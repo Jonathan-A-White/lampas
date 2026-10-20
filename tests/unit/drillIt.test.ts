@@ -410,8 +410,9 @@ describe('a sound that changes by the next letter', () => {
   it.each(soundRulesOf(modern).map((r) => [r.ideaId, r] as const))('%s: both sides drilled, the word misread by the rule offered', (ideaId, rule) => {
     const qs = drillSteps(ideaId, { seed: 1, scheme: modern }).flatMap((s) => s.questions);
     for (const side of rule.sides) {
-      const own = qs.filter((q) => q.facet.id === `${ideaId}:${side.id}`);
-      if (side.words.length === 0) {
+      // the words he reads (the questions that mark the pair in a word are held to the scheme in tests/unit/position-sounds.test.ts)
+      const own = qs.filter((q) => q.facet.id === `${ideaId}:${side.id}` && q.prompt === 'How is this word said?');
+      if (side.examples.length === 0) {
         expect(own, `${ideaId} ${side.id} has no word`).toEqual([]);
         continue;
       }

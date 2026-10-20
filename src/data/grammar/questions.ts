@@ -12,7 +12,7 @@ import { PARADIGMS, tableFor } from '../paradigms';
 import { shuffle, type Random } from '../quiz';
 import { USE_IDS, usesOf, type Use } from './uses';
 import { chosenPronunciation } from '../../speech/greek';
-import type { Pronunciation } from '../../speech/pronunciation';
+import { soundRuleOf, type Pronunciation } from '../../speech/pronunciation';
 import { LADDER, itemFacet, itemsOf, ideasOf, type Facet, type GrammarIdea } from './ladder';
 import type { GradedVerse } from './gradedVerses';
 import { ideaSound, ideaText } from './lessons';
@@ -45,6 +45,8 @@ export interface GrammarQuestion {
   say?: string;
   /** what the question is about, for Drill it (drillIt.ts, mw-i7xe0n.1): the letter, the ending, the case; a miss on it names the gap */
   facet?: Facet;
+  /** the part of `form` the question is about, as [from, to) indexes into it: the pair of a word whose sound depends on its place (ruleWord.ts); the card draws it marked */
+  span?: [number, number];
   /** the Greek words the question is about, for a 'meaning': the chunk's (or the clause's) words in text order, which the card may mark */
   marked?: string[];
   /** the verse's Greek words in text order, for a 'use' (mw-br588b.3): the card draws them as text, with the words at `markedAt` marked */
@@ -612,7 +614,10 @@ export function buildLetter(idea: GrammarIdea, random: Random, scheme: Pronuncia
   const form = ask?.form ?? (random() < 0.5 ? 'small' : 'capital');
   const sound = ideaSound(letter, scheme);
   const bySound = ask?.byName ? false : random() < 0.5 && sound !== undefined;
-  const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && (!bySound || ideaSound(o, scheme) !== sound));
+  // a letter that says the asked sound in some words is no wrong choice (σ is z before β, γ, δ ...: 'Which letter sounds like z?' is ζ, and σ is not wrong either)
+  const symbol = sound?.split(',')[0];
+  const saysIt = (o: GrammarIdea): boolean => soundRuleOf(scheme, o.id)?.sides.some((side) => side.choice.split(',')[0] === symbol) ?? false;
+  const others = LETTER_IDEAS.filter((o) => o.id !== letter.id && (!bySound || (ideaSound(o, scheme) !== sound && !saysIt(o))));
   const which = form === 'capital' ? 'Which capital letter' : 'Which letter';
   return {
     kind: 'letter',

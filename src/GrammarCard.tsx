@@ -43,6 +43,20 @@ function UseVerse({ question }: { question: GrammarQuestion }) {
   );
 }
 
+/** The Greek form, with the part the question is about (a pair whose sound depends on its place, ruleWord.ts) marked: data-marked, so a test and the eye find it. */
+function MarkedForm({ form, span }: { form: string; span?: [number, number] }) {
+  if (!span) return <>{form}</>;
+  return (
+    <>
+      {form.slice(0, span[0])}
+      <span data-marked="" className="rounded bg-accent/20 px-1 font-medium">
+        {form.slice(span[0], span[1])}
+      </span>
+      {form.slice(span[1])}
+    </>
+  );
+}
+
 interface Props {
   question: GrammarQuestion;
   mode: QuestionMode;
@@ -84,7 +98,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
         </p>
         {question.form ? (
           <p data-testid="grammar-form" {...GREEK_LANG} className={`mt-3 min-w-0 break-words font-greek ${question.kind === 'meaning' && question.form.length > 16 ? 'text-4xl' : 'text-5xl'}`}>
-            {question.form}
+            <MarkedForm form={question.form} span={question.span} />
           </p>
         ) : null}
         <UseVerse question={question} />

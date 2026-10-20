@@ -44,6 +44,10 @@ export interface SoundRuleSide {
   line: string;
   /** New Testament words that stand on this side only (none where the text has none: no word begins with μπ) */
   words: readonly string[];
+  /** Real Greek words that stand on this side only, for the sheet and the drill to show it by: `words`, and where the text has none (no word begins with γκ) a modern word, γκάζι */
+  examples: readonly string[];
+  /** the sound of this side as ONE choice of a quiz, the label a question about a word of this side has for its right answer ('ng, as in “finger”', 'ev, with v as in vase') */
+  choice: string;
 }
 
 /** A sound that changes by the letter next to it (χ is kh before α and hy before ε): what Drill it drills both sides of (mw-i7xe0n.7). */

@@ -161,6 +161,8 @@ down each place a rule decided (χ hard or soft, γ, σ before a consonant, αυ
 so a rule's sides and its misreading never disagree with the respelling. tests/unit/sound-rule-sides.test.ts holds every side word to the text and to its side; a scheme with none leaves it out
 and Drill it reads words as before.
 
+A side also has `examples` (real words that stand on it: its `words`, and for the side no word of the text has, a modern word: μπάλα, ντουλάπι, γκάζι) and a `choice` (its sound as one quiz choice: 'ng, as in “finger”', 'ev, with v as in vase'). A **pair** with a rule (αυ ευ ηυ μπ ντ γκ γχ) is never asked alone (mw-5r3p30.646): its sheet's How it sounds is written from its sides (`positionLessons` in `modern.ts`: the rule in plain words, each side's line, an example word and its respelling), and its sound questions (`src/data/grammar/ruleWord.ts` `ruleWordQuestion`, used by `quickQuestion` and Drill it's first step) show a real word of one side with the pair marked (`GrammarQuestion.span`, drawn `[data-marked]` by GrammarCard) and ask its sound in THAT word; the right answer is the side's `choice` and the other side's is the near miss. A letter with a rule (σ is z before β γ δ ...) never has the other side's sound among the wrong choices of its bare question (it is right for a word), and its sheet says the rule too. tests/unit/position-sounds.test.ts holds all of it to the scheme, word by word.
+
 ## Sound progress is kept per pronunciation
 
 He learns the letters, sounds and marks IN a pronunciation, so what he proved in Modern Greek he has not proved in Erasmian (mw-5r3p30.231). The ideas of the

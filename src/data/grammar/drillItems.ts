@@ -16,6 +16,7 @@ import { soundRuleOf, soundRulesOf, type Pronunciation, type SoundRule, type Sou
 import { itemFacet, itemsOf, ideaOf, type Facet, type GrammarIdea } from './ladder';
 import { ideaSound } from './lessons';
 import { quickQuestion } from './quickRound';
+import { positionRule, ruleWordQuestion } from './ruleWord';
 import {
   MOVABLE_FACETS,
   breathingOf,
@@ -255,7 +256,7 @@ function needsOf(ctx: DrillContext, items: readonly GrammarIdea[], plain: (item:
   return items.flatMap((item): WordNeed[] => {
     const rule = soundRuleOf(ctx.scheme, item.id);
     if (!rule) return [{ item, fits: fitting(ctx, textOf(item), plain(item)) }];
-    return rule.sides.map((side) => ({ item, side, fits: fitting(ctx, textOf(item), side.words, (w) => rule.sideOf(w) === side.id) }));
+    return rule.sides.map((side) => ({ item, side, fits: fitting(ctx, textOf(item), side.examples, (w) => rule.sideOf(w) === side.id) }));
   });
 }
 
@@ -343,14 +344,32 @@ export const PAIR_WORD_OF = PAIR_WORDS;
 
 function pairSteps(ctx: DrillContext, items: readonly GrammarIdea[]): RawStep[] {
   let n = 0;
+  // a pair whose sound changes by its place is never asked alone (ruleWord.ts): the first step shows it in a word of each side of its rule, marked
+  const ruled = (item: GrammarIdea) => positionRule(item, soundRuleOf(ctx.scheme, item.id));
   const ask = (mode: 'see' | 'hear'): GrammarQuestion[] =>
-    distinct(ctx, items.flatMap((item) => Array.from({ length: VARIANTS }, () => ({ ...quickQuestion({ id: item.id, mode }, rng(ctx, (n += 1)), ctx.scheme), facet: itemFacet(item) }))));
+    distinct(
+      ctx,
+      items
+        .filter((item) => mode === 'hear' || !ruled(item))
+        .flatMap((item) => Array.from({ length: VARIANTS }, () => ({ ...quickQuestion({ id: item.id, mode }, rng(ctx, (n += 1)), ctx.scheme), facet: itemFacet(item) }))),
+    );
   // a pair with a sound rule reads words of both its sides; a word that only the fixed list has is read VARIANTS times, with other wrong choices
   const needs = needsOf(ctx, items, (item) => (PAIR_WORDS[item.id] ? [PAIR_WORDS[item.id]] : []));
   const given = assignWords(needs);
   const words = needs.flatMap((need, i) => given[i].map((w) => readWord(ctx, w, itemFacet(need.item), rng(ctx, (n += 1)), need.item.id)));
+  const marked = needs.flatMap((need, i) => {
+    const rule = ruled(need.item) ? soundRuleOf(ctx.scheme, need.item.id) : undefined;
+    if (!rule || !need.side) return [];
+    const facet = ctx.idea.id === need.item.id ? sideFacet(rule, need.side) : itemFacet(need.item);
+    return given[i].map((w) => {
+      const q = ruleWordQuestion(need.item, rule, need.side!, w, rng(ctx, (n += 1)), ctx.scheme);
+      return q ? { ...q, facet } : null;
+    });
+  });
+  const everyRuled = items.every((item) => ruled(item));
+  const see = [...ask('see'), ...distinct(ctx, marked)];
   const steps: RawStep[] = [
-    { title: 'See it and pick its sound', questions: ask('see') },
+    { title: everyRuled ? 'See it in a word and pick its sound' : 'See it and pick its sound', questions: see, ...(everyRuled ? { words: true as const } : {}) },
     { title: 'Hear it and pick it', questions: ask('hear') },
   ];
   const read = filled(ctx, distinct(ctx, words), steps.flatMap((s) => s.questions), (i, random) => {
