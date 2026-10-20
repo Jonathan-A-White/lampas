@@ -109,3 +109,37 @@ export async function touchHoldFor(page: Page, target: Locator | PressAt, ms: nu
     await cdp.detach();
   }
 }
+
+export interface DragOptions {
+  /** How many moves the drag is cut into, evenly spaced in time. */
+  steps?: number;
+  /** How long the finger takes from where it lands to where it lifts, on the page's clock: the speed of the flick the page sees. */
+  ms?: number;
+  /** Leaves the page's clock paused after the lift, so the spec can run it frame by frame and time what the release starts (a page turn). */
+  keepPaused?: boolean;
+  /** Runs while the finger is still down at `to`, the page's clock paused: look at what the drag drew before it lifts. */
+  whileDown?: () => Promise<void>;
+}
+
+/** A finger (touch input to the browser) dragged from `from` to `to` in `ms` of the page's clock, the moves evenly spaced: unlike swipe, the page sees how
+ * fast the finger went. The spec must call page.clock.install() before the page opens. */
+export async function drag(page: Page, from: Point, to: Point, { steps = 6, ms = 200, keepPaused = false, whileDown }: DragOptions = {}): Promise<void> {
+  const at = (t: number) => ({ x: from[0] + (to[0] - from[0]) * t, y: from[1] + (to[1] - from[1]) * t });
+  const cdp = await page.context().newCDPSession(page);
+  const send = (type: 'touchStart' | 'touchMove' | 'touchEnd', touchPoints: { x: number; y: number }[]) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });
+  await pauseNow(page);
+  let lifted = false;
+  try {
+    await send('touchStart', [at(0)]);
+    for (let i = 1; i <= steps; i++) {
+      await page.clock.runFor(Math.round(ms / steps));
+      await send('touchMove', [at(i / steps)]);
+    }
+    if (whileDown) await whileDown();
+    await send('touchEnd', []);
+    lifted = true;
+  } finally {
+    if (!lifted || !keepPaused) await page.clock.resume();
+    await cdp.detach();
+  }
+}
