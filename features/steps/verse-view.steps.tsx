@@ -89,7 +89,7 @@ const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const queryView = () => screen.queryByRole('region', { name: 'Verse view' });
 const readerLine = (n: number): HTMLElement => document.querySelector<HTMLElement>(`[data-verse="${n}"] [data-text]`) as HTMLElement;
 const verseOfView = () => viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
-/** The one bar at the view's foot: a HoldBar, or for Ask the tutor the Composer's Hold to ask bar. */
+/** The one bar at the view's foot: the kit's TalkBar, or for Ask the tutor the Composer's Hold to ask bar. */
 const bars = () => [...Array.from(document.querySelectorAll<HTMLElement>('.lp-bar')), ...holdBarsIn(document.body)];
 const foot = (): HTMLElement => viewEl().querySelector<HTMLElement>('[data-verse-bar]') as HTMLElement;
 const bar = () => {

@@ -79,7 +79,7 @@ async function open({ tutor = false, recorder = false }: Options = {}): Promise<
 }
 
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
-/** The hold bar at the view's foot: a HoldBar, or for Ask the tutor the Composer's Hold to ask bar. */
+/** The hold bar at the view's foot: the kit's TalkBar, or for Ask the tutor the Composer's Hold to ask bar. */
 const holdBars = () => [...Array.from(document.querySelectorAll<HTMLElement>('.lp-bar')), ...holdBarsIn(document.body)];
 const speakingBar = () => screen.getByRole('region', { name: 'Speaking' });
 const barButtons = () => within(speakingBar()).getAllByRole('button').map((b) => b.textContent);

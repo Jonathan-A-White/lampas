@@ -22,7 +22,7 @@ export async function typeQuestion(page: Page, question: string): Promise<void> 
   await composerOf(page).getByRole('button', { name: 'Send', exact: true }).click();
 }
 
-/** The one Hold to ask bar: Postern's height, nearly the width of the phone, and the lowest thing on the screen; no hold bar of the HoldBar kind beside it. */
+/** The one Hold to ask bar: Postern's height, nearly the width of the phone, and the lowest thing on the screen; no other hold bar beside it. */
 export async function expectOneAskBar(page: Page, viewport: { width: number; height: number }): Promise<void> {
   await expect(composerOf(page)).toHaveCount(1);
   await expect(askBar(page)).toHaveCount(1);
