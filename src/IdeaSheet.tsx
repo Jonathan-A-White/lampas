@@ -15,7 +15,7 @@
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
 // A letter or pair with a Hard sounds lesson for his accent (src/hardSounds/, mw-5r3p30.361) has 'Learn to say it (optional)' (or the label the lesson gives, 'Learn to roll your r (optional)' on Rho) under How it sounds; Back from it brings the sheet back.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
 import { loadFrequency } from './data/frequency';
@@ -373,7 +373,31 @@ function ReadMore({ ideaId, books }: { ideaId: string; books: readonly GrammarBo
   );
 }
 
-export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS }: {
+const RESTORE_MS = 3000;
+
+/** Scrolls the box to `top` once it is tall enough (its text fills in as the passage loads), and leaves it alone from the first touch, wheel or key of his or after RESTORE_MS. */
+function useRestoredScroll(box: RefObject<HTMLDivElement | null>, top: number): void {
+  useEffect(() => {
+    const el = box.current;
+    if (!el || top <= 0) return;
+    let frame = 0;
+    const stop = (): void => {
+      cancelAnimationFrame(frame);
+      for (const kind of ['pointerdown', 'wheel', 'touchstart', 'keydown']) el.removeEventListener(kind, stop);
+    };
+    const began = performance.now();
+    const step = (): void => {
+      el.scrollTop = top;
+      if (Math.abs(el.scrollTop - top) < 1 || performance.now() - began > RESTORE_MS) return stop();
+      frame = requestAnimationFrame(step);
+    };
+    for (const kind of ['pointerdown', 'wheel', 'touchstart', 'keydown']) el.addEventListener(kind, stop, { passive: true });
+    step();
+    return stop;
+  }, [box, top]);
+}
+
+export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS, restoreScroll = 0 }: {
   idea: GrammarIdea;
   onClose: () => void;
   /** Done, a swipe down, a tap outside and Escape (Back stays onClose): the sheets under this one close with it. Defaults to onClose. */
@@ -386,6 +410,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   onAsk?: (term: string) => void;
   /** the grammar books Read more may name (GRAMMAR_BOOKS); a test hands it its own */
   books?: readonly GrammarBook[];
+  /** the sheet is back from a table (src/ideaReturn.ts): scroll its text this far, as the examples and cards fill in, until he touches it */
+  restoreScroll?: number;
 }) {
   const dismiss = onDismiss ?? onClose;
   const { drag, handle } = useSheetDrag(dismiss);
@@ -395,6 +421,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   const [trying, setTrying] = useState(false);
   useEscapeToClose(dismiss, !covered && opened === null && !trying);
   useSheetBack(onClose);
+  const textBox = useRef<HTMLDivElement>(null);
+  useRestoredScroll(textBox, restoreScroll);
   const loaded = usePassage();
   const level = useLiveQuery(() => getLevel(idea.id), [idea.id]);
   // what Switch kept on an idea it put back to Not yet (its schedule row); an idea that never had a row, or whose row was removed, shows nothing
@@ -489,14 +517,14 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   // the tables that teach this idea (mw-svw421.5): a tap opens one in Study mode, and Back brings this sheet back (src/ideaReturn.ts)
   const tables = paradigmsOf(idea.id);
   const seeTable = (table: string): void => {
-    holdIdea(idea.id);
+    holdIdea(idea.id, textBox.current?.scrollTop ?? 0);
     openParadigm({ table });
   };
   // the Hard sounds lessons on this letter or pair for his accent (mw-5r3p30.361): optional, a tap opens one, and Back brings this sheet back as from a table
   const letter = idea.glyphs?.[0] ?? idea.pair;
   const soundLessons = letter ? lessonsForLetter(letter, scheme.id, accent) : [];
   const learnToSay = (lesson: string): void => {
-    holdIdea(idea.id);
+    holdIdea(idea.id, textBox.current?.scrollTop ?? 0);
     openSoundLesson(lesson);
   };
 
@@ -528,7 +556,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
             Done
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
+        <div ref={textBox} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{titled(idea.title)}</h2>
             <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />

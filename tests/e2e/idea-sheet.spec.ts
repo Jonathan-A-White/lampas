@@ -1,9 +1,31 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { swipe } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 const VIEWPORT = { width: 390, height: 844 };
+
+/** Puts rows in the app's settings store through raw IndexedDB, as the app wrote them. */
+async function put(page: Page, rows: object[]) {
+  await page.evaluate(
+    (list) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const idb = open.result;
+          const tx = idb.transaction('settings', 'readwrite');
+          for (const row of list) tx.objectStore('settings').put(row);
+          tx.oncomplete = () => {
+            idb.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    rows,
+  );
+}
 
 test('the idea sheet of the genitive fits the phone, its slider and buttons clear their sizes, and sliding to Learning shows the level', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
@@ -97,4 +119,43 @@ test('a tap on the middle of the "Your level" track leaves the level where it wa
   await stay.click();
   await expect(idea.getByTestId('idea-level')).toHaveText('Frontier since today');
   await shot(page, 'idea-sheet-track-tap');
+});
+
+test('Back from an idea\'s table brings its sheet back scrolled to where he tapped "Table:" (mw-svw421.39)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await put(page, [{ key: 'goal', value: '1 John 1:1' }]);
+  await page.reload();
+  await page.getByTestId('goal-strip').click();
+  await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
+  await page.getByTestId('ideas-bar').click();
+  await page.getByTestId('ideas-list').getByRole('button', { name: 'The aorist tense', exact: true }).click();
+  const idea = page.getByRole('dialog', { name: 'Idea' });
+  await expect(idea.getByRole('heading', { name: 'The aorist tense' })).toBeVisible();
+  await expect(idea.getByTestId('idea-example').first()).toBeVisible();
+
+  // the nearest scrolling ancestor of the 'What it is' line is the sheet's text box
+  const textBox = idea.getByTestId('idea-what').locator('xpath=ancestor::div[contains(@class,"overflow-y-auto")][1]');
+  const table = idea.getByRole('button', { name: /^Table: Future and aorist/ });
+  await table.scrollIntoViewIfNeeded();
+  await expect(table).toBeInViewport({ ratio: 1 });
+  expect(await textBox.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  await table.click();
+  await expect(page.getByRole('dialog', { name: 'Idea' })).toHaveCount(0);
+  await expect(page).toHaveURL(/#\/paradigms/);
+
+  await page.goBack();
+  const back = page.getByRole('dialog', { name: 'Idea' });
+  await expect(back.getByRole('heading', { name: 'The aorist tense' })).toBeVisible();
+  const again = back.getByRole('button', { name: /^Table: Future and aorist/ });
+  await expect(again).toBeVisible();
+  // its box lies inside the sheet's text box, not scrolled out of it
+  await expect.poll(async () => {
+    const [button, box] = await Promise.all([again.boundingBox(), back.getByTestId('idea-what').locator('xpath=ancestor::div[contains(@class,"overflow-y-auto")][1]').boundingBox()]);
+    if (!button || !box) return false;
+    return button.y >= box.y - 0.5 && button.y + button.height <= box.y + box.height + 0.5;
+  }).toBe(true);
+  await shot(page, 'idea-sheet-back-from-table');
 });
