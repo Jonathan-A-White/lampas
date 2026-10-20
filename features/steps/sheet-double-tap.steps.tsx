@@ -27,6 +27,9 @@ afterAll(async () => {
 });
 
 const user = userEvent.setup();
+
+// jsdom has no scrollIntoView: the Settings page a link names scrolls to its section
+Element.prototype.scrollIntoView = function scrollIntoView() {};
 // The settle moment counts performance.now() (src/ui/settle.ts), so the scenarios hold that clock by hand: it moves only when a step says he waited,
 // never because the host is slow. A tap 'at once' lands 0 ms after the last, however long the steps in between took on the wall clock.
 let elapsed = 0;
