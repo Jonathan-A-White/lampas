@@ -188,7 +188,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
-  const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation);
+  const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation, undefined, chapter);
   // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
   const openTalkRef = useRef<string | null>(null);
   // Push-to-talk (src/useVoice.ts): what he says goes as the turn of the conversation the sheet is open on.

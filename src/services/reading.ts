@@ -1,7 +1,7 @@
 // src/services/reading.ts — the reading check: one verse read aloud, sent as a grist through Postern (bsv-kit/grist) with
 // the recording attached, scored by the mill and answered by its verse-read grind (grinds/verse-read.json). The wire work is
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
-import type { Verse } from '../data/chapter';
+import { NO_CHAPTER, type Chapter, type Verse } from '../data/chapter';
 import type { Woven } from '../data/weave';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
@@ -10,6 +10,7 @@ import type { Recording } from '../audio/recorder';
 import { extensionOf } from '../audio/recorder';
 import { chosenAccent } from '../speech/accents';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
+import { greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { askGrind, type AskOptions } from './tutor';
 
 export const READING_KIND = 'verse-read';
@@ -31,6 +32,8 @@ export interface VerseReadRequest {
   reference: string;
   target_text: string;
   lang: string;
+  /** with a verse read in Greek: each distinct word of `target_text` with its lemma, gloss, parsing and the app's respelling, syllables and stress, as the Bible talk is sent it (src/services/greekWords.ts, mw-5r3p30.659): a tip on a word's syllables and stress reads them from here, never counts */
+  greek_words?: GreekWordEntry[];
   /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound in a tip is described by it */
   pronunciation: GreekPronunciation;
   /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a tip on a Greek sound follows them */
@@ -159,8 +162,8 @@ export const readingText = (verse: Verse, view: ReadingView = 'english'): string
 export const readingLang = (view: ReadingView, pronunciation: unknown): string =>
   view === 'greek' ? pronunciationOf(pronunciation).scoringLang : 'en';
 
-export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField): VerseReadRequest {
-  return {
+export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, chapter: Chapter = NO_CHAPTER): VerseReadRequest {
+  const request: VerseReadRequest = {
     reference,
     target_text: readingText(verse, view),
     lang,
@@ -172,6 +175,10 @@ export function buildReadingRequest(reference: string, verse: Verse, view: Readi
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
   };
+  if (view !== 'greek') return request;
+  // the words of the verse weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule); a reading names no word, so none is held past the budget
+  const words = greekWordsFitting(chapter, [verse], '', pronunciation, new TextEncoder().encode(JSON.stringify(request)).length);
+  return words.length > 0 ? { ...request, greek_words: words } : request;
 }
 
 /** Sends the recording of a verse read aloud and waits for the mill's answer (the verse-read grind). Throws a TutorError. */
