@@ -1,7 +1,7 @@
 // The rows of Settings (src/settings/rows.ts): one list says what every row is called, its one-line hint, its longer help and what it
 // depends on; the screen draws exactly those rows, the search filters them and show-when-on reads their dependencies.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { render, cleanup, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
