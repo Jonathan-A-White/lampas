@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { LADDER, TIERS } from '../../src/data/grammar/ladder';
+import { ideaOf, LADDER, TIERS } from '../../src/data/grammar/ladder';
 import { availableCount, availableText, cellName, cellsOf, isAvailable, missingIdeas, paradigmById, PARADIGMS } from '../../src/data/paradigms';
+
+import { needsOf, needsText } from '../../src/data/paradigms/needs';
 
 const IDEA_IDS = new Set(LADDER.map((idea) => idea.id));
 const COUNTS: Record<string, number> = {
@@ -425,5 +427,24 @@ describe('the verb tables of the other moods', () => {
     expect(greek('mood-infinitive')).toEqual(['εἶναι']);
     expect(greek('mood-participle')).toEqual(['ὤν', 'ὄντος', 'οὖσα', 'οὔσης', 'ὄν', 'ὄντος']);
     expect(cellsOf(eimi).filter((c) => c.lang === 'el')).toHaveLength(35);
+  });
+});
+
+// mw-svw421.25: a lock always says why it is shut, in ideas he can read and open
+describe('what a locked cell says it needs', () => {
+  const none = new Map();
+  it('is, for every locked cell of every table at an empty level set, exactly missingIdeas(cell), by title, the lowest on the ladder first', () => {
+    for (const table of PARADIGMS) {
+      for (const cell of cellsOf(table)) {
+        expect(isAvailable(cell, none), `${table.id} ${cell.form}`).toBe(false);
+        const missing = missingIdeas(cell, none);
+        expect(missing.length, `${table.id} ${cell.form} is locked with nothing missing`).toBeGreaterThan(0);
+        const shown = needsOf(cell, none);
+        expect(shown.map((idea) => idea.id).sort(), `${table.id} ${cell.form}`).toEqual([...missing].sort());
+        expect(shown.map((idea) => idea.rung)).toEqual(shown.map((idea) => idea.rung).sort((a, b) => a - b));
+        const text = needsText(cell, none);
+        for (const id of missing) expect(text.toLowerCase(), `${table.id} ${cell.form}`).toContain(ideaOf(id).title.toLowerCase());
+      }
+    }
   });
 });

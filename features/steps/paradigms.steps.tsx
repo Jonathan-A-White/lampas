@@ -2,7 +2,7 @@
 // Review mode, the cells locked by his grammar levels, and Ask the tutor, which opens the Reader on the open chapter and sends the
 // table's name and the revealed forms to a fake Postern (tests/support/fake-postern.ts) as the bible-talk grind's paradigm focus.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -392,6 +392,46 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     And('a reader request for the table {string} was published', async (_, table: string) => {
       await expectLatest('reader-requested', (e) => expect(e).toMatchObject({ action: 'paradigm', table, book: 'rom', chapter: 8 }));
+    });
+  });
+
+  // mw-svw421.25
+  Scenario('A locked cell names the ideas it still needs, each with a button to its sheet', ({ Given, And, When, Then }) => {
+    Given('only the idea {string} is solid', async (_, id: string) => {
+      await db.grammarLevels.clear();
+      await db.grammarLevels.put({ id, level: 'solid', since: Date.now(), how: 'marked' });
+    });
+    And('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
+    When('he taps the locked cell {string}', async (_, place: string) => {
+      await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'locked'));
+      await user.click(cellAt(place));
+    });
+    Then('the note under the table says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('lock-needs')).toHaveTextContent(text));
+    });
+    And('the note offers {string} first and {string}', (_, first: string, other: string) => {
+      const buttons = within(screen.getByTestId('lock-needs')).getAllByRole('button');
+      expect(buttons[0]).toHaveTextContent(first);
+      expect(buttons.map((b) => b.textContent)).toContain(other);
+    });
+    When('he taps the button {string}', async (_, name: string) => {
+      await user.click(within(screen.getByTestId('lock-needs')).getByRole('button', { name }));
+    });
+    Then('the idea sheet of {string} is open over the table', async (_, title: string) => {
+      const sheet = await screen.findByRole('dialog', { name: 'Idea' });
+      expect(within(sheet).getByRole('heading', { name: title })).toBeInTheDocument();
+      expect(document.querySelector('[data-testid="paradigm-table"]')).not.toBeNull();
+    });
+    When('he goes back', async () => {
+      await act(async () => {
+        window.history.back();
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      });
+    });
+    Then('no idea sheet is open and the table {string} is on screen', async (_, name: string) => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Idea' })).toBeNull());
+      expect(screen.getByRole('heading', { name, level: 1 })).toBeInTheDocument();
+      expect(document.querySelectorAll('[data-cell]').length).toBeGreaterThan(0);
     });
   });
 });

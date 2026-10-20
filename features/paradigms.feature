@@ -131,3 +131,15 @@ Feature: Paradigms
     And the grist carries the focus paradigm "The article" with the revealed forms "Nominative Singular Feminine: ἡ" and "Genitive Singular Masculine: τοῦ"
     And the grist question names the table "The article"
     And a reader request for the table "The article" was published
+
+  # mw-svw421.25: a lock says which ideas it still needs, each with a Go to button that opens that idea's sheet, the lowest on the ladder first.
+  Scenario: A locked cell names the ideas it still needs, each with a button to its sheet
+    Given only the idea "mood-participle" is solid
+    And the table "participle" is open in Review mode
+    When he taps the locked cell "Present active Nominative singular Masculine"
+    Then the note under the table says "Needs the singular, the nominative case, the masculine gender, the third declension, the verb, the present tense and the active voice"
+    And the note offers "Go to The singular" first and "Go to The verb"
+    When he taps the button "Go to The verb"
+    Then the idea sheet of "The verb" is open over the table
+    When he goes back
+    Then no idea sheet is open and the table "The participle" is on screen

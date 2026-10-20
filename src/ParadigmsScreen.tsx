@@ -7,20 +7,20 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { TIER_TITLES } from './approaches/ladder';
+import type { Chapter, GreekWord } from './data/chapter';
 import { ideaOf, TIERS } from './data/grammar/ladder';
 import {
   availableCount,
   availableText,
   cellName,
   isAvailable,
-  missingIdeas,
   paradigmById,
   PARADIGMS,
   type Levels,
   type Paradigm,
-  type ParadigmCell,
   type ParadigmColumn,
 } from './data/paradigms';
+import { needsOf, needsText } from './data/paradigms/needs';
 import { blocksOf, columnsThatFit, greekRemOf } from './data/paradigms/layout';
 import { hideAll, revealedOf, toggleRevealed } from './data/paradigms/revealed';
 import { getOpenChapter } from './data/readerChapter';
@@ -33,6 +33,8 @@ import { oneTap } from './ui/settle';
 import { MAX_REVEALED } from './services/talk';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { greekLang } from './script/greekLang';
+import { IdeaSheet } from './IdeaSheet';
+import { WordSheet, type Lookup } from './WordSheet';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium';
 
@@ -141,13 +143,6 @@ function useColumnsThatFit(table: Paradigm, box: RefObject<HTMLDivElement | null
   return fit;
 }
 
-/** What a locked form needs, in words: 'Needs the plural', 'Needs the plural and the genitive case'. */
-function needsText(cell: ParadigmCell, levels: Levels): string {
-  const titles = missingIdeas(cell, levels).map((id) => ideaOf(id).title.toLowerCase());
-  const last = titles.pop();
-  return `Needs ${titles.length > 0 ? `${titles.join(', ')} and ${last}` : last}`;
-}
-
 // The one cell and label layout of every table (mw-svw421.40): the Greek is text-xl (text-2xl where the table has one or two columns), the
 // labels around the cells text-xs in a 5.5rem column, and a word is never broken inside (no break-words: a label wraps at its spaces). A
 // table whose forms do not all fit the box in one row of cells is drawn as blocks, each with the columns that fit (src/data/paradigms/layout.ts).
@@ -162,10 +157,22 @@ function Table({ table, levels, mode, revealed, onToggle }: {
   const fit = useColumnsThatFit(table, box);
   // the locked form he tapped: the line saying what it needs is drawn under its row (mw-svw421.18)
   const [asked, setAsked] = useState<string | null>(null);
+  // the idea he opened from that line, and the word he tapped in its examples: both sheets open over the table, which stays (mw-svw421.25)
+  const [ideaId, setIdeaId] = useState<string | null>(null);
+  const [word, setWord] = useState<{ chapter: Chapter; lookup: Lookup } | null>(null);
   const size = greekRemOf(table) > 1.25 ? 'text-2xl' : 'text-xl';
   const label = 'text-xs';
   return (
     <div ref={box} className="mt-3 grid gap-3">
+      {ideaId ? (
+        <IdeaSheet
+          idea={ideaOf(ideaId)}
+          onClose={() => setIdeaId(null)}
+          covered={word !== null}
+          onWord={(chapter: Chapter, tapped: GreekWord) => setWord({ chapter, lookup: { words: [tapped], fromEnglish: false } })}
+        />
+      ) : null}
+      {word ? <WordSheet chapter={word.chapter} lookup={word.lookup} onClose={() => setWord(null)} /> : null}
       {blocksOf(table.columns, fit).map((cols, block) => {
         const columns = cols.map((c) => table.columns[c]);
         const groups = groupsOf(columns);
@@ -265,6 +272,20 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                         <tr>
                           <td colSpan={cols.length + 1} data-testid="lock-needs" role="status" className="border-b border-line bg-surface px-2 py-2 text-left text-base">
                             {needsText(row.cells[askedCol], levels)}
+                            <ul aria-label="Ideas it needs" className="mt-2 flex flex-wrap gap-2">
+                              {needsOf(row.cells[askedCol], levels).map((idea) => (
+                                <li key={idea.id}>
+                                  <button
+                                    type="button"
+                                    data-idea={idea.id}
+                                    onClick={() => setIdeaId(idea.id)}
+                                    className="min-h-11 rounded-lg border border-line px-3 text-base font-medium text-accent active:bg-line"
+                                  >
+                                    Go to {idea.title}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
                           </td>
                         </tr>
                       ) : null}
