@@ -43,7 +43,7 @@ function Sheet({ proposal, hidden, onAnswer, onClose }: { proposal: ReturnPropos
         aria-modal="true"
         aria-label="Where did you get to?"
         style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-        className="lp-sheet-in relative flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
+        className="lp-sheet-in relative flex [--lp-panel-max:92dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
       >
         <div data-testid="sheet-handle" {...handle} className="flex shrink-0 touch-none flex-col items-center px-4 pt-2">
           <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />

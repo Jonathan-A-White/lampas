@@ -93,7 +93,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
         aria-modal="true"
         aria-label="New word"
         style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-        className="relative flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
+        className="relative flex [--lp-panel-max:92dvh] flex-col rounded-t-2xl border-t border-line bg-surface"
       >
         <div data-testid="teach-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
