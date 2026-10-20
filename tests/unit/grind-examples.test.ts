@@ -216,3 +216,27 @@ describe.each(['verse-ask', 'bible-talk'])('%s/cleaned-question (mw-5r3p30.164)'
     expect(answered(question)).not.toEqual([]);
   });
 });
+
+// mw-5r3p30.662: read-greek-svennyte-syllables (1 Thessalonians 5:19) named a stand-in clip of 5:16, so a live run could not prove the
+// syllables of σβέννυτε. A recording whose name carries a chapter and verse is a reading of that verse: the example's reference says which.
+describe('a verse-read recording is a reading of the verse its example names (mw-5r3p30.662)', () => {
+  const dir = 'grinds/examples/verse-read';
+  const named = readdirSync(dir)
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => ({ file: f, example: readJson(`${dir}/${f}`) as unknown as GrindExample }))
+    .flatMap(({ file, example }) => (example.photos ?? []).map((photo) => ({ file, photo, reference: String((example.request as { reference: string }).reference) })));
+
+  it.each(named)('$file: $photo is a reading of $reference', ({ photo, reference }) => {
+    const verse = /(\d+):(\d+)/.exec(reference);
+    const inName = /(\d+)-(\d+)(?:-[a-z-]+)?\.webm$/.exec(photo);
+    expect(verse, `${reference} carries a chapter and verse`).not.toBeNull();
+    expect(inName, `${photo} carries the chapter and verse it reads`).not.toBeNull();
+    expect(`${inName?.[1]}:${inName?.[2]}`, `${photo} reads ${reference}`).toBe(`${verse?.[1]}:${verse?.[2]}`);
+  });
+
+  it('the Greek 5:19 example has a recording of its own beside it', () => {
+    const example = readJson(`${dir}/read-greek-svennyte-syllables.json`) as unknown as GrindExample;
+    expect(example.photos).toEqual(['read-1-thess-5-19-el.webm']);
+    expect(existsSync(`${dir}/read-1-thess-5-19-el.webm`)).toBe(true);
+  });
+});

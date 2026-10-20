@@ -1,5 +1,5 @@
 {
-  "description": "1 Thessalonians 5:19 read aloud in Greek, stopping before σβέννυτε: the app hands over the word's syllables σβέν, νυ, τε and its stress on the first in greek_words, so the next word is cut by them (chunks σβέν, νυ, τε), never with σβ as a syllable of its own (mw-5r3p30.659). The recording is a stand-in (the reading of 1 Thessalonians 5:16) until a real reading of Τὸ πνεῦμα μὴ is kept beside it.",
+  "description": "1 Thessalonians 5:19 read aloud in Greek, stopping before σβέννυτε: the app hands over the word's syllables σβέν, νυ, τε and its stress on the first in greek_words, so the next word is cut by them (chunks σβέν, νυ, τε), never with σβ as a syllable of its own (mw-5r3p30.659). The recording is a synthetic Greek voice (Piper el_GR-rapunzelina-low) reading Τὸ πνεῦμα μὴ and stopping there; the local scorer hears all three words right and does not reach σβέννυτε.",
   "schemaVersion": "2",
   "request": {
     "reference": "1 Thessalonians 5:19",
@@ -59,7 +59,7 @@
     "english_accent": "american"
   },
   "photos": [
-    "read-1-thess-5-16-el.webm"
+    "read-1-thess-5-19-el.webm"
   ],
   "expect": {
     "verdict": {
