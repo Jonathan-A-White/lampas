@@ -22,7 +22,7 @@
     }
   },
   "expect": {
-    "answer": { "contains": "MAR", "matches": "^(?:[^hH]|[hH][^aA]|[hH][aA][^-])*(?:[hH][aA]?)?$" },
+    "answer": { "contains": "MAR", "matches": "^(?:(?:[^A-Za-z]|[Hh](?:[^A-Za-z]|[Aa][^A-Za-z-]))|(?:[A-GI-Za-gi-z]|[Hh](?:[B-Zb-z]|[Aa][A-Za-z]))[A-Za-z]*[^A-Za-z])*(?:(?:|[Hh](?:|[Aa]))|(?:[A-GI-Za-gi-z]|[Hh](?:[B-Zb-z]|[Aa][A-Za-z]))[A-Za-z]*)$" },
     "syllables.0": { "equals": "ἁ" },
     "syllables.3": { "equals": "τε" },
     "syllables.4": { "present": false },

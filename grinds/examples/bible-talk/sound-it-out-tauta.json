@@ -14,7 +14,7 @@
     "focus": { "form": "ταῦτα", "lemma": "οὗτος", "parse": "demonstrative pronoun, accusative plural neuter", "kind": "sound", "respelling": "TAF-ta" }
   },
   "expect": {
-    "answer": { "contains": "TAF", "matches": "^(?:[^aA]|[aA]+[^aAwW])*[aA]*$" },
+    "answer": { "contains": "TAF", "matches": "^(?:(?:(?:(?:[^A-Za-z]|[a][^A-Za-z])|[A][^A-Za-z])|(?:[a](?:[A]|[Ww][A])|[A](?:[A]|[w][A]))[A]*[^A-Za-z])|(?:(?:(?:[B-Zb-z]|[a](?:[B-VX-Za-vx-z]|[Ww][B-Za-z]))|[A](?:[B-VX-Za-vx-z]|[w][B-Za-z]))|(?:[a](?:[A]|[Ww][A])|[A](?:[A]|[w][A]))[A]*[B-VX-Za-z])(?:[B-Za-z]|[A][A]*[B-VX-Za-z])*(?:[^A-Za-z]|[A][A]*[^A-Za-z]))*(?:(?:(?:(?:|[a])|[A])|(?:[a](?:[A]|[Ww][A])|[A](?:[A]|[w][A]))[A]*)|(?:(?:(?:[B-Zb-z]|[a](?:[B-VX-Za-vx-z]|[Ww][B-Za-z]))|[A](?:[B-VX-Za-vx-z]|[w][B-Za-z]))|(?:[a](?:[A]|[Ww][A])|[A](?:[A]|[w][A]))[A]*[B-VX-Za-z])(?:[B-Za-z]|[A][A]*[B-VX-Za-z])*(?:|[A][A]*))$" },
     "syllables.0": { "matches": "^τα[υῦύ]" },
     "settings_changes": { "present": false },
     "setting_offer": { "present": false }
