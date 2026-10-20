@@ -285,7 +285,8 @@ describeFeature(feature, ({ Scenario }) => {
     Then('it says {string}', says);
     When('he taps {string}', tapped);
     Then('Settings is open', async () => {
-      await screen.findByRole('heading', { name: 'Greek', level: 1 });
+      // a reopened placement has no Settings page behind it, so the way out lands on the home (a Back from the page it was started on returns to that page)
+      await screen.findByRole('heading', { name: 'Settings', level: 1 });
     });
   });
 

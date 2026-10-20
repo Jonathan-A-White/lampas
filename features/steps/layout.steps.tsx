@@ -184,7 +184,7 @@ describeFeature(feature, ({ Scenario }) => {
       cleanup();
       clearBus();
       render(<App />);
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await screen.findByRole('heading', { name: 'Reading', level: 1 });
     });
     Then('Layout is set to {string} in Settings', async (_, label: string) => {
       const group = await screen.findByRole('group', { name: 'Layout' });

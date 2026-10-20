@@ -291,8 +291,11 @@ describeFeature(feature, ({ Scenario }) => {
       await tapVersion(times);
     });
     Then('Settings has no {string}', async (_, name: string) => {
-      await goToSettings();
-      await screen.findByRole('group', { name: 'Theme' });
+      // with Developer mode off the home does not list the Developer group (src/settings/rows.ts visibleGroups)
+      window.location.hash = '#/settings';
+      const groups = await screen.findByRole('list', { name: 'Settings groups' });
+      await within(groups).findByRole('button', { name: /^Reading/ });
+      expect(within(groups).queryByRole('button', { name: /^Developer/ })).toBeNull();
       expect(screen.queryByRole('group', { name })).toBeNull();
       expect(settingsGroup()).toBeNull();
     });

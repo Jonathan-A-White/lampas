@@ -16,7 +16,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/spoken-word';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { groupHash, openSettingsGroup } from '../../tests/support/settings-pages';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -120,9 +120,9 @@ describeFeature(feature, ({ Scenario }) => {
       clearBus();
       // a page opened afresh: the speaker knows no voice until the saved one is read
       setVoice('greek', null);
-      window.history.replaceState(null, '', '/#/settings');
+      window.history.replaceState(null, '', `/${groupHash('listening')}`);
       render(<App newRandom={() => mulberry32(7)} />);
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await screen.findByRole('heading', { name: 'Listening', level: 1 });
     });
     Then('Reading voices still says the Greek voice in use is {string}', saysInUse);
     When('he opens the Quick test and taps {string}', async (_, name: string) => {

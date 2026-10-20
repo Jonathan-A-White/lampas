@@ -20,7 +20,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { groupHash, openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -410,7 +410,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the app is closed and opened again on Settings', async () => {
       cleanup();
       clearBus();
-      expect(window.location.hash).toBe('#/settings');
+      expect(window.location.hash).toBe(groupHash('reading'));
       await seedHisWords();
       render(<App />);
     });

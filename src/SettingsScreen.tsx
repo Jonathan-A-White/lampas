@@ -18,7 +18,7 @@ import { HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
 import { backToSettingsHome, groupIdOf, settingKeyOf } from './settings/link';
 import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
-import { GROUPS, SECTIONS, groupById, groupOf, neededFor, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId } from './settings/rows';
+import { SECTIONS, groupById, groupOf, neededFor, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId } from './settings/rows';
 import { settingsForTutor } from './settings/tutorSettings';
 import { useReportScreen } from './tutor/screenContext';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -92,11 +92,14 @@ export function SettingsScreen() {
             {searching ? (
               values ? <Found rows={found} query={query} /> : null
             ) : (
-              <ul aria-label="Settings groups">
-                {(values ? visibleGroups(values) : GROUPS).map((g) => (
-                  <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />
-                ))}
-              </ul>
+              // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
+              values ? (
+                <ul aria-label="Settings groups">
+                  {visibleGroups(values).map((g) => (
+                    <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />
+                  ))}
+                </ul>
+              ) : null
             )}
           </div>
         </main>

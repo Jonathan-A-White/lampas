@@ -88,7 +88,6 @@ async function openSettings(): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
   await openSettingsGroup(user, 'tutor');
-  await screen.findByRole('heading', { name: 'More', level: 2 });
   await screen.findByRole('group', { name: 'Tips' });
 }
 
