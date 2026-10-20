@@ -23,6 +23,7 @@ import { readGo, type GoPlace } from './talk/go';
 import { applyChanges, currentSettings, offeredChange } from './settings/registry';
 import { greekOfferOf } from './talk/greekOffer';
 import { rustyOfferOf } from './talk/rustyOffer';
+import { quizGoalOfferOf } from './talk/quizGoalOffer';
 import { rustyNow } from './data/learnerRusty';
 import { applyMemoryFromAnswer } from './talk/memoryUpdate';
 import { finishWelcome } from './data/repositories/welcome';
@@ -204,7 +205,7 @@ export function useTalk(
           const stayed = go?.ok && door?.here?.(go.place) ? go.place.title : undefined;
           const unopened = go?.ok && door && !door.allowed(ref) && !stayed ? go.place : undefined;
           if (go && !place && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? answer.quiz_goal_offer : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, cleanQ: answer.question, spoken, pictures });
+          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, cleanQ: answer.question, spoken, pictures });
           pictured.current[ref] = undefined;
           // the answer is kept: the message is done, even if the screen went away as it came
           setPending(key, undefined);
