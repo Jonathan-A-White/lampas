@@ -2,10 +2,16 @@
 // {kind, id}: kind 'word' with the NFC headword as id, 'grammar' with a ladder idea's id, 'paradigm' with a table's id (mw-svw421.6), 'sound' and 'drill-plan'.
 import { db, type Review } from '../db';
 import { publish } from '../../events/bus';
-import { IDEA_KIND } from '../grammar/ladder';
+import { PLAN_KIND, PROVE_ID, parseRowId } from '../grammar/drillPlan';
+import { IDEA_KIND, ideaOf } from '../grammar/ladder';
 import { ideaOfStored, storedId } from '../grammar/soundScope';
+import { availableCount, paradigmById } from '../paradigms';
+import { PARADIGM_KIND } from '../paradigms/cells';
+import { parseReviewId } from '../readingDrill';
 import { RECENT_ANSWERS } from '../rusty';
 import { DAY, STEP_DAYS, isDue, nextReview } from '../schedule';
+import { getDrillPlan } from './drillPlans';
+import { listLevels } from './grammarLevels';
 import { getGreekPronunciation } from './settings';
 
 export type { Review };
@@ -74,16 +80,51 @@ export async function recordReview(kind: string, id: string, right: boolean, now
   return review;
 }
 
+/** Whether a ladder idea with this id exists (Review leaves out a row of one the ladder no longer has). */
+function ideaExists(id: string): boolean {
+  try {
+    ideaOf(id);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Whether a drill plan row names an item still to do: its plan is open and not replaced, the item is not done and, for Prove it, every short drill is. */
+async function planRowAskable(id: string): Promise<boolean> {
+  const at = parseRowId(id);
+  const plan = at ? await getDrillPlan(at.ideaId) : undefined;
+  const item = plan?.items.find((i) => i.id === at?.itemId);
+  if (!at || !plan || !item || item.done || !ideaExists(at.ideaId)) return false;
+  return item.id !== PROVE_ID || !plan.items.some((i) => i.kind === 'facet' && !i.done);
+}
+
 /**
- * Whether each row is of something he still has: a word that is listed and not dropped. The row of a dropped word is kept
- * (taken up again, the word comes back on its schedule) but it is not due while he has dropped it. A kind that is not
- * words is always live. This is the one source of "what is due" the strip, Review's cards and the round share.
+ * Whether each row is of something Review can ask (mw-svw421.28): a word that is listed and not dropped, a table with a form available to him, a ladder idea the ladder
+ * still has, a sound or word whose id reads, a step of an open drill plan. The row of something it cannot ask is kept (it is asked again when he can: a table once a form
+ * opens, a dropped word taken up again) but it is not due, so the Reader's count, Review's line and a round always agree. A passage lesson has rows and no item: always live.
+ * (A grammar idea and a sound are tested in namesSomething, once their ids are plain.) This is the one source of "what is due" the strip, Review's cards and the round share.
  */
 async function live(rows: Review[]): Promise<Review[]> {
   const words = rows.filter((r) => r.kind === 'word');
   const found = await db.words.bulkGet(words.map((r) => r.id));
   const liveWords = new Set(words.filter((_, i) => found[i] !== undefined && found[i]?.state !== 'dropped').map((r) => r.id));
-  return rows.filter((r) => r.kind !== 'word' || liveWords.has(r.id));
+  const levels = rows.some((r) => r.kind === PARADIGM_KIND) ? await listLevels() : undefined;
+  const plans = await Promise.all(rows.map((r) => (r.kind === PLAN_KIND ? planRowAskable(r.id) : true)));
+  return rows.filter((r, i) => {
+    switch (r.kind) {
+      case 'word':
+        return liveWords.has(r.id);
+      case PARADIGM_KIND: {
+        const table = paradigmById(r.id);
+        return table !== undefined && levels !== undefined && availableCount(table, levels).available > 0;
+      }
+      case PLAN_KIND:
+        return plans[i];
+      default:
+        return true;
+    }
+  });
 }
 
 /**
@@ -100,11 +141,20 @@ async function inScheme(rows: Review[]): Promise<Review[]> {
   });
 }
 
+/** Whether a row (its grammar idea id plain) names an idea the ladder has, or a sound or English word whose id reads and, for a sound, whose idea is a sound of the ladder. */
+function namesSomething(r: Review): boolean {
+  if (r.kind === IDEA_KIND) return ideaExists(r.id);
+  if (r.kind !== SOUND_KIND) return true;
+  const at = parseReviewId(r.id);
+  if (!at) return false;
+  return at.lang === 'en' || (ideaExists(at.unit) && ideaOf(at.unit).parent !== undefined);
+}
+
 /** The items due at `now` (of `kind`, or of every kind), the longest overdue first. A word he dropped is not due. */
 export async function listDue(kind?: string, now = Date.now()): Promise<Review[]> {
   const due = await db.reviews.where('due').belowOrEqual(now).toArray();
   const wanted = due.filter((r) => isDue(r, now) && (kind === undefined || r.kind === kind));
-  return (await inScheme(await live(wanted))).sort((a, b) => a.due - b.due);
+  return (await inScheme(await live(wanted))).filter(namesSomething).sort((a, b) => a.due - b.due);
 }
 
 /** The schedule rows of these items, for the ones that have one (a grammar idea's row is the selected pronunciation's, with the idea's plain id). */

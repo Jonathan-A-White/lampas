@@ -328,6 +328,8 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
   useEffect(() => {
     void markParadigmOpened(table.id).catch((error: unknown) => console.error('could not keep that the table was opened', error));
   }, [table.id]);
+  // a table with no form available has nothing to ask: it is not offered to Review until a form opens (mw-svw421.28)
+  const canDrill = levels !== undefined && availableCount(table, levels).available > 0;
   const ask = () => {
     if (!levels) return;
     const { book, chapter } = getOpenChapter();
@@ -368,7 +370,7 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
         <div className="mt-4 flex gap-2">
           <button
             type="button"
-            disabled={inReview !== false}
+            disabled={inReview !== false || !canDrill}
             onClick={() => void ensureScheduled(PARADIGM_KIND, [table.id])}
             className={`${BUTTON} text-accent disabled:text-muted`}
           >
@@ -380,6 +382,11 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
             </button>
           ) : null}
         </div>
+        {levels && !canDrill && inReview === false ? (
+          <p data-testid="drill-locked" className="mt-2 text-base text-muted">
+            Unlock a form first: Review has nothing to ask of this table yet.
+          </p>
+        ) : null}
       </main>
     </>
   );

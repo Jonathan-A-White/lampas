@@ -10,6 +10,7 @@ import { db, type GrammarLevelName } from '../../src/data/db';
 import { cellsOf, paradigmById, PARADIGMS, type Levels } from '../../src/data/paradigms';
 import { drawCellQuestions } from '../../src/data/paradigms/cells';
 import { mulberry32 } from '../../src/data/quiz';
+import { countDue } from '../../src/data/repositories';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -71,7 +72,7 @@ function openAt(hash: string): void {
   render(<App newRandom={() => mulberry32(seed)} />);
 }
 
-const levels: Levels = new Map(Object.entries(FIXTURE).map(([id, level]) => [id, { level }]));
+let levels: Levels = new Map(Object.entries(FIXTURE).map(([id, level]) => [id, { level }]));
 
 /** Every question of the round the scenario answered: its prompt and options. */
 const asked: Array<{ prompt: string; options: string[] }> = [];
@@ -202,6 +203,56 @@ describeFeature(feature, ({ Background, Scenario }) => {
         expect(options.length).toBe(4);
         for (const o of options) expect(forms.has(o)).toBe(true);
       }
+    });
+  });
+
+  Scenario('A table with no form available cannot be drilled', ({ Given, When, Then, And }) => {
+    Given('he has no grammar level', async () => {
+      await db.grammarLevels.clear();
+      levels = new Map();
+    });
+    When('he opens the table {string}', async (_, name: string) => {
+      openAt(`#/paradigms?t=${PARADIGMS.find((p) => p.name === name)?.id}`);
+      await screen.findByRole('heading', { name, level: 1 });
+    });
+    Then('the table says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
+    });
+    And('the button {string} is disabled', async (_, label: string) => {
+      await waitFor(async () => expect(await findButton(label)).toBeDisabled());
+    });
+    And('the schedule holds no {string} row', async (_, kind: string) => {
+      expect(await db.reviews.where('kind').equals(kind).count()).toBe(0);
+    });
+  });
+
+  Scenario('A due table with no form available is not counted and Start says nothing is due', ({ Given, When, Then, And }) => {
+    Given('he has no grammar level', async () => {
+      await db.grammarLevels.clear();
+      levels = new Map();
+    });
+    And('the table {string} is on the schedule and due', async (_, id: string) => {
+      const now = Date.now();
+      await db.reviews.put({ kind: 'paradigm', id, step: 0, rights: 0, due: now - 60_000, lastWhen: now - 3 * DAY, lapses: 0 });
+    });
+    And('he has no words', async () => {
+      await db.words.clear();
+    });
+    When('he opens Review', async () => {
+      openAt('#/review');
+      await screen.findByRole('heading', { name: 'Review', level: 1 });
+    });
+    Then('the Review screen says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
+    });
+    And('nothing is counted as due', async () => {
+      expect(await countDue()).toBe(0);
+    });
+    When('he starts the review', async () => {
+      await user.click(await screen.findByRole('button', { name: 'Start' }));
+    });
+    Then('Review says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('nothing-to-ask')).toHaveTextContent(text));
     });
   });
 });

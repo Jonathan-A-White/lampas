@@ -40,10 +40,10 @@ describe('the reviews repository', () => {
     await ensureScheduled('word', ['c'], NOW + 3 * DAY);
     await ensureScheduled('word', ['b'], NOW - 2 * DAY);
     await ensureScheduled('word', ['a'], NOW - 5 * DAY);
-    await ensureScheduled('grammar', ['g'], NOW - DAY);
-    expect((await listDue(undefined, NOW)).map((r) => r.id)).toEqual(['a', 'b', 'g']);
+    await ensureScheduled('grammar', ['article'], NOW - DAY);
+    expect((await listDue(undefined, NOW)).map((r) => r.id)).toEqual(['a', 'b', 'article']);
     expect((await listDue('word', NOW)).map((r) => r.id)).toEqual(['a', 'b']);
-    expect((await listDue('grammar', NOW)).map((r) => r.id)).toEqual(['g']);
+    expect((await listDue('grammar', NOW)).map((r) => r.id)).toEqual(['article']);
   });
 
   it('countDue matches listDue', async () => {
@@ -58,11 +58,11 @@ describe('the reviews repository', () => {
   it('does not count or list a dropped word, nor a word that is not listed, and counts it again once taken up', async () => {
     await listWords('a', 'b');
     await ensureScheduled('word', ['a', 'b', 'ghost'], NOW - DAY);
-    await ensureScheduled('grammar', ['g'], NOW - DAY);
+    await ensureScheduled('grammar', ['article'], NOW - DAY);
     expect(await countDue(NOW)).toBe(3);
     await setWordState('b', 'dropped', NOW);
     expect(await countDue(NOW)).toBe(2);
-    expect((await listDue(undefined, NOW)).map((r) => r.id).sort()).toEqual(['a', 'g']);
+    expect((await listDue(undefined, NOW)).map((r) => r.id).sort()).toEqual(['a', 'article']);
     expect(await countDue(NOW, 'word')).toBe(1);
     // taken up again, it comes back on the schedule it kept
     await setWordState('b', 'learning', NOW);
