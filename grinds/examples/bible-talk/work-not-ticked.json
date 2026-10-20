@@ -1,0 +1,18 @@
+{
+  "description": "He asks about Calvin but ticked no work: the request carries no works, so the answer carries no link of kind work.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 3:16",
+    "greek": "Οὕτως γὰρ ἠγάπησεν ὁ θεὸς τὸν κόσμον, ὥστε τὸν υἱὸν τὸν μονογενῆ ἔδωκεν, ἵνα πᾶς ὁ πιστεύων εἰς αὐτὸν μὴ ἀπόληται ἀλλ᾽ ἔχῃ ζωὴν αἰώνιον.",
+    "english": "For God so loved the world that He gave His only Son, that whoever believes in Him should not perish but have eternal life.",
+    "question": "What did John Calvin make of this verse?",
+    "history": [],
+    "solid_words": [],
+    "settings": { "theme": "light", "textSize": "normal" },
+    "resources": []
+  },
+  "expect": {
+    "links.0": { "present": false },
+    "setting_offer": { "present": false }
+  }
+}

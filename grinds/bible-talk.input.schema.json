@@ -112,6 +112,23 @@
         }
       }
     },
+    "works": {
+      "description": "Optional. The works of his Logos library that he ticked in Settings, in the order Settings lists them: the only ones the answer's `links` may name as a `work`. Missing when he has ticked none, and in a talk from About.",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "author", "kind"],
+        "properties": {
+          "id": { "description": "The work's key, the value of a `work` link.", "type": "string" },
+          "title": { "description": "The work's title as Settings lists it.", "type": "string" },
+          "author": { "description": "The work's author.", "type": "string" },
+          "kind": { "description": "A commentary opens at a passage of the Bible; a book opens at its start.", "type": "string", "enum": ["commentary", "book"] },
+          "covers": { "description": "A commentary only: the books of the Bible it comments on. Never link it for a book it does not cover.", "type": "string" }
+        }
+      }
+    },
     "screen": {
       "description": "Optional. Present when he asked from a full screen of the app (the round Ask the tutor button) and not about a text: the screen's name (Goal, Words, Review, Quick test, Parsing drill, Paradigms, Placement, Settings, My study way, Import, Today, About) and what the screen shows, as labelled facts (on Goal: the goal, the solid, frontier and not yet counts of its words and grammar ideas, Learn next and the Next words). `greek` and `english` are then missing.",
       "type": "object",

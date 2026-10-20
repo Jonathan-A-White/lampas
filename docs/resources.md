@@ -217,6 +217,33 @@ the guide needs no verse and the link names no one book or Bible. The Strong's n
 Examples: Ἰησοῦς (G2424) `lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82`; νόμος (G3551) `lemma=lbs%2Fel%2F%CE%BD%CF%8C%CE%BC%CE%BF%CF%82`; ἐν (G1722) `lemma=lbs%2Fel%2F%E1%BC%90%CE%BD`.
 **Still UNVERIFIED on a device** after the 2026-10-08 22:56Z screenshot (the lbs form landed 17:50 local, an hour before it; whether his phone had the new build is unknown).
 
+## Works he holds in Logos (mw-5r3p30.675, PROVISIONAL, Governor to confirm)
+
+Lampas cannot read which books are in his Logos library, so **Settings > Study resources > Works in your Logos library** lists the works the tutor may link, each a switch named by
+its full title with its author (`WORKS` in `src/resources/works.ts`; all off; the ticked ids are a JSON array in the store key `works`, `getWorks` / `setWorks`). The tutor's request
+carries the ticked ones as `works` (`{id, title, author, kind, covers?}`, `worksForTutor`; left out when none is ticked and in About) and its answer may carry `{kind: 'work', work: <id>, reference?}`
+(`grinds/bible-talk.answer.schema.json`; the `work` enum is the ids of `WORKS`, held by `tests/unit/works.test.ts`). `src/TutorLinks.tsx` draws one **Open in Logos** chip named for the title
+(`workChip`); a link to a work he did not tick, an unknown id, or a commentary with no reference or for a book it does not cover is dropped, not shown.
+
+- A `commentary` opens at the passage: `logosres:<volume id>;ref=Bible.Jn3.16` (a chapter alone is `Bible.Ro8`), fallback `https://ref.ly/logosres/<volume id, the colon %3A>?ref=Bible.Jn3.16`. Calvin's commentaries are
+  a volume for each book or group of books in Logos, so a work has `volumes`, each with the books it covers (our book codes), and `workLink` picks the volume that covers the passage's book.
+- A `book` opens at its start: `logosres:LLS:ICRWJKC`, fallback `https://ref.ly/logosres/LLS%3AICRWJKC`.
+- Every link is built by `src/resources/logosRes.ts` (`resourceLink`, `resourceStart`), the one place the scheme and its ref.ly fallback are put together; lexicons (`logos.ts`), Bible chapters and verses
+  (`logosBible.ts`), devotionals, grammar books and works all use it. The Bible Word Study guide (`logos4:Guide...`) is another scheme and keeps its own builder.
+
+Sources. Every Resource ID and the books each commentary volume covers were read from his library listing of 2026-10-08 (vault `plans/lampas-logos-library-2026-10-08.csv`: the `ResourceId` and
+`ReferenceSupersets` columns; Logos' book numbers 61 Matthew to 87 Revelation). An id that is not in a source is left out, never guessed.
+
+| id | Title | Resource IDs |
+| --- | --- | --- |
+| `calvin-commentaries` | Calvin's Commentaries | `LLS:CALCOM61HRMEV` (Matthew, Mark, Luke: the Harmony), `LLS:CALCOM64JN` (John), `LLS:CALCOM65AC` (Acts), `LLS:CALCOM66RO` (Romans), `LLS:CALCOM67CO1` (1 and 2 Corinthians), `LLS:CALCOM69GA` (Galatians, Ephesians), `LLS:CALCOM71PHP` (Philippians, Colossians, 1 and 2 Thessalonians), `LLS:CALCOM75TI` (1 and 2 Timothy, Titus, Philemon), `LLS:CALCOM79HEB` (Hebrews), `LLS:CALCOM81CATHEP` (James, 1 and 2 Peter, 1 John, Jude) |
+| `calvin-institutes-lcc` | Institutes of the Christian Religion (Library of Christian Classics) | `LLS:ICRWJKC` |
+| `calvin-institutes-beveridge` | Institutes of the Christian Religion (Beveridge) | `LLS:ICRBEV` |
+
+Left out: the Old Testament volumes of the commentaries (`CALCOM01GE` ... `CALCOM28HO`; Lampas holds the New Testament), the collection `LLS:CALCOMMHAR` (its listed ranges are patches, not one book), and `LLS:42.110.15`
+(a third Institutes whose edition the listing does not name). **UNVERIFIED on a device:** that `logosres:LLS:...` opens a resource with no `ref`, and that a commentary volume opens at `Bible.<book><ch>.<v>`; the form
+is the one the lexicon and Black links use. Adding a work is one entry in `WORKS` (and its id in the answer schema's `work` enum), the test fails until both agree; update this table.
+
 ## How to add a resource
 
 1. Add `src/resources/<name>.ts` exporting a `StudyResource` (`src/resources/types.ts`): an `id` (kept in the store, so never
