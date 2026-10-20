@@ -13,6 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
+import { pairsAsConsonant } from '../../tests/support/lone-word';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -175,7 +176,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the play button of verse {int}', tapPlay);
     Then(playing, showsPlaying);
     And('the phone speaks the Greek of verse {int} in {string}', (_, n: number, lang: string) => {
-      expect(lastSpoken().text).toBe(greekOf(n));
+      expect(lastSpoken().text).toBe(pairsAsConsonant(greekOf(n)));
       expect(lastSpoken().lang).toBe(lang);
     });
   });

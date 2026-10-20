@@ -84,11 +84,28 @@ function cardWords(): string[] {
 
 const ACCENTS = /[\u0300\u0301\u0342\u0340\u0341]/u;
 /** The vowels of a Greek text in order, each with whether an accent (any of acute, grave, circumflex) sits on it. */
-function vowelsOf(text: string): { v: string; stressed: boolean }[] {
-  const out: { v: string; stressed: boolean }[] = [];
+function vowelsOf(text: string): { v: string; stressed: boolean; split?: boolean; adjacent?: boolean }[] {
+  const out: { v: string; stressed: boolean; split?: boolean; adjacent?: boolean }[] = [];
+  let last = '';
   for (const c of text.normalize('NFD').toLowerCase()) {
-    if ('αεηιουω'.includes(c)) out.push({ v: c, stressed: false });
+    const previous = last;
+    if (!/\p{M}/u.test(c)) last = c;
+    if ('αεηιουω'.includes(c)) out.push({ v: c, stressed: false, adjacent: 'αεηιουω'.includes(previous) });
     else if (out.length > 0 && ACCENTS.test(c)) out[out.length - 1].stressed = true;
+    else if (out.length > 0 && c === '\u0308') out[out.length - 1].split = true;
+  }
+  return out;
+}
+
+/** The vowels of a word as the voice is handed it when αυ, ευ or ηυ is one sound (mw-5r3p30.647): that υ is written β or φ, so it is no vowel, and its accent
+ * is the first vowel's. A pair split by a diaeresis or with the first vowel stressed is two vowels and stays so. */
+function voweledAsHanded(text: string): { v: string; stressed: boolean }[] {
+  const out: { v: string; stressed: boolean }[] = [];
+  for (const [i, vowel] of vowelsOf(text).entries()) {
+    const before = out[out.length - 1];
+    const joins = vowel.v === 'υ' && vowel.adjacent && !vowel.split && i > 0 && 'αεη'.includes(vowelsOf(text)[i - 1].v) && !vowelsOf(text)[i - 1].stressed;
+    if (joins) before.stressed = before.stressed || vowel.stressed;
+    else out.push({ v: vowel.v, stressed: vowel.stressed });
   }
   return out;
 }
@@ -106,7 +123,7 @@ function faultOf(word: string, said: { text: string; lang: string; voice: FakeVo
   const got = said.text.trim().split(/\s+/u);
   if (wanted.length !== got.length) return `${got.length} words`;
   for (const [i, w] of wanted.entries()) {
-    const want = vowelsOf(w);
+    const want = voweledAsHanded(w);
     const has = vowelsOf(got[i]);
     if (want.length !== has.length || want.some((v, j) => v.v !== has[j].v)) return `vowels ${has.map((g) => g.v).join('')} in ${got[i]}`;
     // the respelling stresses the first accented vowel (respellModern); the voice is handed exactly that one
@@ -186,7 +203,7 @@ describe('every word with Tap to hear reaches the Greek voice with one stress ma
       ['φῶς', 'φώς!'],
       ['ῥῆμα', 'ρήμα!'],
       ['υἱός', 'υιός!'],
-      ['αὐτῷ', 'αυτώ!'],
+      ['αὐτῷ', 'αφτώ!'],
       ['Ἰησοῦς', 'ιησούς!'],
       ['πρωΐ', 'πρωΐ!'],
       // an enclitic's second accent goes: the respelling stresses the first (PRO-tos)

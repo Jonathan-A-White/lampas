@@ -14,6 +14,7 @@ import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { pairsAsConsonant } from '../../tests/support/lone-word';
 import { queryStatusLine, statusLine } from '../../tests/support/status';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -115,7 +116,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he switches the reader to Greek', switchToGreek);
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     Then('the phone speaks the Greek of verse {int} in {string}', (_, n: number, lang: string) => {
-      expect(lastSpoken().text).toBe(greekOf(n));
+      expect(lastSpoken().text).toBe(pairsAsConsonant(greekOf(n)));
       expect(lastSpoken().lang).toBe(lang);
     });
     And('the phone speaks it with its Greek voice', () => expect(lastSpoken().voice).toBe(GREEK_VOICE));
@@ -267,7 +268,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he switches the reader to Greek', switchToGreek);
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     Then('the phone speaks the Greek of verse {int} in {string}', (_, n: number, lang: string) => {
-      expect(lastSpoken().text).toBe(greekOf(n));
+      expect(lastSpoken().text).toBe(pairsAsConsonant(greekOf(n)));
       expect(lastSpoken().lang).toBe(lang);
     });
     And('the reading bar shows the line {string}', (_, line: string) => expect(statusLine()).toHaveTextContent(line));
