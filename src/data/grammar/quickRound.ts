@@ -7,12 +7,13 @@
 import { choicesOf, lookAlikesOf, pairMates } from '../choices';
 import type { Random } from '../quiz';
 import { chosenPronunciation } from '../../speech/greek';
-import type { Pronunciation } from '../../speech/pronunciation';
+import { soundRuleOf, type Pronunciation } from '../../speech/pronunciation';
 import { ITEM_GROUPS, ideaOf, itemFacet, itemsOf, type GrammarIdea } from './ladder';
 import { weakItems } from './inference';
 import { ideaChoice, ideaSound } from './lessons';
 import type { Level } from './needs';
 import type { GrammarQuestion } from './questions';
+import { positionRule, ruleWordQuestion } from './ruleWord';
 
 /** Taps in one quick round: the 24 letters, 8 diphthongs, 6 consonant pairs and 2 breathings. PROVISIONAL. */
 export const QUICK_LIMIT = 40;
@@ -116,7 +117,18 @@ export function quickQuestion(item: QuickItem, random: Random, scheme: Pronuncia
       facet: itemFacet(idea),
     };
   }
-  const named = (list: readonly GrammarIdea[]): string[] => list.flatMap((o) => { const said = ideaChoice(o, scheme); return said === undefined ? [] : [said]; });
+  // a pair whose sound changes by its place has no one sound to pick: it is asked on a word of one side of its rule, with the pair marked (ruleWord.ts, mw-5r3p30.646)
+  const rule = soundRuleOf(scheme, idea.id);
+  const place = positionRule(idea, rule);
+  if (place) {
+    const side = place.sides[Math.floor(random() * place.sides.length)];
+    const word = side.examples[Math.floor(random() * side.examples.length)];
+    const asked = ruleWordQuestion(idea, place, side, word, random, scheme);
+    if (asked) return asked;
+  }
+  // a letter that says another sound in some words (σ is z before β, γ ...) never has that sound among the wrong choices: it is right for a word
+  const other = new Set(rule?.sides.map((s) => s.choice).filter((c) => c !== sound));
+  const named = (list: readonly GrammarIdea[]): string[] => list.flatMap((o) => { const said = ideaChoice(o, scheme); return said === undefined || other.has(said) ? [] : [said]; });
   // the near miss is the sound of the letter it looks like: ν read as υ is 'ee'
   const { options, near } = choicesOf({ right: sound, near: named(mates), fillers: named(others) }, random);
   return {

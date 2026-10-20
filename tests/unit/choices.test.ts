@@ -132,7 +132,7 @@ describe('drillItems.ts: every kind of a letter, pair and breathing step', () =>
   });
 
   it('a pair read: the word misread by its rule (αὐτός beside av-TOS)', () => {
-    const au = drillSteps('diphthong-au', { seed: 1, scheme: modern }).flatMap((s) => s.questions).find((q) => q.form === 'αὐτός')!;
+    const au = drillSteps('diphthong-au', { seed: 1, scheme: modern }).flatMap((s) => s.questions).find((q) => q.form === 'αὐτός' && q.prompt === 'How is this word said?')!;
     expect(holdsNear(au)).toContain('av-TOS');
   });
 

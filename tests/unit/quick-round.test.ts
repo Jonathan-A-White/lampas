@@ -5,7 +5,7 @@ import { db } from '../../src/data/db';
 import { gapsOf, groupIsSolid, isSolid, lettersText } from '../../src/data/grammar/inference';
 import { LADDER, ITEM_GROUPS, ideaOf, itemName, itemsOf } from '../../src/data/grammar/ladder';
 import { ideaSound } from '../../src/data/grammar/lessons';
-import { pronunciationOf } from '../../src/speech/pronunciation';
+import { pronunciationOf, soundRuleOf } from '../../src/speech/pronunciation';
 import { ACCENTS, chooseAccent, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { drillSteps } from '../../src/data/grammar/drillIt';
 import { learnNext } from '../../src/data/grammar/goalProgress';
@@ -121,8 +121,14 @@ describe('the questions', () => {
       if (item.id.startsWith('breathing-')) continue;
       const idea = ideaOf(item.id);
       expect(q.kind).toBe('letter');
-      expect(q.form).toBe(idea.glyphs?.[0] ?? idea.pair);
-      expect(q.say).toBeUndefined();
+      if (soundRuleOf(pronunciationOf('modern'), item.id) && idea.pair) {
+        // a pair whose sound changes by its place is asked on a word, the pair marked (tests/unit/position-sounds.test.ts)
+        expect(q.form, item.id).not.toBe(idea.pair);
+        expect(q.form!.slice(...q.span!).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase(), item.id).toBe(idea.pair);
+      } else {
+        expect(q.form).toBe(idea.glyphs?.[0] ?? idea.pair);
+        expect(q.say).toBeUndefined();
+      }
       expect(q.options, item.id).toHaveLength(4);
       expect(q.options).toContain(q.right);
       expect(new Set(q.options).size).toBe(4);
