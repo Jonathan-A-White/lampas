@@ -2,7 +2,8 @@
 // reader is On and the setting Immersive reader card is On. 'Got it' closes it until the Reader opens again; "Don't show this again" sets the
 // setting to Off (Settings > Immersive reader card brings it back). It sits in the page's flow above the text, so it never covers the round
 // Ask button, and nothing is drawn until the saved choice is read. It slides away with the bars (src/Away.tsx) and comes back with them: pinned above
-// the text while he reads it took a quarter of the screen upright and nearly half sideways (mw-5r3p30.331).
+// the text while he reads it took a quarter of the screen upright and nearly half sideways (mw-5r3p30.331). Sideways (`short:`) it is one row, its lines
+// beside its buttons: stacked, it and the bars left Turn pages a 20 px box, under a line of text, cut into 113 pages (mw-5r3p30.664).
 // Its lines are written per reading mode (mw-5r3p30.611): with Turn pages nothing scrolls, and the next page is what puts the bars away
 // (src/immersive.ts IMMERSIVE_HINT_LINES); tests/unit/immersive-hint-lines.test.ts fails on a line that names a gesture its mode does not have.
 import { useState } from 'react';
@@ -25,13 +26,15 @@ export function ImmersiveHint({ enabled, away, mode }: { enabled: boolean; away:
   };
   return (
     <Away enabled away={away}>
-      <aside role="note" aria-label="How the immersive reader works" data-immersive-hint className="mx-2 mt-2 shrink-0 rounded-2xl border border-line bg-surface p-3">
-        {IMMERSIVE_HINT_LINES[mode].map((line) => (
-          <p key={line} className="py-0.5 text-lg leading-snug">
-            {line}
-          </p>
-        ))}
-        <div className="mt-2 flex flex-wrap gap-2">
+      <aside role="note" aria-label="How the immersive reader works" data-immersive-hint className="mx-2 mt-2 shrink-0 rounded-2xl border border-line bg-surface p-3 short:mt-1 short:flex short:items-center short:gap-3 short:p-2">
+        <div className="short:min-w-0 short:flex-1">
+          {IMMERSIVE_HINT_LINES[mode].map((line) => (
+            <p key={line} className="py-0.5 text-lg leading-snug short:py-0 short:text-base">
+              {line}
+            </p>
+          ))}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2 short:mt-0 short:shrink-0">
           <button type="button" onClick={(e) => close(e.currentTarget.closest('aside'))} className="min-h-12 flex-1 rounded-xl bg-accent px-4 text-base font-semibold text-accent-fg">
             Got it
           </button>

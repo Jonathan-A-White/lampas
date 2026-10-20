@@ -690,9 +690,9 @@ for (const size of [
     await expect(card).not.toContainText('Scroll');
     await expect(card).toContainText('Turn to the next page and the bars slide away.');
     await expect(card).toContainText('Tap with two fingers to bring them back or put them away.');
-    // sideways the card and the bars leave the text a sliver until the first turn, and the pages cut so thin open past page 1 (reported on the story)
+    // sideways the card is one row, so the text has its three lines and opens on page 1 (mw-5r3p30.664)
     const before = await pageOf(page);
-    if (size.height > size.width) expect(before.at).toBe(1);
+    expect(before.at).toBe(1);
 
     await tapAt(page, 0.85);
     await expect(page.locator('header').first()).toBeHidden();
@@ -726,6 +726,102 @@ for (const size of [
     await expect(page.locator('header').first()).toBeVisible();
     await expect(card).toBeVisible();
   });
+}
+
+/** The pieces of text (a heading, a verse number, a word of a verse) on the reading box as it stands, each named by its verse and place in it, and the
+ * first piece that is not on it yet (it begins on a later page). */
+const onScreen = (page: Page) =>
+  page.evaluate(() => {
+    const b = (document.querySelector('[data-reader]') as HTMLElement).getBoundingClientRect();
+    const pieces = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading], [data-reader] [data-verse-number], [data-reader] [data-chunk]'));
+    const name = (el: HTMLElement) => `${el.closest<HTMLElement>('[data-verse]')?.dataset.verse ?? 'h'}:${el.dataset.chunk ?? (el.dataset.heading ? el.textContent : 'n')}`;
+    const shown: string[] = [];
+    let next: string | null = null;
+    for (const el of pieces) {
+      const r = el.getClientRects()[0];
+      if (!r) continue;
+      if (r.left >= b.left - 1 && r.right <= b.right + 1 && r.top >= b.top - 1 && r.bottom <= b.bottom + 1) shown.push(name(el));
+      else if (r.left >= b.right - 1 && next === null) next = name(el);
+    }
+    return { shown, next };
+  });
+
+/** How many lines of verse text the reading box holds (its height inside its padding over a verse's line height). */
+const linesHeld = (page: Page) =>
+  page.evaluate(() => {
+    const reader = document.querySelector('[data-reader]') as HTMLElement;
+    const style = getComputedStyle(reader);
+    const inside = reader.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    return inside / parseFloat(getComputedStyle(reader.querySelector('[data-verse]') as HTMLElement).lineHeight);
+  });
+
+// mw-5r3p30.664: with the Immersive reader On and Turn pages, opened sideways with the card showing and the bars up, the card (176 px) and the bars left
+// the text a 20 px box: the place line said Page 3 of 113 (the section heading filled pages 1 and 2), and the first tap on the right third cut the pages
+// afresh for the taller box and showed Page 1 again, the text he had seen, so the tap seemed not to turn. Now sideways the card is one row, its lines
+// beside its buttons, and the text keeps at least three lines; the Reader opens on Page 1, and the first turn shows the text that comes next.
+for (const size of [
+  { name: '844x390', width: 844, height: 390 },
+  { name: '390x844', width: 390, height: 844 },
+]) {
+  test(`with Turn pages and the Immersive reader card showing, the text holds three lines, opens on Page 1, and the first turn shows new text, at ${size.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await openMark12(page, 'pages', { settings: { immersiveReader: 'on' } });
+    const card = page.locator('[data-immersive-hint]');
+    await expect(card).toBeVisible();
+    await expect(page.locator('header').first()).toBeVisible();
+    const b = await box(page);
+    expect(await linesHeld(page), `lines of text in the ${Math.round(b.bottom - b.top)} px box`).toBeGreaterThanOrEqual(3);
+    expect((await pageOf(page)).at).toBe(1);
+    await shot(page, `turn-pages-immersive-card-${size.name}`);
+
+    const before = await onScreen(page);
+    expect(before.next, 'some text begins on page 2').not.toBeNull();
+    await tapAt(page, 0.85);
+    await expect(page.locator('header').first()).toBeHidden();
+    await page.waitForTimeout(400);
+    await settled(page);
+    const after = await onScreen(page);
+    expect(after.shown.filter((piece) => !before.shown.includes(piece)).length, `text not on the screen before (it showed ${before.shown.length} pieces, now ${after.shown.length}, on page ${(await pageOf(page)).at})`).toBeGreaterThan(0);
+    expect(after.shown, `the first text of page 2 (${before.next}) is on the screen`).toContain(before.next);
+  });
+}
+
+// The sweep of mw-5r3p30.664: on every first open of Turn pages (the Immersive reader Off, On with the card dismissed, On with the card showing; upright
+// and sideways) the Reader opens on Page 1 with at least three lines, and its page count is the count of a box that size, not of a sliver: the count times
+// the lines a page holds is within 20% of the same after one turn. With the Immersive reader Off the box is the same after the turn, so the count is the
+// same; with it On the turn puts the bars away (mw-5r3p30.611) and the taller box has fewer pages, as it should. The turn always shows page 2's first text.
+for (const size of [
+  { name: '844x390', width: 844, height: 390 },
+  { name: '390x844', width: 390, height: 844 },
+]) {
+  for (const path of [
+    { name: 'Immersive Off', settings: { immersiveReader: 'off' } as Record<string, string> },
+    { name: 'Immersive On, card dismissed', settings: { immersiveReader: 'on', immersiveHint: 'off' } },
+    { name: 'Immersive On, card showing', settings: { immersiveReader: 'on' } },
+  ]) {
+    test(`with Turn pages, ${path.name}, at ${size.name}, the first open is Page 1 of a page count that holds after one turn`, async ({ page }) => {
+      await page.setViewportSize({ width: size.width, height: size.height });
+      await openMark12(page, 'pages', { settings: path.settings });
+      const open = await pageOf(page);
+      const openLines = Math.floor(await linesHeld(page));
+      expect(open.at).toBe(1);
+      expect(openLines, 'lines of text on a page').toBeGreaterThanOrEqual(3);
+      const before = await onScreen(page);
+
+      await tapAt(page, 0.85);
+      if (path.settings.immersiveReader === 'on') await expect(page.locator('header').first()).toBeHidden();
+      await page.waitForTimeout(400);
+      await settled(page);
+      const turned = await pageOf(page);
+      const turnedLines = Math.floor(await linesHeld(page));
+      expect(turnedLines, 'lines of text on a page').toBeGreaterThanOrEqual(openLines);
+      const opened = open.of * openLines;
+      const after = turned.of * turnedLines;
+      expect(Math.abs(opened - after) / after, `${open.of} pages of ${openLines} lines on opening, ${turned.of} of ${turnedLines} after one turn`).toBeLessThanOrEqual(0.2);
+      if (path.settings.immersiveReader === 'off') expect(turned.of).toBe(open.of);
+      expect((await onScreen(page)).shown, `the first text of page 2 (${before.next}) is on the screen`).toContain(before.next);
+    });
+  }
 }
 
 /** Whether a verse screen or a sheet is open: a tap on the outer thirds opens neither. */
