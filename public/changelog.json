@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.373",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.411",
+    "kind": "new",
+    "text": "With the weave on, Read it aloud now lets you read the Greek words in Greek and the English words in English, and checks each word in its own language."
+  },
+  {
+    "version": "0.1.373",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.681",
+    "kind": "fixed",
+    "text": "Quiz me no longer offers to keep a quiz goal you have already kept."
+  },
+  {
+    "version": "0.1.373",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.679",
+    "kind": "fixed",
+    "text": "The chapter list no longer shows checkmarks or greys out the chapters you have finished; only the next chapter of your plan is outlined."
+  },
+  {
     "version": "0.1.372",
     "date": "2026-10-20",
     "story": "mw-5r3p30.678",

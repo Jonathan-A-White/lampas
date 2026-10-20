@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.373
+_2026-10-20_
+- New: With the weave on, Read it aloud now lets you read the Greek words in Greek and the English words in English, and checks each word in its own language.
+- Fixed: Quiz me no longer offers to keep a quiz goal you have already kept.
+- Fixed: The chapter list no longer shows checkmarks or greys out the chapters you have finished; only the next chapter of your plan is outlined.
+
 ## 0.1.372
 _2026-10-20_
 - Fixed: Choosing a verse like John 18:2 in Choose a book now opens that chapter in the Bible with the verse at the top, instead of the single-verse view.
