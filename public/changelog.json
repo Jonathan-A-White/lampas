@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.360",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.639",
+    "kind": "fixed",
+    "text": "an idea you were taught but never answered no longer says \"last answered today\" on its sheet; it says \"not answered yet\"."
+  },
+  {
     "version": "0.1.359",
     "date": "2026-10-20",
     "story": "mw-5r3p30.501",

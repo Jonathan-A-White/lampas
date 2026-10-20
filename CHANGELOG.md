@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.360
+_2026-10-20_
+- Fixed: an idea you were taught but never answered no longer says "last answered today" on its sheet; it says "not answered yet".
+
 ## 0.1.359
 _2026-10-20_
 - Fixed: The passage you open from a section heading now sits on the page like the Reader's text, without a box drawn round it.
