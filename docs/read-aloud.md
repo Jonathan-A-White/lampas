@@ -58,6 +58,8 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   A word speaker's phrase with such a word in it ('ἄγγελος, -ου, ὁ', `speak` and `speakWord`) is played in the same turns (`greek.ts` `playInTurn`, shared with `playPieces`; mw-5r3p30.640).
   A sound question says a vowel's sound the same way and names a consonant (`speakSound`); a teach tile names its letter (`speakLetter`). Words of two letters
   or more go to the Greek voice in lower case (mw-5r3p30.226).
+  An elided word of one consonant (δ', Luke 9:24 ὃς δ' ἂν) stays in its stretch, but the voice is handed it joined to the word after it (`greek.ts` `greekVoiceForm`, `elision.ts`
+  `joinElidedLetters`: δ'ἂν, said 'dan'), or it would name the letter ('Delta'); the text on screen is unchanged (mw-5r3p30.654; `tests/unit/lone-letter-clip.test.ts` sweeps every such verse).
 - **Listen is a Listen** (mw-5r3p30.130, `docs/verse-view.md` 'Listen is a player'): a reading started with `listen: <key>` is paused by an in-app interruption and goes on by itself when it ends
   (`readAloud.ts` `interruptListen`; a word beside it, a Hold to ask, a recording, a tutor's answer); the speaking bar's Restart on it goes back to the first verse (`restartListen`); one that ran
   to its end by itself is remembered (`useListenCompleted`) so the Verse view's foot says Play again.

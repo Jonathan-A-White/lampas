@@ -10,3 +10,8 @@ export const isElided = (word: string): boolean => ELISION_AT_END.test(word.trim
 
 /** `text` with every mark of a dropped vowel taken out: 'δ' for δ'. */
 export const withoutElision = (text: string): string => text.replace(new RegExp(ELISION.source, 'gu'), '');
+
+/** `text` with each word of ONE letter and a mark of a dropped vowel joined to the word after it (δ' ἂν becomes δ'ἂν): a voice handed δ' as a word of its own
+ * names the letter ('Delta'), and joined it says the sound ('dan'). Only the voice is handed this: the text on screen is as it was (mw-5r3p30.654). */
+export const joinElidedLetters = (text: string): string =>
+  text.replace(new RegExp(`(?<![\\p{L}\\p{M}])(\\p{Script=Greek}\\p{M}*${ELISION.source}+)[ \\t]+(?=[\\p{L}])`, 'gu'), '$1');
