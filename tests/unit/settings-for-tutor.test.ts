@@ -63,8 +63,8 @@ describe('the Settings request', () => {
 
   it('is within the size a request may weigh with a full history left to cut', async () => {
     const settings = await settingsForTutor();
-    // raised with each setting the tutor is told (3200, 3500 with the English accent, 3700 with Handwriting drills, 3800 with Reading plan, 3950 with Font, 4600 with Daily's seven, 4800 with Today's devotional): fitHistory cuts the history to make room
-    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(4800);
+    // raised with each setting the tutor is told (3200, 3500 with the English accent, 3700 with Handwriting drills, 3800 with Reading plan, 3950 with Font, 4600 with Daily's seven, 4800 with Today's devotional, 4900 with Talk and Send): fitHistory cuts the history to make room
+    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(4900);
   });
 });
 
@@ -112,7 +112,7 @@ describe('a Settings talk across turns (mw-5r3p30.615)', () => {
 
   it('drops his requests and memory notes before the newest turn when even that cannot fit', async () => {
     const request = await settingsRequest([turn1], 'n'.repeat(2500));
-    const fitted = fitHistory({ ...request, history: [{ q: 'q'.repeat(300), a: 'a'.repeat(200) }] });
+    const fitted = fitHistory({ ...request, history: [{ q: 'q'.repeat(250), a: 'a'.repeat(150) }] });
     expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(fitted.history).toHaveLength(1);
     expect(fitted.requests ?? []).toEqual([]);

@@ -6,8 +6,8 @@
 //                touch, or Space / Enter held, `onAbort` when the finger slides off the bar or the phone takes the touch.
 // In a short window (a phone held sideways) a bar can be `compact` (a 56 px row, the icon beside the label) or `round` (a round mic button, the label hidden;
 // its name stays) for a sheet that needs the height or the width for its text.
-import { HoldToTalkBar, TalkBar, type TalkLabels } from 'voice-kit/composer';
-import { LAMPAS_TALK_SETTINGS } from '../talkSettings';
+import { DEFAULT_TALK_LABELS, HoldToTalkBar, TalkBar, type TalkLabels } from 'voice-kit/composer';
+import { tapWord, useTalkSettings } from '../talkSettings';
 import type { TalkHold } from './useTalkHold';
 
 export type BarFit = 'wide' | 'compact' | 'round';
@@ -26,7 +26,10 @@ export function HeldTalkBar({ hold, labels, disabled = false, fit = 'wide', onPr
   /** a press that is no hold (let go before the hold's delay) is this */
   onTap?: () => void;
 }) {
-  const bar = <TalkBar talk={hold} labels={labels} disabled={disabled} className={classOf(fit)} />;
+  // with Talk set to Tap the bar's resting words say Tap (Hold to talk, Tap to talk); the Reader's bar says Talk and keeps it
+  const asked = { hold: DEFAULT_TALK_LABELS.hold, tryAgain: DEFAULT_TALK_LABELS.tryAgain, ...labels };
+  const words = { ...labels, hold: tapWord(asked.hold, hold.talk), tryAgain: tapWord(asked.tryAgain, hold.talk) };
+  const bar = <TalkBar talk={hold} labels={words} disabled={disabled} className={classOf(fit)} />;
   if (!onTap && !onPress) return bar;
   // the press starts afresh: the click of a hold that went before is not this one's
   return (
@@ -55,5 +58,6 @@ export function RecordBar({ label, listening, disabled = false, fit = 'wide', on
   onRelease: () => void;
   onAbort: () => void;
 }) {
-  return <HoldToTalkBar label={label} listening={listening} disabled={disabled} onPress={onPress} onRelease={onRelease} onAbort={onAbort} dropOnSlideOff settings={LAMPAS_TALK_SETTINGS} className={classOf(fit)} />;
+  const settings = useTalkSettings();
+  return <HoldToTalkBar label={tapWord(label, settings.talk)} listening={listening} disabled={disabled} onPress={onPress} onRelease={onRelease} onAbort={onAbort} dropOnSlideOff settings={settings} className={classOf(fit)} />;
 }

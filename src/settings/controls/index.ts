@@ -11,7 +11,7 @@ import { NewWordsControl } from './newWords';
 import { QuizGoalControl } from './quizGoal';
 import { RequestDevotionalControl } from './requestDevotional';
 import { AudioBibleControl, LogosBibleControl, ReadingPlanControl, ResourceControl, WorksControl } from './resources';
-import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, TipsControl } from './tutor';
+import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
 import type { Control } from './types';
 import { EnglishAccentControl, PronunciationControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
 import { WeaveControl } from './weave';
@@ -59,6 +59,8 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   readTutor: ReadTutorControl,
   readLessons: ReadLessonsControl,
   askBy: AskByControl,
+  talk: TalkControl,
+  send: SendControl,
   developer: DeveloperControl,
   quizGoal: QuizGoalControl,
   ...Object.fromEntries(SCRIPTS.map((s) => [s.settingKey, ScriptDepthControl])),

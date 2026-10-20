@@ -16,7 +16,7 @@ import { CopyExchange } from './share/CopyExchange';
 import { answerRuns } from './speech/answerRuns';
 import { ReadAloud } from './speech/ReadAloud';
 import { askTranscriber } from './speech/askTranscriber';
-import { LAMPAS_TALK_SETTINGS } from './talkSettings';
+import { tapWord, useTalkSettings } from './talkSettings';
 import { stopAnswerSpeech } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
@@ -181,6 +181,7 @@ export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null
   prefill?: { verse: number; text: string } | null;
 }) {
   const askBy = useSetting(askBySetting) ?? 'speaking';
+  const talkSettings = useTalkSettings();
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   const failed = state?.phase === 'failed' ? state.question : '';
   const prefilled = verse.to === undefined && prefill?.verse === verse.n ? prefill.text : '';
@@ -222,11 +223,11 @@ export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null
       <Composer
         key={`${unitId(verse)}:${failed}`}
         mode={askBy === 'typing' ? 'type' : 'speak'}
-        settings={LAMPAS_TALK_SETTINGS}
+        settings={talkSettings}
         transcriber={askTranscriber}
         lang="en-US"
         appName="Lampas"
-        labels={ASK_LABELS}
+        labels={{ ...ASK_LABELS, hold: tapWord('Hold to ask', talkSettings.talk) }}
         initialText={failed || prefilled || readDraft(draftKey)}
         disabled={busy}
         onSend={send}
@@ -237,7 +238,7 @@ export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null
 
 /** The composer's words for asking the tutor. */
 const ASK_LABELS: Partial<ComposerLabels> = {
-  hold: 'Hold to ask',
+  hold: 'Hold to ask', // tapWord makes it Tap to ask while Talk is Tap
   typeInstead: 'Type a question',
   placeholder: 'Type a question',
   message: 'Your question',

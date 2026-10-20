@@ -72,7 +72,7 @@ export function RowName({ row }: { row: SettingsRow }) {
 }
 
 /** The three chips of a weave or New words row, on one line while they fit (at the phone's largest text they wrap to the next); `name` is the setting's label in the registry. */
-export function ChipRow({ name, current, options, settingKey }: { name: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' | 'weaveOrder' | 'pickerGrammar' | 'grammarMove' | 'newWordsADay' | 'askBy' | 'handwritingDrills' | 'readingMode' }) {
+export function ChipRow({ name, current, options, settingKey }: { name: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' | 'weaveOrder' | 'pickerGrammar' | 'grammarMove' | 'newWordsADay' | 'askBy' | 'talk' | 'send' | 'handwritingDrills' | 'readingMode' }) {
   return (
     <div role="group" aria-label={name} className="inline-flex max-w-full min-w-0 flex-wrap rounded-xl border border-line p-0.5">
       {options.map(([value, text]) => (

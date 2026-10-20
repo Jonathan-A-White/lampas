@@ -12,7 +12,7 @@ Settings is a home and pages (mw-3ased2.1). The grouping is the Builder's, PROVI
 | --- | --- |
 | Reading | appearance, layout, reading, headings, immersive, weave |
 | Greek | newWords, goal, approach, handwriting |
-| The tutor | readTutor, askBy, hebrew, tips, studyWay (Quiz goal, My study way) |
+| The tutor | readTutor, askBy, talk (Talk Hold | Tap, Send On release | By button), hebrew, tips, studyWay (Quiz goal, My study way) |
 | Listening | readAloud, voices, speed, pronunciation |
 | Daily | daily |
 | Study resources | resources, logos |
