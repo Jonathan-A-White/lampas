@@ -2,7 +2,8 @@
 // (src/UpdateBanner.tsx), 'The tutor answered: tap to play' (src/speech/TutorWaitingBar.tsx) and 'Welcome back' (src/WelcomeBack.tsx). In the flow they stack and
 // never overlap one another; `relative z-60` lifts the strip above the Verse view (fixed, z-5) and every sheet, so each bar can be tapped while one is open
 // (mw-5r3p30.632). Its foot is written to --lp-bars-h on the page, and src/index.css starts every full-screen layer (`.fixed.inset-0`: the Verse view, the
-// sheets and their backdrops) that far down and caps a sheet's panel to the room left, so a bar never covers a view's own header (mw-5r3p30.636).
+// sheets and their backdrops, and the kit's What's new backdrop) that far down and caps any dialog panel inside one to the room left, so a bar never covers a view's own header
+// (mw-5r3p30.636); a toast at the top of the screen takes the `toast-top` class, which stands under the strip (mw-5r3p30.644).
 import { useEffect, useRef, type ReactNode } from 'react';
 
 export function ShellBars({ children }: { children: ReactNode }) {

@@ -4,15 +4,18 @@
 // At 390x844 and sideways (844x390).
 // And the bars do not cover what is under them (mw-5r3p30.636): the Verse view (and every full-screen layer) starts below the bars, so its '‹ Reader', arrows and
 // actions can be tapped while Welcome back shows, and the three bars (Update ready, the tutor's waiting bar, Welcome back) stack in the flow without overlapping.
+// And so does every other sheet and dialog, nested panels included, and the toasts that stand at the top of the screen (mw-5r3p30.644): below the strip, with their header
+// and their close control tappable, with Welcome back, with Update ready, and with both.
 import { readFileSync } from 'node:fs';
 import { expect, test, type BrowserContext, type Locator, type Page, type Request } from '@playwright/test';
-import { makeFakePostern, SYNERGEI_ANSWER, type FakePostern } from '../support/fake-postern';
+import { makeFakePostern, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../support/fake-postern';
 import { honestMic, honestSpeech } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
 import { typeQuestion } from './ask-composer';
 import { shot } from './shot';
+import { openCheck, openDrillIt, openIdea, openShare, openTryIt } from './large-text-titles';
 import { openUnlocked } from './unlocked';
-import { chooseAction, openVerseView } from './verse-view';
+import { chooseAction, openTalkAbout, openVerseView } from './verse-view';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, serviceWorkers: 'allow' });
 
@@ -33,14 +36,8 @@ parts[parts.length - 1] = String(Number(parts[parts.length - 1]) + 1);
 const entry = (version: string) => ({ version, date: '2026-10-12', story: 'fx-1', kind: 'new', text: 'Something to see.' });
 const withLine = [entry(parts.join('.')), entry(running)];
 
-interface Update {
-  banner: Locator;
-  navigations: string[];
-  quiet: () => Promise<void>;
-}
-
-/** Opens the Reader with a newer build waiting behind the one in control; gives the banner, the page's navigations and a wait for the gate's lookups to end. */
-async function openWithUpdateWaiting(page: Page, context: BrowserContext): Promise<Update> {
+/** Serves the waiting build (see above) once `raise` is called, and gives the page's navigations and a wait for the gate's lookups to end. */
+async function routeUpdate(page: Page, context: BrowserContext) {
   let build = 1;
   await page.route('**/changelog.json', (route) => route.fulfill({ json: withLine, headers: { 'cache-control': 'no-store' } }));
   await context.route('**/sw.js', async (route) => {
@@ -53,21 +50,41 @@ async function openWithUpdateWaiting(page: Page, context: BrowserContext): Promi
   page.on('requestfailed', chainAsked);
   const navigations: string[] = [];
   page.on('framenavigated', (frame) => frame.parentFrame() === null && navigations.push(frame.url()));
+  const banner = page.getByRole('button', { name: UPDATE });
+  // a tap while the gate's lookups are still going can hang the worker's take-over (update-banner.spec.ts)
+  const quiet = () => expect.poll(() => Date.now() - lastChainAsk, { timeout: 20_000 }).toBeGreaterThan(1500);
+  /** The page has been opened and a worker is in control of it. */
+  const control = async () => {
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+  };
+  /** A newer build now waits behind the one in control: the banner shows. */
+  const raise = async () => {
+    build = 2;
+    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await expect(banner).toBeVisible({ timeout: 20_000 });
+    return banner;
+  };
+  return { banner, navigations, quiet, control, raise };
+}
 
+interface Update {
+  banner: Locator;
+  navigations: string[];
+  quiet: () => Promise<void>;
+}
+
+/** Opens the Reader with a newer build waiting behind the one in control; gives the banner, the page's navigations and a wait for the gate's lookups to end. */
+async function openWithUpdateWaiting(page: Page, context: BrowserContext): Promise<Update> {
+  const update = await routeUpdate(page, context);
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
-  });
-  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
-  build = 2;
-  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
-  const banner = page.getByRole('button', { name: UPDATE });
-  await expect(banner).toBeVisible({ timeout: 20_000 });
-  // a tap while the gate's lookups are still going can hang the worker's take-over (update-banner.spec.ts)
-  const quiet = () => expect.poll(() => Date.now() - lastChainAsk, { timeout: 20_000 }).toBeGreaterThan(1500);
-  return { banner, navigations, quiet };
+  await update.control();
+  await update.raise();
+  return update;
 }
 
 // ---- Welcome back: a break of nine days with solid items overdue, written into the stores as the app wrote them (tests/e2e/welcome-back.spec.ts)
@@ -98,10 +115,8 @@ const dayOf = (ms: number) => {
   return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
 };
 
-async function openAfterABreak(page: Page): Promise<Locator> {
-  await openUnlocked(page);
-  await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+/** Writes a break of nine days with solid items overdue into the stores, so the next start of the app shows Welcome back. */
+async function seedBreak(page: Page): Promise<void> {
   const now = Date.now();
   const gone = dayOf(now - 9 * DAY);
   const word = (lemma: string) => ({ lemma, lemmas: [], gloss: 'g', lesson: 1, state: 'solid', since: now - 90 * DAY });
@@ -112,6 +127,13 @@ async function openAfterABreak(page: Page): Promise<Locator> {
     grammarLevels: [{ id: 'case-genitive', level: 'solid', since: now - 90 * DAY, how: 'placement' }],
     reviews: [due('word', 'ὁδός', 20), due('grammar', 'case-genitive', 12), due('word', 'λόγος', 9)],
   });
+}
+
+async function openAfterABreak(page: Page): Promise<Locator> {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await seedBreak(page);
   await page.reload();
   const strip = page.getByRole('region', { name: 'Welcome back' });
   await expect(strip).toBeVisible();
@@ -273,4 +295,263 @@ for (const size of SIZES) {
     expect(sheetBox.y).toBeGreaterThanOrEqual(stripBox.y + stripBox.height - 0.5);
     await expectTappable(strip.getByRole('button', { name: 'Not now' }));
   });
+}
+
+// ---- every sheet and dialog, and the top toasts, stand below the bars (mw-5r3p30.644)
+
+/** The foot of the shell's bars. */
+async function barsFoot(page: Page): Promise<number> {
+  const box = await page.locator('[data-shell-bars]').boundingBox();
+  expect(box, 'the bars are drawn').not.toBeNull();
+  return box!.y + box!.height;
+}
+
+/** The panel starts below the bars and ends inside the window, its header and its close control can be tapped, and so can the bars' own buttons. */
+async function expectBelowBars(page: Page, panel: Locator, header: Locator, close: Locator, buttons: Locator[]): Promise<void> {
+  await expect(panel).toBeVisible();
+  const foot = await barsFoot(page);
+  const box = (await panel.boundingBox())!;
+  const height = page.viewportSize()!.height;
+  expect(box.y, 'the panel starts at or below the foot of the bars').toBeGreaterThanOrEqual(foot - 0.5);
+  expect(box.y + box.height, 'the panel ends inside the window').toBeLessThanOrEqual(height + 0.5);
+  await header.scrollIntoViewIfNeeded();
+  await expectTappable(header);
+  await close.scrollIntoViewIfNeeded();
+  await expectTappable(close);
+  for (const button of buttons) await expectTappable(button);
+}
+
+interface PanelWay {
+  name: string;
+  /** Opens it (the app starts afresh, so the bars that were set up show at its start) and gives the panel. */
+  open: (page: Page) => Promise<Locator>;
+  header: (panel: Locator) => Locator;
+  close: (panel: Locator) => Locator;
+}
+
+const heading = (panel: Locator) => panel.getByRole('heading').first();
+const done = (panel: Locator) => panel.getByRole('button', { name: 'Done', exact: true });
+const stop = (panel: Locator) => panel.getByRole('button', { name: 'Stop', exact: true });
+
+async function readerPage(page: Page): Promise<void> {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="2"]')).toBeVisible();
+}
+
+async function openWord(page: Page): Promise<Locator> {
+  await readerPage(page);
+  await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Word' });
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+async function talkPostern(page: Page, answer: { answer: string; words: unknown[] } = TALK_ANSWER): Promise<void> {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer };
+  await routePostern(page, fake);
+}
+
+/** What's new, once after an update: the kit's own sheet, whose backdrop and panel carry no utility class of the app's. */
+async function openWhatsNew(page: Page): Promise<Locator> {
+  await page.route('**/changelog.json', (route) => route.fulfill({ json: withLine, headers: { 'cache-control': 'no-store' } }));
+  await openUnlocked(page);
+  // the app is already open and has marked this build as seen: he last saw an older one
+  await page.evaluate(() => window.localStorage.setItem('lampas.lastSeenVersion', '0.0.1'));
+  await page.goto('/');
+  const sheet = page.getByRole('dialog', { name: "What's new" });
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+const PANELS: PanelWay[] = [
+  {
+    name: 'the Verse view',
+    open: async (page) => {
+      await readerPage(page);
+      return openVerseView(page, 28);
+    },
+    header: (view) => view.getByRole('button', { name: '‹ Reader', exact: true }),
+    close: (view) => view.getByRole('button', { name: '‹ Reader', exact: true }),
+  },
+  {
+    name: 'the chapter picker',
+    open: async (page) => {
+      await readerPage(page);
+      await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
+      return page.getByRole('dialog', { name: 'Choose a chapter' });
+    },
+    header: heading,
+    close: done,
+  },
+  {
+    name: 'the Talk sheet',
+    open: async (page) => {
+      await talkPostern(page);
+      await readerPage(page);
+      await openTalkAbout(page, 28);
+      return page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+    },
+    header: heading,
+    close: done,
+  },
+  { name: 'the Word sheet', open: openWord, header: (sheet) => sheet.getByTestId('sheet-handle'), close: done },
+  {
+    name: 'the Grammar sheet',
+    open: async (page) => {
+      const word = await openWord(page);
+      await word.getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+      const sheet = page.getByRole('dialog', { name: 'Grammar' });
+      await expect(sheet).toBeVisible();
+      return sheet;
+    },
+    header: heading,
+    close: done,
+  },
+  {
+    name: 'the Idea sheet',
+    open: (page) => openIdea(page, 'Romans 8', 'The noun'),
+    header: heading,
+    close: done,
+  },
+  {
+    name: 'the Teach sheet',
+    open: async (page) => {
+      await readerPage(page);
+      await page.getByTestId('new-words').click();
+      const sheet = page.getByRole('dialog', { name: 'New word' });
+      await expect(sheet.getByTestId('teach-lemma')).toBeVisible();
+      return sheet;
+    },
+    header: (sheet) => sheet.getByTestId('teach-lemma'),
+    close: done,
+  },
+  {
+    name: 'the Share sheet',
+    open: openShare,
+    header: heading,
+    close: (sheet) => sheet.getByRole('button', { name: 'Cancel', exact: true }),
+  },
+  { name: 'the Try it dialog', open: openTryIt, header: (dialog) => dialog.getByTestId('try-it-title'), close: stop },
+  { name: 'the Drill it dialog', open: (page) => openDrillIt(page, 'The noun'), header: heading, close: stop },
+  { name: 'the Check dialog', open: openCheck, header: heading, close: stop },
+  {
+    name: 'a reference card',
+    open: async (page) => {
+      await talkPostern(page, { answer: 'Compare Heb 7:1-3 with Romans 8:28; Melchizedek is the thread between them, and the letter to the Hebrews draws it out at length for its readers.', words: [] });
+      await readerPage(page);
+      await openTalkAbout(page, 28);
+      const talk = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+      await talk.getByRole('textbox', { name: 'Your message' }).fill('Who is Melchizedek?');
+      await talk.getByRole('button', { name: 'Send', exact: true }).click();
+      await talk.getByRole('link', { name: 'Heb 7:1-3', exact: true }).click();
+      const card = page.getByRole('dialog', { name: 'Hebrews 7:1-3' });
+      await expect(card.getByText('This Melchizedek was king of Salem')).toBeVisible();
+      return card;
+    },
+    header: heading,
+    close: (card) => card.getByRole('button', { name: 'Close', exact: true }),
+  },
+  { name: "the What's new sheet", open: openWhatsNew, header: heading, close: (sheet) => sheet.getByRole('button', { name: 'Close', exact: true }) },
+];
+
+/** A phone that has just started: Welcome back is wanted, the worker is in control (so an update can be raised); gives the way to raise 'Update ready'. */
+async function prepare(page: Page, context: BrowserContext, welcome: boolean, voices?: string[]) {
+  const update = await routeUpdate(page, context);
+  await openUnlocked(page);
+  if (voices) await honestSpeech(page, { langs: voices });
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await update.control();
+  if (welcome) {
+    await seedBreak(page);
+    // Welcome back is drawn when the app starts
+    await page.reload();
+    await expect(welcomeOf(page)).toBeVisible();
+  }
+  return update;
+}
+
+const welcomeOf = (page: Page) => page.getByRole('region', { name: 'Welcome back' });
+
+for (const cover of PANELS) {
+  test.describe(cover.name, () => {
+    test(`with 'Welcome back' and then 'Update ready' up, ${cover.name} stands below the bars with its header and close tappable`, async ({ page, context }) => {
+      const update = await prepare(page, context, true);
+      const panel = await cover.open(page);
+      const strip = welcomeOf(page);
+      await expect(strip).toBeVisible();
+      await expectBelowBars(page, panel, cover.header(panel), cover.close(panel), [strip.getByRole('button', { name: 'Refresh' }), strip.getByRole('button', { name: 'Not now' })]);
+      await shot(page, `shell-over-${cover.name.replace(/[^a-z]+/gi, '-').toLowerCase()}-welcome`);
+      // 'Update ready' comes while it is open: the bars grow and the panel gives way
+      const banner = await update.raise();
+      await expectBelowBars(page, panel, cover.header(panel), cover.close(panel), [banner, strip.getByRole('button', { name: 'Refresh' }), strip.getByRole('button', { name: 'Not now' })]);
+      await shot(page, `shell-over-${cover.name.replace(/[^a-z]+/gi, '-').toLowerCase()}-both`);
+    });
+
+    test(`with 'Update ready' up, ${cover.name} stands below it with its header and close tappable`, async ({ page, context }) => {
+      const update = await prepare(page, context, false);
+      const panel = await cover.open(page);
+      const banner = await update.raise();
+      await expectBelowBars(page, panel, cover.header(panel), cover.close(panel), [banner]);
+      await shot(page, `shell-over-${cover.name.replace(/[^a-z]+/gi, '-').toLowerCase()}-update`);
+    });
+  });
+}
+
+// ---- the toasts at the top of the screen
+
+interface Toast {
+  name: string;
+  /** Goes to the screen and makes the toast show, with no Greek voice on the phone. */
+  show: (page: Page) => Promise<void>;
+}
+
+const TOASTS: Toast[] = [
+  {
+    name: 'SpeakButton',
+    show: async (page) => {
+      await page.goto('/#/words');
+      await page.getByRole('button', { name: 'Hear it', exact: true }).first().click();
+    },
+  },
+  {
+    name: 'TapToHear',
+    show: async (page) => {
+      await page.goto('/#/test');
+      await page.getByTestId('tap-to-hear').click();
+    },
+  },
+  {
+    name: 'ReadAloud',
+    show: async (page) => {
+      await page.getByTestId('new-words').click();
+      await page.getByRole('dialog', { name: 'New word' }).getByRole('button', { name: 'Read aloud', exact: true }).first().click();
+    },
+  },
+];
+
+/** The toast is drawn whole inside the window, below the bars and touching neither. */
+async function expectToastClear(page: Page): Promise<void> {
+  const toast = page.locator('[role="status"]:not([data-live-region])');
+  await expect(toast).toBeVisible();
+  const foot = await barsFoot(page);
+  const box = (await toast.boundingBox())!;
+  expect(box.y, 'the toast starts at or below the foot of the bars').toBeGreaterThanOrEqual(foot - 0.5);
+  expect(box.y + box.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+  await expect(toast).toBeInViewport({ ratio: 1 });
+}
+
+for (const toast of TOASTS) {
+  for (const bars of [{ welcome: true, update: false }, { welcome: false, update: true }, { welcome: true, update: true }]) {
+    const what = [bars.welcome ? "'Welcome back'" : '', bars.update ? "'Update ready'" : ''].filter(Boolean).join(' and ');
+    test(`the ${toast.name} toast stands below the bars with ${what} up`, async ({ page, context }) => {
+      const update = await prepare(page, context, bars.welcome, ['en-US']);
+      if (bars.update) await update.raise();
+      await toast.show(page);
+      await expectToastClear(page);
+      await shot(page, `shell-toast-${toast.name.toLowerCase()}-${bars.welcome ? 'w' : ''}${bars.update ? 'u' : ''}`);
+    });
+  }
 }
