@@ -40,10 +40,15 @@ describe('the names Settings draws', () => {
       const mine = ROWS.filter((row) => groupOf(row.section).id === group.id);
       await waitFor(() => expect([...document.querySelectorAll('[data-setting]')].map((el) => el.getAttribute('data-setting'))).toEqual(mine.map((r) => r.key)));
       for (const row of mine) {
-        const el = document.querySelector(`[data-setting="${row.key}"]`);
         const section = SECTIONS.find((s) => s.id === row.section);
         const alone = ROWS.filter((r) => r.section === row.section).length === 1;
-        if (!((el?.textContent ?? '').includes(row.label) || alone || section?.title === row.label)) nameless.push(row.key);
+        // a control fills in its text once its saved value (or the phone's voices) is read, which a loaded host can make later than the row's box
+        const named = () => (document.querySelector(`[data-setting="${row.key}"]`)?.textContent ?? '').includes(row.label) || alone || section?.title === row.label;
+        try {
+          await waitFor(() => expect(named()).toBe(true));
+        } catch {
+          nameless.push(row.key);
+        }
       }
     }
     expect(nameless).toEqual([]);
