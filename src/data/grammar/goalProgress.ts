@@ -5,7 +5,7 @@ import { lessonOf, nextLessonOf, passageLabel, stepsOf } from '../../approaches'
 import type { GrammarLevel, PassageLessonRow, WordState } from '../db';
 import type { Goal } from '../goal';
 import { unmetNeed } from './drillIt';
-import { gapsOf, groupIsSolid } from './inference';
+import { gapsOf, groupIsSolid, isSolid } from './inference';
 import { groupOfItem, ideaOf, ITEM_GROUPS, LADDER, type GrammarIdea } from './ladder';
 import type { Level, NeededIdea, NeededWord, PassageNeeds } from './needs';
 
@@ -33,8 +33,8 @@ export function wordStatesOf(words: readonly { lemma: string; lemmas: string[]; 
 /** The level of each idea that has one. */
 export const levelsOf = (rows: ReadonlyMap<string, GrammarLevel>): Map<string, Level> => new Map(Array.from(rows, ([id, row]): [string, Level] => [id, row.level]));
 
-/** An idea's level: the one he has, or not yet when he has none. */
-export const levelOf = (levels: ReadonlyMap<string, Level>, id: string): Level => levels.get(id) ?? 'notYet';
+/** An idea's level: the one he has, or not yet when he has none; solid for a letter, pair or breathing of a group he has made solid (isSolid, mw-5r3p30.641). */
+export const levelOf = (levels: ReadonlyMap<string, Level>, id: string): Level => (isSolid(levels, id) ? 'solid' : (levels.get(id) ?? 'notYet'));
 
 /** What a node of the ladder graph shows: solid; learning (the frontier he is working on); next (not yet, and everything it rests on is solid, so it is ready to learn); not yet. */
 export type IdeaState = 'solid' | 'learning' | 'next' | 'notYet';
