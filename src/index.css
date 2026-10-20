@@ -344,10 +344,11 @@ html {
   top: var(--lp-bars-h, 0px);
 }
 /* A panel anywhere inside a layer (a sheet's, a dialog's, one nested in a wrapper) is as tall as the room that is left, no taller, so its top does not slide under the
- * bars (mw-5r3p30.644): the one rule for every panel, so a new sheet needs nothing of its own. (A card the code places itself, src/markdown/ReferenceCard.tsx, keeps its
- * own inline height and is placed against the layer's top instead.) */
+ * bars (mw-5r3p30.644): the one rule for every panel, so a new sheet needs nothing of its own. A panel that keeps a lower cap of its own (a sheet's 92dvh, which leaves a
+ * strip of backdrop above it to tap) sets --lp-panel-max, never max-h-*, which this unlayered rule would override (mw-5r3p30.655). (A card the code places itself,
+ * src/markdown/ReferenceCard.tsx, keeps its own inline height and is placed against the layer's top instead.) */
 :is(.fixed.inset-0, .bk-whats-new__backdrop.bk-whats-new__backdrop) :is([role='dialog'], [role='alertdialog']) {
-  max-height: 100%;
+  max-height: min(100%, var(--lp-panel-max, 100%));
 }
 /* The kit's What's new sheet stands under the bars (the strip is z-60; the kit's backdrop is z-1000) and keeps its own 85vh when that is less. */
 .bk-whats-new__backdrop.bk-whats-new__backdrop {

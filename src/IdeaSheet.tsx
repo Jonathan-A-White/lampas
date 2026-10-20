@@ -550,7 +550,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
         aria-modal="true"
         aria-label="Idea"
         style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-        className="relative flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-line bg-surface short:grid short:h-dvh short:max-h-none short:grid-cols-[minmax(0,1fr)_18rem] short:grid-rows-[auto_minmax(0,1fr)_auto]"
+        className="relative flex [--lp-panel-max:92dvh] flex-col rounded-t-2xl border-t border-line bg-surface short:grid short:h-dvh short:[--lp-panel-max:100%] short:grid-cols-[minmax(0,1fr)_18rem] short:grid-rows-[auto_minmax(0,1fr)_auto]"
       >
         <div data-testid="idea-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 short:col-span-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
