@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.356",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.657",
+    "kind": "fixed",
+    "text": "Read aloud no longer names the letter \"delta\" when a short elided word ends a Greek stretch before English words; it plays the sound instead."
+  },
+  {
     "version": "0.1.355",
     "date": "2026-10-20",
     "story": "mw-i7xe0n.24",

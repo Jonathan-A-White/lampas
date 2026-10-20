@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.356
+_2026-10-20_
+- Fixed: Read aloud no longer names the letter "delta" when a short elided word ends a Greek stretch before English words; it plays the sound instead.
+
 ## 0.1.355
 _2026-10-20_
 - Fixed: Chi's card now names ω among the letters before the hard kh sound, as the drill's rule line does.
