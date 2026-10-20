@@ -128,7 +128,7 @@ export function useTalk(
 
   /** Sends `text` in `scope`'s conversation, or, with `resume` (the grist of this very message that went), waits for the answer to that one; `startedAt` is when it was first said. */
   const run = useCallback(
-    (scope: TalkScope, text: string, focus: TalkFocus | undefined, pictures: OutgoingPicture[], resume?: SentRef, startedAt = Date.now()) => {
+    (scope: TalkScope, text: string, focus: TalkFocus | undefined, pictures: OutgoingPicture[], spoken: boolean, resume?: SentRef, startedAt = Date.now()) => {
       const ref = scopeRef(book, chapter, scope);
       const key = talkKey(ref);
       const signal = live.current.signal;
@@ -137,7 +137,7 @@ export function useTalk(
       const set = (state: AskState | undefined): void => {
         if (!signal.aborted) setPending(key, state);
       };
-      const withFocus = focus ? { focus } : {};
+      const withFocus = { ...(focus ? { focus } : {}), ...(spoken ? { spoken: true as const } : {}) };
       set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume, ...withFocus } : { phase: 'sending', question: text, startedAt, ...withFocus });
       void (async () => {
         try {
@@ -163,10 +163,9 @@ export function useTalk(
           // What he lacks under the topic his words name, worked out here so the tutor picks from it and never guesses (mw-1vuvq6.5); a quiz is not a place to bridge
           const missing = levels && !scope.quiz && !scope.screen?.credits ? missingFoundations(text, levelsOf(levels), focus && 'term' in focus ? focus.term : undefined) : undefined;
           // an offer still waiting for his tap rides with this message: the grind decides from his words whether it is a yes, a no or a request to hear it
-          const waiting = pendingOfferOf(turns);
+          const waiting = pendingOfferOf(turns, levels && levelsOf(levels));
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
-          const spoken = wasSpoken(text);
           let sentAs: string | undefined;
           const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty), {
             key: getDeviceKeyBytes(),
@@ -239,7 +238,8 @@ export function useTalk(
       pictured.current[ref] = pictures.length ? { text, pictures } : undefined;
       // a new message ends the speech of the last response
       stopAnswer();
-      run(scope, text, focus, pictures, same?.sent);
+      // spoken is settled as he sends, once: the words he spoke are forgotten as they go, and a Retry carries the mark the failed message had
+      run(scope, text, focus, pictures, same ? same.spoken === true : wasSpoken(text), same?.sent);
     },
     [book, chapter, run],
   );
@@ -249,7 +249,7 @@ export function useTalk(
       const key = talkKey(scopeRef(book, chapter, scope));
       const kept = pendingOf(key);
       if (!kept || kept.phase === 'failed' || !isOrphan(key)) return;
-      if (kept.sent) run(scope, kept.question, kept.focus, [], kept.sent, kept.startedAt);
+      if (kept.sent) run(scope, kept.question, kept.focus, [], kept.spoken === true, kept.sent, kept.startedAt);
       else setPending(key, { phase: 'failed', question: kept.question, failure: 'unreachable', detail: 'The page was closed before the message went. Nothing was lost: send it again.', ...(kept.focus ? { focus: kept.focus } : {}) });
     },
     [book, chapter, run],

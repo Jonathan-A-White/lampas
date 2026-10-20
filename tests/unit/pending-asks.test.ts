@@ -29,6 +29,16 @@ describe('the kept questions', () => {
     expect(pendingAll()).toEqual({});
   });
 
+  it('keeps that a question was sent as spoken, for its Retry and for a page that is back (mw-5r3p30.333)', () => {
+    const spoken: AskState = { ...FAILED, spoken: true };
+    setPending('ask:rom.8.28', spoken);
+    setPending('talk:rom.8', { ...WAITING, spoken: true });
+    expect(pendingOf('ask:rom.8.28')).toEqual(spoken);
+    expect(pendingOf('talk:rom.8')).toMatchObject({ spoken: true });
+    localStorage.setItem('lampas.pendingAsks', JSON.stringify({ a: { ...WAITING, spoken: 'yes' } }));
+    expect('spoken' in pendingAll().a).toBe(false);
+  });
+
   it('leaves out a line it cannot read, and reads nothing from storage that is not JSON', () => {
     localStorage.setItem('lampas.pendingAsks', JSON.stringify({ good: WAITING, noPhase: { question: 'x' }, noStart: { phase: 'waiting', question: 'x' }, badSent: { ...WAITING, sent: { txid: 1 } }, failedNoDetail: { phase: 'failed', question: 'x', failure: 'unreachable' } }));
     expect(Object.keys(pendingAll()).sort()).toEqual(['badSent', 'good']);

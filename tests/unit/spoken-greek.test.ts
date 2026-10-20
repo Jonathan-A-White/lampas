@@ -40,8 +40,24 @@ describe('which words were spoken (src/speech/spoken.ts)', () => {
     forgetSpoken();
     expect(wasSpoken('Why?')).toBe(false);
     noteSpoken('  what paradigm  from Tech N9ne ');
-    expect(wasSpoken('what paradigm from Tech N9ne')).toBe(true);
     expect(wasSpoken('what paradigm from Tech N9ne to technia')).toBe(false);
+    expect(wasSpoken('what paradigm from Tech N9ne')).toBe(true);
+    forgetSpoken();
+  });
+
+  it('forgets the words once they are sent: the same words typed after are not spoken (mw-5r3p30.333)', () => {
+    forgetSpoken();
+    const said = 'what does Tech N9ne mean';
+    noteSpoken(said);
+    // sending them unedited is spoken, once
+    expect(wasSpoken(said)).toBe(true);
+    expect(wasSpoken(said)).toBe(false);
+    expect(wasSpoken(`  ${said} `)).toBe(false);
+    // words that were not these leave them kept, for the unedited send that is still to come
+    noteSpoken(said);
+    expect(wasSpoken('what does it mean')).toBe(false);
+    expect(wasSpoken(said)).toBe(true);
+    expect(wasSpoken(said)).toBe(false);
     forgetSpoken();
   });
 });
@@ -74,10 +90,9 @@ describe('words kept unsent in the Ask field are marked spoken (mw-5r3p30.307)',
     expect(interim.at(-1)).toBe(SAID);
     session.abort();
     // the composer puts those words in its field; Send of them unedited goes marked
-    expect(wasSpoken(SAID)).toBe(true);
-    expect(wasSpoken(`  ${SAID}  `)).toBe(true);
     expect(wasSpoken(SAID.replace('Tech N9ne', 'technia'))).toBe(false);
     expect(wasSpoken(`${SAID} please`)).toBe(false);
+    expect(wasSpoken(`  ${SAID}  `)).toBe(true);
   });
 
   it('a release that settles with no final words keeps the words shown, and they are spoken', async () => {

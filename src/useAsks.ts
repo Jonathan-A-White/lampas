@@ -57,7 +57,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
 
   /** Sends `text` about `verse`, or, with `resume` (the grist of this very question that went), waits for the answer to that one; `startedAt` is when it was first asked. */
   const run = useCallback(
-    (verse: Verse, text: string, resume?: SentRef, startedAt = Date.now()) => {
+    (verse: Verse, text: string, spoken: boolean, resume?: SentRef, startedAt = Date.now()) => {
       const key = askKey(book, chapter, unitId(verse));
       const signal = live.current.signal;
       const stopRunning = startRunning(key);
@@ -65,13 +65,13 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       const set = (state: AskState | undefined): void => {
         if (!signal.aborted) setPending(key, state);
       };
-      set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume } : { phase: 'sending', question: text, startedAt });
+      const marked = spoken ? { spoken: true as const } : {};
+      set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume, ...marked } : { phase: 'sending', question: text, startedAt, ...marked });
       void (async () => {
         try {
           const [solid, learner, grammar, settings, requests, profile, pronunciation, memory, levels, rusty] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined), listLevels().catch(() => undefined), rustyNow().catch(() => undefined)]);
           // What he lacks under the topic his words name (mw-1vuvq6.5), worked out here so the tutor picks from it and never guesses
           const missing = levels ? missingFoundations(text, levelsOf(levels)) : undefined;
-          const spoken = wasSpoken(text);
           const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty);
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
@@ -81,7 +81,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
             resume,
             onSent: (txid, seq) => {
               sentAs = txid;
-              set({ phase: 'waiting', question: text, startedAt, sent: { txid, seq } });
+              set({ phase: 'waiting', question: text, startedAt, sent: { txid, seq }, ...marked });
             },
           });
           // The one setting this tutor may switch is Ask by; the registry checks it like any talked change.
@@ -93,7 +93,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
-          set({ phase: 'failed', question: text, failure, detail: err instanceof Error ? err.message : 'Something went wrong.', ...(err instanceof TutorError && err.sent ? { sent: err.sent } : {}) });
+          set({ phase: 'failed', question: text, failure, detail: err instanceof Error ? err.message : 'Something went wrong.', ...(err instanceof TutorError && err.sent ? { sent: err.sent } : {}), ...marked });
         } finally {
           stopRunning();
         }
@@ -110,7 +110,9 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       stopAnswer();
       // Retry of a question whose grist went (the link failed after it): wait for that grist's answer, send no second
       const kept = pendingOf(askKey(book, chapter, unitId(verse)));
-      run(verse, text, kept?.phase === 'failed' && kept.question === text ? kept.sent : undefined);
+      const retry = kept?.phase === 'failed' && kept.question === text ? kept : undefined;
+      // spoken is settled as he asks, once: the words he spoke are forgotten as they go, and a Retry carries the mark the failed question had
+      run(verse, text, retry ? retry.spoken === true : wasSpoken(text), retry?.sent);
     },
     [book, chapter, run],
   );
@@ -120,7 +122,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
       const key = askKey(book, chapter, unitId(verse));
       const kept = pendingOf(key);
       if (!kept || kept.phase === 'failed' || !isOrphan(key)) return;
-      if (kept.sent) run(verse, kept.question, kept.sent, kept.startedAt);
+      if (kept.sent) run(verse, kept.question, kept.spoken === true, kept.sent, kept.startedAt);
       else setPending(key, { phase: 'failed', question: kept.question, failure: 'unreachable', detail: 'The page was closed before the question went. Nothing was lost: send it again.' });
     },
     [book, chapter, run],

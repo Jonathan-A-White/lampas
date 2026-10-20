@@ -27,6 +27,7 @@ import { FootBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 import { GREEK_LANG } from './script/greekLang';
+import { forgetSpoken } from './speech/spoken';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 const PRIMARY = `${BUTTON} border-accent bg-accent text-accent-fg`;
@@ -196,7 +197,11 @@ const NO_MICROPHONE = new Set(['permission-denied', 'no-microphone', 'not-suppor
 
 /** Say it's foot: the hold bar he says the letter into, and Skip; the words come back through `onHeard`, a refused microphone through `onNoMicrophone`. */
 function SayFoot({ onHeard, onSkip, onNoMicrophone }: { onHeard: (text: string) => void; onSkip: () => void; onNoMicrophone: () => void }) {
-  const voice = useVoice(onHeard);
+  // the letter he said is no question: its words are not kept to mark a question he types later as spoken (mw-5r3p30.333)
+  const voice = useVoice((text) => {
+    forgetSpoken();
+    onHeard(text);
+  });
   const refused = voice.notice !== undefined && NO_MICROPHONE.has(voice.notice.kind);
   useEffect(() => {
     if (refused) onNoMicrophone();
