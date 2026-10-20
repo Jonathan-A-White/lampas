@@ -6,6 +6,7 @@ import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
 import { DEFAULT_DEVOTIONAL, DEVOTIONALS, RANDOM, devotionalForDay, tickedDevotionals } from '../../src/data/daily/devotionals';
 
 vi.mock('../../src/data/daily/dailyStore', async (original) => {
@@ -29,6 +30,7 @@ beforeEach(async () => {
   await db.settings.clear();
 });
 
+const timeout = ASYNC_WAIT_MS;
 const TWO = ['LLS:20.10.1', 'LLS:20.10.2'];
 const todayDate = () => localDate(new Date());
 const kept = async (key: string) => (await db.settings.get(key))?.value;
@@ -105,7 +107,7 @@ describe('the Another tap on Today ends in the same function', () => {
     await act(async () => {
       await userEvent.click(another);
     });
-    await vi.waitFor(() => expect(pickAnotherDevotional).toHaveBeenCalledTimes(1), { timeout: 10_000 });
+    await vi.waitFor(() => expect(pickAnotherDevotional).toHaveBeenCalledTimes(1), { timeout });
     expect(await kept('devotional')).toBe(RANDOM);
     expect(tickedDevotionals(TWO.join(','))).toEqual(TWO);
   });
