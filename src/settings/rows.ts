@@ -31,6 +31,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'readAloud', title: 'Read aloud' },
   { id: 'readTutor', title: "The tutor's responses" },
   { id: 'askBy', title: 'Asking the tutor' },
+  { id: 'talk', title: 'Talk' },
   { id: 'hebrew', title: 'Hebrew in the tutor' },
   { id: 'voices', title: 'Reading voices' },
   { id: 'speed', title: 'Reading speed' },
@@ -62,7 +63,7 @@ export interface SettingsGroup {
 export const GROUPS: readonly SettingsGroup[] = [
   { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings, the weave and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave'] },
   { id: 'greek', title: 'Greek', hint: 'New words, your goal, the grammar approach and handwriting.', sections: ['newWords', 'goal', 'approach', 'handwriting'] },
-  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, Hebrew, tips and your study way.', sections: ['readTutor', 'askBy', 'hebrew', 'tips', 'studyWay'] },
+  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, Hebrew, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'hebrew', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast, and how Greek is pronounced.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
   { id: 'study', title: 'Study resources', hint: 'Links to the lexicons, Logos and the works you own.', sections: ['resources', 'logos'] },

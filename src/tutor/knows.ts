@@ -41,6 +41,8 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   readTutor: 'speech',
   readLessons: 'speech',
   askBy: 'speech',
+  talk: 'screen',
+  send: 'screen',
   englishVoice: 'speech',
   greekVoice: 'speech',
   englishRate: 'speech',

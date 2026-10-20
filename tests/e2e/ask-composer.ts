@@ -5,7 +5,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 export const composerOf = (page: Page): Locator => page.getByTestId('composer');
 
 /** The one big bar: it says Hold to ask, then Starting the mic… and Release to send while he holds. */
-export const askBar = (page: Page): Locator => composerOf(page).getByRole('button', { name: /^(Hold to ask|Release to send|Starting the mic…|Let go to keep it unsent)$/ });
+export const askBar = (page: Page): Locator => composerOf(page).getByRole('button', { name: /^(Hold to ask|Tap to ask|Release to send|Starting the mic…|Let go to keep it unsent)$/ });
 
 /** The text box, brought out by Type a question when the bar is showing. */
 export async function questionField(page: Page): Promise<Locator> {

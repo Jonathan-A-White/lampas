@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { getReadTutor, getScriptDepth } from '../../data/repositories';
 import { ScriptText } from '../../script/ScriptText';
 import { DEPTHS, SCRIPTS, type Depth, type TutorScript } from '../../script/scripts';
-import { askBySetting, readLessonsSetting, tipsSetting } from '../definitions';
+import { askBySetting, readLessonsSetting, sendSetting, talkSetting, tipsSetting } from '../definitions';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { ChipRow, ON_COLOUR, OnOff, RowName, SettingRow } from './SettingRow';
@@ -58,6 +58,46 @@ export const AskByControl: Control = ({ row }) => {
             ['typing', 'Typing'],
           ]}
           settingKey="askBy"
+        />
+      ) : null}
+    </SettingRow>
+  );
+};
+
+export const TalkControl: Control = ({ row }) => {
+  const talk = useSetting(talkSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {talk ? (
+        <ChipRow
+          name={row.label}
+          current={talk}
+          options={[
+            ['hold', 'Hold'],
+            ['tap', 'Tap'],
+          ]}
+          settingKey="talk"
+        />
+      ) : null}
+    </SettingRow>
+  );
+};
+
+export const SendControl: Control = ({ row }) => {
+  const send = useSetting(sendSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {send ? (
+        <ChipRow
+          name={row.label}
+          current={send}
+          options={[
+            ['release', 'On release'],
+            ['button', 'By button'],
+          ]}
+          settingKey="send"
         />
       ) : null}
     </SettingRow>

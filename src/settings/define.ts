@@ -27,6 +27,7 @@ export type SectionId =
   | 'readAloud'
   | 'readTutor'
   | 'askBy'
+  | 'talk'
   | 'hebrew'
   | 'voices'
   | 'speed'
