@@ -3,11 +3,11 @@
 // with the time played, what he heard of it (time left in the chapter: 'You stopped partway in it: the plan stays at <chapter>.'; at its end: 'You heard it to the end:
 // the plan moves on.', mw-umv8sp.7) and how sure the reading is in words, and 'Yes, that is where I am' answers the return sheet with that chapter and what he heard (markHeard), the session
 // ended. 'Back to the choices', Back, Escape, a swipe down or a tap outside leave the return sheet as it was. A screenshot with no chapter Lampas can place says so,
-// and a grist that fails says so with 'Try again'. The sheet is one height whatever it shows, so a control never moves under her thumb as the answer comes in.
+// and a grist that fails says so with 'Try again' (offline, in the words of the tutor's own offline line: failedLine of src/share/findRefs.ts). The sheet is one height whatever it shows, so a control never moves under her thumb as the answer comes in.
 import { useEffect, useState } from 'react';
 import type { PlanChapter } from '../data/plans';
 import type { Heard } from '../data/repositories/readingPlan';
-import { TutorError } from '../services/tutor';
+import { failedLine } from '../share/findRefs';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -41,7 +41,7 @@ function useScreenshotRead(picture: File, setOffFrom: PlanChapter): { read: Read
     };
     readAudibleScreenshot(picture, setOffFrom, stop.signal).then(
       (reading) => settle({ status: 'done', reading }),
-      (err: unknown) => settle({ status: 'failed', line: err instanceof TutorError && err.failure === 'no-licence' ? 'No licence' : FAILED_LINE }),
+      (err: unknown) => settle({ status: 'failed', line: failedLine(err, FAILED_LINE) }),
     );
     return () => stop.abort();
   }, [picture, setOffFrom, attempt]);

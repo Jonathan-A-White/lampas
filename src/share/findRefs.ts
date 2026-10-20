@@ -76,11 +76,12 @@ const READING: PictureRefs = { status: 'reading' };
 export const FAILED_LINE = 'Could not find Bible references in the picture.';
 
 /** The one line for a picture that could not be read (mw-s1dc0n.13): a phone with no licence says so, a phone or a mill that cannot be reached says that
- *  (the words of the tutor's own offline lines), and anything else blames the picture. */
-export function failedLine(err: unknown): string {
-  if (!(err instanceof TutorError)) return FAILED_LINE;
+ *  (the words of the tutor's own offline lines), and anything else blames the picture with `generic`. Every screen that reads a picture with a grist (Share,
+ *  the plan's screenshot read) takes its failed line from here (mw-5r3p30.661). */
+export function failedLine(err: unknown, generic: string = FAILED_LINE): string {
+  if (!(err instanceof TutorError)) return generic;
   if (err.failure === 'no-licence') return 'No licence';
-  return err.message === OFFLINE_MESSAGE || err.message === TUTOR_OFFLINE_MESSAGE ? err.message : FAILED_LINE;
+  return err.message === OFFLINE_MESSAGE || err.message === TUTOR_OFFLINE_MESSAGE ? err.message : generic;
 }
 
 /** How the readings of a share's pictures ended, one settled result each: what the ones that were read found is kept beside the failure of the others

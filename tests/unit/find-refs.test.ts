@@ -88,6 +88,8 @@ describe('failedLine', () => {
   it('blames the picture for any other failure, and a missing licence says so', () => {
     expect(failedLine(new TutorError('no-answer', 'The tutor could not answer: could not read it'))).toBe(FAILED_LINE);
     expect(failedLine(new Error('boom'))).toBe(FAILED_LINE);
+    expect(failedLine(new TutorError('no-answer', 'could not read it'), 'Could not read the screenshot.')).toBe('Could not read the screenshot.');
     expect(failedLine(new TutorError('no-licence', 'x'))).toBe('No licence');
+    expect(failedLine(new TutorError('unreachable', OFFLINE_MESSAGE), 'Could not read the screenshot.')).toBe(OFFLINE_MESSAGE);
   });
 });
