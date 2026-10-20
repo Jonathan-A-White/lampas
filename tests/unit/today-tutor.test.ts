@@ -81,3 +81,25 @@ describe('the instructions for a talk with no Greek text on screen', () => {
     expect(today).toMatch(/`words` stays empty unless he asks about a Greek word/);
   });
 });
+
+// mw-5r3p30.686: a smoke run of the Goal example (solid_words ὁ, καί, no Greek on screen) had the tutor put both solid words in `words` while naming them in passing.
+describe('the instructions for a solid word named in passing', () => {
+  const instructions = instructionsOf('bible-talk');
+  const section = (title: string) => {
+    const from = instructions.indexOf(`## ${title}\n`);
+    const to = instructions.indexOf('\n## ', from + 1);
+    return instructions.slice(from, to < 0 ? undefined : to).replace(/\s+/g, ' ');
+  };
+
+  it('say in the contract that words lists only Greek words he asked about or the answer teaches', () => {
+    expect(section('The contract')).toMatch(/`words` lists only Greek words he asked about or that the answer teaches/);
+  });
+
+  it('say in the contract that a word of solid_words named in passing is never put in words', () => {
+    expect(section('The contract')).toMatch(/a word of `solid_words` named in passing is never put in `words`/);
+  });
+
+  it('repeat it where solid_words is used: name it and move on, and never put it in words', () => {
+    expect(section('How to answer')).toMatch(/name it and move on[^.]*never put it in `words`/);
+  });
+});
