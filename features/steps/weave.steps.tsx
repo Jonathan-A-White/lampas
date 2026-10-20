@@ -205,6 +205,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he sets Weave to Solid words', async () => setWeave('Solid words'));
     When('he drops the word {string} on the Words screen', async (_, lemma: string) => {
       await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Words' }));
       await screen.findByRole('heading', { name: 'Words', level: 1 });
       const row = await waitFor(() => {

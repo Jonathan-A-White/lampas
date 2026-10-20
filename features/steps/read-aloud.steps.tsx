@@ -86,7 +86,7 @@ async function switchToGreek(): Promise<void> {
 async function setWeaveSolid(): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
-  await openSettingsGroup(user, 'listening');
+  await openSettingsGroup(user, 'reading');
   await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
   await leaveSettings(user);
   await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-weave')).toBe('solid'));

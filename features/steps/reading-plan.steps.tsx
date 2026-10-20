@@ -16,7 +16,7 @@ import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { ensureSettingsGroup, openSettingsGroup } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -297,7 +297,7 @@ describeFeature(feature, ({ Scenario }) => {
       await setDeveloper('on');
       await user.click(screen.getByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
-      await openSettingsGroup(user, 'study');
+      await openSettingsGroup(user, 'developer');
     });
     And('he taps {string} in Settings', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
     Then('the Reading plan setting is Off and no plan is kept', async () => {
@@ -305,7 +305,11 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await getReadingPlan()).toBeUndefined();
       expect(await db.settings.get('readingPlanState')).toBeUndefined();
     });
-    When('he taps {string} in Settings', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    When('he taps {string} in Settings', async (_, name: string) => {
+      // the Developer reset is on its own page; the plan's start is on the study resources page
+      await ensureSettingsGroup('study');
+      await user.click(await screen.findByRole('button', { name }));
+    });
     And('he picks the plan {string}', async (_, plan: string) => {
       const sheet = await screen.findByRole('dialog', { name: 'Start a listening plan' });
       await user.click(within(sheet).getByRole('button', { name: plan }));

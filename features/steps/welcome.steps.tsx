@@ -238,7 +238,7 @@ describeFeature(feature, ({ Scenario }) => {
       await setDeveloper('on');
       await user.click(await screen.findByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
-      await openSettingsGroup(user, 'tutor');
+      await openSettingsGroup(user, 'developer');
     });
     And('he taps {string}', taps);
     Then('the welcome talk is open and the tutor asks {string}', asksFirst);
