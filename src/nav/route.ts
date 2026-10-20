@@ -79,6 +79,13 @@ export function routeOf(hash: string): Route {
 /** The in-app copy of Robinson's essay (src/Essay.tsx), a page under the Preface. */
 export const ESSAY_PATH = '#/preface/robinson';
 
+const pageOpenedOnReader = typeof window === 'undefined' || routeOf(window.location.hash) === 'home';
+
+/** The page was loaded on the Reader (a reopen, a link, a reload there), not on another screen. A page loaded on Settings and reloaded there
+ * reaches the Reader later by Back, to an entry whose address holds the weave from before he chose another: that older address must not win
+ * over the saved setting (src/reader/useReaderSettings.ts, mw-5r3p30.658). */
+export const openedOnReader = (): boolean => pageOpenedOnReader;
+
 const hashFor = (route: Route) => (route === 'home' ? '#/' : route === 'essay' ? ESSAY_PATH : `#/${route}`);
 
 const wholeNumber = (text: string | null): number | undefined => (text !== null && /^[1-9]\d{0,3}$/.test(text) ? Number(text) : undefined);

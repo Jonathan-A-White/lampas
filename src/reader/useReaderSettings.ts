@@ -4,7 +4,8 @@
 // The hook also tells the bus (docs/events.md): view-changed, the weave (announceSetting), layout-changed and headings-changed, each once its value
 // is here and again when it changes. The address the Reader opened on wins over the saved view and weave at first (a reopen, Back to an earlier
 // place): the settings follow the address, then the address follows the settings. The weave is switched in Settings, so a Reader reached by Back
-// from there must not put an older address's weave back: once the bus has told a weave, the saved setting is the truth.
+// from there must not put an older address's weave back: once the bus has told a weave, the saved setting is the truth, and so it is when the page was loaded on another screen
+// (Settings, reloaded there) and the Reader is reached by Back to an entry written before he chose the weave (mw-5r3p30.658).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -29,7 +30,7 @@ import {
   type WeaveGrammar,
 } from '../data/repositories';
 import { publish } from '../events/bus';
-import { readerOf } from '../nav/route';
+import { openedOnReader, readerOf } from '../nav/route';
 import { weaveOrderSetting, weaveSetting } from '../settings/definitions';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
 import { announceSetting, toldSetting, useSetting } from '../settings/store';
@@ -66,7 +67,7 @@ export function useReaderSettings(): ReaderSettings | undefined {
   // What the address said when the reader opened: the view and weave to put back in the settings.
   const [opened] = useState(() => readerOf(window.location.hash));
   const wantView = useRef(opened.view);
-  const wantWeave = useRef(toldSetting(weaveSetting) !== undefined ? undefined : opened.weave);
+  const wantWeave = useRef(toldSetting(weaveSetting) !== undefined || !openedOnReader() ? undefined : opened.weave);
   useEffect(() => {
     if (!view) return;
     if (wantView.current && wantView.current !== view) {
