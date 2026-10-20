@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.372
+_2026-10-20_
+- Fixed: Choosing a verse like John 18:2 in Choose a book now opens that chapter in the Bible with the verse at the top, instead of the single-verse view.
+- New: The tutor can link you straight to John Calvin's commentaries or his Institutes in your Logos library when it talks about him: switch on the ones you own in Settings > Study resources > Works.
+- New: After you send a wish to the makers, a "Your requests" link beside "The answer will come back" takes you to the page where their answer appears.
+
 ## 0.1.371
 _2026-10-20_
 - New: In Turn pages the page now follows your finger and curls over like a real book page, springing back if you let go early and turning as fast as you flick it.
