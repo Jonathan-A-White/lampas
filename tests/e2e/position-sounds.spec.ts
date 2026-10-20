@@ -60,7 +60,9 @@ test('the ευ sheet says when it is v and when f, and its drill asks the marked
   const drill = page.getByRole('dialog', { name: 'Drill it' });
   await expect(drill.getByTestId('drill-step')).toHaveText(/^Step 1 of \d+$/);
   await expect(drill.getByTestId('grammar-prompt')).toHaveText('What sound does the marked ευ make in this word?');
-  await expect(drill.getByTestId('grammar-form').locator('[data-marked]')).toHaveText(/^ε[υὐὔὖ]/u);
+  // whatever accent or breathing the word carries, the marked letters are ε then υ
+  const marked = await drill.getByTestId('grammar-form').locator('[data-marked]').innerText();
+  expect(marked.normalize('NFD').replace(/\p{M}/gu, '')).toBe('ευ');
   const options = drill.locator('[data-option]');
   expect(await options.count()).toBe(4);
   const texts = await options.allInnerTexts();
