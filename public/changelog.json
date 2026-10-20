@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.355",
+    "date": "2026-10-20",
+    "story": "mw-i7xe0n.24",
+    "kind": "fixed",
+    "text": "Chi's card now names ω among the letters before the hard kh sound, as the drill's rule line does."
+  },
+  {
+    "version": "0.1.355",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.584",
+    "kind": "fixed",
+    "text": "The letter sheets now show four different words as examples, instead of several forms of the same word."
+  },
+  {
+    "version": "0.1.355",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.602",
+    "kind": "fixed",
+    "text": "A question to the tutor is no longer lost when you leave the page or the page reloads, a phone going offline is said at once, and after Send the question and the wait stay in view."
+  },
+  {
     "version": "0.1.354",
     "date": "2026-10-20",
     "story": "mw-5r3p30.654",

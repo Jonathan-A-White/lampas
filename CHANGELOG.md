@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.355
+_2026-10-20_
+- Fixed: Chi's card now names ω among the letters before the hard kh sound, as the drill's rule line does.
+- Fixed: The letter sheets now show four different words as examples, instead of several forms of the same word.
+- Fixed: A question to the tutor is no longer lost when you leave the page or the page reloads, a phone going offline is said at once, and after Send the question and the wait stay in view.
+
 ## 0.1.354
 _2026-10-20_
 - Fixed: Reading a verse aloud no longer says the letter name "delta" for a word like δ' (Luke 9:24 and 24 other verses).
