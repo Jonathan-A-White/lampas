@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.352
+_2026-10-20_
+- Fixed: A Greek word tapped on a letter or idea sheet now opens its word sheet in front, not hidden behind.
+- Fixed: The Update ready and Welcome back bars no longer hide the top of the What's new sheet, a Bible reference card or the one-line speaker help.
+- Fixed: holding δ' (δέ with its vowel dropped) now plays the th sound instead of the voice naming the letter.
+
 ## 0.1.351
 _2026-10-19_
 - Fixed: A quick double tap on "Mark known without a drill" (or on "Show more" examples) on a grammar idea no longer lands on the control that moved into its place.

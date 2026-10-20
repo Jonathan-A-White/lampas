@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.352",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.566",
+    "kind": "fixed",
+    "text": "A Greek word tapped on a letter or idea sheet now opens its word sheet in front, not hidden behind."
+  },
+  {
+    "version": "0.1.352",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.644",
+    "kind": "fixed",
+    "text": "The Update ready and Welcome back bars no longer hide the top of the What's new sheet, a Bible reference card or the one-line speaker help."
+  },
+  {
+    "version": "0.1.352",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.449",
+    "kind": "fixed",
+    "text": "holding δ' (δέ with its vowel dropped) now plays the th sound instead of the voice naming the letter."
+  },
+  {
     "version": "0.1.351",
     "date": "2026-10-19",
     "story": "mw-5r3p30.558",
