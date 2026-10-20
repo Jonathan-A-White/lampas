@@ -11,6 +11,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { registerPronunciation } from '../../src/speech/pronunciation';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 let unregister: (() => void) | undefined;
@@ -95,6 +96,7 @@ describeFeature(feature, ({ Scenario }) => {
     When("he taps the gear in the reader's header", async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'listening');
     });
     Then('Greek pronunciation lists {string} and {string}', async (_, a: string, b: string) => {
       const group = await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
@@ -105,7 +107,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(async () => expect((await db.settings.get('greekPronunciation'))?.value).toBe('shouting'));
     });
     And('he taps Back on the Settings screen', async () => {
-      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await leaveSettings(user);
       await waitForReader();
     });
     And('he switches the reader to Greek', switchToGreek);

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 async function openReader(page: Page) {
   await openUnlocked(page);
@@ -12,6 +13,7 @@ async function openReader(page: Page) {
 test('the Weave switch swaps his solid words for Greek, big and tappable, at phone width', async ({ page }) => {
   await openReader(page);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Weave', exact: true });
   await expect(group).toBeVisible();
   for (const label of ['Off', 'Solid']) {
@@ -20,7 +22,7 @@ test('the Weave switch swaps his solid words for Greek, big and tappable, at pho
     expect(box?.width).toBeGreaterThanOrEqual(43.5);
   }
   await group.getByRole('button', { name: 'Solid', exact: true }).click();
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', 'solid');
 
   const woven = page.locator('[data-verse="1"] [data-woven]');

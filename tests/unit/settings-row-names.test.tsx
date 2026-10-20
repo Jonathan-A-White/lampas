@@ -1,12 +1,13 @@
 // Every row of Settings draws its own name (mw-5r3p30.465): a control that names its group only with aria-label leaves the screen without the
 // words, so the row's visible text, or the title of the section it stands alone in, must hold the row's label.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, cleanup, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
-import { ROWS, SECTIONS } from '../../src/settings/rows';
+import { GROUPS, ROWS, SECTIONS, groupOf } from '../../src/settings/rows';
+import { showSettingsGroup } from '../support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -32,15 +33,19 @@ describe('the names Settings draws', () => {
       { key: 'developerMode', value: 'on' },
     ]);
     render(<SettingsScreen />);
-    await screen.findByRole('group', { name: 'Bible in Logos' });
-    await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
     // a row is named by its own text, or by the heading of its section when it carries the section's name or stands alone in it
-    const nameless = ROWS.filter((row) => {
-      const el = document.querySelector(`[data-setting="${row.key}"]`);
-      const section = SECTIONS.find((s) => s.id === row.section);
-      const alone = ROWS.filter((r) => r.section === row.section).length === 1;
-      return !((el?.textContent ?? '').includes(row.label) || alone || section?.title === row.label);
-    }).map((row) => row.key);
+    const nameless: string[] = [];
+    for (const group of GROUPS) {
+      await showSettingsGroup(group.id);
+      const mine = ROWS.filter((row) => groupOf(row.section).id === group.id);
+      await waitFor(() => expect([...document.querySelectorAll('[data-setting]')].map((el) => el.getAttribute('data-setting'))).toEqual(mine.map((r) => r.key)));
+      for (const row of mine) {
+        const el = document.querySelector(`[data-setting="${row.key}"]`);
+        const section = SECTIONS.find((s) => s.id === row.section);
+        const alone = ROWS.filter((r) => r.section === row.section).length === 1;
+        if (!((el?.textContent ?? '').includes(row.label) || alone || section?.title === row.label)) nameless.push(row.key);
+      }
+    }
     expect(nameless).toEqual([]);
     cleanup();
   });

@@ -23,6 +23,7 @@ import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
 import { pronunciationOf } from './speech/pronunciation';
 import { backTo, navigate, openPlacement, openReader, openVerseRange } from './nav/route';
+import { openSettingsSection } from './settings/link';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
@@ -110,7 +111,7 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
       <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
         <p className="text-2xl font-semibold">No goal yet</p>
         <p className="mt-2 text-muted">Choose a book, a chapter or a verse to work toward, and this screen shows how close you are.</p>
-        <button type="button" onClick={() => navigate('settings')} className={`${BUTTON} mt-6 w-full bg-accent text-accent-fg`}>
+        <button type="button" onClick={() => openSettingsSection('goal')} className={`${BUTTON} mt-6 w-full bg-accent text-accent-fg`}>
           Choose a goal
         </button>
         {learning || next ? (
@@ -327,7 +328,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
           <h2 data-testid="goal-title" className="flex-1 basis-48 title-wrap text-2xl font-semibold">
             {title}
           </h2>
-          <button type="button" onClick={() => navigate('settings')} className="min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium text-accent">
+          <button type="button" onClick={() => openSettingsSection('goal')} className="min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium text-accent">
             Change
           </button>
         </div>

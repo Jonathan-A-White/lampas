@@ -3,12 +3,9 @@ Feature: Ask by Speaking or Typing
   first with a small mic beside it. The choice is the setting "Ask by" in Settings, it is kept across a reload, and he can ask the tutor to switch
   it ("let me type instead", "switch back to speaking"): the answer carries the change, the app applies it and the reply says what it did.
 
-  Scenario: Settings shows Ask by with Speaking and Typing and the search finds it
+  Scenario: Settings shows Ask by with Speaking and Typing
     Given Lampas is opened on Settings with nothing chosen
     Then Settings shows the group "Ask by" with Speaking chosen
-    When he types "ask by" in the Settings search
-    Then the group "Ask by" is still shown with Speaking chosen
-    And Settings has no group "Theme"
 
   Scenario: Choosing Typing makes Ask the tutor type-first and it survives a reload
     Given Lampas is opened on Settings with nothing chosen

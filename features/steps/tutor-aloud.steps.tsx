@@ -374,7 +374,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Settings has the switch, On until he turns it Off, and it is kept', ({ Given, When, Then, And }) => {
-    const settings = () => open({ aloud: true, hash: '#/settings', reply: 'answer' });
+    const settings = () => open({ aloud: true, hash: '#/settings?group=tutor', reply: 'answer' });
     Given('Lampas is opened on its Settings screen', settings);
     Then('{string} is On', async (_, name: string) => {
       expect(name).toBe(SWITCH);

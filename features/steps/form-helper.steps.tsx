@@ -50,7 +50,7 @@ async function openSheet(): Promise<void> {
   vi.unstubAllGlobals();
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
-  window.history.replaceState(null, '', '/#/settings');
+  window.history.replaceState(null, '', '/#/settings?group=greek');
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
   fake.autoReply = reply(Q_APPROACH, 'approach');

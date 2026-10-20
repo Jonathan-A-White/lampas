@@ -19,6 +19,7 @@ import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '
 import { instructionsOf } from '../../tests/support/learner';
 import { offerSettled } from '../../tests/support/settled-offer';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -124,6 +125,7 @@ describeFeature(feature, ({ Scenario }) => {
   const openSettings = async () => {
     await user.click(screen.getByRole('button', { name: 'Settings' }));
     await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    await openSettingsGroup(user, 'tutor');
   };
   const goalShown = async (_: unknown, goal: string) => {
     const field = await goalField();
@@ -267,7 +269,7 @@ describeFeature(feature, ({ Scenario }) => {
     await user.type(field, text);
   };
   const backAndAgain = async () => {
-    await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+    await leaveSettings(user);
     await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
     await openSettings();
   };

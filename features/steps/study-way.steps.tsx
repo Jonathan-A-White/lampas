@@ -16,6 +16,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -160,6 +161,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens Settings and then {string}', async (_, name: string) => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'tutor');
       await user.click(screen.getByRole('button', { name }));
       await screen.findByRole('heading', { name, level: 1 });
     });

@@ -2,8 +2,10 @@
 // search or its dependency would hide it (src/SettingsScreen.tsx, src/settings/rows.ts rowsAt). The key is one of the registry's SETTINGS (src/settings/registry.ts):
 // a key that is not has no link, so the tutor's invented key (src/TutorLinks.tsx) and a mistyped address draw nothing. docs/links.md.
 import { forgetScrollsAt } from '../nav/scrollMemory';
-import { openHash, pathOf } from '../nav/route';
+import { previousAddress } from '../nav/lastRoute';
+import { openHash, pathOf, replaceHash } from '../nav/route';
 import { settingOf } from './registry';
+import { groupById, type GroupId } from './rows';
 
 /** The address that opens Settings at the setting `key`, or null when the registry has no such setting. */
 export function settingLink(key: string): string | null {
@@ -31,4 +33,33 @@ export function openSettingsSection(id: string): void {
   const link = `#/settings?section=${encodeURIComponent(id)}`;
   forgetScrollsAt(link);
   openHash(link);
+}
+
+/** The address of the page of the group `id` ('#/settings?group=reading', mw-3ased2.1); '#/settings' alone is the home that lists the groups. */
+export const groupLink = (id: GroupId): string => `#/settings?group=${id}`;
+
+/** The group an address names ('#/settings?group=reading'), or null when it is not a Settings address or names no group. */
+export function groupIdOf(hash: string): GroupId | null {
+  if (pathOf(hash) !== '#/settings') return null;
+  const q = hash.indexOf('?');
+  const id = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('group');
+  return id !== null ? (groupById(id)?.id ?? null) : null;
+}
+
+/** Opens the page of the group `id` as a new Back step, from the home; it starts at the top, not where he last left the page. */
+export function openSettingsGroup(id: GroupId): void {
+  const link = groupLink(id);
+  forgetScrollsAt(link);
+  openHash(link);
+}
+
+/** The group page's back arrow: a step Back when the entry behind this one is the Settings home (so the phone's Back after it leaves Settings, as
+ *  the header back buttons do, mw-5r3p30.458), else (a link or a reload put him on the page) the home in place of this page. */
+export function backToSettingsHome(): void {
+  const behind = previousAddress();
+  if (behind !== null && behind === '#/settings') {
+    window.history.back();
+    return;
+  }
+  replaceHash('#/settings');
 }

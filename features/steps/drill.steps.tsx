@@ -17,6 +17,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 
@@ -58,6 +59,7 @@ async function openDrill(): Promise<void> {
   // The Test button is in the Words header, which the Reader's Settings opens.
   if (!screen.queryByRole('button', { name: 'Test' })) {
     await user.click(await screen.findByRole('button', { name: 'Settings' }));
+    await openSettingsGroup(user, 'account');
     await user.click(await screen.findByRole('button', { name: 'Words' }));
   }
   await user.click(await screen.findByRole('button', { name: 'Test' }));

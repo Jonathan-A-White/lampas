@@ -1,5 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 import { shot } from './shot';
+import { leaveSettings, openGroup } from './settings-group';
 import { openUnlocked } from './unlocked';
 
 // These specs measure a 390 px phone screen, so they pin it themselves: run under the 'chromium' project (a bare
@@ -33,7 +34,7 @@ test('the reader header holds the chapter, English | Greek and the gear, in one 
   await page.screenshot({ path: 'shots/reader-header.png', clip: { x: 0, y: 0, width: 390, height: Math.ceil(head.y + head.height) + 8 } });
 });
 
-test('Settings at phone width: the weave, the voices, the Greek pronunciation, Words and About', async ({ page }) => {
+test('Settings at phone width: the weave, the voices, the Greek pronunciation, Words and About, each on its group page', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
@@ -41,44 +42,56 @@ test('Settings at phone width: the weave, the voices, the Greek pronunciation, W
   await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   expect(new URL(page.url()).hash).toBe('#/settings');
 
+  const tappable = async (controls: Locator[]) => {
+    for (const control of controls) {
+      const box = await control.boundingBox();
+      expect(box?.height).toBeGreaterThanOrEqual(43.5);
+      expect(box?.width).toBeGreaterThanOrEqual(43.5);
+    }
+  };
+  const fitsPhone = async () => {
+    const { scrollWidth, clientWidth, scrollTop } = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      scrollTop: document.documentElement.scrollTop,
+    }));
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+    expect(scrollTop).toBe(0);
+  };
+
+  await openGroup(page, 'Reading');
   const solid = page.getByRole('group', { name: 'Weave', exact: true }).getByRole('button', { name: 'Solid', exact: true });
   await expect(solid).toBeVisible();
-  for (const control of [
-    solid,
-    page.getByRole('combobox', { name: 'English voice' }),
-    page.getByRole('combobox', { name: 'Greek voice' }),
-    page.getByRole('radio', { name: 'Modern Greek' }),
-    page.getByRole('button', { name: 'Words', exact: true }),
-    page.getByRole('button', { name: 'About', exact: true }),
-  ]) {
-    const box = await control.boundingBox();
-    expect(box?.height).toBeGreaterThanOrEqual(43.5);
-    expect(box?.width).toBeGreaterThanOrEqual(43.5);
-  }
-  await expect(page.getByRole('radio', { name: 'Modern Greek' })).toBeChecked();
-  const picker = page.getByRole('combobox', { name: 'Greek voice' });
-  expect(await picker.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+  await tappable([solid]);
+  await fitsPhone();
 
-  const { scrollWidth, clientWidth, scrollTop } = await page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    clientWidth: document.documentElement.clientWidth,
-    scrollTop: document.documentElement.scrollTop,
-  }));
-  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
-  expect(scrollTop).toBe(0);
+  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
+  await openGroup(page, 'Listening');
+  const picker = page.getByRole('combobox', { name: 'Greek voice' });
+  await expect(page.getByRole('radio', { name: 'Modern Greek' })).toBeChecked();
+  await tappable([page.getByRole('combobox', { name: 'English voice' }), picker, page.getByRole('radio', { name: 'Modern Greek' })]);
+  expect(await picker.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+  await fitsPhone();
   await shot(page, 'settings');
 
+  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
+  await openGroup(page, 'Account');
+  await tappable([page.getByRole('button', { name: 'Words', exact: true }), page.getByRole('button', { name: 'About', exact: true })]);
+  await fitsPhone();
+
+  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
+  await openGroup(page, 'Reading');
   await solid.click();
   await page.reload();
   await expect(solid).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', 'solid');
   await expect(page.locator('[data-verse="1"] [data-woven]').first()).toBeVisible();
 });
 
 test('Settings at phone width: Read aloud span has its four choices in one row inside the screen, Chapter chosen', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=listening');
   const group = page.getByRole('group', { name: 'Read aloud span' });
   await expect(group).toBeVisible();
   const names = ['Verse', 'Passage', 'Chapter', 'Book'];
@@ -97,7 +110,7 @@ test('Settings at phone width: Read aloud span has its four choices in one row i
 
 test('Settings > Quiz goal at phone width: the label is bold and a disabled Save is plainly grey, still 48 px', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=tutor');
   const group = page.getByRole('group', { name: 'Quiz goal', exact: true });
   await group.scrollIntoViewIfNeeded();
   await expect(group).toBeVisible();
@@ -133,7 +146,7 @@ test('Settings > Quiz goal at phone width: the label is bold and a disabled Save
 
 test('Settings > Quiz goal at phone width: an off Save looks as off as an off Clear, and Clear does not move when Save turns on', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=tutor');
   const group = page.getByRole('group', { name: 'Quiz goal', exact: true });
   await group.scrollIntoViewIfNeeded();
   await expect(group).toBeVisible();
@@ -183,7 +196,7 @@ test('Settings > Quiz goal at phone width: an off Save looks as off as an off Cl
 
 test('Settings > Daily: a switch per piece, the devotional picker and Tick boxes; a change survives a reload', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=daily');
   const daily = page.locator('section[data-section="daily"]');
   await expect(daily.getByRole('heading', { name: 'Daily', exact: true, level: 2 })).toBeVisible();
 

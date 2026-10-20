@@ -283,7 +283,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
   });
 
   Scenario("Settings reaches the Paradigms screen and a table opens from the list", ({ Given, When, And, Then }) => {
-    Given('Lampas is open on Settings', () => openAt('#/settings'));
+    Given('Lampas is open on Settings', () => openAt('#/settings?group=account'));
     When('he taps Paradigms in Settings', async () => {
       await user.click(await screen.findByRole('button', { name: /^Paradigms/ }));
     });

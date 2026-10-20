@@ -55,7 +55,7 @@ test('Keep this on the tutor\'s proposed line keeps it, and Settings > My study 
   await expect(proposed).toContainText('Kept');
   await expect(proposed.getByRole('button', { name: 'Keep this' })).toHaveCount(0);
 
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=tutor');
   await page.getByRole('button', { name: 'My study way' }).click();
   await expect(page.getByRole('heading', { name: 'My study way', level: 1 })).toBeVisible();
   const rows = page.locator('[data-study-way-line]');

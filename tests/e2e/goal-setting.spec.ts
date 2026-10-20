@@ -4,7 +4,7 @@ import { openUnlocked } from './unlocked';
 
 test('Settings > Goal at phone width: three pickers, each 48 px tall, write Read 1 John 1:1 and keep it across a reload', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   const group = page.getByRole('group', { name: 'Goal', exact: true });
   await expect(group).toBeVisible();
   await expect(group.getByTestId('goal-now')).toHaveText('Goal: none');

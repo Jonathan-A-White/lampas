@@ -49,7 +49,7 @@ const nextRows = () => Array.from(document.querySelectorAll<HTMLElement>('[data-
 async function openSettings(): Promise<void> {
   cleanup();
   clearBus();
-  window.location.hash = '#/settings';
+  window.location.hash = '#/settings?group=greek';
   await db.open();
   await Promise.all([db.settings.clear(), db.grammarLevels.clear()]);
   render(<SettingsScreen />);
@@ -91,7 +91,7 @@ async function showPathBesideLadder(_: unknown, name: string): Promise<void> {
   expect(name).toBe('BMA Tutor');
   cleanup();
   clearBus();
-  window.location.hash = '#/settings';
+  window.location.hash = '#/settings?group=greek';
   await db.open();
   await Promise.all([db.settings.clear(), db.grammarLevels.clear()]);
   render(<ApproachPicker approaches={[ladder, bmaTutor]} chosen="bma-tutor" levels={new Map()} />);
@@ -135,7 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
       async (_, saved: string) => {
         cleanup();
         clearBus();
-        window.location.hash = '#/settings';
+        window.location.hash = '#/settings?group=greek';
         await db.open();
         await Promise.all([db.settings.clear(), db.grammarLevels.clear()]);
         await db.settings.put({ key: 'grammarApproach', value: saved });
@@ -167,7 +167,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Settings is open on the goal {string} with every idea it needs solid', async (_, goal: string) => {
       cleanup();
       clearBus();
-      window.location.hash = '#/settings';
+      window.location.hash = '#/settings?group=greek';
       stubChapterFetch();
       await db.open();
       await Promise.all([db.settings.clear(), db.grammarLevels.clear(), db.passageLessons.clear()]);

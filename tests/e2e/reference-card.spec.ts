@@ -5,6 +5,7 @@ import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { leaveSettings, openGroup } from './settings-group';
 
 // A Bible reference in the tutor's answer opens a card under it (mw-5r3p30.133, features/reference-card.feature) at a small phone's width.
 const VIEWPORT = { width: 360, height: 740 };
@@ -113,7 +114,7 @@ test('an Old Testament reference links to Settings until Logos is linked, then o
   await logos.click();
   await expect(logos).toBeChecked();
 
-  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await leaveSettings(page);
   await openTalkAbout(page, 28);
   await page.getByRole('dialog', { name: 'Talk about Romans 8:28' }).getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
   const open = card.getByRole('link', { name: 'Open in Logos' });
@@ -135,11 +136,12 @@ test('Link Logos in Settings opens Settings at Study resources after Settings wa
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
   const box = page.locator('main.screen');
   await expect(page.getByRole('switch', { name: 'Logos', exact: true })).toHaveCount(1);
   await box.evaluate((el) => { el.scrollTop = el.scrollHeight; });
   await expect.poll(() => box.evaluate((el) => el.scrollHeight - el.clientHeight - el.scrollTop)).toBeLessThan(2);
-  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await leaveSettings(page);
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
@@ -207,7 +209,7 @@ test('Open in Logos with no Logos app keeps the Lampas page on screen', async ({
   const logos = page.getByRole('switch', { name: 'Logos', exact: true });
   await logos.click();
   await expect(logos).toBeChecked();
-  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await leaveSettings(page);
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });

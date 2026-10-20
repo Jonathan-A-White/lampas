@@ -37,7 +37,7 @@ test('the Licence page, #/unlock, shows the phone’s key and says it is not lic
 test('Settings shows the AI off with Needs a licence, which opens the Licence page', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openUnlicensed(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=tutor');
   const tips = page.locator('[data-setting="tips"]');
   await tips.scrollIntoViewIfNeeded();
   await expect(tips.getByRole('button', { name: 'Off', exact: true })).toBeDisabled();

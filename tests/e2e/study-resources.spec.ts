@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { pageTime } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -27,6 +28,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
 
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.scrollIntoViewIfNeeded();
@@ -53,7 +55,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
 
   await page.reload();
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
   await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
   const study = page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('group', { name: 'Study', exact: true });
   await expect(study).toBeInViewport();
@@ -79,6 +81,7 @@ test('The Logos lexicons are a compact list at 360 px (860 high, the box ends ab
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   const logosSwitch = section.getByRole('switch', { name: 'Logos', exact: true });
   await turnsOnWithApp(page, section, 'Logos');
@@ -141,6 +144,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await turnsOnWithApp(page, section, 'Logos');
   const lexham = section.getByRole('checkbox', { name: 'Lexham Theological Wordbook', exact: true });
@@ -148,7 +152,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   await lexham.click();
   await section.getByRole('switch', { name: 'Accordance', exact: true }).evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await turnsOnWithApp(page, section, 'Accordance');
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'condemnation', exact: true }).click();
 
   const study = page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('group', { name: 'Study', exact: true });
@@ -212,6 +216,7 @@ test('Settings at 412 px: Accordance On opens nothing, stays On and offers Get A
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   const accordance = section.getByRole('switch', { name: 'Accordance', exact: true });
   await accordance.evaluate((el) => el.scrollIntoView({ block: 'center' }));

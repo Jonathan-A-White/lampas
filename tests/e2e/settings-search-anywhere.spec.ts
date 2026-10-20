@@ -24,12 +24,15 @@ for (const [name, path] of [
   });
 }
 
-test('on Settings the search field stays in view at the last section, and typing a setting filters the rows', async ({ page }) => {
+test('on the Settings home the search field is pinned under the header, stays in view as the found settings scroll, and typing a setting lists it', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings');
   const search = page.getByRole('searchbox', { name: 'Search settings' });
   await expect(search).toBeInViewport();
+  // a letter every setting has: the list is long
+  await search.fill('e');
   const main = page.locator('main.screen');
+  await expect(page.locator('[data-found]').nth(30)).toBeAttached();
   await main.evaluate((el) => el.scrollTo(0, el.scrollHeight));
   await expect.poll(() => main.evaluate((el) => el.scrollTop)).toBeGreaterThan(500);
   await expect(search).toBeInViewport();
@@ -40,8 +43,8 @@ test('on Settings the search field stays in view at the last section, and typing
   await shot(page, 'settings-search-pinned');
 
   await search.fill('text size');
-  await expect(page.locator('[data-setting="textSize"]')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Greek pronunciation', level: 2 })).toHaveCount(0);
+  await expect(page.locator('[data-found="textSize"]')).toBeVisible();
+  await expect(page.locator('[data-found="greekPronunciation"]')).toHaveCount(0);
   await expect(search).toBeInViewport();
 });
 

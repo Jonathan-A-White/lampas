@@ -12,6 +12,7 @@ import { seedLevelsIfFirstOpen } from '../../src/data/repositories/grammarLevels
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setTermKnown } from '../../src/data/repositories/grammar';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -55,6 +56,7 @@ async function openFresh(): Promise<void> {
 
 async function openWords(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
   await screen.findByTestId('word-counts');
@@ -100,6 +102,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone with nothing on it', openFresh);
     When('he opens Review', async () => {
       await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Review' }));
       await screen.findByRole('heading', { name: 'Review', level: 1 });
     });

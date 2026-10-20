@@ -12,6 +12,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -36,6 +37,7 @@ async function openApp(): Promise<void> {
 async function openSettings(): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'study');
 }
 
 const feature = await loadFeature('features/works.feature');

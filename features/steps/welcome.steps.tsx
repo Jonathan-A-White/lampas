@@ -21,6 +21,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -237,6 +238,7 @@ describeFeature(feature, ({ Scenario }) => {
       await setDeveloper('on');
       await user.click(await screen.findByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'tutor');
     });
     And('he taps {string}', taps);
     Then('the welcome talk is open and the tutor asks {string}', asksFirst);

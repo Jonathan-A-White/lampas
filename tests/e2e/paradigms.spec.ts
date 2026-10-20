@@ -5,6 +5,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { pageTime, tapTwice } from '../support/gesture';
+import { openGroup } from './settings-group';
 
 const IDEAS: Record<string, 'solid' | 'frontier'> = {
   article: 'solid', noun: 'solid', verb: 'solid', 'mood-indicative': 'solid', 'tense-present': 'solid', 'tense-imperfect': 'solid',
@@ -63,6 +64,7 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
 
   // reached from Settings, beside Review
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Account');
   await page.getByRole('button', { name: /^Paradigms/ }).click();
   await expect(page.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 })).toBeVisible();
   const rows = page.locator('[data-paradigm]');
@@ -270,6 +272,7 @@ test('mw-svw421.18: a tap on a locked form says in words what it needs, and noth
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Account');
   await page.getByRole('button', { name: /^Paradigms/ }).click();
   await page.locator('[data-paradigm="third-declension"]').click();
   await expect(page.getByRole('heading', { name: 'The third declension', level: 1 })).toBeVisible();

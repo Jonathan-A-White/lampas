@@ -8,7 +8,8 @@ import { getGreekPronunciation, getLayout, getLogosBible, getSectionHeadings, ge
 import { clearBus, latest } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { getStudyResources } from '../../src/data/repositories';
-import { isTalkable, ROWS } from '../../src/settings/rows';
+import { GROUPS, isTalkable, ROWS, groupOf } from '../../src/settings/rows';
+import { showSettingsGroup } from '../support/settings-pages';
 import { SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
 
 afterAll(() => {
@@ -36,32 +37,27 @@ describe('the registry lists every Settings row', () => {
     ]);
     // jsdom has no speechSynthesis: two voice pickers still draw, empty
     render(<SettingsScreen />);
-    await screen.findByRole('slider', { name: 'Greek speed' });
-    await screen.findByRole('combobox', { name: 'Greek voice' });
-    await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
-    await screen.findByRole('group', { name: 'Weave' });
-    await screen.findByRole('group', { name: 'Grammar' });
-    await screen.findByRole('group', { name: 'New words a day' });
-    await screen.findByRole('group', { name: 'New words at' });
-    await screen.findByRole('group', { name: 'Move it' });
-    await screen.findByRole('group', { name: 'Goal' });
-    // one grammar path: no choice to draw (mw-foy5mb.1), so the row's content is the group
-    await screen.findByRole('group', { name: 'Grammar approach' });
-    await screen.findByRole('group', { name: 'Bible in Logos' });
-    await screen.findByRole('group', { name: 'Read aloud span' });
-    await screen.findByRole('group', { name: "Read the tutor's responses aloud" });
-    await screen.findByRole('group', { name: 'Hebrew in the tutor' });
-    const drawn = [
-      // Logos' ticked lists of lexicons and of grammar books (mw-5r3p30.381) and the line that asks for another book (mw-5r3p30.382) belong to the Logos switch, a study resource kept outside the registry; Request a devotional is a request box, not a setting
-      ...screen.getAllByRole('group').filter((el) => !['Logos lexicons', 'Grammar books', 'Ask for another book', 'Request a devotional'].includes(el.getAttribute('aria-label') ?? '')),
-      ...screen.getAllByRole('radiogroup'),
-      // the Goal group's own Book, Chapter and Verse pickers, and Bible in Logos' own Bible list, are parts of those one settings
-      ...screen.getAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"], [role="group"][aria-label="Bible in Logos"]')),
-      ...screen.getAllByRole('slider'),
-    ].map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '');
-    expect(drawn.filter((name) => name === '')).toEqual([]);
+    const drawnOnPage = (): string[] =>
+      [
+        // Logos' ticked lists of lexicons and of grammar books (mw-5r3p30.381) and the line that asks for another book (mw-5r3p30.382) belong to the Logos switch, a study resource kept outside the registry; Request a devotional is a request box, not a setting
+        ...screen.queryAllByRole('group').filter((el) => !['Logos lexicons', 'Grammar books', 'Ask for another book', 'Request a devotional'].includes(el.getAttribute('aria-label') ?? '')),
+        ...screen.queryAllByRole('radiogroup'),
+        // the Goal group's own Book, Chapter and Verse pickers, and Bible in Logos' own Bible list, are parts of those one settings
+        ...screen.queryAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"], [role="group"][aria-label="Bible in Logos"]')),
+        ...screen.queryAllByRole('slider'),
+      ].map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '');
+    // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);
     // the study-resource switches are checkboxes, not groups: the Settings screen's other tests draw them
-    expect([...drawn].sort()).toEqual(SETTINGS.filter((s) => !s.key.startsWith('resource.')).map((s) => s.label).sort());
+    const all: string[] = [];
+    for (const group of GROUPS) {
+      await showSettingsGroup(group.id);
+      const expected = SETTINGS.filter((s) => groupOf(s.section).id === group.id && !s.key.startsWith('resource.'))
+        .map((s) => s.label)
+        .sort();
+      await waitFor(() => expect(drawnOnPage().sort()).toEqual(expected));
+      all.push(...drawnOnPage());
+    }
+    expect([...all].sort()).toEqual(SETTINGS.filter((s) => !s.key.startsWith('resource.')).map((s) => s.label).sort());
     cleanup();
   });
 

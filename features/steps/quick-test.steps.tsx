@@ -11,6 +11,7 @@ import { forgetChapters } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -51,6 +52,7 @@ async function openQuickTest(): Promise<void> {
   // The Test button is in the Words header, which the Reader's Words button opens.
   if (!screen.queryByRole('button', { name: 'Test' })) {
     await user.click(await screen.findByRole('button', { name: 'Settings' }));
+    await openSettingsGroup(user, 'account');
     await user.click(await screen.findByRole('button', { name: 'Words' }));
   }
   await user.click(await screen.findByRole('button', { name: 'Test' }));
@@ -61,6 +63,7 @@ async function openQuickTest(): Promise<void> {
 async function openQuickTest0(): Promise<void> {
   if (!screen.queryByRole('button', { name: 'Test' })) {
     await user.click(await screen.findByRole('button', { name: 'Settings' }));
+    await openSettingsGroup(user, 'account');
     await user.click(await screen.findByRole('button', { name: 'Words' }));
   }
   await user.click(await screen.findByRole('button', { name: 'Test' }));
@@ -113,6 +116,7 @@ async function playRound(rightAt: (i: number) => boolean): Promise<void> {
 async function openWordsScreen(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Done' }));
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));

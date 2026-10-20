@@ -47,9 +47,9 @@ for (const phone of PHONES) for (const mode of MODES) {
 
     test('Settings scrolls About clear of the navigation bar, and About opens', async ({ page }) => {
       await openUnlocked(page);
-      await page.goto('/#/settings');
+      await page.goto('/#/settings?group=account');
       await withNavBar(page, mode.inset);
-      await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Account', exact: true, level: 1 })).toBeVisible();
       const about = page.getByRole('button', { name: 'About', exact: true });
       await expectReachable(page, about, '.screen');
       await shot(page, `bottom-settings-${phone.name}-${mode.name}`);

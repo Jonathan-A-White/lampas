@@ -32,7 +32,7 @@ test('Ask for another approach at phone width: the sheet, two shrunk pictures, S
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.setViewportSize(PHONE);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
 
   const open = page.getByRole('button', { name: 'Ask for another approach' });
   await open.scrollIntoViewIfNeeded();

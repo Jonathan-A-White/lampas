@@ -16,6 +16,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/spoken-word';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -56,6 +57,7 @@ const inUse = () => screen.findByTestId('greek-voice-in-use');
 const openSettings = async () => {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'listening');
 };
 const tapTest = async () => {
   synth.spoken.length = 0;

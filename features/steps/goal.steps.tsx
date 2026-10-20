@@ -33,7 +33,7 @@ const range = (from: number, to: number): string[] => Array.from({ length: to - 
 async function openSettings(): Promise<void> {
   cleanup();
   clearBus();
-  window.location.hash = '#/settings';
+  window.location.hash = '#/settings?group=greek';
   await db.open();
   render(<SettingsScreen />);
   await screen.findByRole('group', { name: 'Goal' });

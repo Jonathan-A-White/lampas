@@ -17,6 +17,7 @@ import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../te
 import { asSpoken } from '../../tests/support/lone-word';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -82,14 +83,15 @@ type WeaveLabel = 'Off' | 'Solid words' | 'Solid and learning words';
 const WEAVE_VALUE: Record<WeaveLabel, string> = { Off: 'off', 'Solid words': 'solid', 'Solid and learning words': 'solid+learning' };
 const WEAVE_CHIP: Record<WeaveLabel, string> = { Off: 'Off', 'Solid words': 'Solid', 'Solid and learning words': '+ Learning' };
 async function openSettings(): Promise<void> {
-  if (screen.queryByRole('heading', { name: 'Settings', level: 1 })) return;
+  if (onSettingsPage()) return;
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'reading');
 }
 async function setWeave(label: WeaveLabel): Promise<void> {
   await openSettings();
   await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: WEAVE_CHIP[label] }));
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitForReader();
   await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-weave')).toBe(WEAVE_VALUE[label]));
   if (label !== 'Off') await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
@@ -99,7 +101,7 @@ async function setWeave(label: WeaveLabel): Promise<void> {
 async function setGrammar(chip: string): Promise<void> {
   await openSettings();
   await user.click(within(await screen.findByRole('group', { name: 'Grammar' })).getByRole('button', { name: chip }));
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitForReader();
 }
 
@@ -108,7 +110,7 @@ async function setOrder(chip: 'English' | 'Greek'): Promise<void> {
   await openSettings();
   await user.click(within(await screen.findByRole('group', { name: 'Order' })).getByRole('button', { name: chip }));
   await waitFor(async () => expect((await db.settings.get('weaveOrder'))?.value).toBe(chip.toLowerCase()));
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitForReader();
 }
 const verseText = (n: number): string => squash(verseEl(n).querySelector('[data-text]')?.textContent);
@@ -217,7 +219,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(row.getAttribute('data-state')).toBe('dropped'));
     });
     And('he returns to the reader', async () => {
-      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await leaveSettings(user);
       await waitForReader();
       await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
     });
@@ -364,6 +366,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens Settings', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'reading');
     });
     Then('the Weave setting offers {string}, {string} and {string}', async (_, a: string, b: string, c: string) => {
       const group = await screen.findByRole('group', { name: 'Weave' });

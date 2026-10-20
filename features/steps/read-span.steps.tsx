@@ -14,6 +14,7 @@ import { clearBus, subscribe } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
+import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
 
 const fileOf = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;
 const CHAPTERS: Record<string, Chapter> = { 'rom/8': fileOf('rom/8'), 'rom/9': fileOf('rom/9'), 'rev/22': fileOf('rev/22') };
@@ -65,8 +66,10 @@ const lastSpoken = () => synth.spoken[synth.spoken.length - 1];
 const SPANS = ['Verse', 'Passage', 'Chapter', 'Book'];
 
 async function openSettings(): Promise<void> {
+  if (onSettingsPage()) return;
   if (!screen.queryByRole('heading', { name: 'Settings', level: 1 })) await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'listening');
 }
 const spanGroup = () => screen.findByRole('group', { name: 'Read aloud span' });
 
@@ -74,7 +77,7 @@ async function chooseSpan(label: string): Promise<void> {
   await openSettings();
   const group = await spanGroup();
   await user.click(within(group).getByRole('button', { name: label }));
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-read-span')).toBe(label.toLowerCase()));
 }
 

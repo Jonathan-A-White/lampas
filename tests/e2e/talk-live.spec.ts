@@ -10,6 +10,7 @@ import { expect, test, type Locator } from '@playwright/test';
 import { liveKeyOrSkip, plain } from './live';
 import { shot } from './shot';
 import { seedDeviceKey } from './unlocked';
+import { openGroup } from './settings-group';
 
 const ANSWER_WITHIN_MS = 120_000;
 /** What the grind says to anything outside the Bible (grinds/bible-talk.instructions.md; tests/unit/bible-talk-grind.test.ts holds the two equal). */
@@ -58,5 +59,6 @@ test('the live Bible talk refuses code, answers a question about πνεῦμα i
   await expect(slower.getByRole('button', { name: 'Undo Greek speed' })).toBeVisible();
   await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Listening');
   expect(Number(await page.getByRole('slider', { name: 'Greek speed' }).inputValue())).toBeLessThan(1);
 });

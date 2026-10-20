@@ -4,16 +4,18 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 async function switchOn(page: Page) {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Listening');
   const group = page.getByRole('group', { name: 'Read lessons to me' });
   await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await group.getByRole('button', { name: 'On', exact: true }).click();
   await expect(group.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await leaveSettings(page);
 }
 
 async function openGrammar(page: Page) {

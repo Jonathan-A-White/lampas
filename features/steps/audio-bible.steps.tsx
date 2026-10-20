@@ -13,6 +13,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ISSUER_PUB } from '../../tests/support/licence-chain';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -105,6 +106,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens Settings', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'study');
     });
     Then('the Audio Bible shows the choices {string} and {string}', async (_, off: string, promise: string) => {
       const choices = await within(await screen.findByRole('group', { name: 'Audio Bible' })).findAllByRole('button');
@@ -121,6 +123,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens Settings', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'study');
     });
     Then('the Audio Bible row writes its name {string} in its own text', async (_, name: string) => {
       await screen.findByRole('group', { name });
@@ -135,6 +138,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens Settings', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'study');
     });
     And('he chooses {string} for the Audio Bible', async (_, name: string) => {
       await user.click(await within(await screen.findByRole('group', { name: 'Audio Bible' })).findByRole('button', { name }));

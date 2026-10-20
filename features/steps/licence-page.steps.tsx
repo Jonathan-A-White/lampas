@@ -61,9 +61,9 @@ async function openApp(hash: string, licensed: boolean): Promise<void> {
 
 async function openSettings(licensed: boolean): Promise<void> {
   await fresh();
-  await openApp('#/settings', licensed);
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
-  await screen.findByRole('group', { name: 'Theme' });
+  await openApp('#/settings?group=tutor', licensed);
+  await screen.findByRole('heading', { name: 'The tutor', level: 1 });
+  await screen.findByRole('group', { name: 'Tips' });
 }
 
 const aiRows = () => ROWS.filter((r) => r.ai);
@@ -103,7 +103,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(rowEl(label)).getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');
       expect(await db.settings.get('tips')).toBeUndefined();
     });
-    And('Settings is still open', () => expect(screen.getByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument());
+    And('Settings is still open', () => expect(screen.getByRole('heading', { name: 'The tutor', level: 1 })).toBeInTheDocument());
   });
 
   Scenario('Needs a licence opens the Licence page with the key and Check again', ({ Given, When, Then, And }) => {
@@ -139,8 +139,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he goes back to Settings', async () => {
       await user.click(screen.getByRole('button', { name: '‹ Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
-      await screen.findByRole('group', { name: 'Theme' });
+      await screen.findByRole('heading', { name: 'The tutor', level: 1 });
+      await screen.findByRole('group', { name: 'Tips' });
     });
     Then('no AI option says {string}', async (_, words: string) => {
       await waitFor(() => expect(screen.queryAllByRole('button', { name: words })).toHaveLength(0));

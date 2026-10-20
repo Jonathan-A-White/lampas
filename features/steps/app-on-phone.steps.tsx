@@ -11,6 +11,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -65,6 +66,7 @@ async function openSettings(agent: string, ons: string[] = []): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBe(63));
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'reading');
 }
 
 const switchOf = (name: string): Promise<HTMLElement> => screen.findByRole('switch', { name });
@@ -177,7 +179,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Settings and the phone is an Android phone', android);
     When('he turns the switch {string} On', turnsOn);
     And('he goes back to the reader', async () => {
-      await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+      await leaveSettings(user);
       await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
     });

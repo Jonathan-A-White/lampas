@@ -257,7 +257,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Settings with Tips unset', async () => {
       await freshPhone(TRY_REVIEW);
       cleanup();
-      window.location.hash = '#/settings';
+      window.location.hash = '#/settings?group=tutor';
       render(<SettingsScreen />);
       await screen.findByRole('group', { name: 'Tips' });
     });

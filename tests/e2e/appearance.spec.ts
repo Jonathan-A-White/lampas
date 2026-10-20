@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 // 44 px is the floor; a word must clear it by a pixel so one font's metrics can shave a little and it still holds.
 const TAP_WITH_MARGIN = 45;
@@ -24,12 +25,17 @@ async function openReader(page: Page) {
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
-async function openSettings(page: Page) {
+async function openSettings(page: Page, group = 'Reading') {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openGroup(page, group);
+}
+/** From a group's page to another group's, by the Settings home. */
+async function toGroup(page: Page, group: string) {
+  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
+  await openGroup(page, group);
 }
 async function backToReader(page: Page) {
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
 async function expectFitsPhone(page: Page) {
@@ -167,9 +173,10 @@ test('Text size Large makes the verse text larger and every tap target stays at 
     for (const button of await page.getByRole('group', { name: 'Text size' }).getByRole('button').all()) {
       expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
     }
-    for (const control of [page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button').first(), page.getByRole('slider', { name: 'Greek speed' })]) {
-      expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
-    }
+    expect((await page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button').first().boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+    await expectFitsPhone(page);
+    await toGroup(page, 'Listening');
+    expect((await page.getByRole('slider', { name: 'Greek speed' }).boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
     await expectFitsPhone(page);
     await backToReader(page);
     const size = await sizeOf();
@@ -208,7 +215,7 @@ test('a slower Greek rate slows a Greek speaker button and leaves English at its
     await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
   };
 
-  await openSettings(page);
+  await openSettings(page, 'Listening');
   const english = page.getByRole('slider', { name: 'English speed' });
   const greek = page.getByRole('slider', { name: 'Greek speed' });
   await expect(english).toHaveValue('1');
@@ -240,18 +247,21 @@ test('Theme, Text size and both rates survive a reload', async ({ page }) => {
   await openSettings(page);
   await choose(page, 'Theme', 'Dark');
   await choose(page, 'Text size', 'Largest');
+  await toGroup(page, 'Listening');
   await page.getByRole('slider', { name: 'English speed' }).fill('0.7');
   await page.getByRole('slider', { name: 'Greek speed' }).fill('1.3');
   await expect(page.getByRole('slider', { name: 'Greek speed' })).toHaveValue('1.3');
   // let the saves land
   await page.waitForTimeout(300);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  // the page he was on, Listening, is what reopens
+  await expect(page.getByRole('heading', { name: 'Listening', exact: true, level: 1 })).toBeVisible();
   expect(await canvasOf(page)).toBe(DARK_CANVAS);
-  await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'Dark', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('group', { name: 'Text size' }).getByRole('button', { name: 'Largest', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('slider', { name: 'English speed' })).toHaveValue('0.7');
   await expect(page.getByRole('slider', { name: 'Greek speed' })).toHaveValue('1.3');
+  await toGroup(page, 'Reading');
+  await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'Dark', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Text size' }).getByRole('button', { name: 'Largest', exact: true })).toHaveAttribute('aria-pressed', 'true');
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('25.6px');
   await backToReader(page);
   await page.getByRole('button', { name: 'Greek', exact: true }).click();

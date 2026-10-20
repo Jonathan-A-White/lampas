@@ -13,6 +13,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -58,9 +59,10 @@ async function openFresh(): Promise<void> {
 const openSettings = async (): Promise<void> => {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'study');
 };
 const goBack = async (): Promise<void> => {
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitForReader();
 };
 const verseEl = (n: number): HTMLElement => {

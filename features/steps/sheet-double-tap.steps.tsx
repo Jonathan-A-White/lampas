@@ -108,7 +108,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he waits a moment', reads);
     And('he taps Change', () => user.click(change()));
     Then('Settings is open', async () => {
-      await waitFor(() => expect(window.location.hash).toBe('#/settings'));
+      await waitFor(() => expect(window.location.hash).toBe('#/settings?section=goal'));
     });
   });
 

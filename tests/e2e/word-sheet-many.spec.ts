@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { logos } from '../../src/resources/logos';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 
 /** Headless Chromium stops at a link to an app scheme; the tap itself still reaches the page. */
@@ -17,6 +18,7 @@ const holdAppLinks = async (page: Page): Promise<void> => {
 /** Logos switched on with every one of its lexicons ticked (Settings > Study resources), then back to the Reader. */
 const tickEveryLexicon = async (page: Page): Promise<void> => {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));
@@ -26,7 +28,7 @@ const tickEveryLexicon = async (page: Page): Promise<void> => {
     if ((await box.getAttribute('aria-checked')) !== 'true') await box.click();
     await expect(box).toHaveAttribute('aria-checked', 'true');
   }
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
 };
 
 for (const VIEWPORT of [{ width: 390, height: 844 }, { width: 360, height: 740 }]) {

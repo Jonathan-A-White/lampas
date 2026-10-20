@@ -17,6 +17,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -145,6 +146,7 @@ describeFeature(feature, ({ Scenario }) => {
         await user.click(within(sheet).getByRole('button', { name: 'Done' }));
       }
       await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name, exact: true }));
       await screen.findByRole('heading', { name, level: 1 });
     });

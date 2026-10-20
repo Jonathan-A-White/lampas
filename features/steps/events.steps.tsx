@@ -9,6 +9,7 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { clearBus, subscribe, type AppEvent } from '../../src/events/bus';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -83,6 +84,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he switches the weave to Solid words', async () => {
       // the Weave switch is in Settings, opened by the gear
       await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'reading');
       await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
     });
     Then('weave-changed was published with solid', async () => {
@@ -93,6 +95,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 and the bus is listened to', openAndListen);
     When('he switches the weave grammar to Solid', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'reading');
       // the Grammar row is drawn only while the Weave is not Off (mw-5r3p30.106)
       await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
       await user.click(within(await screen.findByRole('group', { name: 'Grammar' })).getByRole('button', { name: 'Solid' }));

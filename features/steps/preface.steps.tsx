@@ -12,6 +12,7 @@ import { PREFACE_LINKS } from '../../src/preface';
 import { screenContextNow } from '../../src/tutor/screenContext';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 // The essay is a lazy chunk (src/Essay.tsx imports its 216 KB JSON when the page opens). The first import is a cold transform that outran
 // the 10 s of a findBy on a loaded host (load ~10 of 16 cores: 11 of 45 steps failed, mw-5r3p30.596), so it is paid here, under a hook's budget.
@@ -125,6 +126,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he opens Settings', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings', exact: true }));
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettingsGroup(user, 'account');
     });
     And('he taps {string}', async (_, label: string) => {
       await user.click(screen.getByRole('button', { name: label, exact: true }));

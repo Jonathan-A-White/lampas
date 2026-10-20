@@ -51,7 +51,7 @@ test('the foot of a chapter in Scroll is the chapter links and nothing else: no 
   await expect(page.locator('[data-reader]').getByRole('button', { name: 'About', exact: true })).toHaveCount(0);
   await expect(page.locator('[data-reader]').getByTestId('build-version')).toHaveCount(0);
   await expect(page.getByTestId('build-version')).toHaveCount(0);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=account');
   await page.getByRole('button', { name: 'About', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
 });

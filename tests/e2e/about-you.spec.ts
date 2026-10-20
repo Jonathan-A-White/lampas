@@ -24,7 +24,7 @@ test.use({ viewport: VIEWPORT });
 
 test('Settings > About you keeps age, pace and ways of learning, and Clear empties them', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=account');
   await page.getByRole('button', { name: 'About you' }).click();
   await expect(page.getByRole('heading', { name: 'About you', level: 1 })).toBeVisible();
 

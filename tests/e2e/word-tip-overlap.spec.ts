@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { logos } from '../../src/resources/logos';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { leaveSettings, openGroup } from './settings-group';
 
 test.use({ hasTouch: true, viewport: { width: 412, height: 915 } });
 
@@ -12,6 +13,7 @@ test.use({ hasTouch: true, viewport: { width: 412, height: 915 } });
 /** Logos on with every lexicon ticked: the sheet is a long one and its facts scroll. */
 async function tickEveryLexicon(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
   for (const { name } of logos.choices?.items ?? []) {
@@ -19,7 +21,7 @@ async function tickEveryLexicon(page: Page): Promise<void> {
     await box.scrollIntoViewIfNeeded();
     if ((await box.getAttribute('aria-checked')) !== 'true') await box.click();
   }
-  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await leaveSettings(page);
 }
 
 async function openSheet(page: Page, options: { long: boolean }) {

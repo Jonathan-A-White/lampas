@@ -10,6 +10,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 
@@ -41,6 +42,7 @@ async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBe(63));
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'reading');
 }
 
 const switchOf = (name: string): Promise<HTMLElement> => screen.findByRole('switch', { name });

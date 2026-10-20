@@ -3,6 +3,7 @@ import { honestMic, honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
+import { leaveSettings, openGroup } from './settings-group';
 
 // The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header, the chips, the Talk bar and the Ask button away;
 // scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
@@ -213,6 +214,7 @@ test('with Immersive reader Off scrolling leaves the bars where they are', async
 test('the setting is kept across a reload', async ({ page }) => {
   await openReader(page, 'off');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
   await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await group.getByRole('button', { name: 'On', exact: true }).click();
@@ -248,19 +250,20 @@ test('with the bars shown, Settings and then ‹ Reader leaves them shown', asyn
   const at = await shownAtAScrolledPlace(page);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await leaveSettings(page);
   await expectStillShown(page, at, 'Settings');
 });
 
 test('with the bars shown, Immersive reader Off and On again in Settings and then ‹ Reader leaves them shown', async ({ page }) => {
   const at = await shownAtAScrolledPlace(page);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
   await group.getByRole('button', { name: 'Off', exact: true }).click();
   await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await group.getByRole('button', { name: 'On', exact: true }).click();
   await expect(group.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await leaveSettings(page);
   await expectStillShown(page, at, 'Off then On');
 });
 

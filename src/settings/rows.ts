@@ -16,7 +16,7 @@ export interface SettingsSection {
   hint?: string;
 }
 
-/** The sections, in the order the screen draws them. */
+/** The sections, in the order the screen draws them (a group's page draws its own, in this order). */
 export const SECTIONS: readonly SettingsSection[] = [
   { id: 'appearance', title: 'Appearance' },
   { id: 'layout', title: 'Layout' },
@@ -45,6 +45,39 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'studyWay', title: 'My study way' },
   { id: 'more', title: 'More' },
 ];
+
+export type GroupId = 'reading' | 'greek' | 'tutor' | 'listening' | 'daily' | 'study' | 'account' | 'developer';
+
+/** A page of Settings (mw-3ased2.1): the home lists the groups and each opens as a page of its own holding its sections. */
+export interface SettingsGroup {
+  id: GroupId;
+  title: string;
+  /** under the title on the home: what is in it */
+  hint: string;
+  sections: readonly SectionId[];
+}
+
+/** The groups, in the order the home lists them, and the one table that says which group a section is in (a unit test fails on a section in none or two).
+ *  PROVISIONAL: the grouping is the Builder's, to be amended by the Governor. */
+export const GROUPS: readonly SettingsGroup[] = [
+  { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings, the weave and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave'] },
+  { id: 'greek', title: 'Greek', hint: 'New words, your goal, the grammar approach and handwriting.', sections: ['newWords', 'goal', 'approach', 'handwriting'] },
+  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, Hebrew, tips and your study way.', sections: ['readTutor', 'askBy', 'hebrew', 'tips', 'studyWay'] },
+  { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast, and how Greek is pronounced.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
+  { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
+  { id: 'study', title: 'Study resources', hint: 'Links to the lexicons, Logos and the works you own.', sections: ['resources', 'logos'] },
+  { id: 'account', title: 'Account', hint: 'About you, Memory, Words, Review, Paradigms and About.', sections: ['aboutYou', 'memory', 'more'] },
+  { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
+];
+
+export const groupById = (id: string): SettingsGroup | undefined => GROUPS.find((g) => g.id === id);
+
+/** The group a section is in. */
+export function groupOf(section: SectionId): SettingsGroup {
+  const group = GROUPS.find((g) => g.sections.includes(section));
+  if (!group) throw new Error(`section ${section} is in no group`);
+  return group;
+}
 
 export interface SettingsRow {
   /** a setting's key ('weave'), a resource switch's ('resource.logos') or a link's ('link.words') */
@@ -193,6 +226,12 @@ export function rowsAt(values: Values, query: string, key: string | null, rows: 
   const needed = neededFor(values, key, rows);
   if (needed) keep.add(needed.key);
   return rows.filter((r) => keep.has(r.key));
+}
+
+/** The groups the home lists: those with a row drawn, given the values read. Developer is not listed until Developer mode is found (its only row hides until then). */
+export function visibleGroups(values: Values, rows: readonly SettingsRow[] = ROWS): SettingsGroup[] {
+  const drawn = new Set(visibleRows(values, '', rows).map((r) => groupOf(r.section).id));
+  return GROUPS.filter((g) => drawn.has(g.id));
 }
 
 /** The settings (the rows with a link, src/settings/link.ts) whose name or hint holds `query`, ignoring capitals and accents, for the search that is

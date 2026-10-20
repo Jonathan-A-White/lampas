@@ -11,7 +11,7 @@ test('Settings names the Greek voice in use and Test says πατήρ, then ἀγ
   await page.setViewportSize({ width: 390, height: 844 });
   await openUnlocked(page);
   await honestSpeech(page, { voices: voicesFor('en-US', 'el-GR', 'el-CY') });
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=listening');
   const inUse = page.getByTestId('greek-voice-in-use');
   await inUse.scrollIntoViewIfNeeded();
   await expect(inUse.getByRole('status')).toHaveText('In use: el-GR');

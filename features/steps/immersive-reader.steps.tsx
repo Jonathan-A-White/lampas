@@ -20,6 +20,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -400,6 +401,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader Off', () => open({ immersive: 'off' }));
     When('he opens Settings and sets Immersive reader to On', async () => {
       await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettingsGroup(user, 'reading');
       const group = await screen.findByRole('group', { name: 'Immersive reader' });
       expect(within(group).getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');
       await user.click(within(group).getByRole('button', { name: 'On' }));

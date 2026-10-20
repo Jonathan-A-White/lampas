@@ -6,6 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openGroup } from './settings-group';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -101,6 +102,7 @@ test("a Settings row's More help has a speaker at its right once it is open, and
   await openUnlocked(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Listening');
   const more = page.getByRole('button', { name: 'More help' }).first();
   await more.scrollIntoViewIfNeeded();
   await more.click();

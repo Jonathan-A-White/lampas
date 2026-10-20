@@ -15,6 +15,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -81,11 +82,11 @@ async function open(hash: string): Promise<void> {
 }
 
 async function openSettings(profile: Kept): Promise<void> {
-  await open('/#/settings');
+  await open('/#/settings?group=account');
   await keep(profile);
   await seedHisWords();
   render(<App />);
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await screen.findByRole('heading', { name: 'Account', level: 1 });
 }
 async function openReader(profile: Kept): Promise<void> {
   await open('/');
@@ -105,6 +106,7 @@ const openAboutYouFromReader = async (): Promise<void> => {
   const sheet = screen.queryByRole('dialog', { name: 'Talk about Romans 8:11' });
   if (sheet) await user.click(within(sheet).getByRole('button', { name: 'Done' }));
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettingsGroup(user, 'account');
   await openAboutYou();
 };
 const learnedRow = (field: string): HTMLElement => {
@@ -178,7 +180,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('Lampas is closed and opened again on {string}', async () => {
       cleanup();
       clearBus();
-      window.history.replaceState(null, '', '/#/settings');
+      window.history.replaceState(null, '', '/#/settings?group=account');
       await seedHisWords();
       render(<App />);
       await openAboutYou();

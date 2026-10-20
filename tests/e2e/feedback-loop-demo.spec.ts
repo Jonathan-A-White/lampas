@@ -44,7 +44,7 @@ async function sendFromTutor(page: Page, fake: FakePostern): Promise<void> {
 
 /** Sends an approach from Settings > Ask for another approach, as the sheet does: his words and who to credit. */
 async function sendApproach(page: Page, text: string): Promise<void> {
-  await page.goto('/#/settings');
+  await page.goto('/#/settings?group=greek');
   const open = page.getByRole('button', { name: 'Ask for another approach' });
   await open.scrollIntoViewIfNeeded();
   await open.click();

@@ -49,14 +49,14 @@ async function openSettings(index: string, notes: string[]): Promise<void> {
   vi.unstubAllGlobals();
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
-  window.history.replaceState(null, '', '/#/settings');
+  window.history.replaceState(null, '', '/#/settings?group=account');
   stubChapterFetch();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   if (index !== '') await setIndex(index, 'me', Date.UTC(2026, 9, 12, 9));
   for (const [i, name] of notes.entries()) await putNote(name, `About ${name}.`, name.startsWith('word:') ? 'tutor' : 'me', Date.UTC(2026, 9, 12, 9, i));
   render(<App />);
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await screen.findByRole('heading', { name: 'Account', level: 1 });
 }
 
 const openMemory = async (): Promise<void> => {

@@ -15,6 +15,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { setSpeechRate, speak, stopSpeaking } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
+import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
 const GREEK: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
 const ENGLISH: FakeVoice = { lang: 'en-US', name: 'English (US)' };
@@ -96,9 +97,10 @@ async function openSettings(): Promise<void> {
   });
   await user.click(await within(header).findByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettingsGroup(user, 'reading');
 }
 async function backToReader(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitForReader();
 }
 
