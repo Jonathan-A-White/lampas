@@ -1,6 +1,7 @@
 // The reading recorder (src/audio/recorder.ts) picks the clip's type by what the browser can record: Opus in webm where
 // it has it, then ogg, then mp4 (iOS Safari). The mime that goes out has no codec suffix.
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MAX_SECONDS } from '../../src/services/reading';
 import { MAX_RECORDING_MS, MicUnavailable, ReadingRecorder, extensionOf, pickMime } from '../../src/audio/recorder';
 
 const only = (...supported: string[]) => (mime: string) => supported.includes(mime);
@@ -76,7 +77,55 @@ describe('ReadingRecorder', () => {
     expect(recording.durationMs).toBe(1500);
   });
 
-  it('cuts a reading at the minute the scorer takes', () => {
-    expect(MAX_RECORDING_MS).toBe(60_000);
+  it('cuts a reading at the ten minutes the check hears, the longest the reading check allows (services/reading.ts MAX_SECONDS)', () => {
+    expect(MAX_RECORDING_MS).toBe(MAX_SECONDS * 1000);
+    expect(MAX_RECORDING_MS).toBe(600_000);
+  });
+
+  describe('a long reading (mw-5r3p30.684)', () => {
+    class FakeMediaRecorder {
+      static isTypeSupported = () => true;
+      mimeType = 'audio/webm';
+      state = 'inactive';
+      ondataavailable: ((event: { data: Blob }) => void) | null = null;
+      onstop: (() => void) | null = null;
+      start() {
+        this.state = 'recording';
+      }
+      stop() {
+        this.state = 'inactive';
+        this.onstop?.();
+      }
+    }
+    const setUp = () => {
+      vi.useFakeTimers();
+      // the monotonic clock follows the fake timers, as a hold is timed on it
+      vi.spyOn(performance, 'now').mockImplementation(() => Date.now());
+      vi.stubGlobal('MediaRecorder', FakeMediaRecorder);
+      Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: () => Promise.resolve({ getTracks: () => [] }) } });
+    };
+    afterEach(() => vi.useRealTimers());
+
+    it('keeps listening past a minute: 150 s of reading is one clip of 150 s and the cap never handed anything on', async () => {
+      setUp();
+      const onLimit = vi.fn();
+      const recorder = new ReadingRecorder(onLimit);
+      await recorder.start();
+      await vi.advanceTimersByTimeAsync(150_000);
+      expect(onLimit).not.toHaveBeenCalled();
+      const recording = await recorder.stop();
+      expect(recording.durationMs).toBe(150_000);
+      expect(recording.capped).toBeUndefined();
+    });
+
+    it('at the cap hands the whole clip on, marked as cut by the cap', async () => {
+      setUp();
+      const onLimit = vi.fn();
+      const recorder = new ReadingRecorder(onLimit);
+      await recorder.start();
+      await vi.advanceTimersByTimeAsync(MAX_RECORDING_MS + 10);
+      expect(onLimit).toHaveBeenCalledTimes(1);
+      expect(onLimit.mock.calls[0][0]).toMatchObject({ durationMs: MAX_RECORDING_MS, capped: true });
+    });
   });
 });

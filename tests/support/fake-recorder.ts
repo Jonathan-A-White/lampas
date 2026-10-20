@@ -14,6 +14,8 @@ export class FakeRecorder implements HoldRecorder {
   started = false;
   stopped = false;
   cancelled = false;
+  /** the app's callback for a clip the cap hands on (ReadingRecorder's onLimit) */
+  onLimit: ((recording: Recording) => void) | undefined;
 
   async start(): Promise<void> {
     if (FakeRecorder.denied) throw new MicUnavailable();
@@ -29,6 +31,12 @@ export class FakeRecorder implements HoldRecorder {
     this.cancelled = true;
   }
 
+  /** The recording runs to the cap and the recorder hands the clip on by itself, as ReadingRecorder does (it marks the clip `capped`). */
+  async hitCap(): Promise<void> {
+    this.stopped = true;
+    this.onLimit?.({ ...(await this.stop()), capped: true });
+  }
+
   static last(): FakeRecorder {
     const found = FakeRecorder.instances[FakeRecorder.instances.length - 1];
     if (!found) throw new Error('no recorder was made');
@@ -42,8 +50,9 @@ export function stubRecorder(): void {
   FakeRecorder.durationMs = 2500;
   FakeRecorder.denied = false;
   FakeRecorder.mime = 'audio/webm';
-  recorderSeam.make = () => {
+  recorderSeam.make = (onLimit) => {
     const made = new FakeRecorder();
+    made.onLimit = onLimit;
     FakeRecorder.instances.push(made);
     return made;
   };

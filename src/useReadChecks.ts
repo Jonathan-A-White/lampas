@@ -19,7 +19,7 @@ import { learnerGrammar } from './data/grammar/learnerGrammar';
 import { learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
-import { askVerseRead, buildReadingRequest, readingLang, wordsOfText, WOVEN_LANG, type ReadingView, type VerseReadAnswer, type WovenReading } from './services/reading';
+import { askVerseRead, buildReadingRequest, cutNote, readingLang, wordsOfText, WOVEN_LANG, type ReadingView, type VerseReadAnswer, type WovenReading } from './services/reading';
 import type { Resend } from './services/mill';
 import { TutorError, type TutorFailure } from './services/tutor';
 import { interruptListen, stopReading } from './speech/readAloud';
@@ -71,7 +71,7 @@ interface Hold {
   started: boolean;
   released: boolean;
   dropped: boolean;
-  /** the clip was handed on (by the one-minute cap) */
+  /** the clip was handed on (by the ten-minute cap) */
   over: boolean;
   /** goes on with the Listen this hold paused, once the recording is over */
   giveBack: (() => void) | null;
@@ -134,7 +134,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
           const [profile, learner, grammar, chosen, memory] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined)]);
           const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar, chosen, memory, chapterData.current ?? undefined, weave);
           let sentAs: string | undefined;
-          const answer = await askVerseRead(request, recording, {
+          const heard = await askVerseRead(request, recording, {
             key: getDeviceKeyBytes(),
             signal,
             // the recording ended as he let go: that is his tap
@@ -146,6 +146,8 @@ export function useReadChecks(book: string, chapter: number, title: string, view
               set(unitId(verse), language, { phase: 'waiting', startedAt });
             },
           });
+          // a reading the cap ended says so first in its note, with the last word heard: never a silent partial (mw-5r3p30.684)
+          const answer = recording.capped ? { ...heard, note: `${cutNote(heard, request.target_text)} ${heard.note}` } : heard;
           // a woven reading is kept as one of its own: its words stand where the weave put them, which a plain English reading's do not
           const kept = request.segments ? WOVEN_LANG : language;
           if (keepRef.current) await keepRef.current(verse, answer, kept);
@@ -167,7 +169,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
     [book, chapter, title, set],
   );
 
-  // The recording is over (let go, or the one-minute cap): short ones are taps, the rest go to the mill.
+  // The recording is over (let go, or the ten-minute cap): short ones are taps, the rest go to the mill.
   const finish = useCallback(
     (h: Hold, recording: Recording): void => {
       if (hold.current === h) hold.current = null;
@@ -195,7 +197,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
         view: shown.current.view,
         lang: shown.current.lang,
         weave,
-        // the recorder hands the clip on by itself at the one-minute cap
+        // the recorder hands the clip on by itself at the ten-minute cap
         recorder: recorderSeam.make((recording) => {
           h.over = true;
           buzz(15);
