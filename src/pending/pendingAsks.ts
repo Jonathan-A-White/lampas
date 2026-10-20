@@ -15,10 +15,11 @@ export interface SentRef {
 }
 
 /** What a question is doing right now. `sent` is set once the grist went (and stays on a failure of the link, so Retry waits for that grist's answer); `focus` is what a Bible talk's message
- * was asked about, kept for the answer and for Retry. */
+ * was asked about, kept for the answer and for Retry; `spoken` is set when the question was sent as spoken (src/speech/spoken.ts forgets the words once they are sent, so Retry and a
+ * page that is back carry it here, mw-5r3p30.333). */
 export type AskState =
-  | { phase: 'sending' | 'waiting'; question: string; startedAt: number; sent?: SentRef; focus?: TalkFocus }
-  | { phase: 'failed'; question: string; failure: TutorFailure; detail: string; sent?: SentRef; focus?: TalkFocus };
+  | { phase: 'sending' | 'waiting'; question: string; startedAt: number; sent?: SentRef; focus?: TalkFocus; spoken?: true }
+  | { phase: 'failed'; question: string; failure: TutorFailure; detail: string; sent?: SentRef; focus?: TalkFocus; spoken?: true };
 
 export type Pending = Record<string, AskState>;
 
@@ -35,11 +36,12 @@ function readState(value: unknown): AskState | undefined {
   if (!isObject(value) || typeof value.question !== 'string') return undefined;
   const sent = isSent(value.sent) ? { sent: value.sent } : {};
   const focus = isObject(value.focus) ? { focus: value.focus as unknown as TalkFocus } : {};
+  const spoken = value.spoken === true ? { spoken: true as const } : {};
   if (value.phase === 'sending' || value.phase === 'waiting') {
-    return typeof value.startedAt === 'number' ? { phase: value.phase, question: value.question, startedAt: value.startedAt, ...sent, ...focus } : undefined;
+    return typeof value.startedAt === 'number' ? { phase: value.phase, question: value.question, startedAt: value.startedAt, ...sent, ...focus, ...spoken } : undefined;
   }
   if (value.phase === 'failed' && typeof value.failure === 'string' && typeof value.detail === 'string') {
-    return { phase: 'failed', question: value.question, failure: value.failure as TutorFailure, detail: value.detail, ...sent, ...focus };
+    return { phase: 'failed', question: value.question, failure: value.failure as TutorFailure, detail: value.detail, ...sent, ...focus, ...spoken };
   }
   return undefined;
 }

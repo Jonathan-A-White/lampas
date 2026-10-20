@@ -3,7 +3,7 @@
 // out what he lacks (`missing_foundations`, from the grammar words of his question and the LADDER's needs) so the model picks from a list and never guesses; the
 // app opens the lowest unmet need whatever the model says. Pure: no store and no screen.
 import type { Bridge } from '../db';
-import { groupOfItem, ideasBelow, LADDER, type GrammarIdea } from './ladder';
+import { groupOfItem, ideaOf, ideasBelow, LADDER, type GrammarIdea } from './ladder';
 import type { Level } from './needs';
 
 export type { Bridge };
@@ -140,6 +140,18 @@ export function resolveBridge(raw: AnswerBridge, hint: MissingFoundations | unde
     why: raw.why,
     many: hint.total > BRIDGE_MAX,
   };
+}
+
+/**
+ * The bridge as it stands now (mw-1vuvq6.11). A turn keeps the bridge as the answer came, but an idea he has taken up since (Learning or solid) is no longer one he
+ * lacks: it is dropped from the list, and the one 'Take me there' opens moves on to the lowest idea still lacking. Undefined when he has taken up all of them: the
+ * talk then offers nothing. Pure, and the one place that says so, for the talk, the Verse view's answer card and a spoken yes.
+ */
+export function liveBridge(bridge: Bridge, levels: ReadonlyMap<string, Level>): Bridge | undefined {
+  const lacking = bridge.ideas.filter((id) => levelOf(levels, id) === 'notYet');
+  if (lacking.length === 0) return undefined;
+  const next = levelOf(levels, bridge.next) === 'notYet' ? bridge.next : [...lacking].sort((a, b) => ideaOf(a).rung - ideaOf(b).rung)[0];
+  return lacking.length === bridge.ideas.length && next === bridge.next ? bridge : { ...bridge, ideas: lacking, next };
 }
 
 type Json = Record<string, unknown>;

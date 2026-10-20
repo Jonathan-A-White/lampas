@@ -4,8 +4,11 @@
 // button is Take me there, and what it does is open the idea's sheet over the talk. The Greek offer (mw-yrmkdf.4, greekOffer.ts) is the last: its tap opens the Greek word or
 // the Greek view, and a no is written to the memory index.
 import { useSyncExternalStore } from 'react';
+import { liveBridge } from '../data/grammar/bridge';
+import { levelsOf } from '../data/grammar/goalProgress';
 import { ideaOf } from '../data/grammar/ladder';
-import { getTurn, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markRustyChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
+import type { Level } from '../data/grammar/needs';
+import { getTurn, listLevels, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markRustyChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
 import type { Bridge } from '../data/db';
 import { noteGreekNo } from '../data/repositories/memory';
 import { RUSTY_BUTTON } from '../data/rusty';
@@ -18,37 +21,49 @@ import { applyChanges, offeredChange, type ChangeResult } from '../settings/regi
 /** What the bridge's button says: 'Take me there: Pairs of vowels', the idea it opens (the device's lowest unmet need, src/data/grammar/bridge.ts resolveBridge). */
 export const bridgeButtonText = (bridge: Bridge): string => `Take me there: ${ideaOf(bridge.next).title}`;
 
-/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge, then the Greek (mw-yrmkdf.4), then the rust (mw-1vuvq6.6). */
-export function offerOfTurn(turn: TalkTurn): PendingOffer | undefined {
+/** The bridge a turn offers now: with `levels` (his grammar levels now), the ideas he has since taken up are left out, and none left means no offer (liveBridge, mw-1vuvq6.11);
+ * without them, the bridge as the answer came. */
+const bridgeOf = (turn: TalkTurn, levels?: ReadonlyMap<string, Level>): Bridge | undefined => (turn.bridge && levels ? liveBridge(turn.bridge, levels) : turn.bridge);
+
+/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge, then the Greek (mw-yrmkdf.4), then the rust (mw-1vuvq6.6).
+ * With `levels`, a bridge to ideas he has taken up since is not one. */
+export function offerOfTurn(turn: TalkTurn, levels?: ReadonlyMap<string, Level>): PendingOffer | undefined {
   if (turn.feedbackOffer && !turn.feedbackSent && !turn.feedbackWithdrawn) return { kind: 'feedback', text: turn.feedbackOffer };
   if (turn.settingOffer && !turn.settingChoice) {
     const change = offeredChange(turn.settingOffer);
     if (change) return { kind: 'setting', text: change.text };
   }
   if (turn.quizGoalOffer && !turn.quizGoalChoice) return { kind: 'quiz-goal', text: turn.quizGoalOffer };
-  if (turn.bridge && !turn.bridgeChoice) return { kind: 'bridge', text: bridgeButtonText(turn.bridge) };
+  const bridge = bridgeOf(turn, levels);
+  if (bridge && !turn.bridgeChoice) return { kind: 'bridge', text: bridgeButtonText(bridge) };
   if (turn.greekOffer && !turn.greekChoice) return { kind: 'greek', text: turn.greekOffer.text };
   if (turn.rustyOffer && !turn.rustyChoice) return { kind: 'rusty', text: RUSTY_BUTTON };
   return undefined;
 }
 
 /** An offer whose button stays on screen after his tap (the bridge, the Greek, the rust: a tap opens it again), so a yes to it does what the tap does (mw-1vuvq6.8). */
-function takenOfferOf(turn: TalkTurn): PendingOffer | undefined {
-  if (turn.bridge && turn.bridgeChoice === 'taken') return { kind: 'bridge', text: bridgeButtonText(turn.bridge) };
+function takenOfferOf(turn: TalkTurn, levels?: ReadonlyMap<string, Level>): PendingOffer | undefined {
+  const bridge = bridgeOf(turn, levels);
+  if (bridge && turn.bridgeChoice === 'taken') return { kind: 'bridge', text: bridgeButtonText(bridge) };
   if (turn.greekOffer && turn.greekChoice === 'taken') return { kind: 'greek', text: turn.greekOffer.text };
   if (turn.rustyOffer && turn.rustyChoice === 'taken') return { kind: 'rusty', text: RUSTY_BUTTON };
   return undefined;
 }
 
+/** True while `kind` is still the offer `turn` holds for a tap or a word: waiting, or taken with its button still there to open again. */
+function stillOffered(turn: TalkTurn, kind: PendingOffer['kind']): boolean {
+  return offerOfTurn(turn)?.kind === kind || takenOfferOf(turn)?.kind === kind;
+}
+
 /** The newest turn of a talk with an offer still waiting, with that offer. When none waits, the newest turn's offer he already took counts, if its button is
  * still there to open again (takenOfferOf). */
-export function pendingOfferOf(turns: readonly TalkTurn[]): { turn: TalkTurn; offer: PendingOffer } | undefined {
+export function pendingOfferOf(turns: readonly TalkTurn[], levels?: ReadonlyMap<string, Level>): { turn: TalkTurn; offer: PendingOffer } | undefined {
   for (let i = turns.length - 1; i >= 0; i--) {
-    const offer = offerOfTurn(turns[i]);
+    const offer = offerOfTurn(turns[i], levels);
     if (offer) return { turn: turns[i], offer };
   }
   const newest = turns[turns.length - 1];
-  const offer = newest && takenOfferOf(newest);
+  const offer = newest && takenOfferOf(newest, levels);
   return offer ? { turn: newest, offer } : undefined;
 }
 
@@ -139,8 +154,10 @@ export function useBridgeIdea(owner: BridgeOwner): string | undefined {
 
 /** Takes the turn's bridge as its button's tap does: the sheet of the idea it names opens over the talk, and the offer is taken (it stays on screen to open again). */
 export async function takeBridgeOffer(turn: TalkTurn): Promise<void> {
-  if (!turn.bridge) return;
-  openBridgeIdea(turn.bridge.next, 'talk');
+  // the idea it opens is the one the button names now (liveBridge): not one he has learned since; none left, nothing to open
+  const bridge = turn.bridge && liveBridge(turn.bridge, levelsOf(await listLevels()));
+  if (!bridge) return;
+  openBridgeIdea(bridge.next, 'talk');
   if (turn.id !== undefined && !turn.bridgeChoice) await markBridgeChoice(turn.id, 'taken');
 }
 
@@ -155,9 +172,13 @@ export interface OfferOutcome {
 export async function settleOffer(reply: OfferReply | undefined, waiting: { turn: TalkTurn; offer: PendingOffer } | undefined, scope: TalkScope, when: number = Date.now()): Promise<OfferOutcome> {
   const outcome: OfferOutcome = { applied: [], refused: [] };
   if (!reply || !waiting || reply === 'read_back') return outcome;
-  const { turn, offer } = waiting;
-  const id = turn.id;
+  const { offer } = waiting;
+  const id = waiting.turn.id;
   if (id === undefined) return outcome;
+  // The turn as kept now, not as it was when his words were sent: his tap on the button may have settled the offer while the reply was on its way (mw-5r3p30.328),
+  // and then the reply does nothing a second time and withdraws nothing he took. A feedback offer being sent right now is still open here, and joins that send.
+  const turn = await getTurn(id);
+  if (!turn || !stillOffered(turn, offer.kind)) return outcome;
   if (reply === 'decline') {
     if (offer.kind === 'feedback') await markFeedbackWithdrawn(id);
     else if (offer.kind === 'setting') await markSettingChoice(id, 'declined');

@@ -93,6 +93,20 @@ Feature: He can answer an offer by voice instead of tapping
     When he taps Undo on the first turn
     Then the first turn shows the change "Put back: Theme: Phone" and no bare "Changed" line
 
+  Scenario: A tapped setting offer and a spoken yes whose answer comes late show the change once
+    Given Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark
+    When he taps the Ask the tutor control
+    And he sends "Make it dark"
+    Then the answer shows the button "Change Theme: Dark"
+    When the tutor is slow to answer his next words
+    And he says "yes please do"
+    And the second bible-talk grist has reached the tutor with the pending offer of kind setting
+    And he taps Change Theme: Dark
+    Then the Theme is Dark
+    And the first turn shows the change "Changed: Theme: Dark" with an Undo button
+    When the tutor's answer to the yes comes at last as a yes
+    Then the talk shows exactly one "Changed: Theme: Dark" row, on the first turn
+
   Scenario: A tap and a spoken yes send once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
     When he taps the Ask the tutor control
