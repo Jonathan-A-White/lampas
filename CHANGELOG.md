@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.374
+_2026-10-20_
+- New: when your devotional is set to Random, asking the tutor for a different devotional now picks another one for today and keeps Random, and Settings has an Another button for it.
+
 ## 0.1.373
 _2026-10-20_
 - New: With the weave on, Read it aloud now lets you read the Greek words in Greek and the English words in English, and checks each word in its own language.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.374",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.680",
+    "kind": "new",
+    "text": "when your devotional is set to Random, asking the tutor for a different devotional now picks another one for today and keeps Random, and Settings has an Another button for it."
+  },
+  {
     "version": "0.1.373",
     "date": "2026-10-20",
     "story": "mw-5r3p30.411",
