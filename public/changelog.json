@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.359",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.501",
+    "kind": "fixed",
+    "text": "The passage you open from a section heading now sits on the page like the Reader's text, without a box drawn round it."
+  },
+  {
+    "version": "0.1.359",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.648",
+    "kind": "new",
+    "text": "The Chi letter sheet now says in one sentence that χ has two sounds, hard before some letters and soft before e and i, with a word of each."
+  },
+  {
+    "version": "0.1.359",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.610",
+    "kind": "fixed",
+    "text": "in Turn pages each page now fills down to the page line, without the blank band under the text."
+  },
+  {
+    "version": "0.1.359",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.605",
+    "kind": "fixed",
+    "text": "Sharing a picture to Lampas now keeps the Bible references in your words when the picture cannot be read, and says so when the phone is offline."
+  },
+  {
     "version": "0.1.358",
     "date": "2026-10-20",
     "story": "mw-5r3p30.603",

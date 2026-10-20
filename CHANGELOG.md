@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.359
+_2026-10-20_
+- Fixed: The passage you open from a section heading now sits on the page like the Reader's text, without a box drawn round it.
+- New: The Chi letter sheet now says in one sentence that χ has two sounds, hard before some letters and soft before e and i, with a word of each.
+- Fixed: in Turn pages each page now fills down to the page line, without the blank band under the text.
+- Fixed: Sharing a picture to Lampas now keeps the Bible references in your words when the picture cannot be read, and says so when the phone is offline.
+
 ## 0.1.358
 _2026-10-20_
 - Fixed: The tutor's offers no longer show a change twice, a question you type is no longer treated as one you spoke, and the lesson you just started is no longer offered again.
