@@ -19,6 +19,7 @@
     }
   },
   "expect": {
+    "words": { "equals": [] },
     "answer": { "matches": "^[^\\n]{10,200}\\?$" },
     "form_values.0.field": { "equals": "approach" },
     "form_values.0.value": { "matches": "[Cc]olou?r" },

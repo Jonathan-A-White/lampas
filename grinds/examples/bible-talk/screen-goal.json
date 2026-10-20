@@ -17,6 +17,7 @@
     }
   },
   "expect": {
+    "words": { "equals": [] },
     "answer": { "matches": "[Ss]olid|[Ff]rontier|[Nn]ot yet" },
     "settings_changes": { "present": false },
     "setting_offer": { "present": false }

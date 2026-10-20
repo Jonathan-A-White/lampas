@@ -30,6 +30,7 @@
     ]
   },
   "expect": {
+    "words": { "equals": [] },
     "answer": {
       "matches": "outside what this app is for"
     },

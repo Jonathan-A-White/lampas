@@ -27,6 +27,7 @@
     }
   },
   "expect": {
+    "words": { "equals": [] },
     "welcome_done": {
       "equals": true
     },

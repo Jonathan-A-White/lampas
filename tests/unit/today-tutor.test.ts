@@ -5,6 +5,7 @@ import { db } from '../../src/data/db';
 import { getDay, markOpened } from '../../src/data/daily/dailyStore';
 import { SEND_A_SCREENSHOT, suggestionsFor } from '../../src/tutor/screen';
 import { openedTitles, todayFacts } from '../../src/today/tutorFacts';
+import { instructionsOf } from '../../scripts/grind-parts';
 
 beforeEach(async () => {
   await db.settings.clear();
@@ -57,5 +58,26 @@ describe('the suggestions on Today', () => {
 
   it('is found by the screen id too', () => {
     expect(suggestionsFor('today')).toEqual(suggestionsFor('Today'));
+  });
+});
+
+// mw-5r3p30.672: a smoke run of the Today example had the tutor offer δόξα unasked and say Romans 10:18 has it (it does not). The instructions close it.
+describe('the instructions for a talk with no Greek text on screen', () => {
+  const instructions = instructionsOf('bible-talk');
+  const part = instructions.slice(instructions.indexOf('## Talk from a screen'), instructions.indexOf('### Talk from Settings'));
+  const flat = part.replace(/\s+/g, ' ');
+
+  it('keeps words empty unless he asks about a Greek word', () => {
+    expect(flat).toMatch(/no Greek text[^.]*`words` stays empty unless he asks about a Greek word/i);
+  });
+
+  it('never says a Greek word stands in a verse it was not given the text of', () => {
+    expect(flat).toMatch(/never say a Greek word stands in a verse you were not given the text of/i);
+  });
+
+  it('does not tell the Today talk to tie the reading to a word of its own choosing', () => {
+    const today = instructions.slice(instructions.indexOf('### Talk from Today'), instructions.indexOf("### Talk from a drill's results")).replace(/\s+/g, ' ');
+    expect(today).not.toMatch(/Tie it to a word or an idea/);
+    expect(today).toMatch(/`words` stays empty unless he asks about a Greek word/);
   });
 });

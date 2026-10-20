@@ -29,6 +29,7 @@
     ]
   },
   "expect": {
+    "words": { "equals": [] },
     "answer": {
       "matches": "[Bb]uil|[Ww]orking on|[Ii]n progress|[Uu]nder ?way|[Bb]eing (made|written|done)"
     },
