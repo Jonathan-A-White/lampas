@@ -1,13 +1,10 @@
 // src/review/kinds.ts — what Review asks, as items of a kind. A kind knows how to turn its due reviews into questions,
 // how to count itself in words ('3 words'), and where an answer goes. Grammar ideas (mw-hqd5bz.6) and words are the kinds today, in the
 // order Review counts and asks them; paradigm tables (mw-svw421.6) are the third; the course epic adds the rest as more entries of KINDS, each with a renderer in src/review/ItemCard.tsx.
-import { BOOK_INDEX } from '../data/bookIndex';
 import { loadChapter, type Chapter } from '../data/chapter';
-import { parseGoal } from '../data/goal';
 import type { ParseStep } from '../data/drill';
 import { drillSteps, type DrillQuestion } from '../data/grammar/drillIt';
 import { facetQuestions, PLAN_KIND, parseRowId, type PlanItem } from '../data/grammar/drillPlan';
-import { goalChapterNumbers } from '../data/grammar/needs';
 import { gradedVerses, ideaMetBy } from '../data/grammar/gradedVerses';
 import { pickerPasses } from '../data/grammar/formLevel';
 import { ideaOf, IDEA_KIND, type GrammarIdea } from '../data/grammar/ladder';
@@ -17,13 +14,13 @@ import { PARADIGM_KIND, drawCellQuestions, spokenForm } from '../data/paradigms/
 import { parseReviewId } from '../data/readingDrill';
 import { getOpenChapter } from '../data/readerChapter';
 import { modeFor, type QuestionMode } from '../data/schedule';
-import { buildQuestion, drawWords, mulberry32, seedDistractors, shuffle, type Question, type Random } from '../data/quiz';
+import { buildQuestion, drawWords, mulberry32, seedDistractors, type Question, type Random } from '../data/quiz';
+import { loadPassage, planFacetQuestions } from '../data/repositories/reviewPassage';
 import { chosenPronunciation, speakWord } from '../speech/greek';
 import { speakQuestion } from '../speech/speakQuestion';
 import {
   getDrillPlan,
   answerPlanItem,
-  getGoal,
   getPickerGrammar,
   listLearningLemmas,
   listLevels,
@@ -165,28 +162,11 @@ export const WORDS: ReviewKind = {
   },
 };
 
-/** The most chapters of a whole-book goal that a round reads questions from (one request each). */
-const MAX_CHAPTERS = 6;
-
 /** The seed a round's grammar questions are drawn from: one number taken from the round's random, so the words drawn beside them cannot shift it. */
 const grammarSeed = (random: Random): number => Math.floor(random() * 0x100000000);
 
 /** The random the grammar questions of a round use, from the round's own (tests find the seed that gives the question they need through it). */
 export const grammarRandom = (random: Random): Random => mulberry32(grammarSeed(random));
-
-/**
- * The passage grammar questions are about: the chapters of his goal (up to MAX_CHAPTERS of a whole book's) or, with no goal, the chapter the Reader has
- * open. A chapter that cannot be loaded is left out, and a phone that cannot load any is asked questions that need no passage.
- */
-export async function loadPassage(chooser: Random): Promise<Chapter[]> {
-  const goal = parseGoal(await getGoal(), BOOK_INDEX);
-  const open = getOpenChapter();
-  const wanted = goal
-    ? shuffle(goalChapterNumbers(goal, BOOK_INDEX), chooser).slice(0, MAX_CHAPTERS).sort((a, b) => a - b).map((n) => [goal.book, n] as const)
-    : [[open.book, open.chapter] as const];
-  const loaded = await Promise.all(wanted.map(([book, n]) => loadChapter(book, n).catch(() => null)));
-  return loaded.filter((c): c is Chapter => c !== null);
-}
 
 /** The ladder's idea with this id; undefined for one the ladder no longer has, which Review leaves out. */
 function ideaIfAny(id: string): GrammarIdea | undefined {
@@ -304,7 +284,9 @@ export const DRILL_PLAN: ReviewKind = {
       if (!at || !plan || !item || item.done || ideaIfAny(at.ideaId) === undefined) continue;
       if (item.kind === 'prove' && plan.items.some((i) => i.kind === 'facet' && !i.done)) continue;
       if (!steps.has(at.ideaId)) steps.set(at.ideaId, drillSteps(at.ideaId, { passage, seed }));
-      const questions = item.kind === 'facet' ? facetQuestions(steps.get(at.ideaId) ?? [], item) : [];
+      let questions = item.kind === 'facet' ? facetQuestions(steps.get(at.ideaId) ?? [], item) : [];
+      // a facet this round's passage gives no question about is still asked when the count's own (fixed) passage gives one: what is counted due is always drawn
+      if (item.kind === 'facet' && questions.length === 0) questions = await planFacetQuestions(at.ideaId, item);
       if (item.kind === 'facet' && questions.length === 0) continue;
       items.push({ kind: 'drill-plan', id: r.id, ideaId: at.ideaId, planAt: plan.at, item, questions, passage });
     }
@@ -355,6 +337,8 @@ export const LESSON: ReviewKind = {
 };
 
 /** Every kind Review knows, in the order its counts are written and its due items asked. */
+export { loadPassage };
+
 export const KINDS: readonly ReviewKind[] = [DRILL_PLAN, GRAMMAR, PARADIGM, SOUNDS, WORDS, LESSON];
 
 export const kindOf = (kind: ReviewItem['kind']): ReviewKind => KINDS.find((k) => k.kind === kind) ?? WORDS;

@@ -2,7 +2,7 @@
 // {kind, id}: kind 'word' with the NFC headword as id, 'grammar' with a ladder idea's id, 'paradigm' with a table's id (mw-svw421.6), 'sound' and 'drill-plan'.
 import { db, type Review } from '../db';
 import { publish } from '../../events/bus';
-import { PLAN_KIND, PROVE_ID, parseRowId } from '../grammar/drillPlan';
+import { PLAN_KIND, parseRowId } from '../grammar/drillPlan';
 import { IDEA_KIND, ideaOf } from '../grammar/ladder';
 import { ideaOfStored, storedId } from '../grammar/soundScope';
 import { availableCount, paradigmById } from '../paradigms';
@@ -12,6 +12,7 @@ import { RECENT_ANSWERS } from '../rusty';
 import { DAY, STEP_DAYS, isDue, nextReview } from '../schedule';
 import { getDrillPlan } from './drillPlans';
 import { listLevels } from './grammarLevels';
+import { planFacetQuestions } from './reviewPassage';
 import { getGreekPronunciation } from './settings';
 
 export type { Review };
@@ -90,13 +91,17 @@ function ideaExists(id: string): boolean {
   }
 }
 
-/** Whether a drill plan row names an item still to do: its plan is open and not replaced, the item is not done and, for Prove it, every short drill is. */
+/**
+ * Whether a drill plan row names an item still to do: its plan is open and not replaced, the item is not done and, for Prove it, every short drill is; a short drill must also
+ * have a question to ask (reviewPassage.ts planFacetQuestions: the draw falls back to the same one), or Start would promise a drill nothing can ask (mw-svw421.42).
+ */
 async function planRowAskable(id: string): Promise<boolean> {
   const at = parseRowId(id);
   const plan = at ? await getDrillPlan(at.ideaId) : undefined;
   const item = plan?.items.find((i) => i.id === at?.itemId);
   if (!at || !plan || !item || item.done || !ideaExists(at.ideaId)) return false;
-  return item.id !== PROVE_ID || !plan.items.some((i) => i.kind === 'facet' && !i.done);
+  if (item.kind === 'prove') return !plan.items.some((i) => i.kind === 'facet' && !i.done);
+  return (await planFacetQuestions(at.ideaId, item)).length > 0;
 }
 
 /**
