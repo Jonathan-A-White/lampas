@@ -1,18 +1,18 @@
 // src/TutorLinks.tsx — the links of a Bible talk answer (mw-5r3p30.75), drawn under the answer: for each word or verse the tutor linked, a group of chips
 // that open it in the study resources he switched on in Settings (src/resources/tutorLinks.ts), and, for a verse, in Lampas's own Reader. A link to a resource
-// he has not switched on is not drawn, a link to a setting (mw-5r3p30.502) is one chip that opens Settings at that row (src/settings/link.ts; a key the registry lacks draws nothing), and a link with no chip at all leaves no group; with nothing to show the whole list is absent. A word's Strong's number
+// he has not switched on is not drawn, a link to a work of his Logos library (mw-5r3p30.675) is one Open in Logos chip, and only for a work he ticked, a link to a setting (mw-5r3p30.502) is one chip that opens Settings at that row (src/settings/link.ts; a key the registry lacks draws nothing), and a link with no chip at all leaves no group; with nothing to show the whole list is absent. A word's Strong's number
 // comes from the lexicon (src/data/lexicon.ts), never from the tutor.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import type { AnswerLink } from './data/db';
 import { lookupLemma } from './data/lexicon';
-import { getLogosBible, getStudyResources, setResourceOn } from './data/repositories';
+import { getLogosBible, getStudyResources, getWorks, setResourceOn } from './data/repositories';
 import { openReader } from './nav/route';
 import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS } from './services/talk';
 import { armFallback } from './resources/openApp';
-import { placeOf, verseChips, wordChips, type LinkChip } from './resources/tutorLinks';
+import { placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
 import type { StudyResource } from './resources';
 import { AppMissingSheet } from './WordSheet';
 import { greekLang } from './script/greekLang';
@@ -53,10 +53,11 @@ interface Group {
 export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: () => void }) {
   const chosen = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
+  const works = useLiveQuery(getWorks, []);
   const shown = links.slice(0, MAX_LINKS);
   const strongs = useStrongs(shown.flatMap((l) => (l.kind === 'word' ? [l.lemma.normalize('NFC')] : [])));
   const [missing, setMissing] = useState<StudyResource | null>(null);
-  if (!chosen || bible === undefined || !strongs) return null;
+  if (!chosen || bible === undefined || works === undefined || !strongs) return null;
 
   const groups: Group[] = [];
   for (const [i, link] of shown.entries()) {
@@ -66,6 +67,9 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
     } else if (link.kind === 'setting') {
       const row = settingLink(link.key) ? rowOf(link.key) : undefined;
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
+    } else if (link.kind === 'work') {
+      const found = workChip(link.work, link.reference, works);
+      if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);
       if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, chips: verseChips(place, place.name, chosen, bible) });

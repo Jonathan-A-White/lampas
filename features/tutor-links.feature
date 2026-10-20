@@ -3,6 +3,8 @@ Feature: The tutor links the reader's study resources
   answer as a group of chips that open in the study resources he switched on in Settings (Strong's, Logos, Accordance): a word
   link in the first link of each, such as his first ticked Logos lexicon at that lemma; a verse link in Lampas's own Reader and, with
   Logos on, in his Bible in Logos. A link to a resource he has not switched on is not shown, and nothing says so.
+  An answer may also link a work of his Logos library that he ticked in Settings > Study resources > Works (mw-5r3p30.675): John Calvin's commentaries, opened at the
+  passage, or his Institutes, opened at the start. The request names the ticked works, and a link to a work he did not tick is dropped.
 
   Scenario: A word link opens his ticked Logos lexicon at that lemma
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the word "ἀγάπη"
@@ -85,3 +87,31 @@ Feature: The tutor links the reader's study resources
     When he asks the tutor about verse 28
     Then the answer shows no study links
     And the answer has no Reader button
+
+  Scenario: A link to Calvin's commentaries opens them at the passage in his Logos library
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the work "calvin-commentaries" at "John 3:16"
+    And the work "calvin-commentaries" is switched on
+    When he asks the tutor "Where does John Calvin say that God loved the world?" about verse 28
+    Then the answer shows the study link "Open in Logos: Calvin's Commentaries at John 3:16" to "logosres:LLS:CALCOM64JN;ref=Bible.Jn3.16"
+    And that link has the fallback "https://ref.ly/logosres/LLS%3ACALCOM64JN?ref=Bible.Jn3.16"
+    And the request named the works "calvin-commentaries"
+
+  Scenario: A link to Calvin's Institutes opens the book at its start
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the work "calvin-institutes-lcc"
+    And the work "calvin-institutes-lcc" is switched on
+    When he asks the tutor "What does Calvin say about the Spirit?" about verse 28
+    Then the answer shows the study link "Open in Logos: Institutes of the Christian Religion (Library of Christian Classics)" to "logosres:LLS:ICRWJKC"
+    And that link has the fallback "https://ref.ly/logosres/LLS%3AICRWJKC"
+
+  Scenario: A link to a work he did not tick is dropped
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the work "calvin-commentaries" at "John 3:16"
+    And the work "calvin-institutes-lcc" is switched on
+    When he asks the tutor "Where does John Calvin say that God loved the world?" about verse 28
+    Then the answer shows no study links
+    And the request named the works "calvin-institutes-lcc"
+
+  Scenario: A link to a commentary for a book it does not cover is dropped
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the work "calvin-commentaries" at "Revelation 1:1"
+    And the work "calvin-commentaries" is switched on
+    When he asks the tutor "Where does John Calvin say that?" about verse 28
+    Then the answer shows no study links
