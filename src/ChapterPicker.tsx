@@ -11,7 +11,7 @@
 // With the Reading plan on and a plan started (mw-umv8sp.5) every grid marks the chapters done (a ✓, dimmed, data-done) and the next one (an accent outline, data-next):
 // `marks` is the plan as src/plan/usePlan.ts reads it; `showPlan` false (StartPlan) draws none, as the plan being started has no marks yet.
 // The search takes a reference as well as a name (mw-5r3p30.622, src/nav/parseReference.ts readPlace, the one reader of a typed place): 'John 18:36' (Enter, or the Go to row)
-// opens John 18 with verse 36 selected, 'Ps 23' opens Psalms with chapter 23 chosen, 'John 99' says 'John has 21 chapters'; a book's name alone still filters the list.
+// opens John 18 in the Reader with verse 36 brought to the top of the reading area (mw-5r3p30.678, not its Verse view), 'Ps 23' opens Psalms with chapter 23 chosen, 'John 99' says 'John has 21 chapters'; a book's name alone still filters the list.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { BOOKS, bookOf } from './data/books';
@@ -23,7 +23,8 @@ import { keyOf } from './data/repositories/readingPlan';
 import { OT_BOOKS, otBookOf } from './data/otBooks';
 import { getStudyResources, setResourceOn } from './data/repositories/resources';
 import { readPlace, type PlaceRead } from './nav/parseReference';
-import { navigate, openReader, openVerseAt, openVerseRange } from './nav/route';
+import { bringVerse, openAtVerse } from './nav/readerRequest';
+import { navigate, openReader } from './nav/route';
 import { SendOff } from './plan/SendOff';
 import { usePlan, type PlanView } from './plan/usePlan';
 import { useSendOff } from './plan/useSendOff';
@@ -249,7 +250,7 @@ export function ChapterPicker({
     if (book === current.book && chapter === current.chapter) onClose();
     else openReader({ book, chapter });
   };
-  // What he typed is a place: a chapter of the New Testament opens in the Reader (a verse, or a range, selected as a link to it does, src/nav/LinkOpener.tsx), one of the Old
+  // What he typed is a place: a chapter of the New Testament opens in the Reader (a verse, or a range, brought to the top, src/reader/useBringVerse.ts), one of the Old
   // opens its book with the chapter chosen; in choose mode the chapter is handed over.
   const goTo = (place: Extract<PlaceRead, { kind: 'place' }>) => {
     if (onChoose) return onChoose({ code: place.book, chapter: place.chapter });
@@ -257,14 +258,15 @@ export function ChapterPicker({
       setTypedChapter(place.chapter);
       return setBook(place.book);
     }
-    const { book: code, chapter, verse, to } = place;
+    const { book: code, chapter, verse } = place;
     const here = code === current.book && chapter === current.chapter;
     if (verse === undefined) return here ? onClose() : openReader({ book: code, chapter });
-    // the chapter he is in is not opened again, so the picker is closed by hand
-    if (here) onClose();
-    else openReader({ book: code, chapter });
-    if (to !== undefined && to > verse) openVerseRange({ book: code, chapter, from: verse, to });
-    else openVerseAt({ book: code, chapter, verse });
+    // a verse (or a range, which starts at its first verse) is a place in the Bible, not a request for its Verse view (mw-5r3p30.678): the Reader opens on the chapter
+    // with the verse brought to the top and the rest above and below it. The chapter he is in is not opened again, so the picker is closed by hand.
+    if (here) {
+      onClose();
+      bringVerse(code, chapter, verse);
+    } else openAtVerse(code, chapter, verse);
   };
   const placeName = (place: Extract<PlaceRead, { kind: 'place' }>): string => {
     const named = (place.testament === 'ot' ? otBookOf(place.book) : bookOf(place.book))?.name ?? place.book;

@@ -51,6 +51,11 @@ if (typeof document !== 'undefined') {
   });
 }
 
+/** Forgets the offset kept for the box `slot` of the screen at `hash`, so the next time that screen opens it is at the top (or where the app puts it, mw-5r3p30.678). */
+export function forgetScroll(hash: string, slot: string): void {
+  offsets.delete(`${scrollAddress(hash)}#${slot}`);
+}
+
 /** Called once before the first render: the offsets kept for the addresses he was at, the one the app opens at last. */
 export function restoreScrolls(): void {
   for (const [key, top] of readAllScrolls(scrollAddress(window.location.hash))) offsets.set(key, top);

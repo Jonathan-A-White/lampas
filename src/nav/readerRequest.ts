@@ -4,7 +4,8 @@
 // later visit to the Reader does not meet it again.
 import { latest, publish, type EventOf } from '../events/bus';
 import type { TalkFocus } from '../services/talk';
-import { openReader } from './route';
+import { openReader, readerHash } from './route';
+import { forgetScroll } from './scrollMemory';
 
 export type ReaderRequest = EventOf<'reader-requested'>;
 
@@ -40,6 +41,19 @@ export function askAboutWord(book: string, chapter: number, verse: number, quest
 /** The tutor takes him to `chapter` of `book` (the Bible talk answer's `go`, mw-5r3p30.172): the Reader opens there as a new Back step, with the notice 'Opened <title>'. */
 export function openedByTutor(book: string, chapter: number): void {
   publish({ kind: 'reader-requested', id: ++lastId, action: 'opened', book, chapter });
+  openReader({ book, chapter });
+}
+
+/** Asks the Reader to bring `verse` of `chapter` of `book` to the top of its reading area (mw-5r3p30.678: Choose a book's Go to John 18:2): the whole chapter is there above and
+ * below it and no verse is selected, so no Verse view opens. A place the Reader remembered for that chapter is forgotten, so this one wins. For the chapter the Reader is on. */
+export function bringVerse(book: string, chapter: number, verse: number): void {
+  forgetScroll(readerHash({ book, chapter }), 'reader');
+  publish({ kind: 'reader-requested', id: ++lastId, action: 'verse', book, chapter, verse });
+}
+
+/** Opens the Reader on `chapter` of `book` as a new Back step with `verse` brought to the top (see `bringVerse`). */
+export function openAtVerse(book: string, chapter: number, verse: number): void {
+  bringVerse(book, chapter, verse);
   openReader({ book, chapter });
 }
 

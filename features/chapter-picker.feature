@@ -48,6 +48,25 @@ Feature: Open any chapter of the New Testament
     When he goes to the Test screen
     Then the Test screen offers the "Parsing drill: 1 John 1"
 
+  # mw-5r3p30.678: a typed place is a way into the Bible, not into the single-verse view; the layout (verse 2 at the top of the reading area) is proved at 390x844 in tests/e2e/chapter-picker.spec.ts
+  Scenario: Go to a verse opens the chapter in the Reader with that verse brought to the top, not the Verse view
+    Given Lampas is opened with nothing saved
+    When he taps the title
+    And he types "John 18:2" in Choose a book and takes the Go to row
+    Then the reader is headed "John 18"
+    And the picker is closed
+    And the Reader shows every verse of John 18 and no Verse view is open
+    And the address names chapter 18 of "jhn" and no verse
+    And verse 2 of the chapter was brought to the top of the reading area
+
+  Scenario: Go to a chapter alone opens it at the top
+    Given Lampas is opened with nothing saved
+    When he taps the title
+    And he types "John 18" in Choose a book and takes the Go to row
+    Then the reader is headed "John 18"
+    And the Reader shows every verse of John 18 and no Verse view is open
+    And no verse was brought to the top of the reading area
+
   Scenario: A chapter that cannot be fetched says so and gives a way back
     Given Lampas is opened with nothing saved
     And the phone is offline

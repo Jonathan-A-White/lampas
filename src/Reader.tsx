@@ -45,6 +45,7 @@ import { LinkNotice } from './reader/LinkNotice';
 import { SwipeNote } from './reader/SwipeNote';
 import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
 import { crossChapter } from './reader/crossChapter';
+import { useBringVerse } from './reader/useBringVerse';
 import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { readingModeSetting } from './settings/definitions';
@@ -167,7 +168,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     return pending?.chapter === CHAPTER && pending.book === BOOK ? pending : undefined;
   });
   useEffect(() => {
-    if (request) takeRequest(request);
+    // a verse to bring to the top is met when the chapter is on screen (src/reader/useBringVerse.ts), not as the Reader opens
+    if (request && request.action !== 'verse') takeRequest(request);
   }, [request]);
   // A link in the address (src/nav/linkRequest.ts) is met once, as the Reader opens: its notice, and for a word link the word's sheet.
   const [link] = useState(() => pendingLink(BOOK, CHAPTER));
@@ -194,6 +196,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const around = neighbours(BOOK, CHAPTER);
   const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`, onTurned, cross);
   const showPage = pages.show;
+  // Choose a book's Go to John 18:2: the chapter, with that verse brought to the top of the reading area (no Verse view)
+  useBringVerse(main, inner, BOOK, CHAPTER, chapter, paging, showPage);
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
