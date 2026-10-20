@@ -9,12 +9,17 @@
 //
 // Its foot keeps the phone's bottom floor (`floor`, --lp-bar-inset) when it is the lowest thing on the screen, because Android Chrome does not always report
 // the navigation bar (mw-5r3p30.473); the Talk bar and the speaking bar keep the floor themselves when they are.
+//
+// With Turn pages the row also holds the room the Reader keeps for the round Ask button (`room`, mw-5r3p30.610): the line is at its top, right under the
+// text, and the button sits beside it in the rest, so a page ends a line or less above the line and not above a blank band of the button's room. The
+// line keeps the room's width clear at each side (the button's 12 px, 56 px and 4 px of air), so a long title wraps rather than runs under the button. A
+// room of 0px (the bars away) slides shut with the bars, as the box's margin does with Scroll.
 import { useEffect, useState } from 'react';
 
 /** How long the row takes to slide: `.place-box` in src/index.css. */
 const SLIDE_MS = 200;
 
-export function PlaceLine({ title, at, visible = true, floor = false }: { title: string; at: string; visible?: boolean; floor?: boolean }) {
+export function PlaceLine({ title, at, visible = true, floor = false, room }: { title: string; at: string; visible?: boolean; floor?: boolean; room?: string }) {
   // `drawn`: in the page, from the moment it is wanted until it has slid out. A row wanted while the page is up slides in (`slides`, a CSS animation that
   // starts with the bars' own slide, so the box never grows past its end); one drawn with the Reader is at full height from the start.
   const [drawn, setDrawn] = useState(visible);
@@ -31,9 +36,9 @@ export function PlaceLine({ title, at, visible = true, floor = false }: { title:
   }, [visible]);
   if (!drawn) return null;
   return (
-    <div className="place-box" data-slides={slides ? '' : undefined} data-closed={visible ? undefined : ''} aria-hidden={visible ? undefined : true} inert={!visible}>
+    <div className="place-box" style={room ? { minHeight: room } : undefined} data-slides={slides ? '' : undefined} data-closed={visible ? undefined : ''} aria-hidden={visible ? undefined : true} inert={!visible}>
       <div className="place-inner">
-        <p data-place-line data-floor={floor ? '' : undefined} className="place-line">
+        <p data-place-line data-floor={floor ? '' : undefined} style={room ? { paddingInline: `max(1rem, ${room})` } : undefined} className="place-line">
           {title} · {at}
         </p>
       </div>
