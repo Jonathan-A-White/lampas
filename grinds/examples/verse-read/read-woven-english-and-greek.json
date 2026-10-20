@@ -1,5 +1,5 @@
 {
-  "description": "Romans 8:28 read aloud woven (a synthesized voice reads the English; δὲ and ἀγαπῶσιν stand in Greek where the weave shows them): the request carries the verse as ordered segments, each in its own language, and the answer is a verdict and a note; a word is marked only for what the scorer heard in the language it was read in, never because it is Greek in an English verse.",
+  "description": "Romans 8:28 read aloud woven (a synthesized voice reads the English; δὲ and ἀγαπῶσιν stand in Greek where the weave shows them): the request carries the verse as ordered segments, each in its own language, and the answer is a verdict and a note; a word is marked only for what the scorer heard in the language it was read in, never because it is Greek in an English verse; the note names what was heard in plain letters and never quotes the Greek as written, and never uses the past tense of read.",
   "schemaVersion": "2",
   "request": {
     "reference": "Romans 8:28",
@@ -66,7 +66,8 @@
       ]
     },
     "note": {
-      "present": true
+      "present": true,
+      "matches": "^[^yYͰ-Ͽἀ-῿]*(?:[yY](?:(?:[yY]|[oO](?:[yY]|[uU](?:[yY]| (?:[yY]|[rR](?:[yY]|[eE](?:[yY]|[aA][yY]))))))|(?:[^yYoOͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[oO](?:[^yYuUͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[uU](?:[^yY Ͱ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]| (?:[^yYrRͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[rR](?:[^yYeEͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[eE](?:[^yYaAͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY]|[aA][^yYdDͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*[yY])))))))*(?:(?:[^yYoOͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[oO](?:(?:[^yYuUͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[uU](?:(?:[^yY Ͱ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?| (?:(?:[^yYrRͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[rR](?:(?:[^yYeEͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[eE](?:(?:[^yYaAͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?|[aA](?:[^yYdDͰ-Ͽἀ-῿][^yYͰ-Ͽἀ-῿]*)?)))))))?$"
     }
   }
 }
