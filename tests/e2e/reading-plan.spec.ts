@@ -170,13 +170,16 @@ test('the Developer row resets the plan, and Start a listening plan runs again',
   await backToReader(page);
 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await openGroup(page, 'Study resources');
+  await openGroup(page, 'Developer');
   const reset = page.getByRole('button', { name: 'Reset the listening plan, for the demo' });
   await reset.scrollIntoViewIfNeeded();
   expect((await reset.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
   await shot(page, 'reading-plan-developer-reset-390x844');
   await reset.click();
 
+  // the group's page, then the Settings home, then the Reader
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await openToday(page);
