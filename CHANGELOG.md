@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.353
+_2026-10-20_
+- Fixed: the sounds that change by position (ευ, αυ, ηυ as v or f, and γκ, μπ, ντ, γχ) now say when each sound is used, and their drills ask about real words with the pair marked instead of the pair alone.
+
 ## 0.1.352
 _2026-10-20_
 - Fixed: A Greek word tapped on a letter or idea sheet now opens its word sheet in front, not hidden behind.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.353",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.646",
+    "kind": "fixed",
+    "text": "the sounds that change by position (ευ, αυ, ηυ as v or f, and γκ, μπ, ντ, γχ) now say when each sound is used, and their drills ask about real words with the pair marked instead of the pair alone."
+  },
+  {
     "version": "0.1.352",
     "date": "2026-10-20",
     "story": "mw-5r3p30.566",
