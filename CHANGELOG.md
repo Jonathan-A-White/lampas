@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.364
+_2026-10-20_
+- Fixed: Tap to hear now says αυ, ευ and ηυ as one sound with a v or f (ηὐλίζετο is "eev-LEE-zeh-to"), not as two vowels.
+- Fixed: after you mark The Greek alphabet known, the letters now show as Solid on the ladder graph and the tutor knows them, instead of showing as Next or Not yet.
+
 ## 0.1.363
 _2026-10-20_
 - Fixed: Sending Audible a screenshot while the phone has no connection now says you are offline and offers Try again, instead of saying the screenshot could not be read.

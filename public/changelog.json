@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.364",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.647",
+    "kind": "fixed",
+    "text": "Tap to hear now says αυ, ευ and ηυ as one sound with a v or f (ηὐλίζετο is \"eev-LEE-zeh-to\"), not as two vowels."
+  },
+  {
+    "version": "0.1.364",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.641",
+    "kind": "fixed",
+    "text": "after you mark The Greek alphabet known, the letters now show as Solid on the ladder graph and the tutor knows them, instead of showing as Next or Not yet."
+  },
+  {
     "version": "0.1.363",
     "date": "2026-10-20",
     "story": "mw-5r3p30.661",
