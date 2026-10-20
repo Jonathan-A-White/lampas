@@ -256,7 +256,9 @@ test('with Turn pages a tap in the middle third opens the word, and a verse numb
 });
 
 /** The gap on screen between the bottom of the lowest line of text on the page shown and the top of the place line, and the line height of that line. A
- * line is its line height tall, centred on its letters, so its bottom is under the letters' box by half of what the line height adds to it. */
+ * line is its line height tall, centred on its letters, so its bottom is under the letters' box by half of what the line height adds to it. `heading` is
+ * the height (with its margins) of a section heading that starts the next page: the browser does not leave a heading at a page's foot with no line of its
+ * verse under it, so a page that ends right before one may end that much higher. */
 const footGap = (page: Page) =>
   page.evaluate(() => {
     const reader = document.querySelector('[data-reader]') as HTMLElement;
@@ -278,16 +280,25 @@ const footGap = (page: Page) =>
         lineHeight = height;
       }
     }
+    let heading = 0;
+    let nearest = Infinity;
+    for (const h of Array.from(reader.querySelectorAll<HTMLElement>('[data-heading]'))) {
+      const r = h.getBoundingClientRect();
+      if (r.left < b.right - 1 || r.left >= nearest || r.top > b.top + 40) continue;
+      const style = getComputedStyle(h);
+      nearest = r.left;
+      heading = r.height + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+    }
     const line = document.querySelector('[data-place-line]') as HTMLElement;
     // the place line's words and the round Ask button beside them do not meet
     range.selectNodeContents(line);
     const words = range.getBoundingClientRect();
     const button = document.querySelector('[data-ask-tutor]')?.getBoundingClientRect();
     const clear = !button || words.right <= button.left || words.bottom <= button.top || words.top >= button.bottom;
-    return { gap: line.getBoundingClientRect().top - lowest, lineHeight, clear };
+    return { gap: line.getBoundingClientRect().top - lowest, lineHeight, heading, clear };
   });
 
-/** Pages 1 and 3 each end at most a line (and 8 px) above the place line: no blank band of paper under the text (mw-5r3p30.610). */
+/** Pages 1 and 3 each end at most a line (and 8 px, and a section heading that starts the next page) above the place line: no blank band of paper under the text (mw-5r3p30.610). */
 async function pagesFillToPlaceLine(page: Page, name: string) {
   // the chapter opened again opens on the page he was on (mw-5r3p30.608): back to the first
   for (let on = await at(page); on > 1; on--) {
@@ -296,11 +307,11 @@ async function pagesFillToPlaceLine(page: Page, name: string) {
   }
   for (const on of [1, 3]) {
     if (on > 1) await turnTo(page, on);
-    const { gap, lineHeight, clear } = await footGap(page);
+    const { gap, lineHeight, heading, clear } = await footGap(page);
     expect(clear, `${name}, page ${on}: the place line is clear of the round button`).toBe(true);
     expect(lineHeight, `${name}, page ${on}: a line of text is on it`).toBeGreaterThan(0);
     expect(gap, `${name}, page ${on}: the place line is under the text`).toBeGreaterThanOrEqual(-0.5);
-    expect(gap, `${name}, page ${on}: the text ends ${Math.round(gap)} px above the place line, a line is ${Math.round(lineHeight)} px`).toBeLessThanOrEqual(lineHeight + 8);
+    expect(gap, `${name}, page ${on}: the text ends ${Math.round(gap)} px above the place line, a line is ${Math.round(lineHeight)} px${heading ? `, a heading starts the next page (${Math.round(heading)} px)` : ''}`).toBeLessThanOrEqual(lineHeight + heading + 8);
   }
   await shot(page, `turn-pages-foot-${name.toLowerCase().replace(/\W+/g, '-')}`);
 }
