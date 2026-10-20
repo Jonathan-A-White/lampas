@@ -5,6 +5,10 @@
 // does nothing. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
 // sliding.
 //
+// With Turn pages nothing scrolls (src/reader/usePages.ts): turning to the next page is what scrolling down is, and puts the bars away (mw-5r3p30.611: the
+// card said 'Scroll down' and the bars never went, leaving the page five lines of the screen); turning back changes nothing, as scrolling up does not.
+// src/Reader.tsx calls `hide` from the turn.
+//
 // Only his own scrolling counts (mw-5r3p30.480): the scroll the Reader makes to keep the verse being read aloud in view (moveBox) is the app moving the
 // text, as putting his saved place back is, so reading aloud leaves the bars as they are.
 //
@@ -24,7 +28,22 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { getImmersive } from './data/repositories';
 import { isRestoringScroll } from './nav/scrollMemory';
+import type { ReadingMode } from './settings/definitions/readingMode';
 import { holdAwake, releaseAwake } from './speech/wakeLock';
+
+/** What the card above the text says (src/ImmersiveHint.tsx), per reading mode: only the gestures that mode has (tests/unit/immersive-hint-lines.test.ts). */
+export const IMMERSIVE_HINT_LINES: Record<ReadingMode, readonly string[]> = {
+  scroll: [
+    'Scroll down and the bars slide away.',
+    'Tap with two fingers to bring them back or put them away.',
+    'To leave immersive reading: Settings > Immersive reader.',
+  ],
+  pages: [
+    'Turn to the next page and the bars slide away.',
+    'Tap with two fingers to bring them back or put them away.',
+    'To leave immersive reading: Settings > Immersive reader.',
+  ],
+};
 
 /** Scrolling down this far hides them. */
 export const HIDE_AFTER_PX = 12;
@@ -107,6 +126,8 @@ export interface Immersive {
   away: boolean;
   /** shows the bars if away, puts them away if shown: what a two-finger tap does, for a control (src/ReaderControls.tsx) */
   toggle(): void;
+  /** puts the bars away: what turning to the next page does with Turn pages (nothing while the setting is Off) */
+  hide(): void;
 }
 
 /** Decides whether the bars are away, from the scrolling of `box` and two-finger taps on it. With `enabled` false nothing is listened to and they are never away. */
@@ -123,6 +144,9 @@ export function useImmersive(
     setAway(value);
   }, []);
   const toggle = useCallback(() => set(!awayRef.current), [set]);
+  const hide = useCallback(() => {
+    if (enabled && !awayRef.current) set(true);
+  }, [enabled, set]);
 
   useEffect(() => {
     const el = box.current;
@@ -274,7 +298,7 @@ export function useImmersive(
     };
   }, [enabled, box, set]);
 
-  return { away: enabled && away, toggle };
+  return { away: enabled && away, toggle, hide };
 }
 
 /** Where the chapter's text ends in `box`'s own scrolling: the bottom of its last verse, not the chapter links under it (so the line reads 100% with the last

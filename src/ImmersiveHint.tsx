@@ -3,19 +3,17 @@
 // setting to Off (Settings > Immersive reader card brings it back). It sits in the page's flow above the text, so it never covers the round
 // Ask button, and nothing is drawn until the saved choice is read. It slides away with the bars (src/Away.tsx) and comes back with them: pinned above
 // the text while he reads it took a quarter of the screen upright and nearly half sideways (mw-5r3p30.331).
+// Its lines are written per reading mode (mw-5r3p30.611): with Turn pages nothing scrolls, and the next page is what puts the bars away
+// (src/immersive.ts IMMERSIVE_HINT_LINES); tests/unit/immersive-hint-lines.test.ts fails on a line that names a gesture its mode does not have.
 import { useState } from 'react';
 import { Away } from './Away';
+import { IMMERSIVE_HINT_LINES } from './immersive';
 import { immersiveHintSetting } from './settings/definitions';
+import type { ReadingMode } from './settings/definitions/readingMode';
 import { setSetting, useSetting } from './settings/store';
 import { useHeldSpace } from './ui/heldSpace';
 
-export const IMMERSIVE_HINT_LINES = [
-  'Scroll down and the bars slide away.',
-  'Tap with two fingers to bring them back or put them away.',
-  'To leave immersive reading: Settings > Immersive reader.',
-] as const;
-
-export function ImmersiveHint({ enabled, away }: { enabled: boolean; away: boolean }) {
+export function ImmersiveHint({ enabled, away, mode }: { enabled: boolean; away: boolean; mode: ReadingMode }) {
   const setting = useSetting(immersiveHintSetting);
   const [closed, setClosed] = useState(false);
   // the card's place stays empty for a moment after it goes, so a double tap on Got it does not land on the text that slides up into it (mw-8m9dyu.10)
@@ -28,7 +26,7 @@ export function ImmersiveHint({ enabled, away }: { enabled: boolean; away: boole
   return (
     <Away enabled away={away}>
       <aside role="note" aria-label="How the immersive reader works" data-immersive-hint className="mx-2 mt-2 shrink-0 rounded-2xl border border-line bg-surface p-3">
-        {IMMERSIVE_HINT_LINES.map((line) => (
+        {IMMERSIVE_HINT_LINES[mode].map((line) => (
           <p key={line} className="py-0.5 text-lg leading-snug">
             {line}
           </p>
