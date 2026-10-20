@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.365",
+    "date": "2026-10-20",
+    "story": "mw-svw421.28",
+    "kind": "fixed",
+    "text": "A paradigm table with no form unlocked can no longer be put in Review, and a table that can't be asked is no longer counted as due."
+  },
+  {
+    "version": "0.1.365",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.665",
+    "kind": "fixed",
+    "text": "Sharing only a GIF (or another file Lampas cannot read) to Lampas now just says it was left out and offers Cancel, instead of leading to an empty talk."
+  },
+  {
     "version": "0.1.364",
     "date": "2026-10-20",
     "story": "mw-5r3p30.647",

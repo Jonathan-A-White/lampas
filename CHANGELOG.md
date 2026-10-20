@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.365
+_2026-10-20_
+- Fixed: A paradigm table with no form unlocked can no longer be put in Review, and a table that can't be asked is no longer counted as due.
+- Fixed: Sharing only a GIF (or another file Lampas cannot read) to Lampas now just says it was left out and offers Cancel, instead of leading to an empty talk.
+
 ## 0.1.364
 _2026-10-20_
 - Fixed: Tap to hear now says αυ, ευ and ηυ as one sound with a v or f (ηὐλίζετο is "eev-LEE-zeh-to"), not as two vowels.
