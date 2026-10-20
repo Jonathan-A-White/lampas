@@ -1,7 +1,9 @@
-import { DEVOTIONALS, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { DEVOTIONALS, RANDOM, devotionalOf, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
+import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
-import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting } from '../definitions';
-import { writeSetting } from '../registry';
+import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
+import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { OnOff, PICKER, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
@@ -61,6 +63,28 @@ export const DevotionalDrawControl: Control = ({ row }) => {
   return (
     <SettingRow row={row}>
       <SearchableList label={row.label} noun="devotional" items={ITEMS} ticked={ticked} onToggle={toggle} />
+    </SettingRow>
+  );
+};
+
+/** Today's devotional: the one Today shows now and Another, which draws a different one for today and leaves Which devotional on Random (the row shows only while it is Random). */
+export const TodaysDevotionalControl: Control = ({ row }) => {
+  const id = useLiveQuery(async () => String(await settingOf(todaysDevotionalSetting.key)?.read()), []);
+  if (id === undefined) return null;
+  return (
+    <SettingRow row={row}>
+      <div role="group" aria-label={row.label}>
+        <span className="block text-base font-medium">{row.label}</span>
+        <span className="block pb-1 text-base text-muted">{devotionalOf(id)?.title ?? id}</span>
+        <button
+          type="button"
+          aria-label="Another devotional for today"
+          onClick={() => oneTap('todays-devotional-another', () => void writeSetting(todaysDevotionalSetting.key, ANOTHER))}
+          className="flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line"
+        >
+          Another
+        </button>
+      </div>
     </SettingRow>
   );
 };

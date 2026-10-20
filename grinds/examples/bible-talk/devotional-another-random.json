@@ -1,0 +1,24 @@
+{
+  "description": "On Today with Which devotional on Random he asks for a different devotional: the answer re-draws today's alone (todaysDevotional another) and never changes the devotional setting, so it stays Random.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Today",
+    "question": "Pick a different devotional.",
+    "history": [],
+    "solid_words": [],
+    "settings": { "devotional": "random", "devotionalDraw": "all", "todaysDevotional": "LLS:20.10.1" },
+    "screen": {
+      "name": "Today",
+      "facts": [
+        { "label": "Date", "value": "2026-10-20" },
+        { "label": "On Today", "value": "Review, Reading plan, Psalms and Proverbs, Devotional" }
+      ]
+    }
+  },
+  "expect": {
+    "settings_changes.0.key": { "equals": "todaysDevotional" },
+    "settings_changes.0.value": { "equals": "another" },
+    "settings_changes.1": { "present": false },
+    "setting_offer": { "present": false }
+  }
+}

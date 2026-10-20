@@ -112,8 +112,8 @@ describe('the explanation of what Today could hold', () => {
     expect(await getExplained()).toBe('done');
   });
 
-  it('names the seven Daily rows', () => {
-    expect([...DAILY_KEYS].sort()).toEqual(['dailyDevotional', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw']);
+  it('names the eight Daily rows', () => {
+    expect([...DAILY_KEYS].sort()).toEqual(['dailyDevotional', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'todaysDevotional']);
   });
 });
 

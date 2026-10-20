@@ -12,7 +12,7 @@ const EXPLAINED_KEY = 'todayExplained';
 export const KEPT_DAYS = 90;
 
 /** The keys of Settings > Daily (src/settings/definitions/daily.ts). Changing any of them answers the explanation. */
-export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'dailyTicks'];
+export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'dailyTicks'];
 
 export interface DayRecord {
   /** the pieces he ticked, in the order he ticked them */

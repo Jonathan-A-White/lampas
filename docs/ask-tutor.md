@@ -106,6 +106,10 @@ failure title and **Try again**); it goes by itself on the window's `online` eve
 one send at a time and in the order asked. A request is forgotten when its grist is out (`onSent`), so a receipt that never comes does not send it twice. Note that Talk
 and Ask for another approach do NOT wait offline (they show the failure and Retry); only this one queues. `features/ask-book.feature`, `tests/e2e/ask-book.spec.ts`.
 
+### Today's devotional (mw-5r3p30.680, PROVISIONAL)
+
+"Pick a different devotional" while Which devotional is Random must not turn Random into a fixed choice, so the registry has `todaysDevotional` (declared in `src/settings/definitions/daily.ts`, its entry in `src/settings/registry.ts`, its row `TodaysDevotionalControl`): the devotional Today shows on the phone's date, read as its Logos id. The tutor writes `"another"` (or a Logos id for today alone); the write ends in `dailyStore.ts` `pickAnotherDevotional` / `setDevotionalPick`, the one function the Another button on Today also taps, and writes nothing to Which devotional. While a devotional is named the entry writes nothing and its row is not drawn: a different one is then a change of Which devotional (the bible-talk instructions say which to use; `grinds/examples/bible-talk/devotional-another-*.json`). `tests/unit/todays-devotional.test.tsx`, `tests/e2e/today.spec.ts`.
+
 ### Request a devotional (mw-1fwagb.8, PROVISIONAL)
 
 Settings > Daily ends with **Request a devotional** (`src/settings/controls/requestDevotional.tsx`, the row `request.devotional` in `src/settings/rows.ts`; not a setting, so the tutor neither reads nor changes it, `isTalkable`), a button that opens the box in place: a 'Devotional title' (at most `MAX_MORE_NAME` 120, counted not cut) and **Send**. It is the same one sender: `submitFeedback` with a

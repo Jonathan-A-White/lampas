@@ -1,0 +1,24 @@
+{
+  "description": "On Today with a named devotional chosen, asking for a different one is a change of the Which devotional setting (he named one, so a new name is a setting change); today's devotional setting is not used.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Today",
+    "question": "Pick a different devotional: let me have Morning and Evening.",
+    "history": [],
+    "solid_words": [],
+    "settings": { "devotional": "LLS:20.10.2", "devotionalDraw": "all", "todaysDevotional": "LLS:20.10.2" },
+    "screen": {
+      "name": "Today",
+      "facts": [
+        { "label": "Date", "value": "2026-10-20" },
+        { "label": "On Today", "value": "Review, Reading plan, Psalms and Proverbs, Devotional" }
+      ]
+    }
+  },
+  "expect": {
+    "settings_changes.0.key": { "equals": "devotional" },
+    "settings_changes.0.value": { "equals": "LLS:20.10.1" },
+    "settings_changes.1": { "present": false },
+    "setting_offer": { "present": false }
+  }
+}

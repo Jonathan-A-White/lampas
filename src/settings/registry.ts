@@ -57,6 +57,8 @@ import {
 import { APPROACHES, DEFAULT_APPROACH, approachOf } from '../approaches';
 import { BOOK_INDEX } from '../data/bookIndex';
 import { goalTitle, parseGoal } from '../data/goal';
+import { getDay, localDate, pickAnotherDevotional, setDevotionalPick } from '../data/daily/dailyStore';
+import { RANDOM, devotionalForDay, devotionalOf, tickedDevotionals } from '../data/daily/devotionals';
 import { normaliseNewWordsADay } from '../data/pace';
 import { publish, type AppEvent } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
@@ -68,7 +70,7 @@ import { chooseAccent } from '../speech/accents';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
-import { askBySetting, audioBibleSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, themeSetting, tipsSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { ANOTHER, askBySetting, audioBibleSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, themeSetting, tipsSetting, todaysDevotionalSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -189,6 +191,34 @@ const englishAccentEntry: SettingEntry = (() => {
     },
   };
 })();
+
+/** What Today shows now: Which devotional and the draw as they stand, and the id of the devotional of the phone's date (the day's pick while Random). */
+async function devotionalToday(): Promise<{ random: boolean; ticked: string[]; date: string; id: string }> {
+  const now = new Date();
+  const date = localDate(now);
+  const [choice, draw, day] = await Promise.all([getSetting(devotionalSetting), getSetting(devotionalDrawSetting), getDay(date)]);
+  const ticked = tickedDevotionals(draw);
+  return { random: choice === RANDOM, ticked, date, id: devotionalForDay(choice, ticked, now, day.devotional).id };
+}
+
+/**
+ * Today's devotional (mw-5r3p30.680): the tutor's way to re-draw the day's devotional while Which devotional is Random. Its write ends in the same function the
+ * Another button on Today taps (dailyStore.ts pickAnotherDevotional), so Which devotional is never rewritten; with a named devotional it writes nothing (a named
+ * one is a change of Which devotional, which the grind is told to ask for instead).
+ */
+const todaysDevotionalEntry: SettingEntry = {
+  ...todaysDevotionalSetting,
+  read: async () => (await devotionalToday()).id,
+  write: async (value) => {
+    const today = await devotionalToday();
+    if (!today.random) return;
+    if (value === ANOTHER) await pickAnotherDevotional(today.date, today.id, today.ticked);
+    else if (devotionalOf(String(value))) await setDevotionalPick(today.date, String(value));
+    else return;
+    publish({ kind: 'setting-changed', key: todaysDevotionalSetting.key, value });
+  },
+  show: (value) => `${todaysDevotionalSetting.label}: ${value === ANOTHER ? 'another one' : (devotionalOf(String(value))?.title ?? String(value))}`,
+};
 
 const textSizeId = (percent: number): SettingValue => TEXT_SIZES.find((t) => t.percent === percent)?.id ?? percent;
 
@@ -504,6 +534,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   fromDefinition(dailyDevotionalSetting),
   fromDefinition(devotionalSetting),
   fromDefinition(devotionalDrawSetting),
+  todaysDevotionalEntry,
   fromDefinition(dailyTicksSetting),
   quizGoalEntry,
 ];
