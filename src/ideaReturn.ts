@@ -8,16 +8,23 @@ interface Hold {
   ideaId: string;
   /** the address the sheet was over */
   hash: string;
+  /** how far the sheet's text was scrolled, so it comes back where he tapped the table */
+  scrollTop: number;
 }
 
 let held: Hold | undefined;
 const watchers = new Set<() => void>();
 const tell = (): void => watchers.forEach((w) => w());
 
-/** The idea sheet is about to be left for a table: remember its idea and where it stood. */
-export function holdIdea(ideaId: string): void {
-  held = { ideaId, hash: window.location.hash };
+/** The idea sheet is about to be left for a table: remember its idea, where it stood and how far its text was scrolled. */
+export function holdIdea(ideaId: string, scrollTop = 0): void {
+  held = { ideaId, hash: window.location.hash, scrollTop };
   tell();
+}
+
+/** How far the held sheet's text was scrolled (0 when nothing is held). */
+export function heldScrollTop(): number {
+  return held?.scrollTop ?? 0;
 }
 
 /** He is done with it: the sheet was closed, or he went somewhere else. */

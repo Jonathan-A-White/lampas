@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import type { Chapter, GreekWord } from './data/chapter';
 import { ideaOf } from './data/grammar/ladder';
-import { dropHeldIdea, holdStillWanted, useReturnedIdea } from './ideaReturn';
+import { dropHeldIdea, heldScrollTop, holdStillWanted, useReturnedIdea } from './ideaReturn';
 import { IdeaSheet } from './IdeaSheet';
 import { useAddress } from './nav/route';
 import { WordSheet, type Lookup } from './WordSheet';
@@ -14,7 +14,12 @@ export function IdeaReturn() {
   const address = useAddress();
   // the sheet, once it is back, is the screen's own: its entry in history makes the hold look as if he had left, so it is taken up and the hold let go at once
   const [ideaId, setIdeaId] = useState<string | null>(null);
-  if (returned && returned !== ideaId) setIdeaId(returned);
+  // how far its text was scrolled when he left it, read before the hold is let go
+  const [scrollTop, setScrollTop] = useState(0);
+  if (returned && returned !== ideaId) {
+    setIdeaId(returned);
+    setScrollTop(heldScrollTop());
+  }
   useEffect(() => {
     if (returned) dropHeldIdea();
   }, [returned]);
@@ -28,6 +33,7 @@ export function IdeaReturn() {
     <>
       <IdeaSheet
         idea={ideaOf(ideaId)}
+        restoreScroll={scrollTop}
         onClose={() => setIdeaId(null)}
         covered={word !== null}
         onWord={(chapter: Chapter, tapped: GreekWord) => setWord({ chapter, lookup: { words: [tapped], fromEnglish: false } })}
