@@ -39,7 +39,7 @@ let noCurl = false;
 function curlFor(width: number, height: number, scale: number, paper: string): { canvas: HTMLCanvasElement; curl: Curl } | null {
   if (noCurl) return null;
   const key = `${width}x${height}@${scale}:${paper}`;
-  if (stage?.key === key) return stage;
+  if (stage?.key === key && !stage.curl.lost()) return stage;
   stage?.curl.dispose();
   stage = null;
   const canvas = document.createElement('canvas');

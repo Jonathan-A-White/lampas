@@ -122,6 +122,8 @@ export interface Curl {
   /** How far the picture `replace` gave has come in over the one before it, from 0 to 1. */
   fade(which: 'sheet' | 'under', fade: number): void;
   draw(scene: CurlScene): void;
+  /** True when the browser has taken the context back (a phone that put the page away): the curl must be made afresh. */
+  lost(): boolean;
   dispose(): void;
 }
 
@@ -276,6 +278,7 @@ export function createCurl(canvas: HTMLCanvasElement, width: number, height: num
       drawPlace('under');
       drawPlace('sheet');
     },
+    lost: () => gl.isContextLost(),
     dispose() {
       for (const place of [pages.sheet, pages.under]) {
         drop(place.now);
