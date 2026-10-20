@@ -3,11 +3,13 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { moveFor } from '../../src/data/grammar/move';
+import type { Level } from '../../src/data/grammar/needs';
 import {
   GRAMMAR_TITLES_MAX,
   LEARNER_GRAMMAR_MAX_BYTES,
   learnerGrammar,
   learnerGrammarOf,
+  orderedIdeas,
   type GrammarSnapshot,
 } from '../../src/data/grammar/learnerGrammar';
 import { setGoal, setPickerGrammar, pushGrammarAnswer } from '../../src/data/repositories/settings';
@@ -55,6 +57,17 @@ describe('learnerGrammarOf', () => {
     const out = learnerGrammarOf(snapshot({ move: 'up', placed: false, pickerLevel: 'solid' }));
     expect(out).toMatchObject({ goal: 'Read 1 John 1:1', placed: false, suggested_move: 'up', picker_level: 'solid' });
     expect(out.approach).toEqual({ name: 'Lampas ladder', credit: null, next_lesson: 'The nominative' });
+  });
+});
+
+describe('orderedIdeas', () => {
+  const levelOfIdea = (levels: Map<string, Level>, id: string) => orderedIdeas(undefined, levels).find((i) => i.id === id)?.level;
+
+  it('gives a letter the level of its group when The Greek alphabet is solid and the letter has none of its own (mw-5r3p30.641)', () => {
+    expect(levelOfIdea(new Map([['alphabet', 'solid']]), 'letter-omicron')).toBe('solid');
+    expect(levelOfIdea(new Map([['alphabet', 'solid'], ['letter-omicron', 'notYet']]), 'letter-omicron')).toBe('solid');
+    expect(levelOfIdea(new Map(), 'letter-omicron')).toBe('notYet');
+    expect(levelOfIdea(new Map([['alphabet', 'frontier']]), 'letter-omicron')).toBe('notYet');
   });
 });
 

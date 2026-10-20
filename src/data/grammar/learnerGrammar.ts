@@ -9,7 +9,7 @@ import type { WordState } from '../db';
 import { goalTitle, parseGoal } from '../goal';
 import { getGoal, getGrammarAnswers, getGrammarApproach, getPickerGrammar, holdsOnlyExampleWords, listLevels, listPassageLessons, listWords, weakFacets } from '../repositories';
 import type { PickerGrammar } from './formLevel';
-import { levelsOf, nextLessonTitle, placedAt, wordStatesOf } from './goalProgress';
+import { levelOf, levelsOf, nextLessonTitle, placedAt, wordStatesOf } from './goalProgress';
 import { needsOf } from './goalNeeds';
 import { LADDER } from './ladder';
 import { moveFor, type Move } from './move';
@@ -95,11 +95,11 @@ export function learnerGrammarOf(snapshot: GrammarSnapshot): LearnerGrammar {
 }
 
 /** The ideas in the order they are named: the goal's needs first (as the passage lists them), then the rest of the ladder by rung. */
-function orderedIdeas(needs: PassageNeeds | undefined, levels: ReadonlyMap<string, Level>): GrammarSnapshot['ideas'] {
+export function orderedIdeas(needs: PassageNeeds | undefined, levels: ReadonlyMap<string, Level>): GrammarSnapshot['ideas'] {
   const first = (needs?.ideas ?? []).map((i) => i.id);
   const rest = LADDER.map((i) => i.id).filter((id) => !first.includes(id));
   const title = new Map(LADDER.map((i) => [i.id, i.title]));
-  return [...first, ...rest].map((id) => ({ id, title: title.get(id) ?? id, level: levels.get(id) ?? 'notYet' }));
+  return [...first, ...rest].map((id) => ({ id, title: title.get(id) ?? id, level: levelOf(levels, id) }));
 }
 
 const countStates = (words: readonly { state: WordState }[]) => ({

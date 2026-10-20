@@ -76,6 +76,13 @@ describe('ideaState: solid, learning, next, not yet', () => {
     expect(ideaState(idea.id, new Map())).toBe('notYet');
   });
 
+  it('calls a letter solid when he marked The Greek alphabet known and the letter has no level of its own (mw-5r3p30.641)', () => {
+    const alphabet = levels([['alphabet', 'solid']]);
+    expect(ideaState('letter-omicron', alphabet)).toBe('solid');
+    expect(ideaState('letter-omicron', levels([['alphabet', 'solid'], ['letter-omicron', 'notYet']]))).toBe('solid');
+    expect(ideaState('letter-omicron', new Map())).not.toBe('solid');
+  });
+
   it('names each state in words, so colour is never the only sign', () => {
     expect(STATE_NAMES).toEqual({ solid: 'Solid', learning: 'Learning', next: 'Next', notYet: 'Not yet' });
   });
