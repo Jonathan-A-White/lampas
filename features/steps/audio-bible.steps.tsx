@@ -167,6 +167,36 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('In Greek view the Verse view offers no Listen in Audible, though the Audio Bible is on', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened with the Audio Bible on', () => openWith({ audioBible: 'word-of-promise' }));
+    When('he opens the Verse view of Luke 15:11', openLuke15Verse11);
+    Then('the Verse view shows the link {string}', async (_, name: string) => {
+      expect(await within(verseView()).findByRole('link', { name: new RegExp(`^${name}`) })).toBeTruthy();
+    });
+    When('he goes back to the Reader and switches it to Greek', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: /‹ Reader/ }));
+      await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
+      await user.click(screen.getByRole('button', { name: 'Greek' }));
+      await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
+    });
+    And('he opens the Verse view of Luke 15:11 again', openLuke15Verse11);
+    Then('there is no {string} link', async (_, name: string) => {
+      await screen.findByText(/Tap Play to hear/);
+      expect(within(verseView()).queryByRole('link', { name: new RegExp(name) })).toBeNull();
+    });
+    And('the line {string} is not shown', (_, text: string) => {
+      expect(within(verseView()).queryByText(text)).toBeNull();
+    });
+  });
+
+  Scenario('In English view the Verse view still offers Listen in Audible', ({ Given, When, Then }) => {
+    Given('Lampas is opened with the Audio Bible on', () => openWith({ audioBible: 'word-of-promise' }));
+    When('he opens the Verse view of Luke 15:11', openLuke15Verse11);
+    Then('the Verse view shows the link {string}', async (_, name: string) => {
+      expect(await within(verseView()).findByRole('link', { name: new RegExp(`^${name}`) })).toBeTruthy();
+    });
+  });
+
   Scenario('The link is named for a screen reader and the credit is plain text under it', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with the Audio Bible on', () => openWith({ audioBible: 'word-of-promise' }));
     When('he opens the Verse view of Luke 15:11', openLuke15Verse11);
