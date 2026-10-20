@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.370",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.674",
+    "kind": "new",
+    "text": "when your devotional is set to Random, Today now has an Another button that picks a different devotional for the day without leaving Random."
+  },
+  {
     "version": "0.1.369",
     "date": "2026-10-20",
     "story": "mw-svw421.42",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.370
+_2026-10-20_
+- New: when your devotional is set to Random, Today now has an Another button that picks a different devotional for the day without leaving Random.
+
 ## 0.1.369
 _2026-10-20_
 - Fixed: Review no longer says a drill is due when that drill has no questions to ask.
