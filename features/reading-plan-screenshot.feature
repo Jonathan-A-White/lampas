@@ -74,6 +74,15 @@ Feature: Send a screenshot of Audible on the return sheet
     And she taps "Try again"
     Then the sheet "Your screenshot" proposes "Leviticus 3" at "2:41"
 
+  Scenario: Offline, the screenshot read says the phone is offline and offers Try again
+    Given a licensed phone back from Audible after listening from "Leviticus 1", and the phone is offline
+    When she sends a screenshot
+    Then the sheet "Your screenshot" says "You are offline. Check your connection and try again."
+    And the sheet "Your screenshot" offers "Try again"
+    When the phone is online again and the mill will answer the book "Lev", the chapter 3, the position "2:41" and the confidence "high"
+    And she taps "Try again"
+    Then the sheet "Your screenshot" proposes "Leviticus 3" at "2:41"
+
   Scenario: With no licence Send a screenshot says Needs a licence and sends nothing
     Given a phone with no licence back from Audible after listening from "Leviticus 1"
     Then the return sheet has no picker of pictures

@@ -5,7 +5,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, expect, vi } from 'vitest';
+import { afterAll, expect, vi, type MockInstance } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
@@ -46,6 +46,7 @@ const NOW = Date.parse('2026-10-16T12:00:00Z');
 const KIND = 'audible-position';
 
 let fake: FakePostern;
+let onLine: MockInstance<() => boolean> | undefined;
 
 /** 'Leviticus 1' -> its book code and chapter number */
 function chapterNamed(name: string): PlanChapter {
@@ -62,8 +63,10 @@ function setVisibility(state: 'hidden' | 'visible'): void {
 }
 
 /** A phone with the plan started at `name` and a session opened there, the Reader open, back from two chapters of listening: the return sheet is open. */
-async function backFromAudible(name: string, licensed: boolean, failing = false): Promise<void> {
+async function backFromAudible(name: string, licensed: boolean, failing: boolean | 'offline' = false): Promise<void> {
   cleanup();
+  onLine?.mockRestore();
+  onLine = undefined;
   // Unmounting the last scenario's open sheets steps history back (useSheetBack); jsdom lands that popstate a moment later, and it must land before this one.
   await sheetEntriesGone();
   clearBus();
@@ -78,7 +81,10 @@ async function backFromAudible(name: string, licensed: boolean, failing = false)
   vi.useFakeTimers({ toFake: ['Date'], now: new Date(NOW) });
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  if (failing) fake.kindReplies[KIND] = { status: 'failed', reason: 'could not read it' };
+  if (failing === 'offline') {
+    fake.down = true;
+    onLine = vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false);
+  } else if (failing) fake.kindReplies[KIND] = { status: 'failed', reason: 'could not read it' };
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
@@ -278,6 +284,25 @@ Scenario('A guess says so in words', ({ Given, When, Then, And }) => {
       expect(await within(await screen.findByRole('dialog', { name })).findByRole('alert')).toHaveTextContent(text);
     });
     When('the mill will answer the book {string}, the chapter {int}, the position {string} and the confidence {string}', (_, book: string, chapter: number, position: string, confidence: string) => {
+      fake.kindReplies[KIND] = answered(book, chapter, position, confidence);
+    });
+    And('she taps {string}', tapsInRead);
+    Then('the sheet {string} proposes {string} at {string}', (_, __: string, name: string, position: string) => proposes(_, name, position));
+  });
+
+  Scenario('Offline, the screenshot read says the phone is offline and offers Try again', ({ Given, When, Then, And }) => {
+    Given('a licensed phone back from Audible after listening from {string}, and the phone is offline', (_, name: string) => backFromAudible(name, true, 'offline'));
+    When('she sends a screenshot', sendsAScreenshot);
+    Then('the sheet {string} says {string}', async (_, name: string, text: string) => {
+      expect(await within(await screen.findByRole('dialog', { name })).findByRole('alert')).toHaveTextContent(text);
+    });
+    And('the sheet {string} offers {string}', async (_, name: string, label: string) => {
+      expect(within(await screen.findByRole('dialog', { name })).getByRole('button', { name: label })).toBeInTheDocument();
+    });
+    When('the phone is online again and the mill will answer the book {string}, the chapter {int}, the position {string} and the confidence {string}', (_, book: string, chapter: number, position: string, confidence: string) => {
+      onLine?.mockRestore();
+      onLine = undefined;
+      fake.down = false;
       fake.kindReplies[KIND] = answered(book, chapter, position, confidence);
     });
     And('she taps {string}', tapsInRead);
