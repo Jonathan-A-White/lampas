@@ -13,6 +13,9 @@ import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 
+// jsdom draws no layout and has no scrollIntoView: a found setting's page scrolls to its row
+Element.prototype.scrollIntoView = function scrollIntoView() {};
+
 afterAll(() => {
   cleanup();
   clearBus();
