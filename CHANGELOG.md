@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.377
+_2026-10-20_
+- Fixed: Holding to talk now keeps your whole sentence when you pause in the middle, in every place you talk to the tutor.
+
 ## 0.1.376
 _2026-10-20_
 - Fixed: The reading check now listens to a long reading for up to ten minutes instead of one, and if a reading is ever cut short it tells you where it stopped.
