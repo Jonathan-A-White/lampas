@@ -44,7 +44,7 @@ import { stepOf, stepOfVerse } from './reader/steps';
 import { LinkNotice } from './reader/LinkNotice';
 import { SwipeNote } from './reader/SwipeNote';
 import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
-import { crossChapter } from './reader/crossChapter';
+import { canCross, crossChapter } from './reader/crossChapter';
 import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { readingModeSetting } from './settings/definitions';
@@ -191,8 +191,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, [hideBars]);
   // past the first or last page the previous or next chapter opens, on its last or first page (src/reader/crossChapter.ts, mw-5r3p30.620)
   const cross = useCallback((by: 1 | -1) => crossChapter(BOOK, CHAPTER, by), [BOOK, CHAPTER]);
+  const crossable = useCallback((by: 1 | -1) => canCross(BOOK, CHAPTER, by), [BOOK, CHAPTER]);
   const around = neighbours(BOOK, CHAPTER);
-  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`, onTurned, cross);
+  // the page follows the finger and every turn is drawn as a page of a book turning (src/reader/pageTurn.ts, mw-5r3p30.621)
+  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`, onTurned, cross, crossable);
   const showPage = pages.show;
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
