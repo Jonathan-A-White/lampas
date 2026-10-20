@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.371
+_2026-10-20_
+- New: In Turn pages the page now follows your finger and curls over like a real book page, springing back if you let go early and turning as fast as you flick it.
+
 ## 0.1.370
 _2026-10-20_
 - New: when your devotional is set to Random, Today now has an Another button that picks a different devotional for the day without leaving Random.
