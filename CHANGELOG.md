@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.361
+_2026-10-20_
+- Fixed: a long question you have pasted into Talk or Ask the tutor and not yet sent is still in the box when you close the sheet and open it again.
+- Fixed: When you read a Greek verse aloud, the coach now uses the app's own syllables and stress for its tips instead of guessing.
+
 ## 0.1.360
 _2026-10-20_
 - Fixed: an idea you were taught but never answered no longer says "last answered today" on its sheet; it says "not answered yet".

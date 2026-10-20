@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.361",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.495",
+    "kind": "fixed",
+    "text": "a long question you have pasted into Talk or Ask the tutor and not yet sent is still in the box when you close the sheet and open it again."
+  },
+  {
+    "version": "0.1.361",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.659",
+    "kind": "fixed",
+    "text": "When you read a Greek verse aloud, the coach now uses the app's own syllables and stress for its tips instead of guessing."
+  },
+  {
     "version": "0.1.360",
     "date": "2026-10-20",
     "story": "mw-5r3p30.639",
