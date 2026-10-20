@@ -63,7 +63,7 @@ describe('settingLink', () => {
       { key: 'resource.logos', value: 'on' },
     ]);
     render(<SettingsScreen />);
-    await screen.findByRole('group', { name: 'Theme' });
+    await screen.findByRole('list', { name: 'Settings groups' });
     for (const s of SETTINGS) {
       await go(settingLink(s.key) as string);
       await waitFor(() => expect(row(s.key), s.key).not.toBeNull());
@@ -101,21 +101,23 @@ describe('the Settings screen at a setting link', () => {
     cleanup();
   });
 
-  it('shows the row though the search box holds a query that would hide it', async () => {
+  it('opens the page of the row\'s group though the home\'s search holds a query that would hide it', async () => {
     cleanup();
-    window.location.hash = '#/settings?setting=textSize';
+    window.location.hash = '#/settings';
     render(<SettingsScreen />);
-    await screen.findByRole('group', { name: 'Text size' });
-    const search = screen.getByRole('searchbox', { name: 'Search settings' });
-    expect(search).toHaveValue('');
+    const search = await screen.findByRole('searchbox', { name: 'Search settings' });
     await act(async () => {
       const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
       set?.call(search, 'logos');
       search.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    await waitFor(() => expect(screen.queryByRole('group', { name: 'Theme' })).toBeNull());
-    expect(row('textSize')).not.toBeNull();
+    await screen.findByRole('list', { name: 'Matching settings' });
+    await go('#/settings?setting=textSize');
+    await screen.findByRole('heading', { name: 'Reading', level: 1 });
+    await waitFor(() => expect(row('textSize')).not.toBeNull());
     expect(row('textSize')?.hasAttribute('data-highlighted')).toBe(true);
+    // the page has no search to hide the row
+    expect(screen.queryByRole('searchbox', { name: 'Search settings' })).toBeNull();
     cleanup();
   });
 
@@ -142,7 +144,7 @@ describe('the Settings screen at a setting link', () => {
     cleanup();
     window.location.hash = '#/settings?setting=noSuchSetting';
     render(<SettingsScreen />);
-    await screen.findByRole('group', { name: 'Theme' });
+    await screen.findByRole('list', { name: 'Settings groups' });
     expect(document.querySelector('[data-highlighted]')).toBeNull();
     expect(needs()).toBeNull();
     cleanup();
