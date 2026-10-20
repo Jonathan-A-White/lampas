@@ -141,7 +141,7 @@ export function VerseView(props: VerseViewProps) {
         {lesson ? <LessonStrip title={lesson.title} ideas={lesson.ideas} onCheck={() => setChecking(lesson.key)} /> : null}
         {/* A passage is long: its text scrolls in a box of its own so the row of actions stays in reach under it. Its blocks (PassageText) are the Reader's own,
             each a [data-passage-text] with the type of its own; a verse is one big [data-size='big'] paragraph. */}
-        <div {...(passage ? { 'data-passage-box': '' } : {})} className={passage ? 'max-h-[40dvh] overflow-y-auto overscroll-contain rounded-xl border border-line px-2' : undefined}>
+        <div {...(passage ? { 'data-passage-box': '' } : {})} className={passage ? 'max-h-[40dvh] overflow-y-auto overscroll-contain px-2' : undefined}>
           {passage ? (
             <div data-sheet-verse>{text}</div>
           ) : (

@@ -108,6 +108,22 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
   await expect(page.getByRole('button', { name: 'Talk', exact: true })).toBeVisible();
 });
 
+test('the passage sits on the page like the Reader\'s text, with no border drawn round it, and Listen is in reach (mw-5r3p30.501)', async ({ page }) => {
+  await start(page, '/#/?b=eph&c=5&view=greek&weave=off');
+  await page.getByRole('button', { name: 'Wives and Husbands' }).first().click();
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(view.getByRole('heading', { name: 'Wives and Husbands, Ephesians 5:21-33' })).toBeVisible();
+  const box = view.locator('[data-passage-box]');
+  expect(await box.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe('0px');
+  expect(await box.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe('0px');
+  const listen = view.getByRole('button', { name: 'Listen', exact: true });
+  const b = await listen.boundingBox();
+  if (!b) throw new Error('no Listen box');
+  expect(b.y).toBeGreaterThanOrEqual(0);
+  expect(b.y + b.height).toBeLessThanOrEqual(VIEWPORT.height);
+  await shot(page, 'passage-view-no-border');
+});
+
 test('Read it aloud: the reading check for the passage above the one bar', async ({ page }) => {
   await start(page, '/#/?c=8&view=greek&weave=off');
   await page.locator('[data-heading]', { hasText: 'Heirs with Christ' }).getByRole('button').click();
