@@ -22,7 +22,7 @@ import { getLogosBible } from './data/repositories';
 import { keyOf } from './data/repositories/readingPlan';
 import { OT_BOOKS, otBookOf } from './data/otBooks';
 import { getStudyResources, setResourceOn } from './data/repositories/resources';
-import { readPlace, type PlaceRead } from './nav/parseReference';
+import { bookPart, readPlace, type PlaceRead } from './nav/parseReference';
 import { bringVerse, openAtVerse } from './nav/readerRequest';
 import { navigate, openReader } from './nav/route';
 import { SendOff } from './plan/SendOff';
@@ -34,7 +34,7 @@ import { armFallback } from './resources/openApp';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
 import { focusOnMount } from './ui/focus';
-import { matching } from './ui/listFilter';
+import { matching, matchingInOrder } from './ui/listFilter';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
@@ -231,8 +231,9 @@ export function ChapterPicker({
     if (list && row) list.scrollTop = Math.max(0, row.offsetTop - list.clientHeight / 2 + row.offsetHeight / 2);
   }, [current.book]);
 
-  const shown = matching(ITEMS, query);
   const typed = readPlace(query);
+  // a name filters by its letters in order, names that start with it first; a start that fits more than one book ('J 3') is no place and lists the books it fits
+  const shown = matchingInOrder(ITEMS, typed.kind === 'none' ? bookPart(query) : query);
   const preface = !onChoose && matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
   const name = book ? (otBookOf(book) ?? bookOf(book))?.name : undefined;
   const pick = (chapter: number) => {
