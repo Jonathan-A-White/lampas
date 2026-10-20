@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.363
+_2026-10-20_
+- Fixed: Sending Audible a screenshot while the phone has no connection now says you are offline and offers Try again, instead of saying the screenshot could not be read.
+
 ## 0.1.362
 _2026-10-20_
 - Fixed: With Immersive reader and Turn pages, the card now says to turn the page, and turning to the next page puts the bars away so the page has the whole screen.

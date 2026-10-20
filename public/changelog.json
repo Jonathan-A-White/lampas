@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.363",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.661",
+    "kind": "fixed",
+    "text": "Sending Audible a screenshot while the phone has no connection now says you are offline and offers Try again, instead of saying the screenshot could not be read."
+  },
+  {
     "version": "0.1.362",
     "date": "2026-10-20",
     "story": "mw-5r3p30.611",
