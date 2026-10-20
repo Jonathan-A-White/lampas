@@ -409,7 +409,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
       {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} /> : null}
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} style={chapter ? { marginBottom: away || !ai ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ai ? ASK_BUTTON_GUTTER : undefined, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} style={chapter ? { marginBottom: away || !ai || paging ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ai ? ASK_BUTTON_GUTTER : undefined, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
         <div ref={inner} data-reader-text data-pages={paging ? '' : undefined}>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
@@ -458,7 +458,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
-      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} floor={footBare && !barUp} /> : null}
+      {/* with Turn pages the round button's room is under the place line, beside the button, so the page reaches down to the line (mw-5r3p30.610) */}
+      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} floor={footBare && !barUp} room={away || !ai ? '0px' : `calc(${ASK_BUTTON_ROOM})`} /> : null}
       <BarSlot level={1} inset={footBare && !(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {chapter && !viewUnit && ai ? (

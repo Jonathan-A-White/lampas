@@ -461,7 +461,8 @@ textarea,
   display: grid;
   grid-template-rows: 1fr;
   flex-shrink: 0;
-  transition: grid-template-rows 200ms ease, visibility 0s;
+  /* min-height: the round button's room it holds with Turn pages (src/PlaceLine.tsx `room`), gone with the bars as the box's margin is with Scroll */
+  transition: grid-template-rows 200ms ease, min-height 200ms ease, visibility 0s;
 }
 .place-box[data-closed] {
   grid-template-rows: 0fr;
@@ -526,16 +527,21 @@ textarea,
 }
 /* Turn pages (Settings > Reading, src/reader/usePages.ts, mw-5r3p30.299): the Reader's text is set in columns one reading box wide and one box high, so
  * the browser breaks it between lines into pages; the box clips them and shows one at a time (its scrollLeft, set by the hook). Nothing scrolls down,
- * and the box keeps only a little room at its foot: the place line under it says the page. The type is untouched. */
+ * and the box keeps no room at its foot: the place line right under it says the page, and a line's own leading keeps its letters off it, so a page
+ * ends at most a line above the place line (mw-5r3p30.610). The type is untouched. */
 [data-reader][data-paging='pages'] {
   overflow: hidden;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0;
 }
 [data-reader][data-paging='pages'] > [data-pages] {
   height: 100%;
   column-count: 1;
   column-gap: 2rem;
   column-fill: auto;
+  /* a page takes every line that fits: the browser's two-line rule for the end and start of a paragraph left a line's room blank at a page's foot
+   * (mw-5r3p30.610) */
+  orphans: 1;
+  widows: 1;
 }
 /* The box can scroll only as far as the last page's text reaches, which stops short of a whole page by the box's right padding: this empty line,
  * a little wider than a page, reaches past it, so the last page sits where every other page does. */
