@@ -66,7 +66,7 @@ async function openSettings(agent: string, ons: string[] = []): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBe(63));
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
-  await openSettingsGroup(user, 'reading');
+  await openSettingsGroup(user, 'study');
 }
 
 const switchOf = (name: string): Promise<HTMLElement> => screen.findByRole('switch', { name });

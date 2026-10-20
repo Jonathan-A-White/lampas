@@ -33,3 +33,9 @@ export async function leaveSettings(user: UserEvent): Promise<void> {
   if (onSettingsPage()) await user.click(await screen.findByRole('button', { name: '‹ Settings' }));
   await user.click(await screen.findByRole('button', { name: '‹ Reader' }));
 }
+
+/** Brings the page of the group `id` onto the screen from wherever Settings is (a step that sets things on two pages): nothing when it is already there. */
+export async function ensureSettingsGroup(id: GroupId): Promise<void> {
+  if (document.querySelector(`[data-settings-group="${id}"]`) !== null) return;
+  await showSettingsGroup(id);
+}
