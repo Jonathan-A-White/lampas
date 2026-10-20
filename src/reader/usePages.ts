@@ -111,11 +111,6 @@ export function usePages(
       const verse = k.count === count || k.verse === null ? null : content.querySelector(`[data-verse="${k.verse}"]`);
       const first = verse?.getClientRects()[0];
       go(first ? pageAt(first.left) : k.page);
-      // a page past the end (the last page asked for, from another chapter) is now the last page, which the verse that begins on it keeps against another cut
-      if (k.page >= count) {
-        kept = { page, count, verse: anchor instanceof HTMLElement ? (anchor.dataset.verse ?? null) : null };
-        keepPage(chapter, kept);
-      }
     };
 
     /** Cuts the pages afresh: how wide one is, how many there are, and which one shows the anchor. */
