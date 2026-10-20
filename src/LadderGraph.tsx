@@ -1,7 +1,8 @@
 // src/LadderGraph.tsx — the whole path (mw-foy5mb.5, #/path, PROVISIONAL): the grammar ladder drawn as a graph to look at, reached from the Goal screen.
 // Each idea of ladder.ts is a node, each need an edge, laid out by depth (pathGraph.ts layoutPath: the ideas that need nothing at the top, an idea below
 // all it needs). A node's colour is ideaState's (goalProgress.ts), the one reading of his levels Learn uses; the state is also written on the node, so
-// colour is never the only sign. SVG, panned with one finger and zoomed with two (or the buttons: Pan, Zoom; focus on a node pans it into view); a tap on a node opens that idea's sheet. Nothing
+// colour is never the only sign. SVG, panned with one finger and zoomed with two or the mouse wheel; with the graph focused the arrow keys pan it and + / − zoom it (no buttons cover the picture,
+// mw-5r3p30.650; one small Where I am stays); focus on a node pans it into view; a tap on a node opens that idea's sheet. Nothing
 // heavier until a path passes about 150 nodes (the ladder has 133).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type FocusEvent as ReactFocusEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
@@ -21,7 +22,7 @@ const MIN_SCALE = 0.15;
 const MAX_SCALE = 2.5;
 /** How far a finger moves before a touch is a pan and no longer a tap. */
 const TAP_SLOP = 8;
-/** A pan button moves the picture by this part of the frame. */
+/** An arrow key moves the picture by this part of the frame. */
 const PAN_STEP = 0.4;
 /** A focused node must lie this far (px) inside the frame, or focus pans it to the middle. */
 const FOCUS_MARGIN = 8;
@@ -35,14 +36,16 @@ const PAINT: Record<IdeaState, { fill: string; stroke: string; dash?: string; wi
   notYet: { fill: 'var(--lp-surface)', stroke: 'var(--lp-line)', width: 1.5 },
 };
 
-const ROUND = 'size-12 rounded-xl border border-line bg-surface text-2xl font-medium active:bg-line';
-// the picture moves the other way to the view: 'Pan left' shows what lies to the left, so the picture slides right
-const PANS = [
-  { name: 'Pan up', arrow: '↑', dx: 0, dy: 1 },
-  { name: 'Pan down', arrow: '↓', dx: 0, dy: -1 },
-  { name: 'Pan left', arrow: '←', dx: 1, dy: 0 },
-  { name: 'Pan right', arrow: '→', dx: -1, dy: 0 },
-] as const;
+/** A key's zoom step, and a wheel's: the scale changes by this much per key press, and by e^(-deltaY x WHEEL_RATE) per wheel event. */
+const KEY_ZOOM = 1.25;
+const WHEEL_RATE = 0.0015;
+// the picture moves the other way to the view: ArrowLeft shows what lies to the left, so the picture slides right
+const ARROWS: Record<string, { dx: number; dy: number }> = {
+  ArrowUp: { dx: 0, dy: 1 },
+  ArrowDown: { dx: 0, dy: -1 },
+  ArrowLeft: { dx: 1, dy: 0 },
+  ArrowRight: { dx: -1, dy: 0 },
+};
 
 interface View {
   x: number;
@@ -132,10 +135,25 @@ export function LadderGraph() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows]);
 
-  const zoomBy = (factor: number): void => {
-    const box = frame.current!.getBoundingClientRect();
-    setView((v) => (v ? zoomAround(v, box.width / 2, box.height / 2, clamp(v.k * factor, MIN_SCALE, MAX_SCALE)) : v));
+  /** Zooms by `factor` about the point (px, py) of the frame, which stays over the same spot of the picture. */
+  const zoomBy = (factor: number, px: number, py: number): void => {
+    setView((v) => (v ? zoomAround(v, px, py, clamp(v.k * factor, MIN_SCALE, MAX_SCALE)) : v));
   };
+
+  // the mouse wheel zooms about the pointer; a native listener, because React's wheel is passive and Ctrl + wheel would zoom the browser's page
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const onWheel = (event: WheelEvent): void => {
+      event.preventDefault();
+      const box = el.getBoundingClientRect();
+      const lines = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? box.height : 1;
+      const factor = Math.exp(-event.deltaY * lines * WHEEL_RATE);
+      setView((v) => (v ? zoomAround(v, event.clientX - box.left, event.clientY - box.top, clamp(v.k * factor, MIN_SCALE, MAX_SCALE)) : v));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
 
   // ---- one finger pans, two fingers pinch; a touch that moved is no tap ----
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -192,10 +210,21 @@ export function LadderGraph() {
     else gesture.current = null;
   };
 
-  /** The buttons that pan: a step is part of the frame, and 'Pan left' shows what lies to the left (the picture moves right). */
-  const panBy = (dx: number, dy: number): void => {
+  /** The arrow keys pan (a step is part of the frame; ArrowLeft shows what lies to the left, so the picture moves right) and + / − zoom, from the graph or from an idea in it. */
+  const onFrameKey = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
     const box = frame.current!.getBoundingClientRect();
-    setView((v) => (v ? { ...v, x: v.x + dx * box.width * PAN_STEP, y: v.y + dy * box.height * PAN_STEP } : v));
+    const arrow = ARROWS[event.key];
+    if (arrow) {
+      event.preventDefault();
+      setView((v) => (v ? { ...v, x: v.x + arrow.dx * box.width * PAN_STEP, y: v.y + arrow.dy * box.height * PAN_STEP } : v));
+    } else if (event.key === '+' || event.key === '=') {
+      event.preventDefault();
+      zoomBy(KEY_ZOOM, box.width / 2, box.height / 2);
+    } else if (event.key === '-' || event.key === '_') {
+      event.preventDefault();
+      zoomBy(1 / KEY_ZOOM, box.width / 2, box.height / 2);
+    }
   };
   /** Focus on a node (Tab, or a screen reader's swipe) that is not wholly in the frame brings it to the middle, so a keyboard reader reaches every idea. */
   const onFocusNode = (event: ReactFocusEvent<SVGGElement>, id: string): void => {
@@ -235,14 +264,22 @@ export function LadderGraph() {
       <div
         ref={frame}
         data-testid="ladder-graph"
+        role="group"
+        aria-label="The grammar ladder as a graph: each idea with the ideas it needs above it"
+        aria-describedby="graph-keys"
+        tabIndex={0}
+        onKeyDown={onFrameKey}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
-        className="relative min-h-0 flex-1 touch-none select-none overflow-hidden"
+        className="relative min-h-0 flex-1 touch-none select-none overflow-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
       >
+        <span id="graph-keys" className="sr-only">
+          Arrow keys move the graph. Plus and minus zoom it.
+        </span>
         {view ? (
-          <svg role="group" aria-label="The grammar ladder as a graph: each idea with the ideas it needs above it" width="100%" height="100%" className="block">
+          <svg width="100%" height="100%" className="block">
             <g data-testid="graph-world" data-scale={view.k.toFixed(3)} transform={`translate(${view.x} ${view.y}) scale(${view.k * text}) translate(${MARGIN} ${MARGIN})`}>
               <g fill="none" stroke="var(--lp-muted)" strokeOpacity="0.45" strokeWidth="1.5">
                 {layout.edges.map((e) => (
@@ -279,7 +316,8 @@ export function LadderGraph() {
                         fill="var(--lp-fg)"
                         stroke="none"
                       >
-                        {line}
+                        {/* the lines are read as one title: a space between them, or a screen reader and axe read 'Diphthongau' */}
+                        {i < lines.length - 1 ? `${line} ` : line}
                       </text>
                     ))}
                   </g>
@@ -288,26 +326,12 @@ export function LadderGraph() {
             </g>
           </svg>
         ) : null}
-        <div className="absolute left-3 flex flex-col gap-2" style={{ bottom: 'calc(var(--lp-bar-inset) + 0.75rem)' }}>
-          <div role="group" aria-label="Pan" className="flex gap-2">
-            {PANS.map(({ name, arrow, dx, dy }) => (
-              <button key={name} type="button" aria-label={name} onClick={() => panBy(dx, dy)} className={ROUND}>
-                {arrow}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <button type="button" aria-label="Zoom in" onClick={() => zoomBy(1.4)} className={ROUND}>
-              +
-            </button>
-            <button type="button" aria-label="Zoom out" onClick={() => zoomBy(1 / 1.4)} className={ROUND}>
-              −
-            </button>
-            <button type="button" onClick={() => setView(centreOn(placeToLook(), 0.8))} className="min-h-12 rounded-xl border border-line bg-surface px-3 text-base font-medium text-accent active:bg-line">
-              Where I am
-            </button>
-          </div>
-        </div>
+      </div>
+      {/* one small control, below the picture and not over it, so it covers no idea; the round Ask button floats at the right of this row */}
+      <div className="shrink-0 px-3 pt-2" style={{ paddingBottom: 'calc(var(--lp-bar-inset) + 0.5rem)' }}>
+        <button type="button" onClick={() => setView(centreOn(placeToLook(), 0.8))} className="chrome-text min-h-11 rounded-full border border-line bg-surface px-4 font-medium text-accent active:bg-line">
+          Where I am
+        </button>
       </div>
       {ideaId ? (
         <IdeaSheet

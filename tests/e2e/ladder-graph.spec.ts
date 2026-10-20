@@ -1,6 +1,9 @@
 // tests/e2e/ladder-graph.spec.ts — the whole path as a graph (mw-foy5mb.5), at 390x844 with a touch screen: reached from the Goal screen, every idea a node,
-// panned with a finger and pinch-zoomed with two without the page scrolling, a tap on a node opens the idea's sheet, Back returns to Goal.
+// panned with a finger and pinch-zoomed with two without the page scrolling, a tap on a node opens the idea's sheet, Back returns to Goal. No arrow or zoom
+// buttons cover the graph (mw-5r3p30.650): the wheel zooms, the arrow keys and + / − move it when it has focus, and one small Where I am stays.
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
+import { EXCLUDED_RULES } from '../support/axe-excluded';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -99,12 +102,104 @@ test('the whole path: every idea a node, pan and pinch without the page moving, 
   expect(page_.top).toBe(0);
   expect(page_.left).toBe(0);
 
-  // the buttons zoom too
-  const level = await scale(page);
-  await page.getByRole('button', { name: 'Zoom in' }).click();
-  expect(await scale(page)).toBeGreaterThan(level);
   await page.getByRole('button', { name: 'Where I am' }).click();
   await shot(page, 'ladder-graph');
+});
+
+test('the graph has no arrow or zoom buttons; one small Where I am sits below the picture', async ({ page }) => {
+  await openGraph(page);
+  for (const name of ['Pan up', 'Pan down', 'Pan left', 'Pan right', 'Zoom in', 'Zoom out']) await expect(page.getByRole('button', { name })).toHaveCount(0);
+  const frame = page.getByTestId('ladder-graph');
+  await expect(frame.locator('button')).toHaveCount(0);
+  const where = page.getByRole('button', { name: 'Where I am' });
+  const at = (await where.boundingBox())!;
+  const box = (await frame.boundingBox())!;
+  // small: a tap-sized pill, not a row of squares, low on the left of the graph
+  expect(at.width).toBeLessThan(box.width / 3);
+  expect(at.height).toBeLessThan(60);
+  expect(at.x).toBeLessThan(box.x + box.width / 2);
+  expect(at.y).toBeGreaterThanOrEqual(box.y + box.height);
+  // it is below the picture, so it covers no idea
+  const covered = await page.evaluate(
+    ({ l, t, r, b, bottom }) =>
+      [...document.querySelectorAll('[data-idea]')]
+        .filter((n) => {
+          const q = n.getBoundingClientRect();
+          // an idea past the graph's own box is clipped away, so it is not drawn under the pill
+          return q.width > 0 && q.top < bottom && q.left < r && q.right > l && q.top < b && q.bottom > t;
+        })
+        .map((n) => n.getAttribute('data-idea')),
+    { l: at.x, t: at.y, r: at.x + at.width, b: at.y + at.height, bottom: box.y + box.height },
+  );
+  expect(covered).toEqual([]);
+  // and it is clear of the tutor's round button
+  const ask = (await page.getByRole('button', { name: 'Ask the tutor about this screen' }).boundingBox())!;
+  expect(at.x + at.width <= ask.x || ask.x + ask.width <= at.x || at.y + at.height <= ask.y || ask.y + ask.height <= at.y).toBe(true);
+});
+
+test('the wheel zooms the graph, and the page does not scroll', async ({ page }) => {
+  await openGraph(page);
+  const box = (await page.getByTestId('ladder-graph').boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 3);
+  const start = await scale(page);
+  await page.mouse.wheel(0, -300);
+  await expect.poll(() => scale(page)).toBeGreaterThan(start);
+  const zoomed = await scale(page);
+  await page.mouse.wheel(0, 600);
+  await expect.poll(() => scale(page)).toBeLessThan(zoomed);
+  expect(await page.evaluate(() => document.documentElement.scrollTop)).toBe(0);
+});
+
+test('with the graph focused the arrow keys pan and + and − zoom', async ({ page }) => {
+  await openGraph(page);
+  const frame = page.getByRole('group', { name: /grammar ladder as a graph/ });
+  await frame.focus();
+  await expect(frame).toBeFocused();
+  // the arrow shows what lies in that direction, so the picture slides the other way
+  const move = async (key: string, axis: 'x' | 'y', sign: 1 | -1) => {
+    const before = await page.getByTestId('graph-world').boundingBox();
+    await page.keyboard.press(key);
+    await expect
+      .poll(async () => {
+        const after = (await page.getByTestId('graph-world').boundingBox())!;
+        return (after[axis] - before![axis]) * sign;
+      }, key)
+      .toBeGreaterThan(20);
+  };
+  await move('ArrowLeft', 'x', 1);
+  await move('ArrowRight', 'x', -1);
+  await move('ArrowUp', 'y', 1);
+  await move('ArrowDown', 'y', -1);
+  const start = await scale(page);
+  await page.keyboard.press('+');
+  await expect.poll(() => scale(page)).toBeGreaterThan(start);
+  const zoomed = await scale(page);
+  await page.keyboard.press('-');
+  await expect.poll(() => scale(page)).toBeLessThan(zoomed);
+  await expect(frame).toBeFocused();
+  await shot(page, 'ladder-graph-keys');
+});
+
+test('axe finds no violation on the whole path', async ({ page }) => {
+  await openGraph(page);
+  const found = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).disableRules([...EXCLUDED_RULES]).analyze();
+  expect(found.violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+});
+
+test.describe('sideways', () => {
+  test.use({ viewport: { width: 844, height: 390 } });
+  test('the whole path on a phone turned sideways: Where I am stays low on the left, below the picture', async ({ page }) => {
+    await openGraph(page);
+    const where = page.getByRole('button', { name: 'Where I am' });
+    await expect(where).toBeVisible();
+    const at = (await where.boundingBox())!;
+    const box = (await page.getByTestId('ladder-graph').boundingBox())!;
+    expect(at.y).toBeGreaterThanOrEqual(box.y + box.height);
+    expect(at.y + at.height).toBeLessThanOrEqual(390);
+    expect(box.height).toBeGreaterThan(120);
+    expect(at.x).toBeLessThan(box.x + box.width / 2);
+    await shot(page, 'ladder-graph-landscape');
+  });
 });
 
 test('a tap on a node opens that idea, and Back from the path returns to Goal', async ({ page }) => {
@@ -123,19 +218,14 @@ test('a tap on a node opens that idea, and Back from the path returns to Goal', 
   await expect(page.getByRole('heading', { name: 'Goal', level: 1 })).toBeVisible();
 });
 
-/** The ideas whose node lies wholly inside the graph's own box, and whether the focused node does. */
-const insideFrame = (page: Page) =>
-  page.evaluate(() => {
-    const frame = document.querySelector('[data-testid="ladder-graph"]')!.getBoundingClientRect();
-    const inside = (r: DOMRect) => r.left >= frame.left && r.right <= frame.right && r.top >= frame.top && r.bottom <= frame.bottom;
-    return [...document.querySelectorAll('[data-idea]')].filter((n) => inside(n.getBoundingClientRect())).map((n) => n.getAttribute('data-idea')!);
-  });
-
-test('from the keyboard: Tab brings each idea into the graph, and the pan buttons move it', async ({ page }) => {
+test('from the keyboard: Tab brings each idea into the graph', async ({ page }) => {
   await openGraph(page);
   const frame = page.getByTestId('ladder-graph');
   const ideas = page.locator('[data-idea]');
   await page.getByRole('button', { name: '‹ Goal' }).focus();
+  await page.keyboard.press('Tab');
+  // the graph itself comes first (it takes the arrow keys), then each idea
+  await expect(page.getByRole('group', { name: /grammar ladder as a graph/ })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(ideas.first()).toBeFocused();
 
@@ -153,14 +243,5 @@ test('from the keyboard: Tab brings each idea into the graph, and the pan button
     await page.keyboard.press('Tab');
   }
 
-  // the pan buttons come after the ideas and each moves what is in view
-  await page.getByRole('button', { name: 'Where I am' }).click();
-  for (const name of ['Pan up', 'Pan left', 'Pan down', 'Pan right']) {
-    const before = (await insideFrame(page)).join();
-    const world = await worldAt(page);
-    await page.getByRole('button', { name }).click();
-    expect(await worldAt(page), `${name} moves the picture`).not.toBe(world);
-    expect((await insideFrame(page)).join(), `${name} changes the ideas in view`).not.toBe(before);
-  }
   await shot(page, 'ladder-graph-keyboard');
 });
