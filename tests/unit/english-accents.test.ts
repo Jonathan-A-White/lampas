@@ -127,7 +127,7 @@ describe('chi fits an American ear (mw-5r3p30.475)', () => {
   });
 
   it('says chi, in American English, as in “chutzpah”, the throaty ch; British keeps loch', () => {
-    expect(ideaSound(ideaOf('letter-chi'), modern, american)).toBe('kh, as in “chutzpah”, the throaty ch, before a, o, ou and a consonant; before e and i it is softer, hy as in huge');
+    expect(ideaSound(ideaOf('letter-chi'), modern, american)).toBe('kh, as in “chutzpah”, the throaty ch, before α, ο, ω, ου or a consonant; before e and i it is softer, hy as in huge');
     expect(soundWords(modern, american).choice('kh')).toBe('kh, as in “chutzpah”');
     expect(ideaText(ideaOf('consonant-pairs'), modern, american)).toContain('γχ is ng plus kh as in chutzpah, the throaty ch (hy as in huge before e and i)');
     expect(ideaSound(ideaOf('letter-chi'), modern, british)).toMatch(/^kh, as in “loch”, the Scottish ch/);

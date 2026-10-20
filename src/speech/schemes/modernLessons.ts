@@ -6,6 +6,9 @@
 import type { SoundWords } from '../accents';
 import type { SoundLesson } from '../pronunciation';
 
+/** What makes χ, γ and γχ hard: Chi's card and the rule line a wrong pick shows (modern.ts soundRules) both name it, so they agree (mw-i7xe0n.24). */
+export const BACK = 'α, ο, ω, ου or a consonant';
+
 export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLesson>> {
   /** In a lesson's prose: 'e as in pet'. */
   const asIn = say.asIn;
@@ -37,7 +40,7 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
     ['tau', one('t')],
     ['upsilon', { sound: keyed('ee'), choice: choice('ee'), sounds: ['ee'], also: 'In αυ, ευ and ηυ it is v or f (av or af, ev or ef, eev or eef).' }],
     ['phi', one('f')],
-    ['chi', { sound: `${keyed('kh')}, before a, o, ou and a consonant; before e and i it is softer, ${asIn('hy')}`, choice: choice('kh'), sounds: ['kh', 'hy'] }],
+    ['chi', { sound: `${keyed('kh')}, before ${BACK}; before e and i it is softer, ${asIn('hy')}`, choice: choice('kh'), sounds: ['kh', 'hy'] }],
     ['psi', one('ps')],
     ['omega', { sound: `${keyed('o')}, the same as omicron`, choice: choice('o'), sounds: ['o'] }],
   ];
