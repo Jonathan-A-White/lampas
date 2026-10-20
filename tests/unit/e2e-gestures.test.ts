@@ -62,4 +62,11 @@ describe('a swipe or a double tap in an e2e spec', () => {
     }
     expect(offences).toEqual([]);
   });
+
+  it('aims at a Settings control by its settled box, not the first one read (mw-5r3p30.628)', () => {
+    // Settings draws its rows one by one, each after reading its saved value, so a control is pushed down after it is first on the page.
+    const text = readFileSync(join(E2E, 'speed-swipe.spec.ts'), 'utf8');
+    expect(text).not.toMatch(/greek\.boundingBox\(\)/);
+    expect(text).toContain('await settledBox(greek)');
+  });
 });

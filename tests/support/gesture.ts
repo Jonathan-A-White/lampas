@@ -23,6 +23,26 @@ export interface SwipeOptions {
   restMs?: number;
 }
 
+/** The box of `target` once its layout has stopped moving (mw-5r3p30.628). A screen whose controls draw one by one (Settings: each row reads its
+ * saved value first) pushes a control down after it is first on the page, so a box read at once is where the control WAS and a finger sent there
+ * lands on another. This reads the box every `everyMs` of the host's clock until `times` reads in a row agree (the layout is state, not the page's
+ * clock, which a spec has paused or faked); a gesture is aimed at the box it returns, and a box that never settles fails the spec. */
+export async function settledBox(target: Locator, { everyMs = 100, times = 5, withinMs = 10_000 }: { everyMs?: number; times?: number; withinMs?: number } = {}): Promise<{ x: number; y: number; width: number; height: number }> {
+  const page = target.page();
+  const same = (a: { x: number; y: number; width: number; height: number }, b: typeof a) => a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
+  const until = Date.now() + withinMs;
+  let last = await target.boundingBox();
+  let agreed = 1;
+  while (Date.now() < until) {
+    await page.waitForTimeout(everyMs); // a real-time hold: the layout settles on the host's clock, not the page's
+    const now = await target.boundingBox();
+    agreed = now && last && same(now, last) ? agreed + 1 : 1;
+    last = now;
+    if (last && agreed >= times) return last;
+  }
+  throw new Error(`the layout of the target did not settle within ${withinMs} ms`);
+}
+
 /** Drags from `from` to `to` inside zero time on the page's clock, however long the host takes to deliver it. */
 export async function swipe(page: Page, from: Point, to: Point, { with: input = 'mouse', steps = 8, lagMs = 0, restMs = 0 }: SwipeOptions = {}): Promise<void> {
   const at = (t: number) => ({ x: from[0] + (to[0] - from[0]) * t, y: from[1] + (to[1] - from[1]) * t });
