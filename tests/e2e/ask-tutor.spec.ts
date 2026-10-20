@@ -103,17 +103,17 @@ async function controlsOnPage(page: Page): Promise<{ name: string; rect: Rect }[
 
 const SCREENS: { name: string; path: string; ready: (page: Page) => Locator }[] = [
   { name: 'Goal', path: '/#/goal', ready: (p) => p.getByTestId('goal-title') },
-  { name: 'Words', path: '/#/words', ready: (p) => p.getByRole('heading', { name: 'Words', level: 1 }) },
-  { name: 'Review', path: '/#/review', ready: (p) => p.getByRole('heading', { name: 'Review', level: 1 }) },
+  { name: 'Words', path: '/#/words', ready: (p) => p.getByRole('heading', { name: 'Words', exact: true, level: 1 }) },
+  { name: 'Review', path: '/#/review', ready: (p) => p.getByRole('heading', { name: 'Review', exact: true, level: 1 }) },
   { name: 'Quick test', path: '/#/test', ready: (p) => p.getByRole('heading', { name: 'Quick test', level: 1 }) },
   { name: 'Parsing drill', path: '/#/drill', ready: (p) => p.getByRole('heading', { name: 'Parsing drill', level: 1 }) },
-  { name: 'Paradigms', path: '/#/paradigms', ready: (p) => p.getByRole('heading', { name: 'Paradigms', level: 1 }) },
-  { name: 'Placement', path: '/#/placement', ready: (p) => p.getByRole('heading', { name: 'Placement', level: 1 }) },
-  { name: 'Settings', path: '/#/settings', ready: (p) => p.getByRole('heading', { name: 'Settings', level: 1 }) },
+  { name: 'Paradigms', path: '/#/paradigms', ready: (p) => p.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 }) },
+  { name: 'Placement', path: '/#/placement', ready: (p) => p.getByRole('heading', { name: 'Placement', exact: true, level: 1 }) },
+  { name: 'Settings', path: '/#/settings', ready: (p) => p.getByRole('heading', { name: 'Settings', exact: true, level: 1 }) },
   { name: 'My study way', path: '/#/studyway', ready: (p) => p.getByRole('heading', { name: 'My study way', level: 1 }) },
-  { name: 'Preface', path: '/#/preface', ready: (p) => p.getByRole('heading', { name: 'Preface', level: 1 }) },
-  { name: 'Import', path: '/#/import', ready: (p) => p.getByRole('heading', { name: 'Import', level: 1 }) },
-  { name: 'About', path: '/#/about', ready: (p) => p.getByRole('heading', { name: 'About', level: 1 }) },
+  { name: 'Preface', path: '/#/preface', ready: (p) => p.getByRole('heading', { name: 'Preface', exact: true, level: 1 }) },
+  { name: 'Import', path: '/#/import', ready: (p) => p.getByRole('heading', { name: 'Import', exact: true, level: 1 }) },
+  { name: 'About', path: '/#/about', ready: (p) => p.getByRole('heading', { name: 'About', exact: true, level: 1 }) },
 ];
 
 test('the control is in the same place on every full screen, thumb-sized, inside the window and clear of the screen\'s own buttons', async ({ page }) => {
@@ -225,7 +225,7 @@ test('from Goal: the control, the sheet that fits the phone with its questions, 
   expect(fake.received[0].input).toMatchObject({ reference: 'Goal', screen: { name: 'Goal' } });
 
   // Done: the sheet goes, the control comes back, and the talk is there on return
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(control).toBeVisible();
   await control.click();
   await expect(page.getByRole('dialog', { name: 'Ask the tutor: Goal' }).locator('[data-turn]')).toHaveCount(1);

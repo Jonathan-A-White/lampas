@@ -26,7 +26,7 @@ async function openReader(page: Page) {
 }
 async function openSettings(page: Page) {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
 }
 async function backToReader(page: Page) {
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
@@ -54,7 +54,7 @@ test('Theme Phone follows a dark colour scheme and a light one', async ({ page }
   await expect.poll(() => canvasOf(page)).toBe(LIGHT_CANVAS);
   await expect.poll(() => barOf(page)).toBe('#f3f5f9');
   await openSettings(page);
-  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Phone', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'Phone', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await shot(page, 'settings-light');
 });
 
@@ -88,7 +88,7 @@ test('Theme Sepia gives warm paper and dark brown text on a dark phone, and Ligh
   await openSettings(page);
   await choose(page, 'Theme', 'Sepia');
   await expect.poll(() => themeOf(page)).toBe('sepia');
-  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Sepia', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'Sepia', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => canvasOf(page)).toBe(SEPIA_CANVAS);
   expect(await barOf(page)).toBe('#f4ecd8');
   await expectFitsPhone(page);
@@ -117,12 +117,12 @@ test('Theme High contrast gives pure white on black with a thick focus ring on a
   await openSettings(page);
   await choose(page, 'Theme', 'High contrast');
   await expect.poll(() => themeOf(page)).toBe('contrast');
-  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'High contrast', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'High contrast', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => canvasOf(page)).toBe(BLACK);
   expect(await barOf(page)).toBe('#000000');
   await expectFitsPhone(page);
   // the choice buttons have a ring round them, and a focused one a thick outline
-  const choice = page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Dark', exact: true });
+  const choice = page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'Dark', exact: true });
   expect(await choice.evaluate((el) => getComputedStyle(el).boxShadow)).toContain('inset');
   await page.keyboard.press('Tab');
   const ring = await page.evaluate(() => {
@@ -167,7 +167,7 @@ test('Text size Large makes the verse text larger and every tap target stays at 
     for (const button of await page.getByRole('group', { name: 'Text size' }).getByRole('button').all()) {
       expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
     }
-    for (const control of [page.getByRole('group', { name: 'Theme' }).getByRole('button').first(), page.getByRole('slider', { name: 'Greek speed' })]) {
+    for (const control of [page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button').first(), page.getByRole('slider', { name: 'Greek speed' })]) {
       expect((await control.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
     }
     await expectFitsPhone(page);
@@ -246,9 +246,9 @@ test('Theme, Text size and both rates survive a reload', async ({ page }) => {
   // let the saves land
   await page.waitForTimeout(300);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   expect(await canvasOf(page)).toBe(DARK_CANVAS);
-  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: 'Dark', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'Dark', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('group', { name: 'Text size' }).getByRole('button', { name: 'Largest', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('slider', { name: 'English speed' })).toHaveValue('0.7');
   await expect(page.getByRole('slider', { name: 'Greek speed' })).toHaveValue('1.3');

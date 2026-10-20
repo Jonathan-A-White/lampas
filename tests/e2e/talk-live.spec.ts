@@ -56,7 +56,7 @@ test('the live Bible talk refuses code, answers a question about πνεῦμα i
   const slower = await say('Make the Greek slower');
   await expect(slower.getByText(/^Changed: Greek speed /)).toBeVisible();
   await expect(slower.getByRole('button', { name: 'Undo Greek speed' })).toBeVisible();
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   expect(Number(await page.getByRole('slider', { name: 'Greek speed' }).inputValue())).toBeLessThan(1);
 });

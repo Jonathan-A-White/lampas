@@ -84,7 +84,7 @@ async function openLicencePage(page: Page, issuer: string | null): Promise<void>
     );
   }
   await page.goto('/#/unlock');
-  await expect(page.getByRole('heading', { name: 'Licence', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true, level: 1 })).toBeVisible();
 }
 
 async function expectFitsPhone(page: Page): Promise<void> {
@@ -104,7 +104,7 @@ test('a site-licensed phone lists its devices by name and last use, signed by it
   await openLicencePage(page, SITE_ISSUER);
   const list = devices(page);
   await expect(list.getByRole('listitem')).toHaveCount(2);
-  const pixel = list.getByRole('listitem', { name: 'Pixel' });
+  const pixel = list.getByRole('listitem', { name: 'Pixel', exact: true });
   await expect(pixel).toContainText('this phone');
   await expect(pixel).toContainText('Last used 18 Oct 2026');
   const tablet = list.getByRole('listitem', { name: 'Old tablet' });
@@ -126,9 +126,9 @@ test('Remove on the other device asks first, then the list has one', async ({ pa
   await expectFitsPhone(page);
   await shot(page, 'my-devices-confirm');
   expect(backend.removed).toEqual([]);
-  await dialog.getByRole('button', { name: 'Remove' }).click();
+  await dialog.getByRole('button', { name: 'Remove', exact: true }).click();
   await expect(devices(page).getByRole('listitem')).toHaveCount(1);
-  await expect(devices(page).getByRole('listitem', { name: 'Pixel' })).toBeVisible();
+  await expect(devices(page).getByRole('listitem', { name: 'Pixel', exact: true })).toBeVisible();
   expect(backend.removed).toEqual([{ deviceKey: OTHER_KEY, personId: 'p1' }]);
   await expect(page.getByRole('status').getByText('Licensed', { exact: true })).toBeVisible();
 });
@@ -137,7 +137,7 @@ test('Keep leaves both devices', async ({ page }) => {
   const backend = await stubBackend(page);
   await openLicencePage(page, SITE_ISSUER);
   await devices(page).getByRole('button', { name: 'Remove Old tablet' }).click();
-  await page.getByRole('button', { name: 'Keep' }).click();
+  await page.getByRole('button', { name: 'Keep', exact: true }).click();
   await expect(page.getByRole('alertdialog')).toHaveCount(0);
   await expect(devices(page).getByRole('listitem')).toHaveCount(2);
   expect(backend.removed).toEqual([]);
@@ -148,7 +148,7 @@ test('Remove on this phone returns it to Not licensed', async ({ page }) => {
   await openLicencePage(page, SITE_ISSUER);
   await devices(page).getByRole('button', { name: 'Remove Pixel' }).click();
   await expect(page.getByRole('alertdialog')).toContainText('Lampas on this phone loses its licence');
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Remove' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Remove', exact: true }).click();
   await expect(page.getByRole('status').getByText('Not licensed')).toBeVisible();
   await expect(devices(page)).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Get a licence' })).toBeVisible();
@@ -164,7 +164,7 @@ test('Rename sends PATCH {deviceKey, name} and shows the new name', async ({ pag
   await expect(field).toHaveValue('Old tablet');
   await expectFitsPhone(page);
   await field.fill('Kitchen tablet');
-  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(devices(page).getByRole('listitem', { name: 'Kitchen tablet' })).toBeVisible();
   expect(backend.renamed).toEqual([{ deviceKey: OTHER_KEY, name: 'Kitchen tablet' }]);
   // it persists: the backend holds it, and the next visit lists it
@@ -182,7 +182,7 @@ test('the backend’s refusal of a rename is shown in its own words', async ({ p
   await openLicencePage(page, SITE_ISSUER);
   await devices(page).getByRole('button', { name: 'Rename Old tablet' }).click();
   await page.getByLabel('Device name').fill('Kitchen tablet');
-  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('that device is not on this licence');
 });
 

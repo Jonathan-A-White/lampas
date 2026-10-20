@@ -39,7 +39,7 @@ test(`The word sheet with every Logos lexicon at ${VIEWPORT.width}x${VIEWPORT.he
   await tickEveryLexicon(page);
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'condemnation', exact: true }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Word' });
+  const dialog = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(dialog).toBeVisible();
   const tiles = dialog.getByRole('group', { name: 'Study', exact: true }).getByRole('link');
   await expect(tiles).toHaveCount(22);

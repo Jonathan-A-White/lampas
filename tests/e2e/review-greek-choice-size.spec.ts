@@ -35,7 +35,7 @@ test('a Greek choice on a Review multiple-choice card draws at 30 px', async ({ 
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
   await put(page, 'reviews', [{ kind: 'grammar', id: 'words-sound-alike', step: 0, rights: 0, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
   await page.goto('/#/review');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
 
   await expect(page.getByTestId('grammar-prompt')).toHaveAttribute('data-idea', 'words-sound-alike');
   const choices = page.locator('[data-option][lang="el"]');

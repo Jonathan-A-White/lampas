@@ -77,10 +77,10 @@ test('after a strong round at Solid grammar with Ask, the end card offers the mo
   await put(page, 'reviews', [{ kind: 'grammar', id: 'preposition', step: 5, rights: 3, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
 
   await page.goto('/#/review');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('grammar-prompt')).toBeVisible();
   for (let i = 0; i < 10; i += 1) {
-    const show = page.getByRole('button', { name: 'Show' });
+    const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
       await page.getByRole('button', { name: 'I knew it' }).click();

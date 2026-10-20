@@ -47,14 +47,14 @@ for (const { hash, title } of PAGES) {
 test('About: Read aloud marks the line being read and Pause is on the speaking bar', async ({ page }) => {
   await openPage(page, '#/about', 'About');
   await page.getByRole('banner').getByRole('button', { name: 'Read aloud', exact: true }).click();
-  const bar = page.getByRole('region', { name: 'Speaking' });
-  await expect(bar.getByRole('button', { name: 'Pause' })).toBeVisible();
+  const bar = page.getByRole('region', { name: 'Speaking', exact: true });
+  await expect(bar.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
   const marked = page.locator('[data-reading]');
   await expect(marked).toHaveCount(1);
   await expect(marked).toBeInViewport();
   await expect(marked).toContainText('If I have seen further');
-  await bar.getByRole('button', { name: 'Pause' }).click();
-  await expect(bar.getByRole('button', { name: 'Resume' })).toBeVisible();
+  await bar.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect(bar.getByRole('button', { name: 'Resume', exact: true })).toBeVisible();
   await shot(page, 'page-actions-about');
   // leaving the page ends the reading
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();

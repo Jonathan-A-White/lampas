@@ -82,7 +82,7 @@ async function openIdeaSheet(page: Page, percent: number, holdChapters = false):
 // The slider is one thumb: End slides it to I know it, which opens Drill it. It is disabled until the sheet has found its examples, and a disabled
 // control takes no focus and no key, so the walk waits for it first (mw-5r3p30.485).
 async function slideToKnowIt(page: Page): Promise<void> {
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   const slider = idea.getByRole('slider', { name: 'Your level' });
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
   await expect(slider).toBeEnabled();
@@ -102,10 +102,10 @@ for (const phone of PHONES) {
 
       test('Review: after every answer of a round Next (Finish at the end) is in view', async ({ page }) => {
         await openWithTextSize(page, '#/review', percent);
-        await page.getByRole('button', { name: 'Start' }).click();
+        await page.getByRole('button', { name: 'Start', exact: true }).click();
         await expect(page.getByTestId('prompt')).toBeVisible();
         for (let i = 0; i < 10; i += 1) {
-          const show = page.getByRole('button', { name: 'Show' });
+          const show = page.getByRole('button', { name: 'Show', exact: true });
           if (await show.isVisible()) {
             await show.click();
             await page.getByRole('button', { name: 'Not yet' }).click();
@@ -280,7 +280,7 @@ test('Drill it opens from the idea sheet even when its examples are slow to load
   await page.setViewportSize(PHONES[0].size);
   await openUnlocked(page);
   const release = await openIdeaSheet(page, 100, true);
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByTestId('idea-loading')).toBeVisible();
   await expect(idea.getByRole('slider', { name: 'Your level' })).toBeDisabled();
   setTimeout(release, 1500);

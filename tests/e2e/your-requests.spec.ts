@@ -165,7 +165,7 @@ test('from About the back button reads ‹ About and returns there; a double tap
   await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
   expect(await page.evaluate(() => history.length)).toBe(before + 1);
   await page.getByRole('button', { name: '‹ Settings' }).dblclick();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await expect(page).toHaveURL(/#\/settings$/);
   await shot(page, 'your-requests-back-from-settings');
 });

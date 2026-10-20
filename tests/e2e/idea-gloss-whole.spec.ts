@@ -80,7 +80,7 @@ for (const [goal, words] of [
   test(`Learn next on ${goal}: the alphabet sheet shows each example's English whole at 390 px`, async ({ page }) => {
     await onGoal(page, goal);
     await page.getByTestId('ideas-list').getByRole('button', { name: ALPHABET }).click();
-    const idea = page.getByRole('dialog', { name: 'Idea' });
+    const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
     await expect(idea.getByRole('heading', { name: ALPHABET })).toBeVisible();
     const rows = await rowsOf(idea, ALPHABET);
     expectGlosses(rows, words);
@@ -93,9 +93,9 @@ for (const [goal, words] of [
 test("About Phi over 1 John 1:1: the Phi sheet shows each example's English whole at 390 px", async ({ page }) => {
   await onGoal(page, '1 John 1:1');
   await page.getByTestId('ideas-list').getByRole('button', { name: ALPHABET }).click();
-  await page.getByRole('dialog', { name: 'Idea' }).getByRole('button', { name: 'About Phi' }).click();
-  const phi = page.getByRole('dialog', { name: 'Idea' }).nth(1);
-  await expect(phi.getByRole('heading', { name: 'Phi' })).toBeVisible();
+  await page.getByRole('dialog', { name: 'Idea', exact: true }).getByRole('button', { name: 'About Phi' }).click();
+  const phi = page.getByRole('dialog', { name: 'Idea', exact: true }).nth(1);
+  await expect(phi.getByRole('heading', { name: 'Phi', exact: true })).toBeVisible();
   const rows = await rowsOf(phi, 'Phi');
   expect(rows.length).toBeGreaterThan(0);
   expect(clipped(rows)).toEqual([]);
@@ -111,17 +111,17 @@ for (const goal of ['1 John 1:1', '1 John 1:2']) {
     const rows: Row[] = [];
     for (const id of ids) {
       await page.locator(`[data-idea="${id}"]`).getByRole('button').click();
-      const idea = page.getByRole('dialog', { name: 'Idea' });
+      const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
       rows.push(...(await rowsOf(idea, id)));
       if (id === 'alphabet') {
         const names = await idea.getByRole('button', { name: /^About / }).evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? ''));
         expect(names.length, 'letters').toBe(24);
         for (const name of names) {
           await idea.getByRole('button', { name, exact: true }).click();
-          const letter = page.getByRole('dialog', { name: 'Idea' }).nth(1);
+          const letter = page.getByRole('dialog', { name: 'Idea', exact: true }).nth(1);
           rows.push(...(await rowsOf(letter, name)));
           await letter.getByRole('button', { name: 'Done', exact: true }).click();
-          await expect(page.getByRole('dialog', { name: 'Idea' })).toHaveCount(1);
+          await expect(page.getByRole('dialog', { name: 'Idea', exact: true })).toHaveCount(1);
         }
       }
       await idea.getByRole('button', { name: 'Done', exact: true }).click();
@@ -139,8 +139,8 @@ test("ἑωράκαμεν > perfect over 1 John 1: the Grammar sheet shows each 
   await openUnlocked(page);
   await page.goto('/#/?b=1jn&c=1&view=greek');
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'ἑωράκαμεν', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'perfect', exact: true }).click();
-  const grammar = page.getByRole('dialog', { name: 'Grammar' });
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'perfect', exact: true }).click();
+  const grammar = page.getByRole('dialog', { name: 'Grammar', exact: true });
   await expect(grammar.getByTestId('grammar-example').first()).toBeVisible();
   const rows = await grammar.getByTestId('grammar-example').evaluateAll((els) =>
     els.map((row) => {

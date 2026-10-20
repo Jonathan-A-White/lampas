@@ -101,7 +101,7 @@ test('a drill left half done is offered again after a reload, and Resume goes on
   const step = await page.getByTestId('drill-step').getAttribute('data-step-id');
   await page.reload();
   await expect(page.getByText('Round left unfinished')).toBeVisible();
-  await page.getByRole('button', { name: 'Resume' }).click();
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
   await expect(page.getByTestId('drill-word')).toHaveAttribute('data-verse', verse ?? '');
   await expect(page.getByTestId('drill-step')).toHaveAttribute('data-step-id', step ?? '');
 });

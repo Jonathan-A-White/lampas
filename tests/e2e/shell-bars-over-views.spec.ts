@@ -233,7 +233,7 @@ for (const size of SIZES) {
     const strip = await openAfterABreak(page);
     const view = await openVerseView(page, 28);
     for (const name of ['‹ Reader', 'Previous verse', 'Next verse']) await expectTappable(view.getByRole('button', { name, exact: true }));
-    await expectTappable(strip.getByRole('button', { name: 'Refresh' }));
+    await expectTappable(strip.getByRole('button', { name: 'Refresh', exact: true }));
     await expectTappable(strip.getByRole('button', { name: 'Not now' }));
     await shot(page, `shell-welcome-back-header-${size.width}`);
     // the Verse view's Back is a real tap: it closes the view, and the strip is still there
@@ -342,7 +342,7 @@ async function readerPage(page: Page): Promise<void> {
 async function openWord(page: Page): Promise<Locator> {
   await readerPage(page);
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-  const sheet = page.getByRole('dialog', { name: 'Word' });
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(sheet).toBeVisible();
   return sheet;
 }
@@ -402,7 +402,7 @@ const PANELS: PanelWay[] = [
     open: async (page) => {
       const word = await openWord(page);
       await word.getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
-      const sheet = page.getByRole('dialog', { name: 'Grammar' });
+      const sheet = page.getByRole('dialog', { name: 'Grammar', exact: true });
       await expect(sheet).toBeVisible();
       return sheet;
     },
@@ -482,11 +482,11 @@ for (const cover of PANELS) {
       const panel = await cover.open(page);
       const strip = welcomeOf(page);
       await expect(strip).toBeVisible();
-      await expectBelowBars(page, panel, cover.header(panel), cover.close(panel), [strip.getByRole('button', { name: 'Refresh' }), strip.getByRole('button', { name: 'Not now' })]);
+      await expectBelowBars(page, panel, cover.header(panel), cover.close(panel), [strip.getByRole('button', { name: 'Refresh', exact: true }), strip.getByRole('button', { name: 'Not now' })]);
       await shot(page, `shell-over-${cover.name.replace(/[^a-z]+/gi, '-').toLowerCase()}-welcome`);
       // 'Update ready' comes while it is open: the bars grow and the panel gives way
       const banner = await update.raise();
-      await expectBelowBars(page, panel, cover.header(panel), cover.close(panel), [banner, strip.getByRole('button', { name: 'Refresh' }), strip.getByRole('button', { name: 'Not now' })]);
+      await expectBelowBars(page, panel, cover.header(panel), cover.close(panel), [banner, strip.getByRole('button', { name: 'Refresh', exact: true }), strip.getByRole('button', { name: 'Not now' })]);
       await shot(page, `shell-over-${cover.name.replace(/[^a-z]+/gi, '-').toLowerCase()}-both`);
     });
 

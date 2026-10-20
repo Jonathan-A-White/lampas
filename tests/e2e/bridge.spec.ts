@@ -22,7 +22,7 @@ test('a question he is not ready for is bridged to the idea he lacks and Take me
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/#/words');
-  await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await sheet.getByRole('textbox', { name: 'Your message' }).fill('Why is the genitive used here?');
@@ -38,13 +38,13 @@ test('a question he is not ready for is bridged to the idea he lacks and Take me
   await shot(page, 'bridge-offer');
 
   await take.click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   await shot(page, 'bridge-idea');
 
-  await idea.getByRole('button', { name: 'Done' }).click();
+  await idea.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(idea).toHaveCount(0);
   await expect(sheet.getByRole('button', { name: 'Take me there: The Greek alphabet' })).toBeVisible();
   expect(fake.received[0].input).toMatchObject({ missing_foundations: { topic: 'The genitive case' } });

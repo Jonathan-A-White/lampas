@@ -15,7 +15,7 @@ test('the word sheet has a Help with this word row with thumb-sized Grammar and 
   await page.goto('/');
   await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
 
-  const word = page.getByRole('dialog', { name: 'Word' });
+  const word = page.getByRole('dialog', { name: 'Word', exact: true });
   const row = word.getByRole('group', { name: 'Help with this word' });
   await expect(row).toBeInViewport();
   // The word's facts and the row fit the sheet without scrolling it, and the page does not move.

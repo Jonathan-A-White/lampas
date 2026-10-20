@@ -9,7 +9,7 @@ test('a phone with no licence opens on the Reader at a phone width', async ({ pa
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Unlock' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Unlock', exact: true })).toHaveCount(0);
   await expect(page.getByTestId('device-key')).toHaveCount(0);
   await shot(page, 'free-to-read');
 });
@@ -27,7 +27,7 @@ test('the Licence page, #/unlock, shows the phone’s key and says it is not lic
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.goto('/#/unlock');
-  await expect(page.getByRole('heading', { name: 'Licence' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true })).toBeVisible();
   await expect(page.getByTestId('device-key')).toHaveText(SEED_PUBLIC_KEY);
   await expect(page.getByRole('status').getByText('Not licensed')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Check again' })).toBeVisible();
@@ -40,14 +40,14 @@ test('Settings shows the AI off with Needs a licence, which opens the Licence pa
   await page.goto('/#/settings');
   const tips = page.locator('[data-setting="tips"]');
   await tips.scrollIntoViewIfNeeded();
-  await expect(tips.getByRole('button', { name: 'Off' })).toBeDisabled();
+  await expect(tips.getByRole('button', { name: 'Off', exact: true })).toBeDisabled();
   const needs = tips.getByRole('button', { name: 'Needs a licence' });
   await expect(needs).toBeVisible();
   const box = (await needs.boundingBox())!;
   expect(box.height).toBeGreaterThanOrEqual(44);
   await shot(page, 'settings-needs-licence');
   await needs.click();
-  await expect(page.getByRole('heading', { name: 'Licence' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true })).toBeVisible();
   await expect(page.getByRole('status').getByText('Not licensed')).toBeVisible();
   await expect(page.getByTestId('device-key')).toHaveText(SEED_PUBLIC_KEY);
   await shot(page, 'licence-page');
@@ -63,7 +63,7 @@ for (const [name, size] of [['upright', { width: 390, height: 844 }], ['sideways
     await page.goto('/#/?ref=Rom.8.28');
     const view = page.getByRole('region', { name: 'Verse view' });
     await expect(view).toBeVisible();
-    const actions = view.getByRole('group', { name: 'Actions' });
+    const actions = view.getByRole('group', { name: 'Actions', exact: true });
     await expect(actions.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
     await expect(actions.getByRole('button', { name: 'Copy link', exact: true })).toBeVisible();
     await expect(view.getByRole('button', { name: 'Read it aloud' })).toHaveCount(0);

@@ -73,8 +73,8 @@ test('the strip names the most overdue, fits a phone and has big buttons', async
 
 test('Refresh opens a round of just those and puts the strip away for the day', async ({ page }) => {
   await openAfterABreak(page);
-  await page.getByRole('region', { name: 'Welcome back' }).getByRole('button', { name: 'Refresh' }).click();
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+  await page.getByRole('region', { name: 'Welcome back' }).getByRole('button', { name: 'Refresh', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByText('1 of 3')).toBeVisible();
   await page.goto('/#/?b=rom&c=8');
   await page.reload();

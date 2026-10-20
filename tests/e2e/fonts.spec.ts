@@ -21,7 +21,7 @@ async function openReader(page: Page, hash = '') {
 
 async function chooseFont(page: Page, name: RegExp) {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   const group = page.getByRole('group', { name: 'Font', exact: true });
   await group.getByRole('button', { name }).click();
   await expect(group.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'true');

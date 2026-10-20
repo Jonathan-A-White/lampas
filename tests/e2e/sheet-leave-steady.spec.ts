@@ -37,7 +37,7 @@ async function putGoal(page: Page, goal: string) {
   );
 }
 
-const ideas = (page: Page) => page.getByRole('dialog', { name: 'Idea' });
+const ideas = (page: Page) => page.getByRole('dialog', { name: 'Idea', exact: true });
 
 /** The Goal screen of 1 John with the settle moment put back (openUnlocked starts it at 0), Learn next tapped: the Learn sheet, loaded, its moment passed. */
 async function openLearnSheet(page: Page): Promise<Locator> {
@@ -62,7 +62,7 @@ async function openRho(page: Page, learn: Locator): Promise<Locator> {
   await learn.getByRole('button', { name: 'About rho' }).click();
   await expect(ideas(page)).toHaveCount(2);
   const rho = ideas(page).nth(1);
-  await expect(rho.getByRole('heading', { name: 'Rho' })).toBeVisible();
+  await expect(rho.getByRole('heading', { name: 'Rho', exact: true })).toBeVisible();
   await expect(rho.getByRole('slider', { name: 'Your level' })).toBeEnabled();
   await page.waitForTimeout(SETTLE_MS + 100);
   return rho;

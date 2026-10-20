@@ -44,8 +44,8 @@ test('Ask for another approach at phone width: the sheet, two shrunk pictures, S
   const text = sheet.getByLabel('What approach, and how does it teach?');
   const name = sheet.getByLabel('Who to credit', { exact: true });
   const link = sheet.getByLabel('Link', { exact: true });
-  const send = sheet.getByRole('button', { name: 'Send' });
-  const done = sheet.getByRole('button', { name: 'Done' });
+  const send = sheet.getByRole('button', { name: 'Send', exact: true });
+  const done = sheet.getByRole('button', { name: 'Done', exact: true });
   await expect(send).toBeDisabled();
 
   await sheet.getByLabel('Add a screenshot or photo').setInputFiles([

@@ -18,7 +18,7 @@ test('the Preface opens from the picker at phone width, with its links', async (
   await row.click();
 
   await expect(page).toHaveURL(/#\/preface$/);
-  await expect(page.getByRole('heading', { name: 'Preface', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Preface', exact: true, level: 1 })).toBeVisible();
   const essay = page.getByRole('button', { name: /The Case for Byzantine Priority/ });
   const original = page.getByRole('link', { name: 'Original (TC Journal, 2001)' });
   const msb = page.getByRole('link', { name: /Majority Standard Bible/ });
@@ -48,9 +48,9 @@ test('About links to the Preface', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/about');
   await page.getByRole('button', { name: 'Preface', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Preface', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Preface', exact: true, level: 1 })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
 });
 
 test('the Robinson entry opens the essay inside the app, readable at phone width', async ({ page }) => {
@@ -59,7 +59,7 @@ test('the Robinson entry opens the essay inside the app, readable at phone width
   await page.getByRole('button', { name: /The Case for Byzantine Priority/ }).click();
   await expect(page).toHaveURL(/#\/preface\/robinson$/);
   await expect(page.getByRole('heading', { name: 'The Case for Byzantine Priority', level: 1 })).toBeVisible();
-  const first = page.getByRole('heading', { name: 'Introduction', level: 2 });
+  const first = page.getByRole('heading', { name: 'Introduction', exact: true, level: 2 });
   await expect(first).toBeVisible();
   const body = page.locator('main [data-essay-paragraph]').first();
   await expect(body).toBeVisible();
@@ -78,13 +78,13 @@ test('the Robinson entry opens the essay inside the app, readable at phone width
   await shot(page, 'essay-robinson');
 
   await page.goBack();
-  await expect(page.getByRole('heading', { name: 'Preface', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Preface', exact: true, level: 1 })).toBeVisible();
 });
 
 test('Greek words in the essay use the app\'s Greek type, in Gentium Plus', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/preface/robinson');
-  await expect(page.getByRole('heading', { name: 'Introduction', level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Introduction', exact: true, level: 2 })).toBeVisible();
   const greek = page.locator('main [data-essay-paragraph] [lang="el"]');
   expect(await greek.count()).toBeGreaterThan(0);
   const target = page.locator('main [data-essay-paragraph]', { hasText: 'ευθυς' }).first();

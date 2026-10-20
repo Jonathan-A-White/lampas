@@ -47,7 +47,7 @@ export async function openIdea(page: Page, goal: string, name: string): Promise<
   await openGoal(page, goal);
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name, exact: true }).click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
   return idea;
 }
@@ -78,7 +78,7 @@ export async function openWriteIt(page: Page): Promise<Locator> {
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet' }).click();
   await page.getByRole('button', { name: 'About omicron' }).click();
-  const part = page.getByRole('dialog', { name: 'Idea' }).nth(1).getByTestId('lesson-write-it');
+  const part = page.getByRole('dialog', { name: 'Idea', exact: true }).nth(1).getByTestId('lesson-write-it');
   await part.scrollIntoViewIfNeeded();
   await part.getByRole('button', { name: 'Write it', exact: true }).click();
   const card = page.getByRole('dialog', { name: 'Write it' });
@@ -151,7 +151,7 @@ export async function openLessonStrip(page: Page): Promise<Locator> {
 export async function openCheck(page: Page): Promise<Locator> {
   const strip = await openLessonStrip(page);
   await strip.getByRole('button', { name: 'Check', exact: true }).click();
-  const sheet = page.getByRole('dialog', { name: 'Check' });
+  const sheet = page.getByRole('dialog', { name: 'Check', exact: true });
   await expect(sheet.getByTestId('check-step')).toBeVisible();
   return sheet;
 }

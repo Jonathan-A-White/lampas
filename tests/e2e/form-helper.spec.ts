@@ -39,13 +39,13 @@ test('Let the tutor help me fill this in at phone width: the button, a question 
   const text = sheet.getByLabel('What approach, and how does it teach?');
   const name = sheet.getByLabel('Who to credit', { exact: true });
   const link = sheet.getByLabel('Link', { exact: true });
-  const send = sheet.getByRole('button', { name: 'Send' });
+  const send = sheet.getByRole('button', { name: 'Send', exact: true });
   await expect(send).toBeDisabled();
 
   // he answers; the tutor's next question shows with the approach field filled and in view beneath it
   fake.autoReply = answered('Who made this approach, so we can credit them?', 'credit', [{ field: 'approach', value: 'Teach the cases with colours, one case at a time.' }]);
   await helper.getByLabel('Your answer').fill('I want the cases taught with colours, one case at a time.');
-  await helper.getByRole('button', { name: 'Reply' }).click();
+  await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(helper.getByText('Who made this approach, so we can credit them?')).toBeVisible();
   await expect(text).toHaveValue('Teach the cases with colours, one case at a time.');
   await expect(text).toBeInViewport();
@@ -54,7 +54,7 @@ test('Let the tutor help me fill this in at phone width: the button, a question 
   // the photo question offers the form's own picker
   fake.autoReply = answered('Do you have a screenshot or a photo of it?', 'pictures', [{ field: 'credit', value: 'Anna Example' }]);
   await helper.getByLabel('Your answer').fill('Anna Example');
-  await helper.getByRole('button', { name: 'Reply' }).click();
+  await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(name).toHaveValue('Anna Example');
   const chooser = page.waitForEvent('filechooser');
   await helper.getByRole('button', { name: 'Choose a photo' }).click();
@@ -65,7 +65,7 @@ test('Let the tutor help me fill this in at phone width: the button, a question 
 
   fake.autoReply = answered('That is everything I need: every required field is filled in.', undefined, [{ field: 'link', value: 'example.org/greek' }]);
   await helper.getByLabel('Your answer').fill('example.org/greek');
-  await helper.getByRole('button', { name: 'Reply' }).click();
+  await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(link).toHaveValue('example.org/greek');
   await expect(helper.getByText(/Everything required is filled in/)).toBeVisible();
   await expect(send).toBeEnabled();

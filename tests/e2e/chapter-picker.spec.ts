@@ -82,13 +82,13 @@ test('a bare open reads the chapter last open, and a chapter fetched once reads 
   // (the worker's precache holds index.json on a phone; with no worker here, the picker has read it once before the cut)
   await page.getByRole('heading', { level: 1 }).getByRole('button').click();
   const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
-  await picker.getByRole('button', { name: 'Jude' }).click();
+  await picker.getByRole('button', { name: 'Jude', exact: true }).click();
   await expect(picker.locator('[data-chapter]')).toHaveCount(1);
-  await picker.getByRole('button', { name: 'Done' }).click();
+  await picker.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(picker).toHaveCount(0);
   await context.setOffline(true);
   await page.getByRole('heading', { level: 1 }).getByRole('button').click();
-  await picker.getByRole('button', { name: 'Jude' }).click();
+  await picker.getByRole('button', { name: 'Jude', exact: true }).click();
   await picker.getByRole('button', { name: 'Chapter 1' }).click();
   const alert = page.getByRole('alert');
   await expect(alert).toContainText('Jude 1 is not on this phone yet');
@@ -154,7 +154,7 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     const search = picker.getByRole('searchbox', { name: 'Search books' });
     await search.fill('Ps 23');
     await search.press('Enter');
-    await expect(picker.getByRole('heading', { name: 'Psalms' })).toBeVisible();
+    await expect(picker.getByRole('heading', { name: 'Psalms', exact: true })).toBeVisible();
 
     await picker.getByRole('button', { name: '‹ Books' }).click();
     await picker.getByRole('searchbox', { name: 'Search books' }).fill('1 Jn 2:1');

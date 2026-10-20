@@ -310,8 +310,8 @@ for (const licensed of [true, false]) {
     const at = await top();
     expect(at).toBeGreaterThan(500);
 
-    await page.getByRole('button', { name: 'Settings' }).click();
-    await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
     await page.getByRole('button', { name: '‹ Reader' }).click();
     await expect.poll(top).toBeGreaterThan(at - 50);
     // the saved place is back; the restore waits for the text to stay still before it lets go

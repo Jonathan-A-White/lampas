@@ -46,7 +46,7 @@ test('the model alpha at the Copy stage is one joined letter, with no gap betwee
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet' }).click();
   await page.getByRole('button', { name: 'About alpha' }).click();
-  const letter = page.getByRole('dialog', { name: 'Idea' }).nth(1);
+  const letter = page.getByRole('dialog', { name: 'Idea', exact: true }).nth(1);
   const part = letter.getByTestId('lesson-write-it');
   await part.scrollIntoViewIfNeeded();
   await part.getByRole('button', { name: 'Write it', exact: true }).click();
@@ -84,7 +84,7 @@ async function openAlpha(page: Page, stage: 'trace' | 'copy') {
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet' }).click();
   await page.getByRole('button', { name: 'About alpha' }).click();
-  const part = page.getByRole('dialog', { name: 'Idea' }).nth(1).getByTestId('lesson-write-it');
+  const part = page.getByRole('dialog', { name: 'Idea', exact: true }).nth(1).getByTestId('lesson-write-it');
   await part.scrollIntoViewIfNeeded();
   await part.getByRole('button', { name: 'Write it', exact: true }).click();
   const card = page.getByRole('dialog', { name: 'Write it' }).getByTestId('write-it');
@@ -128,7 +128,7 @@ test('alpha at Copy and in the Not quite replay keeps its numbered start point',
   await page.mouse.down();
   for (let i = 1; i <= 10; i += 1) await page.mouse.move(box.x + 20 + i * 4, box.y + 20);
   await page.mouse.up();
-  await card.getByRole('button', { name: 'Check' }).click();
+  await card.getByRole('button', { name: 'Check', exact: true }).click();
   await expect(card.getByTestId('write-verdict')).toHaveAttribute('data-right', 'false');
   await markerShown(card.getByTestId('write-strokes-shown'));
   await expect(card.getByTestId('write-stroke-line')).toBeVisible();

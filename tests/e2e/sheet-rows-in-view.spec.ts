@@ -39,9 +39,9 @@ async function opensPlural(page: Page): Promise<Locator> {
   await openUnlocked(page);
   await page.goto('/#/?b=1jn&c=2&view=greek');
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'Τεκνία', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'plural', exact: true }).click();
-  const grammar = page.getByRole('dialog', { name: 'Grammar' });
-  await expect(grammar.getByRole('heading', { name: 'plural' })).toBeVisible();
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'plural', exact: true }).click();
+  const grammar = page.getByRole('dialog', { name: 'Grammar', exact: true });
+  await expect(grammar.getByRole('heading', { name: 'plural', exact: true })).toBeVisible();
   return grammar;
 }
 
@@ -60,7 +60,7 @@ for (const [name, size] of [['upright', UPRIGHT], ['sideways', SIDEWAYS]] as con
     await page.setViewportSize(size);
     const grammar = await opensPlural(page);
     await grammar.getByRole('button', { name: 'Learn this idea' }).click();
-    const idea = page.getByRole('dialog', { name: 'Idea' });
+    const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
     await settled(idea);
     await expect(idea.getByTestId('idea-example')).toHaveCount(3);
     await expect(idea.getByTestId('idea-example').first()).toHaveAttribute('data-form', 'Τεκνία');
@@ -97,9 +97,9 @@ for (const [name, size] of [['upright', UPRIGHT], ['sideways', SIDEWAYS]] as con
     await page.reload();
     await page.getByTestId('ideas-bar').click();
     await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet' }).click();
-    await page.getByRole('dialog', { name: 'Idea' }).getByRole('button', { name: 'About Chi' }).click();
-    const chi = page.getByRole('dialog', { name: 'Idea' }).nth(1);
-    await expect(chi.getByRole('heading', { name: 'Chi' })).toBeVisible();
+    await page.getByRole('dialog', { name: 'Idea', exact: true }).getByRole('button', { name: 'About Chi' }).click();
+    const chi = page.getByRole('dialog', { name: 'Idea', exact: true }).nth(1);
+    await expect(chi.getByRole('heading', { name: 'Chi', exact: true })).toBeVisible();
     await settled(chi);
     const all = await chi.getByTestId('idea-example').count();
     const shown = shownExamples(chi);
@@ -134,7 +134,7 @@ test('the sweep, upright: the word sheet of Τεκνία opens with its word, le
   await openUnlocked(page);
   await page.goto('/#/?b=1jn&c=2&view=greek');
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'Τεκνία', exact: true }).click();
-  const word = page.getByRole('dialog', { name: 'Word' });
+  const word = page.getByRole('dialog', { name: 'Word', exact: true });
   for (const id of ['sheet-word', 'sheet-lemma', 'sheet-parse', 'sheet-gloss']) expect(await whyHidden(word.getByTestId(id)), id).toBe('');
   await shot(page, 'sheet-rows-word');
 });

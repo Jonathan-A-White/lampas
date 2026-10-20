@@ -36,7 +36,7 @@ async function answerFirstCard(page: Page, right: boolean) {
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
   await put(page, 'reviews', [{ kind: 'grammar', id: 'movable-letters', step: 0, rights: 0, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
   await page.goto('/#/review');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
 
   const prompt = page.getByTestId('grammar-prompt');
   await expect(prompt).toHaveAttribute('data-idea', 'movable-letters');

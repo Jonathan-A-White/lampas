@@ -28,7 +28,7 @@ async function openSheet(page: Page, options: { long: boolean }) {
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   if (options.long) await tickEveryLexicon(page);
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'condemnation', exact: true }).tap();
-  const sheet = page.getByRole('dialog', { name: 'Word' });
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   const tip = sheet.getByRole('note');
   const heading = sheet.getByText('“condemnation”');
   await expect(tip).toContainText('Long-press a word to hear it');

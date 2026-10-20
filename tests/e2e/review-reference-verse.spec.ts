@@ -17,10 +17,10 @@ async function answeredWithLine(page: Page, view: 'greek' | 'english'): Promise<
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await waitForDue(page);
   await openReviewFromToday(page);
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(page.getByTestId('prompt')).toBeVisible();
   for (let i = 0; i < 10; i += 1) {
-    const show = page.getByRole('button', { name: 'Show' });
+    const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
       await page.getByRole('button', { name: 'I knew it' }).click();
@@ -62,7 +62,7 @@ for (const view of ['greek', 'english'] as const) {
     expect(box && box.x >= 0 && box.x + box.width <= 390 && box.y >= 0 && box.y + box.height <= 844).toBe(true);
     await shot(page, `review-reference-verse-${view}`);
 
-    await card.getByRole('button', { name: 'Close' }).click();
+    await card.getByRole('button', { name: 'Close', exact: true }).click();
     await expect(card).toBeHidden();
     await expect(page.getByTestId('chapter-form')).toBeVisible();
     await expect(page.locator('[data-option][data-result="right"], [data-option][data-result="wrong"]')).toHaveCount(result);

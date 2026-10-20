@@ -101,7 +101,7 @@ test('scrolling down slides the bars away, scrolling up leaves them away', async
   await scrollText(page, 400);
   await expectAll(page, 'hidden');
   // out of the tab order too
-  await expect(page.getByRole('button', { name: 'Settings' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Settings', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Talk', exact: true })).toHaveCount(0);
   expect(await textHeight(page)).toBeGreaterThan(before + 150);
   // the text has the whole screen: its box ends in the foot's last 100 px of the window, above the place line and the phone's 48 px floor under it (mw-5r3p30.473)
@@ -212,12 +212,12 @@ test('with Immersive reader Off scrolling leaves the bars where they are', async
 
 test('the setting is kept across a reload', async ({ page }) => {
   await openReader(page, 'off');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
-  await expect(group.getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');
-  await group.getByRole('button', { name: 'On' }).click();
+  await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await group.getByRole('button', { name: 'On', exact: true }).click();
   await page.reload();
-  await expect(page.getByRole('group', { name: 'Immersive reader', exact: true }).getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('group', { name: 'Immersive reader', exact: true }).getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
 
 // Every return to the Reader at a scrolled place keeps the bars as he left them (mw-5r3p30.471): the Reader puts the saved place back, and that
@@ -246,20 +246,20 @@ async function expectStillShown(page: Page, at: number, what: string) {
 
 test('with the bars shown, Settings and then ‹ Reader leaves them shown', async ({ page }) => {
   const at = await shownAtAScrolledPlace(page);
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: '‹ Reader' }).click();
   await expectStillShown(page, at, 'Settings');
 });
 
 test('with the bars shown, Immersive reader Off and On again in Settings and then ‹ Reader leaves them shown', async ({ page }) => {
   const at = await shownAtAScrolledPlace(page);
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
-  await group.getByRole('button', { name: 'Off' }).click();
-  await expect(group.getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');
-  await group.getByRole('button', { name: 'On' }).click();
-  await expect(group.getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true');
+  await group.getByRole('button', { name: 'Off', exact: true }).click();
+  await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await group.getByRole('button', { name: 'On', exact: true }).click();
+  await expect(group.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: '‹ Reader' }).click();
   await expectStillShown(page, at, 'Off then On');
 });
@@ -308,7 +308,7 @@ test('with the bars shown, the next chapter opens shown, and Back to this one ke
   await scrollText(page, 100000);
   await page.waitForTimeout(600);
   await expectAll(page, 'visible');
-  await page.getByRole('navigation', { name: 'Chapters' }).getByRole('button', { name: /Romans 9/ }).click();
+  await page.getByRole('navigation', { name: 'Chapters', exact: true }).getByRole('button', { name: /Romans 9/ }).click();
   await expect(page.getByRole('heading', { name: 'Romans 9', level: 1 })).toBeVisible();
   await page.waitForTimeout(900);
   await expectAll(page, 'visible');

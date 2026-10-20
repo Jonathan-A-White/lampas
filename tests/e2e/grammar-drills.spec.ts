@@ -40,7 +40,7 @@ test('a due grammar idea is asked first, as tap the form: the verse words are bu
 
   await page.goto('/#/review');
   await expect(page.getByTestId('due-today')).toHaveText(/^Due today: 1 idea, \d+ words?$/);
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
 
   const prompt = page.getByTestId('grammar-prompt');
   await expect(prompt).toBeVisible();

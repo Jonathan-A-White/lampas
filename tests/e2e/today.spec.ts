@@ -107,7 +107,7 @@ async function openToday(page: Page, rows: { key: string; value: string }[] = []
   if (options.fixed) await page.clock.setFixedTime(FIXED);
   await page.goto('/#/today');
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Today', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true, level: 1 })).toBeVisible();
 }
 
 const piece = (page: Page, name: string) => page.getByRole('region', { name, exact: true });
@@ -166,7 +166,7 @@ test('a tap on a passage hands Logos a logosres: link', async ({ page }) => {
 test('Review opens Review', async ({ page }) => {
   await openToday(page);
   await piece(page, 'Review').getByRole('button', { name: /due|Nothing due/ }).click();
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
 });
 
 test('switching Psalms and Proverbs off in Settings takes it off Today', async ({ page }) => {
@@ -341,7 +341,7 @@ test('Read today names what he marked read today, a tick on Next marks the next 
   await plan.getByRole('checkbox', { name: 'Read today: 1 John 1', exact: true }).click();
 
   // Undo puts the tick back
-  await page.getByTestId('plan-moved').getByRole('button', { name: 'Undo' }).click();
+  await page.getByTestId('plan-moved').getByRole('button', { name: 'Undo', exact: true }).click();
   await expect(plan.getByTestId('plan-place')).toContainText('Next: 1 John 2');
   await expect(readToday(page)).toHaveText(['1 Peter 1-5', '2 Peter 1-3', '1 John 1']);
 

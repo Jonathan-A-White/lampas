@@ -48,7 +48,7 @@ test('on every answered Review card, Next (Finish at the end) and the round Ask 
   const now = Date.now();
   await putReviews(page, ideas.map((i) => ({ kind: 'grammar', id: i.id, step: 0, due: now - 60_000, lastWhen: 0, lapses: 0, rights: 0 })));
   await page.goto('/#/review');
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   const counter = page.getByText(/^1 of \d+$/);
   await expect(counter).toBeVisible();
   const total = Number((await counter.innerText()).replace(/^1 of /, ''));
@@ -58,7 +58,7 @@ test('on every answered Review card, Next (Finish at the end) and the round Ask 
     await expect(page.getByText(`${i + 1} of ${total}`, { exact: true })).toBeVisible();
     await expect(prompt).toBeVisible();
     const asked = (await prompt.innerText()).slice(0, 40);
-    const show = page.getByRole('button', { name: 'Show' });
+    const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
       await page.getByRole('button', { name: 'Not yet' }).click();

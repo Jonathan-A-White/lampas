@@ -64,7 +64,7 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   // reached from Settings, beside Review
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: /^Paradigms/ }).click();
-  await expect(page.getByRole('heading', { name: 'Paradigms', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 })).toBeVisible();
   const rows = page.locator('[data-paradigm]');
   await expect(rows).toHaveCount(20);
   await expect(page.locator('[data-paradigm="article"]').getByTestId('paradigm-available')).toHaveText('Available forms: 12 of 24');
@@ -297,9 +297,9 @@ test('mw-svw421.18: a tap on a locked form says in words what it needs, and noth
 
   // its button opens the idea's sheet over the table; Back closes it and the table is still there (mw-svw421.25)
   await line.getByRole('button', { name: 'Go to The plural' }).click();
-  await expect(page.getByRole('dialog', { name: 'Idea' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Idea', exact: true })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole('dialog', { name: 'Idea' })).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Idea', exact: true })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'The third declension', level: 1 })).toBeVisible();
 
   // a tap on the same lock again puts the line away

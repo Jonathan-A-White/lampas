@@ -24,7 +24,7 @@ test('the Lesson strip sits under the heading with its chips and a Check a thumb
   const check = strip.getByRole('button', { name: 'Check', exact: true });
   const checkBox = await check.boundingBox();
   const stripBox = await strip.boundingBox();
-  const actions = await view.getByRole('group', { name: 'Actions' }).boundingBox();
+  const actions = await view.getByRole('group', { name: 'Actions', exact: true }).boundingBox();
   if (!checkBox || !stripBox || !actions) throw new Error('no boxes');
   expect(checkBox.height).toBeGreaterThanOrEqual(47.5);
   expect(stripBox.x).toBeGreaterThanOrEqual(0);
@@ -39,11 +39,11 @@ test('the Lesson strip sits under the heading with its chips and a Check a thumb
 test('Check opens a sheet over the whole window with its question and Stop in reach', async ({ page }) => {
   await start(page);
   await page.getByRole('region', { name: 'Lesson strip' }).getByRole('button', { name: 'Check', exact: true }).click();
-  const sheet = page.getByRole('dialog', { name: 'Check' });
+  const sheet = page.getByRole('dialog', { name: 'Check', exact: true });
   await expect(sheet.getByTestId('check-title')).toHaveText('Check: 1 John 1:1-4');
   await expect(sheet.getByTestId('check-step')).toHaveText(/Question 1 of \d/);
   const box = await sheet.boundingBox();
-  const stop = await sheet.getByRole('button', { name: 'Stop' }).boundingBox();
+  const stop = await sheet.getByRole('button', { name: 'Stop', exact: true }).boundingBox();
   if (!box || !stop) throw new Error('no boxes');
   expect(box.width).toBe(VIEWPORT.width);
   expect(box.height).toBe(VIEWPORT.height);

@@ -43,10 +43,10 @@ test('Settings > Grammar approach at phone width: the one path, the ladder, with
   expect(alikeBox?.height).toBeGreaterThanOrEqual(47.5);
   expect((alikeBox?.x ?? 0) + (alikeBox?.width ?? 0)).toBeLessThanOrEqual(390);
   await alike.click();
-  const sheet = page.getByRole('dialog', { name: 'Idea' });
+  const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(sheet.getByRole('heading', { name: 'Words that sound alike' })).toBeVisible();
   await expect(sheet).toContainText(/trust the spelling/i);
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(sheet).toHaveCount(0);
 
   // the screen scrolls in its own box: bring the section to the top so the shot shows it

@@ -24,7 +24,7 @@ async function expectFitsPhone(page: Page) {
 test('the Words screen has a speaker beside each lemma that speaks it in Greek', async ({ page }) => {
   await withGreekVoice(page);
   await page.goto('/#/words');
-  await expect(page.getByRole('heading', { name: 'Words', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   const speakers = page.getByRole('button', { name: 'Hear it', exact: true });
   await expect(speakers).toHaveCount(63);
 
@@ -71,7 +71,7 @@ test('each verse has a play button that speaks its Greek in the Greek view, and 
   const sbox = await speaker.boundingBox();
   expect(sbox?.width).toBeGreaterThanOrEqual(43.5);
   expect(sbox?.height).toBeGreaterThanOrEqual(43.5);
-  const done = await dialog.getByRole('button', { name: 'Done' }).boundingBox();
+  const done = await dialog.getByRole('button', { name: 'Done', exact: true }).boundingBox();
   expect(done && sbox && done.y + done.height <= sbox.y).toBe(true);
   await expectFitsPhone(page);
   await speaker.click();

@@ -38,7 +38,7 @@ test('offline, the Xi sheet says the examples could not be looked for, not that 
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet', exact: true }).click();
-  const alphabet = page.getByRole('dialog', { name: 'Idea' });
+  const alphabet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(alphabet.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   await expect(alphabet.getByTestId('idea-example').first()).toBeVisible();
 
@@ -46,8 +46,8 @@ test('offline, the Xi sheet says the examples could not be looked for, not that 
   await page.route(/\/data\/(?!.*\/1\.json)[^/]+\/\d+\.json/, (route) => route.abort());
   await context.setOffline(true);
   await alphabet.getByRole('button', { name: 'About xi' }).click();
-  const xi = page.getByRole('dialog', { name: 'Idea' }).last();
-  await expect(xi.getByRole('heading', { name: 'Xi' })).toBeVisible();
+  const xi = page.getByRole('dialog', { name: 'Idea', exact: true }).last();
+  await expect(xi.getByRole('heading', { name: 'Xi', exact: true })).toBeVisible();
 
   await expect(xi.getByTestId('idea-unreached')).toBeVisible();
   await expect(xi).toContainText('could not be looked for');

@@ -31,7 +31,7 @@ async function openReader(page: Page): Promise<void> {
 test('the word sheet keeps its text over half its height', async ({ page }) => {
   await openReader(page);
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-  const sheet = page.getByRole('dialog', { name: 'Word' });
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(sheet).toBeVisible();
   expect(await mainShare(sheet)).toBeGreaterThanOrEqual(0.5);
   await shot(page, 'sheets-landscape-word');
@@ -40,8 +40,8 @@ test('the word sheet keeps its text over half its height', async ({ page }) => {
 test('the grammar sheet keeps its text over half its height', async ({ page }) => {
   await openReader(page);
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
-  const sheet = page.getByRole('dialog', { name: 'Grammar' });
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Grammar', exact: true });
   await expect(sheet).toBeVisible();
   expect(await mainShare(sheet)).toBeGreaterThanOrEqual(0.5);
 });

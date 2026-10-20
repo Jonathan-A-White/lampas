@@ -109,7 +109,7 @@ test.describe('without a service worker', () => {
     await expect(sheet).not.toContainText(waiting);
     await expect(sheet).not.toContainText('Reading Romans 8');
     await shot(page, 'whats-new-sheet');
-    await sheet.getByRole('button', { name: 'Close' }).click();
+    await sheet.getByRole('button', { name: 'Close', exact: true }).click();
     await expect(sheet).toBeHidden();
     await page.reload();
     await expect(page.locator('[data-verse="1"]')).toBeVisible();

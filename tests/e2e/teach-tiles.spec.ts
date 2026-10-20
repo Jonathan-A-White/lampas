@@ -61,7 +61,7 @@ async function opensIdea(page: Page, title: string) {
   await page.reload();
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: title }).click();
-  const sheet = page.getByRole('dialog', { name: 'Idea' });
+  const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByTestId('teach-tiles')).toBeVisible();
   return sheet;

@@ -60,7 +60,7 @@ test('the first tap on a word shows the tip once; Got it keeps it away; the shee
   const word = page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true });
   await word.tap();
 
-  const sheet = page.getByRole('dialog', { name: 'Word' });
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   const tip = sheet.getByRole('note');
   await expect(tip).toContainText('Long-press a word to hear it');
   const got = tip.getByRole('button', { name: 'Got it' });
@@ -79,12 +79,12 @@ test('the first tap on a word shows the tip once; Got it keeps it away; the shee
 
   await got.tap();
   await expect(tip).toHaveCount(0);
-  await sheet.getByRole('button', { name: 'Done' }).tap();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).tap();
   await word.tap();
-  await expect(page.getByRole('dialog', { name: 'Word' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
   await expect(page.getByRole('note')).toHaveCount(0);
 
-  await page.getByRole('dialog', { name: 'Word' }).getByRole('button', { name: 'Ask the tutor' }).tap();
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('button', { name: 'Ask the tutor' }).tap();
   const talk = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
   await expect(talk).toBeVisible();
   await expect(talk.locator('[data-turn]')).toContainText(GRAMMAR_HELP_ANSWER.answer);

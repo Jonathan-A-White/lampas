@@ -181,8 +181,8 @@ test('leaving the Reader leaves full screen, and with Immersive reader Off nothi
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });
 
   // the bars are still shown: the gear is in the header
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 1 });
   expect(await fullScreen(page)).toBe(false);
 
@@ -231,8 +231,8 @@ test('where the phone has no full-screen API, the Reader still works', async ({ 
   await expect(page.locator('header').first()).toBeHidden();
   await twoFingerTap(page);
   await expect(page.locator('header').first()).toBeVisible();
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -292,8 +292,8 @@ test('a full screen the Reader leaves itself is not asked for again', async ({ p
   await openReader(page, 'on');
   await tapText(page);
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 1 });
   await page.waitForTimeout(400);
   expect(await counts(page)).toEqual({ requests: 1, exits: 1 });

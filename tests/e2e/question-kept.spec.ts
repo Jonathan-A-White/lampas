@@ -66,13 +66,13 @@ test.describe('a question that failed or waits is kept (mw-5r3p30.439, mw-5r3p30
     await reopenAsk(page);
     const box = page.locator('[data-ask-failed]');
     await expect(box.getByText('Could not reach the tutor')).toBeVisible();
-    await expect(box.getByRole('button', { name: 'Retry' })).toBeVisible();
+    await expect(box.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
     await expect(await questionField(page)).toHaveValue(QUESTION);
     await shot(page, 'question-kept-ask-failed');
 
     fake.gateway = undefined;
     fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
-    await box.getByRole('button', { name: 'Retry' }).click();
+    await box.getByRole('button', { name: 'Retry', exact: true }).click();
     await expect(page.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
     await expect(page.locator('[data-ask-failed]')).toHaveCount(0);
   });
@@ -134,7 +134,7 @@ test.describe('after Send, what was sent and its wait or failure are in view, si
     await fake.answer({ status: 'failed', reason: 'no' });
     const failed = page.locator('[data-ask-failed]');
     await expectAboveComposer(page, failed.getByText('Could not reach the tutor'), 'the failure');
-    await expectAboveComposer(page, failed.getByRole('button', { name: 'Retry' }), 'Retry');
+    await expectAboveComposer(page, failed.getByRole('button', { name: 'Retry', exact: true }), 'Retry');
     await shot(page, 'question-kept-ask-failed-sideways');
   });
 
@@ -151,7 +151,7 @@ test.describe('after Send, what was sent and its wait or failure are in view, si
     await fake.answer({ status: 'failed', reason: 'no' });
     await expect(sheet.locator('[data-talk-failed]')).toBeVisible();
     await expectInList(sheet, sheet.locator('[data-talk-failed] p.text-bad'), 'the failure');
-    await expectInList(sheet, sheet.getByRole('button', { name: 'Retry' }), 'Retry');
+    await expectInList(sheet, sheet.getByRole('button', { name: 'Retry', exact: true }), 'Retry');
   });
 
   test('the tutor sheet (About): the question and the wait are in the box, and so is a failure', async ({ page }) => {
@@ -168,7 +168,7 @@ test.describe('after Send, what was sent and its wait or failure are in view, si
     await expectInList(sheet, pending.getByText(/Waiting for the tutor…/), 'Waiting for the tutor');
     await fake.answer({ status: 'failed', reason: 'no' });
     await expectInList(sheet, sheet.locator('[data-talk-failed] p.text-bad'), 'the failure');
-    await expectInList(sheet, sheet.getByRole('button', { name: 'Retry' }), 'Retry');
+    await expectInList(sheet, sheet.getByRole('button', { name: 'Retry', exact: true }), 'Retry');
   });
 });
 
@@ -206,7 +206,7 @@ test('Share: a shared note taken into a new talk, sent, shows the question and t
   await expectInList(sheet, pending.getByText(/Waiting for the tutor…/), 'Waiting for the tutor');
   await fake.answer({ status: 'failed', reason: 'no' });
   await expectInList(sheet, sheet.locator('[data-talk-failed] p.text-bad'), 'the failure');
-  await expectInList(sheet, sheet.getByRole('button', { name: 'Retry' }), 'Retry');
+  await expectInList(sheet, sheet.getByRole('button', { name: 'Retry', exact: true }), 'Retry');
 });
 
 test.describe('a long question leaves the first line of the answer on screen (mw-5r3p30.493)', () => {

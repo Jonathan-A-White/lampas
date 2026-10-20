@@ -25,7 +25,7 @@ test('Ask for more leads with Ask the tutor, and a form fits the phone', async (
   await page.getByRole('button', { name: 'A translation' }).click();
   const form = page.getByRole('form', { name: 'A translation' });
   await form.getByRole('textbox').first().fill('The ESV');
-  const send = form.getByRole('button', { name: 'Send' });
+  const send = form.getByRole('button', { name: 'Send', exact: true });
   await send.scrollIntoViewIfNeeded();
   await expect(send).toBeEnabled();
   const sideways = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);

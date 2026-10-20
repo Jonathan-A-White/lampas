@@ -16,10 +16,10 @@ async function fits(page: Page): Promise<void> {
 test('the Optional entry, Why learn it?, a card and a drill question fit the phone', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/goal');
-  await expect(page.getByRole('heading', { name: 'Goal', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Goal', exact: true, level: 1 })).toBeVisible();
   const entry = page.getByTestId('ipa-entry');
   await entry.scrollIntoViewIfNeeded();
-  await expect(page.getByRole('heading', { name: 'Optional' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Optional', exact: true })).toBeVisible();
   // below the main path, and reachable above the phone's bar
   const box = (await entry.boundingBox())!;
   expect(box.y + box.height).toBeLessThanOrEqual(844);

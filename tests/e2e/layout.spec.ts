@@ -24,7 +24,7 @@ async function openReader(page: Page) {
 
 async function setInSettings(page: Page, group: string, label: string) {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('group', { name: group }).getByRole('button', { name: label, exact: true }).click();
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
@@ -33,8 +33,8 @@ async function setInSettings(page: Page, group: string, label: string) {
 test('Settings offers Layout and Section headings with 44 px choices, Verse by verse and On to begin with', async ({ page }) => {
   await openReader(page);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
-  const layout = page.getByRole('group', { name: 'Layout' });
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  const layout = page.getByRole('group', { name: 'Layout', exact: true });
   const headings = page.getByRole('group', { name: 'Section headings' });
   await expect(layout.getByRole('button', { name: 'Verse by verse', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(headings.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -84,7 +84,7 @@ test('Paragraph runs the verses on with superscript numbers, every word and numb
 
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'Therefore', exact: true }).click();
   await expect(page.getByRole('dialog').getByTestId('sheet-word')).toHaveText('ἄρα');
-  await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Done', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 
   await number.click();

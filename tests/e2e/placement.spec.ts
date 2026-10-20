@@ -60,7 +60,7 @@ test('Place me in Settings > Goal opens the placement; a question fits the phone
   expect((placeBox?.x ?? 0) + (placeBox?.width ?? 0)).toBeLessThanOrEqual(390);
   await place.click();
 
-  await expect(page.getByRole('heading', { name: 'Placement', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Placement', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByTestId('placement-goal')).toHaveText('Placement: Read 1 John 1:1');
   const start = page.getByRole('button', { name: 'Start', exact: true });
   expect((await start.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
@@ -137,7 +137,7 @@ test('the paused card has Back to the goal, and Go on another day returns to the
   await expectFitsPhone(page);
   await shot(page, 'placement-paused');
   await page.getByRole('button', { name: 'Go on another day' }).click();
-  await expect(page.getByRole('heading', { name: 'Goal', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Goal', exact: true, level: 1 })).toBeVisible();
 });
 
 test('the end card: Where you are, by tier, with Back to the goal in reach', async ({ page }) => {
@@ -151,7 +151,7 @@ test('the end card: Where you are, by tier, with Back to the goal in reach', asy
   await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
   const { solid } = await placementSummary('1 John 1:1', Object.fromEntries(known.map((id) => [id, 'solid' as const])));
   await expect(page.getByTestId('where')).toHaveText(`Where you are: solid ${solid}, frontier 0, not yet 0; untested 0`);
-  const nouns = page.getByRole('region', { name: 'nouns' });
+  const nouns = page.getByRole('region', { name: 'nouns', exact: true });
   await expect(nouns.getByRole('listitem').filter({ hasText: 'The noun' })).toContainText('Solid');
   const back = page.getByRole('button', { name: 'Back to the goal' });
   expect((await back.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
@@ -247,7 +247,7 @@ test('the card of Start from the letters comes back after a reload and after Bac
   await shot(page, 'placement-reload-card');
 
   await page.getByRole('button', { name: 'Back to the goal' }).click();
-  await expect(page.getByRole('heading', { name: 'Goal', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Goal', exact: true, level: 1 })).toBeVisible();
   await page.goBack();
   await expect(page.getByTestId('placement-title')).toHaveText('Where you are');
   await expect(where).toHaveText(card.where!);

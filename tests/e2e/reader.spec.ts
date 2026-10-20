@@ -46,14 +46,14 @@ test('the foot of a chapter in Scroll is the chapter links and nothing else: no 
   await page.locator('[data-reader]').evaluate((el) => {
     el.scrollTop = el.scrollHeight;
   });
-  await expect(page.getByRole('navigation', { name: 'Chapters' })).toBeInViewport();
+  await expect(page.getByRole('navigation', { name: 'Chapters', exact: true })).toBeInViewport();
   expect(await afterLastVerse(page)).toEqual(['nav:Chapters']);
   await expect(page.locator('[data-reader]').getByRole('button', { name: 'About', exact: true })).toHaveCount(0);
   await expect(page.locator('[data-reader]').getByTestId('build-version')).toHaveCount(0);
   await expect(page.getByTestId('build-version')).toHaveCount(0);
   await page.goto('/#/settings');
   await page.getByRole('button', { name: 'About', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
 });
 
 test('the Greek view sets verse 1 in Gentium Plus with polytonic accents', async ({ page }) => {
@@ -90,7 +90,7 @@ test('a tap opens the word sheet at the bottom, inside the phone, and a tap outs
   const box = await dialog.boundingBox();
   expect(box && box.y + box.height).toBeLessThanOrEqual(844);
   expect(box && box.y).toBeGreaterThan(844 * 0.3);
-  const done = await dialog.getByRole('button', { name: 'Done' }).boundingBox();
+  const done = await dialog.getByRole('button', { name: 'Done', exact: true }).boundingBox();
   expect(done?.height).toBeGreaterThanOrEqual(43.5);
   await expectFitsPhone(page);
   await shot(page, 'word-sheet');

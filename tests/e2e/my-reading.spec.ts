@@ -28,7 +28,7 @@ async function readVerse28(page: Page) {
 
 async function findDeveloperMode(page: Page): Promise<void> {
   await page.goto('/#/about');
-  await expect(page.getByRole('heading', { name: 'About', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
   const version = page.getByTestId('build-version');
   await version.scrollIntoViewIfNeeded();
   expect((await version.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);

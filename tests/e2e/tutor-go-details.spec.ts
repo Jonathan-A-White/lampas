@@ -66,7 +66,7 @@ async function expectWholeTitle(page: Page, title: string) {
   const header = await page.locator('header').first().evaluate((el) => ({ right: el.getBoundingClientRect().right, wide: el.scrollWidth > el.clientWidth }));
   expect(header.wide).toBe(false);
   const box = await heading.boundingBox();
-  const switchBox = await page.getByRole('group', { name: 'Language' }).boundingBox();
+  const switchBox = await page.getByRole('group', { name: 'Language', exact: true }).boundingBox();
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual((switchBox?.x ?? 0) + 0.5);
 }
 
@@ -129,7 +129,7 @@ test.describe('at 390 x 844', () => {
     const fake = await openTalk(page, '/', 'Talk about Romans 8', false);
     const sheet = await ask(page, 'Talk about Romans 8', 'take me to John 3');
     await expect.poll(() => fake.received.length).toBe(1);
-    await sheet.getByRole('button', { name: 'Done' }).click();
+    await sheet.getByRole('button', { name: 'Done', exact: true }).click();
     await expect(sheet).toBeHidden();
     await fake.answer({ status: 'answered', answer: { ...TALK_ANSWER, answer: 'Taking you to John 3.', go: { book: 'John', chapter: 3 } } });
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();

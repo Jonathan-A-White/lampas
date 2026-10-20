@@ -44,12 +44,12 @@ test('a Greek span is lang el with data-lang grc, an English span has no lang', 
   expect(await page.locator('[lang="grc"]').count()).toBe(0);
   // the word sheet's Greek
   await verse.locator('[data-word]').first().click();
-  const sheet = page.getByRole('dialog', { name: 'Word' });
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(sheet.getByTestId('sheet-word').first()).toHaveAttribute('lang', 'el');
   await expect(sheet.getByTestId('sheet-word').first()).toHaveAttribute('data-lang', 'grc');
   await expect(sheet.getByTestId('sheet-lemma')).toHaveAttribute('lang', 'el');
   expect(await page.locator('[lang="grc"]').count()).toBe(0);
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   // the English text and its chunks have no Greek tag
   await page.goto('/#/?b=rom&c=8&view=english');
   const english = page.locator('[data-verse="1"]');
@@ -122,13 +122,13 @@ test('a sheet takes focus to its heading when it opens and gives it back to what
   // the word sheet, over the Reader
   const opener = page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true });
   await opener.click();
-  const word = page.getByRole('dialog', { name: 'Word' });
+  const word = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(word.getByRole('heading').first()).toBeFocused();
   // the Grammar sheet, over the word sheet
   const genitive = word.getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true });
   await genitive.click();
-  const grammar = page.getByRole('dialog', { name: 'Grammar' });
-  await expect(grammar.getByRole('heading', { name: 'genitive' })).toBeFocused();
+  const grammar = page.getByRole('dialog', { name: 'Grammar', exact: true });
+  await expect(grammar.getByRole('heading', { name: 'genitive', exact: true })).toBeFocused();
   // Back closes only the Grammar sheet, and focus goes back to the term he tapped
   await page.goBack();
   await expect(grammar).toHaveCount(0);
@@ -136,13 +136,13 @@ test('a sheet takes focus to its heading when it opens and gives it back to what
   // the idea sheet, over the Grammar sheet
   await genitive.click();
   await grammar.getByRole('button', { name: 'Learn this idea' }).click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByRole('heading', { name: 'The genitive case' })).toBeFocused();
   await page.goBack();
   await expect(idea).toHaveCount(0);
   await expect(grammar.getByRole('button', { name: 'Learn this idea' })).toBeFocused();
   // Done on the Grammar sheet closes it and the word sheet under it (mw-5r3p30.514), and focus goes back to the word he tapped
-  await grammar.getByRole('button', { name: 'Done' }).click();
+  await grammar.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(grammar).toHaveCount(0);
   await expect(word).toHaveCount(0);
   await expect(opener).toBeFocused();
@@ -151,7 +151,7 @@ test('a sheet takes focus to its heading when it opens and gives it back to what
   await talk.click();
   const sheet = page.getByRole('dialog');
   await expect(sheet.getByRole('heading', { level: 2 }).first()).toBeFocused();
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(sheet).toHaveCount(0);
   await expect(talk).toBeFocused();
   await shot(page, 'talkback-reading');

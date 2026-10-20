@@ -22,7 +22,7 @@ async function askFrom(page: Page, path: string, screen: string, go: { book: str
   const sheet = page.getByRole('dialog', { name: `Ask the tutor: ${screen}` });
   await expect(sheet).toBeVisible();
   await sheet.getByLabel('Your message').fill(question);
-  await sheet.getByRole('button', { name: 'Send' }).click();
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   return sheet;
 }
 
@@ -46,6 +46,6 @@ test('from Settings: a go for Psalm 23 moves nothing and the answer says it coul
   const sheet = await askFrom(page, '/#/settings', 'Settings', { book: 'Psalms', chapter: 23 }, 'take me to Psalm 23');
   await expect(sheet.locator('[data-turn]')).toHaveCount(1);
   await expect(sheet.getByText('Could not open Psalms 23')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   expect(page.url()).toContain('#/settings');
 });

@@ -39,7 +39,7 @@ test('the Write it card fits a phone, its three buttons the same size, and an ο
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The Greek alphabet' }).click();
   await page.getByRole('button', { name: 'About omicron' }).click();
-  const letter = page.getByRole('dialog', { name: 'Idea' }).nth(1);
+  const letter = page.getByRole('dialog', { name: 'Idea', exact: true }).nth(1);
   const part = letter.getByTestId('lesson-write-it');
   await part.scrollIntoViewIfNeeded();
   await expect(part.getByTestId('write-why')).toBeVisible();
@@ -71,7 +71,7 @@ test('the Write it card fits a phone, its three buttons the same size, and an ο
   await page.mouse.up();
   await expect(pad).toHaveAttribute('data-strokes', '1');
   await shot(page, 'write-it-trace');
-  await card.getByRole('button', { name: 'Check' }).click();
+  await card.getByRole('button', { name: 'Check', exact: true }).click();
   await expect(card.getByTestId('write-verdict')).toHaveText('Right');
   await shot(page, 'write-it-right');
 });

@@ -25,7 +25,7 @@ test('Request a devotional: the title goes to the factory as kind devotional, an
   await open.click();
   await expect(open).toHaveAttribute('aria-expanded', 'true');
   const box = group.getByRole('textbox', { name: 'Devotional title' });
-  const send = group.getByRole('button', { name: 'Send' });
+  const send = group.getByRole('button', { name: 'Send', exact: true });
   await expect(send).toBeDisabled();
 
   for (const control of [open, box, send]) {

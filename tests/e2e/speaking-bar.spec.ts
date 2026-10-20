@@ -71,7 +71,7 @@ test('Leaving the reader pauses the reading; the bar offers Resume on Settings a
   await page.locator('[data-verse="3"]').getByRole('button', { name: 'Hear the verse', exact: true }).click();
   await expect(bar(page)).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await expect(bar(page).getByRole('button')).toHaveText(['Resume', 'Restart', 'Stop']);
   expect(await isSpeaking(page)).toBe(false);
   const box = await bar(page).boundingBox();

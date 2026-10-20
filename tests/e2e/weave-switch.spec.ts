@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
   await page.clock.install();
 });
 
-const choice = (page: Page, name: string) => page.getByRole('group', { name: 'Language' }).getByRole('button', { name, exact: true });
+const choice = (page: Page, name: string) => page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name, exact: true });
 
 for (const { name, size } of SIZES) {
   test(`the switch is English | Weave | Greek and a long press on Weave flips the word order, ${name}`, async ({ page }) => {
@@ -26,7 +26,7 @@ for (const { name, size } of SIZES) {
     await expect(verse1).toBeVisible();
 
     // the Weave is on: three choices, Weave chosen, the Greek of his words in the English
-    const group = page.getByRole('group', { name: 'Language' });
+    const group = page.getByRole('group', { name: 'Language', exact: true });
     await expect(group.getByRole('button')).toHaveText(['English', 'Weave', 'Greek']);
     await expect(choice(page, 'Weave')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('[data-verse="1"] [data-woven]').first()).toBeVisible();
@@ -93,7 +93,7 @@ for (const { name, size } of SIZES) {
     await openUnlocked(page);
     await page.goto('/#/?b=rom&c=8&weave=off');
     await expect(page.locator('[data-verse="1"] [data-text]')).toBeVisible();
-    await expect(page.getByRole('group', { name: 'Language' }).getByRole('button')).toHaveText(['English', 'Greek']);
+    await expect(page.getByRole('group', { name: 'Language', exact: true }).getByRole('button')).toHaveText(['English', 'Greek']);
     await shot(page, `weave-switch-off-${name}`);
   });
 }

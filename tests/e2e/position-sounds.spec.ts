@@ -41,7 +41,7 @@ test('the ευ sheet says when it is v and when f, and its drill asks the marked
   await expect(page.getByTestId('graph-world')).toBeAttached();
   await page.locator('[data-idea="diphthong-eu"]').dispatchEvent('click');
 
-  const sheet = page.getByRole('dialog', { name: 'Idea' });
+  const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(sheet.getByRole('heading', { name: 'The vowel pair ευ' })).toBeVisible();
   const sounds = sheet.getByTestId('idea-text');
   await expect(sounds).toContainText('depends on the letter after it');

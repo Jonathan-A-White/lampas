@@ -227,7 +227,7 @@ test('with no licence: Send a screenshot says Needs a licence, opens the Licence
   await shot(page, 'reading-plan-screenshot-no-licence');
 
   await row.click();
-  await expect(page.getByRole('heading', { name: 'Licence', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true, level: 1 })).toBeVisible();
   await expect(returnSheet(page)).toHaveCount(0);
   await page.getByRole('button', { name: '‹ Reader' }).click();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();

@@ -8,7 +8,7 @@ import { openUnlocked } from './unlocked';
 test.use({ viewport: { width: 390, height: 844 } });
 
 async function switchOn(page: Page) {
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const group = page.getByRole('group', { name: 'Read lessons to me' });
   await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await group.getByRole('button', { name: 'On', exact: true }).click();
@@ -18,8 +18,8 @@ async function switchOn(page: Page) {
 
 async function openGrammar(page: Page) {
   await page.locator('[data-verse="2"]').getByRole('button', { name: 'of the', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
-  const grammar = page.getByRole('dialog', { name: 'Grammar' });
+  await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-parse').getByRole('button', { name: 'genitive', exact: true }).click();
+  const grammar = page.getByRole('dialog', { name: 'Grammar', exact: true });
   await expect(grammar).toBeVisible();
   return grammar;
 }
@@ -52,7 +52,7 @@ test('a browser that refuses speech without a tap gets a Tap to listen that fits
   const grammar = await openGrammar(page);
   const tap = grammar.getByRole('button', { name: 'Tap to listen', exact: true });
   await expect(tap).toBeVisible();
-  const [button, title, box] = await Promise.all([tap.boundingBox(), grammar.getByRole('heading', { name: 'genitive' }).boundingBox(), grammar.boundingBox()]);
+  const [button, title, box] = await Promise.all([tap.boundingBox(), grammar.getByRole('heading', { name: 'genitive', exact: true }).boundingBox(), grammar.boundingBox()]);
   expect(button!.height).toBeGreaterThanOrEqual(43.5);
   expect(button!.x).toBeGreaterThanOrEqual(box!.x);
   expect(button!.x + button!.width).toBeLessThanOrEqual(box!.x + box!.width);

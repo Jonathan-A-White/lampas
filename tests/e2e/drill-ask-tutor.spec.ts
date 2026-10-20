@@ -52,7 +52,7 @@ async function openIdea(page: Page) {
   await page.reload();
   await page.getByTestId('ideas-bar').click();
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
   return idea;
 }

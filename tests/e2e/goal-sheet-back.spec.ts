@@ -75,9 +75,9 @@ test('Back from a word tapped on the letter sheet opened by Learn next shows the
   await page.goto('/#/goal');
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   await page.getByTestId('learn-next').click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
-  const word = page.getByRole('dialog', { name: 'Word' });
-  await expect(idea.getByRole('heading', { name: 'Xi' })).toBeVisible();
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
+  const word = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(idea.getByRole('heading', { name: 'Xi', exact: true })).toBeVisible();
 
   await idea.getByTestId('idea-example').first().click();
   await expect(word).toBeVisible();
@@ -85,7 +85,7 @@ test('Back from a word tapped on the letter sheet opened by Learn next shows the
   // one Back: the word sheet goes and the letter sheet is still there
   await page.goBack();
   await expect(word).toBeHidden();
-  await expect(idea.getByRole('heading', { name: 'Xi' })).toBeVisible();
+  await expect(idea.getByRole('heading', { name: 'Xi', exact: true })).toBeVisible();
   await expect(page.getByTestId('goal-title')).toBeVisible();
 
   // a second Back closes the letter sheet and leaves the Goal screen
@@ -106,8 +106,8 @@ test('Back pops one sheet at a time down a stack of idea sheet, a tile\'s letter
   await page.goto('/#/goal');
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   await page.getByTestId('learn-next').click();
-  const ideas = page.getByRole('dialog', { name: 'Idea' });
-  const word = page.getByRole('dialog', { name: 'Word' });
+  const ideas = page.getByRole('dialog', { name: 'Idea', exact: true });
+  const word = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(ideas).toHaveCount(1);
   await ideas.first().getByRole('button', { name: /^About / }).first().click();
   await expect(ideas).toHaveCount(2);
@@ -143,9 +143,9 @@ test('The word sheet opened from the Xi letter sheet is the topmost thing on the
   await page.reload();
   await page.goto('/#/goal');
   await page.getByTestId('learn-next').click();
-  const idea = page.getByRole('dialog', { name: 'Idea' });
-  const word = page.getByRole('dialog', { name: 'Word' });
-  await expect(idea.getByRole('heading', { name: 'Xi' })).toBeVisible();
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
+  const word = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(idea.getByRole('heading', { name: 'Xi', exact: true })).toBeVisible();
 
   await idea.getByTestId('idea-example').first().click();
   await expect(word).toBeVisible();

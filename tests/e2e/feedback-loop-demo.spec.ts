@@ -51,9 +51,9 @@ async function sendApproach(page: Page, text: string): Promise<void> {
   const sheet = page.getByRole('dialog', { name: 'Ask for another approach' });
   await sheet.getByLabel('What approach, and how does it teach?').fill(text);
   await sheet.getByLabel('Who to credit', { exact: true }).fill('Anna Example');
-  await sheet.getByRole('button', { name: 'Send' }).click();
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.getByText('Sent: the factory has it')).toBeVisible();
-  await sheet.getByRole('button', { name: 'Done' }).click();
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(sheet).toHaveCount(0);
 }
 

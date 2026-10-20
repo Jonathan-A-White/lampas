@@ -171,12 +171,12 @@ test('Pick it myself opens the chapter picker, and the chapter she chooses is th
 
   const picker = page.getByRole('dialog', { name: 'Which chapter did you stop in?' });
   await expect(picker).toBeVisible();
-  await expect(picker.getByRole('button', { name: 'Preface' })).toHaveCount(0);
+  await expect(picker.getByRole('button', { name: 'Preface', exact: true })).toHaveCount(0);
   await expect(picker.locator('[data-in-logos]')).toHaveCount(0);
   await shot(page, 'reading-plan-return-pick');
 
   // Done puts the picker away and the sheet is still there, the session still open
-  await picker.getByRole('button', { name: 'Done' }).click();
+  await picker.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(picker).toHaveCount(0);
   await expect(sheet(page)).toBeVisible();
   expect((await readState(page)).session).toBeDefined();

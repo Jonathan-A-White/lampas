@@ -349,7 +349,7 @@ test('the last page of a chapter in Turn pages ends with the chapter links: no A
     await tapAt(page, 0.85);
     await expect.poll(() => at(page)).toBe(n);
   }
-  await expect(page.getByRole('navigation', { name: 'Chapters' })).toBeInViewport();
+  await expect(page.getByRole('navigation', { name: 'Chapters', exact: true })).toBeInViewport();
   expect(await afterLastVerse(page)).toEqual(['nav:Chapters']);
   await expect(page.locator('[data-reader]').getByRole('button', { name: 'About', exact: true })).toHaveCount(0);
   await expect(page.getByTestId('build-version')).toHaveCount(0);
@@ -667,12 +667,12 @@ test('with Turn pages, Settings and back by ‹ Reader or by Back keeps the page
   const verses = await turnTo(page, 6);
 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await backOnPage(page, 6, verses);
 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await page.goBack();
   await backOnPage(page, 6, verses);
   await shot(page, 'turn-pages-back-from-settings');
@@ -691,10 +691,10 @@ test('with Turn pages, a reload opens the chapter on the page he was reading', a
 
 /** The screens the Reader gives way to (it unmounts for each), opened as the app opens a screen (a new history entry), and how each shows it is there. */
 const AWAY: { name: string; hash: string; ready: (page: Page) => Locator }[] = [
-  { name: 'Words', hash: '#/words', ready: (p) => p.getByRole('heading', { name: 'Words', level: 1 }) },
-  { name: 'Review', hash: '#/review', ready: (p) => p.getByRole('heading', { name: 'Review', level: 1 }) },
-  { name: 'Paradigms', hash: '#/paradigms', ready: (p) => p.getByRole('heading', { name: 'Paradigms', level: 1 }) },
-  { name: 'About', hash: '#/about', ready: (p) => p.getByRole('heading', { name: 'About', level: 1 }) },
+  { name: 'Words', hash: '#/words', ready: (p) => p.getByRole('heading', { name: 'Words', exact: true, level: 1 }) },
+  { name: 'Review', hash: '#/review', ready: (p) => p.getByRole('heading', { name: 'Review', exact: true, level: 1 }) },
+  { name: 'Paradigms', hash: '#/paradigms', ready: (p) => p.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 }) },
+  { name: 'About', hash: '#/about', ready: (p) => p.getByRole('heading', { name: 'About', exact: true, level: 1 }) },
 ];
 
 test('with Turn pages, Words, Review, Paradigms, About and the Talk sheet each keep the page when he comes back', async ({ page }) => {

@@ -48,9 +48,9 @@ test('the third visit shows the tip at the foot; Learn more opens the Licence pa
   await shot(page, 'licence-tip');
 
   await tip(page).getByRole('button', { name: 'Learn more' }).click();
-  await expect(page.getByRole('heading', { name: 'Licence', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByTestId('how-to-licence')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Copy' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
   await shot(page, 'licence-page-from-tip');
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
@@ -82,7 +82,7 @@ test.describe('the tip on a phone held sideways', () => {
     expect(reader.height).toBeGreaterThan(box.height);
     // the sentence, Learn more and Close sit side by side, each still a thumb's size
     const learn = (await tip(page).getByRole('button', { name: 'Learn more' }).boundingBox())!;
-    const close = (await tip(page).getByRole('button', { name: 'Close' }).boundingBox())!;
+    const close = (await tip(page).getByRole('button', { name: 'Close', exact: true }).boundingBox())!;
     const text = (await tip(page).locator('p').boundingBox())!;
     for (const b of [learn, close]) expect(Math.min(b.width, b.height)).toBeGreaterThanOrEqual(44);
     expect(learn.x).toBeGreaterThanOrEqual(text.x + text.width - 1);
@@ -94,7 +94,7 @@ test.describe('the tip on a phone held sideways', () => {
 test('closing the tip ends it for good', async ({ page }) => {
   await onVisit(page, 3);
   await page.goto('/');
-  await tip(page).getByRole('button', { name: 'Close' }).click();
+  await tip(page).getByRole('button', { name: 'Close', exact: true }).click();
   await expect(tip(page)).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
@@ -104,16 +104,16 @@ test('closing the tip ends it for good', async ({ page }) => {
 test('a Settings row’s Needs a licence opens the Licence page and Back returns to that row', async ({ page }) => {
   await onVisit(page, 1);
   await page.goto('/#/settings');
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   const rows = page.getByRole('button', { name: 'Needs a licence' });
   await expect(rows.first()).toBeVisible();
   const last = rows.last();
   await last.scrollIntoViewIfNeeded();
   const before = (await last.boundingBox())!;
   await last.click();
-  await expect(page.getByRole('heading', { name: 'Licence', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licence', exact: true, level: 1 })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   await expect(last).toBeInViewport();
   await expect.poll(async () => Math.abs(((await last.boundingBox())?.y ?? -999) - before.y)).toBeLessThan(2);
 });
@@ -182,7 +182,7 @@ test.describe('a double tap on the tip', () => {
     await page.goto('/#/?c=8&view=greek');
     await expect(tip(page)).toBeVisible();
     await tapOverAWordTwice(page, 'Learn more');
-    await expect(page.getByRole('heading', { name: 'Licence', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Licence', exact: true, level: 1 })).toBeVisible();
     await page.waitForTimeout(600);
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });

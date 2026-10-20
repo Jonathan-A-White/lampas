@@ -87,7 +87,7 @@ test('with the plan on Today says what is next and how far, and Listen in Audibl
   await plan(page).getByRole('link', { name: /^Listen in Audible/ }).click();
   const sheet = page.getByRole('dialog', { name: 'Off to Audible: Leviticus 4' });
   await expect(sheet).toBeVisible();
-  await expect(sheet.getByRole('button', { name: 'Go' })).toBeVisible();
+  await expect(sheet.getByRole('button', { name: 'Go', exact: true })).toBeVisible();
 });
 
 test('with the plan off Today invites her to start one, and so does Settings', async ({ page }) => {
@@ -103,8 +103,8 @@ test('with the plan off Today invites her to start one, and so does Settings', a
   await expect(sheet).toHaveCount(0);
 
   await backToReader(page);
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   const entry = page.getByRole('button', { name: 'Start a listening plan' });
   await entry.scrollIntoViewIfNeeded();
   await entry.click();
@@ -163,8 +163,8 @@ test('the Developer row resets the plan, and Start a listening plan runs again',
   await expect(plan(page)).toContainText('Next: Leviticus 4');
   await backToReader(page);
 
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   const reset = page.getByRole('button', { name: 'Reset the listening plan, for the demo' });
   await reset.scrollIntoViewIfNeeded();
   expect((await reset.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
@@ -269,7 +269,7 @@ test("with 1 John 2 open and the plan at 1 Peter 2, I'm at 1 John 2 moves the pl
   const moved = plan(page).locator('xpath=..').getByTestId('plan-moved');
   await expect(moved).toBeVisible();
   await shot(page, 'reading-plan-place-moved-390x844');
-  await moved.getByRole('button', { name: 'Undo' }).click();
+  await moved.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect(plan(page)).toContainText('Next: 1 Peter 2');
   await expect(moved).toHaveCount(0);
 });

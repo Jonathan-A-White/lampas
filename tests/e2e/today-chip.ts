@@ -9,7 +9,7 @@ export const reviewPiece = (page: Page) => page.getByRole('region', { name: 'Rev
 /** From the Reader: taps the Today chip and waits for Today. */
 export async function openToday(page: Page): Promise<void> {
   await todayChip(page).click();
-  await expect(page.getByRole('heading', { name: 'Today', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true, level: 1 })).toBeVisible();
 }
 
 /** From the Reader: opens Today and waits until Review says words are due (the first open leaves his learning words due once it has seeded the schedule); returns how many. Today is left open. */
@@ -31,5 +31,5 @@ export async function waitForDue(page: Page): Promise<void> {
 export async function openReviewFromToday(page: Page): Promise<void> {
   await openToday(page);
   await reviewPiece(page).getByRole('button').click();
-  await expect(page.getByRole('heading', { name: 'Review', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Review', exact: true, level: 1 })).toBeVisible();
 }
