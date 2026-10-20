@@ -111,7 +111,7 @@ export function AskTutor({ route }: { route: Route }) {
   const sayAbout = useRef<(message: string) => void>(() => {});
   const voice = useVoice((message) => sayAbout.current(message));
   const openRef = useRef<string | null>(null);
-  const { states, say } = useTalk('', 0, (ref, id, answer) => {
+  const { states, say, resume } = useTalk('', 0, (ref, id, answer) => {
     if (openRef.current !== ref || voice.listening) return;
     speakTutor(id, answerRuns(answer), () => openRef.current === ref);
   }, {
@@ -150,6 +150,7 @@ export function AskTutor({ route }: { route: Route }) {
           voice={voice}
           suggestions={suggestionsFor(name)}
           onSay={(message, focus, pictures) => say(scope, message, focus, pictures)}
+          onResume={() => resume(scope)}
           onHelp={() => {}}
           onAskTerm={() => {}}
           onClose={close}

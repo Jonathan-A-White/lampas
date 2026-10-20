@@ -3,7 +3,7 @@
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { expect, test, type Page } from '@playwright/test';
-import { makeFakePostern, POSTERN_ORIGIN } from '../support/fake-postern';
+import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
 import { composerOf, questionField } from './ask-composer';
@@ -104,4 +104,51 @@ test('Talk with a gateway 502 with no CORS headers and the phone online says the
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.getByText('The tutor is offline right now. This is not your connection; try again later.')).toBeVisible();
   await expect(sheet.getByText(/You are offline/)).toHaveCount(0);
+});
+
+test('the phone going offline while the tutor is still thinking says he is offline within a few seconds, with Retry (mw-5r3p30.434)', async ({ page, context }) => {
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  await honestMic(page);
+  await openUnlocked(page);
+  await page.goto('/');
+  await chooseAction(page, 28, 'Ask the tutor');
+  await askAbout28(page);
+  // the question has gone and the tutor has not answered: the box counts the wait
+  await expect(page.locator('[data-ask-pending]').getByText(/Waiting for the tutor…/)).toBeVisible();
+  await expect.poll(() => fake.received.length).toBe(1);
+  // airplane mode: the browser says so and every call to the backend fails to connect
+  await context.setOffline(true);
+  await page.route(`${POSTERN_ORIGIN}/**`, (route) => route.abort('internetdisconnected'));
+  const box = page.locator('[data-ask-failed]');
+  await expect(box.getByText('You are offline. Check your connection and try again.')).toBeVisible({ timeout: 5000 });
+  await expect(box.getByRole('button', { name: 'Retry' })).toBeVisible();
+  await expect(page.getByText(/Waiting for the tutor…/)).toHaveCount(0);
+
+  // Retry with the phone back on finds the answer to the grist that went; it does not send a second one
+  await context.setOffline(false);
+  await page.unroute(`${POSTERN_ORIGIN}/**`);
+  await routePostern(page, fake);
+  await box.getByRole('button', { name: 'Retry' }).click();
+  await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
+  await expect(page.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
+  expect(fake.received).toHaveLength(1);
+});
+
+test('Talk: the phone going offline while the tutor is still thinking says he is offline within a few seconds (mw-5r3p30.434)', async ({ page, context }) => {
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  await honestMic(page);
+  await openUnlocked(page);
+  await page.goto('/');
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What is this verse about?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(sheet.locator('[data-talk-pending]').getByText(/Waiting for the tutor…/)).toBeVisible();
+  await expect.poll(() => fake.received.length).toBe(1);
+  await context.setOffline(true);
+  await page.route(`${POSTERN_ORIGIN}/**`, (route) => route.abort('internetdisconnected'));
+  await expect(sheet.locator('[data-talk-failed]').getByText('You are offline. Check your connection and try again.')).toBeVisible({ timeout: 5000 });
+  await expect(sheet.getByRole('button', { name: 'Retry' })).toBeVisible();
 });
