@@ -2,7 +2,7 @@
 // (src/share/target.ts) and opened the app here, at '#/share?s=<id>': the 'Share to Lampas' sheet asks which talk they go to: 'Continue: <the newest talk> ·
 // <when>' first, 'New talk', 'Choose a talk' (the recent talks, newest first, each with its first question and date), and Cancel. A pick takes the share off
 // the phone's store and opens that talk (the address becomes '#/share?talk=<key>', so a reopen finds him in it) with the pictures waiting in its composer
-// and the words in its field, NOT sent. Shared words are also searched for Bible references, and a shared picture is read for them by the find-refs grist (src/share/findRefs.ts); they are listed above the choice as links (ShareReferences.tsx). A file that is no JPEG, PNG or WebP (a GIF) is not counted and gets a "left out" line (shareText.ts leftOutLine) and stays out of the composer. The talk is the Talk sheet over its own scope (src/share/ShareTalk.tsx).
+// and the words in its field, NOT sent. Shared words are also searched for Bible references, and a shared picture is read for them by the find-refs grist (src/share/findRefs.ts); they are listed above the choice as links (ShareReferences.tsx). A file that is no JPEG, PNG or WebP (a GIF) is not counted and gets a "left out" line (shareText.ts leftOutLine) and stays out of the composer; a share with nothing readable (no words, no such picture: hasReadable) offers only Cancel. The talk is the Talk sheet over its own scope (src/share/ShareTalk.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { dropShares, listRecentTalks, waitingShare, type RecentTalk, type ShareRow } from '../data/repositories';
@@ -18,7 +18,7 @@ import { ShareReferences } from './ShareReferences';
 import { sharedContentOf, type SharedContent } from './shared';
 import { TalkHost } from './ShareTalk';
 import { useTalkScope } from './talkScope';
-import { describeShare, leftOutLine, shareTalkHash } from './shareText';
+import { describeShare, hasReadable, leftOutLine, shareTalkHash } from './shareText';
 import { dateText, newTalkRef, placeOf, talkLabel, timeAgo } from './talkPlace';
 
 const paramsOf = (hash: string): URLSearchParams => new URLSearchParams(hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '');
@@ -34,7 +34,9 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
   const { drag, handle } = useSheetDrag(onCancel);
   useEscapeToClose(onCancel);
   useSheetBack(onCancel);
-  const newest: RecentTalk | undefined = talks[0];
+  // a share of nothing Lampas reads (a GIF, a PDF) would lead to an empty talk: the sheet says what was left out and offers only Cancel
+  const readable = hasReadable(row);
+  const newest: RecentTalk | undefined = readable ? talks[0] : undefined;
   const [now] = useState(() => Date.now());
   // a shared picture is read by the find-refs grist (only on a phone that may send to the mill); its references join the words'
   const { refs: picture, retry } = usePictureRefs(row, useAiAllowed());
@@ -78,10 +80,12 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
                 <span className="text-lg font-semibold">{`Continue: ${talkLabel(newest.ref)} · ${timeAgo(newest.lastWhen, now)}`}</span>
               </button>
             ) : null}
-            <button type="button" ref={newest ? undefined : focusOnMount} onClick={() => onPick(newTalkRef())} className={`${ACTION} border-line bg-surface`}>
-              <span className="text-lg font-semibold">New talk</span>
-            </button>
-            {talks.length > 0 ? (
+            {readable ? (
+              <button type="button" ref={newest ? undefined : focusOnMount} onClick={() => onPick(newTalkRef())} className={`${ACTION} border-line bg-surface`}>
+                <span className="text-lg font-semibold">New talk</span>
+              </button>
+            ) : null}
+            {readable && talks.length > 0 ? (
               <button type="button" aria-expanded={choosing} onClick={() => setChoosing((open) => !open)} className={`${ACTION} border-line bg-surface`}>
                 <span className="text-lg font-semibold">Choose a talk</span>
               </button>
@@ -101,7 +105,7 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
                 ))}
               </ul>
             ) : null}
-            <button type="button" onClick={onCancel} className="min-h-12 w-full rounded-xl px-4 text-lg font-medium text-accent">
+            <button type="button" ref={readable ? undefined : focusOnMount} onClick={onCancel} className="min-h-12 w-full rounded-xl px-4 text-lg font-medium text-accent">
               Cancel
             </button>
             {/* a picture's references come when the grist answers, so they are drawn under the buttons: in the full-height sheet nothing he may be about to tap moves */}

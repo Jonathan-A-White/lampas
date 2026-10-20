@@ -13,6 +13,9 @@ export function describeShare(row: Pick<ShareRow, 'files' | 'text'>): string {
   return parts.length === 2 ? `${parts[0]} and ${parts[1]}` : (parts[0] ?? '');
 }
 
+/** Whether anything Lampas can read is waiting: words, or a JPEG, PNG or WebP. A share of nothing readable has no talk to go to. */
+export const hasReadable = (row: Pick<ShareRow, 'files' | 'text'>): boolean => Boolean(row.text) || row.files.some(isTalkPicture);
+
 /** The line for the files of a share that are no picture Lampas reads (a GIF), or '' when there are none: said at the share, before a talk is chosen. */
 export function leftOutLine(row: Pick<ShareRow, 'files'>): string {
   const left = row.files.filter((f) => !isTalkPicture(f)).length;

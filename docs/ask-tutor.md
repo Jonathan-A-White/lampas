@@ -311,7 +311,7 @@ a phone that installed Lampas before this version may need it removed and instal
   <when>** (the default, the focused one; only when a talk was ever had), **New talk**, **Choose a talk** (the recent talks, newest first, at most 20, each with its
   name, its date and its first question; `repositories/talks.ts` `listRecentTalks`: the app had no list of past talks, this is the smallest one) and **Cancel**.
   The sheet is drawn once the talks are read, so a tap never lands on a button that moved.
-  Only JPEG, PNG or WebP files are counted as pictures (mw-s1dc0n.14: `shareText.ts` `describeShare`); any other (a GIF) gets the line "1 picture left out: Lampas reads only JPEG, PNG or WebP." (`leftOutLine`), is not read for references and stays out of the talk's composer.
+  Only JPEG, PNG or WebP files are counted as pictures (mw-s1dc0n.14: `shareText.ts` `describeShare`); any other (a GIF) gets the line "1 picture left out: Lampas reads only JPEG, PNG or WebP." (`leftOutLine`), is not read for references and stays out of the talk's composer. A share with nothing readable (no words, no such picture: `hasReadable`) offers only Cancel, with no New talk, Choose a talk or Continue (mw-5r3p30.665).
 - **A pick** takes the share off the phone's store and opens the talk in the Talk sheet over its own scope (`src/share/talkScope.ts`, `ShareTalk.tsx`): the
   address becomes `#/share?talk=<key>` (kept, so after leaving the app and coming back he is in that talk, with its turns; the pictures and words were
   placed once and are not kept). The pictures wait in the composer (`TalkSheet`'s `shared` prop: `usePictureBox().add`, cut down like any picture) and the words

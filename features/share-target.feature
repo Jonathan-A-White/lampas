@@ -72,7 +72,31 @@ Feature: Lampas is a share target
   Scenario: A shared GIF is not counted as a picture to read, and the sheet says so
     Given the Share screen is opened with two past talks and a shared GIF
     Then the sheet says Lampas leaves the GIF out because it reads only JPEG, PNG or WebP, and does not count it as a picture
+    And the sheet offers no "Continue: Romans 8:28 · 2 hours ago", "New talk" or "Choose a talk", only "Cancel"
+    And no picture was sent to the mill to be read
+
+  Scenario: A share of nothing Lampas can read offers only Cancel, whatever the file is
+    Given the Share screen is opened with two past talks and a shared PDF
+    Then the sheet says "1 picture left out: Lampas reads only JPEG, PNG or WebP."
+    And the sheet offers no "Continue: Romans 8:28 · 2 hours ago", "New talk" or "Choose a talk", only "Cancel"
+
+  Scenario: A share of a file of an unknown type offers only Cancel
+    Given the Share screen is opened with two past talks and a shared file of no known type
+    Then the sheet says "1 picture left out: Lampas reads only JPEG, PNG or WebP."
+    And the sheet offers no "Continue: Romans 8:28 · 2 hours ago", "New talk" or "Choose a talk", only "Cancel"
+
+  Scenario: With no past talk a shared GIF offers only Cancel
+    Given the Share screen is opened with no past talk and a shared GIF
+    Then the sheet offers no "New talk" or "Choose a talk", only "Cancel"
+
+  Scenario: Cancel on a share of nothing readable drops it
+    Given the Share screen is opened with two past talks and a shared GIF
+    When he taps "Cancel"
+    Then no share is waiting and the Reader is open
+
+  Scenario: A shared GIF with some words still offers the talks, and leaves the GIF out
+    Given the Share screen is opened with two past talks and a shared GIF with some words
+    Then the sheet "Share to Lampas" offers, in order, "Continue: Romans 8:28 · 2 hours ago", "New talk" and "Choose a talk"
     When he taps "New talk"
     Then the talk sheet "Talk with the tutor" is open with nothing said yet
-    And the composer shows no thumbnails and says nothing of a refused picture
-    And no picture was sent to the mill to be read
+    And the composer shows no thumbnails and the field holds "ἀγάπη in BDAG"
