@@ -70,7 +70,11 @@ async function open(page: Page, hash: string, rows: Parameters<typeof put>[1] = 
   // English chunks). Only the Reader's own address is written, so the other screens' hashes are opened at once.
   if (/^#\/(\?|$)/.test(hash)) await expect(page).toHaveURL(/#\/\?.*view=.*weave=/);
   if (Object.keys(rows).length > 0) await put(page, rows);
-  await page.goto(`/${hash}`);
+  // The share sheet pushes a history entry the moment it is drawn, so one drawn before the reload below is a stale sheet to the fresh page, which leaves it with
+  // history.go(-1) (src/ui/sheetBack.ts leaveStaleSheets): on a loaded host that went back past the share to the Reader, which the share then became (1 run in 8 at 8 workers).
+  // The address is replaced without drawing the screen, so the reload is the share's first draw.
+  if (hash.startsWith('#/share')) await page.evaluate((to) => window.history.replaceState(null, '', to), `/${hash}`);
+  else await page.goto(`/${hash}`);
   // a write behind Dexie's back is not seen by its live queries: the app starts afresh
   await page.reload();
   await ready?.();
