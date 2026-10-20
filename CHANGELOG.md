@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.357
+_2026-10-20_
+- Fixed: Going back from a table to an idea's sheet now returns you to the place you were reading, not the top of the sheet.
+- Fixed: The whole path is moved with your finger, a pinch or the arrow keys, and the clunky arrow and zoom buttons are gone, leaving one small Where I am button.
+- New: After you answer a Review or Quick test word, tap the verse reference under it to see that verse, with the word marked, in the way you read.
+- Fixed: In Greek view the verse screen no longer offers an English audio Bible.
+
 ## 0.1.356
 _2026-10-20_
 - Fixed: Read aloud no longer names the letter "delta" when a short elided word ends a Greek stretch before English words; it plays the sound instead.

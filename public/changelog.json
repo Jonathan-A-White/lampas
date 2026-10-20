@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.357",
+    "date": "2026-10-20",
+    "story": "mw-svw421.39",
+    "kind": "fixed",
+    "text": "Going back from a table to an idea's sheet now returns you to the place you were reading, not the top of the sheet."
+  },
+  {
+    "version": "0.1.357",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.650",
+    "kind": "fixed",
+    "text": "The whole path is moved with your finger, a pinch or the arrow keys, and the clunky arrow and zoom buttons are gone, leaving one small Where I am button."
+  },
+  {
+    "version": "0.1.357",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.652",
+    "kind": "new",
+    "text": "After you answer a Review or Quick test word, tap the verse reference under it to see that verse, with the word marked, in the way you read."
+  },
+  {
+    "version": "0.1.357",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.653",
+    "kind": "fixed",
+    "text": "In Greek view the verse screen no longer offers an English audio Bible."
+  },
+  {
     "version": "0.1.356",
     "date": "2026-10-20",
     "story": "mw-5r3p30.657",
