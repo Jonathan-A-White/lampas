@@ -30,7 +30,7 @@ import {
   type WeaveGrammar,
 } from '../data/repositories';
 import { publish } from '../events/bus';
-import { openedOnReader, readerOf } from '../nav/route';
+import { openedOnReader, readerOf, routeOf } from '../nav/route';
 import { weaveOrderSetting, weaveSetting } from '../settings/definitions';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
 import { announceSetting, toldSetting, useSetting } from '../settings/store';
@@ -68,12 +68,17 @@ export function useReaderSettings(): ReaderSettings | undefined {
   const [opened] = useState(() => readerOf(window.location.hash));
   const wantView = useRef(opened.view);
   const wantWeave = useRef(toldSetting(weaveSetting) !== undefined || !openedOnReader() ? undefined : opened.weave);
+  const viewSettled = useRef(false);
   useEffect(() => {
     if (!view) return;
+    // Until the saved view has been told to the bus, the address may have moved on since the Reader mounted (a link opened while the app was starting):
+    // the view it names now is the one wanted, not the one it named at mount, which readerAddress would otherwise overwrite with the saved one.
+    if (!viewSettled.current && routeOf(window.location.hash) === 'home') wantView.current = readerOf(window.location.hash).view;
     if (wantView.current && wantView.current !== view) {
       void setReaderView(wantView.current);
       return;
     }
+    viewSettled.current = true;
     wantView.current = undefined;
     publish({ kind: 'view-changed', view });
   }, [view]);

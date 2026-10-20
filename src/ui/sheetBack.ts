@@ -33,6 +33,8 @@ const depthOf = (): number => (window.history.state as SheetState)?.sheet ?? 0;
 
 /** Sheets mounted now. */
 let open = 0;
+/** True from leaveStaleSheets until its go has landed: a sheet that mounts meanwhile takes no entry (see there). */
+let leaving = false;
 const watchers = new Set<() => void>();
 const tellWatchers = (): void => watchers.forEach((w) => w());
 
@@ -82,8 +84,21 @@ function skipStale(): void {
 export function leaveStaleSheets(): void {
   const stale = depthOf();
   if (stale <= 0) return;
+  leaving = true;
+  // The go lands after the first render on a loaded host, and a screen that draws its sheet at once (Share) has mounted it by then without an entry of its
+  // own (the stale one is still on top): when the go has landed, the sheets open now take entries again, and the landing is no Back that closes them.
+  const landed = () => {
+    window.removeEventListener('popstate', landed);
+    leaving = false;
+    for (const level of [...mounted].sort((a, b) => a - b)) {
+      window.history.pushState({ ...(window.history.state as object | null), sheet: level }, '', window.location.href);
+    }
+  };
+  window.addEventListener('popstate', landed);
   window.history.go(-stale);
   setTimeout(() => {
+    leaving = false;
+    window.removeEventListener('popstate', landed);
     if (open > 0 || depthOf() === 0) return;
     const rest = { ...(window.history.state as Record<string, unknown> | null) };
     delete rest.sheet;
@@ -169,7 +184,9 @@ export function useSheetBack(onClose: () => void): () => number {
     guard();
     const top = depthOf();
     let level: number;
-    if (adopt.length > 0 && adopt[0] <= top) {
+    if (leaving) {
+      level = Math.max(0, ...mounted) + 1; // the entry beneath the stale ones is not on top yet: leaveStaleSheets pushes this sheet's entry once it lands
+    } else if (adopt.length > 0 && adopt[0] <= top) {
       level = adopt.shift() ?? top + 1; // brought back by Back over a move: its entry is still there
     } else if (settleAt !== null && settleAt + 1 <= top) {
       level = settleAt + 1; // the entry of a sheet that just closed is this sheet's
