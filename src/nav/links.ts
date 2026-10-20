@@ -104,6 +104,29 @@ export function parseCanonReference(text: string): CanonReference | null {
   return numbers ? { testament: 'ot', ...numbers } : null;
 }
 
+/** The books whose names (in either table) start with what he typed, squashed: the New Testament's codes and the Old's. */
+function booksStartingWith(typed: string): { nt: string[]; ot: string[] } {
+  const starting = (table: ReadonlyMap<string, string>): string[] => [...new Set([...table].filter(([name]) => name.startsWith(typed)).map(([, code]) => code))];
+  return { nt: starting(BOOK_BY_NAME), ot: starting(OT_BY_NAME) };
+}
+
+/** `parseCanonReference`, and where the book is only a start of a name too ('ep 4:15', 'Ephe 4 15', 'Jo 3:16'): what he types into a field that takes a place
+ *  (src/nav/parseReference.ts readPlace, nothing else: text that merely holds words must go through `parseCanonReference`, which takes only the names the tables
+ *  list, or a start of a word would be read as a book). A name in the tables is that book, as before. Else a start that fits exactly one New Testament book goes to it
+ *  (Lampas holds the New Testament: 'Jo' is John, never Job, Joel, Jonah or Joshua); with none of those, the one Old Testament book it fits; else null, nothing guessed. */
+export function parseTypedReference(text: string): CanonReference | null {
+  const exact = parseCanonReference(text);
+  if (exact) return exact;
+  const named = /^((?:[1-3]\s*)?[a-z][a-z .]*?)\s*((?:\d.*)?)$/i.exec(text.trim().replace(SCHEME, '').replace(/\+/g, ' '));
+  if (!named) return null;
+  const typed = squash(named[1]);
+  if (typed === '') return null;
+  const { nt, ot } = booksStartingWith(typed);
+  const [testament, book] = nt.length === 1 ? (['nt', nt[0]] as const) : nt.length === 0 && ot.length === 1 ? (['ot', ot[0]] as const) : [undefined, undefined];
+  const numbers = book && numbersOf(book, named[2].trim());
+  return testament && numbers ? { testament, ...numbers } : null;
+}
+
 /** Where a reference opens the reader. `notice` is set when what was asked for is not what is shown. */
 export interface Opened {
   book: string;

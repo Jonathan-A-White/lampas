@@ -151,6 +151,31 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     await shot(page, 'chapter-picker-reference-390x844');
   });
 
+  // mw-5r3p30.683: a start of a book's name finds it, with a chapter and verse
+  test('ep 4:15 offers Go to Ephesians 4:15 and Enter opens Ephesians 4 with verse 15 at the top; Ph 1 guesses nothing and lists both books', async ({ page }) => {
+    const picker = await openPicker(page);
+    const search = picker.getByRole('searchbox', { name: 'Search books' });
+    for (const typed of ['ep 4:15', 'Eph 4:15', 'ephe 4 15', 'EP 4:15']) {
+      await search.fill(typed);
+      await expect(picker.getByRole('button', { name: 'Go to Ephesians 4:15' }), typed).toBeVisible();
+    }
+    await search.fill('Ph 1');
+    await expect(picker.locator('[data-go-to]')).toHaveCount(0);
+    await expect(picker.getByRole('button', { name: 'Philippians' })).toBeVisible();
+    await expect(picker.getByRole('button', { name: 'Philemon' })).toBeVisible();
+    await search.fill('phlm');
+    await expect(picker.getByRole('button', { name: 'Philemon' })).toBeVisible();
+    await search.fill('ep 4:15');
+    await search.press('Enter');
+    await expect(picker).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Ephesians 4', level: 1 })).toBeVisible();
+    const box = page.locator('[data-reader]');
+    await expect
+      .poll(async () => Math.abs((await page.locator('[data-verse="15"]').boundingBox())!.y - (await box.boundingBox())!.y) <= 12)
+      .toBe(true);
+    await shot(page, 'chapter-picker-start-of-book-390x844');
+  });
+
   test('a verse of the chapter he is in is brought to the top without opening the Verse view', async ({ page }) => {
     const picker = await openPicker(page);
     await picker.getByRole('searchbox', { name: 'Search books' }).fill('Rom 8:30');
