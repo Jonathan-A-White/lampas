@@ -6,8 +6,8 @@
 // that explanation is not shown again (an empty Today then names only where to choose). The day is the LOCAL date, read again when the app comes back to the front.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type ReactNode } from 'react';
-import { devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
-import { getDay, getExplained, localDate, markOpened, noteExplained, setTicked } from '../data/daily/dailyStore';
+import { RANDOM, devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
+import { getDay, getExplained, localDate, markOpened, noteExplained, pickAnotherDevotional, setTicked } from '../data/daily/dailyStore';
 import { dailyReadings } from '../data/daily/psalmsProverbs';
 import { countDue, getLogosBible, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
@@ -252,11 +252,12 @@ function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
   );
 }
 
-function DevotionalPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
+function DevotionalPiece({ ticks, today, pick }: { ticks: Ticks; today: Date; pick?: string }) {
   const choice = useSetting(devotionalSetting);
   const draw = useSetting(devotionalDrawSetting);
   if (choice === undefined || draw === undefined) return null;
-  const devotional = devotionalForDay(choice, tickedDevotionals(draw), today);
+  const ticked = tickedDevotionals(draw);
+  const devotional = devotionalForDay(choice, ticked, today, pick);
   const link = devotionalLink(devotional.id, today);
   return (
     <section aria-label="Devotional">
@@ -267,6 +268,13 @@ function DevotionalPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
             <span className="text-lg font-medium text-accent">{devotional.title}</span>
             <span className="text-sm text-muted">{devotional.author ? `${devotional.author} · Open in Logos` : 'Open in Logos'}</span>
           </a>
+          {choice === RANDOM ? (
+            <div className="px-2 pb-1">
+              <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked))} className={ACTION}>
+                Another
+              </button>
+            </div>
+          ) : null}
         </Piece>
       </List>
     </section>
@@ -339,7 +347,7 @@ export function Today() {
   const devotionalDraw = useSetting(devotionalDrawSetting);
   const names = {
     plan: planName,
-    devotional: devotionalChoice === undefined || devotionalDraw === undefined ? undefined : devotionalForDay(devotionalChoice, tickedDevotionals(devotionalDraw), today).title,
+    devotional: devotionalChoice === undefined || devotionalDraw === undefined ? undefined : devotionalForDay(devotionalChoice, tickedDevotionals(devotionalDraw), today, day?.devotional).title,
   };
   useReportScreen({
     name: 'Today',
@@ -355,7 +363,7 @@ export function Today() {
           {ready && review === 'on' ? <ReviewPiece ticks={ticks} /> : null}
           {ready && plan === 'on' ? <PlanPiece ticks={ticks} date={date} /> : null}
           {ready && psalms === 'on' ? <PsalmsPiece ticks={ticks} today={today} /> : null}
-          {ready && devotional === 'on' ? <DevotionalPiece ticks={ticks} today={today} /> : null}
+          {ready && devotional === 'on' ? <DevotionalPiece ticks={ticks} today={today} pick={day?.devotional} /> : null}
         </div>
       </main>
     </>

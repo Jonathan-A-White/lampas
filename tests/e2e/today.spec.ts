@@ -71,6 +71,27 @@ async function kept(page: Page, key: string): Promise<unknown> {
   );
 }
 
+/** What the app kept under a settings key, as saved (a plain text setting is not JSON). */
+async function keptRaw(page: Page, key: string): Promise<string | undefined> {
+  return page.evaluate(
+    (k) =>
+      new Promise<string | undefined>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const idb = open.result;
+          const get = idb.transaction('settings', 'readonly').objectStore('settings').get(k);
+          get.onsuccess = () => {
+            idb.close();
+            resolve(get.result?.value);
+          };
+          get.onerror = () => reject(get.error);
+        };
+      }),
+    key,
+  );
+}
+
 /** A tap on a link to an app stays in the page and is recorded (headless Chromium stops at an app scheme); window.open is recorded and answers like a tab that opened. */
 async function recordAppLinks(page: Page): Promise<void> {
   await page.addInitScript(() => {
@@ -381,4 +402,50 @@ test('the tutor from Today is told the chapters read today', async ({ page }) =>
   const screen = fake.received[0].input.screen as { facts: { label: string; value: string }[] };
   expect(screen.facts).toContainEqual({ label: 'Read today', value: '1 John 1' });
   expect(screen.facts).toContainEqual({ label: 'Reading plan', value: 'Next: 1 John 2' });
+});
+
+const TWO = [
+  { id: 'LLS:20.10.1', title: 'Morning and Evening' },
+  { id: 'LLS:20.10.2', title: 'My Utmost for His Highest' },
+];
+
+test('with Which devotional on Random, Another picks a different devotional for the day, keeps Random, and holds across a reload', async ({ page }) => {
+  await openToday(page, [
+    { key: 'devotional', value: 'random' },
+    { key: 'devotionalDraw', value: TWO.map((d) => d.id).join(',') },
+  ]);
+  const card = piece(page, 'Devotional');
+  const link = card.getByRole('link');
+  await expect(link).toBeVisible();
+  const titleOf = async () => (await link.innerText()).split('\n')[0];
+  const before = await titleOf();
+  const another = card.getByRole('button', { name: 'Another' });
+  await expect(another).toBeVisible();
+  const size = await another.boundingBox();
+  expect(size?.height).toBeGreaterThanOrEqual(43.5);
+  await another.click();
+  await expect.poll(titleOf).not.toBe(before);
+  const after = await titleOf();
+  expect(TWO.map((d) => d.title)).toContain(after);
+  expect(await keptRaw(page, 'devotional')).toBe('random');
+  await shot(page, 'today-another');
+  // it holds across a reload and a return to Today
+  await page.reload();
+  await expect(card.getByRole('link')).toContainText(after);
+  await page.goto('/#/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await page.goto('/#/today');
+  await expect(card.getByRole('link')).toContainText(after);
+  await expect(card.getByRole('button', { name: 'Another' })).toBeVisible();
+  expect(await keptRaw(page, 'devotional')).toBe('random');
+  // it is the day's alone: tapping again goes back to the other one
+  await card.getByRole('button', { name: 'Another' }).click();
+  await expect.poll(titleOf).toBe(before);
+});
+
+test('with a fixed devotional chosen, Today shows no Another', async ({ page }) => {
+  await openToday(page, [{ key: 'devotional', value: 'LLS:20.10.2' }]);
+  const card = piece(page, 'Devotional');
+  await expect(card).toContainText('My Utmost for His Highest');
+  await expect(card.getByRole('button', { name: 'Another' })).toHaveCount(0);
 });
