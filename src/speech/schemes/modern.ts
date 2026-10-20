@@ -6,7 +6,7 @@ import type { Pronunciation, SoundGuide, SoundLesson, SoundRule, SoundRuleSide, 
 import type { SoundId } from '../sounds';
 import { isElided, withoutElision } from '../elision';
 import { ONSETS } from '../greekSyllables';
-import { modernLessons } from './modernLessons';
+import { BACK, modernLessons } from './modernLessons';
 import { MODERN_HEARD_AS, MODERN_LETTER_NAMES } from './modernSpoken';
 
 interface Letter {
@@ -435,7 +435,6 @@ function sideIn(word: string, rule: RuleId): string | null {
 }
 
 const FRONT = 'ε, ι, η, υ, αι, ει or οι';
-const BACK = 'α, ο, ω, ου or a consonant';
 const VOICED_LIST = 'β, γ, δ, ζ, λ, μ, ν or ρ';
 
 /** The sounds of Modern Greek that change by the next letter (mw-i7xe0n.7), each with its two sides, the line a wrong pick shows, and New Testament words of
