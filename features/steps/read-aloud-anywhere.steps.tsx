@@ -27,6 +27,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { APP_SEMVER, LAST_SEEN_VERSION_STORAGE_KEY } from '../../src/config';
 import { fixtureChangelog, stubChangelog, OLDER_VERSION, RUNNING_NEW } from '../../tests/support/changelog';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { pairsAsConsonant } from '../../tests/support/lone-word';
 import { statusLine } from '../../tests/support/status';
 
 const feature = await loadFeature('features/read-aloud-anywhere.feature');
@@ -63,7 +64,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
   };
   const spokenIn = (lang: string): string[] => engine().spoken.filter((s) => s.lang === lang).map((s) => s.text);
   const speaks = (text: string, lang: string): void => {
-    expect(spokenIn(lang).some((said) => said.includes(text))).toBe(true);
+    expect(spokenIn(lang).some((said) => said.includes(lang === 'el-GR' ? pairsAsConsonant(text) : text))).toBe(true);
   };
 
   const phone = (voices: Parameters<typeof stubSpeech>[0]) => () => {
