@@ -74,7 +74,7 @@ A table is never a dead end, and an ending is never asked before the table that 
 ## What unlocks a form
 
 A form is available when every idea it names is `frontier` or `solid` in `grammarLevels` (`isAvailable`); an idea with no level is not
-yet. A locked cell shows a lock (its accessible name says what it needs), never nothing, so the table keeps its shape. A lock is a button: a tap draws a line in words under its row ('Needs the plural', `needsText`, `data-testid="lock-needs"`), a second tap on the same lock, or a tap on another, takes it away; nothing else changes (mw-svw421.18).
+yet. A locked cell shows a lock (its accessible name says what it needs), never nothing, so the table keeps its shape. A lock is a button: a tap draws a line in words under its row ('Needs the plural', `needsText`, `data-testid="lock-needs"`; the ideas are `needsOf`, `src/data/paradigms/needs.ts`, the lowest on the ladder first) with a 'Go to <idea title>' button for each, which opens that idea's sheet over the table (Back closes it; mw-svw421.25), a second tap on the same lock, or a tap on another, takes it away; nothing else changes (mw-svw421.18).
 `availableCount` gives 'Available forms: N of M' for the list and for a table.
 
 ## Study and Review

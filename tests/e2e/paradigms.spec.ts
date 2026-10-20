@@ -283,7 +283,8 @@ test('mw-svw421.18: a tap on a locked form says in words what it needs, and noth
   // the line is in words, in view beside the lock he tapped, and at least a finger tall
   const line = page.getByTestId('lock-needs');
   await expect(line).toHaveCount(1);
-  await expect(line).toHaveText('Needs the plural');
+  await expect(line).toContainText('Needs the plural');
+  await expect(line.getByRole('button', { name: 'Go to The plural' })).toBeVisible();
   await expect(line).toBeInViewport();
   const tapped = await lock.boundingBox();
   const said = await line.boundingBox();
@@ -293,6 +294,13 @@ test('mw-svw421.18: a tap on a locked form says in words what it needs, and noth
   await expect(lock).toHaveAttribute('data-state', 'locked');
   await expectFitsPhone(page);
   await shot(page, 'paradigms-lock-needs');
+
+  // its button opens the idea's sheet over the table; Back closes it and the table is still there (mw-svw421.25)
+  await line.getByRole('button', { name: 'Go to The plural' }).click();
+  await expect(page.getByRole('dialog', { name: 'Idea' })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('dialog', { name: 'Idea' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'The third declension', level: 1 })).toBeVisible();
 
   // a tap on the same lock again puts the line away
   await lock.click();
