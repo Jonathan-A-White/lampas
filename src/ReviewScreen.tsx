@@ -27,7 +27,7 @@ import { NextBar } from './ui/NextBar';
 type MoveCard = { status: 'none' } | { status: 'offer'; move: PendingMove } | { status: 'said'; move: PendingMove };
 
 type Round =
-  | { status: 'start' }
+  | { status: 'start'; nothing?: boolean }
   | { status: 'loading' }
   | { status: 'running'; items: ReviewItem[]; index: number; picked: string | null; right: number; missed: string[] }
   | { status: 'done'; total: number; right: number; tomorrow: number; later: number; move: MoveCard };
@@ -160,7 +160,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
 
   const draw = () =>
     void drawReviewRound(newRandom(), Date.now(), undefined, takePractise()).then(({ items }) =>
-      setRound(items.length > 0 ? { status: 'running', items, index: 0, picked: null, right: 0, missed: [] } : { status: 'start' }),
+      setRound(items.length > 0 ? { status: 'running', items, index: 0, picked: null, right: 0, missed: [] } : { status: 'start', nothing: true }),
     );
   const start = () => {
     setRound({ status: 'loading' });
@@ -204,6 +204,11 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           <p className="mt-2 text-muted">
             {stillDue === 0 ? `${lessons && lessons.length > 0 ? 'No idea or word is due' : 'Nothing is due'}. Start still asks ten of your words.` : 'The due ones come first, then other words, up to ten.'}
           </p>
+          {round.nothing ? (
+            <p role="status" data-testid="nothing-to-ask" className="mt-4 text-lg">
+              Nothing is due and there is no word to ask.
+            </p>
+          ) : null}
           <button type="button" onClick={start} className="mt-6 min-h-12 w-full rounded-xl bg-accent text-lg font-medium text-accent-fg">
             Start
           </button>

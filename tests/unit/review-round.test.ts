@@ -132,10 +132,12 @@ describe('a Review round', () => {
     expect(await asked()).toEqual(first);
   });
 
-  it('asks nothing of a due table with no available cell, and it stays due (mw-svw421.6)', async () => {
+  it('asks nothing of a due table with no available cell, and does not count it as due (mw-svw421.6, mw-svw421.28)', async () => {
     await db.reviews.put(due('paradigm', 'article', 60_000));
     const round = await drawReviewRound(mulberry32(5), NOW);
     expect(round.items.filter((i) => i.kind === 'paradigm')).toEqual([]);
-    expect((await listDue('paradigm', NOW)).map((r) => r.id)).toEqual(['article']);
+    expect(await listDue('paradigm', NOW)).toEqual([]);
+    // the row is kept: it is due again once a form of the table opens
+    expect(await db.reviews.get(['paradigm', 'article'])).toBeDefined();
   });
 });

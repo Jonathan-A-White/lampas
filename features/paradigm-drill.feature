@@ -28,3 +28,20 @@ Feature: A table can be drilled in Review
     Then the round asked at most 3 cells
     And every cell asked is one of the 4 available article forms
     And every option is a form of the article
+
+  Scenario: A table with no form available cannot be drilled
+    Given he has no grammar level
+    When he opens the table "The article"
+    Then the table says "Available forms: 0 of 24"
+    And the button "Drill this table" is disabled
+    And the schedule holds no "paradigm" row
+
+  Scenario: A due table with no form available is not counted and Start says nothing is due
+    Given he has no grammar level
+    And the table "article" is on the schedule and due
+    And he has no words
+    When he opens Review
+    Then the Review screen says "Due today: 0 words"
+    And nothing is counted as due
+    When he starts the review
+    Then Review says "Nothing is due and there is no word to ask."

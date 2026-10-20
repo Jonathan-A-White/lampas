@@ -98,7 +98,7 @@ question of kind `cell` drawn by `GrammarCard`: the cell's name and the table ('
 prompt, four forms of the same table as the options (the right one and three whose text differs: other available forms first, locked
 ones borrowed only when fewer than four are available; a locked cell is never asked itself). The form is said once it is answered, not
 before. From `FLASHCARD_STEP` up it is a flashcard: the name, Show reveals the form, I knew it / Not yet. A table with no available
-cell asks nothing and stays due. Each cell is one `recordReview('paradigm', id, right)` (a wrong cell is a wrong review) and a right
+cell asks nothing: `Drill this table` is disabled on it ('Unlock a form first'), and a row already on the schedule for one is kept but not due (`live`/`namesSomething` in `src/data/repositories/reviews.ts`, mw-svw421.28), so the Reader's Due chip and Review's line never count what a round cannot ask. When Start draws no item, Review says 'Nothing is due and there is no word to ask.' Each cell is one `recordReview('paradigm', id, right)` (a wrong cell is a wrong review) and a right
 cell credits its form's letters, sounds and marks as a form read right (`noteAnswer`, docs/grammar.md).
 
 ## Ask the tutor

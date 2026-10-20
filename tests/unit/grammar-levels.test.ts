@@ -178,10 +178,10 @@ describe('seedLevelsIfFirstOpen', () => {
 
 describe('the schedule and grammar ideas', () => {
   it('counts a due grammar idea, and lists it under its kind', async () => {
-    await scheduleIdea('x', 'frontier', NOW);
+    await scheduleIdea('article', 'frontier', NOW);
     expect(await countDue(NOW)).toBe(1);
     expect(await countDue(NOW, 'grammar')).toBe(1);
-    expect((await listDue('grammar', NOW)).map((r) => r.id)).toEqual(['x']);
+    expect((await listDue('grammar', NOW)).map((r) => r.id)).toEqual(['article']);
     expect(await countDue(NOW - 1)).toBe(0);
   });
 });
