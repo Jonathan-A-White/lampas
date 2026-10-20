@@ -19,6 +19,17 @@ Feature: Ask for more
     And its composer holds "I'd like Lampas to have "
     And nothing has been sent to the mill
 
+  Scenario: After the tutor's offer is sent, Sent links to Your requests, where the makers' answer comes back
+    Given the Ask for more page is open in the app and the tutor offers to send his ask to the makers
+    When he taps "Ask the tutor"
+    And he sends "I'd like Lampas to have the Polis method"
+    And he taps "Send this to the makers"
+    Then the offer says "Sent" and "The answer will come back." with a link "Your requests"
+    When he taps the link "Your requests"
+    Then the talk is closed
+    And the page "Your requests" is open
+    And its heading "Your requests" is in view
+
   Scenario Outline: Each form sends one feedback grist with its kind and fields
     Given the Ask for more page is open in the app
     When he opens the form "<form>"

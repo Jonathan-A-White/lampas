@@ -38,10 +38,32 @@ test('an ask Lampas cannot meet is offered to the makers and one tap sends it', 
   await offer.click();
   await expect(sheet.getByText('Sent', { exact: true })).toBeVisible();
   await expect(sheet.getByText('The answer will come back.')).toBeVisible();
+  const link = sheet.getByRole('button', { name: 'Your requests' });
+  await expect(link).toBeVisible();
+  expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
   await expect(offer).toHaveCount(0);
   expect(fake.received.map((g) => g.grist.kind)).toEqual(['bible-talk', 'feedback']);
   expect(fake.received[1].input).toMatchObject({ kind: 'tutor-ask', text: 'Can this work with Olive Tree?', screen: 'Words' });
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   await shot(page, 'feedback-offer-sent');
+});
+
+test('the link beside the answer opens Your requests with its heading in view', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: ANSWER };
+  fake.kindReplies.feedback = { status: 'answered', answer: { status: 'sent' } };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/#/words');
+  await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
+  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Can this work with Olive Tree?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  await sheet.getByRole('button', { name: 'Send this to the makers' }).click();
+  await sheet.getByRole('button', { name: 'Your requests' }).click();
+  await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeInViewport();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await shot(page, 'feedback-offer-requests');
 });

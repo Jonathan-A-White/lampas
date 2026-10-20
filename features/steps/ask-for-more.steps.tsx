@@ -91,6 +91,12 @@ const says = async (_: unknown, line: string) => {
   expect(await within(form(opened)).findByText(line)).toBeInTheDocument();
 };
 
+const OFFER_ANSWER = {
+  answer: 'Lampas does not have that. I can pass your wish to the makers; I cannot promise they will build it.',
+  words: [],
+  feedback_offer: { summary: 'He wants Lampas to have the Polis method.' },
+};
+
 const feature = await loadFeature('features/ask-for-more.feature');
 
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
@@ -141,6 +147,55 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     And('nothing has been sent to the mill', () => {
       expect(fake.received).toHaveLength(0);
+    });
+  });
+
+  Scenario("After the tutor's offer is sent, Sent links to Your requests, where the makers' answer comes back", ({ Given, When, Then, And }) => {
+    Given('the Ask for more page is open in the app and the tutor offers to send his ask to the makers', async () => {
+      await openPage();
+      fake.kindReplies['bible-talk'] = { status: 'answered', answer: OFFER_ANSWER };
+    });
+    When('he taps {string}', async (_, label: string) => {
+      await user.click(screen.getByRole('button', { name: label }));
+    });
+    And('he sends {string}', async (_, words: string) => {
+      const sheet = await screen.findByRole('dialog', { name: 'Ask the tutor: Ask for more' });
+      const box = within(sheet).getByRole('textbox', { name: 'Your message' });
+      await user.clear(box);
+      await user.type(box, words);
+      await user.click(within(sheet).getByRole('button', { name: 'Send' }));
+    });
+    And('he taps {string}', async (_, label: string) => {
+      const sheet = screen.getByRole('dialog', { name: 'Ask the tutor: Ask for more' });
+      await user.click(await within(sheet).findByRole('button', { name: label }));
+    });
+    Then('the offer says {string} and {string} with a link {string}', async (_, sent: string, line: string, link: string) => {
+      const sheet = screen.getByRole('dialog', { name: 'Ask the tutor: Ask for more' });
+      const settled = await waitFor(() => {
+        const found = sheet.querySelector<HTMLElement>('[data-offer-settled]');
+        expect(found).not.toBeNull();
+        return found as HTMLElement;
+      });
+      expect(within(settled).getByText(sent)).toBeInTheDocument();
+      expect(settled).toHaveTextContent(line);
+      expect(within(settled).getByRole('button', { name: link })).toBeInTheDocument();
+    });
+    When('he taps the link {string}', async (_, label: string) => {
+      const sheet = screen.getByRole('dialog', { name: 'Ask the tutor: Ask for more' });
+      await user.click(within(sheet).getByRole('button', { name: label }));
+    });
+    Then('the talk is closed', async () => {
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    });
+    And('the page {string} is open', async (_, title: string) => {
+      expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/requests');
+    });
+    And('its heading {string} is in view', (_, title: string) => {
+      // jsdom has no layout: the page opens at its top, so its heading is the first thing in the screen box
+      const heading = screen.getByRole('heading', { name: title, level: 1 });
+      expect(heading).toBeVisible();
+      expect(screen.getByRole('main').scrollTop).toBe(0);
     });
   });
 
