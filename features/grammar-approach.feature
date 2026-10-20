@@ -13,7 +13,7 @@ Feature: Grammar approach
 
   Scenario: A phone that saved the BMA Tutor choice reads as the ladder
     Given Settings is open on a phone that saved "bma-tutor" with the alphabet and the genitive solid and the aorist at the frontier
-    Then the approach shows its method and its first lesson "Alpha" marked "Next"
+    Then the approach shows its method and its first lesson "Pairs of vowels" marked "Next"
     And the alphabet and the genitive are still solid and the aorist is still at the frontier
     And the saved approach is "bma-tutor" in the store and reads as "ladder"
 

@@ -98,12 +98,12 @@ export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarA
 /** The lesson Settings > Grammar approach marks Next and the tutor's learner_grammar names (mw-86e9r1.24): with a goal, the lesson Learn next opens, so the
  *  two screens agree (undefined when Learn next names none); with no goal (or its needs not known), the lesson of the earliest idea with no level or not yet. */
 export function nextLesson(needs: Pick<PassageNeeds, 'ideas'> | undefined, approach: GrammarApproach, levels: ReadonlyMap<string, Level>, passages?: PassageContext): LessonPlace | undefined {
-  return needs ? learnNext(needs, approach, levels, passages)?.lesson : nextLessonOf(approach, (id) => levels.get(id));
+  return needs ? learnNext(needs, approach, levels, passages)?.lesson : nextLessonOf(approach, (id) => levelOf(levels, id));
 }
 
 /** The words the tutor is told for `nextLesson` (learner_grammar next_lesson): the lesson's title, or 'Read 1 John 1:1-4' when the next step is a passage; null when none. */
 export function nextLessonTitle(needs: Pick<PassageNeeds, 'ideas'> | undefined, approach: GrammarApproach, levels: ReadonlyMap<string, Level>, passages?: PassageContext): string | null {
-  if (!needs) return nextLessonOf(approach, (id) => levels.get(id))?.lesson.title ?? null;
+  if (!needs) return nextLessonOf(approach, (id) => levelOf(levels, id))?.lesson.title ?? null;
   const next = learnNext(needs, approach, levels, passages);
   return next?.passage ? `Read ${next.passage.label}` : (next?.lesson?.lesson.title ?? null);
 }
