@@ -1,0 +1,23 @@
+{
+  "description": "He owns Calvin's Commentaries and asks about Calvin on John 3:16: the answer carries a link of kind work to calvin-commentaries with the reference John 3:16, and no other work.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 3:16",
+    "greek": "Οὕτως γὰρ ἠγάπησεν ὁ θεὸς τὸν κόσμον, ὥστε τὸν υἱὸν τὸν μονογενῆ ἔδωκεν, ἵνα πᾶς ὁ πιστεύων εἰς αὐτὸν μὴ ἀπόληται ἀλλ᾽ ἔχῃ ζωὴν αἰώνιον.",
+    "english": "For God so loved the world that He gave His only Son, that whoever believes in Him should not perish but have eternal life.",
+    "question": "Can you tell me more about John Calvin and where he makes his claim on this verse? I would like to read it in my own books.",
+    "history": [],
+    "solid_words": [],
+    "settings": { "theme": "light", "textSize": "normal" },
+    "resources": [],
+    "works": [
+      { "id": "calvin-commentaries", "title": "Calvin's Commentaries", "author": "John Calvin", "kind": "commentary", "covers": "Matthew, Mark, Luke, John, Acts, Romans, 1 Corinthians, 2 Corinthians, Galatians, Ephesians, Philippians, Colossians, 1 Thessalonians, 2 Thessalonians, 1 Timothy, 2 Timothy, Titus, Philemon, Hebrews, James, 1 Peter, 2 Peter, 1 John, Jude" }
+    ]
+  },
+  "expect": {
+    "links.0.kind": { "equals": "work" },
+    "links.0.work": { "equals": "calvin-commentaries" },
+    "links.0.reference": { "contains": "John 3" },
+    "setting_offer": { "present": false }
+  }
+}

@@ -17,7 +17,7 @@ import { LEARNABLE, LEARNED_VALUE_MAX, type Learnable, type ProfileUpdate } from
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { MemoryUpdate } from '../talk/memoryUpdate';
 import type { SettingValue } from '../settings/registry';
-import type { TutorResource } from '../resources/tutorLinks';
+import type { TutorResource, TutorWork } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
 import type { FormFieldState, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
@@ -209,6 +209,8 @@ export interface TalkRequest {
   pronunciation_guide?: string;
   /** the study resources he has switched on in Settings (mw-5r3p30.123): the only ones the tutor may link; missing in About, whose request is the credits */
   resources?: TutorResource[];
+  /** the works of his Logos library that he ticked in Settings (mw-5r3p30.675): the only ones the tutor may link as a `work`; missing when none is ticked and in About */
+  works?: TutorWork[];
   /** present only when pictures go with the message (mw-y3qno5.1): how many, 1 to 4. They are the grist's attachments; the tutor reads the text in them */
   pictures?: number;
   /** present only while an offer waits for his tap (mw-5r3p30.186): the newest one in this talk, its kind and the exact text */
@@ -311,8 +313,13 @@ export const MEMORY_APPEND_MAX = 300;
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 
+const isWorkLink = (value: Record<string, unknown>): boolean =>
+  value.kind === 'work' && isText(value.work, 60) && Object.keys(value).length === ('reference' in value ? 3 : 2) && (!('reference' in value) || isText(value.reference, 40));
+
 const isAnswerLink = (value: unknown): value is AnswerLink =>
-  isObject(value) && Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)) || (value.kind === 'setting' && isText(value.key, 40)));
+  isObject(value) &&
+  (isWorkLink(value) ||
+    (Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)) || (value.kind === 'setting' && isText(value.key, 40)))));
 
 const isFormValue = (value: unknown): value is FormValue =>
   isObject(value) && Object.keys(value).length === 2 && isText(value.field, 30) && isText(value.value, 1200);
@@ -485,6 +492,7 @@ export function buildTalkRequest(
   missingFoundations?: MissingFoundations,
   readerView?: ReaderView,
   rusty?: RustyItem[],
+  works: TutorWork[] = [],
 ): TalkRequest {
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
@@ -511,6 +519,7 @@ export function buildTalkRequest(
     ...(scope.quiz ? { quiz_goal: quizGoal.kept === '' ? null : quizGoal.kept } : {}),
     ...(scope.quiz && quizGoal.kept === '' && quizGoal.once ? { quiz_goal_once: quizGoal.once } : {}),
     ...(aboutCredits ? {} : { resources }),
+    ...(works.length > 0 && !aboutCredits ? { works } : {}),
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
     ...(missingFoundations && !aboutCredits ? { missing_foundations: missingFoundations } : {}),

@@ -88,6 +88,15 @@ const REQUESTS: readonly SettingsRow[] = [
   },
 ];
 
+/** Works (mw-5r3p30.675): the commentaries and books of his Logos library that he ticks so the tutor may link them. A list of switches, not a setting, so the tutor does not read or change it (isTalkable). */
+const WORKS_ROW: SettingsRow = {
+  key: 'works',
+  label: 'Works in your Logos library',
+  hint: 'The commentaries and books you own. The tutor links only the ones on.',
+  help: 'Lampas cannot see your Logos library, so switch on the commentaries and books you own. When the tutor names one of them, it adds an Open in Logos button: a commentary opens at the passage, a book at its start. All start off.',
+  section: 'resources',
+};
+
 /** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
 const DEVELOPER: SettingsRow = {
   key: 'developer',
@@ -108,13 +117,13 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   ai: AI_KEYS.has(s.key) || undefined,
 });
 
-const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...REQUESTS, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...REQUESTS, WORKS_ROW, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = SECTIONS.flatMap((section) => unordered.filter((r) => r.section === section.id));
 
-/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer';
+/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the list of Works or Developer mode. */
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'works';
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 

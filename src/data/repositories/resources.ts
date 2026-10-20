@@ -1,6 +1,7 @@
 // src/data/repositories/resources.ts — which study resources he switched on (src/resources/) and the name he typed for a resource's
 // field, in the settings store: 'resource.<id>' is 'on', 'resourceOption.<id>' the text. All off, all empty to start with.
 import { DEFAULT_GRAMMAR_BOOKS } from '../../resources/grammarBooks';
+import { WORKS } from '../../resources/works';
 import { db } from '../db';
 
 export interface StudyResources {
@@ -49,4 +50,25 @@ export async function getGrammarBooks(): Promise<string[]> {
 
 export async function setGrammarBooks(ids: readonly string[]): Promise<void> {
   await db.settings.put({ key: BOOKS, value: JSON.stringify(ids) });
+}
+
+// The works of his Logos library that he ticked under Study resources (src/resources/works.ts): a JSON array of work ids in 'works'; none until he ticks one.
+const WORKS_KEY = 'works';
+
+/** The ids of the works he ticked, in WORKS' order (an id no work has any more is passed over); none when nothing was kept or the kept value cannot be read. */
+export async function getWorks(): Promise<string[]> {
+  const row = await db.settings.get(WORKS_KEY);
+  if (typeof row?.value === 'string') {
+    try {
+      const ids: unknown = JSON.parse(row.value);
+      if (Array.isArray(ids)) return WORKS.filter((w) => ids.includes(w.id)).map((w) => w.id);
+    } catch {
+      // not JSON: as if nothing was kept
+    }
+  }
+  return [];
+}
+
+export async function setWorks(ids: readonly string[]): Promise<void> {
+  await db.settings.put({ key: WORKS_KEY, value: JSON.stringify(ids) });
 }

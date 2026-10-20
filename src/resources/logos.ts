@@ -3,6 +3,7 @@
 // scheme first (logosres: for a resource, logos4: for a guide) and carries the https ref.ly address as the fallback, opened only when the
 // phone cannot open the scheme (src/resources/openApp.ts). docs/resources.md names the sources and what is UNVERIFIED.
 import { verseLink } from './logosBible';
+import { resourceLink } from './logosRes';
 import type { StudyLink, StudyResource, StudyWord } from './types';
 
 /** The key a lexicon is filed under: the Greek lemma (`hw=<lemma>`; `commonLemma` is the same for a book with no proper names), a Strong's number (`ref=GreekStrongs.<n>` or `HebrewStrongs.<n>`, as Greek and Hebrew share numbers),
@@ -89,8 +90,7 @@ export const logos: StudyResource = {
       lexicons.push({
         label: `Open in Logos: ${l.name}`,
         tile: l.short,
-        url: `logosres:${l.resource};${key}`,
-        fallback: `https://ref.ly/logosres/${encodeURIComponent(l.resource)}?${key}`,
+        ...resourceLink(l.resource, key),
       });
     }
     const guide = study(word);

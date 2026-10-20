@@ -12,8 +12,8 @@ import { focusLemmaOf, learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { learnFromTalk } from './data/repositories/profile';
-import { addTurn, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, listLevels, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
-import { resourcesForTutor } from './resources/tutorLinks';
+import { addTurn, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getWorks, listLevels, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
+import { resourcesForTutor, worksForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
 import { checkedSyllables } from './speech/greekSyllables';
@@ -141,7 +141,7 @@ export function useTalk(
       set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume, ...withFocus } : { phase: 'sending', question: text, startedAt, ...withFocus });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty, works] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -159,6 +159,7 @@ export function useTalk(
             getReaderView().catch(() => undefined),
             // the solid words and ideas he now slips on or has been away from: the tutor says so once and may offer to move them back (src/data/rusty.ts); not in a quiz
             scope.quiz || scope.welcome ? Promise.resolve(undefined) : rustyNow().catch(() => undefined),
+            getWorks().catch(() => []),
           ]);
           // What he lacks under the topic his words name, worked out here so the tutor picks from it and never guesses (mw-1vuvq6.5); a quiz is not a place to bridge
           const missing = levels && !scope.quiz && !scope.screen?.credits ? missingFoundations(text, levelsOf(levels), focus && 'term' in focus ? focus.term : undefined) : undefined;
@@ -167,7 +168,7 @@ export function useTalk(
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
           let sentAs: string | undefined;
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty), {
+          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works)), {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,

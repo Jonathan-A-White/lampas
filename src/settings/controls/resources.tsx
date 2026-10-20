@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
-import { getGrammarBooks, getLogosBible, getStudyResources, setGrammarBooks, setResourceOn, setResourceOption } from '../../data/repositories';
+import { getGrammarBooks, getLogosBible, getStudyResources, getWorks, setGrammarBooks, setResourceOn, setResourceOption, setWorks } from '../../data/repositories';
 import { StartPlan } from '../../plan/StartPlan';
 import { resourceOf, tickedOf, type ResourceChoices, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
@@ -8,6 +8,7 @@ import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { GRAMMAR_BOOKS } from '../../resources/grammarBooks';
 import { logos } from '../../resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
+import { WORKS } from '../../resources/works';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
@@ -157,6 +158,46 @@ function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource:
     </SettingRow>
   );
 }
+
+/** Works in your Logos library (mw-5r3p30.675): a switch for each entry of WORKS, by its full title and author, all off until he switches one on; kept as he taps (a JSON array of ids).
+ *  An app cannot read what his Logos library holds, so he says which he owns; the tutor links only these. */
+export const WorksControl: Control = ({ row }) => {
+  const ticked = useLiveQuery(getWorks, []);
+  const toggle = (id: string, on: boolean): void => {
+    const next = on ? ticked?.filter((t) => t !== id) : [...(ticked ?? []), id];
+    void setWorks(WORKS.map((w) => w.id).filter((w) => next?.includes(w)));
+  };
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {ticked ? (
+        <ul aria-label={row.label} className="rounded-lg border border-line">
+          {WORKS.map((work) => {
+            const on = ticked.includes(work.id);
+            return (
+              <li key={work.id} className="flex min-h-12 items-center justify-between gap-3 border-t border-line px-3 py-2 first:border-t-0">
+                <span className="title-wrap min-w-0 flex-1">
+                  <span className="block text-base font-medium">{work.title}</span>
+                  <span className="block text-sm text-muted">{`by ${work.author}`}</span>
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={on}
+                  aria-label={work.title}
+                  onClick={() => oneTap(`work-switch:${work.id}`, () => toggle(work.id, on))}
+                  className={`min-h-12 min-w-16 shrink-0 rounded-lg px-4 text-base font-medium ${on ? 'bg-accent text-accent-fg' : 'border border-line text-fg'}`}
+                >
+                  {on ? 'On' : 'Off'}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </SettingRow>
+  );
+};
 
 /** Bible in Logos: the Bible an Old Testament chapter opens in, from a short list or by typing its Resource ID. A typed ID is kept as soon as it is well formed. */
 function LogosBiblePicker({ saved }: { saved: string }) {

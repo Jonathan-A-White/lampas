@@ -9,7 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { setLogosBible, setReaderView, setResourceOn, setWeave } from '../../src/data/repositories';
+import { setLogosBible, setReaderView, setResourceOn, setWeave, setWorks } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { readerOf } from '../../src/nav/route';
 import { RESOURCES } from '../../src/resources';
@@ -30,7 +30,7 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern;
 
-type Link = { kind: 'word'; lemma: string } | { kind: 'verse'; reference: string };
+type Link = { kind: 'word'; lemma: string } | { kind: 'verse'; reference: string } | { kind: 'work'; work: string; reference?: string };
 
 async function open(links: Link[]): Promise<void> {
   cleanup();
@@ -62,13 +62,13 @@ const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const turn = () => sheet().querySelector<HTMLElement>('[data-turn]') as HTMLElement;
 const links = () => within(turn()).queryAllByRole('link');
 
-async function askAboutVerse28(): Promise<void> {
+async function askAboutVerse28(text = 'Tell me about love'): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Verse 28' }));
   const view = await screen.findByRole('region', { name: 'Verse view' });
   await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
   await user.click(await within(view).findByRole('button', { name: 'Talk about verse 28' }));
   await screen.findByRole('dialog', { name: /^Talk about / });
-  await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), 'Tell me about love');
+  await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), text);
   await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
   await waitFor(() => expect(sheet().querySelector('[data-turn]')).not.toBeNull());
 }
@@ -90,7 +90,16 @@ describeFeature(feature, ({ Scenario }) => {
   const fallback = (_: unknown, fallbackUrl: string) => {
     expect(links().find((l) => l.getAttribute('data-fallback') === fallbackUrl)).toBeDefined();
   };
-  const ask = askAboutVerse28;
+  const ask = () => askAboutVerse28();
+  const work = (_: unknown, id: string, reference?: string) => open([{ kind: 'work', work: id, ...(reference ? { reference } : {}) }]);
+  const switchOnWork = async (_: unknown, id: string) => {
+    await setWorks([id]);
+  };
+  const quietly = async () => {
+    await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(turn().querySelector('[data-tutor-links]')).toBeNull();
+  };
 
   Scenario('A word link opens his ticked Logos lexicon at that lemma', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with a link to the word {string}', word);
@@ -227,5 +236,43 @@ describeFeature(feature, ({ Scenario }) => {
     And('the answer has no Reader button', () => {
       expect(within(turn()).queryAllByRole('button', { name: /in Lampas/ })).toEqual([]);
     });
+  });
+
+  Scenario("A link to Calvin's commentaries opens them at the passage in his Logos library", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the work {string} at {string}', work);
+    And('the work {string} is switched on', switchOnWork);
+    When('he asks the tutor {string} about verse 28', (_, text: string) => askAboutVerse28(text));
+    Then('the answer shows the study link {string} to {string}', shows);
+    And('that link has the fallback {string}', fallback);
+    And('the request named the works {string}', (_, ids: string) => {
+      const input = fake.received.at(-1)?.input as { works?: { id: string }[] };
+      expect(input.works?.map((w) => w.id).join(',')).toBe(ids);
+    });
+  });
+
+  Scenario('A link to Calvin\'s Institutes opens the book at its start', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the work {string}', work);
+    And('the work {string} is switched on', switchOnWork);
+    When('he asks the tutor {string} about verse 28', (_, text: string) => askAboutVerse28(text));
+    Then('the answer shows the study link {string} to {string}', shows);
+    And('that link has the fallback {string}', fallback);
+  });
+
+  Scenario('A link to a work he did not tick is dropped', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the work {string} at {string}', work);
+    And('the work {string} is switched on', switchOnWork);
+    When('he asks the tutor {string} about verse 28', (_, text: string) => askAboutVerse28(text));
+    Then('the answer shows no study links', quietly);
+    And('the request named the works {string}', (_, ids: string) => {
+      const input = fake.received.at(-1)?.input as { works?: { id: string }[] };
+      expect(input.works?.map((w) => w.id).join(',')).toBe(ids);
+    });
+  });
+
+  Scenario('A link to a commentary for a book it does not cover is dropped', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the work {string} at {string}', work);
+    And('the work {string} is switched on', switchOnWork);
+    When('he asks the tutor {string} about verse 28', (_, text: string) => askAboutVerse28(text));
+    Then('the answer shows no study links', quietly);
   });
 });
