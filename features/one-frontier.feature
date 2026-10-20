@@ -44,6 +44,17 @@ Feature: One frontier idea at a time
     Then the idea sheet says "Not yet since today"
     And the idea sheet says what was kept: "Kept: next due tomorrow, last answered today, 1 missed"
 
+  Scenario: After Switch, an idea that was taught but never answered does not say it was answered
+    Given the goal is "1 John 1:1" and he has been taught "case-genitive" but has not answered it
+    And he opens the idea sheet of "alphabet" from the Goal screen
+    And he slides the level to "Learning"
+    And he taps "Switch"
+    And he closes the idea sheet
+    When he opens the idea sheet of "case-genitive" again from the Goal screen
+    Then the idea sheet says "Not yet since today"
+    And the idea sheet says what was kept: "Kept: next due tomorrow, not answered yet"
+    And the idea sheet does not say "last answered"
+
   Scenario: Proving the idea he is learning makes the next idea the frontier
     Given the goal is "1 John 1:1" and he is learning "case-genitive"
     And he opens the idea sheet of "case-genitive" from the Goal screen

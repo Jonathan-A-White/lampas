@@ -86,12 +86,14 @@ function dueText(due: number, now = Date.now()): string {
   return days < 7 ? WEEKDAYS[then.getDay()] : `${then.getDate()} ${MONTHS[then.getMonth()]}`;
 }
 
-/** What a Not yet idea kept on the schedule when it was put back (Switch keeps its row): when it is next due, when it was last answered, how often it was missed, and the last answer if it is known. */
+/** What a Not yet idea kept on the schedule when it was put back (Switch keeps its row): when it is next due, when it was last answered (or that it never was), how often it was missed, and the last answer if it is known. */
 function keptText(row: Review): string {
   const last = row.recent?.at(-1);
+  // teachIdea writes lastWhen as the day it was taught, so a row with no answer on it has no 'last answered' to give.
+  const answered = last !== undefined || row.rights > 0 || row.lapses > 0;
   return [
     `Kept: next due ${dueText(row.due)}`,
-    `last answered ${sinceText(row.lastWhen)}${last ? ` (${last.right ? 'right' : 'wrong'})` : ''}`,
+    answered ? `last answered ${sinceText(row.lastWhen)}${last ? ` (${last.right ? 'right' : 'wrong'})` : ''}` : 'not answered yet',
     ...(row.lapses > 0 ? [`${row.lapses} missed`] : []),
   ].join(', ');
 }
