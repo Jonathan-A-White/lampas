@@ -347,6 +347,59 @@ test('with Turn pages and the Immersive reader, each page fills down to the plac
   await pagesFillToPlaceLine(page, 'Bars away');
 });
 
+// mw-5r3p30.611: with the Immersive reader On and Turn pages, the card said 'Scroll down and the bars slide away.' though nothing scrolls, the bars
+// never went, and the card and bars left the text five lines of a 844 px screen (four sideways). Now the card says what works in pages and turning to the
+// next page puts the bars, and the card with them, away, as scrolling down does with Scroll; turning back changes nothing.
+for (const size of [
+  { name: '390x844', width: 390, height: 844 },
+  { name: '844x390', width: 844, height: 390 },
+]) {
+  test(`with Turn pages and the Immersive reader the card says what works in pages, and the next page puts the bars away, at ${size.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await openMark12(page, 'pages', { settings: { immersiveReader: 'on' } });
+    const card = page.locator('[data-immersive-hint]');
+    await expect(card).toBeVisible();
+    await expect(card).not.toContainText('Scroll');
+    await expect(card).toContainText('Turn to the next page and the bars slide away.');
+    await expect(card).toContainText('Tap with two fingers to bring them back or put them away.');
+    // sideways the card and the bars leave the text a sliver until the first turn, and the pages cut so thin open past page 1 (reported on the story)
+    const before = await pageOf(page);
+    if (size.height > size.width) expect(before.at).toBe(1);
+
+    await tapAt(page, 0.85);
+    await expect(page.locator('header').first()).toBeHidden();
+    await expect(card).toBeHidden();
+    await expect(page.locator('[data-ask-tutor]')).toHaveAttribute('data-away', '');
+    // the slide is 200 ms, and the pages are cut afresh for the taller box: fewer of them
+    await page.waitForTimeout(400);
+    const b = await box(page);
+    expect(b.bottom - b.top, `the text box is ${Math.round(b.bottom - b.top)} px of ${size.height}`).toBeGreaterThanOrEqual(size.height * 0.55);
+    const lines = await page.evaluate(() => {
+      const verse = document.querySelector('[data-reader] [data-verse]') as HTMLElement;
+      const reader = (document.querySelector('[data-reader]') as HTMLElement).getBoundingClientRect();
+      return reader.height / parseFloat(getComputedStyle(verse).lineHeight);
+    });
+    expect(lines, 'lines of text on a page').toBeGreaterThan(size.height > size.width ? 12 : 4);
+    await expect.poll(async () => (await pageOf(page)).of).toBeLessThan(before.of);
+    await shot(page, `turn-pages-immersive-away-${size.name}`);
+
+    // more page turns, back and forward, leave them away; a two-finger tap brings them back, the card with them
+    const on = await at(page);
+    await tapAt(page, 0.85);
+    await expect.poll(() => at(page)).toBe(on + 1);
+    await tapAt(page, 0.15);
+    await expect.poll(() => at(page)).toBe(on);
+    await expect(page.locator('header').first()).toBeHidden();
+    const cdp = await page.context().newCDPSession(page);
+    const y = (b.top + b.bottom) / 2;
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: b.left + b.width * 0.4, y, id: 1 }, { x: b.left + b.width * 0.6, y: y + 10, id: 2 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await cdp.detach();
+    await expect(page.locator('header').first()).toBeVisible();
+    await expect(card).toBeVisible();
+  });
+}
+
 /** Whether a verse screen or a sheet is open: a tap on the outer thirds opens neither. */
 const opened = async (page: Page) => /[?&]v=/.test(page.url()) || (await page.getByTestId('sheet-backdrop').count()) > 0;
 

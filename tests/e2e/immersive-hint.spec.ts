@@ -67,6 +67,22 @@ test('the card says how it works, in large type, and does not cover the Ask butt
   await shot(page, 'immersive-hint');
 });
 
+// mw-5r3p30.611: with Turn pages nothing scrolls, so the card says what does work there (tests/e2e/turn-pages.spec.ts proves the page turn puts the bars away).
+test('with Turn pages the card does not say Scroll down: it says the next page puts the bars away', async ({ page }) => {
+  await openReader(page, 'on');
+  await keep(page, 'readingMode', 'pages');
+  await page.goto('/#/?b=mrk&c=12');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', 'pages');
+  await expect(card(page)).toBeVisible();
+  await expect(card(page)).not.toContainText('Scroll down');
+  await expect(card(page)).toContainText('Turn to the next page and the bars slide away.');
+  await expect(card(page)).toContainText('Tap with two fingers to bring them back or put them away.');
+  await expect(card(page)).toContainText('To leave immersive reading: Settings > Immersive reader.');
+  await shot(page, 'immersive-hint-pages');
+});
+
 test('Got it closes the card and it comes back when the app opens again', async ({ page }) => {
   await openReader(page, 'on');
   await card(page).getByRole('button', { name: 'Got it' }).click();
