@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.367
+_2026-10-20_
+- Fixed: reloading the app while the Share to Lampas sheet is open keeps the sheet instead of dropping you on the reading screen, and a link that names Greek or English view keeps that view when the app was still starting.
+
 ## 0.1.366
 _2026-10-20_
 - Fixed: The Chi and Gamma lessons now name the same letters before their soft sound as the drill's rule line does, instead of just "e and i".

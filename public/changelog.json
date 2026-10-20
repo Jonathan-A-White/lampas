@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.367",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.669",
+    "kind": "fixed",
+    "text": "reloading the app while the Share to Lampas sheet is open keeps the sheet instead of dropping you on the reading screen, and a link that names Greek or English view keeps that view when the app was still starting."
+  },
+  {
     "version": "0.1.366",
     "date": "2026-10-20",
     "story": "mw-i7xe0n.27",
