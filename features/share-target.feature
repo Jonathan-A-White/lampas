@@ -68,3 +68,11 @@ Feature: Lampas is a share target
     When he taps "New talk"
     And he presses the phone's Back
     Then no share is waiting and the Reader is open
+
+  Scenario: A shared GIF is not counted as a picture to read, and the sheet says so
+    Given the Share screen is opened with two past talks and a shared GIF
+    Then the sheet says Lampas leaves the GIF out because it reads only JPEG, PNG or WebP, and does not count it as a picture
+    When he taps "New talk"
+    Then the talk sheet "Talk with the tutor" is open with nothing said yet
+    And the composer shows no thumbnails and says nothing of a refused picture
+    And no picture was sent to the mill to be read

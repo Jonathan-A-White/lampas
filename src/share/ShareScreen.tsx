@@ -2,7 +2,7 @@
 // (src/share/target.ts) and opened the app here, at '#/share?s=<id>': the 'Share to Lampas' sheet asks which talk they go to: 'Continue: <the newest talk> ·
 // <when>' first, 'New talk', 'Choose a talk' (the recent talks, newest first, each with its first question and date), and Cancel. A pick takes the share off
 // the phone's store and opens that talk (the address becomes '#/share?talk=<key>', so a reopen finds him in it) with the pictures waiting in its composer
-// and the words in its field, NOT sent. Shared words are also searched for Bible references, and a shared picture is read for them by the find-refs grist (src/share/findRefs.ts); they are listed above the choice as links (ShareReferences.tsx). The talk is the Talk sheet over its own scope (src/share/ShareTalk.tsx).
+// and the words in its field, NOT sent. Shared words are also searched for Bible references, and a shared picture is read for them by the find-refs grist (src/share/findRefs.ts); they are listed above the choice as links (ShareReferences.tsx). A file that is no JPEG, PNG or WebP (a GIF) is not counted and gets a "left out" line (shareText.ts leftOutLine) and stays out of the composer. The talk is the Talk sheet over its own scope (src/share/ShareTalk.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { dropShares, listRecentTalks, waitingShare, type RecentTalk, type ShareRow } from '../data/repositories';
@@ -12,12 +12,13 @@ import { useNeverShrink } from '../ui/neverShrink';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useAiAllowed } from '../gate/licenceContext';
+import { isTalkPicture } from '../talk/pictures';
 import { usePictureRefs } from './findRefs';
 import { ShareReferences } from './ShareReferences';
 import { sharedContentOf, type SharedContent } from './shared';
 import { TalkHost } from './ShareTalk';
 import { useTalkScope } from './talkScope';
-import { describeShare, shareTalkHash } from './shareText';
+import { describeShare, leftOutLine, shareTalkHash } from './shareText';
 import { dateText, newTalkRef, placeOf, talkLabel, timeAgo } from './talkPlace';
 
 const paramsOf = (hash: string): URLSearchParams => new URLSearchParams(hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '');
@@ -61,9 +62,16 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-line px-4 pt-3 pb-[calc(1rem+var(--lp-end-inset))]">
           <div ref={holdHeight} className="space-y-3">
-            <p data-share-what className="text-base text-muted">
-              {describeShare(row)} from another app. Where should they go?
-            </p>
+            {describeShare(row) ? (
+              <p data-share-what className="text-base text-muted">
+                {describeShare(row)} from another app. Where should they go?
+              </p>
+            ) : null}
+            {leftOutLine(row) ? (
+              <p data-share-left-out className="text-base text-muted">
+                {leftOutLine(row)}
+              </p>
+            ) : null}
             {row.text && !picture ? <ShareReferences text={row.text} /> : null}
             {newest ? (
               <button type="button" ref={focusOnMount} data-share-continue onClick={() => onPick(newest.ref)} className={`${ACTION} border-accent bg-accent text-accent-fg`}>
@@ -135,7 +143,9 @@ export function ShareScreen() {
   const pick = useCallback(
     (ref: string) => {
       if (!row) return;
-      setContent(sharedContentOf(row));
+      // a file Lampas cannot read stays out of the composer: the sheet has said so, and the talk would only refuse it again
+      const shared = sharedContentOf(row);
+      setContent({ ...shared, files: shared.files.filter(isTalkPicture) });
       void dropShares().then(() => replaceHash(shareTalkHash(ref)));
     },
     [row],
