@@ -119,7 +119,7 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
           ))}
         </dl>
       ) : null}
-      {bridge ? <BridgeOffer bridge={bridge} onTake={() => openBridgeIdea(bridge.next, 'ask')} /> : null}
+      {bridge ? <BridgeOffer bridge={bridge} onTake={(next) => openBridgeIdea(next, 'ask')} /> : null}
       <div className="-mb-1 mt-1 flex flex-wrap items-start justify-end gap-1">
         <CopyExchange place={answer.ref} question={answer.cleanQuestion ?? answer.question} answer={answer.answer} />
         {answer.id === undefined ? null : <ReadAloud id={askAnswerId(answer.id)} runs={answerRuns(answer.answer)} />}

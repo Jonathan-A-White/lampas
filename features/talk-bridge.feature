@@ -56,6 +56,18 @@ Feature: The tutor bridges a question he is not ready for
     When he taps "Take me there: Pairs of vowels"
     Then the idea sheet "Pairs of vowels" is open over the talk
 
+  Scenario: Once he has learned the idea the bridge took him to, the talk no longer offers it
+    Given only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor names the foundations he lacks
+    When he opens the talk and asks "Why is the genitive used in 1 John 1:1?"
+    And he taps "Take me there: Pairs of vowels"
+    And he sets the idea sheet "Pairs of vowels" to Learning
+    And he taps Done on the idea sheet
+    Then the talk no longer lists "Pairs of vowels" as missing nor offers it as "Take me there: Pairs of vowels"
+    And the talk shows the button "Take me there: Pairs of consonants"
+    When the tutor will take his next words as a yes
+    And he says "yes, take me there"
+    Then the second bible-talk grist carries the pending offer of kind bridge with the text "Take me there: Pairs of consonants"
+
   Scenario: A question about no grammar gets no bridge
     Given only the letters are solid and Lampas is opened on 1 John 1 behind a fake Postern whose tutor names the foundations he lacks
     When he opens the talk and asks "What does this verse mean?"

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { BRIDGE_MAX, MISSING_FOUNDATIONS_MAX, askedIdeas, missingFoundations, resolveBridge, withBridgeIdeas } from '../../src/data/grammar/bridge';
+import { BRIDGE_MAX, MISSING_FOUNDATIONS_MAX, askedIdeas, liveBridge, missingFoundations, resolveBridge, withBridgeIdeas } from '../../src/data/grammar/bridge';
 import { itemsOf, LADDER } from '../../src/data/grammar/ladder';
 import type { Level } from '../../src/data/grammar/needs';
 import { addAnswer, addTurn, listAnswers, listTurns } from '../../src/data/repositories';
@@ -195,6 +195,17 @@ describe('the request and the turn', () => {
     expect(offerOfTurn(turn)).toEqual({ kind: 'bridge', text: 'Take me there: Pairs of vowels' });
     expect(offerOfTurn({ ...turn, bridgeChoice: 'taken' })).toBeUndefined();
     expect(offerOfTurn({ ...turn, bridgeChoice: 'declined' })).toBeUndefined();
+  });
+
+  it('liveBridge drops the ideas he has taken up since and moves the button on (mw-1vuvq6.11)', () => {
+    const bridge = { ideas: ['diphthongs', 'consonant-pairs', 'syllables'], next: 'diphthongs', why: 'Cases rest on these.', many: false };
+    const turn = { id: 1, ref: 'rom.8.11', q: QUESTION, a: 'a', words: [], at: 0, bridge } as unknown as Parameters<typeof offerOfTurn>[0];
+    expect(liveBridge(bridge, new Map())).toBe(bridge);
+    expect(liveBridge(bridge, new Map<string, Level>([['diphthongs', 'frontier']]))).toEqual({ ...bridge, ideas: ['consonant-pairs', 'syllables'], next: 'consonant-pairs' });
+    expect(liveBridge(bridge, new Map<string, Level>([['diphthongs', 'solid'], ['syllables', 'frontier']]))?.ideas).toEqual(['consonant-pairs']);
+    expect(liveBridge(bridge, new Map<string, Level>(bridge.ideas.map((id): [string, Level] => [id, 'solid'])))).toBeUndefined();
+    expect(offerOfTurn(turn, new Map<string, Level>([['diphthongs', 'frontier']]))).toEqual({ kind: 'bridge', text: 'Take me there: Pairs of consonants' });
+    expect(offerOfTurn(turn, new Map<string, Level>(bridge.ideas.map((id): [string, Level] => [id, 'frontier'])))).toBeUndefined();
   });
 
   it('a verse answer keeps the bridge for its card', async () => {

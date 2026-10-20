@@ -1,7 +1,7 @@
 // features/steps/talk-bridge.steps.tsx — runs features/talk-bridge.feature: an answer that bridges a question he is not ready for shows 'Take me there: <title>';
 // a tap or a spoken yes opens that idea's sheet over the talk, and Back returns to it (mw-1vuvq6.5). Postern is the fake (tests/support/fake-postern.ts).
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -218,6 +218,43 @@ describeFeature(feature, ({ Scenario }) => {
     And('the talk shows the button {string}', shows);
     When('he taps {string}', taps);
     Then('the idea sheet {string} is open over the talk', sheetOpen);
+  });
+
+  Scenario('Once he has learned the idea the bridge took him to, the talk no longer offers it', ({ Given, When, And, Then }) => {
+    Given(FOUNDATIONS, opens(LACKS));
+    When(WHEN_ASKS, asks);
+    And('he taps {string}', taps);
+    And('he sets the idea sheet {string} to Learning', async (_, name: string) => {
+      const sheetNow = await waitFor(() => {
+        const found = ideaSheets(name)[0];
+        if (!found) throw new Error('the idea sheet is not open yet');
+        return found;
+      });
+      const slider = within(sheetNow).getByRole('slider', { name: 'Your level' });
+      fireEvent.change(slider, { target: { value: '1' } });
+      await waitFor(() => expect(slider).toHaveAttribute('aria-valuetext', 'Learning'));
+    });
+    And('he taps Done on the idea sheet', async () => {
+      await user.click(within(screen.getByRole('dialog', { name: 'Idea' })).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Idea' })).toBeNull());
+    });
+    Then('the talk no longer lists {string} as missing nor offers it as {string}', async (_, title: string, button: string) => {
+      await waitFor(() => expect(sheet().querySelector('[data-bridge-missing]')?.textContent).not.toContain(title));
+      expect(sheet().querySelector('[data-bridge-missing]')?.textContent).toContain('Pairs of consonants');
+      expect(offerButton(button)).toBeNull();
+    });
+    And('the talk shows the button {string}', shows);
+    When('the tutor will take his next words as a yes', () => {
+      fake.autoReply = { status: 'answered', answer: { answer: 'Opening it for you.', words: [], offer_reply: 'confirm' } };
+    });
+    And('he says {string}', async (_, words: string) => {
+      await send(words);
+    });
+    Then('the second bible-talk grist carries the pending offer of kind bridge with the text {string}', async (_, text: string) => {
+      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      expect((talkGrists()[1].input as { pending_offer?: unknown }).pending_offer).toEqual({ kind: 'bridge', text });
+      await waitFor(() => expect(ideaSheets('Pairs of consonants')).toHaveLength(1));
+    });
   });
 
   Scenario('A question about no grammar gets no bridge', ({ Given, When, And, Then }) => {
