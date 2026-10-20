@@ -6,7 +6,7 @@ import { drillSteps } from '../../src/data/grammar/drillIt';
 import { ITEM_GROUPS, ideaOf, itemsOf } from '../../src/data/grammar/ladder';
 import { soundLesson } from '../../src/data/grammar/lessons';
 import { quickQuestion } from '../../src/data/grammar/quickRound';
-import type { GrammarQuestion } from '../../src/data/grammar/questions';
+import { buildLetter, type GrammarQuestion } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
 import { pronunciationOf, soundRuleOf, soundRulesOf } from '../../src/speech/pronunciation';
 
@@ -103,6 +103,19 @@ describe('the sweep: a question whose right answer is a sound, against the schem
         for (const option of q.options.filter((o) => o !== q.right)) expect(sides.has(option), `${letter.id}: ${option} is right for a word`).toBe(false);
       }
     }
+  });
+
+  it('never offers σ as a wrong letter for “Which letter sounds like z?”: it is z before β, γ, δ, ζ, λ, μ, ν, ρ', () => {
+    const zeta = ideaOf('letter-zeta');
+    const sigma = ideaOf('letter-sigma').glyphs!;
+    let asked = 0;
+    for (let seed = 1; seed <= 40; seed += 1) {
+      const q = buildLetter(zeta, mulberry32(seed), modern, { letter: zeta, form: 'small' });
+      if (!q.prompt.includes('sounds like')) continue;
+      asked += 1;
+      for (const g of sigma) expect(q.options, `seed ${seed}`).not.toContain(g);
+    }
+    expect(asked).toBeGreaterThan(0);
   });
 
   it('asks every sound-bearing idea of every group by ear or by a word, and every “How is this word said?” answer is the scheme’s respelling', () => {
