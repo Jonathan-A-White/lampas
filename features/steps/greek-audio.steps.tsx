@@ -13,7 +13,7 @@ import { chosenPronunciation } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
-import { asSpoken } from '../../tests/support/lone-word';
+import { asSpoken, pairsAsConsonant } from '../../tests/support/lone-word';
 import { queryStatusLine, statusLine } from '../../tests/support/status';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -117,7 +117,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he switches the reader to Greek', switchToGreek);
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     Then('the phone is told to speak the Greek of verse {int} in {string}', (_, n: number, lang: string) =>
-      expectSpoken(verseGreek(n), lang),
+      expectSpoken(pairsAsConsonant(verseGreek(n)), lang),
     );
     And('the play button of verse {int} shows it is playing', (_, n: number) => {
       expect(playButton(n)).toHaveAttribute('aria-pressed', 'true');
@@ -152,7 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
       const after = synth.calls.slice(at + 1);
       expect(after.every((c) => c.startsWith('speak '))).toBe(true);
       expect(after.map((c) => c.slice('speak '.length)).join(' ')).toBe(
-        verseGreek(n)
+        pairsAsConsonant(verseGreek(n))
           .split(' ')
           .map((w) => chosenPronunciation().loneLetterForm(w) ?? w)
           .join(' '),
@@ -185,7 +185,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the play button of verse {int}', (_, n: number) => tapPlay(n));
     // voice-kit/speech waits up to a second for a phone to list its voices (VOICES_WAIT_MS), then speaks with the language alone
     Then('after waiting a moment for its voices the phone is told to speak the Greek of verse {int} in {string}', (_, n: number, lang: string) =>
-      waitFor(() => expectSpoken(verseGreek(n), lang)),
+      waitFor(() => expectSpoken(pairsAsConsonant(verseGreek(n)), lang)),
     );
     And('no help line shows', () => {
       expect(queryStatusLine()).toBeNull();

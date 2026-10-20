@@ -17,6 +17,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { TeachSheet } from '../../src/TeachSheet';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { pairsAsConsonant } from '../../tests/support/lone-word';
 
 const feature = await loadFeature('features/read-lessons.feature');
 const user = userEvent.setup();
@@ -59,7 +60,7 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   };
   const spokenIn = (lang: string): string[] => engine().spoken.filter((s) => s.lang === lang).map((s) => s.text);
   const speaks = async (text: string, lang: string): Promise<void> => {
-    await waitFor(() => expect(spokenIn(lang).some((said) => said.includes(text))).toBe(true));
+    await waitFor(() => expect(spokenIn(lang).some((said) => said.includes(lang === 'el-GR' ? pairsAsConsonant(text) : text))).toBe(true));
   };
 
   const phone = () => {
