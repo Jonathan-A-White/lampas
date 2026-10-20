@@ -45,6 +45,8 @@ export interface GrammarQuestion {
   say?: string;
   /** what the question is about, for Drill it (drillIt.ts, mw-i7xe0n.1): the letter, the ending, the case; a miss on it names the gap */
   facet?: Facet;
+  /** the part of `form` the question is about, as [from, to) indexes into it: the pair of a word whose sound depends on its place (ruleWord.ts); the card draws it marked */
+  span?: [number, number];
   /** the Greek words the question is about, for a 'meaning': the chunk's (or the clause's) words in text order, which the card may mark */
   marked?: string[];
   /** the verse's Greek words in text order, for a 'use' (mw-br588b.3): the card draws them as text, with the words at `markedAt` marked */

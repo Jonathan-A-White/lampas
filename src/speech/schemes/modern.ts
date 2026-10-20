@@ -2,7 +2,7 @@
 // the stressed syllable in capitals ("khree-STO"). Written from Modern Greek's own rules (docs/pronunciation.md lists
 // them); the other schemes (Erasmian next) are further files beside this one, registered in ../pronunciation.ts.
 import type { SoundWords } from '../accents';
-import type { Pronunciation, SoundGuide, SoundRule, SoundRuleSide, Spelling } from '../pronunciation';
+import type { Pronunciation, SoundGuide, SoundLesson, SoundRule, SoundRuleSide, Spelling } from '../pronunciation';
 import type { SoundId } from '../sounds';
 import { ONSETS } from '../greekSyllables';
 import { modernLessons } from './modernLessons';
@@ -430,7 +430,8 @@ const VOICED_LIST = 'β, γ, δ, ζ, λ, μ, ν or ρ';
  * each side (tests/unit/sound-rule-sides.test.ts holds every word to its side and to the text). No word of the text begins with μπ, ντ or γκ, so their start side has none. */
 function modernSoundRules(say: SoundWords): SoundRule[] {
   const asIn = say.keyed;
-  const side = (id: string, label: string, line: string, words: readonly string[] = []): SoundRuleSide => ({ id, label, line, words });
+  const prose = say.asIn;
+  const side = (id: string, label: string, line: string, choice: string, words: readonly string[] = [], examples: readonly string[] = words): SoundRuleSide => ({ id, label, line, choice, words, examples });
   const rule = (ideaId: string, id: RuleId, sides: [SoundRuleSide, SoundRuleSide]): SoundRule => ({
     ideaId,
     sides,
@@ -439,38 +440,65 @@ function modernSoundRules(say: SoundWords): SoundRule[] {
   });
   const vowelPair = (ideaId: string, id: RuleId, pair: string, base: string, voiced: readonly string[], voiceless: readonly string[]): SoundRule =>
     rule(ideaId, id, [
-      side('voiced', `${pair} before a vowel or a voiced consonant: ${base}v`, `${pair} before a vowel or ${VOICED_LIST} is ${base}v, with the ${asIn('v')}`, voiced),
-      side('voiceless', `${pair} before any other letter: ${base}f`, `${pair} before any other letter, or at the end of a word, is ${base}f, with the ${asIn('f')}`, voiceless),
+      side('voiced', `${pair} before a vowel or a voiced consonant: ${base}v`, `${pair} before a vowel or ${VOICED_LIST} is ${base}v, with the ${asIn('v')}`, `${base}v, with ${prose('v')}`, voiced),
+      side('voiceless', `${pair} before any other letter: ${base}f`, `${pair} before any other letter, or at the end of a word, is ${base}f, with the ${asIn('f')}`, `${base}f, with ${prose('f')}`, voiceless),
     ]);
-  const nasal = (ideaId: string, id: RuleId, pair: string, start: string, within: string, words: readonly string[]): SoundRule =>
+  // no word of the text begins with μπ, ντ or γκ: the side at the start is shown by a modern word (the same the course 'Learn the IPA sounds' uses)
+  const nasal = (ideaId: string, id: RuleId, pair: string, start: string, within: string, words: readonly string[], startWord: string): SoundRule =>
     rule(ideaId, id, [
-      side('start', `${pair} at the start of a word: ${start}`, `${pair} at the start of a word is ${asIn(start)}`),
-      side('inside', `${pair} inside a word: ${within}`, `${pair} inside a word is ${asIn(within)}`, words),
+      side('start', `${pair} at the start of a word: ${start}`, `${pair} at the start of a word is ${asIn(start)}`, say.choice(start), [], [startWord]),
+      side('inside', `${pair} inside a word: ${within}`, `${pair} inside a word is ${asIn(within)}`, say.choice(within), words),
     ]);
   return [
     rule('letter-chi', 'chi', [
-      side('hard', `χ before ${BACK}: kh`, `χ before ${BACK} is hard: ${asIn('kh')}`, ['χάρις', 'χαρά', 'ἔχω']),
-      side('soft', `χ before ${FRONT}: hy`, `χ before ${FRONT} is soft: ${asIn('hy')}`, ['χεῖρες', 'ψυχή', 'ἔχει']),
+      side('hard', `χ before ${BACK}: kh`, `χ before ${BACK} is hard: ${asIn('kh')}`, say.choice('kh'), ['χάρις', 'χαρά', 'ἔχω']),
+      side('soft', `χ before ${FRONT}: hy`, `χ before ${FRONT} is soft: ${asIn('hy')}`, say.choice('hy'), ['χεῖρες', 'ψυχή', 'ἔχει']),
     ]),
     rule('letter-gamma', 'gamma', [
-      side('hard', `γ before ${BACK}: gh`, `γ before ${BACK} is ${asIn('gh')}`, ['λόγος', 'γάρ', 'λέγω']),
-      side('soft', `γ before ${FRONT}: y`, `γ before ${FRONT} is ${asIn('y')}`, ['γῆ', 'λέγει', 'ἡγεμών']),
+      side('hard', `γ before ${BACK}: gh`, `γ before ${BACK} is ${asIn('gh')}`, say.choice('gh'), ['λόγος', 'γάρ', 'λέγω']),
+      side('soft', `γ before ${FRONT}: y`, `γ before ${FRONT} is ${asIn('y')}`, say.choice('y'), ['γῆ', 'λέγει', 'ἡγεμών']),
     ]),
     rule('letter-sigma', 'sigma', [
-      side('voiced', `σ before a voiced consonant: z`, `σ before ${VOICED_LIST} is ${asIn('z')}`, ['κόσμος', 'Ἰσραήλ']),
-      side('voiceless', `σ before any other consonant: s`, `σ before any other consonant is ${asIn('s')}`, ['ἐστίν', 'ἀπόστολος']),
+      side('voiced', `σ before a voiced consonant: z`, `σ before ${VOICED_LIST} is ${asIn('z')}`, say.choice('z'), ['κόσμος', 'Ἰσραήλ']),
+      side('voiceless', `σ before any other consonant: s`, `σ before any other consonant is ${asIn('s')}`, say.choice('s'), ['ἐστίν', 'ἀπόστολος']),
     ]),
     vowelPair('diphthong-au', 'au', 'αυ', 'a', ['Παῦλος', 'αὔριον'], ['αὐτός', 'ταῦτα']),
-    vowelPair('diphthong-eu', 'eu', 'ευ', 'e', ['εὐαγγέλιον', 'εὐλογία'], ['εὐθύς', 'εὐχαριστῶ']),
+    vowelPair('diphthong-eu', 'eu', 'ευ', 'e', ['εὐαγγέλιον', 'εὐλογία'], ['εὐχαριστῶ', 'εὐθύς']),
     vowelPair('diphthong-eeu', 'eeu', 'ηυ', 'ee', ['ηὐλίζετο'], ['ηὔξανεν', 'προσηύχετο']),
-    nasal('pair-mp', 'mp', 'μπ', 'b', 'mb', ['πέμπω', 'ἐμπορίαν']),
-    nasal('pair-nt', 'nt', 'ντ', 'd', 'nd', ['ἐντολή', 'πάντοτε']),
-    nasal('pair-gk', 'gk', 'γκ', 'g', 'ng', ['ἀνάγκη', 'ἤνεγκεν']),
+    nasal('pair-mp', 'mp', 'μπ', 'b', 'mb', ['πέμπω', 'ἐμπορίαν'], 'μπάλα'),
+    nasal('pair-nt', 'nt', 'ντ', 'd', 'nd', ['ἐντολή', 'πάντοτε'], 'ντουλάπι'),
+    nasal('pair-gk', 'gk', 'γκ', 'g', 'ng', ['ἀνάγκη', 'ἤνεγκεν'], 'γκάζι'),
     rule('pair-gch', 'gch', [
-      side('hard', `γχ before ${BACK}: ngkh`, `γχ before ${BACK} is ${asIn('ng')}, plus ${asIn('kh')}`, ['ἔλεγχος', 'ἔλεγχον']),
-      side('soft', `γχ before ${FRONT}: nghy`, `γχ before ${FRONT} is ${asIn('ng')}, plus ${asIn('hy')}`, ['ἐλέγχει', 'συγχαίρω']),
+      side('hard', `γχ before ${BACK}: ngkh`, `γχ before ${BACK} is ${asIn('ng')}, plus ${asIn('kh')}`, `ngkh, ${prose('ng')} plus ${prose('kh')}`, ['ἔλεγχος', 'ἔλεγχον']),
+      side('soft', `γχ before ${FRONT}: nghy`, `γχ before ${FRONT} is ${asIn('ng')}, plus ${asIn('hy')}`, `nghy, ${prose('ng')} plus ${prose('hy')}`, ['ἐλέγχει', 'συγχαίρω']),
     ]),
   ];
+}
+
+/**
+ * The lessons of the pairs whose sound changes by position (mw-5r3p30.646, his words: 'needs to have more information on when it has the EF sound and the EV sound'): each
+ * says it is a rule, then each side's own line with a word that stands on it and the respelling the voice and Say it use for that word. Written from the rule's
+ * sides, so the sheet, the drill's wrong-pick line and the respeller cannot say different things.
+ */
+function positionLessons(say: SoundWords): Record<string, SoundLesson> {
+  const lessons = modernLessons(say);
+  const out: Record<string, SoundLesson> = {};
+  for (const rule of modernSoundRules(say)) {
+    const idea = rule.ideaId;
+    if (!idea.startsWith('diphthong-') && !idea.startsWith('pair-')) continue;
+    const pair = rule.sides[0].label.split(' ')[0];
+    const nasal = rule.sides[0].id === 'start';
+    const parts = rule.sides.map((side) => {
+      const word = side.examples[0];
+      const modernWord = side.words.length === 0 ? ' (a Modern Greek word: no word of the New Testament begins so)' : '';
+      return `${side.line}: ${word}${modernWord} is “${respellModern(word)}”.`;
+    });
+    out[idea] = { ...lessons[idea], text: `${pair} is ${lessons[idea].sound}: which it is depends on ${nasal ? 'where it stands in the word' : 'the letter after it'}. ${parts.join(' ')}` };
+  }
+  // σ is a letter, not a pair, but it too is z before β, γ, δ, ζ, λ, μ, ν or ρ: its sheet says so, since its drill never offers z as a wrong choice
+  const voiced = modernSoundRules(say).find((r) => r.ideaId === 'letter-sigma')!.sides[0];
+  out['letter-sigma'] = { ...lessons['letter-sigma'], also: `${voiced.line}: ${voiced.examples[0]} is “${respellModern(voiced.examples[0])}”.` };
+  return { ...lessons, ...out };
 }
 
 /** What the tutor is told of Modern Greek (mw-5r3p30.268): the rules respellModern writes, and the ones the lessons teach, so its answers say the sounds
@@ -506,6 +534,6 @@ export const MODERN: Pronunciation = {
   letterNames: MODERN_LETTER_NAMES,
   heardAs: MODERN_HEARD_AS,
   tutorGuide: modernTutorGuide,
-  lessons: modernLessons,
+  lessons: positionLessons,
   soundRules: modernSoundRules,
 };
