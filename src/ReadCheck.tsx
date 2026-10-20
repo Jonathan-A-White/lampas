@@ -4,7 +4,7 @@
 // the whole verse again'. The Greek view is the same check on the verse's Greek: the words to fix are Greek, their chunks are
 // Greek syllables, and the speaker is the Greek voice. The state is src/useReadChecks.ts's.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
 import { ClipPlayer, usePlaying } from './audio/clipPlayer';
@@ -12,7 +12,7 @@ import { speechTimesOf, type SpeechTimes } from './audio/voiceSpan';
 import type { Verse } from './data/chapter';
 import { unitId, unitName } from './data/passage';
 import { getDeveloper, getGreekPronunciation, getMissTally, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
-import { markWords, normalWord, plainQuotes, readingLang, readingText, RESULT_HEADINGS, sayOf, wordsOfText, type ReadingView } from './services/reading';
+import { markWords, normalWord, plainQuotes, readingLang, readingText, RESULT_HEADINGS, sayOf, wordsOfText, WOVEN_LANG, type ReadingView, type WovenReading } from './services/reading';
 import { GREEK_LANG } from './script/greekLang';
 import { announce } from './ui/live';
 import { oneTap } from './ui/settle';
@@ -109,12 +109,40 @@ const typeOf = (view: ReadingView) =>
     ? { attrs: GREEK_LANG, face: 'font-greek text-[length:var(--lp-greek-size)]', chunks: 'font-greek' }
     : { attrs: { lang: 'en' }, face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
 
+const GREEK_LETTERS = /\p{Script=Greek}/u;
+
+/** The view a word is set and spoken in: in a woven reading (mw-5r3p30.411) a word in Greek letters is Greek, whichever view the verse is read in. */
+const viewOfWord = (view: ReadingView, word: string): ReadingView => (view === 'english' && GREEK_LETTERS.test(word) ? 'greek' : view);
+
+/** The text of a reading with each word in Greek letters set in the Greek face (a woven verse is part Greek), the rest as the parent sets it. */
+function MixedText({ text, view }: { text: string; view: ReadingView }) {
+  if (view !== 'english' || !GREEK_LETTERS.test(text)) return <>{text}</>;
+  const greek = typeOf('greek');
+  return (
+    <>
+      {wordsOfText(text).map((token, i) => (
+        <Fragment key={i}>
+          {i > 0 ? ' ' : ''}
+          {GREEK_LETTERS.test(token) ? (
+            <span {...greek.attrs} className={greek.face}>
+              {token}
+            </span>
+          ) : (
+            token
+          )}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
 /** A passage's text in the reading check is set as the passage view sets it, which is the Reader's (src/index.css shares the rules by this attribute). */
 const passageText = (passage?: boolean) => (passage ? { 'data-passage-text': '' } : {});
 
 /** The speaker for a flagged word: it says the word as it should sound (the answer's `say`, else the word) in the voice of the language read, and
  * nothing else; a response being read aloud is paused by the tap (speech/greek.ts speakBeside), so he hears only the word and can Resume it. */
-function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: ReadingView; id: string; label: string; className?: string }) {
+function SayWord({ fix, view: shown, id, label, className }: { fix: FixWord; view: ReadingView; id: string; label: string; className?: string }) {
+  const view = viewOfWord(shown, fix.word);
   return (
     <SpeakButton
       text={sayOf(fix, view)}
@@ -129,7 +157,7 @@ function SayWord({ fix, view, id, label, className }: { fix: FixWord; view: Read
 
 /** A word's chunks, big, with the tip and a speaker that says the whole word in the voice of the language read. */
 function Fix({ fix, view, large, player, speaker = true }: { fix: FixWord; view: ReadingView; large?: boolean; player?: ClipPlayer; speaker?: boolean }) {
-  const type = typeOf(view);
+  const type = typeOf(viewOfWord(view, fix.word));
   return (
     <div className="space-y-1">
       <p data-chunks {...type.attrs} className={`${large ? 'text-3xl' : 'text-2xl'} ${type.chunks} font-semibold tracking-wide`}>
@@ -159,10 +187,11 @@ function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached
     <span key={key} className="whitespace-nowrap">
       <button
         type="button"
+        {...typeOf(viewOfWord(view, label)).attrs}
         data-fix={normalWord(fix.word)}
         aria-pressed={open === key}
         onClick={() => oneTap(`fix-open:${key}`, () => onOpen(open === key ? null : key))}
-        className="inline-block min-h-11 rounded-lg bg-bad/15 px-1 font-semibold text-bad underline decoration-2 underline-offset-4"
+        className={`inline-block min-h-11 rounded-lg bg-bad/15 px-1 font-semibold text-bad underline decoration-2 underline-offset-4 ${typeOf(viewOfWord(view, label)).chunks}`}
       >
         {label}
       </button>
@@ -198,7 +227,10 @@ function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached
                   {after}
                 </>
               ) : (
-                core + after
+                <>
+                  <MixedText text={core} view={view} />
+                  {after}
+                </>
               )}{' '}
             </span>
           );
@@ -235,7 +267,7 @@ const isOneChunk = (fix: FixWord): boolean => fix.chunks.length <= 1 && normalWo
 /** The word he stopped at, offered as his next: big, in chunks, with the tip and the speaker (the same as a word to fix). A word of one chunk is
  * drawn once, big, with its tip under it: a second line of the same word would be a repeat (mw-neuq78.13). */
 const NextWord = forwardRef<HTMLDivElement, { fix: FixWord; view: ReadingView }>(function NextWord({ fix, view }, ref) {
-  const type = typeOf(view);
+  const type = typeOf(viewOfWord(view, fix.word));
   return (
     <div ref={ref} tabIndex={-1} data-next-word className="space-y-1 rounded-xl border border-line bg-surface p-3 outline-none">
       {/* the speaker sits in the heading's row, not under the tip: the card is a row shorter, so it fits above the bar at the biggest text on a small phone */}
@@ -372,7 +404,7 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
       {last || !word ? (
         <>
           <p data-walk-verse {...passageText(passage)} {...type.attrs} className={`break-words ${type.face} leading-(--lp-leading)`}>
-            {text}
+            <MixedText text={text} view={view} />
           </p>
           <p className="text-sm text-muted">Hold the bar below while you read the whole verse. Let go to send.</p>
         </>
@@ -381,7 +413,7 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
           <p className="text-sm text-muted">
             Word {step + 1} of {words.length}
           </p>
-          <p data-walk-word {...type.attrs} className={`break-words text-4xl font-semibold ${type.chunks}`}>
+          <p data-walk-word {...typeOf(viewOfWord(view, word.word)).attrs} className={`break-words text-4xl font-semibold ${typeOf(viewOfWord(view, word.word)).chunks}`}>
             {word.word}
           </p>
           <Fix fix={word} view={view} large />
@@ -400,26 +432,28 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
   );
 }
 
-/** What the reading check says while the weave shows some of the verse in Greek: the mill scores one language a reading (mw-5r3p30.410). */
-export const WEAVE_ENGLISH_ONLY = 'In weave mode I can check English only: read the whole verse in English, or turn weave off to read the Greek';
+/** What the reading check says while the weave shows some of the verse in Greek (mw-5r3p30.411): it is read as shown, and the mill hears each word in its own language. */
+export const WEAVE_READ_AS_SHOWN = 'Read it as it is shown: the Greek words in Greek and the English words in English';
 
 /** The reading check of the verse in the Verse view. `hold` is the bar's hold for this verse, `checks` has the states; the bar itself is drawn
  * into `slot`, the foot of the Verse view (the one hold bar on that screen), and says what a hold does now. */
-export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weaveShown = false, onRetry, slot }: {
+export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave = null, onRetry, slot }: {
   verse: Verse;
   view: 'english' | 'greek';
   book: string;
   chapter: number;
   checks: Pick<UseReadChecks, 'states'>;
   hold: ReadHold;
-  /** the weave shows some of its words in Greek */
-  weaveShown?: boolean;
+  /** the verse as the weave shows it to be read, when some of its words are shown in Greek (src/services/reading.ts wovenReading) */
+  weave?: WovenReading | null;
   onRetry: () => void;
   slot: HTMLElement | null;
 }) {
   const ref = verseRef(book, chapter, unitId(verse));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
-  const lang = readingLang(view, pronunciation);
+  // a verse read woven is a reading of its own (WOVEN_LANG): its words are not one language's, and its text is the weave's
+  const woven = view === 'english' ? weave : null;
+  const lang = woven ? WOVEN_LANG : readingLang(view, pronunciation);
   const reading = useLiveQuery(() => getVerseReading(ref, lang), [ref, lang]);
   const state = checks.states[unitId(verse)];
   const sent = state?.phase === 'sending' || state?.phase === 'waiting';
@@ -429,7 +463,8 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
   // The walk belongs to the reading it was started on: a new result closes it, and so does sending the next one.
   const [walkFor, setWalkFor] = useState<number | null>(null);
   const [walkStep, setWalkStep] = useState(0);
-  const text = readingText(verse, view);
+  // a woven reading's marks stand in the text it was scored against, kept with it: the weave of another day may show other words in Greek
+  const text = reading?.text ?? readingText(verse, view, woven);
   // A result, or a failure, that arrives is brought into view (never while he holds: the page must not move under his finger).
   const section = useRef<HTMLElement>(null);
   const arrived = state?.phase === 'failed' ? 'failed' : reading?.when;
@@ -500,9 +535,9 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
             ) : null}
           </>
         )}
-        {weaveShown && view === 'english' ? (
-          <p data-weave-english-only className="text-base font-medium">
-            {WEAVE_ENGLISH_ONLY}
+        {woven ? (
+          <p data-weave-read-as-shown className="text-base font-medium">
+            {WEAVE_READ_AS_SHOWN}
           </p>
         ) : null}
         <Status state={state} onRetry={onRetry} />

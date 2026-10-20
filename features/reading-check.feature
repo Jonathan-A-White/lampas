@@ -270,19 +270,20 @@ Feature: Reading check, in English and in Greek
     When he closes the Verse view, switches to the English view and opens the reading check again
     Then the English result is still there with "together" and "purpose" marked to fix
 
-  # mw-5r3p30.410: with the weave on, the check can hear English only (the mill scores one language a reading): he is told so, and a word
-  # shown to him in Greek is never marked or listed to fix, nor counted towards a drill.
-  Scenario: With the weave on the reading check says it can check English only and marks no word shown in Greek
-    Given Lampas is opened on Romans 8 in English with the weave on Solid words and a reading check whose answer missed the English of the Greek shown
+  # mw-5r3p30.411: with the weave on he reads the verse as it is shown, the Greek words in Greek and the English in English; the grist carries the pieces in order, each with
+  # its language (the mill's scorer turns each to IPA in its own), and the words come back marked where they stand in what he read.
+  Scenario: With the weave on he reads the verse as shown and the mill is sent its pieces, each in its own language
+    Given Lampas is opened on Romans 8 in English with the weave on Solid words and a reading check behind a fake Postern that holds its answers
     And he opens the reading check of verse 28
     And the verse shows "And" and "love" in Greek
-    Then the reading check says "In weave mode I can check English only: read the whole verse in English, or turn weave off to read the Greek" above the hold bar
+    Then the reading check says "Read it as it is shown: the Greek words in Greek and the English words in English" above the hold bar
     When he holds the bar for 2 seconds and lets go
+    Then the mill is sent the verse in pieces, "And" and "love" in Greek and the rest in English, and target_text is the pieces end to end
+    When the mill answers that it heard the Greek of "love" and the word "purpose" wrong
     Then the result is headed "Words to fix"
-    And the verse in the reading check shows only "purpose" marked to fix
-    When he taps "Read these again"
-    Then the walk shows the word "purpose" as word 1 of 1 in chunks "pur · pose"
-    And the misses kept for a drill name only "purpose"
+    And the verse in the reading check shows the Greek of "love" in Greek letters and "purpose" marked to fix
+    And the speaker beside the Greek of "love" speaks Greek
+    And the misses kept for a drill are none
 
   Scenario: With the weave off the reading check says nothing about the weave
     Given Lampas is opened on Romans 8 in English with a reading check behind a fake Postern

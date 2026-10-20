@@ -2,6 +2,7 @@
 // diphthongs and consonant pairs (the sounds tier of ladder.ts, ideas with a `pair`) found in the word's chunks, in an English
 // one the word itself. Pure; the repository (repositories/readings.ts) keeps the counts.
 import type { FixWord } from '../db';
+import { WOVEN_LANG } from '../wovenLang';
 import { LADDER } from './ladder';
 
 const ACCENTS = /[̀́͂]/;
@@ -44,6 +45,8 @@ export const englishUnit = (word: string): string => word.normalize('NFC').toLow
  * Greek pronunciation (readingLang: 'el').
  */
 export function missUnits(lang: string, words: FixWord[]): string[] {
+  // a woven reading (English and Greek words together) is no one language's: nothing in it is tallied for a drill (mw-5r3p30.411)
+  if (lang === WOVEN_LANG) return [];
   const units: string[] = [];
   for (const word of words) {
     if (lang === 'en') {

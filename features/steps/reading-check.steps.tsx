@@ -18,6 +18,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, PARTIAL_ANSWER, PARTIAL_FURTHER_ANSWER, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { normalWord, wordsOfText } from '../../src/services/reading';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
 
@@ -83,7 +84,7 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 interface Options {
-  reply?: 'reading' | 'woven-missed' | 'well-read' | 'incomplete' | 'partial' | 'held' | 'second-who' | 'escaped' | 'tip-respelling' | 'tip-not-first' | 'partial-together';
+  reply?: 'reading' | 'well-read' | 'incomplete' | 'partial' | 'held' | 'second-who' | 'escaped' | 'tip-respelling' | 'tip-not-first' | 'partial-together';
   view?: 'english' | 'greek';
   denied?: boolean;
   down?: boolean;
@@ -124,7 +125,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   }
   // the send is taken a second after the door gave up on it, as the Tester's stalled link did 35 s after a 30 s door
   if (send === 'late') fake.slowSendMs = LATE_MS;
-  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'woven-missed' ? WOVEN_MISSED_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : reply === 'partial-together' ? PARTIAL_TOGETHER_ANSWER : WELL_READ_ANSWER };
+  if (reply !== 'held') fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : reply === 'second-who' ? SECOND_WHO_ANSWER : reply === 'escaped' ? ESCAPED_ANSWER : reply === 'tip-respelling' ? LEVITES_ANSWER : reply === 'tip-not-first' ? NOT_FIRST_ANSWER : reply === 'incomplete' ? INCOMPLETE_ANSWER : reply === 'partial' ? PARTIAL_ANSWER : reply === 'partial-together' ? PARTIAL_TOGETHER_ANSWER : WELL_READ_ANSWER };
   fake.greekReply = { status: 'answered', answer: GREEK_READING_ANSWER };
   fake.down = down;
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -226,18 +227,6 @@ const saysOnly = (lang: string) => (_: unknown, text: string) => {
   // the verdict read before the tap was cut off by it: what is asked of the engine since its last cancel is the word alone
   expect(synth.since.map((u) => u.text)).toEqual([lang.startsWith('el') ? asSpoken(text) : text]);
   expect(synth.since[0].lang).toBe(lang);
-};
-
-/** An answer to a reading of 8:28 woven with his solid words, read the way he read it: the Greek shown in Greek, so the scorer, hearing for the
- * English, missed 'And' (word 0) and 'love' (word 14), whose Greek stood in their place; 'purpose' (word 22, English on screen) he really missed. */
-const WOVEN_MISSED_ANSWER = {
-  verdict: 'some-to-fix',
-  focus_words: [
-    { word: 'And', index: 0, chunks: ['and'], tip: 'Say the whole word.' },
-    { word: 'love', index: 14, chunks: ['love'], tip: 'Say the v.' },
-    READING_ANSWER.focus_words[1],
-  ],
-  note: 'Three words to say again.',
 };
 
 /** The Greek words that stand for the English chunk `english` of 8:28. */
@@ -816,10 +805,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the English result is still there with {string} and {string} marked to fix', verseMarkedSteps);
   });
-  Scenario('With the weave on the reading check says it can check English only and marks no word shown in Greek', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 in English with the weave on Solid words and a reading check whose answer missed the English of the Greek shown', () =>
-      open({ reply: 'woven-missed', weave: 'solid' }),
-    );
+  Scenario('With the weave on he reads the verse as shown and the mill is sent its pieces, each in its own language', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 in English with the weave on Solid words and a reading check behind a fake Postern that holds its answers', () => open({ reply: 'held', weave: 'solid' }));
     And('he opens the reading check of verse 28', selectVerse28);
     And('the verse shows {string} and {string} in Greek', async (_, first: string, second: string) => {
       const shown = () => Array.from(document.querySelectorAll('[data-sheet-verse] [data-woven]')).map((w) => w.textContent ?? '').join(' ');
@@ -831,24 +818,54 @@ describeFeature(feature, ({ Scenario }) => {
       expect(said.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
+    Then('the mill is sent the verse in pieces, {string} and {string} in Greek and the rest in English, and target_text is the pieces end to end', async (_, first: string, second: string) => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      const { segments, target_text: text, lang } = received().input as { segments: { text: string; lang: string }[]; target_text: string; lang: string };
+      expect(lang).toBe('en');
+      expect(text).toBe(segments.map((s) => s.text).join(' '));
+      const inGreek = segments.filter((s) => s.lang === 'el').map((s) => s.text).join(' ');
+      for (const english of [first, second]) for (const greek of greekOfChunk(english)) expect(inGreek).toContain(greek);
+      expect(segments.filter((s) => s.lang === 'en').map((s) => s.text).join(' ')).toContain('purpose');
+      expect(segments.filter((s) => s.lang === 'en').some((s) => /\p{Script=Greek}/u.test(s.text))).toBe(false);
+      // the two languages alternate: neighbours of one language are one piece
+      segments.forEach((s, i) => expect(s.lang).not.toBe(segments[i - 1]?.lang));
+    });
+    When('the mill answers that it heard the Greek of {string} and the word {string} wrong', async (_, english: string, word: string) => {
+      const tokens = wordsOfText((received().input as { target_text: string }).target_text);
+      const at = (token: string) => {
+        const index = tokens.findIndex((t) => normalWord(t) === normalWord(token));
+        expect(index, `${token} in what he read`).toBeGreaterThanOrEqual(0);
+        return { word: token, index };
+      };
+      const greek = greekOfChunk(english)[0];
+      await fake.answer({
+        status: 'answered',
+        answer: {
+          verdict: 'some-to-fix',
+          focus_words: [
+            { ...at(greek), chunks: [greek], tip: 'Say the whole word.' },
+            { ...at(word), chunks: ['pur', 'pose'], tip: 'The first part sounds like per.' },
+          ],
+          note: 'Two words to say again.',
+        },
+      });
+    });
     Then('the result is headed {string}', async (_, heading: string) => {
       await waitFor(() => expect(panel().querySelector('[data-reading-result] h3')).toHaveTextContent(heading));
     });
-    And('the verse in the reading check shows only {string} marked to fix', async (_, word: string) => {
-      await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual([word]));
-      expect(within(panel()).queryByText(/Also to fix/)).toBeNull();
+    And('the verse in the reading check shows the Greek of {string} in Greek letters and {string} marked to fix', async (_, english: string, word: string) => {
+      await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual([greekOfChunk(english)[0], word]));
+      const [greek, plain] = marked();
+      expect(greek).toHaveAttribute('lang', 'el');
+      expect(plain).toHaveAttribute('lang', 'en');
     });
-    When('he taps {string}', async (_, name: string) => {
-      await user.click(await markedWord(name));
+    And('the speaker beside the Greek of {string} speaks Greek', async (_, english: string) => {
+      await user.click(within(panel()).getByRole('button', { name: `Hear ${greekOfChunk(english)[0]}`, exact: true }));
+      expect(synth.since.at(-1)?.lang.startsWith('el')).toBe(true);
     });
-    Then('the walk shows the word {string} as word 1 of 1 in chunks {string}', async (_, word: string, chunks: string) => {
-      await waitFor(() => expect(walk()).toHaveTextContent('Word 1 of 1'));
-      expect(walk().querySelector('[data-walk-word]')).toHaveTextContent(word);
-      expect(walk().querySelector('[data-chunks]')).toHaveTextContent(chunks);
-    });
-    And('the misses kept for a drill name only {string}', async (_, word: string) => {
-      const units = (await getMissTally('en')).map((t) => t.unit);
-      expect(units).toEqual([word]);
+    And('the misses kept for a drill are none', async () => {
+      expect(await getMissTally('en')).toEqual([]);
+      expect(await getMissTally('weave')).toEqual([]);
     });
   });
 

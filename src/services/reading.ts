@@ -1,8 +1,9 @@
 // src/services/reading.ts — the reading check: one verse read aloud, sent as a grist through Postern (bsv-kit/grist) with
 // the recording attached, scored by the mill and answered by its verse-read grind (grinds/verse-read.json). The wire work is
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
-import { NO_CHAPTER, type Chapter, type Verse } from '../data/chapter';
-import type { Woven } from '../data/weave';
+import { NO_CHAPTER, type Chapter, type GreekWord, type Verse } from '../data/chapter';
+import { drawnOrder, type WovenVerse } from '../data/weave';
+import { WOVEN_LANG } from '../data/wovenLang';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
@@ -14,6 +15,7 @@ import { greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { askGrind, type AskOptions } from './tutor';
 
 export const READING_KIND = 'verse-read';
+export { WOVEN_LANG };
 
 /** The most words a reading may mark, and the most chunks a word may be broken into (the schema's limits). */
 export const MAX_FOCUS_WORDS = 8;
@@ -32,6 +34,9 @@ export interface VerseReadRequest {
   reference: string;
   target_text: string;
   lang: string;
+  /** with the weave on and some of the verse shown in Greek (mw-5r3p30.411): the verse as he reads it, in the order it is drawn, each piece with its own language ('en', or the
+   * Greek pronunciation's scoringLang). `target_text` is their text end to end, so a word's `index` counts the same in both; the mill's scorer turns each piece to IPA in its own language */
+  segments?: ReadingSegment[];
   /** with a verse read in Greek: each distinct word of `target_text` with its lemma, gloss, parsing and the app's respelling, syllables and stress, as the Bible talk is sent it (src/services/greekWords.ts, mw-5r3p30.659): a tip on a word's syllables and stress reads them from here, never counts */
   greek_words?: GreekWordEntry[];
   /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound in a tip is described by it */
@@ -48,6 +53,12 @@ export interface VerseReadRequest {
   learner?: string;
   /** where his grammar stands (src/data/grammar/learnerGrammar.ts), as the Bible talk is sent it */
   learner_grammar?: LearnerGrammar;
+}
+
+/** One piece of a woven verse and the language it is read in. */
+export interface ReadingSegment {
+  text: string;
+  lang: string;
 }
 
 /** One word he misread, broken into chunks to say. */
@@ -154,19 +165,53 @@ export const plainQuotes = (text: string): string => text.replace(/\\+"/g, '"');
 
 export type ReadingView = 'english' | 'greek';
 
-/** The text he is asked to read, as one line: the verse's English, or its Greek words in Greek order. */
-export const readingText = (verse: Verse, view: ReadingView = 'english'): string =>
-  view === 'greek' ? verse.g.map((w) => w.t).join(' ') : verse.e.map((c) => c.t.trim()).join(' ');
+/** A verse (or a passage) read as the weave shows it: its pieces in the order they are drawn, and the Greek words among them. */
+export interface WovenReading {
+  segments: ReadingSegment[];
+  words: GreekWord[];
+}
+
+/** The text he is asked to read, as one line: the verse's English, its Greek words in Greek order, or, read woven, the pieces of the weave one after another. */
+export const readingText = (verse: Verse, view: ReadingView = 'english', weave?: WovenReading | null): string =>
+  weave ? weave.segments.map((s) => s.text).join(' ') : view === 'greek' ? verse.g.map((w) => w.t).join(' ') : verse.e.map((c) => c.t.trim()).join(' ');
+
+/** The verses of a unit as the weave shows them to be read (mw-5r3p30.411): the Greek of a woven chunk in Greek (`greek`: the scoring language of the chosen pronunciation), every other chunk in
+ * English, chunk by chunk in the order the verse is drawn (a Greek-order weave lays them out in the Greek word order), each verse after the one before. Neighbours in one language are one segment.
+ * `woven` is each verse's weave, in step with `verses`. null when no chunk is shown in Greek: that reading is the plain English one. */
+export function wovenReading(verses: readonly Verse[], woven: readonly (WovenVerse | null | undefined)[], greek: string): WovenReading | null {
+  const segments: ReadingSegment[] = [];
+  const words: GreekWord[] = [];
+  const add = (text: string, lang: string): void => {
+    if (!text) return;
+    const last = segments[segments.length - 1];
+    if (last?.lang === lang) last.text += ` ${text}`;
+    else segments.push({ text, lang });
+  };
+  verses.forEach((verse, v) => {
+    const weave = woven[v] ?? null;
+    for (const i of drawnOrder(verse, weave)) {
+      const chunk = verse.e[i];
+      const weft = weave?.[i];
+      if (weft) {
+        words.push(...weft.words);
+        add(weft.words.map((w) => w.t).join(' '), greek);
+      } else add(chunk.t.trim(), 'en');
+    }
+  });
+  return words.length === 0 ? null : { segments, words };
+}
 
 /** The language the mill scores a reading in: English, or the chosen Greek pronunciation's. */
 export const readingLang = (view: ReadingView, pronunciation: unknown): string =>
   view === 'greek' ? pronunciationOf(pronunciation).scoringLang : 'en';
 
-export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, chapter: Chapter = NO_CHAPTER): VerseReadRequest {
+export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, chapter: Chapter = NO_CHAPTER, weave?: WovenReading | null): VerseReadRequest {
+  const woven = view === 'english' ? weave ?? null : null;
   const request: VerseReadRequest = {
     reference,
-    target_text: readingText(verse, view),
+    target_text: readingText(verse, view, woven),
     lang,
+    ...(woven ? { segments: woven.segments } : {}),
     pronunciation,
     pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
     english_accent: chosenAccent().id,
@@ -175,9 +220,9 @@ export function buildReadingRequest(reference: string, verse: Verse, view: Readi
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
   };
-  if (view !== 'greek') return request;
-  // the words of the verse weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule); a reading names no word, so none is held past the budget
-  const words = greekWordsFitting(chapter, [verse], '', pronunciation, new TextEncoder().encode(JSON.stringify(request)).length);
+  if (view !== 'greek' && !woven) return request;
+  // the words of the verse (a woven reading's: the ones shown in Greek) weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule); a reading names no word, so none is held past the budget
+  const words = greekWordsFitting(chapter, [woven ? { ...verse, g: woven.words } : verse], '', pronunciation, new TextEncoder().encode(JSON.stringify(request)).length);
   return words.length > 0 ? { ...request, greek_words: words } : request;
 }
 
@@ -195,28 +240,6 @@ export const normalWord = (word: string): string =>
 
 /** The verse's words as the scorer counts them: split on white space, in order (a focus word's `index` counts these). */
 export const wordsOfText = (text: string): string[] => text.split(/\s+/).filter(Boolean);
-
-/** The places, in the verse's English words as readingText gives them, of the words the weave shows him in Greek: every word of a chunk `woven`
- * (chunk by chunk in `verse.e`'s own order, a passage's verses one after another) stands in Greek. Empty with no weave. */
-export function wovenPlaces(verse: Verse, woven: readonly Woven[] | null): ReadonlySet<number> {
-  const places = new Set<number>();
-  if (!woven) return places;
-  let at = 0;
-  verse.e.forEach((chunk, i) => {
-    const count = wordsOfText(chunk.t.trim()).length;
-    if (woven[i]) for (let k = 0; k < count; k++) places.add(at + k);
-    at += count;
-  });
-  return places;
-}
-
-/** The answer to a reading without the words shown to him in Greek (mw-5r3p30.410): the mill scores one language a reading, so a word he read in Greek
- * where the weave showed its Greek is heard as an English word missed. Such a word (its `index` in `places`) is neither a word to fix nor the next word. */
-export function outsideWeave(answer: VerseReadAnswer, places: ReadonlySet<number>): VerseReadAnswer {
-  if (places.size === 0) return answer;
-  const { next_word: next, ...rest } = answer;
-  return { ...rest, focus_words: answer.focus_words.filter((w) => !places.has(w.index)), ...(next && !places.has(next.index) ? { next_word: next } : {}) };
-}
 
 /** Which words of `text` the focus words mark: a map from a word's place in the verse to the focus word that marks it, and the
  * focus words that mark nothing (their place is not in the verse). Only the exact instance named by `index` is marked, never
