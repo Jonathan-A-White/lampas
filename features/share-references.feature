@@ -64,3 +64,43 @@ Feature: Share to Lampas lists the Bible references in the shared words
     When the mill will answer with the references "Rom 8:28-30" at "Rom.8.28"
     And he taps "Try again"
     Then the sheet shows "Bible references (1)" with the link "Rom 8:28-30"
+
+  Scenario: While a picture is read, the references in its words are already listed
+    Given the Share screen is opened with a shared picture and the words "Gen. 1:28 ESV", read slowly
+    Then the sheet says "Finding Bible references..."
+    And the sheet shows the link "Gen. 1:28"
+    When the mill answers with the references "Rom. 8:28" at "Rom.8.28"
+    Then the sheet shows "Bible references (2)" with the links "Gen. 1:28" and "Rom. 8:28"
+
+  Scenario: A picture that fails keeps the references in the words it came with
+    Given the Share screen is opened with a shared picture and the words "Gen. 1:28 ESV", and the mill fails the grist
+    Then the sheet says "Could not find Bible references in the picture."
+    And the sheet shows the link "Gen. 1:28"
+    When the mill will answer with the references "Rom. 8:28" at "Rom.8.28"
+    And he taps "Try again"
+    Then the sheet shows "Bible references (2)" with the links "Gen. 1:28" and "Rom. 8:28"
+
+  Scenario: Going back to a share after an opened reference sends no second grist
+    Given the Share screen is opened with a shared picture, read at once with the reference "Rom. 8:28" at "Rom.8.28"
+    When he taps the link "Rom. 8:28"
+    Then the Reader is open at Romans 8 verse 28
+    When he goes Back
+    Then the sheet "Share to Lampas" is not there
+    And only one grist went to the mill
+
+  Scenario: Offline, the line says the phone is offline and offers Try again
+    Given the Share screen is opened with a shared picture, and the phone is offline
+    Then the sheet says "You are offline. Check your connection and try again."
+    And the sheet offers "Try again"
+    When the phone is online again and the mill will answer with the references "Gen. 1:28" at "Gen.1.28"
+    And he taps "Try again"
+    Then the sheet shows "Bible references (1)" with the link "Gen. 1:28"
+
+  Scenario: Going back from the card of an Old Testament reference sends no second grist
+    Given the Share screen is opened with a shared picture, read at once with the reference "Gen. 1:28" at "Gen.1.28"
+    When he taps the link "Gen. 1:28"
+    Then a card headed "Genesis 1:28" says "Not in Lampas yet"
+    When he goes Back
+    Then the sheet "Genesis 1:28" is not there
+    And the sheet shows the link "Gen. 1:28" again
+    And only one grist went to the mill
