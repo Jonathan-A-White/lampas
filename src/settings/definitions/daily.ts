@@ -2,7 +2,7 @@
 // 37 in src/data/daily/devotionals.ts, or Random among those ticked), and whether each piece has a box he ticks himself (On to start, PROVISIONAL). Today itself
 // is a later story (mw-1fwagb.5); these are the settings it reads.
 import { ALL_TICKED, DEFAULT_DEVOTIONAL, DEVOTIONALS, NONE_TICKED, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
-import { defineSetting } from '../define';
+import { defineSetting, type Allowed, type Dependency, type SectionId } from '../define';
 
 export type DailySwitch = 'on' | 'off';
 
@@ -81,3 +81,29 @@ export const dailyTicksSetting = piece(
   'Each piece has a box you tick yourself.',
   'Whether each piece on Today has a box you tick yourself when you have done it. Nothing ticks by itself. Off makes Today a plain list of links. On by default.',
 );
+
+/** The value of Today's devotional that draws another one for the day (any devotional's Logos id names that one). */
+export const ANOTHER = 'another';
+
+/**
+ * Today's devotional (mw-5r3p30.680): the devotional Today shows on the day, while Which devotional is Random. Not saved as a setting: its value is the day's
+ * pick kept by src/data/daily/dailyStore.ts (setDevotionalPick, and pickAnotherDevotional for 'another', the ONE function the Another tap also uses), so it is
+ * declared here as the metadata its registry entry and its row are made from, not through defineSetting.
+ */
+export const todaysDevotionalSetting: {
+  key: string;
+  section: SectionId;
+  label: string;
+  hint: string;
+  help: string;
+  allowed: Allowed;
+  dependsOn: Dependency;
+} = {
+  key: 'todaysDevotional',
+  section: 'daily',
+  label: "Today's devotional",
+  hint: "Change only today's devotional; Which devotional stays Random.",
+  help: `The devotional Today shows for the rest of today, while Which devotional is Random: "${ANOTHER}" draws a different one for today (the Another button on Today does the same), and a devotional's Logos resource id shows that one today. It is today's alone and Which devotional stays Random. It shows only while Which devotional is Random; with a named devotional, a change of devotional is a change of Which devotional.`,
+  allowed: { kind: 'choice', values: [{ value: ANOTHER, label: 'Another' }, ...DEVOTIONALS.map((d) => ({ value: d.id, label: d.title }))] },
+  dependsOn: { key: 'devotional', shown: (value) => value === RANDOM },
+};

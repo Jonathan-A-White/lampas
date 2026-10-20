@@ -2,7 +2,7 @@ import { SCRIPTS } from '../../script/scripts';
 import { ROWS } from '../rows';
 import { AppearanceControl, FontControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
 import { ApproachControl } from './approach';
-import { DailyDevotionalControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, DevotionalDrawControl } from './daily';
+import { DailyDevotionalControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, DevotionalDrawControl, TodaysDevotionalControl } from './daily';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
 import { HandwritingControl } from './handwriting';
@@ -51,6 +51,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   dailyDevotional: DailyDevotionalControl,
   devotional: DevotionalControl,
   devotionalDraw: DevotionalDrawControl,
+  todaysDevotional: TodaysDevotionalControl,
   dailyTicks: DailyTicksControl,
   'request.devotional': RequestDevotionalControl,
   works: WorksControl,

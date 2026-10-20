@@ -449,3 +449,57 @@ test('with a fixed devotional chosen, Today shows no Another', async ({ page }) 
   await expect(card).toContainText('My Utmost for His Highest');
   await expect(card.getByRole('button', { name: 'Another' })).toHaveCount(0);
 });
+
+test('the tutor\'s "pick a different devotional" with Which devotional on Random re-draws today\'s and keeps Random', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = {
+    status: 'answered',
+    answer: { answer: "Done: I drew another devotional for today.", words: [], settings_changes: [{ key: 'todaysDevotional', value: 'another' }] },
+  };
+  await routePostern(page, fake);
+  await openToday(page, [
+    { key: 'devotional', value: 'random' },
+    { key: 'devotionalDraw', value: TWO.map((d) => d.id).join(',') },
+  ]);
+  const card = piece(page, 'Devotional');
+  const link = card.getByRole('link');
+  await expect(link).toBeVisible();
+  const titleOf = async () => (await link.innerText()).split('\n')[0];
+  const before = await titleOf();
+
+  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Today' });
+  await expect(sheet).toBeVisible();
+  await sheet.locator('[data-suggestion]').filter({ hasText: 'Talk about what I read' }).click();
+  await expect(sheet.getByText("Done: I drew another devotional for today.")).toBeVisible();
+  expect(fake.received[0].input.settings).toMatchObject({ devotional: 'random' });
+
+  // today's devotional changed on the card, and Which devotional is still Random
+  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect.poll(titleOf).not.toBe(before);
+  expect(TWO.map((d) => d.title)).toContain(await titleOf());
+  expect(await keptRaw(page, 'devotional')).toBe('random');
+  await shot(page, 'today-tutor-another');
+});
+
+test("Settings > Daily shows Today's devotional with Another only while Which devotional is Random, and Another keeps Random", async ({ page }) => {
+  await openToday(page, [
+    { key: 'devotional', value: 'random' },
+    { key: 'devotionalDraw', value: TWO.map((d) => d.id).join(',') },
+  ]);
+  const title = async () => (await page.getByRole('region', { name: 'Devotional', exact: true }).getByRole('link').innerText()).split('\n')[0];
+  const before = await title();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const row = page.getByRole('group', { name: "Today's devotional" });
+  await expect(row).toBeVisible();
+  await expect(row).toContainText(before);
+  const another = row.getByRole('button', { name: 'Another devotional for today' });
+  expect((await another.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  await another.click();
+  await expect(row).not.toContainText(before);
+  expect(await keptRaw(page, 'devotional')).toBe('random');
+  await shot(page, 'settings-todays-devotional');
+  // with a named devotional the row is not drawn
+  await page.getByRole('combobox', { name: 'Which devotional' }).selectOption('LLS:20.10.2');
+  await expect(page.getByRole('group', { name: "Today's devotional" })).toHaveCount(0);
+});
