@@ -25,7 +25,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import type { Verse } from './data/chapter';
 import { getGrammarApproach, getGreekPronunciation, setReaderView, talkRef } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
-import { verseNeighbours } from './data/neighbours';
+import { neighbours, verseNeighbours } from './data/neighbours';
 import { passageAt, passageVerse, passagesOf, rangeOf, unitId, type Passage } from './data/passage';
 import { approachOf, DEFAULT_APPROACH, lessonForRange, passageLabel } from './approaches';
 import { ChapterNav } from './ChapterNav';
@@ -44,6 +44,7 @@ import { stepOf, stepOfVerse } from './reader/steps';
 import { LinkNotice } from './reader/LinkNotice';
 import { SwipeNote } from './reader/SwipeNote';
 import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
+import { crossChapter } from './reader/crossChapter';
 import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { readingModeSetting } from './settings/definitions';
@@ -188,7 +189,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const onTurned = useCallback((by: 1 | -1) => {
     if (by > 0) hideBars();
   }, [hideBars]);
-  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`, onTurned);
+  // past the first or last page the previous or next chapter opens, on its last or first page (src/reader/crossChapter.ts, mw-5r3p30.620)
+  const cross = useCallback((by: 1 | -1) => crossChapter(BOOK, CHAPTER, by), [BOOK, CHAPTER]);
+  const around = neighbours(BOOK, CHAPTER);
+  const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`, onTurned, cross);
   const showPage = pages.show;
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
@@ -406,7 +410,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           immersive={immersive}
           away={away}
           onBars={bars.toggle}
-          pages={paging ? { page: pages.page, count: pages.count, turn: pages.turn } : null}
+          pages={paging ? { page: pages.page, count: pages.count, turn: pages.turn, chapterBefore: around.previous !== null, chapterAfter: around.next !== null } : null}
           inert={sheetOpen || viewUnit !== undefined}
         />
       ) : null}

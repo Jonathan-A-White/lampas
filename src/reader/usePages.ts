@@ -1,8 +1,9 @@
 // src/reader/usePages.ts — Turn pages (Settings > Reading, mw-5r3p30.299): the Reader's chapter laid out in pages the size of the reading box, like a
 // Kindle. The text (`inner`, [data-pages]) is set in CSS columns one box wide and one box high (src/index.css 'Turn pages'), so the browser breaks it
 // between lines, never through one; the reading box (`box`) clips them and shows one column at a time by its scrollLeft. A tap on the right third of
-// the text or a swipe to the left turns forward a page, the left third or a swipe to the right turns back; the first page does not turn back, the last
-// does not turn forward, and no swipe opens another chapter (the chapter buttons end the last page). A tap on a button or link outside the verses (the
+// the text or a swipe to the left turns forward a page, the left third or a swipe to the right turns back; past the last page the next chapter opens
+// on its first page and back past the first page the previous chapter opens on its last (`cross`, src/reader/crossChapter.ts, mw-5r3p30.620; at Matthew 1 and
+// Revelation 22 nothing happens). A tap on a button or link outside the verses (the
 // chapter buttons) does what it does; a verse's number and play button and a section heading's button are text: their outer thirds turn the page, as a
 // Kindle's edges always do (mw-5r3p30.609: the number is a 44 px button at the left edge, where a thumb taps to turn back). A tap in the middle third
 // still opens the word, verse or heading; so does a long press (the word's own click guard drops its click; a held number talks, or with no licence opens
@@ -43,7 +44,7 @@ interface Turner {
 }
 
 /** Lays out the text of `box` in pages while `enabled`, and turns them by tap and swipe unless `blocked` (a sheet is open); the page is kept under `chapter`.
- * `onTurned` hears each turn he makes, after the page has changed. */
+ * `onTurned` hears each turn he makes, after the page has changed; `cross` hears a turn past the first or the last page, which is to open the chapter there. */
 export function usePages(
   enabled: boolean,
   box: RefObject<HTMLElement | null>,
@@ -51,12 +52,15 @@ export function usePages(
   blocked: boolean,
   chapter: string,
   onTurned?: (by: 1 | -1) => void,
+  cross?: (by: 1 | -1) => void,
 ): Pages {
   const [place, setPlace] = useState({ page: 0, count: 1 });
   const turner = useRef<Turner | null>(null);
   const turned = useRef(onTurned);
+  const crossed = useRef(cross);
   useEffect(() => {
     turned.current = onTurned;
+    crossed.current = cross;
   });
 
   // the pages are cut when the text is there and again whenever the box or the text changes
@@ -107,6 +111,11 @@ export function usePages(
       const verse = k.count === count || k.verse === null ? null : content.querySelector(`[data-verse="${k.verse}"]`);
       const first = verse?.getClientRects()[0];
       go(first ? pageAt(first.left) : k.page);
+      // a page past the end (the last page asked for, from another chapter) is now the last page, which the verse that begins on it keeps against another cut
+      if (k.page >= count) {
+        kept = { page, count, verse: anchor instanceof HTMLElement ? (anchor.dataset.verse ?? null) : null };
+        keepPage(chapter, kept);
+      }
     };
 
     /** Cuts the pages afresh: how wide one is, how many there are, and which one shows the anchor. */
@@ -135,7 +144,10 @@ export function usePages(
     turner.current = {
       turn: (by) => {
         const to = page + by;
-        if (to < 0 || to >= count) return;
+        if (to < 0 || to >= count) {
+          crossed.current?.(by);
+          return;
+        }
         kept = undefined;
         move(to);
         turned.current?.(by);

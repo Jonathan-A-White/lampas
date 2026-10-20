@@ -13,6 +13,9 @@ export interface PageControls {
   /** the page shown, from 1 */
   page: number;
   count: number;
+  /** a chapter stands before this one, and one after it: the first page turns back, and the last forward, into it (mw-5r3p30.620) */
+  chapterBefore: boolean;
+  chapterAfter: boolean;
   turn(by: 1 | -1): void;
 }
 
@@ -42,10 +45,10 @@ export function ReaderControls({ immersive, away, onBars, pages, inert }: {
     <div role="group" aria-label="Reading controls" inert={inert} data-reader-controls className="reveal-on-focus">
       {pages ? (
         <>
-          <button type="button" aria-disabled={pages.page <= 1 ? true : undefined} onClick={() => turn(-1)} className={BUTTON}>
+          <button type="button" aria-disabled={pages.page <= 1 && !pages.chapterBefore ? true : undefined} onClick={() => turn(-1)} className={BUTTON}>
             Previous page
           </button>
-          <button type="button" aria-disabled={pages.page >= pages.count ? true : undefined} onClick={() => turn(1)} className={BUTTON}>
+          <button type="button" aria-disabled={pages.page >= pages.count && !pages.chapterAfter ? true : undefined} onClick={() => turn(1)} className={BUTTON}>
             Next page
           </button>
         </>
