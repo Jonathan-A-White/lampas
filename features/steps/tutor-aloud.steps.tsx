@@ -98,6 +98,17 @@ async function ask(question: string): Promise<void> {
   await typeQuestion(user, viewEl(), question);
 }
 
+/** Asks a second question that the tutor does not answer, and waits until it has reached the Postern. A question is sent only after its request is
+ * built from several reads of the database, so the scenario must not end before it is sent: the next scenario's fake Postern (the fetch stub is
+ * replaced by its open) would take the late send, answer it, and the answer would be stored as that scenario's first (mw-5r3p30.656). */
+async function askUnanswered(question: string): Promise<void> {
+  fake.autoReply = undefined;
+  await waitFor(() => expect(holdBarIn(viewEl())).toBeEnabled());
+  const sent = fake.received.length;
+  await ask(question);
+  await waitFor(() => expect(fake.received.length).toBe(sent + 1));
+}
+
 /** Waits for the speech to begin and lets every utterance run to its end, noting each as it was asked of the engine. */
 async function hearAll(): Promise<void> {
   await waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0));
@@ -202,11 +213,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given(readOn, () => open({ aloud: true, reply: 'answer' }));
     And(askFirst, askIt);
     And('the phone is speaking the answer', speaking);
-    When('he asks the tutor {string} a second question', async (_, question: string) => {
-      fake.autoReply = undefined;
-      await waitFor(() => expect(holdBarIn(viewEl())).toBeEnabled());
-      await ask(question);
-    });
+    When('he asks the tutor {string} a second question', (_, question: string) => askUnanswered(question));
     Then('the speech has stopped', stopped);
   });
 
@@ -321,11 +328,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the answer is shown and nothing is spoken', answerShownSilent);
     And('he comes back to Lampas', () => setVisibility('visible'));
     And('the bar at the top says {string}', barSays);
-    When('he asks the tutor {string} a second question', async (_, question: string) => {
-      fake.autoReply = undefined;
-      await waitFor(() => expect(holdBarIn(viewEl())).toBeEnabled());
-      await ask(question);
-    });
+    When('he asks the tutor {string} a second question', (_, question: string) => askUnanswered(question));
     Then('the bar at the top is gone', barIsGone);
   });
 
