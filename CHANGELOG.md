@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.379
+_2026-10-20_
+- New: Settings has a Talk section where you choose whether the talk bars are held or tapped, and whether your words are sent when you let go or wait for the Send button.
+
 ## 0.1.378
 _2026-10-20_
 - New: Settings now opens on a short list of groups (Reading, Greek, The tutor, Listening, Daily, Study resources, Account), each its own page with a back arrow, and search still finds any setting.
