@@ -42,7 +42,7 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "voice-kit": "github:Jonathan-A-White/voice-kit#a2135a9d7615b2600764d969748e0626d4afe584",
+    "voice-kit": "github:Jonathan-A-White/voice-kit#38f203176a4db55a36ff48912dd14afbe74393cc",
     "workbox-precaching": "7.4.1",
     "workbox-routing": "^7.4.1",
     "workbox-strategies": "7.4.1"
@@ -80,6 +80,6 @@
     "github:Jonathan-A-White/audible-kit#ac2224ca7dedccae47df7a33f7a71136e688cb2e": true,
     "github:Jonathan-A-White/bsv-kit#22619754e8f468ece66abbe43339ee98aeab61b7": true,
     "github:Jonathan-A-White/pwa-kit#1bcc9e9f14b4c3e28d7e3221080b9b29672c6fff": true,
-    "github:Jonathan-A-White/voice-kit#a2135a9d7615b2600764d969748e0626d4afe584": true
+    "github:Jonathan-A-White/voice-kit#38f203176a4db55a36ff48912dd14afbe74393cc": true
   }
 }
