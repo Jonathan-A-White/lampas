@@ -4,6 +4,7 @@
 import type { SoundWords } from '../accents';
 import type { Pronunciation, SoundGuide, SoundRule, SoundRuleSide, Spelling } from '../pronunciation';
 import type { SoundId } from '../sounds';
+import { isElided, withoutElision } from '../elision';
 import { ONSETS } from '../greekSyllables';
 import { modernLessons } from './modernLessons';
 import { MODERN_HEARD_AS, MODERN_LETTER_NAMES } from './modernSpoken';
@@ -318,22 +319,33 @@ export const MODERN_SOUND_GUIDE: Readonly<Record<SoundId, SoundGuide>> = {
  * double ones from the phone itself' (mw-5r3p30.395, 2026-10-15; mw-5r3p30.421). A consonant has no form the voice says as a sound (there is no bare v
  * to double): null, and it is named as before. */
 export function loneLetterFormModern(word: string): string | null {
-  const bare = word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  const bare = bareOf(word);
   return [...bare].length === 1 && VOWEL_SOUND[bare] ? bare + bare : null;
 }
 
+/** The bare lower-case letters of a word: no marks, and no mark of a dropped vowel (δ' is δ). */
+const bareOf = (word: string): string => withoutElision(word.trim()).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+/** The sound of an elided word of ONE consonant, by its consonant, as respellModern writes it: δ' (δέ before a vowel, Luke 9:24, 25 places) is dh, the th
+ * of 'this' (mw-5r3p30.449). No voice says a consonant alone as a sound, so this word is a clip on every phone. No other such word (τ', γ') is in the text
+ * or the lexicon. */
+const ELIDED_SOUND: Readonly<Record<string, string>> = { δ: SINGLE.δ };
+
 /** The bundled clip of the sound of a Greek word of ONE letter (mw-5r3p30.347), for a phone with no Greek voice to say loneLetterFormModern (mw-5r3p30.421):
- * ὁ, Ὃ and ὦ play the o, ἡ and ἤ the ee, ἃ the a. The clip, public/sounds/modern/<sound>.mp3, is named by the sound respellModern writes for the vowel and
- * was made with eSpeak NG's phoneme input (scripts/sounds-build.sh), which says a sound and cannot spell a letter. A consonant alone (no Greek word is one)
- * has no clip: null. */
+ * ὁ, Ὃ and ὦ play the o, ἡ and ἤ the ee, ἃ the a; and of an elided word of one consonant, which has no form and is a clip on every phone: δ' plays the dh
+ * (ELIDED_SOUND). The clip, public/sounds/modern/<sound>.mp3, is named by the sound respellModern writes for the letter and was made with eSpeak NG's
+ * phoneme input (scripts/sounds-build.sh), which says a sound and cannot spell a letter. A consonant alone with no mark of a dropped vowel (no Greek word is
+ * one, and a reading's δ' comes here without its apostrophe) has no clip: null. */
 export function loneLetterClipModern(word: string): string | null {
-  const bare = word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
-  const sound = [...bare].length === 1 ? VOWEL_SOUND[bare] : undefined;
+  const bare = bareOf(word);
+  const sound = [...bare].length === 1 ? (VOWEL_SOUND[bare] ?? (isElided(word) ? ELIDED_SOUND[bare] : undefined)) : undefined;
   return sound ? `/sounds/modern/${sound}.mp3` : null;
 }
 
-/** Every clip the Modern Greek scheme plays for a one-letter word (the sounds of its single vowels), for the tests that hold them to the files. */
-export const MODERN_LONE_CLIPS: readonly string[] = [...new Set(Object.values(VOWEL_SOUND))].map((sound) => `/sounds/modern/${sound}.mp3`);
+/** Every clip the Modern Greek scheme plays for a one-letter word (the sounds of its single vowels and of δ'), for the tests that hold them to the files. */
+export const MODERN_LONE_CLIPS: readonly string[] = [...new Set([...Object.values(VOWEL_SOUND), ...Object.values(ELIDED_SOUND)])].map(
+  (sound) => `/sounds/modern/${sound}.mp3`,
+);
 
 /** The pairs said with a nasal inside a word (the respelling writes it: πάντοτε is 'PAN-do-te'), each with the nasal letter that says it. */
 const NASAL_PAIRS: Readonly<Record<string, string>> = { ντ: 'ν', μπ: 'μ', γκ: 'ν' };

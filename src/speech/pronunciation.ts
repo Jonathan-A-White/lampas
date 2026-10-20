@@ -95,7 +95,8 @@ export interface Pronunciation {
   loneLetterForm(word: string): string | null;
   /** The bundled clip (a root-absolute path under public/sounds/<scheme>/) of the sound of a Greek word of ONE letter (ὁ, ἡ, ὦ, Ὃ), played on a phone that
    * has no Greek voice to say loneLetterForm (mw-5r3p30.421; before it, on every phone, mw-5r3p30.347). Null for a letter the scheme has no clip for.
-   * Modern Greek's are its vowels' sounds, '/sounds/modern/o.mp3' for ὁ. */
+   * Modern Greek's are its vowels' sounds, '/sounds/modern/o.mp3' for ὁ; and the clip of an elided word of one consonant, played on every phone since no
+   * form says it (δ', '/sounds/modern/dh.mp3', mw-5r3p30.449). */
   loneLetterClip(word: string): string | null;
   /** What this scheme's voice is handed for Greek text (a word, or a run of words read aloud), so that it says the sounds the respelling writes. A
    * voice reads the Greek its own way: a Modern Greek voice drops the n of ντ inside a word ('PA-do-te' for Πάντοτε, respelt 'PAN-do-te'), so Modern

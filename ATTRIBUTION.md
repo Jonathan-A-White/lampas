@@ -35,8 +35,9 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   characters (scripts/data-build.ts, docs/data.md).
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer. The short clips of a vowel's sound that play when you hear a Greek word of one
   letter (ὁ, ἡ, ὦ, Ὃ) on a phone with no Greek voice, in public/sounds/: with a Greek voice the app hands it the vowel doubled ('οο'), which it says as the
-  sound, where the letter alone it would name ('omicron').
-  Each is eSpeak NG's Greek voice saying one vowel from its phoneme input, not a letter. Licence: eSpeak NG is [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING);
+  sound, where the letter alone it would name ('omicron'). And the clip of the th of 'this' that plays, on every phone, when you hear δ' alone (δέ with its
+  vowel dropped), which a voice would name ('delta').
+  Each is eSpeak NG's Greek voice saying one sound from its phoneme input, not a letter. Licence: eSpeak NG is [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING);
   the clips are sound it made, and no eSpeak NG code is in the app. Changes: silence trimmed, cut to MP3 with [FFmpeg](https://ffmpeg.org) (scripts/sounds-build.sh).
   Its Greek voice is also how the app chose what the phone's voice is handed for a word said alone (a word ending in '!', so the voice's pitch peaks on the
   stressed syllable): the pitch of each syllable was measured with [Praat](https://www.fon.hum.uva.nl/praat/) (GPL-3.0) through
