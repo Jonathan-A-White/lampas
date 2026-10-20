@@ -341,3 +341,71 @@ describe('the examples of an idea when the goal verse has none (mw-5r3p30.350)',
     expect(found.title).toBe('Jude');
   });
 });
+
+describe('the label of the examples (mw-5r3p30.564, his choice: easy-first examples, even past the goal verse, labelled with the range they come from)', () => {
+  /** The verses a label names: '1 John 1:1' one verse, '1 John 1:1-4' a run, '1 John 1' a chapter, '1 John' a book. */
+  const rangeOf = (label: string) => {
+    const m = /^(.+?) (?:(\d+)(?::(\d+)(?:-(\d+))?)?)$/u.exec(label);
+    return m ? { book: m[1], chapter: m[2] ? Number(m[2]) : undefined, from: m[3] ? Number(m[3]) : undefined, to: m[4] ? Number(m[4]) : m[3] ? Number(m[3]) : undefined } : { book: label, chapter: undefined, from: undefined, to: undefined };
+  };
+  const inRange = (label: string, e: { chapter: Chapter; verse: number }) => {
+    const r = rangeOf(label);
+    if (e.chapter.book !== r.book) return false;
+    if (r.chapter === undefined) return true;
+    if (e.chapter.chapter !== r.chapter) return false;
+    return r.from === undefined || (e.verse >= r.from && e.verse <= (r.to ?? r.from));
+  };
+  /** The next narrower label that could have held the examples, or undefined when the label is the narrowest place there is. */
+  const narrower = (label: string, goalLabel: string, pericope: string | undefined, chapter: string) => {
+    const order = [goalLabel, ...(pericope ? [pericope] : []), chapter, chapter.replace(/ \d+$/, '')];
+    const at = order.indexOf(label);
+    return at > 0 ? order.slice(0, at) : [];
+  };
+
+  it('names 1 John 1:1-4 for omicron over the goal 1 John 1:1, whose examples may come from 1:2 and 1:3', async () => {
+    const found = await ideaExamplesFor('letter-omicron', await ideaPassage('1 John 1:1', DEFAULT_CHAPTER, loadChapter, index), loadChapter);
+    expect(found.title).toBe('1 John 1:1-4');
+    expect(found.examples.length).toBeGreaterThan(0);
+    expect(found.examples.every((e) => inRange(found.title, e))).toBe(true);
+    // a label never names a range narrower than its examples, and is no wider than they need
+    expect(found.examples.some((e) => e.verse > 1)).toBe(true);
+    expect(found.examples.every((e) => e.verse <= 4)).toBe(true);
+  });
+
+  it('is, for every idea and several goals, the smallest range that holds every example it shows', async () => {
+    const goals = ['1 John 1:1', '1 John 1:5', '1 John 2:6', '1 John 3:1', '1 John 5:21', '3 John 1:4', 'Jude 1:5', 'Romans 8:28', 'Mark 1:1', '1 John 1', 'Romans 1', '1 John', 'Jude'];
+    const lies: string[] = [];
+    for (const goal of goals) {
+      const passage = await ideaPassage(goal, DEFAULT_CHAPTER, loadChapter, index);
+      const first = passage.chapters[0];
+      const chapterLabel = `${first.book} ${first.chapter}`;
+      const verseGoal = passage.verse !== undefined;
+      // the pericope the goal verse sits in, as the search labels it
+      let pericope: string | undefined;
+      if (verseGoal) {
+        const found = await ideaExamplesFor('letter-omicron', { ...passage }, loadChapter);
+        pericope = /:\d+-\d+$/.test(found.title) ? found.title : undefined;
+        if (!pericope) {
+          // learn the pericope label from an idea that needs it
+          for (const probe of ['letter-xi', 'letter-psi', 'tense-future', 'tense-aorist', 'mood-imperative', 'case-vocative']) {
+            const t = (await ideaExamplesFor(probe, passage, loadChapter)).title;
+            if (/:\d+-\d+$/.test(t)) pericope = t;
+          }
+        }
+      }
+      for (const idea of LADDER) {
+        const found = await ideaExamplesFor(idea.id, passage, loadChapter);
+        if (!found.examples.length) continue;
+        const label = found.title;
+        // the pair line under the examples (a word where a letter is read in a pair) is from inside the range too
+        if (found.pairCase && !inRange(label, found.pairCase)) lies.push(`${goal} / ${idea.id}: '${label}' omits the pair line's ${found.pairCase.reference}`);
+        const outside = found.examples.filter((e) => !inRange(label, e));
+        if (outside.length) lies.push(`${goal} / ${idea.id}: '${label}' omits ${outside.map((e) => `${e.chapter.chapter}:${e.verse}`).join(', ')}`);
+        for (const narrow of narrower(label, passage.title, pericope, chapterLabel)) {
+          if (found.examples.every((e) => inRange(narrow, e))) lies.push(`${goal} / ${idea.id}: '${label}' is wider than '${narrow}', which holds every example`);
+        }
+      }
+    }
+    expect(lies).toEqual([]);
+  }, 120_000);
+});
