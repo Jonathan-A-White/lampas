@@ -122,7 +122,7 @@ preposition), `infinitive-complement`, `subjunctive-hortatory`, `prohibition`, `
 - **The idea sheet.** `ideaExamples` gives a sentence idea up to three uses, each as the whole verse with the use's words marked (`parts`, a part for each word and
   each space; the Example row marks them `data-use`), a different verse for each use first, the verse's English for the use's words as the gloss, and the use's
   words on the speaker. A tap opens the head word's sheet. No Try it is offered (no word's parsing names a sentence idea).
-- **Drill it.** A sentence idea has no form to spot, so Drill it asks what it is (`buildConcept`) until a story makes questions about the verses.
+- **Drill it.** At the end of a run (and of a short drill of Your drill plan) the round Ask the tutor button sits beside Done and the tutor is told every question, his answer, the right answer and right or wrong (mw-5r3p30.649, docs/ask-tutor.md). A sentence idea has no form to spot, so Drill it asks what it is (`buildConcept`) until a story makes questions about the verses.
 - **The approaches.** The ladder approach's last level is 'Sentences' (`TIER_TITLES`), a lesson for each idea. BMA Tutor's level 5 lessons name them
   ('Clauses of condition and purpose': `condition`, `clause-hina`; 'Clauses that say who or which': `agreement`, `article-substantival`; and so on), each after the
   ideas it needs (`tests/unit/ladder-sentences.test.ts`).

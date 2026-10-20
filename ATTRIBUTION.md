@@ -6,7 +6,7 @@
 Lampas stands on other people's work, so it names every text, lexicon, library, font, service and idea it
 builds on, with a link to each, its licence and what we changed. Credit is owed whether or not a licence asks for it.
 Lampas is free to read: the text, the lessons and the quizzes need no licence. A licence unlocks the AI, the tutor and everything sent to it; until a phone has one, Settings shows those options off with “Needs a licence”, which opens the Licence page. Once, on a third visit, one quiet line at the foot of the Reader says what a licence adds; it is never pressed.
-Tap the round Ask the tutor button to ask what any of it gives you, what its licence lets us do, or why we credit it at all. From Today, the tutor knows which of the day's links you opened and opens by naming them, and a screenshot of what you read is one tap away.
+Tap the round Ask the tutor button to ask what any of it gives you, what its licence lets us do, or why we credit it at all. From Today, the tutor knows which of the day's links you opened and opens by naming them, and a screenshot of what you read is one tap away. When a drill ends, the same button sits beside Done, and the tutor is given every question of the drill, the answer you gave, the right answer and which were right or wrong, so you can talk the results through.
 
 ## Texts and data
 
