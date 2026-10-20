@@ -91,10 +91,19 @@ function dateSeed(date: Date): number {
   return (h ^ (h >>> 16)) >>> 0;
 }
 
-/** The devotional for `date`: the one he chose; with Random, one of the `ticked` ids drawn by the LOCAL date (the same all day). Nothing ticked, or a choice the
- *  catalog lacks, gives Morning and Evening. */
-export function devotionalForDay(choice: string, ticked: readonly string[], date: Date): Devotional {
+/** The devotional for `date`: the one he chose; with Random, the day's `pick` (what Another drew, kept for the date) when the catalog has it, else one of the `ticked` ids
+ *  drawn by the LOCAL date (the same all day). Nothing ticked, or a choice the catalog lacks, gives Morning and Evening. */
+export function devotionalForDay(choice: string, ticked: readonly string[], date: Date, pick?: string): Devotional {
   if (choice !== RANDOM) return byId.get(choice) ?? FALLBACK;
+  const picked = pick === undefined ? undefined : byId.get(pick);
+  if (picked) return picked;
   const pool = DEVOTIONALS.filter((d) => ticked.includes(d.id));
   return pool.length === 0 ? FALLBACK : pool[dateSeed(date) % pool.length];
+}
+
+/** The id Another draws: one of the `ticked` ones other than `current`; when the draw holds nothing else, any other in the catalog. `random` is Math.random's kind. */
+export function anotherDevotional(current: string, ticked: readonly string[], random: () => number = Math.random): string {
+  let pool = DEVOTIONALS.filter((d) => d.id !== current && ticked.includes(d.id));
+  if (pool.length === 0) pool = DEVOTIONALS.filter((d) => d.id !== current);
+  return pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))].id;
 }

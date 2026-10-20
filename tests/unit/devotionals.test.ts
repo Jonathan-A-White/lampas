@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_DEVOTIONAL, DEVOTIONALS, RANDOM, devotionalForDay, tickedDevotionals } from '../../src/data/daily/devotionals';
+import { DEFAULT_DEVOTIONAL, DEVOTIONALS, RANDOM, anotherDevotional, devotionalForDay, tickedDevotionals } from '../../src/data/daily/devotionals';
 
 const MORNING_AND_EVENING = 'LLS:20.10.1';
 const MY_UTMOST = 'LLS:20.10.2';
@@ -60,5 +60,39 @@ describe('tickedDevotionals', () => {
     expect(tickedDevotionals('all')).toHaveLength(37);
     expect(tickedDevotionals(`${MY_UTMOST},LLS:GONE,${MORNING_AND_EVENING}`)).toEqual([MORNING_AND_EVENING, MY_UTMOST]);
     expect(tickedDevotionals('')).toEqual([]);
+  });
+});
+
+describe('the pick for the day and Another', () => {
+  const day = new Date(2026, 9, 19);
+  const ticked = DEVOTIONALS.map((d) => d.id);
+
+  it('shows the day\'s pick instead of the date draw while the choice is Random', () => {
+    const drawn = devotionalForDay(RANDOM, ticked, day).id;
+    const other = DEVOTIONALS.find((d) => d.id !== drawn)!.id;
+    expect(devotionalForDay(RANDOM, ticked, day, other).id).toBe(other);
+  });
+
+  it('ignores the day\'s pick for a fixed devotional and for one the catalog lacks', () => {
+    expect(devotionalForDay(DEFAULT_DEVOTIONAL, ticked, day, DEVOTIONALS[0].id).id).toBe(DEFAULT_DEVOTIONAL);
+    const drawn = devotionalForDay(RANDOM, ticked, day).id;
+    expect(devotionalForDay(RANDOM, ticked, day, 'LLS:NOPE').id).toBe(drawn);
+  });
+
+  it('draws one that is never the one shown, from those ticked', () => {
+    const pool = DEVOTIONALS.slice(0, 3).map((d) => d.id);
+    for (const current of pool) {
+      for (const r of [0, 0.3, 0.7, 0.999]) {
+        const next = anotherDevotional(current, pool, () => r);
+        expect(next).not.toBe(current);
+        expect(pool).toContain(next);
+      }
+    }
+  });
+
+  it('draws from the whole catalog when the draw holds only the one shown (or none)', () => {
+    const only = DEVOTIONALS[4].id;
+    expect(anotherDevotional(only, [only], () => 0)).not.toBe(only);
+    expect(anotherDevotional(only, [], () => 0.5)).not.toBe(only);
   });
 });

@@ -11,6 +11,8 @@ import {
   markOpened,
   noteExplained,
   noteDailyChange,
+  pickAnotherDevotional,
+  setDevotionalPick,
   setTicked,
 } from '../../src/data/daily/dailyStore';
 
@@ -112,5 +114,25 @@ describe('the explanation of what Today could hold', () => {
 
   it('names the seven Daily rows', () => {
     expect([...DAILY_KEYS].sort()).toEqual(['dailyDevotional', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw']);
+  });
+});
+
+describe('the devotional drawn again for a day', () => {
+  it('starts with none, keeps the pick for its date only, and leaves the ticks alone', async () => {
+    expect((await getDay('2026-10-05')).devotional).toBeUndefined();
+    await setTicked('2026-10-05', 'devotional', true);
+    await setDevotionalPick('2026-10-05', 'LLS:20.10.2');
+    expect(await getDay('2026-10-05')).toEqual({ ticked: ['devotional'], opened: [], devotional: 'LLS:20.10.2' });
+    expect((await getDay('2026-10-06')).devotional).toBeUndefined();
+  });
+
+  it('pickAnotherDevotional writes a different one each time it is shown one, never the one shown', async () => {
+    const ticked = ['LLS:20.10.1', 'LLS:20.10.2'];
+    const a = await pickAnotherDevotional('2026-10-05', 'LLS:20.10.1', ticked, () => 0);
+    expect(a).toBe('LLS:20.10.2');
+    expect((await getDay('2026-10-05')).devotional).toBe('LLS:20.10.2');
+    const b = await pickAnotherDevotional('2026-10-05', a, ticked, () => 0);
+    expect(b).toBe('LLS:20.10.1');
+    expect((await getDay('2026-10-05')).devotional).toBe('LLS:20.10.1');
   });
 });

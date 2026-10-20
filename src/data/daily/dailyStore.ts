@@ -3,6 +3,7 @@
 // store under 'dailyDone' (like readingPlan.ts), outside the settings registry; no Dexie version. A date is 'YYYY-MM-DD' on the phone's clock, never the UTC one, so
 // a new local date starts empty. A piece is 'review', 'plan', 'devotional' or a passage ('psa.5', 'pro.5'). Nothing ticks by itself: only setTicked writes a tick.
 import { db } from '../db';
+import { anotherDevotional } from './devotionals';
 
 const KEY = 'dailyDone';
 const EXPLAINED_KEY = 'todayExplained';
@@ -18,6 +19,8 @@ export interface DayRecord {
   ticked: string[];
   /** the pieces whose link he tapped, in the order he did */
   opened: string[];
+  /** the devotional Another drew for the day (a Logos id), only while one was; it counts only while Which devotional is Random */
+  devotional?: string;
 }
 
 const two = (n: number): string => String(n).padStart(2, '0');
@@ -35,8 +38,8 @@ async function read(): Promise<Record<string, DayRecord>> {
     if (typeof kept !== 'object' || kept === null || Array.isArray(kept)) return {};
     const days: Record<string, DayRecord> = {};
     for (const [date, day] of Object.entries(kept)) {
-      const { ticked, opened } = (day ?? {}) as Partial<DayRecord>;
-      days[date] = { ticked: strings(ticked), opened: strings(opened) };
+      const { ticked, opened, devotional } = (day ?? {}) as Partial<DayRecord>;
+      days[date] = { ticked: strings(ticked), opened: strings(opened), ...(typeof devotional === 'string' && devotional !== '' ? { devotional } : {}) };
     }
     return days;
   } catch {
@@ -64,6 +67,19 @@ export async function getDay(date: string): Promise<DayRecord> {
 /** Ticks `piece` on `date`, or takes the tick away. */
 export function setTicked(date: string, piece: string, on: boolean): Promise<void> {
   return update(date, (day) => ({ ...day, ticked: on ? (day.ticked.includes(piece) ? day.ticked : [...day.ticked, piece]) : day.ticked.filter((p) => p !== piece) }));
+}
+
+/** Keeps `id` as the devotional of `date` (the tutor's switch for the day and Another both end here). */
+export function setDevotionalPick(date: string, id: string): Promise<void> {
+  return update(date, (day) => ({ ...day, devotional: id }));
+}
+
+/** Another: draws a devotional for `date` other than `current` (from the `ticked` ones, src/data/daily/devotionals.ts anotherDevotional), keeps it for the date and returns its id.
+ *  The ONE function that switches the day's devotional while Which devotional stays Random. */
+export async function pickAnotherDevotional(date: string, current: string, ticked: readonly string[], random?: () => number): Promise<string> {
+  const id = anotherDevotional(current, ticked, random);
+  await setDevotionalPick(date, id);
+  return id;
 }
 
 /** Keeps that he tapped `piece`'s link on `date` (once). It is never a tick. */
