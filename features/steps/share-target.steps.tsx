@@ -39,7 +39,7 @@ let fake: FakePostern;
 const picture = (name: string): { name: string; type: string; bytes: ArrayBuffer } => ({ name, type: 'image/png', bytes: new Uint8Array([1, 2, 3]).buffer });
 
 /** Opens the app at the Share screen with the share parked and the past talks kept, as the worker and earlier sessions leave them. */
-async function open(options: { talks: boolean; files: number; text: string }): Promise<void> {
+async function open(options: { talks: boolean; files: number; text: string; gif?: boolean }): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -69,7 +69,7 @@ async function open(options: { talks: boolean; files: number; text: string }): P
     id: SHARE_ID,
     createdAt: now,
     text: options.text || undefined,
-    files: Array.from({ length: options.files }, (_, i) => picture(`shared-${i + 1}.png`)),
+    files: options.gif ? [{ name: 'shared.gif', type: 'image/gif', bytes: new Uint8Array([71, 73, 70, 56, 57, 97]).buffer }] : Array.from({ length: options.files }, (_, i) => picture(`shared-${i + 1}.png`)),
   });
   render(<App />);
   await screen.findByRole('dialog', { name: 'Share to Lampas' });
@@ -252,5 +252,28 @@ describeFeature(feature, ({ Scenario }) => {
       await back();
     });
     Then('no share is waiting and the Reader is open', readerIsOpen);
+  });
+
+  Scenario('A shared GIF is not counted as a picture to read, and the sheet says so', ({ Given, Then, When, And }) => {
+    Given('the Share screen is opened with two past talks and a shared GIF', () => open({ talks: true, files: 0, text: '', gif: true }));
+    Then('the sheet says Lampas leaves the GIF out because it reads only JPEG, PNG or WebP, and does not count it as a picture', () => {
+      const sheet = chooser();
+      expect(within(sheet).getByText('1 picture left out: Lampas reads only JPEG, PNG or WebP.')).toBeInTheDocument();
+      expect(sheet).not.toHaveTextContent(/1 picture from another app/);
+    });
+    When('he taps {string}', async (_, label: string) => user.click(within(chooser()).getByRole('button', { name: label })));
+    Then('the talk sheet {string} is open with nothing said yet', async (_, name: string) => {
+      const sheet = await screen.findByRole('dialog', { name });
+      expect(within(sheet).getByText(/^Nothing said yet/)).toBeInTheDocument();
+    });
+    And('the composer shows no thumbnails and says nothing of a refused picture', () => {
+      const sheet = screen.getByRole('dialog', { name: 'Talk with the tutor' });
+      expect(thumbs(sheet)).toHaveLength(0);
+      expect(sheet).not.toHaveTextContent('Only JPEG, PNG or WebP pictures can be sent.');
+    });
+    And('no picture was sent to the mill to be read', async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(fake.received).toHaveLength(0);
+    });
   });
 });

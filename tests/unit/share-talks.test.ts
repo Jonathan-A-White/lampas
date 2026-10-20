@@ -2,7 +2,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { addTurn, listRecentTalks } from '../../src/data/repositories';
-import { describeShare } from '../../src/share/shareText';
+import { describeShare, leftOutLine } from '../../src/share/shareText';
 import { newTalkRef, placeOf, talkLabel, timeAgo } from '../../src/share/talkPlace';
 
 beforeEach(() => db.talks.clear());
@@ -53,6 +53,11 @@ describe('describeShare', () => {
     expect(describeShare({ files: [{ name: 'a', type: 'image/png', bytes: new ArrayBuffer(1) }], text: undefined })).toBe('1 picture');
     const two = [1, 2].map(() => ({ name: 'a', type: 'image/png', bytes: new ArrayBuffer(1) }));
     expect(describeShare({ files: two, text: 'x' })).toBe('2 pictures and some words');
+    const gif = { name: 'a.gif', type: 'image/gif', bytes: new ArrayBuffer(1) };
+    expect(describeShare({ files: [gif], text: undefined })).toBe('');
+    expect(describeShare({ files: [gif, ...two], text: undefined })).toBe('2 pictures');
+    expect(leftOutLine({ files: two })).toBe('');
+    expect(leftOutLine({ files: [gif] })).toBe('1 picture left out: Lampas reads only JPEG, PNG or WebP.');
   });
 });
 
