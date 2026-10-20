@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.366
+_2026-10-20_
+- Fixed: The Chi and Gamma lessons now name the same letters before their soft sound as the drill's rule line does, instead of just "e and i".
+
 ## 0.1.365
 _2026-10-20_
 - Fixed: A paradigm table with no form unlocked can no longer be put in Review, and a table that can't be asked is no longer counted as due.
