@@ -4,7 +4,7 @@
 // from the grist's own place in the backend's sequence.
 import { door } from 'bsv-kit/bsv';
 import { POSTERN_DOOR } from '../config';
-import { markSupplied, type Verse } from '../data/chapter';
+import { markSupplied, NO_CHAPTER, type Chapter, type Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
 import { isAnswerBridge, type AnswerBridge, type MissingFoundations } from '../data/grammar/bridge';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
@@ -14,6 +14,7 @@ import type { TutorRequest } from '../data/requestsForTutor';
 import type { RustyItem } from '../data/rusty';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
+import { greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import type { GristKind } from './gristKinds';
@@ -162,6 +163,8 @@ export interface VerseAskRequest {
   reference: string;
   greek: string;
   english: string;
+  /** each distinct Greek word of `greek` with its lemma, gloss, parsing and the app's respelling, syllables and stress, as the Bible talk is sent it (src/services/greekWords.ts, mw-5r3p30.643): a typed "how do I say it?" reads the syllables from here, never counts */
+  greek_words?: GreekWordEntry[];
   question: string;
   /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
   spoken?: true;
@@ -229,8 +232,8 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[]): VerseAskRequest {
-  return {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[], chapter: Chapter = NO_CHAPTER): VerseAskRequest {
+  const request: VerseAskRequest = {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
     english: verse.e.map(markSupplied).join(' '),
@@ -248,6 +251,8 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(missingFoundations ? { missing_foundations: missingFoundations } : {}),
     ...(rusty && rusty.length > 0 ? { rusty } : {}),
   };
+  // the words of the verse weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule, src/services/talk.ts)
+  return { ...request, greek_words: greekWordsFitting(chapter, [verse], request.question, pronunciation, new TextEncoder().encode(JSON.stringify(request)).length) };
 }
 
 /** Why a question did not come back with an answer. */
@@ -445,17 +450,19 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
 
 /**
  * Makes the request fit a grist, as the Bible talk's fitHistory does (src/services/talk.ts): while it is over MAX_REQUEST_BYTES the pronunciation's guide goes first,
- * then the oldest of his solid words, his requests (the last in the list, newest first) and his notes (from the end of the list; the index always stays). The verse and his question are never cut.
+ * then the oldest of his solid words, the words of the verse (from the end of the list), his requests (the last in the list, newest first) and his notes (from the end of the list; the index always stays). The verse and his question are never cut.
  */
 export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   let guide = request.pronunciation_guide;
   let solid = request.solid_words;
   let requests = request.requests;
   let notes = request.memory?.notes;
+  let words = request.greek_words;
   const fitted = (): VerseAskRequest => ({
     ...request,
     pronunciation_guide: guide,
     solid_words: solid,
+    ...(words ? { greek_words: words } : {}),
     ...(requests ? { requests } : {}),
     ...(request.memory && notes ? { memory: { ...request.memory, notes } } : {}),
   });
@@ -463,6 +470,7 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   if (!tooBig()) return request;
   guide = undefined;
   while (solid.length > 0 && tooBig()) solid = solid.slice(1);
+  while (words && words.length > 0 && tooBig()) words = words.slice(0, -1);
   while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
   while (notes && notes.length > 0 && tooBig()) notes = notes.slice(0, -1);
   return fitted();

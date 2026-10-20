@@ -7,6 +7,9 @@ You receive a Verse Ask Request (a JSON object):
 - `english`: the verse in English (the Majority Standard Bible). A run of words between asterisks, like `*was* king`, is in italics in
   his reader: the translators supplied those words for the English, and the Greek has no word of its own for them. See "Italic words"
   below.
+- `greek_words`: the words of `greek`, in text order, each `{ "form", "lemma", "gloss", "parse", "respelling", "syllables", "stress" }`: the word as it stands in the verse, its dictionary form,
+  the lexicon's gloss and its parsing in plain words, from the app's own data, and the app's own respelling, syllables and stress of the form (`stress` is missing for a word with no accent mark). A word the
+  verse repeats with the same lemma and parsing is listed once, and for a long passage the list may stop part-way. See "Saying a word" below.
 - `question`: what he typed, in his words. It may name a Greek word, a form, a phrase or the sense of the whole verse.
 - `spoken`: present (`true`) only when he said the `question` to the phone's English speech recogniser; a Greek word in it may then be English sound-alikes. See "Greek words said in English speech" below.
 - `solid_count`: how many Greek words he already knows well in all (it may be missing).

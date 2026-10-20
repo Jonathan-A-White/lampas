@@ -2,7 +2,7 @@
 // verse; its answer is stored when it comes (an Ask by change it carries is applied then). They all stop when the screen goes away, but what each was doing is kept
 // (src/pending/pendingAsks.ts): a question that had gone is waited for again, never sent a second time, when the page is back (`resume`), and a failure stays with its Retry.
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import type { Verse } from './data/chapter';
+import type { Chapter, Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { missingFoundations, resolveBridge } from './data/grammar/bridge';
 import { rustyNow } from './data/learnerRusty';
@@ -38,13 +38,18 @@ export interface UseAsks {
 export const askKey = (book: string, chapter: number, unit: number | string): string => `ask:${verseRef(book, chapter, unit)}`;
 
 /** The questions in flight, by verse number ('11') or passage ('1-11'), for one chapter. They stop when the screen goes away. */
-export function useAsks(book: string, chapter: number, title: string): UseAsks {
+export function useAsks(book: string, chapter: number, title: string, data: Chapter | null): UseAsks {
   const table = usePendingAsks();
   const asks = useMemo<Asks>(() => {
     const prefix = askKey(book, chapter, '');
     return Object.fromEntries(Object.entries(table).filter(([key]) => key.startsWith(prefix)).map(([key, state]) => [key.slice(prefix.length), state]));
   }, [table, book, chapter]);
   const live = useRef<AbortController>(new AbortController());
+  // the chapter's data (lemma, gloss and parse of each word) is read when the request is built, so a chapter that arrives later is not a new `run`
+  const chapterData = useRef(data);
+  useEffect(() => {
+    chapterData.current = data;
+  });
 
   useEffect(() => {
     // React strict mode runs the effect twice: the controller made while the screen was away is replaced here.
@@ -72,7 +77,7 @@ export function useAsks(book: string, chapter: number, title: string): UseAsks {
           // What he lacks under the topic his words name (mw-1vuvq6.5), worked out here so the tutor picks from it and never guesses
           const missing = levels ? missingFoundations(text, levelsOf(levels)) : undefined;
           const spoken = wasSpoken(text);
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty, chapterData.current ?? undefined);
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),

@@ -8,6 +8,24 @@
     "reference": { "description": "The verse he asks about: 'Romans 8:28', or a passage under a heading ('Romans 8:1-11').", "type": "string", "minLength": 1, "maxLength": 80 },
     "greek": { "description": "The Greek of the verse (the Byzantine text), in Greek word order.", "type": "string" },
     "english": { "description": "The same verse in English (the Majority Standard Bible); words the translators supplied are between asterisks.", "type": "string" },
+    "greek_words": {
+      "description": "Optional. The words of `greek`, in text order, each with its form as it stands in the text, its lemma (the dictionary form), the lexicon's gloss and its parsing in plain words, from the app's own chapter data, and the app's respelling, syllables and stress of the form; a word the text repeats with the same lemma and parsing is listed once. For a long passage the list may stop part-way.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["form", "lemma", "gloss", "parse"],
+        "properties": {
+          "form": { "type": "string", "minLength": 1 },
+          "lemma": { "type": "string", "minLength": 1 },
+          "gloss": { "type": "string" },
+          "parse": { "type": "string" },
+          "respelling": { "description": "The word as the app's pronunciation respells it, the stressed syllable in capitals.", "type": "string", "minLength": 1 },
+          "syllables": { "description": "The word cut into syllables by the app, in order, in Greek letters. Use these exactly for a question about how to say the word; never count or cut the word yourself.", "type": "array", "minItems": 1, "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 80 } },
+          "stress": { "description": "Only with syllables: the 0-based index of the stressed syllable in syllables (0 is the first). Absent when the word carries no accent.", "type": "number", "minimum": 0, "maximum": 19 }
+        }
+      }
+    },
     "question": { "description": "What he asked, at most 4000 characters.", "type": "string", "minLength": 1, "maxLength": 4000 },
     "spoken": { "description": "Optional. true only when he spoke the question to the phone's English speech recogniser (Hold to talk, Hold to ask); missing when he typed it. A Greek word in it may have come as English sound-alikes. See the instructions.", "type": "boolean", "const": true },
     "solid_count": { "description": "Optional. How many Greek words he knows well in all. `solid_words` names only the most recent of them.", "type": "number", "minimum": 0 },
