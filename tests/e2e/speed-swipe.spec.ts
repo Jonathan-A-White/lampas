@@ -3,7 +3,7 @@
 // it knows the touch is a scroll) and saved it; with the right thumb that is the right end, 1.5. Real touch events through the
 // DevTools protocol, at 390x844.
 import { expect, test, type Page } from '@playwright/test';
-import { swipe } from '../support/gesture';
+import { settledBox, swipe } from '../support/gesture';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
@@ -43,7 +43,7 @@ test('scrolling Settings with a thumb that starts on the Greek speed slider leav
   await page.keyboard.press('Home');
   await expect(greek).toHaveValue('0.5');
   await greek.scrollIntoViewIfNeeded();
-  const box = (await greek.boundingBox())!;
+  const box = await settledBox(greek); // the rows above it draw one by one and push it down (mw-5r3p30.628)
   const at = { x: box.x + box.width * 0.92, y: box.y + box.height / 2 };
 
   // a swipe upward that starts at the slider's right end, and one downward
@@ -64,7 +64,7 @@ test('a tap on the Greek speed slider still sets the speed, and it is saved', as
   const greek = page.getByRole('slider', { name: 'Greek speed' });
   await expect(greek).toBeVisible();
   await greek.scrollIntoViewIfNeeded();
-  const box = (await greek.boundingBox())!;
+  const box = await settledBox(greek); // the rows above it draw one by one and push it down (mw-5r3p30.628)
   const at = { x: box.x + box.width * 0.9, y: box.y + box.height / 2 };
   await touch(page, at, at, 1);
   await expect.poll(async () => Number(await greek.inputValue())).toBeGreaterThanOrEqual(1.3);
