@@ -37,17 +37,23 @@ async function keep(page: Page, values: Record<string, string>) {
   );
 }
 
-async function openMark12(page: Page, mode: 'scroll' | 'pages') {
+/** How Mark 12 is opened: more settings to keep (the text size, the layout) and more of the address (the view, the weave). */
+interface Opening {
+  settings?: Record<string, string>;
+  address?: string;
+}
+
+async function openMark12(page: Page, mode: 'scroll' | 'pages', opening: Opening = {}) {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await reopenAs(page, mode);
+  await reopenAs(page, mode, opening);
 }
 
 /** Saves the Reading setting and opens Mark 12 afresh with it; with Turn pages, waits until the pages are cut for good (the chips and fonts come late). */
-async function reopenAs(page: Page, mode: 'scroll' | 'pages') {
-  await keep(page, { readingMode: mode });
-  await page.goto('/#/?b=mrk&c=12');
+async function reopenAs(page: Page, mode: 'scroll' | 'pages', { settings = {}, address = '' }: Opening = {}) {
+  await keep(page, { ...settings, readingMode: mode });
+  await page.goto(`/#/?b=mrk&c=12${address}`);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', mode);
@@ -249,6 +255,87 @@ test('with Turn pages a tap in the middle third opens the word, and a verse numb
   expect(await at(page)).toBe(1);
 });
 
+/** The gap on screen between the bottom of the lowest line of text on the page shown and the top of the place line, and the line height of that line. A
+ * line is its line height tall, centred on its letters, so its bottom is under the letters' box by half of what the line height adds to it. */
+const footGap = (page: Page) =>
+  page.evaluate(() => {
+    const reader = document.querySelector('[data-reader]') as HTMLElement;
+    const b = reader.getBoundingClientRect();
+    const walk = document.createTreeWalker(reader.querySelector('[data-pages]') as HTMLElement, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    let lowest = -Infinity;
+    let lineHeight = 0;
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      if (!n.textContent?.trim() || !n.parentElement) continue;
+      range.selectNodeContents(n);
+      for (const r of Array.from(range.getClientRects())) {
+        if (r.width <= 0 || r.left < b.left - 1 || r.right > b.right + 1 || r.top < b.top - 1 || r.bottom > b.bottom + 1) continue;
+        const style = getComputedStyle(n.parentElement);
+        const height = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+        const bottom = r.bottom + Math.max(0, height - r.height) / 2;
+        if (bottom <= lowest) continue;
+        lowest = bottom;
+        lineHeight = height;
+      }
+    }
+    const line = document.querySelector('[data-place-line]') as HTMLElement;
+    // the place line's words and the round Ask button beside them do not meet
+    range.selectNodeContents(line);
+    const words = range.getBoundingClientRect();
+    const button = document.querySelector('[data-ask-tutor]')?.getBoundingClientRect();
+    const clear = !button || words.right <= button.left || words.bottom <= button.top || words.top >= button.bottom;
+    return { gap: line.getBoundingClientRect().top - lowest, lineHeight, clear };
+  });
+
+/** Pages 1 and 3 each end at most a line (and 8 px) above the place line: no blank band of paper under the text (mw-5r3p30.610). */
+async function pagesFillToPlaceLine(page: Page, name: string) {
+  // the chapter opened again opens on the page he was on (mw-5r3p30.608): back to the first
+  for (let on = await at(page); on > 1; on--) {
+    await tapAt(page, 0.15);
+    await expect.poll(() => at(page)).toBe(on - 1);
+  }
+  for (const on of [1, 3]) {
+    if (on > 1) await turnTo(page, on);
+    const { gap, lineHeight, clear } = await footGap(page);
+    expect(clear, `${name}, page ${on}: the place line is clear of the round button`).toBe(true);
+    expect(lineHeight, `${name}, page ${on}: a line of text is on it`).toBeGreaterThan(0);
+    expect(gap, `${name}, page ${on}: the place line is under the text`).toBeGreaterThanOrEqual(-0.5);
+    expect(gap, `${name}, page ${on}: the text ends ${Math.round(gap)} px above the place line, a line is ${Math.round(lineHeight)} px`).toBeLessThanOrEqual(lineHeight + 8);
+  }
+  await shot(page, `turn-pages-foot-${name.toLowerCase().replace(/\W+/g, '-')}`);
+}
+
+// mw-5r3p30.610: a Kindle page fills its screen down to the one small line; the room the Reader keeps for the round Ask button is under the place line,
+// not between it and the text.
+test('with Turn pages each page fills down to the place line, at Normal and at Largest', async ({ page }) => {
+  await openMark12(page, 'pages');
+  await pagesFillToPlaceLine(page, 'Normal');
+  await reopenAs(page, 'pages', { settings: { textSize: '160' } });
+  await pagesFillToPlaceLine(page, 'Largest');
+});
+
+test('with Turn pages each page fills down to the place line in the Greek view, the Paragraph layout and with the Weave on', async ({ page }) => {
+  await openMark12(page, 'pages', { address: '&view=greek' });
+  await pagesFillToPlaceLine(page, 'Greek');
+  await reopenAs(page, 'pages', { settings: { layout: 'paragraph' }, address: '&view=english' });
+  await pagesFillToPlaceLine(page, 'Paragraph');
+  await reopenAs(page, 'pages', { settings: { layout: 'verse' }, address: '&view=english&weave=solid%2Blearning' });
+  await pagesFillToPlaceLine(page, 'Weave');
+});
+
+// The room is the place line's row only while the bars are shown: with them away the row is the line alone, and the page still reaches it.
+test('with Turn pages and the Immersive reader, each page fills down to the place line with the bars away', async ({ page }) => {
+  await openMark12(page, 'pages', { settings: { immersiveReader: 'on', immersiveHint: 'off' } });
+  await page.getByRole('button', { name: 'Put the bars away', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ask-tutor]')).toHaveAttribute('data-away', '');
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  // the place line is the lowest row now, with the phone's floor under it; the bars' slide is 200 ms
+  await expect(place(page)).toHaveAttribute('data-floor', '');
+  await page.waitForTimeout(400);
+  await pagesFillToPlaceLine(page, 'Bars away');
+});
+
 /** Whether a verse screen or a sheet is open: a tap on the outer thirds opens neither. */
 const opened = async (page: Page) => /[?&]v=/.test(page.url()) || (await page.getByTestId('sheet-backdrop').count()) > 0;
 
@@ -264,10 +351,10 @@ async function tapTurns(page: Page, x: number, y: number, to: number) {
 }
 
 // mw-5r3p30.609: the verse number is a 44 px button at the left edge of its verse, right where a thumb taps to turn back; like a Kindle's, the left
-// edge always turns back.
+// edge always turns back. Page 4 of Mark 12 begins three verses (page 3 only two since the pages reach the place line, mw-5r3p30.610).
 test('with Turn pages a tap on any verse number in the left third turns back, and no verse opens', async ({ page }) => {
   await openMark12(page, 'pages');
-  await turnTo(page, 3);
+  await turnTo(page, 4);
   const b = await box(page);
   const numbers = await page.evaluate(({ left, right }) =>
     Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-verse-number]'))
@@ -278,9 +365,9 @@ test('with Turn pages a tap on any verse number in the left third turns back, an
   expect(numbers.length).toBeGreaterThan(2);
   for (const n of numbers) {
     expect(n.x).toBeLessThan(b.left + b.width / 3);
-    await tapTurns(page, n.x, n.y, 2);
+    await tapTurns(page, n.x, n.y, 3);
     await tapAt(page, 0.85);
-    await expect.poll(() => at(page)).toBe(3);
+    await expect.poll(() => at(page)).toBe(4);
   }
   await shot(page, 'turn-pages-verse-numbers');
 });
