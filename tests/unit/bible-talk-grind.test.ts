@@ -542,6 +542,27 @@ describe('the screen credits (mw-vtjxh4.2)', () => {
     }
   });
 
+  it('takes the results of a drill as screen.drill: every question with its idea, what was asked, his answer, the right answer and right or wrong (mw-5r3p30.649)', () => {
+    const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+    const example = readJson('grinds/examples/bible-talk/drill-results-wrong.json') as { request: { screen: { drill: Record<string, unknown>[] } } };
+    expect(example.request.screen.drill.filter((d) => d.right === false)).toHaveLength(1);
+    expect(validate(example.request, input)).toEqual([]);
+    const [one] = example.request.screen.drill;
+    for (const key of ['idea', 'asked', 'answer', 'right_answer', 'right']) {
+      const without = Object.fromEntries(Object.entries(one).filter(([k]) => k !== key));
+      expect(validate({ ...example.request, screen: { ...example.request.screen, drill: [without] } }, input), key).not.toEqual([]);
+    }
+    expect(validate({ ...example.request, screen: { ...example.request.screen, drill: [{ ...one, extra: 1 }] } }, input)).not.toEqual([]);
+    expect(validate({ ...example.request, screen: { ...example.request.screen, drill: Array.from({ length: 15 }, () => one) } }, input)).not.toEqual([]);
+  });
+
+  it('the instructions say how to talk about a drill\'s results: the misses one by one, and what to practise next', () => {
+    const text = instructionsOf(grind.kind as string);
+    for (const part of ['### Talk from a drill\'s results', '`screen.drill`', '`right_answer`', 'Why did I get these wrong?', 'What should I practise next?', 'Never say he answered anything the list does not show']) {
+      expect(text).toContain(part);
+    }
+  });
+
   it('has a scenario that asks what STEPBible gives him and expects TBESG and its licence in the answer', () => {
     const example = readJson('grinds/examples/bible-talk/about-stepbible.json') as { request: { question: string; screen: { credits: unknown[] } }; expect: { answer: { matches: string } } };
     expect(example.request.question).toBe('What does STEPBible give me?');

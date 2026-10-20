@@ -406,6 +406,8 @@ export interface TalkScope {
   welcome?: boolean;
   /** a talk from a screen (mw-5r3p30.91): what the screen shows. `chapter` is then NO_CHAPTER, `verse` null: the talk is not about a text. */
   screen?: ScreenContext;
+  /** a screen talk kept under a key of its own, not the screen's (mw-5r3p30.649: the results of each drill are a talk, 'screen.drill-it.<n>') */
+  kept?: string;
   /** a talk of its own (mw-y3qno5.2): the key it is kept under ('talk.<ms>', src/share/talkPlace.ts newTalkRef). It carries a `screen` that names no screen, and the sheet is a plain talk with the tutor. */
   free?: string;
 }
@@ -473,8 +475,8 @@ function greekWordsOf(chapter: Chapter, verses: Verse[], question: string, pronu
 export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${unitId(scope.verse)}` : scope.title);
 
 /** The key the conversation `scope` names is kept under (src/data/repositories/talks.ts talkRef). */
-export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz' | 'screen' | 'free'>): string =>
-  scope.free ? scope.free : scope.screen ? screenRef(slugOf(scope.screen.name)) : talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
+export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz' | 'screen' | 'free' | 'kept'>): string =>
+  scope.free ? scope.free : scope.screen && scope.kept ? scope.kept : scope.screen ? screenRef(slugOf(scope.screen.name)) : talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
 
 const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.stringify(request)).length;
 
@@ -484,7 +486,7 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
  * the last to be touched (a quiz is nothing without its earlier turns, so they outlast the tail of a long passage's word list).
  * The oldest turns go until the newest alone is left; then the oldest of his requests (the last in the list, newest first) go one at a time, then
  * his memory notes, and only then the newest turn (mw-5r3p30.615: a talk from Settings, whose screen weighs most of the record, forgot the question
- * it was answering). The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
+ * it was answering). The questions of a drill's results go after the notes, right answers first. The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
  * the sound rules), except on a sound question.
  */
 export function fitHistory(request: TalkRequest): TalkRequest {
@@ -493,7 +495,8 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   let greekWords = request.greek_words;
   let memoryNotes = request.memory?.notes;
   let guide = request.pronunciation_guide;
-  const fitted = (): TalkRequest => ({ ...request, pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
+  let drill = request.screen?.drill;
+  const fitted = (): TalkRequest => ({ ...request, ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   const tooBig = (): boolean => sizeOf(fitted()) > MAX_REQUEST_BYTES;
   for (;;) {
     const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
@@ -508,6 +511,11 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
   // his notes are the next to go, from the end of the list (the notes come in name order: book, topic, word); the index always stays
   while (memoryNotes && memoryNotes.length > 0 && tooBig()) memoryNotes = memoryNotes.slice(0, -1);
+  // the results of a drill give way a right answer at a time, the oldest first, then the rest from the end: the wrong ones are what he talks about
+  while (drill && drill.length > 0 && tooBig()) {
+    const right = drill.findIndex((d) => d.right);
+    drill = right >= 0 ? drill.filter((_, i) => i !== right) : drill.slice(0, -1);
+  }
   while (history.length > 0 && tooBig()) history = history.slice(1);
   return fitted();
 }
