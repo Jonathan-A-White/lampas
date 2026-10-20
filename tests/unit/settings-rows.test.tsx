@@ -85,7 +85,7 @@ describe('visibleRows', () => {
   });
 
   it('shows only the Logos settings for "logos"', () => {
-    expect(keys(visibleRows(ALL_ON, 'logos'))).toEqual(['resource.logos', 'logosBible']);
+    expect(keys(visibleRows(ALL_ON, 'logos'))).toEqual(['resource.logos', 'works', 'logosBible']);
   });
 
   it('reaches a hidden detail through the setting that turns it on', () => {

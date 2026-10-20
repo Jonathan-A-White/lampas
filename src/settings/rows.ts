@@ -92,7 +92,8 @@ const REQUESTS: readonly SettingsRow[] = [
 const WORKS_ROW: SettingsRow = {
   key: 'works',
   label: 'Works in your Logos library',
-  hint: 'Switch on the commentaries and books you own in Logos. The tutor then links them (a commentary at the passage) when it names them. All start off.',
+  hint: 'The commentaries and books you own. The tutor links only the ones on.',
+  help: 'Lampas cannot see your Logos library, so switch on the commentaries and books you own. When the tutor names one of them, it adds an Open in Logos button: a commentary opens at the passage, a book at its start. All start off.',
   section: 'resources',
 };
 

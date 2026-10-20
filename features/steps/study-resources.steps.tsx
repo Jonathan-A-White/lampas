@@ -135,7 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
       const section = await screen.findByRole('region', { name: 'Study resources' });
       // The switches are drawn once the resources are read (a liveQuery answers later): wait for them.
       await waitFor(() =>
-        expect(within(section).getAllByRole('switch').map((s) => s.getAttribute('aria-label'))).toEqual(["Strong's", 'Logos', 'Accordance']),
+        expect(within(section).getAllByRole('switch').filter((s) => !s.closest('ul')).map((s) => s.getAttribute('aria-label'))).toEqual(["Strong's", 'Logos', 'Accordance']),
       );
     });
     And('every study resource is switched off', () => {
