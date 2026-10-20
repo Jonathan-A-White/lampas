@@ -1,0 +1,84 @@
+{
+  "description": "1 Thessalonians 5:19 read aloud in Greek, stopping before σβέννυτε: the app hands over the word's syllables σβέν, νυ, τε and its stress on the first in greek_words, so the next word is cut by them (chunks σβέν, νυ, τε), never with σβ as a syllable of its own (mw-5r3p30.659). The recording is a stand-in (the reading of 1 Thessalonians 5:16) until a real reading of Τὸ πνεῦμα μὴ is kept beside it.",
+  "schemaVersion": "2",
+  "request": {
+    "reference": "1 Thessalonians 5:19",
+    "target_text": "Τὸ πνεῦμα μὴ σβέννυτε",
+    "lang": "el",
+    "greek_words": [
+      {
+        "form": "Τὸ",
+        "lemma": "ὁ",
+        "gloss": "the/this/who",
+        "parse": "article, accusative singular neuter",
+        "respelling": "to",
+        "syllables": [
+          "Τὸ"
+        ],
+        "stress": 0
+      },
+      {
+        "form": "πνεῦμα",
+        "lemma": "πνεῦμα",
+        "gloss": "spirit, breath",
+        "parse": "noun, accusative singular neuter",
+        "respelling": "PNEV-ma",
+        "syllables": [
+          "πνεῦ",
+          "μα"
+        ],
+        "stress": 0
+      },
+      {
+        "form": "μὴ",
+        "lemma": "μή",
+        "gloss": "not",
+        "parse": "particle, negative",
+        "respelling": "mee",
+        "syllables": [
+          "μὴ"
+        ],
+        "stress": 0
+      },
+      {
+        "form": "σβέννυτε",
+        "lemma": "σβέννυμι",
+        "gloss": "to extinguish",
+        "parse": "verb, present active imperative, 2nd person plural",
+        "respelling": "ZVE-nee-te",
+        "syllables": [
+          "σβέν",
+          "νυ",
+          "τε"
+        ],
+        "stress": 0
+      }
+    ],
+    "pronunciation": "modern",
+    "pronunciation_guide": "Modern Greek, as Greek is spoken in Greece today: never by English spelling habit and never by the Erasmian (school) pronunciation. The app respells a word in syllables, the stressed one in capitals: ταῦτα is TAF-ta, Πάντοτε is PAN-do-te, χαίρετε is HYE-re-te. The vowels, each with a word of the reader's English that has it: a as in father; e as in pet; ee as in see; o as in or, short; oo as in food. αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ, and av and ev before a voiced consonant or a vowel (never \"aw\", never \"ow\"); ηυ is eef or eev the same way. αι is e; ει, οι, υι, η, ι and υ are ee; ου is oo; ω and ο are o. β is v; δ is dh, the th of “this”; γ is gh (or y before e or i); θ is th as in thin; φ is f; ρ is r, a quick tap of the tongue, like the tt of “butter”; χ is kh as in chutzpah, the throaty ch, before a, o, ou and a consonant, and the softer hy before e or i. μπ, ντ and γκ are b, d and g at the start of a word and mb, nd and ng inside it; γγ is ng; γχ is ng plus kh (or hy before e or i); γξ is nks. σ is z before β γ δ ζ λ μ ν ρ. A doubled consonant is said once. Both breathings are silent, and the iota under a letter is not said.",
+    "english_accent": "american"
+  },
+  "photos": [
+    "read-1-thess-5-16-el.webm"
+  ],
+  "expect": {
+    "verdict": {
+      "equals": "partial"
+    },
+    "next_word.word": {
+      "equals": "σβέννυτε"
+    },
+    "next_word.chunks.0": {
+      "equals": "σβέν"
+    },
+    "next_word.chunks.1": {
+      "equals": "νυ"
+    },
+    "next_word.chunks.2": {
+      "equals": "τε"
+    },
+    "next_word.tip": {
+      "present": true
+    }
+  }
+}

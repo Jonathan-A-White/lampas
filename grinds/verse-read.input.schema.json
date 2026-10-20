@@ -9,6 +9,24 @@
     "reference": { "description": "The verse he read: 'Romans 8:28'.", "type": "string", "minLength": 1, "maxLength": 80 },
     "target_text": { "description": "The text he was to read: the English of the verse, or its Greek words in order. The mill scores the recording against it.", "type": "string", "minLength": 1 },
     "lang": { "description": "The language the mill scores in (the grind's scoring.langs): en for English, el for the Greek read in the pronunciation pronunciation_guide describes.", "type": "string", "enum": ["en", "el"] },
+    "greek_words": {
+      "description": "Optional. Only with a Greek reading (lang el): the words of `target_text`, in text order, each with its form as it stands in the text, its lemma (the dictionary form), the lexicon's gloss and its parsing in plain words, from the app's own chapter data, and the app's respelling, syllables and stress of the form; a word the text repeats with the same lemma and parsing is listed once. For a long passage the list may stop part-way.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["form", "lemma", "gloss", "parse"],
+        "properties": {
+          "form": { "type": "string", "minLength": 1 },
+          "lemma": { "type": "string", "minLength": 1 },
+          "gloss": { "type": "string" },
+          "parse": { "type": "string" },
+          "respelling": { "description": "The word as the app's pronunciation respells it, the stressed syllable in capitals.", "type": "string", "minLength": 1 },
+          "syllables": { "description": "The word cut into syllables by the app, in order, in Greek letters. Use these exactly for a tip on how to say the word, and for its `chunks`; never count or cut the word yourself.", "type": "array", "minItems": 1, "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 80 } },
+          "stress": { "description": "Only with syllables: the 0-based index of the stressed syllable in syllables (0 is the first). Absent when the word carries no accent.", "type": "number", "minimum": 0, "maximum": 19 }
+        }
+      }
+    },
     "pronunciation": { "description": "Optional. The Greek pronunciation the app speaks and respells in, by its id. Its rules are in pronunciation_guide.", "type": "string", "minLength": 1, "maxLength": 40 },
     "pronunciation_guide": { "description": "Optional. The name of that pronunciation and the sound rules the app speaks and respells by, from its pronunciation scheme. Describe every Greek sound by these rules.", "type": "string", "minLength": 1, "maxLength": 2000 },
     "english_accent": { "description": "The English the reader hears sounds in, from Settings > English accent: american, british, or ipa (the standard, written as IPA symbols, no English key word). Give English example words and respellings for this accent; the pronunciation_guide is written in it.", "type": "string", "enum": ["american", "british", "ipa"] },

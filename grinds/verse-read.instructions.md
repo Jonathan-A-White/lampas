@@ -11,6 +11,9 @@ You receive a Verse Read Request (a JSON object) with a recording scored by the 
 - `reference`: the verse, for example `Romans 8:28`.
 - `target_text`: the verse exactly as he saw it and was asked to read, in English or in Greek.
 - `lang`: the language read, `en` (English) or `el` (Greek, read in the pronunciation `pronunciation_guide` describes).
+- `greek_words`: with a Greek reading, the words of `target_text`, in text order, each `{ "form", "lemma", "gloss", "parse", "respelling", "syllables", "stress" }`: the word as it stands in the verse, its dictionary form,
+  the lexicon's gloss and its parsing in plain words, from the app's own data, and the app's own respelling, syllables and stress of the form (`stress` is missing for a word with no accent mark). A word the
+  verse repeats with the same lemma and parsing is listed once, and for a long passage the list may stop part-way. It is missing for an English reading. See "A Greek reading" below.
 - `pronunciation`: the Greek pronunciation the app speaks and respells in, by its id. A tip on a Greek sound describes it by this
   pronunciation, the one he hears from the app's own speaker, and never by another.
 - `pronunciation_guide`: that pronunciation's name and the sound rules the app speaks and respells by, as the app's pronunciation scheme gives
@@ -135,9 +138,13 @@ describes. Do not expect the sounds of any other pronunciation, and do not mark 
   different word, or a wrong stressed syllable that changes the word.
 - `word` is the Greek word as it stands in `target_text`, in Greek letters, without punctuation.
 - `chunks` are the word's Greek syllables as written, in Greek letters, which joined spell the word (for example
-  `συν`, `ερ`, `γεῖ`). Never Latin letters, and never a respelling.
+  `συν`, `ερ`, `γεῖ`). Never Latin letters, and never a respelling. When the word is in `greek_words` (find it by its `form`), its `chunks` are its `syllables`, exactly and in order; cut a word
+  yourself only when it is not there (a word past the point where a long list stops), and a cluster of consonants such as σβ, πν or στ is never a syllable of its own: it starts the syllable whose vowel follows it
+  (σβέννυτε is σβέν, νυ, τε).
 - `tip` is one short, kind line in plain English on how to say that word by the rules of `pronunciation_guide` (for example
-  how a letter sounds before ε or ι, or which syllable carries the stress).
+  how a letter sounds before ε or ι, or which syllable carries the stress). When the word is in `greek_words`, a tip on its stress names the syllable `syllables[stress]`, the one the `respelling` writes in
+  capitals, and never works out the stress itself; a word with no `stress` carries no accent mark, so say nothing of a stressed syllable. Describe a sound by what it is in the chosen pronunciation, never by a wrong
+  sound to avoid, even as a warning: the app reads your tip aloud, so naming a wrong sound speaks it to a beginner.
 - Never more than 8 words, as above. A partial Greek reading gives `reached` and `next_word` the same way (`chunks` Greek
   syllables, `tip` in English). `note` is in English.
 

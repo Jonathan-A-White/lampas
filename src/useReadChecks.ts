@@ -7,7 +7,7 @@
 // language shown, a reading in the other one carries on unseen. With the weave on, the words shown in Greek are not the mill's to judge (it scores
 // one language): an answer is kept without them (services/reading.ts outsideWeave), so no result, walk or drill offer names one.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Verse } from './data/chapter';
+import type { Chapter, Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { getGreekPronunciation, keepVerseReading, reachOf, verseRef } from './data/repositories';
 import { clipOf } from './audio/clip';
@@ -81,11 +81,16 @@ const buzz = (ms: number) => navigator.vibrate?.(ms);
 /** Where an answer goes instead of the reading history: the reading drill (src/ReadingDrill.tsx) reads words that are not verses and keeps nothing of them there. */
 export type KeepAnswer = (unit: Verse, answer: VerseReadAnswer, language: string) => void | Promise<void>;
 
-export function useReadChecks(book: string, chapter: number, title: string, view: ReadingView = 'english', pronunciation?: string, keep?: KeepAnswer): UseReadChecks {
+export function useReadChecks(book: string, chapter: number, title: string, view: ReadingView = 'english', pronunciation?: string, keep?: KeepAnswer, data?: Chapter | null): UseReadChecks {
   const [all, setAll] = useState<AllStates>({});
   const keepRef = useRef(keep);
   useEffect(() => {
     keepRef.current = keep;
+  });
+  // the chapter's data (lemma, gloss and parse of each word) is read when the request is built, so a chapter that arrives later is not a new `send`
+  const chapterData = useRef(data);
+  useEffect(() => {
+    chapterData.current = data;
   });
   const lang = readingLang(view, pronunciation);
   // what a press made now reads: the view and language shown
@@ -126,7 +131,7 @@ export function useReadChecks(book: string, chapter: number, title: string, view
         try {
           // the profile, the words and the grammar are the tutor's context: a failure to read one sends the reading without it
           const [profile, learner, grammar, chosen, memory] = await Promise.all([learnerProfile().catch(() => undefined), learnerSummary().catch(() => undefined), learnerGrammar().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined)]);
-          const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar, chosen, memory);
+          const request = buildReadingRequest(unitReference(title, verse), verse, readView, language, profile, learner, grammar, chosen, memory, chapterData.current ?? undefined);
           let sentAs: string | undefined;
           const heard = await askVerseRead(request, recording, {
             key: getDeviceKeyBytes(),
