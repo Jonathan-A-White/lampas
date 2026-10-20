@@ -510,7 +510,7 @@ const lemmaOf = (c: Candidate): string => bare(c.example.word.l);
  * The examples of a letter or a sound for a passage (mw-5r3p30.351, his words: "a simpler word, what you've learned so far, rather than being from your goal"):
  * every candidate is a word that makes the sound the card teaches (ideaExamples). The search widens, the goal, its pericope, its chapter, its book, until there
  * are SOUND_EXAMPLES easy words of different lemmas (mw-5r3p30.584). They are shown easy first (EASY_SCORE), the ones made of letters he has met first, then the nearest to the goal, the commonest
- * in the New Testament, the shortest; a word too hard to say comes last, or not at all. `title` names the widest place an example came from. The ranking is PROVISIONAL.
+ * in the New Testament, the shortest; a word too hard to say comes last, or not at all. `title` names the widest place an example came from, the smallest range that holds them all (mw-5r3p30.564: his choice, easy-first even past the goal verse). The ranking is PROVISIONAL.
  */
 async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterLoader, ranking: ExampleRanking, scheme: Pronunciation): Promise<IdeaExamples> {
   const candidates: Candidate[] = [];

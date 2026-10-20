@@ -250,11 +250,12 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   alone or a pair said as one sound. A letter is marked only where the scheme reads it ALONE as a sound its lesson teaches (`SoundLesson.sounds`:
   'gh' and 'y' for γ), a pair only where the scheme reads exactly that pair; a word with ONE occurrence that is not (ο in τοῖς is half of οι, σ in
   κόσμος is z) is no example of the letter, so the underline is never on a letter that says something else. Nothing in the sheet knows a sound: it asks
-  the scheme, and a scheme with no `spellings` holds nothing back. The search for them (`ideaExamplesFor`, PROVISIONAL, the Governor to confirm)
-  widens verse, pericope, chapter, book until it has `SOUND_EXAMPLES` (4) easy words (`ladderScore.ts` score at most `EASY_SCORE`, about three
+  the scheme, and a scheme with no `spellings` holds nothing back. The search for them (`ideaExamplesFor`; the Governor chose on 2026-10-20 that easy-first examples
+  come even from past the goal verse, mw-5r3p30.564) widens verse, pericope, chapter, book until it has `SOUND_EXAMPLES` (4) easy words (`ladderScore.ts` score at most `EASY_SCORE`, about three
   syllables), and ranks them: easy first, then words made of letters he has met or is learning, then the nearest to the goal, the commonest in the
   New Testament (`ExampleRanking`, read once by the sheet), the shortest; a long cluster like ὀφθαλμοῖς comes last or not at all. An elided fragment (`δ'`, `ἀλλ'`) or a form with no vowel is never an example (`isWholeWord`, mw-5r3p30.583): the phone's voice names a lone consonant (`δ'` is "delta", not dh). The heading names the
-  widest place an example came from, and each row its verse. Under the examples a LETTER sheet may add ONE line, 'In a pair it sounds different:
+  widest place an example came from, so it is the smallest of verse, pericope, chapter, book that holds every example and the pair line below them
+  (omicron over 1 John 1:1 reads 'Examples from 1 John 1:1-4'; `tests/unit/idea-sheet-data.test.ts` sweeps every idea over several goals), and each row its verse. Under the examples a LETTER sheet may add ONE line, 'In a pair it sounds different:
   τοῖς, οι = ee' (`pairCaseOf`: the easiest word in range where the letter sits inside a pair; the wording is PROVISIONAL), whose word opens the pair's
   own idea sheet; with no such word in range, no line. `tests/unit/idea-sound-examples.test.ts` re-derives every marked stretch of every one of these
   sheets from the scheme, over 1 John 1 and over all 260 chapters.
