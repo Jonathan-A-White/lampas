@@ -44,12 +44,16 @@ async function openPassage(page: Page, { immersive, view, layout = 'verse', weav
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await keep(page, { immersiveReader: immersive, immersiveHint: 'off', layout });
+  // The weave is kept like the rest: the address alone can lose it, because the open Reader writes its saved weave (still Off) back into the address before the reload reads it.
+  await keep(page, { immersiveReader: immersive, immersiveHint: 'off', layout, weave });
   await page.goto(`/#/?b=${book}&c=${chapter}&view=${view}&weave=${encodeURIComponent(weave)}`);
   await page.reload();
   await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', immersive);
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-layout', layout);
+  // The words he is learning load after the chapter (useWoven), and a verse with a line under a word takes the roomy line height only then: read nothing until a hint is drawn (the Greek view draws none).
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', weave);
+  if (weave === 'solid+learning' && view === 'english') await expect(page.locator('[data-reader] [data-hint]').first()).toBeAttached();
 }
 
 interface Look {
