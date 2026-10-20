@@ -47,12 +47,13 @@ export function keptRound(now = Date.now()): RunningRound | undefined {
     const saved = JSON.parse(store()?.getItem(KEY) ?? 'null') as { round?: Partial<RunningRound>; at?: unknown } | null;
     const round = saved?.round;
     if (!round || typeof saved?.at !== 'number' || now - saved.at > KEPT_MS) return undefined;
-    const { items, index, picked, right, missed } = round;
+    const { items, index, picked, right, missed, outcomes } = round;
     if (!Array.isArray(items) || items.length === 0 || !items.every((i) => typeof i === 'object' && i !== null && isText((i as { kind?: unknown }).kind))) return undefined;
     if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= items.length) return undefined;
     if (picked !== null && !isText(picked)) return undefined;
     if (typeof right !== 'number' || !Array.isArray(missed) || !missed.every(isText)) return undefined;
-    return { status: 'running', items, index, picked, right, missed };
+    const sound = typeof outcomes === 'object' && outcomes !== null && Object.values(outcomes).every((v) => typeof v === 'boolean');
+    return { status: 'running', items, index, picked, right, missed, ...(sound ? { outcomes } : {}) };
   } catch {
     return undefined;
   }

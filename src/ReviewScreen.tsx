@@ -15,6 +15,7 @@ import { KINDS, kindOf, recordParseStep, type ReviewItem } from './review/kinds'
 import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
 import { heldRound, holdRound, releaseRound } from './review/heldRound';
 import { dropRound, keepRound, keptRound } from './review/keptRound';
+import { rowOutcome } from './review/rowOutcome';
 import { hasPractise, takePractise } from './review/practise';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -29,7 +30,7 @@ type MoveCard = { status: 'none' } | { status: 'offer'; move: PendingMove } | { 
 type Round =
   | { status: 'start'; nothing?: boolean }
   | { status: 'loading' }
-  | { status: 'running'; items: ReviewItem[]; index: number; picked: string | null; right: number; missed: string[] }
+  | { status: 'running'; items: ReviewItem[]; index: number; picked: string | null; right: number; missed: string[]; outcomes?: Record<string, boolean> }
   | { status: 'done'; total: number; right: number; tomorrow: number; later: number; move: MoveCard };
 
 /** 'N come back tomorrow, M later', from the schedule rows the round's items now have. */
@@ -263,9 +264,11 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     if (picked !== null) return;
     const kind = kindOf(item.kind);
     const wasRight = kind.isRight(item, option);
-    writing.current = writing.current.then(() => kind.record(item, wasRight)).catch((error: unknown) => console.error('could not record the answer', error));
+    // a table asked several cells in the round has one outcome on its row (src/review/rowOutcome.ts)
+    const { write, outcomes } = rowOutcome(round.outcomes, item, wasRight);
+    writing.current = writing.current.then(() => kind.record(item, wasRight, write)).catch((error: unknown) => console.error('could not record the answer', error));
     // a miss on a grammar idea is remembered: when the round ends the mill is asked, in the background, for more on the weakest of them
-    setRound({ ...round, picked: option, right: right + (wasRight ? 1 : 0), missed: !wasRight && item.kind === 'grammar' ? [...round.missed, item.id] : round.missed });
+    setRound({ ...round, outcomes, picked: option, right: right + (wasRight ? 1 : 0), missed: !wasRight && item.kind === 'grammar' ? [...round.missed, item.id] : round.missed });
     kind.hear?.(item);
   };
   const next = async () => {

@@ -103,7 +103,7 @@ export interface PlanDrillItem {
 
 /**
  * One cell of a paradigm table he is drilling (mw-svw421.6, src/data/paradigms/cells.ts): the cell's name as the prompt among four forms of the table. The review id is the
- * table's id, so a table asked three cells in a round appears as three items with the same id; each is recorded on its own.
+ * table's id, so a table asked three cells in a round appears as three items with the same id; the row takes one outcome a round (src/review/rowOutcome.ts), each cell's form is credited on its own.
  */
 export interface ParadigmItem {
   kind: 'paradigm';
@@ -128,8 +128,11 @@ export interface ReviewKind {
   isRight: (item: ReviewItem, picked: string) => boolean;
   /** Says the item aloud once it is answered, if it can be heard. */
   hear?: (item: ReviewItem) => void;
-  /** Puts one answer on the schedule. */
-  record: (item: ReviewItem, right: boolean) => Promise<void>;
+  /**
+   * Puts one answer on the schedule. `row` is the answer to put on the item's schedule row: `right` as a rule, a different one when an earlier answer of the round on the same id
+   * decided the row (src/review/rowOutcome.ts), or null to leave the row alone. Only a kind whose draw can give several items with one id is ever given anything but `right`.
+   */
+  record: (item: ReviewItem, right: boolean, row?: boolean | null) => Promise<void>;
 }
 
 /** The chapter whose forms show beneath a word after the answer: the one the Reader has open. A phone that cannot load it shows no form; the lemma is asked either way. */
@@ -275,9 +278,10 @@ export const PARADIGM: ReviewKind = {
     const form = item.kind === 'paradigm' ? spokenForm(item.question.right) : undefined;
     if (form) speakWord(form, 'greek');
   },
-  record: async (item, right) => {
+  record: async (item, right, row = right) => {
     if (item.kind !== 'paradigm') return;
-    await recordReview(PARADIGM_KIND, item.id, right);
+    // a table is asked several cells in a round: its row takes one outcome (src/review/rowOutcome.ts)
+    if (row !== null) await recordReview(PARADIGM_KIND, item.id, row);
     // a cell read right shows its form's letters, sounds and marks (mw-hqd5bz.17)
     await noteAnswer(item.question, right);
   },
