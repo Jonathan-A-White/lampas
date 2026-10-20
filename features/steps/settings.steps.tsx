@@ -13,6 +13,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
+import { ensureSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -54,14 +55,25 @@ afterAll(() => {
   db.close();
 });
 
-const settingsHeading = () => screen.findByRole('heading', { name: 'Settings', level: 1 });
+// the home is titled Settings and a group's page by its group (mw-3ased2.1): either is the Settings screen
+const settingsHeading = () =>
+  waitFor(() => {
+    const title = document.querySelector('h1')?.textContent ?? '';
+    expect(title === 'Settings' || document.querySelector('[data-settings-group]') !== null).toBe(true);
+  });
 const optionsOf = (select: HTMLElement): string[] => within(select).getAllByRole('option').map((o) => o.textContent ?? '');
 const selectedOption = (select: HTMLElement): string => {
   const chosen = within(select).getAllByRole<HTMLOptionElement>('option').find((o) => o.selected);
   return chosen?.textContent ?? '';
 };
-const greekPicker = () => screen.findByRole('combobox', { name: 'Greek voice' });
-const englishPicker = () => screen.findByRole('combobox', { name: 'English voice' });
+const greekPicker = async () => {
+  await ensureSettingsGroup('listening');
+  return screen.findByRole('combobox', { name: 'Greek voice' });
+};
+const englishPicker = async () => {
+  await ensureSettingsGroup('listening');
+  return screen.findByRole('combobox', { name: 'English voice' });
+};
 const verseEl = (n: number): HTMLElement => {
   const el = document.querySelector<HTMLElement>(`[data-verse="${n}"]`);
   if (!el) throw new Error(`no verse ${n} on screen`);
@@ -73,10 +85,11 @@ async function openSettings(): Promise<void> {
   await settingsHeading();
 }
 const goBack = async () => {
-  await user.click(screen.getByRole('button', { name: '‹ Reader' }));
+  await leaveSettings(user);
   await waitForReader();
 };
 const setWeaveInSettings = async (label: 'Off' | 'Solid') => {
+  await ensureSettingsGroup('reading');
   await user.click(await within(await screen.findByRole('group', { name: 'Weave' })).findByRole('button', { name: label }));
   await waitFor(() => expect(latest('weave-changed')?.weave).toBe(label === 'Off' ? 'off' : 'solid'));
 };
@@ -146,10 +159,12 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
     When("he taps the gear in the reader's header", openSettings);
     Then('Greek pronunciation lists only {string}', async (_, label: string) => {
+      await ensureSettingsGroup('listening');
       const group = await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
       expect(within(group).getAllByRole('radio').map((r) => r.getAttribute('aria-labelledby')).map((id) => document.getElementById(id ?? '')?.textContent)).toEqual([label]);
     });
     And('{string} is selected', async (_, label: string) => {
+      await ensureSettingsGroup('listening');
       expect(await screen.findByRole('radio', { name: label })).toBeChecked();
     });
   });
@@ -177,6 +192,7 @@ describeFeature(feature, ({ Scenario }) => {
       await settingsHeading();
     });
     And('Weave is set to Solid words in Settings', async () => {
+      await ensureSettingsGroup('reading');
       await waitFor(() =>
         expect(within(screen.getByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' })).toHaveAttribute('aria-pressed', 'true'),
       );
@@ -188,6 +204,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(async () => expect(selectedOption(await englishPicker())).toBe(name));
     });
     And('{string} is selected', async (_, label: string) => {
+      await ensureSettingsGroup('listening');
       expect(await screen.findByRole('radio', { name: label })).toBeChecked();
     });
   });
@@ -196,6 +213,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
     When("he taps the gear in the reader's header", openSettings);
     And('he taps {string} on the Settings screen', async (_, label: string) => {
+      await ensureSettingsGroup('account');
       await user.click(screen.getByRole('button', { name: label }));
     });
     Then('the Words screen is shown', async () => {
