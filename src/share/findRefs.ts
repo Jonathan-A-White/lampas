@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { chaptersOf, findReferences, type FoundReference } from '../nav/refsInText';
 import { osisOf, parseCanonReference } from '../nav/links';
 import { getDeviceKeyBytes } from '../services/deviceKey';
-import { askGrind, TutorError } from '../services/tutor';
+import { askGrind, OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError } from '../services/tutor';
 import { isTalkPicture, filesOf, preparePicture } from '../talk/pictures';
 import type { ShareRow } from '../data/repositories/shares';
 import { sharedContentOf } from './shared';
@@ -69,11 +69,27 @@ export async function findRefsInPicture(picture: File, place: number, signal?: A
 }
 
 /** Where the reading of a share's pictures stands. */
-export type PictureRefs = { status: 'reading' } | { status: 'failed'; line: string } | { status: 'done'; found: FoundReference[] };
+export type PictureRefs = { status: 'reading' } | { status: 'failed'; line: string; found: FoundReference[] } | { status: 'done'; found: FoundReference[] };
 
 const READING: PictureRefs = { status: 'reading' };
 
 export const FAILED_LINE = 'Could not find Bible references in the picture.';
+
+/** The one line for a picture that could not be read (mw-s1dc0n.13): a phone with no licence says so, a phone or a mill that cannot be reached says that
+ *  (the words of the tutor's own offline lines), and anything else blames the picture. */
+export function failedLine(err: unknown): string {
+  if (!(err instanceof TutorError)) return FAILED_LINE;
+  if (err.failure === 'no-licence') return 'No licence';
+  return err.message === OFFLINE_MESSAGE || err.message === TUTOR_OFFLINE_MESSAGE ? err.message : FAILED_LINE;
+}
+
+/** How the readings of a share's pictures ended, one settled result each: what the ones that were read found is kept beside the failure of the others
+ *  (mw-s1dc0n.9), so one picture that cannot be read never takes the references of another away. */
+export function settledRefs(results: readonly PromiseSettledResult<FoundReference[]>[]): PictureRefs {
+  const found = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
+  const failure = results.find((r): r is PromiseRejectedResult => r.status === 'rejected');
+  return failure ? { status: 'failed', line: failedLine(failure.reason), found } : { status: 'done', found };
+}
 
 /** Reads the pictures of `row` with the grist, one grist each, as soon as `enabled`; `retry` reads them again after a failure. Undefined while there is nothing
  *  to read (no picture, or not enabled): a phone with no licence is not offered the grist. */
@@ -89,10 +105,7 @@ export function usePictureRefs(row: ShareRow, enabled: boolean): { refs: Picture
     const settle = (refs: PictureRefs): void => {
       if (!stop.signal.aborted) setSettled({ row, attempt, refs });
     };
-    void Promise.all(pictures.map((p, i) => findRefsInPicture(p, i, stop.signal))).then(
-      (all) => settle({ status: 'done', found: all.flat() }),
-      (err: unknown) => settle({ status: 'failed', line: err instanceof TutorError && err.failure === 'no-licence' ? 'No licence' : FAILED_LINE }),
-    );
+    void Promise.allSettled(pictures.map((p, i) => findRefsInPicture(p, i, stop.signal))).then((results) => settle(settledRefs(results)));
     return () => stop.abort();
   }, [active, pictures, row, attempt]);
   const retry = useCallback(() => setAttempt((n) => n + 1), []);

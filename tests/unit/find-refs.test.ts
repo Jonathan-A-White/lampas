@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { referenceUrl } from '../../src/nav/links';
 import { bookNameOf, listReferences } from '../../src/nav/refsInText';
-import { buildFindRefsRequest, checkedReferences, FIND_REFS_KIND, isFindRefsAnswer } from '../../src/share/findRefs';
+import { buildFindRefsRequest, checkedReferences, failedLine, FAILED_LINE, FIND_REFS_KIND, isFindRefsAnswer, settledRefs } from '../../src/share/findRefs';
+import { OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError } from '../../src/services/tutor';
 import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
@@ -62,5 +63,31 @@ describe('the find-refs grind and the app agree', () => {
     expect(isFindRefsAnswer({ references: 'Gen.1.28' })).toBe(false);
     expect(isFindRefsAnswer(null)).toBe(false);
     expect(validate({ references: [{ printed: 'Gen. 1:28' }] }, answer)).not.toEqual([]);
+  });
+});
+
+describe('settledRefs', () => {
+  const rom = checkedReferences([{ printed: 'Rom 8:28', ref: 'Rom.8.28' }]);
+
+  it('is done with every picture\'s references when all were read', () => {
+    expect(settledRefs([{ status: 'fulfilled', value: rom }, { status: 'fulfilled', value: [] }])).toEqual({ status: 'done', found: rom });
+  });
+
+  it('keeps the references of the pictures that were read when another could not be (mw-s1dc0n.9)', () => {
+    const failed = settledRefs([{ status: 'rejected', reason: new TutorError('no-answer', 'x') }, { status: 'fulfilled', value: rom }]);
+    expect(failed).toEqual({ status: 'failed', line: FAILED_LINE, found: rom });
+  });
+});
+
+describe('failedLine', () => {
+  it('says the phone is offline, or the tutor is, in the tutor\'s own words (mw-s1dc0n.13)', () => {
+    expect(failedLine(new TutorError('unreachable', OFFLINE_MESSAGE))).toBe(OFFLINE_MESSAGE);
+    expect(failedLine(new TutorError('no-answer', TUTOR_OFFLINE_MESSAGE))).toBe(TUTOR_OFFLINE_MESSAGE);
+  });
+
+  it('blames the picture for any other failure, and a missing licence says so', () => {
+    expect(failedLine(new TutorError('no-answer', 'The tutor could not answer: could not read it'))).toBe(FAILED_LINE);
+    expect(failedLine(new Error('boom'))).toBe(FAILED_LINE);
+    expect(failedLine(new TutorError('no-licence', 'x'))).toBe('No licence');
   });
 });

@@ -91,33 +91,29 @@ function RefLink({ r }: { r: ListedReference }) {
 /** The section for what was shared: the references in its words `text` and, for a picture, what the grist found in it (`picture`, with `retry` for a failure). */
 export function ShareReferences({ text, picture, retry }: { text?: string; picture?: PictureRefs; retry?: () => void }) {
   const [order, setOrder] = useState<RefsOrder>(savedOrder);
-  const found = useMemo<FoundReference[]>(() => [...findReferences(text ?? ''), ...(picture?.status === 'done' ? picture.found : [])], [text, picture]);
+  // the words' references are listed whatever became of the picture (mw-s1dc0n.9); a failure keeps what the pictures that were read found
+  const found = useMemo<FoundReference[]>(() => [...findReferences(text ?? ''), ...(picture && picture.status !== 'reading' ? picture.found : [])], [text, picture]);
   const listed = useMemo(() => listReferences(found, order), [found, order]);
-  if (picture?.status === 'reading') {
-    return (
-      <section data-share-refs aria-label="Bible references">
-        <p role="status" className="text-base text-muted">
-          Finding Bible references...
-        </p>
-      </section>
-    );
-  }
-  if (picture?.status === 'failed') {
-    return (
-      <section data-share-refs aria-label="Bible references" className="space-y-2">
+  // the reading's own line stands under the list, so the links do not move when it goes
+  const status =
+    picture?.status === 'reading' ? (
+      <p role="status" className="text-base text-muted">
+        Finding Bible references...
+      </p>
+    ) : picture?.status === 'failed' ? (
+      <>
         <p role="alert" className="text-base">
           {picture.line}
         </p>
         <button type="button" onClick={retry} className="min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent">
           Try again
         </button>
-      </section>
-    );
-  }
+      </>
+    ) : null;
   if (listed.length === 0) {
     return (
-      <section data-share-refs aria-label="Bible references">
-        <p className="text-base text-muted">No Bible references found</p>
+      <section data-share-refs aria-label="Bible references" className="space-y-2">
+        {status ?? <p className="text-base text-muted">No Bible references found</p>}
       </section>
     );
   }
@@ -162,6 +158,7 @@ export function ShareReferences({ text, picture, retry }: { text?: string; pictu
           </div>
         ))
       )}
+      {status}
     </section>
   );
 }

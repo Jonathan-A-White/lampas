@@ -5,7 +5,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, expect, vi } from 'vitest';
+import { afterAll, expect, vi, type MockInstance } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
@@ -23,6 +23,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake
 const realSeam = { ...imageSeam };
 
 afterAll(() => {
+  onLine?.mockRestore();
   cleanup();
   stopReading();
   Object.assign(imageSeam, realSeam);
@@ -34,13 +35,16 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 
 let fake: FakePostern;
+let onLine: MockInstance<() => boolean> | undefined;
 
 /** Opens the app at the Share screen with `text` (or one picture) parked as the waiting share. `fresh` starts from an empty phone; a second share keeps what the phone kept. */
-async function open(text: string, fresh: boolean, picture: false | 'held' | 'failing' = false): Promise<void> {
+async function open(text: string, fresh: boolean, picture: false | 'held' | 'failing' | 'offline' | { answers: [string, string] } = false): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
+  onLine?.mockRestore();
+  onLine = undefined;
   Object.assign(imageSeam, realSeam);
   tutorTimings.pollMs = 20;
   stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -52,6 +56,11 @@ async function open(text: string, fresh: boolean, picture: false | 'held' | 'fai
   fake = makeFakePostern();
   // a picture's grist waits for the step that answers it, or fails at once
   if (picture === 'failing') fake.kindReplies['find-refs'] = { status: 'failed', reason: 'could not read it' };
+  if (picture === 'offline') {
+    fake.down = true;
+    onLine = vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false);
+  }
+  if (typeof picture === 'object') fake.kindReplies['find-refs'] = answered(picture.answers);
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
@@ -227,5 +236,115 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(sheet()).getByRole('button', { name: label }));
     });
     Then('the sheet shows {string} with the link {string}', sheetShows);
+  });
+
+  const sheetShowsTwo = async (_: unknown, heading: string, a: string, b: string) => {
+    expect(await within(sheet()).findByRole('heading', { name: heading })).toBeInTheDocument();
+    expect(links().map((l) => l.textContent)).toEqual([a, b]);
+  };
+  const sheetShowsLink = async (_: unknown, name: string) => {
+    await waitFor(() => expect(links().map((l) => l.textContent)).toContain(name));
+  };
+  const withWords = (text: string, picture: 'held' | 'failing') => open(text, true, picture);
+
+  Scenario('While a picture is read, the references in its words are already listed', ({ Given, Then, And, When }) => {
+    Given('the Share screen is opened with a shared picture and the words {string}, read slowly', (_, text: string) => withWords(text, 'held'));
+    Then('the sheet says {string}', async (_, text: string) => {
+      expect(await within(sheet()).findByText(text)).toBeInTheDocument();
+    });
+    And('the sheet shows the link {string}', sheetShowsLink);
+    When('the mill answers with the references {string} at {string}', async (_, printed: string, ref: string) => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      await fake.answer(answered([printed, ref]));
+    });
+    Then('the sheet shows {string} with the links {string} and {string}', sheetShowsTwo);
+  });
+
+  Scenario('A picture that fails keeps the references in the words it came with', ({ Given, Then, And, When }) => {
+    Given('the Share screen is opened with a shared picture and the words {string}, and the mill fails the grist', (_, text: string) => withWords(text, 'failing'));
+    Then('the sheet says {string}', async (_, text: string) => {
+      expect(await within(sheet()).findByRole('alert')).toHaveTextContent(text);
+    });
+    And('the sheet shows the link {string}', sheetShowsLink);
+    When('the mill will answer with the references {string} at {string}', (_, printed: string, ref: string) => {
+      fake.kindReplies['find-refs'] = answered([printed, ref]);
+    });
+    And('he taps {string}', async (_, label: string) => {
+      await user.click(within(sheet()).getByRole('button', { name: label }));
+    });
+    Then('the sheet shows {string} with the links {string} and {string}', sheetShowsTwo);
+  });
+
+  Scenario('Going back to a share after an opened reference sends no second grist', ({ Given, When, Then, And }) => {
+    Given('the Share screen is opened with a shared picture, read at once with the reference {string} at {string}', async (_, printed: string, ref: string) => {
+      await open('', true, { answers: [printed, ref] });
+      await within(sheet()).findByRole('heading', { name: 'Bible references (1)' });
+    });
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(linkNamed(name));
+    });
+    Then('the Reader is open at Romans 8 verse 28', async () => {
+      await waitFor(() => expect(document.querySelector('[data-verse][data-selected="true"]')).not.toBeNull());
+      expect(window.location.hash).toContain('c=8');
+    });
+    When('he goes Back', async () => {
+      window.history.back();
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    });
+    Then('the sheet {string} is not there', (_, name: string) => {
+      expect(screen.queryByRole('dialog', { name })).toBeNull();
+    });
+    And('only one grist went to the mill', () => {
+      expect(fake.received).toHaveLength(1);
+    });
+  });
+
+  Scenario('Offline, the line says the phone is offline and offers Try again', ({ Given, Then, And, When }) => {
+    Given('the Share screen is opened with a shared picture, and the phone is offline', async () => {
+      await open('', true, 'offline');
+    });
+    Then('the sheet says {string}', async (_, text: string) => {
+      expect(await within(sheet()).findByRole('alert')).toHaveTextContent(text);
+    });
+    And('the sheet offers {string}', (_, label: string) => {
+      expect(within(sheet()).getByRole('button', { name: label })).toBeInTheDocument();
+    });
+    When('the phone is online again and the mill will answer with the references {string} at {string}', (_, printed: string, ref: string) => {
+      onLine?.mockRestore();
+      onLine = undefined;
+      fake.down = false;
+      fake.kindReplies['find-refs'] = answered([printed, ref]);
+    });
+    And('he taps {string}', async (_, label: string) => {
+      await user.click(within(sheet()).getByRole('button', { name: label }));
+    });
+    Then('the sheet shows {string} with the link {string}', sheetShows);
+  });
+
+  Scenario('Going back from the card of an Old Testament reference sends no second grist', ({ Given, When, Then, And }) => {
+    Given('the Share screen is opened with a shared picture, read at once with the reference {string} at {string}', async (_, printed: string, ref: string) => {
+      await open('', true, { answers: [printed, ref] });
+      await within(sheet()).findByRole('heading', { name: 'Bible references (1)' });
+    });
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(linkNamed(name));
+    });
+    Then('a card headed {string} says {string}', async (_, heading: string, line: string) => {
+      const dialog = await screen.findByRole('dialog', { name: heading });
+      expect(await within(dialog).findByText(new RegExp(line))).toBeInTheDocument();
+    });
+    When('he goes Back', async () => {
+      window.history.back();
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    });
+    Then('the sheet {string} is not there', (_, name: string) => {
+      expect(screen.queryByRole('dialog', { name })).toBeNull();
+    });
+    And('the sheet shows the link {string} again', async (_, name: string) => {
+      expect(linkNamed(name)).toBeInTheDocument();
+    });
+    And('only one grist went to the mill', () => {
+      expect(fake.received).toHaveLength(1);
+    });
   });
 });
