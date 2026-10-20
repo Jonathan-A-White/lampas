@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.378
+_2026-10-20_
+- New: Settings now opens on a short list of groups (Reading, Greek, The tutor, Listening, Daily, Study resources, Account), each its own page with a back arrow, and search still finds any setting.
+- Fixed: The tutor no longer lists the Greek words you already know as words to learn when it only mentions them in passing.
+
 ## 0.1.377
 _2026-10-20_
 - Fixed: Holding to talk now keeps your whole sentence when you pause in the middle, in every place you talk to the tutor.

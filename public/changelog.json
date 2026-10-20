@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.378",
+    "date": "2026-10-20",
+    "story": "mw-3ased2.1",
+    "kind": "new",
+    "text": "Settings now opens on a short list of groups (Reading, Greek, The tutor, Listening, Daily, Study resources, Account), each its own page with a back arrow, and search still finds any setting."
+  },
+  {
+    "version": "0.1.378",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.686",
+    "kind": "fixed",
+    "text": "The tutor no longer lists the Greek words you already know as words to learn when it only mentions them in passing."
+  },
+  {
     "version": "0.1.377",
     "date": "2026-10-20",
     "story": "mw-06ggew.7",
