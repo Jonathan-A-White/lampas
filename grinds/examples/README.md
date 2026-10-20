@@ -39,6 +39,8 @@ shape without a network.
   - `contains`: a string field includes this text
   - `matches`: a string field matches this regular expression, which the app's test (JavaScript) and the mill (Go's RE2) must both read:
     no `(?i)`, no lookaround (`(?=` `(?!` `(?<=` `(?<!`), no backreference (`\1`), no `[^]` (write `[\s\S]`); the unit test refuses them
+    To ban a sound over free prose, ban it as a word or a respelling (a standalone `aw`, `TAW-`, a word-start `ha-`), never as a letter pair anywhere: a pattern that
+    refuses every `aw` fails "away" and "draw" (mw-5r3p30.671). RE2 has no lookahead, so the pattern is written out as an automaton, and `tests/unit/grind-example-patterns.test.ts` holds its should-fail and should-pass strings
   - `present`: `true` the field is in the answer, `false` it is left out
 
 Every `expect` path must be a field of the grind's answer schema, and every `equals` or
