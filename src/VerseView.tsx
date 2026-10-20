@@ -101,7 +101,8 @@ export function VerseView(props: VerseViewProps) {
   const ai = useAiAllowed();
   const reference = unitReference(title, verse);
   const audioBible = audioBibleOf(useSetting(audioBibleSetting) ?? 'off');
-  const audibleChapter = audibleChapterLabel(book, chapter);
+  // The Audible Bible is in English: in Greek view no English audio is offered (mw-5r3p30.653); English and the Weave keep it.
+  const audibleChapter = view === 'greek' ? undefined : audibleChapterLabel(book, chapter);
   const sendOff = useSendOff();
   const passage = verse.to !== undefined;
   const name = unitName(verse);

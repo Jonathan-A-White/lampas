@@ -34,6 +34,20 @@ Feature: Listen in Audible
     And the line "In Audible: Chapters > Luke 15" is shown
     And the credit line "The Word of Promise, Thomas Nelson. Needs the book in your Audible library." is shown
 
+  Scenario: In Greek view the Verse view offers no Listen in Audible, though the Audio Bible is on
+    Given Lampas is opened with the Audio Bible on
+    When he opens the Verse view of Luke 15:11
+    Then the Verse view shows the link "Listen in Audible"
+    When he goes back to the Reader and switches it to Greek
+    And he opens the Verse view of Luke 15:11 again
+    Then there is no "Listen in Audible" link
+    And the line "In Audible: Chapters > Luke 15" is not shown
+
+  Scenario: In English view the Verse view still offers Listen in Audible
+    Given Lampas is opened with the Audio Bible on
+    When he opens the Verse view of Luke 15:11
+    Then the Verse view shows the link "Listen in Audible"
+
   Scenario: The link is named for a screen reader and the credit is plain text under it
     Given Lampas is opened with the Audio Bible on
     When he opens the Verse view of Luke 15:11
