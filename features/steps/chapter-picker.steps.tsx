@@ -240,6 +240,54 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  // mw-5r3p30.678: a typed place opens the Reader, the verse brought to the top by the Reader (data-brought), never the Verse view (the address would carry v)
+  const shownWhole = async (): Promise<void> => {
+    await waitFor(() => expect(document.querySelectorAll('[data-verse]')).toHaveLength(chapterFile('jhn', 18).verses.length));
+    expect(document.querySelector('[data-reader]')).not.toHaveAttribute('inert');
+  };
+
+  Scenario('Go to a verse opens the chapter in the Reader with that verse brought to the top, not the Verse view', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened with nothing saved', () => openFresh());
+    When('he taps the title', openPicker);
+    And('he types {string} in Choose a book and takes the Go to row', async (_, text: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Choose a chapter' });
+      await user.type(within(dialog).getByRole('searchbox', { name: 'Search books' }), text);
+      await user.click(await within(dialog).findByRole('button', { name: /^Go to / }));
+    });
+    Then('the reader is headed {string}', async (_, title: string) => {
+      await screen.findByRole('heading', { name: title, level: 1 });
+    });
+    And('the picker is closed', async () => {
+      await waitFor(() => expect(picker()).toBeNull());
+    });
+    And('the Reader shows every verse of John 18 and no Verse view is open', shownWhole);
+    And('the address names chapter {int} of {string} and no verse', async (_, n: number, book: string) => {
+      await waitFor(() => expect(readerOf(window.location.hash)).toMatchObject({ book, chapter: n }));
+      expect(readerOf(window.location.hash).verse).toBeUndefined();
+      expect(readerOf(window.location.hash).passage).toBeUndefined();
+    });
+    And('verse {int} of the chapter was brought to the top of the reading area', async (_, n: number) => {
+      await waitFor(() => expect(document.querySelector('[data-reader]')).toHaveAttribute('data-brought-verse', String(n)));
+    });
+  });
+
+  Scenario('Go to a chapter alone opens it at the top', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened with nothing saved', () => openFresh());
+    When('he taps the title', openPicker);
+    And('he types {string} in Choose a book and takes the Go to row', async (_, text: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Choose a chapter' });
+      await user.type(within(dialog).getByRole('searchbox', { name: 'Search books' }), text);
+      await user.click(await within(dialog).findByRole('button', { name: /^Go to / }));
+    });
+    Then('the reader is headed {string}', async (_, title: string) => {
+      await screen.findByRole('heading', { name: title, level: 1 });
+    });
+    And('the Reader shows every verse of John 18 and no Verse view is open', shownWhole);
+    And('no verse was brought to the top of the reading area', () => {
+      expect(document.querySelector('[data-reader]')).not.toHaveAttribute('data-brought-verse');
+    });
+  });
+
   Scenario('A chapter that cannot be fetched says so and gives a way back', ({ Given, And, When, Then }) => {
     Given('Lampas is opened with nothing saved', () => openFresh());
     And('the phone is offline', () => {

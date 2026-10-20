@@ -120,17 +120,47 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     return picker;
   }
 
-  test('John 18:36 opens John 18 at verse 36', async ({ page }) => {
+  // mw-5r3p30.678: Go to is a way into the Bible: the Reader on the chapter with the verse at the top of the reading area, the whole chapter there for context
+  test('Go to John 18:2 opens John 18 in the Reader with verse 2 at the top, verse 1 above it, not the Verse view', async ({ page }) => {
     const picker = await openPicker(page);
     const search = picker.getByRole('searchbox', { name: 'Search books' });
-    await search.fill('John 18:36');
+    await search.fill('John 18:2');
     await expect(picker.getByText('No book matches')).toHaveCount(0);
+    await expect(picker.getByRole('button', { name: 'Go to John 18:2' })).toBeVisible();
     await search.press('Enter');
     await expect(picker).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'John 18', level: 1 })).toBeVisible();
-    await expect(page.locator('[data-verse="36"]')).toBeVisible();
-    expect(page.url()).toContain('v=36');
+    expect(page.url()).not.toContain('v=');
+    // no Verse view: the reading text is not inert and has no Read-aloud panel over it
+    await expect(page.locator('[data-reader]')).not.toHaveAttribute('inert', /.*/);
+    await expect(page.locator('[data-verse="1"]')).toHaveCount(1);
+    const box = page.locator('[data-reader]');
+    await expect
+      .poll(async () => {
+        const top = (await page.locator('[data-verse="2"]').boundingBox())!.y - (await box.boundingBox())!.y;
+        return Math.abs(top) <= 12;
+      })
+      .toBe(true);
+    // verse 1 is above verse 2, reachable by scrolling up; the later verses by scrolling down
+    expect((await page.locator('[data-verse="1"]').boundingBox())!.y).toBeLessThan((await page.locator('[data-verse="2"]').boundingBox())!.y);
+    await box.evaluate((el) => (el.scrollTop = 0));
+    await expect(page.locator('[data-verse="1"]')).toBeInViewport();
+    await box.evaluate((el) => (el.scrollTop = el.scrollHeight));
+    await expect(page.locator('[data-verse="40"]')).toBeInViewport();
+    await box.evaluate((el) => (el.scrollTop = 0));
     await shot(page, 'chapter-picker-reference-390x844');
+  });
+
+  test('a verse of the chapter he is in is brought to the top without opening the Verse view', async ({ page }) => {
+    const picker = await openPicker(page);
+    await picker.getByRole('searchbox', { name: 'Search books' }).fill('Rom 8:30');
+    await picker.getByRole('searchbox', { name: 'Search books' }).press('Enter');
+    await expect(picker).toHaveCount(0);
+    expect(page.url()).not.toContain('v=');
+    const box = page.locator('[data-reader]');
+    await expect
+      .poll(async () => Math.abs((await page.locator('[data-verse="30"]').boundingBox())!.y - (await box.boundingBox())!.y) <= 12)
+      .toBe(true);
   });
 
   test('a chapter past the book end says how many it has, and a book name alone still filters', async ({ page }) => {
@@ -163,7 +193,7 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     await expect(picker).toHaveCount(0);
   });
 
-  test('jn18 opens John 18, and a verse of the chapter he is in opens that verse', async ({ page }) => {
+  test('jn18 opens John 18, and a verse of the chapter he is in brings that verse to the top', async ({ page }) => {
     const picker = await openPicker(page);
     await picker.getByRole('searchbox', { name: 'Search books' }).fill('jn18');
     await picker.getByRole('button', { name: 'Go to John 18' }).click();
@@ -175,6 +205,7 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     await again.getByRole('searchbox', { name: 'Search books' }).fill('John 18:36');
     await again.getByRole('searchbox', { name: 'Search books' }).press('Enter');
     await expect(again).toHaveCount(0);
-    expect(page.url()).toContain('v=36');
+    expect(page.url()).not.toContain('v=');
+    await expect(page.locator('[data-verse="36"]')).toBeVisible();
   });
 });
