@@ -204,7 +204,11 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given(opened, openAnswerBeingRead);
     When('he sends another message to the tutor', async () => {
       fake.autoReply = undefined;
+      const sent = fake.received.length;
       await sendMessage('And what is its lemma?');
+      // The request is built from several database reads, so the step must not end before it reaches the fake: the next scenario's fake
+      // Postern would take the late send and answer it (the same race as mw-5r3p30.656's askUnanswered in tutor-aloud.steps.tsx).
+      await waitFor(() => expect(fake.received.length).toBe(sent + 1));
     });
     Then('the phone has stopped speaking', stoppedAll);
     And('there is no speaking bar', async () => {
