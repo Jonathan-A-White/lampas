@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { swipe } from '../support/gesture';
+import { drag, swipe } from '../support/gesture';
+import { pauseNow } from '../support/hold';
 import { afterLastVerse } from './reader-foot';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -156,6 +157,176 @@ test('a tap on the right third and a swipe left turn forward; the left third and
   expect(await versesInView(page)).toContain(1);
   await expect(page.getByTestId('sheet-backdrop')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
+});
+
+// mw-5r3p30.621 (his 2026-10-19 words: "if you pull back the page a little bit it comes a little ... if you go quickly it goes quickly"): the page follows the
+// finger and turns like a page of a book. Each turn puts up one layer over the text, [data-page-turn]: 'curl' (WebGL) or, with no WebGL, 'slide'. The
+// page he lands on is the place line's at once; the layer only draws the motion, and goes when it ends.
+
+/** Takes WebGL away from the page, as a phone without it: every canvas refuses a webgl context. */
+async function noWebGL(page: Page) {
+  await page.addInitScript(() => {
+    const real = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, kind: string, options?: unknown) {
+      return /webgl/i.test(kind) ? null : real.call(this, kind, options);
+    } as typeof real;
+  });
+}
+
+/** Keeps every page-turn layer the page puts up from now on, by its kind. */
+async function watchTurns(page: Page) {
+  await page.evaluate(() => {
+    const seen: string[] = [];
+    (window as unknown as { turnsSeen: string[] }).turnsSeen = seen;
+    new MutationObserver((records) => {
+      for (const r of records) for (const n of Array.from(r.addedNodes)) if (n instanceof HTMLElement && n.dataset.pageTurn) seen.push(n.dataset.pageTurn);
+    }).observe(document.body, { childList: true, subtree: true });
+  });
+}
+const turnsSeen = (page: Page) => page.evaluate(() => [...(window as unknown as { turnsSeen: string[] }).turnsSeen]);
+const turning = (page: Page) => page.locator('[data-page-turn]');
+
+/** With the page's clock paused, runs it a frame at a time until the turn's layer is gone, and gives how long that took on the page's clock. */
+async function turnLasts(page: Page): Promise<number> {
+  let ms = 0;
+  try {
+    while ((await turning(page).count()) > 0) {
+      if (ms > 4000) throw new Error('the turn never ended');
+      await page.clock.runFor(16);
+      ms += 16;
+    }
+  } finally {
+    await page.clock.resume();
+  }
+  return ms;
+}
+
+/** A finger dragged across the text from one share of the box's width to another, at the middle of its height, in `ms` of the page's clock. */
+async function dragText(page: Page, from: number, to: number, ms: number, options: { keepPaused?: boolean; whileDown?: () => Promise<void> } = {}) {
+  const b = await box(page);
+  const y = (b.top + b.bottom) / 2;
+  await drag(page, [b.left + b.width * from, y], [b.left + b.width * to, y + 4], { ms, steps: 6, ...options });
+}
+
+/** Waits until no turn is drawn, the page `on`. */
+async function restsOn(page: Page, on: number) {
+  await expect(turning(page)).toHaveCount(0);
+  expect(await at(page)).toBe(on);
+}
+
+for (const look of [
+  { name: 'a page curl', kind: 'curl', webgl: true },
+  { name: 'the plain slide with no WebGL', kind: 'slide', webgl: false },
+]) {
+  test(`the page follows the finger: a short slow drag springs back, past half it turns, a quick flick turns, and a faster flick turns faster (${look.name})`, async ({ page }) => {
+    if (!look.webgl) await noWebGL(page);
+    await openMark12(page, 'pages');
+    await watchTurns(page);
+
+    // a slow drag a third of the way: the page lifts with the finger and springs back when it lets go
+    await dragText(page, 0.8, 0.45, 600, {
+      whileDown: async () => {
+        await expect(turning(page)).toHaveAttribute('data-page-turn', look.kind);
+        expect(await at(page)).toBe(1);
+      },
+    });
+    await restsOn(page, 1);
+    expect(await versesInView(page)).toContain(1);
+
+    // a slow drag past half turns, and the turn is drawn
+    await dragText(page, 0.85, 0.25, 700, { keepPaused: true });
+    await expect.poll(() => at(page)).toBe(2);
+    const slow = await turnLasts(page);
+    await restsOn(page, 2);
+    expect(await versesInView(page)).not.toContain(1);
+
+    // the same drag as a quick flick turns too, and faster
+    await tapAt(page, 0.15);
+    await restsOn(page, 1);
+    await dragText(page, 0.85, 0.25, 80, { keepPaused: true });
+    await expect.poll(() => at(page)).toBe(2);
+    const fast = await turnLasts(page);
+    expect(fast, `the quick flick's turn took ${fast} ms, the slow drag's ${slow} ms`).toBeLessThan(slow);
+    expect(fast).toBeGreaterThan(0);
+
+    // a quick flick of a fifth of the page turns it, forward and back
+    await dragText(page, 0.6, 0.4, 60);
+    await restsOn(page, 3);
+    await dragText(page, 0.4, 0.6, 60);
+    await restsOn(page, 2);
+    // and a short slow drag back springs back
+    await dragText(page, 0.3, 0.6, 600);
+    await restsOn(page, 2);
+    expect(new Set(await turnsSeen(page))).toEqual(new Set([look.kind]));
+    await shot(page, `turn-pages-drag-${look.kind}`);
+  });
+
+  test(`with Reduce motion a turn is instant, by a tap, a swipe and a drag (${look.name})`, async ({ page }) => {
+    if (!look.webgl) await noWebGL(page);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openMark12(page, 'pages');
+    await watchTurns(page);
+    await pauseNow(page);
+    await tapAt(page, 0.85);
+    await expect.poll(() => at(page)).toBe(2);
+    await page.clock.resume();
+    await swipeText(page, 'left');
+    await expect.poll(() => at(page)).toBe(3);
+    await dragText(page, 0.85, 0.25, 700);
+    await expect.poll(() => at(page)).toBe(4);
+    await dragText(page, 0.6, 0.4, 60);
+    await expect.poll(() => at(page)).toBe(5);
+    await dragText(page, 0.8, 0.45, 600);
+    await page.waitForTimeout(300);
+    expect(await at(page)).toBe(5);
+    await tapAt(page, 0.15);
+    await expect.poll(() => at(page)).toBe(4);
+    expect(await turnsSeen(page)).toEqual([]);
+    await expect(turning(page)).toHaveCount(0);
+  });
+}
+
+// Every way a page turns draws the one turn: a tap on a third, a swipe, a drag, the Next and Previous page buttons, and the turn into the next chapter
+// or back into the previous one.
+test('every way a page turns, and the turn across a chapter, draws the same page curl', async ({ page }) => {
+  await openMark12(page, 'pages');
+  await watchTurns(page);
+  let turns = 0;
+  const drawn = async (to: { title?: string; at: number | 'last' }) => {
+    turns += 1;
+    await expect.poll(async () => (await turnsSeen(page)).length).toBe(turns);
+    expect(new Set(await turnsSeen(page))).toEqual(new Set(['curl']));
+    await expect(turning(page)).toHaveCount(0);
+    await expectOn(page, to.title ?? 'Mark 12', to.at);
+  };
+  await tapAt(page, 0.85);
+  await drawn({ at: 2 });
+  await swipeText(page, 'left');
+  await drawn({ at: 3 });
+  await dragText(page, 0.85, 0.25, 300);
+  await drawn({ at: 4 });
+  const controls = page.getByRole('group', { name: 'Reading controls' });
+  await controls.getByRole('button', { name: 'Previous page', exact: true }).evaluate((b) => (b as HTMLButtonElement).click());
+  await drawn({ at: 3 });
+  await controls.getByRole('button', { name: 'Next page', exact: true }).evaluate((b) => (b as HTMLButtonElement).click());
+  await drawn({ at: 4 });
+  await tapAt(page, 0.15);
+  await drawn({ at: 3 });
+
+  // on to the last page by taps, each drawn
+  const { of } = await placeOf(page);
+  for (let n = 4; n <= of; n++) {
+    await tapAt(page, 0.85);
+    await drawn({ at: n });
+  }
+  await tapAt(page, 0.85);
+  await drawn({ title: 'Mark 13', at: 1 });
+  await swipeText(page, 'right');
+  await drawn({ title: 'Mark 12', at: 'last' });
+  await dragText(page, 0.85, 0.25, 300);
+  await drawn({ title: 'Mark 13', at: 1 });
+  await dragText(page, 0.15, 0.75, 300);
+  await drawn({ title: 'Mark 12', at: 'last' });
 });
 
 /** The place line as a whole: the chapter it names, the page and how many there are. */
