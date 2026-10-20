@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.368",
+    "date": "2026-10-20",
+    "story": "mw-svw421.29",
+    "kind": "fixed",
+    "text": "A table you miss a form of in Review now comes back tomorrow even when you get the other forms right in the same round."
+  },
+  {
+    "version": "0.1.368",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.620",
+    "kind": "new",
+    "text": "In Turn pages, turning past the last page of a chapter opens the next chapter, and turning back from the first page opens the end of the one before; no blank pages."
+  },
+  {
     "version": "0.1.367",
     "date": "2026-10-20",
     "story": "mw-5r3p30.669",

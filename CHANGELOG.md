@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.368
+_2026-10-20_
+- Fixed: A table you miss a form of in Review now comes back tomorrow even when you get the other forms right in the same round.
+- New: In Turn pages, turning past the last page of a chapter opens the next chapter, and turning back from the first page opens the end of the one before; no blank pages.
+
 ## 0.1.367
 _2026-10-20_
 - Fixed: reloading the app while the Share to Lampas sheet is open keeps the sheet instead of dropping you on the reading screen, and a link that names Greek or English view keeps that view when the app was still starting.
