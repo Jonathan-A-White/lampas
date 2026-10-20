@@ -60,6 +60,8 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   or more go to the Greek voice in lower case (mw-5r3p30.226).
   An elided word of one consonant (δ', Luke 9:24 ὃς δ' ἂν) stays in its stretch, but the voice is handed it joined to the word after it (`greek.ts` `greekVoiceForm`, `elision.ts`
   `joinElidedLetters`: δ'ἂν, said 'dan'), or it would name the letter ('Delta'); the text on screen is unchanged (mw-5r3p30.654; `tests/unit/lone-letter-clip.test.ts` sweeps every such verse).
+  When δ' ends its stretch (the end of a run before an English chunk of a woven plan, or a one-letter word comes next) there is no word to join it to: `loneLetterCuts` cuts it
+  off as its clip, the dh sound, on every phone (mw-5r3p30.657; the same test sweeps every plan kind).
 - **Listen is a Listen** (mw-5r3p30.130, `docs/verse-view.md` 'Listen is a player'): a reading started with `listen: <key>` is paused by an in-app interruption and goes on by itself when it ends
   (`readAloud.ts` `interruptListen`; a word beside it, a Hold to ask, a recording, a tutor's answer); the speaking bar's Restart on it goes back to the first verse (`restartListen`); one that ran
   to its end by itself is remembered (`useListenCompleted`) so the Verse view's foot says Play again.
