@@ -8,8 +8,8 @@
 // Logos off in Settings the books still show; picking one says so and turns Logos on in one tap, and with the Audio Bible off too it names that setting.
 // In choose mode (mw-umv8sp.3: the return sheet's Pick it myself, src/plan/WhereDidYouGetTo.tsx) a tap on any chapter, of either testament, hands it to `onChoose` and
 // opens nothing: no Logos panel, no Preface row, no 'Opens in Logos' tag. `heading` names the sheet in that mode ('Where are you starting?', src/plan/StartPlan.tsx).
-// With the Reading plan on and a plan started (mw-umv8sp.5) every grid marks the chapters done (a ✓, dimmed, data-done) and the next one (an accent outline, data-next):
-// `marks` is the plan as src/plan/usePlan.ts reads it; `showPlan` false (StartPlan) draws none, as the plan being started has no marks yet.
+// With the Reading plan on and a plan started (mw-umv8sp.5) every grid outlines the next chapter (an accent outline, data-next); a chapter done looks like any other, with no ✓ and
+// no dimming (his feedback, mw-5r3p30.679: 'They are confusing.'): `marks` is the plan as src/plan/usePlan.ts reads it; `showPlan` false (StartPlan) draws none, as the plan being started has no next yet.
 // The search takes a reference as well as a name (mw-5r3p30.622, src/nav/parseReference.ts readPlace, the one reader of a typed place): 'John 18:36' (Enter, or the Go to row)
 // opens John 18 in the Reader with verse 36 brought to the top of the reading area (mw-5r3p30.678, not its Verse view), 'Ps 23' opens Psalms with chapter 23 chosen, 'John 99' says 'John has 21 chapters'; a book's name alone still filters the list.
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -40,16 +40,13 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
 const ITEMS = [...OT_BOOKS, ...BOOKS].map((b) => ({ id: b.code, name: b.name }));
 
-/** How a chapter of the plan is marked: done (dimmed, with a check) or the next one (outlined). Both are also said to a screen reader as the button's description. */
-function markOf(marks: PlanView | undefined, code: string, chapter: number): { attrs: Record<string, string>; check: boolean; ring: string; description?: string } {
-  if (!marks) return { attrs: {}, check: false, ring: '' };
-  const key = keyOf({ code, chapter });
-  if (marks.done.has(key)) return { attrs: { 'data-done': '' }, check: true, ring: 'text-muted opacity-70', description: 'Done' };
-  if (marks.next && keyOf(marks.next) === key) return { attrs: { 'data-next': '' }, check: false, ring: 'ring-2 ring-inset ring-accent', description: 'Next in your plan' };
-  return { attrs: {}, check: false, ring: '' };
+/** How a chapter of the plan is marked: only the next one, outlined and said to a screen reader as the button's description. A chapter done is not marked. */
+function markOf(marks: PlanView | undefined, code: string, chapter: number): { attrs: Record<string, string>; ring: string; description?: string } {
+  if (marks?.next && keyOf(marks.next) === keyOf({ code, chapter })) return { attrs: { 'data-next': '' }, ring: 'ring-2 ring-inset ring-accent', description: 'Next in your plan' };
+  return { attrs: {}, ring: '' };
 }
 
-/** One chapter number in a grid: 48 px, the chapter he is in filled, the plan's marks on top. */
+/** One chapter number in a grid: 48 px, the chapter he is in filled, the next chapter of the plan outlined. */
 function ChapterButton({ code, n, here, pressed, marks, onPick }: { code: string; n: number; here?: boolean; pressed?: boolean; marks: PlanView | undefined; onPick: () => void }) {
   const mark = markOf(marks, code, n);
   const filled = here || pressed;
@@ -63,14 +60,9 @@ function ChapterButton({ code, n, here, pressed, marks, onPick }: { code: string
       aria-current={here ? 'true' : undefined}
       aria-pressed={pressed === undefined ? undefined : pressed}
       onClick={onPick}
-      className={`relative min-h-12 rounded-xl border text-lg font-medium ${filled ? 'border-accent bg-accent text-accent-fg' : `border-line bg-surface ${mark.ring}`}`}
+      className={`min-h-12 rounded-xl border text-lg font-medium ${filled ? 'border-accent bg-accent text-accent-fg' : `border-line bg-surface ${mark.ring}`}`}
     >
       {n}
-      {mark.check ? (
-        <span aria-hidden="true" className="absolute right-1.5 top-0.5 text-xs font-semibold">
-          ✓
-        </span>
-      ) : null}
     </button>
   );
 }

@@ -2,8 +2,8 @@ Feature: The listening plan lives in the Bible view
   The plan's next chapter is a piece of Today (src/today/Today.tsx, opened by the Reader's Today chip, features/reader-chips.feature). With the Reading plan on and a plan started
   it says "Next: Leviticus 4" and how far she is ("93 of 1,189 chapters done"), with Listen in Audible, whose tap opens that chapter's send-off sheet. With the plan off, or on but not
   started, it says no plan is started and has "Start a plan", which opens "Start a listening plan": pick the plan, then "Where are you starting?" (the chapter picker in
-  choose mode), and everything before that chapter is done. Settings > Study resources has the same entry. The chapter picker marks the chapters done and
-  the next one. A tap on the plan's place on Today opens "Where are you?" (mw-5r3p30.623): "I'm at <the Reader's chapter>" counts that chapter done, "Pick a place" is the picker in choose
+  choose mode), and everything before that chapter is done. Settings > Study resources has the same entry. The chapter picker marks the next
+  chapter with an outline and nothing else: no check and no dimming on a chapter done (his feedback of 2026-10-20, mw-5r3p30.679: the checks were confusing). A tap on the plan's place on Today opens "Where are you?" (mw-5r3p30.623): "I'm at <the Reader's chapter>" counts that chapter done, "Pick a place" is the picker in choose
   mode (a typed "Ps 23" too) and Set here moves the plan; days done stay done and Undo puts the place back for a few seconds. A reader who is not learning Greek is shown the Today chip alone: the Greek chips are only drawn when they have something to show.
 
   Scenario: Today names the next chapter and how far she is
@@ -40,14 +40,14 @@ Feature: The listening plan lives in the Bible view
     And he taps "Start a listening plan" in Settings
     Then the sheet "Start a listening plan" is shown with the plan "The whole Bible"
 
-  Scenario: The chapter picker marks the chapters done and the next
+  Scenario: The chapter picker marks only the next chapter, never a chapter done
     Given Lampas is opened with a reading plan started at Luke 15
     When he opens the chapter picker at Matthew
-    Then the Matthew chapters are all marked done and none is marked next
+    Then no Matthew chapter shows a check or is dimmed and none is marked next
     When he goes back to the books and opens Luke
-    Then Luke 14 is marked done and Luke 15 is marked next and Luke 16 is neither
+    Then Luke 15 is marked next and Luke 14 and Luke 16 are marked neither, with no check or dimming
     When he goes back to the books and opens Leviticus
-    Then every Leviticus chapter is marked done
+    Then no Leviticus chapter shows a check or is dimmed
 
   Scenario: A reader with no Greek activity sees the Today chip alone
     Given Lampas is opened with a reading plan started at Leviticus 4 and no Greek activity

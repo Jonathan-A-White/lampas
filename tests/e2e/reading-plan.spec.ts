@@ -126,7 +126,7 @@ test('starting at Leviticus 1 counts Genesis and Exodus as done', async ({ page 
   await expect(plan(page)).toContainText('90 of 1,189 chapters done');
 });
 
-test('the chapter picker marks done chapters and the next, in both testaments', async ({ page }) => {
+test('the chapter picker marks only the next chapter, never a chapter done, in both testaments', async ({ page }) => {
   await openWith(page, [
     { key: 'audioBible', value: 'word-of-promise' },
     { key: 'readingPlan', value: 'on' },
@@ -136,12 +136,15 @@ test('the chapter picker marks done chapters and the next, in both testaments', 
   const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
   await picker.getByRole('button', { name: /^Leviticus/ }).click();
   const grid = picker.getByRole('group', { name: 'Leviticus chapters' });
-  await expect(grid.locator('[data-done]')).toHaveCount(3);
-  await expect(grid.locator('[data-chapter="1"]')).toHaveAttribute('data-done', '');
-  await expect(grid.locator('[data-chapter="3"]')).toHaveAttribute('data-done', '');
+  // a chapter done looks like any other (mw-5r3p30.679): no check, no dimming
+  await expect(grid.locator('[data-done]')).toHaveCount(0);
+  await expect(grid).not.toContainText('✓');
+  await expect(grid.locator('[data-chapter="1"]')).toHaveText('1');
+  await expect(grid.locator('[data-chapter="1"]')).toHaveCSS('opacity', '1');
+  await expect(grid.locator('[data-chapter="3"]')).toHaveCSS('opacity', '1');
+  expect(await grid.locator('[data-chapter="1"]').evaluate((e) => getComputedStyle(e).color)).toBe(await grid.locator('[data-chapter="5"]').evaluate((e) => getComputedStyle(e).color));
   await expect(grid.locator('[data-chapter="4"]')).toHaveAttribute('data-next', '');
   await expect(grid.locator('[data-chapter="5"]')).not.toHaveAttribute('data-next', '');
-  await expect(grid.locator('[data-chapter="5"]')).not.toHaveAttribute('data-done', '');
   expect(await grid.locator('[data-chapter="1"]').boundingBox().then((b) => b?.height ?? 0)).toBeGreaterThanOrEqual(47.5);
   await shot(page, 'reading-plan-picker-ot-390x844');
 
@@ -151,7 +154,9 @@ test('the chapter picker marks done chapters and the next, in both testaments', 
   await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
   await picker.getByRole('button', { name: /^Luke$/ }).click();
   const luke = picker.getByRole('group', { name: 'Luke chapters' });
-  await expect(luke.locator('[data-chapter="14"]')).toHaveAttribute('data-done', '');
+  await expect(luke.locator('[data-chapter="14"]')).not.toHaveAttribute('data-done', '');
+  await expect(luke).not.toContainText('✓');
+  await expect(luke.locator('[data-chapter="14"]')).toHaveCSS('opacity', '1');
   await expect(luke.locator('[data-chapter="15"]')).toHaveAttribute('data-next', '');
   await expect(luke.locator('[data-chapter="16"]')).not.toHaveAttribute('data-next', '');
   await shot(page, 'reading-plan-picker-nt-390x844');
@@ -297,8 +302,9 @@ test('Pick a place, Psalms 23, Set here: the plan and the picker marks show Psal
   await chooser.getByRole('button', { name: /^Psalms/ }).click();
   const grid = chooser.getByRole('group', { name: 'Psalms chapters' });
   await expect(grid.locator('[data-chapter="23"]')).toHaveAttribute('data-next', '');
-  await expect(grid.locator('[data-chapter="22"]')).toHaveAttribute('data-done', '');
-  await expect(grid.locator('[data-chapter="24"]')).toHaveAttribute('data-done', '');
+  await expect(grid.locator('[data-chapter="22"]')).not.toHaveAttribute('data-done', '');
+  await expect(grid.locator('[data-chapter="24"]')).not.toHaveAttribute('data-done', '');
+  await expect(grid).not.toContainText('✓');
 });
 
 test("the place picker takes a typed 'Ps 23'", async ({ page }) => {

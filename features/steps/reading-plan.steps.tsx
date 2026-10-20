@@ -159,40 +159,53 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The chapter picker marks the chapters done and the next', ({ Given, When, Then }) => {
+  // a chapter done looks like any other (mw-5r3p30.679): no check, no dimming, no data-done; only the next one is outlined
+  const plain = (button: Element | null) => {
+    expect(button).not.toBeNull();
+    expect(button).not.toHaveAttribute('data-done');
+    expect(button).not.toHaveAttribute('data-next');
+    expect(button?.className).not.toContain('opacity');
+    expect(button?.className).not.toContain('text-muted');
+    expect(button?.textContent).toBe(button?.getAttribute('data-chapter'));
+  };
+
+  Scenario('The chapter picker marks only the next chapter, never a chapter done', ({ Given, When, Then }) => {
     Given('Lampas is opened with a reading plan started at Luke 15', luke15);
     When('he opens the chapter picker at Matthew', async () => {
       await todayChip();
       const picker = await openPicker();
       await user.click(await within(picker).findByRole('button', { name: /^Matthew/ }));
     });
-    Then('the Matthew chapters are all marked done and none is marked next', async () => {
+    Then('no Matthew chapter shows a check or is dimmed and none is marked next', async () => {
       const grid = await screen.findByRole('group', { name: 'Matthew chapters' });
-      await waitFor(() => expect(grid.querySelectorAll('[data-done]').length).toBe(28));
-      expect(grid.querySelectorAll('[data-chapter]').length).toBe(28);
+      await waitFor(() => expect(grid.querySelectorAll('[data-chapter]').length).toBe(28));
+      grid.querySelectorAll('[data-chapter]').forEach(plain);
       expect(grid.querySelector('[data-next]')).toBeNull();
+      expect(grid.textContent).not.toContain('✓');
     });
     When('he goes back to the books and opens Luke', async () => {
       const picker = screen.getByRole('dialog', { name: 'Choose a chapter' });
       await user.click(within(picker).getByRole('button', { name: /Books/ }));
       await user.click(await within(picker).findByRole('button', { name: /^Luke/ }));
     });
-    Then('Luke 14 is marked done and Luke 15 is marked next and Luke 16 is neither', async () => {
+    Then('Luke 15 is marked next and Luke 14 and Luke 16 are marked neither, with no check or dimming', async () => {
       const grid = await screen.findByRole('group', { name: 'Luke chapters' });
       await waitFor(() => expect(grid.querySelector('[data-chapter="15"][data-next]')).not.toBeNull());
-      expect(grid.querySelector('[data-chapter="14"]')).toHaveAttribute('data-done');
-      expect(grid.querySelector('[data-chapter="15"]')).not.toHaveAttribute('data-done');
-      expect(grid.querySelector('[data-chapter="16"]')).not.toHaveAttribute('data-done');
-      expect(grid.querySelector('[data-chapter="16"]')).not.toHaveAttribute('data-next');
+      plain(grid.querySelector('[data-chapter="14"]'));
+      plain(grid.querySelector('[data-chapter="16"]'));
+      expect(grid.querySelectorAll('[data-next]').length).toBe(1);
+      expect(grid.textContent).not.toContain('✓');
     });
     When('he goes back to the books and opens Leviticus', async () => {
       const picker = screen.getByRole('dialog', { name: 'Choose a chapter' });
       await user.click(within(picker).getByRole('button', { name: /Books/ }));
       await user.click(await within(picker).findByRole('button', { name: /^Leviticus/ }));
     });
-    Then('every Leviticus chapter is marked done', async () => {
+    Then('no Leviticus chapter shows a check or is dimmed', async () => {
       const grid = await screen.findByRole('group', { name: 'Leviticus chapters' });
-      await waitFor(() => expect(grid.querySelectorAll('[data-done]').length).toBe(27));
+      await waitFor(() => expect(grid.querySelectorAll('[data-chapter]').length).toBe(27));
+      grid.querySelectorAll('[data-chapter]').forEach(plain);
+      expect(grid.textContent).not.toContain('✓');
     });
   });
 
