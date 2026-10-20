@@ -1,0 +1,75 @@
+{
+  "description": "He finished Drill it on the vowel pair αυ with one wrong answer and asks why: the answer names the question he missed, what he chose and the right answer, and does not invent an answer the list does not show.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Drill it",
+    "question": "Why did I get these wrong?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "screen": {
+      "name": "Drill it",
+      "facts": [
+        {
+          "label": "Idea",
+          "value": "The vowel pair αυ"
+        },
+        {
+          "label": "Result",
+          "value": "You reached step 1 of 2"
+        },
+        {
+          "label": "Questions",
+          "value": "3 asked, 2 right, 1 wrong"
+        },
+        {
+          "label": "Strong",
+          "value": "αυ before any other letter: af"
+        },
+        {
+          "label": "Weak",
+          "value": "αυ before a vowel or a voiced consonant: av"
+        }
+      ],
+      "drill": [
+        {
+          "idea": "αυ before any other letter: af",
+          "asked": "How is αυ said in αὐτός? αὐτός",
+          "answer": "af",
+          "right_answer": "af",
+          "right": true
+        },
+        {
+          "idea": "αυ before a vowel or a voiced consonant: av",
+          "asked": "How is αυ said in Παῦλος? Παῦλος",
+          "answer": "af",
+          "right_answer": "av",
+          "right": false
+        },
+        {
+          "idea": "αυ before any other letter: af",
+          "asked": "How is αυ said in αὐξάνω? αὐξάνω",
+          "answer": "af",
+          "right_answer": "af",
+          "right": true,
+          "hinted": true
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

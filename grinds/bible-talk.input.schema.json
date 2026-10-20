@@ -162,6 +162,24 @@
               "link": { "type": "string", "minLength": 1, "maxLength": 120 }
             }
           }
+        },
+        "drill": {
+          "description": "Only on Drill it, in the talk from the results of a drill (the round Ask the tutor button there): every question of the run in the order it was asked, each with the point of the idea it tests, what was asked, the answer he gave, the right answer and whether he was right. `facts` has the idea, how the run ended and how many were right. `hinted` is true on a right answer a Hint helped with, which Drill it does not count toward Proved.",
+          "type": "array",
+          "maxItems": 14,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["idea", "asked", "answer", "right_answer", "right"],
+            "properties": {
+              "idea": { "description": "The point of the idea the question tests: a letter, a pair of look-alikes, an ending, a case.", "type": "string", "minLength": 1, "maxLength": 60 },
+              "asked": { "description": "What the question asked, with the Greek it is about.", "type": "string", "minLength": 1, "maxLength": 100 },
+              "answer": { "description": "The option he tapped.", "type": "string", "minLength": 1, "maxLength": 40 },
+              "right_answer": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "right": { "description": "true when `answer` is the right answer.", "type": "boolean" },
+              "hinted": { "type": "boolean", "const": true }
+            }
+          }
         }
       }
     },

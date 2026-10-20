@@ -24,13 +24,25 @@ export interface ScreenCredit {
   link: string;
 }
 
+/** One question of a drill as the results screen reports it (mw-5r3p30.649): the point of the idea it tests, what was asked, the answer he gave, the right answer and whether he was right. `hinted` is
+ *  set (true) only on a right answer a Hint helped with, which Drill it does not count. */
+export interface ScreenDrillAnswer {
+  idea: string;
+  asked: string;
+  answer: string;
+  right_answer: string;
+  right: boolean;
+  hinted?: true;
+}
+
 /** The screen he asks from: its name, as the screen's own title has it, and what it shows (grinds/bible-talk.input.schema.json `screen`).
- *  Settings also lists every setting it has in `settings`, so the tutor can speak of one that is off; About lists every credit in `credits`. */
+ *  Settings also lists every setting it has in `settings`, so the tutor can speak of one that is off; About lists every credit in `credits`; the results of a drill list every question in `drill`. */
 export interface ScreenContext {
   name: string;
   facts: ScreenFact[];
   settings?: ScreenSetting[];
   credits?: ScreenCredit[];
+  drill?: ScreenDrillAnswer[];
 }
 
 /** The most facts a screen sends, the longest label and the longest value (the input schema's limits). */
@@ -48,6 +60,13 @@ export const CREDIT_NAME_MAX = 40;
 export const CREDIT_USE_MAX = 160;
 export const CREDIT_LICENCE_MAX = 60;
 export const CREDIT_LINK_MAX = 120;
+
+/** The name the results of a drill go by (src/tutor/drillTalk.ts): the screen he asked from, which is no route. */
+export const DRILL_SCREEN = 'Drill it';
+
+/** The most questions a drill's results send (Drill it asks at most 14) and the longest text of one (the input schema's limits). */
+export const MAX_DRILL_ANSWERS = 14;
+export const DRILL_ANSWER_MAX = { idea: 60, asked: 100, answer: 40, right_answer: 40 } as const;
 
 /** The name each full screen but the Reader goes by (its title, or the name the Settings list has for it). */
 export const SCREEN_NAMES: Record<Exclude<Route, 'home' | 'share' | 'unlock'>, string> = {
@@ -95,6 +114,20 @@ export function fitScreen(context: ScreenContext): ScreenContext {
       .filter((c) => c.name !== '' && c.use !== '' && c.licence !== '' && c.link !== '' && c.link.length <= CREDIT_LINK_MAX)
       .slice(0, MAX_CREDITS);
   }
+  if (context.drill) {
+    const max = DRILL_ANSWER_MAX;
+    fitted.drill = context.drill
+      .map((d): ScreenDrillAnswer => ({
+        idea: cut(d.idea.trim(), max.idea),
+        asked: cut(d.asked.trim(), max.asked),
+        answer: cut(d.answer.trim(), max.answer),
+        right_answer: cut(d.right_answer.trim(), max.right_answer),
+        right: d.right,
+        ...(d.hinted ? { hinted: true as const } : {}),
+      }))
+      .filter((d) => d.idea !== '' && d.asked !== '' && d.answer !== '' && d.right_answer !== '')
+      .slice(0, MAX_DRILL_ANSWERS);
+  }
   return fitted;
 }
 
@@ -125,6 +158,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   Memory: ['What kind of notes can I keep here?', 'How do I move my notes to another phone?'],
   'Your requests': ['What happened to my idea?', 'What do the statuses mean?'],
   'Ask for more': ['What does Lampas have already?', 'What happens to what I ask for?'],
+  [DRILL_SCREEN]: ['Why did I get these wrong?', 'What should I practise next?'],
   Import: ['What words should I add to my list?', 'How do I write a word list to import?'],
   Preface: ['Why does Lampas read the Byzantine text?', 'How does the Majority text differ from the critical text?'],
   'The Case for Byzantine Priority': ['What is Robinson arguing in this essay?', 'What does "Byzantine priority" mean?', 'What do the other scholars say against it?'],

@@ -1,12 +1,14 @@
 // src/PlanDrillScreen.tsx — one short drill of Your drill plan (mw-i7xe0n.4, docs/grammar.md 'Your drill plan'): a full screen that asks 4 to 6 questions of one weak facet of an idea
 // (data/grammar/drillPlan.ts shortDrill), one at a time as Drill it draws them (GrammarCard, multiple choice), then says how many were right and whether this step of the plan is done
-// (facetPassed: one miss is allowed). It writes nothing: Done hands the verdict to onFinish (the Result of Drill it and the Review card put it on the plan, drillPlans.ts answerPlanItem).
+// (facetPassed: one miss is allowed), with the round Ask the tutor button at the foot's right end on that result (mw-5r3p30.649, as on Drill it). It writes nothing: Done hands the verdict to onFinish (the Result of Drill it and the Review card put it on the plan, drillPlans.ts answerPlanItem).
 import { useState } from 'react';
+import { DialogAskTutor } from './AskTutor';
 import { facetPassed } from './data/grammar/drillPlan';
 import type { DrillQuestion } from './data/grammar/drillIt';
 import { ideaOf } from './data/grammar/ladder';
 import { GrammarCard } from './GrammarCard';
 import { FacetLabel } from './FacetLabel';
+import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
@@ -26,6 +28,9 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
   const [index, setIndex] = useState(0);
   const [right, setRight] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
+  // every question as he answered it, for the tutor on the result, and the key this drill's talk is kept under
+  const [tries, setTries] = useState<DrillTry[]>([]);
+  const [talkKey] = useState(() => `screen.drill-it.${Date.now()}`);
   const over = index >= questions.length;
   const passed = facetPassed(right, questions.length);
   const leave = over ? () => onFinish(passed) : onClose;
@@ -37,8 +42,12 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
   const pick = (option: string) => {
     if (!question || picked !== null) return;
     setPicked(option);
+    setTries((all) => [...all, { question, picked: option, hinted: false }]);
     if (option === question.right) setRight((n) => n + 1);
   };
+  const talkScreen = over
+    ? drillScreen({ idea: ideaOf(ideaId).title, headline: `Short drill on ${facetLabel}: ${right} of ${questions.length} right`, tries })
+    : null;
   const next = () => {
     setIndex((n) => n + 1);
     setPicked(null);
@@ -72,7 +81,7 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
           </div>
         )}
       </div>
-      <FootBar>
+      <FootBar beside={over}>
         {over ? (
           <button type="button" data-testid="plan-drill-done" ref={focusOnMount} onClick={() => settled() && onFinish(passed)} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
@@ -83,6 +92,7 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
           </button>
         ) : null}
       </FootBar>
+      {talkScreen ? <DialogAskTutor kept={talkKey} screen={talkScreen} suggestions={drillSuggestions(talkScreen)} /> : null}
     </div>
   );
 }

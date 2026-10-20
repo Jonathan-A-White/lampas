@@ -42,7 +42,17 @@ export function NextBar({ children, grid, where }: { children: ReactNode; grid?:
   );
 }
 
-/** The foot of a full-screen dialog: pinned under the scrolling card, above the phone's bar. */
-export function FootBar({ children }: { children: ReactNode }) {
-  return <div className={`shrink-0 px-4 pt-2 ${BELOW_PHONE_BAR} ${LOOK}`}>{children}</div>;
+/**
+ * The foot of a full-screen dialog: pinned under the scrolling card, above the phone's bar. `beside` leaves the bar's right end to the round Ask the tutor button the dialog
+ * draws (the results of a drill, DialogAskTutor in src/AskTutor.tsx), as NextBar does for a screen's; with no licence, or the speaking bar carrying the button, the bar is as ever.
+ */
+export function FootBar({ children, beside }: { children: ReactNode; beside?: boolean }) {
+  const ai = useAiAllowed();
+  const speaking = useBarShown();
+  const room = beside && ai && !speaking ? 'pl-4 pr-19 pb-[calc(0.75rem+var(--lp-bar-inset))]' : `px-4 ${BELOW_PHONE_BAR}`;
+  return (
+    <div data-ask-beside={beside && ai && !speaking ? '' : undefined} className={`shrink-0 pt-2 ${room} ${LOOK}`}>
+      {children}
+    </div>
+  );
 }

@@ -1,7 +1,8 @@
 // src/DrillItScreen.tsx — Drill it on screen (mw-i7xe0n.3, docs/grammar.md 'Drill it on the idea sheet'): a full screen over the idea sheet that walks one idea with the engine
 // (data/grammar/drillIt.ts): the idea's title and 'Step N of M', one question at a time drawn as Review draws it (GrammarCard, multiple choice), a Hint that takes half the
 // wrong answers away and marks the answer hinted (a hinted right does not count), and Stop. At the end, the result: 'Proved' or 'You reached step N of M', then 'Strong:' and
-// 'Weak:' by facet, and Done. The screen writes nothing: it hands the finished result to onResult (the sheet keeps the run and moves the level, grammarLevels.ts recordDrill).
+// 'Weak:' by facet, and Done, with the round Ask the tutor button at the foot's right end (mw-5r3p30.649): the tutor it opens is told every question of the run, his answer, the
+// right answer and whether he was right (src/tutor/drillTalk.ts). The screen writes nothing: it hands the finished result to onResult (the sheet keeps the run and moves the level, grammarLevels.ts recordDrill).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import type { Chapter } from './data/chapter';
@@ -11,10 +12,12 @@ import { drillSeed } from './data/grammar/drillSeed';
 import { hintTakes } from './data/grammar/hint';
 import { ideaOf, type Facet } from './data/grammar/ladder';
 import type { Level } from './data/grammar/needs';
+import { DialogAskTutor } from './AskTutor';
 import { answerPlanItem, getDrillPlan, type DrillMode } from './data/repositories';
 import { FacetLabel } from './FacetLabel';
 import { GrammarCard } from './GrammarCard';
 import { PlanDrillScreen } from './PlanDrillScreen';
+import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
@@ -93,12 +96,11 @@ function DrillPlan({ result, passage }: { result: DrillResult; passage: readonly
   );
 }
 
+const headlineOf = (result: DrillResult): string =>
+  result.proved ? 'Proved' : result.edgeStep === 0 ? `You have not reached step 1 of ${result.topStep} yet` : `You reached step ${result.edgeStep} of ${result.topStep}`;
+
 function Result({ result, mode, passage }: { result: DrillResult; mode: DrillMode; passage: readonly Chapter[] | undefined }) {
-  const headline = result.proved
-    ? 'Proved'
-    : result.edgeStep === 0
-      ? `You have not reached step 1 of ${result.topStep} yet`
-      : `You reached step ${result.edgeStep} of ${result.topStep}`;
+  const headline = headlineOf(result);
   const note = result.proved
     ? 'It is solid now: proved by drill.'
     : mode === 'prove'
@@ -131,6 +133,9 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
   // the walk after the answer he has given, held until he taps Next so he can read whether he was right
   const [after, setAfter] = useState<{ walk: DrillWalk; picked: string } | null>(null);
   const [taken, setTaken] = useState<ReadonlySet<number> | null>(null);
+  // every question as he answered it, for the tutor on the results (mw-5r3p30.649), and the key this run's talk is kept under
+  const [tries, setTries] = useState<DrillTry[]>([]);
+  const [talkKey] = useState(() => `screen.drill-it.${Date.now()}`);
   const reported = useRef(false);
   const result = walk?.result ?? null;
   // Hint (and Done, after Finish) stands where Next was: a second tap of a double tap on Next lands on it, so it waits for the new card to settle
@@ -143,10 +148,14 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
     }
   }, [result, onResult]);
 
+  const talkScreen = result
+    ? drillScreen({ idea: idea.title, headline: headlineOf(result), tries, strong: result.strong.map((f) => f.label), weak: result.weak.map((f) => f.label) })
+    : null;
   const question = walk?.current ?? null;
   const pick = (option: string) => {
     if (!walk || !question || after) return;
     setAfter({ walk: answerWalk(walk, option === question.right, taken !== null), picked: option });
+    setTries((all) => [...all, { question, picked: option, hinted: taken !== null }]);
   };
   const next = () => {
     if (!after) return;
@@ -189,7 +198,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
           />
         ) : null}
       </div>
-      <FootBar>
+      <FootBar beside={result !== null}>
         {result || walk === null ? (
           <button type="button" ref={focusOnMount} onClick={() => settled() && onClose()} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
@@ -209,6 +218,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
           </button>
         )}
       </FootBar>
+      {talkScreen ? <DialogAskTutor kept={talkKey} screen={talkScreen} suggestions={drillSuggestions(talkScreen)} /> : null}
     </div>
   );
 }

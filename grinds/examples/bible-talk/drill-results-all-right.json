@@ -1,0 +1,63 @@
+{
+  "description": "He finished Drill it on the vowel pair αυ with every answer right and asks what to practise next: the answer says what he proved and points to the next idea, with nothing wrong to go over.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Drill it",
+    "question": "What should I practise next?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "screen": {
+      "name": "Drill it",
+      "facts": [
+        {
+          "label": "Idea",
+          "value": "The vowel pair αυ"
+        },
+        {
+          "label": "Result",
+          "value": "Proved"
+        },
+        {
+          "label": "Questions",
+          "value": "2 asked, 2 right, 0 wrong"
+        },
+        {
+          "label": "Strong",
+          "value": "αυ before a vowel or a voiced consonant: av; αυ before any other letter: af"
+        }
+      ],
+      "drill": [
+        {
+          "idea": "αυ before a vowel or a voiced consonant: av",
+          "asked": "How is αυ said in Παῦλος? Παῦλος",
+          "answer": "av",
+          "right_answer": "av",
+          "right": true
+        },
+        {
+          "idea": "αυ before any other letter: af",
+          "asked": "How is αυ said in αὐτός? αὐτός",
+          "answer": "af",
+          "right_answer": "af",
+          "right": true
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

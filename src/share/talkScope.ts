@@ -22,9 +22,9 @@ function bibleScope(place: Extract<TalkPlace, { kind: 'bible' }>, chapter: Chapt
   return verse ? { title, chapter, verse, ...(place.quiz ? { quiz: true } : {}) } : null;
 }
 
-/** The scope of a talk about a screen, or of a talk of its own. */
+/** The scope of a talk about a screen (kept under the key it was opened by: the results of a drill are a talk each), or of a talk of its own. */
 function plainScope(place: Extract<TalkPlace, { kind: 'screen' | 'free' }>, ref: string): TalkScope {
-  if (place.kind === 'screen') return { title: place.name, chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: place.name, facts: [] }) };
+  if (place.kind === 'screen') return { title: place.name, chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: place.name, facts: [] }), kept: ref };
   return {
     title: 'New talk',
     chapter: NO_CHAPTER,
