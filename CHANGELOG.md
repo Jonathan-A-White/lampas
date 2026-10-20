@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.376
+_2026-10-20_
+- Fixed: The reading check now listens to a long reading for up to ten minutes instead of one, and if a reading is ever cut short it tells you where it stopped.
+
 ## 0.1.375
 _2026-10-20_
 - New: In Choose a book you can type just the start of a book's name, like "ep 4:15", and it finds Ephesians 4:15; typing a name's letters in order, like "phlm", finds the book too.
