@@ -13,6 +13,7 @@ import type { AnswerWord } from './data/db';
 import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { openedByTutor } from './nav/readerRequest';
+import { openRequests } from './nav/route';
 import { TutorLinks } from './TutorLinks';
 import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
@@ -270,8 +271,8 @@ function QuizGoalOffer({ turn }: { turn: TalkTurn }) {
 }
 
 /** The tutor's offer to pass an ask Lampas cannot meet to the makers: its summary and Send this to the makers. The tap sends one feedback grist
- * through the one sender (src/services/feedback.ts): his words, the summary, the screen's name and what it showed; then the turn reads Sent. */
-function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
+ * through the one sender (src/services/feedback.ts): his words, the summary, the screen's name and what it showed; then the turn reads Sent, 'The answer will come back.' and a link to Your requests, where it does (mw-5r3p30.677). */
+function FeedbackOffer({ turn, scope, onLeave }: { turn: TalkTurn; scope: TalkScope; onLeave: () => void }) {
   const [failure, setFailure] = useState<{ failure: TutorFailure; detail: string } | undefined>();
   const sending = useOfferSending(turn.id);
   if (!turn.feedbackOffer) return null;
@@ -291,9 +292,21 @@ function FeedbackOffer({ turn, scope }: { turn: TalkTurn; scope: TalkScope }) {
       <p className="text-sm text-muted">For the makers</p>
       <p className="break-words text-lg">{summary}</p>
       {turn.feedbackSent ? (
-        <div role="status" data-offer-settled>
-          <p className="min-h-11 py-2 text-base font-medium">Sent</p>
-          <p className="text-base text-muted">The answer will come back.</p>
+        <div data-offer-settled>
+          <p role="status" className="min-h-11 py-2 text-base font-medium">Sent</p>
+          <div className="flex min-h-11 flex-wrap items-center gap-x-2 text-base">
+            <p role="status" className="text-muted">The answer will come back.</p>
+            <button
+              type="button"
+              onClick={() => {
+                onLeave();
+                openRequests('settings');
+              }}
+              className="min-h-11 text-base font-medium text-accent underline"
+            >
+              Your requests
+            </button>
+          </div>
         </div>
       ) : turn.feedbackWithdrawn ? (
         <p data-offer-settled className="min-h-11 py-2 text-base font-medium text-muted">Not sent</p>
@@ -467,7 +480,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
         <QuizGoalOffer turn={turn} />
         <SettingOffer turn={turn} />
-        <FeedbackOffer turn={turn} scope={scope} />
+        <FeedbackOffer turn={turn} scope={scope} onLeave={onLeave} />
         {turn.bridge ? <BridgeOffer bridge={turn.bridge} onTake={() => void takeBridgeOffer(turn)} /> : null}
         <GreekOfferButton turn={turn} />
         <RustyOffer turn={turn} />
@@ -617,7 +630,8 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, suggestions, shar
         const mark = box.querySelector<HTMLElement>(`[data-turn-id="${id}"] [data-offer-settled]`);
         if (!mark) continue;
         const gap = newest.getBoundingClientRect().top - mark.getBoundingClientRect().top;
-        if (gap > room.height / 2) continue;
+        // it and the first three lines of the newest answer (72 px) must fit; the half of the box it once took was met to the pixel by a mark a link's height taller (mw-5r3p30.677)
+        if (gap + 72 > room.height - 8) continue;
         box.scrollTop += mark.getBoundingClientRect().top - room.top - 8;
         return;
       }
