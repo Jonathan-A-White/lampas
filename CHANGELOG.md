@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.362
+_2026-10-20_
+- Fixed: With Immersive reader and Turn pages, the card now says to turn the page, and turning to the next page puts the bars away so the page has the whole screen.
+- Fixed: The Weave you chose in Settings now stays on if the app reloads before you go back to reading.
+- Fixed: Sharing a GIF to Lampas now tells you at once that only JPEG, PNG or WebP pictures can be read, instead of accepting it and refusing it in the talk.
+- Fixed: Lesson sheets leave a strip of the screen above them again, so a tap there closes them.
+- New: tapping a locked form in Paradigms now offers a button for each idea it needs that opens that idea.
+
 ## 0.1.361
 _2026-10-20_
 - Fixed: a long question you have pasted into Talk or Ask the tutor and not yet sent is still in the box when you close the sheet and open it again.

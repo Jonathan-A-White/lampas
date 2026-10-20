@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.1.362",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.611",
+    "kind": "fixed",
+    "text": "With Immersive reader and Turn pages, the card now says to turn the page, and turning to the next page puts the bars away so the page has the whole screen."
+  },
+  {
+    "version": "0.1.362",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.658",
+    "kind": "fixed",
+    "text": "The Weave you chose in Settings now stays on if the app reloads before you go back to reading."
+  },
+  {
+    "version": "0.1.362",
+    "date": "2026-10-20",
+    "story": "mw-s1dc0n.14",
+    "kind": "fixed",
+    "text": "Sharing a GIF to Lampas now tells you at once that only JPEG, PNG or WebP pictures can be read, instead of accepting it and refusing it in the talk."
+  },
+  {
+    "version": "0.1.362",
+    "date": "2026-10-20",
+    "story": "mw-5r3p30.655",
+    "kind": "fixed",
+    "text": "Lesson sheets leave a strip of the screen above them again, so a tap there closes them."
+  },
+  {
+    "version": "0.1.362",
+    "date": "2026-10-20",
+    "story": "mw-svw421.25",
+    "kind": "new",
+    "text": "tapping a locked form in Paradigms now offers a button for each idea it needs that opens that idea."
+  },
+  {
     "version": "0.1.361",
     "date": "2026-10-20",
     "story": "mw-5r3p30.495",
