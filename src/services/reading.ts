@@ -8,7 +8,7 @@ import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
 import type { Recording } from '../audio/recorder';
-import { extensionOf } from '../audio/recorder';
+import { extensionOf, MAX_RECORDING_MS } from '../audio/recorder';
 import { chosenAccent } from '../speech/accents';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
@@ -22,7 +22,7 @@ export const MAX_FOCUS_WORDS = 8;
 export const MAX_CHUNKS = 12;
 /** The largest index a focus word may carry (the schema's maximum). */
 export const MAX_WORD_INDEX = 2000;
-/** The latest second a focus word's times may name (the schema's maximum; a reading is kept to a minute). */
+/** The latest second a focus word's times may name (the schema's maximum; a reading is kept to MAX_RECORDING_MS, which is the same ten minutes). */
 export const MAX_SECONDS = 600;
 /** The longest respelling a focus word's `say` may be (the schema's maximum). */
 export const MAX_SAY = 60;
@@ -158,6 +158,13 @@ export function tipRespelling(tip: string): string | null {
  * capitals, since the phone's voice reads 'Levites' as LEV-its though the tip says LEE-vites (mw-5r3p30.140), else the word as written. */
 export const sayOf = (fix: { word: string; tip?: string; say?: string }, view: ReadingView = 'english'): string =>
   fix.say ?? (view === 'english' && fix.tip ? tipRespelling(fix.tip) : null) ?? fix.word;
+
+/** What the result says when the recorder's cap, not he, ended the reading (mw-5r3p30.684): how long it was heard and, of a partial reading, the last word the scorer heard, so a cut reading is never a silent partial. */
+export function cutNote(answer: VerseReadAnswer, targetText: string): string {
+  const minutes = Math.round(MAX_RECORDING_MS / 60_000);
+  const last = answer.verdict === 'partial' && answer.reached !== undefined ? wordsOfText(targetText)[answer.reached] : undefined;
+  return `Your reading was stopped after ${minutes} minutes, the longest this check hears, so only that much was heard.${last ? ` The last word I heard was “${last}”.` : ''}`;
+}
 
 /** The note and the tip as he reads them: the grind's model has written a quote as backslash-quote inside a string the JSON
  * already escapes, so a reading kept that way shows plain quote marks (mw-5r3p30.110). */

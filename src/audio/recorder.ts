@@ -1,16 +1,20 @@
 // src/audio/recorder.ts — records him reading a verse aloud: the phone's microphone through MediaRecorder, Opus where
-// the browser has it (iOS Safari gives audio/mp4), after SpellForge's recorder. A reading is cut at a minute, because the
-// scorer's short-audio limit is a minute. What comes out is one clip, sent as a grist attachment (src/services/reading.ts).
+// the browser has it (iOS Safari gives audio/mp4), after SpellForge's recorder. A reading is heard whole, however long he reads,
+// up to MAX_RECORDING_MS (ten minutes: the longest a reading's word times may name, services/reading.ts MAX_SECONDS; at 32 kbps that is about 2.4 MB,
+// inside the verse-read grind's 8 MB attachment limit, and the mill's local scorer takes a clip of any length). What comes out is one clip, sent as a
+// grist attachment (src/services/reading.ts). A reading the cap stops is marked `capped`, and the result says so (reading.ts cutNote).
 
 export interface Recording {
   blob: Blob;
   /** The clip's mime without its codec: audio/webm, audio/ogg or audio/mp4. */
   mime: string;
   durationMs: number;
+  /** the cap stopped this recording, not he: the result says the reading was cut (services/reading.ts cutNote) */
+  capped?: boolean;
 }
 
-/** The scorer takes short audio only; a reading is cut here and sent as it stands. */
-export const MAX_RECORDING_MS = 60_000;
+/** The longest reading heard: a reading is cut here and sent as it stands, marked `capped`. */
+export const MAX_RECORDING_MS = 600_000;
 
 const PREFERRED = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4', 'audio/webm'];
 const NO_MIC = 'The microphone is turned off for this page. Turn it on in the browser settings, then try again.';
@@ -49,7 +53,7 @@ export class ReadingRecorder implements HoldRecorder {
   private cap: ReturnType<typeof setTimeout> | undefined;
   private readonly onLimit: ((recording: Recording) => void) | undefined;
 
-  /** `onLimit` gets the clip when the cap stops the recording; a stop() before the cap never calls it. */
+  /** `onLimit` gets the clip, marked `capped`, when the cap stops the recording; a stop() before the cap never calls it. */
   constructor(onLimit?: (recording: Recording) => void) {
     this.onLimit = onLimit;
   }
@@ -72,7 +76,7 @@ export class ReadingRecorder implements HoldRecorder {
     this.recorder.start(1000);
     this.cap = setTimeout(() => {
       this.cap = undefined;
-      void this.stop().then((recording) => this.onLimit?.(recording));
+      void this.stop().then((recording) => this.onLimit?.({ ...recording, capped: true }));
     }, MAX_RECORDING_MS);
   }
 
