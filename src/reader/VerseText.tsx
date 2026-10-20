@@ -41,9 +41,11 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
  * space is inside so the gap between two words is tappable too. It has no horizontal padding: the gap between two words is that one space (mw-5r3p30.127). A finger held on it for half a second (`onLongPress`)
  * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
  * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
-function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
+function Tap({ onTap, onLongPress, still, lang, className, children, ...data }: {
   onTap: () => void;
   onLongPress: () => void;
+  /** read only (a verse on a card): a plain span, not a button */
+  still?: boolean;
   lang?: string;
   'data-lang'?: string;
   className?: string;
@@ -53,8 +55,18 @@ function Tap({ onTap, onLongPress, lang, className, children, ...data }: {
   'data-learning'?: string;
   'data-word'?: string;
   'data-hint'?: string;
+  'data-marked'?: string;
 }) {
   const press = useLongPress(onTap, onLongPress);
+  if (still) {
+    return (
+      <>
+        <span lang={lang} {...data} className={className}>
+          {children}
+        </span>{' '}
+      </>
+    );
+  }
   return (
     <span
       role="button"
@@ -122,9 +134,14 @@ export interface VerseProps {
   talk: VerseTalk;
 }
 
+/** How a marked word is drawn: the verse card of a Review question shows the form asked (mw-5r3p30.652). */
+const MARKED = 'font-bold underline decoration-2 underline-offset-4';
+
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
- * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). */
-export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'verse' | 'view' | 'woven' | 'onLook'>) {
+ * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). `marked` are indices into `verse.g` drawn marked (data-marked; in the English view
+ * the chunk that stands for one); `still` draws the words as plain text for a verse shown on a card, where a tap has nothing to open. */
+export function VerseText({ verse, view, woven, onLook, marked, still }: Pick<VerseProps, 'verse' | 'view' | 'woven' | 'onLook'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+  const isMarked = (c: EnglishChunk): boolean => marked !== undefined && c.g.some((i) => marked.has(i));
   const lookGreek = (w: GreekWord) =>
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
   const lookWord = (w: GreekWord, c: EnglishChunk) => onLook({ words: [w], english: c.t, fromEnglish: false });
@@ -138,7 +155,7 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
     <span data-text>
       {view === 'greek'
         ? verse.g.map((w, i) => (
-            <Tap key={i} data-word={String(i)} className={TAP_PAD} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, 'greek')}>
+            <Tap key={i} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, 'greek')}>
               {w.t}
             </Tap>
           ))
@@ -148,16 +165,16 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
             if (weft && weft.words.length > 1) {
               // Two Greek words behind one English chunk ("to you." is ὑμῖν γράφω): the wrapper only holds the chunk's marks, each word is its own target (mw-5r3p30.614).
               const words = weft.words.map((w, k) => (
-                <Tap key={k} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, 'greek')}>
+                <Tap key={k} still={still} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, 'greek')}>
                   {w.t}
                 </Tap>
               ));
               return (
-                <span key={i} data-chunk={String(i)} data-woven="" data-learning={weft.learning ? '' : undefined} {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)] text-accent">
+                <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-learning={weft.learning ? '' : undefined} {...GREEK_LANG} className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${isMarked(c) ? MARKED : ''}`}>
                   {weft.learning ? (
                     <span className="inline-flex flex-col items-center align-top leading-tight">
                       <span data-greek>{words}</span>
-                      <Tap data-hint="" lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
+                      <Tap still={still} data-hint="" lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
                         {c.t}
                       </Tap>
                     </span>
@@ -170,11 +187,13 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
             return weft ? (
               <Tap
                 key={i}
+                still={still}
                 data-chunk={String(i)}
                 data-woven=""
+                data-marked={isMarked(c) ? '' : undefined}
                 data-learning={weft.learning ? '' : undefined}
                 {...GREEK_LANG}
-                className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD}`}
+                className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD} ${isMarked(c) ? MARKED : ''}`}
                 onTap={() => lookEnglish(c)}
                 onLongPress={() => say(weft.words.map((w) => w.t).join(' '), 'greek')}
               >
@@ -190,7 +209,7 @@ export function VerseText({ verse, view, woven, onLook }: Pick<VerseProps, 'vers
                 )}
               </Tap>
             ) : (
-              <Tap key={i} data-chunk={String(i)} className={TAP_PAD} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
+              <Tap key={i} still={still} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
                 {c.s ? <SuppliedText chunk={c} /> : c.t}
               </Tap>
             );

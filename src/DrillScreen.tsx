@@ -18,6 +18,7 @@ import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
 import { GREEK_LANG } from './script/greekLang';
+import { ReferenceLink } from './markdown/ReferenceCard';
 
 interface Session {
   status: 'loading' | 'offer' | 'failed' | 'ready';
@@ -224,7 +225,10 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
                   <li key={i} data-missed={s.questions[i].lemma} className="px-3 py-2">
                     <span {...GREEK_LANG} className="block break-words font-greek text-2xl">{s.questions[i].form}</span>
                     <span className="block break-words text-sm text-muted">
-                      {s.questions[i].reference}: {s.questions[i].parsing}
+                      <ReferenceLink written={s.questions[i].reference} mark={s.questions[i].form} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">
+                        {s.questions[i].reference}
+                      </ReferenceLink>
+                      : {s.questions[i].parsing}
                     </span>
                   </li>
                 ))}
@@ -292,7 +296,11 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
       {header}
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <VerseWithWord q={question} />
-        <p className="mt-1 text-sm text-muted">{question.reference}</p>
+        <p className="mt-1 text-sm text-muted">
+          <ReferenceLink written={question.reference} mark={question.form} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">
+            {question.reference}
+          </ReferenceLink>
+        </p>
         <p data-testid="drill-step" data-step-id={step.id} className="mt-3 text-center text-xl font-semibold">
           What is the {step.label.toLowerCase()} of{' '}
           <span {...GREEK_LANG} className="font-greek text-2xl">

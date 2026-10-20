@@ -7,13 +7,18 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { loadChapter, type Chapter } from '../data/chapter';
+import { loadChapter, type Chapter, type Verse } from '../data/chapter';
 import { getLogosBible, getStudyResources } from '../data/repositories';
 import { openVerseAt } from '../nav/route';
 import { openSettingsSection } from '../settings/link';
 import { verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
 import { useSheetBack } from '../ui/sheetBack';
+import { VerseText } from '../reader/VerseText';
+import { useViewSettings } from '../reader/useViewSettings';
+import { useWoven } from '../reader/useWoven';
+import { textClass } from '../reader/textClass';
+import { langOf } from '../script/greekLang';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
 
 /** The translation the reader's English is. */
@@ -36,6 +41,31 @@ const passageOf = (chapter: Chapter, held: HeldPlace): PassageVerse[] =>
   chapter.verses
     .filter((v) => v.n >= held.first && v.n <= held.last)
     .map((v) => ({ n: v.n, text: v.e.map((c) => c.t.trim()).join(' ') }));
+
+/** The indices of the Greek words of `verse` that are `form`: the first one, which a card marks (a form that stands twice in a verse is marked at its first place). */
+const markedIn = (verse: Verse, form: string): ReadonlySet<number> => {
+  const at = verse.g.findIndex((w) => w.t === form);
+  return new Set(at < 0 ? [] : [at]);
+};
+
+/** The passage as the Reader would draw it, in his view and Weave, with the Greek word `mark` marked (mw-5r3p30.652). The words are plain text: a tap on a card opens nothing. */
+function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPlace; mark: string }) {
+  const settings = useViewSettings();
+  const woven = useWoven(chapter, settings ?? {});
+  if (!settings) return <p role="status" className="py-1 text-base text-muted">Loading…</p>;
+  const inRange = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => v.n >= held.first && v.n <= held.last);
+  return (
+    <p data-reference-text data-view={settings.view} {...langOf(settings.view === 'greek')} className={`break-words leading-snug ${textClass(settings.view)}`}>
+      {inRange.map(({ v, i }, k) => (
+        <span key={v.n}>
+          {inRange.length > 1 ? <sup className="mr-0.5 font-sans text-xs text-muted">{v.n}</sup> : null}
+          <VerseText verse={v} view={settings.view} woven={woven?.[i] ?? null} onLook={() => undefined} marked={markedIn(v, mark)} still />
+          {k < inRange.length - 1 ? ' ' : ''}
+        </span>
+      ))}
+    </p>
+  );
+}
 
 /** Settings, scrolled to the Study resources, where Logos is linked. */
 const LINK_LOGOS_HASH = '#/settings?section=resources';
@@ -103,10 +133,11 @@ function onReference(reference: HTMLElement | null, x: number, y: number): boole
   return [...(reference?.getClientRects() ?? [])].some((r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
 }
 
-function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
+function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
   useSheetBack(onClose);
   const { held } = card;
   const [passage, setPassage] = useState<Passage>(null);
+  const [chapter, setChapter] = useState<Chapter | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState<Spot | null>(null);
 
@@ -114,7 +145,11 @@ function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }:
     if (!held) return;
     let live = true;
     loadChapter(held.book, held.chapter).then(
-      (chapter) => live && setPassage(passageOf(chapter, held)),
+      (loaded) => {
+        if (!live) return;
+        setChapter(loaded);
+        setPassage(passageOf(loaded, held));
+      },
       () => live && setPassage('failed'),
     );
     return () => {
@@ -164,6 +199,8 @@ function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }:
             <p role="status" className="py-1 text-base text-muted">Loading…</p>
           ) : passage === 'failed' ? (
             <p role="status" className="py-1 text-base text-muted">This passage is not on this phone yet, and you are offline.</p>
+          ) : mark !== undefined && chapter ? (
+            <MarkedPassage chapter={chapter} held={held} mark={mark} />
           ) : (
             <p data-reference-text className="text-lg leading-snug">
               {passage.map((v, i) => (
@@ -190,10 +227,11 @@ function ReferenceCardView({ card, place, anchor, onClose, onOpen, onSettings }:
   );
 }
 
-/** A reference link in an answer: the words stay where they are; a tap opens the card. `onLeave` is called before Open opens the reader (the Talk sheet closes there).
+/** A reference link in an answer: the words stay where they are; a tap opens the card. With `mark` (a Greek form, as a Review question gives it) the card shows
+ *  the passage as the Reader draws it, in his view and Weave, with that word marked, instead of the plain English (mw-5r3p30.652). `onLeave` is called before Open opens the reader (the Talk sheet closes there).
  *  A reference found by name rather than written for the tutor's `cardOf` (Share to Lampas lists 'Song of Solomon 2:1', 'Gen. 1:28' with their book known) gives
  *  its `old` Testament place and `heading`, and a `className`, `href` (what a long press has) and `data` of its own. */
-export function ReferenceLink({ written, onLeave, old, className, href, data, children }: { written: string; onLeave?: () => void; old?: { heading: string; place: ElsewherePlace }; className?: string; href?: string; data?: Record<string, string>; children: ReactNode }) {
+export function ReferenceLink({ written, onLeave, old, mark, className, href, data, children }: { written: string; onLeave?: () => void; mark?: string; old?: { heading: string; place: ElsewherePlace }; className?: string; href?: string; data?: Record<string, string>; children: ReactNode }) {
   const card = useMemo(() => (old ? { heading: old.heading, held: null } : cardOf(written)), [written, old]);
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLAnchorElement>(null);
@@ -218,6 +256,7 @@ export function ReferenceLink({ written, onLeave, old, className, href, data, ch
         <ReferenceCardView
           card={card}
           place={old ? old.place : elsewhereOf(written)}
+          mark={mark}
           anchor={anchor}
           onClose={() => setOpen(false)}
           onOpen={() => {
