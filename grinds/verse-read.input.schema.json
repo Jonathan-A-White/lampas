@@ -7,10 +7,24 @@
   "required": ["reference", "target_text", "lang"],
   "properties": {
     "reference": { "description": "The verse he read: 'Romans 8:28'.", "type": "string", "minLength": 1, "maxLength": 80 },
-    "target_text": { "description": "The text he was to read: the English of the verse, or its Greek words in order. The mill scores the recording against it.", "type": "string", "minLength": 1 },
-    "lang": { "description": "The language the mill scores in (the grind's scoring.langs): en for English, el for the Greek read in the pronunciation pronunciation_guide describes.", "type": "string", "enum": ["en", "el"] },
+    "target_text": { "description": "The text he was to read: the English of the verse, its Greek words in order, or, with `segments`, the verse as the weave showed it (the Greek words in Greek and the English in English, in the order drawn). The mill scores the recording against it.", "type": "string", "minLength": 1 },
+    "lang": { "description": "The language the mill scores in (the grind's scoring.langs): en for English, el for the Greek read in the pronunciation pronunciation_guide describes. A woven reading says en and lists its pieces in `segments`.", "type": "string", "enum": ["en", "el"] },
+    "segments": {
+      "description": "Optional. Only with a woven reading (the weave showed some of the verse in Greek and he read it as shown: Greek words in Greek, English in English): the verse in the order it was drawn, in pieces, each with the language he read it in. `target_text` is their text joined with single spaces, so a word's index counts the same in both. The mill's scorer turns each piece to IPA in its own language and scores the whole reading word by word, so a word read in the language shown is not an error; `lang` is en and is not used. A piece in el is read in the pronunciation pronunciation_guide describes.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "lang"],
+        "properties": {
+          "text": { "type": "string", "minLength": 1 },
+          "lang": { "type": "string", "enum": ["en", "el"] }
+        }
+      }
+    },
     "greek_words": {
-      "description": "Optional. Only with a Greek reading (lang el): the words of `target_text`, in text order, each with its form as it stands in the text, its lemma (the dictionary form), the lexicon's gloss and its parsing in plain words, from the app's own chapter data, and the app's respelling, syllables and stress of the form; a word the text repeats with the same lemma and parsing is listed once. For a long passage the list may stop part-way.",
+      "description": "Optional. Only with a Greek reading (lang el) or a woven one (the pieces of `segments` in el): the words of `target_text`, in text order, each with its form as it stands in the text, its lemma (the dictionary form), the lexicon's gloss and its parsing in plain words, from the app's own chapter data, and the app's respelling, syllables and stress of the form; a word the text repeats with the same lemma and parsing is listed once. For a long passage the list may stop part-way.",
       "type": "array",
       "items": {
         "type": "object",
