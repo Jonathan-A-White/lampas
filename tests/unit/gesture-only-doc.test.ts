@@ -17,12 +17,6 @@ const CONTROLS = [
   'Previous page',
   'Hear it',
   'Hear the verse',
-  'Pan up',
-  'Pan down',
-  'Pan left',
-  'Pan right',
-  'Zoom in',
-  'Zoom out',
   'Done',
 ];
 
@@ -35,7 +29,7 @@ function sources(dir: string): string {
 describe('the gesture-only actions', () => {
   it('docs/accessibility.md has the section, with a row for each gesture of the app', () => {
     expect(section).not.toBe('');
-    for (const gesture of ['Tap with two fingers', 'Tap on the outer thirds', 'Swipe left or right: the next or previous chapter', 'Long press on a word', 'Hold a bar', 'Swipe down on a sheet', 'Double tap']) {
+    for (const gesture of ['Tap with two fingers', 'Tap on the outer thirds', 'Swipe left or right: the next or previous chapter', 'Long press on a word', 'Hold a bar', 'Swipe down on a sheet', 'Pinch and drag the grammar ladder graph', 'Double tap']) {
       expect(section, `no row for: ${gesture}`).toContain(gesture);
     }
   });
@@ -45,6 +39,12 @@ describe('the gesture-only actions', () => {
       expect(section, `${name} is not in the section`).toContain(`\`${name}`);
       expect(src, `${name} is not a control in src`).toContain(name);
     }
+  });
+  it('the whole path has no buttons for its gestures: the keys on the graph are the way (mw-5r3p30.650)', () => {
+    const graph = readFileSync('src/LadderGraph.tsx', 'utf8');
+    for (const gone of ['Pan up', 'Pan down', 'Pan left', 'Pan right', 'Zoom in', 'Zoom out']) expect(graph, `${gone} is a button no longer`).not.toContain(gone);
+    for (const key of ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']) expect(graph).toContain(key);
+    expect(section).toContain('arrow keys');
   });
   it('src/ReaderControls.tsx draws the Reader\'s four', () => {
     const text = readFileSync('src/ReaderControls.tsx', 'utf8');
