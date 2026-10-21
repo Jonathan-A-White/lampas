@@ -7,6 +7,7 @@ import { ideaSound, ideaText, soundLesson } from '../../src/data/grammar/lessons
 import { buildIdeaQuestion, buildLetter } from '../../src/data/grammar/questions';
 import { quickQuestion } from '../../src/data/grammar/quickRound';
 import { mulberry32 } from '../../src/data/quiz';
+import { MARK_PAIRS } from '../../src/data/grammar/marks';
 import { soundWords } from '../../src/speech/accents';
 import { lessonsOf, registerPronunciation, pronunciationOf, type Pronunciation } from '../../src/speech/pronunciation';
 import { MODERN, respellModern } from '../../src/speech/schemes/modern';
@@ -119,12 +120,32 @@ describe('the accents and the marks that change a word are taught by the scheme'
 
   it('gives Modern Greek\'s sound of them from its lessons', () => {
     expect(lessonsOf(modern).accents.also).toContain('said louder in Modern Greek');
-    expect(lessonsOf(modern)['marks-change-word'].also).toContain('Modern Greek says each pair the same');
+    expect(lessonsOf(modern)['marks-change-word'].also).toContain('only the mark tells them apart');
     expect(ideaText(ideaOf('accents'), modern).startsWith(ideaOf('accents').text)).toBe(true);
     expect(ideaText(ideaOf('marks-change-word'), modern).startsWith(ideaOf('marks-change-word').text)).toBe(true);
     expect(soundLesson(ideaOf('accents'), modern)).toBe(lessonsOf(modern).accents.also);
     expect(ideaText(ideaOf('accents'), modern)).toContain('said louder in Modern Greek');
-    expect(ideaText(ideaOf('marks-change-word'), modern)).toContain('Modern Greek says each pair the same');
+    expect(ideaText(ideaOf('marks-change-word'), modern)).toContain('only the mark tells them apart');
+  });
+
+  // his report (2026-10-21): the sheet said Modern Greek says each pair the same, but ἀλλά/ἄλλα and αὐτή/αὕτη differ in where the stress falls
+  it('says a pair whose accent sits on another syllable is said with the stress moved, and the others the same, in respellModern\'s own respellings', () => {
+    const also = lessonsOf(modern)['marks-change-word'].also ?? '';
+    expect(also).not.toMatch(/each pair the same/);
+    // the pairs said alike: a breathing or the kind of accent on one syllable
+    for (const [a, b] of MARK_PAIRS.filter((p) => respellModern(p.a.word) === respellModern(p.b.word)).map((p) => [p.a.word, p.b.word])) {
+      expect(respellModern(a), `${a}/${b}`).toBe(respellModern(b));
+    }
+    expect(respellModern('ἡ')).toBe('ee');
+    expect(respellModern('ἤ')).toBe('ee');
+    expect(also).toContain('ἡ and ἤ are both “ee”');
+    // the pairs said apart: the stress moves
+    const moved = MARK_PAIRS.filter((p) => respellModern(p.a.word) !== respellModern(p.b.word)).map((p) => [p.a.word, p.b.word]);
+    expect(moved).toEqual([['ἀλλά', 'ἄλλα'], ['αὐτή', 'αὕτη']]);
+    for (const [a, b] of moved) {
+      expect(also, a).toContain(`${a} is “${respellModern(a)}” and ${b} is “${respellModern(b)}”`);
+    }
+    expect(also).toContain('stress');
   });
 
   it('gives another scheme\'s lesson of them, and Modern Greek\'s never', () => {

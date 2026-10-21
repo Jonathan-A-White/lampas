@@ -1,6 +1,6 @@
 // src/speech/schemes/modernLessons.ts — what Modern Greek teaches of each sound-bearing idea of the grammar ladder (mw-5r3p30.229): the sound of
 // each letter, vowel pair and consonant pair, the breathings, which Modern Greek does not say, and the accents and the marks that change a word
-// (mw-5r3p30.312: the stress is said louder, and a mark is not heard, each one sentence after the ladder's own text). The sounds are the ones modern.ts respells by
+// (mw-5r3p30.312: the stress is said louder, and a mark is not heard unless it moves the stress, each a short passage after the ladder's own text). The sounds are the ones modern.ts respells by
 // (docs/pronunciation.md lists the rules; tests/unit/sound-lessons.test.ts holds each to respellModern), each said through `say`, which gives the
 // symbol the respelling writes and the reader's English accent's hint for it (mw-5r3p30.352: no English word is written here).
 import type { SoundWords } from '../accents';
@@ -92,6 +92,8 @@ export function modernLessons(say: SoundWords): Readonly<Record<string, SoundLes
   };
   // the ladder's text of these two holds the spelling and the glosses; the lesson adds how Modern Greek says them (mw-5r3p30.312)
   lessons.accents = { also: 'The stressed syllable is said louder in Modern Greek, and the three marks sound alike.' };
-  lessons['marks-change-word'] = { also: 'Modern Greek says each pair the same, so only the mark tells them apart.' };
+  lessons['marks-change-word'] = {
+    also: 'Most pairs differ by a breathing, which Modern Greek does not say, or by the kind of accent on the same syllable, and it says those the same, so only the mark tells them apart: ἡ and ἤ are both “ee”. Where the accent sits on another syllable the stress moves, and the two are said differently: ἀλλά is “a-LA” and ἄλλα is “A-la”, αὐτή is “af-TEE” and αὕτη is “AF-tee”.',
+  };
   return lessons;
 }
