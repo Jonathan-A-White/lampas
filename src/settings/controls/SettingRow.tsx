@@ -15,8 +15,9 @@ export function Section({ id, title, hint, labelled, children }: { id?: string; 
   );
 }
 
-/** The row's longer help, behind a small 'More help' that sits on the hint's line (its tap area reaches 44 px without costing height); open, it has the
- * small Read aloud speaker at its right (mw-5r3p30.393). */
+/** The row's longer help, behind a quiet 'More help' that sits on the hint's line (its tap area reaches 44 px without costing height); open, it is a card of
+ * the theme's surface with a line border and an accent bar at its left, the words in the reading colour and the small Read aloud speaker at its right
+ * (mw-5r3p30.393, look mw-5r3p30.702). Every Settings row that has a help gets it from here. */
 export function MoreHelp({ text, id: rowKey }: { text: string; id?: string }) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -27,15 +28,17 @@ export function MoreHelp({ text, id: rowKey }: { text: string; id?: string }) {
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen(!open)}
-        className="relative ml-2 text-base font-medium text-accent underline before:absolute before:-inset-x-2 before:-inset-y-3"
+        className="relative ml-2 text-base font-medium text-fg underline decoration-muted underline-offset-4 before:absolute before:-inset-x-2 before:-inset-y-3"
       >
         {open ? 'Less help' : 'More help'}
       </button>
       {open ? (
-        <span id={id} className="mt-1 flex items-start gap-2 text-base text-muted">
-          <span className="min-w-0 flex-1 self-center">{text}</span>
+        <div id={id} data-help-panel className="mt-2 flex items-start gap-2 rounded-lg border border-l-4 border-line border-l-accent bg-surface p-3 text-base text-fg">
+          <p data-help-text className="min-w-0 flex-1 self-center">
+            {text}
+          </p>
           <ReadAloud id={`help:${rowKey ?? text}`} text={proseOf([text])} />
-        </span>
+        </div>
       ) : null}
     </>
   );
