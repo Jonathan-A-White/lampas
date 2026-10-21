@@ -651,6 +651,12 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 40
+              },
+              "place": {
+                "description": "A book whose request entry has `places` only: where in the book to open it, written as that entry says (book.chapter, such as 3.24, or book.chapter.section, such as 3.21.5). Leave it out for a commentary, and for a book with no `places`, and when you do not know the chapter that treats the question: the book then opens at its start.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20
               }
             }
           },
