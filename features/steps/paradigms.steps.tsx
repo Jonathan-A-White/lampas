@@ -577,7 +577,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
-  Scenario("Ask the tutor hands the table's name and the revealed forms to the tutor", ({ Given, And, When, Then }) => {
+  Scenario('Ask the tutor hands the table, the mode, the revealed forms and the cell he is on to the tutor', ({ Given, And, When, Then }) => {
     Given('the table {string} is open to Drill, with a fake Postern', async (_, id: string) => {
       behindFakePostern();
       openAt(`#/paradigms?t=${id}&mode=drill`);
@@ -590,23 +590,24 @@ describeFeature(feature, ({ Background, Scenario }) => {
     When('he taps Ask the tutor', async () => {
       await user.click(await screen.findByRole('button', { name: 'Ask the tutor' }));
     });
-    Then('the reader is open on Romans 8 and the Talk sheet is titled {string}', async (_, title: string) => {
-      const sheet = await screen.findByRole('dialog', { name: /^Talk about / });
+    Then('the table is still open and the Talk sheet is titled {string}', async (_, title: string) => {
+      const sheet = await screen.findByRole('dialog', { name: /^Ask the tutor: / });
       expect(sheet).toHaveAccessibleName(title);
-      expect(window.location.hash).toMatch(/^#\/\?/);
+      expect(window.location.hash).toMatch(/^#\/paradigms\?t=article/);
     });
     And('the mill received {int} grist for the lampas app, kind bible-talk', async (_, count: number) => {
       await waitFor(() => expect(fake?.received).toHaveLength(count));
       expect(fake?.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk', v: '1' });
     });
-    And('the grist carries the focus paradigm {string} with the revealed forms {string} and {string}', (_, table: string, a: string, b: string) => {
-      expect(fake?.received[0].input.focus).toEqual({ kind: 'paradigm', table, revealed: [a, b] });
+    And('the grist carries the focus paradigm {string} in Drill with the revealed forms {string} and {string}, on the cell {string}', (_, table: string, a: string, b: string, cell: string) => {
+      const form = [a, b].find((shown) => shown.startsWith(`${cell}: `))?.slice(cell.length + 2);
+      expect(fake?.received[0].input.focus).toEqual({ kind: 'paradigm', table, mode: 'drill', revealed: [a, b], cell: { parse: cell, form } });
     });
     And('the grist question names the table {string}', (_, table: string) => {
       expect(String(fake?.received[0].input.question)).toContain(table);
     });
-    And('a reader request for the table {string} was published', async (_, table: string) => {
-      await expectLatest('reader-requested', (e) => expect(e).toMatchObject({ action: 'paradigm', table, book: 'rom', chapter: 8 }));
+    And('no request was made of the Reader', async () => {
+      await expectLatest('reader-requested', (e) => expect(e).toBeUndefined());
     });
   });
 
