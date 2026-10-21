@@ -16,7 +16,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { typeQuestion } from '../../tests/support/composer';
+import { messageBox, typeQuestion } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 
@@ -85,7 +85,7 @@ async function askFromGoal(question: string, answer: Record<string, unknown>): P
   fake.received.length = 0;
   fake.autoReply = { status: 'answered', answer: { ...TALK_ANSWER, words: [], ...answer } };
   await user.click(await screen.findByRole('button', { name: CONTROL }));
-  await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), question);
+  await user.type(await messageBox(user, sheet()), question);
   await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
 }
 

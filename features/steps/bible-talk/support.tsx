@@ -14,6 +14,7 @@ import { clearBus } from '../../../src/events/bus';
 import { tutorTimings } from '../../../src/services/tutor';
 import { stopReading } from '../../../src/speech/readAloud';
 import { stubChapterFetch } from '../../../tests/support/chapter-fetch';
+import { messageBox } from '../../../tests/support/composer';
 import { stubClipboard } from '../../../tests/support/exchange';
 import { type FakePostern, POSTERN_ORIGIN, TALK_ANSWER, makeFakePostern } from '../../../tests/support/fake-postern';
 import { ENGLISH_VOICE, type FakeSynth, GREEK_VOICE, stubSpeech } from '../../../tests/support/fake-speech';
@@ -113,10 +114,17 @@ export async function openTalk(): Promise<void> {
 export const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 export const field = () => within(sheet()).getByRole('textbox', { name: 'Your message' });
 export const sendButton = () => within(sheet()).getByRole('button', { name: 'Send' });
+/** The Talk sheet's input is voice-kit's Composer (mw-06ggew.15): Send is not drawn while nothing is in the box and a sent one's box gives way to the bar. Nothing can be sent while Send is absent or disabled. */
+export const sendIsOff = (): boolean => {
+  const button = within(sheet()).queryByRole('button', { name: 'Send' });
+  return button === null || (button as HTMLButtonElement).disabled;
+};
+/** The composer takes a message: it is not disabled for a message that is out (its buttons are enabled). */
+export const composerIsFree = () => expect(within(sheet()).getByRole('button', { name: 'Attach a picture' })).toBeEnabled();
 export const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 
 export async function send(question: string): Promise<void> {
-  await user.type(field(), question);
+  await user.type(await messageBox(user, sheet()), question);
   await user.click(sendButton());
 }
 
@@ -127,7 +135,7 @@ export async function sendAndWait(question: string): Promise<void> {
   const before = turns().length;
   await send(question);
   await turnsKept(before + 1);
-  await waitFor(() => expect(field()).toBeEnabled());
+  await waitFor(composerIsFree);
 }
 
 export async function turnsKept(n: number): Promise<void> {

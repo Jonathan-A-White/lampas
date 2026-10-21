@@ -13,6 +13,8 @@ import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { messageBox } from '../../tests/support/composer';
+import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 
@@ -45,6 +47,8 @@ async function reset(): Promise<void> {
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
+  // a phone that can recognise speech: the Talk sheet's composer draws its Hold to talk bar only then
+  stubRecognizer();
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE, HEBREW_VOICE]);
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
@@ -64,7 +68,7 @@ async function reset(): Promise<void> {
 }
 
 async function sendMessage(text: string): Promise<void> {
-  await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), text);
+  await user.type(await messageBox(user, sheet()), text);
   await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
 }
 

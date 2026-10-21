@@ -11,7 +11,8 @@ import { db } from '../../../src/data/db';
 import { stopReading } from '../../../src/speech/readAloud';
 import { type FakePostern, TALK_ANSWER } from '../../../tests/support/fake-postern';
 import { seedHisWords } from '../../../tests/support/his-words';
-import { QUESTION, answerShowsUnderQuestion, endScenario, fake, field, open, openTalk, selectVerse28, send, sendButton, sheet, taps, turns, turnsKept, user } from './support';
+import { QUESTION, answerShowsUnderQuestion, composerIsFree, endScenario, fake, field, open, openTalk, selectVerse28, send, sendButton, sendIsOff, sheet, taps, turns, turnsKept, user } from './support';
+import { messageBox } from '../../../tests/support/composer';
 
 const feature = await loadFeature('features/bible-talk.feature');
 
@@ -143,8 +144,9 @@ describeFeature(
       Then('the sheet says Waiting and nothing can be sent until the answer comes', async () => {
         const status = await within(sheet()).findByRole('status');
         await waitFor(() => expect(status).toHaveTextContent(/^Waiting for the tutor… \d+ s$/));
-        expect(field()).toBeDisabled();
-        expect(sendButton()).toBeDisabled();
+        // the Composer is disabled while the message is out: no attaching, no holding, no Send (its text box stays editable)
+        expect(within(sheet()).getByRole('button', { name: 'Attach a picture' })).toBeDisabled();
+        expect(sendIsOff()).toBe(true);
         expect(within(sheet()).getByText(QUESTION)).toBeInTheDocument();
       });
       // the question reaches the mill a moment after Send: the fake's answer waits for it
@@ -184,7 +186,7 @@ describeFeature(
       );
       And('the sheet has no unsent question and its field is free', async () => {
         expect(sheet().querySelector('[data-talk-pending]')).toBeNull();
-        await waitFor(() => expect(field()).toBeEnabled());
+        await waitFor(composerIsFree);
         expect(await db.talks.count()).toBe(0);
       });
     });
@@ -204,11 +206,11 @@ describeFeature(
       Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
       When('he opens Talk', openTalk);
       Then('the Send button is off', () => {
-        expect(sendButton()).toBeDisabled();
+        expect(sendIsOff()).toBe(true);
       });
-      When('he types {string}', (_, text: string) => user.type(field(), text));
+      When('he types {string}', async (_, text: string) => user.type(await messageBox(user, sheet()), text));
       Then('the Send button is still off', () => {
-        expect(sendButton()).toBeDisabled();
+        expect(sendIsOff()).toBe(true);
       });
       When('he types {string} instead', (_, text: string) => user.clear(field()).then(() => user.type(field(), text)));
       Then('the Send button is on', () => {

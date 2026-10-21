@@ -1,11 +1,12 @@
 // src/Talk.tsx — Bible talk: the Talk bar at the bottom of the reader and the bottom sheet it opens, a conversation about the
 // chapter or the selected verse. The sheet shows the turns so far (kept per chapter and per verse, src/data/repositories/talks.ts),
-// a field, Send and, last at the foot, Postern's hold-to-talk bar; what a message is doing is src/useTalk.ts's. He can talk instead of typing
-// (src/talk/useTalkHold.ts over voice-kit's useTalk): the Talk bar held for half a second, a verse number held, or the sheet's own hold-to-talk bar; his words
-// show live while he holds and go on release. Each answer can be heard (read aloud through
+// and, last at the foot, voice-kit's Composer (Postern's compose button, as in Ask the tutor: Hold to talk, Type a message, Attach a picture, Take a photo, mw-06ggew.15);
+// what a message is doing is src/useTalk.ts's. He can talk instead of typing: the Composer's own bar, or (src/talk/useTalkHold.ts over voice-kit's TalkBar) the Talk bar held
+// for half a second or a verse number held; his words show live while he holds and go on release. Each answer can be heard (read aloud through
 // src/speech/readAloud.ts, a Stop while it plays) and its Greek words open the word sheet.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Waiting } from './Ask';
 import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
 import type { GreekWord } from './data/chapter';
@@ -29,11 +30,12 @@ import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkSc
 import { HebrewSoundGuide } from './script/HebrewGuide';
 import { HebrewAskContext } from './script/hebrewSpeech';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
-import { registerOutbox } from './talk/outbox';
-import { pastedPictures, PICTURE_ONLY_QUESTION, type OutgoingPicture } from './talk/pictures';
-import { PictureControls } from './talk/PictureControls';
+import { dataUrlOf, isTalkPicture, NOT_A_PICTURE_LINE, PICTURE_ONLY_QUESTION, preparePictures, TALK_MAX_PICTURES, TOO_MANY_TO_SEND_LINE, type OutgoingPicture } from './talk/pictures';
 import { PictureThumbs, TurnPictures } from './talk/TurnPictures';
-import { usePictureBox, type BoxPicture } from './talk/usePictureBox';
+import { holdBegan, holdEnded } from './talk/holding';
+import { registerKeeper } from './talk/keptWords';
+import { askTranscriber } from './speech/askTranscriber';
+import { tapWord, useTalkSettings } from './talkSettings';
 import { stopAnswer, stopAnswerSpeech } from './speech/readAloud';
 import { stopOnTap } from './speech/tutorVoice';
 import { SEND_A_SCREENSHOT } from './tutor/screen';
@@ -71,13 +73,44 @@ export function ReaderTalkBar({ hold, onPress, onTap }: { hold: TalkHold; onPres
 /** The Reader's bar says Talk whatever it is doing, a finger slid off it too (it is the colour that changes, and the sheet over it says what to do). */
 const TALK_BAR_LABELS = { hold: 'Talk', release: 'Talk', starting: 'Talk', tryAgain: 'Talk', stop: 'Talk', drop: 'Talk' };
 
-/** What the sheet's bar says, as Postern's does: Hold to talk, Starting the mic…, Release to send (the kit's own words). */
-function HoldToTalk({ voice, disabled, round }: { voice: TalkHold; disabled: boolean; round: boolean }) {
-  return <HeldTalkBar hold={voice} disabled={disabled} fit={round ? 'round' : 'compact'} labels={SHEET_BAR_LABELS} />;
+/** A picture in flight: what draws it under his question. */
+interface InFlight {
+  key: number;
+  url: string;
 }
 
-/** The sheet's bar keeps its name Hold to talk after a failed hold too, as the sheet's notice says why. */
-const SHEET_BAR_LABELS = { tryAgain: 'Hold to talk' };
+/** The sheet's words for the kit's Composer: Postern's, with the names the sheet has always had for its field and its picture buttons. */
+const TALK_LABELS: Partial<ComposerLabels> = {
+  hold: 'Hold to talk', // tapWord makes it Tap to talk while Talk is Tap
+  tryAgain: 'Hold to talk', // the bar keeps its name after a failed hold too, as the notice says why
+  message: 'Your message',
+  typeInstead: 'Type a message',
+  placeholder: 'Type a message',
+  attach: 'Attach a picture',
+  camera: 'Take a photo',
+  toSend: 'Pictures to send',
+};
+
+/** The kit's Send arrow, drawn here so the button can point at the count that says why it is off (aria-describedby): the kit's own Send cannot. */
+function SendArrow({ slot, why }: { slot: SendSlot; why: string | undefined }) {
+  return (
+    <button
+      type="button"
+      aria-label={slot.label}
+      aria-describedby={why}
+      disabled={slot.busy || slot.disabled || slot.blocked || !slot.canSend}
+      onClick={slot.send}
+      className={`bk-composer__button ${slot.placement === 'bar' ? 'bk-composer__bar-send' : 'bk-composer__send'}`}
+    >
+      <svg className="bk-composer__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        <path d="M4 12 20 4l-4.5 16-3.5-6.5L4 12Zm8 1.5L20 4" />
+      </svg>
+    </button>
+  );
+}
+
+/** Only pictures of the kinds the grind takes go in the composer's waiting row. */
+const refuseNonPicture = (file: { type: string }): string | undefined => (isTalkPicture(file) ? undefined : NOT_A_PICTURE_LINE);
 
 /** The speaker under an answer: reads it, or stops it while it is being read (a tutor's answer read by itself is read under the turn's id, so the button knows). */
 function AnswerSpeaker({ turn }: { turn: TalkTurn }) {
@@ -507,14 +540,12 @@ function Suggestions({ questions, onAsk, label }: { questions: string[]; onAsk: 
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, voice, opened, suggestions, shared, onSay, onResume, onHelp, onAskTerm, onSkip, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, shared, onSay, onResume, onHelp, onAskTerm, onSkip, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
   /** what the last message of this conversation is doing; undefined when it is done */
   state: AskState | undefined;
-  /** push-to-talk: the sheet's own bar holds through this, and his words live while he holds, and what went wrong */
-  voice: TalkHold;
   /** the hold that opened the sheet (the Reader's Talk bar or a verse number): its words show live too, and what went wrong with it */
   opened?: TalkHold;
   /** questions fitted to where he asks from (src/tutor/screen.ts): shown as buttons while nothing has been said, a tap sends one */
@@ -569,8 +600,10 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, opened, suggestio
   // The word sheet above this one takes the Escape.
   useEscapeToClose(onClose, lookup === null);
   useSheetBack(onClose);
-  const live = opened?.listening ? opened : voice;
-  const notice = voice.notice ?? opened?.notice;
+  // the hold that opened the sheet (the Talk bar, a verse number) is drawn here; the sheet's own hold is the Composer's, which draws its own words and notice
+  const live = opened?.listening ? opened : undefined;
+  const notice = opened?.notice;
+  const talkSettings = useTalkSettings();
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   // Once there is a talk the suggestions he has not used are still offered, under the last answer (or the failure of the first question).
   const asked = new Set([...(turns ?? []).map((t) => t.q), ...(state ? [state.question] : [])]);
@@ -701,64 +734,53 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, opened, suggestio
   }, [turns]);
   // Closing the sheet takes its answer's speech with it; an answer that waits for his return keeps its bar (mw-5r3p30.323).
   useEffect(() => () => stopAnswerSpeech(), []);
+  // The words of a hold that did not end in a release (a slide off the Talk bar, the recogniser failing) wait in the field, unsent (src/talk/keptWords.ts).
+  const composer = useRef<HTMLDivElement>(null);
+  useEffect(
+    () =>
+      registerKeeper((words) =>
+        setText((now) => {
+          const kept = now.trim() ? `${now.trim()} ${words}` : words;
+          return kept;
+        }),
+      ),
+    [],
+  );
   // A phone with no recogniser sends a hold to the typed field.
-  const field = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
-    if (voice.typing + (opened?.typing ?? 0) > 0) focusQuietly(field.current);
-  }, [voice.typing, opened?.typing]);
-  // The box grows upward with his words, line by line (its CSS holds it between one or two lines and five, then it scrolls); it is measured again
-  // when the window changes shape, since the same words take other lines in another width.
-  useLayoutEffect(() => {
-    const grow = (): void => {
-      const el = field.current;
-      if (!el) return;
-      el.style.height = 'auto';
-      if (el.scrollHeight > 0) el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
-    };
-    grow();
-    window.addEventListener('resize', grow);
-    return () => window.removeEventListener('resize', grow);
-  }, [text]);
+    if ((opened?.typing ?? 0) > 0) focusQuietly(composer.current?.querySelector('textarea') ?? null);
+  }, [opened?.typing]);
 
-  // The pictures waiting to go (attached, taken or pasted) and, from Send until the answer, the ones in flight, shown under his question.
-  const box = usePictureBox();
-  const [inFlight, setInFlight] = useState<BoxPicture[]>([]);
-  const { take } = box;
-  const takeWaiting = useCallback((): OutgoingPicture[] => {
-    const taken = take();
-    if (taken.length > 0) setInFlight(taken);
-    return taken;
-  }, [take]);
-  // The words he holds to say go with the pictures he has put in (src/talk/outbox.ts).
-  useEffect(() => registerOutbox(takeWaiting), [takeWaiting]);
-  // The pictures that came in through the share sheet wait in the composer, once.
-  const { add: addToBox } = box;
+  // The pictures in flight, from Send until the answer, shown under his question. The ones waiting to go are the Composer's: it adds a picked, taken or pasted file to its
+  // row; each is cut down on the phone as Send is pressed (src/talk/pictures.ts preparePictures), and a message that cannot go keeps them in the row.
+  const [inFlight, setInFlight] = useState<InFlight[]>([]);
+  // The shared pictures wait in the composer, once (Composer.incomingFiles adds each new list once).
   const sharedFiles = shared?.files;
-  const placed = useRef<File[] | undefined>(undefined);
-  useEffect(() => {
-    if (!sharedFiles?.length || placed.current === sharedFiles) return;
-    placed.current = sharedFiles;
-    addToBox(sharedFiles);
-  }, [sharedFiles, addToBox]);
-  const hasPictures = box.pictures.length > 0;
   // 'Send a screenshot' (a suggestion) opens the picker where the composer's attach button would, and sends no words
-  const openPicker = useRef<(() => void) | null>(null);
-  const registerPicker = useCallback((open: (() => void) | null) => {
-    openPicker.current = open;
-  }, []);
-  // words or pictures waiting to go: Send is on screen and, in a short window, the hold bar gives way to a round mic button
-  const composing = text.length > 0 || hasPictures;
+  const openPicker = (): void => composer.current?.querySelector<HTMLButtonElement>(`button[aria-label="${TALK_LABELS.attach}"]`)?.click();
   // a question past the cap stays in the box, never cut; Send is off and the count says why (src/services/requestBudget.ts MAX_QUESTION_CHARS)
   const tooLong = isTooLong(text, MAX_TALK_CHARS);
-  const send = (message: string): void => {
-    if ((!message.trim() && !hasPictures) || message.trim().length > MAX_TALK_CHARS || busy || box.working) return;
-    // a message of pictures alone asks what the pictures say
-    onSay(message.trim() || PICTURE_ONLY_QUESTION, undefined, takeWaiting());
-    setText('');
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const sendMessage = async ({ text: said, files }: ComposerMessage): Promise<boolean> => {
+    const message = said.trim();
+    if ((!message && files.length === 0) || message.length > MAX_TALK_CHARS || busy) return false;
+    if (files.length > TALK_MAX_PICTURES) throw new Error(TOO_MANY_TO_SEND_LINE);
+    // the pictures are cut down first (an Error says which could not be used, and the row keeps them); a message of pictures alone asks what the pictures say
+    const pictures = await preparePictures(files);
+    if (!mounted.current) return false;
+    if (pictures.length > 0) setInFlight(pictures.map((p, i) => ({ key: i, url: dataUrlOf(p.bytes, p.mime) })));
+    onSay(message || PICTURE_ONLY_QUESTION, undefined, pictures);
+    return true;
   };
   const ask = (question: string): void => {
-    if (question === SEND_A_SCREENSHOT) openPicker.current?.();
-    else send(question);
+    if (question === SEND_A_SCREENSHOT) openPicker();
+    else if (question.trim() && !busy) onSay(question.trim());
   };
   // A Hebrew word of an answer, in its guide, asks how it is said: a sound question with the word as its focus (mw-5r3p30.98).
   const hebrew = useMemo(
@@ -782,13 +804,6 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, opened, suggestio
           aria-labelledby={titleId}
           style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
           className="relative flex h-[85dvh] flex-col short:h-dvh rounded-t-2xl border-t border-line bg-surface"
-          onPaste={(e) => {
-            // a copied screenshot becomes an attachment; copied text pastes as it always did
-            const pasted = pastedPictures(e);
-            if (pasted.length === 0) return;
-            e.preventDefault();
-            box.add(pasted);
-          }}
         >
           <div data-testid="sheet-handle" {...handle} className="relative flex shrink-0 touch-none flex-col items-center px-4 pt-2">
             <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
@@ -838,7 +853,7 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, opened, suggestio
             </HebrewAskContext.Provider>
             {state ? (
               <div data-talk-pending className="space-y-2">
-                {inFlight.length > 0 ? <PictureThumbs pictures={inFlight.map((p) => ({ key: p.id, url: p.url }))} /> : null}
+                {inFlight.length > 0 ? <PictureThumbs pictures={inFlight.map((p) => ({ key: p.key, url: p.url }))} /> : null}
                 {state.phase === 'failed' ? (
                   <PendingQuestion text={state.question} />
                 ) : (
@@ -870,46 +885,38 @@ export function TalkSheet({ scope, talkRef: ref, state, voice, opened, suggestio
             {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={ask} label="Ask something else" /> : null}
           </div>
           <BarSlot level={3} />
-          <div data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))] short:flex short:flex-wrap short:items-end short:gap-x-2 short:space-y-0 short:gap-y-2">
-            {live.listening ? (
-              <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2 short:basis-full">
+          <div ref={composer} data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
+            {live?.listening ? (
+              <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">
                 <p className="text-sm font-medium text-bad">{live.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
                 <p className="min-h-7 break-words text-lg">{live.transcript}</p>
               </div>
             ) : null}
             {notice ? (
-              <p role="alert" className="break-words text-base text-bad short:basis-full">
+              <p role="alert" className="break-words text-base text-bad">
                 {notice}
               </p>
             ) : null}
-            <PictureControls box={box} disabled={busy} registerPicker={registerPicker} />
-            <LengthNote id={countId} text={text} max={MAX_TALK_CHARS} what="question" className="short:basis-full" />
-            {/* One row for the words: the box, Send and the mic. In a short window (the keyboard up, a phone sideways) the mic is the bar beside the box, a round
-                button once there are words, and the row is at least 20 rem so the pictures and the two buttons go on a line above it, never beside a squeezed box. */}
-            <div data-composer-row className="flex flex-wrap items-end gap-2 short:min-w-[20rem] short:flex-1 short:flex-nowrap">
-              <textarea
-                ref={field}
-                aria-label="Your message"
-                rows={1}
-                aria-invalid={tooLong || undefined}
-                value={text}
-                disabled={busy}
-                onChange={(e) => setText(e.target.value)}
-                className="block min-h-[calc(2*1.75rem+1rem+2px)] max-h-[calc(5*1.75rem+1rem+2px)] min-w-0 flex-1 resize-none overflow-y-auto rounded-lg border border-line bg-canvas px-3 py-2 text-lg short:min-h-14"
-              />
-              <button
-                type="button"
-                disabled={busy || box.working || tooLong || (!text.trim() && !hasPictures)}
-                aria-describedby={tooLong ? countId : undefined}
-                onClick={() => send(text)}
-                className={`min-h-12 shrink-0 rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg disabled:opacity-40 short:order-3 short:min-h-14 short:min-w-14 short:px-3 ${composing ? '' : 'short:hidden'}`}
-              >
-                Send
-              </button>
-              <div className={`w-full short:order-2 short:shrink-0 ${composing ? 'short:w-14' : 'short:w-42'}`}>
-                <HoldToTalk voice={voice} disabled={busy} round={composing} />
-              </div>
-            </div>
+            <LengthNote id={countId} text={text} max={MAX_TALK_CHARS} what="question" />
+            {/* The kit's Composer, as Ask the tutor draws it: Hold to talk (or Tap to talk, Settings > Talk), Type a message, Attach a picture, Take a photo. Anything playing aloud is paused
+                while he holds (src/speech/askTranscriber.ts), and an answer that arrives meanwhile waits (src/talk/holding.ts). A question over the cap is kept, not sent (sendBlocked). */}
+            <Composer
+              settings={{ ...talkSettings, attach: true, camera: true }}
+              transcriber={askTranscriber}
+              lang="en-US"
+              appName="Lampas"
+              labels={{ ...TALK_LABELS, hold: tapWord('Hold to talk', talkSettings.talk), tryAgain: tapWord('Hold to talk', talkSettings.talk) }}
+              text={text}
+              onTextChange={setText}
+              incomingFiles={sharedFiles}
+              refuseFile={refuseNonPicture}
+              sendBlocked={tooLong}
+              renderSend={(slot) => <SendArrow slot={slot} why={tooLong ? countId : undefined} />}
+              disabled={busy}
+              onHoldStart={holdBegan}
+              onHoldEnd={holdEnded}
+              onSend={sendMessage}
+            />
           </div>
         </div>
       </div>

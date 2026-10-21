@@ -17,8 +17,7 @@ import type { Route } from './nav/route';
 import { openedByTutor } from './nav/readerRequest';
 import { useSheetOpen } from './ui/sheetBack';
 import { useTalk } from './useTalk';
-import { useTalkHold } from './talk/useTalkHold';
-import { takeWaitingPictures } from './talk/outbox';
+import { isHolding } from './talk/holding';
 
 /** The button's name for a screen reader and the tests; it starts with the words on the control. */
 export const ASK_TUTOR_LABEL = 'Ask the tutor about this screen';
@@ -104,11 +103,9 @@ function contextOf(name: string, reported: ScreenContext | null): ScreenContext 
 /** The talk of a screen's Ask the tutor: the conversation `scope` names (null when the screen has none), the voice, and what a sheet over it needs. `open` is whether its sheet is on screen
  * (an answer is spoken only then); `onClosed` is what closing the sheet does besides stopping the voice. */
 function useScreenTalk(scope: TalkScope | null, open: boolean, onClosed: () => void) {
-  const sayAbout = useRef<(message: string) => void>(() => {});
-  const voice = useTalkHold((message) => sayAbout.current(message));
   const openRef = useRef<string | null>(null);
   const { states, say, resume } = useTalk('', 0, (ref, id, answer) => {
-    if (openRef.current !== ref || voice.listening) return;
+    if (openRef.current !== ref || isHolding()) return;
     speakTutor(id, answerRuns(answer), () => openRef.current === ref);
   }, {
     // the tutor takes him to a chapter (the answer's `go`) while this screen's sheet is open: the Reader opens there as a new Back step, and Back returns to this screen
@@ -118,16 +115,8 @@ function useScreenTalk(scope: TalkScope | null, open: boolean, onClosed: () => v
   const ref = scope ? scopeRef('', 0, scope) : null;
   useEffect(() => {
     openRef.current = open ? ref : null;
-    sayAbout.current = (message) => {
-      if (scope) say(scope, message, undefined, takeWaitingPictures());
-    };
   });
-  const close = useCallback(() => {
-    voice.abort();
-    voice.clearNotice();
-    onClosed();
-  }, [voice, onClosed]);
-  return { ref, state: ref ? states[ref] : undefined, voice, say, resume, close };
+  return { ref, state: ref ? states[ref] : undefined, say, resume, close: onClosed };
 }
 
 /** The button and the sheet for the screens but the Reader. */
@@ -157,7 +146,6 @@ export function AskTutor({ route }: { route: Route }) {
           scope={scope}
           talkRef={talk.ref}
           state={talk.state}
-          voice={talk.voice}
           suggestions={suggestionsFor(name)}
           onSay={(message, focus, pictures) => talk.say(scope, message, focus, pictures)}
           onResume={() => talk.resume(scope)}
@@ -198,7 +186,6 @@ export function DialogAskTutor({ screen, kept, suggestions }: { screen: ScreenCo
           scope={scope}
           talkRef={talk.ref}
           state={talk.state}
-          voice={talk.voice}
           suggestions={suggestions}
           onSay={(message, focus, pictures) => talk.say(scope, message, focus, pictures)}
           onResume={() => talk.resume(scope)}

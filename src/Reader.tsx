@@ -80,7 +80,7 @@ import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
 import { VerseText, type VerseTalk } from './reader/VerseText';
-import { takeWaitingPictures } from './talk/outbox';
+import { isHolding } from './talk/holding';
 
 const NO_SETTINGS: Partial<ReaderSettings> = {};
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
@@ -209,23 +209,18 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation, undefined, chapter);
   // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
   const openTalkRef = useRef<string | null>(null);
-  // Push-to-talk (voice-kit's useTalk through src/talk/useTalkHold.ts): what he says goes as the turn of the conversation the sheet is open on. Two holds, one
-  // settings object: `onBar` is the Talk bar and a verse number (a press under half a second is a tap there), `voice` the sheet's own bar (a hold from the first touch).
+  // Push-to-talk (voice-kit's TalkBar through src/talk/useTalkHold.ts): what he says goes as the turn of the conversation the sheet is open on. `onBar` is the Talk bar and a verse
+  // number (a press under half a second is a tap there); the sheet's own hold is the Composer's (src/Talk.tsx), which sends through the sheet's onSay.
   const sayAbout = useRef<(message: string) => void>(() => {});
   const send = useCallback((message: string) => sayAbout.current(message), []);
-  const voice = useTalkHold(send);
   // what the finger that began a hold on the Talk bar or a verse number is on: the sheet opens on it as the hold begins
   const [holdAbout, setHoldAbout] = useState<number | null>(null);
   const holdTalkRef = useRef<(about: number | null) => void>(() => {});
   const onBar = useTalkHold(send, { holdDelayMs: HOLD_AFTER_MS, onBegin: () => holdTalkRef.current(holdAbout) });
-  const holding = useRef(false);
-  useEffect(() => {
-    holding.current = voice.listening || onBar.listening;
-  });
   const closeTalk = useRef<() => void>(() => {});
   const talk = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
     // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
-    if (openTalkRef.current !== ref || holding.current) return;
+    if (openTalkRef.current !== ref || isHolding()) return;
     // Sound it out: the word was said before the answer; now each syllable it lists, slowly, one after another.
     if (info.focus?.kind === 'sound' && !info.focus.language && info.syllables?.length) startAnswerWhenSeen(id, syllableRuns(info.syllables));
     else speakTutor(id, answerRuns(answer), () => openTalkRef.current === ref);
@@ -283,7 +278,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (viewUnit) resumeAsk(viewUnit);
   }, [viewUnit, resumeAsk]);
   // whichever hold is going on is dropped as one: the sheet closed, or another screen asked
-  const stopTalking = { abort: () => (voice.abort(), onBar.abort()) };
+  const stopTalking = { abort: () => onBar.abort() };
   const tutor = useReaderTutor(open, chapter, talk, stopTalking, { request, viewUnit, openTalkRef });
   const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
   useEffect(() => {
@@ -308,7 +303,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     closeTalk.current = () => {
       stopTalking.abort();
-      voice.clearNotice();
       onBar.clearNotice();
       setTalkAbout(undefined);
     };
@@ -316,7 +310,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // What he says goes to the open Talk sheet (the Verse view's Ask the tutor has its own composer, src/Ask.tsx).
   useEffect(() => {
     sayAbout.current = (message) => {
-      if (talkScope) talk.say(talkScope, message, undefined, takeWaitingPictures());
+      if (talkScope) talk.say(talkScope, message);
     };
   });
   // The verse number on the teach sheet: the reading box is scrolled so that verse stands at its top. The verse is not selected: that
@@ -544,7 +538,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           suggestions={talkScope.verse === null && !talkScope.quiz ? READER_SUGGESTIONS : undefined}
           talkRef={talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)}
           state={talk.states[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
-          voice={voice}
           opened={onBar}
           onSay={(message, focus, pictures) => talk.say(talkScope, message, focus, pictures)}
           onResume={() => talk.resume(talkScope)}

@@ -39,11 +39,11 @@ Feature: Ask the tutor uses the shared composer
     And that grist carries the Greek and the English of verses 1 to 11 and no other
     And the answer shows in the Verse view
 
-  Scenario: In the Talk sheet Hold to talk becomes a round mic button while there are words and comes back when the box is empty
+  Scenario: In the Talk sheet the Hold to talk bar gives way to the message box for typing, and the mic button brings it back
     Given Lampas is opened on Romans 8 in the English view with a tutor and a recogniser behind a fake Postern
     When he opens the Talk sheet
     Then the Talk sheet's Hold to talk bar is the wide bar
     When he types "es" in the Talk sheet's message box
-    Then the Talk sheet's Hold to talk bar is a round mic button
-    When he clears the Talk sheet's message box
+    Then the Talk sheet's Hold to talk bar gives way to a mic button beside the box
+    When he clears the Talk sheet's message box and taps the mic button
     Then the Talk sheet's Hold to talk bar is the wide bar again

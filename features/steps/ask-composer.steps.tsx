@@ -16,7 +16,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { composerIn, holdBarIn, holdBarsIn } from '../../tests/support/composer';
+import { composerIn, holdBarIn, holdBarsIn, messageBox as talkMessageBox } from '../../tests/support/composer';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -170,23 +170,28 @@ describeFeature(feature, ({ Scenario }) => {
     And('the answer shows in the Verse view', answerShows);
   });
 
-  Scenario('In the Talk sheet Hold to talk becomes a round mic button while there are words and comes back when the box is empty', ({ Given, When, Then }) => {
+  Scenario('In the Talk sheet the Hold to talk bar gives way to the message box for typing, and the mic button brings it back', ({ Given, When, Then }) => {
     const talkSheet = () => screen.getByRole('dialog', { name: /^Talk about / });
     const messageBox = () => within(talkSheet()).getByRole('textbox', { name: 'Your message' });
     const talkBar = () => within(talkSheet()).getByRole('button', { name: 'Hold to talk', exact: true });
+    const mic = () => within(talkSheet()).getByRole('button', { name: 'Speak a message', exact: true });
     Given(opened, openIt);
     When('he opens the Talk sheet', async () => {
       await user.click(await screen.findByRole('button', { name: 'Talk' }));
       await screen.findByRole('dialog', { name: /^Talk about / });
     });
-    Then("the Talk sheet's Hold to talk bar is the wide bar", () => expect(talkBar()).not.toHaveClass('lp-bar-round'));
+    Then("the Talk sheet's Hold to talk bar is the wide bar", () => expect(talkBar()).toHaveClass('bk-composer__bar'));
     When("he types {string} in the Talk sheet's message box", async (_, words: string) => {
-      await user.type(messageBox(), words);
+      await user.type(await talkMessageBox(user, talkSheet()), words);
     });
-    Then("the Talk sheet's Hold to talk bar is a round mic button", () => expect(talkBar()).toHaveClass('lp-bar-round'));
-    When("he clears the Talk sheet's message box", async () => {
+    Then("the Talk sheet's Hold to talk bar gives way to a mic button beside the box", () => {
+      expect(within(talkSheet()).queryByRole('button', { name: 'Hold to talk', exact: true })).toBeNull();
+      expect(messageBox()).toHaveValue('es');
+    });
+    When("he clears the Talk sheet's message box and taps the mic button", async () => {
       await user.clear(messageBox());
+      await user.click(mic());
     });
-    Then("the Talk sheet's Hold to talk bar is the wide bar again", () => expect(talkBar()).not.toHaveClass('lp-bar-round'));
+    Then("the Talk sheet's Hold to talk bar is the wide bar again", () => expect(talkBar()).toHaveClass('bk-composer__bar'));
   });
 });

@@ -70,7 +70,8 @@ const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 /** The sheet's bar by whatever it says: voice-kit's bar is named by its words (Hold to talk, Starting the mic…, Release to send, Let go to keep it unsent). */
 const holdInSheet = () => within(sheet()).getByRole('button', { name: /^(Hold to talk|Starting the mic…|Release to send|Let go to keep it unsent)$/ });
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
-const live = () => sheet().querySelector<HTMLElement>('[data-talk-live]');
+/** the words heard so far: the Talk bar's hold draws them in the sheet (data-talk-live), the sheet's own bar (the Composer) in its status line */
+const live = () => sheet().querySelector<HTMLElement>('[data-talk-live], [data-testid="live-transcript"]');
 
 async function pressDown(el: HTMLElement): Promise<void> {
   await user.pointer({ keys: '[MouseLeft>]', target: el, coords: AT });
@@ -107,7 +108,7 @@ const nothingSent = async () => {
 
 /** Postern's bar (TalkLineScreen.tsx: 96 px high, the sheet's width, a mic over the label): voice-kit's TalkBar, which Lampas sizes with `.lp-bar` (src/index.css; the height is proven in tests/e2e/hold-bar.spec.ts). */
 const expectBar = (el: HTMLElement, px: number): void => {
-  expect(el).toHaveClass('bk-composer__bar', 'lp-bar');
+  expect(el).toHaveClass('bk-composer__bar');
   expect(px).toBe(96);
   expect(el.querySelector('svg')).not.toBeNull();
 };
@@ -238,9 +239,12 @@ describeFeature(feature, ({ Scenario }) => {
       expect(alert).toHaveTextContent(/Settings.*Permissions.*Microphone.*Allow/);
     });
     And('nothing was sent and the phone is not listening', nothingSent);
-    And('the typed field and Send are still there', () => {
+    And('the typed field and Send are one tap away', async () => {
+      // the bar is first; Type a message brings out the box, and Send stands beside it once there are words
+      await user.click(within(sheet()).getByRole('button', { name: 'Type a message' }));
+      await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), 'ok');
       expect(within(sheet()).getByRole('textbox', { name: 'Your message' })).toBeEnabled();
-      expect(within(sheet()).getByRole('button', { name: 'Send' })).toBeInTheDocument();
+      expect(within(sheet()).getByRole('button', { name: 'Send' })).toBeEnabled();
     });
   });
 
@@ -272,13 +276,13 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he taps the Talk button quickly', () => user.click(talkButton()));
     Then(
-      'the sheet\'s hold-to-talk button is Postern\'s hold bar, {int} px high, labelled {string}, and the last control of the sheet',
+      'the sheet\'s hold-to-talk button is Postern\'s hold bar, {int} px high, labelled {string}, and the first control of the composer',
       async (_, px: number, label: string) => {
         await screen.findByRole('dialog', { name: /^Talk about / });
         expectBar(holdInSheet(), px);
         expect(holdInSheet()).toHaveTextContent(label);
-        const controls = Array.from(sheet().querySelectorAll('button, textarea'));
-        expect(controls[controls.length - 1]).toBe(holdInSheet());
+        const controls = Array.from(within(sheet()).getByTestId('composer').querySelectorAll('button, textarea'));
+        expect(controls[0]).toBe(holdInSheet());
       },
     );
     When('he presses the hold-to-talk button in the sheet', () => pressDown(holdInSheet()));
@@ -293,7 +297,8 @@ describeFeature(feature, ({ Scenario }) => {
   const checkAnswers = "the phone's speech check answers language-not-supported";
   const answerChecks = () => act(() => FakeRecognizer.answerChecks());
   const saysNothingHeard = async (_: unknown, words: string) => {
-    expect(await within(sheet()).findByRole('alert')).toHaveTextContent(words);
+    // the Composer says it in its status line, the Talk bar's hold in the sheet's alert
+    await waitFor(() => expect(sheet()).toHaveTextContent(words));
   };
   const noLanguageLine = async () => {
     // the stop's own wait (voice-kit STOP_TIMEOUT_MS is 3 s) is long gone by the time a late answer would have shown
