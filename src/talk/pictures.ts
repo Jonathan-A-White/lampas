@@ -2,12 +2,12 @@
 // up to four JPEG, PNG or WebP files), the cut each picture gets on the phone before it is sent, and what he is told when one is refused.
 import type { ClipboardEvent } from 'react';
 import { shrinkImage } from '../images/shrink';
-import type { MillFile } from '../services/mill';
+import { MILL_PHOTO_MIMES, type MillFile } from '../services/mill';
 
 /** The most pictures one message carries: the grind's `attachments.max`. */
 export const TALK_MAX_PICTURES = 4;
-/** The kinds of picture the grind takes: its `attachments.mime`. */
-export const TALK_PICTURE_MIMES: readonly string[] = ['image/jpeg', 'image/png', 'image/webp'];
+/** The kinds of picture the grind takes: its `attachments.mime`, and the kit's photo types (grist.PHOTO_MIMES). */
+export const TALK_PICTURE_MIMES: readonly string[] = MILL_PHOTO_MIMES;
 /** A picture is cut to this many px on the long edge: enough to read small print in a screenshot, little enough to send. */
 export const TALK_MAX_EDGE = 1600;
 /** A picture is sent under this many bytes: the grind's `attachments.maxBytes`. */

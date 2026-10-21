@@ -2,6 +2,7 @@
 // turn keeps its pictures, and how a Greek word of an answer is marked. The screens are features/talk-pictures.feature.
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { grist } from 'bsv-kit/grist';
 import { db } from '../../src/data/db';
 import { addTurn, listTurnPictures, listTurns } from '../../src/data/repositories';
 import { imageSeam, shrinkImage } from '../../src/images/shrink';
@@ -24,7 +25,7 @@ describe('the bible-talk grind takes pictures', () => {
   it('takes 0 to 4 JPEG, PNG or WebP files, the size and kinds the app sends', () => {
     expect(grind.attachments).toEqual({ min: 0, max: TALK_MAX_PICTURES, mime: [...TALK_PICTURE_MIMES], maxBytes: TALK_PICTURE_MAX_BYTES });
     expect(TALK_MAX_PICTURES).toBe(4);
-    expect(TALK_PICTURE_MIMES).toEqual(['image/jpeg', 'image/png', 'image/webp']);
+    expect(TALK_PICTURE_MIMES).toEqual(grist.PHOTO_MIMES);
     expect(isTalkPicture({ type: 'image/webp' })).toBe(true);
     expect(isTalkPicture({ type: 'image/gif' })).toBe(false);
     expect(isTalkPicture({ type: 'application/pdf' })).toBe(false);
