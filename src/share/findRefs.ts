@@ -8,6 +8,7 @@ import { osisOf, parseCanonReference } from '../nav/links';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askGrind, OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError } from '../services/tutor';
 import { isTalkPicture, filesOf, preparePicture } from '../talk/pictures';
+import { fingerprintOf, keepPictureRefs, keptPictureRefs } from '../data/repositories/pictureRefs';
 import type { ShareRow } from '../data/repositories/shares';
 import { sharedContentOf } from './shared';
 
@@ -61,11 +62,18 @@ export function checkedReferences(answered: readonly AnsweredReference[]): Found
   return found;
 }
 
-/** The references one picture names. Throws a TutorError whatever went wrong. */
+/** The references one picture names. A picture read before (the same bytes, whatever the share or the file's name) is answered from the phone, with no grist
+ *  (mw-5r3p30.695); one that is read without error is kept by its fingerprint, and one that fails keeps nothing. Throws a TutorError whatever went wrong. */
 export async function findRefsInPicture(picture: File, place: number, signal?: AbortSignal): Promise<FoundReference[]> {
+  const hash = await fingerprintOf(picture).catch(() => undefined);
+  const kept = hash === undefined ? undefined : await keptPictureRefs(hash).catch(() => undefined);
+  if (kept) return kept;
   const sent = await preparePicture(picture, place);
   const answer = await askGrind(FIND_REFS_KIND, buildFindRefsRequest(), isFindRefsAnswer, { key: getDeviceKeyBytes(), files: filesOf([sent]), signal, untimed: true });
-  return checkedReferences(answer.references);
+  const found = checkedReferences(answer.references);
+  // a phone that cannot keep it still has the answer to show
+  if (hash !== undefined) await keepPictureRefs(hash, found).catch(() => undefined);
+  return found;
 }
 
 /** Where the reading of a share's pictures stands. */

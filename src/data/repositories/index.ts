@@ -91,6 +91,8 @@ export { latestDrillRunFor, saveDrillRun, weakFacets } from './drillRuns';
 export type { DrillRunRow } from './drillRuns';
 export { LESSON_KIND, lessonCheckPassed, listPassageLessons, markPassed, markRead, tryAgainTomorrow } from './passageLessons';
 export type { PassageLessonRow } from './passageLessons';
+export { fingerprintOf, keepPictureRefs, keptPictureRefs, KEPT_PICTURES } from './pictureRefs';
+export type { PictureRefsRow } from './pictureRefs';
 export { answerPlanItem, closeDrillPlan, drillPlanCounts, getDrillPlan, listDrillPlans, saveDrillPlan } from './drillPlans';
 export type { PlanAnswer } from './drillPlans';
 export { countFetchedItems, listFetchedIdeas, saveFetchedItems, takeFetchedItems } from './fetchedItems';
