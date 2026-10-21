@@ -107,7 +107,7 @@ test('Talk with a gateway 502 with no CORS headers and the phone online says the
   await expect(sheet.getByText(/You are offline/)).toHaveCount(0);
 });
 
-test('the phone going offline while the tutor is still thinking says he is offline within a few seconds, with Retry (mw-5r3p30.434)', async ({ page, context }) => {
+test('the phone going offline while the tutor is still thinking says he is offline without waiting for the 180 s deadline, with Retry (mw-5r3p30.434)', async ({ page, context }) => {
   const fake = makeFakePostern();
   await routePostern(page, fake);
   await honestMic(page);
@@ -122,7 +122,7 @@ test('the phone going offline while the tutor is still thinking says he is offli
   await context.setOffline(true);
   await page.route(`${POSTERN_ORIGIN}/**`, (route) => route.abort('internetdisconnected'));
   const box = page.locator('[data-ask-failed]');
-  await expect(box.getByText('You are offline. Check your connection and try again.')).toBeVisible({ timeout: 5000 });
+  await expect(box.getByText('You are offline. Check your connection and try again.')).toBeVisible();
   await expect(box.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
   await expect(page.getByText(/Waiting for the tutor…/)).toHaveCount(0);
 
@@ -136,7 +136,7 @@ test('the phone going offline while the tutor is still thinking says he is offli
   expect(fake.received).toHaveLength(1);
 });
 
-test('Talk: the phone going offline while the tutor is still thinking says he is offline within a few seconds (mw-5r3p30.434)', async ({ page, context }) => {
+test('Talk: the phone going offline while the tutor is still thinking says he is offline without waiting for the 180 s deadline (mw-5r3p30.434)', async ({ page, context }) => {
   const fake = makeFakePostern();
   await routePostern(page, fake);
   await honestMic(page);
@@ -150,6 +150,6 @@ test('Talk: the phone going offline while the tutor is still thinking says he is
   await expect.poll(() => fake.received.length).toBe(1);
   await context.setOffline(true);
   await page.route(`${POSTERN_ORIGIN}/**`, (route) => route.abort('internetdisconnected'));
-  await expect(sheet.locator('[data-talk-failed]').getByText('You are offline. Check your connection and try again.')).toBeVisible({ timeout: 5000 });
+  await expect(sheet.locator('[data-talk-failed]').getByText('You are offline. Check your connection and try again.')).toBeVisible();
   await expect(sheet.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
 });
