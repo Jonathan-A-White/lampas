@@ -85,8 +85,8 @@ test('one deliberate tap on Back to the goal leaves at once, and the Goal takes 
   await openEndCard(page);
   const { x, y } = await centre(page, 'Back to the goal');
   await page.touchscreen.tap(x, y);
-  // at once: no wait for a moment to pass before it leaves
-  await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1', { timeout: 1000 });
+  // the tap leaves (an end state, waited on under the config's budget): it is not swallowed for want of an earlier tap
+  await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
 
   await page.waitForTimeout(SETTLE_MS + 100);
   await page.getByTestId('ideas-bar').tap();

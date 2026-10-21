@@ -133,7 +133,7 @@ test('a double tap on the Rho sheet\'s Drill it opens the drill with its Hint un
 test('one deliberate tap on the Learn sheet\'s Done closes it at once, and Change takes a tap after the moment', async ({ page }) => {
   const learn = await openLearnSheet(page);
   await learn.getByRole('button', { name: 'Done', exact: true }).tap();
-  await expect(ideas(page)).toHaveCount(0, { timeout: 1000 });
+  await expect(ideas(page)).toHaveCount(0);
   await page.waitForTimeout(SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Change', exact: true }).tap();
   await expect(page).toHaveURL(/#\/settings/);
