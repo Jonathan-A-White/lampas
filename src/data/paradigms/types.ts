@@ -9,6 +9,10 @@ export interface ParadigmCell {
   lang: 'el' | 'en';
   /** Ids of the ideas in LADDER the form needs; the form is available once every one is at the frontier or solid. */
   ideas: string[];
+  /** Only in a table made by ownTable (ownForms.ts, mw-irpgqi.4): the text has no form of the word for this cell. `form` is then ''. */
+  absent?: true;
+  /** Only in a table made by ownTable: the form is the word's own, the one the text has, with its parsing and first use, and the pattern's form it stands in for. */
+  own?: { code: string; count: number; book: string; chapter: number; verse: number; pattern: string; others: string[] };
 }
 
 export interface ParadigmColumn {

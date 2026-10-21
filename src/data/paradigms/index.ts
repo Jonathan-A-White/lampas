@@ -79,7 +79,8 @@ export const cellsOf = (table: Paradigm): ParadigmCell[] => table.rows.flatMap((
 
 /** How many cells the table shows as his under `extent` (standing `open`): the list's bar, the table's line, and (at the default) whether Review has a cell to ask. */
 export function availableCount(table: Paradigm, levels: Levels, extent: GrammarExtent = DEFAULT_EXTENT): { available: number; total: number } {
-  const cells = cellsOf(table);
+  // a cell the text has no form for (a word's own table, ownForms.ts) is not a form to count
+  const cells = cellsOf(table).filter((cell) => !cell.absent);
   return { available: cells.filter((cell) => standingOf(cell, levels, extent) === 'open').length, total: cells.length };
 }
 
@@ -192,6 +193,60 @@ function lands(cell: ParadigmCell, wanted: readonly string[]): boolean {
   return mine.every((id) => kindOf(id) === undefined || !kinds.has(kindOf(id)) || named.includes(id) || (kindOf(id) === 'voice' && named.some((n) => kindOf(n) === 'voice' && mine.includes(n))));
 }
 
+/** A cell a form lands on (`lands`): where it is, how many of the parsing's ideas it names, how long an ending the form has that the cell's hyphenated form is, and whether it is the form whole. */
+export interface Hit {
+  table: Paradigm;
+  place: string;
+  row: number;
+  column: number;
+  shared: number;
+  suffix: number;
+  whole: boolean;
+}
+
+/** Every Greek cell of `table` that the parsing `wanted` (ideasOfWord) lands on, for the form `form` (already bare). */
+function hitsIn(table: Paradigm, wanted: readonly string[], form: string): Hit[] {
+  return table.rows.flatMap((row, r) =>
+    row.cells.flatMap((cell, c) => {
+      if (cell.lang !== 'el' || !lands(cell, wanted)) return [];
+      const spellings = spellingsOf(cell.form);
+      // a form with a hyphen is a stem and an ending (λυσ-ομαι) or an ending alone (-ος): the longer the ending the word has, the better the cell
+      const ending = spellings[0].slice(spellings[0].lastIndexOf('-') + 1);
+      const suffix = cell.form.includes('-') && form.endsWith(ending) ? ending.length : 0;
+      return [{ table, place: cellName(table, row, c), row: r, column: c, shared: cell.ideas.filter((id) => asTablesSay(wanted).includes(id)).length, suffix, whole: spellings.includes(form) }];
+    }),
+  );
+}
+
+const better = (a: Hit, b: Hit): boolean => a.shared > b.shared || (a.shared === b.shared && a.suffix > b.suffix);
+/** The best of the cells a form lands on: the most of the parsing's ideas, then the longest ending, then the earlier. */
+export const bestHit = (hits: readonly Hit[]): Hit | undefined => hits.reduce<Hit | undefined>((top, hit) => (top === undefined || better(hit, top) ? hit : top), undefined);
+const best = bestHit;
+
+/**
+ * The cells of `table` that a form of a word (its text form, its lemma, its RP code) lands on, as the word sheet's cell is found (paradigmOfWord): the ones this
+ * parsing can be. None for a code the ladder does not know. Used by the word's own forms (ownForms.ts) to put each form the text has in its cell.
+ */
+export function cellsLanding(table: Paradigm, word: { t: string; l: string; p: string }): Hit[] {
+  try {
+    return hitsIn(table, ideasOfWord(word), bare(word.t));
+  } catch {
+    return [];
+  }
+}
+
+/** How well a form fits a cell's form as a member of the same model: a whole match is high; a hyphenated cell counts the ending the form has; else the letters the two end alike. */
+export function formFit(form: string, cellForm: string): number {
+  const mine = bare(form);
+  const spellings = spellingsOf(cellForm);
+  if (spellings.includes(mine)) return 100;
+  const ending = spellings[0].slice(spellings[0].lastIndexOf('-') + 1);
+  if (cellForm.includes('-')) return mine.endsWith(ending) ? ending.length : 0;
+  let n = 0;
+  while (n < mine.length && n < ending.length && mine[mine.length - 1 - n] === ending[ending.length - 1 - n]) n++;
+  return n;
+}
+
 /**
  * The one table a tap on this word opens and the cell in it that is the word's own (mw-irpgqi.1). A table that holds the word's own form (ἀγαπῶ is in Contract
  * verbs, ἐστίν in εἰμί) wins over tableFor's table, which holds only its ending (Verb endings); else tableFor's. A cell is the word's when it lands on the word's
@@ -215,34 +270,15 @@ function findWordParadigm(word: { t: string; l: string; p: string }): WordParadi
     return undefined;
   }
   const form = bare(word.t);
-  interface Hit {
-    table: Paradigm;
-    place: string;
-    shared: number;
-    suffix: number;
-    whole: boolean;
-  }
-  const hitsIn = (table: Paradigm): Hit[] =>
-    table.rows.flatMap((row) =>
-      row.cells.flatMap((cell, c) => {
-        if (cell.lang !== 'el' || !lands(cell, wanted)) return [];
-        const spellings = spellingsOf(cell.form);
-        // a form with a hyphen is a stem and an ending (λυσ-ομαι) or an ending alone (-ος): the longer the ending the word has, the better the cell
-        const ending = spellings[0].slice(spellings[0].lastIndexOf('-') + 1);
-        const suffix = cell.form.includes('-') && form.endsWith(ending) ? ending.length : 0;
-        return [{ table, place: cellName(table, row, c), shared: cell.ideas.filter((id) => asTablesSay(wanted).includes(id)).length, suffix, whole: spellings.includes(form) }];
-      }),
-    );
-  const better = (a: Hit, b: Hit): boolean => a.shared > b.shared || (a.shared === b.shared && a.suffix > b.suffix);
-  const best = (hits: Hit[]): Hit | undefined => hits.reduce<Hit | undefined>((top, hit) => (top === undefined || better(hit, top) ? hit : top), undefined);
-  const own = best(PARADIGMS.flatMap(hitsIn).filter((hit) => hit.whole));
+  const hitsOf = (table: Paradigm): Hit[] => hitsIn(table, wanted, form);
+  const own = best(PARADIGMS.flatMap(hitsOf).filter((hit) => hit.whole));
   if (own) return { table: own.table, cell: own.place };
   const table = tableFor(word.p, word);
   if (!table) return undefined;
-  const here = best(hitsIn(table));
+  const here = best(hitsOf(table));
   if (here) return { table, cell: here.place };
   // tableFor weighs the ideas a parsing names and not the voice (a middle verb's table is εἰμί's): another table that holds the word's parse is its table
-  const elsewhere = best(PARADIGMS.filter((other) => other !== table).flatMap(hitsIn));
+  const elsewhere = best(PARADIGMS.filter((other) => other !== table).flatMap(hitsOf));
   if (elsewhere) return { table: elsewhere.table, cell: elsewhere.place };
   // εἰμί's table for a participle of another verb is no table of the word's: the table of the general kind with the most of its ideas
   const mine = asTablesSay(wanted);
