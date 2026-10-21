@@ -20,6 +20,7 @@
     "settings_changes": {
       "description": "Only when he asked in words to switch how Ask the tutor opens: askBy to typing (\"let me type\") or to speaking (\"switch back to speaking\"). The app applies it at once; say in `answer` what you did. Leave it out otherwise, and never change any other setting.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 1,
       "items": {
         "type": "object",

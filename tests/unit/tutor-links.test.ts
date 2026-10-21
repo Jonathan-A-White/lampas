@@ -22,10 +22,13 @@ describe('links in the answer schema and the guard', () => {
     const links = schema.properties?.links;
     expect(links?.maxItems).toBe(MAX_LINKS);
     expect(MAX_LINKS).toBe(3);
-    for (const value of [base, { ...base, links: [] }, { ...base, links: [word] }, { ...base, links: [word, verse, word] }]) {
+    for (const value of [base, { ...base, links: [word] }, { ...base, links: [word, verse, word] }]) {
       expect(validate(value, schema), JSON.stringify(value)).toEqual([]);
       expect(isTalkAnswer(value)).toBe(true);
     }
+    // mw-5r3p30.691: leaving links out is the only way to send none; the phone's guard still takes [] from an older mill
+    expect(validate({ ...base, links: [] }, schema)).not.toEqual([]);
+    expect(isTalkAnswer({ ...base, links: [] })).toBe(true);
   });
 
   const bad: [string, unknown][] = [

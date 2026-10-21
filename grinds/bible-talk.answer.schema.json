@@ -35,18 +35,21 @@
     "syllables": {
       "description": "Only when the question asked how to sound a word out (its focus kind is sound): the word's syllables in Greek letters, in order, each one short enough to say alone; for a Hebrew word (focus language he), in the pointed Hebrew letters. Leave it out otherwise.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 40 }
     },
     "transliteration": {
       "description": "Only for a Hebrew word's sound question (focus kind sound and language he): how each entry of syllables sounds, in plain Latin letters with no special marks, in the same order and the same number, the stressed syllable in capitals (TSE, dek). Leave it out otherwise.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 40 }
     },
     "words_to_add": {
       "description": "Only when he asked to put words on his words-to-learn list ('add σάρξ to my words'): the dictionary form of each word, in Greek letters. Leave it out otherwise.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 80 }
     },
@@ -65,6 +68,7 @@
     "profile_update": {
       "description": "What you learned about him as a student in his words just now, or judged from how he writes and talks (see 'Learning about him'). Each entry is a field (age, pace, ways, background, why, or note for a short thing worth remembering) and its value in a few plain words of at most 100 characters (pace is quick, steady or slow); `guessed` true marks a judgement of yours that he did not say (only for age, as a band such as 'adult' or '60s', and background); `declined` true, with no value, when he would not say. The app keeps it on his phone, shows it in Settings > About you where he can change or remove it, and never lets it replace what he set himself. At most three. Leave it out when you learned nothing.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 3,
       "items": {
         "type": "object",
@@ -81,6 +85,7 @@
     "memory_update": {
       "description": "What to remember about him for later, in the notes Lampas keeps on his phone (see 'His memory'): at most four entries, each `name` ('index', or a note's name: book:<Book>, word:<lemma>, topic:<slug>) and exactly one of `append` (one short plain line, at most 300 characters, added to the end of that note or of the index; a note that is not there is made), `replace` (the whole new text of that note or of the index) or `remove` (true: drop that note). `replace` and `remove` need `directed` true, and `directed` is true ONLY when he asked for exactly that change in his own words of this turn ('forget what you noted about Romans', 'change that note to ...'); never for your own tidying. The app refuses and logs a `replace` or `remove` without `directed`. Leave it out when there is nothing worth keeping.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 4,
       "items": {
         "anyOf": [
@@ -115,6 +120,7 @@
     "wished_notes": {
       "description": "The names of notes you would have used in this answer had they existed (book:<Book>, word:<lemma>, topic:<slug>, in the naming scheme), at most five. The app only counts them and keeps the last names; it sends you nothing more for them. Leave it out when the notes you were sent were enough.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 5,
       "items": { "type": "string", "minLength": 1, "maxLength": 60 }
     },
@@ -576,6 +582,7 @@
     "form_values": {
       "description": "Only while he is being helped to fill in a form (`form` in the request): the values to put in its fields from what he just said, each the field's `name` and the field's whole new value. Only text and link fields, never pictures; never a field the form does not list. Leave it out when his words fill nothing.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 8,
       "items": {
         "type": "object",
@@ -596,6 +603,7 @@
     "links": {
       "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, and a work (a commentary or book of his Logos library that he ticked, listed in the request's `works`) opens in Logos. At most three. Leave it out when no lexicon, verse or setting would help him.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 3,
       "items": {
         "anyOf": [
@@ -754,6 +762,7 @@
     "settings_changes": {
       "description": "The settings he asked to change, each applied at once by the app. Only when he asked for the change in words, never on your own; only the keys and values the instructions list; leave it out when he asked for no change.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 10,
       "items": {
         "anyOf": [

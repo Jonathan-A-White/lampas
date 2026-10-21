@@ -60,6 +60,7 @@ export function settingsChangesSchema(): Json {
     description:
       'The settings he asked to change, each applied at once by the app. Only when he asked for the change in words, never on your own; only the keys and values the instructions list; leave it out when he asked for no change.',
     type: 'array',
+    minItems: 1,
     maxItems: MAX_CHANGES,
     items: { anyOf: SETTINGS.map(changeSchema) },
   };

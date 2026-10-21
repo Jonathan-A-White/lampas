@@ -87,10 +87,13 @@ describe('settings_changes in the answer', () => {
 
   it('is optional in the schema, and the app\'s guard takes it', () => {
     expect((schema.required as string[]).sort()).toEqual(['answer', 'question', 'words']);
-    for (const value of [answer, change('greekRate', 0.8), { ...answer, settings_changes: [] }]) {
+    for (const value of [answer, change('greekRate', 0.8)]) {
       expect(validate(value, schema as Schema)).toEqual([]);
       expect(isTalkAnswer(value)).toBe(true);
     }
+    // mw-5r3p30.691: the only way to say "no change" is to leave it out; the guard on the phone still shrugs at [] from an older mill
+    expect(validate({ ...answer, settings_changes: [] }, schema as Schema)).not.toEqual([]);
+    expect(isTalkAnswer({ ...answer, settings_changes: [] })).toBe(true);
   });
 
   it('allows, in the schema, exactly the keys and values the registry lists', () => {
@@ -155,7 +158,7 @@ describe('the word help focus and the syllables (mw-5r3p30.34)', () => {
   });
 
   it('the answer schema and the app guard accept syllables (up to 12), and an answer without them', () => {
-    for (const value of [answer, { ...answer, syllables: ['συν', 'ερ', 'γεῖ'] }, { ...answer, syllables: Array.from({ length: 12 }, () => 'α') }, { ...answer, syllables: [] }]) {
+    for (const value of [answer, { ...answer, syllables: ['συν', 'ερ', 'γεῖ'] }, { ...answer, syllables: Array.from({ length: 12 }, () => 'α') }]) {
       expect(validate(value, schema as Schema)).toEqual([]);
       expect(isTalkAnswer(value)).toBe(true);
     }
@@ -164,6 +167,9 @@ describe('the word help focus and the syllables (mw-5r3p30.34)', () => {
       expect(validate(bad, schema as Schema), JSON.stringify(bad)).not.toEqual([]);
       expect(isTalkAnswer(bad), JSON.stringify(bad)).toBe(false);
     }
+    // mw-5r3p30.691: the schema leaves "no syllables" one way to say, leaving it out; the phone's guard still takes [] from an older mill
+    expect(validate({ ...answer, syllables: [] }, schema as Schema)).not.toEqual([]);
+    expect(isTalkAnswer({ ...answer, syllables: [] })).toBe(true);
   });
 
   it('the instructions tell the companion what the focus is and how to answer it, and to list the syllables for sound', () => {
@@ -216,10 +222,12 @@ describe('words_to_add in the answer (mw-5r3p30.44)', () => {
 
   it('is optional in the schema and takes up to 12 lemmas; the app\'s guard agrees', () => {
     expect((schema.required as string[]).sort()).toEqual(['answer', 'question', 'words']);
-    for (const value of [answer, { ...answer, words_to_add: [] }, { ...answer, words_to_add: ['σάρξ'] }, { ...answer, words_to_add: Array.from({ length: 12 }, () => 'α') }]) {
+    for (const value of [answer, { ...answer, words_to_add: ['σάρξ'] }, { ...answer, words_to_add: Array.from({ length: 12 }, () => 'α') }]) {
       expect(validate(value, schema as Schema), JSON.stringify(value)).toEqual([]);
       expect(isTalkAnswer(value), JSON.stringify(value)).toBe(true);
     }
+    // mw-5r3p30.691: leaving it out is the only way to add nothing
+    expect(validate({ ...answer, words_to_add: [] }, schema as Schema)).not.toEqual([]);
   });
 
   it('refuses an empty lemma, a number, more than 12, a lemma over 80 characters and a non-list, in both', () => {
