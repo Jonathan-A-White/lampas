@@ -63,6 +63,10 @@ Reading voices' Test): `greek.ts` `greekWordSpeech` uses it, and its `voiceForm`
 the first. Modern Greek hands the word in monotonic marks (an acute, grave or circumflex is the one tonos, the first of the word only; the breathings and
 the iota under a letter go; a diaeresis stays: `monotonicModern`), in its voiceForm, its last stop replaced by `!`: `πατήρ!`, `αγάπη!`, `ουδέν!`.
 
+A word of two syllables or more with no accent of its own (the New Testament's εἰμι, ἐστιν, εἰσιν, ἐστε, ἐσμεν, φημι, φησιν, τινες, τινα, τινος, τινι, τινων, τισιν,
+ποτε) is given one on its last vowel first (`stressedAlone`: `ειμί!`, `ποτέ!`, a last pair as `αγαθοί!`), the stress of its orthotone form, or the voice reads
+its letters apart (his phone said εἰμι 'e, i', not 'ee-mee': mw-5r3p30.701). A word of one syllable (τις, μου, εἰς, ὁ, an elided καθ') is left as it is.
+
 Measured with eSpeak NG's `el` on the factory's machine (`scripts/stress-peak/peaks.py`: the library's own phoneme times, Praat's pitch tracker):
 
 | handed | pitch of each vowel (highest, Hz) | the peak |

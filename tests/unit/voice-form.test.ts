@@ -11,7 +11,8 @@ import { clearBus } from '../../src/events/bus';
 import { greekWordSpeech, setGreekPronunciation, speakWord, stopSpeaking } from '../../src/speech/greek';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, registerPronunciation, type Pronunciation } from '../../src/speech/pronunciation';
 import { startReading, stopReading } from '../../src/speech/readAloud';
-import { MODERN, respellModern } from '../../src/speech/schemes/modern';
+import { greekSyllables } from '../../src/speech/greekSyllables';
+import { MODERN, respellModern, wordFormModern } from '../../src/speech/schemes/modern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
 
 let synth: FakeSynth;
@@ -126,6 +127,13 @@ describe('every bundled word', () => {
     });
     expect(changed.slice(0, 10)).toEqual([]);
   });
+
+  it('is handed over as every bundled word of two or more syllables with exactly one tonos', () => {
+    const without = words.filter((w) => !/[\u0301\u0300\u0342]/u.test(w.normalize('NFD')) && greekSyllables(bare(w)).length > 1);
+    expect(without).toContain('ἐστιν'.normalize('NFC'));
+    const wrong = without.filter((w) => (wordFormModern(w).normalize('NFD').match(/\u0301/gu) ?? []).length !== 1);
+    expect(wrong.slice(0, 10)).toEqual([]);
+  });
 });
 
 describe('the voice form and the respelling are the scheme\'s', () => {
@@ -168,4 +176,46 @@ describe('the voice form and the respelling are the scheme\'s', () => {
     }
     expect(MODERN.voiceForm('πάντοτε')).toBe('πάν-ντοτε');
   });
+});
+
+// His report (John 6:48, the reading check's εἰ · μι card): the speaker said 'e, i' for εἰμι, not 'ee-mee'. The word reached the el-GR voice as 'ειμι!', with no
+// tonos, and a voice handed a two-syllable word with no stress reads its letters apart (mw-5r3p30.701).
+describe('a word said alone that carries no accent of its own', () => {
+  it('is the same monotonic form written precomposed (ἰ, U+1F30) or decomposed (ι and U+0313), with no breathing left', () => {
+    const precomposed = 'ε\u1f30\u03bc\u03b9';
+    const decomposed = 'ε\u03b9\u0313\u03bc\u03b9';
+    expect(precomposed).not.toBe(decomposed);
+    expect(wordFormModern(precomposed)).toBe(wordFormModern(decomposed));
+    expect(wordFormModern(precomposed)).not.toMatch(/\p{M}(?!$)|[\u0313\u0314\u1f00-\u1fff]/u);
+  });
+
+  it('of two or more syllables is given the tonos on its last, the stress of the orthotone form (εἰμι is ee-MEE)', () => {
+    expect(wordFormModern('εἰμι')).toBe('ειμί!');
+    expect(wordFormModern('ἐστι')).toBe('εστί!');
+    expect(wordFormModern('ἐστιν')).toBe('εστίν!');
+    expect(wordFormModern('τινες')).toBe('τινές!');
+    expect(wordFormModern('ποτε')).toBe('ποτέ!');
+    expect(wordFormModern('ἀλληλουϊα')).toBe('αλληλουϊά!');
+    expect(respellModern(wordFormModern('εἰμι'))).toBe('ee-MEE');
+  });
+
+  it('puts the tonos on the second letter of a last syllable that is a diphthong, so the pair stays one sound', () => {
+    expect(wordFormModern('ἀγαθοι')).toBe('αγαθοί!');
+    expect(respellModern(wordFormModern('ἀγαθοι'))).toBe('a-gha-THEE');
+  });
+
+  it('of one syllable (τις, μου, εἰς, ὁ, a word cut short by an elision) is left as it is: there is no second syllable to be louder than', () => {
+    expect(wordFormModern('τις')).toBe('τις!');
+    expect(wordFormModern('μου')).toBe('μου!');
+    expect(wordFormModern('εἰς')).toBe('εις!');
+    expect(wordFormModern('ὁ')).toBe('ο!');
+    expect(wordFormModern('καθ\u2019')).toBe('καθ’!');
+  });
+
+  it('keeps the accent a word has (no second tonos) and reaches the voice through speakWord', () => {
+    expect(wordFormModern('εἰμί')).toBe('ειμί!');
+    expect(heard('εἰμι')).toBe('ειμί!');
+    expect(heard('ἐστι')).toBe('εστί!');
+  });
+
 });

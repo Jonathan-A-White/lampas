@@ -155,9 +155,12 @@ export function tipRespelling(tip: string): string | null {
 }
 
 /** What a speaker beside a flagged word says: the respelling the answer gave, else (English only) the respelling its tip spells in
- * capitals, since the phone's voice reads 'Levites' as LEV-its though the tip says LEE-vites (mw-5r3p30.140), else the word as written. */
+ * capitals, since the phone's voice reads 'Levites' as LEV-its though the tip says LEE-vites (mw-5r3p30.140), else the word as written. A Greek reading's
+ * `say` that is not Greek letters ('ee mee') is dropped: the Greek voice reads Latin letters as Greek ones, so it would never say it (mw-5r3p30.701). */
 export const sayOf = (fix: { word: string; tip?: string; say?: string }, view: ReadingView = 'english'): string =>
-  fix.say ?? (view === 'english' && fix.tip ? tipRespelling(fix.tip) : null) ?? fix.word;
+  (view === 'greek' && fix.say !== undefined && !/\p{Script=Greek}/u.test(fix.say) ? undefined : fix.say) ??
+  (view === 'english' && fix.tip ? tipRespelling(fix.tip) : null) ??
+  fix.word;
 
 /** What the result says when the recorder's cap, not he, ended the reading (mw-5r3p30.684): how long it was heard and, of a partial reading, the last word the scorer heard, so a cut reading is never a silent partial. */
 export function cutNote(answer: VerseReadAnswer, targetText: string): string {

@@ -16,6 +16,7 @@ import { teachOf } from '../../src/data/grammar/teach';
 import { teachTiles } from '../../src/data/grammar/teachTiles';
 import { clearBus } from '../../src/events/bus';
 import { chosenPronunciation, setVoice, speak, speakWord, stopSpeaking } from '../../src/speech/greek';
+import { greekSyllables } from '../../src/speech/greekSyllables';
 import { respellModern } from '../../src/speech/schemes/modern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../support/fake-speech';
 
@@ -126,8 +127,10 @@ function faultOf(word: string, said: { text: string; lang: string; voice: FakeVo
     const want = voweledAsHanded(w);
     const has = vowelsOf(got[i]);
     if (want.length !== has.length || want.some((v, j) => v.v !== has[j].v)) return `vowels ${has.map((g) => g.v).join('')} in ${got[i]}`;
-    // the respelling stresses the first accented vowel (respellModern); the voice is handed exactly that one
-    const stress = want.findIndex((v) => v.stressed);
+    // the respelling stresses the first accented vowel (respellModern); the voice is handed exactly that one. A word of two syllables or more with no accent
+    // (εἰμι, ἐστιν, τινες) is handed the tonos on its last vowel, or the voice reads its letters apart (mw-5r3p30.701: tests/unit/voice-form.test.ts)
+    const given = want.findIndex((v) => v.stressed);
+    const stress = given < 0 && greekSyllables(w.replace(/[^\p{L}\p{M}]/gu, '')).length > 1 ? want.length - 1 : given;
     const tonos = [...got[i].normalize('NFD')].filter((c) => c === '\u0301').length;
     if (tonos !== (stress >= 0 ? 1 : 0)) return `${tonos} stress marks in ${got[i]}`;
     if (has.findIndex((v) => v.stressed) !== stress) return `the stress on another vowel in ${got[i]}`;

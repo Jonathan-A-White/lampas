@@ -10,7 +10,7 @@ import { ideaSound } from './data/grammar/lessons';
 import { drillWhy, drillWords, ideaOfSound, reviewIdsOf, type DrillOffer } from './data/readingDrill';
 import { scheduleSounds } from './data/repositories';
 import { FAILURE_TITLES } from './services/tutor';
-import { plainQuotes, RESULT_HEADINGS, type ReadingView, type VerseReadAnswer } from './services/reading';
+import { plainQuotes, RESULT_HEADINGS, sayOf, type ReadingView, type VerseReadAnswer } from './services/reading';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { RecordBar } from './talk/Bars';
@@ -99,7 +99,7 @@ function WordResult({ answer, view }: { answer: VerseReadAnswer; view: ReadingVi
             {fix.chunks.join(' · ')}
           </p>
           <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p>
-          <SpeakButton text={fix.say ?? fix.word} id={`drill-fix-${i}`} label={`Hear ${fix.word}`} kind="speaker" language={greek ? 'greek' : 'english'} />
+          <SpeakButton text={sayOf(fix, view)} id={`drill-fix-${i}`} label={`Hear ${fix.word}`} kind="speaker" language={greek ? 'greek' : 'english'} />
         </div>
       ))}
     </div>
