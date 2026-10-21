@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.393",
+    "date": "2026-10-21",
+    "story": "mw-06ggew.15",
+    "kind": "fixed",
+    "text": "Talk now uses the same hold-to-talk box as Ask the tutor, so words you dictate are no longer cut off, and anything being read aloud pauses while you hold."
+  },
+  {
     "version": "0.1.392",
     "date": "2026-10-21",
     "story": "mw-5r3p30.703",

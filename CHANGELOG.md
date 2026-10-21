@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.393
+_2026-10-21_
+- Fixed: Talk now uses the same hold-to-talk box as Ask the tutor, so words you dictate are no longer cut off, and anything being read aloud pauses while you hold.
+
 ## 0.1.392
 _2026-10-21_
 - Fixed: the page line at the foot of the reader ('Mark 12 · 12%', 'Page 2 of 7') is easier to tap with a thumb, and looks the same.
