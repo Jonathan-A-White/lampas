@@ -5,6 +5,10 @@ import { openUnlocked } from './unlocked';
 import { openReviewFromToday, waitForDue } from './today-chip';
 
 // The 'in Hebrews 8:9 as ἐκ' line of an answered word question opens the verse card with the form marked, in his view (mw-5r3p30.652, features/word-question-verse.feature).
+// The card's bound is the phone's screen, so the spec sets it: the chromium project is 1280 wide, the shots project is already this size.
+const PHONE = { width: 390, height: 844 };
+test.use({ viewport: PHONE });
+
 // tapTwice (tests/support/gesture.ts) times its two taps on the page's clock, so it is installed before the page opens.
 test.beforeEach(async ({ page }) => {
   await page.clock.install();
@@ -59,7 +63,7 @@ for (const view of ['greek', 'english'] as const) {
       expect(await marked.count()).toBeLessThanOrEqual(1);
     }
     const box = await card.boundingBox();
-    expect(box && box.x >= 0 && box.x + box.width <= 390 && box.y >= 0 && box.y + box.height <= 844).toBe(true);
+    expect(box && box.x >= 0 && box.x + box.width <= PHONE.width && box.y >= 0 && box.y + box.height <= PHONE.height).toBe(true);
     await shot(page, `review-reference-verse-${view}`);
 
     await card.getByRole('button', { name: 'Close', exact: true }).click();

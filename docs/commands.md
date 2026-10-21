@@ -4,7 +4,7 @@ The long notes of CLAUDE.md's Quick reference, moved word for word (mw-gq6.485):
 
 ```bash
 npx playwright test  # all e2e, no flags (use --workers=2): the 'chromium' project (1280 wide) and 'shots' (390x844); chromium leaves out the specs that only pass at a phone's width
-                     #   (tests/support/e2e-projects.ts PHONE_WIDTH_SPECS: add a spec there when it passes under shots and fails under chromium; tests/unit/playwright-live-config.test.ts holds the list
+                     #   (tests/support/e2e-projects.ts PHONE_WIDTH_SPECS: add a spec there only if it cannot set its own viewport (the list is empty today: a spec that asserts a 390x844 bound does test.use({ viewport })); tests/unit/playwright-live-config.test.ts holds the list
                      #   to the config); the 'live' project is in the config only for `npm run e2e:live` (LAMPAS_E2E=live), so a plain run is green on a clean main; playwright.config.ts also gives the specs the
                      #   __APP_SEMVER__ global that src/config.ts needs (Vite defines it, Playwright does not)
 npm run e2e:live     # the live tests (tests/e2e/*-live.spec.ts: tutor-live asks the tutor about Romans 8:28, talk-live asks the Bible talk, read-live reads 8:28 aloud to the mill through Chromium's fake microphone playing tests/fixtures/read-8-28.wav, and its Greek case plays read-8-28-el.wav; Playwright project 'live'): drives the DEPLOYED app

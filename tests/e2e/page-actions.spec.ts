@@ -6,6 +6,9 @@ import { honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+test.use({ viewport: { width: 390, height: 844 } });
+
 const PAGES = [
   { hash: '#/about', title: 'About' },
   { hash: '#/studyway', title: 'My study way' },

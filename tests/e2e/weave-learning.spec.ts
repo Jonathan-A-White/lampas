@@ -3,6 +3,9 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
 
+// The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+test.use({ viewport: { width: 390, height: 844 } });
+
 async function openReader(page: Page) {
   await openUnlocked(page);
   await page.goto('/');

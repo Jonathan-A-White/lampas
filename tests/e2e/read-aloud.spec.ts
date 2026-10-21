@@ -3,6 +3,9 @@ import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// The 390 bound below is the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+test.use({ viewport: { width: 390, height: 844 } });
+
 // The engine is voice-kit's honest fake (tests/support/honest-fakes.ts): a verse takes the time it takes to say, so it goes on
 // by itself. A slow reader (300 ms a word) keeps a verse on the bar long enough to look at, and the page's clock (Playwright's
 // page.clock) runs ahead to get through the verses between; how a real phone's voices sound is only a phone check

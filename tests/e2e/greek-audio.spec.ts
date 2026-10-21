@@ -4,6 +4,10 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { asSpoken } from '../support/lone-word';
 
+// The bound below is the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+const PHONE = { width: 390, height: 844 };
+test.use({ viewport: PHONE });
+
 // The engine is a stand-in that records what the page asks of it (a headless Chromium has no Greek voice);
 // whether a real phone's Greek voice sounds right is only a phone check (docs/pwa-best-practices.md section 12).
 async function withGreekVoice(page: Page) {
@@ -88,7 +92,7 @@ test("without a Greek voice a word's speaker still shows and a tap puts one line
   const help = page.locator('[role="status"]:not([data-live-region])');
   await expect(help).toContainText('No Greek voice on this');
   const box = await help.boundingBox();
-  expect(box && box.x >= 0 && box.x + box.width <= 390).toBe(true);
+  expect(box && box.x >= 0 && box.x + box.width <= PHONE.width).toBe(true);
   await expectFitsPhone(page);
   await shot(page, 'speech-no-voice');
 });
