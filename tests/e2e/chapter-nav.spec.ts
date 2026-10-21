@@ -17,7 +17,11 @@ test('the foot of 1 John 1 offers 1 John 2, which opens from the top and is kept
   const next = nav.getByRole('button', { name: '1 John 2 ›' });
   await expect(next).toBeInViewport();
   await expect(nav.getByRole('button', { name: '‹ 2 Peter 3' })).toBeInViewport();
-  for (const button of await nav.getByRole('button').all()) expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(TAP);
+  // the chapter buttons keep 48 px; the tip's own Got it above them (mw-5r3p30.706) is the tip card's 44 px
+  const chapterButtons = nav.getByRole('button', { name: /[‹›]/ });
+  expect(await chapterButtons.count()).toBe(2);
+  for (const button of await chapterButtons.all()) expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(TAP);
+  expect((await nav.getByRole('button', { name: 'Got it' }).boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
     clientWidth: document.documentElement.clientWidth,
