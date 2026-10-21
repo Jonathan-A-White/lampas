@@ -36,7 +36,7 @@ import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
 import { openedByTutor, pendingRequest, takeRequest } from './nav/readerRequest';
-import { closeVerse, openPassage, openVerse, readerOf, routeOf, useAddress } from './nav/route';
+import { closeVerse, openPassage, openVerse, openVerseRange, readerOf, routeOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
@@ -240,6 +240,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   });
   // A tap on a verse number opens the Verse view as a Back step of its own; the address then names the verse and the effect below tells the bus.
   const selectVerse = useCallback((n: number) => openVerse(n), []);
+  // A tap on the place line opens the whole chapter in the view a section heading opens (mw-5r3p30.699), as a Back step; Back returns to the reader where it was.
+  const openChapter = useCallback(() => {
+    const verses = chapter?.verses;
+    if (!verses?.length) return;
+    const { view: v, weave: w } = readerOf(window.location.hash);
+    openVerseRange({ book: BOOK, chapter: CHAPTER, from: verses[0].n, to: verses[verses.length - 1].n, view: v, weave: w });
+  }, [chapter, BOOK, CHAPTER]);
   const [action, chooseAction] = useVerseAction();
   // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
   useEffect(() => {
@@ -258,7 +265,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (!chapter || viewVerse !== undefined || wantedPassage === undefined) return undefined;
     if (wantedTo === undefined) return passageAt(chapter.verses, wantedPassage);
     const lesson = lessonForRange(approach, BOOK, CHAPTER, wantedPassage, wantedTo);
-    const heading = lesson?.lesson.lesson.title ?? chapter.verses.find((v) => v.n === wantedPassage)?.h ?? `${TITLE}:${wantedPassage}-${wantedTo}`;
+    // the whole chapter (the place line opens it, mw-5r3p30.699) is headed with the chapter, not with the heading of its first section
+    const whole = wantedPassage === chapter.verses[0]?.n && wantedTo >= chapter.verses[chapter.verses.length - 1].n;
+    const heading = lesson?.lesson.lesson.title ?? (whole ? TITLE : chapter.verses.find((v) => v.n === wantedPassage)?.h) ?? `${TITLE}:${wantedPassage}-${wantedTo}`;
     return rangeOf(chapter.verses, wantedPassage, wantedTo, heading);
   }, [chapter, viewVerse, wantedPassage, wantedTo, approach, BOOK, CHAPTER, TITLE]);
   // The lesson the view's range reads, when the chosen approach has one for it: the Lesson strip and its Check (src/CheckSheet.tsx).
@@ -502,7 +511,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </div>
       </main>
       {/* with Turn pages the round button's room is under the place line, beside the button, so the page reaches down to the line (mw-5r3p30.610) */}
-      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} floor={footBare && !barUp} room={away || !ai ? '0px' : `calc(${ASK_BUTTON_ROOM})`} /> : null}
+      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} floor={footBare && !barUp} room={away || !ai ? '0px' : `calc(${ASK_BUTTON_ROOM})`} /> : null}
       <BarSlot level={1} inset={footBare && !(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {chapter && !viewUnit && ai ? (
@@ -517,7 +526,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           />
         </Away>
       ) : null}
-      {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} visible={away} floor /> : null}
+      {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} visible={away} floor /> : null}
       {chapter && !viewUnit ? (
         <AskTutorButton
           away={immersive ? away : undefined}

@@ -7,3 +7,30 @@ export const MAX_REQUEST_BYTES = 8000;
 /** The longest question he may ask, in the Bible talk and in Ask the tutor alike: room for a prayer or a passage of several paragraphs pasted in. The box
  * keeps whatever he pastes and warns past this (never cuts it); the grinds' input schemas (question) and answer schemas (the cleaned question) say the same. */
 export const MAX_QUESTION_CHARS = 4000;
+
+/** The mark a clipped text ends with, so the tutor can see the text goes on past what it was sent. */
+export const TEXT_CLIP_MARK = ' …';
+
+/** The text with its last tenth (at least 40 characters) cut at a space, ending in TEXT_CLIP_MARK. A text of 200 characters or fewer is not cut. */
+export function clipText(text: string): string {
+  if (text.length <= 200) return text;
+  const body = text.endsWith(TEXT_CLIP_MARK) ? text.slice(0, -TEXT_CLIP_MARK.length) : text;
+  const cut = body.slice(0, body.length - Math.max(40, Math.floor(body.length / 10)));
+  return cut.slice(0, Math.max(cut.lastIndexOf(' '), 0)).trimEnd() + TEXT_CLIP_MARK;
+}
+
+/**
+ * Clips the longer of a request's two texts (Greek and English of the same verses) a tenth at a time while `tooBig` says the request is still over its cap
+ * (mw-5r3p30.699: a whole chapter opened from the place line is a passage no request holds). The first part of the text is kept, since the tutor reads on from
+ * the verse the reference starts at. Returns the texts as they ended up.
+ */
+export function clipTexts(texts: { greek: string; english: string }, tooBig: (texts: { greek: string; english: string }) => boolean): { greek: string; english: string } {
+  let now = texts;
+  while (tooBig(now)) {
+    const key = now.greek.length >= now.english.length ? 'greek' : 'english';
+    const clipped = clipText(now[key]);
+    if (clipped === now[key]) break;
+    now = { ...now, [key]: clipped };
+  }
+  return now;
+}
