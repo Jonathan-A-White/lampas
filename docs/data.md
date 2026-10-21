@@ -46,6 +46,17 @@ Every lemma of the text once (about 5,400, 320 KB), so a word he names that the 
 `g` is the TBESG gloss (cleaned of its `range: chosen` form, below), `s` the Strong's number, `c` the part of speech (`parseCode.ts` `splitParse`) of the lemma's first use in
 canonical order; keys are NFC, in alphabetical order. `src/data/lexicon.ts` (`loadLexicon`, `lookupLemma`) reads it.
 
+## `lemma-forms/<lemma>.json` (outside `public/data`)
+
+Generated into `public/lemma-forms/` by `scripts/build-lemma-forms.mjs` (`npm run build`, or `npm run forms:build`) from the chapters above; git-ignored. One file for each of the 5,374 lemmas (about 1 MB in all, the largest, ποιέω, 4 KB), every form of the lemma the text uses:
+
+```json
+{"l":"ἀγαπάω","f":[["ἀγαπήσεις","V-FAI-2S",10,"mat",5,43],["ἀγαπῶ","V-PAI-1S",5,"jhn",14,31]]}
+```
+
+`[form, RP code, count, book, chapter, verse of the first use]`, in the order the text first uses them; the same form with another code is another entry. The form is the text's own, the first letter lower-cased unless the lemma is a name, a grave accent turned acute.
+`src/data/paradigms/ownForms.ts` (`loadLemmaForms`) fetches one on demand for a word's own paradigm (docs/paradigms.md 'This word').
+
 ## `frequency.json`
 
 How often each word is used, for the frontier ("the commonest words he does not know yet"). One entry per Strong's number the text uses
