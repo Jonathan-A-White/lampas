@@ -105,7 +105,7 @@ kinds of "if") a New Testament sentence is built from.
 | Foundations | Reading the letters of John | 1 John 4:13-21 | `pronoun-indefinite`, `mood-infinitive`, `conditional`, `tense-perfect` | partly | `conditional-classes` |
 | Foundations | Reading the letters of John | 1 John 5:1-12 | `mood-participle`, `tense-perfect`, `pronoun-demonstrative`, `voice-passive` | covered |  |
 | Foundations | Reading the letters of John | 1 John 5:13-21 | `tense-future`, `pronoun-interrogative`, `mood-imperative`, `pronoun-indefinite` | partly | `indirect-discourse`, `purpose-result-clauses` |
-| Foundations | Reading the letters of John | 2 John and 3 John | `comparative`, `voice-passive-deponent`, `mood-infinitive`, `pronoun-reciprocal` | covered |  |
+| Foundations | Reading the letters of John | 2 John 1:1-13 | `comparative`, `voice-passive-deponent`, `mood-infinitive`, `pronoun-reciprocal` | covered |  |
 | Wider reading | Reading | Reading the prologue of John | `poetic`, `aramaic`, `hebrew` | covered |  |
 | Wider reading | Reading | Reading a night talk in John | `poetic`, `aramaic`, `hebrew` | covered |  |
 | Fluent reading | Reading | Reading Romans 8 | `mood-participle`, `mood-infinitive` | partly | `participle-uses`, `reading-the-text` |
