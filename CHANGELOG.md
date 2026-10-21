@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.391
+_2026-10-21_
+- Fixed: Choose a book opens with the search box ready to type in and the keyboard up.
+
 ## 0.1.390
 _2026-10-21_
 - Fixed: The help that opens under a setting now looks like a neat card instead of grey text with a bright yellow link.

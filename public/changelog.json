@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.391",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.711",
+    "kind": "fixed",
+    "text": "Choose a book opens with the search box ready to type in and the keyboard up."
+  },
+  {
     "version": "0.1.390",
     "date": "2026-10-21",
     "story": "mw-5r3p30.702",
