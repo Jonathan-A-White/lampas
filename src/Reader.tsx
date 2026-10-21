@@ -370,7 +370,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     if (plan) updatePlan(plan);
   }, [plan]);
-  // A reading that went on into this chapter (the Read aloud span, src/speech/readAloud.ts) starts its first verse once the plan is here.
+  // A reading that went on into this chapter (Play to, src/speech/readAloud.ts) starts its first verse once the plan is here.
   const crossing = reading.crossing;
   const crossingHere = crossing !== null && crossing.book === BOOK && crossing.chapter === CHAPTER;
   const readingStatus = reading.status;

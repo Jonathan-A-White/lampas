@@ -8,7 +8,7 @@ import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layou
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
 import type { Theme } from '../../appearance/themes';
 import { DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
-import { DEFAULT_READ_SPAN, isReadSpan, type ReadSpan } from '../../speech/readSpan';
+import { playToOf, type PlayTo } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
@@ -166,13 +166,13 @@ export async function setSectionHeadings(headings: SectionHeadings): Promise<voi
 
 const READ_SPAN_KEY = 'readSpan';
 
-/** The saved Read aloud span; the default (Chapter) when he has not chosen yet or the saved value is not one in the list. */
-export async function getReadSpan(): Promise<ReadSpan> {
+/** The saved Play to (the key is still readSpan); the end of the book when he has not chosen yet or the saved value is an old span (verse, passage, chapter). */
+export async function getReadSpan(): Promise<PlayTo> {
   const row = await db.settings.get(READ_SPAN_KEY);
-  return isReadSpan(row?.value) ? row.value : DEFAULT_READ_SPAN;
+  return playToOf(row?.value);
 }
 
-export async function setReadSpan(span: ReadSpan): Promise<void> {
+export async function setReadSpan(span: PlayTo): Promise<void> {
   await db.settings.put({ key: READ_SPAN_KEY, value: span });
 }
 

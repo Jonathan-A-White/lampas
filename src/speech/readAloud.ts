@@ -6,11 +6,11 @@
 // goes on to the next verse when a verse is over and the reading is continuous, publishes verse-reading as each verse starts, and
 // follows the package: a Pause, Resume or Stop made on the bar moves the state here (syncWithEngine). A word said while a reading is under
 // way (a long press, a speaker) PAUSES it (greek.ts speakBeside says the word beside it), so Resume goes on from the sentence it was in.
-// How far a reading goes is the Read aloud span (src/speech/readSpan.ts, docs/read-aloud.md): the verse, to the next section
-// heading, to the chapter's end, or on through the book. Where it goes into another chapter (Book always, Passage when the next
-// chapter's first verse has no heading) it asks the Reader to turn to it (openReader) and waits as `crossing`; the Reader that
-// opens that chapter hands over its plan (continueReading) and the voice starts verse 1 at once, so the chapter turns just as
-// the voice reaches it.
+// How far a reading goes is its span (src/speech/readSpan.ts, docs/read-aloud.md): the verse a tap started (a verse's play or Listen), a section or a
+// chapter (a Listen on a heading's view or the place line's chapter view), or, for the header's Play, Play to: on through the book or through the Bible.
+// Where it goes into another chapter (Play to either) it asks the Reader to turn to it (openReader), into the next book too for the Bible, and waits as
+// `crossing`; the Reader that opens that chapter hands over its plan (continueReading) and the voice starts verse 1 at once, so the chapter turns just
+// as the voice reaches it.
 import { useSyncExternalStore } from 'react';
 import { getSpeech, isSpeaking, pause as enginePause, resume as engineResume, stop as engineStop, subscribe as subscribeEngine } from 'voice-kit/speech';
 import { loadChapter, type Verse } from '../data/chapter';
@@ -104,7 +104,7 @@ let chapterNumber = 0;
 let bookCode: string | null = null;
 /** the book the plan is of, for a reading that never leaves its plan (a passage); with bookCode it tells which chapter a paused reading belongs to */
 let planBook: string | null = null;
-/** how far this reading goes (a verse button's reading is 'verse') */
+/** how far this reading goes (a verse button's reading is 'verse'; the header's Play is Play to: 'book' or 'bible') */
 let reach: ReadSpan = 'verse';
 /** a plan for the verses after the one being read: the chapter was shown differently meanwhile */
 let queued: PlanVerse[] | null = null;
@@ -187,11 +187,11 @@ function syncWithEngine(): void {
 
 if (typeof window !== 'undefined') subscribeEngine(syncWithEngine);
 
-/** The chapter after the one being read, when this reading may go into it: never for a verse or a chapter, never out of the book. */
+/** The chapter after the one being read, when this reading may go into it: never for a verse, a section or a chapter; out of the book only for the Bible. */
 function chapterAhead(): ChapterRef | null {
-  if (bookCode === null || chapterNumber === 0 || (reach !== 'passage' && reach !== 'book')) return null;
+  if (bookCode === null || chapterNumber === 0 || (reach !== 'passage' && reach !== 'book' && reach !== 'bible')) return null;
   const next = neighbours(bookCode, chapterNumber).next;
-  return next && next.book === bookCode ? { book: next.book, chapter: next.chapter } : null;
+  return next && (reach === 'bible' || next.book === bookCode) ? { book: next.book, chapter: next.chapter } : null;
 }
 
 /** The plan has no verse after `at`: go on into the next chapter when the span allows, else the reading is over. */

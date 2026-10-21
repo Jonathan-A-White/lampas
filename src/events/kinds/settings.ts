@@ -1,7 +1,7 @@
 // src/events/kinds/settings.ts — the event kinds of settings and appearance. bus.ts composes AppEvent from every kinds file; docs/events.md lists each kind.
 import type { Immersive, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, Weave, WeaveGrammar } from '../../data/repositories';
 import type { Depth, TutorScript } from '../../script/scripts';
-import type { ReadSpan } from '../../speech/readSpan';
+import type { PlayTo } from '../../speech/readSpan';
 import type { Theme } from '../../appearance/themes';
 import type { SpeechRates } from '../../speech/languages';
 import type { GreekPronunciation } from '../../speech/pronunciation';
@@ -21,8 +21,8 @@ export type SettingsEvent =
   | { kind: 'headings-changed'; headings: SectionHeadings }
   /** the Immersive reader choice: whether the Reader's top and Talk bar slide away while he reads */
   | { kind: 'immersive-changed'; immersive: Immersive }
-  /** the Read aloud span: how far the header's Read from the top / Read from here goes */
-  | { kind: 'read-span-changed'; span: ReadSpan }
+  /** Play to: how far the header's Play goes (the end of the book or of the Bible) */
+  | { kind: 'read-span-changed'; span: PlayTo }
   /** Read the tutor's responses aloud: whether a verdict or an answer is spoken the moment it arrives */
   | { kind: 'read-tutor-changed'; readTutor: ReadTutor }
   /** how deep into a language the tutor goes (Settings > Hebrew in the tutor): `script` is the language tag, 'he' */

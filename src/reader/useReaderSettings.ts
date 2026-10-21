@@ -22,7 +22,7 @@ import {
   setReaderView,
   setWeave,
   type GrammarLevel,
-  type ReadSpan,
+  type PlayTo,
   type ReadingLayout,
   type ReaderView,
   type SectionHeadings,
@@ -49,7 +49,7 @@ export interface ReaderSettings {
   weaveShown: boolean;
   layout: ReadingLayout;
   headings: SectionHeadings;
-  readSpan: ReadSpan;
+  readSpan: PlayTo;
   solid: ReadonlySet<string>;
   learning: ReadonlySet<string>;
   levels: ReadonlyMap<string, GrammarLevel>;
