@@ -38,6 +38,7 @@ describe('the address', () => {
     expect(routeOf('#/memory')).toBe('memory');
     expect(routeOf('#/requests')).toBe('requests');
     expect(routeOf('#/askmore')).toBe('askmore');
+    expect(routeOf('#/conversations')).toBe('conversations');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/preface')).toBe('preface');
     expect(routeOf('#/preface/robinson')).toBe('essay');

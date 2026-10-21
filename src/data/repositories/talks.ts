@@ -181,26 +181,76 @@ export async function deleteTurns(ref: string): Promise<void> {
   });
 }
 
-/** A conversation as the Share screen lists it: its key, the first thing he said in it and when the last turn came. */
-export interface RecentTalk {
+/** A conversation as the lists show it (Share to Lampas > Choose a talk, and Conversations): its key, the first and the last thing he said in it and when the last turn came. */
+export interface Conversation {
   ref: string;
   firstQuestion: string;
+  lastQuestion: string;
   lastWhen: number;
 }
 
-/** The conversations, the one with the newest turn first (at most `limit`). A turn shows his question as the tutor cleaned it up when it did. */
-export async function listRecentTalks(limit = 20): Promise<RecentTalk[]> {
-  const talks = new Map<string, RecentTalk & { firstWhen: number }>();
+/** What he said in a turn: his question as the tutor cleaned it up when it did. */
+const questionOf = (turn: TalkTurn): string => (turn.cleanQ ?? turn.q).trim();
+
+/** The conversations, the one with the newest turn first (all of them, or at most `limit`). */
+export async function listConversations(limit = Infinity): Promise<Conversation[]> {
+  const talks = new Map<string, Conversation & { firstWhen: number }>();
   await db.talks.each((turn) => {
     const seen = talks.get(turn.ref);
-    const question = (turn.cleanQ ?? turn.q).trim();
-    if (!seen) talks.set(turn.ref, { ref: turn.ref, firstQuestion: question, firstWhen: turn.when, lastWhen: turn.when });
+    const question = questionOf(turn);
+    if (!seen) talks.set(turn.ref, { ref: turn.ref, firstQuestion: question, firstWhen: turn.when, lastQuestion: question, lastWhen: turn.when });
     else {
       if (turn.when < seen.firstWhen) Object.assign(seen, { firstQuestion: question, firstWhen: turn.when });
-      if (turn.when > seen.lastWhen) seen.lastWhen = turn.when;
+      if (turn.when >= seen.lastWhen) Object.assign(seen, { lastQuestion: question, lastWhen: turn.when });
     }
   });
-  return Array.from(talks.values(), ({ ref, firstQuestion, lastWhen }) => ({ ref, firstQuestion, lastWhen }))
+  return Array.from(talks.values(), ({ ref, firstQuestion, lastQuestion, lastWhen }) => ({ ref, firstQuestion, lastQuestion, lastWhen }))
     .sort((a, b) => b.lastWhen - a.lastWhen)
     .slice(0, limit);
+}
+
+/** A conversation the search found, with the line of its newest matching turn that holds the first word searched for. */
+export interface ConversationHit extends Conversation {
+  line: string;
+}
+
+/** The longest matching line a hit shows, cut around the word. */
+const LINE_MAX = 120;
+
+/** The first line of `texts` that holds `word` (lower case), cut to LINE_MAX around it with … where it is cut; undefined when none does. */
+function lineWith(texts: string[], word: string): string | undefined {
+  for (const text of texts) {
+    for (const line of text.split('\n')) {
+      const at = line.toLowerCase().indexOf(word);
+      if (at < 0) continue;
+      const trimmed = line.trim();
+      if (trimmed.length <= LINE_MAX) return trimmed;
+      const from = Math.max(0, Math.min(at - Math.floor((LINE_MAX - word.length) / 2), line.length - LINE_MAX));
+      const cut = line.slice(from, from + LINE_MAX).trim();
+      return `${from > 0 ? '…' : ''}${cut}${from + LINE_MAX < line.length ? '…' : ''}`;
+    }
+  }
+  return undefined;
+}
+
+/** The conversations with a turn whose question or answer holds every word of `query` (case-insensitive), the one with the newest last turn first.
+ * The turns are read from the phone and filtered in memory: no index is needed for the few thousand a phone holds. */
+export async function searchConversations(query: string): Promise<ConversationHit[]> {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return [];
+  const found = new Map<string, { when: number; line: string }>();
+  await db.talks.each((turn) => {
+    const texts = [turn.cleanQ ?? turn.q, turn.q, turn.a];
+    const all = texts.join('\n').toLowerCase();
+    if (!words.every((word) => all.includes(word))) return;
+    const line = lineWith(texts, words[0] as string);
+    const seen = found.get(turn.ref);
+    if (line !== undefined && (!seen || turn.when >= seen.when)) found.set(turn.ref, { when: turn.when, line });
+  });
+  if (found.size === 0) return [];
+  const conversations = await listConversations();
+  return conversations.flatMap((conversation) => {
+    const hit = found.get(conversation.ref);
+    return hit ? [{ ...conversation, line: hit.line }] : [];
+  });
 }

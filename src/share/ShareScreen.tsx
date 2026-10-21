@@ -5,7 +5,7 @@
 // and the words in its field, NOT sent. Shared words are also searched for Bible references, and a shared picture is read for them by the find-refs grist (src/share/findRefs.ts); they are listed above the choice as links (ShareReferences.tsx). A file that is no JPEG, PNG or WebP (a GIF) is not counted and gets a "left out" line (shareText.ts leftOutLine) and stays out of the composer; a share with nothing readable (no words, no such picture: hasReadable) offers only Cancel. The talk is the Talk sheet over its own scope (src/share/ShareTalk.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useState } from 'react';
-import { dropShares, listRecentTalks, waitingShare, type RecentTalk, type ShareRow } from '../data/repositories';
+import { dropShares, listConversations, waitingShare, type Conversation, type ShareRow } from '../data/repositories';
 import { navigate, replaceHash, useAddress } from '../nav/route';
 import { focusOnMount } from '../ui/focus';
 import { useNeverShrink } from '../ui/neverShrink';
@@ -19,7 +19,8 @@ import { sharedContentOf, type SharedContent } from './shared';
 import { TalkHost } from './ShareTalk';
 import { useTalkScope } from './talkScope';
 import { describeShare, hasReadable, leftOutLine, shareTalkHash } from './shareText';
-import { dateText, newTalkRef, placeOf, talkLabel, timeAgo } from './talkPlace';
+import { newTalkRef, placeOf, talkLabel, timeAgo } from './talkPlace';
+import { TalkRow } from './TalkRow';
 
 const paramsOf = (hash: string): URLSearchParams => new URLSearchParams(hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '');
 
@@ -28,7 +29,7 @@ const goHome = (): void => navigate('home', { replace: true });
 const ACTION = 'flex min-h-14 w-full flex-col justify-center rounded-xl border px-4 py-2 text-left active:bg-line';
 
 /** The sheet that asks where the share goes. */
-function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: RecentTalk[]; onPick: (ref: string) => void; onCancel: () => void }) {
+function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: Conversation[]; onPick: (ref: string) => void; onCancel: () => void }) {
   const titleId = useId();
   const [choosing, setChoosing] = useState(false);
   const { drag, handle } = useSheetDrag(onCancel);
@@ -36,7 +37,7 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
   useSheetBack(onCancel);
   // a share of nothing Lampas reads (a GIF, a PDF) would lead to an empty talk: the sheet says what was left out and offers only Cancel
   const readable = hasReadable(row);
-  const newest: RecentTalk | undefined = readable ? talks[0] : undefined;
+  const newest: Conversation | undefined = readable ? talks[0] : undefined;
   const [now] = useState(() => Date.now());
   // a shared picture is read by the find-refs grist (only on a phone that may send to the mill); its references join the words'
   const { refs: picture, retry } = usePictureRefs(row, useAiAllowed());
@@ -94,13 +95,7 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
               <ul aria-label="Recent talks" className="space-y-2">
                 {talks.map((talk) => (
                   <li key={talk.ref}>
-                    <button type="button" data-recent-talk={talk.ref} onClick={() => onPick(talk.ref)} className={`${ACTION} border-line bg-surface`}>
-                      <span className="flex items-baseline justify-between gap-2">
-                        <span className="title-wrap text-lg font-medium">{talkLabel(talk.ref)}</span>{' '}
-                        <span className="shrink-0 text-sm text-muted">{dateText(talk.lastWhen)}</span>
-                      </span>{' '}
-                      <span className="title-wrap text-base text-muted">{talk.firstQuestion}</span>
-                    </button>
+                    <TalkRow talk={talk} line={talk.firstQuestion} onPick={onPick} />
                   </li>
                 ))}
               </ul>
@@ -140,7 +135,7 @@ export function ShareScreen() {
     if ((!talk && row === null) || (talk && !placeOf(talk))) goHome();
   }, [talk, row]);
   // The talks he can place it in, read before the sheet is drawn so that what a tap lands on does not change under his thumb.
-  const talks = useLiveQuery(() => listRecentTalks().then((all) => all.filter((t) => placeOf(t.ref) !== null)), []);
+  const talks = useLiveQuery(() => listConversations().then((all) => all.filter((t) => placeOf(t.ref) !== null)), []);
   const cancel = useCallback(() => {
     void dropShares().then(goHome);
   }, []);

@@ -62,3 +62,10 @@ export function timeAgo(when: number, now = Date.now()): string {
   if (days < 7) return days === 1 ? 'yesterday' : `${days} days ago`;
   return dateText(when);
 }
+
+/** The first line of `text` with anything on it: a question of several lines shows its first in a row. */
+export const firstLine = (text: string): string =>
+  text
+    .split('\n')
+    .map((line) => line.trim())
+    .find(Boolean) ?? '';
