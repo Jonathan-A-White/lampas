@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.380",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.685",
+    "kind": "fixed",
+    "text": "A long reading now gets more time to be checked, and if it still takes too long you are told so instead of that the tutor is offline."
+  },
+  {
     "version": "0.1.379",
     "date": "2026-10-20",
     "story": "mw-06ggew.8",

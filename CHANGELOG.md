@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.380
+_2026-10-21_
+- Fixed: A long reading now gets more time to be checked, and if it still takes too long you are told so instead of that the tutor is offline.
+
 ## 0.1.379
 _2026-10-20_
 - New: Settings has a Talk section where you choose whether the talk bars are held or tapped, and whether your words are sent when you let go or wait for the Send button.
