@@ -104,23 +104,31 @@ export interface SendParams {
   clientTiming?: ClientTiming;
 }
 
-/** The shape checks bsv-kit's sendGrist makes before anything goes out. */
+/** The kit's types of one kind as a phrase ('a, b or c'), and every kind's for a refusal line: built from grist.GRIST_FILE_TYPES, never written out. */
+const listOf = (mimes: readonly string[]): string => (mimes.length === 1 ? mimes[0] : `${mimes.slice(0, -1).join(', ')} or ${mimes[mimes.length - 1]}`);
+const ALL_TYPES = grist.GRIST_FILE_TYPES.map((type) => listOf(type.mimes)).join(', or ');
+/** The photo types a grist carries: the kit's list (grist.PHOTO_MIMES), for what picks or filters a picture. */
+export const MILL_PHOTO_MIMES: readonly string[] = grist.PHOTO_MIMES;
+
+/** The shape checks bsv-kit's sendGrist makes before anything goes out: the types and caps are grist.GRIST_FILE_TYPES. */
 function check(files: MillFile[]): void {
   if (files.length > grist.MAX_PHOTOS) throw new grist.GristInputError(`${files.length} files is over the ${grist.MAX_PHOTOS} a grist may carry.`);
-  let audio = 0;
+  const totals = new Map<string, number>();
   for (const file of files) {
     if (file.name !== undefined && (!file.name.trim() || /[\\/]/.test(file.name))) {
       throw new grist.GristInputError(`The file name ${JSON.stringify(file.name)} must be a base name: not empty, no folders.`);
     }
-    const mime = baseMime(file.mime);
-    if ((grist.AUDIO_MIMES as readonly string[]).includes(mime)) audio += file.bytes.length;
-    else if (!(grist.PHOTO_MIMES as readonly string[]).includes(mime)) {
-      throw new grist.GristInputError(`${file.mime || 'a file of no type'} is not a file a grist carries: use image/jpeg, image/png or image/webp, or audio/webm, audio/ogg or audio/mp4.`);
-    } else if (file.bytes.length > grist.MAX_PHOTO_BYTES) {
-      throw new grist.GristInputError(`A photo of ${file.bytes.length} bytes is over the ${grist.MAX_PHOTO_BYTES} bytes (8 MB) a photo may be.`);
+    const type = grist.GRIST_FILE_TYPES.find((t) => t.mimes.includes(baseMime(file.mime)));
+    if (!type) throw new grist.GristInputError(`${file.mime || 'a file of no type'} is not a file a grist carries: use ${ALL_TYPES}.`);
+    if (type.total) totals.set(type.kind, (totals.get(type.kind) ?? 0) + file.bytes.length);
+    else if (file.bytes.length > type.maxBytes) {
+      throw new grist.GristInputError(`A ${type.kind} file of ${file.bytes.length} bytes is over the ${type.maxBytes} bytes a ${type.kind} file may be.`);
     }
   }
-  if (audio > grist.MAX_AUDIO_BYTES) throw new grist.GristInputError(`${audio} bytes of audio is over the ${grist.MAX_AUDIO_BYTES} bytes (8 MiB) a grist may carry.`);
+  for (const [kind, bytes] of totals) {
+    const type = grist.GRIST_FILE_TYPES.find((t) => t.kind === kind)!;
+    if (bytes > type.maxBytes) throw new grist.GristInputError(`${bytes} bytes of ${kind} is over the ${type.maxBytes} bytes a grist may carry.`);
+  }
 }
 
 function scriptOf(p: SendParams, attachments: grist.Attachment[]): string {

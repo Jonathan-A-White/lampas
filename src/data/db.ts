@@ -143,7 +143,7 @@ export interface TalkPicture {
   /** its place among the turn's pictures, from 0 */
   place: number;
   bytes: ArrayBuffer;
-  /** image/jpeg, image/png or image/webp */
+  /** one of bsv-kit's photo types (grist.PHOTO_MIMES); always image/jpeg after the cut */
   mime: string;
   /** the file name it was sent under: 'picture-1.jpg' */
   name: string;

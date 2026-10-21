@@ -2,6 +2,7 @@
 // a licence: no grist leaves the phone. A guard reads the sources, so a file that reaches for bsv-kit/grist itself fails here.
 import { Utils } from '@bsv/sdk';
 import { door } from 'bsv-kit/bsv';
+import { grist } from 'bsv-kit/grist';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -61,6 +62,37 @@ describe('the gated mill client', () => {
     setCurrentLicence('not-licensed');
     expect(await failure(pullStatuses({ key }))).toBeInstanceOf(door.RefusedError);
     expect(postern.calls).toEqual([]);
+  });
+});
+
+describe('the gate refuses a file the kit does not list', () => {
+  const send = (files: { bytes: Uint8Array; mime: string; name?: string }[]) => {
+    const d = timedDoor(new door.Door({ baseUrl: 'https://postern.allmymind.org/api', key }));
+    return failure(sendTimedGrist({ door: d, key, mill: 'm', app: 'lampas', kind: 'tips', v: '1', input: {}, files }));
+  };
+
+  it('names every type of GRIST_FILE_TYPES in its refusal, so a type added to the kit is shown', async () => {
+    const error = await send([{ bytes: new Uint8Array([1]), mime: 'application/pdf' }]);
+    expect(error).toBeInstanceOf(grist.GristInputError);
+    const mimes = grist.GRIST_FILE_TYPES.flatMap((t) => t.mimes);
+    expect(mimes.length).toBeGreaterThan(6);
+    for (const mime of mimes) expect((error as Error).message).toContain(mime);
+    expect(postern.calls).toEqual([]);
+  });
+
+  it('holds each type to its kit cap (a photo or a text file each, the audio of the grist together)', async () => {
+    for (const type of grist.GRIST_FILE_TYPES) {
+      const over = new Uint8Array(type.maxBytes + 1);
+      const error = await send([{ bytes: over, mime: type.mimes[0] }]);
+      expect(error, type.kind).toBeInstanceOf(grist.GristInputError);
+      expect((error as Error).message, type.kind).toContain(String(type.maxBytes + 1));
+    }
+    expect(postern.calls).toEqual([]);
+  });
+
+  it('lets a type the kit lists through the shape check (text/csv under its cap goes up)', async () => {
+    const error = await send([{ bytes: new Uint8Array([1, 2, 3]), mime: 'text/csv', name: 'a.csv' }]);
+    expect(error).not.toBeInstanceOf(grist.GristInputError);
   });
 });
 
