@@ -33,11 +33,13 @@ import { latestSetting, publish } from '../events/bus';
 import { openedOnReader, readerOf, routeOf } from '../nav/route';
 import { weaveOrderSetting, weaveSetting } from '../settings/definitions';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
-import { GREEK_VIEW_FROM, GREEK_WEAVE_FROM, viewAt, weaveAt } from '../settings/definitions/greekInterest';
+import { GREEK_VIEW_FROM, GREEK_WEAVE_FROM, viewAt, weaveAt, type GreekLevel } from '../settings/definitions/greekInterest';
 import { announceSetting, toldSetting, useSetting } from '../settings/store';
 import { useGreekInterest } from '../settings/useGreekInterest';
 
 export interface ReaderSettings {
+  /** the Greek dial's step, read in the same render as the view, so the English | Greek switch is there as soon as the verses are (mw-3ased2.2) */
+  greek: GreekLevel;
   view: ReaderView;
   weave: Weave;
   weaveGrammar: WeaveGrammar;
@@ -108,9 +110,9 @@ export function useReaderSettings(): ReaderSettings | undefined {
   }, [headings]);
   return useMemo(
     () =>
-      view && weave && weaveGrammar && weaveOrder && plainUnder !== undefined && levels && solid && learning && layout && headings && readSpan
-        ? { view, weave, weaveGrammar, weaveOrder, weaveShown: weave !== 'off' && plainUnder !== weave, layout, headings, readSpan, solid, learning, levels }
+      level !== undefined && view && weave && weaveGrammar && weaveOrder && plainUnder !== undefined && levels && solid && learning && layout && headings && readSpan
+        ? { greek: level, view, weave, weaveGrammar, weaveOrder, weaveShown: weave !== 'off' && plainUnder !== weave, layout, headings, readSpan, solid, learning, levels }
         : undefined,
-    [view, weave, weaveGrammar, weaveOrder, plainUnder, levels, solid, learning, layout, headings, readSpan],
+    [level, view, weave, weaveGrammar, weaveOrder, plainUnder, levels, solid, learning, layout, headings, readSpan],
   );
 }
