@@ -13,7 +13,7 @@ const patternOf = (example: string, field: string): string => {
 };
 
 // The tutor describes αυ by the app's respelling, never as "aw": the word "aw" on its own, or the respelling TAW-ta.
-const NOT_AW_FAIL = ['TAW-ta', 'The αυ in ταῦτα is said aw.', 'It sounds like "aw" before the t.', 'The aw of saw, then ta.', 'Aw-ta', 'say TAF, not AW'];
+const NOT_AW_FAIL = ['TAW-ta', 'It is never "aw" or "ow".', 'The αυ in ταῦτα is said aw.', 'It sounds like "aw" before the t.', 'The aw of saw, then ta.', 'Aw-ta', 'say TAF, not AW'];
 const NOT_AW_PASS = [
   'ταῦτα sounds like TAF-ta ... before τ is said "af" ... say TAF with force and let ta fall away softly.',
   'Let it fall away.',

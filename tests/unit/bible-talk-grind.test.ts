@@ -659,6 +659,12 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     expect(text).toMatch(/never name a wrong sound/i);
   });
 
+  // mw-5r3p30.719: the smoke saw "It is never 'aw' or 'ow'" in a right-looking answer: the guide's own 'never "aw"' was echoed as a denial
+  it('they say a denial of a wrong sound is naming it, and that the guide\'s own "never" wording is not to be repeated to him (mw-5r3p30.719)', () => {
+    expect(text).toMatch(/"it is never aw"/i);
+    expect(text).toMatch(/pronunciation_guide[^.]*its "never" wording is for you/i);
+  });
+
   it('they say never to cut a diphthong across two syllables', () => {
     expect(text).toMatch(/never split a pair of letters that makes one sound[^.]*αυ, ευ, ηυ, ου, αι, ει, οι, υι/i);
     expect(text).toMatch(/unless the second letter carries a diaeresis/);
