@@ -4,6 +4,7 @@
 // Settings, and its answer is always 'Licensed' or 'Not licensed' (the reason under it). Not licensed, it says what a licence unlocks and has
 // Get a licence (GetLicence.tsx, mw-cvwm1u.4: an email, a phone and two codes), with the key and its Copy below for a licence issued by hand. Licensed by the site
 // issuer, it shows My devices (MyDevices.tsx, mw-cvwm1u.5) above the key.
+import { useAlive } from 'pwa-kit/alive';
 import { useState } from 'react';
 import { GetLicence } from './GetLicence';
 import { KeyQr } from './KeyQr';
@@ -66,6 +67,7 @@ const HOW_TO_LICENCE = 'Or issue one to this key from Postern’s Key screen, th
 export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page = false, siteIssued = false, onRemoved }: Props) {
   const [copied, setCopied] = useState(false);
   const [getting, setGetting] = useState(false);
+  const alive = useAlive();
   const origin = licenceOriginOf(useAddress());
   const canGet = page && locked.kind !== 'licensed';
   const words = locked.kind === 'error' && locked.setup ? { title: locked.setup, hint: '' } : (page ? PAGE_WORDS : WORDS)[locked.kind];
@@ -73,11 +75,13 @@ export function Unlock({ locked, publicKeyHex, onCheckAgain, banner = true, page
   async function copy(): Promise<void> {
     try {
       await navigator.clipboard.writeText(publicKeyHex);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
     } catch {
       // No clipboard (an insecure page): the key text below is select-all, so he can still copy it by hand.
+      return;
     }
+    if (!alive()) return;
+    setCopied(true);
+    window.setTimeout(() => alive() && setCopied(false), 2000);
   }
 
   return (

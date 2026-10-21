@@ -3,6 +3,7 @@
 // delete (the page never adds one); Export (one file) and Import (a file, read and shown first, then put in place of what is kept once he says so).
 // Nothing here is sent to the tutor yet.
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useAlive } from 'pwa-kit/alive';
 import { useRef, useState } from 'react';
 import { downloadSeam } from './audio/clip';
 import {
@@ -45,8 +46,10 @@ function Note({ note }: { note: MemoryNote }) {
   const [mode, setMode] = useState<'view' | 'edit' | 'delete'>('view');
   const [text, setText] = useState(note.text);
   const [problem, setProblem] = useState<string | null>(null);
+  const alive = useAlive();
   const save = async (): Promise<void> => {
     const result = await putNote(note.name, text, 'me');
+    if (!alive()) return;
     if (result === 'saved') {
       setMode('view');
       setProblem(null);
@@ -173,19 +176,22 @@ function Transfer({ onReplaced }: { onReplaced: () => void }) {
   const input = useRef<HTMLInputElement>(null);
   const [picked, setPicked] = useState<Picked>({ kind: 'none' });
   const [saved, setSaved] = useState<string | null>(null);
+  // a file read or written after he has left the screen changes nothing on it (the download itself is what he asked for)
+  const alive = useAlive();
   const exportFile = async (): Promise<void> => {
     const name = fileName();
     downloadSeam.save(name, new Blob([await exportMemory()], { type: 'application/json' }));
-    setSaved(name);
+    if (alive()) setSaved(name);
   };
   const pick = async (file: File | undefined): Promise<void> => {
     if (input.current) input.current.value = '';
     if (!file) return;
     const read = readMemoryFile(await readText(file));
-    setPicked(read ? { kind: 'file', file: read } : { kind: 'bad' });
+    if (alive()) setPicked(read ? { kind: 'file', file: read } : { kind: 'bad' });
   };
   const replace = async (file: MemoryFile): Promise<void> => {
     await replaceMemory(file);
+    if (!alive()) return;
     onReplaced();
     setPicked({ kind: 'done', what: describeFile(file) });
   };

@@ -3,6 +3,7 @@
 // letters. Every answer goes on the back-off schedule and every finished idea gets its level. It ends on 'Where you are'; after twenty
 // questions it pauses and keeps its place (src/data/placementKeep.ts), so he can go on another day. The end card is kept too, and its entry's address
 // names it, so a reload or Back to it shows the card again; a new Place me opens the intro (mw-86e9r1.23).
+import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useRef, useState } from 'react';
 import { approachOf, DEFAULT_APPROACH, levelNumberOf, orderOf, type GrammarApproach } from './approaches';
 import { BOOK_INDEX } from './data/bookIndex';
@@ -84,6 +85,8 @@ const BUTTON = 'min-h-12 w-full rounded-xl text-lg font-medium';
 
 export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const [run, setRun] = useState<Run>({ status: 'loading' });
+  // an answer that comes after he has left the screen (a level read, a passage loaded) asks nothing, draws nothing and keeps nothing
+  const alive = useAlive();
   // Start over on the intro asks first: his kept answers go only on the second, deliberate tap (mw-hqd5bz.27)
   const [confirming, setConfirming] = useState(false);
   // The quick round's Say it again and Stop here sit where Next sat, so the second tap of a double tap on Next lands on them: they take no tap in the
@@ -129,9 +132,11 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
 
   /** Shows the question the state asks, or the end when it asks none. */
   const ask = async (state: PlacementState): Promise<void> => {
+    if (!alive()) return;
     if (state.done === 'finished') return afterWalk(state);
     if (state.done === 'paused') return setRun({ status: 'over', state, gaps: [] });
     if (passage.current.length === 0) passage.current = await loadPassage(mulberry32(state.seed));
+    if (!alive()) return;
     const question = questionFor(state, passage.current, lastQuestion.current, chosenPronunciation().respell);
     lastQuestion.current = question;
     setRun({ status: 'asking', state, item: itemOf(question), picked: null, after: null });
@@ -142,6 +147,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     if (state.quick === null && reachedFoundation(state)) {
       await writing.current;
       const rows = await listLevels();
+      if (!alive()) return;
       // a group he said he knows whole (I know this on the alphabet) is not asked again
       const claimed = new Set(Array.from(rows.values()).filter((r) => r.level === 'solid' && (r.how === 'sheet' || r.how === 'marked')).map((r) => r.id));
       const round = startQuick(levelsOf(rows), state.seed, claimed);
@@ -154,6 +160,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
 
   /** Shows the end card of a placement that is over, and keeps it for this entry. */
   const showCard = (over: Over): void => {
+    if (!alive()) return;
     const stamp = Date.now().toString(36);
     saveCard({ stamp, goal: session.goal, approach: session.approach.id, state: over.state, gaps: over.gaps.map((idea) => idea.id), fromLetters: over.fromLetters });
     showPlacementCard(stamp);
@@ -209,6 +216,7 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     }
     const goal = parseGoal(session.goal, BOOK_INDEX);
     const [needs, levels, evidence] = await Promise.all([goal ? passageNeeds(goal, loadChapter, BOOK_INDEX) : null, listLevels(), getEvidence()]);
+    if (!alive()) return;
     const known = new Map(Array.from(levels, ([id, row]): [string, Level] => [id, row.level]));
     const seed = Math.floor(newRandom()() * 0x100000000);
     const state = startPlacement(needs, known, orderOf(session.approach), seed, evidence);

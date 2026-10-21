@@ -1,5 +1,6 @@
 // src/About.tsx — Newton's line, why we credit, then every credit (texts, type, libraries, services, ideas, tools), read from ATTRIBUTION.md (src/attribution.ts).
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useAlive } from 'pwa-kit/alive';
 import { Fragment, useRef, useState, type ReactNode } from 'react';
 import { attribution } from './attribution';
 import { BuildVersion } from './BuildVersion';
@@ -45,6 +46,7 @@ export function About() {
   const { buttons, notice } = usePageActions('#/about', 'About');
   const taps = useRef({ count: 0, last: 0 });
   const [found, setFound] = useState(false);
+  const alive = useAlive();
   const answerLine = lastAnswerLine();
   // the notes the tutor said it would have used had they existed (mw-yrmkdf.2): a count and the last names, nothing more is sent for them
   const wished = useLiveQuery(getWishedNotes, []);
@@ -55,7 +57,7 @@ export function About() {
     t.last = now;
     if (t.count >= DEVELOPER_TAPS) {
       t.count = 0;
-      void setDeveloper('on').then(() => setFound(true));
+      void setDeveloper('on').then(() => alive() && setFound(true));
     }
   };
   return (

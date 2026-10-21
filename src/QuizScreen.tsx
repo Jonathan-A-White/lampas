@@ -1,5 +1,6 @@
 // src/QuizScreen.tsx — the Quick test: ten questions on his solid and learning words. Tap one of four
 // glosses, see at once whether it was right, go on; the end screen gives the score and the misses.
+import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useState } from 'react';
 import { loadChapter, wordLemma, wordParse, type Chapter } from './data/chapter';
 import { lookupLemma } from './data/lexicon';
@@ -60,6 +61,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
   const [missed, setMissed] = useState<Question[]>([]);
   // his answers to the questions before this one: the tutor is told them with the one he asks about
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
+  const alive = useAlive();
 
   const another = () => {
     clearRound();
@@ -68,7 +70,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     setPicked(null);
     setMissed([]);
     setAnswers([]);
-    void drawRound(newRandom()).then((questions) => setRound({ status: 'ready', questions }));
+    void drawRound(newRandom()).then((questions) => alive() && setRound({ status: 'ready', questions }));
   };
 
   const resume = () => {

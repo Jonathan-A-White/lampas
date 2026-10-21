@@ -1,6 +1,7 @@
 // src/ui/LinkActions.tsx — Copy link (and Share, where the phone has navigator.share) for the https link of a verse or a word (src/nav/links.ts
 // referenceUrl, wordUrl). Copying says 'Link copied'; a phone that refuses the clipboard shows the link itself, selected, to copy by hand: the tap
 // never ends in nothing. Used under a verse's panel (ReadCheck.tsx) and on the word sheet.
+import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useRef, useState } from 'react';
 import { copy } from './clipboard';
 
@@ -13,9 +14,11 @@ const COPIED_MS = 2500;
 export function LinkActions({ url, title, className, statusClassName = 'text-sm text-muted' }: { url: string; title: string; className?: string; statusClassName?: string }) {
   const [state, setState] = useState<'idle' | 'copied' | 'by-hand'>('idle');
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const alive = useAlive();
   useEffect(() => () => clearTimeout(timer.current), []);
   const canShare = typeof navigator.share === 'function';
   const copied = () => {
+    if (!alive()) return;
     setState('copied');
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setState('idle'), COPIED_MS);
@@ -23,7 +26,7 @@ export function LinkActions({ url, title, className, statusClassName = 'text-sm 
   return (
     <div data-link-actions className={`${className ?? ''} ${state === 'by-hand' ? 'col-span-full w-full' : ''}`}>
       <div className="flex flex-wrap items-center gap-x-1">
-        <button type="button" onClick={() => void copy(url).then((done) => (done ? copied() : setState('by-hand')))} className={BUTTON}>
+        <button type="button" onClick={() => void copy(url).then((done) => (done ? copied() : alive() && setState('by-hand')))} className={BUTTON}>
           Copy link
         </button>
         {canShare ? (
@@ -32,7 +35,7 @@ export function LinkActions({ url, title, className, statusClassName = 'text-sm 
             onClick={() =>
               void navigator.share({ title, url }).catch((error: unknown) => {
                 // closing the share sheet is not a failure
-                if (!(error instanceof DOMException && error.name === 'AbortError')) setState('by-hand');
+                if (alive() && !(error instanceof DOMException && error.name === 'AbortError')) setState('by-hand');
               })
             }
             className={BUTTON}
