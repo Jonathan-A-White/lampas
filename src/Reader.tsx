@@ -262,7 +262,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const lesson = lessonForRange(approach, BOOK, CHAPTER, wantedPassage, wantedTo);
     // the whole chapter (the place line opens it, mw-5r3p30.699) is headed with the chapter, not with the heading of its first section
     const whole = wantedPassage === chapter.verses[0]?.n && wantedTo >= chapter.verses[chapter.verses.length - 1].n;
-    const heading = lesson?.lesson.lesson.title ?? (whole ? TITLE : chapter.verses.find((v) => v.n === wantedPassage)?.h) ?? `${TITLE}:${wantedPassage}-${wantedTo}`;
+    // a lesson's title never names a whole chapter: a lesson that reads one is the chapter's own range, which the place line opens too (mw-5r3p30.704)
+    const heading = (whole ? TITLE : (lesson?.lesson.lesson.title ?? chapter.verses.find((v) => v.n === wantedPassage)?.h)) ?? `${TITLE}:${wantedPassage}-${wantedTo}`;
     return rangeOf(chapter.verses, wantedPassage, wantedTo, heading);
   }, [chapter, viewVerse, wantedPassage, wantedTo, approach, BOOK, CHAPTER, TITLE]);
   // The lesson the view's range reads, when the chosen approach has one for it: the Lesson strip and its Check (src/CheckSheet.tsx).
