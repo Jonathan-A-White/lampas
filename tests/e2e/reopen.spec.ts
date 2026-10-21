@@ -5,6 +5,12 @@ import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
 
 const scrollTop = (page: Page) => page.locator('[data-reader]').evaluate((el) => el.scrollTop);
+/** The biggest scroll offset the app has written to the phone (localStorage 'lampas.scrolls', src/nav/lastRoute.ts). */
+const keptScroll = (page: Page) =>
+  page.evaluate(() => {
+    const all = JSON.parse(localStorage.getItem('lampas.scrolls') ?? '{}') as Record<string, Record<string, number>>;
+    return Math.max(0, ...Object.values(all).flatMap((own) => Object.values(own)));
+  });
 
 test('closing the app and opening it again puts him back, and Back walks the places before', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
@@ -19,8 +25,8 @@ test('closing the app and opening it again puts him back, and Back walks the pla
   await first.locator('[data-reader]').evaluate((el) => (el.scrollTop = 900));
   const left = await scrollTop(first);
   expect(left).toBeGreaterThan(500);
-  // the scroll is written to the phone 250 ms after the last scroll event
-  await first.waitForTimeout(600);
+  // the scroll is written to the phone 250 ms after the last scroll event: wait for the write, not for a time
+  await expect.poll(() => keptScroll(first)).toBeGreaterThan(left - 5);
 
   await first.getByRole('button', { name: 'Settings', exact: true }).click();
   await openGroup(first, 'Account');
@@ -49,7 +55,7 @@ test('closing the app and opening it again puts him back, and Back walks the pla
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
-  await expect.poll(() => scrollTop(page), { timeout: 5000 }).toBeGreaterThan(left - 5);
+  await expect.poll(() => scrollTop(page)).toBeGreaterThan(left - 5);
   expect(await scrollTop(page)).toBeLessThan(left + 5);
   await shot(page, 'reopen-reader');
 
@@ -72,7 +78,7 @@ test('closing the app on a verse reopens its Verse view, and Back returns to the
   await first.goto('/');
   await first.getByRole('button', { name: 'Verse 28', exact: true }).click();
   await expect(first.getByRole('region', { name: 'Verse view' }).getByRole('heading', { name: 'Romans 8:28' })).toBeVisible();
-  await first.waitForTimeout(600);
+  await expect.poll(() => first.evaluate(() => localStorage.getItem('lampas.lastRoute'))).toContain('v=28');
   await first.close();
 
   const page = await context.newPage();

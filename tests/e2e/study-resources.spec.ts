@@ -177,7 +177,7 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   // Accordance is not on this phone: the tap leaves the page in front, and the sheet says so.
   await study.getByRole('group', { name: 'Accordance', exact: true }).getByRole('link').click();
   const sheet = page.getByRole('dialog', { name: 'App not on this phone' });
-  await expect(sheet).toBeVisible({ timeout: 4000 });
+  await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Accordance isn't on this phone")).toBeVisible();
   const get = sheet.getByRole('link', { name: 'Get Accordance', exact: true });
   await expect(get).toHaveAttribute('href', /play\.google\.com\/store\/apps\/details\?id=com\.accordancebible\.accordance/);
