@@ -95,7 +95,7 @@ export interface ChapterTextProps { blocks: Block[]; view: ReaderView; wovenOf: 
 export function ChapterText(props: ChapterTextProps): ReactElement;
 
 // src/reader/useReaderSettings.ts — (b)
-export interface ReaderSettings { view: ReaderView; weave: Weave; weaveGrammar: WeaveGrammar; layout: ReadingLayout; headings: SectionHeadings; readSpan: ReadSpan; solid: ReadonlySet<string>; learning: ReadonlySet<string>; levels: ReadonlyMap<string, GrammarLevel> }
+export interface ReaderSettings { view: ReaderView; weave: Weave; weaveGrammar: WeaveGrammar; layout: ReadingLayout; headings: SectionHeadings; readSpan: PlayTo; solid: ReadonlySet<string>; learning: ReadonlySet<string>; levels: ReadonlyMap<string, GrammarLevel> }
 export function useReaderSettings(): ReaderSettings | undefined; // undefined until every value has loaded
 
 // src/reader/useReaderTutor.ts — (c); one helper replaces the three near-identical callbacks

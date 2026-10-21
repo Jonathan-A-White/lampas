@@ -276,7 +276,7 @@ describe('currentSettings', () => {
       sectionHeadings: 'on',
       immersiveReader: 'off',
       immersiveHint: 'on',
-      readSpan: 'chapter',
+      readSpan: 'book',
       readLessons: 'off',
       readTutor: 'on',
       askBy: 'speaking',

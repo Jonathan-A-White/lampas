@@ -189,7 +189,7 @@ describe('reading a chapter', () => {
   });
 });
 
-describe('the Read aloud span', () => {
+describe('the span of a reading (Play to and the shorter readings)', () => {
   const rom9 = JSON.parse(readFileSync('public/data/rom/9.json', 'utf8')) as Chapter;
   const chapter9 = (headingOnFirst: boolean): Chapter => ({
     ...rom9,
@@ -271,6 +271,26 @@ describe('the Read aloud span', () => {
     expect(synth.spoken).toHaveLength(count);
     continueReading({ book: 'rom', chapter: 9, plan: planOf(rom9.verses, 'english', null) });
     expect(synth.spoken).toHaveLength(count + 1);
+  });
+
+  it('the Bible goes on from the end of a book into the first chapter of the next; the book stops there', async () => {
+    const john2 = JSON.parse(readFileSync('public/data/2jn/1.json', 'utf8')) as Chapter;
+    const john3 = JSON.parse(readFileSync('public/data/3jn/1.json', 'utf8')) as Chapter;
+    stubNext(john3);
+    const last = john2.verses[john2.verses.length - 1].n;
+    startReading({ book: '2jn', chapter: 1, plan: planOf(john2.verses, 'english', null), from: last, continuous: true, span: 'bible' });
+    synth.finishAll();
+    await settle();
+    expect(getReading().crossing).toEqual({ book: '3jn', chapter: 1 });
+    expect(window.location.hash).toContain('b=3jn');
+    continueReading({ book: '3jn', chapter: 1, plan: planOf(john3.verses, 'english', null) });
+    expect(getReading()).toMatchObject({ verse: 1, crossing: null });
+    // the book ends at its own end
+    stopReading();
+    startReading({ book: '2jn', chapter: 1, plan: planOf(john2.verses, 'english', null), from: last, continuous: true, span: 'book' });
+    synth.finishAll();
+    await settle();
+    expect(getReading().status).toBe('idle');
   });
 
   it('Stop while crossing ends the reading and the Reader\'s plan then starts nothing', async () => {

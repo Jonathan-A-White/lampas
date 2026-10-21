@@ -61,6 +61,6 @@ test('a row with help has a More help button that opens its longer help', async 
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await toggle.click();
   await expect(row.getByRole('button', { name: 'Less help' })).toHaveAttribute('aria-expanded', 'true');
-  await expect(row.getByText('How far the app reads aloud')).toBeVisible();
+  await expect(row.getByText("Where the header's Play stops")).toBeVisible();
   await shot(page, 'settings-help-open');
 });

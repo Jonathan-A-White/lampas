@@ -66,7 +66,7 @@ import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
 import { RESOURCES } from '../resources';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
-import { READ_SPANS, type ReadSpan } from '../speech/readSpan';
+import { PLAY_TOS, type PlayTo } from '../speech/readSpan';
 import { chooseAccent } from '../speech/accents';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
@@ -397,17 +397,17 @@ export const SETTINGS: readonly SettingEntry[] = [
   fromDefinition(immersiveHintSetting),
   choice(
     'readSpan',
-    'Read aloud span',
-    'How far Play reads aloud before it stops.',
-    READ_SPANS.map((s) => ({ value: s.id, label: s.label })),
+    'Play to',
+    'Play goes on from here. To hear less, tap a verse, a section heading or the place line.',
+    PLAY_TOS.map((s) => ({ value: s.id, label: s.label })),
     getReadSpan,
     async (value) => {
-      await setReadSpan(value as ReadSpan);
-      publish({ kind: 'read-span-changed', span: value as ReadSpan });
+      await setReadSpan(value as PlayTo);
+      publish({ kind: 'read-span-changed', span: value as PlayTo });
     },
     {
       section: 'readAloud',
-      help: `How far the app reads aloud before it stops, from the verse it starts at (the play button on one verse always reads just that verse):\n\n${READ_SPANS.map((s) => `- **${s.label}** stops ${s.stops}`).join('\n')}`,
+      help: `Where the header's Play stops; it always goes on from the verse he is at:\n\n${PLAY_TOS.map((s) => `- **${s.label}** stops ${s.stops}`).join('\n')}\n\nA shorter reading comes from what he taps: the play button or Listen on a verse reads that verse only, a section heading's view reads that section, the place line's chapter view reads that chapter.`,
     },
   ),
   fromDefinition(readLessonsSetting),

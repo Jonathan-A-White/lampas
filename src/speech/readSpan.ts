@@ -1,23 +1,28 @@
-// src/speech/readSpan.ts — how far the app reads aloud (mw-5r3p30.72), the Read aloud span setting as a list: the header's
-// Read from the top / Read from here goes this far before the voice stops. docs/read-aloud.md says what each does. The play
-// button on a verse always reads that verse only.
-export type ReadSpan = 'verse' | 'passage' | 'chapter' | 'book';
+// src/speech/readSpan.ts — how far the header's Play reads aloud (mw-5r3p30.72, remade by mw-5r3p30.705): the 'Play to' setting. The header's Play always
+// goes on from where he is, to the end of the book or the end of the Bible. A shorter reading comes from what he tapped, not from a setting: a verse's play
+// and Listen read the verse, a section heading's view its section, the place line's chapter view its chapter. docs/read-aloud.md says what each does.
 
-export interface ReadSpanChoice {
-  id: ReadSpan;
+/** The two choices of the Play to setting. */
+export type PlayTo = 'book' | 'bible';
+
+export interface PlayToChoice {
+  id: PlayTo;
   label: string;
   /** one line: where the reading stops */
   stops: string;
 }
 
-export const READ_SPANS: readonly ReadSpanChoice[] = [
-  { id: 'verse', label: 'Verse', stops: 'after the verse it started from' },
-  { id: 'passage', label: 'Passage', stops: "before the next section heading (the Bible's own heading above a block of verses)" },
-  { id: 'chapter', label: 'Chapter', stops: "at the chapter's end" },
-  { id: 'book', label: 'Book', stops: "at the book's end, going on into each next chapter and turning the Reader to it" },
+export const PLAY_TOS: readonly PlayToChoice[] = [
+  { id: 'book', label: 'End of the book', stops: "at the book's end, going on into each next chapter and turning the Reader to it" },
+  { id: 'bible', label: 'End of the Bible', stops: 'at the end of Revelation, going on into each next chapter and each next book and turning the Reader to it' },
 ];
 
-/** PROVISIONAL, the Governor to confirm: the chapter. */
-export const DEFAULT_READ_SPAN: ReadSpan = 'chapter';
+/** How far one reading goes: the two Play to choices, and the spans of the shorter readings a tap starts (a verse, a section, a chapter). */
+export type ReadSpan = 'verse' | 'passage' | 'chapter' | PlayTo;
 
-export const isReadSpan = (value: unknown): value is ReadSpan => READ_SPANS.some((s) => s.id === value);
+export const DEFAULT_PLAY_TO: PlayTo = 'book';
+
+export const isPlayTo = (value: unknown): value is PlayTo => PLAY_TOS.some((s) => s.id === value);
+
+/** A saved value as the setting: an old span (verse, passage, chapter) or anything else that is not one of the two reads as the end of the book. */
+export const playToOf = (value: unknown): PlayTo => (isPlayTo(value) ? value : DEFAULT_PLAY_TO);

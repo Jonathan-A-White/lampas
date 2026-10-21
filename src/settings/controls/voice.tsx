@@ -1,21 +1,21 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
-import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type ReadSpan, type VoiceLanguage } from '../../data/repositories';
+import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type PlayTo, type VoiceLanguage } from '../../data/repositories';
 import { hasVoice, noVoiceHelp, speaksLanguage, testGreekVoice, useSpeakingKey, useVoices, voiceInUse, voiceKey, VOICE_TEST_KEY, warmVoices } from '../../speech/greek';
 import { DEFAULT_RATE, RATE_MAX, RATE_MIN, RATE_STEP } from '../../speech/languages';
 import { ACCENTS } from '../../speech/accents';
 import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from '../../speech/pronunciation';
-import { READ_SPANS } from '../../speech/readSpan';
+import { PLAY_TOS } from '../../speech/readSpan';
 import { englishAccentSetting } from '../definitions';
 import { PHONE_VOICE, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
-function ReadSpanChoice({ span }: { span: ReadSpan }) {
+function ReadSpanChoice({ span }: { span: PlayTo }) {
   return (
-    <div role="group" aria-label="Read aloud span" className="inline-flex rounded-xl border border-line p-0.5">
-      {READ_SPANS.map((s) => (
+    <div role="group" aria-label="Play to" className="inline-flex rounded-xl border border-line p-0.5">
+      {PLAY_TOS.map((s) => (
         <button
           key={s.id}
           type="button"

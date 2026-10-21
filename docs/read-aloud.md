@@ -1,22 +1,31 @@
-# Read aloud span (mw-5r3p30.72)
+# Play to, and listening by what he tapped (mw-5r3p30.72, remade by mw-5r3p30.705)
 
-Settings > Read aloud has one choice, the **Read aloud span** (registry key `readSpan`, `src/speech/readSpan.ts`; default
-**Chapter**, PROVISIONAL until the Governor confirms). It says how far the header's *Read from the top* / *Read from here*
-goes before the voice stops. It starts at the verse he starts from (the header's Play: verse 1; the Verse view's Listen: its verse, by a tap on Play, and it stops at that verse's end, mw-5r3p30.79, .92, .130).
+The header's Play (*Read from the top* / *Read from here*) always goes on from the verse he is at. Settings > Read aloud has one choice for where it stops, **Play to**
+(registry key `readSpan`, `src/speech/readSpan.ts`; the hint says: Play goes on from here, to hear less tap a verse, a section heading or the place line):
 
-| Span | The voice stops |
+| Play to | The voice stops |
 | --- | --- |
-| Verse | after the verse it started from |
-| Passage | before the next section heading: the Bible's own heading shown above a block of verses (`data-heading`, the `h` of a verse in the chapter JSON). The heading is read from the data whether or not Settings > Section headings shows it. |
-| Chapter | at the chapter's end |
-| Book | at the end of the book (Revelation 22 for Revelation); it does not go on into the next book |
+| End of the book (default) | at the end of the book (Revelation 22 for Revelation), going on into each next chapter and turning the Reader to it |
+| End of the Bible | at the end of Revelation 22, going on into each next chapter and each next book (2 John 1 into 3 John 1) and turning the Reader to it |
 
-The play button on a single verse (*Hear the verse*) always reads that verse only, whatever the span. The Verse view of a passage (a tapped section heading, mw-5r3p30.73) has Listen read that passage only, whatever the span.
+A span saved before this setting (Verse, Passage, Chapter) reads as End of the book (`playToOf`); nothing is asked of him and the saved row is left as it is.
+
+A shorter reading comes from what he tapped, never from the setting. Each reads exactly its own span and goes through the one range player (`startReading`, `src/speech/readAloud.ts`):
+
+| He taps | The voice reads |
+| --- | --- |
+| the play button on a verse in the text (*Hear the verse*) | that verse |
+| a verse's Listen (the Verse view of a verse, *Play verse N*) | that verse |
+| a section heading, then Listen (the view of a passage, *Play verses A-B*) | that section, from its heading to the verse before the next |
+| the place line (*Mark 12 · 45%*, mw-5r3p30.699), then Listen (*Play verses 1-N*) | that chapter |
+| the header's Play | from the verse he is at (the selected verse, else verse 1) to the end of the book or of the Bible |
+
+The other readings are not a span of the Bible: *Read it aloud* on a tutor's answer or a page of prose (About, My study way, the Preface) reads that text, a Talk answer likewise (below).
+The section heading is read from the data whether or not Settings > Section headings shows it.
 
 ## Crossing into another chapter
 
-Book always, and a Passage that reaches the chapter's end when the next chapter's first verse has no heading before it, go on into the
-next chapter of the same book. (The MSB data heads every chapter's first verse today, so for now a Passage stops at a chapter's end.) The reading (`src/speech/readAloud.ts`):
+Either Play to goes on into the next chapter of the same book, and End of the Bible goes on from a book's last chapter into the first chapter of the next book (Romans 16 into 1 Corinthians 1). The reading (`src/speech/readAloud.ts`):
 
 1. starts loading the next chapter while the last verse is spoken;
 2. when the last verse ends, asks the Reader to turn to the next chapter (`openReader`, a new Back step) and waits as
@@ -27,7 +36,7 @@ next chapter of the same book. (The MSB data heads every chapter's first verse t
 
 `ReaderBody` (keyed by chapter) does not touch a reading that is crossing when it unmounts; leaving the Reader for another screen
 pauses it (the speaking bar below offers Resume there and on coming back), and opening another chapter ends it. A chapter that cannot be fetched ends the reading before the Reader turns. Stop ends a
-reading in every span, crossing included.
+reading in every case, crossing included. A Listen (a verse, a section, a chapter) never crosses: it has no book to go on in (`inBook`), and a verse's reading is of span `verse`.
 
 The verse being read keeps doing what it did: `verse-reading` on the bus per verse, the highlight, the scroll that keeps it in
 view, and the wake lock.
@@ -42,7 +51,7 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
 
 - A verse is ONE speech under the key `read-aloud` (`greek.ts` READ_KEY): `readAloud.ts` joins its runs with a line break (a run is one language, so the package
   cuts a sentence at the end of every run too and tells the Greek from the English by its letters) and goes on to the next verse when the speech ends. It follows
-  the package: a Pause, Resume or Stop made on the bar moves the reading's state (`syncWithEngine`). `Listen` on a verse stops at the verse end (`span` 'verse'), on a passage at the passage's end.
+  the package: a Pause, Resume or Stop made on the bar moves the reading's state (`syncWithEngine`). `Listen` on a verse stops at the verse end (`span` 'verse'), on a passage or the whole chapter at its end.
 - Where the bar is drawn (`src/speech/SpeakingBarSlot.tsx`): a screen with a bottom edge leaves a `<BarSlot level>` and the one bar is drawn into the highest on screen:
   the foot of the shell (0, every screen but the Reader), the Reader above its Talk bar (1), the Verse view above its hold bar (2), the Talk sheet above its foot (3).
   It is in flow, never over text, and the round *Ask the tutor* button rides above it. The header's own Pause / Stop are gone while the bar holds the reading.

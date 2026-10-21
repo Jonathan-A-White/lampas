@@ -1,5 +1,5 @@
-// features/steps/read-span.steps.tsx — runs features/read-span.feature: the Read aloud span setting (Verse, Passage, Chapter, Book)
-// and how far the header's Read from the top / Read from here goes. speech synthesis is the honest fake of tests/support/fake-speech.ts.
+// features/steps/read-span.steps.tsx — runs features/read-span.feature: the Play to setting (End of the book, End of the Bible)
+// and how far the header's Play goes. speech synthesis is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -17,7 +17,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../te
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
 
 const fileOf = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;
-const CHAPTERS: Record<string, Chapter> = { 'rom/8': fileOf('rom/8'), 'rom/9': fileOf('rom/9'), 'rev/22': fileOf('rev/22') };
+const CHAPTERS: Record<string, Chapter> = { 'rom/8': fileOf('rom/8'), 'rom/9': fileOf('rom/9'), 'rev/22': fileOf('rev/22'), '2jn/1': fileOf('2jn/1'), '3jn/1': fileOf('3jn/1') };
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 const englishIn = (key: string, n: number): string => {
   const v = CHAPTERS[key].verses.find((x) => x.n === n);
@@ -63,7 +63,8 @@ const verseEl = (n: number): HTMLElement => {
 };
 const bar = () => document.querySelector<HTMLElement>('[data-reading-bar]');
 const lastSpoken = () => synth.spoken[synth.spoken.length - 1];
-const SPANS = ['Verse', 'Passage', 'Chapter', 'Book'];
+const SPANS = ['End of the book', 'End of the Bible'];
+const VALUE_OF: Record<string, string> = { 'End of the book': 'book', 'End of the Bible': 'bible' };
 
 async function openSettings(): Promise<void> {
   if (onSettingsPage()) return;
@@ -71,14 +72,14 @@ async function openSettings(): Promise<void> {
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
   await openSettingsGroup(user, 'listening');
 }
-const spanGroup = () => screen.findByRole('group', { name: 'Read aloud span' });
+const spanGroup = () => screen.findByRole('group', { name: 'Play to' });
 
 async function chooseSpan(label: string): Promise<void> {
   await openSettings();
   const group = await spanGroup();
-  await user.click(within(group).getByRole('button', { name: label }));
+  await user.click(within(group).getByRole('button', { name: label, exact: true }));
   await leaveSettings(user);
-  await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-read-span')).toBe(label.toLowerCase()));
+  await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-read-span')).toBe(VALUE_OF[label]));
 }
 
 const selectAndReadFromHere = async (n: number) => {
@@ -96,19 +97,25 @@ const feature = await loadFeature('features/read-span.feature');
 
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   const phone = 'Lampas is opened on a phone with an English and a Greek voice';
+  const chosen = async (label: string) => {
+    await waitFor(async () => expect(within(await spanGroup()).getByRole('button', { name: label, exact: true })).toHaveAttribute('aria-pressed', 'true'));
+  };
+  const openOn = (hash: string, title: string) => async () => {
+    window.location.hash = hash;
+    await screen.findByRole('heading', { name: title, level: 1 });
+    await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+  };
 
-  Scenario('The span is Chapter until he chooses another, and the choice survives a close', ({ Given, When, Then, And }) => {
+  Scenario('Play to is End of the book until he chooses End of the Bible, and the choice survives a close', ({ Given, When, Then, And }) => {
     Given(phone, openWith);
     When('he opens Settings', openSettings);
-    Then('Read aloud span shows Chapter chosen', async () => {
-      expect(within(await spanGroup()).getByRole('button', { name: 'Chapter' })).toHaveAttribute('aria-pressed', 'true');
-    });
-    And('Read aloud span offers Verse, Passage, Chapter and Book', async () => {
+    Then('Play to shows End of the book chosen', () => chosen('End of the book'));
+    And('Play to offers End of the book and End of the Bible', async () => {
       expect(within(await spanGroup()).getAllByRole('button').map((b) => b.textContent)).toEqual(SPANS);
     });
-    When('he chooses Passage for Read aloud span', async () => {
-      await user.click(within(await spanGroup()).getByRole('button', { name: 'Passage' }));
-      await waitFor(async () => expect(within(await spanGroup()).getByRole('button', { name: 'Passage' })).toHaveAttribute('aria-pressed', 'true'));
+    When('he chooses End of the Bible for Play to', async () => {
+      await user.click(within(await spanGroup()).getByRole('button', { name: 'End of the Bible' }));
+      await chosen('End of the Bible');
     });
     And('he closes Lampas and opens it again', async () => {
       cleanup();
@@ -116,51 +123,20 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       render(<App />);
     });
     And('he opens Settings', openSettings);
-    Then('Read aloud span shows Passage chosen', async () => {
-      await waitFor(async () => expect(within(await spanGroup()).getByRole('button', { name: 'Passage' })).toHaveAttribute('aria-pressed', 'true'));
-    });
+    Then('Play to shows End of the Bible chosen', () => chosen('End of the Bible'));
   });
 
-  Scenario('Verse reads only the verse started from', ({ Given, And, When, Then }) => {
+  Scenario('A span saved before reads as End of the book', ({ Given, And, When, Then }) => {
     Given(phone, openWith);
-    And('Read aloud span is Verse', () => chooseSpan('Verse'));
-    When('he selects verse 5 and taps Read from here', () => selectAndReadFromHere(5));
-    Then('the phone speaks the English of verse 5', () => expect(lastSpoken().text).toBe(englishIn('rom/8', 5)));
-    When('the phone finishes speaking verse 5', () => {
-      synth.finish();
+    And('Chapter was saved as the span by an earlier Lampas', async () => {
+      await db.settings.put({ key: 'readSpan', value: 'chapter' });
     });
-    Then('nothing more is spoken', expectNothingMore);
-    And('the reading bar is gone', () => expect(bar()).toBeNull());
+    When('he opens Settings', openSettings);
+    Then('Play to shows End of the book chosen', () => chosen('End of the book'));
   });
 
-  Scenario('Passage reads from the verse to the next section heading', ({ Given, And, When, Then }) => {
+  Scenario("End of the book reads on past the chapter's end into the next chapter and the Reader turns to it", ({ Given, When, Then, And }) => {
     Given(phone, openWith);
-    And('Read aloud span is Passage', () => chooseSpan('Passage'));
-    When('he selects verse 9 and taps Read from here', () => selectAndReadFromHere(9));
-    And('the phone finishes the reading', () => {
-      synth.finishAll();
-    });
-    Then('verses 9, 10 and 11 were read', () => expect(read).toEqual([9, 10, 11]));
-    And('nothing more is spoken', expectNothingMore);
-    And('the reading bar is gone', () => expect(bar()).toBeNull());
-    And('the Reader still shows Romans 8', () => expect(reader('Romans 8')).toBeInTheDocument());
-  });
-
-  Scenario("Chapter reads to the chapter's end and stops there", ({ Given, And, When, Then }) => {
-    Given(phone, openWith);
-    And('Read aloud span is Chapter', () => chooseSpan('Chapter'));
-    When('he selects verse 37 and taps Read from here', () => selectAndReadFromHere(37));
-    And('the phone finishes the reading', () => {
-      synth.finishAll();
-    });
-    Then('verses 37, 38 and 39 were read', () => expect(read).toEqual([37, 38, 39]));
-    And('the reading bar is gone', () => expect(bar()).toBeNull());
-    And('the Reader still shows Romans 8', () => expect(reader('Romans 8')).toBeInTheDocument());
-  });
-
-  Scenario('Book reads on past the chapter\'s end into the next chapter and the Reader turns to it', ({ Given, And, When, Then }) => {
-    Given(phone, openWith);
-    And('Read aloud span is Book', () => chooseSpan('Book'));
     When('he selects verse 39 and taps Read from here', () => selectAndReadFromHere(39));
     Then('the phone speaks the English of verse 39', () => expect(lastSpoken().text).toBe(englishIn('rom/8', 39)));
     And('the Reader still shows Romans 8', () => expect(reader('Romans 8')).toBeInTheDocument());
@@ -180,9 +156,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
-  Scenario('Book keeps going through the next chapter', ({ Given, And, When, Then }) => {
+  Scenario('End of the book keeps going through the next chapter', ({ Given, When, Then, And }) => {
     Given(phone, openWith);
-    And('Read aloud span is Book', () => chooseSpan('Book'));
     When('he selects verse 39 and taps Read from here', () => selectAndReadFromHere(39));
     And('the phone finishes speaking verse 39', async () => {
       synth.finish();
@@ -196,15 +171,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('verse 2 is highlighted as being read', () => expect(verseEl(2).hasAttribute('data-reading')).toBe(true));
   });
 
-  Scenario('Book stops at the end of Revelation 22', ({ Given, And, When, Then }) => {
+  Scenario('End of the book stops at the end of Revelation 22', ({ Given, And, When, Then }) => {
     Given(phone, openWith);
-    And('Read aloud span is Book', () => chooseSpan('Book'));
-    And('the Reader is open on Revelation 22', async () => {
-      window.location.hash = '#/?b=rev&c=22';
-      await screen.findByRole('heading', { name: 'Revelation 22', level: 1 });
-      await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-read-span')).toBe('book'));
-      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-    });
+    And('the Reader is open on Revelation 22', openOn('#/?b=rev&c=22', 'Revelation 22'));
     When('he selects verse 20 and taps Read from here', () => selectAndReadFromHere(20));
     And('the phone finishes the reading', () => {
       synth.finishAll();
@@ -214,9 +183,40 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('the Reader still shows Revelation 22', () => expect(reader('Revelation 22')).toBeInTheDocument());
   });
 
-  ScenarioOutline('Stop stops at once in every span', ({ Given, And, When, Then }, row) => {
+  Scenario('End of the book stops at the end of 2 John and does not go into 3 John', ({ Given, And, When, Then }) => {
     Given(phone, openWith);
-    And('Read aloud span is <span>', () => chooseSpan(row.span));
+    And('the Reader is open on 2 John 1', openOn('#/?b=2jn&c=1', '2 John 1'));
+    When('he selects verse 12 and taps Read from here', () => selectAndReadFromHere(12));
+    And('the phone finishes the reading', () => {
+      synth.finishAll();
+    });
+    Then('verses 12 and 13 were read', () => expect(read).toEqual([12, 13]));
+    And('the reading bar is gone', () => expect(bar()).toBeNull());
+    And('the Reader still shows 2 John 1', () => expect(reader('2 John 1')).toBeInTheDocument());
+  });
+
+  Scenario('End of the Bible goes on from the end of 2 John into 3 John and the Reader turns to it', ({ Given, And, When, Then }) => {
+    Given(phone, openWith);
+    And('Play to is End of the Bible', () => chooseSpan('End of the Bible'));
+    And('the Reader is open on 2 John 1', openOn('#/?b=2jn&c=1', '2 John 1'));
+    When('he selects verse 13 and taps Read from here', () => selectAndReadFromHere(13));
+    And('the phone finishes speaking verse 13', () => {
+      synth.finishAll();
+    });
+    Then('the Reader shows 3 John 1', async () => {
+      await screen.findByRole('heading', { name: '3 John 1', level: 1 });
+    });
+    And('the phone speaks the English of 3 John 1 verse 1', async () => {
+      await waitFor(() => expect(lastSpoken().text).toBe(englishIn('3jn/1', 1)));
+    });
+    And('the open chapter is 3 John 1', async () => {
+      await waitFor(() => expect(getOpenChapter()).toMatchObject({ book: '3jn', chapter: 1 }));
+    });
+  });
+
+  ScenarioOutline('Stop stops at once whatever Play to is', ({ Given, And, When, Then }, row) => {
+    Given(phone, openWith);
+    And('Play to is <span>', () => chooseSpan(row.span));
     When('he selects verse 5 and taps Read from here', () => selectAndReadFromHere(5));
     And('he taps Stop', () => user.click(screen.getByRole('button', { name: 'Stop' })));
     Then('the phone is told to stop', () => expect(synth.calls[synth.calls.length - 1]).toBe('cancel'));
@@ -226,7 +226,6 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   Scenario('Stop while the reading is crossing into the next chapter stops it there', ({ Given, And, When, Then }) => {
     Given(phone, openWith);
-    And('Read aloud span is Book', () => chooseSpan('Book'));
     When('he selects verse 39 and taps Read from here', () => selectAndReadFromHere(39));
     And('the phone finishes speaking verse 39', () => {
       synth.finish();
@@ -241,9 +240,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
-  Scenario('The play button on a verse reads that verse only, whatever the span', ({ Given, And, When, Then }) => {
+  ScenarioOutline('The play button on a verse reads that verse only, whatever Play to is', ({ Given, And, When, Then }, row) => {
     Given(phone, openWith);
-    And('Read aloud span is Book', () => chooseSpan('Book'));
+    And('Play to is <span>', () => chooseSpan(row.span));
     When('he taps the play button of verse 5', () => user.click(within(verseEl(5)).getByRole('button', { name: 'Hear the verse' })));
     And('the phone finishes speaking verse 5', () => {
       synth.finish();

@@ -123,7 +123,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     notSent: {
       newWordsADay: 'How many new words are offered a day is the picker\'s pace; the answer is about this verse, and learner says what is new today.',
       grammarMove: 'Whether the app moves the grammar level for him is the Bible talk\'s offer to make; learner_grammar.picker_level is the level it left.',
-      readSpan: 'How far Play reads aloud is a reading control; it changes nothing the answer says.',
+      readSpan: 'Play to (the end of the book or of the Bible) is where the header\'s Play stops; a verse, a section heading or the place line reads just what he tapped. It changes nothing the answer says.',
       readLessons: READ_LESSONS,
       englishVoice: SPOKEN_LATER,
       greekVoice: SPOKEN_LATER,
@@ -143,7 +143,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     },
     progress: { words: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory' },
     notSent: {
-      readSpan: 'How far Play reads aloud has no part in the verdict on one verse he read.',
+      readSpan: 'Where the header\'s Play stops (Play to) has no part in the verdict on one verse he read.',
       readLessons: READ_LESSONS,
       readTutor: 'The verdict is written to be safe to speak whether or not it is read aloud to him (no words the voice mispronounces).',
       askBy: 'How he asks the tutor has no part in the verdict on a reading.',

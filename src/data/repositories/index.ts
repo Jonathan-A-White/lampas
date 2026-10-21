@@ -64,7 +64,7 @@ export {
   setWeave,
   setWeaveGrammar,
 } from './settings';
-export type { ReadSpan } from '../../speech/readSpan';
+export type { PlayTo } from '../../speech/readSpan';
 export type { DeveloperMode, GrammarMove, Immersive, PickerGrammar, ReaderLanguage, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
