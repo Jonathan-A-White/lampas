@@ -1,7 +1,7 @@
 // What a talk's key says it is about, how the Share screen names it, and the list of recent talks it offers (mw-y3qno5.2).
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
-import { addTurn, listRecentTalks } from '../../src/data/repositories';
+import { addTurn, listConversations } from '../../src/data/repositories';
 import { describeShare, leftOutLine } from '../../src/share/shareText';
 import { newTalkRef, placeOf, talkLabel, timeAgo } from '../../src/share/talkPlace';
 
@@ -61,21 +61,21 @@ describe('describeShare', () => {
   });
 });
 
-describe('listRecentTalks', () => {
+describe('listConversations', () => {
   it('lists each conversation once, the newest turn first, with the first thing he said in it', async () => {
     await addTurn('rom.8', 'First about the chapter?', 'a', [], 1000);
     await addTurn('rom.8.28', 'First about the verse?', 'a', [], 2000);
     await addTurn('rom.8', 'Second about the chapter?', 'a', [], 3000);
     await addTurn('screen.goal', 'raw words', 'a', [], 500, { changes: [], refused: [], cleanQ: 'Cleaned words.' });
-    expect(await listRecentTalks()).toEqual([
-      { ref: 'rom.8', firstQuestion: 'First about the chapter?', lastWhen: 3000 },
-      { ref: 'rom.8.28', firstQuestion: 'First about the verse?', lastWhen: 2000 },
-      { ref: 'screen.goal', firstQuestion: 'Cleaned words.', lastWhen: 500 },
+    expect(await listConversations()).toEqual([
+      { ref: 'rom.8', firstQuestion: 'First about the chapter?', lastQuestion: 'Second about the chapter?', lastWhen: 3000 },
+      { ref: 'rom.8.28', firstQuestion: 'First about the verse?', lastQuestion: 'First about the verse?', lastWhen: 2000 },
+      { ref: 'screen.goal', firstQuestion: 'Cleaned words.', lastQuestion: 'Cleaned words.', lastWhen: 500 },
     ]);
-    expect(await listRecentTalks(2)).toHaveLength(2);
+    expect(await listConversations(2)).toHaveLength(2);
   });
 
   it('lists nothing when no talk was had', async () => {
-    expect(await listRecentTalks()).toEqual([]);
+    expect(await listConversations()).toEqual([]);
   });
 });
