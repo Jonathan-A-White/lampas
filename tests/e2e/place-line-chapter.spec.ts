@@ -81,6 +81,36 @@ async function expectQuiet(page: Page) {
   expect(size.width).toBeCloseTo(390, 0);
 }
 
+/**
+ * The place line's tap area is at least 44 px tall (--lp-tap, mw-5r3p30.703): probed by what a finger would hit, for a pseudo-element has no box to measure. Walks
+ * a column through the middle of the line, from 60 px above its text to 60 px below, and measures the run of points that land on the line.
+ */
+async function expectTapBox(page: Page) {
+  const run = await place(page).evaluate((el) => {
+    const text = (el.firstElementChild as HTMLElement).getBoundingClientRect();
+    const x = text.left + text.width / 2;
+    const mid = text.top + text.height / 2;
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (let y = Math.max(0, mid - 60); y <= Math.min(innerHeight - 1, mid + 60); y += 0.5) {
+      if (document.elementFromPoint(x, y)?.closest('[data-place-line]') === el) {
+        top = Math.min(top, y);
+        bottom = Math.max(bottom, y);
+      }
+    }
+    return { height: bottom - top, above: mid - top };
+  });
+  expect(run.height).toBeGreaterThanOrEqual(43.5);
+  expect(run.above).toBeGreaterThanOrEqual(15);
+}
+
+/** A tap 15 px above the middle of the line's text still opens the chapter. */
+async function tapAboveText(page: Page) {
+  const text = await place(page).locator('span').boundingBox();
+  if (!text) throw new Error('the place line has no text');
+  await page.touchscreen.tap(text.x + text.width / 2, text.y + text.height / 2 - 15);
+}
+
 /** Opens the chapter's view from the place line and checks what it holds. */
 async function openFromLine(page: Page) {
   await place(page).click();
@@ -108,6 +138,13 @@ test('Immersive reader: a tap on the place line opens the whole chapter, Back re
   await expectQuiet(page);
   const was = await page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).scrollTop);
   const before = await place(page).boundingBox();
+
+  await expectTapBox(page);
+  await tapAboveText(page);
+  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
+  await page.waitForTimeout(400);
 
   const view = await openFromLine(page);
   await shot(page, 'place-line-chapter');
@@ -139,8 +176,15 @@ test('Turn pages: a tap on the Page N of M line opens the whole chapter, Back re
   await settled(page);
   await expect(place(page)).toHaveText(/^Mark 12 · Page \d+ of \d+$/);
   await expectQuiet(page);
+  await expectTapBox(page);
   const reading = await place(page).textContent();
   const before = await place(page).boundingBox();
+
+  await tapAboveText(page);
+  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await page.getByRole('button', { name: '‹ Reader' }).click();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
+  await settled(page);
 
   await openFromLine(page);
   await page.getByRole('button', { name: '‹ Reader' }).click();

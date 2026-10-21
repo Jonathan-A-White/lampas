@@ -482,6 +482,10 @@ textarea,
   min-height: 0;
   overflow: hidden;
 }
+/* Once the row has slid in, nothing clips it: the tap area of the line (`.place-line[data-tap]::before`) reaches above the row (mw-5r3p30.703). */
+.place-box:not([data-slides]):not([data-closed]) .place-inner {
+  overflow: visible;
+}
 /* The Immersive reader's place line (src/PlaceLine.tsx): a quiet row under the text's box, smaller and dimmer than the text. */
 .place-line {
   flex-shrink: 0;
@@ -495,6 +499,24 @@ textarea,
   /* 4.5:1 or more on every theme's page, for text this small (WCAG AA, mw-5r3p30.477; tests/unit/place-line-contrast.test.ts). */
   opacity: 0.9;
   user-select: none;
+}
+/* The line opens the chapter (src/PlaceLine.tsx `onOpen`, mw-5r3p30.699): its box is 22 px, so its tap area is grown to the app's 44 px (--lp-tap) with two hit boxes that
+ * paint nothing: ::before 16 px below the row, and ::after 8 px above it in the middle third only (15 px above the middle of the text is inside it). Above the row
+ * is the foot of the page, whose outer thirds turn it down to its last pixel with Turn pages (tests/e2e/turn-pages.spec.ts), so only the middle third is
+ * taken, where a tap opens a word. The line's look and place are unchanged. */
+.place-line[data-tap] {
+  position: relative;
+}
+.place-line[data-tap]::before,
+.place-line[data-tap]::after {
+  content: '';
+  position: absolute;
+}
+.place-line[data-tap]::before {
+  inset: 100% 0 -16px;
+}
+.place-line[data-tap]::after {
+  inset: -8px 33.4% 100%;
 }
 /* The lowest row on the screen keeps the floor of a three-button navigation bar under it (mw-5r3p30.473, --lp-bar-inset). */
 .place-line[data-floor] {

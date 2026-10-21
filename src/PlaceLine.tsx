@@ -17,6 +17,7 @@
 //
 // A tap on the line opens the whole chapter in the view a section heading opens (`onOpen`, mw-5r3p30.699). The line is then a button with the row's own
 // type, padding and place, so it is no bigger than it was; an underline is all that says it can be tapped, as a heading's active tint does.
+// Its tap area is 44 px tall (--lp-tap, mw-5r3p30.703), a hit box that paints nothing and reaches above the row, so the row is not clipped once it has slid in.
 import { useEffect, useState } from 'react';
 
 /** How long the row takes to slide: `.place-box` in src/index.css. */
@@ -37,12 +38,18 @@ export function PlaceLine({ title, at, visible = true, floor = false, room, onOp
     const gone = setTimeout(() => setDrawn(false), SLIDE_MS);
     return () => clearTimeout(gone);
   }, [visible]);
+  // the slide is over after SLIDE_MS: the row is then no longer clipped, so the line's tap area can reach above it (`.place-box` in src/index.css)
+  useEffect(() => {
+    if (!slides) return undefined;
+    const over = setTimeout(() => setSlides(false), SLIDE_MS);
+    return () => clearTimeout(over);
+  }, [slides]);
   if (!drawn) return null;
   return (
     <div className="place-box" style={room ? { minHeight: room } : undefined} data-slides={slides ? '' : undefined} data-closed={visible ? undefined : ''} aria-hidden={visible ? undefined : true} inert={!visible}>
       <div className="place-inner">
         {onOpen ? (
-          <button type="button" onClick={onOpen} data-place-line data-floor={floor ? '' : undefined} style={room ? { paddingInline: `max(1rem, ${room})` } : undefined} className="place-line block w-full">
+          <button type="button" onClick={onOpen} data-place-line data-tap data-floor={floor ? '' : undefined} style={room ? { paddingInline: `max(1rem, ${room})` } : undefined} className="place-line block w-full">
             <span className="underline decoration-dotted underline-offset-2">
               {title} · {at}
             </span>
