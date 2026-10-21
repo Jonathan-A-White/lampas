@@ -6,9 +6,16 @@ import { tips } from 'pwa-kit/tips';
 
 /** The events a tip is tied to (the `event` of an entry). */
 export const WORD_SHEET_OPENED = 'word-sheet-opened';
+/** The chapter buttons are drawn (src/ChapterNav.tsx): the tip about the swipe, then, once he has changed chapter by a swipe, the offer to hide them. */
+export const CHAPTER_NAV_SHOWN = 'chapter-nav-shown';
+export const CHAPTER_BUTTONS_OFFER = 'chapter-buttons-offer';
+/** The offer's id: dismissing it is answering it (Hide or Keep), for good. */
+export const HIDE_CHAPTER_BUTTONS = 'hide-chapter-buttons';
 
 export const HINTS: readonly tips.Tip[] = [
   { id: 'long-press-word', text: 'Long-press a word to hear it', event: WORD_SHEET_OPENED },
+  { id: 'swipe-chapters', text: 'Swipe the text left or right to change chapter', event: CHAPTER_NAV_SHOWN },
+  { id: HIDE_CHAPTER_BUTTONS, text: 'You swipe between chapters. Hide these buttons?', event: CHAPTER_BUTTONS_OFFER },
 ];
 
 /** localStorage, or nothing when the phone refuses it: then the tip shows again, which is harmless. */
@@ -30,3 +37,14 @@ const storage: tips.TipStorage = {
 };
 
 export const hints = tips.createTips({ tips: HINTS, storage, key: 'lampas.tipsDismissed' });
+
+const SWIPED_KEY = 'lampas.chapterSwiped';
+
+/** Remembers on the phone that he changed chapter by a swipe (scroll mode's chapter swipe, or a Turn pages swipe or drag past a chapter's edge; never a button,
+ * a tap on a third or the page buttons): the chapter buttons then offer once to hide themselves (mw-5r3p30.706). */
+export function noteChapterSwipe(): void {
+  storage.setItem(SWIPED_KEY, '1');
+}
+
+/** True once he has changed chapter by a swipe on this phone. */
+export const chapterSwiped = (): boolean => storage.getItem(SWIPED_KEY) === '1';
