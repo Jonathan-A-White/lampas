@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.385
+_2026-10-21_
+- New: Settings now opens with a "How much Greek?" dial, from Just English to All in, and each step shows only the Greek that step is about.
+
 ## 0.1.384
 _2026-10-21_
 - Fixed: When the tutor says a second form of a word aloud, it no longer pronounces the rough breathing as an "h".
