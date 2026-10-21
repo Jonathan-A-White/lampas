@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.382
+_2026-10-21_
+- Fixed: A long reading that is too slow to send on a weak connection now says so, instead of saying the tutor is offline.
+
 ## 0.1.380
 _2026-10-21_
 - Fixed: A long reading now gets more time to be checked, and if it still takes too long you are told so instead of that the tutor is offline.

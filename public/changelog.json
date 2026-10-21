@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.382",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.690",
+    "kind": "fixed",
+    "text": "A long reading that is too slow to send on a weak connection now says so, instead of saying the tutor is offline."
+  },
+  {
     "version": "0.1.380",
     "date": "2026-10-21",
     "story": "mw-5r3p30.685",
