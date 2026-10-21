@@ -33,7 +33,7 @@ import { oldTestamentChoices } from './resources/oldTestamentChoices';
 import { armFallback } from './resources/openApp';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
-import { focusOnMount } from './ui/focus';
+import { focusQuietly } from './ui/focus';
 import { matching, matchingInOrder } from './ui/listFilter';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -224,6 +224,12 @@ export function ChapterPicker({
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   const box = useRef<HTMLDivElement>(null);
+  // The search field has the focus when the sheet opens and when the books come back from a chapter grid, so the keyboard is up and ready to type (mw-5r3p30.711).
+  // Not a ref callback: useSheetBack, above, moves focus to the heading once the sheet has mounted, and this effect runs after it, still inside the tap that opened the sheet.
+  const search = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!book) focusQuietly(search.current);
+  }, [book]);
   // The list opens with the book he is in at the middle of the box (moving this box and nothing else).
   useEffect(() => {
     const list = box.current;
@@ -285,7 +291,7 @@ export function ChapterPicker({
               </button>
             ) : null}
             <h2 className="min-w-0 flex-1 break-words text-xl font-semibold">{name ?? heading ?? 'Choose a book'}</h2>
-            <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">
+            <button type="button" onClick={onClose} className="min-h-11 min-w-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent">
               Done
             </button>
           </div>
@@ -300,6 +306,7 @@ export function ChapterPicker({
           >
             <input
               type="search"
+              ref={search}
               value={query}
               placeholder="Search 66 books or type John 18:36"
               aria-label="Search books"
