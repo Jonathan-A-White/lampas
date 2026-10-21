@@ -49,6 +49,7 @@ const GREEK_ROWS: Readonly<Record<string, GreekLevel>> = {
   goal: 4,
   hebrewDepth: 5,
   'link.paradigms': 5,
+  paradigmExtent: 5,
 };
 
 /** The values the rows' dependencies read with every Greek detail switched on, at dial level `level`. */

@@ -71,6 +71,7 @@ import { chooseAccent } from '../speech/accents';
 import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
+import { extentChoices, paradigmExtentSetting } from './definitions/grammarExtent';
 import { ANOTHER, askBySetting, audioBibleSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
@@ -438,11 +439,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     'weaveGrammar',
     'Grammar',
     'Keep only forms whose grammar you have.',
-    [
-      { value: 'any', label: 'Any' },
-      { value: 'solid', label: 'Solid' },
-      { value: 'solid+frontier', label: '+ Frontier' },
-    ],
+    extentChoices('weaveGrammar'),
     getWeaveGrammar,
     async (value) => {
       await setWeaveGrammar(value as WeaveGrammar);
@@ -479,10 +476,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     'pickerGrammar',
     'New words at',
     'Offer new words by the grammar of their form.',
-    [
-      { value: 'solid', label: 'Solid grammar' },
-      { value: 'frontier', label: 'Frontier grammar' },
-    ],
+    extentChoices('pickerGrammar'),
     getPickerGrammar,
     async (value) => {
       await setPickerGrammar(value as PickerGrammar);
@@ -512,6 +506,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       help: 'Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never. It shows only while New words a day is not Off.',
     },
   ),
+  fromDefinition(paradigmExtentSetting),
   goalEntry,
   choice(
     'grammarApproach',

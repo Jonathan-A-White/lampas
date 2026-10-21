@@ -2,6 +2,7 @@ import { useContext, useEffect, useId, useRef, useState, type ReactNode } from '
 import { proseOf } from '../../speech/proseOf';
 import { ReadAloud } from '../../speech/ReadAloud';
 import { writeSetting } from '../registry';
+import { Chips } from '../../ui/Chips';
 import { HighlightedSetting } from './highlighted';
 import type { SettingsRow } from '../rows';
 
@@ -74,23 +75,10 @@ export function RowName({ row }: { row: SettingsRow }) {
   return <h3 className="pb-1 text-base font-medium">{row.label}</h3>;
 }
 
-/** The three chips of a weave or New words row, on one line while they fit (at the phone's largest text they wrap to the next); `name` is the setting's label in the registry. */
-export function ChipRow({ name, current, options, settingKey }: { name: string; current: string; options: [string, string][]; settingKey: 'weave' | 'weaveGrammar' | 'weaveOrder' | 'pickerGrammar' | 'grammarMove' | 'newWordsADay' | 'askBy' | 'talk' | 'send' | 'handwritingDrills' | 'readingMode' }) {
-  return (
-    <div role="group" aria-label={name} className="inline-flex max-w-full min-w-0 flex-wrap rounded-xl border border-line p-0.5">
-      {options.map(([value, text]) => (
-        <button
-          key={value}
-          type="button"
-          aria-pressed={current === value}
-          onClick={() => void writeSetting(settingKey, value)}
-          className={`min-h-12 min-w-12 rounded-lg px-3 text-base font-medium ${current === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
-        >
-          {text}
-        </button>
-      ))}
-    </div>
-  );
+/** The chips of a weave or New words row (src/ui/Chips.tsx), on one line while they fit (at the phone's largest text they wrap to the next), each tap written to the
+ * setting; `name` is the setting's label in the registry. `size` 'header' is the smaller chip of a screen's header (the paradigm table's How much of a table). */
+export function ChipRow({ name, current, options, settingKey, size }: { name: string; current: string; options: readonly (readonly [string, string])[]; settingKey: 'weave' | 'weaveGrammar' | 'weaveOrder' | 'pickerGrammar' | 'paradigmExtent' | 'grammarMove' | 'newWordsADay' | 'askBy' | 'talk' | 'send' | 'handwritingDrills' | 'readingMode'; size?: 'row' | 'header' }) {
+  return <Chips name={name} current={current} options={options} onChoose={(value) => void writeSetting(settingKey, value)} size={size} />;
 }
 
 export const PICKER = 'mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg disabled:opacity-50';

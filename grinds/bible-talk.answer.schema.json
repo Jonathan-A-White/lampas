@@ -687,6 +687,7 @@
                   "newWordsADay",
                   "pickerGrammar",
                   "grammarMove",
+                  "paradigmExtent",
                   "goal",
                   "grammarApproach",
                   "handwritingDrills",
@@ -904,6 +905,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "grammarMove" }, "value": { "type": "string", "enum": ["ask", "auto", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "paradigmExtent" }, "value": { "type": "string", "enum": ["any", "solid+frontier", "solid"] } }
           },
           {
             "type": "object",
