@@ -60,10 +60,10 @@ describe('a drill run', () => {
     gradeCell('article', FOUR[1], true);
     revealCell('article', FOUR[3]);
     expect(scoreOf(gradeCell('article', FOUR[3], true))).toEqual({ had: 2, of: 2, missed: [], done: true });
-    // a third run keeps what the first two had
+    // a third run keeps what the first two had (a set: the screen asks it only whether a cell is kept)
     const third = drillMissed('article');
     expect(third.asking).toEqual([]);
-    expect([...third.kept]).toEqual(FOUR);
+    expect([...third.kept].sort()).toEqual([...FOUR].sort());
   });
 
   it('remembers that the run\'s first miss was written, and a new run starts over', () => {
