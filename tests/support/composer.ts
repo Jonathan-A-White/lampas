@@ -24,3 +24,11 @@ export async function typeQuestion(user: UserEvent, root: HTMLElement, question:
   await user.type(field, question);
   await user.click(within(composerIn(root)).getByRole('button', { name: 'Send' }));
 }
+
+/** The Talk sheet's text box (mw-06ggew.15: its input is the same Composer, opening on the bar), brought out by Type a message when the bar is showing. */
+export async function messageBox(user: UserEvent, sheet: HTMLElement): Promise<HTMLTextAreaElement> {
+  const open = within(sheet).queryByRole('textbox', { name: 'Your message' });
+  if (open) return open as HTMLTextAreaElement;
+  await user.click(within(sheet).getByRole('button', { name: 'Type a message' }));
+  return within(sheet).getByRole('textbox', { name: 'Your message' }) as HTMLTextAreaElement;
+}

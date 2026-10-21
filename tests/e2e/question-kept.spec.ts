@@ -11,6 +11,7 @@ import { shot } from './shot';
 import { expectInList } from './talk-list';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const QUESTION = 'What is this verse about?';
 const SIDEWAYS = { width: 844, height: 390 };
@@ -38,7 +39,7 @@ async function reopenAsk(page: Page): Promise<Locator> {
 const talkSheet = (page: Page): Locator => page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
 
 async function sayInTalk(sheet: Locator, text: string): Promise<void> {
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill(text);
+  await (await talkField(sheet)).fill(text);
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 }
 
@@ -199,7 +200,7 @@ test('Share: a shared note taken into a new talk, sent, shows the question and t
   await page.goto('/#/share?s=kept');
   await page.getByRole('dialog', { name: 'Share to Lampas' }).getByRole('button', { name: 'New talk', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: 'Talk with the tutor' });
-  await expect(sheet.getByRole('textbox', { name: 'Your message' })).toHaveValue('A note to keep');
+  await expect((await talkField(sheet))).toHaveValue('A note to keep');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   const pending = sheet.locator('[data-talk-pending]');
   await expectInList(sheet, pending.getByText('A note to keep', { exact: true }), 'the question');
@@ -228,7 +229,7 @@ test.describe('a long question leaves the first line of the answer on screen (mw
       await start(page, fake);
       await openTalkAbout(page, 28);
       const sheet = talkSheet(page);
-      await sheet.getByRole('textbox', { name: 'Your message' }).fill(question);
+      await (await talkField(sheet)).fill(question);
       await sheet.getByRole('button', { name: 'Send', exact: true }).click();
       const answer = sheet.locator('[data-turn] [data-answer-text]');
       await expect(answer).toContainText(TALK_ANSWER.answer.slice(0, 20));

@@ -14,7 +14,7 @@ import { speakTutor } from './speech/tutorVoice';
 import type { TalkScope } from './services/talk';
 import { TalkSheet } from './Talk';
 import { useTalk } from './useTalk';
-import { useTalkHold } from './talk/useTalkHold';
+import { isHolding } from './talk/holding';
 
 /** The welcome talk's scope: a talk from a screen named Welcome, which is about no text. */
 const WELCOME_SCOPE: TalkScope = { title: 'Welcome', chapter: NO_CHAPTER, verse: null, screen: { name: 'Welcome', facts: [] }, welcome: true };
@@ -39,16 +39,13 @@ export function Welcome() {
   }
 
   const turns = useLiveQuery(() => listTurns(WELCOME_REF), []);
-  const sayAbout = useRef<(message: string) => void>(() => {});
-  const voice = useTalkHold((message) => sayAbout.current(message));
   const open = useRef(false);
   const { states, say, resume } = useTalk('', 0, (_ref, id, answer) => {
-    if (!open.current || voice.listening) return;
+    if (!open.current || isHolding()) return;
     speakTutor(id, answerRuns(answer), () => open.current);
   });
   useEffect(() => {
     open.current = shown;
-    sayAbout.current = (message) => say(WELCOME_SCOPE, message);
   });
 
   // The app says hello for him, once for each time the welcome is due, so the tutor's first question is the first thing he reads.
@@ -60,11 +57,7 @@ export function Welcome() {
     if (turns.length === 0) say(WELCOME_SCOPE, WELCOME_OPENING);
   }, [shown, pending, turns, state, flag, say]);
 
-  const close = useCallback(() => {
-    voice.abort();
-    voice.clearNotice();
-    setShown(false);
-  }, [voice]);
+  const close = useCallback(() => setShown(false), []);
   const skip = useCallback(() => {
     void skipWelcome().finally(close);
   }, [close]);
@@ -75,7 +68,6 @@ export function Welcome() {
       scope={WELCOME_SCOPE}
       talkRef={WELCOME_REF}
       state={state}
-      voice={voice}
       onSay={(message, focus, pictures) => say(WELCOME_SCOPE, message, focus, pictures)}
       onResume={() => resume(WELCOME_SCOPE)}
       onHelp={() => {}}

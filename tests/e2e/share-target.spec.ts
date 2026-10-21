@@ -6,6 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 390, height: 844 };
 const ENTRY = readFileSync('grinds/examples/bible-talk/lexicon-entry.png');
@@ -90,6 +91,6 @@ test('Share > Lampas opens the Share to Lampas sheet, and Continue puts the pict
   await expect(talk).toBeVisible();
   await expect(talk.getByText('Why do all things work together?')).toBeVisible();
   await expect(talk.getByRole('group', { name: 'Pictures to send' }).getByRole('img')).toHaveCount(1);
-  await expect(talk.getByRole('textbox', { name: 'Your message' })).toHaveValue('ἀγάπη in BDAG');
+  await expect((await talkField(talk))).toHaveValue('ἀγάπη in BDAG');
   await shot(page, 'share-target-talk');
 });

@@ -3,10 +3,10 @@ Feature: Ask the tutor uses the shared composer
   Type a question under it. There is no separate Ask button and no second hold bar. What he says or types goes to the tutor as it always did, with the
   verses of the passage or the verse in the reference. The tutor takes no photo or file, so the composer shows no attach or camera button.
 
-  The Talk sheet has its own composer (attach, camera, a typing box, Send and Hold to talk). With the keyboard up (a window 450 px high) the typing box keeps at
-  least 60% of its row, 'es' stays on one line, the box grows upward line by line to five lines and then scrolls, no control sits on Hold to talk, and a
-  picture's thumbnail goes above the row, never beside the box. jsdom has no layout, so those measures are proved at 390x844 and 390x450 by
-  tests/e2e/talk-composer-keyboard.spec.ts; the scenario below holds what the sheet does as he types.
+  The Talk sheet's input is the same Composer (with attach and camera, mw-06ggew.15). With the keyboard up (a window 450 px high) the typing box keeps at
+  least half of its row (the mic and Send beside it), 'es' stays on one line, the box grows upward line by line to the kit's 200 px and then scrolls, no control
+  sits on Hold to talk, and a picture's thumbnail goes above the row, never beside the box. jsdom has no layout, so those measures are proved at 390x844 and
+  390x450 by tests/e2e/talk-composer-keyboard.spec.ts; the scenario below holds what the sheet does as he types.
 
   Scenario: Ask the tutor shows one composer and nothing else to ask with
     Given Lampas is opened on Romans 8 in the English view with a tutor and a recogniser behind a fake Postern
@@ -39,11 +39,11 @@ Feature: Ask the tutor uses the shared composer
     And that grist carries the Greek and the English of verses 1 to 11 and no other
     And the answer shows in the Verse view
 
-  Scenario: In the Talk sheet Hold to talk becomes a round mic button while there are words and comes back when the box is empty
+  Scenario: In the Talk sheet the Hold to talk bar gives way to the message box for typing, and the mic button brings it back
     Given Lampas is opened on Romans 8 in the English view with a tutor and a recogniser behind a fake Postern
     When he opens the Talk sheet
     Then the Talk sheet's Hold to talk bar is the wide bar
     When he types "es" in the Talk sheet's message box
-    Then the Talk sheet's Hold to talk bar is a round mic button
-    When he clears the Talk sheet's message box
+    Then the Talk sheet's Hold to talk bar gives way to a mic button beside the box
+    When he clears the Talk sheet's message box and taps the mic button
     Then the Talk sheet's Hold to talk bar is the wide bar again

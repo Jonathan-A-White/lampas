@@ -9,6 +9,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { expectInList, rectOf } from './talk-list';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const LONG = 'Why does Paul say that all things work together for good? '.repeat(10).trim();
 
@@ -23,7 +24,7 @@ test('a question that could not be sent has its Copy in view, and a tap copies a
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill(LONG);
+  await (await talkField(sheet)).fill(LONG);
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   await expect(sheet.getByRole('alert')).toContainText('No licence');
@@ -47,7 +48,7 @@ test('a sent question has a Copy under it that copies his words', async ({ page,
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+  await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   const turn = sheet.locator('[data-turn]');
   await expect(turn).toContainText(TALK_ANSWER.answer);
@@ -65,7 +66,7 @@ test('1,000 characters pasted into Your message are all kept and Send sends what
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  const box = sheet.getByRole('textbox', { name: 'Your message' });
+  const box = await talkField(sheet);
   await box.fill(PASTED);
   expect(await box.inputValue()).toHaveLength(1000);
   await expect(box).toHaveValue(PASTED);
@@ -88,7 +89,7 @@ async function answeredTalk(page: Page, url: string, n: number | null, title: st
   if (n === null) await page.getByRole('button', { name: 'Talk', exact: true }).click();
   else await openTalkAbout(page, n);
   const sheet = page.getByRole('dialog', { name: title });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does it mean here?');
+  await (await talkField(sheet)).fill('What does it mean here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.locator('[data-turn]')).toContainText(TALK_ANSWER.answer);
   return { sheet, fake };
@@ -128,7 +129,7 @@ test('after an answer and a failed send, the red message and its Copy are inside
   await sheet.getByRole('button', { name: 'Read aloud', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Speaking', exact: true })).toBeVisible();
   fake.licensed = false;
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill(LONG);
+  await (await talkField(sheet)).fill(LONG);
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   const alert = sheet.getByRole('alert');
   await expect(alert).toContainText('No licence');

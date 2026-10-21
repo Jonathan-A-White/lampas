@@ -46,6 +46,8 @@ const ANSWER = { answer: 'This is a lexicon entry. It explains a word and where 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const field = () => within(sheet()).getByRole('textbox', { name: 'Your message' });
 const pictureFile = (type = 'image/png'): File => new File([new Uint8Array(2_000_000)], `shot-${++picture}.${type.split('/')[1]}`, { type });
+/** the Composer's hidden picker (the camera's input is the other one) */
+const picker = (): HTMLInputElement => sheet().querySelector<HTMLInputElement>('input[type="file"]:not([capture])') as HTMLInputElement;
 const composerThumbs = (): HTMLElement[] => {
   const group = within(sheet()).queryByRole('group', { name: 'Pictures to send' });
   return group ? within(group).queryAllByRole('img') : [];
@@ -61,6 +63,7 @@ async function open(answer: { answer: string; words: unknown[] } = ANSWER): Prom
   cleanup();
   stopReading();
   clearBus();
+  picture = 0;
   vi.unstubAllGlobals();
   Object.assign(imageSeam, realSeam);
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -91,7 +94,7 @@ async function open(answer: { answer: string; words: unknown[] } = ANSWER): Prom
 }
 
 async function attach(file = pictureFile()): Promise<void> {
-  await user.upload(within(sheet()).getByLabelText('Picture file'), file);
+  await user.upload(picker(), file);
 }
 
 async function typeAndSend(text: string): Promise<void> {
@@ -111,17 +114,17 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Attaching a picture shows its thumbnail in the composer with a remove x', ({ Given, When, Then, And }) => {
     Given(Given0, () => open());
     When('he attaches a picture', () => attach());
-    Then('the composer shows one thumbnail, "Picture 1", with a remove x', async () => {
+    Then('the composer shows one thumbnail, {string}, with a remove x', async (_, name: string) => {
       await waitFor(() => expect(composerThumbs()).toHaveLength(1));
-      expect(composerThumbs()[0]).toHaveAccessibleName('Picture 1');
-      expect(within(sheet()).getByRole('button', { name: 'Remove picture 1' })).toBeInTheDocument();
+      expect(composerThumbs()[0]).toHaveAccessibleName(name);
+      expect(within(sheet()).getByRole('button', { name: `Remove ${name}` })).toBeInTheDocument();
     });
     And('the picture button and the camera button are there to add more', () => {
       expect(within(sheet()).getByRole('button', { name: 'Attach a picture' })).toBeInTheDocument();
       expect(within(sheet()).getByRole('button', { name: 'Take a photo' })).toBeInTheDocument();
     });
     When('he removes the first picture', async () => {
-      await user.click(within(sheet()).getByRole('button', { name: 'Remove picture 1' }));
+      await user.click(within(sheet()).getByRole('button', { name: 'Remove shot-1.png' }));
     });
     Then('the composer shows no thumbnails', () => {
       expect(composerThumbs()).toHaveLength(0);
@@ -175,10 +178,10 @@ describeFeature(feature, ({ Scenario }) => {
     When('he pastes a picture into the message', async () => {
       fireEvent.paste(field(), { clipboardData: { files: [pictureFile('image/png')], items: [], types: ['Files'], getData: () => '' } });
     });
-    Then('the composer shows one thumbnail, "Picture 1", with a remove x', async () => {
+    Then('the composer shows one thumbnail, {string}, with a remove x', async (_, name: string) => {
       await waitFor(() => expect(composerThumbs()).toHaveLength(1));
-      expect(composerThumbs()[0]).toHaveAccessibleName('Picture 1');
-      expect(within(sheet()).getByRole('button', { name: 'Remove picture 1' })).toBeInTheDocument();
+      expect(composerThumbs()[0]).toHaveAccessibleName(name);
+      expect(within(sheet()).getByRole('button', { name: `Remove ${name}` })).toBeInTheDocument();
     });
   });
 
@@ -192,18 +195,28 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A fifth picture is refused with a message', ({ Given, When, Then, And }) => {
+  Scenario('A fifth picture waits, and Send says four at most without cutting any', ({ Given, When, Then, And }) => {
     Given(Given0, () => open());
     When('he attaches {int} pictures', async (_, count: number) => {
-      await user.upload(within(sheet()).getByLabelText('Picture file'), Array.from({ length: count }, () => pictureFile()));
+      await user.upload(picker(), Array.from({ length: count }, () => pictureFile()));
       await waitFor(() => expect(composerThumbs()).toHaveLength(count));
     });
-    And('he attaches one more picture', () => attach());
+    And('he attaches one more picture', async () => {
+      const before = composerThumbs().length;
+      await attach();
+      await waitFor(() => expect(composerThumbs()).toHaveLength(before + 1));
+    });
+    And('he taps Send', async () => {
+      await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
+    });
     Then('the sheet says {string}', async (_, line: string) => {
       expect(await within(sheet()).findByText(new RegExp(line))).toBeInTheDocument();
     });
     And('the composer shows {int} thumbnails', (_, count: number) => {
       expect(composerThumbs()).toHaveLength(count);
+    });
+    And('the mill received no grist', () => {
+      expect(fake.received).toHaveLength(0);
     });
   });
 
@@ -211,7 +224,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given(Given0, () => open());
     When('he attaches a file of type {string}', (_, type: string) => {
       // the picker's own filter would not offer it; a pasted or dropped file can still be anything
-      fireEvent.change(within(sheet()).getByLabelText('Picture file'), { target: { files: [pictureFile(type)] } });
+      fireEvent.change(picker(), { target: { files: [pictureFile(type)] } });
     });
     Then('the sheet says {string}', async (_, line: string) => {
       expect(await within(sheet()).findByText(new RegExp(line))).toBeInTheDocument();

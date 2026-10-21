@@ -6,6 +6,7 @@ import { honestSpeech } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 /** Puts rows in the app's own store through raw IndexedDB, as the app wrote them. */
 async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object[]): Promise<void> {
@@ -166,7 +167,7 @@ export async function openHebrewGuide(page: Page): Promise<Locator> {
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does righteousness come from?');
+  await (await talkField(sheet)).fill('Where does righteousness come from?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.locator('[data-turn] [lang="he"]')).toHaveCount(1);
   await sheet.locator('[data-turn] button:has([lang="he"])').click();

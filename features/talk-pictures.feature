@@ -1,7 +1,7 @@
 Feature: The tutor talk takes pictures
   In the Talk sheet he can attach a picture (a screenshot of a lexicon entry, a page), take a photo with the camera or paste a copied
   picture into the message. Up to four go with one message, each cut down on the phone to at most 1600 px on the long edge before it is
-  sent. They wait in the composer with a remove x, go with the message as the grist's attachments and show as thumbnails in his turn,
+  sent. They wait in the composer (voice-kit's, named by their files) with a remove x, go with the message as the grist's attachments and show as thumbnails in his turn,
   where a tap opens one full screen and Back closes it. The pictures are kept with the talk, so a reopened talk still shows them. The
   tutor reads the text in them and quotes the words it discusses as plain text, so each quoted Greek word is a word he can tap to hear.
   The mill is the fake Postern of tests/support/fake-postern.ts; speech is the recording fake of tests/support/fake-speech.ts.
@@ -9,7 +9,7 @@ Feature: The tutor talk takes pictures
   Scenario: Attaching a picture shows its thumbnail in the composer with a remove x
     Given Lampas is opened on Romans 8 with the Talk sheet open behind a fake Postern
     When he attaches a picture
-    Then the composer shows one thumbnail, "Picture 1", with a remove x
+    Then the composer shows one thumbnail, "shot-1.png", with a remove x
     And the picture button and the camera button are there to add more
     When he removes the first picture
     Then the composer shows no thumbnails
@@ -32,19 +32,21 @@ Feature: The tutor talk takes pictures
   Scenario: A pasted picture becomes an attachment
     Given Lampas is opened on Romans 8 with the Talk sheet open behind a fake Postern
     When he pastes a picture into the message
-    Then the composer shows one thumbnail, "Picture 1", with a remove x
+    Then the composer shows one thumbnail, "shot-1.png", with a remove x
 
   Scenario: Pasted text is left alone
     Given Lampas is opened on Romans 8 with the Talk sheet open behind a fake Postern
     When he pastes only text into the message
     Then the composer shows no thumbnails
 
-  Scenario: A fifth picture is refused with a message
+  Scenario: A fifth picture waits, and Send says four at most without cutting any
     Given Lampas is opened on Romans 8 with the Talk sheet open behind a fake Postern
     When he attaches 4 pictures
     And he attaches one more picture
+    And he taps Send
     Then the sheet says "Four pictures at most"
-    And the composer shows 4 thumbnails
+    And the composer shows 5 thumbnails
+    And the mill received no grist
 
   Scenario: Something that is not a picture is refused
     Given Lampas is opened on Romans 8 with the Talk sheet open behind a fake Postern

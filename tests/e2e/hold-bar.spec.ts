@@ -8,6 +8,7 @@ import { holdFor } from '../support/hold';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 360, height: 740 };
 /** Postern's bar: h-24 = 6 rem = 96 px (TalkLineScreen.tsx line 561) */
@@ -38,22 +39,23 @@ test("the Talk sheet's hold-to-talk bar is the last control at the foot, the she
   const barBox = await box(bar);
   const sheetBox = await box(sheet);
   expect(barBox.height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
-  // across the sheet, inside its 16 px padding (Postern's max-w-xl is wider than a phone)
-  expect(barBox.width).toBeGreaterThanOrEqual(sheetBox.width - 2 * 16 - 1);
+  // across the sheet, inside its 16 px padding and the kit's Composer's own 16 px (Postern's max-w-xl is wider than a phone)
+  expect(barBox.width).toBeGreaterThanOrEqual(sheetBox.width - 2 * 32 - 1);
   expect(barBox.x + barBox.width).toBeLessThanOrEqual(VIEWPORT.width);
 
-  // the last control: nothing in the sheet sits lower, and the field and Send are above it
+  // the kit's Composer is the foot: the bar, then its quiet row (Attach a picture, Take a photo, Type a message); nothing else in the sheet sits lower than the bar's top
   for (const control of await sheet.locator('button, textarea').all()) {
     if ((await control.getAttribute('class'))?.split(' ').includes('lp-bar')) continue;
     if (!(await control.isVisible())) continue;
+    if (await control.evaluate((el) => el.closest('[data-testid="composer"]') !== null)) continue;
     const b = await box(control);
     expect(b.y + b.height).toBeLessThanOrEqual(barBox.y + 0.5);
   }
-  const send = await box(sheet.getByRole('button', { name: 'Send', exact: true }));
-  expect(send.y + send.height).toBeLessThanOrEqual(barBox.y + 0.5);
+  // Send comes with words: it is drawn once there are some, in the Composer
+  await expect(sheet.getByRole('button', { name: 'Send', exact: true })).toHaveCount(0);
   expect(barBox.y + barBox.height).toBeLessThanOrEqual(VIEWPORT.height);
   // the field still takes typing
-  const field = sheet.getByRole('textbox', { name: 'Your message' });
+  const field = await talkField(sheet);
   expect((await box(field)).height).toBeGreaterThan(30);
   await shot(page, 'talk-sheet-hold-bar');
 });

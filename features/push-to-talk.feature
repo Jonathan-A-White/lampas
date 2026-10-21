@@ -2,8 +2,8 @@ Feature: Push-to-talk
   He can talk to the Bible talk instead of typing, the way Postern's Talk line works: hold the Talk button at the
   bottom of the reader (or a verse number) for half a second, say the question, and let go. His words appear in the
   sheet while he holds and go as the turn on release. A tap under half a second only opens the sheet. Sliding the
-  finger away drops what he said. Reading aloud stops when he presses. The sheet's foot has Postern's big hold-to-talk bar
-  under the field and Send, and the Talk button at the bottom of the reader is the same bar. The phone's recogniser is faked here (tests/support/fake-recognizer.ts); how a phone really hears is
+  finger away drops what he said. Reading aloud stops when he presses. The sheet's foot is voice-kit's Composer, Postern's compose button as in Ask the tutor (mw-06ggew.15): the big hold-to-talk bar
+  with Type a message, Attach a picture and Take a photo beneath it, and the Talk button at the bottom of the reader is the same bar. The phone's recogniser is faked here (tests/support/fake-recognizer.ts); how a phone really hears is
   checked on the phone.
 
   Scenario: Holding Talk and saying a question sends it on release about the chapter
@@ -74,7 +74,7 @@ Feature: Push-to-talk
     And the phone refuses the microphone
     Then the sheet says the microphone is not allowed, with the steps in Settings
     And nothing was sent and the phone is not listening
-    And the typed field and Send are still there
+    And the typed field and Send are one tap away
 
   Scenario: Letting go with nothing heard says so and sends nothing
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern and a recogniser
@@ -93,7 +93,7 @@ Feature: Push-to-talk
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern and a recogniser
     Then the Talk button is Postern's hold bar, 96 px high, with a microphone and the label "Talk"
     When he taps the Talk button quickly
-    Then the sheet's hold-to-talk button is Postern's hold bar, 96 px high, labelled "Hold to talk", and the last control of the sheet
+    Then the sheet's hold-to-talk button is Postern's hold bar, 96 px high, labelled "Hold to talk", and the first control of the composer
     When he presses the hold-to-talk button in the sheet
     Then the sheet's hold bar says "Starting the mic…" until the microphone is open and "Release to send" after
 

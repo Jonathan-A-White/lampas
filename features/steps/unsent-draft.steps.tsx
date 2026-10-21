@@ -14,7 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { composerIn, questionField } from '../../tests/support/composer';
+import { composerIn, messageBox, questionField } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -87,7 +87,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     await user.click(await within(bar).findByRole('button', { name: 'Talk' }));
     await screen.findByRole('dialog', { name: /^Talk about / });
-    await within(sheet()).findByRole('textbox', { name: 'Your message' });
+    await messageBox(user, sheet());
   };
   const pasteIntoTalk = async (_: unknown, length: number) => {
     await user.click(talkField());

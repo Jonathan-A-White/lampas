@@ -7,6 +7,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { expectInList } from './talk-list';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 const LONG_ANSWER = {
   answer:
@@ -94,7 +95,7 @@ test('a two-line question sideways leaves three lines of the answer in view whil
   const sheet = await openAbout(page);
   const question = 'Why do you credit every one of these libraries and texts, and what would happen to Lampas if one of them changed?';
   expect(question.length).toBeGreaterThan(105);
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill(`${question} Tell me all of it please.`);
+  await (await talkField(sheet)).fill(`${question} Tell me all of it please.`);
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   const answer = sheet.locator('[data-turn] [data-answer-text]');
   await expect(answer).toBeVisible();
@@ -145,7 +146,7 @@ test('a failed send sideways has its red message and Copy in the box, and again 
   await sheet.locator('[data-suggestion]').first().click();
   await expect(sheet.locator('[data-turn]')).toHaveCount(1);
   fake.licensed = false;
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Why do you credit all these?');
+  await (await talkField(sheet)).fill('Why do you credit all these?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   const alert = sheet.getByRole('alert');
   await expect(alert).toContainText('No licence');

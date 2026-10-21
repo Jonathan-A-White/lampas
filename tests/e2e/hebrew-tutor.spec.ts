@@ -6,6 +6,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -23,7 +24,7 @@ test('a Hebrew word in an answer is lang he, dir rtl, in the Hebrew font, with t
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does righteousness come from?');
+  await (await talkField(sheet)).fill('Where does righteousness come from?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const turn = sheet.locator('[data-turn]');

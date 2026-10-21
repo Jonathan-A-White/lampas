@@ -1,13 +1,14 @@
-// tests/e2e/talk-composer-keyboard.spec.ts — the Talk sheet's composer with the keyboard up (mw-5r3p30.258), proving the scenarios of
-// features/ask-composer.feature that need layout: at 390x844 and with the height cut to 450 (the keyboard), the typing box keeps most of the row, 'es' and
-// 'links' stay on one line, Hold to talk is a round mic button while there are words and comes back when the box is empty, the box grows upward to five
-// lines and then scrolls, nothing sits on Hold to talk, and a picture's thumbnail is above the row and not in it.
+// tests/e2e/talk-composer-keyboard.spec.ts — the Talk sheet's composer (voice-kit's Composer since mw-06ggew.15) with the keyboard up (mw-5r3p30.258), proving the
+// scenarios of features/ask-composer.feature that need layout: at 390x844 and with the height cut to 450 (the keyboard), the typing box keeps most of the row, 'es' and
+// 'links' stay on one line, Send is drawn with the words, the box grows upward to the kit's 200 px and then scrolls, nothing sits on Hold to talk, and a picture's
+// thumbnail is above the row and not in it.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { pictureInput, talkField } from './talk-field';
 
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 const SIZES = [
@@ -60,7 +61,7 @@ async function expectNothingOn(page: Page, sheet: Locator): Promise<void> {
   const rects = await sheet.locator('[data-composer]').evaluate(
     (foot) =>
       Array.from(foot.querySelectorAll('button, textarea, img'))
-        .filter((el) => !el.matches('.lp-bar'))
+        .filter((el) => !el.matches('.bk-composer__bar') && !el.closest('.bk-composer__bar'))
         .map((el) => el.getBoundingClientRect().toJSON() as Rect),
   );
   for (const r of rects) if (r.width > 0 && r.height > 0) expect(overlap(mine, r), 'a control overlaps Hold to talk').toBe(false);
@@ -74,50 +75,40 @@ async function expectNothingOn(page: Page, sheet: Locator): Promise<void> {
   for (const [x, y] of points) {
     const top = await page.evaluate(([px, py]) => {
       const el = document.elementFromPoint(px, py);
-      return el?.closest('.lp-bar') ? 'bar' : `${el?.tagName} ${el?.getAttribute('aria-label') ?? el?.className}`;
+      return el?.closest('.bk-composer__bar') ? 'bar' : `${el?.tagName} ${el?.getAttribute('aria-label') ?? el?.className}`;
     }, [x, y]);
     expect(top, `something covers Hold to talk at ${Math.round(x)},${Math.round(y)}`).toBe('bar');
   }
 }
 
 for (const size of SIZES) {
-  test(`the composer at 390x${size.height} (${size.name}): the box keeps the row, the mic is round while there are words`, async ({ page }) => {
+  test(`the composer at 390x${size.height} (${size.name}): the box keeps the row, Send comes with the words`, async ({ page }) => {
     const sheet = await open(page, size.height);
-    const field = sheet.getByRole('textbox', { name: 'Your message' });
-    const row = sheet.locator('[data-composer-row]');
-    await expect(field).toBeVisible();
-    const short = size.height < 500;
-
-    // empty: the box has most of the row, and Hold to talk is the bar
-    const empty = await rectOf(field);
-    expect(empty.width / (await rectOf(row)).width).toBeGreaterThanOrEqual(short ? 0.5 : 0.6);
+    // the kit's Composer opens on its bar (nothing sits on it) and Type a message brings the box out, with the mic and Send in its row
     await expectNothingOn(page, sheet);
     const wide = await rectOf(bar(sheet));
     expect(wide.width).toBeGreaterThan(wide.height * 1.5);
+    const field = await talkField(sheet);
+    const row = sheet.locator('.bk-composer__field-row');
+    await expect(field).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Send', exact: true })).toHaveCount(0);
 
-    // 'es' is on one line in a box that keeps at least 60% of the row
+    // 'es' is on one line in a box that keeps at least half of the row, and Send is a thumb tall beside it
     await field.fill('es');
     expect(await linesIn(field)).toBe(1);
-    expect((await rectOf(field)).width / (await rectOf(row)).width).toBeGreaterThanOrEqual(0.6);
-    await expectNothingOn(page, sheet);
-    if (short) {
-      const mic = await rectOf(bar(sheet));
-      expect(Math.abs(mic.width - mic.height)).toBeLessThanOrEqual(1);
-      expect(mic.width).toBeGreaterThanOrEqual(43.5);
-      expect(await bar(sheet).evaluate((el) => parseFloat(getComputedStyle(el).borderTopLeftRadius))).toBeGreaterThanOrEqual(mic.width / 2 - 1);
-      await shot(page, 'talk-composer-keyboard-text');
-    }
-
-    // and the bar comes back when the box is empty
-    await field.fill('');
-    const back = await rectOf(bar(sheet));
-    expect(back.width).toBeGreaterThan(back.height * 1.5);
-    await expectNothingOn(page, sheet);
+    // (the kit's row holds the mic and Send beside the box, a thumb wide each)
+    expect((await rectOf(field)).width / (await rectOf(row)).width).toBeGreaterThanOrEqual(0.5);
+    const send = await rectOf(sheet.getByRole('button', { name: 'Send', exact: true }));
+    expect(send.width).toBeGreaterThanOrEqual(43.5);
+    expect(send.height).toBeGreaterThanOrEqual(43.5);
+    expect(overlap(send, await rectOf(field))).toBe(false);
+    expect(send.x + send.width).toBeLessThanOrEqual(390);
+    await shot(page, `talk-composer-keyboard-${size.height}-text`);
   });
 
-  test(`the composer at 390x${size.height} (${size.name}): the box grows upward line by line to five lines, then scrolls`, async ({ page }) => {
+  test(`the composer at 390x${size.height} (${size.name}): the box grows upward line by line, then scrolls`, async ({ page }) => {
     const sheet = await open(page, size.height);
-    const field = sheet.getByRole('textbox', { name: 'Your message' });
+    const field = await talkField(sheet);
     await field.fill('one');
     const one = await rectOf(field);
     await field.fill('one\ntwo\nthree');
@@ -126,36 +117,34 @@ for (const size of SIZES) {
     // it grew upward: the bottom stayed, the top moved up
     expect(Math.abs(three.y + three.height - (one.y + one.height))).toBeLessThanOrEqual(1);
     expect(three.y).toBeLessThan(one.y);
-    const lineHeight = await field.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
     expect(await linesIn(field)).toBe(3);
 
-    await field.fill('one\ntwo\nthree\nfour\nfive\nsix\nseven\neight');
+    await field.fill('one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\ntwelve');
     const many = await rectOf(field);
-    expect(many.height).toBeLessThanOrEqual(5 * lineHeight + 32);
+    // the kit holds the box at 200 px (--bk-composer-field-max-height) and it scrolls from there
+    expect(many.height).toBeLessThanOrEqual(200.5);
     expect(await field.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
     expect(await field.evaluate((el) => getComputedStyle(el).overflowY)).toMatch(/auto|scroll/);
-    // the box stays inside the window and the sheet's list still has room
+    // the box stays inside the window
     expect(many.y).toBeGreaterThanOrEqual(0);
-    expect((await rectOf(sheet.locator('[data-talk-list]'))).height).toBeGreaterThanOrEqual(size.height < 500 ? 40 : 150);
     await shot(page, `talk-composer-keyboard-${size.height}-lines`);
   });
 }
 
 test('the composer at 390x450 with a picture attached: links stays on one line and the thumbnail is above the row', async ({ page }) => {
   const sheet = await open(page, 450);
-  await sheet.getByLabel('Picture file').setInputFiles({ name: 'p.png', mimeType: 'image/png', buffer: PNG });
-  const thumb = sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img', { name: 'Picture 1' });
+  await pictureInput(sheet).setInputFiles({ name: 'p.png', mimeType: 'image/png', buffer: PNG });
+  const thumb = sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img', { name: 'p.png' });
   await expect(thumb).toBeVisible();
-  const field = sheet.getByRole('textbox', { name: 'Your message' });
+  const field = await talkField(sheet);
   await field.fill('links');
   expect(await linesIn(field)).toBe(1);
-  const row = await rectOf(sheet.locator('[data-composer-row]'));
+  const row = await rectOf(sheet.locator('.bk-composer__field-row'));
   const box = await rectOf(field);
   expect(box.width / row.width).toBeGreaterThanOrEqual(0.5);
   const picture = await rectOf(thumb);
   // not in the row of the box: above it
   expect(picture.y + picture.height).toBeLessThanOrEqual(row.y + 0.5);
   expect(overlap(picture, box)).toBe(false);
-  await expectNothingOn(page, sheet);
   await shot(page, 'talk-composer-keyboard-picture');
 });

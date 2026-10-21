@@ -63,7 +63,7 @@ New Testament for me to learn first, given where I am?" The Reader's chapter tal
 Today (mw-1fwagb.7, the grilling mw-6ww.126 Q5) reports the local date, what is On and `Opened today`, the pieces whose link he tapped on that date, by name
 (`src/today/tutorFacts.ts` `openedTitles`, `todayFacts`; dailyStore.ts keeps the opened list per date, so yesterday's never comes); the bible-talk instructions
 ('Talk from Today') say to open by naming them and to invite a screenshot. Its suggestions are 'Talk about what I read' and `SEND_A_SCREENSHOT`: the second
-sends no words, it opens the picture picker (`TalkSheet` `ask`, `PictureControls` `registerPicker`); the attach and camera buttons are on the composer from the first turn.
+sends no words, it opens the picture picker (`TalkSheet` `ask`, which clicks the Composer's Attach a picture button); the attach and camera buttons are on the composer from the first turn.
 `suggestionsFor` also finds a screen by its lower-case name ('today').
 Once the talk has a turn (or the first question failed) the ones not yet asked stay under the last answer, headed 'Ask something else'
 (mw-vtjxh4.43). 'New talk' in the sheet's header (shown with a turn and nothing in flight) forgets the kept talk (`deleteTurns`, with its
@@ -195,7 +195,7 @@ His words (12 Oct 2026): a person is not always going forward; he takes a break,
 ## Greek words he says aloud (mw-5r3p30.244)
 
 Hold to talk and Hold to ask use the phone's recogniser in en-US, so a Greek word he says arrives as English sound-alikes ('Tech N9ne' for
-τεκνίον). The words the recogniser handed over are remembered (src/speech/spoken.ts, noted by speech/askTranscriber.ts, the transcriber of every hold: the Ask composer's and, through talk/useTalkHold.ts, the Talk sheet's bar, the Talk bar, Welcome and the letter drill); a question whose text is those words goes to bible-talk and verse-ask with `spoken: true` (buildTalkRequest, buildRequest), and a
+τεκνίον). The words the recogniser handed over are remembered (src/speech/spoken.ts, noted by speech/askTranscriber.ts, the transcriber of every hold: the Ask composer's, the Talk sheet's composer and, through talk/useTalkHold.ts, the Talk bar, Welcome and the letter drill); a question whose text is those words goes to bible-talk and verse-ask with `spoken: true` (buildTalkRequest, buildRequest), and a
 typed one, or one he edited after speaking, has no such field. `wasSpoken` is asked once, as the message is sent (`useTalk.say`, `useAsks.ask`), and forgets the words, so the same words typed after are his typing (mw-5r3p30.333); Retry sends the same text and so stays marked (the failed line in `pendingAsks` keeps `spoken`). Both grinds' instructions
 ('## Greek words said in English speech') tell the tutor to match the sound-alike to the passage's Greek words and lemmas, answer about the best
 match and say in one line which word it took ('I took "Tech N9ne" as τεκνίον.') rather than ask first (PROVISIONAL). Scenario:
@@ -274,16 +274,15 @@ Asked in the Talk sheet to switch to, open, go to or take him to a chapter ('can
 ## Pictures in a talk
 
 The Talk sheet takes pictures (mw-y3qno5.1, `features/talk-pictures.feature`): a screenshot of a lexicon entry, a page, a note. Above the field are
-**Attach a picture** and **Take a photo** (48 px; the labels of voice-kit's Composer, which the Verse view's Ask uses; the Talk sheet keeps its own field and
-hold bar, so the buttons are its own, `src/talk/PictureControls.tsx`) and a **paste** anywhere in the sheet of a copied picture (`pastedPictures`, a
-clipboard that holds files) is an attachment too; pasted text pastes as before.
+**Attach a picture** and **Take a photo** (the Composer's own buttons, mw-06ggew.15: the sheet's input is voice-kit's Composer, as Ask the tutor's and Postern's is, with
+`attach` and `camera` on and `refuseFile` letting only JPEG, PNG and WebP in), and a **paste** into the field of a copied picture is an attachment too; pasted text pastes as before.
+The Composer holds the waiting pictures itself (a row 'Pictures to send', each with a remove x named for its file); a share's pictures are its `incomingFiles`.
 
 - At most **four** pictures a message, JPEG, PNG or WebP (the grind's `attachments`, `grinds/bible-talk.json`: max 4, `maxBytes` 1 MiB). A fifth gets the line
-  "Four pictures at most. The rest were left out."; another kind of file, "Only JPEG, PNG or WebP pictures can be sent."
-- Each is cut down **on the phone** as it is added (`src/talk/pictures.ts`, `shrinkImage` with `{maxEdge: 1600, maxBytes: 1 MiB}`: a JPEG, quality then size
-  lowered until it fits), so Send waits for nothing but the last one ("Getting the picture ready…").
-- A waiting picture is a 56 px thumbnail with a 44 px remove x (`src/talk/usePictureBox.ts`). Send, or words he holds to say (`src/talk/outbox.ts`: the open
-  sheet's waiting pictures go with the Reader's and the screens' hold-to-talk message), sends them as the grist's `attachments` (`picture-N.jpg`) and the request
+  nothing is cut: Send says "Four pictures at most. Take one out and send again; nothing has been cut."; another kind of file is refused when it is added, "Only JPEG, PNG or WebP pictures can be sent."
+- Each is cut down **on the phone** as Send is pressed (`src/talk/pictures.ts` `preparePictures`, `shrinkImage` with `{maxEdge: 1600, maxBytes: 1 MiB}`: a JPEG, quality then size
+  lowered until it fits); a picture that cannot be used keeps the message in the composer with a line saying so.
+- A waiting picture is the Composer's thumbnail with its remove x. Send (the Composer's, or words he holds to say in its bar) sends them as the grist's `attachments` (`picture-N.jpg`) and the request
   has `pictures: N`. Pictures with no words ask "Read the picture and tell me about it." (`PICTURE_ONLY_QUESTION`; the grind knows it).
 - The turn keeps them in Dexie (`talkPictures`, v14: `{turnId, place, bytes, mime, name}`, written with the turn by `addTurn`; `listTurnPictures`), so a reopened
   talk shows them. His turn draws them as 64 px thumbnails (`src/talk/TurnPictures.tsx`); a tap opens the picture full screen (a Back step of its own,
@@ -317,7 +316,7 @@ a phone that installed Lampas before this version may need it removed and instal
   Only JPEG, PNG or WebP files are counted as pictures (mw-s1dc0n.14: `shareText.ts` `describeShare`); any other (a GIF) gets the line "1 picture left out: Lampas reads only JPEG, PNG or WebP." (`leftOutLine`), is not read for references and stays out of the talk's composer. A share with nothing readable (no words, no such picture: `hasReadable`) offers only Cancel, with no New talk, Choose a talk or Continue (mw-5r3p30.665).
 - **A pick** takes the share off the phone's store and opens the talk in the Talk sheet over its own scope (`src/share/talkScope.ts`, `ShareTalk.tsx`): the
   address becomes `#/share?talk=<key>` (kept, so after leaving the app and coming back he is in that talk, with its turns; the pictures and words were
-  placed once and are not kept). The pictures wait in the composer (`TalkSheet`'s `shared` prop: `usePictureBox().add`, cut down like any picture) and the words
+  placed once and are not kept). The pictures wait in the composer (`TalkSheet`'s `shared` prop: the Composer's `incomingFiles`, cut down like any picture when sent) and the words
   in its field, **not sent**; the sheet opens scrolled to the talk's end. A talk about a chapter, verse or passage, or a quiz on one, is the Talk sheet over
   the chapter (fetched; offline and never read says so, with Try again), with Help with this word and a grammar term asking the tutor in that talk; a talk from a
   screen (`screen.<name>`) is the Ask the tutor sheet's scope; **New talk** is a talk of its own (`talk.<ms>`, `TalkScope.free`, titled **Talk with the

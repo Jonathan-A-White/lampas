@@ -7,6 +7,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { expectInList } from './talk-list';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -25,7 +26,7 @@ test('a question he is not ready for is bridged to the idea he lacks and Take me
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Why is the genitive used here?');
+  await (await talkField(sheet)).fill('Why is the genitive used here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const take = sheet.getByRole('button', { name: 'Take me there: The Greek alphabet' });
@@ -59,7 +60,7 @@ test('right after a bridged answer draws in a 1 John 1 talk, Take me there is in
   await page.goto('/#/?b=1jn&c=1&view=english&weave=off');
   await page.getByRole('button', { name: 'Talk', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: 'Talk about 1 John 1' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Why is the genitive used here?');
+  await (await talkField(sheet)).fill('Why is the genitive used here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   // the answer is being read aloud, so its speaking bar has taken room from the list

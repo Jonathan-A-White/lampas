@@ -16,6 +16,7 @@ import { shot } from './shot';
 import { openCheck, openDrillIt, openIdea, openShare, openTryIt } from './large-text-titles';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openTalkAbout, openVerseView } from './verse-view';
+import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, serviceWorkers: 'allow' });
 
@@ -443,7 +444,7 @@ const PANELS: PanelWay[] = [
       await readerPage(page);
       await openTalkAbout(page, 28);
       const talk = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-      await talk.getByRole('textbox', { name: 'Your message' }).fill('Who is Melchizedek?');
+      await (await talkField(talk)).fill('Who is Melchizedek?');
       await talk.getByRole('button', { name: 'Send', exact: true }).click();
       await talk.getByRole('link', { name: 'Heb 7:1-3', exact: true }).click();
       const card = page.getByRole('dialog', { name: 'Hebrews 7:1-3' });

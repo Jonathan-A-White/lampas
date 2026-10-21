@@ -6,6 +6,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 import { leaveSettings, openGroup } from './settings-group';
+import { talkField } from './talk-field';
 
 // A Bible reference in the tutor's answer opens a card under it (mw-5r3p30.133, features/reference-card.feature) at a small phone's width.
 const VIEWPORT = { width: 360, height: 740 };
@@ -22,7 +23,7 @@ test('a reference in the tutor\'s answer opens a card that fits a 360 px phone, 
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Who is Melchizedek?');
+  await (await talkField(sheet)).fill('Who is Melchizedek?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const link = sheet.getByRole('link', { name: 'Heb 7:1-3', exact: true });
@@ -98,7 +99,7 @@ test('an Old Testament reference links to Settings until Logos is linked, then o
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('How does it end?');
+  await (await talkField(sheet)).fill('How does it end?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   await sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
@@ -147,7 +148,7 @@ test('Link Logos in Settings opens Settings at Study resources after Settings wa
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does Ecclesiastes end?');
+  await (await talkField(sheet)).fill('Where does Ecclesiastes end?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
   const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
@@ -175,7 +176,7 @@ test('a quick second tap on the reference leaves its card on screen', async ({ p
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does Ecclesiastes end?');
+  await (await talkField(sheet)).fill('Where does Ecclesiastes end?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const link = sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true });
@@ -215,7 +216,7 @@ test('Open in Logos with no Logos app keeps the Lampas page on screen', async ({
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does Ecclesiastes end?');
+  await (await talkField(sheet)).fill('Where does Ecclesiastes end?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
   const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });

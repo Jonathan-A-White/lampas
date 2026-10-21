@@ -11,6 +11,7 @@ import { liveKeyOrSkip, plain } from './live';
 import { shot } from './shot';
 import { seedDeviceKey } from './unlocked';
 import { openGroup } from './settings-group';
+import { talkField } from './talk-field';
 
 const ANSWER_WITHIN_MS = 120_000;
 /** What the grind says to anything outside the Bible (grinds/bible-talk.instructions.md; tests/unit/bible-talk-grind.test.ts holds the two equal). */
@@ -34,7 +35,7 @@ test('the live Bible talk refuses code, answers a question about πνεῦμα i
   const say = async (message: string): Promise<Locator> => {
     const turns = sheet.locator('[data-turn]');
     const before = await turns.count();
-    await sheet.getByRole('textbox', { name: 'Your message' }).fill(message);
+    await (await talkField(sheet)).fill(message);
     await sheet.getByRole('button', { name: 'Send', exact: true }).click();
     const answered = turns.nth(before);
     const failure = sheet.getByRole('alert');

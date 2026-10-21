@@ -9,6 +9,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const NAV_BAR = 48;
 const MODES = [
@@ -101,13 +102,14 @@ for (const phone of PHONES) for (const mode of MODES) {
       await openTalkAbout(page, 28);
       const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
       await expect(sheet).toBeVisible();
-      await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+      await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
       const send = sheet.getByRole('button', { name: 'Send', exact: true });
+      // the kit's Send goes with the words: it is measured while they are in the box, and it is gone once they are sent
+      const sendBox = await send.boundingBox();
+      if (!sendBox) throw new Error('Send has no box');
       await send.click();
       await expect(sheet.getByText(TALK_ANSWER.answer.slice(0, 20), { exact: false }).first()).toBeVisible();
       const innerHeight = await page.evaluate(() => window.innerHeight);
-      const sendBox = await send.boundingBox();
-      if (!sendBox) throw new Error('Send has no box');
       expect(sendBox.y + sendBox.height).toBeLessThanOrEqual(innerHeight - NAV_BAR + 0.5);
       // The answer's turn draws a moment before the waiting block goes and the box re-aligns to the new turn (useTalk sets the state after its
       // write), so wait for the pending block to go, then scroll to the end until the last row clears the composer: one scroll too early is undone.

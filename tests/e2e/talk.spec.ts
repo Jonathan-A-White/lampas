@@ -5,6 +5,7 @@ import { clips, honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -42,9 +43,10 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   await expect(talk).toBeHidden();
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
   await expect(sheet).toBeVisible();
-  const field = sheet.getByRole('textbox', { name: 'Your message' });
+  const field = await talkField(sheet);
   const send = sheet.getByRole('button', { name: 'Send', exact: true });
-  await expect(send).toBeDisabled();
+  // the kit's Composer draws Send only once there are words
+  await expect(send).toHaveCount(0);
   await field.fill('What does συνεργεῖ mean here?');
   await expect(send).toBeEnabled();
 
@@ -69,7 +71,7 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   expect(box?.x).toBeGreaterThanOrEqual(0);
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(VIEWPORT.height);
-  expect((await send.boundingBox())?.y ?? 0).toBeGreaterThan(VIEWPORT.height / 2);
+  expect(sendBox?.y ?? 0).toBeGreaterThan(VIEWPORT.height / 2);
   await expectFitsPhone(page);
   await shot(page, 'talk-sheet');
 
@@ -98,7 +100,7 @@ test('a setting asked for in the talk is applied at once, shown as Changed with 
   await page.goto('/');
   await page.getByRole('button', { name: 'Talk', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Make the Greek slower, and dark');
+  await (await talkField(sheet)).fill('Make the Greek slower, and dark');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   await expect(sheet.getByText('Changed: Greek speed 0.8x')).toBeVisible();
@@ -139,7 +141,7 @@ test('Add to my words under an explained word is thumb-sized, fits the phone and
   await page.goto('/');
   await page.getByRole('button', { name: 'Talk', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Explain these words');
+  await (await talkField(sheet)).fill('Explain these words');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const add = sheet.getByRole('button', { name: 'Add to my words', exact: true });
@@ -166,7 +168,7 @@ test("the tutor's Markdown shows bold and a list in the Talk sheet, with no mark
   await page.goto('/');
   await page.getByRole('button', { name: 'Talk', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('what is parsing?');
+  await (await talkField(sheet)).fill('what is parsing?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const answer = sheet.locator('[data-talk-a]');
@@ -193,7 +195,7 @@ for (const place of [
     await page.goto(place.path);
     await place.open(page);
     const sheet = page.getByRole('dialog', { name: place.title });
-    await sheet.getByRole('textbox', { name: 'Your message' }).fill('take me to Psalm 23');
+    await (await talkField(sheet)).fill('take me to Psalm 23');
     await sheet.getByRole('button', { name: 'Send', exact: true }).click();
     await expect(sheet.locator('[data-turn]')).toContainText(TALK_ANSWER.answer);
     await expect(sheet.getByRole('button', { name: 'New talk', exact: true })).toBeVisible();
@@ -241,7 +243,7 @@ test('a spoken turn shows the tidied question with his own words under it as a m
   if (!hold) throw new Error('no Hold to talk button');
   await page.mouse.move(hold.x + hold.width / 2, hold.y + hold.height / 2);
   await page.mouse.down();
-  await expect(sheet.locator('[data-talk-live]')).toContainText(SPOKEN, { timeout: 15_000 });
+  await expect(sheet.getByTestId('live-transcript')).toContainText(SPOKEN, { timeout: 15_000 });
   await page.mouse.up();
 
   const turn = sheet.locator('[data-turn]');
@@ -261,7 +263,7 @@ test('a spoken turn shows the tidied question with his own words under it as a m
 
 test('a typed turn shows the tidied question and no "You said" line, even sideways (mw-5r3p30.633)', async ({ page }) => {
   const sheet = await openTalkSideways(page, false);
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('what does called mean');
+  await (await talkField(sheet)).fill('what does called mean');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   const turn = sheet.locator('[data-turn]');
   await expect(turn.locator('[data-talk-q]')).toHaveText(TIDIED);

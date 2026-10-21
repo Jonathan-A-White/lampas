@@ -8,6 +8,7 @@ import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked, SEED_PUBLIC_KEY } from './unlocked';
+import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -34,7 +35,7 @@ async function sendFromTutor(page: Page, fake: FakePostern): Promise<void> {
   await page.goto('/#/words');
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Can this work with Olive Tree?');
+  await (await talkField(sheet)).fill('Can this work with Olive Tree?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await sheet.getByRole('button', { name: 'Send this to the makers' }).click();
   await expect(sheet.getByText('Sent', { exact: true })).toBeVisible();

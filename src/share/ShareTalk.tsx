@@ -8,36 +8,27 @@ import { helpQuestion, scopeTitle, termQuestion, type TalkScope, type WordFocus 
 import { answerRuns } from '../speech/answerRuns';
 import { speakTutor } from '../speech/tutorVoice';
 import { stopReading } from '../speech/readAloud';
-import { takeWaitingPictures } from '../talk/outbox';
+import { isHolding } from '../talk/holding';
 import { READER_SUGGESTIONS, suggestionsFor } from '../tutor/screen';
 import { TalkSheet } from '../Talk';
 import { useTalk } from '../useTalk';
-import { useTalkHold } from '../talk/useTalkHold';
 import type { TermAsk, WordHelp } from '../WordSheet';
 import type { SharedContent } from './shared';
 
 /** The Talk sheet over `scope`, with the voice, the answers read aloud and the word sheet's help wired as the Reader and the Ask the tutor button wire them. */
 export function TalkHost({ scope, talkRef, book, chapter, shared, onClose }: { scope: TalkScope; talkRef: string; book: string; chapter: number; shared?: SharedContent; onClose: () => void }) {
-  const sayAbout = useRef<(message: string) => void>(() => {});
-  const voice = useTalkHold((message) => sayAbout.current(message));
   const openRef = useRef<string | null>(talkRef);
   const { states, say, resume } = useTalk(book, chapter, (ref, id, answer) => {
-    if (openRef.current !== ref || voice.listening) return;
+    if (openRef.current !== ref || isHolding()) return;
     speakTutor(id, answerRuns(answer), () => openRef.current === ref);
   });
   useEffect(() => {
     openRef.current = talkRef;
-    sayAbout.current = (message) => say(scope, message, undefined, takeWaitingPictures());
   });
   // A talk that is gone has nothing open: an answer that comes as it goes is not read aloud.
   useEffect(() => () => void (openRef.current = null), []);
   // Opening the talk ends a reading under way, as the Ask the tutor button does.
   useEffect(() => stopReading(), []);
-  const close = useCallback(() => {
-    voice.abort();
-    voice.clearNotice();
-    onClose();
-  }, [voice, onClose]);
   const help = useCallback(
     (asked: WordHelp) => {
       const focus: WordFocus = { form: asked.form, lemma: asked.lemma, parse: asked.parse, kind: asked.kind };
@@ -52,14 +43,13 @@ export function TalkHost({ scope, talkRef, book, chapter, shared, onClose }: { s
       scope={scope}
       talkRef={talkRef}
       state={states[talkRef]}
-      voice={voice}
       suggestions={suggestions}
       shared={shared}
       onSay={(message, focus, pictures) => say(scope, message, focus, pictures)}
       onResume={() => resume(scope)}
       onHelp={help}
       onAskTerm={askTerm}
-      onClose={close}
+      onClose={onClose}
     />
   );
 }

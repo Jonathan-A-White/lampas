@@ -27,6 +27,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { pageTime, tapTwice } from '../support/gesture';
+import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -356,7 +357,7 @@ test('mw-1vuvq6.10: a double tap on the bridge idea sheet\'s Done leaves the tal
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const talk = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await reads(page);
-  await talk.getByRole('textbox', { name: 'Your message' }).fill('Why is the genitive used here?');
+  await (await talkField(talk)).fill('Why is the genitive used here?');
   await talk.getByRole('button', { name: 'Send', exact: true }).click();
   await talk.getByRole('button', { name: 'Take me there: The Greek alphabet' }).click();
   const idea = ideas(page);

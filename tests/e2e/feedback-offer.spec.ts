@@ -5,6 +5,7 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -24,7 +25,7 @@ test('an ask Lampas cannot meet is offered to the makers and one tap sends it', 
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Can this work with Olive Tree?');
+  await (await talkField(sheet)).fill('Can this work with Olive Tree?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const offer = sheet.getByRole('button', { name: 'Send this to the makers' });
@@ -59,7 +60,7 @@ test('the link beside the answer opens Your requests with its heading in view', 
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Can this work with Olive Tree?');
+  await (await talkField(sheet)).fill('Can this work with Olive Tree?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await sheet.getByRole('button', { name: 'Send this to the makers' }).click();
   await sheet.getByRole('button', { name: 'Your requests' }).click();

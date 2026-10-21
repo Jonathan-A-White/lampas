@@ -19,6 +19,8 @@ export const PICTURE_ONLY_QUESTION = 'Read the picture and tell me about it.';
 export const TOO_MANY_LINE = 'Four pictures at most. The rest were left out.';
 export const NOT_A_PICTURE_LINE = 'Only JPEG, PNG or WebP pictures can be sent.';
 export const COULD_NOT_USE_LINE = 'That picture could not be used.';
+/** Said when more pictures wait in the composer than one message carries: none is cut, he takes one out and sends again. */
+export const TOO_MANY_TO_SEND_LINE = 'Four pictures at most. Take one out and send again; nothing has been cut.';
 
 /** A picture ready to send, or kept: its bytes (always JPEG after the cut) and the name it goes under. */
 export interface OutgoingPicture {
@@ -34,6 +36,15 @@ export const isTalkPicture = (file: { type: string }): boolean => TALK_PICTURE_M
 export async function preparePicture(file: Blob, place: number): Promise<OutgoingPicture> {
   const shrunk = await shrinkImage(file, { maxEdge: TALK_MAX_EDGE, maxBytes: TALK_PICTURE_MAX_BYTES });
   return { bytes: new Uint8Array(await shrunk.arrayBuffer()), mime: 'image/jpeg', name: `picture-${place + 1}.jpg` };
+}
+
+/** The pictures the Composer holds (its files: bytes, type and name), each cut down as preparePicture does, in the order they stand; an Error says so when one cannot be used,
+ * and the message does not go (the composer keeps its words and pictures). */
+export async function preparePictures(files: readonly { bytes: Uint8Array; type: string }[]): Promise<OutgoingPicture[]> {
+  const results = await Promise.allSettled(files.map((file, i) => preparePicture(new Blob([file.bytes as BlobPart], { type: file.type }), i)));
+  const failed = results.some((r) => r.status === 'rejected');
+  if (failed) throw new Error(`${COULD_NOT_USE_LINE} Take it out and send again.`);
+  return results.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []));
 }
 
 /** The pictures as the grist's files. */

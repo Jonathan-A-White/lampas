@@ -8,6 +8,7 @@ import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 390, height: 844 };
 const ANSWER = { answer: "Paul's word for righteousness echoes the Hebrew צֶדֶק (tsedeq), which is about being in the right before God.", words: [] };
@@ -24,7 +25,7 @@ async function askAbout(page: Page, reply: object) {
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does righteousness come from?');
+  await (await talkField(sheet)).fill('Where does righteousness come from?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.locator('[data-turn] [lang="he"]')).toHaveCount(1);
   return { sheet, fake };

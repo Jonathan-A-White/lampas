@@ -7,6 +7,7 @@ import { holdFor } from '../support/hold';
 import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
+import { talkField } from './talk-field';
 
 // An automated accessibility check over every main screen (mw-cwf538.2, the epic 'Lampas for every age and every ability'): axe runs with
 // the WCAG 2.1 A and AA rules on each screen below, opened as a thumb opens it, and the spec fails on any violation (a missing name or role,
@@ -101,7 +102,7 @@ const SCREENS: readonly Screen[] = [
       await openUnlocked(page);
       await page.goto('/');
       await page.getByRole('button', { name: 'Talk', exact: true }).click();
-      await expect(page.getByRole('dialog').getByRole('textbox', { name: 'Your message' })).toBeVisible();
+      await expect((await talkField(page.getByRole('dialog')))).toBeVisible();
     },
   },
   {

@@ -201,10 +201,12 @@ const SAY_LABELS = { hold: 'Hold and say it', release: 'Let go when you have sai
 /** Say it's foot: the hold bar he says the letter into, and Skip; the words come back through `onHeard`, a refused microphone through `onNoMicrophone`. */
 function SayFoot({ onHeard, onSkip, onNoMicrophone }: { onHeard: (text: string) => void; onSkip: () => void; onNoMicrophone: () => void }) {
   // the letter he said is no question: its words are not kept to mark a question he types later as spoken (mw-5r3p30.333)
-  const voice = useTalkHold((text) => {
+  const heard = (text: string): void => {
     forgetSpoken();
     onHeard(text);
-  });
+  };
+  // a letter heard before the recogniser gave up (an error, it ending by itself) is the answer he said; a slide off or leaving the app is "never mind", and there is no field to keep it in
+  const voice = useTalkHold(heard, { onKept: (text, ended) => (ended === 'error' || ended === 'ended' ? heard(text) : undefined) });
   const refused = voice.failure !== undefined && NO_MICROPHONE.has(voice.failure);
   useEffect(() => {
     if (refused) onNoMicrophone();
