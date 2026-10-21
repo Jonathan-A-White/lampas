@@ -52,6 +52,12 @@ registerRoute(
   new CacheFirst({ cacheName: DATA_CACHE }),
 );
 
+// A lemma's own forms (/lemma-forms/<lemma>.json?v=<version>, a word's own paradigm, mw-irpgqi.4) are kept as they first came: the version in the address changes with the chapters.
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && url.pathname.startsWith('/lemma-forms/'),
+  new CacheFirst({ cacheName: DATA_CACHE }),
+);
+
 // A tap on the 'Update ready' banner sends {type:'SKIP_WAITING'}: this build takes over at once.
 self.addEventListener('message', (event) => {
   const data = event.data as { type?: string } | undefined;

@@ -398,7 +398,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
     const found = paradigmOfWord(word);
     if (!found) return;
     holdWord(sheetChapter, lookup);
-    openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse: word.p });
+    openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse: word.p, lemma: word.l });
   };
   const askVerse = grammar?.verse;
   const ask =
