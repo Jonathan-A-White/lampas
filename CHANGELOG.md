@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.396
+_2026-10-21_
+- New: On a paradigm table you can Learn (every form shown) or Drill (blank cells you tap and mark Had it or Missed, with a score and Drill the missed again at the end), and a setting How much of a table (Any, Solid and frontier, Solid only) chooses which forms are shown, in Settings and in the table's header.
+
 ## 0.1.394
 _2026-10-21_
 - Fixed: A link to a book in your Logos library now opens it where the tutor says the topic is treated, and the tutor only links a book when it really answers your question.
