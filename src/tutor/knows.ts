@@ -57,7 +57,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   newWordsADay: 'level',
   pickerGrammar: 'level',
   grammarMove: 'level',
-  // which cells a paradigm table shows: what the table screen offers, not what he knows (mw-irpgqi.3 tells the tutor the table, the mode and the cell he is on)
+  // which cells a paradigm table shows: what the table screen offers, not what he knows (mw-irpgqi.3: the table's own Ask the tutor tells the tutor the table, the mode, the cell he is on and the word he came from, as screen facts and the paradigm focus)
   paradigmExtent: 'screen',
   goal: 'level',
   grammarApproach: 'level',

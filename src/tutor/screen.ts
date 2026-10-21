@@ -40,6 +40,8 @@ export interface ScreenDrillAnswer {
 export interface ScreenContext {
   name: string;
   facts: ScreenFact[];
+  /** a screen whose talk is its own, not the screen's (mw-irpgqi.3: each paradigm table): the key it is kept under, 'screen.paradigms.article'. Never sent: fitScreen leaves it out. */
+  kept?: string;
   settings?: ScreenSetting[];
   credits?: ScreenCredit[];
   drill?: ScreenDrillAnswer[];

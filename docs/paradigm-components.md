@@ -20,7 +20,7 @@ mw-irpgqi.4 reuse what the last section says and add nothing this file does not 
 | `PARADIGM_KIND`, `cellPrompt`, `spokenForm`, `drawCellQuestions` | `src/data/paradigms/cells.ts` | the Review kind of a table; a cell in plain words; what the voice says | Review (`src/review/kinds.ts` PARADIGM); the Drill's grade line names the cell with `cellPrompt` |
 | `needsOf`, `needsText` | `src/data/paradigms/needs.ts` | what a locked cell still needs | the Needs line |
 | `recordReview`, `writeReview`, `ensureScheduled`, `reviewsOf` | `src/data/repositories/reviews.ts` | the back-off schedule's writes | Review; Drill this table; the Drill's miss (below) |
-| `askAboutParadigm` + `paradigmQuestion`, `ParadigmFocus` | `src/nav/readerRequest.ts`, `src/services/talk.ts` | the one tutor entry of a table: opens the Reader's Talk sheet with the table and the forms showing | Ask the tutor on the table screen; mw-irpgqi.3 widens the focus |
+| `askTheTutor` + `paradigmQuestion`, `ParadigmFocus`, `paradigmTalk` | `src/tutor/askNow.ts`, `src/services/talk.ts`, `src/ParadigmsScreen.tsx` | the one tutor entry of a screen: opens the round control's sheet over the screen; a table reports its table, mode, cell in focus and word, and its talk is kept per table (mw-irpgqi.3 replaced the Reader's `askAboutParadigm`) | Ask the tutor on the list and the table screen; mw-irpgqi.4's This word view |
 | `useSetting`, `getSetting`, `setSetting` | `src/settings/store.ts` | a declared setting, read live | the screen reads the extent with it |
 | `greekLang`, `GREEK_LANG` | `src/script/greekLang.ts` | the `lang` attributes of a Greek span | every Greek cell |
 

@@ -5,8 +5,9 @@
 // screen's header) says which cells are shown: Any (every cell, the ones not his marked not yet), Solid and frontier (his cells; a locked form shows as
 // locked, not hidden, so the table keeps its shape) or Solid only (the frontier cells hidden, the locked ones locked). Two modes, Learn | Drill (mw-irpgqi.2):
 // Learn shows every shown cell's form; Drill leaves them blank, a tap shows one with Had it / Missed under its row, after the last 'N of M' and Drill the
-// missed again (data/paradigms/drill.ts keeps the run while the page lives); a miss puts the table in Review due now (recordDrillMiss). Ask the tutor opens
-// the Reader's Talk sheet on the open chapter with the table's name and the forms shown. The parts this screen shares are listed in docs/paradigm-components.md.
+// missed again (data/paradigms/drill.ts keeps the run while the page lives); a miss puts the table in Review due now (recordDrillMiss). Ask the tutor (the list's and
+// each table's, mw-irpgqi.3) opens the round control's sheet over the screen (src/tutor/askNow.ts): the screen reports the table, the mode, the cell in focus and the word he came
+// from (paradigmTalk), and the talk is kept per table. The parts this screen shares are listed in docs/paradigm-components.md.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { TIER_TITLES } from './approaches/ladder';
@@ -29,11 +30,9 @@ import {
 import { needsOf, needsText } from './data/paradigms/needs';
 import { blocksOf, columnsThatFit, greekRemOf } from './data/paradigms/layout';
 import { drillMissed, drillOf, forgetDrill, gradeCell, markMissWritten, revealCell, scoreOf, startRun, type Drill } from './data/paradigms/drill';
-import { getOpenChapter } from './data/readerChapter';
 import { cellPrompt, PARADIGM_KIND } from './data/paradigms/cells';
-import { ensureScheduled, listLevels, markParadigmOpened, recordDrillMiss, reviewsOf } from './data/repositories';
+import { ensureScheduled, listLevels, markParadigmOpened, recordDrillMiss, reviewsOf, screenRef } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
-import { askAboutParadigm } from './nav/readerRequest';
 import { backTo, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress, type ParadigmMode } from './nav/route';
 import { decodeParse } from './data/parseCode';
 import { ExtentChips } from './settings/controls/grammarExtent';
@@ -43,7 +42,10 @@ import { heldWord, leaveToWord } from './wordReturn';
 import { oneTap } from './ui/settle';
 import { Chips } from './ui/Chips';
 import { Grades } from './ui/SelfGrade';
-import { MAX_REVEALED } from './services/talk';
+import { MAX_REVEALED, paradigmQuestion, type ParadigmFocus, type ParadigmPlace } from './services/talk';
+import { askTheTutor } from './tutor/askNow';
+import { useReportScreen } from './tutor/screenContext';
+import type { ScreenFact } from './tutor/screen';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { GREEK_LANG, greekLang } from './script/greekLang';
 import { IdeaSheet } from './IdeaSheet';
@@ -89,12 +91,22 @@ const MODES: readonly (readonly [ParadigmMode, string])[] = [
 /** How much of a table, in the header of a table: the one setting's chips (src/settings/controls/grammarExtent.tsx), smaller, as the header's own. */
 const EXTENT_SWITCH_NAME = 'How much of a table';
 
+/** What the tutor is told on the list (the screen's name is Paradigms, as on the round control). */
+const LIST_FACTS: ScreenFact[] = [{ label: 'Showing', value: 'The list of the paradigm tables' }];
+
 function ParadigmList({ levels, extent }: { levels: Levels | undefined; extent: GrammarExtent | undefined }) {
+  const ai = useAiAllowed();
+  useReportScreen({ name: 'Paradigms', facts: LIST_FACTS });
   return (
     <>
       <ScreenHeader title="Paradigms" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <p className="text-base text-muted">Tables to learn by heart. A form unlocks when you have the grammar it needs.</p>
+        {ai ? (
+          <button type="button" onClick={() => askTheTutor()} className={`${BUTTON} mt-3 text-accent`}>
+            Ask the tutor
+          </button>
+        ) : null}
         {TIERS.map((tier) => {
           const tables = PARADIGMS.filter((table) => table.tier === tier);
           if (tables.length === 0) return null;
@@ -175,7 +187,7 @@ function useColumnsThatFit(table: Paradigm, box: RefObject<HTMLDivElement | null
 // Each cell is drawn by its standing under How much of a table (data/paradigms standingOf) and the mode: locked (a lock; a tap says what it needs),
 // outside (an empty cell: Solid only hides a frontier form), open or notYet (Learn: the form; Drill: blank until tapped, then the form with Had it / Missed
 // under its row; a notYet cell carries a small lock and, once tapped, what it needs).
-function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade }: {
+function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onFocus }: {
   table: Paradigm;
   /** the name of the cell that is a tapped word's own: outlined and brought into view, and for a locked one its Needs line is open (mw-irpgqi.1) */
   lit?: string;
@@ -186,6 +198,8 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade }: {
   drill: Drill | undefined;
   onReveal: (place: string) => void;
   onGrade: (place: string, right: boolean) => void;
+  /** he tapped the cell `place` (a locked or not-yet one in Learn): the cell the tutor is told he is on */
+  onFocus: (place: string) => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const fit = useColumnsThatFit(table, box);
@@ -200,7 +214,11 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade }: {
   }, [lit, fit, table]);
   const size = greekRemOf(table) > 1.25 ? 'text-2xl' : 'text-xl';
   const label = 'text-xs';
-  const toggleAsked = (place: string) => oneTap(`paradigms:${place}`, () => setAsked(asked === place ? null : place));
+  const toggleAsked = (place: string) =>
+    oneTap(`paradigms:${place}`, () => {
+      setAsked(asked === place ? null : place);
+      onFocus(place);
+    });
   /** What a shown Drill cell has been graded, if it has: had (this run or an earlier one) or missed. */
   const gradeOf = (place: string): 'had' | 'missed' | undefined => {
     if (!drill) return undefined;
@@ -505,8 +523,40 @@ function runOf(drill: Drill | undefined, shown: ReadonlySet<string>): Drill | un
   return asking.length === drill.asking.length ? drill : { ...drill, asking };
 }
 
+/** The cell `place` of the table as the tutor is told it: its place in plain words, and its form when the table shows it (Drill shows only the ones he has tapped; a locked or hidden one is never told). */
+function placeOf(table: Paradigm, place: string, levels: Levels, extent: GrammarExtent, mode: ParadigmMode, drill: Drill | undefined): ParadigmPlace | undefined {
+  for (const row of table.rows) {
+    for (let c = 0; c < row.cells.length; c++) {
+      if (cellName(table, row, c) !== place) continue;
+      const standing = standingOf(row.cells[c], levels, extent);
+      const shown = (standing === 'open' || standing === 'notYet') && (mode === 'learn' || revealedIn(drill, place));
+      return { parse: place, ...(shown ? { form: row.cells[c].form } : {}) };
+    }
+  }
+  return undefined;
+}
+
+/**
+ * What the tutor is told on a table (mw-irpgqi.3): the focus the first question carries (the table, the mode, the forms showing, the cell in focus and the word he came from) and the facts
+ * every question of the table's talk carries, so a question asked after he moved to another cell is about that one. `cell` is the last cell he tapped, or the word's own.
+ */
+function paradigmTalk(table: Paradigm, mode: ParadigmMode, state: { levels: Levels; extent: GrammarExtent; drill: Drill | undefined; cell: string | undefined; word: string | undefined; parse: string | undefined } | undefined): { focus: ParadigmFocus; facts: ScreenFact[] } {
+  const here = state?.cell !== undefined ? placeOf(table, state.cell, state.levels, state.extent, mode, state.drill) : undefined;
+  const word = state?.word && state.parse ? { form: state.word, parse: plainParse(state.parse) } : undefined;
+  const facts: ScreenFact[] = [
+    { label: 'Table', value: table.name },
+    { label: 'Mode', value: mode === 'learn' ? 'Learn' : 'Drill' },
+    ...(here ? [{ label: 'Cell in focus', value: here.form ? `${here.parse}: ${here.form}` : `${here.parse} (its form is not shown)` }] : []),
+    ...(word ? [{ label: 'Word he came from', value: `${word.form} (${word.parse})` }] : []),
+  ];
+  const revealed = state ? shownForms(table, state.levels, state.extent, mode, state.drill) : [];
+  return { focus: { table: table.name, revealed, kind: 'paradigm', mode, ...(here ? { cell: here } : {}), ...(word ? { word } : {}) }, facts };
+}
+
 function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { table: Paradigm; mode: ParadigmMode; levels: Levels | undefined; extent: GrammarExtent | undefined; cell?: string; word?: string; parse?: string }) {
   const [drill, setDrill] = useState<Drill | undefined>(() => drillOf(table.id));
+  // the last cell he tapped (Learn: a locked or not-yet one; Drill: a blank one he showed): the tutor is told he is on it, else on the word's own
+  const [tapped, setTapped] = useState<string | null>(null);
   const ai = useAiAllowed();
   // from a word's sheet the way back is to the sheet (src/wordReturn.ts); with the sheet gone (a reload) it is the list
   const toWord = word !== undefined && heldWord() !== undefined;
@@ -544,6 +594,7 @@ function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { tab
   const score = run && mode === 'drill' ? scoreOf(run) : undefined;
   const started = run !== undefined && (run.open !== null || run.graded.size > 0 || run.kept.size > 0);
   const reveal = (place: string) => {
+    setTapped(place);
     if (!drillOf(table.id)) startRun(table.id, [...shown]);
     setDrill(revealCell(table.id, place));
   };
@@ -556,11 +607,10 @@ function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { tab
     }
     setDrill(next);
   };
-  const ask = () => {
-    if (!levels || !extent) return;
-    const { book, chapter } = getOpenChapter();
-    askAboutParadigm(book, chapter, table.name, shownForms(table, levels, extent, mode, run));
-  };
+  // the tutor is told the table, the mode, the cell in focus and the word (paradigmTalk); the talk is the table's own
+  const talk = paradigmTalk(table, mode, levels && extent ? { levels, extent, drill: run, cell: tapped ?? lit, word, parse } : undefined);
+  useReportScreen({ name: 'Paradigms', facts: talk.facts, kept: screenRef(`paradigms.${table.id}`) });
+  const ask = () => askTheTutor({ question: paradigmQuestion(table.name, talk.focus.revealed.length, talk.focus), focus: talk.focus });
   return (
     <>
       <ScreenHeader title={table.name} back={back} action={<ExtentChips settingKey="paradigmExtent" name={EXTENT_SWITCH_NAME} current={extent} size="header" />} />
@@ -589,7 +639,7 @@ function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { tab
             </button>
           ) : null}
         </div>
-        {levels && extent ? <Table table={table} levels={levels} extent={extent} mode={mode} drill={run} lit={lit} onReveal={reveal} onGrade={grade} /> : null}
+        {levels && extent ? <Table table={table} levels={levels} extent={extent} mode={mode} drill={run} lit={lit} onReveal={reveal} onGrade={grade} onFocus={setTapped} /> : null}
         {score?.done && run ? <DrillEnd drill={run} onMissedAgain={() => oneTap('paradigms:end', () => setDrill(drillMissed(table.id)))} /> : null}
         <div className="mt-4 flex gap-2">
           <button

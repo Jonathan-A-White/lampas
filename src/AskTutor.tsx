@@ -3,6 +3,7 @@
 // sheet is open. The sheet is the Talk sheet over a TalkScope with a `screen` (name and facts, src/tutor/screen.ts), kept under 'screen.<name>';
 // it opens with the questions fitted to the screen. The Reader draws the same button but opens its own chapter talk (src/Reader.tsx).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { listTurns } from './data/repositories';
 import { NO_CHAPTER } from './data/chapter';
 import { useAiAllowed } from './gate/licenceContext';
 import { TalkSheet } from './Talk';
@@ -12,6 +13,7 @@ import { speakTutor } from './speech/tutorVoice';
 import { answerRuns } from './speech/answerRuns';
 import { scopeRef, type TalkScope } from './services/talk';
 import { fitScreen, SCREEN_NAMES, suggestionsFor, type ScreenContext } from './tutor/screen';
+import { askRequestNow, useAskRequest } from './tutor/askNow';
 import { useScreenContext } from './tutor/screenContext';
 import type { Route } from './nav/route';
 import { openedByTutor } from './nav/readerRequest';
@@ -129,8 +131,26 @@ export function AskTutor({ route }: { route: Route }) {
   const open = openOn === route;
   const reported = useScreenContext();
   const name = route === 'home' || route === 'share' || route === 'unlock' ? undefined : SCREEN_NAMES[route];
-  const scope: TalkScope | null = name ? { title: name, chapter: NO_CHAPTER, verse: null, screen: contextOf(name, reported) } : null;
+  // a screen whose talk is its own (each paradigm table) reports the key it is kept under
+  const kept = reported && reported.name === name ? reported.kept : undefined;
+  const scope: TalkScope | null = name ? { title: name, chapter: NO_CHAPTER, verse: null, screen: contextOf(name, reported), ...(kept ? { kept } : {}) } : null;
   const talk = useScreenTalk(scope, open, useCallback(() => setOpenOn(null), []));
+  // a button the screen draws itself (src/tutor/askNow.ts) opens this sheet; its first question goes only when the talk has no turn yet, so coming back finds what was said
+  const asked = useAskRequest();
+  const met = useRef(askRequestNow()?.id ?? 0);
+  useEffect(() => {
+    if (!asked || asked.id <= met.current || !scope || !talk.ref) return;
+    met.current = asked.id;
+    stopReading();
+    setOpenOn(route);
+    const { first } = asked;
+    if (!first || talk.state !== undefined) return;
+    void listTurns(talk.ref).then((turns) => {
+      if (turns.length === 0) talk.say(scope, first.question, first.focus);
+    });
+    // a request is met once, when it arrives (`met`): the scope and the talk it is met with are the ones of that render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asked]);
   if (!name || !scope || !talk.ref || !ai) return null;
   return (
     <>

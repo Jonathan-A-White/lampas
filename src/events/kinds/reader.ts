@@ -16,8 +16,6 @@ export type ReaderEvent =
    * 'ask') or to open the Talk sheet (action 'talk'); `id` counts up, so the Reader can tell a request it has not met */
   | { kind: 'reader-requested'; id: number; action: 'ask'; book: string; chapter: number; verse: number; question: string }
   | { kind: 'reader-requested'; id: number; action: 'talk'; book: string; chapter: number; verse: number }
-  /** the Paradigms screen's Ask the tutor: the Talk sheet on the whole chapter, with `table` (its name) and the `revealed` forms sent as the first question's focus */
-  | { kind: 'reader-requested'; id: number; action: 'paradigm'; book: string; chapter: number; table: string; revealed: string[] }
   /** the Quick test's Ask the tutor: the Talk sheet on `verse`, the first question `question` sent with `focus` (a QuizFocus: the word, the question, his answers) */
   | { kind: 'reader-requested'; id: number; action: 'word'; book: string; chapter: number; verse: number; question: string; focus: TalkFocus }
   /** the tutor took him to `chapter` of `book` (mw-5r3p30.172, the answer's `go`): the Reader shows the one-line notice 'Opened <title>' as it opens */

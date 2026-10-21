@@ -134,10 +134,15 @@ cell credits its form's letters, sounds and marks as a form read right (`noteAns
 
 ## Ask the tutor
 
-At the foot of a table. It opens the Reader on the open chapter with the Talk sheet on the whole chapter and sends the first question
-with the bible-talk grind's focus `{table, revealed, kind: 'paradigm'}`: `table` is the table's name, `revealed` the forms showing now
-(in Learn every shown one, in Drill the ones he has tapped), each with its place, such as `Genitive Singular Masculine: τοῦ` (`grinds/bible-talk.*`,
-`reader-requested` action `paradigm` in `docs/events.md`).
+On the list (under the line of words at its top) and at the foot of a table (mw-irpgqi.3). It is the round control's sheet (`src/AskTutor.tsx`, `Ask the tutor: Paradigms`) opened
+over the screen, not the Reader: the button calls `askTheTutor` (`src/tutor/askNow.ts`). The screen reports its facts with `useReportScreen` (`screen.name` Paradigms): on the
+list `Showing: The list of the paradigm tables`; on a table `Table`, `Mode` (Learn or Drill), `Cell in focus` (`Genitive Singular Feminine: τῆς`, the last cell he tapped or,
+before any tap, the word's own; its form only when the table shows it) and `Word he came from` (`ἀγαπῶ (present active indicative, 1st person singular)`), so every question
+of the table's talk is told where he is now. The first question of a table's talk (sent only when the talk has no turn, so coming back shows what was said) carries the
+bible-talk grind's focus `{table, revealed, kind: 'paradigm', mode, cell?, word?}` (`paradigmTalk` in `src/ParadigmsScreen.tsx`, `ParadigmFocus` in `src/services/talk.ts`):
+`revealed` the forms showing now (in Learn every shown one, in Drill the ones he has tapped), each with its place, such as `Genitive Singular Masculine: τοῦ`; `cell` is
+`{parse, form?}` and `word` `{form, parse}` (`grinds/bible-talk.*`). The talk is kept per table, under `screen.paradigms.<table id>` (`ScreenContext.kept`, which is never sent);
+the list's is the Paradigms screen's own, `screen.paradigms`.
 
 ## Out of scope
 
