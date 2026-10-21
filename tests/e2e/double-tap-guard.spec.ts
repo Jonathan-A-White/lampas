@@ -393,13 +393,16 @@ test.describe('Share to Lampas', () => {
     return sheet;
   }
 
-  // the Tester's Gen. 1:28 now opens the 'Not in Lampas yet' card in the list (no Old Testament); a New Testament reference leaves the share for the Reader
-  test('mw-s1dc0n.8: a double tap on a reference opens it with no sheet over the Reader', async ({ page }) => {
+  // a reference opens its card over the list (mw-5r3p30.697; Gen. 1:28 did already): the second tap of a double tap lands on the reference under the card's backdrop and changes
+  // nothing (mw-5r3p30.429), and Open leaves the share for the Reader with no sheet over it
+  test('mw-s1dc0n.8: a double tap on a reference opens one card over the list, and Open lands on the Reader with no sheet over it', async ({ page }) => {
     const sheet = await openShare(page);
-    await thumbDoubleTap(page, sheet.getByRole('link', { name: /Rom 8:28/ }), () => page.locator('[data-chunk], [data-word]').first().waitFor(), {
-      selector: '[data-chunk], [data-word]',
-      second: { selector: '[data-chunk], [data-word]' },
-    });
+    const card = page.getByRole('dialog', { name: 'Romans 8:28', exact: true });
+    await thumbDoubleTap(page, sheet.getByRole('link', { name: /Rom 8:28/ }), () => card.waitFor(), { selector: '[data-reference-backdrop]' });
+    await expect(page.locator('[data-reference-card]')).toHaveCount(1);
+    await expect(sheet).toBeVisible();
+    await card.getByRole('button', { name: 'Open', exact: true }).tap();
+    await page.locator('[data-chunk], [data-word]').first().waitFor();
     await expect(page).not.toHaveURL(/#\/share/);
     expect(await anyDialog(page).evaluateAll((all) => all.map((d) => d.getAttribute('aria-label')))).toEqual([]);
   });
