@@ -17,6 +17,7 @@ import { LEARNABLE, LEARNED_VALUE_MAX, type Learnable, type ProfileUpdate } from
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { MemoryUpdate } from '../talk/memoryUpdate';
 import type { SettingValue } from '../settings/registry';
+import { GREEK_LEVELS, greekLevelOf, nextGreekStep, type GreekLevel } from '../settings/definitions/greekInterest';
 import type { TutorResource, TutorWork } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
 import type { FormFieldState, FormValue } from '../formHelper/formHelper';
@@ -218,8 +219,11 @@ export interface TalkRequest {
   /** present only when the grammar words of his question name a topic that rests on ideas he lacks (mw-1vuvq6.5, src/data/grammar/bridge.ts): the topic, how many he lacks and those
    * ideas, the lowest on the ladder first. The tutor picks its `bridge` from it and never guesses an idea. */
   missing_foundations?: MissingFoundations;
-  /** which language the Reader shows now (mw-yrmkdf.4): the tutor offers the Greek only to a reader whose Reader is in English and who is not learning it; missing in a talk from a screen */
+  /** which language the Reader shows now (mw-yrmkdf.4); missing in a talk from a screen */
   reader_view?: ReaderView;
+  /** the Greek dial as he set it (mw-3ased2.3): its step, the step's name and the one step above, which is all the tutor may offer to raise it to; `next` is missing at All in. A phone not
+   * placed yet reads All in. Missing in a quiz and a talk from a screen. */
+  greek_interest?: GreekInterestField;
   /** present only when he has sent requests to the factory (mw-vy3ghg.6, src/data/requestsForTutor.ts): up to 10, newest first, each with where it stands; none in About, whose request is the credits */
   requests?: TutorRequest[];
   /** the solid words and ideas he now slips on or has not met for a long while, worst first, at most 8 (mw-1vuvq6.6, src/data/rusty.ts); missing when none; fitHistory never cuts it */
@@ -469,6 +473,20 @@ function withRespelling(focus: TalkFocus, pronunciation: GreekPronunciation): Ta
   return { ...focus, respelling: pronunciationOf(pronunciation).respell(focus.form), syllables, ...(stress >= 0 ? { stress } : {}) };
 }
 
+/** The Greek dial as the request carries it: `greekInterest` of the settings, read as the Reader reads it (All in until the phone is placed). */
+export interface GreekInterestField {
+  level: GreekLevel;
+  name: string;
+  next?: { level: GreekLevel; name: string };
+}
+
+/** The dial's field of a request, from the settings it carries. */
+export function greekInterestField(settings: Record<string, SettingValue>): GreekInterestField {
+  const level = greekLevelOf(settings.greekInterest);
+  const next = nextGreekStep(level);
+  return { level, name: GREEK_LEVELS[level].name, ...(next ? { next: { level: next.level, name: next.name } } : {}) };
+}
+
 /** The request for what he just said: the verse's or the passage's whole text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand; the word he asked help with, if he did. */
 export function buildTalkRequest(
   scope: TalkScope,
@@ -524,6 +542,7 @@ export function buildTalkRequest(
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
     ...(missingFoundations && !aboutCredits ? { missing_foundations: missingFoundations } : {}),
     ...(readerView && !scope.screen && !scope.quiz ? { reader_view: readerView } : {}),
+    ...(!scope.screen && !scope.quiz ? { greek_interest: greekInterestField(settings) } : {}),
     ...(requests.length > 0 && !aboutCredits ? { requests } : {}),
     ...(rusty && rusty.length > 0 && !aboutCredits && !scope.quiz && !scope.welcome ? { rusty } : {}),
   };

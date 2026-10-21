@@ -1,8 +1,15 @@
 // src/talk/GreekOfferButton.tsx — the tutor's one offer of the Greek on screen (mw-yrmkdf.4, docs/ask-tutor.md 'The Greek offer'): under an English answer, one line as a button.
-// A tap opens the Greek word's sheet over the talk or switches the Reader to Greek (src/talk/greekOffer.ts takeGreekOffer, the function a spoken yes calls too). After his no
+// A tap raises the Greek dial one step and, for a word offer, opens the Greek word's sheet over the talk (src/talk/greekOffer.ts takeGreekOffer, the function a spoken yes calls too). After his no
 // there is nothing here: the tutor remembers it.
-import type { TalkTurn } from '../data/db';
+import type { GreekOffer, TalkTurn } from '../data/db';
+import { GREEK_LEVELS } from '../settings/definitions/greekInterest';
 import { takeGreekOffer } from './greekOffer';
+
+/** What the sheet says after the tap: the step the dial now stands at, and for a word offer that its sheet opened. */
+const confirmation = (offer: GreekOffer): string => {
+  const step = offer.to === undefined ? 'The Greek dial is up one step.' : `The Greek dial is now ${GREEK_LEVELS[offer.to].name}.`;
+  return offer.kind === 'word' ? `${step} Opened the Greek word.` : step;
+};
 
 export function GreekOfferButton({ turn }: { turn: TalkTurn }) {
   if (!turn.greekOffer || turn.greekChoice === 'declined') return null;
@@ -17,7 +24,7 @@ export function GreekOfferButton({ turn }: { turn: TalkTurn }) {
       </button>
       {turn.greekChoice === 'taken' && (
         <p role="status" aria-label="Greek offer" className="mt-2 text-sm text-muted">
-          {turn.greekOffer.kind === 'view' ? 'The Reader is now in Greek.' : 'Opened the Greek word.'}
+          {confirmation(turn.greekOffer)}
         </p>
       )}
     </div>

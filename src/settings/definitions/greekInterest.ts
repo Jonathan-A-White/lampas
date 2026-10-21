@@ -25,6 +25,9 @@ export const GREEK_LEVELS: readonly GreekStep[] = [
   { level: 5, name: 'All in', line: 'Everything: every Greek setting, the paradigms, Hebrew in the tutor, taught to your goal.' },
 ];
 
+/** The step one above `level`, or undefined at the top: what the tutor offers to raise the dial to. */
+export const nextGreekStep = (level: GreekLevel): GreekStep | undefined => GREEK_LEVELS[level + 1];
+
 /** The highest step: All in. A phone not yet placed reads it, so nothing is hidden. */
 export const GREEK_TOP: GreekLevel = 5;
 

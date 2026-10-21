@@ -22,6 +22,7 @@ import { wasSpoken } from './speech/spoken';
 import { readGo, type GoPlace } from './talk/go';
 import { applyChanges, currentSettings, offeredChange } from './settings/registry';
 import { greekOfferOf } from './talk/greekOffer';
+import { greekLevelOf } from './settings/definitions/greekInterest';
 import { rustyOfferOf } from './talk/rustyOffer';
 import { quizGoalOfferOf } from './talk/quizGoalOffer';
 import { rustyNow } from './data/learnerRusty';
@@ -193,7 +194,7 @@ export function useTalk(
           // The welcome interview is over once the tutor says so with its line of thanks; the sheet stays open to be read (src/Welcome.tsx)
           if (scope.welcome && answer.welcome_done) await finishWelcome().catch(() => undefined);
           // The one offer of the Greek, kept only while this talk has made none and his no is not in the index the request carried or in this very answer (src/talk/greekOffer.ts)
-          const greekOffer = greekOfferOf(answer, scope, turns, memory?.index, waiting?.offer.kind === 'greek' && answer.offer_reply === 'decline');
+          const greekOffer = greekOfferOf(answer, scope, turns, memory?.index, waiting?.offer.kind === 'greek' && answer.offer_reply === 'decline', greekLevelOf(settings.greekInterest));
           // The one offer to move the rust back to Frontier: only the items this request listed, once a talk, none after his no in this very answer (src/talk/rustyOffer.ts)
           const rustyOffer = rustyOfferOf(answer, scope, turns, rusty, waiting?.offer.kind === 'rusty' && answer.offer_reply === 'decline');
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);

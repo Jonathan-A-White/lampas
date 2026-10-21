@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { addTurn, getReaderView, listTurns } from '../../src/data/repositories';
+import { addTurn, getGreekInterest, getReaderView, getWeave, listTurns, setGreekInterest } from '../../src/data/repositories';
 import { appendToIndex, getIndex, GREEK_NO_PREFIX, greekNoLine, hasGreekNo } from '../../src/data/repositories/memory';
 import { learnerMemory } from '../../src/data/learnerMemory';
 import { buildTalkRequest, isTalkAnswer, type TalkScope } from '../../src/services/talk';
@@ -15,6 +15,7 @@ import { applyMemoryFromAnswer } from '../../src/talk/memoryUpdate';
 import { offerOfTurn, pendingOfferOf, settleOffer } from '../../src/talk/offers';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import { GREEK_LEVELS } from '../../src/settings/definitions/greekInterest';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -70,21 +71,40 @@ describe('the offer a turn holds', () => {
 });
 
 describe('a tap', () => {
-  it('on a view offer switches the reader to the Greek view and marks the turn taken', async () => {
-    const turn = await turnWith({ ...none, greekOffer: VIEW_OFFER });
-    expect(await getReaderView()).toBe('english');
+  it('on a view offer raises the Greek dial one step through the dial, leaves the view and the Weave to it, and marks the turn taken', async () => {
+    await setGreekInterest(0);
+    const turn = await turnWith({ ...none, greekOffer: { ...VIEW_OFFER, to: 1 } });
     await takeGreekOffer(turn);
-    expect(await getReaderView()).toBe('greek');
+    expect(await getGreekInterest()).toBe(1);
+    expect(await getReaderView()).toBe('english');
+    expect(await getWeave()).toBe('off');
     expect((await db.talks.get(turn.id!))?.greekChoice).toBe('taken');
   });
 
-  it('on a word offer asks the Talk sheet to open the Greek word, and leaves the view alone', async () => {
-    const turn = await turnWith({ ...none, greekOffer: WORD_OFFER });
+  it('raises by one step from where the dial stands now when the offer was stored with no step, and never lowers it', async () => {
+    await setGreekInterest(2);
+    await takeGreekOffer(await turnWith({ ...none, greekOffer: VIEW_OFFER }));
+    expect(await getGreekInterest()).toBe(3);
+    await setGreekInterest(4);
+    await takeGreekOffer(await turnWith({ ...none, greekOffer: { ...VIEW_OFFER, to: 3 } }));
+    expect(await getGreekInterest()).toBe(4);
+  });
+
+  it('changes the Reader only through the dial: greekOffer.ts sets neither the view nor the Weave itself', () => {
+    const source = readFileSync('src/talk/greekOffer.ts', 'utf8');
+    expect(source).not.toMatch(/\bsetReaderView\b|\bsetWeave\b/);
+    expect(source).toContain('raiseGreekInterest');
+  });
+
+  it('on a word offer raises the dial one step, asks the Talk sheet to open the Greek word, and leaves the view alone', async () => {
+    await setGreekInterest(0);
+    const turn = await turnWith({ ...none, greekOffer: { ...WORD_OFFER, to: 1 } });
     const opened: string[] = [];
     const unregister = registerGreekWordOpener((lemma) => opened.push(lemma));
     await takeGreekOffer(turn);
     unregister();
     expect(opened).toEqual(['ἀγαπάω']);
+    expect(await getGreekInterest()).toBe(1);
     expect(await getReaderView()).toBe('english');
     expect((await db.talks.get(turn.id!))?.greekChoice).toBe('taken');
   });
@@ -145,6 +165,12 @@ describe('which greek_offer is kept', () => {
     expect(greekOfferOf({ ...good, greek_offer: WORD_OFFER }, scope, [], '')).toEqual(WORD_OFFER);
   });
 
+  it('names the one step up the dial in the offer it keeps, never more, and none above All in', () => {
+    for (const level of [0, 1, 2, 3, 4] as const) expect(greekOfferOf({ ...good, greek_offer: VIEW_OFFER }, scope, [], '', false, level)?.to).toBe(level + 1);
+    expect(greekOfferOf({ ...good, greek_offer: VIEW_OFFER }, scope, [], '', false, 5)).toBeUndefined();
+    expect(greekOfferOf({ ...good, greek_offer: VIEW_OFFER }, scope, [], '')?.to).toBeUndefined();
+  });
+
   it('is none for an answer with none', () => {
     expect(greekOfferOf(good, scope, [], '')).toBeUndefined();
   });
@@ -156,7 +182,7 @@ describe('the grind', () => {
 
   it('says when to answer in English, when to offer, and the three limits', () => {
     expect(instructions).toContain('## Offering the Greek');
-    for (const rule of ['`greek_offer`', '`reader_view`', '`greek_asked`', 'at most one', 'said no to the Greek offer', 'no Greek words unless he asks']) expect(instructions).toContain(rule);
+    for (const rule of ['`greek_offer`', '`greek_interest`', '`greek_asked`', 'at most one', 'said no to the Greek offer', 'no Greek words unless he asks']) expect(instructions).toContain(rule);
     expect(instructions).toContain('`greek`');
   });
 
@@ -183,5 +209,82 @@ describe('the grind', () => {
 describe('an answer that takes his no', () => {
   it('keeps no greek_offer of its own', () => {
     expect(greekOfferOf({ ...good, greek_offer: VIEW_OFFER }, scope, [], '', true)).toBeUndefined();
+  });
+});
+
+describe('the request', () => {
+  const request = (settings: Record<string, string>, s: TalkScope = scope) =>
+    buildTalkRequest(s, 'what is this?', [], [], settings, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, 'modern', false, undefined, undefined, 'english');
+
+  it('carries greek_interest: the dial\'s step, its name and the next step up, valid against the input schema', () => {
+    for (const step of GREEK_LEVELS) {
+      const built = request({ greekInterest: String(step.level) });
+      const next = GREEK_LEVELS[step.level + 1];
+      expect(built.greek_interest).toEqual({ level: step.level, name: step.name, ...(next ? { next: { level: next.level, name: next.name } } : {}) });
+      expect(validate(built, inputSchema)).toEqual([]);
+    }
+  });
+
+  it('reads an unplaced phone as All in, with no next step', () => {
+    expect(request({}).greek_interest).toEqual({ level: 5, name: 'All in' });
+  });
+
+  it('leaves greek_interest out of a quiz and a talk from a screen, as it does reader_view', () => {
+    expect(request({ greekInterest: '0' }, { ...scope, quiz: true }).greek_interest).toBeUndefined();
+    expect(request({ greekInterest: '0' }, { ...scope, screen: { name: 'Words' } } as TalkScope).greek_interest).toBeUndefined();
+  });
+
+  it('describes greek_interest in the input schema', () => {
+    const props = (inputSchema as unknown as { properties: Record<string, unknown> }).properties;
+    expect(props.greek_interest).toBeDefined();
+  });
+});
+
+describe('the instructions on the dial', () => {
+  const text = instructionsOf('bible-talk');
+  const part = text.slice(text.indexOf('## Offering the Greek'));
+  const offering = part.slice(0, part.indexOf('\n## ', 5) === -1 ? undefined : part.indexOf('\n## ', 5));
+
+  it('say that at step 0 there is no Greek offer unless he asks about the Greek', () => {
+    expect(offering).toContain('`greek_interest`');
+    expect(offering).toMatch(/level` is 0|step 0|Just English/);
+    expect(offering).toMatch(/no `greek_offer` unless he asks|no Greek offer unless he asks/);
+  });
+
+  it('say that on real interest the offer raises the dial one step, named by `next.name`, and never more than one step', () => {
+    expect(offering).toContain('`next`');
+    expect(offering).toMatch(/raise the dial/);
+    expect(offering).toMatch(/one step/);
+    expect(offering).toMatch(/never more than one step/i);
+    expect(offering).toMatch(/never above/i);
+  });
+
+  it('keep a remembered no, and no offer at All in', () => {
+    expect(offering).toContain('said no to the Greek offer');
+    expect(offering).toMatch(/All in|no `next`/);
+  });
+});
+
+describe('the dial\'s examples', () => {
+  type Ex = { request: { reader_view?: string; settings: Record<string, string>; greek_interest?: { level: number; name: string; next?: { level: number; name: string } }; question: string }; expect: Record<string, { present?: boolean; equals?: string; matches?: string }> };
+  const read = (file: string) => JSON.parse(readFileSync(`grinds/examples/bible-talk/${file}.json`, 'utf8')) as Ex;
+
+  it('has one for a reader at Just English who asks what a Greek word means: answered, with one offer to step up to Curious', () => {
+    const e = read('greek-dial-offer-at-zero');
+    expect(e.request.greek_interest).toEqual({ level: 0, name: 'Just English', next: { level: 1, name: 'Curious' } });
+    expect(e.request.settings.greekInterest).toBe('0');
+    expect(e.expect['greek_offer.text'].matches).toContain('Curious');
+    expect(e.expect['greek_offer.kind']).toBeDefined();
+    expect(e.expect['words.0.lemma'].equals).toBe('ἀγαπάω');
+    expect(validate(e.request, inputSchema)).toEqual([]);
+  });
+
+  it('every example that expects a greek_offer in the talk (not the welcome) carries the dial in its request', () => {
+    for (const file of ['greek-offer-word-meaning', 'greek-offer-example-words-only', 'greek-offer-asks-for-greek', 'greek-offer-after-no', 'greek-offer-no-thanks', 'greek-offer-learner']) {
+      const e = read(file);
+      expect(e.request.greek_interest, file).toBeDefined();
+      expect(e.request.settings.greekInterest, file).toBe(String(e.request.greek_interest!.level));
+      expect(validate(e.request, inputSchema), file).toEqual([]);
+    }
   });
 });

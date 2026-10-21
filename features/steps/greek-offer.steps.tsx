@@ -8,6 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
+import { getGreekInterest, getReaderView, getWeave, setGreekInterest } from '../../src/data/repositories';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { getIndex } from '../../src/data/repositories/memory';
 import { clearBus } from '../../src/events/bus';
@@ -28,8 +29,8 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
-const WORD_BUTTON = 'Want to see the Greek word?';
-const VIEW_BUTTON = 'Want to read this chapter in Greek?';
+const WORD_BUTTON = 'Want to try Curious: see this Greek word?';
+const VIEW_BUTTON = 'Want to raise the Greek to Curious?';
 const WORD_OFFER = { answer: 'It is the self-giving kind of love.', words: [], greek_offer: { kind: 'word', text: WORD_BUTTON, lemma: 'ἀγαπάω' } };
 const VIEW_OFFER = { answer: 'The Greek is more exact than any one English word.', words: [], greek_offer: { kind: 'view', text: VIEW_BUTTON } };
 let fake: FakePostern;
@@ -53,6 +54,8 @@ async function openWith(answer: Record<string, unknown>, seeded = false): Promis
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.requests.clear()]);
+  // a phone placed at Just English, as the app places a new one (placeGreekInterest): the tutor offers one step up
+  await setGreekInterest(0);
   if (seeded) {
     // a phone that was opened before a new install started empty (mw-5r3p30.385): the 63 example words and their schedule, none of them touched
     const opened = Date.now() - 3 * 24 * 60 * 60 * 1000;
@@ -110,25 +113,32 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the request told the tutor the Reader shows English', () => {
       expect((talkGrists()[0].input as { reader_view?: string }).reader_view).toBe('english');
     });
+    And('the request told the tutor the Greek dial is Just English, with Curious next', () => {
+      expect((talkGrists()[0].input as { greek_interest?: unknown }).greek_interest).toEqual({ level: 0, name: 'Just English', next: { level: 1, name: 'Curious' } });
+    });
     And('the talk shows the button {string}', shows);
     When('he taps {string}', taps);
-    Then('the word sheet for {string} is open over the talk', async (_, lemma: string) => {
+    Then('the Greek dial is Curious', async () => {
+      await waitFor(async () => expect(await getGreekInterest()).toBe(1));
+    });
+    And('the word sheet for {string} is open over the talk', async (_, lemma: string) => {
       const word = await screen.findByRole('dialog', { name: 'Word' });
       expect(within(word).getAllByText((text) => text.normalize('NFC').includes(lemma.normalize('NFC'))).length).toBeGreaterThan(0);
       expect(screen.getByRole('dialog', { name: /^Talk about / })).toBeInTheDocument();
     });
   });
 
-  Scenario('The offer can switch the Reader to Greek', ({ Given, When, Then }) => {
+  Scenario('The offer raises the Greek dial one step and nothing more', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek view', () => openWith(VIEW_OFFER));
     When(WHEN_ASKS, asks);
     Then('the talk shows the button {string}', shows);
     When('he taps {string}', taps);
-    Then('the Reader shows the Greek', async () => {
-      await waitFor(() => {
-        const greek = document.querySelector<HTMLElement>('[role=group][aria-label=Language] button[aria-pressed=true]');
-        expect(greek?.textContent).toBe('Greek');
-      });
+    Then('the Greek dial is Curious', async () => {
+      await waitFor(async () => expect(await getGreekInterest()).toBe(1));
+    });
+    And('the Reader still shows English with the Weave off', async () => {
+      expect(await getReaderView()).toBe('english');
+      expect(await getWeave()).toBe('off');
     });
   });
 

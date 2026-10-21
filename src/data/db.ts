@@ -194,13 +194,13 @@ export interface RustyOffer {
   items: Array<{ kind: 'word' | 'idea'; id: string; title: string }>;
 }
 
-/** The tutor's offer to show a reader not learning the Greek the original: a word's sheet in Greek (`lemma`, a word of the text) or the Greek view; `text` is the button's line. */
+/** The tutor's offer to raise the Greek dial one step (mw-3ased2.3): a tap raises it to `to`, and a `word` offer then opens that word's sheet in Greek (`lemma`, a word of the text);
+ * `text` is the button's line, naming the step. `to` is set by the app from the dial as the answer came (the welcome's is Dipping a toe); an offer kept without it raises one step from where the dial stands. */
 export interface GreekOffer {
   kind: 'word' | 'view';
   text: string;
   lemma?: string;
-  /** set by the welcome (mw-yrmkdf.3) on a view offer: taking it also turns the Weave on (+ Learning) */
-  weave?: true;
+  to?: 0 | 1 | 2 | 3 | 4 | 5;
 }
 
 /** How a Hebrew word is said, as the tutor's sound answer gave it: the word, its syllables in Hebrew letters in reading order and how each sounds in Latin letters. */

@@ -1,7 +1,7 @@
 Feature: A new licensed reader is welcomed in plain English
   The first time a phone's licence is found, Lampas opens the Reader in English with the Weave off and no New words chip, and the tutor welcomes him with a short
   interview in plain English (mw-yrmkdf.3): why he is here (to read, to study or to learn the Greek), what he wants from the app, and one thing about himself. The
-  tutor writes his answers to the memory index; an answer that is to learn the Greek offers the Greek view, which a tap takes. Skip ends the welcome with the English
+  tutor writes his answers to the memory index; an answer that is to learn the Greek offers the Greek, which a tap takes by raising the Greek dial to Dipping a toe. Skip ends the welcome with the English
   defaults. A phone that already has a profile or settings is not welcomed. These scenarios run against a fake Postern whose mill answers each message.
 
   Scenario: A phone whose licence is first found opens in English and the tutor welcomes him
@@ -20,12 +20,12 @@ Feature: A new licensed reader is welcomed in plain English
     And the Reader still shows English with the Weave off
     And no welcome is waiting on this phone
 
-  Scenario: Answering learn the Greek offers the Greek view and a tap opens it
+  Scenario: Answering learn the Greek offers the Greek and a tap raises the Greek dial to Dipping a toe
     Given a new phone whose licence is found when Lampas opens
     When he answers "I want to learn the Greek"
     Then the welcome talk shows the button "Show me the Greek"
     When he taps "Show me the Greek"
-    Then the Reader shows the Greek
+    Then the Greek dial is Dipping a toe
     And the Weave is on
 
   Scenario: Skip ends the welcome with the English defaults

@@ -9,7 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { getNewWordsADay, getReaderView, getWeave, setDeveloper } from '../../src/data/repositories';
+import { getGreekInterest, getNewWordsADay, getReaderView, getWeave, setDeveloper } from '../../src/data/repositories';
 import { getIndex } from '../../src/data/repositories/memory';
 import { saveProfile } from '../../src/data/repositories/profile';
 import { getWelcome } from '../../src/data/repositories/welcome';
@@ -177,18 +177,18 @@ describeFeature(feature, ({ Scenario }) => {
     And('no welcome is waiting on this phone', noWelcomeWaiting);
   });
 
-  Scenario('Answering learn the Greek offers the Greek view and a tap opens it', ({ Given, When, Then, And }) => {
+  Scenario('Answering learn the Greek offers the Greek and a tap raises the Greek dial to Dipping a toe', ({ Given, When, Then, And }) => {
     Given('a new phone whose licence is found when Lampas opens', newPhone);
     When('he answers {string}', answers);
     Then('the welcome talk shows the button {string}', async (_, name: string) => {
       expect(await within(await welcome()).findByRole('button', { name })).toBeInTheDocument();
     });
     When('he taps {string}', taps);
-    Then('the Reader shows the Greek', async () => {
-      await waitFor(() => expect(languagePressed()).toBe('Greek'));
+    Then('the Greek dial is Dipping a toe', async () => {
+      await waitFor(async () => expect(await getGreekInterest()).toBe(2));
     });
     And('the Weave is on', async () => {
-      await waitFor(async () => expect(await getWeave()).toBe('solid+learning'));
+      await waitFor(async () => expect(await getWeave()).toBe('solid'));
     });
   });
 

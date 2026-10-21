@@ -98,7 +98,8 @@ const NO_QUIZ = 'The quiz is the Bible talk\'s Quiz me mode alone; this grind ne
 export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
   'bible-talk': {
     // currentSettings(): what every registry setting holds now, in `settings`; the pronunciation also has its own field the sound questions use (mw-5r3p30.241)
-    settings: { ...everySetting, greekPronunciation: 'pronunciation' },
+    // the Greek dial is also its own field, greek_interest, with the step's name and the one step above it: all the Greek offer may name (mw-3ased2.3)
+    settings: { ...everySetting, greekPronunciation: 'pronunciation', greekInterest: 'greek_interest' },
     progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty' },
     notSent: {},
   },

@@ -67,9 +67,28 @@
       }
     },
     "reader_view": {
-      "description": "Optional. Which language the Reader shows him now: 'english' or 'greek' (what he chose with English | Greek at the top of the Reader). Missing in a talk from a screen. Only a reader whose Reader is 'english' and who is not otherwise learning the Greek is offered the Greek (`greek_offer`); see the instructions, 'Offering the Greek'.",
+      "description": "Optional. Which language the Reader shows him now: 'english' or 'greek' (what he chose with English | Greek at the top of the Reader). Missing in a talk from a screen and in a quiz.",
       "type": "string",
       "enum": ["english", "greek"]
+    },
+    "greek_interest": {
+      "description": "Optional. The Greek dial as he set it (Settings > How much Greek?), from 0, Just English, to 5, All in: `level` and its `name`, and `next`, the one step above it, which is all you may offer to raise it to (see the instructions, 'Offering the Greek'). `next` is missing at All in: there is nothing to offer. Missing in a talk from a screen and in a quiz.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "name"],
+      "properties": {
+        "level": { "type": "number", "minimum": 0, "maximum": 5 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "next": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["level", "name"],
+          "properties": {
+            "level": { "type": "number", "minimum": 1, "maximum": 5 },
+            "name": { "type": "string", "minLength": 1, "maxLength": 40 }
+          }
+        }
+      }
     },
     "missing_foundations": {
       "description": "Optional. Present only when the grammar words of his question name a topic that rests on ideas he has not learned (not yet, or not at all): `topic` is the idea he asked about, `total` how many ideas under it he lacks, and `ideas` the lowest on the ladder first (at most 8), so `ideas[0]` is his next step in the progression. `direct` marks an idea the topic itself names as a need: those are the most important. Offer a `bridge` from this list and never name an idea that is not in it (see the instructions, 'When he is not ready for the question').",
