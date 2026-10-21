@@ -1,6 +1,7 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
+import { timingFilter } from 'pwa-kit/test-preset';
 import { buildVersion, shortCommit } from './build-version';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
@@ -17,12 +18,20 @@ export default defineConfig({
     environment: 'jsdom',
     globalSetup: ['./tests/global-setup.ts'],
     setupFiles: ['./tests/setup.ts'],
-    include: [
-      'tests/unit/**/*.test.ts',
-      'tests/unit/**/*.test.tsx',
-      'features/steps/**/*.steps.ts',
-      'features/steps/**/*.steps.tsx',
-    ],
+    // MW_TIMING (millwright docs/timing-tests.md): the rig's timing_tests leave the gate under skip and are alone under only (mw-5r3p30.712).
+    ...timingFilter({
+      include: [
+        'tests/unit/**/*.test.ts',
+        'tests/unit/**/*.test.tsx',
+        'features/steps/**/*.steps.ts',
+        'features/steps/**/*.steps.tsx',
+      ],
+      // vitest's own default exclude (giving an exclude here would otherwise replace it), and the Playwright specs: under
+      // MW_TIMING=only the include is the timing globs alone, and a timing spec in tests/e2e is Playwright's, not vitest's.
+      exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+    }),
+    // MW_TIMING=only with timing tests that are all Playwright specs leaves vitest no file: that is a pass, not a failure.
+    passWithNoTests: process.env.MW_TIMING === 'only',
     // A few tests run a real vite build; capping workers keeps them from piling up and timing out.
     maxWorkers: 4,
     testTimeout: 20_000,

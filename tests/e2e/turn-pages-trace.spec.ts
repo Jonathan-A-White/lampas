@@ -2,6 +2,9 @@ import { mkdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { openUnlocked } from './unlocked';
 
+// covers: src/reader/usePages.ts, src/reader/pageTurn.ts, src/reader/pageCurl.ts, src/reader/pageSnapshot.ts, src/Reader.tsx (the 60 fps page turn in Turn pages). The real clock proves the screen's own frame rate:
+// requestAnimationFrame gaps are the browser's frames, which a faked clock (page.clock) does not time. It is a timing test: the rig's timing_tests
+// leaves it out of every gate (MW_TIMING=skip) and runs it in the nightly timing job (mw-5r3p30.712).
 // mw-5r3p30.621: a page turn in Turn pages holds 60 fps at 390x844. The page's own clock runs here (no page.clock.install: a faked clock times frames
 // by its timers, not the screen's), and Chromium's performance trace of the turns is written to TRACE for a look in DevTools (Performance, Load profile).
 // What the test holds the turn to is the screen's frames as the page sees them, by requestAnimationFrame: a frame more than ALLOWED_GAP_MS after the one

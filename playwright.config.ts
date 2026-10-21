@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { playwrightTimingFilter } from 'pwa-kit/test-preset';
 import { browserEnv } from './tests/support/browser-env';
 import { PHONE_WIDTH_SPECS } from './tests/support/e2e-projects';
 import { previewPort, reuseExistingPreview } from './tests/support/preview-port';
@@ -27,6 +28,11 @@ const LIVE_RUN = process.env.LAMPAS_E2E === 'live';
 
 // The 1280-wide chromium project leaves out the specs that only pass at a phone's width (they run under shots).
 const PHONE_WIDTH_IGNORE = PHONE_WIDTH_SPECS.map((file) => `**/${file}`);
+
+// MW_TIMING (millwright docs/timing-tests.md): the specs in the rig's timing_tests leave the gate under MW_TIMING=skip and are the only ones under
+// MW_TIMING=only. A project's own testMatch/testIgnore wins over the config's, so each gate project is filtered here. Playwright's own default
+// testMatch is given, so a run with MW_TIMING unset matches what it did before. The live project is outside both runs (mw-5r3p30.712).
+const DEFAULT_TEST_MATCH = '**/*.@(spec|test).?(c|m)[jt]s?(x)';
 
 // `npm run e2e:live` (--project=live): the specs (tests/e2e/*-live.spec.ts) that talk to the real Postern backend, through the
 // deployed app. It is in neither the gate nor `npm run shots`, and it spends a grind of fuel per run, so it is in the
@@ -66,14 +72,14 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: [LIVE_SPEC, ...PHONE_WIDTH_IGNORE],
+      ...playwrightTimingFilter({ testMatch: [DEFAULT_TEST_MATCH], testIgnore: [LIVE_SPEC, ...PHONE_WIDTH_IGNORE] }),
       use: { ...devices['Desktop Chrome'], channel: 'chromium', launchOptions: { env: browserEnv } },
     },
     // `npm run shots` (--project=shots): every spec's end-of-test screenshot (tests/e2e/shot.ts)
     // is taken at a 390x844 phone width.
     {
       name: 'shots',
-      testIgnore: LIVE_SPEC,
+      ...playwrightTimingFilter({ testMatch: [DEFAULT_TEST_MATCH], testIgnore: [LIVE_SPEC] }),
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chromium',
