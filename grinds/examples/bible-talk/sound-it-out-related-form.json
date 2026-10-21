@@ -1,0 +1,70 @@
+{
+  "description": "Sound it out on ἁμάρτητε (1 Corinthians 15:34) when he also asks about the present form ἁμαρτάνετε, which the request gives no respelling for: the answer follows a-MAR-tee-te for the focus word and, for the second form, either leaves it unrespelled or respells it by the modern guide (a-mar-TA-ne-te); no word ever gets a sounded rough breathing (ha-mar-TA-ne-te, as Erasmian does) (mw-5r3p30.692).",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "1 Corinthians 15:34",
+    "greek": "ἐκνήψατε δικαίως καὶ μὴ ἁμαρτάνετε",
+    "english": "Wake up from your drunken stupor, as is right, and stop sinning.",
+    "question": "The word ἁμάρτητε (lemma ἁμαρτάνω; verb, aorist active subjunctive, 2nd person plural) in 1 Corinthians 15:34. Help me pronounce this word: its syllables and how each sounds. And how does the present form ἁμαρτάνετε in the same verse sound next to it?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "greekPronunciation": "modern"
+    },
+    "pronunciation": "modern",
+    "pronunciation_guide": "Modern Greek, as Greek is spoken in Greece today: never by English spelling habit and never by the Erasmian (school) pronunciation. The app respells a word in syllables, the stressed one in capitals: ταῦτα is TAF-ta, Πάντοτε is PAN-do-te, χαίρετε is HYE-re-te. The vowels, each with a word of the reader's English that has it: a as in father; e as in pet; ee as in see; o as in or, short; oo as in food. αυ and ευ are af and ef before θ κ ξ π σ τ φ χ ψ, and av and ev before a voiced consonant or a vowel (never \"aw\", never \"ow\"); ηυ is eef or eev the same way. αι is e; ει, οι, υι, η, ι and υ are ee; ου is oo; ω and ο are o. β is v; δ is dh, the th of “this”; γ is gh (or y before ε, ι, η, υ, αι, ει or οι); θ is th as in thin; φ is f; ρ is r, a quick tap of the tongue, like the tt of “butter”; χ is kh as in chutzpah, the throaty ch, before α, ο, ω, ου or a consonant, and the softer hy before ε, ι, η, υ, αι, ει or οι. μπ, ντ and γκ are b, d and g at the start of a word and mb, nd and ng inside it; γγ is ng; γχ is ng plus kh (or hy before ε, ι, η, υ, αι, ει or οι); γξ is nks. σ is z before β γ δ ζ λ μ ν ρ. A doubled consonant is said once. Both breathings are silent, and the iota under a letter is not said.",
+    "focus": {
+      "form": "ἁμάρτητε",
+      "lemma": "ἁμαρτάνω",
+      "parse": "verb, aorist active subjunctive, 2nd person plural",
+      "kind": "sound",
+      "respelling": "a-MAR-tee-te",
+      "syllables": [
+        "ἁ",
+        "μάρ",
+        "τη",
+        "τε"
+      ],
+      "stress": 1
+    },
+    "greek_words": [
+      {
+        "form": "ἐκνήψατε",
+        "lemma": "ἐκνήφω",
+        "gloss": "to become sober",
+        "parse": "verb, aorist active imperative, 2nd person plural"
+      },
+      {
+        "form": "ἁμαρτάνετε",
+        "lemma": "ἁμαρτάνω",
+        "gloss": "to sin",
+        "parse": "verb, present active imperative, 2nd person plural"
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "contains": "MAR",
+      "matches": "^(?:(?:[^A-Za-z]|[Hh](?:[^A-Za-z]|[Aa][^A-Za-z-]))|(?:[A-GI-Za-gi-z]|[Hh](?:[B-Zb-z]|[Aa][A-Za-z]))[A-Za-z]*[^A-Za-z])*(?:(?:|[Hh](?:|[Aa]))|(?:[A-GI-Za-gi-z]|[Hh](?:[B-Zb-z]|[Aa][A-Za-z]))[A-Za-z]*)$"
+    },
+    "syllables.0": {
+      "equals": "ἁ"
+    },
+    "syllables.3": {
+      "equals": "τε"
+    },
+    "syllables.4": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

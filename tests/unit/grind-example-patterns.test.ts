@@ -39,6 +39,7 @@ describe.each([
   ['sound-it-out-british', 'answer', NOT_AW_FAIL, NOT_AW_PASS],
   ['sound-it-out-tauta', 'answer', NOT_AW_FAIL, NOT_AW_PASS],
   ['sound-it-out-hamartete', 'answer', NOT_HA_FAIL, NOT_HA_PASS],
+  ['sound-it-out-related-form', 'answer', [...NOT_HA_FAIL, 'a-MAR-tee-te; the present form is ha-mar-TA-ne-te.'], [...NOT_HA_PASS, 'a-MAR-tee-te; the present form ἁμαρτάνετε is a-mar-TA-ne-te.']],
 ])('the answer pattern of %s (%s)', (example, field, shouldFail, shouldPass) => {
   const pattern = patternOf(example, field);
   const re = new RegExp(pattern);

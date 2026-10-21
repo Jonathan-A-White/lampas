@@ -29,6 +29,10 @@ the ending shows. Keep to the length below; cite the word in `words` as usual.
   `respelling`, `syllables` and `stress` exactly as `focus.respelling`, `focus.syllables` and `focus.stress` above: put its `syllables` in `syllables`, name them in `answer`, and say the
   stress falls on `syllables[stress]`. Never count or cut the word yourself, and never call a cluster such as σβ a syllable.
   Only when the word is in neither `focus` nor `greek_words` (a word of another verse) work it out yourself, by the rules of `pronunciation_guide`.
+  The same holds for a word you say aloud that the request gives no `respelling` for (a related form of the focus word that the question or the verse brings in, say the
+  present tense beside an aorist): leave it unrespelled, naming it only in Greek letters, or respell it strictly by the rules of `pronunciation_guide`, never by a school habit, an English
+  spelling habit or any other pronunciation. A rough breathing is then never written as an `h` when the chosen pronunciation leaves it silent. Following `focus.respelling`
+  for the focus word does not license a habit for the next word: hold to the guide for every word you say.
   If `focus.respelling` is missing, work the sounds out by the rules of `pronunciation_guide`. Never split a pair of letters that makes one sound across two
   syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second letter carries a diaeresis
   (ϊ, ϋ), which makes it a syllable of its own.

@@ -698,6 +698,31 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     for (const wrong of ['The rough breathing gives an h: ha-MAR-tee-te.', 'Say ha-MAR-tee-teh.', 'It starts with ha-']) expect(noHa.test(wrong), wrong).toBe(false);
   });
 
+  // mw-5r3p30.692: after following a-MAR-tee-te for the focus word the tutor added "ha-mar-TA-ne-te" for a related form the request gave no respelling for
+  it('says a word the request gives no respelling for is left unrespelled or respelled strictly by the guide, a rough breathing never an h', () => {
+    expect(text).toMatch(/a word you say aloud that the request gives no `respelling` for/);
+    expect(text).toMatch(/leave it unrespelled/i);
+    expect(text).toMatch(/rough breathing is then never written as an? `h`/);
+  });
+
+  it('holds the same rule in verse-ask and verse-read, where Greek is also said aloud', () => {
+    for (const kind of ['verse-ask', 'verse-read']) {
+      const other = instructionsOf(kind);
+      expect(other, kind).toMatch(/gives no `respelling` for/);
+      expect(other, kind).toMatch(/rough breathing is never written as an `h`/);
+    }
+  });
+
+  it('has a scenario whose request invites a second form (ἁμαρτάνετε, with no respelling) and whose answer never sounds the rough breathing on any word', () => {
+    const example = readJson('grinds/examples/bible-talk/sound-it-out-related-form.json') as { request: { pronunciation: string; question: string; focus: { respelling: string }; greek_words: Array<{ form: string; respelling?: string }> }; expect: Record<string, Record<string, string>> };
+    expect(example.request.pronunciation).toBe('modern');
+    expect(example.request.question).toContain('ἁμαρτάνετε');
+    expect(example.request.greek_words.find((w) => w.form === 'ἁμαρτάνετε')?.respelling).toBeUndefined();
+    const noHa = new RegExp(example.expect.answer.matches);
+    expect(noHa.test('Say a-MAR-tee-te. The present form ἁμαρτάνετε is a-mar-TA-ne-te.')).toBe(true);
+    expect(noHa.test('Say a-MAR-tee-te. The related form is ha-mar-TA-ne-te.')).toBe(false);
+  });
+
   it('has a scenario that asks how to sound ταῦτα and expects TAF and no aw', () => {
     const example = readJson('grinds/examples/bible-talk/sound-it-out-tauta.json') as { request: { pronunciation: string; focus: { respelling: string; kind: string } }; expect: Record<string, Record<string, string>> };
     expect(example.request.pronunciation).toBe('modern');

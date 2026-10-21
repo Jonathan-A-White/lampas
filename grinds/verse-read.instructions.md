@@ -146,6 +146,7 @@ describes. Do not expect the sounds of any other pronunciation, and do not mark 
   how a letter sounds before ε or ι, or which syllable carries the stress). When the word is in `greek_words`, a tip on its stress names the syllable `syllables[stress]`, the one the `respelling` writes in
   capitals, and never works out the stress itself; a word with no `stress` carries no accent mark, so say nothing of a stressed syllable. Describe a sound by what it is in the chosen pronunciation, never by a wrong
   sound to avoid, even as a warning: the app reads your tip aloud, so naming a wrong sound speaks it to a beginner.
+  A tip that says how another word sounds, one `greek_words` gives no `respelling` for, leaves it unrespelled or respells it strictly by `pronunciation_guide`: a rough breathing is never written as an `h` when the chosen pronunciation leaves it silent.
 - Never more than 8 words, as above. A partial Greek reading gives `reached` and `next_word` the same way (`chunks` Greek
   syllables, `tip` in English). `note` is in English.
 
