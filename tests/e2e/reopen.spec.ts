@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { startAtAllIn } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
@@ -7,6 +8,7 @@ const scrollTop = (page: Page) => page.locator('[data-reader]').evaluate((el) =>
 
 test('closing the app and opening it again puts him back, and Back walks the places before', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+  await startAtAllIn(context);
   const first = await context.newPage();
   await openUnlocked(first);
   await first.goto('/');
@@ -64,6 +66,7 @@ test('a reload keeps him on the same screen, verse and view', async ({ page }) =
 
 test('closing the app on a verse reopens its Verse view, and Back returns to the Reader', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+  await startAtAllIn(context);
   const first = await context.newPage();
   await openUnlocked(first);
   await first.goto('/');

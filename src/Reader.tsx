@@ -57,6 +57,8 @@ import { useReadFrom } from './reader/useReadFrom';
 import { useWoven } from './reader/useWoven';
 import { wovenReading } from './services/reading';
 import { pronunciationOf } from './speech/pronunciation';
+import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
+import { useGreekInterest } from './settings/useGreekInterest';
 import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
 import { useReaderTutor } from './reader/useReaderTutor';
@@ -126,6 +128,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [picking, setPicking] = useState(false);
   const closePicker = useCallback(() => setPicking(false), []);
   const settings = useReaderSettings() ?? NO_SETTINGS;
+  const greek = useGreekInterest();
   const { view, weave, weaveShown, weaveOrder, solid, learning, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
   const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
@@ -414,7 +417,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       <div data-reader-top className="reader-top">
       <ReaderHeader
         title={TITLE}
-        view={view}
+        view={greek !== undefined && greek >= GREEK_VIEW_FROM ? view : undefined}
         weave={weave ?? 'off'}
         weaveShown={weaveShown ?? false}
         weaveOrder={weaveOrder ?? 'english'}

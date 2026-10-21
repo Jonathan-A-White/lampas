@@ -398,7 +398,7 @@ same English default (`## English for a reader not learning the Greek`) and no o
 A new reader is met by the tutor. `src/Welcome.tsx` (mounted in `App.tsx`, drawn only inside a `LicenceProvider`, so a screen drawn alone in a test is never welcomed) calls
 `startWelcomeIfFirst` (`src/data/repositories/welcome.ts`) when `useLicence()` first says `licensed`. The phone's own flag is localStorage `lampas.welcome`
 (`pending` | `done` | `skipped`; null until the phone is looked at). A phone that holds a profile, any setting or any talk is a reader from before: its flag becomes `done` and
-nothing else changes (`welcomeStartFor`, `isExistingReader`). A phone with none is put on the English defaults (the English view, Weave Off, New words a day Off, so the
+nothing else changes (`welcomeStartFor`, `isExistingReader`). A phone with none is put on the English defaults (step 0 of the Greek dial, Just English: the English view, Weave Off, New words a day Off, so the
 Reader has no Greek and no New words chip) and the flag becomes `pending`: the welcome Talk opens at once, and again on each later open until the tutor ends it or he taps Skip.
 Closing the sheet only puts it off.
 

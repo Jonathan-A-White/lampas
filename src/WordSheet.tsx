@@ -26,6 +26,8 @@ import { pushSheetStep, sheetsAbove, useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { wordUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
+import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
+import { useGreekInterest } from './settings/useGreekInterest';
 import { useKnownTerms } from './useKnownTerms';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { HintCard } from './tips/HintCard';
@@ -296,13 +298,21 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
 
 /** `onHelp`, when given, adds the Help with this word row to each word; the sheet closes itself before it is called. `onAskTerm`,
  * when given, adds Ask the tutor to a Grammar sheet; the sheet closes itself (and the Grammar sheet with it) before it is called. */
-export function WordSheet({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: {
+interface WordSheetProps {
   chapter: Chapter;
   lookup: Lookup;
   onClose: () => void;
   onHelp?: (help: WordHelp) => void;
   onAskTerm?: (ask: TermAsk) => void;
-}) {
+}
+
+/** The word's sheet is Greek (its word, lemma, parsing and Strong's number), so the Greek dial draws it from Curious up and not at Just English (mw-3ased2.2). */
+export function WordSheet(props: WordSheetProps) {
+  const level = useGreekInterest();
+  return level !== undefined && level < GREEK_VIEW_FROM ? null : <WordSheetBody {...props} />;
+}
+
+function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: WordSheetProps) {
   const { drag, handle } = useSheetDrag(onClose);
   // The Grammar sheet takes the Escape while it is open.
   const [grammar, setGrammar] = useState<{ term: string; word: GreekWord; verse: number | undefined } | null>(null);

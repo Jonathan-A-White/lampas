@@ -29,11 +29,13 @@ import {
   type Weave,
   type WeaveGrammar,
 } from '../data/repositories';
-import { publish } from '../events/bus';
+import { latestSetting, publish } from '../events/bus';
 import { openedOnReader, readerOf, routeOf } from '../nav/route';
 import { weaveOrderSetting, weaveSetting } from '../settings/definitions';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
+import { GREEK_VIEW_FROM, GREEK_WEAVE_FROM, viewAt, weaveAt } from '../settings/definitions/greekInterest';
 import { announceSetting, toldSetting, useSetting } from '../settings/store';
+import { useGreekInterest } from '../settings/useGreekInterest';
 
 export interface ReaderSettings {
   view: ReaderView;
@@ -53,8 +55,12 @@ export interface ReaderSettings {
 
 /** The Reader's settings, or undefined until every value has loaded. */
 export function useReaderSettings(): ReaderSettings | undefined {
-  const view = useLiveQuery(getReaderView, []);
-  const weave = useLiveQuery(getWeave, []);
+  // the Greek dial (mw-3ased2.2): what it hides does not act, whatever is saved or an address asks for
+  const level = useGreekInterest();
+  const savedView = useLiveQuery(getReaderView, []);
+  const savedWeave = useLiveQuery(getWeave, []);
+  const view = savedView && level !== undefined ? viewAt(level, savedView) : undefined;
+  const weave = savedWeave && level !== undefined ? weaveAt(level, savedWeave) : undefined;
   const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
   const weaveOrder = useSetting(weaveOrderSetting);
   const plainUnder = useLiveQuery(getPlainEnglishUnder, []);
@@ -66,31 +72,34 @@ export function useReaderSettings(): ReaderSettings | undefined {
   const readSpan = useLiveQuery(getReadSpan, []);
   // What the address said when the reader opened: the view and weave to put back in the settings.
   const [opened] = useState(() => readerOf(window.location.hash));
-  const wantView = useRef(opened.view);
+  // the Greek dial can set the view while he is in Settings (Reading in Greek opens the Reader in Greek): it tells the bus, and then the saved view is the truth, as the Weave's is
+  const dialSetView = () => latestSetting('readerView') !== undefined;
+  const wantView = useRef(dialSetView() ? undefined : opened.view);
   const wantWeave = useRef(toldSetting(weaveSetting) !== undefined || !openedOnReader() ? undefined : opened.weave);
   const viewSettled = useRef(false);
   useEffect(() => {
-    if (!view) return;
+    if (!view || !savedView || level === undefined) return;
     // Until the saved view has been told to the bus, the address may have moved on since the Reader mounted (a link opened while the app was starting):
     // the view it names now is the one wanted, not the one it named at mount, which readerAddress would otherwise overwrite with the saved one.
-    if (!viewSettled.current && routeOf(window.location.hash) === 'home') wantView.current = readerOf(window.location.hash).view;
-    if (wantView.current && wantView.current !== view) {
+    if (!viewSettled.current && !dialSetView() && routeOf(window.location.hash) === 'home') wantView.current = readerOf(window.location.hash).view;
+    // an address that names the Greek view is followed only where the dial shows it
+    if (wantView.current && level >= GREEK_VIEW_FROM && wantView.current !== savedView) {
       void setReaderView(wantView.current);
       return;
     }
     viewSettled.current = true;
     wantView.current = undefined;
     publish({ kind: 'view-changed', view });
-  }, [view]);
+  }, [view, savedView, level]);
   useEffect(() => {
-    if (!weave) return;
-    if (wantWeave.current && wantWeave.current !== weave) {
+    if (!weave || !savedWeave || level === undefined) return;
+    if (wantWeave.current && level >= GREEK_WEAVE_FROM && wantWeave.current !== savedWeave) {
       void setWeave(wantWeave.current);
       return;
     }
     wantWeave.current = undefined;
     announceSetting(weaveSetting, weave);
-  }, [weave]);
+  }, [weave, savedWeave, level]);
   useEffect(() => {
     if (layout) publish({ kind: 'layout-changed', layout });
   }, [layout]);

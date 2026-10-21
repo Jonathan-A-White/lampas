@@ -4,7 +4,7 @@
 // forgets still offers once, and once only. His no is written to the memory index by settleOffer (src/talk/offers.ts); `greek_asked` clears it (src/talk/memoryUpdate.ts).
 import { findGreekWord } from '../data/answerWord';
 import type { GreekOffer, TalkTurn } from '../data/db';
-import { markGreekChoice, setReaderView, setWeave } from '../data/repositories';
+import { markGreekChoice, raiseGreekInterest, setReaderView, setWeave } from '../data/repositories';
 import { hasGreekNo } from '../data/repositories/memory';
 import type { TalkAnswer, TalkScope } from '../services/talk';
 
@@ -41,9 +41,14 @@ export const requestGreekWord = (lemma: string): void => opener?.(lemma);
 export async function takeGreekOffer(turn: TalkTurn): Promise<void> {
   const offer = turn.greekOffer;
   if (!offer) return;
+  // his tap is his yes to the Greek: the Greek dial rises to the step that shows what the offer opens (Curious for the Greek view or a word, Dipping a toe with the Weave)
   if (offer.kind === 'view') {
+    await raiseGreekInterest(offer.weave ? 2 : 1);
     await setReaderView('greek');
     if (offer.weave) await setWeave('solid+learning');
-  } else if (offer.lemma) requestGreekWord(offer.lemma);
+  } else if (offer.lemma) {
+    await raiseGreekInterest(1);
+    requestGreekWord(offer.lemma);
+  }
   if (turn.id !== undefined && !turn.greekChoice) await markGreekChoice(turn.id, 'taken');
 }

@@ -18,7 +18,8 @@
       "askBy": "typing",
       "readTutor": "on",
       "weave": "off",
-      "weaveGrammar": "any"
+      "weaveGrammar": "any",
+      "greekInterest": "5"
     }
   },
   "expect": {

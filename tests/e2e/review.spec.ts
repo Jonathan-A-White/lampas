@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { startAtAllIn } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { dueOnToday, reviewPiece, todayChip, waitForDue } from './today-chip';
@@ -60,6 +61,7 @@ test('the Reader shows the Today chip, Today shows Review with N due and opens i
 
 test('the Today chip fits the Reader at 360 px and leaves the header as it was', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 360, height: 740 } });
+  await startAtAllIn(context);
   const page = await context.newPage();
   await openUnlocked(page);
   await page.goto('/');
@@ -182,6 +184,7 @@ test('the end card labels its score, so it is not read as the question counter',
 
 test('sideways (844x390) the round Ask button keeps clear of every answer option', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 844, height: 390 } });
+  await startAtAllIn(context);
   const page = await context.newPage();
   await openUnlocked(page);
   await page.goto('/#/review');

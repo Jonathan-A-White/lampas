@@ -1,7 +1,7 @@
 // src/settings/SettingsHome.tsx — the pieces of the Settings home (mw-3ased2.1): the search field pinned at the top, a group's button and the rows the search found.
 // src/SettingsScreen.tsx draws them; docs/layout/settings.md.
 import { openSetting, openSettingsGroup, openSettingsSection, settingLink } from './link';
-import { groupOf, type GroupId, type SettingsRow } from './rows';
+import { groupOf, isHomeRow, type GroupId, type SettingsRow } from './rows';
 
 /** The search field at the top: it filters the rows by name and hint as he types. It is pinned under the header (sticky), so it is in view however far he scrolls (mw-5r3p30.617). */
 export function SettingsSearch({ query, onChange }: { query: string; onChange: (query: string) => void }) {
@@ -66,7 +66,7 @@ export function Found({ rows, query }: { rows: readonly SettingsRow[]; query: st
           <button type="button" data-found={row.key} onClick={() => openFound(row)} className="block min-h-12 w-full border-b border-line py-3 text-left">
             <span className="block text-lg font-medium">{row.label}</span>
             <span className="block text-base text-muted">{row.hint}</span>
-            <span className="block text-base text-accent">in {groupOf(row.section).title}</span>
+            <span className="block text-base text-accent">{isHomeRow(row) ? 'at the top of Settings' : `in ${groupOf(row.section).title}`}</span>
           </button>
         </li>
       ))}

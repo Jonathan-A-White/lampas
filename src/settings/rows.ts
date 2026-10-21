@@ -7,6 +7,7 @@
 // A new setting is one entry in the registry (with its section) plus its control in src/settings/controls/ (CONTROLS, index.ts); a test fails until both.
 import { getDeveloper } from '../data/repositories';
 import { SCRIPTS } from '../script/scripts';
+import { greekFrom } from './definitions/greekInterest';
 import { SETTINGS, settingOf, type Dependency, type SectionId } from './registry';
 
 export interface SettingsSection {
@@ -18,6 +19,7 @@ export interface SettingsSection {
 
 /** The sections, in the order the screen draws them (a group's page draws its own, in this order). */
 export const SECTIONS: readonly SettingsSection[] = [
+  { id: 'dial', title: 'How much Greek?' },
   { id: 'appearance', title: 'Appearance' },
   { id: 'layout', title: 'Layout' },
   { id: 'reading', title: 'Reading' },
@@ -35,7 +37,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'hebrew', title: 'Hebrew in the tutor' },
   { id: 'voices', title: 'Reading voices' },
   { id: 'speed', title: 'Reading speed' },
-  { id: 'pronunciation', title: 'Greek pronunciation' },
+  { id: 'pronunciation', title: 'Pronunciation' },
   { id: 'resources', title: 'Study resources', hint: 'Links from a word to the tools you own. Only links are added; no lexicon text is kept in Lampas. All start off.' },
   { id: 'logos', title: 'Bible in Logos' },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.' },
@@ -46,6 +48,12 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'studyWay', title: 'My study way' },
   { id: 'more', title: 'More' },
 ];
+
+/** The sections drawn on the Settings home itself, above the groups, not on a group's page: the Greek dial (mw-3ased2.2). They are in no group. */
+export const HOME_SECTIONS: readonly SectionId[] = ['dial'];
+
+/** Whether a row is drawn on the home (the dial), not on a group's page. */
+export const isHomeRow = (row: Pick<SettingsRow, 'section'>): boolean => HOME_SECTIONS.includes(row.section);
 
 export type GroupId = 'reading' | 'greek' | 'tutor' | 'listening' | 'daily' | 'study' | 'account' | 'developer';
 
@@ -61,13 +69,13 @@ export interface SettingsGroup {
 /** The groups, in the order the home lists them, and the one table that says which group a section is in (a unit test fails on a section in none or two).
  *  PROVISIONAL: the grouping is the Builder's, to be amended by the Governor. */
 export const GROUPS: readonly SettingsGroup[] = [
-  { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings, the weave and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave'] },
+  { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave'] },
   { id: 'greek', title: 'Greek', hint: 'New words, your goal, the grammar approach and handwriting.', sections: ['newWords', 'goal', 'approach', 'handwriting'] },
-  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, Hebrew, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'hebrew', 'tips', 'studyWay'] },
-  { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast, and how Greek is pronounced.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
+  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'hebrew', 'tips', 'studyWay'] },
+  { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
   { id: 'study', title: 'Study resources', hint: 'Links to the lexicons, Logos and the works you own.', sections: ['resources', 'logos'] },
-  { id: 'account', title: 'Account', hint: 'About you, Memory, Words, Review, Paradigms and About.', sections: ['aboutYou', 'memory', 'more'] },
+  { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests and About.', sections: ['aboutYou', 'memory', 'more'] },
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
 ];
 
@@ -75,6 +83,7 @@ export const groupById = (id: string): SettingsGroup | undefined => GROUPS.find(
 
 /** The group a section is in. */
 export function groupOf(section: SectionId): SettingsGroup {
+  if (HOME_SECTIONS.includes(section)) throw new Error(`section ${section} is on the home, in no group`);
   const group = GROUPS.find((g) => g.sections.includes(section));
   if (!group) throw new Error(`section ${section} is in no group`);
   return group;
@@ -103,9 +112,9 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.aboutyou', label: 'About you', hint: 'Your age, pace and how you learn, so the tutor meets you where you are.', section: 'aboutYou' },
   { key: 'link.memory', label: 'Memory', hint: 'The notes Lampas keeps about you on this phone: read, edit, export and import them.', section: 'memory' },
   { key: 'link.studyway', label: 'My study way', hint: 'The lines you kept about how the tutor quizzes you.', section: 'studyWay' },
-  { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'more' },
-  { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'more' },
-  { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'more' },
+  { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'more', dependsOn: greekFrom(1) },
+  { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'more', dependsOn: greekFrom(1) },
+  { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'more', dependsOn: greekFrom(5) },
   { key: 'link.askmore', label: 'Ask for more', hint: 'Ask for an approach, a study resource, a text or a translation Lampas lacks.', section: 'more' },
   { key: 'link.requests', label: 'Your requests', hint: 'What became of the things you asked the factory for.', section: 'more' },
   { key: 'link.about', label: 'About', hint: 'Where the text comes from, and its licences.', section: 'more' },
@@ -231,7 +240,7 @@ export function rowsAt(values: Values, query: string, key: string | null, rows: 
 
 /** The groups the home lists: those with a row drawn, given the values read. Developer is not listed until Developer mode is found (its only row hides until then). */
 export function visibleGroups(values: Values, rows: readonly SettingsRow[] = ROWS): SettingsGroup[] {
-  const drawn = new Set(visibleRows(values, '', rows).map((r) => groupOf(r.section).id));
+  const drawn = new Set(visibleRows(values, '', rows).filter((r) => !isHomeRow(r)).map((r) => groupOf(r.section).id));
   return GROUPS.filter((g) => drawn.has(g.id));
 }
 

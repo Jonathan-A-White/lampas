@@ -3,10 +3,9 @@
 // Off) and a welcome talk with the tutor is due: the flag is 'pending' until the tutor ends the talk ('done') or he taps Skip ('skipped', with the index line
 // 'skipped the welcome'). A phone that already has a profile, any setting or any talk is a reader from before: its flag is 'done' and nothing changes.
 // The flag is the phone's own, in localStorage 'lampas.welcome' (the way the tips' day is), so a test can mark a phone welcomed before the app opens.
-import { db } from '../db';
 import { deleteTurns, screenRef } from './talks';
 import { appendToIndex } from './memory';
-import { setNewWordsADay, setReaderView, setWeave } from './settings';
+import { holdsAReader, setGreekInterest } from './greekInterest';
 
 export type WelcomeStatus = 'pending' | 'done' | 'skipped';
 
@@ -54,18 +53,12 @@ export function welcomeStartFor(kept: WelcomeStatus | null, existingReader: bool
   return existingReader ? 'done' : 'pending';
 }
 
-/** True when the phone holds anything of a reader: a profile, any setting or any talk. */
-export async function isExistingReader(): Promise<boolean> {
-  const [settings, talks] = await Promise.all([db.settings.count(), db.talks.count()]);
-  return settings > 0 || talks > 0;
-}
+/** True when the phone holds anything of a reader: a profile, any setting (the Greek dial's own aside) or any talk. */
+export const isExistingReader = holdsAReader;
 
-/** The English defaults of a new reader: the English view, no Weave, no new words offered. Written once, when the welcome begins (and again by showWelcomeAgain). */
-async function putEnglishDefaults(): Promise<void> {
-  await setReaderView('english');
-  await setWeave('off');
-  await setNewWordsADay(0);
-}
+/** The English defaults of a new reader: step 0 of the Greek dial, Just English (the English view, no Weave, no new words offered, and the rest of what the dial hides
+ * turned off). Written once, when the welcome begins (and again by showWelcomeAgain). The one function: the dial's step 0 is this preset (mw-3ased2.2). */
+const putEnglishDefaults = (): Promise<void> => setGreekInterest(0);
 
 let starting: Promise<WelcomeStatus> | undefined;
 

@@ -1,6 +1,6 @@
 // tests/support/settings-pages.ts — Settings is a home of groups and a page per group (mw-3ased2.1): a jsdom step opens a group from the home and leaves for the Reader
 // from wherever it is. The group's button is named by its title (its hint follows in the same button).
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import type { GroupId } from '../../src/settings/rows';
 import { groupById } from '../../src/settings/rows';
@@ -20,7 +20,9 @@ export async function showSettingsGroup(id: GroupId): Promise<void> {
 /** On the Settings home, opens the page of the group `id` and waits for its title. */
 export async function openSettingsGroup(user: UserEvent, id: GroupId): Promise<void> {
   const title = groupById(id)?.title ?? id;
-  const button = await screen.findByRole('button', { name: new RegExp(`^${title}`) });
+  // inside the list of groups: the Greek dial above it has buttons of its own ('Reading in Greek')
+  const groups = await screen.findByRole('list', { name: 'Settings groups' });
+  const button = within(groups).getByRole('button', { name: new RegExp(`^${title}`) });
   await user.click(button);
   await screen.findByRole('heading', { name: title, level: 1 });
 }

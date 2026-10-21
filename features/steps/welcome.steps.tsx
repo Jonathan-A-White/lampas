@@ -125,7 +125,8 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const readerStillEnglish = async () => {
     await waitFor(async () => {
-      expect(languagePressed()).toBe('English');
+      // Just English (the dial's step 0) draws no English | Greek switch at all
+      expect(document.querySelector('[role=group][aria-label=Language]')).toBeNull();
       expect(await getReaderView()).toBe('english');
       expect(await getWeave()).toBe('off');
     });
