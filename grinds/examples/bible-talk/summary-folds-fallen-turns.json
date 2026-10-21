@@ -1,0 +1,86 @@
+{
+  "description": "A talk of 12 turns: turn 1 (his son Luke is 14 and they read Greek on Sundays) has fallen out of the 10-turn window and is in `fold`, with an earlier summary; the answer to the ordinary question is plain, and carries the new summary that still names Luke and the age.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "And what does πρόθεσιν mean?",
+    "history": [
+      {
+        "q": "What does Οἴδαμεν mean?",
+        "a": "Οἴδαμεν is from οἶδα: 'we know'. It is first person plural, perfect in form, present in meaning."
+      },
+      {
+        "q": "And δὲ?",
+        "a": "δὲ is a small connecting word: 'and' or 'but', depending on the sentence."
+      },
+      {
+        "q": "What is ὅτι doing here?",
+        "a": "ὅτι here introduces what we know: 'that'."
+      },
+      {
+        "q": "Who are τοῖς ἀγαπῶσιν?",
+        "a": "'Those who love', a present participle in the dative plural."
+      },
+      {
+        "q": "Why the dative?",
+        "a": "It says for whom all things work together: 'for those who love'."
+      },
+      {
+        "q": "What is τὸν θεὸν?",
+        "a": "'God', the object of the loving, in the accusative singular."
+      },
+      {
+        "q": "And πάντα?",
+        "a": "'All things', the subject of συνεργεῖ."
+      },
+      {
+        "q": "What does συνεργεῖ mean?",
+        "a": "'Works together'; the prefix συν- means 'with'."
+      },
+      {
+        "q": "What is εἰς ἀγαθόν?",
+        "a": "'Toward good': εἰς gives the direction the working together takes."
+      },
+      {
+        "q": "And κατὰ?",
+        "a": "'According to': it names the standard."
+      }
+    ],
+    "summary": "He is learning Greek with his son. Earlier they covered the verse's first words.",
+    "fold": [
+      {
+        "q": "Before we start: my son Luke is 14 and we read Greek together on Sundays. What does ἀγαπῶσιν mean here?",
+        "a": "ἀγαπῶσιν is from ἀγαπάω, 'to love': 'those who love'. A good Sunday reading for you and Luke."
+      }
+    ],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {}
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Pp]urpose"
+    },
+    "summary": {
+      "all": [
+        {
+          "present": true
+        },
+        {
+          "matches": "Luke"
+        },
+        {
+          "matches": "14|fourteen"
+        }
+      ]
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
