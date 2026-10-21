@@ -4,7 +4,7 @@
 // later visit to the Reader does not meet it again.
 import { latest, publish, type EventOf } from '../events/bus';
 import type { TalkFocus } from '../services/talk';
-import { openReader, readerHash } from './route';
+import { openReader, readerHash, replaceReader } from './route';
 import { forgetScroll } from './scrollMemory';
 
 export type ReaderRequest = EventOf<'reader-requested'>;
@@ -51,10 +51,12 @@ export function bringVerse(book: string, chapter: number, verse: number): void {
   publish({ kind: 'reader-requested', id: ++lastId, action: 'verse', book, chapter, verse });
 }
 
-/** Opens the Reader on `chapter` of `book` as a new Back step with `verse` brought to the top (see `bringVerse`). */
-export function openAtVerse(book: string, chapter: number, verse: number): void {
+/** Opens the Reader on `chapter` of `book` as a new Back step with `verse` brought to the top (see `bringVerse`). With `replacing` the Reader takes the place of the entry he is on
+ * instead (see `replaceReader`): the screen he leaves was a sheet that Back should find again, not step over. */
+export function openAtVerse(book: string, chapter: number, verse: number, replacing = false): void {
   bringVerse(book, chapter, verse);
-  openReader({ book, chapter });
+  if (replacing) replaceReader({ book, chapter });
+  else openReader({ book, chapter });
 }
 
 /** The request the Reader has not met yet, if any. It does not take it (see `takeRequest`), so it can be called while rendering. */

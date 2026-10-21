@@ -1,6 +1,6 @@
 // src/markdown/ReferenceCard.tsx — a Bible reference in the tutor's answer (mw-5r3p30.133), the pop-up Logos gives a verse: a tap on the link opens a small card
-// under it with the reference as its heading, the passage's English (the Majority Standard Bible, the only English in the reader) and Open, which opens the reader
-// on the verse. A whole chapter shows its first verse. Lampas holds no Old Testament text, so that card says 'Not in Lampas yet' and has no Open: with Logos linked in Settings it has 'Open in Logos' instead, at that
+// under it with the reference as its heading, the passage as the Reader draws it now (English, the Weave with his weave settings, or Greek, mw-5r3p30.697) and Open,
+// which opens the Reader on the verse's chapter with the verse brought to the top and the rest above and below it (never the Verse view). A whole chapter shows its first verse. Lampas holds no Old Testament text, so that card says 'Not in Lampas yet' and has no Open: with Logos linked in Settings it has 'Open in Logos' instead, at that
 // verse (a whole chapter at its first) in the Bible he chose there (src/resources/logosBible.ts), and with no Bible app linked a link to Settings where he links Logos. A tap outside the
 // card (not on the reference itself: a second tap there changes nothing, mw-5r3p30.429), Close, Escape or Back closes it and nothing moves (it is a sheet for Back, src/ui/sheetBack.ts). The card sits below the reference, or above it when
 // there is no room below, so it never covers what was tapped.
@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, type Chapter, type Verse } from '../data/chapter';
 import { getLogosBible, getStudyResources } from '../data/repositories';
-import { openVerseAt } from '../nav/route';
+import { openAtVerse } from '../nav/readerRequest';
 import { openSettingsSection } from '../settings/link';
 import { verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
@@ -21,26 +21,16 @@ import { textClass } from '../reader/textClass';
 import { langOf } from '../script/greekLang';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
 
-/** The translation the reader's English is. */
+/** The translation the reader's English is, and the edition its Greek follows. */
 const TRANSLATION = 'Majority Standard Bible';
+const GREEK_TEXT = 'Robinson-Pierpont Greek';
 
 const MARGIN = 8;
 const GAP = 6;
 const WIDTH = 340;
 
-/** One verse of the passage, with its English as the chapter file has it. */
-interface PassageVerse {
-  n: number;
-  text: string;
-}
-
 /** `null` while the chapter loads, `'failed'` when it cannot be had. */
-type Passage = PassageVerse[] | 'failed' | null;
-
-const passageOf = (chapter: Chapter, held: HeldPlace): PassageVerse[] =>
-  chapter.verses
-    .filter((v) => v.n >= held.first && v.n <= held.last)
-    .map((v) => ({ n: v.n, text: v.e.map((c) => c.t.trim()).join(' ') }));
+type Passage = Chapter | 'failed' | null;
 
 /** The indices of the Greek words of `verse` that are `form`: the first one, which a card marks (a form that stands twice in a verse is marked at its first place). */
 const markedIn = (verse: Verse, form: string): ReadonlySet<number> => {
@@ -48,8 +38,8 @@ const markedIn = (verse: Verse, form: string): ReadonlySet<number> => {
   return new Set(at < 0 ? [] : [at]);
 };
 
-/** The passage as the Reader would draw it, in his view and Weave, with the Greek word `mark` marked (mw-5r3p30.652). The words are plain text: a tap on a card opens nothing. */
-function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPlace; mark: string }) {
+/** The passage as the Reader would draw it, in his view and Weave, with the Greek word `mark` marked when there is one (mw-5r3p30.652). The words are plain text: a tap on a card opens nothing. */
+function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPlace; mark?: string }) {
   const settings = useViewSettings();
   const woven = useWoven(chapter, settings ?? {});
   if (!settings) return <p role="status" className="py-1 text-base text-muted">Loading…</p>;
@@ -59,7 +49,7 @@ function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPl
       {inRange.map(({ v, i }, k) => (
         <span key={v.n}>
           {inRange.length > 1 ? <sup className="mr-0.5 font-sans text-xs text-muted">{v.n}</sup> : null}
-          <VerseText verse={v} view={settings.view} woven={woven?.[i] ?? null} onLook={() => undefined} marked={markedIn(v, mark)} still />
+          <VerseText verse={v} view={settings.view} woven={woven?.[i] ?? null} onLook={() => undefined} marked={mark === undefined ? undefined : markedIn(v, mark)} still />
           {k < inRange.length - 1 ? ' ' : ''}
         </span>
       ))}
@@ -138,7 +128,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   useSheetBack(onClose);
   const { held } = card;
   const [passage, setPassage] = useState<Passage>(null);
-  const [chapter, setChapter] = useState<Chapter | null>(null);
+  const view = useViewSettings()?.view;
   const box = useRef<HTMLDivElement>(null);
   const layer = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState<Spot | null>(null);
@@ -147,11 +137,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
     if (!held) return;
     let live = true;
     loadChapter(held.book, held.chapter).then(
-      (loaded) => {
-        if (!live) return;
-        setChapter(loaded);
-        setPassage(passageOf(loaded, held));
-      },
+      (loaded) => live && setPassage(loaded),
       () => live && setPassage('failed'),
     );
     return () => {
@@ -207,23 +193,13 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
             <p role="status" className="py-1 text-base text-muted">Loading…</p>
           ) : passage === 'failed' ? (
             <p role="status" className="py-1 text-base text-muted">This passage is not on this phone yet, and you are offline.</p>
-          ) : mark !== undefined && chapter ? (
-            <MarkedPassage chapter={chapter} held={held} mark={mark} />
           ) : (
-            <p data-reference-text className="text-lg leading-snug">
-              {passage.map((v, i) => (
-                <span key={v.n}>
-                  {passage.length > 1 ? <sup className="mr-0.5 text-xs text-muted">{v.n}</sup> : null}
-                  {v.text}
-                  {i < passage.length - 1 ? ' ' : ''}
-                </span>
-              ))}
-            </p>
+            <MarkedPassage chapter={passage} held={held} mark={mark} />
           )}
         </div>
         {held ? (
           <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-2">
-            <span className="text-sm text-muted">{TRANSLATION}</span>
+            <span className="text-sm text-muted">{view === 'greek' ? GREEK_TEXT : TRANSLATION}</span>
             <button type="button" onClick={onOpen} className="min-h-11 rounded-lg bg-accent px-5 text-base font-medium text-accent-fg">
               Open<span aria-hidden="true"> ›</span>
             </button>
@@ -235,12 +211,27 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   );
 }
 
+/** Runs `then` once the history entry of the card, which closing it takes off with a step Back (src/ui/sheetBack.ts), has gone, or at the latest a moment later. */
+function afterSheetEntryGone(then: () => void): void {
+  let done = false;
+  const run = (): void => {
+    if (done) return;
+    done = true;
+    window.removeEventListener('popstate', run);
+    clearTimeout(timer);
+    then();
+  };
+  const timer = setTimeout(run, 400);
+  window.addEventListener('popstate', run);
+}
+
 /** A reference link in an answer: the words stay where they are; a tap opens the card. With `mark` (a Greek form, as a Review question gives it) the card shows
- *  the passage as the Reader draws it, in his view and Weave, with that word marked, instead of the plain English (mw-5r3p30.652). `onLeave` is called before Open opens the reader (the Talk sheet closes there).
+ *  the passage as the Reader draws it, in his view and Weave, with that word marked, instead of the plain English (mw-5r3p30.652). `onLeave` is called before Open opens the reader (the Talk sheet closes there). `replacing`: Open puts the Reader in the place of the screen's own entry rather than after it (the Share to Lampas list, whose
+ *  entries Back must find again: src/nav/route.ts replaceReader).
  *  A reference found by name rather than written for the tutor's `cardOf` (Share to Lampas lists 'Song of Solomon 2:1', 'Gen. 1:28' with their book known) gives
- *  its `old` Testament place and `heading`, and a `className`, `href` (what a long press has) and `data` of its own. */
-export function ReferenceLink({ written, onLeave, old, mark, className, href, data, children }: { written: string; onLeave?: () => void; mark?: string; old?: { heading: string; place: ElsewherePlace }; className?: string; href?: string; data?: Record<string, string>; children: ReactNode }) {
-  const card = useMemo(() => (old ? { heading: old.heading, held: null } : cardOf(written)), [written, old]);
+ *  its `old` Testament place and `heading`, or, for the New Testament, its `found` card (what `referencesIn` gives), and a `className`, `href` (what a long press has) and `data` of its own. */
+export function ReferenceLink({ written, onLeave, replacing, old, found, mark, className, href, data, children }: { written: string; onLeave?: () => void; replacing?: boolean; mark?: string; old?: { heading: string; place: ElsewherePlace }; found?: Card; className?: string; href?: string; data?: Record<string, string>; children: ReactNode }) {
+  const card = useMemo(() => (old ? { heading: old.heading, held: null } : found ?? cardOf(written)), [written, old, found]);
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLAnchorElement>(null);
   if (!card) return <>{children}</>;
@@ -263,7 +254,7 @@ export function ReferenceLink({ written, onLeave, old, mark, className, href, da
       {open ? (
         <ReferenceCardView
           card={card}
-          place={old ? old.place : elsewhereOf(written)}
+          place={old ? old.place : found ? null : elsewhereOf(written)}
           mark={mark}
           anchor={anchor}
           onClose={() => setOpen(false)}
@@ -271,7 +262,8 @@ export function ReferenceLink({ written, onLeave, old, mark, className, href, da
             if (!held) return;
             onLeave?.();
             setOpen(false);
-            openVerseAt({ book: held.book, chapter: held.chapter, verse: held.first });
+            if (replacing) afterSheetEntryGone(() => openAtVerse(held.book, held.chapter, held.first, true));
+            else openAtVerse(held.book, held.chapter, held.first);
           }}
           onSettings={() => {
             onLeave?.();

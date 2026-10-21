@@ -1,11 +1,10 @@
 // src/share/ShareReferences.tsx — the Bible references in the words that were shared to Lampas (mw-s1dc0n.1): 'Bible references (N)', each one a link that opens
-// the Reader on the verse (a range at its first verse). In the order of the page by default, so he can go through them as he reads; the switch above the list
+// the verse's card over the list (mw-5r3p30.697), whose Open goes to the Reader at the verse (a range at its first verse). In the order of the page by default, so he can go through them as he reads; the switch above the list
 // puts them in Bible order, grouped under each book, and the choice is kept on the phone for the next share. The references of a shared picture (the find-refs grist,
 // src/share/findRefs.ts, mw-s1dc0n.2) join the same list: while the grist reads, 'Finding Bible references...'; a failure is one line with 'Try again'.
 import { useMemo, useState } from 'react';
 import { ReferenceLink } from '../markdown/ReferenceCard';
 import { inWords, referenceUrl } from '../nav/links';
-import { openHash } from '../nav/route';
 import { findReferences, groupedByBook, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
 import type { PictureRefs } from './findRefs';
 
@@ -54,37 +53,28 @@ function Printed({ r }: { r: ListedReference }) {
   );
 }
 
-/** The link to the verse. A plain tap opens the Reader through the address (a Back step, so Back returns to the list; not a change of `location.hash`, whose popstate the open sheet would take for Back and cancel the share); anything else (a long press, a new tab)
- *  has the https link. A reference to the Old Testament, which Lampas does not hold, opens the card the tutor's references open ('Not in Lampas yet', with Open in Logos when
- *  Logos is on) and the list stays where it is. */
+/** The link to the verse, a tap on which opens the card the tutor's references open (src/markdown/ReferenceCard.tsx, mw-5r3p30.697) over the list, which stays where it is: the
+ *  verses in the view he reads in (English, the Weave or Greek) and, for the New Testament, Open, which opens the Reader on the chapter with the verse at the top (not the
+ *  Verse view; Back returns to the list). The card is opened by a change of the app's own history entries, not of `location.hash`, whose popstate the open sheet would take for
+ *  Back and cancel the share. A reference to the Old Testament, which Lampas does not hold, opens the card that says 'Not in Lampas yet' (with Open in Logos when Logos is
+ *  on). A long press or a new tab has the https link. */
 function RefLink({ r }: { r: ListedReference }) {
   const href = referenceUrl(r.book, r.chapter, r.verse);
+  const common = { written: r.printed, replacing: true, href, className: LINK_CLASS, data: { 'data-share-ref': r.ref } };
   if (r.testament === 'ot') {
     return (
-      <ReferenceLink
-        written={r.printed}
-        old={{ heading: headingOf(r), place: { book: r.book, chapter: r.chapter, ...(r.verse === undefined ? {} : { verse: r.verse }) } }}
-        href={href}
-        className={LINK_CLASS}
-        data={{ 'data-share-ref': r.ref }}
-      >
+      <ReferenceLink {...common} old={{ heading: headingOf(r), place: { book: r.book, chapter: r.chapter, ...(r.verse === undefined ? {} : { verse: r.verse }) } }}>
         <Printed r={r} />
       </ReferenceLink>
     );
   }
+  // a chapter alone is headed, as the tutor's cards head it, by the first verse it shows
+  const first = r.verse ?? 1;
+  const found = { heading: r.verse === undefined ? `${headingOf(r)}:1` : headingOf(r), held: { book: r.book, chapter: r.chapter, first, last: r.verse === undefined ? first : (r.lastVerse ?? first) } };
   return (
-    <a
-      href={href}
-      data-share-ref={r.ref}
-      onClick={(e) => {
-        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
-        e.preventDefault();
-        openHash(referenceUrl(r.book, r.chapter, r.verse, r.printed).replace(/^[^#]*/, ''));
-      }}
-      className={LINK_CLASS}
-    >
+    <ReferenceLink {...common} found={found}>
       <Printed r={r} />
-    </a>
+    </ReferenceLink>
   );
 }
 

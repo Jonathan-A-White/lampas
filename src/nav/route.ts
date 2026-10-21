@@ -247,6 +247,16 @@ export function openReader(address: Pick<ReaderAddress, 'book' | 'chapter' | 've
   notify();
 }
 
+/** Opens the reader at a chapter in the place of the entry he is on, which was a screen that a sheet had pushed an entry for (Share to Lampas): the entry keeps its place in the trail
+ * but not the sheet's mark, so Back from the Reader returns to the entry beneath, the screen with no sheet, and the screen draws its sheet afresh (src/ui/sheetBack.ts skipStale
+ * would otherwise step over the sheet's entry at the moment the screen mounts a new one). */
+export function replaceReader(address: Pick<ReaderAddress, 'book' | 'chapter'>): void {
+  const kept = { ...(window.history.state as Record<string, unknown> | null) };
+  delete kept.sheet;
+  window.history.replaceState(kept, '', urlFor(readerHash(address)));
+  notify();
+}
+
 /** Opens an address of the app that is not a screen's own (a link, '#/?ref=Rom.8.28', src/nav/links.ts), as a new Back step. A change of `location.hash` would fire a
  * popstate, which an open sheet takes for Back. */
 export function openHash(hash: string): void {

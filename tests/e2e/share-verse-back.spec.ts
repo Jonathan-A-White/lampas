@@ -1,5 +1,5 @@
-// tests/e2e/share-verse-back.spec.ts — Back from a verse opened from a shared reference (mw-s1dc0n.11), at 390x844: a tap on 'Rom. 8:28' on the Share to Lampas list
-// opens the Verse view on verse 28, and the phone's Back shows the Reader (Romans 8, the view closed), not the share sheet again.
+// tests/e2e/share-verse-back.spec.ts — Back from a verse opened from a shared reference (mw-s1dc0n.11, changed by mw-5r3p30.697), at 390x844: a tap on 'Rom. 8:28' on the
+// Share to Lampas list opens its card, Open lands on the Reader at Romans 8 (no Verse view), and the phone's Back returns to the share list, which has not moved.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -35,18 +35,18 @@ async function openShare(page: Page): Promise<void> {
   await expect(page.getByRole('dialog', { name: 'Share to Lampas' })).toBeVisible();
 }
 
-test('Back from the verse a shared reference opened shows the Reader, not the share sheet', async ({ page }) => {
+test('Open on a shared reference lands on the Reader, and Back returns to the share list', async ({ page }) => {
   await openShare(page);
   await page.getByRole('link', { name: 'Rom. 8:28', exact: true }).tap();
+  await page.getByRole('dialog', { name: 'Romans 8:28', exact: true }).getByRole('button', { name: 'Open', exact: true }).tap();
 
-  const verseView = page.getByRole('region', { name: 'Verse view' });
-  await expect(verseView).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
   await expect(page.getByRole('dialog', { name: 'Share to Lampas' })).toHaveCount(0);
+  await shot(page, 'share-verse-back');
 
   await page.goBack();
-  await expect(verseView).toBeHidden();
-  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await expect(page.getByRole('dialog', { name: 'Share to Lampas' })).toHaveCount(0);
-  expect(new URL(page.url()).hash).not.toContain('#/share');
-  await shot(page, 'share-verse-back');
+  await expect(page.getByRole('dialog', { name: 'Share to Lampas' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Rom. 8:28', exact: true })).toBeVisible();
+  expect(new URL(page.url()).hash).toContain('#/share');
 });

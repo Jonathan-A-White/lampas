@@ -73,15 +73,17 @@ test('a reference in the tutor\'s answer opens a card that fits a 360 px phone, 
   await psalm.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(psalm).toBeHidden();
 
-  // Open takes him to the verse and the card and the sheet are gone.
+  // Open takes him to the chapter with the verse at the top, not the one-verse screen, and the card and the sheet are gone (mw-5r3p30.697).
   await link.click();
   await card.getByRole('button', { name: 'Open', exact: true }).click();
   await expect(card).toBeHidden();
   await expect(sheet).toBeHidden();
-  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Hebrews 7', level: 1 })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
   expect(page.url()).toContain('b=heb');
   expect(page.url()).toContain('c=7');
-  expect(page.url()).toContain('v=1');
+  expect(page.url()).not.toContain('v=');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
 });
 
 // A passage Lampas does not hold (mw-5r3p30.345): with no Bible app linked the card links to Settings, and once Logos is linked it opens the verse in his Bible.
