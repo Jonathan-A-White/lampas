@@ -1,0 +1,55 @@
+{
+  "description": "He tapped the genitive singular feminine of The article in Drill and tapped Ask the tutor: the answer is about that cell, τῆς, as the focus names it, says what sets it apart in its row and column, and does not read out a form he has not revealed.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Paradigms",
+    "question": "I am learning the paradigm table “The article”. I am looking at Genitive Singular Feminine: τῆς. Explain what to notice about it and how it fits the pattern of the table.",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "focus": {
+      "table": "The article",
+      "kind": "paradigm",
+      "mode": "drill",
+      "revealed": [
+        "Genitive Singular Feminine: τῆς"
+      ],
+      "cell": {
+        "parse": "Genitive Singular Feminine",
+        "form": "τῆς"
+      }
+    },
+    "screen": {
+      "name": "Paradigms",
+      "facts": [
+        {
+          "label": "Table",
+          "value": "The article"
+        },
+        {
+          "label": "Mode",
+          "value": "Drill"
+        },
+        {
+          "label": "Cell in focus",
+          "value": "Genitive Singular Feminine: τῆς"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

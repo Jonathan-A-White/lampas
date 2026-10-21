@@ -206,6 +206,13 @@ describe('the paradigm focus (mw-5r3p30.82)', () => {
     expect(validate({ ...request, focus: paradigm }, input)).toEqual([]);
     expect(validate({ ...request, focus: { ...paradigm, revealed: [] } }, input)).toEqual([]);
     expect(validate({ ...request, focus: { ...paradigm, revealed: Array.from({ length: 40 }, () => 'Nominative: ὁ') } }, input)).toEqual([]);
+    // mw-irpgqi.3: the mode, the cell he is on and the word he came from
+    const where = { mode: 'drill', cell: { parse: 'Genitive Singular Feminine', form: 'τῆς' }, word: { form: 'ἀγαπῶ', parse: 'present active indicative, 1st person singular' } };
+    expect(validate({ ...request, focus: { ...paradigm, ...where } }, input)).toEqual([]);
+    expect(validate({ ...request, focus: { ...paradigm, mode: 'learn', cell: { parse: 'Genitive Singular Feminine' } } }, input)).toEqual([]);
+    for (const bad of [{ mode: 'study' }, { cell: { form: 'τῆς' } }, { cell: { parse: '' } }, { cell: { parse: 'x', extra: 1 } }, { word: { form: 'ἀγαπῶ' } }, { word: { parse: 'x' } }]) {
+      expect(validate({ ...request, focus: { ...paradigm, ...bad } }, input), JSON.stringify(bad)).not.toEqual([]);
+    }
     for (const bad of [{ table: 'The article', kind: 'paradigm' }, { ...paradigm, kind: 'grammar-term' }, { ...paradigm, extra: 1 }, { ...paradigm, table: '' }, { ...paradigm, revealed: [''] }, { ...paradigm, revealed: Array.from({ length: 41 }, () => 'ὁ') }]) {
       expect(validate({ ...request, focus: bad }, input), JSON.stringify(bad)).not.toEqual([]);
     }
@@ -213,7 +220,7 @@ describe('the paradigm focus (mw-5r3p30.82)', () => {
 
   it('the instructions tell the companion what a paradigm focus is and how to answer it', () => {
     const text = instructionsOf(grind.kind as string);
-    for (const part of ['`paradigm`', '`focus.revealed`', 'Help with a paradigm table', 'Leave `syllables` out']) expect(text).toContain(part);
+    for (const part of ['`paradigm`', '`focus.revealed`', 'Help with a paradigm table', 'Leave `syllables` out', '`mode`', '`cell`', 'Word he came from']) expect(text).toContain(part);
   });
 });
 

@@ -1,0 +1,63 @@
+{
+  "description": "He came to Contract verbs from the word ἀγαπῶ and tapped Ask the tutor in Learn: the answer is about the cell the word lands on, says how ἀγαπῶ is that cell, and names the contraction.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Paradigms",
+    "question": "I am learning the paradigm table “Contract verbs”. I am looking at ἀγαπάω 1st person singular Present Active: ἀγαπῶ. I came to it from the word ἀγαπῶ (present active indicative, 1st person singular). Explain what to notice about it and how it fits the pattern of the table.",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "focus": {
+      "table": "Contract verbs",
+      "kind": "paradigm",
+      "mode": "learn",
+      "revealed": [
+        "ἀγαπάω 1st person singular Present Active: ἀγαπῶ"
+      ],
+      "cell": {
+        "parse": "ἀγαπάω 1st person singular Present Active",
+        "form": "ἀγαπῶ"
+      },
+      "word": {
+        "form": "ἀγαπῶ",
+        "parse": "present active indicative, 1st person singular"
+      }
+    },
+    "screen": {
+      "name": "Paradigms",
+      "facts": [
+        {
+          "label": "Table",
+          "value": "Contract verbs"
+        },
+        {
+          "label": "Mode",
+          "value": "Learn"
+        },
+        {
+          "label": "Cell in focus",
+          "value": "ἀγαπάω 1st person singular Present Active: ἀγαπῶ"
+        },
+        {
+          "label": "Word he came from",
+          "value": "ἀγαπῶ (present active indicative, 1st person singular)"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
