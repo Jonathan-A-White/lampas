@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.394",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.708",
+    "kind": "fixed",
+    "text": "A link to a book in your Logos library now opens it where the tutor says the topic is treated, and the tutor only links a book when it really answers your question."
+  },
+  {
     "version": "0.1.393",
     "date": "2026-10-21",
     "story": "mw-06ggew.15",

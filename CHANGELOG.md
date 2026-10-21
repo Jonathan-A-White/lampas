@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.394
+_2026-10-21_
+- Fixed: A link to a book in your Logos library now opens it where the tutor says the topic is treated, and the tutor only links a book when it really answers your question.
+
 ## 0.1.393
 _2026-10-21_
 - Fixed: Talk now uses the same hold-to-talk box as Ask the tutor, so words you dictate are no longer cut off, and anything being read aloud pauses while you hold.
