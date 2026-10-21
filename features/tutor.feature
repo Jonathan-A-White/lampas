@@ -134,10 +134,10 @@ Feature: Ask the tutor about a verse
     And its input carries the Greek pronunciation "modern" and the settings that bear on the answer
     And the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move
 
-  Scenario: A verse the tutor names in its answer is a link whose card opens that verse
+  Scenario: A verse the tutor names in its answer is a link whose card opens that verse in its chapter
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers with "Melchizedek is in Hebrews 7:2, where he is called king of righteousness."
     And he selects verse 28
     When he asks "Who is Melchizedek?"
     And he taps the link "Hebrews 7:2" in the answer
     And he taps Open on the reference card
-    Then the Verse view shows Hebrews 7:2
+    Then the Reader shows Hebrews 7 with verse 2 brought to the top and no Verse view

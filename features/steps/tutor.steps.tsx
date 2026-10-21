@@ -406,7 +406,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(text).toContain('do not offer to move New words at here');
     });
   });
-  Scenario('A verse the tutor names in its answer is a link whose card opens that verse', ({ Given, And, When, Then }) => {
+  Scenario('A verse the tutor names in its answer is a link whose card opens that verse in its chapter', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers with {string}', (_, text: string) =>
       open((f) => void (f.autoReply = { status: 'answered', answer: { answer: text, words: [] } })),
     );
@@ -419,10 +419,12 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And('he taps Open on the reference card', async () => {
       await user.click(await within(await screen.findByRole('dialog', { name: 'Hebrews 7:2' })).findByRole('button', { name: 'Open' }));
     });
-    Then('the Verse view shows Hebrews 7:2', async () => {
-      const view = await screen.findByRole('region', { name: 'Verse view' });
-      await waitFor(() => expect(within(view).getByRole('heading', { name: 'Hebrews 7:2' })).toBeInTheDocument());
-      expect(readerOf(window.location.hash)).toMatchObject({ book: 'heb', chapter: 7, verse: 2 });
+    Then('the Reader shows Hebrews 7 with verse 2 brought to the top and no Verse view', async () => {
+      await waitFor(() => expect(document.querySelector('[data-brought-verse="2"]')).not.toBeNull());
+      expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull();
+      const at = readerOf(window.location.hash);
+      expect(at).toMatchObject({ book: 'heb', chapter: 7 });
+      expect(at.verse).toBeUndefined();
     });
   });
 });
