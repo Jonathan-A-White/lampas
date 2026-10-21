@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.398
+_2026-10-21_
+- New: Ask the tutor is one tap away on the Paradigms list and on every table, it opens over the table you are on, and the tutor already knows the table, whether you are in Learn or Drill, the form you tapped and the word you came from.
+
 ## 0.1.397
 _2026-10-21_
 - Fixed: Tapping the place line at the foot of 2 John now names 2 John, not 2 John and 3 John.
