@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.386
+_2026-10-21_
+- New: When you show interest in the Greek, the tutor now offers to turn up the Greek dial by one step, never more, and stays quiet about the Greek at Just English unless you ask.
+
 ## 0.1.385
 _2026-10-21_
 - New: Settings now opens with a "How much Greek?" dial, from Just English to All in, and each step shows only the Greek that step is about.
