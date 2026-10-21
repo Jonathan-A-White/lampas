@@ -100,7 +100,7 @@ describe('the request', () => {
 
 describe('the answer', () => {
   const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema & { required: string[] };
-  const answer = { answer: 'Five questions it is.', words: [] };
+  const answer = { answer: 'Five questions it is.', question: 'What does it say?', words: [] };
 
   it('may propose one line, and the schema and the app agree', () => {
     expect(schema.required).not.toContain('study_way_line');

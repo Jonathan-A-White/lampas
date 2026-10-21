@@ -146,7 +146,7 @@ describe('wished_notes', () => {
 });
 
 describe('the answer guard and the schemas', () => {
-  const base = { answer: 'Yes.', words: [] };
+  const base = { answer: 'Yes.', question: 'What does it say?', words: [] };
   it('takes a memory_update and wished_notes of the right shape', () => {
     expect(isTalkAnswer({ ...base, memory_update: [{ name: 'word:λόγος', append: 'x' }], wished_notes: ['topic:aorist'] })).toBe(true);
     expect(isTalkAnswer({ ...base, memory_update: [{ name: 'book:Romans', replace: 'x', directed: true }, { name: 'index', remove: true, directed: true }] })).toBe(true);

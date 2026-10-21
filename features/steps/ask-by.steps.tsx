@@ -250,7 +250,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('the verse-ask grind', () => undefined);
     Then('its answer schema lets an answer change only Ask by to Speaking or Typing, and its instructions say when', () => {
       const schema = JSON.parse(readFileSync('grinds/verse-ask.answer.schema.json', 'utf8')) as Schema;
-      const base = { answer: 'x', words: [] };
+      const base = { answer: 'x', question: 'Why?', words: [] };
       expect(validate({ ...base, settings_changes: [{ key: 'askBy', value: 'typing' }] }, schema)).toEqual([]);
       expect(validate({ ...base, settings_changes: [{ key: 'askBy', value: 'speaking' }] }, schema)).toEqual([]);
       expect(validate({ ...base, settings_changes: [{ key: 'askBy', value: 'shouting' }] }, schema)).not.toEqual([]);

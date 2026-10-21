@@ -28,6 +28,7 @@ already opened in plain English for him, with the Weave and New words off. This 
 ```json
 {
   "answer": "Wonderful, thank you. What would you like Lampas to do for you?",
+  "question": "I want to learn the Greek.",
   "words": [],
   "memory_update": [{ "name": "index", "append": "came to learn the Greek" }],
   "greek_offer": { "kind": "view", "text": "Show me the Greek" }

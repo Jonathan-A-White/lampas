@@ -33,6 +33,7 @@ the list (a study-resource switch is not one), do not offer a change: say where 
 ```json
 {
   "answer": "Your idea 'Let me read in a dark theme' is now a setting: Theme, in Settings under Appearance. Shall I set it to Dark?",
+  "question": "Can I read in a dark theme?",
   "words": [],
   "setting_offer": { "key": "theme", "value": "dark" }
 }

@@ -11,14 +11,14 @@ import { instructionsOf } from '../../scripts/grind-parts';
 
 const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
 const instructions = instructionsOf('bible-talk');
-const base = { answer: 'Love, mostly.', words: [] };
+const base = { answer: 'Love, mostly.', question: 'What does it say?', words: [] };
 const word = { kind: 'word', lemma: 'ἀγάπη' };
 const verse = { kind: 'verse', reference: 'Romans 8:31' };
 const on = (...ids: string[]): StudyResources => ({ on: ids, options: {} });
 
 describe('links in the answer schema and the guard', () => {
   it('are optional, at most three, and a word (a lemma) or a verse (a reference)', () => {
-    expect((schema.required as string[]).sort()).toEqual(['answer', 'words']);
+    expect((schema.required as string[]).sort()).toEqual(['answer', 'question', 'words']);
     const links = schema.properties?.links;
     expect(links?.maxItems).toBe(MAX_LINKS);
     expect(MAX_LINKS).toBe(3);

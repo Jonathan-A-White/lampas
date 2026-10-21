@@ -57,11 +57,11 @@ describe('Hebrew in the tutor', () => {
 });
 
 describe('the answer schema and isTalkAnswer', () => {
-  const good = { answer: 'It means "works together".', words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative' }] };
+  const good = { answer: 'It means "works together".', question: 'What does it say?', words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative' }] };
   const bad: [string, unknown][] = [
     ['an empty answer', { ...good, answer: '' }],
     ['an answer over 1500 characters', { ...good, answer: 'x'.repeat(1501) }],
-    ['no words key', { answer: 'x' }],
+    ['no words key', { answer: 'x', question: 'Why?' }],
     ['a word without a note', { ...good, words: [{ greek: 'a', lemma: 'b' }] }],
     ['an extra key', { ...good, extra: 1 }],
     ['13 words', { ...good, words: Array.from({ length: 13 }, () => good.words[0]) }],
@@ -69,7 +69,7 @@ describe('the answer schema and isTalkAnswer', () => {
   ];
 
   it('accepts a good answer, an answer with no words and one of exactly 1500 characters', () => {
-    for (const value of [good, { answer: 'x', words: [] }, { answer: 'x'.repeat(1500), words: [] }]) {
+    for (const value of [good, { answer: 'x', question: 'What does it say?', words: [] }, { answer: 'x'.repeat(1500), question: 'What does it say?', words: [] }]) {
       expect(validate(value, schema as Schema)).toEqual([]);
       expect(isTalkAnswer(value)).toBe(true);
     }
@@ -82,11 +82,11 @@ describe('the answer schema and isTalkAnswer', () => {
 });
 
 describe('settings_changes in the answer', () => {
-  const answer = { answer: 'Slower now.', words: [] };
+  const answer = { answer: 'Slower now.', question: 'What does it say?', words: [] };
   const change = (key: string, value: unknown) => ({ ...answer, settings_changes: [{ key, value }] });
 
   it('is optional in the schema, and the app\'s guard takes it', () => {
-    expect((schema.required as string[]).sort()).toEqual(['answer', 'words']);
+    expect((schema.required as string[]).sort()).toEqual(['answer', 'question', 'words']);
     for (const value of [answer, change('greekRate', 0.8), { ...answer, settings_changes: [] }]) {
       expect(validate(value, schema as Schema)).toEqual([]);
       expect(isTalkAnswer(value)).toBe(true);
@@ -139,7 +139,7 @@ describe('the word help focus and the syllables (mw-5r3p30.34)', () => {
   const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
   const request = { reference: 'Romans 8:28', greek: 'Οἴδαμεν', english: 'And we know', question: 'Why?', history: [], solid_words: [], settings: {} };
   const focus = { form: 'συνεργεῖ', lemma: 'συνεργέω', parse: 'verb, present active indicative, third person singular', kind: 'grammar' };
-  const answer = { answer: 'Say it in three parts.', words: [] };
+  const answer = { answer: 'Say it in three parts.', question: 'What does it say?', words: [] };
 
   it("the request schema accepts a focus, and still accepts a request without one", () => {
     expect(validate(request, input)).toEqual([]);
@@ -159,7 +159,7 @@ describe('the word help focus and the syllables (mw-5r3p30.34)', () => {
       expect(validate(value, schema as Schema)).toEqual([]);
       expect(isTalkAnswer(value)).toBe(true);
     }
-    expect((schema.required as string[]).sort()).toEqual(['answer', 'words']);
+    expect((schema.required as string[]).sort()).toEqual(['answer', 'question', 'words']);
     for (const bad of [{ ...answer, syllables: Array.from({ length: 13 }, () => 'α') }, { ...answer, syllables: [''] }, { ...answer, syllables: [4] }, { ...answer, syllables: 'συν' }]) {
       expect(validate(bad, schema as Schema), JSON.stringify(bad)).not.toEqual([]);
       expect(isTalkAnswer(bad), JSON.stringify(bad)).toBe(false);
@@ -212,10 +212,10 @@ describe('the paradigm focus (mw-5r3p30.82)', () => {
 });
 
 describe('words_to_add in the answer (mw-5r3p30.44)', () => {
-  const answer = { answer: 'Adding σάρξ.', words: [] };
+  const answer = { answer: 'Adding σάρξ.', question: 'What does it say?', words: [] };
 
   it('is optional in the schema and takes up to 12 lemmas; the app\'s guard agrees', () => {
-    expect((schema.required as string[]).sort()).toEqual(['answer', 'words']);
+    expect((schema.required as string[]).sort()).toEqual(['answer', 'question', 'words']);
     for (const value of [answer, { ...answer, words_to_add: [] }, { ...answer, words_to_add: ['σάρξ'] }, { ...answer, words_to_add: Array.from({ length: 12 }, () => 'α') }]) {
       expect(validate(value, schema as Schema), JSON.stringify(value)).toEqual([]);
       expect(isTalkAnswer(value), JSON.stringify(value)).toBe(true);
@@ -436,7 +436,7 @@ describe('the sound kind for a Hebrew word (mw-5r3p30.98)', () => {
   const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
   const request = { reference: 'Romans 8:28', greek: 'Οἴδαμεν', english: 'And we know', question: 'Say it', history: [], solid_words: [], settings: {} };
   const focus = { form: 'צֶדֶק', lemma: 'צֶדֶק', parse: 'Hebrew word', kind: 'sound', language: 'he' };
-  const answer = { answer: 'Say it TSE-dek.', words: [], syllables: ['צֶ', 'דֶק'], transliteration: ['TSE', 'dek'] };
+  const answer = { answer: 'Say it TSE-dek.', question: 'What does it say?', words: [], syllables: ['צֶ', 'דֶק'], transliteration: ['TSE', 'dek'] };
 
   it('the request schema accepts a word focus in Hebrew, and refuses another language', () => {
     expect(validate({ ...request, focus }, input)).toEqual([]);
@@ -462,7 +462,7 @@ describe('the sound kind for a Hebrew word (mw-5r3p30.98)', () => {
 });
 
 describe('the feedback offer', () => {
-  const good = { answer: 'Lampas has no such link yet. I can pass it to the makers; I cannot promise they will build it.', words: [] };
+  const good = { answer: 'Lampas has no such link yet. I can pass it to the makers; I cannot promise they will build it.', question: 'What does it say?', words: [] };
   const instructions = instructionsOf('bible-talk');
 
   it('is an optional object with a one-line summary, in both the schema and isTalkAnswer', () => {

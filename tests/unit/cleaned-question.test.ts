@@ -24,9 +24,10 @@ describe.each(KINDS)('$kind: the cleaned question', ({ kind, max, guard }) => {
   const instructions = instructionsOf(kind);
   const answer = { answer: 'They are words the translators added.', words: [] };
 
-  it('is a field of the answer schema, as long as the question may be, and not required', () => {
+  it('is a field of the answer schema, as long as the question may be, and required', () => {
     expect(schema.properties.question).toMatchObject({ type: 'string', minLength: 1, maxLength: max });
-    expect(schema.required).not.toContain('question');
+    // mw-5r3p30.688: the instructions say every answer carries it, so the schema must not let the model drop it
+    expect(schema.required).toContain('question');
     expect(schema.properties.question.description).toMatch(/punctuation/i);
   });
 
@@ -56,11 +57,17 @@ describe.each(KINDS)('$kind: the cleaned question', ({ kind, max, guard }) => {
     expect(new RegExp(example.expect.question.matches).test(example.request.question)).toBe(true);
   });
 
-  it('is taken by the schema and the phone\'s guard, and an answer without it still is', () => {
-    for (const value of [answer, { ...answer, question: CLEAN }, { ...answer, question: 'x'.repeat(max) }]) {
+  it('is taken by the schema and the phone\'s guard', () => {
+    for (const value of [{ ...answer, question: CLEAN }, { ...answer, question: 'x'.repeat(max) }]) {
       expect(validate(value, schema)).toEqual([]);
       expect(guard(value)).toBe(true);
     }
+  });
+
+  // the phone's guard stays lenient: a stored or older answer with no `question` still shows the raw words (src/useTalk.ts cleanQ, src/useAsks.ts)
+  it('is refused by the schema when missing, while the phone\'s guard still takes an answer without it', () => {
+    expect(validate(answer, schema)).toContain('$.question: missing');
+    expect(guard(answer)).toBe(true);
   });
 
   it.each([

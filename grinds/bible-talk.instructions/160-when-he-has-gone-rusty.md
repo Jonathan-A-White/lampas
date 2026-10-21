@@ -19,6 +19,7 @@ Example: `rusty` lists λόγος ('slipped twice this week') and The genitive c
 ```json
 {
   "answer": "You're rusty on λόγος and the genitive case: they were solid before. A few minutes back on them will bring them back. Tap Move back to Frontier and practise.",
+  "question": "What should I work on?",
   "words": [],
   "rusty_offer": { "items": [{ "kind": "word", "id": "λόγος" }, { "kind": "idea", "id": "case-genitive" }] }
 }

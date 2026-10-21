@@ -3,7 +3,7 @@
   "title": "Verse Ask Answer 1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["answer", "words"],
+  "required": ["answer", "question", "words"],
   "properties": {
     "answer": {
       "description": "The reply to his question, in short plain English, at most 120 words.",

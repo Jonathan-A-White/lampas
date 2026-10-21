@@ -33,6 +33,7 @@ For example, to 'Can this work with Accordance's competitor, Olive Tree?' the an
 ```json
 {
   "answer": "Lampas does not work with Olive Tree. I can pass your wish to the makers; I cannot say what they will decide.",
+  "question": "Can this work with Accordance's competitor, Olive Tree?",
   "words": [],
   "feedback_offer": { "summary": "He wants Lampas to work with the Olive Tree app, as it does with Accordance." }
 }

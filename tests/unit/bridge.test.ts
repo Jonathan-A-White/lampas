@@ -33,7 +33,7 @@ const PATH = ['diphthongs', 'consonant-pairs', 'syllables', 'breathings', 'accen
 const withSolid = (count: number): Map<string, Level> => solid([...LETTERS, ...PATH.slice(0, PATH.length - count)]);
 
 const QUESTION = 'Why is this word in the genitive?';
-const bridgeOf = (ids: string[], next: string) => ({ answer: 'Briefly: it shows belonging.', words: [], bridge: { missing: ids, next, why: 'Cases come first.' } });
+const bridgeOf = (ids: string[], next: string) => ({ answer: 'Briefly: it shows belonging.', question: 'What does it say?', words: [], bridge: { missing: ids, next, why: 'Cases come first.' } });
 
 describe('the answer schemas', () => {
   it.each([

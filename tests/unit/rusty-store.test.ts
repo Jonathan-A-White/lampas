@@ -131,7 +131,7 @@ describe('the request and the answer', () => {
     { kind: 'word', id: 'λόγος', title: 'λόγος', why: 'slipped twice this week' },
     { kind: 'idea', id: 'case-genitive', title: 'The genitive case', why: 'not seen for 3 weeks' },
   ];
-  const good: TalkAnswer = { answer: 'You are rusty on λόγος.', words: [] };
+  const good: TalkAnswer = { answer: 'You are rusty on λόγος.', question: 'What does it say?', words: [] };
   const offer = (items: Array<{ kind: 'word' | 'idea'; id: string }>): TalkAnswer => ({ ...good, rusty_offer: { items } });
   const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
   const answerSchema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;

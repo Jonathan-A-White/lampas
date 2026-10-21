@@ -43,7 +43,7 @@ describe('readGo', () => {
 describe('isTalkAnswer with go', () => {
   it('keeps an answer whose go is any shape: the app reads it, so a go it cannot take never costs him the answer', () => {
     for (const go of [{ book: 'Colossians', chapter: 1 }, { book: 'Psalms', chapter: 23 }, 'Colossians 1', 3, null]) {
-      expect(isTalkAnswer({ answer: 'Taking you there.', words: [], go })).toBe(true);
+      expect(isTalkAnswer({ answer: 'Taking you there.', question: 'What does it say?', words: [], go })).toBe(true);
     }
   });
 });
@@ -62,7 +62,7 @@ describe('the bible-talk grind and go', () => {
   });
 
   it('takes a go for Colossians 1 and refuses a book outside the list, a chapter outside 1 to 28 and an extra key', () => {
-    const answer = (value: unknown) => validate({ answer: 'Taking you to Colossians 1.', words: [], go: value }, schema);
+    const answer = (value: unknown) => validate({ answer: 'Taking you to Colossians 1.', question: 'What does it say?', words: [], go: value }, schema);
     expect(answer({ book: 'Colossians', chapter: 1 })).toEqual([]);
     expect(answer({ book: 'Psalms', chapter: 23 })).not.toEqual([]);
     expect(answer({ book: 'Colossians', chapter: 0 })).not.toEqual([]);
