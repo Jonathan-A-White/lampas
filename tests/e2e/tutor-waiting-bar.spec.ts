@@ -9,6 +9,7 @@ import { typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -77,7 +78,7 @@ test('the bar is above the Talk sheet and its backdrop, and a tap on it plays th
   const fake = await start(page);
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+  await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await awayAndBack(page, fake, TALK_ANSWER);
   await expectBarOnTop(page);
@@ -111,7 +112,7 @@ test('the phone\'s Back out of the Talk sheet keeps the bar, and a tap on it pla
   const fake = await start(page);
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+  await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await awayAndBack(page, fake, TALK_ANSWER);
   await page.goBack();

@@ -8,6 +8,7 @@ import { longQuestion } from '../support/long-text';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 test('885 characters pasted into the Talk box are all in the box and all sent', async ({ page }) => {
   const QUESTION = longQuestion(885);
@@ -19,7 +20,7 @@ test('885 characters pasted into the Talk box are all in the box and all sent', 
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  const box = sheet.getByRole('textbox', { name: 'Your message' });
+  const box = await talkField(sheet);
   await box.fill(QUESTION);
   await expect(box).toHaveValue(QUESTION);
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();

@@ -7,6 +7,7 @@ import { routePostern } from '../support/playwright-postern';
 import { honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -30,7 +31,7 @@ test('while the answer is read aloud, taking a setting offer shows the whole con
   await page.goto('/');
   await page.getByRole('button', { name: 'Talk', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Can the Greek be slower?');
+  await (await talkField(sheet)).fill('Can the Greek be slower?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.locator('[data-setting-offer]')).toBeVisible();
 

@@ -8,6 +8,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 const SIZES = [
@@ -83,7 +84,7 @@ async function expectNothingOn(page: Page, sheet: Locator): Promise<void> {
 for (const size of SIZES) {
   test(`the composer at 390x${size.height} (${size.name}): the box keeps the row, the mic is round while there are words`, async ({ page }) => {
     const sheet = await open(page, size.height);
-    const field = sheet.getByRole('textbox', { name: 'Your message' });
+    const field = await talkField(sheet);
     const row = sheet.locator('[data-composer-row]');
     await expect(field).toBeVisible();
     const short = size.height < 500;
@@ -117,7 +118,7 @@ for (const size of SIZES) {
 
   test(`the composer at 390x${size.height} (${size.name}): the box grows upward line by line to five lines, then scrolls`, async ({ page }) => {
     const sheet = await open(page, size.height);
-    const field = sheet.getByRole('textbox', { name: 'Your message' });
+    const field = await talkField(sheet);
     await field.fill('one');
     const one = await rectOf(field);
     await field.fill('one\ntwo\nthree');
@@ -146,7 +147,7 @@ test('the composer at 390x450 with a picture attached: links stays on one line a
   await sheet.getByLabel('Picture file').setInputFiles({ name: 'p.png', mimeType: 'image/png', buffer: PNG });
   const thumb = sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img', { name: 'Picture 1' });
   await expect(thumb).toBeVisible();
-  const field = sheet.getByRole('textbox', { name: 'Your message' });
+  const field = await talkField(sheet);
   await field.fill('links');
   expect(await linesIn(field)).toBe(1);
   const row = await rectOf(sheet.locator('[data-composer-row]'));

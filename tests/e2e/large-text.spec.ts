@@ -29,6 +29,7 @@ import {
 import { startAtAllIn } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 /** The browser's default font size at 200%: 2 x 16 px. */
 const TEXT_PX = 32;
@@ -98,7 +99,7 @@ const SCREENS: readonly Screen[] = [
       await openUnlocked(page);
       await page.goto('/');
       await page.getByRole('button', { name: 'Talk', exact: true }).click();
-      await expect(page.getByRole('dialog').getByRole('textbox', { name: 'Your message' })).toBeAttached();
+      await expect((await talkField(page.getByRole('dialog')))).toBeAttached();
     },
   },
   {
@@ -207,7 +208,7 @@ const MORE_SCREENS: readonly Screen[] = [
       await page.goto('/');
       await page.getByRole('button', { name: 'Talk', exact: true }).click();
       const sheet = page.getByRole('dialog');
-      await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+      await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
       await sheet.getByRole('button', { name: 'Send', exact: true }).click();
       await expect(sheet).toContainText(TALK_ANSWER.answer);
     },
@@ -331,7 +332,7 @@ test('the Talk sheet while the speaking bar is up keeps the conversation at leas
   await page.goto('/');
   await page.getByRole('button', { name: 'Talk', exact: true }).click();
   const sheet = page.getByRole('dialog');
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+  await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet).toContainText(TALK_ANSWER.answer);
   await expect(sheet.locator('[data-speaking-slot] button').first()).toBeVisible();

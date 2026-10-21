@@ -7,6 +7,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 390, height: 844 };
 const ENTRY = readFileSync('grinds/examples/bible-talk/lexicon-entry.png');
@@ -69,12 +70,12 @@ test('a picture attached to the talk waits in the composer, goes with the messag
   await shot(page, 'talk-pictures-composer');
 
   // a pasted 3000 x 2000 screenshot is a second picture; removing it leaves the first
-  await pasteScreenshot(sheet.getByRole('textbox', { name: 'Your message' }), 3000, 2000);
+  await pasteScreenshot((await talkField(sheet)), 3000, 2000);
   await expect(sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img')).toHaveCount(2);
   await sheet.getByRole('button', { name: 'Remove picture 2', exact: true }).click();
   await expect(sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img')).toHaveCount(1);
 
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does this entry say about Jesus weeping?');
+  await (await talkField(sheet)).fill('What does this entry say about Jesus weeping?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   // his turn carries the thumbnail, a thumb-sized button, and the composer is empty again

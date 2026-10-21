@@ -5,6 +5,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 import { leaveSettings, openGroup } from './settings-group';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -47,7 +48,7 @@ test('the tutor\'s links at phone width: chips for the resources he switched on,
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does love come back?');
+  await (await talkField(sheet)).fill('Where does love come back?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const links = sheet.locator('[data-tutor-links]');
@@ -102,7 +103,7 @@ test('an Old Testament verse link opens in his Bible in Logos (LSB today) and ha
 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('Where does Paul get that?');
+  await (await talkField(sheet)).fill('Where does Paul get that?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   const links = sheet.locator('[data-tutor-links]');

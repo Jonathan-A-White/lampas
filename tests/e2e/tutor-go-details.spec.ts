@@ -5,6 +5,7 @@ import { makeFakePostern, TALK_ANSWER, type FakePostern } from '../support/fake-
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 /** Opens the Reader at `hash` unlocked, the mill answering every talk with `go` (or holding its answers when `go` is false). */
 async function openTalk(page: Page, hash: string, sheetName: string, go: { book: string; chapter: number } | false): Promise<FakePostern> {
@@ -20,7 +21,7 @@ async function openTalk(page: Page, hash: string, sheetName: string, go: { book:
 
 async function ask(page: Page, sheetName: string, question: string) {
   const sheet = page.getByRole('dialog', { name: sheetName });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill(question);
+  await (await talkField(sheet)).fill(question);
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   return sheet;
 }

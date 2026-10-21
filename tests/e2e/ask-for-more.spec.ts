@@ -6,6 +6,7 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 test('Ask for more leads with Ask the tutor, and a form fits the phone', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -35,6 +36,6 @@ test('Ask for more leads with Ask the tutor, and a form fits the phone', async (
   await ask.scrollIntoViewIfNeeded();
   await ask.click();
   const talk = page.getByRole('dialog', { name: 'Ask the tutor: Ask for more' });
-  await expect(talk.getByRole('textbox', { name: 'Your message' })).toHaveValue("I'd like Lampas to have ");
+  await expect((await talkField(talk))).toHaveValue("I'd like Lampas to have ");
   await shot(page, 'ask-for-more-talk');
 });

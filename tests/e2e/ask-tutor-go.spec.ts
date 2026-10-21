@@ -5,6 +5,7 @@ import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -21,7 +22,7 @@ async function askFrom(page: Page, path: string, screen: string, go: { book: str
   await page.getByRole('button', { name: CONTROL }).click();
   const sheet = page.getByRole('dialog', { name: `Ask the tutor: ${screen}` });
   await expect(sheet).toBeVisible();
-  await sheet.getByLabel('Your message').fill(question);
+  await (await talkField(sheet)).fill(question);
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   return sheet;
 }

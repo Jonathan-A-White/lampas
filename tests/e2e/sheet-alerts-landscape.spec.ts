@@ -12,6 +12,7 @@ import { holdFor } from '../support/hold';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const STARTS = (JSON.parse(readFileSync('src/resources/audibleStarts.json', 'utf8')) as { chapters: Record<string, number> }).chapters;
 const TWO_CHAPTERS = STARTS['lev.3'] - STARTS['lev.1'];
@@ -125,7 +126,7 @@ for (const size of SIZES) {
       const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
       await expect(sheet).toBeVisible();
       fake.licensed = false;
-      await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does this verse mean?');
+      await (await talkField(sheet)).fill('What does this verse mean?');
       await sheet.getByRole('button', { name: 'Send', exact: true }).click();
       await expect(sheet.getByRole('alert')).toContainText('No licence');
       await expectFailureShown(sheet, ['Copy my question'], 'Talk');
@@ -185,7 +186,7 @@ for (const size of SIZES) {
       await openTalkAbout(page, 28);
       const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
       await expect(sheet).toBeVisible();
-      await sheet.getByRole('textbox', { name: 'Your message' }).fill('What is in this picture?');
+      await (await talkField(sheet)).fill('What is in this picture?');
       await sheet.getByLabel('Picture file').setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('not a picture') });
       await expect(sheet.locator('[data-talk-pictures]').getByRole('alert')).toBeVisible();
       await expectFailureShown(sheet, ['Send'], 'Talk, picture');

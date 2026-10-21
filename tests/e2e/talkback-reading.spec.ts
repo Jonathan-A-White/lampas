@@ -6,6 +6,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
+import { talkField } from './talk-field';
 
 // Lampas under TalkBack (mw-cwf538.3, the epic 'Lampas for every age and every ability'): a Greek span is read by a Greek voice, the tutor's
 // answers, a grading result and the Read-it-aloud marks are announced once through one polite live region, and focus goes into a sheet when it
@@ -75,13 +76,13 @@ test('a tutor answer is announced once through the live region, and not again wh
   await expect(live).toHaveAttribute('role', 'status');
   await expect(live).toHaveAttribute('aria-live', 'polite');
   await watchLive(page);
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+  await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.locator('[data-turn]')).toContainText('works together');
   await expect(live).toContainText('works together');
   const once = await heard(page);
   expect(once.filter((t) => t.includes('works together'))).toHaveLength(1);
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('And what else?');
+  await (await talkField(sheet)).fill('And what else?');
   await redraw(page);
   expect(await heard(page)).toEqual(once);
 });

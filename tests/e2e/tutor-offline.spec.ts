@@ -9,6 +9,7 @@ import { openUnlocked } from './unlocked';
 import { composerOf, questionField } from './ask-composer';
 import { honestMic } from '../support/honest-fakes';
 import { chooseAction, openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 async function askAbout28(page: Page): Promise<void> {
   const field = await questionField(page);
@@ -100,7 +101,7 @@ test('Talk with a gateway 502 with no CORS headers and the phone online says the
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What is this verse about?');
+  await (await talkField(sheet)).fill('What is this verse about?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.getByText('The tutor is offline right now. This is not your connection; try again later.')).toBeVisible();
   await expect(sheet.getByText(/You are offline/)).toHaveCount(0);
@@ -143,7 +144,7 @@ test('Talk: the phone going offline while the tutor is still thinking says he is
   await page.goto('/');
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await sheet.getByRole('textbox', { name: 'Your message' }).fill('What is this verse about?');
+  await (await talkField(sheet)).fill('What is this verse about?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(sheet.locator('[data-talk-pending]').getByText(/Waiting for the tutor…/)).toBeVisible();
   await expect.poll(() => fake.received.length).toBe(1);

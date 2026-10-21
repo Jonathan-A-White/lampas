@@ -9,6 +9,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const NAV_BAR = 48;
 const MODES = [
@@ -101,7 +102,7 @@ for (const phone of PHONES) for (const mode of MODES) {
       await openTalkAbout(page, 28);
       const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
       await expect(sheet).toBeVisible();
-      await sheet.getByRole('textbox', { name: 'Your message' }).fill('What does συνεργεῖ mean here?');
+      await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
       const send = sheet.getByRole('button', { name: 'Send', exact: true });
       await send.click();
       await expect(sheet.getByText(TALK_ANSWER.answer.slice(0, 20), { exact: false }).first()).toBeVisible();

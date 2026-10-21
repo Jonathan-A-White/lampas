@@ -8,6 +8,7 @@ import { holdFor } from '../support/hold';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openTalkAbout } from './verse-view';
+import { talkField } from './talk-field';
 
 const VIEWPORT = { width: 360, height: 740 };
 /** Postern's bar: h-24 = 6 rem = 96 px (TalkLineScreen.tsx line 561) */
@@ -53,7 +54,7 @@ test("the Talk sheet's hold-to-talk bar is the last control at the foot, the she
   expect(send.y + send.height).toBeLessThanOrEqual(barBox.y + 0.5);
   expect(barBox.y + barBox.height).toBeLessThanOrEqual(VIEWPORT.height);
   // the field still takes typing
-  const field = sheet.getByRole('textbox', { name: 'Your message' });
+  const field = await talkField(sheet);
   expect((await box(field)).height).toBeGreaterThan(30);
   await shot(page, 'talk-sheet-hold-bar');
 });
