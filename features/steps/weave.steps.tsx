@@ -484,8 +484,11 @@ describeFeature(feature, ({ Scenario }) => {
           expect(await getWeave()).toBe(wValue);
           expect(await getWeaveGrammar()).toBe(gValue);
         });
-        expect(words.getByRole('button', { name: wChip })).toHaveAttribute('aria-pressed', 'true');
-        expect(grammar.getByRole('button', { name: gChip })).toHaveAttribute('aria-pressed', 'true');
+        // the rows follow the saved settings by a live query, a render after the write the wait above saw
+        await waitFor(() => {
+          expect(words.getByRole('button', { name: wChip })).toHaveAttribute('aria-pressed', 'true');
+          expect(grammar.getByRole('button', { name: gChip })).toHaveAttribute('aria-pressed', 'true');
+        });
       }
     });
   });

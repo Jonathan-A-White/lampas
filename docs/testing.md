@@ -99,3 +99,7 @@ elsewhere) and waits for a new screen with `pageTime`; a screen that waits on it
 | Postern door | `VITE_POSTERN_DOOR` | `https://postern.allmymind.org` |
 
 Vite bakes these in at build time: set the variable for `npm run build`.
+
+## The Greek dial's start level (the test seam, mw-3ased2.2)
+
+A new phone is placed on the Greek dial at 0, Just English (`placeGreekInterest`, `src/main.tsx`), which hides every Greek setting, the Reader's Greek view and the word sheet. A spec that is not about the dial needs the whole app, so `playwright.config.ts` gives every context the localStorage key **`lampas.greekInterestStart`** = `5` (All in) through `use.storageState`; the phone is placed there instead of at 0. `tests/e2e/greek-dial.spec.ts` overrides it with an empty storage state and starts as a new reader does. A spec that makes its own context (`browser.newContext`, `launchPersistentContext`) does not get the config's storage state: it calls `startAtAllIn(context)` (`tests/e2e/greek-start.ts`). jsdom features and unit tests do not run `main.tsx`: an unplaced phone reads 5, so they see everything until one calls `setGreekInterest` (the welcome does, for a new reader).

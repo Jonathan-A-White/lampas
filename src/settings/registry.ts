@@ -47,6 +47,7 @@ import {
   setTextSize,
   setVoice,
   setWeaveGrammar,
+  setGreekInterest,
   type GrammarMove,
   type PickerGrammar,
   type ReadingLayout,
@@ -74,6 +75,7 @@ import { ANOTHER, askBySetting, audioBibleSetting, dailyDevotionalSetting, daily
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
+import { greekFrom, greekInterestSetting, greekLevelOf } from './definitions/greekInterest';
 import { getSetting, setSetting } from './store';
 
 export type { Allowed, Dependency, SectionId, SettingValue };
@@ -175,6 +177,7 @@ const depthEntries = SCRIPTS.map((script) =>
     },
     {
       section: 'hebrew',
+      dependsOn: greekFrom(5),
       help: `How deep into ${script.label} the tutor goes when it writes a ${script.label} word: ${DEPTHS.map((d) => `${d.id} (${d.label}) writes it like ${script.examples[d.id]}`).join('; ')}. ${DEPTHS.find((d) => d.id === DEFAULT_DEPTH)?.label} by default.`,
     },
   ),
@@ -237,6 +240,7 @@ const voiceEntries = LANGUAGES.map((l): SettingEntry => {
     },
     {
       section: 'voices',
+      dependsOn: l.id === 'greek' ? greekFrom(1) : undefined,
       help: "Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's.",
     },
   );
@@ -247,6 +251,7 @@ const voiceEntries = LANGUAGES.map((l): SettingEntry => {
 const rateEntries = LANGUAGES.map(
   (l): SettingEntry => ({
     section: 'speed',
+    dependsOn: l.id === 'greek' ? greekFrom(1) : undefined,
     key: `${l.id}Rate`,
     label: `${l.label} speed`,
     hint: `How fast ${l.label} is read aloud; ${DEFAULT_RATE} is normal, smaller is slower.`,
@@ -268,6 +273,7 @@ const goalOf = (value: string) => (value.trim() === '' ? null : (parseGoal(value
 
 const goalEntry: SettingEntry = {
   section: 'goal',
+  dependsOn: greekFrom(4),
   key: 'goal',
   label: 'Goal',
   hint: 'The passage you are working toward: a book, a chapter or a verse.',
@@ -286,6 +292,7 @@ const goalEntry: SettingEntry = {
 
 const quizGoalEntry: SettingEntry = {
   section: 'studyWay',
+  dependsOn: greekFrom(3),
   key: 'quizGoal',
   label: 'Quiz goal',
   hint: 'Why you want Quiz me; the tutor quizzes to match. Empty: it asks.',
@@ -328,12 +335,20 @@ const resourceEntries = RESOURCES.map((r) =>
     ON_OFF,
     async () => ((await getStudyResources()).on.includes(r.id) ? 'on' : 'off'),
     (value) => setResourceOn(r.id, value === 'on'),
-    { section: 'resources' },
+    // Strong's is the word sheet's number and its link: the sheet is drawn from Curious up (the Greek dial)
+    { section: 'resources', dependsOn: r.id === 'strongs' ? greekFrom(1) : undefined },
   ),
 );
 
+/** How much Greek (the dial at the top of the Settings home): writing it moves the dial, which brings in and turns off what the steps change (src/data/repositories/greekInterest.ts). */
+const greekInterestEntry: SettingEntry = {
+  ...fromDefinition(greekInterestSetting),
+  write: (value) => setGreekInterest(greekLevelOf(value)),
+};
+
 /** Every talkable Settings item. (The screen draws them in src/settings/rows.ts's order, section by section.) */
 export const SETTINGS: readonly SettingEntry[] = [
+  greekInterestEntry,
   fromDefinition(themeSetting),
   fromDefinition(fontSetting),
   choice(
@@ -456,6 +471,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
     {
       section: 'newWords',
+      dependsOn: greekFrom(3),
       help: 'From the chapter you are reading, most common first. Off offers none; the app offers none while many reviews are due or the last round went badly, and one notch more after a clean week.',
     },
   ),
@@ -508,7 +524,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       await setGrammarApproach(approach);
       publish({ kind: 'approach-changed', approach });
     },
-    { section: 'approach' },
+    { section: 'approach', dependsOn: greekFrom(3) },
   ),
   fromDefinition(handwritingSetting),
   ...voiceEntries,
@@ -523,7 +539,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       await setGreekPronunciation(value);
       publish({ kind: 'pronunciation-changed', pronunciation: value });
     },
-    { section: 'pronunciation' },
+    { section: 'pronunciation', dependsOn: greekFrom(1) },
   ),
   englishAccentEntry,
   ...resourceEntries,

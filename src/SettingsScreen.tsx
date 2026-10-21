@@ -18,13 +18,21 @@ import { HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
 import { backToSettingsHome, groupIdOf, settingKeyOf } from './settings/link';
 import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
-import { SECTIONS, groupById, groupOf, neededFor, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId } from './settings/rows';
+import { GREEK_LEVELS } from './settings/definitions/greekInterest';
+import { HOME_SECTIONS, SECTIONS, groupById, groupOf, isHomeRow, neededFor, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
 import { settingsForTutor } from './settings/tutorSettings';
 import { useReportScreen } from './tutor/screenContext';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 /** How long a row that a link opened Settings at is kept in view while the controls above it arrive. */
 const KEEP_IN_VIEW_MS = 2500;
+
+/** What a linked row that something else hides says: a Greek row names the dial's step that shows it, any other says to turn on the setting it depends on. */
+function neededText(values: Values, row: SettingsRow | undefined, needed: SettingsRow): string {
+  if (needed.key !== 'greekInterest' || !row) return `“${row?.label}” is shown once “${needed.label}” is on. Turn “${needed.label}” on first.`;
+  const step = GREEK_LEVELS.find((l) => visibleRows({ ...values, greekInterest: String(l.level) }, '').some((r) => r.key === row.key));
+  return `“${row.label}” is Greek. It is shown from “${step?.name ?? 'All in'}” up: raise “${needed.label}” at the top of Settings.`;
+}
 
 /** The section id an address asks for ('#/settings?section=resources'), or null. */
 function sectionOf(hash: string): string | null {
@@ -62,7 +70,8 @@ export function SettingsScreen() {
   // the page he is on: the group the address names, else the group of the setting or section it asks for; none is the home
   const sectionGroup = SECTIONS.find((sec) => sec.id === wanted);
   const linkedRow = linked ? rowOf(linked) : undefined;
-  const pageId: GroupId | null = groupIdOf(address) ?? (linkedRow ? groupOf(linkedRow.section).id : sectionGroup ? groupOf(sectionGroup.id).id : null);
+  const pageId: GroupId | null =
+    groupIdOf(address) ?? (linkedRow && !isHomeRow(linkedRow) ? groupOf(linkedRow.section).id : sectionGroup && !HOME_SECTIONS.includes(sectionGroup.id) ? groupOf(sectionGroup.id).id : null);
   const page = pageId ? groupById(pageId) : undefined;
   const scrollRef = useScrollMemory('settings');
   const [query, setQuery] = useState('');
@@ -83,6 +92,9 @@ export function SettingsScreen() {
   if (!page) {
     const searching = query.trim() !== '';
     const found = searching && values ? visibleRows(values, query) : [];
+    // the Greek dial is the first thing on the home (mw-3ased2.2); a search lists matching rows instead
+    const dialRow = rowOf('greekInterest');
+    const Dial = CONTROLS.greekInterest;
     return (
       <>
         <ScreenHeader title="Settings" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
@@ -94,11 +106,18 @@ export function SettingsScreen() {
             ) : (
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (
-                <ul aria-label="Settings groups">
-                  {visibleGroups(values).map((g) => (
-                    <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />
-                  ))}
-                </ul>
+                <>
+                  {dialRow ? (
+                    <HighlightedSetting.Provider value={highlighted}>
+                      <Dial row={dialRow} />
+                    </HighlightedSetting.Provider>
+                  ) : null}
+                  <ul aria-label="Settings groups">
+                    {visibleGroups(values).map((g) => (
+                      <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />
+                    ))}
+                  </ul>
+                </>
               ) : null
             )}
           </div>
@@ -114,7 +133,7 @@ export function SettingsScreen() {
         <div ref={contentRef} data-settings-group={page.id}>
           {needed && linked ? (
             <p role="status" data-setting-needs className="mt-3 rounded-lg border border-line px-3 py-2 text-base">
-              “{rowOf(linked)?.label}” is shown once “{needed.label}” is on. Turn “{needed.label}” on first.
+              {neededText(values ?? {}, rowOf(linked), needed)}
             </p>
           ) : null}
           <HighlightedSetting.Provider value={highlighted}>

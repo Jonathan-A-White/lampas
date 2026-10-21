@@ -1,6 +1,6 @@
 // features/steps/settings-search.steps.tsx — runs features/settings-search.feature: the search field at the top of the Settings home, which lists the rows it finds with their group.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -45,7 +45,8 @@ async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   await groupButton('Account');
 }
 
-const groupButton = (title: string): Promise<HTMLElement> => screen.findByRole('button', { name: new RegExp(`^${title}`) });
+// inside the list of groups: the Greek dial above it has buttons of its own ('Reading in Greek')
+const groupButton = async (title: string): Promise<HTMLElement> => within(await screen.findByRole('list', { name: 'Settings groups' })).findByRole('button', { name: new RegExp(`^${title}`) });
 
 const searchField = (): Promise<HTMLElement> => screen.findByRole('searchbox', { name: 'Search settings' });
 const found = (label: string): HTMLElement | null =>

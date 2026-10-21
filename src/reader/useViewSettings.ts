@@ -5,13 +5,19 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { getPlainEnglishUnder, getReaderView, getWeave, getWeaveGrammar, listLearningLemmas, listLevels, listSolidLemmas } from '../data/repositories';
 import { weaveOrderSetting } from '../settings/definitions';
+import { viewAt, weaveAt } from '../settings/definitions/greekInterest';
 import { useSetting } from '../settings/store';
+import { useGreekInterest } from '../settings/useGreekInterest';
 import type { ReaderSettings } from './useReaderSettings';
 
 /** The view and weave settings, or undefined until every one has loaded. */
 export function useViewSettings(): Pick<ReaderSettings, 'view' | 'weave' | 'weaveShown' | 'weaveGrammar' | 'weaveOrder' | 'solid' | 'learning' | 'levels'> | undefined {
-  const view = useLiveQuery(getReaderView, []);
-  const weave = useLiveQuery(getWeave, []);
+  // the Greek dial (mw-3ased2.2): what it hides is not drawn
+  const level = useGreekInterest();
+  const savedView = useLiveQuery(getReaderView, []);
+  const savedWeave = useLiveQuery(getWeave, []);
+  const view = savedView && level !== undefined ? viewAt(level, savedView) : undefined;
+  const weave = savedWeave && level !== undefined ? weaveAt(level, savedWeave) : undefined;
   const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
   const weaveOrder = useSetting(weaveOrderSetting);
   const plainUnder = useLiveQuery(getPlainEnglishUnder, []);

@@ -6,7 +6,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
-import { GROUPS, ROWS, SECTIONS, groupOf } from '../../src/settings/rows';
+import { GROUPS, ROWS, SECTIONS, groupOf, isHomeRow } from '../../src/settings/rows';
 import { showSettingsGroup } from '../support/settings-pages';
 
 afterAll(() => {
@@ -37,7 +37,7 @@ describe('the names Settings draws', () => {
     const nameless: string[] = [];
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);
-      const mine = ROWS.filter((row) => groupOf(row.section).id === group.id);
+      const mine = ROWS.filter((row) => !isHomeRow(row) && groupOf(row.section).id === group.id);
       await waitFor(() => expect([...document.querySelectorAll('[data-setting]')].map((el) => el.getAttribute('data-setting'))).toEqual(mine.map((r) => r.key)));
       for (const row of mine) {
         const section = SECTIONS.find((s) => s.id === row.section);

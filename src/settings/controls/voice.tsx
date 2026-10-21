@@ -214,7 +214,12 @@ export const SpeedControl: Control = ({ row }) => {
 
 export const PronunciationControl: Control = ({ row }) => {
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
-  return <SettingRow row={row}>{pronunciation ? <PronunciationList chosen={pronunciation} /> : null}</SettingRow>;
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {pronunciation ? <PronunciationList chosen={pronunciation} /> : null}
+    </SettingRow>
+  );
 };
 
 /** The accent the sound hints are said in: one 48 px button a line, so the longest name fits any width, upright or sideways. */

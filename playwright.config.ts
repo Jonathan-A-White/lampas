@@ -55,6 +55,9 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL: PREVIEW_BASE_URL,
+    // A fresh phone is placed on the Greek dial at 0 (Just English, mw-3ased2.2); the specs before the dial expect the whole app, so they start at 5, All in (the seam in
+    // src/data/repositories/greekInterest.ts, docs/testing.md). tests/e2e/greek-dial.spec.ts starts from an empty phone instead.
+    storageState: { cookies: [], origins: [{ origin: PREVIEW_BASE_URL, localStorage: [{ name: 'lampas.greekInterestStart', value: '5' }] }] },
     trace: 'retain-on-failure',
     // A cached worker would serve a stale build to the next spec.
     serviceWorkers: 'block',

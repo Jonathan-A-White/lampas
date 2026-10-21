@@ -4,14 +4,24 @@ Which file holds what, for `src/settings/` (the registry, the rows, the links, t
 
 Settings is a home and pages (mw-3ased2.1). The grouping is the Builder's, PROVISIONAL, until the Governor amends it.
 
+## The Greek dial (mw-3ased2.2)
+
+The first thing on the home, under the search field, is **How much Greek?**: six named steps, 0 Just English, 1 Curious, 2 Dipping a toe, 3 Learning, 4 Reading in Greek, 5 All in (names and lines: `GREEK_LEVELS`, `src/settings/definitions/greekInterest.ts`; PROVISIONAL, from the epic mw-3ased2). It is the setting `greekInterest` (a choice of `'0'` to `'5'`, section `dial`, drawn on the home by `controls/greekInterest.tsx`; the tutor may read and change it like any setting). A phone not yet placed reads 5, so nothing is hidden; `placeGreekInterest` (`src/main.tsx`, before the first render) places it once.
+
+- **What each step shows** is the ordinary `dependsOn` rule: a Greek row says `dependsOn: greekFrom(n)` (shown from step n up); a detail of one of those (Order and Grammar under the Weave, New words at and Move it under New words a day) is hidden through the chain. 1: the Reader's English | Greek view, the word sheet (its Greek word, lemma, parsing and Strong's number; Strong's study resource), Greek voice, Greek speed, Pronunciation, Words and Review. 2: the Weave rows. 3: New words a day (and its details), Grammar approach, Handwriting drills, Read lessons to me, Quiz goal; the Greek page appears. 4: Goal. 5: Hebrew in the tutor, Paradigms. At 0 no Greek row, no Greek page and no word sheet is drawn. `tests/unit/greek-interest.test.ts` lists the table.
+- **What the Reader does with it**: `viewAt`, `weaveAt` and `newWordsAt` (same file) clamp what is saved: the Reader (`useReaderSettings`, `useViewSettings`), the Language switch (`Reader.tsx`), the word sheet (`WordSheet.tsx`) and the pace (`usePace.ts`) read the dial, so what is hidden does not act. A row a link opens that the dial hides says which step shows it (`neededText`, `SettingsScreen.tsx`).
+- **Moving it** is `setGreekInterest` (`src/data/repositories/greekInterest.ts`): up, each step passed brings in its starting values (Weave Solid at 2, 3 new words at 3, the Greek view, Greek word order and 5 new words at 4); down, what the lower step hides is turned off (the Greek view, the Weave, new words a day, Handwriting drills, Read lessons, Quiz goal, Goal) after his own value is kept under `greekKept.<key>`; going back up restores it (his value wins over a starting value). The Greek voice, speed, pronunciation, Grammar approach, New words at, Move it and Hebrew's depth have no Off of their own and stay as they are. The welcome's English defaults are step 0 (`putEnglishDefaults` is `setGreekInterest(0)`).
+- **Where a phone starts**: a phone with nothing of a reader kept starts at 0 and nothing else is written; a reader from before is placed by what he has (Greek view on 4, new words above 0 is 3, Weave on 2, else 0). The `lampas.greekInterestStart` key in localStorage (docs/testing.md) is a test's way to start a phone at another step.
+- The dial's section `dial` is in `HOME_SECTIONS` (`rows.ts`), in no group: `groupOf` throws for it, so a caller of `groupOf` over every row filters `isHomeRow` first.
+
 ## The home and the groups
 
-`#/settings` is the home: a search field pinned under the header ("Search settings") and the groups, each a button that opens its page.
+`#/settings` is the home: a search field pinned under the header ("Search settings"), the Greek dial and the groups, each a button that opens its page.
 
 | Group | Sections it holds |
 | --- | --- |
-| Reading | appearance, layout, reading, headings, immersive, weave |
-| Greek | newWords, goal, approach, handwriting |
+| Reading | appearance, layout, reading, headings, immersive, weave (Weave rows from step 2) |
+| Greek | newWords, goal, approach, handwriting (the page is listed from step 3) |
 | The tutor | readTutor, askBy, talk (Talk Hold | Tap, Send On release | By button), hebrew, tips, studyWay (Quiz goal, My study way) |
 | Listening | readAloud, voices, speed, pronunciation |
 | Daily | daily |
@@ -46,6 +56,9 @@ Typing on the home swaps the groups for the rows that match by name or hint (`vi
 src/SettingsScreen.tsx  # the home (search field, groups, found rows) and a group's page (its sections, drawn from the rows, each with its control); reports the screen to the tutor with every setting
 src/settings/rows.ts  # SECTIONS, GROUPS (which group a section is in), ROWS, visibleRows, rowsAt, neededFor, visibleGroups, searchSettings; the links, the Request a devotional box, Works and Developer mode are rows too
 src/settings/define.ts  # defineSetting and SectionId
+src/settings/definitions/greekInterest.ts  # the Greek dial: GREEK_LEVELS, greekFrom, viewAt / weaveAt / newWordsAt, placementOf, the setting
+src/settings/useGreekInterest.ts  # the step, live
+src/data/repositories/greekInterest.ts  # setGreekInterest, placeGreekInterest, raiseGreekInterest, the kept values
 src/settings/registry.ts  # every talkable setting: key, label, hint, help, section, dependency, values, read and write
 src/settings/link.ts  # the addresses into Settings: a setting, a section, a group; backToSettingsHome
 src/settings/controls/  # the control of each row (CONTROLS by key) and the Section, SettingRow and MoreHelp pieces

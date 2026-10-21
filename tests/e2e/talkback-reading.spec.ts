@@ -15,6 +15,8 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 /** The texts the page's one live region took, in order: a change that is not a new announcement would add one. */
 async function watchLive(page: Page): Promise<void> {
+  // the app draws once the phone is placed on the Greek dial (src/main.tsx), which can be just after the page's load
+  await page.locator('[data-live-region]').waitFor({ state: 'attached' });
   await page.evaluate(() => {
     const region = document.querySelector('[data-live-region]');
     if (!region) throw new Error('no live region on the page');

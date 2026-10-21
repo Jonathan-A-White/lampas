@@ -664,6 +664,7 @@
                 "description": "The key of the setting, exactly as the instructions list it.",
                 "type": "string",
                 "enum": [
+                  "greekInterest",
                   "theme",
                   "font",
                   "textSize",
@@ -766,6 +767,12 @@
       "maxItems": 10,
       "items": {
         "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "greekInterest" }, "value": { "type": "string", "enum": ["0", "1", "2", "3", "4", "5"] } }
+          },
           {
             "type": "object",
             "additionalProperties": false,

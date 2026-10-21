@@ -5,6 +5,7 @@ import { ApproachControl } from './approach';
 import { DailyDevotionalControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, DevotionalDrawControl, TodaysDevotionalControl } from './daily';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
+import { GreekInterestControl } from './greekInterest';
 import { HandwritingControl } from './handwriting';
 import { LinkControl } from './links';
 import { NewWordsControl } from './newWords';
@@ -18,6 +19,7 @@ import { WeaveControl } from './weave';
 
 /** The control of each row, by the row's key (src/settings/rows.ts): a row with no control here is a test failure. */
 export const CONTROLS: Readonly<Record<string, Control>> = {
+  greekInterest: GreekInterestControl,
   theme: AppearanceControl,
   font: FontControl,
   textSize: AppearanceControl,

@@ -26,6 +26,7 @@ import {
   openTryIt,
   openWriteIt,
 } from './large-text-titles';
+import { startAtAllIn } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -47,6 +48,7 @@ const test = base.extend({
       viewport: VIEWPORT,
       serviceWorkers: 'block',
     });
+    await startAtAllIn(context);
     await provide(context);
     await context.close();
     rmSync(profile, { recursive: true, force: true });
