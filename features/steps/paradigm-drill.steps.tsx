@@ -1,5 +1,6 @@
 // features/steps/paradigm-drill.steps.tsx — runs features/paradigm-drill.feature: 'Drill this table' on a table puts it on the schedule as the kind
-// 'paradigm' (src/review/kinds.ts PARADIGM), and Review asks a few of its available cells by name among four forms of the same table.
+// 'paradigm' (src/review/kinds.ts PARADIGM), Review asks a few of its available cells by name among four forms of the same table, and a Missed in the
+// table's own Drill (mw-irpgqi.2) writes a miss to the table's row and makes it due now (src/data/repositories/reviews.ts recordDrillMiss).
 import '@testing-library/react/dont-cleanup-after-each';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,6 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db, type GrammarLevelName } from '../../src/data/db';
 import { cellsOf, paradigmById, PARADIGMS, type Levels } from '../../src/data/paradigms';
+import { forgetDrills } from '../../src/data/paradigms/drill';
 import { drawCellQuestions } from '../../src/data/paradigms/cells';
 import { mulberry32 } from '../../src/data/quiz';
 import { countDue } from '../../src/data/repositories';
@@ -58,6 +60,7 @@ async function freshStore(): Promise<void> {
   stubChapterFetch();
   seed = 7;
   asked.length = 0;
+  forgetDrills();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear()]);
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }, { key: 'grammarLevelsSeeded', value: '1' }]);
@@ -110,6 +113,19 @@ async function answerCells(rightAt: (i: number) => boolean): Promise<void> {
   }
   await screen.findByTestId('score');
 }
+const cellAt = (place: string): HTMLElement => {
+  const el = document.querySelector<HTMLElement>(`[data-cell="${place}"]`);
+  if (!el) throw new Error(`no cell "${place}" on screen`);
+  return el;
+};
+/** Taps a blank cell of the table's Drill, then Had it or Missed. */
+async function tapAndGrade(_: unknown, place: string, grade: string): Promise<void> {
+  await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'hidden'));
+  await user.click(cellAt(place));
+  await user.click(await screen.findByRole('button', { name: grade }));
+  await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-grade', grade === 'Had it' ? 'had' : 'missed'));
+}
+
 async function expectEndCard(_: unknown, score: string, back: string): Promise<void> {
   await waitFor(() => expect(screen.getByTestId('score')).toHaveTextContent(score.replace('Score ', '')));
   expect(screen.getByTestId('comes-back')).toHaveTextContent(back);
@@ -310,6 +326,51 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     Then('Review says {string}', async (_, text: string) => {
       await waitFor(() => expect(screen.getByTestId('nothing-to-ask')).toHaveTextContent(text));
+    });
+  });
+  // mw-irpgqi.2
+  Scenario('A Missed in a Drill puts the table in Review, due now, and a second miss of the run writes nothing more', ({ Given, When, Then }) => {
+    Given('the table {string} is open to Drill', async (_, id: string) => {
+      openAt(`#/paradigms?t=${id}&mode=drill`);
+      await screen.findByTestId('paradigm-table');
+    });
+    When('he taps the cell {string} and then {string}', tapAndGrade);
+    When('he misses the cell {string} too', (_, place: string) => tapAndGrade(_, place, 'Missed'));
+    Then('the review {string} {string} is due now with {int} lapse at step {int}', async (_, kind: string, id: string, lapses: number, step: number) => {
+      const before = Date.now();
+      await waitFor(async () => {
+        const row = await db.reviews.get([kind, id]);
+        expect(row).toBeDefined();
+        expect(row?.lapses).toBe(lapses);
+        expect(row?.step).toBe(step);
+        expect(row?.rights).toBe(0);
+        // due now: Review counts it today, not tomorrow
+        expect(row!.due).toBeLessThanOrEqual(before);
+        expect(row!.recent?.at(-1)?.right).toBe(false);
+      });
+      expect(await countDue()).toBe(1);
+    });
+    Then('the review {string} {string} still has {int} lapse', async (_, kind: string, id: string, lapses: number) => {
+      // the cell is graded before the row is read: a write that was going to come has come
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      const row = await db.reviews.get([kind, id]);
+      expect(row?.lapses).toBe(lapses);
+    });
+    When('he opens Review', openReview);
+    Then('the Review screen says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('due-today')).toHaveTextContent(text));
+    });
+  });
+
+  Scenario('A Drill with every cell had writes nothing to the schedule', ({ Given, When, Then }) => {
+    Given('the table {string} is open to Drill', async (_, id: string) => {
+      openAt(`#/paradigms?t=${id}&mode=drill`);
+      await screen.findByTestId('paradigm-table');
+    });
+    When('he taps the cell {string} and then {string}', tapAndGrade);
+    Then('the schedule holds no {string} row', async (_, kind: string) => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(await db.reviews.where('kind').equals(kind).count()).toBe(0);
     });
   });
 });

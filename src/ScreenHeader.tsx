@@ -11,7 +11,8 @@ interface Props {
 }
 
 /** The bar at the top of a screen: back on the left, the title, an action on the right. The title never gives up its room to the buttons: at the phone's
- * largest text (200%, mw-cwf538.5) what does not fit one row drops to the next, rather than the title being squeezed out. */
+ * largest text (200%, mw-cwf538.5) what does not fit one row drops to the next, rather than the title being squeezed out; an action too wide for the title's
+ * row (the paradigm table's How much of a table, mw-irpgqi.2) drops to a row of its own, at the right (ml-auto; on the title's row the title's flex-1 takes the room). */
 export function ScreenHeader({ title, subtitle, back, action }: Props) {
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-2 py-2">
@@ -20,7 +21,7 @@ export function ScreenHeader({ title, subtitle, back, action }: Props) {
         <h1 className="chrome-title font-semibold">{title}</h1>
         {subtitle ? <p className="chrome-small text-muted">{subtitle}</p> : null}
       </div>
-      <div className="flex min-w-20 shrink-0 justify-end">
+      <div className="ml-auto flex min-w-20 shrink-0 justify-end">
         {action}
       </div>
     </header>

@@ -68,14 +68,22 @@ describe('the address', () => {
 describe('the paradigm address', () => {
   it('names the table and the mode, and leaves out what it does not say clearly', () => {
     expect(paradigmOf('#/paradigms')).toEqual({});
-    expect(paradigmOf('#/paradigms?t=eimi&mode=review')).toEqual({ table: 'eimi', mode: 'review' });
-    expect(paradigmOf('#/paradigms?t=article&mode=study')).toEqual({ table: 'article', mode: 'study' });
+    expect(paradigmOf('#/paradigms?t=eimi&mode=learn')).toEqual({ table: 'eimi', mode: 'learn' });
+    expect(paradigmOf('#/paradigms?t=article&mode=drill')).toEqual({ table: 'article', mode: 'drill' });
     expect(paradigmOf('#/paradigms?t=nope&mode=cram')).toEqual({});
+    expect(paradigmOf('#/paradigms?t=article&mode=cram')).toEqual({ table: 'article' });
+  });
+
+  // mw-irpgqi.2: the modes were Study (cells hidden) and Review (every form shown); an address kept or linked before still opens the same view
+  it('reads the old mode names: study is Drill, review is Learn', () => {
+    expect(paradigmOf('#/paradigms?t=eimi&mode=review')).toEqual({ table: 'eimi', mode: 'learn' });
+    expect(paradigmOf('#/paradigms?t=article&mode=study')).toEqual({ table: 'article', mode: 'drill' });
   });
 
   it('writes the same address back, in one order', () => {
     expect(paradigmHash({})).toBe('#/paradigms');
     expect(paradigmHash({ table: 'noun-endings' })).toBe('#/paradigms?t=noun-endings');
-    expect(paradigmHash({ table: 'article', mode: 'review' })).toBe('#/paradigms?t=article&mode=review');
+    expect(paradigmHash({ table: 'article', mode: 'learn' })).toBe('#/paradigms?t=article&mode=learn');
+    expect(paradigmHash({ table: 'article', mode: 'drill' })).toBe('#/paradigms?t=article&mode=drill');
   });
 });

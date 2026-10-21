@@ -30,7 +30,8 @@ mw-irpgqi.4 reuse what the last section says and add nothing this file does not 
 | --- | --- | --- | --- |
 | `GrammarExtent`, `EXTENTS`, `DEFAULT_EXTENT`, `withinExtent`, `EXTENT_LABELS` | `src/data/grammar/extent.ts` | the three extents (`any`, `solid+frontier`, `solid`), most to least, and the ONE rule 'is this idea's level within the extent' | `formPasses` (the Weave and the picker), `isAvailable` and `standingOf` (the tables), the extent settings |
 | `EXTENT_SETTINGS`, `extentOf`, `paradigmExtentSetting` | `src/settings/definitions/grammarExtent.ts` | the settings whose choices are extents (`weaveGrammar`, `pickerGrammar`, `paradigmExtent`): each one's stored values, labels and the extent each stands for; the new setting's definition | the registry's entries, the controls, the table screen |
-| `ExtentChips`, `GrammarExtentControl`, `useExtent` | `src/settings/controls/grammarExtent.tsx` | `ExtentChips {settingKey, name, current}`: `ChipRow` over `EXTENT_SETTINGS`; the Settings row of How much of a table; the saved extent, live | the Weave's Grammar row (`weave.tsx`), New words at (`newWords.tsx`), the How much of a table row, the table screen's header switch |
+| `ExtentChips`, `GrammarExtentControl` | `src/settings/controls/grammarExtent.tsx` | `ExtentChips {settingKey, name, current, size?}`: `ChipRow` over `EXTENT_SETTINGS`; the Settings row of How much of a table | the Weave's Grammar row (`weave.tsx`), New words at (`newWords.tsx`), the How much of a table row, the table screen's header switch |
+| `useParadigmExtent`, `useExtentSetting` | `src/settings/useExtent.ts` | How much of a table, live; any extent setting's value and extent, live | the table screen and the list; mw-irpgqi.4's This word view |
 | `Chips` | `src/ui/Chips.tsx` | `{name, current, options, onChoose}`: the segmented chips (`ChipRow` is `Chips` bound to a setting) | `ChipRow`; the Learn \| Drill switch |
 | `Grades` | `src/ui/SelfGrade.tsx` | `{right, wrong, picked, onPick}`: the two grade buttons of a flashcard, with their labels given | `SelfGrade` (I knew it / Not yet); the Drill's grade line (Had it / Missed) |
 | `standingOf`, `isAvailable(cell, levels, extent)`, `availableCount(table, levels, extent)`, `availableText(count, extent)` | `src/data/paradigms/index.ts` | a cell's standing under an extent: `open` (shown, his), `notYet` (shown under Any, not his), `outside` (his, hidden under Solid only), `locked` | the list, the table, Review's `live` (default extent: today's rule) |
@@ -58,6 +59,6 @@ mw-irpgqi.4 reuse what the last section says and add nothing this file does not 
 ## What mw-irpgqi.4 must reuse
 
 - The `Table` of `ParadigmsScreen.tsx` with its cell standings (`standingOf`): This word adds a cell's own form or 'not in the NT' as data, not a second table.
-- The extent is `useExtent('paradigmExtent')` and `isAvailable(cell, levels, extent)`; Drill on This word asks the cells that have a form and are within the extent.
+- The extent is `useParadigmExtent()` (`src/settings/useExtent.ts`) and `isAvailable(cell, levels, extent)`; Drill on This word asks the cells that have a form and are within the extent.
 - The Drill's state is `drill.ts`, keyed by the table's id (add the view to the key, do not keep a second state).
 - The toggle This word | The pattern is `Chips`; the address gains a `view` in `paradigmOf` / `paradigmHash`.

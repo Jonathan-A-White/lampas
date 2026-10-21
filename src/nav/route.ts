@@ -126,11 +126,17 @@ export function readerHash({ book, chapter, view, weave, verse, passage, passage
   return query ? `#/?${query}` : '#/';
 }
 
-/** What the address says about the Paradigms screen: no table is the list; a table opens in a mode (study when it is not said). */
+/** The two views of a paradigm table (mw-irpgqi.2): Learn (every form shown) and Drill (each cell blank until tapped, then Had it or Missed). */
+export type ParadigmMode = 'learn' | 'drill';
+
+/** The names the modes had before mw-irpgqi.2 (Study hid the cells, Review showed them): an address kept or linked then still opens the same view. */
+const OLD_PARADIGM_MODES: Readonly<Record<string, ParadigmMode>> = { study: 'drill', review: 'learn' };
+
+/** What the address says about the Paradigms screen: no table is the list; a table opens in a mode (Drill when it is not said). */
 export interface ParadigmAddress {
   /** the table's id: 'article', 'eimi' */
   table?: string;
-  mode?: 'study' | 'review';
+  mode?: ParadigmMode;
   /** the cell of the table that is a tapped word's own, by its name (paradigms cellName): it is lit and brought into view (mw-irpgqi.1) */
   cell?: string;
   /** the word whose cell it is, as the text has it ('ἀγαπῶ'), and its RP parsing code ('V-PAI-1S'): the screen says them beside the table's name */
@@ -145,7 +151,8 @@ export function paradigmOf(hash: string): ParadigmAddress {
   const table = params.get('t');
   if (table !== null && paradigmById(table)) address.table = table;
   const mode = params.get('mode');
-  if (address.table !== undefined && (mode === 'study' || mode === 'review')) address.mode = mode;
+  const read = mode === 'learn' || mode === 'drill' ? mode : mode !== null ? OLD_PARADIGM_MODES[mode] : undefined;
+  if (address.table !== undefined && read !== undefined) address.mode = read;
   const cell = params.get('cell');
   if (address.table !== undefined && cell) address.cell = cell;
   const word = params.get('w');

@@ -42,7 +42,7 @@ Feature: Review asks grammar ideas, and asks them before words
     When he taps the right ending
     Then "See the table" is shown
     When he taps "See the table"
-    Then the Paradigms screen shows the table "Noun endings" in Study mode
+    Then the Paradigms screen shows the table "Noun endings" to Drill
     When he goes Back
     Then the Review question is still on screen, answered
 

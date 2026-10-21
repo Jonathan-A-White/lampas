@@ -61,3 +61,18 @@ Feature: A table can be drilled in Review
     And nothing is counted as due
     When he starts the review
     Then Review says "Nothing is due and there is no word to ask."
+
+  # mw-irpgqi.2: a miss in the table's own Drill feeds the schedule as a missed Review cell does, and the table is due now
+  Scenario: A Missed in a Drill puts the table in Review, due now, and a second miss of the run writes nothing more
+    Given the table "article" is open to Drill
+    When he taps the cell "Genitive Singular Masculine" and then "Missed"
+    Then the review "paradigm" "article" is due now with 1 lapse at step 0
+    When he misses the cell "Nominative Singular Masculine" too
+    Then the review "paradigm" "article" still has 1 lapse
+    When he opens Review
+    Then the Review screen says "Due today: 1 table"
+
+  Scenario: A Drill with every cell had writes nothing to the schedule
+    Given the table "article" is open to Drill
+    When he taps the cell "Genitive Singular Masculine" and then "Had it"
+    Then the schedule holds no "paradigm" row

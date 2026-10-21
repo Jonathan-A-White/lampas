@@ -768,11 +768,11 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(within(ideaSheet()).getByRole('button', { name })).toBeInTheDocument();
     });
     When('he taps {string} on the idea sheet', async (_, name: string) => user.click(within(ideaSheet()).getByRole('button', { name })));
-    Then('the address is {string} and the table {string} is open in Study mode', async (_, hash: string, name: string) => {
+    Then('the address is {string} and the table {string} is open to Drill', async (_, hash: string, name: string) => {
       expect(window.location.hash).toBe(hash);
       expect(await screen.findByRole('heading', { name, level: 1 })).toBeInTheDocument();
-      // in Study mode the one switch button names the mode it goes to; the line under the title may say the cells are locked (mw-svw421.23)
-      expect(screen.getByRole('button', { name: 'Review mode' })).toBeInTheDocument();
+      // the Learn | Drill switch has Drill pressed (mw-irpgqi.2); the line under the title may say the cells are locked (mw-svw421.23)
+      expect(within(screen.getByRole('group', { name: 'Mode' })).getByRole('button', { name: 'Drill' })).toHaveAttribute('aria-pressed', 'true');
     });
     When('he goes Back', async () => {
       window.history.back();

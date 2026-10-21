@@ -68,7 +68,7 @@ export type { ReadSpan } from '../../speech/readSpan';
 export type { DeveloperMode, GrammarMove, Immersive, PickerGrammar, ReaderLanguage, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';
 export { listResults, recordAnswer } from './results';
 export type { TestResult } from './results';
-export { countDue, ensureScheduled, listDue, recordReview, reviewsOf, scheduleSounds, seedScheduleIfFirstOpen, SOUND_KIND } from './reviews';
+export { countDue, ensureScheduled, listDue, recordDrillMiss, recordReview, reviewsOf, scheduleSounds, seedScheduleIfFirstOpen, SOUND_KIND } from './reviews';
 export type { Review } from './reviews';
 export { moveToFrontier, solidCandidates } from './rusty';
 export type { ItemRef } from './rusty';

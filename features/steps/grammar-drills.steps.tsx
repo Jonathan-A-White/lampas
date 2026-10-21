@@ -258,11 +258,11 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await screen.findByRole('button', { name })).toBeVisible();
     });
     When('he taps {string}', async (_, name: string) => user.click(screen.getByRole('button', { name })));
-    Then('the Paradigms screen shows the table {string} in Study mode', async (_, name: string) => {
+    Then('the Paradigms screen shows the table {string} to Drill', async (_, name: string) => {
       expect(await screen.findByRole('heading', { name, level: 1 })).toBeInTheDocument();
       expect(window.location.hash).toBe('#/paradigms?t=noun-endings');
-      // in Study mode the one switch button names the mode it goes to; the line under the title may say the cells are locked (mw-svw421.23)
-      expect(screen.getByRole('button', { name: 'Review mode' })).toBeInTheDocument();
+      // the Learn | Drill switch has Drill pressed (mw-irpgqi.2); the line under the title may say the cells are locked (mw-svw421.23)
+      expect(within(screen.getByRole('group', { name: 'Mode' })).getByRole('button', { name: 'Drill' })).toHaveAttribute('aria-pressed', 'true');
     });
     When('he goes Back', async () => {
       window.history.back();

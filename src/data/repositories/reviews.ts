@@ -81,6 +81,21 @@ export async function recordReview(kind: string, id: string, right: boolean, now
   return review;
 }
 
+/**
+ * A miss in a drill of his own (a paradigm table's Drill, mw-irpgqi.2): the item's row takes a wrong answer as a missed Review cell does (the step drops, a lapse is
+ * counted, the rights in a row go), and the item is due now rather than tomorrow: he has just shown he does not have it, and Review should ask it today. An item not on
+ * the schedule is put there by it (step 0, a lapse). The screen writes one miss a run (src/data/paradigms/drill.ts missWritten).
+ */
+export async function recordDrillMiss(kind: string, id: string, now = Date.now()): Promise<Review> {
+  const review = await db.transaction('rw', db.reviews, async () => {
+    const missed = { ...(await writeReview(kind, id, false, now)), due: now };
+    await db.reviews.put(missed);
+    return missed;
+  });
+  await announceDue(now);
+  return review;
+}
+
 /** Whether a ladder idea with this id exists (Review leaves out a row of one the ladder no longer has). */
 function ideaExists(id: string): boolean {
   try {
