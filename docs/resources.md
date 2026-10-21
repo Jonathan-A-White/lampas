@@ -227,9 +227,34 @@ carries the ticked ones as `works` (`{id, title, author, kind, covers?}`, `works
 
 - A `commentary` opens at the passage: `logosres:<volume id>;ref=Bible.Jn3.16` (a chapter alone is `Bible.Ro8`), fallback `https://ref.ly/logosres/<volume id, the colon %3A>?ref=Bible.Jn3.16`. Calvin's commentaries are
   a volume for each book or group of books in Logos, so a work has `volumes`, each with the books it covers (our book codes), and `workLink` picks the volume that covers the passage's book.
-- A `book` opens at its start: `logosres:LLS:ICRWJKC`, fallback `https://ref.ly/logosres/LLS%3AICRWJKC`.
+- A `book` opens at its start: `logosres:LLS:ICRWJKC`, fallback `https://ref.ly/logosres/LLS%3AICRWJKC`, **unless the work has an `index` and the answer's `place` is one the book has** (mw-5r3p30.708, below).
 - Every link is built by `src/resources/logosRes.ts` (`resourceLink`, `resourceStart`), the one place the scheme and its ref.ly fallback are put together; lexicons (`logos.ts`), Bible chapters and verses
   (`logosBible.ts`), devotionals, grammar books and works all use it. The Bible Word Study guide (`logos4:Guide...`) is another scheme and keeps its own builder.
+
+### A place inside a book (mw-5r3p30.708, PROVISIONAL, UNVERIFIED on a device)
+
+The Governor (2026-10-21): the tutor linked a book and it "just opened the book, not what was relevant". Until then a `book` link was `resourceStart` whatever the answer said. The form now:
+`logosres:LLS:ICRWJKC;ref=CICR.3.24` (book 3, chapter 24 of the Institutes; `CICR.3.21.5` adds the section), fallback `https://ref.ly/logosres/LLS%3AICRWJKC?ref=CICR.3.24`. A work that has
+this is one with `index` in `WORKS` (its data type `CICR`, the chapters of each of the four books: 18, 17, 25, 20); the answer's `work` link gains `place` (`3.24`, `3.21.5`), the request's `works`
+entry gains `places` (a sentence telling the tutor how to write it), and `workLink(work, place, spot)` / `indexPlace` turn a valid place into the link. A `place` the book does not have (book 5, chapter 26
+of book 3, any other shape) opens the book at its start, as before. A commentary ignores `place` and keeps the Bible reference.
+
+Why this form (the evidence, read 2026-10-21; nothing here was opened in Logos on the Laptop, which has no Logos, or on a phone):
+- His library listing (vault `plans/lampas-logos-library-2026-10-08.csv`, `ReferenceSupersets`) gives both Institutes the reference type `cicr.1-4.20.32` (book, chapter, section: books 1 to 4, last chapter 20, last section 32 of book 4), the way
+  it gives a commentary `bible.66.1-66.16.27`. A Logos reference is `<data type>.<parts>` after `ref=` (`Bible.Ro8.28`, `GreekStrongs.11`, `Page.p_26`, `DayOfYear.Oct_19`), so `CICR.3.24` is that book's own address.
+- A Logos employee on the Logos forum (a search engine's excerpt of the thread on the Institutes, the page itself answers 403 to a script) says the Institutes have milestones `n.n.n` (`4.2.1`), book.chapter.section.
+- ref.ly accepts the form and passes it on unchanged: `curl https://ref.ly/logosres/LLS%3AICRWJKC?ref=CICR.3.21.5` answers 301 to `https://app.logos.com/refly?uri=logosres%3ALLS%3AICRWJKC%3Bref%3DCICR.3.21.5` (the target page then wants a Faithlife
+  sign-in, so a script cannot see whether it opens the section).
+
+Forms tried or weighed and not used:
+- `ref=Bible.Ro8.28` on the Institutes: ref.ly passes it through, but a book opens at a Bible reference only if it is indexed to the Bible (the listing gives a commentary `bible.…` and the Institutes only `cicr.…`), and the Logos forum says a book that is not
+  versified does not sync to the Bible text. It would open the start or stay at his open tab (the fault of `Page.p+26` above), so it is not used.
+- `ref=Page.p_<n>`: the form works for Black's lessons (above) but needs the printed page, which neither the tutor nor Lampas knows for the Institutes; a guessed page is worse than a chapter.
+- `art=`, a headword (`hw=`) and a Logos search link (`logos4:Search;...`) found no source naming them for a book of this kind, so none is used. The fallback if `CICR` does not open (the Governor's check): make the book's tile open a search for the topic
+  in the book (a Logos search link is built from the question, not from a place), and change `WORKS[].index` to say so.
+
+**UNVERIFIED on a device:** that the Logos app opens `logosres:LLS:ICRWJKC;ref=CICR.3.24` at that chapter (the data type name `CICR`, its case, and that a chapter without a section is accepted). If it opens the start or his open tab, the Governor says so on the bead.
+The tutor names the place from what it knows of the Institutes; Lampas checks only that book and chapter exist, not that the chapter treats the question.
 
 Sources. Every Resource ID and the books each commentary volume covers were read from his library listing of 2026-10-08 (vault `plans/lampas-logos-library-2026-10-08.csv`: the `ResourceId` and
 `ReferenceSupersets` columns; Logos' book numbers 61 Matthew to 87 Revelation). An id that is not in a source is left out, never guessed.
