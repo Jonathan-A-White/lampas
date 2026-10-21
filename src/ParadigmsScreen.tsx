@@ -29,12 +29,18 @@ import { ensureScheduled, listLevels, markParadigmOpened, reviewsOf } from './da
 import { useAiAllowed } from './gate/licenceContext';
 import { askAboutParadigm } from './nav/readerRequest';
 import { backTo, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress } from './nav/route';
+import { decodeParse } from './data/parseCode';
+import { bringIntoScrollBox } from './ui/reveal';
+import { heldWord, leaveToWord } from './wordReturn';
 import { oneTap } from './ui/settle';
 import { MAX_REVEALED } from './services/talk';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
-import { greekLang } from './script/greekLang';
+import { GREEK_LANG, greekLang } from './script/greekLang';
 import { IdeaSheet } from './IdeaSheet';
 import { WordSheet, type Lookup } from './WordSheet';
+
+/** The word's own cell: a ring inside its box, so the cell next to it is not touched and the table keeps its shape. */
+const LIT = 'ring-2 ring-inset ring-accent';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium';
 
@@ -146,8 +152,10 @@ function useColumnsThatFit(table: Paradigm, box: RefObject<HTMLDivElement | null
 // The one cell and label layout of every table (mw-svw421.40): the Greek is text-xl (text-2xl where the table has one or two columns), the
 // labels around the cells text-xs in a 5.5rem column, and a word is never broken inside (no break-words: a label wraps at its spaces). A
 // table whose forms do not all fit the box in one row of cells is drawn as blocks, each with the columns that fit (src/data/paradigms/layout.ts).
-function Table({ table, levels, mode, revealed, onToggle }: {
+function Table({ table, levels, mode, revealed, onToggle, lit }: {
   table: Paradigm;
+  /** the name of the cell that is a tapped word's own: outlined and brought into view, and for a locked one its Needs line is open (mw-irpgqi.1) */
+  lit?: string;
   levels: Levels;
   mode: 'study' | 'review';
   revealed: ReadonlySet<string>;
@@ -156,10 +164,14 @@ function Table({ table, levels, mode, revealed, onToggle }: {
   const box = useRef<HTMLDivElement>(null);
   const fit = useColumnsThatFit(table, box);
   // the locked form he tapped: the line saying what it needs is drawn under its row (mw-svw421.18)
-  const [asked, setAsked] = useState<string | null>(null);
+  const [asked, setAsked] = useState<string | null>(() => lit ?? null);
   // the idea he opened from that line, and the word he tapped in its examples: both sheets open over the table, which stays (mw-svw421.25)
   const [ideaId, setIdeaId] = useState<string | null>(null);
   const [word, setWord] = useState<{ chapter: Chapter; lookup: Lookup } | null>(null);
+  // the word's own cell is brought into view in the screen's scroll box once the table is drawn in the blocks that fit (a change of blocks moves it)
+  useLayoutEffect(() => {
+    if (lit) bringIntoScrollBox(box.current?.querySelector<HTMLElement>('[data-lit]') ?? null);
+  }, [lit, fit, table]);
   const size = greekRemOf(table) > 1.25 ? 'text-2xl' : 'text-xl';
   const label = 'text-xs';
   return (
@@ -229,11 +241,12 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                                 <button
                                   type="button"
                                   data-cell={place}
+                                  data-lit={place === lit || undefined}
                                   data-state="locked"
                                   aria-expanded={asked === place}
                                   aria-label={`${place}: locked. ${needsText(cell, levels)}`}
                                   onClick={() => oneTap(`paradigms:${place}`, () => setAsked(asked === place ? null : place))}
-                                  className={`${cellBox} rounded-lg border border-dashed border-line active:bg-line`}
+                                  className={`${cellBox} rounded-lg border border-dashed border-line active:bg-line ${place === lit ? LIT : ''}`}
                                 >
                                   <LockIcon />
                                 </button>
@@ -244,7 +257,7 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                           if (mode === 'review') {
                             return (
                               <td key={c} className="border-b border-l border-line p-0.5">
-                                <div data-cell={place} data-state="shown" {...lang} aria-label={`${place}: ${cell.form}`} className={cellBox}>
+                                <div data-cell={place} data-lit={place === lit || undefined} data-state="shown" {...lang} aria-label={`${place}: ${cell.form}`} className={`${cellBox} ${place === lit ? `rounded-lg ${LIT}` : ''}`}>
                                   {cell.form}
                                 </div>
                               </td>
@@ -255,12 +268,13 @@ function Table({ table, levels, mode, revealed, onToggle }: {
                               <button
                                 type="button"
                                 data-cell={place}
+                                data-lit={place === lit || undefined}
                                 data-state={shown ? 'shown' : 'hidden'}
                                 aria-pressed={shown}
                                 aria-label={shown ? `${place}: ${cell.form}. Tap to hide` : `Reveal ${place}`}
                                 {...(shown ? lang : {})}
                                 onClick={() => onToggle(place)}
-                                className={`${shown ? cellBox : `${frame} ${label} font-medium text-accent active:bg-accent/30 bg-accent/15`} rounded-lg`}
+                                className={`${shown ? cellBox : `${frame} ${label} font-medium text-accent active:bg-accent/30 bg-accent/15`} rounded-lg ${place === lit ? LIT : ''}`}
                               >
                                 {shown ? cell.form : 'reveal'}
                               </button>
@@ -317,11 +331,46 @@ function modeHelp(mode: 'study' | 'review', available: number | undefined): stri
   return available > 0 ? 'Study mode: tap a cell to reveal it.' : 'Every form is locked. Mark the grammar ideas a form needs to open it.';
 }
 
-function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study' | 'review'; levels: Levels | undefined }) {
+/** A parsing code in plain words; the code itself when it is not one (an address is typed or kept). */
+function plainParse(code: string): string {
+  try {
+    return decodeParse(code);
+  } catch {
+    return code;
+  }
+}
+
+/** The word a tap on it sent him here from, with its parsing in plain words ('ἀγαπῶ: present active indicative, 1st person singular'), and what is lit in the table. */
+function WordLine({ word, parse, lit }: { word: string; parse: string; lit: boolean }) {
+  return (
+    <div data-testid="word-line" className="mb-2 rounded-xl border border-line px-3 py-2">
+      <p className="text-lg">
+        <span {...GREEK_LANG} className="font-greek text-xl font-bold">
+          {word}
+        </span>
+        : {plainParse(parse)}
+      </p>
+      <p data-testid="word-lit" className="text-base text-muted">
+        {lit ? 'Its form is outlined in the table.' : 'The table has no cell for this form yet.'}
+      </p>
+    </div>
+  );
+}
+
+function ParadigmTable({ table, mode, levels, cell, word, parse }: { table: Paradigm; mode: 'study' | 'review'; levels: Levels | undefined; cell?: string; word?: string; parse?: string }) {
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => revealedOf(table.id));
   const switchTo = mode === 'study' ? 'review' : 'study';
   // the mode button and Hide all take the place of each other as the first tap lands, so they share a key; a cell has its own (mw-svw421.41)
   const ai = useAiAllowed();
+  // from a word's sheet the way back is to the sheet (src/wordReturn.ts); with the sheet gone (a reload) it is the list
+  const toWord = word !== undefined && heldWord() !== undefined;
+  // the word's cell, when the table has a cell by that name (an address kept from an older table may not)
+  const lit = cell !== undefined && table.rows.some((row) => row.cells.some((_, c) => cellName(table, row, c) === cell)) ? cell : undefined;
+  const back = toWord ? (
+    <HeaderButton onClick={() => leaveToWord(() => backTo('paradigms'))}>‹ Word</HeaderButton>
+  ) : (
+    <HeaderButton onClick={() => backTo('paradigms')}>‹ Paradigms</HeaderButton>
+  );
   // whether the table is on the back-off schedule: 'Drill this table' puts it there (mw-svw421.6), and it reads 'In Review' once it is
   const inReview = useLiveQuery(async () => (await reviewsOf([{ kind: PARADIGM_KIND, id: table.id }])).length > 0, [table.id]);
   // opening a table is what lets Review ask the endings in it (mw-svw421.5)
@@ -337,8 +386,9 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
   };
   return (
     <>
-      <ScreenHeader title={table.name} back={<HeaderButton onClick={() => backTo('paradigms')}>‹ Paradigms</HeaderButton>} />
+      <ScreenHeader title={table.name} back={back} />
       <main className="screen min-h-0 flex-1 px-4 pt-3">
+        {word && parse ? <WordLine word={word} parse={parse} lit={lit !== undefined} /> : null}
         <p data-testid="table-available" className="text-lg font-semibold">
           {levels ? availableText(availableCount(table, levels)) : '…'}
         </p>
@@ -346,7 +396,7 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
           {modeHelp(mode, levels ? availableCount(table, levels).available : undefined)}
         </p>
         <div className="mt-3 flex gap-2">
-          <button type="button" onClick={() => oneTap('paradigms:header', () => replaceHash(paradigmHash({ table: table.id, mode: switchTo })))} className={BUTTON}>
+          <button type="button" onClick={() => oneTap('paradigms:header', () => replaceHash(paradigmHash({ table: table.id, mode: switchTo, cell, word, parse })))} className={BUTTON}>
             {switchTo === 'review' ? 'Review mode' : 'Study mode'}
           </button>
           {mode === 'study' && revealed.size > 0 ? (
@@ -365,7 +415,7 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
           ) : null}
         </div>
         {levels ? (
-          <Table table={table} levels={levels} mode={mode} revealed={revealed} onToggle={(place) => oneTap(`paradigms:${place}`, () => setRevealed(toggleRevealed(table.id, place)))} />
+          <Table table={table} levels={levels} mode={mode} revealed={revealed} lit={lit} onToggle={(place) => oneTap(`paradigms:${place}`, () => setRevealed(toggleRevealed(table.id, place)))} />
         ) : null}
         <div className="mt-4 flex gap-2">
           <button
@@ -394,7 +444,7 @@ function ParadigmTable({ table, mode, levels }: { table: Paradigm; mode: 'study'
 
 export function ParadigmsScreen() {
   const levels = useLiveQuery(listLevels, []);
-  const { table: id, mode = 'study' } = paradigmOf(useAddress());
+  const { table: id, mode = 'study', cell, word, parse } = paradigmOf(useAddress());
   const table = paradigmById(id);
-  return table ? <ParadigmTable key={table.id} table={table} mode={mode} levels={levels} /> : <ParadigmList levels={levels} />;
+  return table ? <ParadigmTable key={table.id} table={table} mode={mode} levels={levels} cell={cell} word={word} parse={parse} /> : <ParadigmList levels={levels} />;
 }
