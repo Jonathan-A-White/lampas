@@ -25,7 +25,7 @@ describe('useReaderSettings', () => {
     expect(settings.weaveGrammar).toBe('any');
     expect(settings.layout).toBe('verse');
     expect(settings.headings).toBe('on');
-    expect(settings.readSpan).toBe('chapter');
+    expect(settings.readSpan).toBe('book');
     expect(settings.solid).toBeInstanceOf(Set);
     expect(settings.learning).toBeInstanceOf(Set);
     expect(settings.levels).toBeInstanceOf(Map);

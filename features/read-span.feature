@@ -1,52 +1,28 @@
 Feature: How far Lampas reads aloud
-  Settings has Read aloud span: Verse, Passage, Chapter or Book (default Chapter). It says how far the header's
-  Read from the top / Read from here goes before the voice stops. Verse reads only the verse started from. Passage reads
-  to the next section heading (the h2 the Reader shows, such as "Heirs with Christ"). Chapter reads to the chapter's end.
-  Book reads on from chapter to chapter to the end of the book (Revelation 22 for Revelation), and the Reader turns to each
-  chapter just as the voice reaches its first verse. Whatever the span, the verse being read is highlighted and kept in view as
-  before, and Stop stops at once. The play button on a verse (Hear the verse) reads that verse only, as it always did.
+  Settings has Play to: End of the book (the default) or End of the Bible. The header's Play always goes on from the verse he is at to
+  there, and the Reader turns to each next chapter just as the voice reaches its first verse (into the next book too for End of the
+  Bible). A shorter reading comes from what he tapped, not from the setting: the play button on a verse reads that verse only, as it
+  always did. Whatever the setting, the verse being read is highlighted and kept in view as before, and Stop stops at once. A span
+  saved before (Verse, Passage, Chapter) reads as End of the book.
 
-  Scenario: The span is Chapter until he chooses another, and the choice survives a close
+  Scenario: Play to is End of the book until he chooses End of the Bible, and the choice survives a close
     Given Lampas is opened on a phone with an English and a Greek voice
     When he opens Settings
-    Then Read aloud span shows Chapter chosen
-    And Read aloud span offers Verse, Passage, Chapter and Book
-    When he chooses Passage for Read aloud span
+    Then Play to shows End of the book chosen
+    And Play to offers End of the book and End of the Bible
+    When he chooses End of the Bible for Play to
     And he closes Lampas and opens it again
     And he opens Settings
-    Then Read aloud span shows Passage chosen
+    Then Play to shows End of the Bible chosen
 
-  Scenario: Verse reads only the verse started from
+  Scenario: A span saved before reads as End of the book
     Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is Verse
-    When he selects verse 5 and taps Read from here
-    Then the phone speaks the English of verse 5
-    When the phone finishes speaking verse 5
-    Then nothing more is spoken
-    And the reading bar is gone
+    And Chapter was saved as the span by an earlier Lampas
+    When he opens Settings
+    Then Play to shows End of the book chosen
 
-  Scenario: Passage reads from the verse to the next section heading
+  Scenario: End of the book reads on past the chapter's end into the next chapter and the Reader turns to it
     Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is Passage
-    When he selects verse 9 and taps Read from here
-    And the phone finishes the reading
-    Then verses 9, 10 and 11 were read
-    And nothing more is spoken
-    And the reading bar is gone
-    And the Reader still shows Romans 8
-
-  Scenario: Chapter reads to the chapter's end and stops there
-    Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is Chapter
-    When he selects verse 37 and taps Read from here
-    And the phone finishes the reading
-    Then verses 37, 38 and 39 were read
-    And the reading bar is gone
-    And the Reader still shows Romans 8
-
-  Scenario: Book reads on past the chapter's end into the next chapter and the Reader turns to it
-    Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is Book
     When he selects verse 39 and taps Read from here
     Then the phone speaks the English of verse 39
     And the Reader still shows Romans 8
@@ -57,18 +33,16 @@ Feature: How far Lampas reads aloud
     And verse 1 is highlighted as being read
     And the open chapter is Romans 9
 
-  Scenario: Book keeps going through the next chapter
+  Scenario: End of the book keeps going through the next chapter
     Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is Book
     When he selects verse 39 and taps Read from here
     And the phone finishes speaking verse 39
     And the phone finishes speaking verse 1
     Then the phone speaks the English of Romans 9 verse 2
     And verse 2 is highlighted as being read
 
-  Scenario: Book stops at the end of Revelation 22
+  Scenario: End of the book stops at the end of Revelation 22
     Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is Book
     And the Reader is open on Revelation 22
     When he selects verse 20 and taps Read from here
     And the phone finishes the reading
@@ -76,9 +50,28 @@ Feature: How far Lampas reads aloud
     And the reading bar is gone
     And the Reader still shows Revelation 22
 
-  Scenario Outline: Stop stops at once in every span
+  Scenario: End of the book stops at the end of 2 John and does not go into 3 John
     Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is <span>
+    And the Reader is open on 2 John 1
+    When he selects verse 12 and taps Read from here
+    And the phone finishes the reading
+    Then verses 12 and 13 were read
+    And the reading bar is gone
+    And the Reader still shows 2 John 1
+
+  Scenario: End of the Bible goes on from the end of 2 John into 3 John and the Reader turns to it
+    Given Lampas is opened on a phone with an English and a Greek voice
+    And Play to is End of the Bible
+    And the Reader is open on 2 John 1
+    When he selects verse 13 and taps Read from here
+    And the phone finishes speaking verse 13
+    Then the Reader shows 3 John 1
+    And the phone speaks the English of 3 John 1 verse 1
+    And the open chapter is 3 John 1
+
+  Scenario Outline: Stop stops at once whatever Play to is
+    Given Lampas is opened on a phone with an English and a Greek voice
+    And Play to is <span>
     When he selects verse 5 and taps Read from here
     And he taps Stop
     Then the phone is told to stop
@@ -86,15 +79,12 @@ Feature: How far Lampas reads aloud
     And nothing more is spoken
 
     Examples:
-      | span    |
-      | Verse   |
-      | Passage |
-      | Chapter |
-      | Book    |
+      | span              |
+      | End of the book   |
+      | End of the Bible  |
 
   Scenario: Stop while the reading is crossing into the next chapter stops it there
     Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is Book
     When he selects verse 39 and taps Read from here
     And the phone finishes speaking verse 39
     And he taps Stop
@@ -102,9 +92,14 @@ Feature: How far Lampas reads aloud
     And the reading bar is gone
     And the Reader does not start Romans 9
 
-  Scenario: The play button on a verse reads that verse only, whatever the span
+  Scenario Outline: The play button on a verse reads that verse only, whatever Play to is
     Given Lampas is opened on a phone with an English and a Greek voice
-    And Read aloud span is Book
+    And Play to is <span>
     When he taps the play button of verse 5
     And the phone finishes speaking verse 5
     Then nothing more is spoken
+
+    Examples:
+      | span              |
+      | End of the book   |
+      | End of the Bible  |

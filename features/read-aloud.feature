@@ -36,7 +36,7 @@ Feature: Lampas reads aloud what is shown
     And verse 1 is not highlighted
     When the phone finishes the chapter
     Then every verse of the chapter was read in order
-    And the reading bar is gone
+    And the reading goes on into Romans 9 (Play to is the end of the book)
 
   Scenario: With a verse selected the header reads from there
     Given Lampas is opened on a phone with an English and a Greek voice

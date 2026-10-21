@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { getOpenChapter } from '../../src/data/readerChapter';
 import { clearBus, subscribe } from '../../src/events/bus';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -40,6 +41,8 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   stubChapterFetch();
   synth = stubSpeech(voices);
   read = [];
+  // the chapter he was last in is kept (src/data/readerChapter.ts): the scenario that read on into Romans 9 must not leave the next one there
+  localStorage.clear();
   wakeLock = { request: vi.fn(), released: 0 };
   wakeLock.request.mockImplementation(async () => ({
     addEventListener: () => {},
@@ -163,7 +166,12 @@ describeFeature(feature, ({ Scenario }) => {
       expect(read).toEqual(chapter.verses.map((v) => v.n));
       expect(squash(synth.spoken.map((u) => u.text).join(' '))).toBe(squash(chapter.verses.map((v) => englishOf(v.n)).join(' ')));
     });
-    And('the reading bar is gone', () => expect(bar()).toBeNull());
+    And('the reading goes on into Romans 9 (Play to is the end of the book)', async () => {
+      await screen.findByRole('heading', { name: 'Romans 9', level: 1 });
+      await waitFor(() => expect(getOpenChapter()).toMatchObject({ book: 'rom', chapter: 9 }));
+      await waitFor(() => expect(read[read.length - 1]).toBe(1));
+      expect(getReading().status).toBe('reading');
+    });
   });
 
   Scenario('With a verse selected the header reads from there', ({ Given, When, And, Then }) => {
