@@ -63,8 +63,8 @@ describe('the Settings request', () => {
 
   it('is within the size a request may weigh with a full history left to cut', async () => {
     const settings = await settingsForTutor();
-    // raised with each setting the tutor is told (3200, 3500 with the English accent, 3700 with Handwriting drills, 3800 with Reading plan, 3950 with Font, 4600 with Daily's seven, 4800 with Today's devotional, 4900 with Talk and Send, 5100 with the Greek dial): fitHistory cuts the history to make room
-    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(5100);
+    // raised with each setting the tutor is told (3200, 3500 with the English accent, 3700 with Handwriting drills, 3800 with Reading plan, 3950 with Font, 4600 with Daily's seven, 4800 with Today's devotional, 4900 with Talk and Send, 5100 with the Greek dial, 5200 with How much of a table): fitHistory cuts the history to make room
+    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(5200);
   });
 });
 
