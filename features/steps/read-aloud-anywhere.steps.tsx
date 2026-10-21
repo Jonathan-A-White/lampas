@@ -305,7 +305,10 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
       await waitFor(() => speaks(text, lang));
     });
     And('the More help is still on screen', () => {
-      expect(screen.getByText(/The long help says λόγος/)).toBeVisible();
+      // the help is Markdown now: the Greek word in it is a button of its own (GreekWord), so the sentence is read from the whole block
+      const help = document.querySelector('[data-help-text]') as HTMLElement;
+      expect(help).toHaveTextContent(/The long help says λόγος and a little more/);
+      expect(help).toBeVisible();
     });
     When('he taps Less help', () => user.click(screen.getByRole('button', { name: 'Less help' })));
     Then('the phone is silent', () => {
