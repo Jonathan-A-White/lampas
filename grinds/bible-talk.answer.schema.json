@@ -677,6 +677,7 @@
                   "layout",
                   "sectionHeadings",
                   "readingMode",
+                  "chapterButtons",
                   "immersiveReader",
                   "immersiveHint",
                   "readSpan",
@@ -815,6 +816,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "readingMode" }, "value": { "type": "string", "enum": ["scroll", "pages"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "chapterButtons" }, "value": { "type": "string", "enum": ["show", "hide"] } }
           },
           {
             "type": "object",

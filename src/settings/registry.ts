@@ -72,7 +72,7 @@ import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
 import { extentChoices, paradigmExtentSetting } from './definitions/grammarExtent';
-import { ANOTHER, askBySetting, audioBibleSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { ANOTHER, askBySetting, audioBibleSetting, chapterButtonsSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -393,6 +393,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     { section: 'headings' },
   ),
   fromDefinition(readingModeSetting),
+  fromDefinition(chapterButtonsSetting),
   fromDefinition(immersiveSetting),
   fromDefinition(immersiveHintSetting),
   choice(

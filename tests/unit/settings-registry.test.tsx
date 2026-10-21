@@ -65,7 +65,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['askBy', 'audioBible', 'dailyDevotional', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
+      ['askBy', 'audioBible', 'chapterButtons', 'dailyDevotional', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.accordance', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -273,6 +273,7 @@ describe('currentSettings', () => {
       textSize: 'normal',
       layout: 'verse',
       readingMode: 'scroll',
+      chapterButtons: 'show',
       sectionHeadings: 'on',
       immersiveReader: 'off',
       immersiveHint: 'on',
