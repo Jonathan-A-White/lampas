@@ -67,6 +67,7 @@ function creditFor(path: string): string | null | undefined {
   }
   if (path === 'public/data/lexicon.json') return 'TBESG';
   if (path.startsWith('public/data/')) return 'Majority Standard Bible';
+  if (path.startsWith('public/lemma-forms/')) return 'Majority Standard Bible'; // the forms of each lemma the text uses, made from the chapters (scripts/build-lemma-forms.mjs)
   if (path.startsWith('public/sounds/')) return 'eSpeak NG'; // the clips of a one-letter Greek word's sound, made by eSpeak NG (scripts/sounds-build.sh)
   if (path.startsWith('public/sounds-trial/')) {
     // the listening page's clips (docs/research/letter-sounds.md): one folder per voice that made them

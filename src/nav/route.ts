@@ -143,6 +143,10 @@ export interface ParadigmAddress {
   /** the word whose cell it is, as the text has it ('ἀγαπῶ'), and its RP parsing code ('V-PAI-1S'): the screen says them beside the table's name */
   word?: string;
   parse?: string;
+  /** the word's lemma ('ἀγαπάω'): the table can then show its own forms, This word (mw-irpgqi.4) */
+  lemma?: string;
+  /** the table shows the lemma's own forms (This word) and not the pattern's */
+  own?: boolean;
 }
 
 export function paradigmOf(hash: string): ParadigmAddress {
@@ -162,11 +166,16 @@ export function paradigmOf(hash: string): ParadigmAddress {
     address.word = word;
     address.parse = parse;
   }
+  const lemma = params.get('l');
+  if (address.table !== undefined && lemma) {
+    address.lemma = lemma;
+    if (params.get('own') === '1') address.own = true;
+  }
   return address;
 }
 
 /** The Paradigms address, always in the same order. */
-export function paradigmHash({ table, mode, cell, word, parse }: ParadigmAddress): string {
+export function paradigmHash({ table, mode, cell, word, parse, lemma, own }: ParadigmAddress): string {
   const params = new URLSearchParams();
   if (table !== undefined) params.set('t', table);
   if (table !== undefined && mode) params.set('mode', mode);
@@ -174,6 +183,10 @@ export function paradigmHash({ table, mode, cell, word, parse }: ParadigmAddress
   if (table !== undefined && word && parse) {
     params.set('w', word);
     params.set('p', parse);
+  }
+  if (table !== undefined && lemma) {
+    params.set('l', lemma);
+    if (own) params.set('own', '1');
   }
   const query = params.toString();
   return query ? `#/paradigms?${query}` : '#/paradigms';

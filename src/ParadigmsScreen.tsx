@@ -7,9 +7,10 @@
 // Learn shows every shown cell's form; Drill leaves them blank, a tap shows one with Had it / Missed under its row, after the last 'N of M' and Drill the
 // missed again (data/paradigms/drill.ts keeps the run while the page lives); a miss puts the table in Review due now (recordDrillMiss). Ask the tutor (the list's and
 // each table's, mw-irpgqi.3) opens the round control's sheet over the screen (src/tutor/askNow.ts): the screen reports the table, the mode, the cell in focus and the word he came
-// from (paradigmTalk), and the talk is kept per table. The parts this screen shares are listed in docs/paradigm-components.md.
+// from (paradigmTalk), and the talk is kept per table. From a word's sheet a table can show that word's own forms, This word | The pattern (mw-irpgqi.4, ownForms.ts: the
+// forms the text has laid in the cells, the cells it lacks marked 'not in the NT'). The parts this screen shares are listed in docs/paradigm-components.md.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { TIER_TITLES } from './approaches/ladder';
 import type { Chapter, GreekWord } from './data/chapter';
 import type { GrammarExtent } from './data/grammar/extent';
@@ -29,11 +30,13 @@ import {
 } from './data/paradigms';
 import { needsOf, needsText } from './data/paradigms/needs';
 import { blocksOf, columnsThatFit, greekRemOf } from './data/paradigms/layout';
+import { loadLemmaForms, ownFormOf, ownTable, referenceText, type OwnForm } from './data/paradigms/ownForms';
 import { drillMissed, drillOf, forgetDrill, gradeCell, markMissWritten, revealCell, scoreOf, startRun, type Drill } from './data/paradigms/drill';
 import { cellPrompt, PARADIGM_KIND } from './data/paradigms/cells';
 import { ensureScheduled, listLevels, markParadigmOpened, recordDrillMiss, reviewsOf, screenRef } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
-import { backTo, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress, type ParadigmMode } from './nav/route';
+import { backTo, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress, type ParadigmAddress, type ParadigmMode } from './nav/route';
+import { openAtVerse } from './nav/readerRequest';
 import { decodeParse } from './data/parseCode';
 import { ExtentChips } from './settings/controls/grammarExtent';
 import { useParadigmExtent } from './settings/useExtent';
@@ -268,6 +271,8 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                   const standings = cols.map((c) => standingOf(row.cells[c], levels, extent));
                   // the Needs line of a locked cell, or of a not-yet cell in Learn, that he tapped
                   const askedCol = asked === null ? undefined : cols.find((c, i) => cellName(table, row, c) === asked && (standings[i] === 'locked' || (standings[i] === 'notYet' && mode === 'learn')));
+                  // the word's own form he tapped in Learn: where the text uses it is drawn under its row (This word)
+                  const ownCol = mode === 'learn' && asked !== null ? cols.find((c, i) => cellName(table, row, c) === asked && row.cells[c].own !== undefined && (standings[i] === 'open' || standings[i] === 'notYet')) : undefined;
                   // the open cell of the Drill, when it is in this row: Had it / Missed go under the row
                   const openCol = mode === 'drill' && drill?.open !== null && drill !== undefined ? cols.find((c) => cellName(table, row, c) === drill.open) : undefined;
                   return (
@@ -292,6 +297,16 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                           const frame = 'flex min-h-14 w-full min-w-0 items-center justify-center px-0.5';
                           const cellBox = `${frame} ${font}`;
                           const ring = place === lit ? LIT : '';
+                          if (cell.absent) {
+                            // the text has no form of the word for this cell (This word): said plainly, never filled with the pattern's form
+                            return (
+                              <td key={c} className="border-b border-l border-line p-0.5">
+                                <div data-cell={place} data-state="absent" aria-label={`${place}: not in the NT`} className={`${frame} text-center text-xs leading-tight text-muted`}>
+                                  not in the NT
+                                </div>
+                              </td>
+                            );
+                          }
                           if (standing === 'locked') {
                             return (
                               <td key={c} className="border-b border-l border-line p-0.5">
@@ -341,6 +356,26 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                                   >
                                     <span {...lang}>{cell.form}</span>
                                     <LockIcon small />
+                                  </button>
+                                </td>
+                              );
+                            }
+                            if (cell.own) {
+                              // the word's own form: a tap says where the text uses it and opens it there (OwnNote)
+                              return (
+                                <td key={c} className="border-b border-l border-line p-0.5">
+                                  <button
+                                    type="button"
+                                    data-cell={place}
+                                    data-lit={place === lit || undefined}
+                                    data-state="shown"
+                                    {...lang}
+                                    aria-expanded={asked === place}
+                                    aria-label={`${place}: ${cell.form}`}
+                                    onClick={() => toggleAsked(place)}
+                                    className={`${cellBox} rounded-lg active:bg-line ${ring}`}
+                                  >
+                                    {cell.form}
                                   </button>
                                 </td>
                               );
@@ -396,10 +431,11 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                           );
                         })}
                       </tr>
-                      {askedCol !== undefined ? (
+                      {askedCol !== undefined || ownCol !== undefined ? (
                         <tr>
                           <td colSpan={cols.length + 1} className="border-b border-line bg-surface px-2 py-2">
-                            <NeedsNote cell={row.cells[askedCol]} levels={levels} onIdea={setIdeaId} />
+                            {askedCol !== undefined ? <NeedsNote cell={row.cells[askedCol]} levels={levels} onIdea={setIdeaId} /> : null}
+                            {ownCol !== undefined ? <OwnNote cell={row.cells[ownCol]} /> : null}
                           </td>
                         </tr>
                       ) : null}
@@ -408,6 +444,7 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                           <td colSpan={cols.length + 1} data-testid="grade-row" className="border-b border-line bg-surface px-2 py-2 text-left">
                             <p className="text-base text-muted">{cellPrompt(table, row, openCol)}</p>
                             {standings[cols.indexOf(openCol)] === 'notYet' ? <NeedsNote cell={row.cells[openCol]} levels={levels} onIdea={setIdeaId} /> : null}
+                            {row.cells[openCol].own ? <OwnNote cell={row.cells[openCol]} /> : null}
                             <Grades right={HAD_IT} wrong={MISSED} picked={null} onPick={(grade) => onGrade(cellName(table, row, openCol), grade === HAD_IT)} settleKey={drill?.open} className="mt-2" />
                           </td>
                         </tr>
@@ -427,6 +464,39 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
 /** The two words of the Drill's grade (mw-irpgqi.2). */
 const HAD_IT = 'Had it';
 const MISSED = 'Missed';
+
+/** Where the text uses the word's own form (This word): its parsing, how often, the place it is first used with a button that opens the Reader there, and the pattern's form it stands in for. */
+function OwnNote({ cell }: { cell: ParadigmCell }) {
+  const own = cell.own;
+  if (!own) return null;
+  const place = referenceText(own);
+  return (
+    <div data-testid="own-note" className="mt-1 text-left text-base first:mt-0">
+      <p>
+        <span {...GREEK_LANG} className="font-greek text-xl font-bold">
+          {cell.form}
+        </span>
+        : {plainParse(own.code)}
+      </p>
+      <p className="text-muted">
+        {own.count === 1 ? 'Used once in the New Testament' : `Used ${own.count} times in the New Testament`}, first at {place}.
+      </p>
+      <p className="text-muted">
+        In the pattern: <span {...GREEK_LANG}>{own.pattern}</span>
+        {own.others.length > 0 ? (
+          <>
+            {'. Also in the text: '}
+            <span {...GREEK_LANG}>{own.others.join(', ')}</span>
+          </>
+        ) : null}
+        .
+      </p>
+      <button type="button" data-testid="own-open" onClick={() => openAtVerse(own.book, own.chapter, own.verse)} className="mt-2 min-h-11 rounded-lg border border-line px-3 text-base font-medium text-accent active:bg-line">
+        Open {place}
+      </button>
+    </div>
+  );
+}
 
 /** What a locked or not-yet form needs, in words, and a Go to button for each idea (mw-svw421.25): under a lock he tapped, or in the grade line of a not-yet cell. */
 function NeedsNote({ cell, levels, onIdea }: { cell: ParadigmCell; levels: Levels; onIdea: (id: string) => void }) {
@@ -448,7 +518,7 @@ function NeedsNote({ cell, levels, onIdea }: { cell: ParadigmCell; levels: Level
 
 /** The cells the table shows, in its order, each with its name and standing: open and notYet are shown (and asked by the Drill); outside and locked are not. */
 function shownCells(table: Paradigm, levels: Levels, extent: GrammarExtent): { place: string; cell: ParadigmCell; standing: CellStanding }[] {
-  return table.rows.flatMap((row) => row.cells.map((cell, c) => ({ place: cellName(table, row, c), cell, standing: standingOf(cell, levels, extent) }))).filter(({ standing }) => standing === 'open' || standing === 'notYet');
+  return table.rows.flatMap((row) => row.cells.map((cell, c) => ({ place: cellName(table, row, c), cell, standing: standingOf(cell, levels, extent) }))).filter(({ cell, standing }) => !cell.absent && (standing === 'open' || standing === 'notYet'));
 }
 
 /** Whether a Drill cell shows its form: it is the open one, graded, or kept from an earlier run. */
@@ -528,6 +598,7 @@ function placeOf(table: Paradigm, place: string, levels: Levels, extent: Grammar
   for (const row of table.rows) {
     for (let c = 0; c < row.cells.length; c++) {
       if (cellName(table, row, c) !== place) continue;
+      if (row.cells[c].absent) return { parse: place, form: 'not in the NT' };
       const standing = standingOf(row.cells[c], levels, extent);
       const shown = (standing === 'open' || standing === 'notYet') && (mode === 'learn' || revealedIn(drill, place));
       return { parse: place, ...(shown ? { form: row.cells[c].form } : {}) };
@@ -540,12 +611,13 @@ function placeOf(table: Paradigm, place: string, levels: Levels, extent: Grammar
  * What the tutor is told on a table (mw-irpgqi.3): the focus the first question carries (the table, the mode, the forms showing, the cell in focus and the word he came from) and the facts
  * every question of the table's talk carries, so a question asked after he moved to another cell is about that one. `cell` is the last cell he tapped, or the word's own.
  */
-function paradigmTalk(table: Paradigm, mode: ParadigmMode, state: { levels: Levels; extent: GrammarExtent; drill: Drill | undefined; cell: string | undefined; word: string | undefined; parse: string | undefined } | undefined): { focus: ParadigmFocus; facts: ScreenFact[] } {
+function paradigmTalk(table: Paradigm, mode: ParadigmMode, lemma: string | undefined, state: { levels: Levels; extent: GrammarExtent; drill: Drill | undefined; cell: string | undefined; word: string | undefined; parse: string | undefined } | undefined): { focus: ParadigmFocus; facts: ScreenFact[] } {
   const here = state?.cell !== undefined ? placeOf(table, state.cell, state.levels, state.extent, mode, state.drill) : undefined;
   const word = state?.word && state.parse ? { form: state.word, parse: plainParse(state.parse) } : undefined;
   const facts: ScreenFact[] = [
     { label: 'Table', value: table.name },
     { label: 'Mode', value: mode === 'learn' ? 'Learn' : 'Drill' },
+    ...(lemma ? [{ label: 'Forms', value: `${lemma}'s own forms in the New Testament (This word); a cell the text lacks says not in the NT` }] : []),
     ...(here ? [{ label: 'Cell in focus', value: here.form ? `${here.parse}: ${here.form}` : `${here.parse} (its form is not shown)` }] : []),
     ...(word ? [{ label: 'Word he came from', value: `${word.form} (${word.parse})` }] : []),
   ];
@@ -553,8 +625,75 @@ function paradigmTalk(table: Paradigm, mode: ParadigmMode, state: { levels: Leve
   return { focus: { table: table.name, revealed, kind: 'paradigm', mode, ...(here ? { cell: here } : {}), ...(word ? { word } : {}) }, facts };
 }
 
-function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { table: Paradigm; mode: ParadigmMode; levels: Levels | undefined; extent: GrammarExtent | undefined; cell?: string; word?: string; parse?: string }) {
-  const [drill, setDrill] = useState<Drill | undefined>(() => drillOf(table.id));
+/** The Drill's key: the table's id, or for a word's own forms the table's id and the lemma, so the two runs never mix. */
+const drillKeyOf = (table: Paradigm, lemma: string | undefined): string => (lemma ? `${table.id}|${lemma}` : table.id);
+
+/** The lemma's forms once fetched; undefined while they load (or when there is no lemma). A lemma whose file cannot be had has none. */
+function useLemmaForms(lemma: string | undefined): OwnForm[] | undefined {
+  const [loaded, setLoaded] = useState<{ lemma: string; forms: OwnForm[] } | undefined>();
+  useEffect(() => {
+    if (!lemma) return;
+    let current = true;
+    loadLemmaForms(lemma)
+      .then((forms) => current && setLoaded({ lemma, forms }))
+      .catch((error: unknown) => {
+        console.error('could not load the forms of the word', error);
+        if (current) setLoaded({ lemma, forms: [] });
+      });
+    return () => {
+      current = false;
+    };
+  }, [lemma]);
+  return lemma && loaded?.lemma === lemma ? loaded.forms : undefined;
+}
+
+/** The two views of a table opened from a word (mw-irpgqi.4). */
+const FORM_VIEWS: readonly (readonly [string, string])[] = [
+  ['word', 'This word'],
+  ['pattern', 'The pattern'],
+];
+
+/**
+ * The table, opened from a word or not. With the word's lemma in the address its forms are fetched; where the text has any in this table the switch This word | The pattern
+ * appears, and This word lays the table with the lemma's own forms (ownTable); the view is remounted on a change, so its Drill and its tapped cell are its own.
+ */
+function ParadigmWord({ table, address, levels, extent }: { table: Paradigm; address: ParadigmAddress; levels: Levels | undefined; extent: GrammarExtent | undefined }) {
+  const { lemma, word, parse, own: wantsOwn } = address;
+  const forms = useLemmaForms(lemma);
+  const mine = useMemo(() => (lemma && forms ? ownTable(table, lemma, forms) : undefined), [table, lemma, forms]);
+  if (wantsOwn && lemma && forms === undefined) {
+    return (
+      <>
+        <ScreenHeader title={table.name} back={<HeaderButton onClick={() => backTo('paradigms')}>‹ Paradigms</HeaderButton>} />
+        <main className="screen min-h-0 flex-1 px-4 pt-3">
+          <p className="text-base text-muted">…</p>
+        </main>
+      </>
+    );
+  }
+  const showing = wantsOwn && mine ? mine : undefined;
+  const lit = showing ? (word && parse && lemma ? showing.placeOf(ownFormOf(word, lemma), parse) : undefined) : address.cell;
+  return (
+    <ParadigmTable
+      key={showing ? 'word' : 'pattern'}
+      table={showing ? showing.table : table}
+      pattern={table}
+      address={address}
+      mode={address.mode ?? 'drill'}
+      levels={levels}
+      extent={extent}
+      cell={lit}
+      word={word}
+      parse={parse}
+      lemma={showing ? lemma : undefined}
+      canChoose={mine !== undefined}
+    />
+  );
+}
+
+function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, word, parse, lemma, canChoose }: { table: Paradigm; pattern: Paradigm; address: ParadigmAddress; mode: ParadigmMode; levels: Levels | undefined; extent: GrammarExtent | undefined; cell?: string; word?: string; parse?: string; lemma?: string; canChoose: boolean }) {
+  const drillKey = drillKeyOf(table, lemma);
+  const [drill, setDrill] = useState<Drill | undefined>(() => drillOf(drillKey));
   // the last cell he tapped (Learn: a locked or not-yet one; Drill: a blank one he showed): the tutor is told he is on it, else on the word's own
   const [tapped, setTapped] = useState<string | null>(null);
   const ai = useAiAllowed();
@@ -582,11 +721,11 @@ function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { tab
     }
     if (extentSeen.current === extent) return;
     extentSeen.current = extent;
-    forgetDrill(table.id);
+    forgetDrill(drillKey);
     setDrill(undefined);
-  }, [extent, table.id]);
+  }, [extent, drillKey]);
   // a table with no form his has nothing for Review to ask: it is not offered until a form opens (mw-svw421.28), whatever the extent shows
-  const his = levels ? availableCount(table, levels).available : 0;
+  const his = levels ? availableCount(pattern, levels).available : 0;
   const canDrill = levels !== undefined && his > 0;
   const cells = levels && extent ? shownCells(table, levels, extent) : [];
   const shown = new Set(cells.map(({ place }) => place));
@@ -595,20 +734,20 @@ function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { tab
   const started = run !== undefined && (run.open !== null || run.graded.size > 0 || run.kept.size > 0);
   const reveal = (place: string) => {
     setTapped(place);
-    if (!drillOf(table.id)) startRun(table.id, [...shown]);
-    setDrill(revealCell(table.id, place));
+    if (!drillOf(drillKey)) startRun(drillKey, [...shown]);
+    setDrill(revealCell(drillKey, place));
   };
   const grade = (place: string, right: boolean) => {
-    let next = gradeCell(table.id, place, right);
+    let next = gradeCell(drillKey, place, right);
     // the run's first miss puts the table in Review, due now, as a missed Review cell would (one write a run, as a round's row takes one outcome)
     if (!right && !next.missWritten) {
-      next = markMissWritten(table.id);
+      next = markMissWritten(drillKey);
       void recordDrillMiss(PARADIGM_KIND, table.id).catch((error: unknown) => console.error('could not record the miss', error));
     }
     setDrill(next);
   };
   // the tutor is told the table, the mode, the cell in focus and the word (paradigmTalk); the talk is the table's own
-  const talk = paradigmTalk(table, mode, levels && extent ? { levels, extent, drill: run, cell: tapped ?? lit, word, parse } : undefined);
+  const talk = paradigmTalk(table, mode, lemma, levels && extent ? { levels, extent, drill: run, cell: tapped ?? lit, word, parse } : undefined);
   useReportScreen({ name: 'Paradigms', facts: talk.facts, kept: screenRef(`paradigms.${table.id}`) });
   const ask = () => askTheTutor({ question: paradigmQuestion(table.name, talk.focus.revealed.length, talk.focus), focus: talk.focus });
   return (
@@ -623,13 +762,16 @@ function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { tab
           {levels && extent ? modeHelp(mode, extent, cells.length, his) : '…'}
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Chips name="Mode" current={mode} options={MODES} onChoose={(next) => next !== mode && replaceHash(paradigmHash({ table: table.id, mode: next as ParadigmMode, cell, word, parse }))} />
+          <Chips name="Mode" current={mode} options={MODES} onChoose={(next) => next !== mode && replaceHash(paradigmHash({ ...address, mode: next as ParadigmMode }))} />
+          {canChoose ? (
+            <Chips name="Forms" current={lemma ? 'word' : 'pattern'} options={FORM_VIEWS} onChoose={(next) => next !== (lemma ? 'word' : 'pattern') && replaceHash(paradigmHash({ ...address, mode, own: next === 'word' }))} />
+          ) : null}
           {mode === 'drill' && started ? (
             <button
               type="button"
               onClick={() =>
                 oneTap('paradigms:header', () => {
-                  forgetDrill(table.id);
+                  forgetDrill(drillKey);
                   setDrill(undefined);
                 })
               }
@@ -640,7 +782,7 @@ function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { tab
           ) : null}
         </div>
         {levels && extent ? <Table table={table} levels={levels} extent={extent} mode={mode} drill={run} lit={lit} onReveal={reveal} onGrade={grade} onFocus={setTapped} /> : null}
-        {score?.done && run ? <DrillEnd drill={run} onMissedAgain={() => oneTap('paradigms:end', () => setDrill(drillMissed(table.id)))} /> : null}
+        {score?.done && run ? <DrillEnd drill={run} onMissedAgain={() => oneTap('paradigms:end', () => setDrill(drillMissed(drillKey)))} /> : null}
         <div className="mt-4 flex gap-2">
           <button
             type="button"
@@ -669,7 +811,7 @@ function ParadigmTable({ table, mode, levels, extent, cell, word, parse }: { tab
 export function ParadigmsScreen() {
   const levels = useLiveQuery(listLevels, []);
   const extent = useParadigmExtent();
-  const { table: id, mode = 'drill', cell, word, parse } = paradigmOf(useAddress());
-  const table = paradigmById(id);
-  return table ? <ParadigmTable key={table.id} table={table} mode={mode} levels={levels} extent={extent} cell={cell} word={word} parse={parse} /> : <ParadigmList levels={levels} extent={extent} />;
+  const address = paradigmOf(useAddress());
+  const table = paradigmById(address.table);
+  return table ? <ParadigmWord key={table.id} table={table} address={address} levels={levels} extent={extent} /> : <ParadigmList levels={levels} extent={extent} />;
 }

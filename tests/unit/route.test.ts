@@ -86,5 +86,11 @@ describe('the paradigm address', () => {
     expect(paradigmHash({ table: 'noun-endings' })).toBe('#/paradigms?t=noun-endings');
     expect(paradigmHash({ table: 'article', mode: 'learn' })).toBe('#/paradigms?t=article&mode=learn');
     expect(paradigmHash({ table: 'article', mode: 'drill' })).toBe('#/paradigms?t=article&mode=drill');
+    // a word's lemma, and This word (mw-irpgqi.4): own is only said with a lemma, and only when it is on
+    expect(paradigmHash({ table: 'contract-verbs', mode: 'learn', word: 'ἀγαπῶ', parse: 'V-PAI-1S', lemma: 'ἀγαπάω' })).toBe(`#/paradigms?t=contract-verbs&mode=learn&w=${encodeURIComponent('ἀγαπῶ')}&p=V-PAI-1S&l=${encodeURIComponent('ἀγαπάω')}`);
+    expect(paradigmHash({ table: 'contract-verbs', own: true })).toBe('#/paradigms?t=contract-verbs');
+    expect(paradigmOf(paradigmHash({ table: 'contract-verbs', lemma: 'ἀγαπάω', own: true }))).toEqual({ table: 'contract-verbs', lemma: 'ἀγαπάω', own: true });
+    expect(paradigmOf(paradigmHash({ table: 'contract-verbs', lemma: 'ἀγαπάω' }))).toEqual({ table: 'contract-verbs', lemma: 'ἀγαπάω' });
+    expect(paradigmOf('#/paradigms?l=ἀγαπάω&own=1')).toEqual({});
   });
 });

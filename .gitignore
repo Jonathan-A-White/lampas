@@ -10,6 +10,8 @@ dist-ssr
 
 # Raw text downloads (the generated JSON per chapter is committed)
 data/raw
+# The lemma form files, made from the chapters by npm run build (scripts/build-lemma-forms.mjs)
+public/lemma-forms
 
 # Playwright
 /test-results/
