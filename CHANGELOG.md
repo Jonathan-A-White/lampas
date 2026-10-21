@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.387
+_2026-10-21_
+- Fixed: In Greek word order, a verse's full stop now stays at the end of the verse instead of appearing in the middle.
+
 ## 0.1.386
 _2026-10-21_
 - New: When you show interest in the Greek, the tutor now offers to turn up the Greek dial by one step, never more, and stays quiet about the Greek at Just English unless you ask.

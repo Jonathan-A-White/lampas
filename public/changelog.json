@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.387",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.698",
+    "kind": "fixed",
+    "text": "In Greek word order, a verse's full stop now stays at the end of the verse instead of appearing in the middle."
+  },
+  {
     "version": "0.1.386",
     "date": "2026-10-21",
     "story": "mw-3ased2.3",
