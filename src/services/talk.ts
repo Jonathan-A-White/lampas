@@ -24,7 +24,7 @@ import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
-import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
+import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { solidWordsField } from './solidWords';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
 
@@ -425,6 +425,7 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
  * Makes the request fit a grist: while it is too big the oldest long answer in the history is cut short; when none is left to cut
  * the words of the text (greek_words) are cut from their end, and when none is left the oldest turn is dropped. The newest turn is
  * the last to be touched (a quiz is nothing without its earlier turns, so they outlast the tail of a long passage's word list).
+ * The text of a passage too long for a request is clipped from its end (clipTexts) once the words are gone, before any turn is dropped.
  * The oldest turns go until the newest alone is left; then the oldest of his requests (the last in the list, newest first) go one at a time, then
  * his memory notes, and only then the newest turn (mw-5r3p30.615: a talk from Settings, whose screen weighs most of the record, forgot the question
  * it was answering). The questions of a drill's results go after the notes, right answers first. The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
@@ -437,7 +438,8 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   let memoryNotes = request.memory?.notes;
   let guide = request.pronunciation_guide;
   let drill = request.screen?.drill;
-  const fitted = (): TalkRequest => ({ ...request, ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
+  let text = { greek: request.greek ?? '', english: request.english ?? '' };
+  const fitted = (): TalkRequest => ({ ...request, ...(request.greek !== undefined ? text : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   const tooBig = (): boolean => sizeOf(fitted()) > MAX_REQUEST_BYTES;
   for (;;) {
     const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
@@ -446,6 +448,13 @@ export function fitHistory(request: TalkRequest): TalkRequest {
   }
   if (tooBig() && request.focus?.kind !== 'sound') guide = undefined;
   while (greekWords && greekWords.length > 0 && tooBig() && history.length > 0) greekWords = greekWords.slice(0, -1);
+  // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) is sent from its start, cut where it must be, before any turn is dropped
+  if (request.greek !== undefined && tooBig()) {
+    text = clipTexts(text, (t) => {
+      text = t;
+      return tooBig();
+    });
+  }
   // the newest turn is what he is answering ("Here are the others"): the older turns go first, then the lesser fields, and the newest turn last (mw-5r3p30.615)
   while (history.length > 1 && tooBig()) history = history.slice(1);
   while (greekWords && greekWords.length > 0 && tooBig()) greekWords = greekWords.slice(0, -1);

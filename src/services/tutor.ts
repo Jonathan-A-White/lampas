@@ -13,7 +13,7 @@ import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { RustyItem } from '../data/rusty';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
-import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
+import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
@@ -468,7 +468,7 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
 
 /**
  * Makes the request fit a grist, as the Bible talk's fitHistory does (src/services/talk.ts): while it is over MAX_REQUEST_BYTES the pronunciation's guide goes first,
- * then the oldest of his solid words, the words of the verse (from the end of the list), his requests (the last in the list, newest first) and his notes (from the end of the list; the index always stays). The verse and his question are never cut.
+ * then the oldest of his solid words, the words of the verse (from the end of the list), his requests (the last in the list, newest first) and his notes (from the end of the list; the index always stays). His question is never cut, nor is the text of a verse or a passage that fits: one too long for a request (a whole chapter) is clipped from its end last (clipTexts).
  */
 export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   let guide = request.pronunciation_guide;
@@ -476,8 +476,10 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   let requests = request.requests;
   let notes = request.memory?.notes;
   let words = request.greek_words;
+  let text = { greek: request.greek, english: request.english };
   const fitted = (): VerseAskRequest => ({
     ...request,
+    ...text,
     pronunciation_guide: guide,
     solid_words: solid,
     ...(words ? { greek_words: words } : {}),
@@ -491,6 +493,11 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   while (words && words.length > 0 && tooBig()) words = words.slice(0, -1);
   while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
   while (notes && notes.length > 0 && tooBig()) notes = notes.slice(0, -1);
+  // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) is sent from its start, cut where it must be, and only after all of the above
+  text = clipTexts(text, (t) => {
+    text = t;
+    return tooBig();
+  });
   return fitted();
 }
 
