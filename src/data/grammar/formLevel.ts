@@ -1,10 +1,12 @@
-// src/data/grammar/formLevel.ts — whether one form's grammar stands at the Weave's grammar dial (mw-hqd5bz.9). Pure.
+// src/data/grammar/formLevel.ts — whether one form's grammar stands at the Weave's grammar dial (mw-hqd5bz.9). Pure. The dial is a grammar extent
+// (extent.ts, mw-irpgqi.2): the one rule for an idea's level is withinExtent, shared with the paradigm tables.
 import type { GreekWord } from '../chapter';
 import type { GrammarLevel } from '../db';
+import { withinExtent, type GrammarExtent } from './extent';
 import { ALWAYS_NEEDED, ideasOf } from './ladder';
 
-/** The Weave's grammar dial: 'any' ignores grammar; 'solid' wants every idea of the form solid; 'solid+frontier' also takes frontier ones. */
-export type WeaveGrammar = 'any' | 'solid' | 'solid+frontier';
+/** The Weave's grammar dial: 'any' ignores grammar; 'solid' wants every idea of the form solid; 'solid+frontier' also takes frontier ones. A grammar extent. */
+export type WeaveGrammar = GrammarExtent;
 
 export const WEAVE_GRAMMARS: readonly WeaveGrammar[] = ['any', 'solid', 'solid+frontier'];
 
@@ -19,10 +21,7 @@ export function formPasses(code: string, levels: ReadonlyMap<string, GrammarLeve
   } catch {
     return false;
   }
-  return ideas.every((id) => {
-    const level = levels.get(id)?.level;
-    return level === 'solid' || (dial === 'solid+frontier' && level === 'frontier');
-  });
+  return ideas.every((id) => withinExtent(levels.get(id)?.level, dial));
 }
 
 /** At which grammar level the picker offers new words (mw-hqd5bz.11): only words with a form whose grammar he has Solid, or Solid and at the Frontier. */
