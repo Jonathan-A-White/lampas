@@ -119,7 +119,7 @@ describe('what the tutor is told', () => {
 });
 
 describe('the answer\'s work link', () => {
-  const answer = (links: unknown) => ({ answer: 'Calvin writes on this.', words: [], links });
+  const answer = (links: unknown) => ({ answer: 'Calvin writes on this.', question: 'What does it say?', words: [], links });
 
   it('is accepted by the app with or without a reference, and refused when malformed', () => {
     expect(isTalkAnswer(answer([{ kind: 'work', work: 'calvin-commentaries', reference: 'John 3:16' }]))).toBe(true);

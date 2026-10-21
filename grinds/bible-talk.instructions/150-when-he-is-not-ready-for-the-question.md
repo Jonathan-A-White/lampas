@@ -31,6 +31,7 @@ vowels first and The nominative case marked `direct`. The answer is:
 ```json
 {
   "answer": "Briefly: the genitive is the case that says \"of\", so here it shows whose it is. You are missing quite a bit for this: these are the top three, the nominative case, the noun and accents. Start with Pairs of vowels, then work up. Tap Take me there.",
+  "question": "Why is this word in the genitive?",
   "words": [],
   "bridge": { "missing": ["case-nominative", "noun", "accents"], "next": "diphthongs", "why": "Cases rest on nouns, and nouns on spelling and sounds you have not met." }
 }

@@ -41,13 +41,13 @@ describe('the form helper request', () => {
 
 describe('the form helper answer', () => {
   it('is believed with the next question and the field values, and its schema allows them', () => {
-    const answer = { answer: 'Who made it?', words: [], form_values: [{ field: 'approach', value: 'Colours' }], form_ask: 'credit' };
+    const answer = { answer: 'Who made it?', question: 'What does it say?', words: [], form_values: [{ field: 'approach', value: 'Colours' }], form_ask: 'credit' };
     expect(isTalkAnswer(answer)).toBe(true);
     expect(validate(answer, answerSchema)).toEqual([]);
   });
 
   it('is refused when a value is not text, has a stray key, or the list is too long', () => {
-    const base = { answer: 'Who made it?', words: [] };
+    const base = { answer: 'Who made it?', question: 'What does it say?', words: [] };
     expect(isTalkAnswer({ ...base, form_values: [{ field: 'approach', value: 7 }] })).toBe(false);
     expect(isTalkAnswer({ ...base, form_values: [{ field: 'approach', value: 'x', send: true }] })).toBe(false);
     expect(isTalkAnswer({ ...base, form_values: Array.from({ length: 9 }, () => ({ field: 'link', value: 'x' })) })).toBe(false);

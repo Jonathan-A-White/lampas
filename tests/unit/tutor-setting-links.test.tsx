@@ -14,7 +14,7 @@ import { instructionsOf } from '../../scripts/grind-parts';
 import { validate, type Schema } from '../support/schema-validate';
 
 const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
-const base = { answer: 'Make the text bigger in Settings.', words: [] };
+const base = { answer: 'Make the text bigger in Settings.', question: 'What does it say?', words: [] };
 const text: AnswerLink = { kind: 'setting', key: 'textSize' };
 
 afterAll(() => {

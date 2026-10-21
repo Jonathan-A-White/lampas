@@ -44,10 +44,10 @@ describe('grinds/verse-ask.json', () => {
 });
 
 describe('the answer schema and isVerseAnswer', () => {
-  const good = { answer: 'It means "works together".', words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative' }] };
+  const good = { answer: 'It means "works together".', question: 'What does it say?', words: [{ greek: 'συνεργεῖ', lemma: 'συνεργέω', note: 'verb, present active indicative' }] };
   const bad: [string, unknown][] = [
     ['an empty answer', { ...good, answer: '' }],
-    ['no words key', { answer: 'x' }],
+    ['no words key', { answer: 'x', question: 'Why?' }],
     ['a word without a note', { ...good, words: [{ greek: 'a', lemma: 'b' }] }],
     ['an extra key on a word', { ...good, words: [{ greek: 'a', lemma: 'b', note: 'c', extra: 1 }] }],
     ['13 words', { ...good, words: Array.from({ length: 13 }, () => good.words[0]) }],
@@ -60,13 +60,13 @@ describe('the answer schema and isVerseAnswer', () => {
   it('accepts a good answer and an answer with no words', () => {
     expect(validate(good, schema as Schema)).toEqual([]);
     expect(isVerseAnswer(good)).toBe(true);
-    expect(validate({ answer: 'x', words: [] }, schema as Schema)).toEqual([]);
-    expect(isVerseAnswer({ answer: 'x', words: [] })).toBe(true);
+    expect(validate({ answer: 'x', question: 'What does it say?', words: [] }, schema as Schema)).toEqual([]);
+    expect(isVerseAnswer({ answer: 'x', question: 'What does it say?', words: [] })).toBe(true);
   });
 
   it('accepts a switch of Ask by in both', () => {
     for (const value of ['typing', 'speaking']) {
-      const switched = { answer: 'Done.', words: [], settings_changes: [{ key: 'askBy', value }] };
+      const switched = { answer: 'Done.', question: 'What does it say?', words: [], settings_changes: [{ key: 'askBy', value }] };
       expect(validate(switched, schema as Schema)).toEqual([]);
       expect(isVerseAnswer(switched)).toBe(true);
     }
@@ -93,7 +93,7 @@ describe('the answer schema and isVerseAnswer', () => {
 });
 
 describe('askByChange: the one change Ask the tutor makes', () => {
-  const of = (settings_changes: unknown) => askByChange({ answer: 'x', words: [], settings_changes } as never);
+  const of = (settings_changes: unknown) => askByChange({ answer: 'x', question: 'What does it say?', words: [], settings_changes } as never);
 
   it('takes askBy to typing or speaking, in any case', () => {
     expect(of([{ key: 'askBy', value: 'typing' }])).toEqual([{ key: 'askBy', value: 'typing' }]);
@@ -106,7 +106,7 @@ describe('askByChange: the one change Ask the tutor makes', () => {
     expect(of([{ key: 'askBy', value: 'shouting' }])).toEqual([]);
     expect(of('dark')).toEqual([]);
     expect(of([null, 3, { key: 7 }])).toEqual([]);
-    expect(askByChange({ answer: 'x', words: [] })).toEqual([]);
+    expect(askByChange({ answer: 'x', question: 'What does it say?', words: [] })).toEqual([]);
   });
 
   // mw-5r3p30.191: a refused change before it must not drop the Ask by change, or the reply says it switched while nothing changes

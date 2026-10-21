@@ -3,7 +3,7 @@
   "title": "Bible Talk Answer 1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["answer", "words"],
+  "required": ["answer", "question", "words"],
   "properties": {
     "answer": {
       "description": "The reply to what he said, in short plain English; or the one-sentence refusal for anything outside the Bible.",

@@ -22,7 +22,7 @@ const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Ch
 const scope: TalkScope = { title: 'Romans 8', chapter, verse: chapter.verses[10], quiz: true };
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
 const answerSchema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
-const good = { answer: 'Done.', words: [] };
+const good = { answer: 'Done.', question: 'What does it say?', words: [] };
 const turnWith = async (done: Parameters<typeof addTurn>[5]) => {
   await addTurn('rom.8.11:quiz', 'q', 'a', [], Date.now(), done);
   return (await listTurns('rom.8.11:quiz')).at(-1)!;

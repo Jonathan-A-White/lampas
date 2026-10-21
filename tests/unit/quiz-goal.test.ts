@@ -72,7 +72,7 @@ describe('the request', () => {
 });
 
 describe('the answer', () => {
-  const base = { answer: 'Is this how you want me to quiz you from now on?', words: [] };
+  const base = { answer: 'Is this how you want me to quiz you from now on?', question: 'What does it say?', words: [] };
 
   it('may carry a short quiz_goal_offer and no other long or empty one', () => {
     expect(isTalkAnswer({ ...base, quiz_goal_offer: 'understanding the passage' })).toBe(true);
