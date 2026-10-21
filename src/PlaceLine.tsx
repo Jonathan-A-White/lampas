@@ -14,12 +14,15 @@
 // text, and the button sits beside it in the rest, so a page ends a line or less above the line and not above a blank band of the button's room. The
 // line keeps the room's width clear at each side (the button's 12 px, 56 px and 4 px of air), so a long title wraps rather than runs under the button. A
 // room of 0px (the bars away) slides shut with the bars, as the box's margin does with Scroll.
+//
+// A tap on the line opens the whole chapter in the view a section heading opens (`onOpen`, mw-5r3p30.699). The line is then a button with the row's own
+// type, padding and place, so it is no bigger than it was; an underline is all that says it can be tapped, as a heading's active tint does.
 import { useEffect, useState } from 'react';
 
 /** How long the row takes to slide: `.place-box` in src/index.css. */
 const SLIDE_MS = 200;
 
-export function PlaceLine({ title, at, visible = true, floor = false, room }: { title: string; at: string; visible?: boolean; floor?: boolean; room?: string }) {
+export function PlaceLine({ title, at, visible = true, floor = false, room, onOpen }: { title: string; at: string; visible?: boolean; floor?: boolean; room?: string; onOpen?: () => void }) {
   // `drawn`: in the page, from the moment it is wanted until it has slid out. A row wanted while the page is up slides in (`slides`, a CSS animation that
   // starts with the bars' own slide, so the box never grows past its end); one drawn with the Reader is at full height from the start.
   const [drawn, setDrawn] = useState(visible);
@@ -38,9 +41,17 @@ export function PlaceLine({ title, at, visible = true, floor = false, room }: { 
   return (
     <div className="place-box" style={room ? { minHeight: room } : undefined} data-slides={slides ? '' : undefined} data-closed={visible ? undefined : ''} aria-hidden={visible ? undefined : true} inert={!visible}>
       <div className="place-inner">
-        <p data-place-line data-floor={floor ? '' : undefined} style={room ? { paddingInline: `max(1rem, ${room})` } : undefined} className="place-line">
-          {title} · {at}
-        </p>
+        {onOpen ? (
+          <button type="button" onClick={onOpen} data-place-line data-floor={floor ? '' : undefined} style={room ? { paddingInline: `max(1rem, ${room})` } : undefined} className="place-line block w-full">
+            <span className="underline decoration-dotted underline-offset-2">
+              {title} · {at}
+            </span>
+          </button>
+        ) : (
+          <p data-place-line data-floor={floor ? '' : undefined} style={room ? { paddingInline: `max(1rem, ${room})` } : undefined} className="place-line">
+            {title} · {at}
+          </p>
+        )}
       </div>
     </div>
   );
