@@ -68,5 +68,6 @@ export const greekInterestSetting = defineSetting<string>({
   section: 'dial',
   label: 'How much Greek?',
   hint: 'From none to all in: each step shows more Greek, and nothing more.',
-  help: `How much Greek you want in Lampas, from 0 to 5. ${GREEK_LEVELS.map((l) => `${l.level}, ${l.name}: ${l.line}`).join(' ')} Moving it up sets what the new step brings in to its starting values; moving it down turns off what the lower step hides and keeps your own values, so going back up restores them.`,
+  // Markdown (the row's More help draws it with src/markdown/Markdown.tsx): a list, one line a step, the step's number and name in bold
+  help: `How much Greek you want in Lampas, from 0 to 5:\n\n${GREEK_LEVELS.map((l) => `- **${l.level} · ${l.name}**: ${l.line}`).join('\n')}\n\nMoving it up sets what the new step brings in to its starting values; moving it down turns off what the lower step hides and keeps your own values, so going back up restores them.`,
 });

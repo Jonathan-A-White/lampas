@@ -2,6 +2,7 @@
 // schema and the list of keys and values in its instructions, both made from the registry (src/settings/registry.ts).
 // `npm run grind:build` (scripts/grind-build.ts) writes them into grinds/; tests/unit/bible-talk-grind.test.ts fails when the
 // files and the registry disagree, so a setting added to the registry is not talkable until the build has been run.
+import { helpPlain } from './helpText';
 import { MAX_CHANGES, SETTINGS, TEXT_MAX, type SettingEntry } from './registry';
 
 export const SETTINGS_BEGIN = '<!-- settings:begin -->';
@@ -16,7 +17,7 @@ function valueText(entry: SettingEntry): string {
 
 /** The list of keys and values the instructions carry, between the two markers. */
 export function settingsBlock(): string {
-  const lines = SETTINGS.map((s) => `- \`${s.key}\` — ${s.label}. ${s.hint}${s.help ? ` ${s.help}` : ''} Value: ${valueText(s)}.`);
+  const lines = SETTINGS.map((s) => `- \`${s.key}\` — ${s.label}. ${s.hint}${s.help ? ` ${helpPlain(s.help)}` : ''} Value: ${valueText(s)}.`);
   return [SETTINGS_BEGIN, ...lines, SETTINGS_END].join('\n');
 }
 

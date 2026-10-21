@@ -18,6 +18,6 @@ export const weaveOrderSetting = defineSetting<WeaveOrder>({
   section: 'weave',
   label: 'Order',
   hint: 'Lay the woven verse out in the English or in the Greek word order.',
-  help: 'In the English view with the Weave on, the order the verse is laid out in. English is the English translation\'s own order. Greek is the order of the Greek words: each English word or phrase stands where its Greek word stands in the verse, so the Greek of his words is read where the Greek has it and the rest are their English glosses. A Greek word the translation gives no English of its own is not shown. English by default; it shows only while the Weave is not Off.',
+  help: 'In the English view with the Weave on, the order the verse is laid out in:\n\n- **English**: the English translation\'s own order.\n- **Greek**: the order of the Greek words. Each English word or phrase stands where its Greek word stands in the verse, so the Greek of his words is read where the Greek has it and the rest are their English glosses. A Greek word the translation gives no English of its own is not shown.\n\nEnglish by default; it shows only while the Weave is not Off.',
   dependsOn: { key: 'weave', shown: (value) => value !== 'off' },
 });

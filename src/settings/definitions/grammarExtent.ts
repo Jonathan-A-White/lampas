@@ -64,5 +64,5 @@ export const paradigmExtentSetting = defineSetting<GrammarExtent>({
   dependsOn: greekFrom(5),
   label: 'How much of a table',
   hint: 'Which forms a paradigm table shows: all of them, yours, or only the solid ones.',
-  help: 'A form is yours once every grammar idea it needs is solid or at the frontier. Solid and frontier shows your forms and locks the rest. Any shows every form, the ones you do not have yet marked not yet, with what each needs. Solid only hides the forms whose grammar is still at the frontier. In Learn the shown forms are filled in; in Drill they are blank until you tap them. The same switch sits in the header of every table.',
+  help: 'A form is yours once every grammar idea it needs is solid or at the frontier:\n\n- **Solid and frontier**: shows your forms and locks the rest.\n- **Any**: shows every form, the ones you do not have yet marked not yet, with what each needs.\n- **Solid only**: hides the forms whose grammar is still at the frontier.\n\nIn Learn the shown forms are filled in; in Drill they are blank until you tap them. The same switch sits in the header of every table.',
 });

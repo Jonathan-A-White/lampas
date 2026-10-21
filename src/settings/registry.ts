@@ -179,7 +179,7 @@ const depthEntries = SCRIPTS.map((script) =>
     {
       section: 'hebrew',
       dependsOn: greekFrom(5),
-      help: `How deep into ${script.label} the tutor goes when it writes a ${script.label} word: ${DEPTHS.map((d) => `${d.id} (${d.label}) writes it like ${script.examples[d.id]}`).join('; ')}. ${DEPTHS.find((d) => d.id === DEFAULT_DEPTH)?.label} by default.`,
+      help: `How deep into ${script.label} the tutor goes when it writes a ${script.label} word:\n\n${DEPTHS.map((d) => `- **${d.label}** (${d.id}) writes it like ${script.examples[d.id]}`).join('\n')}\n\n${DEPTHS.find((d) => d.id === DEFAULT_DEPTH)?.label} by default.`,
     },
   ),
 );
@@ -377,7 +377,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
     {
       section: 'layout',
-      help: 'How the verses are set on the page. Verse by verse is one verse per line. Paragraph runs the verses of a paragraph together, with small verse numbers.',
+      help: 'How the verses are set on the page:\n\n- **Verse by verse**: one verse per line.\n- **Paragraph**: runs the verses of a paragraph together, with small verse numbers.',
     },
   ),
   choice(
@@ -407,7 +407,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
     {
       section: 'readAloud',
-      help: `How far the app reads aloud before it stops, from the verse it starts at (the play button on one verse always reads just that verse): ${READ_SPANS.map((s) => `${s.label} stops ${s.stops}`).join('; ')}.`,
+      help: `How far the app reads aloud before it stops, from the verse it starts at (the play button on one verse always reads just that verse):\n\n${READ_SPANS.map((s) => `- **${s.label}** stops ${s.stops}`).join('\n')}`,
     },
   ),
   fromDefinition(readLessonsSetting),
@@ -503,7 +503,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     {
       section: 'newWords',
       dependsOn: { key: 'newWordsADay', shown: (value) => value !== '0' },
-      help: 'Whether the app moves New words at by how your grammar reviews go: Ask offers, Auto moves and says so, Off never. It shows only while New words a day is not Off.',
+      help: 'Whether the app moves New words at by how your grammar reviews go:\n\n- **Ask**: offers.\n- **Auto**: moves and says so.\n- **Off**: never.\n\nIt shows only while New words a day is not Off.',
     },
   ),
   fromDefinition(paradigmExtentSetting),
