@@ -253,6 +253,9 @@ export const readingDeadlineMs = (seconds: number): number =>
 /** What he is told when the check of his reading ran out of its time: the mill had the clip, so the tutor is not offline. */
 export const READING_TOO_LONG_MESSAGE = 'That reading took too long to check. Try a shorter passage.';
 
+/** What he is told when the clip of his reading did not finish uploading: his connection was too slow, the mill never had it (mw-5r3p30.690). */
+export const READING_UPLOAD_TOO_SLOW_MESSAGE = 'That reading is taking too long to send. Check your connection and try again.';
+
 /** Sends the recording of a verse read aloud and waits for the mill's answer (the verse-read grind). Throws a TutorError. */
 export async function askVerseRead(request: VerseReadRequest, recording: Recording, options: AskOptions): Promise<VerseReadAnswer> {
   const bytes = new Uint8Array(await recording.blob.arrayBuffer());
@@ -262,6 +265,7 @@ export async function askVerseRead(request: VerseReadRequest, recording: Recordi
     deadlineMs: readingDeadlineMs(seconds),
     uploadTimeoutMs: uploadTimeoutMs(bytes.length),
     tookTooLong: READING_TOO_LONG_MESSAGE,
+    uploadSlow: READING_UPLOAD_TOO_SLOW_MESSAGE,
     ...options,
     files: [file],
   });

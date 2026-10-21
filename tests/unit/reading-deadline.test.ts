@@ -3,8 +3,8 @@
 // The mill's scorer limit is 120 s + 0.5 s per second of audio, at most 540 s (the mill's mw-gq6.660); the mill is the fake Postern on fake time.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Utils } from '@bsv/sdk';
-import { TUTOR_OFFLINE_MESSAGE, TutorError, tutorTimings } from '../../src/services/tutor';
-import { askVerseRead, buildReadingRequest, READING_TOO_LONG_MESSAGE, readingDeadlineMs, scorerLimitMs, uploadTimeoutMs } from '../../src/services/reading';
+import { askGrind, OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError, tutorTimings, UPLOAD_TOO_SLOW_MESSAGE } from '../../src/services/tutor';
+import { askVerseRead, buildReadingRequest, isVerseReadAnswer, READING_TOO_LONG_MESSAGE, READING_UPLOAD_TOO_SLOW_MESSAGE, readingDeadlineMs, scorerLimitMs, uploadTimeoutMs } from '../../src/services/reading';
 import type { Recording } from '../../src/audio/recorder';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 
@@ -101,5 +101,52 @@ describe('a reading that runs out of time', () => {
     expect(result.error.message).toBe(READING_TOO_LONG_MESSAGE);
     expect(result.error.message).not.toContain('offline');
     expect(result.error.message).not.toBe(TUTOR_OFFLINE_MESSAGE);
+  });
+});
+
+describe('a reading whose upload runs out of time (mw-5r3p30.690)', () => {
+  it('says the reading was too slow to send, not that the tutor is offline or that the check took too long', async () => {
+    delayOf = (path, method) => (path === '/api/blobs' && method === 'POST' ? uploadTimeoutMs(600 * 4000) + 60_000 : 0);
+    const wait = outcome(askVerseRead(request, clip(600), { key }));
+    await advance(uploadTimeoutMs(600 * 4000) + 30_000);
+    const result = (await wait) as { error: TutorError };
+    expect(result.error).toBeInstanceOf(TutorError);
+    expect(result.error.message).toBe(READING_UPLOAD_TOO_SLOW_MESSAGE);
+    expect(result.error.message).not.toBe(TUTOR_OFFLINE_MESSAGE);
+    expect(result.error.message).not.toBe(READING_TOO_LONG_MESSAGE);
+    expect(result.error.message).toContain('send');
+    // nothing went: a retry sends the reading afresh, and the screen may offer it (failure is not 'not-sent')
+    expect(result.error.failure).toBe('unreachable');
+    expect(result.error.resend).toBeUndefined();
+    expect(postern.received).toHaveLength(0);
+  });
+
+  it('says the same, in the general words, for an ask whose file upload runs out of the door 30 s', async () => {
+    delayOf = (path, method) => (path === '/api/blobs' && method === 'POST' ? 90_000 : 0);
+    const wait = outcome(askGrind('verse-read', request, isVerseReadAnswer, { key, files: [{ bytes: new Uint8Array(1000), mime: 'audio/webm', name: 'a.webm' }], untimed: true }));
+    await advance(35_000);
+    const result = (await wait) as { error: TutorError };
+    expect(result.error).toBeInstanceOf(TutorError);
+    expect(result.error.message).toBe(UPLOAD_TOO_SLOW_MESSAGE);
+  });
+
+  it('still says the tutor is offline when the upload is refused by a gateway error with the phone online', async () => {
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = new URL(typeof input === 'string' ? input : input.toString());
+      if (url.pathname === '/api/blobs') return new Response('bad gateway', { status: 502 });
+      return postern.fetch(input, init);
+    });
+    const result = (await outcome(askVerseRead(request, clip(20), { key }))) as { error: TutorError };
+    expect(result.error.message).toBe(TUTOR_OFFLINE_MESSAGE);
+  });
+
+  it('says the phone is offline when it is, whatever the upload did', async () => {
+    delayOf = (path, method) => (path === '/api/blobs' && method === 'POST' ? 90_000 : 0);
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    const wait = outcome(askVerseRead(request, clip(20), { key }));
+    await advance(60_000);
+    const result = (await wait) as { error: TutorError };
+    expect(result.error.message).toBe(OFFLINE_MESSAGE);
+    vi.restoreAllMocks();
   });
 });

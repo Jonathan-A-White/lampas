@@ -151,6 +151,17 @@ export class SendUnknownError extends Error {
   }
 }
 
+/**
+ * A file's upload ran out of its time (the door's ApiTimeoutError on the blob POST or on its reply): the link was too slow for the file, the mill never
+ * had it and no grist went, so a retry sends afresh. Not the tutor being down (mw-5r3p30.690).
+ */
+export class UploadTimeoutError extends Error {
+  constructor(cause: unknown) {
+    super('The file did not finish uploading in time.', { cause });
+    this.name = 'UploadTimeoutError';
+  }
+}
+
 /** Whether the backend's answer says the tutor's side is down, not that it refused him: a gateway error from the VPS's proxy (502, 503, 504) or any 5xx from
  * Postern itself (a 500 carries its own words, 'sql: database is locked', which mean nothing to him; mw-5r3p30.438). The one test for the send and the upload. */
 const backendFailed = (status: number): boolean => status >= 500;
@@ -182,13 +193,18 @@ export async function sendTimedGrist(p: SendParams): Promise<SentGrist & { resen
   const attachments: grist.Attachment[] = [];
   for (const file of files) {
     const sealed = grist.sealBytes(file.bytes, p.key, p.mill);
-    const response = await (p.uploadDoor ?? p.door).fetch('/blobs', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: sealed.buffer.slice(sealed.byteOffset, sealed.byteOffset + sealed.byteLength) as ArrayBuffer });
-    if (backendFailed(response.status)) throw new door.BackendUnreachableError(await refusal(response, 'The image upload failed.'));
-    if (!response.ok) throw new door.RefusedError(await refusal(response, 'The image upload failed.'), response.status);
-    // The upload has not sent the grist: a timeout here means nothing has gone.
-    const body = (await door.withTimeout(response.json(), false)) as { hash?: unknown; size?: unknown };
-    if (typeof body.hash !== 'string' || typeof body.size !== 'number') throw new Error('The upload succeeded but returned no hash.');
-    attachments.push({ hash: body.hash, size: body.size, mime: file.mime, ...(file.name === undefined ? {} : { name: file.name }) });
+    try {
+      const response = await (p.uploadDoor ?? p.door).fetch('/blobs', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: sealed.buffer.slice(sealed.byteOffset, sealed.byteOffset + sealed.byteLength) as ArrayBuffer });
+      if (backendFailed(response.status)) throw new door.BackendUnreachableError(await refusal(response, 'The image upload failed.'));
+      if (!response.ok) throw new door.RefusedError(await refusal(response, 'The image upload failed.'), response.status);
+      // The upload has not sent the grist: a timeout here means nothing has gone.
+      const body = (await door.withTimeout(response.json(), false)) as { hash?: unknown; size?: unknown };
+      if (typeof body.hash !== 'string' || typeof body.size !== 'number') throw new Error('The upload succeeded but returned no hash.');
+      attachments.push({ hash: body.hash, size: body.size, mime: file.mime, ...(file.name === undefined ? {} : { name: file.name }) });
+    } catch (err) {
+      if (err instanceof door.ApiTimeoutError) throw new UploadTimeoutError(err);
+      throw err;
+    }
   }
   // the script is made once: a second making seals afresh, and would be a second grist
   const scriptHex = scriptOf(p, attachments);

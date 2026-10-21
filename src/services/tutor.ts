@@ -19,7 +19,7 @@ import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import type { GristKind } from './gristKinds';
 import { listenForAnswers, type StreamTarget } from './answerStream';
-import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, SendUnknownError, sendTimedGrist, timedDoor, type MillAnswer, type MillFile, type Page, type Resend, type SentGrist, type TimedDoor } from './mill';
+import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, SendUnknownError, sendTimedGrist, timedDoor, UploadTimeoutError, type MillAnswer, type MillFile, type Page, type Resend, type SentGrist, type TimedDoor } from './mill';
 
 /** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
 export const TUTOR_APP = 'lampas';
@@ -271,6 +271,9 @@ export const FAILURE_TITLES: Record<TutorFailure, string> = {
 export const OFFLINE_MESSAGE = 'You are offline. Check your connection and try again.';
 export const TUTOR_OFFLINE_MESSAGE = 'The tutor is offline right now. This is not your connection; try again later.';
 
+/** What the box says when a file's upload ran out of its time with the phone online: the link was too slow, nothing reached the tutor (mw-5r3p30.690). */
+export const UPLOAD_TOO_SLOW_MESSAGE = 'That is taking too long to send. Check your connection and try again.';
+
 const phoneIsOffline = (): boolean => typeof navigator !== 'undefined' && navigator.onLine === false;
 
 export class TutorError extends Error {
@@ -333,7 +336,7 @@ async function sendSurely(first: () => Promise<SentGrist>, resend: Resend | unde
 }
 
 /** The door's and the grist's failures in the words the Ask box shows. */
-function explain(err: unknown): TutorError {
+function explain(err: unknown, uploadSlow?: string): TutorError {
   if (err instanceof TutorError) return err;
   if (err instanceof door.RefusedError && err.message === door.LICENCE_REQUIRED) {
     return new TutorError('no-licence', 'This phone holds no Lampas licence the tutor accepts.');
@@ -343,6 +346,8 @@ function explain(err: unknown): TutorError {
   // the phone has no network only when the browser says so (mw-5r3p30.433): a call that failed before any response is no proof, since the gateway's
   // error page with no CORS headers, and a refused connection with the factory's home off, fail just as a lost network does (a TypeError)
   if (phoneIsOffline()) return new TutorError('unreachable', OFFLINE_MESSAGE);
+  // a file that did not finish uploading on a slow link: the tutor never had it, and the tutor is not what is down
+  if (err instanceof UploadTimeoutError) return new TutorError('unreachable', uploadSlow ?? UPLOAD_TOO_SLOW_MESSAGE);
   // the backend answered with a gateway error, could not be reached with the phone online, or did not answer in time: it is the tutor's side that is down
   if (lostOnTheWay(err)) {
     return new TutorError('unreachable', TUTOR_OFFLINE_MESSAGE);
@@ -376,6 +381,8 @@ export interface AskOptions {
   uploadTimeoutMs?: number;
   /** What the box says when the deadline ends the wait, in place of 'The tutor is offline right now': for an ask whose mill has the grist and is still at it (a long reading). */
   tookTooLong?: string;
+  /** What the box says when the upload of a file runs out of its time, in place of UPLOAD_TOO_SLOW_MESSAGE: for an ask that can name what was being sent (a reading). */
+  uploadSlow?: string;
   baseUrl?: string;
 }
 
@@ -448,7 +455,7 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
       const tooLong = options.tookTooLong !== undefined && !offline && !phoneIsOffline();
       throw new TutorError('no-answer', tooLong ? options.tookTooLong! : phoneIsOffline() ? OFFLINE_MESSAGE : TUTOR_OFFLINE_MESSAGE, offline ? resend : undefined, offline ? went : undefined);
     }
-    const failure = explain(err);
+    const failure = explain(err, options.uploadSlow);
     // the grist went (or may have) and the link failed: the backend may hold it, and Retry is to find it, not to send a second
     if (resend && sent && lostOnTheWay(err)) throw new TutorError(failure.failure, failure.message, resend, went);
     throw failure;
