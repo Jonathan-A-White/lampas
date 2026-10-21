@@ -1,6 +1,6 @@
 Feature: A Bible reference in the tutor's answer opens a card first
   A reference the tutor writes ('Ps. 110', 'Heb 7:1-3', 'Romans 8:28') is a link. A tap opens a small card under it with the reference as its heading, the
-  verse's text in the Majority Standard Bible and the translation's name, and Open, which opens the reader on that verse. A tap outside the card or Back closes
+  verse's text as the Reader draws it now (English in the Majority Standard Bible, the Weave, or Greek; tests/unit/reference-card-mode.test.tsx) and Open, which opens the reader on that verse's chapter with the verse brought to the top, never the Verse view. A tap outside the card or Back closes
   it and nothing moves. A whole chapter shows its first verse. A book Lampas has no text for shows the card with 'Not in Lampas yet'; with Logos linked in Settings it
   has Open in Logos, in the Bible he chose there, and without it a link to Settings where Logos is linked. It has no Open for the reader.
 
@@ -17,11 +17,11 @@ Feature: A Bible reference in the tutor's answer opens a card first
     And the card has an Open button
     And the address is still where it was
 
-  Scenario: Open opens the reader on Hebrews 7:1 and the card is gone
+  Scenario: Open opens the reader on Hebrews 7 with verse 1 at the top, not the Verse view, and the card is gone
     Given a tutor answer says "Compare Ps. 110 with Heb 7:1-3 and Romans 8:28 today."
     When he taps the link "Heb 7:1-3"
     And he taps Open on the card
-    Then the reader is opened on Hebrews 7 verse 1
+    Then the reader is opened on Hebrews 7 with verse 1 brought to the top
     And no card is showing
 
   Scenario: A tap outside the card closes it and nothing moves

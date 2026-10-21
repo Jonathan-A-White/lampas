@@ -1,7 +1,7 @@
 Feature: Share to Lampas lists the Bible references in the shared words
   Words shared to Lampas (a page of a book, a message) are searched for Bible references: 'Gen. 1:28 ESV', 'Rom 8:28-30', '1 John 1:1', 'Ps 23'. The sheet
-  'Share to Lampas' shows them under 'Bible references (N)', each as it was printed and each a link that opens the Reader on the verse (a range at its first
-  verse). They are in the order of the page by default, a reference named twice at its first place with '×2'; a switch 'Page order' | 'Bible order' puts them
+  'Share to Lampas' shows them under 'Bible references (N)', each as it was printed and each a link that opens the verse's card over the list (the verses in the view he reads in, English, Weave or Greek; the Old Testament's card says 'Not in Lampas yet')
+  and the card's Open goes to the Reader, the chapter with the verse at the top (a range at its first verse), never the Verse view. They are in the order of the page by default, a reference named twice at its first place with '×2'; a switch 'Page order' | 'Bible order' puts them
   in Bible order under each book, and his choice is kept for the next share. Words with none say 'No Bible references found'. The finder is
   tests/unit/refs-in-text.test.ts.
   A shared picture (a screenshot of a book's page) is read by the mill's find-refs grind (mw-s1dc0n.2): the sheet says 'Finding Bible references...' while
@@ -14,10 +14,14 @@ Feature: Share to Lampas lists the Bible references in the shared words
     And the link "Rom 8:28" goes to "https://lampas.allmymind.org/#/?ref=Rom.8.28"
     And the link "1 John 1:1" also goes to "https://lampas.allmymind.org/#/?ref=1John.1.1"
 
-  Scenario: A link opens the Reader on the verse
+  Scenario: A link opens the verse's card over the list, and Open brings the verse to the top of its chapter in the Reader
     Given the Share screen is opened with a share of the words "See Rom 8:28-30."
     When he taps the link "Rom 8:28-30"
-    Then the Reader is open at Romans 8 verse 28
+    Then a card headed "Romans 8:28-30" shows the text "all things work together"
+    And the sheet shows the link "Rom 8:28-30"
+    When he taps Open on the card
+    Then the Reader is open at Romans 8 with verse 28 brought to the top
+    And no verse is selected
 
   Scenario: An Old Testament reference opens the not-in-Lampas card, not another chapter
     Given the Share screen is opened with a share of the words "God said (Gen. 1:28 ESV) be fruitful."
@@ -83,9 +87,10 @@ Feature: Share to Lampas lists the Bible references in the shared words
   Scenario: Going back to a share after an opened reference sends no second grist
     Given the Share screen is opened with a shared picture, read at once with the reference "Rom. 8:28" at "Rom.8.28"
     When he taps the link "Rom. 8:28"
-    Then the Reader is open at Romans 8 verse 28
+    And he taps Open on the card
+    Then the Reader is open at Romans 8 with verse 28 brought to the top
     When he goes Back
-    Then the sheet "Share to Lampas" is not there
+    Then the sheet "Share to Lampas" is there
     And only one grist went to the mill
 
   Scenario: Offline, the line says the phone is offline and offers Try again

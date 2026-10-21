@@ -327,8 +327,14 @@ a phone that installed Lampas before this version may need it removed and instal
   `links.ts` `parseCanonReference`: no second table of names; a full name or an abbreviation with or without a dot, `1 John`, `Ps 23`, `Rom 8:28-30`, `Rom 8:28, 31` as one
   reference each; a translation tag such as ESV is left out; a word that is also English, such as `Mark my words`, needs a chapter and verse or a capital) and the sheet shows
   **Bible references (N)** above the choice (`src/share/ShareReferences.tsx`): each reference as printed, a link whose href is `links.ts` `referenceUrl` (a range at its
-  first verse, an Old Testament book by its OSIS code `OT_OSIS`; Lampas holds no Old Testament text, so that link opens the nearest place with its usual notice). A tap opens the
-  link as a new Back step (`route.ts` `openHash`), so Back returns to the list. **Page order** (the default) keeps the order of the text, a reference named twice at its first place
+  first verse, an Old Testament book by its OSIS code `OT_OSIS`; the href is what a long press or a new tab has). **A tap opens the usual pop-up over the list** (mw-5r3p30.697: the
+  tutor's reference card, `src/markdown/ReferenceCard.tsx` `ReferenceLink`), and the list stays under it: so he can read just those verses one after another without leaving it. The pop-up
+  shows the verses in the mode he reads in now, as the Reader draws them (`MarkedPassage`: English, the Weave with his weave settings, or Greek; the footer names the Majority Standard Bible or
+  the Robinson-Pierpont Greek), for every place the card is used (the tutor's answers, a Review question, this list). A reference to the Old Testament, which Lampas does not hold, opens the card
+  that says **Not in Lampas yet**, with **Open in Logos** when Logos is on. The card's **Open** goes to the Reader on the verse's chapter with the verse brought to the top and the rest of the
+  chapter above and below it (`readerRequest.ts` `openAtVerse`, the request `useBringVerse` meets; no verse is selected, so never the one-verse Verse view); from this list it takes the place of
+  the list's own history entry (`route.ts` `replaceReader`, `ReferenceLink`'s `replacing`), so Back from the Reader returns to the list, which draws its sheet afresh. Checks:
+  `tests/unit/reference-card-mode.test.tsx`, `tests/e2e/share-refs-popup.spec.ts`, `tests/e2e/share-verse-back.spec.ts`. **Page order** (the default) keeps the order of the text, a reference named twice at its first place
   with **×2**; **Bible order** groups them under each book. The choice is kept on the phone (localStorage `lampas.shareRefsOrder`). With words and no reference it says **No Bible
   references found**.
 - **Bible references in a picture** (mw-s1dc0n.2, `features/share-references.feature`): a shared picture (a screenshot of a book's page) is read by the mill's `find-refs`

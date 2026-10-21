@@ -78,6 +78,17 @@ async function open(text: string, fresh: boolean, picture: false | 'held' | 'fai
   await screen.findByRole('dialog', { name: 'Share to Lampas' });
 }
 
+const openOnCard = async (): Promise<void> => {
+  await user.click(await within(await screen.findByRole('dialog', { name: /^Romans 8:28/ })).findByRole('button', { name: 'Open' }));
+};
+
+/** The Reader is on Romans 8 and verse 28 has been brought to the top: its box says so, and no verse is selected (that would open the Verse view). */
+const readerAtEight = async (): Promise<void> => {
+  await waitFor(() => expect(document.querySelector('[data-brought-verse="28"]')).not.toBeNull());
+  expect(window.location.hash).toContain('c=8');
+  expect(window.location.hash).not.toContain('v=');
+};
+
 const sheet = () => screen.getByRole('dialog', { name: 'Share to Lampas' });
 const links = () => Array.from(sheet().querySelectorAll<HTMLAnchorElement>('a[data-share-ref]'));
 const linkNamed = (name: string): HTMLAnchorElement => {
@@ -117,15 +128,24 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A link opens the Reader on the verse', ({ Given, When, Then }) => {
+  Scenario("A link opens the verse's card over the list, and Open brings the verse to the top of its chapter in the Reader", ({ Given, When, Then, And }) => {
     Given('the Share screen is opened with a share of the words {string}', sharedWords);
     When('he taps the link {string}', async (_, name: string) => {
       await user.click(linkNamed(name));
     });
-    Then('the Reader is open at Romans 8 verse 28', async () => {
-      await waitFor(() => expect(document.querySelector('[data-verse][data-selected="true"]')).not.toBeNull());
-      expect(document.querySelector('[data-verse][data-selected="true"]')).toHaveTextContent(/28/);
-      expect(window.location.hash).toContain('c=8');
+    Then('a card headed {string} shows the text {string}', async (_, heading: string, text: string) => {
+      const dialog = await screen.findByRole('dialog', { name: heading });
+      await waitFor(() => expect(dialog.querySelector('[data-reference-text]')).toHaveTextContent(text));
+    });
+    And('the sheet shows the link {string}', async (_, name: string) => {
+      expect(sheet()).toBeInTheDocument();
+      expect(linkNamed(name)).toBeInTheDocument();
+    });
+    When('he taps Open on the card', openOnCard);
+    Then('the Reader is open at Romans 8 with verse 28 brought to the top', readerAtEight);
+    And('no verse is selected', () => {
+      expect(document.querySelector('[data-verse][data-selected="true"]')).toBeNull();
+      expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull();
     });
   });
 
@@ -283,16 +303,14 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the link {string}', async (_, name: string) => {
       await user.click(linkNamed(name));
     });
-    Then('the Reader is open at Romans 8 verse 28', async () => {
-      await waitFor(() => expect(document.querySelector('[data-verse][data-selected="true"]')).not.toBeNull());
-      expect(window.location.hash).toContain('c=8');
-    });
+    And('he taps Open on the card', openOnCard);
+    Then('the Reader is open at Romans 8 with verse 28 brought to the top', readerAtEight);
     When('he goes Back', async () => {
       window.history.back();
       await new Promise((resolve) => setTimeout(resolve, 300));
     });
-    Then('the sheet {string} is not there', (_, name: string) => {
-      expect(screen.queryByRole('dialog', { name })).toBeNull();
+    Then('the sheet {string} is there', async (_, name: string) => {
+      expect(await screen.findByRole('dialog', { name })).toBeInTheDocument();
     });
     And('only one grist went to the mill', () => {
       expect(fake.received).toHaveLength(1);

@@ -54,7 +54,8 @@ test('a picture is read once: opening a reference and coming back (or reloading)
 
   // read the verse, then back to the share for the next one
   await sheet.getByRole('link', { name: 'Rom. 8:28', exact: true }).tap();
-  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await page.getByRole('dialog', { name: 'Romans 8:28', exact: true }).getByRole('button', { name: 'Open', exact: true }).tap();
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await page.goto('/#/share?s=pic');
   await expect(sheet.getByRole('link', { name: 'John 3:16', exact: true })).toBeVisible();
   await expect(sheet.getByText('Finding Bible references...')).toHaveCount(0);

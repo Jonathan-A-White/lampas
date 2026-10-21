@@ -8,6 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { setLogosBible, setResourceOn } from '../../src/data/repositories';
 import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { Markdown } from '../../src/markdown/Markdown';
+import { pendingRequest } from '../../src/nav/readerRequest';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
@@ -58,7 +59,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('a card headed {string} shows the text {string}', async (_, heading: string, text: string) => {
       const dialog = await screen.findByRole('dialog', { name: heading });
       expect(within(dialog).getByRole('heading', { name: heading })).toBeInTheDocument();
-      await within(dialog).findByText(new RegExp(text));
+      await waitFor(() => expect(dialog.querySelector('[data-reference-text]')).toHaveTextContent(text));
     });
     And('the card names the translation {string}', (_, name: string) => {
       expect(within(card() as HTMLElement).getByText(name)).toBeInTheDocument();
@@ -71,7 +72,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Open opens the reader on Hebrews 7:1 and the card is gone', ({ Given, When, Then, And }) => {
+  Scenario('Open opens the reader on Hebrews 7 with verse 1 at the top, not the Verse view, and the card is gone', ({ Given, When, Then, And }) => {
     Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
     When('he taps the link {string}', async (_, name: string) => {
       await user.click(screen.getByRole('link', { name }));
@@ -79,8 +80,11 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps Open on the card', async () => {
       await user.click(await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Open' }));
     });
-    Then('the reader is opened on Hebrews 7 verse 1', () => {
-      expect(readerOf(window.location.hash)).toMatchObject({ book: 'heb', chapter: 7, verse: 1 });
+    Then('the reader is opened on Hebrews 7 with verse 1 brought to the top', () => {
+      const at = readerOf(window.location.hash);
+      expect(at).toMatchObject({ book: 'heb', chapter: 7 });
+      expect(at.verse).toBeUndefined();
+      expect(pendingRequest()).toMatchObject({ action: 'verse', book: 'heb', chapter: 7, verse: 1 });
     });
     And('no card is showing', async () => {
       await waitFor(() => expect(card()).toBeNull());
@@ -128,7 +132,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('a card headed {string} shows the text {string}', async (_, heading: string, text: string) => {
       const dialog = await screen.findByRole('dialog', { name: heading });
-      await within(dialog).findByText(new RegExp(text));
+      await waitFor(() => expect(dialog.querySelector('[data-reference-text]')).toHaveTextContent(text));
     });
   });
 
