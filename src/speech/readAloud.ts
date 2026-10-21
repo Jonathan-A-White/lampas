@@ -16,7 +16,7 @@ import { getSpeech, isSpeaking, pause as enginePause, resume as engineResume, st
 import { loadChapter, type Verse } from '../data/chapter';
 import { neighbours } from '../data/neighbours';
 import type { ReaderView } from '../data/repositories';
-import { drawnOrder, type WovenVerse } from '../data/weave';
+import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
 import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterCuts, playInTurn, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside, type Piece } from './greek';
@@ -56,9 +56,8 @@ export function runsOf(verse: Verse, view: ReaderView, woven: WovenVerse | null)
     view === 'greek'
       ? verse.g.map((w) => ({ text: w.t, language: 'greek' as const }))
       : drawnOrder(verse, woven).map((i) => {
-          const chunk = verse.e[i];
           const words = woven?.[i]?.words;
-          return words ? { text: words.map((w) => w.t).join(' '), language: 'greek' as const } : { text: chunk.t, language: 'english' as const };
+          return words ? { text: words.map((w) => w.t).join(' '), language: 'greek' as const } : { text: chunkText(verse, woven, i), language: 'english' as const };
         });
   const runs: Run[] = [];
   for (const part of parts) {

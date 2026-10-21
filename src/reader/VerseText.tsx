@@ -3,7 +3,7 @@ import type { BarHandlers } from 'voice-kit/composer';
 import { Fragment, useEffect, useRef, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import { drawnOrder, type WovenVerse } from '../data/weave';
+import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { useAiAllowed } from '../gate/licenceContext';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
@@ -208,7 +208,9 @@ export function VerseText({ verse, view, woven, onLook, marked, still }: Pick<Ve
             </Tap>
           ))
         : drawnOrder(verse, woven).map((i) => {
-            const c = verse.e[i];
+            // a Greek-order weave may have moved a sentence's closing mark to the end of its last piece (weave.ts chunkText)
+            const text = chunkText(verse, woven, i);
+            const c = text === verse.e[i].t ? verse.e[i] : { ...verse.e[i], t: text };
             const weft = woven?.[i];
             if (weft && weft.words.length > 1) {
               // Two Greek words behind one English chunk ("to you." is ὑμῖν γράφω): the wrapper only holds the chunk's marks, each word is its own target (mw-5r3p30.614).

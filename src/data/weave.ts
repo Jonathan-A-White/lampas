@@ -9,7 +9,7 @@ export type Woven = { words: GreekWord[]; learning: boolean } | null;
 
 /** A verse's weave, chunk by chunk in `verse.e`'s own indexes, and the order the chunks are drawn and read in (mw-5r3p30.250): absent, the
  * English order. */
-export type WovenVerse = Woven[] & { readonly order?: readonly number[] };
+export type WovenVerse = Woven[] & { readonly order?: readonly number[]; readonly texts?: readonly string[] };
 
 /** The lemmas the weave knows (NFC): the solid ones, and with Weave 'Solid and learning words' the learning ones too. */
 export interface WeaveLemmas {
@@ -79,10 +79,43 @@ export function chunkOrder(verse: Verse, order: WeaveOrder): number[] {
   return english.sort((a, b) => at[a] - at[b] || a - b);
 }
 
-/** The weave `woven` of `verse` with the order it is laid out in: Greek carries chunkOrder's, English none (the chunks' own order). */
+/** A sentence's closing mark at the end of a chunk's English: the mark, then any closing quote or bracket. */
+const CLOSING = /([.?!;:]+)([”’"')\]]*)$/;
+
+/**
+ * The English of every chunk as a Greek-order weave shows it (mw-5r3p30.698), or undefined when it is the chunks' own text. A sentence's closing mark
+ * belongs to the end of the sentence: the English sentences are those the marks close, and when the chunks are laid out in `order` a mark on a chunk
+ * that is followed by more of its own sentence is taken off it and put on the sentence's last drawn chunk (in place of a comma that chunk ended with),
+ * so 'are seared with a hot iron.' drawn before 'whose consciences' gives '... iron whose consciences.'. A sentence the English never closed stays open.
+ */
+function movedMarks(verse: Verse, order: readonly number[]): string[] | undefined {
+  let sentence = 0;
+  const of = verse.e.map((c) => {
+    const s = sentence;
+    if (CLOSING.test(c.t.trimEnd())) sentence += 1;
+    return s;
+  });
+  const texts = verse.e.map((c) => c.t);
+  order.forEach((i, p) => {
+    const closing = CLOSING.exec(verse.e[i].t.trimEnd());
+    if (!closing || !order.slice(p + 1).some((j) => of[j] === of[i])) return;
+    const last = order.filter((j) => of[j] === of[i]).pop() as number;
+    texts[i] = verse.e[i].t.trimEnd().replace(CLOSING, '');
+    texts[last] = `${texts[last].trimEnd().replace(/,$/, '')}${closing[0]}`;
+  });
+  return texts.some((t, i) => t !== verse.e[i].t) ? texts : undefined;
+}
+
+/** The weave `woven` of `verse` with the order it is laid out in: Greek carries chunkOrder's (and, where a sentence's closing mark had to move, the chunks' texts), English none (the chunks' own order). */
 export function wovenInOrder(verse: Verse, woven: Woven[], order: WeaveOrder): WovenVerse {
-  return order === 'greek' ? Object.assign([...woven], { order: chunkOrder(verse, order) }) : woven;
+  if (order !== 'greek') return woven;
+  const drawn = chunkOrder(verse, order);
+  const texts = movedMarks(verse, drawn);
+  return Object.assign([...woven], { order: drawn, ...(texts ? { texts } : {}) });
 }
 
 /** The chunk indexes of `verse` in the order a weave lays them out. */
 export const drawnOrder = (verse: Verse, woven: WovenVerse | null): readonly number[] => woven?.order ?? verse.e.map((_, i) => i);
+
+/** The English of chunk `i` as the weave shows it. */
+export const chunkText = (verse: Verse, woven: WovenVerse | null | undefined, i: number): string => woven?.texts?.[i] ?? verse.e[i].t;
