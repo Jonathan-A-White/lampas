@@ -395,7 +395,7 @@
     "pronunciation": { "description": "Optional. The Greek pronunciation the app speaks and respells in, by its id. Its rules are in pronunciation_guide.", "type": "string", "minLength": 1, "maxLength": 40 },
     "pronunciation_guide": { "description": "Optional. The name of that pronunciation and the sound rules the app speaks and respells by, from its pronunciation scheme. Describe every Greek sound by these rules.", "type": "string", "minLength": 1, "maxLength": 2000 },
     "focus": {
-      "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row, or its Ask the tutor: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), a grammar term (from a Grammar sheet's Ask the tutor), a paradigm table (from the Paradigms screen's Ask the tutor), or a Quick test question (from the question's Ask the tutor: the word, the question, his answer and his earlier answers of the round).",
+      "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row, or its Ask the tutor: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), a grammar term (from a Grammar sheet's Ask the tutor), a paradigm table (from a table's Ask the tutor on the Paradigms screen: the table, the mode, the forms he has revealed, the cell he is on and the word he came from), or a Quick test question (from the question's Ask the tutor: the word, the question, his answer and his earlier answers of the round).",
       "anyOf": [
         {
           "type": "object",
@@ -433,7 +433,28 @@
               "maxItems": 40,
               "items": { "type": "string", "minLength": 1, "maxLength": 120 }
             },
-            "kind": { "description": "paradigm: explain the table's pattern and quiz him on the forms he has revealed.", "type": "string", "enum": ["paradigm"] }
+            "kind": { "description": "paradigm: explain the table's pattern and quiz him on the forms he has revealed.", "type": "string", "enum": ["paradigm"] },
+            "mode": { "description": "Optional. Learn: every form of the table is shown. Drill: the forms are blank until he taps them, so only the revealed ones are known to him.", "type": "string", "enum": ["learn", "drill"] },
+            "cell": {
+              "description": "Optional. The cell he is on: the last one he tapped, or, before any tap, the word's own cell.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["parse"],
+              "properties": {
+                "parse": { "description": "The cell's place in plain words: 'Genitive Singular Feminine'.", "type": "string", "minLength": 1, "maxLength": 120 },
+                "form": { "description": "Optional. The form in the cell. Missing when the table does not show it to him (a locked cell, or a blank one in Drill).", "type": "string", "minLength": 1, "maxLength": 80 }
+              }
+            },
+            "word": {
+              "description": "Optional. The word of the text he opened the table from, with its parsing in plain words.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["form", "parse"],
+              "properties": {
+                "form": { "description": "The word as it stands in the text.", "type": "string", "minLength": 1, "maxLength": 80 },
+                "parse": { "description": "Its parsing in plain words: 'present active indicative, 1st person singular'.", "type": "string", "minLength": 1, "maxLength": 120 }
+              }
+            }
           }
         },
         {

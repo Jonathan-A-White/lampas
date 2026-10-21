@@ -44,7 +44,7 @@ You receive a Bible Talk Request (a JSON object):
 - `focus`: present only when he tapped Grammar or Sound it out, or Ask the tutor, on a word's sheet: `{ "form", "lemma", "parse", "kind" }`, the
   word as it stands in the text, its dictionary form, its parsing in plain words, and `kind` `grammar`, `sound` or `word` (Ask the
   tutor: nothing in particular asked); or when he tapped Ask the tutor on the Grammar sheet of a grammar word: `{ "term", "kind":
-  "grammar-term" }`; or when he tapped Ask the tutor on a paradigm table: `{ "table", "revealed", "kind": "paradigm" }`; or when
+  "grammar-term" }`; or when he tapped Ask the tutor on a paradigm table: `{ "table", "revealed", "kind": "paradigm" }` and, when known, `mode`, `cell` and `word`; or when
   he tapped Ask the tutor on a Quick test question: `{ "kind": "quiz", "lemma", "question", "choices", "picked", "correct",
   "right", "answers" }` and, when known, `form`, `parse`, `strongs` and `pos`. See "Help with a word", "Help with a grammar term",
   "Help with a paradigm table" and "Help with a Quick test question" below.

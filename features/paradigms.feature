@@ -8,8 +8,8 @@ Feature: Paradigms
   blank; a tap shows its form and asks Had it or Missed; after the last, 'N of M' and Drill the missed again); a Learn | Drill switch
   changes it (mw-irpgqi.2; the old addresses mode=review and mode=study still open Learn and Drill). How much of a table (Settings >
   Greek, and a switch in the table's header) says which cells are shown: Any (locked cells too, marked not yet), Solid and frontier (the
-  default: his cells, the rest locked) or Solid only (the frontier cells hidden). Ask the tutor sends the table's name and the forms
-  showing to the tutor, on the chapter that is open.
+  default: his cells, the rest locked) or Solid only (the frontier cells hidden). Ask the tutor (on the list too) opens the tutor's sheet over the screen and tells it the table, the mode, the forms
+  showing, the cell he is on and the word he came from; the talk is kept per table (mw-irpgqi.3).
 
   Background:
     Given his grammar levels are the article, the nominative, the singular and nouns solid, the genitive and the feminine at the frontier, the masculine solid, the dative, the accusative, the plural and the neuter not yet
@@ -217,15 +217,15 @@ Feature: Paradigms
     When he goes back to Settings, to the Greek page
     Then "Any" is chosen under How much of a table
 
-  Scenario: Ask the tutor hands the table's name and the revealed forms to the tutor
+  Scenario: Ask the tutor hands the table, the mode, the revealed forms and the cell he is on to the tutor
     Given the table "article" is open to Drill, with a fake Postern
     And he drills "Genitive Singular Masculine" as had and "Nominative Singular Feminine" as had
     When he taps Ask the tutor
-    Then the reader is open on Romans 8 and the Talk sheet is titled "Talk about Romans 8"
+    Then the table is still open and the Talk sheet is titled "Ask the tutor: Paradigms"
     And the mill received 1 grist for the lampas app, kind bible-talk
-    And the grist carries the focus paradigm "The article" with the revealed forms "Nominative Singular Feminine: ἡ" and "Genitive Singular Masculine: τοῦ"
+    And the grist carries the focus paradigm "The article" in Drill with the revealed forms "Nominative Singular Feminine: ἡ" and "Genitive Singular Masculine: τοῦ", on the cell "Nominative Singular Feminine"
     And the grist question names the table "The article"
-    And a reader request for the table "The article" was published
+    And no request was made of the Reader
 
   # mw-svw421.25: a lock says which ideas it still needs, each with a Go to button that opens that idea's sheet, the lowest on the ladder first.
   Scenario: A locked cell names the ideas it still needs, each with a button to its sheet

@@ -1,7 +1,7 @@
 // src/reader/useReaderTutor.ts — the Reader's tutor wiring (docs/module-map.md R1b): which Talk sheet is open and what it is about, and every way
 // the Reader asks the tutor: a hold on a verse number or the Talk bar (holdTalk), Help with this word (helpWithWord), a grammar term
 // (askAboutTerm), the teach sheet's new word (askAboutNewWord) and the Verse view's Quiz me (openQuiz); with the request another screen made
-// (the Paradigms and Quick test asks), met once as the Reader opens. helpWithWord, askAboutTerm and askAboutNewWord differ only in the question
+// (the Quick test's ask), met once as the Reader opens. helpWithWord, askAboutTerm and askAboutNewWord differ only in the question
 // they build: askFrom is the one place that opens the sheet on the verse and sends it.
 // The refs the Reader's effects share are passed in, never copied: `openTalkRef` (the conversation the sheet is open on, which useTalk's
 // callback reads) is the Reader's, and this hook keeps it current.
@@ -15,7 +15,6 @@ import type { ReaderRequest } from '../nav/readerRequest';
 import {
   helpQuestion,
   newWordQuestion,
-  paradigmQuestion,
   quizMeQuestion,
   scopeRef,
   scopeTitle,
@@ -65,7 +64,7 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
   const { states, say } = talk;
   // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. A request from another screen opens it first.
   const [talkAbout, setTalkAboutRaw] = useState<number | null | undefined>(() =>
-    request?.action === 'talk' || request?.action === 'word' ? request.verse : request?.action === 'paradigm' ? null : undefined,
+    request?.action === 'talk' || request?.action === 'word' ? request.verse : undefined,
   );
   // The quiz (the Verse view's Quiz me, mw-5r3p30.74): the verse or passage the open Talk sheet quizzes, else null.
   const [quizUnit, setQuizUnit] = useState<Verse | null>(null);
@@ -87,18 +86,6 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
       : null;
   const talkKey = talkScope ? scopeRef(BOOK, CHAPTER, talkScope) : null;
 
-  // Ask the tutor on a paradigm table (src/ParadigmsScreen.tsx): the Talk sheet is open on the chapter; once the chapter is here the first
-  // question goes with the table's name and the forms he revealed.
-  const paradigmSent = useRef(false);
-  useEffect(() => {
-    if (request?.action !== 'paradigm' || !chapter || paradigmSent.current) return;
-    paradigmSent.current = true;
-    say({ title: TITLE, chapter, verse: null }, paradigmQuestion(request.table, request.revealed.length), {
-      kind: 'paradigm',
-      table: request.table,
-      revealed: request.revealed,
-    });
-  }, [request, chapter, say, TITLE]);
   // The Quick test's Ask the tutor: the Talk sheet is open on the word's verse; once the chapter is here the first question goes with
   // the focus it was asked with (the word, the question, his answers so far).
   const wordSent = useRef(false);

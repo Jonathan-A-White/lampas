@@ -29,7 +29,9 @@ screen gets `<AskTutor route>` from `App.tsx`, which opens the Talk sheet over a
 use it. `learner`, `learner_grammar` and `solid_words` ride as in every talk (`solid_words` is his 50 newest solid words and `solid_count` how many he has in all, src/services/solidWords.ts: the request does not grow with the learner; verse-ask is fitted to `MAX_REQUEST_BYTES` by `fitAsk` as the talk is by `fitHistory`).
 
 A screen leaves its facts with `useReportScreen({ name, facts })` (or `<ReportScreen>`), kept in `src/tutor/screenContext.ts`; the control reads them
-live. A screen that reports nothing sends its name alone.
+live. A screen that reports nothing sends its name alone. A screen may draw an Ask the tutor button of its own: it calls `askTheTutor(first?)` (`src/tutor/askNow.ts`) and the
+control opens its sheet, sending `first` (a question and a focus) only when the talk has no turn yet. A screen whose talk is its own reports `kept` with its facts (the key the talk
+is kept under, never sent): each paradigm table is `screen.paradigms.<id>` (mw-irpgqi.3, docs/paradigms.md 'Ask the tutor').
 
 | Screen | Facts |
 | --- | --- |

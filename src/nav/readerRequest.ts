@@ -24,13 +24,6 @@ export function talkInReader(book: string, chapter: number, verse: number): void
   openReader({ book, chapter, verse });
 }
 
-/** Opens the Reader on `chapter` of `book` (no verse), with the Talk sheet open on the chapter and a first question sent about the paradigm table `table`,
- * its name, holding the `revealed` forms (src/data/paradigms). */
-export function askAboutParadigm(book: string, chapter: number, table: string, revealed: string[]): void {
-  publish({ kind: 'reader-requested', id: ++lastId, action: 'paradigm', book, chapter, table, revealed });
-  openReader({ book, chapter });
-}
-
 /** Opens the Reader on `verse` of `chapter` of `book`, with the Talk sheet open on that verse and `question` already sent, `focus` with it (the
  * Quick test's Ask the tutor: the word, the question and his answers so far). */
 export function askAboutWord(book: string, chapter: number, verse: number, question: string, focus: TalkFocus): void {

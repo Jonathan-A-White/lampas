@@ -115,12 +115,24 @@ export interface TermFocus {
   kind: 'grammar-term';
 }
 
-/** The paradigm table he asked the tutor about (the Paradigms screen's Ask the tutor): its name and the forms he has revealed, each
- * with its place: 'Genitive Singular Masculine: τοῦ'. At most MAX_REVEALED, the longest table. */
+/** A form of a paradigm table with its place in plain words, as the table names it: 'Genitive Singular Feminine' and 'τῆς'. */
+export interface ParadigmPlace {
+  /** the cell's place; for a word, its parsing in plain words */
+  parse: string;
+  /** the form; missing for a cell whose form the table does not show him (a locked one) */
+  form?: string;
+}
+
+/** The paradigm table he asked the tutor about (the Paradigms screen's Ask the tutor, mw-irpgqi.3): its name, the mode he is in (Learn shows every form, Drill hides them until tapped),
+ * the forms he has revealed, each with its place: 'Genitive Singular Masculine: τοῦ' (at most MAX_REVEALED, the longest table), the cell in focus (the last one he tapped, or the
+ * word's own) and the word he came to the table from, if he did. */
 export interface ParadigmFocus {
   table: string;
   revealed: string[];
   kind: 'paradigm';
+  mode?: 'learn' | 'drill';
+  cell?: ParadigmPlace;
+  word?: { form: string; parse: string };
 }
 
 /** The most forms a paradigm focus carries (the grind's schema): the largest table holds 40. */
@@ -129,8 +141,11 @@ export const MAX_REVEALED = 40;
 /** What a question comes with, when it comes from a word's sheet, a Grammar sheet, a paradigm table or a Quick test question. */
 export type TalkFocus = WordFocus | TermFocus | ParadigmFocus | QuizFocus;
 
-/** The question the Paradigms screen's Ask the tutor sends: it names the table; the forms he has revealed ride in the focus. */
-export function paradigmQuestion(table: string, revealed: number): string {
+/** The question the Paradigms screen's Ask the tutor sends: it names the table, and the cell he is on and the word he came from when he is on one; the forms he has revealed and the mode ride in the focus. */
+export function paradigmQuestion(table: string, revealed: number, on: Pick<ParadigmFocus, 'cell' | 'word'> = {}): string {
+  const cell = on.cell ? ` I am looking at ${on.cell.parse}${on.cell.form ? `: ${on.cell.form}` : ''}.` : '';
+  const word = on.word ? ` I came to it from the word ${on.word.form} (${on.word.parse}).` : '';
+  if (on.cell || on.word) return `I am learning the paradigm table “${table}”.${cell}${word} Explain what to notice about it and how it fits the pattern of the table.`;
   return revealed > 0
     ? `I am learning the paradigm table “${table}”. Explain its pattern, then quiz me on the forms I have revealed.`
     : `I am learning the paradigm table “${table}” and have not revealed any form yet. Explain its pattern and how to learn it.`;
