@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.390
+_2026-10-21_
+- Fixed: The help that opens under a setting now looks like a neat card instead of grey text with a bright yellow link.
+
 ## 0.1.389
 _2026-10-21_
 - Fixed: the Greek voice now says εἰμι, ἐστιν and similar small words as one word (ee-mee) instead of spelling the letters.

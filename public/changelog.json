@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.390",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.702",
+    "kind": "fixed",
+    "text": "The help that opens under a setting now looks like a neat card instead of grey text with a bright yellow link."
+  },
+  {
     "version": "0.1.389",
     "date": "2026-10-21",
     "story": "mw-5r3p30.701",
