@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.384",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.692",
+    "kind": "fixed",
+    "text": "When the tutor says a second form of a word aloud, it no longer pronounces the rough breathing as an \"h\"."
+  },
+  {
     "version": "0.1.382",
     "date": "2026-10-21",
     "story": "mw-5r3p30.690",

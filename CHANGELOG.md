@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.384
+_2026-10-21_
+- Fixed: When the tutor says a second form of a word aloud, it no longer pronounces the rough breathing as an "h".
+
 ## 0.1.382
 _2026-10-21_
 - Fixed: A long reading that is too slow to send on a weak connection now says so, instead of saying the tutor is offline.
