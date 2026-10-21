@@ -25,3 +25,7 @@ npm run ladder       # scripts/ladder-el.ts scores every verse for how hard it i
 npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json + frequency.json;
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
+
+## Timing tests (MW_TIMING)
+
+A test that needs the real clock is listed in the rig's `timing_tests` (millwright's `rigs/lampas.toml`, `docs/timing-tests.md`) and carries a `covers:` line saying what the real clock proves. `vitest.config.ts` (`timingFilter`) and each gate project of `playwright.config.ts` (`playwrightTimingFilter`, from `pwa-kit/test-preset`) read `MW_TIMING` and `MW_TIMING_TESTS` (comma-joined globs): `MW_TIMING=skip` leaves those files out (what the gates set), `MW_TIMING=only` runs just them (the nightly timing job; vitest then passes with no file when the timing tests are all Playwright specs), unset runs everything. The `live` project is in neither. `tests/unit/timing-filter-config.test.ts` holds it. Today the one timing test is `tests/e2e/turn-pages-trace.spec.ts`.
