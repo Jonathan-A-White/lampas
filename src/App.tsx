@@ -21,6 +21,7 @@ import { IpaCourse } from './ipa/IpaCourse';
 import { LadderGraph } from './LadderGraph';
 import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
+import { WordReturn } from './WordReturn';
 import { ParadigmsScreen } from './ParadigmsScreen';
 import { WhereDidYouGetTo } from './plan/WhereDidYouGetTo';
 import { RequestsScreen } from './RequestsScreen';
@@ -150,6 +151,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       <WhereDidYouGetTo hidden={route === 'unlock'} />
       {/* the idea sheet he left for a table comes back on Back (mw-svw421.5) */}
       <IdeaReturn />
+      {/* the word sheet he left for the word's table comes back on Back (mw-irpgqi.1) */}
+      <WordReturn />
       {/* the round Ask the tutor control of every screen but the Reader and the Share screen (its sheets are talks), which draws its own beside its Talk bar */}
       {route === 'home' || route === 'share' || route === 'unlock' ? null : <AskTutor route={route} />}
       {/* the one bar for anything read aloud (voice-kit/speech): drawn into the highest BarSlot on screen, this one at the shell's foot when no screen has its own */}

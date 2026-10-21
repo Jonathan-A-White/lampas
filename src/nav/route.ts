@@ -131,6 +131,11 @@ export interface ParadigmAddress {
   /** the table's id: 'article', 'eimi' */
   table?: string;
   mode?: 'study' | 'review';
+  /** the cell of the table that is a tapped word's own, by its name (paradigms cellName): it is lit and brought into view (mw-irpgqi.1) */
+  cell?: string;
+  /** the word whose cell it is, as the text has it ('ἀγαπῶ'), and its RP parsing code ('V-PAI-1S'): the screen says them beside the table's name */
+  word?: string;
+  parse?: string;
 }
 
 export function paradigmOf(hash: string): ParadigmAddress {
@@ -141,14 +146,27 @@ export function paradigmOf(hash: string): ParadigmAddress {
   if (table !== null && paradigmById(table)) address.table = table;
   const mode = params.get('mode');
   if (address.table !== undefined && (mode === 'study' || mode === 'review')) address.mode = mode;
+  const cell = params.get('cell');
+  if (address.table !== undefined && cell) address.cell = cell;
+  const word = params.get('w');
+  const parse = params.get('p');
+  if (address.table !== undefined && word && parse) {
+    address.word = word;
+    address.parse = parse;
+  }
   return address;
 }
 
 /** The Paradigms address, always in the same order. */
-export function paradigmHash({ table, mode }: ParadigmAddress): string {
+export function paradigmHash({ table, mode, cell, word, parse }: ParadigmAddress): string {
   const params = new URLSearchParams();
   if (table !== undefined) params.set('t', table);
   if (table !== undefined && mode) params.set('mode', mode);
+  if (table !== undefined && cell) params.set('cell', cell);
+  if (table !== undefined && word && parse) {
+    params.set('w', word);
+    params.set('p', parse);
+  }
   const query = params.toString();
   return query ? `#/paradigms?${query}` : '#/paradigms';
 }

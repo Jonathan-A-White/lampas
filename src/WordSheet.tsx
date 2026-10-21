@@ -15,6 +15,10 @@ import { useAiAllowed } from './gate/licenceContext';
 import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
+import { paradigmOfWord } from './data/paradigms';
+import { openParadigm } from './nav/route';
+import { holdWord } from './wordReturn';
+import { oneTap } from './ui/settle';
 import { optionOf, RESOURCES, type StudyLink, type StudyRef, type StudyResource } from './resources';
 import { storeUrl } from './resources/appStore';
 import { armFallback } from './resources/openApp';
@@ -120,10 +124,14 @@ function studyGroupsOf(chapter: Chapter, word: GreekWord, study: StudyResources 
 /** More tiles than this and the sheet is a long one: a Close button sits under its scroll box and a fade says there is more below. */
 const MANY_TILES = 6;
 
-/** The facts' box's height and foot: the heading above it (a line and its padding) takes its room out of the box, so the sheet stays as tall as before. */
-function scrollHeight(many: boolean, heading: unknown): string {
+/** The facts' box's height and foot: the heading above it (a line and its padding) takes its room out of the box, so the sheet stays as tall as before. A short sheet
+ * whose word has a Paradigm row (a row of its own, 44 px and its padding) gets that much more room, so Help with this word and Ask the tutor stay where they were
+ * (mw-irpgqi.1; tests/e2e/word-tip.spec.ts holds Ask the tutor in reach, so the row's 52 px are added and not taken from what was there); a long sheet (many tiles) scrolls and keeps its height. */
+function scrollHeight(many: boolean, heading: unknown, paradigm: boolean): string {
+  // whole class names, as tailwind finds them in the source
   if (many) return heading ? 'max-h-[calc(50dvh-2.75rem)] pb-4' : 'max-h-[50dvh] pb-4';
   const foot = 'pb-[calc(1rem+var(--lp-end-inset))]';
+  if (paradigm) return heading ? `max-h-[calc(58dvh-2.75rem+3.25rem)] ${foot}` : `max-h-[calc(58dvh+3.25rem)] ${foot}`;
   return heading ? `max-h-[calc(58dvh-2.75rem)] ${foot}` : `max-h-[58dvh] ${foot}`;
 }
 
@@ -235,7 +243,7 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
   );
 }
 
-function WordCard({ chapter, word, english, pronunciation, known, study, onHelp, onTerm, onMissing }: {
+function WordCard({ chapter, word, english, pronunciation, known, study, onHelp, onTerm, onParadigm, onMissing }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
@@ -245,12 +253,16 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
   onHelp?: (help: WordHelp) => void;
   /** a grammar word of the Parsing was tapped: the term, and the verse the word stands in */
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
+  /** the Paradigm row was tapped: the word, to open its table */
+  onParadigm: (word: GreekWord) => void;
   /** a Study link's app did not open */
   onMissing: (resource: StudyResource) => void;
 }) {
   const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   // The Strong's resource shows the number as its link in the Study row; the plain fact would say it twice.
   const strongsOn = study?.on.includes('strongs') ?? false;
+  // the table that holds the word's form (a conjunction or a particle has none): the row names it and a tap opens it with the word's own cell lit
+  const table = paradigmOfWord(word)?.table;
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-2">
@@ -272,6 +284,19 @@ function WordCard({ chapter, word, english, pronunciation, known, study, onHelp,
         {wordParse(chapter, word) ? (
           <Fact label="Parsing" testId="sheet-parse">
             <ParseTerms parse={wordParse(chapter, word)} known={known} open={(term) => onTerm(term, word, verse)} />
+          </Fact>
+        ) : null}
+        {table ? (
+          <Fact label="Paradigm" testId="sheet-paradigm">
+            <button
+              type="button"
+              data-table={table.id}
+              onClick={() => oneTap('word:paradigm', () => onParadigm(word))}
+              {...greekLang(table.id === 'eimi' || table.id === 'oida')}
+              className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4"
+            >
+              {table.name}
+            </button>
           </Fact>
         ) : null}
         <Fact label="Meaning" testId="sheet-gloss">
@@ -368,6 +393,13 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
     setGrammar({ term, word, verse });
     publish({ kind: 'grammar-term-opened', term });
   };
+  // the word's table is a page of its own: the sheet is held, with what it showed, and Back brings it back (src/wordReturn.ts)
+  const openTable = (word: GreekWord): void => {
+    const found = paradigmOfWord(word);
+    if (!found) return;
+    holdWord(sheetChapter, lookup);
+    openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse: word.p });
+  };
   const askVerse = grammar?.verse;
   const ask =
     ai && onAskTerm && askVerse !== undefined && !elsewhere
@@ -404,7 +436,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
             Done
           </button>
         </div>
-        {/* the tip stays above the scrolling facts, so it is seen without a scroll; the facts' box is 2 dvh shorter to make room, so the sheet stays below 30% of the screen */}
+        {/* the tip stays above the scrolling facts, so it is seen without a scroll; the facts' box is 2 dvh shorter to make room, so the sheet stays below 30% of the screen (a word with a Paradigm row has that row's 52 px more: scrollHeight) */}
         <HintCard event={WORD_SHEET_OPENED} className="mx-4 mt-1" />
         {/* a reading or answer paused by the word he tapped keeps its Resume in view (the sheet is over the screen's own bar) */}
         <BarSlot level={4} />
@@ -418,7 +450,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
           <div
             ref={scroll}
             data-testid="sheet-scroll"
-            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${scrollHeight(many, heading)}`}
+            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${scrollHeight(many, heading, lookup.words.some((w) => paradigmOfWord(w) !== undefined))}`}
           >
             {lookup.words.map((w, i) => (
               <WordCard
@@ -431,6 +463,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 study={study}
                 onHelp={help}
                 onTerm={openTerm}
+                onParadigm={openTable}
                 onMissing={setMissing}
               />
             ))}

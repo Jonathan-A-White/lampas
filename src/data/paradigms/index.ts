@@ -1,6 +1,6 @@
 // src/data/paradigms/index.ts — the paradigm tables, in the order the Paradigms list shows them (docs/paradigms.md), and what his
 // grammar levels make of them. Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
-import { ideasOf } from '../grammar/ladder';
+import { ideasOf, ideasOfWord } from '../grammar/ladder';
 import { patternsOf } from '../grammar/patterns';
 import type { Level } from '../grammar/needs';
 import { ADJECTIVE_ENDINGS } from './adjectiveEndings';
@@ -133,4 +133,108 @@ function findTable(code: string, word?: { l: string; t?: string }): Paradigm | u
     if (shared > bestShared) [best, bestShared] = [table, shared];
   }
   return best;
+}
+
+/** A word's table, and the place in it that is the word's own (mw-irpgqi.1): `cell` is the cell's name (cellName), undefined when the table holds no form of the word's parse. */
+export interface WordParadigm {
+  table: Paradigm;
+  cell?: string;
+}
+
+// the accents and breathings go; the iota subscript (U+0345) stays, for it is part of the ending
+const bare = (text: string): string => text.normalize('NFD').replace(/[\u0300-\u0344\u0346-\u036f]/g, '').normalize('NFC').toLowerCase();
+/** The spellings a cell's form stands for: 'ἐστί(ν)' is ἐστί and ἐστίν; a hyphen starts an ending. */
+const spellingsOf = (form: string): string[] => [form.replace(/\([^)]*\)/g, ''), form.replace(/[()]/g, '')].map(bare);
+
+// what a parsing says of a form: its case, number, gender, person, tense, voice and mood (tense-signs is a pattern, not a tense); a deponent verb's voice is the voice its forms have
+const KIND = /^(case|number|gender|person|tense|voice|mood)-/;
+const kindOf = (id: string): string | undefined => (id === 'tense-signs' ? undefined : KIND.exec(id)?.[1]);
+const plain = (id: string): string => id.replace(/-deponent$/, '');
+/** The parsing as the tables name it: a middle or a passive verb is a form of the table's middle or passive voice. */
+const asTablesSay = (wanted: readonly string[]): string[] => {
+  const ids = wanted.map(plain);
+  return ids.some((id) => id === 'voice-middle' || id === 'voice-passive') ? [...ids, 'voice-middle-or-passive'] : ids;
+};
+
+// the ideas of a table that holds the forms of particular verbs: a cell with one is for a word of those verbs alone
+const OF_ITS_OWN_VERBS = ['eimi', 'contract-verbs', 'mi-verbs', 'oida'];
+
+/**
+ * Whether a cell is where the parsing `wanted` (ideasOfWord) lands: it shares an idea of the word that is not one of those kinds (verb, noun, the article), it names nothing of case, number, gender, person, tense, voice or mood that the word has otherwise,
+ * it names whatever of them the word has unless it is silent on that kind altogether (εἰμί's cells name no voice; a noun's no person), and a cell of particular verbs
+ * is for the word of one of them.
+ */
+function lands(cell: ParadigmCell, wanted: readonly string[]): boolean {
+  const mine = asTablesSay(wanted);
+  const named = cell.ideas.filter((id) => kindOf(id) !== undefined);
+  const wantedKinds = new Set(mine.map(kindOf));
+  // it is a cell of the word's own kind of word (a verb's, a noun's, a personal pronoun's)
+  if (!cell.ideas.some((id) => kindOf(id) === undefined && mine.includes(id))) return false;
+  if (named.some((id) => wantedKinds.has(kindOf(id)) && !mine.includes(id))) return false;
+  if (cell.ideas.some((id) => OF_ITS_OWN_VERBS.includes(id) && !mine.includes(id))) return false;
+  const kinds = new Set(named.map(kindOf));
+  // a voice the word has is any of the cell's when the cell's is the middle or passive (the word's own voice and the table's are the same kind)
+  return mine.every((id) => kindOf(id) === undefined || !kinds.has(kindOf(id)) || named.includes(id) || (kindOf(id) === 'voice' && named.some((n) => kindOf(n) === 'voice' && mine.includes(n))));
+}
+
+/**
+ * The one table a tap on this word opens and the cell in it that is the word's own (mw-irpgqi.1). A table that holds the word's own form (ἀγαπῶ is in Contract
+ * verbs, ἐστίν in εἰμί) wins over tableFor's table, which holds only its ending (Verb endings); else tableFor's. A cell is the word's when it lands on the word's
+ * parsing (`lands`), and of those the one that names the most of the word's ideas; when two name as many, the one whose ending the word ends with (ἀληθείᾳ: -ᾳ, not -ῃ),
+ * then the earlier. A word no table fits (a conjunction, a particle) has none, and a form the table does not hold (a participle in the accusative) has the table and no cell.
+ */
+export function paradigmOfWord(word: { t: string; l: string; p: string }): WordParadigm | undefined {
+  // kept per form, lemma and code: the word sheet asks it on every draw, a drag of its handle included
+  const key = `${word.t}|${word.l}|${word.p}`;
+  if (!wordCache.has(key)) wordCache.set(key, findWordParadigm(word));
+  return wordCache.get(key);
+}
+
+const wordCache = new Map<string, WordParadigm | undefined>();
+
+function findWordParadigm(word: { t: string; l: string; p: string }): WordParadigm | undefined {
+  let wanted: string[];
+  try {
+    wanted = ideasOfWord(word);
+  } catch {
+    return undefined;
+  }
+  const form = bare(word.t);
+  interface Hit {
+    table: Paradigm;
+    place: string;
+    shared: number;
+    suffix: number;
+    whole: boolean;
+  }
+  const hitsIn = (table: Paradigm): Hit[] =>
+    table.rows.flatMap((row) =>
+      row.cells.flatMap((cell, c) => {
+        if (cell.lang !== 'el' || !lands(cell, wanted)) return [];
+        const spellings = spellingsOf(cell.form);
+        // a form with a hyphen is a stem and an ending (λυσ-ομαι) or an ending alone (-ος): the longer the ending the word has, the better the cell
+        const ending = spellings[0].slice(spellings[0].lastIndexOf('-') + 1);
+        const suffix = cell.form.includes('-') && form.endsWith(ending) ? ending.length : 0;
+        return [{ table, place: cellName(table, row, c), shared: cell.ideas.filter((id) => asTablesSay(wanted).includes(id)).length, suffix, whole: spellings.includes(form) }];
+      }),
+    );
+  const better = (a: Hit, b: Hit): boolean => a.shared > b.shared || (a.shared === b.shared && a.suffix > b.suffix);
+  const best = (hits: Hit[]): Hit | undefined => hits.reduce<Hit | undefined>((top, hit) => (top === undefined || better(hit, top) ? hit : top), undefined);
+  const own = best(PARADIGMS.flatMap(hitsIn).filter((hit) => hit.whole));
+  if (own) return { table: own.table, cell: own.place };
+  const table = tableFor(word.p, word);
+  if (!table) return undefined;
+  const here = best(hitsIn(table));
+  if (here) return { table, cell: here.place };
+  // tableFor weighs the ideas a parsing names and not the voice (a middle verb's table is εἰμί's): another table that holds the word's parse is its table
+  const elsewhere = best(PARADIGMS.filter((other) => other !== table).flatMap(hitsIn));
+  if (elsewhere) return { table: elsewhere.table, cell: elsewhere.place };
+  // εἰμί's table for a participle of another verb is no table of the word's: the table of the general kind with the most of its ideas
+  const mine = asTablesSay(wanted);
+  const bound = cellsOf(table).flatMap((cell) => cell.ideas.filter((id) => OF_ITS_OWN_VERBS.includes(id)));
+  if (bound.length === 0 || bound.some((id) => mine.includes(id))) return { table };
+  const near = (other: Paradigm): number =>
+    Math.max(0, ...cellsOf(other).filter((cell) => !cell.ideas.some((id) => OF_ITS_OWN_VERBS.includes(id))).map((cell) => cell.ideas.filter((id) => mine.includes(id)).length));
+  const closest = PARADIGMS.reduce<Paradigm | undefined>((top, other) => (near(other) > (top ? near(top) : 0) ? other : top), undefined);
+  return { table: closest ?? table };
 }

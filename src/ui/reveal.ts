@@ -22,6 +22,17 @@ export function revealTop(el: HTMLElement | null): void {
   box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
 }
 
+/** Brings `el` into view in the nearest scrolling ancestor: left where it is when the whole of it shows, else scrolled to the middle of the box (as far as the content allows): a cell he was sent to,
+ * with the screen's own top (the word it is the cell of) kept when it needs no scroll. Like revealInScrollBox it moves the box and never the document. */
+export function bringIntoScrollBox(el: HTMLElement | null): void {
+  const box = el?.closest<HTMLElement>('.screen');
+  if (!el || !box) return;
+  const inner = el.getBoundingClientRect();
+  const outer = box.getBoundingClientRect();
+  if (inner.top >= outer.top && inner.bottom <= outer.bottom) return;
+  box.scrollTop += inner.top + inner.height / 2 - (outer.top + outer.height / 2);
+}
+
 /** The top of what is drawn over the foot of `box`'s scroll content: the sticky NextBar (src/ui/NextBar.tsx), when the box has one, else the box's own bottom.
  * The speaking bar and the hold bar are outside the box, so the box's bottom is already above them. */
 function stackTopOf(box: HTMLElement): number {
