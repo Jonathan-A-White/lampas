@@ -2,7 +2,7 @@
 // the recording attached, scored by the mill and answered by its verse-read grind (grinds/verse-read.json). The wire work is
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
 import { NO_CHAPTER, type Chapter, type GreekWord, type Verse } from '../data/chapter';
-import { drawnOrder, type WovenVerse } from '../data/weave';
+import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { WOVEN_LANG } from '../data/wovenLang';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
@@ -197,12 +197,11 @@ export function wovenReading(verses: readonly Verse[], woven: readonly (WovenVer
   verses.forEach((verse, v) => {
     const weave = woven[v] ?? null;
     for (const i of drawnOrder(verse, weave)) {
-      const chunk = verse.e[i];
       const weft = weave?.[i];
       if (weft) {
         words.push(...weft.words);
         add(weft.words.map((w) => w.t).join(' '), greek);
-      } else add(chunk.t.trim(), 'en');
+      } else add(chunkText(verse, weave, i).trim(), 'en');
     }
   });
   return words.length === 0 ? null : { segments, words };
