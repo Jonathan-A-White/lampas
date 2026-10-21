@@ -885,7 +885,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
             {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={ask} label="Ask something else" /> : null}
           </div>
           <BarSlot level={3} />
-          <div ref={composer} data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 pb-[calc(0.75rem+var(--lp-bar-inset))]">
+          <div ref={composer} data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 short:pt-0 pb-[calc(0.75rem+var(--lp-bar-inset))]">
             {live?.listening ? (
               <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">
                 <p className="text-sm font-medium text-bad">{live.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>

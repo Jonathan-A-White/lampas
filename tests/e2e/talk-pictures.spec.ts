@@ -7,7 +7,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
-import { talkField } from './talk-field';
+import { pictureInput, talkField } from './talk-field';
 
 const VIEWPORT = { width: 390, height: 844 };
 const ENTRY = readFileSync('grinds/examples/bible-talk/lexicon-entry.png');
@@ -58,12 +58,12 @@ test('a picture attached to the talk waits in the composer, goes with the messag
     expect(box?.width).toBeGreaterThanOrEqual(43.5);
     expect(box?.height).toBeGreaterThanOrEqual(43.5);
   }
-  await sheet.getByLabel('Picture file').setInputFiles({ name: 'lexicon-entry.png', mimeType: 'image/png', buffer: ENTRY });
+  await pictureInput(sheet).setInputFiles({ name: 'lexicon-entry.png', mimeType: 'image/png', buffer: ENTRY });
 
   // the thumbnail waits in the composer with a remove x of a thumb's size
-  const waiting = sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img', { name: 'Picture 1' });
+  const waiting = sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img', { name: 'lexicon-entry.png' });
   await expect(waiting).toBeVisible();
-  const remove = sheet.getByRole('button', { name: 'Remove picture 1', exact: true });
+  const remove = sheet.getByRole('button', { name: 'Remove lexicon-entry.png', exact: true });
   const removeBox = await remove.boundingBox();
   expect(removeBox?.width).toBeGreaterThanOrEqual(43.5);
   expect(removeBox?.height).toBeGreaterThanOrEqual(43.5);
@@ -72,7 +72,7 @@ test('a picture attached to the talk waits in the composer, goes with the messag
   // a pasted 3000 x 2000 screenshot is a second picture; removing it leaves the first
   await pasteScreenshot((await talkField(sheet)), 3000, 2000);
   await expect(sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img')).toHaveCount(2);
-  await sheet.getByRole('button', { name: 'Remove picture 2', exact: true }).click();
+  await sheet.getByRole('button', { name: 'Remove screenshot.png', exact: true }).click();
   await expect(sheet.getByRole('group', { name: 'Pictures to send' }).getByRole('img')).toHaveCount(1);
 
   await (await talkField(sheet)).fill('What does this entry say about Jesus weeping?');

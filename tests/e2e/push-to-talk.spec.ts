@@ -36,16 +36,15 @@ test('holding Talk shows his words live in the sheet and sends them on release',
   // his words come as he says them
   await expect(live).toContainText('Please');
 
-  // The live words, the mic button and Send are inside the window, a thumb tall, and the page has not moved.
+  // The live words and the mic button are inside the window, a thumb tall, and the page has not moved.
   const hold = sheet.getByRole('button', { name: 'Hold to talk' });
   const holdBox = await hold.boundingBox();
   expect(holdBox?.height).toBeGreaterThanOrEqual(43.5);
   expect(holdBox?.width).toBeGreaterThanOrEqual(43.5);
-  const sendBox = await sheet.getByRole('button', { name: 'Send', exact: true }).boundingBox();
-  expect((sendBox?.x ?? 0) + (sendBox?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  expect((holdBox?.x ?? 0) + (holdBox?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   const liveBox = await live.boundingBox();
   expect((liveBox?.x ?? 0) + (liveBox?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
-  expect((sendBox?.y ?? 0) + (sendBox?.height ?? 0)).toBeLessThanOrEqual(VIEWPORT.height);
+  expect((holdBox?.y ?? 0) + (holdBox?.height ?? 0)).toBeLessThanOrEqual(VIEWPORT.height);
   const { scrollWidth, clientWidth, scrollTop } = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
     clientWidth: document.documentElement.clientWidth,

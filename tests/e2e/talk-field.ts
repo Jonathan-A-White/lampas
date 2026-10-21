@@ -8,3 +8,6 @@ export async function talkField(sheet: Locator): Promise<Locator> {
   if (!(await field.isVisible())) await sheet.getByRole('button', { name: 'Type a message' }).click();
   return field;
 }
+
+/** The kit's picture picker (Attach a picture opens it): a hidden file input with no label of its own. */
+export const pictureInput = (sheet: Locator): Locator => sheet.locator('input[type="file"]:not([capture])');

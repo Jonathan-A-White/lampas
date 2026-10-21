@@ -45,7 +45,8 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   await expect(sheet).toBeVisible();
   const field = await talkField(sheet);
   const send = sheet.getByRole('button', { name: 'Send', exact: true });
-  await expect(send).toBeDisabled();
+  // the kit's Composer draws Send only once there are words
+  await expect(send).toHaveCount(0);
   await field.fill('What does συνεργεῖ mean here?');
   await expect(send).toBeEnabled();
 
@@ -70,7 +71,7 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   expect(box?.x).toBeGreaterThanOrEqual(0);
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(VIEWPORT.height);
-  expect((await send.boundingBox())?.y ?? 0).toBeGreaterThan(VIEWPORT.height / 2);
+  expect(sendBox?.y ?? 0).toBeGreaterThan(VIEWPORT.height / 2);
   await expectFitsPhone(page);
   await shot(page, 'talk-sheet');
 
@@ -242,7 +243,7 @@ test('a spoken turn shows the tidied question with his own words under it as a m
   if (!hold) throw new Error('no Hold to talk button');
   await page.mouse.move(hold.x + hold.width / 2, hold.y + hold.height / 2);
   await page.mouse.down();
-  await expect(sheet.locator('[data-talk-live]')).toContainText(SPOKEN, { timeout: 15_000 });
+  await expect(sheet.getByTestId('live-transcript')).toContainText(SPOKEN, { timeout: 15_000 });
   await page.mouse.up();
 
   const turn = sheet.locator('[data-turn]');

@@ -908,36 +908,79 @@ textarea,
   padding-top: 1.5rem;
   padding-bottom: calc(1rem + var(--lp-end-inset));
 }
-[data-verse-bar] .bk-composer__type-instead {
+[data-verse-bar] .bk-composer__type-instead,
+[data-composer] .bk-composer__type-instead {
   min-height: var(--lp-tap);
+}
+/* The Talk sheet's Attach a picture, Take a photo and the round mic are thumb targets of 44 px, not the kit's 36 (mw-06ggew.15). */
+[data-composer] .bk-composer {
+  --bk-composer-quiet-size: var(--lp-tap);
+  --bk-composer-mic-size: var(--lp-tap);
+}
+/* A waiting picture's remove x is a 44 px target too: the button is the thumb's size and the kit's 20 px circle is drawn in its middle, where it was. */
+[data-composer] .bk-composer__files {
+  padding-top: 1.25rem;
+}
+[data-composer] .bk-composer__remove {
+  top: calc(0.25rem - var(--lp-tap) / 2);
+  right: calc(0.25rem - var(--lp-tap) / 2);
+  width: var(--lp-tap);
+  height: var(--lp-tap);
+  border: 0;
+  background: transparent;
+}
+[data-composer] .bk-composer__remove::before {
+  content: '';
+  position: absolute;
+  top: calc(50% - 0.625rem);
+  left: calc(50% - 0.625rem);
+  width: 1.25rem;
+  height: 1.25rem;
+  box-sizing: border-box;
+  border: 1px solid var(--lp-line);
+  border-radius: 9999px;
+  background: var(--lp-surface);
+}
+[data-composer] .bk-composer__remove > svg {
+  position: relative;
 }
 
 /* Sideways (a short window) the composer's three stacked rows (his words or the hint, the 96 px bar, Type a question) plus the speaking bar left the scrolling box
- * 28 px, so a tutor's answer could not be read (mw-5r3p30.188). The bar is a 56 px row with Type a question beside it, and the hint line is not drawn (the bar says
- * Hold to ask); his live words and a notice still have their line. Same cut as the Talk bar's (src/talk/Bars.tsx compact). */
+ * 28 px, so a tutor's answer could not be read (mw-5r3p30.188), and the Talk sheet's too (mw-06ggew.15: its answers were in a 16 px box). The bar is a 56 px row with Type a message beside it, and the hint line is not drawn (the bar says
+ * Hold to talk); his live words and a notice still have their line. Same cut as the Talk bar's (src/talk/Bars.tsx compact). */
 @media (max-height: 500px) {
-  [data-verse-bar] .bk-composer {
+  [data-verse-bar] .bk-composer,
+  [data-composer] .bk-composer {
     --bk-composer-bar-height: 56px;
   }
-  [data-verse-bar] .bk-composer[data-layout='bar'] .bk-composer__speak {
+  [data-verse-bar] .bk-composer[data-layout='bar'] .bk-composer__speak,
+  [data-composer] .bk-composer[data-layout='bar'] .bk-composer__speak {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     column-gap: 0.5rem;
     row-gap: 0.25rem;
   }
-  [data-verse-bar] .bk-composer__status {
+  [data-composer] .bk-composer__speak {
+    padding-block: 0;
+  }
+  [data-verse-bar] .bk-composer__status,
+  [data-composer] .bk-composer__status {
     grid-column: 1 / -1;
     min-height: 0;
   }
-  [data-verse-bar] .bk-composer__status:has(.bk-composer__hint:not(.bk-composer__error)) {
+  [data-verse-bar] .bk-composer__status:has(.bk-composer__hint:not(.bk-composer__error)),
+  [data-composer] .bk-composer__status:has(.bk-composer__hint:not(.bk-composer__error)) {
     display: none;
   }
   [data-verse-bar] .bk-composer__bar-row,
-  [data-verse-bar] .bk-composer__quiet-row {
+  [data-verse-bar] .bk-composer__quiet-row,
+  [data-composer] .bk-composer__bar-row,
+  [data-composer] .bk-composer__quiet-row {
     width: auto;
   }
-  [data-verse-bar] .bk-composer__bar {
+  [data-verse-bar] .bk-composer__bar,
+  [data-composer] .bk-composer__bar {
     flex-direction: row;
     gap: 0.5rem;
   }
