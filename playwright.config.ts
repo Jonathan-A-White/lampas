@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { playwrightTimingFilter } from 'pwa-kit/test-preset';
+import { playwrightTimeouts, playwrightTimingFilter } from 'pwa-kit/test-preset';
 import { browserEnv } from './tests/support/browser-env';
 import { PHONE_WIDTH_SPECS } from './tests/support/e2e-projects';
 import { previewPort, reuseExistingPreview } from './tests/support/preview-port';
@@ -56,7 +56,8 @@ const LIVE_PROJECT = {
 
 export default defineConfig({
   testDir: './tests/e2e',
-  timeout: 60_000,
+  // The preset's budgets (tests/support/timeouts.ts re-exports them): timeout 60 s and expect.timeout 20 s, because the 5 s Playwright gives expect() was outrun on a loaded host.
+  ...playwrightTimeouts,
   fullyParallel: false,
   reporter: 'list',
   use: {
