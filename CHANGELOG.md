@@ -1,5 +1,12 @@
 # What's new
 
+## 0.1.400
+_2026-10-21_
+- New: A table opened from a word can now show that word's own forms from the New Testament, with 'not in the NT' for forms it never uses, and a tap on a form shows where it is first used and opens it.
+- New: The play button now always reads on from where you are, to the end of the book or the end of the Bible as you choose in Settings; to hear less, play a verse, a section heading or the chapter from the bottom line.
+- New: Conversations, under Settings, lists every talk you have had with the tutor, with a search for any word and a tap to carry on where you left off.
+- Fixed: The "How it sounds" note for pairs of words told apart by a mark now says that ἀλλά/ἄλλα and αὐτή/αὕτη are said with the stress on different syllables, instead of saying every pair sounds the same.
+
 ## 0.1.399
 _2026-10-21_
 - New: Settings help is easier to read: the Greek dial's six steps and other lists of choices are now lines with bold names.

@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.1.400",
+    "date": "2026-10-21",
+    "story": "mw-irpgqi.4",
+    "kind": "new",
+    "text": "A table opened from a word can now show that word's own forms from the New Testament, with 'not in the NT' for forms it never uses, and a tap on a form shows where it is first used and opens it."
+  },
+  {
+    "version": "0.1.400",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.705",
+    "kind": "new",
+    "text": "The play button now always reads on from where you are, to the end of the book or the end of the Bible as you choose in Settings; to hear less, play a verse, a section heading or the chapter from the bottom line."
+  },
+  {
+    "version": "0.1.400",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.696",
+    "kind": "new",
+    "text": "Conversations, under Settings, lists every talk you have had with the tutor, with a search for any word and a tap to carry on where you left off."
+  },
+  {
+    "version": "0.1.400",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.720",
+    "kind": "fixed",
+    "text": "The \"How it sounds\" note for pairs of words told apart by a mark now says that ἀλλά/ἄλλα and αὐτή/αὕτη are said with the stress on different syllables, instead of saying every pair sounds the same."
+  },
+  {
     "version": "0.1.399",
     "date": "2026-10-21",
     "story": "mw-5r3p30.721",
