@@ -379,18 +379,21 @@ the names under it, and nothing else is sent for them. Examples: `grinds/example
 
 ### The Greek offer (mw-yrmkdf.4)
 
-Lampas opens in English, so the tutor offers the Greek gently. The bible-talk request carries `reader_view` (`'english' | 'greek'`: the Reader's English | Greek
-choice, `getReaderView`; missing in a talk from a screen). For a reader whose Reader is in English and who is not otherwise learning the Greek (nothing in
-`memory`, `learner_profile`, `learner` or `learner_grammar` says so: the grind's `## Offering the Greek` decides) the tutor answers in English, with no Greek
-words unless he asks, and on real interest in the original (what a word really means, why translations differ, what the original says) leaves ONE
-`greek_offer` `{kind: 'word' | 'view', text, lemma?}` (a word offer names a lemma of the passage). `src/talk/GreekOfferButton.tsx` draws it as a button under
-the answer (after a tap the button stays and a `role=status` line under it says 'The Reader is now in Greek.' or 'Opened the Greek word.', mw-yrmkdf.10); a tap, or a spoken yes (`pending_offer` of kind `greek`), is `takeGreekOffer` (`src/talk/greekOffer.ts`): a view offer calls `setReaderView('greek')`,
-a word offer asks the Talk sheet (`requestGreekWord`, watched by `TalkSheet`) to open the Greek word's sheet over the talk. The app keeps to the limits too
-(`greekOfferOf`): the first offer of a talk only (the history shows it), none while the index holds his no, none for a word the text lacks, none in a quiz or
-a talk from a screen. A no (`offer_reply` decline) is `settleOffer`: the turn is marked declined and the app appends `said no to the Greek offer <date>` to the
+Lampas opens in English, so the tutor offers the Greek gently, and only as far as the Greek dial (Settings > How much Greek?, `src/settings/definitions/greekInterest.ts`, mw-3ased2)
+lets it. The bible-talk request carries `reader_view` (`'english' | 'greek'`: the Reader's English | Greek choice; missing in a talk from a screen) and `greek_interest`
+`{level, name, next?: {level, name}}` (the dial's step, its name and the one step above it, built by `greekInterestField` in `src/services/talk.ts` from the settings; missing in a quiz
+and a talk from a screen; an unplaced phone reads All in, with no `next`). The grind's `## Offering the Greek` decides: at 0 (Just English) and 1 (Curious) the tutor answers in English
+with no Greek words unless he asks; at 0 it makes no `greek_offer` unless he asks about the Greek; on real interest in the original (what a word really means, why translations
+differ, what the original says) it leaves ONE `greek_offer` `{kind: 'word' | 'view', text, lemma?}` (a word offer names a lemma of the passage) that offers to raise the dial
+ONE step, to `next`, whose name the `text` carries; never more than one step, none at All in. `greekOfferOf` (`src/talk/greekOffer.ts`) stamps the step the offer names, from the level the
+request carried, as `to`. `src/talk/GreekOfferButton.tsx` draws it as a button under the answer (after a tap the button stays and a `role=status` line under it says 'The Greek dial is now
+Curious.', with 'Opened the Greek word.' after it for a word offer, mw-yrmkdf.10); a tap, or a spoken yes (`pending_offer` of kind `greek`), is `takeGreekOffer`: `raiseGreekInterest(to)`,
+the dial's own function, which brings in what the step brings (nothing is set directly); a word offer then asks the Talk sheet (`requestGreekWord`, watched by `TalkSheet`) to open the
+Greek word's sheet over the talk. The app keeps to the limits too (`greekOfferOf`): the first offer of a talk only (the history shows it), none while the index holds his no, none at All
+in, none for a word the text lacks, none in a quiz or a talk from a screen. A no (`offer_reply` decline) is `settleOffer`: the turn is marked declined and the app appends `said no to the Greek offer <date>` to the
 memory index (`noteGreekNo`, once); the tutor does not write it. The line is in `memory.index`, so the next requests carry it and the tutor offers nothing
 until he asks for Greek himself: the answer then sets `greek_asked: true` and `applyMemoryFromAnswer` takes the line out (`clearGreekNo`). verse-ask has the
-same English default (`## English for a reader not learning the Greek`) and no offer. Examples: `grinds/examples/bible-talk/greek-offer-*.json`,
+same English default (`## English for a reader not learning the Greek`) and no offer. Examples: `grinds/examples/bible-talk/greek-offer-*.json`, `greek-dial-offer-at-zero.json`,
 `verse-ask/english-reader-said-no.json`; `features/greek-offer.feature`, `tests/unit/greek-offer.test.ts`.
 
 ### The welcome (mw-yrmkdf.3)
@@ -407,8 +410,8 @@ screen and no `greek`, `english` or `greek_words` (and no `rusty`); the app says
 reads. The grind's `## The welcome` asks at most three questions, one at a time, in plain English with no Greek (why he is here: read, study or learn the Greek; what he
 wants; one thing about himself), writes each answer to the index with `memory_update` (and to the profile with `profile_update` where a field fits) and ends with a line of
 thanks that carries `welcome_done: true`, which `useTalk` turns into `finishWelcome` (`done`); the sheet stays up to be read. A reader who says he is here to learn the Greek
-is offered the Greek view once: a `greek_offer` of kind `view` (`greekOfferOf` allows it in the welcome and marks it `weave`), and its tap, or a spoken yes, calls
-`setReaderView('greek')` and `setWeave('solid+learning')`. Skip (a button in the sheet's header while the welcome is `pending`) appends `skipped the welcome` to the index and
+is offered the Greek once: a `greek_offer` of kind `view` (`greekOfferOf` allows it in the welcome and names Dipping a toe, `to: 2`), and its tap, or a spoken yes, calls
+`raiseGreekInterest(2)`, which turns the Weave on (Solid) and leaves the Reader's view to him. Skip (a button in the sheet's header while the welcome is `pending`) appends `skipped the welcome` to the index and
 sets `skipped`. Settings > Developer (Developer mode On) has Show the welcome again: it forgets the talk, puts the English defaults back and sets `pending` (for the demo).
 Examples: `grinds/examples/bible-talk/welcome-*.json`; `features/welcome.feature`, `tests/unit/welcome.test.ts`; an e2e spec past the gate marks the welcome done
 (`openUnlocked`, `welcome: true` leaves it due).

@@ -12,8 +12,18 @@
       "καί",
       "θεός"
     ],
-    "settings": {},
+    "settings": {
+      "greekInterest": "4"
+    },
     "reader_view": "greek",
+    "greek_interest": {
+      "level": 4,
+      "name": "Reading in Greek",
+      "next": {
+        "level": 5,
+        "name": "All in"
+      }
+    },
     "learner": "solid 12 words; learning: ἀγάπη, θεός; new today: ; due now: 3"
   },
   "expect": {

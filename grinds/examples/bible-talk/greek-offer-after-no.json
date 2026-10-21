@@ -1,5 +1,5 @@
 {
-  "description": "The same question from a reader whose index says he said no to the Greek offer: the answer is in English and carries no greek_offer.",
+  "description": "The same question from a reader whose index says he said no to the Greek offer: the answer is in English and carries no greek_offer, at the dial's Just English.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -8,8 +8,18 @@
     "question": "What does 'love' really mean in this verse?",
     "history": [],
     "solid_words": [],
-    "settings": {},
+    "settings": {
+      "greekInterest": "0"
+    },
     "reader_view": "english",
+    "greek_interest": {
+      "level": 0,
+      "name": "Just English",
+      "next": {
+        "level": 1,
+        "name": "Curious"
+      }
+    },
     "learner": "solid 0 words; learning: ; new today: ; due now: 0",
     "memory": {
       "index": "Likes short answers.\nsaid no to the Greek offer 2026-10-13",

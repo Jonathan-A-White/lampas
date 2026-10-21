@@ -1,5 +1,5 @@
 {
-  "description": "A Greek offer waits (a button) and he says no: the tutor declines it in offer_reply, offers nothing again and does not write the no to the memory itself (the app does).",
+  "description": "An offer to raise the Greek dial waits (a button) and he says no: the tutor declines it in offer_reply, offers nothing again and does not write the no to the memory itself (the app does).",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -9,12 +9,22 @@
     "history": [
       {
         "q": "What does 'love' really mean in this verse?",
-        "a": "It is the self-giving kind of love. Want to see the Greek word?"
+        "a": "It is the self-giving kind of love. Want to raise the Greek to Dipping a toe?"
       }
     ],
     "solid_words": [],
-    "settings": {},
+    "settings": {
+      "greekInterest": "1"
+    },
     "reader_view": "english",
+    "greek_interest": {
+      "level": 1,
+      "name": "Curious",
+      "next": {
+        "level": 2,
+        "name": "Dipping a toe"
+      }
+    },
     "learner": "solid 0 words; learning: ; new today: ; due now: 0",
     "memory": {
       "index": "",
@@ -22,7 +32,7 @@
     },
     "pending_offer": {
       "kind": "greek",
-      "text": "Want to see the Greek word?"
+      "text": "Want to raise the Greek to Dipping a toe?"
     }
   },
   "expect": {

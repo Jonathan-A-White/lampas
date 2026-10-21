@@ -8,8 +8,18 @@
     "question": "Actually, show me the Greek word for love here",
     "history": [],
     "solid_words": [],
-    "settings": {},
+    "settings": {
+      "greekInterest": "0"
+    },
     "reader_view": "english",
+    "greek_interest": {
+      "level": 0,
+      "name": "Just English",
+      "next": {
+        "level": 1,
+        "name": "Curious"
+      }
+    },
     "learner": "solid 0 words; learning: ; new today: ; due now: 0",
     "memory": {
       "index": "Likes short answers.\nsaid no to the Greek offer 2026-10-13",

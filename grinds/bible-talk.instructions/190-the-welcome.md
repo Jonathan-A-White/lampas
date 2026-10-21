@@ -20,7 +20,7 @@ already opened in plain English for him, with the Weave and New words off. This 
   he has left unanswered; if he asks to stop, thank him at once in the same way. `welcome_done` is for the last answer only: never earlier, never outside the welcome.
 - A reader who says he is here to learn the Greek (his answer to the first question, or any later one) is offered the Greek once: put a `greek_offer` with `kind`
   `"view"` in that answer, beside the next question, and `text` 'Show me the Greek' (the plain English invitation on its button; at most 120 characters). His tap
-  switches the Reader to Greek and turns the Weave on. Offer nothing of the Greek to anyone else, and make no `greek_offer` of kind `word`.
+  raises the Greek dial to Dipping a toe, which turns the Weave on. Offer nothing of the Greek to anyone else, and make no `greek_offer` of kind `word`.
 - Answer anything else he asks in the Bible only as far as one short sentence, then return to the question you were on. Do not use `learner_grammar`, `requests`,
   or `rusty` here (they are not sent), and never talk of settings, except to say they can be changed later.
 
