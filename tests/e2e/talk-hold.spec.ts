@@ -92,7 +92,7 @@ test('pressing Hold to talk while a tutor answer is read aloud pauses it before 
   await prepare(page);
   await honestSpeech(page, { langs: ['en-US', 'el-GR'], msPerWord: 250 });
   await honestMic(page);
-  // what the speech is doing at the moment the recogniser is started
+  // whether the voice is speaking at the moment the recogniser is started
   await page.addInitScript(() => {
     const seen: { speaking: boolean; paused: boolean }[] = [];
     (window as unknown as { atStart: typeof seen }).atStart = seen;
@@ -121,7 +121,9 @@ test('pressing Hold to talk while a tutor answer is read aloud pauses it before 
   await expect(speaking.getByRole('button')).toHaveText(['Resume', 'Restart', 'Stop']);
   const atStart = await page.evaluate(() => (window as unknown as { atStart: { speaking: boolean; paused: boolean }[] }).atStart);
   expect(atStart.length).toBeGreaterThan(0);
-  expect(atStart[0].paused).toBe(true);
+  // voice-kit's pause stops the voice and keeps the sentence reached (the bar offers Resume): nothing is speaking when the recogniser opens
+  expect(atStart.every((seen) => !seen.speaking)).toBe(true);
+  expect(await isSpeaking(page)).toBe(false);
   await shot(page, 'talk-hold-answer-paused');
   await page.mouse.up();
 });
