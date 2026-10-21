@@ -31,6 +31,12 @@ shape without a network.
   A recording that carries a misread must change what the scorer can hear: the local scorer does not hear a word's first
   consonant (`tall` scores as `all`, 100 accuracy), so change the vowel or the last sound (`all` said as `up` is scored a
   mispronunciation), and run `mw grist score --engine local --audio <clip> --target <text>` on the clip before keeping it.
+- `turn_2` (optional, a talk's example): a second turn, `{ "request": {...}, "photos": [...] }`, sent under the
+  same talk after the first (`mw grist eval` and `mw grist smoke` resume it). Then `request` is turn 1 and
+  `turn_2.request` is turn 2, valid against the same input schema; `photos` is as above and optional. Turn 2 is sent with
+  no `history` (the mill's resumed session holds turn 1; the request may carry `"history": []` for the schema, and the eval
+  strips it). `expect` judges turn 2's answer only; turn 1's answer only has to fit the answer schema. An example
+  with no `turn_2` is one turn. See `bible-talk/remembers-turn-one.json`.
 - `expect`: answer path (a field name; dots for nested fields and a number for a place in a
   list, `settings_changes.0.key`) to checks. Every check given for a path must hold:
   - `equals`: the value is exactly this
@@ -42,6 +48,8 @@ shape without a network.
     To ban a sound over free prose, ban it as a word or a respelling (a standalone `aw`, `TAW-`, a word-start `ha-`), never as a letter pair anywhere: a pattern that
     refuses every `aw` fails "away" and "draw" (mw-5r3p30.671). RE2 has no lookahead, so the pattern is written out as an automaton, and `tests/unit/grind-example-patterns.test.ts` holds its should-fail and should-pass strings
   - `present`: `true` the field is in the answer, `false` it is left out
+  - `all`: a list of checks of these kinds, each of which must hold, for a field that must show several things a single
+    `matches` cannot say (`"answer": { "all": [{ "matches": "Luke" }, { "matches": "14|fourteen" }] }`)
 
 Every `expect` path must be a field of the grind's answer schema, and every `equals` or
 `one_of` value one the schema allows. `feedback` forwards to the Mayor and has no answer

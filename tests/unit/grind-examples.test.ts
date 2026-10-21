@@ -9,7 +9,7 @@ import { buildRequest } from '../../src/services/tutor';
 import { buildReadingRequest } from '../../src/services/reading';
 import type { Verse } from '../../src/data/chapter';
 import { validate, type Schema } from '../support/schema-validate';
-import { CHECKS, EXAMPLE_FILE_MAX_BYTES, FORWARD_ANSWER_SCHEMA, checkExpect, expectProblems, type GrindExample } from '../support/grind-examples';
+import { CHECKS, EXAMPLE_FILE_MAX_BYTES, FORWARD_ANSWER_SCHEMA, checkExpect, expectProblems, turnTwoProblems, type GrindExample } from '../support/grind-examples';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 
@@ -45,20 +45,23 @@ describe('the grinds have scenarios', () => {
 
     it.each(exampleFiles)('%s is a sound scenario', (file) => {
       const example = readJson(`${dir}/${file}`) as unknown as GrindExample;
-      expect(Object.keys(example).sort(), 'the keys').toEqual(example.photos ? ['description', 'expect', 'photos', 'request', 'schemaVersion'] : ['description', 'expect', 'request', 'schemaVersion']);
+      expect(Object.keys(example).sort(), 'the keys').toEqual(['description', 'expect', ...(example.photos ? ['photos'] : []), 'request', 'schemaVersion', ...('turn_2' in example ? ['turn_2'] : [])]);
       expect(typeof example.description === 'string' && example.description.length > 0, 'description').toBe(true);
       expect(grind.versions, 'schemaVersion is one of the grind\'s versions').toContain(example.schemaVersion);
       expect(validate(example.request, inputSchema), 'the request fits the input schema').toEqual([]);
       expect(expectProblems(example.expect, answerSchema), 'the expect fits the answer schema').toEqual([]);
+      if ('turn_2' in example) expect(turnTwoProblems(example.turn_2, inputSchema), 'turn_2').toEqual([]);
 
-      const photos = example.photos ?? [];
-      expect(photos.length, 'files named').toBeGreaterThanOrEqual(attachments.min);
-      expect(photos.length, 'files named').toBeLessThanOrEqual(attachments.max);
-      for (const name of photos) {
-        const path = `${dir}/${name}`;
-        expect(existsSync(path), `${path} exists`).toBe(true);
-        expect(attachments.mime, `${name}'s type`).toContain(MIME_BY_EXT[extname(name).toLowerCase()]);
-        expect(statSync(path).size, `${name} is under 200 KB`).toBeLessThan(EXAMPLE_FILE_MAX_BYTES);
+      // turn 2 is a turn of its own, with its own files (mw-pxji7y.6)
+      for (const photos of [example.photos ?? [], ...(example.turn_2 ? [example.turn_2.photos ?? []] : [])]) {
+        expect(photos.length, 'files named').toBeGreaterThanOrEqual(attachments.min);
+        expect(photos.length, 'files named').toBeLessThanOrEqual(attachments.max);
+        for (const name of photos) {
+          const path = `${dir}/${name}`;
+          expect(existsSync(path), `${path} exists`).toBe(true);
+          expect(attachments.mime, `${name}'s type`).toContain(MIME_BY_EXT[extname(name).toLowerCase()]);
+          expect(statSync(path).size, `${name} is under 200 KB`).toBeLessThan(EXAMPLE_FILE_MAX_BYTES);
+        }
       }
     });
   });
@@ -91,7 +94,7 @@ describe('the scenario checks', () => {
   };
 
   it('knows every check the README names', () => {
-    expect(CHECKS).toEqual(['equals', 'is_null', 'one_of', 'contains', 'matches', 'present']);
+    expect(CHECKS).toEqual(['equals', 'is_null', 'one_of', 'contains', 'matches', 'present', 'all']);
   });
 
   it('accepts a sound expect, including a place in an array and a branch of anyOf', () => {
@@ -143,6 +146,40 @@ describe('the scenario checks', () => {
       'note: expected to contain "shelf", got "Seen on the tag."',
       'gone: expected present, got absent',
     ]);
+  });
+});
+
+// mw-pxji7y.6: a talk example may hold turn_2, the second turn (mw grist eval / smoke, millwright a50a463): its own request, sent with no history
+// under turn 1's talk; `expect` judges turn 2's answer.
+describe('a two-turn scenario (turn_2)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const turn1 = readJson('grinds/examples/bible-talk/cleaned-question.json').request as Record<string, unknown>;
+
+  it('takes a turn_2 whose request fits the input schema, with or without photos', () => {
+    expect(turnTwoProblems({ request: { ...turn1, question: 'What did I tell you?' } }, input)).toEqual([]);
+    expect(turnTwoProblems({ request: turn1, photos: [] }, input)).toEqual([]);
+  });
+
+  it.each([
+    ['a turn_2 that is not an object', 'again', 'turn_2: must be an object holding a request'],
+    ['a turn_2 with no request', { photos: [] }, 'turn_2.request: missing'],
+    ['a turn_2 whose request is a string', { request: 'What did I tell you?' }, 'turn_2.request: must be an object'],
+    ['a turn_2 whose request lacks what the schema requires', { request: { question: 'Who?' } }, 'turn_2.request fits the input schema'],
+    ['a key turn_2 does not have', { request: turn1, expect: {} }, 'turn_2: unknown key "expect"'],
+    ['photos that are not a list of names', { request: turn1, photos: 'a.png' }, 'turn_2.photos: must be a list of file names'],
+  ])('refuses %s', (_name, turn2, problem) => {
+    expect(turnTwoProblems(turn2, input).join('\n')).toContain(problem);
+  });
+
+  it('checks the all check: every one of its list must hold, and the unsound are refused', () => {
+    const answerSchema = readJson(readJson('grinds/bible-talk.json').answerSchema as string) as Schema;
+    const block = { answer: { all: [{ matches: 'Luke' }, { matches: '14|fourteen' }] } };
+    expect(expectProblems(block, answerSchema)).toEqual([]);
+    expect(checkExpect(block, { answer: 'Your son Luke is 14.' })).toEqual([]);
+    expect(checkExpect(block, { answer: 'Your son Luke is a boy.' })).toEqual(['answer: expected to match /14|fourteen/, got "Your son Luke is a boy."']);
+    expect(expectProblems({ answer: { all: [] } }, answerSchema)).toContain('answer: all must be a non-empty list of checks');
+    expect(expectProblems({ answer: { all: [{ startsWith: 'L' }] } }, answerSchema)).toContain('answer.all.0: unknown check "startsWith"');
+    expect(expectProblems({ answer: { all: [{ matches: '(?=Luke)' }] } }, answerSchema)).toContain(`answer.all.0: matches uses syntax RE2 (the mill's Go regexp) cannot compile`);
   });
 });
 

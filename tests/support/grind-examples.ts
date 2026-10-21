@@ -14,6 +14,8 @@ export interface FieldCheck {
   contains?: string;
   matches?: string;
   present?: boolean;
+  /** A list of checks of the same kinds, every one of which must hold (a field that must show several things). */
+  all?: FieldCheck[];
 }
 
 /** Answer path (a field name, dots for nested fields and array places) to what it must show. */
@@ -25,11 +27,13 @@ export interface GrindExample {
   request: Record<string, unknown>;
   /** File names beside the scenario: the photos, or for a grind that takes a recording, the recording. */
   photos?: string[];
+  /** A talk of two turns: `request` is turn 1, this is turn 2 (sent with no history, resumed under turn 1's talk), and `expect` judges turn 2's answer. */
+  turn_2?: { request: Record<string, unknown>; photos?: string[] };
   expect: ExpectBlock;
 }
 
 /** The check names `mw grist smoke` knows (millwright application/gristsmokecheck.go): snake_case, nothing else. */
-export const CHECKS = ['equals', 'is_null', 'one_of', 'contains', 'matches', 'present'];
+export const CHECKS = ['equals', 'is_null', 'one_of', 'contains', 'matches', 'present', 'all'];
 
 /** The camelCase spelling of each check name, which the smoke does not know: a bare string of one is a mistake, not a value. */
 const CAMEL_CHECKS: Record<string, string> = { isNull: '{ "is_null": true }', oneOf: '{ "one_of": [...] }' };
@@ -78,6 +82,46 @@ function schemasAt(root: Schema, path: string): Schema[] {
 
 const branches = (schema: Schema): Schema[] => (schema.anyOf ? schema.anyOf.flatMap(branches) : [schema]);
 
+/** What is wrong with one check (or one of an `all` list) at `path`, against the schemas that path can stand at. */
+function checkProblems(path: string, check: unknown, schemas: Schema[]): string[] {
+  if (typeof check === 'string' && check in CAMEL_CHECKS) return [`${path}: "${check}" looks like a check name; write ${CAMEL_CHECKS[check]}`];
+  if (typeof check !== 'object' || check === null || Array.isArray(check)) return [`${path}: must be an object of checks`];
+  const problems: string[] = [];
+  const keys = Object.keys(check);
+  if (keys.length === 0) problems.push(`${path}: has no checks`);
+  for (const key of keys) if (!CHECKS.includes(key)) problems.push(`${path}: unknown check "${key}"`);
+  const c = check as FieldCheck;
+  const allowed = (value: unknown): boolean => schemas.some((s) => validate(value, s).length === 0);
+  if ('equals' in c && !allowed(c.equals)) problems.push(`${path}: equals ${JSON.stringify(c.equals)} is never a valid answer`);
+  if ('one_of' in c) {
+    if (!Array.isArray(c.one_of) || c.one_of.length === 0) problems.push(`${path}: one_of must be a non-empty list`);
+    else for (const value of c.one_of) if (!allowed(value)) problems.push(`${path}: one_of ${JSON.stringify(value)} is never a valid answer`);
+  }
+  if ('is_null' in c) {
+    if (typeof c.is_null !== 'boolean') problems.push(`${path}: is_null must be true or false`);
+    else if (c.is_null && !allowed(null)) problems.push(`${path}: is never null in the answer schema`);
+  }
+  if ('present' in c && typeof c.present !== 'boolean') problems.push(`${path}: present must be true or false`);
+  for (const key of ['contains', 'matches'] as const) {
+    if (!(key in c)) continue;
+    if (typeof c[key] !== 'string') problems.push(`${path}: ${key} must be a string`);
+    else if (!schemas.some((s) => s.type === 'string')) problems.push(`${path}: ${key} needs a string field`);
+  }
+  if (typeof c.matches === 'string') {
+    try {
+      new RegExp(c.matches);
+    } catch {
+      problems.push(`${path}: matches is not a valid pattern`);
+    }
+    if (usesBeyondRe2(c.matches)) problems.push(`${path}: matches uses syntax RE2 (the mill's Go regexp) cannot compile`);
+  }
+  if ('all' in c) {
+    if (!Array.isArray(c.all) || c.all.length === 0) problems.push(`${path}: all must be a non-empty list of checks`);
+    else c.all.forEach((inner, i) => problems.push(...checkProblems(`${path}.all.${i}`, inner, schemas)));
+  }
+  return problems;
+}
+
 /** What is wrong with an expect block against the grind's answer schema; empty when it is sound. */
 export function expectProblems(expectBlock: unknown, answerSchema: Schema): string[] {
   if (typeof expectBlock !== 'object' || expectBlock === null || Array.isArray(expectBlock)) return ['expect: must be an object of answer path to checks'];
@@ -86,47 +130,22 @@ export function expectProblems(expectBlock: unknown, answerSchema: Schema): stri
   const problems: string[] = [];
   for (const [path, check] of entries) {
     const schemas = schemasAt(answerSchema, path);
-    if (schemas.length === 0) {
-      problems.push(`${path}: not a field of the answer schema`);
-      continue;
-    }
-    if (typeof check === 'string' && check in CAMEL_CHECKS) {
-      problems.push(`${path}: "${check}" looks like a check name; write ${CAMEL_CHECKS[check]}`);
-      continue;
-    }
-    if (typeof check !== 'object' || check === null || Array.isArray(check)) {
-      problems.push(`${path}: must be an object of checks`);
-      continue;
-    }
-    const keys = Object.keys(check);
-    if (keys.length === 0) problems.push(`${path}: has no checks`);
-    for (const key of keys) if (!CHECKS.includes(key)) problems.push(`${path}: unknown check "${key}"`);
-    const c = check as FieldCheck;
-    const allowed = (value: unknown): boolean => schemas.some((s) => validate(value, s).length === 0);
-    if ('equals' in c && !allowed(c.equals)) problems.push(`${path}: equals ${JSON.stringify(c.equals)} is never a valid answer`);
-    if ('one_of' in c) {
-      if (!Array.isArray(c.one_of) || c.one_of.length === 0) problems.push(`${path}: one_of must be a non-empty list`);
-      else for (const value of c.one_of) if (!allowed(value)) problems.push(`${path}: one_of ${JSON.stringify(value)} is never a valid answer`);
-    }
-    if ('is_null' in c) {
-      if (typeof c.is_null !== 'boolean') problems.push(`${path}: is_null must be true or false`);
-      else if (c.is_null && !allowed(null)) problems.push(`${path}: is never null in the answer schema`);
-    }
-    if ('present' in c && typeof c.present !== 'boolean') problems.push(`${path}: present must be true or false`);
-    for (const key of ['contains', 'matches'] as const) {
-      if (!(key in c)) continue;
-      if (typeof c[key] !== 'string') problems.push(`${path}: ${key} must be a string`);
-      else if (!schemas.some((s) => s.type === 'string')) problems.push(`${path}: ${key} needs a string field`);
-    }
-    if (typeof c.matches === 'string') {
-      try {
-        new RegExp(c.matches);
-      } catch {
-        problems.push(`${path}: matches is not a valid pattern`);
-      }
-      if (usesBeyondRe2(c.matches)) problems.push(`${path}: matches uses syntax RE2 (the mill's Go regexp) cannot compile`);
-    }
+    if (schemas.length === 0) problems.push(`${path}: not a field of the answer schema`);
+    else problems.push(...checkProblems(path, check, schemas));
   }
+  return problems;
+}
+
+/** What is wrong with a scenario's `turn_2` (its own request, sent with no history, and its own files); empty when it is sound. Its files are checked beside turn 1's. */
+export function turnTwoProblems(turn2: unknown, inputSchema: Schema): string[] {
+  if (typeof turn2 !== 'object' || turn2 === null || Array.isArray(turn2)) return ['turn_2: must be an object holding a request'];
+  const given = turn2 as Record<string, unknown>;
+  const problems: string[] = [];
+  for (const key of Object.keys(given)) if (key !== 'request' && key !== 'photos') problems.push(`turn_2: unknown key "${key}"`);
+  if (!('request' in given)) problems.push('turn_2.request: missing');
+  else if (typeof given.request !== 'object' || given.request === null || Array.isArray(given.request)) problems.push('turn_2.request: must be an object');
+  else for (const problem of validate(given.request, inputSchema)) problems.push(`turn_2.request fits the input schema: ${problem}`);
+  if ('photos' in given && !(Array.isArray(given.photos) && given.photos.every((name) => typeof name === 'string'))) problems.push('turn_2.photos: must be a list of file names');
   return problems;
 }
 
@@ -139,18 +158,21 @@ function valueAt(answer: unknown, path: string): unknown {
   return node;
 }
 
+/** What a value at `path` fails to show of one check; an `all` check's failures are those of the one of its list that did not hold. */
+function failuresOf(path: string, c: FieldCheck, value: unknown): string[] {
+  const failures: string[] = [];
+  const shown = JSON.stringify(value) ?? 'absent';
+  if ('equals' in c && JSON.stringify(value) !== JSON.stringify(c.equals)) failures.push(`${path}: expected ${JSON.stringify(c.equals)}, got ${shown}`);
+  if (c.is_null !== undefined && (value === null) !== c.is_null) failures.push(`${path}: expected ${c.is_null ? 'null' : 'not null'}, got ${shown}`);
+  if (c.one_of && !c.one_of.some((o) => JSON.stringify(o) === JSON.stringify(value))) failures.push(`${path}: expected one of ${JSON.stringify(c.one_of)}, got ${shown}`);
+  if (c.contains !== undefined && !(typeof value === 'string' && value.includes(c.contains))) failures.push(`${path}: expected to contain ${JSON.stringify(c.contains)}, got ${shown}`);
+  if (c.matches !== undefined && !(typeof value === 'string' && new RegExp(c.matches).test(value))) failures.push(`${path}: expected to match /${c.matches}/, got ${shown}`);
+  if (c.present !== undefined && (value !== undefined) !== c.present) failures.push(`${path}: expected ${c.present ? 'present' : 'absent'}, got ${shown}`);
+  for (const inner of c.all ?? []) failures.push(...failuresOf(path, inner, value));
+  return failures;
+}
+
 /** What an answer fails to show of an expect block; empty when every check holds. */
 export function checkExpect(expectBlock: ExpectBlock, answer: unknown): string[] {
-  const failures: string[] = [];
-  for (const [path, c] of Object.entries(expectBlock)) {
-    const value = valueAt(answer, path);
-    const shown = JSON.stringify(value) ?? 'absent';
-    if ('equals' in c && JSON.stringify(value) !== JSON.stringify(c.equals)) failures.push(`${path}: expected ${JSON.stringify(c.equals)}, got ${shown}`);
-    if (c.is_null !== undefined && (value === null) !== c.is_null) failures.push(`${path}: expected ${c.is_null ? 'null' : 'not null'}, got ${shown}`);
-    if (c.one_of && !c.one_of.some((o) => JSON.stringify(o) === JSON.stringify(value))) failures.push(`${path}: expected one of ${JSON.stringify(c.one_of)}, got ${shown}`);
-    if (c.contains !== undefined && !(typeof value === 'string' && value.includes(c.contains))) failures.push(`${path}: expected to contain ${JSON.stringify(c.contains)}, got ${shown}`);
-    if (c.matches !== undefined && !(typeof value === 'string' && new RegExp(c.matches).test(value))) failures.push(`${path}: expected to match /${c.matches}/, got ${shown}`);
-    if (c.present !== undefined && (value !== undefined) !== c.present) failures.push(`${path}: expected ${c.present ? 'present' : 'absent'}, got ${shown}`);
-  }
-  return failures;
+  return Object.entries(expectBlock).flatMap(([path, c]) => failuresOf(path, c, valueAt(answer, path)));
 }
