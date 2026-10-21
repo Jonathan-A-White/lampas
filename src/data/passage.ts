@@ -1,8 +1,8 @@
 // src/data/passage.ts — the passage under a section heading (mw-5r3p30.73): from a verse that has a heading (`h`) to the verse before the next
 // heading, or the chapter's end. A tap on a heading opens the Verse view (src/VerseView.tsx) for it, and the view treats it as a verse that
 // spans several: `passageVerse` is a Verse whose `n` is the first verse and `to` the last, with every verse's words in order, so the ask, the
-// reading check and the reading aloud work on it as they do on one verse. This is the same span as 'Passage' in the Read aloud span
-// (src/speech/readSpan.ts). Pure: no store, no fetch.
+// reading check and the reading aloud work on it as they do on one verse. Listen on a passage reads this span only
+// (src/reader/useReadFrom.ts listenTo). Pure: no store, no fetch.
 import type { Verse } from './chapter';
 
 export interface Passage {
