@@ -37,6 +37,9 @@ async function putLevels(page: Page, ideas: Record<string, 'solid' | 'frontier'>
   );
 }
 
+/** The Learn | Drill switch's chip (mw-irpgqi.2). */
+const modeChip = (page: Page, name: string) => page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name, exact: true });
+
 async function expectFitsPhone(page: Page) {
   const fits = await page.evaluate(() => ({
     w: document.documentElement.scrollWidth,
@@ -75,7 +78,7 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   await expectFitsPhone(page);
   await shot(page, 'paradigms-list');
 
-  // the article, in Study mode: available cells say reveal, locked cells show a lock
+  // the article, to Drill (mw-irpgqi.2): available cells are blank, locked cells show a lock
   await page.locator('[data-paradigm="article"]').click();
   await expect(page.getByRole('heading', { name: 'The article', level: 1 })).toBeVisible();
   await expect(page.getByTestId('table-available')).toHaveText('Available forms: 12 of 24');
@@ -85,6 +88,7 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   await expect(page.locator('[data-cell][data-state="locked"]')).toHaveCount(12);
   for (const cell of await hidden.all()) expect((await cell.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
   await page.locator('[data-cell="Nominative Singular Masculine"]').click();
+  await page.getByTestId('grade-row').getByRole('button', { name: 'Had it', exact: true }).click();
   await page.locator('[data-cell="Genitive Singular Feminine"]').click();
   await expect(page.locator('[data-cell="Nominative Singular Masculine"]')).toHaveText('ὁ');
   await expect(page.locator('[data-cell="Genitive Singular Feminine"]')).toHaveText('τῆς');
@@ -93,16 +97,16 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
   await expectFitsPhone(page);
   await shot(page, 'paradigms-study');
 
-  // Review mode: every available cell shows; the address keeps the mode across a reload
-  await page.getByRole('button', { name: 'Review mode', exact: true }).click();
+  // Learn: every available cell shows; the address keeps the mode across a reload
+  await modeChip(page, 'Learn').click();
   await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(12);
   await expect(page.locator('[data-cell][data-state="hidden"]')).toHaveCount(0);
   await expect(page.locator('[data-cell="Dative Singular Masculine"]')).toHaveText('τῷ');
   await expectFitsPhone(page);
   await shot(page, 'paradigms-review');
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Study mode', exact: true })).toBeVisible();
-  expect(page.url()).toContain('#/paradigms?t=article&mode=review');
+  await expect(modeChip(page, 'Learn')).toHaveAttribute('aria-pressed', 'true');
+  expect(page.url()).toContain('#/paradigms?t=article&mode=learn');
 
   // the other tables fit the phone, and Ask the tutor is a 48 px button inside the screen
   for (const [id, name, count] of [
@@ -119,7 +123,7 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
     ['infinitive', 'The infinitive', 9],
     ['participle', 'The participle', 30],
   ] as const) {
-    await page.goto(`/#/paradigms?t=${id}&mode=review`);
+    await page.goto(`/#/paradigms?t=${id}&mode=learn`);
     await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
     await expect(page.locator('[data-cell]')).toHaveCount(count);
     await expectFitsPhone(page);
@@ -138,7 +142,7 @@ test('Paradigms: every form of the mood tables fits its cell at phone width, wit
   await page.reload();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   for (const [id, count] of [['subjunctive', 30], ['imperative', 20], ['infinitive', 9], ['participle', 30]] as const) {
-    await page.goto(`/#/paradigms?t=${id}&mode=review`);
+    await page.goto(`/#/paradigms?t=${id}&mode=learn`);
     await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(count);
     await expectFitsPhone(page);
     // no Greek form is cut off or broken inside its cell
@@ -220,7 +224,7 @@ async function openAllSolid(page: Page) {
 async function sweep(page: Page, ids: string[], size: keyof typeof SIZES): Promise<string[]> {
   const found: string[] = [];
   for (const id of ids) {
-    await page.goto(`/#/paradigms?t=${id}&mode=review`);
+    await page.goto(`/#/paradigms?t=${id}&mode=learn`);
     await page.evaluate((scale) => document.documentElement.style.setProperty('--lp-scale', String(scale)), SIZES[size]);
     await expect(page.locator('[data-cell][data-state="shown"]').first()).toBeVisible();
     for (const problem of await misfits(page)) found.push(`${id} at ${size}: ${problem}`);
@@ -235,7 +239,7 @@ test('mw-svw421.15: a six-column table prints no Greek over the next column at 3
   const sixColumns = PARADIGMS.filter((table) => table.columns.length >= 6).map((table) => table.id);
   expect(sixColumns).toEqual(expect.arrayContaining(['article', 'adjective-endings', 'pronouns-demonstrative-relative']));
   expect(await sweep(page, sixColumns, 'Normal')).toEqual([]);
-  await page.goto('/#/paradigms?t=adjective-endings&mode=review');
+  await page.goto('/#/paradigms?t=adjective-endings&mode=learn');
   await shot(page, 'paradigms-adjective-fits');
 });
 
@@ -243,7 +247,7 @@ test('mw-svw421.26: at Large and Largest no form runs out of its cell, overlaps 
   await openAllSolid(page);
   expect(await sweep(page, ALL, 'Large')).toEqual([]);
   expect(await sweep(page, ALL, 'Largest')).toEqual([]);
-  await page.goto('/#/paradigms?t=participle&mode=review');
+  await page.goto('/#/paradigms?t=participle&mode=learn');
   await shot(page, 'paradigms-participle-largest');
 });
 
@@ -313,7 +317,7 @@ test('mw-svw421.18: a tap on a locked form says in words what it needs, and noth
 // A two-state toggle takes one tap per settle moment (src/ui/settle.ts oneTap): a thumb's double tap lands both taps on the control (or, once
 // the first has changed the row, on the one that took its place), so it must end where one tap does. The moment is as on his phone (SETTLE_MS) and
 // both taps run on the page's clock (tests/support/gesture.ts).
-async function openArticle(page: Page, mode: 'study' | 'review' = 'study') {
+async function openArticle(page: Page, mode: 'drill' | 'learn' = 'drill') {
   await page.clock.install();
   await openUnlocked(page);
   // init scripts run in order: this one puts the moment back after openUnlocked's '0'
@@ -332,44 +336,49 @@ async function openArticle(page: Page, mode: 'study' | 'review' = 'study') {
 test.describe('a double tap on a two-state toggle', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-  test('mw-svw421.16: a double tap on Review mode ends in Review mode', async ({ page }) => {
+  test('mw-svw421.16: a double tap on Learn ends in Learn', async ({ page }) => {
     await openArticle(page);
-    await tapTwice(page, page.getByRole('button', { name: 'Review mode', exact: true }), 120, { touch: true });
+    await tapTwice(page, modeChip(page, 'Learn'), 120, { touch: true });
     await pageTime(page, SETTLE_MS + 100);
-    expect(page.url()).toContain('mode=review');
-    await expect(page.getByRole('button', { name: 'Study mode', exact: true })).toBeVisible();
+    expect(page.url()).toContain('mode=learn');
+    await expect(modeChip(page, 'Learn')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(12);
-    // a tap after the moment has passed is his next, and switches back
-    await page.getByRole('button', { name: 'Study mode', exact: true }).tap();
-    await expect(page.getByRole('button', { name: 'Review mode', exact: true })).toBeVisible();
+    // a tap on Drill after the moment has passed is his next, and switches back
+    await modeChip(page, 'Drill').tap();
+    await expect(modeChip(page, 'Drill')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-cell][data-state="hidden"]')).toHaveCount(12);
   });
 
-  test('mw-svw421.17: a double tap on Hide all ends in Hide all, still in Study mode', async ({ page }) => {
+  test('mw-svw421.17: a double tap on Start again ends in Start again, still in Drill', async ({ page }) => {
     await openArticle(page);
     await page.locator('[data-cell="Nominative Singular Masculine"]').tap();
     await pageTime(page, SETTLE_MS + 100);
-    const hideAll = page.getByRole('button', { name: 'Hide all', exact: true });
-    await expect(hideAll).toBeVisible();
-    await tapTwice(page, hideAll, 120, { touch: true });
+    await page.getByTestId('grade-row').getByRole('button', { name: 'Had it', exact: true }).tap();
     await pageTime(page, SETTLE_MS + 100);
-    expect(page.url()).not.toContain('mode=review');
-    await expect(page.getByTestId('mode-help')).toHaveText('Study mode: tap a cell to reveal it.');
+    const startAgain = page.getByRole('button', { name: 'Start again', exact: true });
+    await expect(startAgain).toBeVisible();
+    await tapTwice(page, startAgain, 120, { touch: true });
+    await pageTime(page, SETTLE_MS + 100);
+    expect(page.url()).not.toContain('mode=learn');
+    await expect(page.getByTestId('mode-help')).toHaveText('Drill: tap a blank cell to see its form, then say whether you had it.');
     await expect(page.locator('[data-cell][data-state="hidden"]')).toHaveCount(12);
     await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Hide all', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Start again', exact: true })).toHaveCount(0);
   });
 
-  test('mw-svw421.21: a double tap on a reveal cell leaves the form shown', async ({ page }) => {
+  test('mw-svw421.21: a double tap on a blank cell leaves the form shown, asking Had it or Missed once', async ({ page }) => {
     await openArticle(page);
     const cell = page.locator('[data-cell="Nominative Singular Masculine"]');
     await tapTwice(page, cell, 80, { touch: true });
     await pageTime(page, SETTLE_MS + 100);
     await expect(cell).toHaveAttribute('data-state', 'shown');
     await expect(cell).toHaveText('ὁ');
+    await expect(page.getByTestId('grade-row')).toHaveCount(1);
     await shot(page, 'paradigms-double-tap-reveal');
-    // a tap after the moment has passed is his next, and hides it
+    // a tap on the shown cell after the moment does nothing: Had it or Missed is the way on
     await cell.tap();
-    await expect(cell).toHaveAttribute('data-state', 'hidden');
+    await expect(cell).toHaveAttribute('data-state', 'shown');
+    await expect(page.getByTestId('grade-row')).toHaveCount(1);
   });
 
   // the sweep of mw-svw421.16: a locked form opens and puts away the line saying what it needs, a two-state control too

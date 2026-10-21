@@ -1,6 +1,7 @@
-// features/steps/paradigms.steps.tsx — runs features/paradigms.feature: the Paradigms list (#/paradigms), a table in Study and
-// Review mode, the cells locked by his grammar levels, and Ask the tutor, which opens the Reader on the open chapter and sends the
-// table's name and the revealed forms to a fake Postern (tests/support/fake-postern.ts) as the bible-talk grind's paradigm focus.
+// features/steps/paradigms.steps.tsx — runs features/paradigms.feature: the Paradigms list (#/paradigms), a table to Learn and to Drill
+// (mw-irpgqi.2: blank cells, Had it / Missed, the score), the cells locked by his grammar levels, How much of a table (the setting, its header
+// switch and what each extent shows), and Ask the tutor, which opens the Reader on the open chapter and sends the table's name and the forms
+// showing to a fake Postern (tests/support/fake-postern.ts) as the bible-talk grind's paradigm focus.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -10,7 +11,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db, type GrammarLevelName } from '../../src/data/db';
 import { cellsOf, paradigmById } from '../../src/data/paradigms';
-import { forgetRevealed } from '../../src/data/paradigms/revealed';
+import { forgetDrills } from '../../src/data/paradigms/drill';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
@@ -18,6 +19,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { expectLatest } from '../../tests/support/published';
+import { openSettingsGroup } from '../../tests/support/settings-pages';
 
 afterAll(() => {
   cleanup();
@@ -51,7 +53,7 @@ async function freshStore(): Promise<void> {
   stopReading();
   clearBus();
   forgetTrail();
-  forgetRevealed();
+  forgetDrills();
   localStorage.clear();
   localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.history.replaceState(null, '', '/');
@@ -115,6 +117,39 @@ const showsNothing = async (place: string, state: 'locked' | 'hidden'): Promise<
 
 const tapsCell = (place: string) => async (): Promise<void> => {
   await user.click(cellAt(place));
+};
+
+/** A Drill cell not yet tapped: blank, no Greek, no word on it. */
+const isBlank = async (place: string): Promise<void> => {
+  await showsNothing(place, 'hidden');
+  expect(cellAt(place).textContent?.trim() ?? '').toBe('');
+};
+const gradeRow = (): HTMLElement | null => document.querySelector<HTMLElement>('[data-testid="grade-row"]');
+const noGrade = (): void => {
+  expect(gradeRow()).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Had it' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Missed' })).toBeNull();
+};
+/** Taps `place`, then Had it or Missed. */
+async function drill(place: string, had: boolean): Promise<void> {
+  await user.click(cellAt(place));
+  await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'shown'));
+  await user.click(await screen.findByRole('button', { name: had ? 'Had it' : 'Missed' }));
+  await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-grade', had ? 'had' : 'missed'));
+}
+const modeChip = (name: string): HTMLElement => within(screen.getByRole('group', { name: 'Mode' })).getByRole('button', { name, exact: true });
+const extentGroup = (): HTMLElement => screen.getByRole('group', { name: 'How much of a table' });
+const extentChip = (name: string): HTMLElement => within(extentGroup()).getByRole('button', { name, exact: true });
+const setExtent = async (_: unknown, value: string): Promise<void> => {
+  await db.settings.put({ key: 'paradigmExtent', value });
+};
+const tableSays = async (_: unknown, text: string): Promise<void> => {
+  await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
+};
+const openLearn = (_: unknown, id: string): void => openAt(`#/paradigms?t=${id}&mode=learn`);
+const openDrill = (_: unknown, id: string): void => openAt(`#/paradigms?t=${id}&mode=drill`);
+const needsSays = async (_: unknown, text: string): Promise<void> => {
+  await waitFor(() => expect(screen.getByTestId('lock-needs')).toHaveTextContent(text));
 };
 
 /** Puts a comma-separated list of ideas at the frontier, over the Background's levels. */
@@ -206,10 +241,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
 
   Scenario('The future cells of Future and aorist stay locked, naming the future tense, while the aorist cells open', ({ Given, And, Then }) => {
     Given('the ideas {string} are at the frontier', putAtFrontier);
-    And('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
-    Then('the table says {string}', async (_, text: string) => {
-      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
-    });
+    And('the table {string} is open to Learn', openLearn);
+    Then('the table says {string}', tableSays);
     And('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
     And('the {int} future cells are locked and their accessible names name {string}', async (_, count: number, idea: string) => {
       await waitFor(() => expect(document.querySelectorAll('[data-cell*="Future"][data-state="locked"]')).toHaveLength(count));
@@ -226,10 +259,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
       ids.delete(except);
       await db.grammarLevels.bulkPut([...ids].map((idea) => ({ id: idea, level: 'frontier' as const, since: Date.now(), how: 'marked' as const })));
     });
-    And('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
-    Then('the table says {string}', async (_, text: string) => {
-      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
-    });
+    And('the table {string} is open to Learn', openLearn);
+    Then('the table says {string}', tableSays);
     And('all {int} cells of the table are locked', async (_, count: number) => {
       await waitFor(() => expect(document.querySelectorAll('[data-cell][data-state="locked"]')).toHaveLength(count));
     });
@@ -268,7 +299,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
   });
 
   Scenario('A third declension form opens with its ideas and stays locked without them', ({ Given, Then, When, And }) => {
-    Given('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
+    Given('the table {string} is open to Learn', openLearn);
     Then('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
     When('the idea {string} moves to frontier', async (_, id: string) => {
       await db.grammarLevels.put({ id, level: 'frontier', since: Date.now(), how: 'marked' });
@@ -301,7 +332,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
   });
 
   Scenario('A form whose idea is not yet shows locked, and is available once its idea reaches the frontier', ({ Given, Then, And, When }) => {
-    Given('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
+    Given('the table {string} is open to Learn', openLearn);
     Then('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
     And('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
     When('the idea {string} moves to frontier', async (_, id: string) => {
@@ -314,63 +345,247 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
-  Scenario('Study mode hides an available cell until it is tapped', ({ Given, Then, When, And }) => {
-    Given('the table {string} is open in Study mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=study`));
-    Then('the cell {string} says reveal and shows no form', async (_, place: string) => {
-      await showsNothing(place, 'hidden');
-      expect(cellAt(place)).toHaveTextContent('reveal');
-    });
+  // mw-irpgqi.2
+  Scenario('Drill leaves an available cell blank until it is tapped, then asks whether he had it', ({ Given, Then, When, And }) => {
+    Given('the table {string} is open to Drill', openDrill);
+    Then('the cell {string} is blank and shows no form', (_, place: string) => isBlank(place));
+    And('nothing asks Had it or Missed', noGrade);
     When('he taps the cell {string}', (_, place: string) => tapsCell(place)());
     Then('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
-    And('the cell {string} still says reveal and shows no form', async (_, place: string) => {
-      await showsNothing(place, 'hidden');
-      expect(cellAt(place)).toHaveTextContent('reveal');
+    And('he is asked {string} or {string} under that row, the cell named {string}', async (_, had: string, missed: string, named: string) => {
+      const row = await waitFor(() => {
+        const found = gradeRow();
+        if (!found) throw new Error('no grade row');
+        return found;
+      });
+      expect(within(row).getByRole('button', { name: had })).toBeInTheDocument();
+      expect(within(row).getByRole('button', { name: missed })).toBeInTheDocument();
+      expect(row).toHaveTextContent(named);
+      // under the open cell's row: the next table row after the one holding the cell
+      const cellRow = cellAt('Genitive Singular Masculine').closest('tr') ?? cellAt('Dative Singular Masculine').closest('tr');
+      expect(cellRow?.nextElementSibling).toBe(row.closest('tr'));
     });
+    And('the cell {string} is still blank and shows no form', (_, place: string) => isBlank(place));
     And('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
+    When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('the cell {string} stays shown, marked {string}', async (_, place: string, grade: string) => {
+      await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-grade', grade));
+      expect(cellAt(place)).toHaveAttribute('data-state', 'shown');
+    });
+    And('Had it and Missed are gone', noGrade);
   });
 
-  Scenario('Review mode shows an available cell', ({ Given, When, Then, And }) => {
-    Given('the table {string} is open in Study mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=study`));
-    When('he taps the button to switch to Review mode', async () => {
-      await user.click(await screen.findByRole('button', { name: 'Review mode' }));
+  Scenario('A Drill ends on its score, and Drill the missed again asks only the missed', ({ Given, When, Then, And }) => {
+    Given('the table {string} is open to Drill', openDrill);
+    When('he drills {string} as had, {string} as had, {string} as missed and {string} as had', async (_, a: string, b: string, c: string, d: string) => {
+      await screen.findByTestId('paradigm-table');
+      for (const [place, had] of [[a, true], [b, true], [c, false], [d, true]] as const) await drill(place, had);
     });
-    Then('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
-    And('the cell {string} also shows {string}', (_, place: string, form: string) => shows(place, form));
-    And('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
-    And('the address is for the table {string} in Review mode', (_, id: string) => {
-      expect(window.location.hash).toBe(`#/paradigms?t=${id}&mode=review`);
+    Then('the score reads {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('drill-score')).toHaveTextContent(text));
+    });
+    And('the cell {string} is shown, marked {string}', async (_, place: string, grade: string) => {
+      await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-grade', grade));
+      expect(cellAt(place)).toHaveAttribute('data-state', 'shown');
+    });
+    When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('the cell {string} is blank and shows no form', (_, place: string) => isBlank(place));
+    And('the cell {string} stays shown, marked {string}', async (_, place: string, grade: string) => {
+      await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-grade', grade));
+      expect(cellAt(place)).toHaveAttribute('data-state', 'shown');
+    });
+    And('the score is not shown', () => {
+      expect(screen.queryByTestId('drill-score')).toBeNull();
+    });
+    When('he drills {string} as had', async (_, place: string) => drill(place, true));
+    Then('the score now reads {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('drill-score')).toHaveTextContent(text));
+    });
+    And('there is no {string} button', (_, name: string) => {
+      expect(screen.queryByRole('button', { name })).toBeNull();
     });
   });
 
-  Scenario('With every cell locked, the Study line does not tell him to tap a cell', ({ Given, Then, And }) => {
-    Given('the table {string} is open in Study mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=study`));
-    Then('the table says {string}', async (_, text: string) => {
-      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
+  Scenario('Start again blanks every cell of the drill', ({ Given, When, And, Then }) => {
+    Given('the table {string} is open to Drill', openDrill);
+    When('he drills {string} as had', async (_, place: string) => {
+      await screen.findByTestId('paradigm-table');
+      await drill(place, true);
     });
-    And('the Study line does not say {string}', (_, text: string) => {
+    And('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('the cell {string} is blank and shows no form', (_, place: string) => isBlank(place));
+    And('there is no {string} button', (_, name: string) => {
+      expect(screen.queryByRole('button', { name })).toBeNull();
+    });
+  });
+
+  Scenario('With every cell locked, the Drill line does not tell him to tap a cell', ({ Given, Then, And }) => {
+    Given('the table {string} is open to Drill', openDrill);
+    Then('the table says {string}', tableSays);
+    And('the mode line does not say {string}', (_, text: string) => {
       expect(screen.getByTestId('mode-help')).not.toHaveTextContent(text);
     });
-    And('the Study line says {string}', (_, text: string) => {
+    And('the mode line says {string}', (_, text: string) => {
       expect(screen.getByTestId('mode-help')).toHaveTextContent(text);
     });
   });
 
+  Scenario('Learn shows every available cell', ({ Given, When, Then, And }) => {
+    Given('the table {string} is open to Drill', openDrill);
+    When('he taps {string} in the mode switch', async (_, name: string) => {
+      await screen.findByRole('group', { name: 'Mode' });
+      await user.click(modeChip(name));
+    });
+    Then('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the cell {string} also shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
+    And('the mode line says {string}', (_, text: string) => {
+      expect(screen.getByTestId('mode-help')).toHaveTextContent(text);
+    });
+    And('the address is for the table {string} in Learn', (_, id: string) => {
+      expect(window.location.hash).toBe(`#/paradigms?t=${id}&mode=learn`);
+    });
+  });
+
+  Scenario('An old link with mode=study still opens Drill', ({ Given, Then, And }) => {
+    Given('the address {string} is opened', (_, hash: string) => openAt(hash));
+    Then('{string} is the mode pressed', async (_, name: string) => {
+      await screen.findByRole('group', { name: 'Mode' });
+      await waitFor(() => expect(modeChip(name)).toHaveAttribute('aria-pressed', 'true'));
+    });
+    And('the cell {string} is blank and shows no form', (_, place: string) => isBlank(place));
+  });
+
+  Scenario('An old link with mode=review still opens Learn', ({ Given, Then, And }) => {
+    Given('the address {string} is opened', (_, hash: string) => openAt(hash));
+    Then('{string} is the mode pressed', async (_, name: string) => {
+      await screen.findByRole('group', { name: 'Mode' });
+      await waitFor(() => expect(modeChip(name)).toHaveAttribute('aria-pressed', 'true'));
+    });
+    And('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
+  });
+
   Scenario('The table says how many of its forms are available', ({ Given, Then }) => {
-    Given('the table {string} is open in Study mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=study`));
-    Then('the table says {string}', async (_, text: string) => {
-      await waitFor(() => expect(screen.getByTestId('table-available')).toHaveTextContent(text));
+    Given('the table {string} is open to Drill', openDrill);
+    Then('the table says {string}', tableSays);
+  });
+
+  Scenario('Any shows a locked cell filled in Learn, marked not yet with what it needs', ({ Given, And, Then, When }) => {
+    Given('How much of a table is {string}', setExtent);
+    And('the table {string} is open to Learn', openLearn);
+    Then('the table says {string}', tableSays);
+    And('the cell {string} shows {string}, marked not yet', async (_, place: string, form: string) => {
+      await shows(place, form);
+      expect(cellAt(place)).toHaveAttribute('data-standing', 'notYet');
+      expect(cellAt(place).getAttribute('aria-label')).toMatch(/not yet/);
+    });
+    And('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
+    When('he taps the cell {string}', (_, place: string) => tapsCell(place)());
+    Then('the note under the table says {string}', needsSays);
+    And('no cell is locked', () => {
+      expect(document.querySelectorAll('[data-cell][data-state="locked"]')).toHaveLength(0);
+    });
+  });
+
+  Scenario('Any leaves a not-yet cell blank in Drill, and asks it with what it needs', ({ Given, And, Then, When }) => {
+    Given('How much of a table is {string}', setExtent);
+    And('the table {string} is open to Drill', openDrill);
+    Then('the cell {string} is blank and shows no form, marked not yet', async (_, place: string) => {
+      await isBlank(place);
+      expect(cellAt(place)).toHaveAttribute('data-standing', 'notYet');
+    });
+    When('he taps the cell {string}', (_, place: string) => tapsCell(place)());
+    Then('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('he is asked {string} or {string} under that row, the cell named {string}', async (_, had: string, missed: string, named: string) => {
+      const row = await waitFor(() => {
+        const found = gradeRow();
+        if (!found) throw new Error('no grade row');
+        return found;
+      });
+      expect(within(row).getByRole('button', { name: had })).toBeInTheDocument();
+      expect(within(row).getByRole('button', { name: missed })).toBeInTheDocument();
+      expect(row).toHaveTextContent(named);
+    });
+    And('the note under the table says {string}', needsSays);
+  });
+
+  Scenario('Solid only hides the frontier cells and keeps the locked ones locked', ({ Given, And, Then }) => {
+    Given('How much of a table is {string}', setExtent);
+    And('the table {string} is open to Learn', openLearn);
+    Then('the table says {string}', tableSays);
+    And('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the cells {string} and {string} are hidden by the extent', async (_, a: string, b: string) => {
+      for (const place of [a, b]) {
+        await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'outside'));
+        expect(cellAt(place).textContent ?? '').not.toMatch(/\p{Script=Greek}/u);
+        expect(cellAt(place).querySelector('button')).toBeNull();
+      }
+    });
+    And('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
+    And('the table still has {int} cells', (_, count: number) => {
+      expect(document.querySelectorAll('[data-cell]')).toHaveLength(count);
+    });
+  });
+
+  for (const extent of ['Solid only', 'Any']) {
+    Scenario(`The Paradigms list follows How much of a table at ${extent}`, ({ Given, When, Then }) => {
+      Given('How much of a table is {string}', setExtent);
+      When('he opens the Paradigms screen', () => openAt('#/paradigms'));
+      Then('the list reads {string}, {string}, {string} and {string}', async (_, ...rows: string[]) => {
+        for (const row of rows.slice(0, 4)) {
+          const [name, count] = [row.slice(0, row.indexOf(': ')), row.slice(row.indexOf(': ') + 2)];
+          await waitFor(() => expect(within(listRow(name)).getByTestId('paradigm-available')).toHaveTextContent(count));
+        }
+      });
+    });
+  }
+
+  Scenario("The setting shows in Settings and in the table's header switch, and a change in one shows in the other", ({ Given, And, Then, When }) => {
+    Given('Lampas is open on Settings', () => openAt('#/settings'));
+    And('he opens the Greek page', async () => {
+      await openSettingsGroup(user, 'greek');
+    });
+    Then('the row {string} offers {string}, {string} and {string}, and {string} is chosen', async (_, name: string, a: string, b: string, c: string, chosen: string) => {
+      const group = await screen.findByRole('group', { name });
+      expect(within(group).getAllByRole('button').map((x) => x.textContent)).toEqual([a, b, c]);
+      await waitFor(() => expect(within(group).getByRole('button', { name: chosen })).toHaveAttribute('aria-pressed', 'true'));
+    });
+    When('he taps {string} under How much of a table', async (_, chip: string) => user.click(extentChip(chip)));
+    Then('{string} is chosen under How much of a table and is kept as {string}', async (_, chip: string, value: string) => {
+      await waitFor(() => expect(extentChip(chip)).toHaveAttribute('aria-pressed', 'true'));
+      await waitFor(async () => expect((await db.settings.get('paradigmExtent'))?.value).toBe(value));
+    });
+    When('the table {string} is opened', (_, id: string) => openAt(`#/paradigms?t=${id}`));
+    Then('the header switch {string} has {string} pressed', async (_, name: string, chip: string) => {
+      const group = await screen.findByRole('group', { name });
+      expect(group.closest('header')).not.toBeNull();
+      await waitFor(() => expect(within(group).getByRole('button', { name: chip })).toHaveAttribute('aria-pressed', 'true'));
+    });
+    And('the table says {string}', tableSays);
+    When('he taps {string} in the header switch', async (_, chip: string) => user.click(extentChip(chip)));
+    Then('the table now says {string}', tableSays);
+    And('the setting is kept as {string}', async (_, value: string) => {
+      await waitFor(async () => expect((await db.settings.get('paradigmExtent'))?.value).toBe(value));
+    });
+    When('he goes back to Settings, to the Greek page', async () => {
+      openAt('#/settings');
+      await openSettingsGroup(user, 'greek');
+    });
+    Then('{string} is chosen under How much of a table', async (_, chip: string) => {
+      await screen.findByRole('group', { name: 'How much of a table' });
+      await waitFor(() => expect(extentChip(chip)).toHaveAttribute('aria-pressed', 'true'));
     });
   });
 
   Scenario("Ask the tutor hands the table's name and the revealed forms to the tutor", ({ Given, And, When, Then }) => {
-    Given('the table {string} is open in Study mode, with a fake Postern', async (_, id: string) => {
+    Given('the table {string} is open to Drill, with a fake Postern', async (_, id: string) => {
       behindFakePostern();
-      openAt(`#/paradigms?t=${id}&mode=study`);
+      openAt(`#/paradigms?t=${id}&mode=drill`);
       await screen.findByTestId('paradigm-table');
     });
-    And('he taps the cells {string} and {string}', async (_, a: string, b: string) => {
-      await tapsCell(a)();
-      await tapsCell(b)();
+    And('he drills {string} as had and {string} as had', async (_, a: string, b: string) => {
+      await drill(a, true);
+      await drill(b, true);
     });
     When('he taps Ask the tutor', async () => {
       await user.click(await screen.findByRole('button', { name: 'Ask the tutor' }));
@@ -401,7 +616,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
       await db.grammarLevels.clear();
       await db.grammarLevels.put({ id, level: 'solid', since: Date.now(), how: 'marked' });
     });
-    And('the table {string} is open in Review mode', (_, id: string) => openAt(`#/paradigms?t=${id}&mode=review`));
+    And('the table {string} is open to Learn', openLearn);
     When('he taps the locked cell {string}', async (_, place: string) => {
       await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'locked'));
       await user.click(cellAt(place));

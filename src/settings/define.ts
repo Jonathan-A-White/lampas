@@ -22,6 +22,7 @@ export type SectionId =
   | 'immersive'
   | 'weave'
   | 'newWords'
+  | 'paradigms'
   | 'goal'
   | 'approach'
   | 'handwriting'

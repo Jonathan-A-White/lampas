@@ -21,7 +21,7 @@ The first thing on the home, under the search field, is **How much Greek?**: six
 | Group | Sections it holds |
 | --- | --- |
 | Reading | appearance, layout, reading, headings, immersive, weave (Weave rows from step 2) |
-| Greek | newWords, goal, approach, handwriting (the page is listed from step 3) |
+| Greek | newWords, paradigms (How much of a table, from step 5, mw-irpgqi.2), goal, approach, handwriting (the page is listed from step 3) |
 | The tutor | readTutor, askBy, talk (Talk Hold | Tap, Send On release | By button), hebrew, tips, studyWay (Quiz goal, My study way) |
 | Listening | readAloud, voices, speed, pronunciation |
 | Daily | daily |
@@ -61,5 +61,6 @@ src/settings/useGreekInterest.ts  # the step, live
 src/data/repositories/greekInterest.ts  # setGreekInterest, placeGreekInterest, raiseGreekInterest, the kept values
 src/settings/registry.ts  # every talkable setting: key, label, hint, help, section, dependency, values, read and write
 src/settings/link.ts  # the addresses into Settings: a setting, a section, a group; backToSettingsHome
-src/settings/controls/  # the control of each row (CONTROLS by key) and the Section, SettingRow and MoreHelp pieces
+src/settings/controls/  # the control of each row (CONTROLS by key) and the Section, SettingRow and MoreHelp pieces; ChipRow is src/ui/Chips.tsx bound to a setting
+src/settings/definitions/grammarExtent.ts  # the settings whose choices are grammar extents (weaveGrammar, pickerGrammar, paradigmExtent): one table of their values, labels and extents; controls/grammarExtent.tsx ExtentChips draws any of them (mw-irpgqi.2)
 ```

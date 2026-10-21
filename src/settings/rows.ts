@@ -27,6 +27,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'immersive', title: 'Immersive reader' },
   { id: 'weave', title: 'Weave' },
   { id: 'newWords', title: 'New words' },
+  { id: 'paradigms', title: 'Paradigms' },
   { id: 'goal', title: 'Goal' },
   { id: 'approach', title: 'Grammar approach' },
   { id: 'handwriting', title: 'Handwriting' },
@@ -70,7 +71,7 @@ export interface SettingsGroup {
  *  PROVISIONAL: the grouping is the Builder's, to be amended by the Governor. */
 export const GROUPS: readonly SettingsGroup[] = [
   { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave'] },
-  { id: 'greek', title: 'Greek', hint: 'New words, your goal, the grammar approach and handwriting.', sections: ['newWords', 'goal', 'approach', 'handwriting'] },
+  { id: 'greek', title: 'Greek', hint: 'New words, how much of a paradigm table, your goal, the grammar approach and handwriting.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting'] },
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'hebrew', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },

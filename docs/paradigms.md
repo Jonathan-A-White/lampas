@@ -1,8 +1,8 @@
 # Paradigms (mw-5r3p30.82)
 
 The Paradigms screen (`#/paradigms`, Settings > More > Paradigms, beside Review) holds the tables he learns by heart. The names
-(Paradigms, Study mode, Review mode, Available forms) and which tenses, declensions and pronouns the tables hold are
-PROVISIONAL, the Governor to confirm.
+(Paradigms, Learn, Drill, Available forms) and which tenses, declensions and pronouns the tables hold are
+PROVISIONAL, the Governor to confirm. The parts this screen shares with the rest of the app, and what the epic's later stories reuse, are in docs/paradigm-components.md.
 
 ## The tables
 
@@ -78,16 +78,46 @@ A form is available when every idea it names is `frontier` or `solid` in `gramma
 yet. A locked cell shows a lock (its accessible name says what it needs), never nothing, so the table keeps its shape. A lock is a button: a tap draws a line in words under its row ('Needs the plural', `needsText`, `data-testid="lock-needs"`; the ideas are `needsOf`, `src/data/paradigms/needs.ts`, the lowest on the ladder first) with a 'Go to <idea title>' button for each, which opens that idea's sheet over the table (Back closes it; mw-svw421.25), a second tap on the same lock, or a tap on another, takes it away; nothing else changes (mw-svw421.18).
 `availableCount` gives 'Available forms: N of M' for the list and for a table.
 
-## Study and Review
+## Learn and Drill (mw-irpgqi.2)
 
-The address says the table and the mode: `#/paradigms` (the list), `#/paradigms?t=article&mode=review`. A table opens in Study mode.
+The address says the table and the mode: `#/paradigms` (the list), `#/paradigms?t=article&mode=learn`. A table opens to Drill. The modes were Study and
+Review before mw-irpgqi.2: `mode=study` still opens Drill and `mode=review` Learn (`src/nav/route.ts` paradigmOf), so a kept or linked address keeps its view.
 
-- Study mode: an available cell says `reveal`; a tap shows the form, a tap on a shown form hides it. Hide all hides them all. What is
-  revealed is kept in memory while the page lives (`revealed.ts`), so coming Back from the Reader finds the table as he left it.
-- Review mode: every available cell shows its form.
-- The line under the title says 'Study mode: tap a cell to reveal it.' only while some cell is available; with every cell locked it says 'Every form is locked. Mark the grammar ideas a form needs to open it.' (a tap on a locked cell names the ideas it needs).
+- Learn: every shown cell shows its form (under Any, the ones not his are marked not yet: a small lock beside the form, a tap says what it needs).
+- Drill: each shown cell is blank until he taps it. The tap shows the form and, under its row, the cell in plain words (`cells.ts` cellPrompt) with
+  `Had it` | `Missed` (`src/ui/SelfGrade.tsx` Grades, the flashcards' grade buttons with these words). One cell is open at a time: a tap on another
+  blank puts the first back, ungraded; a tap on the open cell does nothing. A graded cell stays shown, tinted good or bad. After the last cell of the
+  run, `N of M` (`drill-score`) and, while any was missed, `Drill the missed again`, which asks only the missed cells and keeps the rest shown. `Start
+  again` (beside the Learn | Drill switch once a cell has been tapped) blanks every cell. The run is kept in memory while the page lives
+  (`src/data/paradigms/drill.ts`), so coming Back from the Reader finds the table as he left it; a change of How much of a table starts it over.
+- A run's first `Missed` puts the table in Review: `recordDrillMiss('paradigm', id)` (`src/data/repositories/reviews.ts`) writes a wrong answer to the
+  table's row as a missed Review cell does (the step drops, a lapse is counted, the rights go) and makes it due now, so Review counts it today. One
+  write a run, as a Review round's row takes one outcome; `Had it` writes nothing.
+- The line under the title: Learn says 'Learn: every available form is shown.' (under Any, '… the ones you do not have yet marked not yet.'); Drill says
+  'Drill: tap a blank cell to see its form, then say whether you had it.' only while some cell is shown; with every cell locked it says 'Every form is
+  locked. Mark the grammar ideas a form needs to open it.' (a tap on a locked cell names the ideas it needs), and under Solid only with his forms all at the
+  frontier 'No form is solid yet. Solid only hides the forms at the frontier.'
 
-One button switches (it names the mode it goes to).
+The Learn | Drill switch is the app's segmented chips (`src/ui/Chips.tsx`, group 'Mode'); choosing the mode he is in does nothing, so a double tap ends where one does.
+
+## How much of a table (mw-irpgqi.2)
+
+The setting `paradigmExtent` (Settings > Greek > Paradigms, **How much of a table**: Any | Solid and frontier | Solid only, default Solid and frontier;
+`src/settings/definitions/grammarExtent.ts`), also a switch in the header of every table (`ExtentChips`, the same chips). It is a grammar extent
+(`src/data/grammar/extent.ts`: the one rule `withinExtent(level, extent)`, which the Weave's Grammar dial and the picker's New words at read too). A cell's
+standing under it (`standingOf` in `src/data/paradigms/index.ts`):
+
+| standing | when | Learn | Drill |
+| --- | --- | --- | --- |
+| `open` | within the extent and his (every idea solid or frontier) | the form | blank, asked |
+| `notYet` | within Any, not his | the form, muted, a small lock; a tap says what it needs | blank with a small lock, asked; the grade line says what it needs |
+| `outside` | his, but Solid only (the form has a frontier idea) | an empty cell (the table keeps its shape) | the same |
+| `locked` | not his and not within | a lock; a tap says what it needs | the same |
+
+`isAvailable(cell, levels, extent = 'solid+frontier')` keeps its meaning with no extent given (his to learn): Review's draw (`cells.ts`), `live` in
+`reviews.ts` and Drill this table read it so, whatever the extent shows. `availableCount(table, levels, extent)` counts the `open` cells and
+`availableText` says it as the extent would: 'Available forms: 12 of 24'; under Any 'All 24 forms shown, 12 available'; under Solid only 'Solid forms: 6 of 24'.
+The list and the table read one line; the list's bar is the `open` share.
 
 ## Drill this table (mw-svw421.6)
 
@@ -106,7 +136,7 @@ cell credits its form's letters, sounds and marks as a form read right (`noteAns
 
 At the foot of a table. It opens the Reader on the open chapter with the Talk sheet on the whole chapter and sends the first question
 with the bible-talk grind's focus `{table, revealed, kind: 'paradigm'}`: `table` is the table's name, `revealed` the forms showing now
-(in Review mode, every available one), each with its place, such as `Genitive Singular Masculine: τοῦ` (`grinds/bible-talk.*`,
+(in Learn every shown one, in Drill the ones he has tapped), each with its place, such as `Genitive Singular Masculine: τοῦ` (`grinds/bible-talk.*`,
 `reader-requested` action `paradigm` in `docs/events.md`).
 
 ## Out of scope

@@ -1,5 +1,6 @@
 // src/data/paradigms/index.ts — the paradigm tables, in the order the Paradigms list shows them (docs/paradigms.md), and what his
-// grammar levels make of them. Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
+// grammar levels make of them, as far as How much of a table takes in (the extent, src/data/grammar/extent.ts, mw-irpgqi.2). Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
+import { DEFAULT_EXTENT, withinExtent, type GrammarExtent } from '../grammar/extent';
 import { ideasOf, ideasOfWord } from '../grammar/ladder';
 import { patternsOf } from '../grammar/patterns';
 import type { Level } from '../grammar/needs';
@@ -56,22 +57,37 @@ export const paradigmById = (id: string | undefined): Paradigm | undefined => PA
 /** Where each idea stands: a lookup by idea id; an idea it does not know is not yet. */
 export type Levels = ReadonlyMap<string, { level: Level }>;
 
-const AVAILABLE: readonly Level[] = ['frontier', 'solid'];
+/** A form is his to learn once every idea it names is at the frontier or solid (the default extent); with `extent` given, whether every idea is within it (extent.ts). */
+export function isAvailable(cell: ParadigmCell, levels: Levels, extent: GrammarExtent = DEFAULT_EXTENT): boolean {
+  return cell.ideas.every((id) => withinExtent(levels.get(id)?.level, extent));
+}
 
-/** A form is his to learn once every idea it names is at the frontier or solid. */
-export function isAvailable(cell: ParadigmCell, levels: Levels): boolean {
-  return cell.ideas.every((id) => AVAILABLE.includes(levels.get(id)?.level ?? 'notYet'));
+/**
+ * Where a cell stands under How much of a table (mw-irpgqi.2): `open` (within the extent and his: shown, asked), `notYet` (within Any but not his: shown, marked
+ * not yet with what it needs), `outside` (his, but Solid only hides it: an empty cell), `locked` (not his and not within: a lock, as ever).
+ */
+export type CellStanding = 'open' | 'notYet' | 'outside' | 'locked';
+
+export function standingOf(cell: ParadigmCell, levels: Levels, extent: GrammarExtent): CellStanding {
+  const his = isAvailable(cell, levels);
+  const within = isAvailable(cell, levels, extent);
+  if (within) return his ? 'open' : 'notYet';
+  return his ? 'outside' : 'locked';
 }
 
 export const cellsOf = (table: Paradigm): ParadigmCell[] => table.rows.flatMap((row) => row.cells);
 
-export function availableCount(table: Paradigm, levels: Levels): { available: number; total: number } {
+/** How many cells the table shows as his under `extent` (standing `open`): the list's bar, the table's line, and (at the default) whether Review has a cell to ask. */
+export function availableCount(table: Paradigm, levels: Levels, extent: GrammarExtent = DEFAULT_EXTENT): { available: number; total: number } {
   const cells = cellsOf(table);
-  return { available: cells.filter((cell) => isAvailable(cell, levels)).length, total: cells.length };
+  return { available: cells.filter((cell) => standingOf(cell, levels, extent) === 'open').length, total: cells.length };
 }
 
-/** 'Available forms: 12 of 36' */
-export const availableText = ({ available, total }: { available: number; total: number }): string => `Available forms: ${available} of ${total}`;
+/** The count as the extent says it: 'Available forms: 12 of 36'; under Any 'All 36 forms shown, 12 available'; under Solid only 'Solid forms: 12 of 36'. */
+export function availableText({ available, total }: { available: number; total: number }, extent: GrammarExtent = DEFAULT_EXTENT): string {
+  if (extent === 'any') return `All ${total} forms shown, ${available} available`;
+  return `${extent === 'solid' ? 'Solid' : 'Available'} forms: ${available} of ${total}`;
+}
 
 /** The cell's place in plain words, for the screen reader and the tutor: 'Genitive Singular Masculine', 'Present 2nd person singular Greek'. */
 export function cellName(table: Paradigm, row: ParadigmRow, column: number): string {
@@ -79,9 +95,8 @@ export function cellName(table: Paradigm, row: ParadigmRow, column: number): str
   return [row.group, row.label, col.group, col.label].filter(Boolean).join(' ');
 }
 
-/** The ideas of a locked cell that are not yet at the frontier, as the ladder's titles would say them (ids; the screen looks the titles up). */
-export const missingIdeas = (cell: ParadigmCell, levels: Levels): string[] =>
-  cell.ideas.filter((id) => !AVAILABLE.includes(levels.get(id)?.level ?? 'notYet'));
+/** The ideas of a locked or not-yet cell that are not yet at the frontier, as the ladder's titles would say them (ids; the screen looks the titles up). */
+export const missingIdeas = (cell: ParadigmCell, levels: Levels): string[] => cell.ideas.filter((id) => !withinExtent(levels.get(id)?.level, DEFAULT_EXTENT));
 
 /** The tables that teach an idea (their `ideas` name it), in the list's order: what the idea sheet links to. None for an idea no table teaches. */
 export const paradigmsOf = (ideaId: string): Paradigm[] => PARADIGMS.filter((p) => p.ideas.includes(ideaId));

@@ -5,6 +5,7 @@ import { ApproachControl } from './approach';
 import { DailyDevotionalControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, DevotionalDrawControl, TodaysDevotionalControl } from './daily';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
+import { GrammarExtentControl } from './grammarExtent';
 import { GreekInterestControl } from './greekInterest';
 import { HandwritingControl } from './handwriting';
 import { LinkControl } from './links';
@@ -34,6 +35,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   newWordsADay: NewWordsControl,
   pickerGrammar: NewWordsControl,
   grammarMove: NewWordsControl,
+  paradigmExtent: GrammarExtentControl,
   goal: GoalControl,
   grammarApproach: ApproachControl,
   handwritingDrills: HandwritingControl,

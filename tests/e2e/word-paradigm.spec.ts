@@ -117,7 +117,7 @@ test('an open cell is lit too, and the table keeps its mode when it is switched'
   const lit = page.locator('[data-lit]');
   await expect(lit).toHaveCount(1);
   await expect(lit).toHaveAttribute('data-state', 'hidden');
-  await page.getByRole('button', { name: 'Review mode' }).click();
+  await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
   await expect(page.locator('[data-lit]')).toHaveAttribute('data-state', 'shown');
   await expect(page.locator('[data-lit]')).toHaveText('ἀγαπῶ');
   await expect(page.getByTestId('word-line')).toBeVisible();

@@ -115,7 +115,7 @@ describe('the Paradigms address of a word', () => {
   });
 
   it('is the same address as before when there is no cell', () => {
-    expect(paradigmHash({ table: 'article', mode: 'review' })).toBe('#/paradigms?t=article&mode=review');
+    expect(paradigmHash({ table: 'article', mode: 'learn' })).toBe('#/paradigms?t=article&mode=learn');
     expect(paradigmOf('#/paradigms?t=article&cell=x')).toEqual({ table: 'article', cell: 'x' });
   });
 

@@ -263,7 +263,7 @@ Feature: The idea sheet
     When he opens the idea sheet of "tense-aorist" from the Goal screen
     Then the idea sheet shows the button "Table: Future and aorist"
     When he taps "Table: Future and aorist" on the idea sheet
-    Then the address is "#/paradigms?t=future-and-aorist" and the table "Future and aorist" is open in Study mode
+    Then the address is "#/paradigms?t=future-and-aorist" and the table "Future and aorist" is open to Drill
     When he goes Back
     Then the idea sheet "The aorist tense" is on screen over the Goal screen
 
