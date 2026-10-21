@@ -4,11 +4,11 @@ import { db } from '../../src/data/db';
 afterAll(() => db.close());
 
 describe('the Dexie database', () => {
-  it('opens at version 23 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder, drillRuns and passageLessons stores', async () => {
+  it('opens at version 24 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder, drillRuns, passageLessons and pictureRefs stores', async () => {
     await db.open();
     expect(db.name).toBe('lampas');
-    expect(db.verno).toBe(23);
-    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drillRuns', 'drills', 'grammarKnown', 'grammarLevels', 'ladder', 'meta', 'missTally', 'passageLessons', 'readingHistory', 'readings', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talks', 'tips', 'usage', 'words']);
+    expect(db.verno).toBe(24);
+    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drillRuns', 'drills', 'grammarKnown', 'grammarLevels', 'ladder', 'meta', 'missTally', 'passageLessons', 'pictureRefs', 'readingHistory', 'readings', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talks', 'tips', 'usage', 'words']);
     expect(db.words.schema.primKey.name).toBe('lemma');
     expect(db.words.schema.idxByName['lemmas']?.multi).toBe(true);
     expect(db.settings.schema.primKey.name).toBe('key');
@@ -48,5 +48,7 @@ describe('the Dexie database', () => {
     expect(db.missTally.schema.primKey.keyPath).toEqual(['lang', 'unit']);
     expect(db.passageLessons.schema.primKey.name).toBe('key');
     expect(db.passageLessons.schema.idxByName['state']).toBeDefined();
+    expect(db.pictureRefs.schema.primKey.name).toBe('hash');
+    expect(db.pictureRefs.schema.idxByName['at']).toBeDefined();
   });
 });

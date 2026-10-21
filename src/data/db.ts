@@ -85,6 +85,27 @@ export interface ShareRow {
   files: { name: string; type: string; bytes: ArrayBuffer }[];
 }
 
+/** One reference as kept: the shape of src/nav/refsInText.ts FoundReference, written out here because the worker reads this file and imports no screen. */
+export interface KeptReference {
+  printed: string;
+  ref: string;
+  book: string;
+  testament: 'nt' | 'ot';
+  chapter: number;
+  verse?: number;
+  lastVerse?: number;
+}
+
+/** The Bible references found in a shared picture (src/data/repositories/pictureRefs.ts, mw-5r3p30.695), kept by the picture's fingerprint so it is never read twice. */
+export interface PictureRefsRow {
+  /** the SHA-256 of the picture's bytes, in hex: the key */
+  hash: string;
+  /** when they were kept (ms since the epoch); the oldest go first when there are many */
+  at: number;
+  /** the checked references (src/share/findRefs.ts checkedReferences), as they are shown */
+  found: KeptReference[];
+}
+
 /** A request Lampas sent to the factory (mw-vy3ghg.2), kept with the grist's id so a status that comes back can be matched to it. */
 export interface RequestRow {
   /** the grist's transaction id: the key */
@@ -444,6 +465,7 @@ class LampasDB extends Dexie {
   ladder!: EntityTable<LadderRow, 'lang'>;
   drillRuns!: EntityTable<DrillRunRow, 'id'>;
   passageLessons!: EntityTable<PassageLessonRow, 'key'>;
+  pictureRefs!: EntityTable<PictureRefsRow, 'hash'>;
 
   constructor() {
     super('lampas');
@@ -821,6 +843,31 @@ class LampasDB extends Dexie {
       ladder: 'lang',
       drillRuns: '++id, ideaId, at',
       passageLessons: 'key, state',
+    });
+    // v24: the references found in a shared picture {hash, at, found} (src/data/repositories/pictureRefs.ts, mw-5r3p30.695); every other table as it was.
+    this.version(24).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+      pictureRefs: 'hash, at',
     });
   }
 }

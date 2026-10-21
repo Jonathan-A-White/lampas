@@ -67,7 +67,7 @@ async function open(text: string, fresh: boolean, picture: false | 'held' | 'fai
   imageSeam.decode = async () => ({ width: 1200, height: 800, source: null });
   imageSeam.encode = async () => new Blob([new Uint8Array(50_000).fill(7)], { type: 'image/jpeg' });
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.talkPictures.clear(), db.shares.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.talkPictures.clear(), db.shares.clear(), db.pictureRefs.clear()]);
   await parkShare({
     id: 'share-1',
     createdAt: Date.now(),
