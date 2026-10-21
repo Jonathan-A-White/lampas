@@ -35,9 +35,9 @@ mw-irpgqi.4 reuse what the last section says and add nothing this file does not 
 | `Chips` | `src/ui/Chips.tsx` | `{name, current, options, onChoose}`: the segmented chips (`ChipRow` is `Chips` bound to a setting) | `ChipRow`; the Learn \| Drill switch |
 | `Grades` | `src/ui/SelfGrade.tsx` | `{right, wrong, picked, onPick}`: the two grade buttons of a flashcard, with their labels given | `SelfGrade` (I knew it / Not yet); the Drill's grade line (Had it / Missed) |
 | `standingOf`, `isAvailable(cell, levels, extent)`, `availableCount(table, levels, extent)`, `availableText(count, extent)` | `src/data/paradigms/index.ts` | a cell's standing under an extent: `open` (shown, his), `notYet` (shown under Any, not his), `outside` (his, hidden under Solid only), `locked` | the list, the table, Review's `live` (default extent: today's rule) |
-| `drillOf`, `revealCell`, `gradeCell`, `drillMissed`, `startAgain`, `scoreOf`, `forgetDrills` | `src/data/paradigms/drill.ts` | the Drill's state per table while the page lives (replaces `revealed.ts`): the cells asked, each grade, the open cell | the table screen; mw-irpgqi.4's This word view |
+| `drillOf`, `startRun`, `revealCell`, `gradeCell`, `markMissWritten`, `scoreOf`, `drillMissed`, `forgetDrill`, `forgetDrills`, `Drill`, `Score` | `src/data/paradigms/drill.ts` | the Drill's state per table while the page lives (replaces `revealed.ts`): the cells asked, each grade, the open cell, the cells kept shown, whether the run's miss was written | the table screen; mw-irpgqi.4's This word view |
 | `recordDrillMiss` | `src/data/repositories/reviews.ts` | a miss in a self-drill: the table's row takes a wrong answer and is due now | the Drill's first Missed of a run |
-| `ModeSwitch`, `NeedsRow`, `GradeRow`, `DrillEnd` | `src/ParadigmsScreen.tsx` | Learn \| Drill; the line under a row saying what a cell needs; the Had it / Missed line under the open cell; 'N of M' and Drill the missed again | the table screen; mw-irpgqi.4 draws This word with the same `Table` |
+| `Table`, `NeedsNote`, `DrillEnd`, `shownCells`, `shownForms`, `modeHelp`, `MODES` | `src/ParadigmsScreen.tsx` | the table drawn by each cell's standing and the mode (its `grade-row` under the open cell is `Grades` with Had it / Missed; the Learn \| Drill switch is `Chips` over `MODES`, group 'Mode'); what a cell needs, with its Go to buttons; 'N of M' and Drill the missed again; the cells shown and the forms showing; the line under the title | the table screen; mw-irpgqi.4 draws This word with the same `Table` |
 
 ## Duplicates mw-irpgqi.2 removes
 
@@ -45,7 +45,7 @@ mw-irpgqi.4 reuse what the last section says and add nothing this file does not 
   tables beside the registry's two `choice` lists: all four now read `EXTENT_SETTINGS`.
 - The level test was written twice: `formPasses` (`formLevel.ts`) and `AVAILABLE` in `src/data/paradigms/index.ts`: both read `withinExtent`.
 - `revealed.ts` (the Study mode's revealed cells) goes; `drill.ts` holds the Drill's state, the revealed cells among it.
-- The Paradigms screen drew the Needs line in one place and the grade buttons would have been a second pair: `NeedsRow` and `Grades` are each one.
+- The Paradigms screen drew the Needs line in one place and the grade buttons would have been a second pair: `NeedsNote` and `Grades` are each one.
 - The segmented chips were drawn by `ChipRow` alone, bound to a setting; `Chips` is the look, so the Learn | Drill switch is not a second copy.
 
 ## What mw-irpgqi.3 must reuse
