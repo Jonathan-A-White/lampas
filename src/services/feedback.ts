@@ -9,7 +9,7 @@ import { keepRequest } from '../data/repositories/requests';
 import { getDeviceKeyBytes } from './deviceKey';
 import { MILL_MAX_FILES, type MillFile } from './mill';
 import { askGrind, TutorError, type AskOptions } from './tutor';
-import { MAX_QUESTION_CHARS } from './requestBudget';
+import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 
 export const FEEDBACK_KIND = 'feedback';
 
@@ -133,9 +133,8 @@ export function buildMoreRequest(kind: MoreKind, name: string, why = '', link = 
   return { kind, name: name.trim(), ...(text ? { text } : {}), ...(url ? { url } : {}), app_version: __APP_VERSION__ };
 }
 
-/** The most a tutor-ask request may weigh, as JSON in UTF-8 (the same as a talk's, src/services/talk.ts MAX_REQUEST_BYTES): a grist's record
- * is capped at 10 KiB and the sealed grist is base64 of this. Greek is two bytes a letter, so the facts are what gives way. */
-export const MAX_ASK_BYTES = 6500;
+/** The most a tutor-ask request may weigh, as JSON in UTF-8: the same as a talk's (src/services/requestBudget.ts), so the two cannot drift apart. Greek is two bytes a letter, so the facts are what gives way. */
+export const MAX_ASK_BYTES = MAX_REQUEST_BYTES;
 
 /** The request for an ask the tutor could not meet: his words, the tutor's summary, where he asked and what that screen showed. While it
  * is too big for a grist the screen's last facts are left out, one at a time; his words and the summary are never cut. */
