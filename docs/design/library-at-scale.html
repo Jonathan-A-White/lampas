@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lampas: the library at scale (mockups)</title>
+<style>
+  :root { --fg: #1b1b1b; --muted: #666; --line: #d8d4cc; --surface: #fff; --bg: #f3f0ea; --accent: #6b3e26; --accent-fg: #fff; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #eee; --muted: #aaa; --line: #444; --surface: #1e1e1e; --bg: #121212; --accent: #d9a066; --accent-fg: #111; } }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+  body { padding: 12px 12px calc(24px + env(safe-area-inset-bottom)); max-width: 430px; margin: 0 auto; }
+  h1 { font-size: 1.25rem; margin: 8px 0 4px; }
+  p.lead { color: var(--muted); margin: 0 0 16px; font-size: .95rem; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--accent); text-decoration: none; background: var(--surface); }
+  section.screen { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; margin: 0 0 28px; overflow: hidden; }
+  section.screen > h2 { margin: 0; padding: 10px 14px; font-size: 1rem; background: var(--bg); border-bottom: 1px solid var(--line); color: var(--muted); font-weight: 600; }
+  .bar { display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 12px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .bar .back { color: var(--accent); font-weight: 500; }
+  .pad { padding: 12px; }
+  .card { border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+  .muted { color: var(--muted); font-size: .9rem; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--line); color: var(--accent); font-weight: 500; background: var(--surface); }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); width: 100%; margin-top: 8px; }
+  .row2 { display: flex; gap: 8px; margin-top: 10px; }
+  .row2 .btn { flex: 1; }
+  .search { display: flex; align-items: center; min-height: 44px; border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; color: var(--muted); margin: 10px 0; }
+  ul.list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; }
+  ul.list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 48px; padding: 6px 12px; border-top: 1px solid var(--line); }
+  ul.list li:first-child { border-top: 0; }
+  ul.list li .name { flex: 1; min-width: 0; }
+  ul.list li .name small { display: block; color: var(--muted); font-size: .85rem; }
+  .count { color: var(--muted); font-size: .9rem; white-space: nowrap; }
+  .chev { color: var(--muted); }
+  .steps { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .steps span { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 40px; padding: 0 8px; font-size: .9rem; border-left: 1px solid var(--line); }
+  .steps span:first-child { border-left: 0; }
+  .steps span.on { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .tile { display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--line); border-radius: 12px; color: var(--accent); font-weight: 500; text-align: center; padding: 4px 8px; }
+  .group { font-weight: 600; margin: 12px 0 4px; }
+  .sheet { border-top: 2px solid var(--line); margin-top: 8px; }
+  .reason { margin: 0 0 10px; }
+  .pin { font-size: .8rem; color: var(--muted); }
+  .note { font-size: .85rem; color: var(--muted); padding: 0 12px 12px; }
+</style>
+</head>
+<body>
+<h1>Lampas: the library at scale</h1>
+<p class="lead">Mockups for docs/design/library-at-scale.md (mw-5r3p30.709). Static: nothing here taps. Drawn at phone width; type is the app's size. PROVISIONAL.</p>
+<nav>
+  <a href="#home">Library</a><a href="#kind">Lexicons</a><a href="#import">Import</a><a href="#reasons">Cannot use</a><a href="#word">Word sheet</a><a href="#verse">Verse</a><a href="#ask">Ask</a><a href="#settings">Settings</a>
+</nav>
+
+<section class="screen" id="home">
+  <h2>1 · Your Logos library (#/library)</h2>
+  <div class="bar"><span class="back">‹ Settings</span><span>Your Logos library</span><span></span></div>
+  <div class="pad">
+    <div class="card">
+      <div>198 of your 4,795 books open from Lampas.</div>
+      <div class="muted">Imported 8 Oct · 3 new since.</div>
+      <div class="row2"><span class="btn">Import again</span><span class="btn">Ask for a book</span></div>
+    </div>
+    <div class="search">🔍 Search your books</div>
+    <ul class="list">
+      <li><span class="name">Lexicons</span><span class="count">19 on · 2 pinned</span><span class="chev">›</span></li>
+      <li><span class="name">Grammars</span><span class="count">9 on · 1 pinned</span><span class="chev">›</span></li>
+      <li><span class="name">Greek texts</span><span class="count">8 on</span><span class="chev">›</span></li>
+      <li><span class="name">Interlinears</span><span class="count">45 on · 1 pinned</span><span class="chev">›</span></li>
+      <li><span class="name">Commentaries</span><span class="count">25 on</span><span class="chev">›</span></li>
+      <li><span class="name">Bibles</span><span class="count">1 chosen: LSB</span><span class="chev">›</span></li>
+      <li><span class="name">Devotionals</span><span class="count">37 on</span><span class="chev">›</span></li>
+    </ul>
+    <p class="muted" style="margin:12px 0 0">4,597 of your books Lampas cannot use yet. <span style="color:var(--accent)">What they are ›</span></p>
+  </div>
+  <p class="note">Before an import the card says: Lampas opens 110 books of a Logos library. Import your list, or tick the ones you own. [Import] [Tick by hand]. At 3 or 1,000 books the same seven rows; only the counts change.</p>
+</section>
+
+<section class="screen" id="kind">
+  <h2>2 · A kind page: Lexicons (#/library?kind=lexicon)</h2>
+  <div class="bar"><span class="back">‹ Library</span><span>Lexicons</span><span class="count">19 on</span></div>
+  <div class="pad">
+    <p class="muted" style="margin:0 0 8px">Opens the word you tap at its entry. Pinned ones are on the word sheet; the rest are behind All lexicons.</p>
+    <div class="row2"><span class="btn">All on</span><span class="btn">All off</span></div>
+    <div class="search">🔍 Search 19 lexicons</div>
+    <ul class="list">
+      <li><span class="name">BDAG<small>A Greek-English Lexicon of the New Testament and Other Early Christian Literature</small></span><span class="steps"><span>Off</span><span>On</span><span class="on">Pin</span></span></li>
+      <li><span class="name">Louw-Nida<small>Greek-English Lexicon of the NT based on Semantic Domains</small></span><span class="steps"><span>Off</span><span>On</span><span class="on">Pin</span></span></li>
+      <li><span class="name">Lexham Theological Wordbook</span><span class="steps"><span>Off</span><span class="on">On</span><span>Pin</span></span></li>
+      <li><span class="name">DBL Greek</span><span class="steps"><span>Off</span><span class="on">On</span><span>Pin</span></span></li>
+      <li><span class="name">EDNT</span><span class="steps"><span>Off</span><span class="on">On</span><span>Pin</span></span></li>
+      <li><span class="name">Thayer's Greek-English Lexicon</span><span class="steps"><span class="on">Off</span><span>On</span><span>Pin</span></span></li>
+    </ul>
+  </div>
+  <p class="note">Sorted pinned, on, off, then title; never re-sorted under his thumb. A fourth Pin says: Four pinned already: unpin one first. Bibles has Chosen in place of Pin, one at a time; Devotionals has no Pin.</p>
+</section>
+
+<section class="screen" id="import">
+  <h2>3 · Import your library: the result</h2>
+  <div class="bar"><span class="back">✕</span><span>Import your library</span><span></span></div>
+  <div class="pad">
+    <p style="margin:0 0 10px">4,795 books read from your Logos list.</p>
+    <div class="card">
+      <div style="font-weight:600">198 open from Lampas</div>
+      <div class="muted">19 lexicons · 9 grammars · 8 Greek texts · 45 interlinears · 25 commentaries · 37 devotionals · 55 Bibles (LSB chosen)</div>
+      <div class="muted" style="margin-top:6px">All of these turn on. BDAG, Louw-Nida, Black and the ESV interlinear are pinned; change any in Your Logos library.</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600">4,597 Lampas cannot use yet</div>
+      <div style="color:var(--accent)">What they are ›</div>
+    </div>
+    <p class="muted">Your list stays on this phone. Nothing is sent.</p>
+    <span class="btn primary">Turn on 198 books</span>
+  </div>
+</section>
+
+<section class="screen" id="reasons">
+  <h2>4 · What they are: the rows Lampas cannot use</h2>
+  <div class="bar"><span class="back">‹ Import</span><span>4,597 books</span><span></span></div>
+  <div class="pad">
+    <p class="reason">838 ancient manuscripts and 412 translations of them: not the New Testament.</p>
+    <p class="reason">383 commentaries on the New Testament that are not on the Greek text: the makers add a series when a reader asks and it fits (Ask for a book).</p>
+    <p class="reason">287 commentaries on the Old Testament or the whole Bible: Lampas holds the New.</p>
+    <p class="reason">1,319 other books, 95 collected works, 61 of sermons, 44 journals: Lampas links a book only where it opens at the word, the verse or the day.</p>
+    <p class="reason">19 lexicons of Hebrew, Aramaic, Latin or Arabic: not Greek.</p>
+    <p class="reason">21 grammars of Hebrew, Latin or classical Greek: not Koine.</p>
+    <p class="reason">6 pronunciation and 36 interactive tools: Lampas has its own.</p>
+    <span class="btn primary">Ask the makers about these</span>
+    <p class="muted" style="margin:8px 0 0">One request: the titles of about 500 of these (the kinds Lampas could use). Titles say something of what you read; nothing goes until you tap.</p>
+  </div>
+</section>
+
+<section class="screen" id="word">
+  <h2>5 · The word sheet's Study row, 21 lexicons on, 2 pinned</h2>
+  <div class="pad">
+    <div class="muted">Study</div>
+    <div class="group" style="margin-top:4px">Logos</div>
+    <div class="tiles">
+      <span class="tile">BDAG</span><span class="tile">Louw-Nida</span>
+      <span class="tile">Bible Word Study</span><span class="tile">All 19 lexicons ›</span>
+    </div>
+    <div style="margin-top:10px"><span class="muted">Strong's</span> &nbsp;G26</div>
+    <div class="sheet">
+      <div class="bar"><span>ἀγάπη in Logos</span><span class="back">✕</span></div>
+      <div class="pad">
+        <div class="search">🔍 Search 19 lexicons</div>
+        <ul class="list">
+          <li><span class="name">BDAG <span class="pin">· pinned</span></span><span class="chev">›</span></li>
+          <li><span class="name">Louw-Nida <span class="pin">· pinned</span></span><span class="chev">›</span></li>
+          <li><span class="name">DBL Greek</span><span class="chev">›</span></li>
+          <li><span class="name">EDNT</span><span class="chev">›</span></li>
+          <li><span class="name">Lexham Analytical Lexicon of the GNT</span><span class="chev">›</span></li>
+          <li><span class="name" style="color:var(--accent)">Manage in Your Logos library</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <p class="note">With 3 on and none pinned: the 3 tiles and no door. The sheet is a direct role=dialog child so it stays clear of the bars.</p>
+</section>
+
+<section class="screen" id="verse">
+  <h2>6 · A verse: one door, then the chooser</h2>
+  <div class="pad">
+    <div class="row2"><span class="btn">Open in Logos</span><span class="btn">In another book…</span></div>
+    <div class="sheet">
+      <div class="bar"><span>Romans 8:31 in Logos</span><span class="back">✕</span></div>
+      <div class="pad">
+        <div class="search">🔍 Search 58 books</div>
+        <div class="group">Pinned</div>
+        <ul class="list"><li><span class="name">ESV reverse interlinear</span><span class="chev">›</span></li></ul>
+        <div class="group">Commentaries on Romans (10)</div>
+        <ul class="list">
+          <li><span class="name">Lenski, Romans</span><span class="chev">›</span></li>
+          <li><span class="name">Calvin, Romans</span><span class="chev">›</span></li>
+          <li><span class="name">BECNT, Romans</span><span class="chev">›</span></li>
+          <li><span class="name" style="color:var(--accent)">7 more</span></li>
+        </ul>
+        <div class="group">Greek texts (8)</div>
+        <ul class="list">
+          <li><span class="name">SBLGNT</span><span class="chev">›</span></li>
+          <li><span class="name">SBLGNT apparatus</span><span class="chev">›</span></li>
+          <li><span class="name">Textus Receptus 1550</span><span class="chev">›</span></li>
+          <li><span class="name" style="color:var(--accent)">5 more</span></li>
+        </ul>
+        <div class="group">Interlinears (45)</div>
+        <ul class="list">
+          <li><span class="name">NASB95</span><span class="chev">›</span></li>
+          <li><span class="name">NKJV</span><span class="chev">›</span></li>
+          <li><span class="name">KJV 1900</span><span class="chev">›</span></li>
+          <li><span class="name" style="color:var(--accent)">42 more</span></li>
+        </ul>
+        <p class="muted" style="margin:10px 0 0; color:var(--accent)">Manage in Your Logos library</p>
+      </div>
+    </div>
+  </div>
+  <p class="note">The same chooser under the tutor's verse chip, on Today's Psalms and Proverbs, in the Verse view and on an Old Testament reference card (Bibles and interlinears only there).</p>
+</section>
+
+<section class="screen" id="ask">
+  <h2>7 · Ask for a book (the one ask)</h2>
+  <div class="bar"><span>Ask for a book</span><span class="back">✕</span></div>
+  <div class="pad">
+    <div class="group" style="margin-top:0">Which book?</div>
+    <div class="search">🔍 Search your 4,597 other books</div>
+    <ul class="list">
+      <li><span class="name">Lenski, The Interpretation of St. Paul's Epistle to the Romans<small>Commentary · Romans</small></span><span class="chev">›</span></li>
+      <li><span class="name">Guzik, Romans<small>Commentary · Romans</small></span><span class="chev">›</span></li>
+    </ul>
+    <div class="group">or type a title</div>
+    <div class="search" style="color:var(--fg)">&nbsp;</div>
+    <div class="group">Why would it help? (optional)</div>
+    <div class="search" style="min-height:72px">&nbsp;</div>
+    <p class="muted">The makers weigh each ask against what Lampas is for. Your requests follows it. What is sent: the book's title and Logos id.</p>
+    <span class="btn primary">Send</span>
+  </div>
+  <p class="note">Opened from the Library card, the idea sheet (Ask for a grammar), Daily (Ask for a devotional) and Ask for more. A book already asked, or one Lampas already opens, is refused with one line.</p>
+</section>
+
+<section class="screen" id="settings">
+  <h2>8 · Settings › Study resources, after the change</h2>
+  <div class="pad">
+    <ul class="list">
+      <li><span class="name">Strong's</span><span class="steps"><span class="on">On</span></span></li>
+      <li><span class="name">Logos<small>Don't have Logos? Get Logos</small></span><span class="steps"><span class="on">On</span></span></li>
+      <li><span class="name">Your Logos library<small>198 books on · imported 8 Oct</small></span><span class="chev">›</span></li>
+      <li><span class="name">Bible in Logos<small>LSB (Legacy Standard Bible)</small></span><span class="chev">›</span></li>
+      <li><span class="name">Accordance</span><span class="steps"><span class="on">Off</span></span></li>
+      <li><span class="name">Audio Bible<small>The Word of Promise (NKJV), in Audible</small></span><span class="chev">›</span></li>
+    </ul>
+  </div>
+  <p class="note">The lexicon list, Grammar books, Ask for another book and Works leave Settings. Settings search for 'BDAG' answers BDAG · Your Logos library.</p>
+</section>
+</body>
+</html>
