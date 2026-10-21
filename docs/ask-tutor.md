@@ -297,6 +297,24 @@ The Composer holds the waiting pictures itself (a row 'Pictures to send', each w
 - Checks: `features/talk-pictures.feature`, `tests/unit/talk-pictures.test.ts`, `tests/unit/db.test.ts`, and `tests/e2e/talk-pictures.spec.ts` (390 px; shots
   `talk-pictures-composer`, `talk-pictures-turn`, `talk-pictures-full-screen`).
 
+## Conversations
+
+Every talk with the tutor is kept on the phone per conversation (`repositories/talks.ts`: a verse, chapter or passage `rom.8.28`, a quiz `rom.8.1-11:quiz`, a screen
+`screen.goal`, a talk of its own `talk.<ms>`). The **Conversations** screen (mw-5r3p30.696; `#/conversations`, route `conversations`, in `KEPT_PATHS`, reached by
+**Conversations** under Settings > Account > More; `src/Conversations.tsx`) is the list of them:
+
+- **The list** is `listConversations()`: one row per conversation, the one with the newest last turn first, each drawn by `src/share/TalkRow.tsx` (the row Share to
+  Lampas > **Choose a talk** draws too, so the two lists never drift): its place in words (`talkPlace.ts` `talkLabel`: "Romans 8:28", "Quiz on Romans 8:1-11", "Ask
+  the tutor: Goal"), the date of its last turn and the first line of its last question (as the tutor cleaned it up when it did). A key this app does not make is not listed.
+- **The search** (one box, "Search conversations") is `searchConversations(query)`: a turn matches when every word typed is in its question or its answer, any case,
+  and the conversation is listed with the line of its newest matching turn that holds the first word (cut to 120 characters around it). It runs on the phone over
+  the turns already kept (a phone's few thousand are filtered in memory; no index, no new database version, no grist).
+- **A tap** opens the conversation to carry on: the Talk sheet over a scope made from its key (`talkScope.ts` `useTalkScope`, `ShareTalk.tsx` `TalkHost`, as Share to
+  Lampas opens one) with its turns shown and its composer ready for the next question. A Bible chapter that is not on the phone and cannot be fetched says so, with Try again.
+  **Done** closes the sheet and the list is as he left it (his search too).
+- It is read only: no delete and no rename here (the Talk sheet's own **New talk** still forgets the one conversation it is on).
+- Checks: `tests/unit/conversations.test.ts`, `tests/e2e/conversations.spec.ts` (390 px; shots `conversations`, `conversations-search`, `conversations-resumed`).
+
 ## Share to Lampas
 
 Lampas is in the phone's share sheet (mw-y3qno5.2, `features/share-target.feature`): Share > Lampas from the Photos app, Logos or any app that shares a picture,
@@ -313,7 +331,7 @@ a phone that installed Lampas before this version may need it removed and instal
 - **The screen** (`#/share`, route `share`, in `KEPT_PATHS`; `src/share/ShareScreen.tsx`) is behind the licence gate like every screen. The sheet **Share to
   Lampas** (`useSheetBack`) says what is waiting ("2 pictures and some words from another app") and offers, in this order: **Continue: <the newest talk> ·
   <when>** (the default, the focused one; only when a talk was ever had), **New talk**, **Choose a talk** (the recent talks, newest first, at most 20, each with its
-  name, its date and its first question; `repositories/talks.ts` `listRecentTalks`: the app had no list of past talks, this is the smallest one) and **Cancel**.
+  name, its date and its first question; `repositories/talks.ts` `listConversations(20)`, drawn by `src/share/TalkRow.tsx`, the row **Conversations** draws too) and **Cancel**.
   The sheet is drawn once the talks are read, so a tap never lands on a button that moved.
   Only JPEG, PNG or WebP files are counted as pictures (mw-s1dc0n.14: `shareText.ts` `describeShare`); any other (a GIF) gets the line "1 picture left out: Lampas reads only JPEG, PNG or WebP." (`leftOutLine`), is not read for references and stays out of the talk's composer. A share with nothing readable (no words, no such picture: `hasReadable`) offers only Cancel, with no New talk, Choose a talk or Continue (mw-5r3p30.665).
 - **A pick** takes the share off the phone's store and opens the talk in the Talk sheet over its own scope (`src/share/talkScope.ts`, `ShareTalk.tsx`): the
