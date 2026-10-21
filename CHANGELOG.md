@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.388
+_2026-10-21_
+- New: Lampas remembers the Bible verses it found in a screenshot you shared, so going back for the next verse is instant and the picture is not read again.
+- New: Tap the chapter line at the foot of the reader to open the whole chapter with Listen, Read it aloud, Ask the tutor and Quiz me.
+
 ## 0.1.387
 _2026-10-21_
 - Fixed: In Greek word order, a verse's full stop now stays at the end of the verse instead of appearing in the middle.
