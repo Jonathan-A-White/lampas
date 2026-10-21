@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+test.use({ viewport: { width: 390, height: 844 } });
+
 test('Settings > Goal at phone width: three pickers, each 48 px tall, write Read 1 John 1:1 and keep it across a reload', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings?group=greek');

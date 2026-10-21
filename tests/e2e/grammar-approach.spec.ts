@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+test.use({ viewport: { width: 390, height: 844 } });
+
 test('Settings > Grammar approach at phone width: the one path, the ladder, with no choice to make, and a phone that saved BMA Tutor reads as it', async ({ page }) => {
   await openUnlocked(page);
   // an old phone: the saved choice is the BMA Tutor path, which is no longer listed

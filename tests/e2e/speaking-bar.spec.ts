@@ -3,6 +3,10 @@ import { honestSpeech, isSpeaking, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+const PHONE = { width: 390, height: 844 };
+test.use({ viewport: PHONE });
+
 // The speaking bar (voice-kit/speech, drawn by src/speech/SpeakingBarSlot.tsx) over a verse at phone width. The engine is voice-kit's honest fake: a slow
 // reader (300 ms a word) keeps a verse on the bar long enough to look at. The shots are written by the spec (shots/ is not committed).
 async function openRomans8(page: Page) {
@@ -23,7 +27,7 @@ test('Listen on a verse shows the bar above the Talk bar, 44 px buttons, over no
   const box = await bar(page).boundingBox();
   const talk = await page.locator('[data-talk-bar]').boundingBox();
   const main = await page.locator('[data-reader]').boundingBox();
-  expect(box && box.x >= 0 && box.x + box.width <= 390).toBe(true);
+  expect(box && box.x >= 0 && box.x + box.width <= PHONE.width).toBe(true);
   // in flow, between the reading box and the Talk bar: it covers no text
   expect(box && main && main.y + main.height <= box.y + 1).toBe(true);
   expect(box && talk && box.y + box.height <= talk.y + 1).toBe(true);
@@ -31,7 +35,7 @@ test('Listen on a verse shows the bar above the Talk bar, 44 px buttons, over no
     const b = await bar(page).getByRole('button', { name, exact: true }).boundingBox();
     expect(b?.height).toBeGreaterThanOrEqual(43.5);
     expect(b?.width).toBeGreaterThanOrEqual(43.5);
-    expect(b && b.x >= 0 && b.x + b.width <= 390).toBe(true);
+    expect(b && b.x >= 0 && b.x + b.width <= PHONE.width).toBe(true);
   }
   // the round Ask the tutor button rides above the bar, not over its buttons
   const ask = await page.locator('[data-ask-tutor]').boundingBox();
@@ -75,7 +79,7 @@ test('Leaving the reader pauses the reading; the bar offers Resume on Settings a
   await expect(bar(page).getByRole('button')).toHaveText(['Resume', 'Restart', 'Stop']);
   expect(await isSpeaking(page)).toBe(false);
   const box = await bar(page).boundingBox();
-  expect(box && box.x >= 0 && box.x + box.width <= 390 && box.y + box.height <= 844).toBe(true);
+  expect(box && box.x >= 0 && box.x + box.width <= PHONE.width && box.y + box.height <= PHONE.height).toBe(true);
   // the round Ask the tutor button rides above it here too
   const ask = await page.locator('[data-ask-tutor]').boundingBox();
   expect(ask && box && ask.y + ask.height <= box.y + 1).toBe(true);

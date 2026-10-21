@@ -7,6 +7,9 @@ import { test, expect, type Request } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
+// The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+test.use({ viewport: { width: 390, height: 844 } });
+
 test.use({ serviceWorkers: 'allow' });
 
 // the waiting build's changelog (the server's, fetched fresh): with a line after the running version it is worth a banner

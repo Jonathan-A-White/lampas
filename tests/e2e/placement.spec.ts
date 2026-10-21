@@ -7,6 +7,9 @@ import { honestSpeech, spoken } from '../support/honest-fakes';
 import { neededIdeas, placementSummary } from './needed-ideas';
 import { openUnlocked } from './unlocked';
 
+// The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
+test.use({ viewport: { width: 390, height: 844 } });
+
 // Puts rows in the app's own store through raw IndexedDB, as the app wrote them.
 async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object[]) {
   await page.evaluate(

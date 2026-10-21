@@ -88,7 +88,6 @@ describe('the chromium and shots Playwright projects', () => {
       expect(ignored(chromium), file).toContain(`**/${file}`);
       expect(ignored(shots), file).not.toContain(`**/${file}`);
     }
-    expect(PHONE_WIDTH_SPECS.length).toBeGreaterThan(0);
   });
 
   it('leave every spec (but the live ones) to at least one of them', async () => {
