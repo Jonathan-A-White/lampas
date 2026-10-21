@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.389
+_2026-10-21_
+- Fixed: the Greek voice now says εἰμι, ἐστιν and similar small words as one word (ee-mee) instead of spelling the letters.
+
 ## 0.1.388
 _2026-10-21_
 - New: Lampas remembers the Bible verses it found in a screenshot you shared, so going back for the next verse is instant and the picture is not read again.

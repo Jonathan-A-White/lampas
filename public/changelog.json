@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.389",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.701",
+    "kind": "fixed",
+    "text": "the Greek voice now says εἰμι, ἐστιν and similar small words as one word (ee-mee) instead of spelling the letters."
+  },
+  {
     "version": "0.1.388",
     "date": "2026-10-21",
     "story": "mw-5r3p30.695",
