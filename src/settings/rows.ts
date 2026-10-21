@@ -8,6 +8,7 @@
 import { getDeveloper } from '../data/repositories';
 import { SCRIPTS } from '../script/scripts';
 import { greekFrom } from './definitions/greekInterest';
+import { helpPlain } from './helpText';
 import { SETTINGS, settingOf, type Dependency, type SectionId } from './registry';
 
 export interface SettingsSection {
@@ -190,6 +191,9 @@ export async function readValues(): Promise<Values> {
 /** Text as the search compares it: no capitals, no accents. */
 export const foldText = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
 
+/** Whether the row's longer help holds the folded query `q`, read as plain words (its Markdown marks are not searched, helpText.ts). */
+const holdsHelp = (row: SettingsRow, q: string): boolean => row.help !== undefined && foldText(helpPlain(row.help)).includes(q);
+
 /** Whether each row's dependency is on, given the values read (a row with no dependency is always on). */
 function reading(values: Values, rows: readonly SettingsRow[]) {
   const byKey = new Map(rows.map((r) => [r.key, r]));
@@ -202,7 +206,7 @@ function reading(values: Values, rows: readonly SettingsRow[]) {
   return { byKey, on };
 }
 
-/** The rows to draw: those whose dependency is on and, when `query` is not empty, whose name or hint holds it (ignoring capitals and accents).
+/** The rows to draw: those whose dependency is on and, when `query` is not empty, whose name, hint or help holds it (ignoring capitals and accents).
  *  A row that matches but is hidden by what it depends on is reached through the row that turns it on, which is shown in its place. */
 export function visibleRows(values: Values, query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
   const { byKey, on } = reading(values, rows);
@@ -210,7 +214,7 @@ export function visibleRows(values: Values, query: string, rows: readonly Settin
   if (q === '') return rows.filter(on);
   const shown = new Set<string>();
   for (const row of rows) {
-    if (!foldText(row.label).includes(q) && !foldText(row.hint).includes(q)) continue;
+    if (!foldText(row.label).includes(q) && !foldText(row.hint).includes(q) && !holdsHelp(row, q)) continue;
     let at: SettingsRow | undefined = row;
     while (at && !on(at)) at = at.dependsOn ? byKey.get(at.dependsOn.key) : undefined;
     if (at) shown.add(at.key);
@@ -245,10 +249,10 @@ export function visibleGroups(values: Values, rows: readonly SettingsRow[] = ROW
   return GROUPS.filter((g) => drawn.has(g.id));
 }
 
-/** The settings (the rows with a link, src/settings/link.ts) whose name or hint holds `query`, ignoring capitals and accents, for the search that is
+/** The settings (the rows with a link, src/settings/link.ts) whose name, hint or help holds `query`, ignoring capitals and accents, for the search that is
  *  one tap away from every screen. A detail that is hidden while its setting is off is found too: its link says what to turn on first. Nothing for an empty query. */
 export function searchSettings(query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
   const q = foldText(query.trim());
   if (q === '') return [];
-  return rows.filter((r) => settingOf(r.key) !== undefined && (foldText(r.label).includes(q) || foldText(r.hint).includes(q)));
+  return rows.filter((r) => settingOf(r.key) !== undefined && (foldText(r.label).includes(q) || foldText(r.hint).includes(q) || holdsHelp(r, q)));
 }

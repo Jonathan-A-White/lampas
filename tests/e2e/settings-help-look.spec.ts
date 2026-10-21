@@ -68,6 +68,11 @@ for (const size of SIZES) {
       expect(look.radius).toBeGreaterThanOrEqual(8);
       expect(look.padding).toBeGreaterThanOrEqual(12);
       expect(look.words).toBe(await token(page, '--lp-fg'));
+      // the six steps of the dial are a list, one line a step, each step's number and name in bold (mw-5r3p30.721)
+      const steps = panel.locator('[data-help-text] li');
+      await expect(steps).toHaveCount(6);
+      await expect(steps.first().locator('strong')).toHaveText('0 · Just English');
+      await expect(steps.last().locator('strong')).toHaveText('5 · All in');
       // it fits the screen's width
       const box = await panel.boundingBox();
       expect(box!.x).toBeGreaterThanOrEqual(0);

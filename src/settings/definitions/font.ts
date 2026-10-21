@@ -10,5 +10,5 @@ export const fontSetting = defineSetting<FontId>({
   section: 'appearance',
   label: 'Font',
   hint: 'The face of the English text; the Greek and the Hebrew keep theirs.',
-  help: `The face of the English text, in the reader, the sheets and the screens; the Greek and the Hebrew keep theirs, and the size is the same. ${FONTS.map((f) => `${f.label}: ${f.line}`).join(' ')}`,
+  help: `The face of the English text, in the reader, the sheets and the screens; the Greek and the Hebrew keep theirs, and the size is the same:\n\n${FONTS.map((f) => `- **${f.label}**: ${f.line}`).join('\n')}`,
 });

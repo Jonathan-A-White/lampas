@@ -9,5 +9,5 @@ export const themeSetting = defineSetting<Theme>({
   section: 'appearance',
   label: 'Theme',
   hint: "Light, dark, sepia, high contrast, or the phone's own.",
-  help: "The colours: Phone follows the phone's own light or dark setting. Sepia is warm paper with dark brown text, for long reading. High contrast is pure white on black with thick outlines, for low vision.",
+  help: "The colours:\n\n- **Phone**: follows the phone's own light or dark setting.\n- **Sepia**: warm paper with dark brown text, for long reading.\n- **High contrast**: pure white on black with thick outlines, for low vision.",
 });

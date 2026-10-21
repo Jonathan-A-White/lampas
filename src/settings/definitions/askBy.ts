@@ -17,5 +17,5 @@ export const askBySetting = defineSetting<AskBy>({
   section: 'askBy',
   label: 'Ask by',
   hint: 'Ask the tutor with your voice first, or with the keyboard first.',
-  help: 'How Ask the tutor opens. Speaking shows the big Hold to ask bar, with Type a question beneath it. Typing shows the text box and Send first, with a small mic beside them to speak instead. Speaking by default. You can also ask the tutor to switch it: say "let me type" or "switch back to speaking".',
+  help: 'How Ask the tutor opens:\n\n- **Speaking**: shows the big Hold to ask bar, with Type a question beneath it.\n- **Typing**: shows the text box and Send first, with a small mic beside them to speak instead.\n\nSpeaking by default. You can also ask the tutor to switch it: say "let me type" or "switch back to speaking".',
 });

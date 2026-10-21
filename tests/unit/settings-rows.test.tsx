@@ -90,8 +90,9 @@ describe('visibleRows', () => {
     expect(keys(visibleRows(ALL_ON, byHint.toUpperCase()))).toContain('theme');
   });
 
-  it('shows only the Logos settings for "logos"', () => {
-    expect(keys(visibleRows(ALL_ON, 'logos'))).toEqual(['resource.logos', 'works', 'logosBible']);
+  it('shows the Logos settings for "logos", and the rows whose help names Logos after them in the list\'s order', () => {
+    expect(keys(visibleRows(ALL_ON, 'logos')).slice(0, 3)).toEqual(['resource.logos', 'works', 'logosBible']);
+    expect(keys(visibleRows(ALL_ON, 'logos'))).toEqual(expect.arrayContaining(['dailyPlan', 'dailyDevotional']));
   });
 
   it('reaches a hidden detail through the setting that turns it on', () => {

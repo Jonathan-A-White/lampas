@@ -19,7 +19,7 @@ export const talkSetting = defineSetting<TalkHow>({
   section: 'talk',
   label: 'Talk',
   hint: 'Hold the bar to speak, or tap to start and stop.',
-  help: 'How the talk bars are worked. Hold: keep your finger on the bar while you speak, and let go when you are done. Tap: tap the bar to keep the microphone on and tap it again to stop (holding still works too). Hold by default.',
+  help: 'How the talk bars are worked:\n\n- **Hold**: keep your finger on the bar while you speak, and let go when you are done.\n- **Tap**: tap the bar to keep the microphone on and tap it again to stop (holding still works too).\n\nHold by default.',
 });
 
 export const sendSetting = defineSetting<SendHow>({
@@ -35,5 +35,5 @@ export const sendSetting = defineSetting<SendHow>({
   section: 'talk',
   label: 'Send',
   hint: 'Sent when you let go, or kept in the box to fix.',
-  help: 'What happens to your words when the bar lets go. On release: they are sent at once. By button: they wait in the question box on Ask the tutor for you to fix, and the Send button sends them. The other talk bars send on release whatever this says. On release by default.',
+  help: 'What happens to your words when the bar lets go:\n\n- **On release**: they are sent at once.\n- **By button**: they wait in the question box on Ask the tutor for you to fix, and the Send button sends them.\n\nThe other talk bars send on release whatever this says. On release by default.',
 });
