@@ -36,7 +36,7 @@ async function keep(page: Page, values: Record<string, string>) {
 
 const place = (page: Page) => page.locator('[data-place-line]');
 
-async function start(page: Page, settings: Record<string, string>) {
+async function start(page: Page, settings: Record<string, string>, book = { code: 'mrk', chapter: 12, title: 'Mark 12' }) {
   await page.addInitScript(() => {
     // a phone with Share: the view draws its sixth button
     Object.defineProperty(navigator, 'share', { value: () => Promise.resolve(), configurable: true });
@@ -48,9 +48,9 @@ async function start(page: Page, settings: Record<string, string>) {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await keep(page, { immersiveHint: 'off', ...settings });
-  await page.goto('/#/?b=mrk&c=12&view=english&weave=off');
+  await page.goto(`/#/?b=${book.code}&c=${book.chapter}&view=english&weave=off`);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: book.title, level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   return fake;
 }
@@ -193,3 +193,40 @@ test('Turn pages: a tap on the Page N of M line opens the whole chapter, Back re
   await expect(place(page)).toHaveText(reading ?? '');
   expect(await place(page).boundingBox()).toEqual(before);
 });
+
+// The chapter a tap on the place line opens is named by its own reference, never by the title of a lesson that happens to read the same verses (mw-5r3p30.704:
+// 2 John 1 is the John-letters lesson's passage, once titled '2 John and 3 John').
+for (const { code, title, verses } of [
+  { code: '2jn', title: '2 John 1', verses: 13 },
+  { code: '3jn', title: '3 John 1', verses: 14 },
+  { code: 'phm', title: 'Philemon 1', verses: 25 },
+  { code: 'jud', title: 'Jude 1', verses: 25 },
+]) {
+  test(`${title}: the place line opens the chapter named ${title}, ${title}:1-${verses}, and nothing on it names another book`, async ({ page }) => {
+    const fake = await start(page, { immersiveReader: 'on' }, { code, chapter: 1, title });
+    await page.evaluate(() => {
+      (document.querySelector('[data-reader]') as HTMLElement).scrollTop += 100;
+    });
+    await expect(place(page)).toHaveText(new RegExp(`^${title} · \\d+%$`));
+    await page.waitForTimeout(400);
+    await place(page).click();
+    const view = page.getByRole('region', { name: 'Verse view' });
+    await expect(view).toBeVisible();
+    await expect(view.getByRole('heading', { name: `${title}, ${title}:1-${verses}` })).toBeVisible();
+    await expect(view.locator('[data-passage-verse]')).toHaveCount(verses);
+    const others = ['2 John', '3 John', '1 John'].filter((n) => !title.startsWith(n));
+    for (const other of others) expect(await view.innerText()).not.toContain(other);
+
+    await view.getByRole('button', { name: 'Quiz me', exact: true }).click();
+    await view.getByRole('button', { name: 'Start the quiz', exact: true }).click();
+    const sheet = page.getByRole('dialog', { name: `Quiz on ${title}:1-${verses}` });
+    await expect(sheet).toContainText(`Quiz me on ${title}:1-${verses}.`);
+    await expect(sheet).toContainText(QUIZ_ANSWER.answer);
+    const sent = fake.received[fake.received.length - 1].input;
+    expect(sent.reference).toBe(`${title}:1-${verses}`);
+    expect(sent.question).toBe(`Quiz me on ${title}:1-${verses}.`);
+    for (const other of others) expect(JSON.stringify(sent)).not.toContain(other);
+    await sheet.getByRole('button', { name: 'Done', exact: true }).click();
+    await shot(page, `place-line-chapter-${code}`);
+  });
+}
