@@ -10,7 +10,7 @@ import { otBookOf } from '../data/otBooks';
 import type { StudyResources } from '../data/repositories';
 import { parseCanonReference } from '../nav/links';
 import { optionOf, resourceOf, RESOURCES, type StudyPlace, type StudyResource } from './index';
-import { coversOf, WORKS, workLink, workOf } from './works';
+import { coversOf, indexPlace, WORKS, workLink, workOf } from './works';
 
 /** One chip: the app's own address, its https fallback, the short words on it and the accessible name. */
 export interface LinkChip {
@@ -95,25 +95,28 @@ export interface TutorWork {
   kind: 'commentary' | 'book';
   /** a commentary only: the books of the Bible it comments on, so a link is never offered for one it lacks */
   covers?: string;
+  /** a book with an index only: how a place in it is written, so the link can open there and not at the start */
+  places?: string;
 }
 
 /** The works he ticked, in the order Settings lists them: the only ones the tutor is told of. */
 export function worksForTutor(ticked: readonly string[]): TutorWork[] {
   return WORKS.filter((w) => ticked.includes(w.id)).map((w) => {
     const covers = coversOf(w);
-    return { id: w.id, title: w.title, author: w.author, kind: w.kind, ...(covers ? { covers } : {}) };
+    return { id: w.id, title: w.title, author: w.author, kind: w.kind, ...(covers ? { covers } : {}), ...(w.index ? { places: w.index.hint } : {}) };
   });
 }
 
 /** The chip of a `work` link: Open in Logos, named for the work's title (and, for a commentary, the passage it opens at). Null when the work is not among the ones he ticked, no
  *  work has the id, or Logos has nowhere to open it (a commentary with no reference, or for a book it does not cover): such a link is dropped, never shown. */
-export function workChip(id: string, reference: string | undefined, ticked: readonly string[]): { name: string; chip: LinkChip } | null {
+export function workChip(id: string, reference: string | undefined, ticked: readonly string[], spot?: string): { name: string; chip: LinkChip } | null {
   const work = ticked.includes(id) ? workOf(id) : undefined;
   const logos = resourceOf('logos');
   if (!work || !logos) return null;
   const place = reference === undefined ? null : placeOf(reference);
-  const link = workLink(work, place ?? undefined);
+  const link = workLink(work, place ?? undefined, spot);
   if (!link) return null;
-  const name = work.kind === 'commentary' && place ? `${work.title} at ${place.name}` : work.title;
+  const inBook = work.kind === 'book' && spot !== undefined ? indexPlace(work, spot) : undefined;
+  const name = work.kind === 'commentary' && place ? `${work.title} at ${place.name}` : inBook ? `${work.title} at ${inBook.name}` : work.title;
   return { name, chip: { resource: logos, label: `Open in Logos: ${name}`, tile: 'Open in Logos', ...link } };
 }

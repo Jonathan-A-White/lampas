@@ -68,7 +68,7 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
       const row = settingLink(link.key) ? rowOf(link.key) : undefined;
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
     } else if (link.kind === 'work') {
-      const found = workChip(link.work, link.reference, works);
+      const found = workChip(link.work, link.reference, works, link.place);
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);

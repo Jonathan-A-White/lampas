@@ -5,13 +5,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { getWorks, setWorks } from '../../src/data/repositories';
 import { WORKS, workLink, workOf } from '../../src/resources/works';
-import { worksForTutor } from '../../src/resources/tutorLinks';
+import { workChip, worksForTutor } from '../../src/resources/tutorLinks';
 import { buildTalkRequest, isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
 
 const commentaries = WORKS.find((w) => w.id === 'calvin-commentaries');
 const institutes = WORKS.find((w) => w.id === 'calvin-institutes-lcc');
+const beveridge = WORKS.find((w) => w.id === 'calvin-institutes-beveridge');
 const answerSchema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
 
@@ -62,6 +63,27 @@ describe('workLink', () => {
     expect(workLink(institutes!)).toEqual(start);
     expect(workLink(institutes!, { book: 'jhn', chapter: 3, verse: 16 })).toEqual(start);
   });
+
+  // mw-5r3p30.708: the Institutes carry their own reference type (CICR, book.chapter.section: his library listing's ReferenceSupersets 'cicr.1-4.20.32'), so a place in it is
+  // `ref=CICR.<book>.<chapter>[.<section>]`, not a Bible reference and not the title page.
+  it('opens a book that has an index at the chapter or section it is given, the scheme and the ref.ly fallback both', () => {
+    expect(workLink(institutes!, undefined, '3.24')).toEqual({
+      url: 'logosres:LLS:ICRWJKC;ref=CICR.3.24',
+      fallback: 'https://ref.ly/logosres/LLS%3AICRWJKC?ref=CICR.3.24',
+    });
+    expect(workLink(institutes!, undefined, '3.21.5')).toEqual({
+      url: 'logosres:LLS:ICRWJKC;ref=CICR.3.21.5',
+      fallback: 'https://ref.ly/logosres/LLS%3AICRWJKC?ref=CICR.3.21.5',
+    });
+    expect(workLink(beveridge!, undefined, ' 1.17 ')?.url).toBe('logosres:LLS:ICRBEV;ref=CICR.1.17');
+  });
+
+  it('opens at the start when the place is not one the book has, and a commentary ignores a book place', () => {
+    const start = { url: 'logosres:LLS:ICRWJKC', fallback: 'https://ref.ly/logosres/LLS%3AICRWJKC' };
+    for (const bad of ['', '5.1', '0.1', '3.26', '4.21', '1.19', '3', '3.24.0', '3.24.5.1', 'Romans 8:28', 'III.xxiv', '3,24']) expect(workLink(institutes!, undefined, bad)).toEqual(start);
+    expect(workLink(commentaries!, { book: 'rom', chapter: 8 }, '3.24')?.url).toBe('logosres:LLS:CALCOM66RO;ref=Bible.Ro8');
+    expect(workLink(commentaries!, undefined, '3.24')).toBeUndefined();
+  });
 });
 
 describe('the works he ticked', () => {
@@ -96,6 +118,8 @@ describe('what the tutor is told', () => {
     expect(told[0]?.covers).not.toContain('Revelation');
     expect(told[1]).toMatchObject({ kind: 'book' });
     expect(told[1]).not.toHaveProperty('covers');
+    expect(told[1]?.places).toMatch(/book.*chapter/i);
+    expect(told[0]).not.toHaveProperty('places');
     expect(worksForTutor(['nope'])).toEqual([]);
   });
 
@@ -118,12 +142,32 @@ describe('what the tutor is told', () => {
   });
 });
 
+describe('the chip of a work link', () => {
+  const ticked = ['calvin-commentaries', 'calvin-institutes-lcc'];
+
+  it('opens a book at its place and says which in its name, and at the start with no place', () => {
+    const at = workChip('calvin-institutes-lcc', undefined, ticked, '3.24');
+    expect(at?.chip.url).toBe('logosres:LLS:ICRWJKC;ref=CICR.3.24');
+    expect(at?.name).toContain('Book 3, chapter 24');
+    expect(workChip('calvin-institutes-lcc', undefined, ticked, '3.21.5')?.name).toContain('Book 3, chapter 21, section 5');
+    expect(workChip('calvin-institutes-lcc', undefined, ticked)?.chip.url).toBe('logosres:LLS:ICRWJKC');
+    expect(workChip('calvin-institutes-lcc', undefined, ticked, '9.9')?.chip.url).toBe('logosres:LLS:ICRWJKC');
+    expect(workChip('calvin-institutes-lcc', undefined, ticked, '9.9')?.name).not.toContain('Book');
+  });
+
+  it('keeps the commentary at its verse', () => {
+    expect(workChip('calvin-commentaries', 'Romans 8:28', ticked)?.chip.url).toBe('logosres:LLS:CALCOM66RO;ref=Bible.Ro8.28');
+  });
+});
+
 describe('the answer\'s work link', () => {
   const answer = (links: unknown) => ({ answer: 'Calvin writes on this.', question: 'What does it say?', words: [], links });
 
   it('is accepted by the app with or without a reference, and refused when malformed', () => {
     expect(isTalkAnswer(answer([{ kind: 'work', work: 'calvin-commentaries', reference: 'John 3:16' }]))).toBe(true);
     expect(isTalkAnswer(answer([{ kind: 'work', work: 'calvin-institutes-lcc' }]))).toBe(true);
+    expect(isTalkAnswer(answer([{ kind: 'work', work: 'calvin-institutes-lcc', place: '3.24' }]))).toBe(true);
+    expect(isTalkAnswer(answer([{ kind: 'work', work: 'calvin-institutes-lcc', place: '' }]))).toBe(false);
     expect(isTalkAnswer(answer([{ kind: 'work' }]))).toBe(false);
     expect(isTalkAnswer(answer([{ kind: 'work', work: 'a', reference: 'John 3:16', extra: 1 }]))).toBe(false);
   });
@@ -131,6 +175,8 @@ describe('the answer\'s work link', () => {
   it('is allowed by the answer schema, for the ids of WORKS only', () => {
     expect(validate(answer([{ kind: 'work', work: 'calvin-commentaries', reference: 'John 3:16' }]), answerSchema)).toEqual([]);
     expect(validate(answer([{ kind: 'work', work: 'calvin-institutes-lcc' }]), answerSchema)).toEqual([]);
+    expect(validate(answer([{ kind: 'work', work: 'calvin-institutes-lcc', place: '3.24' }]), answerSchema)).toEqual([]);
+    expect(validate(answer([{ kind: 'work', work: 'calvin-institutes-lcc', place: '' }]), answerSchema)).not.toEqual([]);
     expect(validate(answer([{ kind: 'work', work: 'invented' }]), answerSchema)).not.toEqual([]);
     const enumIds = ((answerSchema.properties?.links as { items: { anyOf: { properties: { kind: { const?: string }; work?: { enum: string[] } } }[] } }).items.anyOf.find((a) => a.properties.kind.const === 'work')?.properties.work?.enum ?? []);
     expect([...enumIds].sort()).toEqual(WORKS.map((w) => w.id).sort());
@@ -143,5 +189,10 @@ describe('the bible-talk instructions on works', () => {
     expect(text).toContain('`works`');
     expect(text).toMatch(/only\s+(a\s+work\s+)?(that\s+is\s+)?in\s+`works`|only\s+when\s+it\s+is\s+in\s+`works`/i);
     expect(text).toMatch(/commentary[^.]*`reference`/i);
+  });
+
+  it('say, in one rule, to link a work only when it directly treats what he asked, and to give a book its `place`', () => {
+    expect(text).toMatch(/only when (it|the work) directly (treats|answers)/i);
+    expect(text).toMatch(/book[^.]*`place`/i);
   });
 });

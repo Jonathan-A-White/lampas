@@ -143,8 +143,9 @@
           "id": { "description": "The work's key, the value of a `work` link.", "type": "string" },
           "title": { "description": "The work's title as Settings lists it.", "type": "string" },
           "author": { "description": "The work's author.", "type": "string" },
-          "kind": { "description": "A commentary opens at a passage of the Bible; a book opens at its start.", "type": "string", "enum": ["commentary", "book"] },
-          "covers": { "description": "A commentary only: the books of the Bible it comments on. Never link it for a book it does not cover.", "type": "string" }
+          "kind": { "description": "A commentary opens at a passage of the Bible; a book opens at its start, or at the `place` of the link when the entry has `places`.", "type": "string", "enum": ["commentary", "book"] },
+          "covers": { "description": "A commentary only: the books of the Bible it comments on. Never link it for a book it does not cover.", "type": "string" },
+          "places": { "description": "A book with an index of its own only: how a place in it is written, for the `place` of a `work` link. A book without it opens at its start.", "type": "string" }
         }
       }
     },

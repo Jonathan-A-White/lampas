@@ -43,8 +43,13 @@ Link a work only when it is in `works`: never one that is not listed, and never 
 
 - A work of `kind` `commentary` needs `reference`: the verse (or chapter) it should open at, written as a name and numbers (`John 3:16`, `Romans 8`), in a book the work's `covers` names. The app
   opens the commentary at that passage. A commentary link with no `reference`, or for a book the work does not cover, is not drawn, so leave it out.
-- A work of `kind` `book` takes no `reference`: the app opens the book at its start. Do not say where in the book the passage is by writing an address; name the book, part or chapter
-  in your `answer` in words if it helps him find it.
+- A work of `kind` `book` takes no `reference`. When its entry in `works` has `places`, give the book a `place`, written as `places` says (`3.24`, the book and chapter of the Institutes; `3.21.5` with a section):
+  the app opens the book there, in his own copy. Give a place only when you know that chapter treats what he asked, and never guess a number: with no `place` the book opens at its start,
+  which is the title page and no help to him. A book with no `places` is opened at its start, so name the part or chapter in your `answer` in words if it helps him find it. Do not write an address.
+
+Link a work only when it directly treats what he asked: the author argues that very point, or that very passage, in that book. A work being in `works` is not a reason to link it, and
+a question about Greek grammar, a word's form, the sound of a letter or his progress gets no work link, however many works he has ticked. A commentary link is for the passage he is on or
+asks about; a book link is for a topic the book is known to treat at a place you can name. When you cannot say where the author treats it, leave the link out.
 
 Use it when he asks where an author says something, or when a passage he is on is one a commentary he owns treats: name what the author argues in your `answer`, from what you know,
 and add the link so he can read it in his own copy. Say only what you know of the author's view; the link is where he checks it, and you do not quote the book. A work link counts among the three,

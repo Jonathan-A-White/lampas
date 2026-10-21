@@ -318,7 +318,11 @@ const isObject = (value: unknown): value is Record<string, unknown> => typeof va
 const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
 
 const isWorkLink = (value: Record<string, unknown>): boolean =>
-  value.kind === 'work' && isText(value.work, 60) && Object.keys(value).length === ('reference' in value ? 3 : 2) && (!('reference' in value) || isText(value.reference, 40));
+  value.kind === 'work' &&
+  isText(value.work, 60) &&
+  Object.keys(value).length === 2 + Number('reference' in value) + Number('place' in value) &&
+  (!('reference' in value) || isText(value.reference, 40)) &&
+  (!('place' in value) || isText(value.place, 20));
 
 const isAnswerLink = (value: unknown): value is AnswerLink =>
   isObject(value) &&

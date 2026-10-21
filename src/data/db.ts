@@ -41,7 +41,7 @@ export interface AnswerWord {
 
 /** A link of the tutor's answer to a study resource (mw-5r3p30.75): a word by its lemma (NFC, the dictionary form) or a verse by its reference as the tutor wrote it ('Romans 8:31'); a setting by its key; a work of his Logos library by its id (src/resources/works.ts)
  *  and, for a commentary, the passage to open it at (mw-5r3p30.675). */
-export type AnswerLink = { kind: 'word'; lemma: string } | { kind: 'verse'; reference: string } | { kind: 'setting'; key: string } | { kind: 'work'; work: string; reference?: string };
+export type AnswerLink = { kind: 'word'; lemma: string } | { kind: 'verse'; reference: string } | { kind: 'setting'; key: string } | { kind: 'work'; work: string; reference?: string; place?: string };
 
 /** One answer the tutor gave to a question about a verse, kept so it is there on return. */
 export interface TutorAnswer {
