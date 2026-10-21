@@ -37,7 +37,7 @@ describe('the upgrade from version 16', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(24);
+    expect(db.verno).toBe(25);
     expect(await getVerseReading('rom.8.28')).toEqual(english);
     expect(await getVerseReading('rom.8.28', 'el')).toEqual(greek);
     expect(await listReadingHistory()).toEqual([]);

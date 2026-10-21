@@ -96,6 +96,17 @@ export interface KeptReference {
   lastVerse?: number;
 }
 
+/** The running summary of one talk (src/data/repositories/talks.ts, mw-5r3p30.700): what the tutor wrote of every turn that fell out of the 10-turn window, and how many of the talk's
+ * oldest turns it holds, so the next request sends only the turns after them to be folded in. */
+export interface TalkSummaryRow {
+  /** the talk's key ('rom.8', 'rom.8.28:quiz', 'screen.goal') */
+  ref: string;
+  summary: string;
+  /** how many of the talk's oldest turns the summary holds */
+  covered: number;
+  when: number;
+}
+
 /** The Bible references found in a shared picture (src/data/repositories/pictureRefs.ts, mw-5r3p30.695), kept by the picture's fingerprint so it is never read twice. */
 export interface PictureRefsRow {
   /** the SHA-256 of the picture's bytes, in hex: the key */
@@ -466,6 +477,7 @@ class LampasDB extends Dexie {
   drillRuns!: EntityTable<DrillRunRow, 'id'>;
   passageLessons!: EntityTable<PassageLessonRow, 'key'>;
   pictureRefs!: EntityTable<PictureRefsRow, 'hash'>;
+  talkSummaries!: EntityTable<TalkSummaryRow, 'ref'>;
 
   constructor() {
     super('lampas');
@@ -868,6 +880,32 @@ class LampasDB extends Dexie {
       drillRuns: '++id, ideaId, at',
       passageLessons: 'key, state',
       pictureRefs: 'hash, at',
+    });
+    // v25: the running summary of each talk {ref, summary, covered, when} (src/data/repositories/talks.ts, mw-5r3p30.700); every other table as it was.
+    this.version(25).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+      pictureRefs: 'hash, at',
+      talkSummaries: 'ref',
     });
   }
 }

@@ -25,7 +25,7 @@ import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
-import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
+import { clipTexts, FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES, TALK_SUMMARY_MAX } from './requestBudget';
 import { solidWordsField } from './solidWords';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
 
@@ -36,7 +36,7 @@ export const TALK_KIND = 'bible-talk';
 export const MAX_TALK_CHARS = MAX_QUESTION_CHARS;
 /** How many earlier turns the grind is sent. */
 export const MAX_HISTORY_TURNS = 10;
-export { MAX_REQUEST_BYTES, GREEK_WORDS_BYTES };
+export { MAX_REQUEST_BYTES, GREEK_WORDS_BYTES, TALK_SUMMARY_MAX, FOLD_MAX_TURNS, FOLD_Q_CHARS, FOLD_A_CHARS };
 /** A long answer in the history is cut to this many characters when the request is too big. */
 const CLIPPED_CHARS = 240;
 const CLIP_MARK = '…';
@@ -192,6 +192,12 @@ export interface TalkRequest {
   /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
   spoken?: true;
   history: TalkHistoryEntry[];
+  /** the running summary of this talk (mw-5r3p30.700): what the tutor wrote of every turn older than `history`, kept on the phone; missing until a turn has fallen out of the window. fitHistory cuts it last of all, after the newest turn */
+  summary?: string;
+  /** the turns older than `history` that `summary` does not hold yet, oldest first, each cut short (FOLD_Q_CHARS, FOLD_A_CHARS), at most FOLD_MAX_TURNS: the tutor folds them into `summary` and answers with the new one */
+  fold?: TalkHistoryEntry[];
+  /** only with `fold`: how many older turns still wait behind it, when the backlog is longer than one fold holds (an old talk): the summary is still catching up */
+  unfolded?: number;
   /** how many solid words he has (src/services/solidWords.ts) and the most recent few of them, newest last */
   solid_count?: number;
   solid_words: string[];
@@ -286,6 +292,8 @@ export interface TalkAnswer {
   syllables?: string[];
   /** for a Hebrew word's sound question: how each of `syllables` sounds, in Latin letters, in the same order (at most 12) */
   transliteration?: string[];
+  /** only when the request carried `fold` (mw-5r3p30.700): the talk's new running summary, `summary` and every turn of `fold` folded in, at most TALK_SUMMARY_MAX characters; the app keeps it on the phone and sends it next time */
+  summary?: string;
   /** the words and verses the answer links to a study resource (mw-5r3p30.75): the app shows each in the resources he has switched on */
   links?: AnswerLink[];
   /** in a quiz, one line the tutor proposes for his study way (mw-5r3p30.76): shown with Keep this, kept only when he taps it */
@@ -384,10 +392,11 @@ const isRustyOffer = (value: unknown): value is RustyOfferAnswer =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'welcome_done')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'welcome_done' && k !== 'summary')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
+  if ('summary' in value && !isText(value.summary, TALK_SUMMARY_MAX)) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('quiz_goal_offer' in value && !isText(value.quiz_goal_offer, QUIZ_GOAL_MAX)) return false;
   if ('profile_update' in value && !(Array.isArray(value.profile_update) && value.profile_update.length <= 3 && value.profile_update.every(isProfileUpdate))) return false;
@@ -442,6 +451,11 @@ export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string =>
 export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz' | 'screen' | 'free' | 'kept'>): string =>
   scope.free ? scope.free : scope.screen && scope.kept ? scope.kept : scope.screen ? screenRef(slugOf(scope.screen.name)) : talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
 
+const clipTo = (text: string, max: number): string => (text.length <= max ? text : text.slice(0, max - CLIP_MARK.length).trimEnd() + CLIP_MARK);
+
+/** A turn as the fold carries it: what he said and what the tutor answered, each cut short. */
+export const foldedTurn = (turn: TalkHistoryEntry): TalkHistoryEntry => ({ q: clipTo(turn.q, FOLD_Q_CHARS), a: clipTo(turn.a, FOLD_A_CHARS) });
+
 const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.stringify(request)).length;
 
 /**
@@ -451,18 +465,24 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
  * The text of a passage too long for a request is clipped from its end (clipTexts) once the words are gone, before any turn is dropped.
  * The oldest turns go until the newest alone is left; then the oldest of his requests (the last in the list, newest first) go one at a time, then
  * his memory notes, and only then the newest turn (mw-5r3p30.615: a talk from Settings, whose screen weighs most of the record, forgot the question
- * it was answering). The questions of a drill's results go after the notes, right answers first. The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
+ * it was answering). A turn dropped for room moves to the fold, cut short, so the tutor folds it into the summary (mw-5r3p30.700); the fold goes before the lesser fields, and the summary after the
+ * newest turn, last of all. `held` is how many of the history's oldest turns the summary holds already (they are never folded twice). The questions of a drill's results go after the notes, right answers first. The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
  * the sound rules), except on a sound question.
  */
-export function fitHistory(request: TalkRequest): TalkRequest {
+export function fitHistory(request: TalkRequest, held = 0): TalkRequest {
   let history = request.history.map((t) => ({ ...t }));
+  let summary = request.summary;
+  let fold = request.fold ? request.fold.map((t) => ({ ...t })) : [];
   let requests = request.requests;
   let greekWords = request.greek_words;
   let memoryNotes = request.memory?.notes;
   let guide = request.pronunciation_guide;
   let drill = request.screen?.drill;
   let text = { greek: request.greek ?? '', english: request.english ?? '' };
-  const fitted = (): TalkRequest => ({ ...request, ...(request.greek !== undefined ? text : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
+  const rest: Partial<TalkRequest> = { ...request };
+  delete rest.summary;
+  delete rest.fold;
+  const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   const tooBig = (): boolean => sizeOf(fitted()) > MAX_REQUEST_BYTES;
   for (;;) {
     const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
@@ -479,7 +499,16 @@ export function fitHistory(request: TalkRequest): TalkRequest {
     });
   }
   // the newest turn is what he is answering ("Here are the others"): the older turns go first, then the lesser fields, and the newest turn last (mw-5r3p30.615)
-  while (history.length > 1 && tooBig()) history = history.slice(1);
+  // a turn dropped for room is folded into the summary instead of lost, cut short, behind the turns already waiting to be: only when none is left waiting behind them (`unfolded`), else the summary would skip them
+  // (the first `held` turns of the history are in the summary already, since an earlier fit folded them: they go without a second fold)
+  let covered = held;
+  while (history.length > 1 && tooBig()) {
+    if (covered > 0) covered -= 1;
+    else if (!request.unfolded) fold = [...fold, foldedTurn(history[0])];
+    history = history.slice(1);
+  }
+  // what the cut turns would add is the first to go again when the request is still over: the fold is the oldest turns' last claim on the record
+  while (fold.length > 0 && tooBig()) fold = fold.slice(0, -1);
   while (greekWords && greekWords.length > 0 && tooBig()) greekWords = greekWords.slice(0, -1);
   while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
   // his notes are the next to go, from the end of the list (the notes come in name order: book, topic, word); the index always stays
@@ -490,6 +519,12 @@ export function fitHistory(request: TalkRequest): TalkRequest {
     drill = right >= 0 ? drill.filter((_, i) => i !== right) : drill.slice(0, -1);
   }
   while (history.length > 0 && tooBig()) history = history.slice(1);
+  // the summary is the last to go, after the newest turn (mw-5r3p30.700)
+  if (tooBig()) {
+    summary = undefined;
+    // a fold with no summary to fold into would replace the kept summary with a part of it
+    if (request.summary) fold = [];
+  }
   return fitted();
 }
 
@@ -515,7 +550,7 @@ export function greekInterestField(settings: Record<string, SettingValue>): Gree
   return { level, name: GREEK_LEVELS[level].name, ...(next ? { next: { level: next.level, name: next.name } } : {}) };
 }
 
-/** The request for what he just said: the verse's or the passage's whole text, or the chapter's first three verses; the last 10 turns, oldest first; the settings as they stand; the word he asked help with, if he did. */
+/** The request for what he just said: the verse's or the passage's whole text, or the chapter's first three verses; the last 10 turns, oldest first, the talk's running summary and the next turns to fold into it; the settings as they stand; the word he asked help with, if he did. */
 export function buildTalkRequest(
   scope: TalkScope,
   question: string,
@@ -539,7 +574,13 @@ export function buildTalkRequest(
   readerView?: ReaderView,
   rusty?: RustyItem[],
   works: TutorWork[] = [],
+  summary?: { text: string; covered: number },
 ): TalkRequest {
+  // the turns older than the window that the summary does not hold yet: the next few, oldest first, for the tutor to fold in (mw-5r3p30.700)
+  const past = Math.max(0, turns.length - MAX_HISTORY_TURNS);
+  const from = Math.min(summary?.covered ?? 0, past);
+  const folding = turns.slice(from, Math.min(past, from + FOLD_MAX_TURNS)).map(foldedTurn);
+  const waiting = past - from - folding.length;
   const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
   const aboutCredits = scope.screen?.credits !== undefined;
@@ -550,6 +591,9 @@ export function buildTalkRequest(
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
+    ...(summary?.text ? { summary: summary.text } : {}),
+    ...(folding.length > 0 ? { fold: folding } : {}),
+    ...(folding.length > 0 && waiting > 0 ? { unfolded: waiting } : {}),
     // a talk with credits sends no words and no count: a count of 0 would tell the tutor he knows nothing
     ...(aboutCredits ? { solid_words: [] } : solidWordsField(solidWords)),
     settings,

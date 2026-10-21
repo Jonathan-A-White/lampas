@@ -1,8 +1,8 @@
 // src/data/repositories/talks.ts — the turns of the Bible talk, kept on the phone per conversation. A repository owns its transactions.
 import type { AppliedChange } from '../../settings/registry';
-import { db, type AnswerLink, type AnswerWord, type Bridge, type GreekOffer, type HebrewSounds, type RustyOffer, type TalkPicture, type TalkTurn } from '../db';
+import { db, type AnswerLink, type AnswerWord, type Bridge, type GreekOffer, type HebrewSounds, type RustyOffer, type TalkPicture, type TalkSummaryRow, type TalkTurn } from '../db';
 
-export type { TalkPicture, TalkTurn };
+export type { TalkPicture, TalkSummaryRow, TalkTurn };
 
 /** The key a conversation is kept under: the chapter 'rom.8', one of its verses 'rom.8.28' or a passage 'rom.8.1-11' (a string, src/data/passage.ts unitId).
  * A quiz (mw-5r3p30.74) is a conversation of its own beside the talk about the same verses: 'rom.8.1-11:quiz'. */
@@ -172,9 +172,20 @@ export function listTurns(ref: string): Promise<TalkTurn[]> {
   return db.talks.where('[ref+when]').between([ref, -Infinity], [ref, Infinity]).toArray();
 }
 
-/** Forgets one conversation (New talk): its turns and the pictures kept with them. */
+/** The running summary of a conversation (mw-5r3p30.700), or undefined when none is kept yet. */
+export function getTalkSummary(ref: string): Promise<TalkSummaryRow | undefined> {
+  return db.talkSummaries.get(ref);
+}
+
+/** Keeps the running summary of a conversation, replacing the one before: `covered` is how many of its oldest turns the summary holds. */
+export async function keepTalkSummary(ref: string, summary: string, covered: number, when = Date.now()): Promise<void> {
+  await db.talkSummaries.put({ ref, summary, covered, when });
+}
+
+/** Forgets one conversation (New talk): its turns, the pictures kept with them and its summary. */
 export async function deleteTurns(ref: string): Promise<void> {
-  await db.transaction('rw', db.talks, db.talkPictures, async () => {
+  await db.transaction('rw', db.talks, db.talkPictures, db.talkSummaries, async () => {
+    await db.talkSummaries.delete(ref);
     const ids = (await db.talks.where('[ref+when]').between([ref, -Infinity], [ref, Infinity]).primaryKeys()) as number[];
     await db.talkPictures.where('turnId').anyOf(ids).delete();
     await db.talks.bulkDelete(ids);
