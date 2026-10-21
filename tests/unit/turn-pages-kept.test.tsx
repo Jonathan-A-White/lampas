@@ -33,6 +33,7 @@ const AWAY: Record<Exclude<Route, 'home'>, string> = {
   aboutyou: '#/aboutyou',
   memory: '#/memory',
   requests: '#/requests',
+  conversations: '#/conversations',
   askmore: '#/askmore',
   about: '#/about',
   preface: '#/preface',
