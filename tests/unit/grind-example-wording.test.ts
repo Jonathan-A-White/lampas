@@ -80,6 +80,18 @@ describe('bible-talk/memory-update-wished makes the note plain, and the grind sa
     expect(memory).toMatch(/wished_notes[^.]*\b(required|must|always)\b|\b(required|must|always)\b[^.]*wished_notes/i);
     expect(memory).toContain('I keep mixing up');
   });
+
+  // mw-5r3p30.718: the smoke of 2026-10-21 20:57Z (1 of 3) made the two notes in memory_update and left wished_notes out: it took the notes it was
+  // making for the notes it wished it had. The two fields answer different questions, so the instructions and the schema say the first never stands in for the second.
+  it('the instructions say wished_notes is still set when the same names are in memory_update', () => {
+    const memory = instructions.slice(instructions.indexOf('## His memory'), instructions.indexOf('## Offering the Greek')).replace(/\s+/g, ' ');
+    expect(memory).toMatch(/wished_notes[^.]*(even|also|as well)[^.]*memory_update|memory_update[^.]*does not (stand in|replace|count)[^.]*wished_notes/i);
+  });
+
+  it('the schema says the same of wished_notes', () => {
+    const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as { properties: { wished_notes: { description: string } } };
+    expect(schema.properties.wished_notes.description).toMatch(/even when[^.]*memory_update/i);
+  });
 });
 
 // mw-5r3p30.424: the smoke of 2026-10-15 20:15Z failed bible-talk/rusty-offer on a right answer that never said "rusty" (the ids were

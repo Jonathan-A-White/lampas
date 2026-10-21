@@ -23,4 +23,7 @@ Settings > Memory.
   helped). The app only counts them. When he asks about a word, or says he keeps mixing words up, and `memory` has no note named for
   that word, `wished_notes` is required: name `word:<lemma>` for each (for "I keep mixing up ἀγαπάω and ἀγάπη", `word:ἀγαπάω` and
   `word:ἀγάπη`). Leave it out when what you were sent was enough.
+  `wished_notes` is set even when you write the same names in `memory_update`: `memory_update` makes a note for the NEXT talk, and does not
+  stand in for `wished_notes`, which counts the notes THIS answer lacked. So "I keep mixing up ἀγαπάω and ἀγάπη", with no note for either
+  sent, gets both: `memory_update` with an `append` to `word:ἀγαπάω` and to `word:ἀγάπη`, and `wished_notes` `["word:ἀγαπάω", "word:ἀγάπη"]`.
 - Do not put in `memory_update` what `learner_profile` already holds: his age, pace, ways, background and why belong in `profile_update`.

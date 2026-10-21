@@ -118,7 +118,7 @@
       }
     },
     "wished_notes": {
-      "description": "The names of notes you would have used in this answer had they existed (book:<Book>, word:<lemma>, topic:<slug>, in the naming scheme), at most five. The app only counts them and keeps the last names; it sends you nothing more for them. Leave it out when the notes you were sent were enough.",
+      "description": "The names of notes you would have used in this answer had they existed (book:<Book>, word:<lemma>, topic:<slug>, in the naming scheme), at most five. The app only counts them and keeps the last names; it sends you nothing more for them. Set it even when the same names are in `memory_update`: making a note for next time does not stand in for naming the note this answer lacked. Leave it out when the notes you were sent were enough.",
       "type": "array",
       "minItems": 1,
       "maxItems": 5,
