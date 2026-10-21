@@ -12,7 +12,7 @@ import { extensionOf, MAX_RECORDING_MS } from '../audio/recorder';
 import { chosenAccent } from '../speech/accents';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
-import { askGrind, type AskOptions } from './tutor';
+import { askGrind, tutorTimings, type AskOptions } from './tutor';
 
 export const READING_KIND = 'verse-read';
 export { WOVEN_LANG };
@@ -233,11 +233,38 @@ export function buildReadingRequest(reference: string, verse: Verse, view: Readi
   return words.length > 0 ? { ...request, greek_words: words } : request;
 }
 
+/** The mill's local scorer limit for a clip of `seconds` (mw-gq6.660, scorer.LocalTimeoutFor): 120 s and half a second per second of audio, at most 540 s. */
+export const scorerLimitMs = (seconds: number): number => Math.min(540_000, 120_000 + 500 * Math.max(0, seconds));
+/** What the model's step after the scorer is allowed. */
+const MODEL_STEP_MS = 60_000;
+/** The recorder's rate (audioBitsPerSecond 32_000), for the size of a clip not yet made: 4000 bytes a second. */
+const CLIP_BYTES_PER_SECOND = 4000;
+/** What a slow phone link carries: 160 kbit/s, or 20 bytes a millisecond. A 600 s clip (2.4 MB) is allowed 30 s and 120 s: 150 s. */
+const SLOW_LINK_BYTES_PER_MS = 20;
+const UPLOAD_FLOOR_MS = 30_000;
+
+/** How long the clip's upload may take: the door's 30 s, and the time `bytes` need on a slow link. */
+export const uploadTimeoutMs = (bytes: number): number => UPLOAD_FLOOR_MS + Math.ceil(bytes / SLOW_LINK_BYTES_PER_MS);
+
+/** How long a reading of `seconds` is waited for: the scorer's limit for that clip, the model's step and the upload, never below the tutor's 180 s. */
+export const readingDeadlineMs = (seconds: number): number =>
+  Math.max(tutorTimings.deadlineMs, scorerLimitMs(seconds) + MODEL_STEP_MS + uploadTimeoutMs(seconds * CLIP_BYTES_PER_SECOND));
+
+/** What he is told when the check of his reading ran out of its time: the mill had the clip, so the tutor is not offline. */
+export const READING_TOO_LONG_MESSAGE = 'That reading took too long to check. Try a shorter passage.';
+
 /** Sends the recording of a verse read aloud and waits for the mill's answer (the verse-read grind). Throws a TutorError. */
 export async function askVerseRead(request: VerseReadRequest, recording: Recording, options: AskOptions): Promise<VerseReadAnswer> {
   const bytes = new Uint8Array(await recording.blob.arrayBuffer());
   const file = { bytes, mime: recording.mime, name: `reading.${extensionOf(recording.mime)}` };
-  return askGrind(READING_KIND, request, isVerseReadAnswer, { ...options, files: [file] });
+  const seconds = recording.durationMs / 1000;
+  return askGrind(READING_KIND, request, isVerseReadAnswer, {
+    deadlineMs: readingDeadlineMs(seconds),
+    uploadTimeoutMs: uploadTimeoutMs(bytes.length),
+    tookTooLong: READING_TOO_LONG_MESSAGE,
+    ...options,
+    files: [file],
+  });
 }
 
 /** A word as it is compared: no case, no accents or breathings, a final sigma as a sigma, no punctuation. The mill may write

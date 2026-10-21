@@ -90,6 +90,8 @@ async function refusal(response: Response, fallback: string): Promise<string> {
 
 export interface SendParams {
   door: TimedDoor;
+  /** the door the files are uploaded through, when their upload is given longer than the door's own limit; default `door` */
+  uploadDoor?: TimedDoor;
   key: Uint8Array;
   mill: string;
   app: string;
@@ -180,7 +182,7 @@ export async function sendTimedGrist(p: SendParams): Promise<SentGrist & { resen
   const attachments: grist.Attachment[] = [];
   for (const file of files) {
     const sealed = grist.sealBytes(file.bytes, p.key, p.mill);
-    const response = await p.door.fetch('/blobs', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: sealed.buffer.slice(sealed.byteOffset, sealed.byteOffset + sealed.byteLength) as ArrayBuffer });
+    const response = await (p.uploadDoor ?? p.door).fetch('/blobs', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: sealed.buffer.slice(sealed.byteOffset, sealed.byteOffset + sealed.byteLength) as ArrayBuffer });
     if (backendFailed(response.status)) throw new door.BackendUnreachableError(await refusal(response, 'The image upload failed.'));
     if (!response.ok) throw new door.RefusedError(await refusal(response, 'The image upload failed.'), response.status);
     // The upload has not sent the grist: a timeout here means nothing has gone.

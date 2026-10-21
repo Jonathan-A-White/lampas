@@ -370,6 +370,12 @@ export interface AskOptions {
   /** A grist that has gone (TutorError.sent, or the id `onSent` was told, kept across a reload or a screen that went away): nothing is sent, the answer to it is waited for
    * (mw-5r3p30.602). `request` and `files` are not sent, and no timing is kept for it. */
   resume?: SentGrist;
+  /** How long the answer is waited for before the question is given up on; default tutorTimings.deadlineMs. A reading grows it with the clip (services/reading.ts readingDeadlineMs). */
+  deadlineMs?: number;
+  /** How long the upload of a file may take, where the door's own 30 s is too little for the file (a long reading's clip, services/reading.ts uploadTimeoutMs). */
+  uploadTimeoutMs?: number;
+  /** What the box says when the deadline ends the wait, in place of 'The tutor is offline right now': for an ask whose mill has the grist and is still at it (a long reading). */
+  tookTooLong?: string;
   baseUrl?: string;
 }
 
@@ -388,7 +394,9 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
   options.signal?.addEventListener('abort', stop, { once: true });
   // a screen that went away before the send began sends nothing: its abort has already fired, and no listener would hear it now
   if (options.signal?.aborted) stop();
-  const timer = setTimeout(stop, tutorTimings.deadlineMs);
+  const timer = setTimeout(stop, options.deadlineMs ?? tutorTimings.deadlineMs);
+  // a file's upload may be given more than the door's 30 s: its own door, so the polls and the sign-in codes keep the short limit
+  const uploadDoor = options.uploadTimeoutMs && options.uploadTimeoutMs > tutorTimings.doorTimeoutMs ? timedDoor(new door.Door({ baseUrl: options.baseUrl ?? POSTERN_DOOR, key, timeoutMs: options.uploadTimeoutMs })) : undefined;
   // the timing of his previous answer rides with this grist (and is let go again if the grist never reaches the backend)
   // a resend carries the timing its first sending did
   const report = options.untimed || options.resend || options.resume ? undefined : claimReport();
@@ -409,7 +417,7 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
     const { mill, events } = await meOf(d, deadline.signal);
     const contactAt = Date.now();
     const send = async (): Promise<SentGrist> => {
-      const grist = await sendTimedGrist({ door: d, key, mill, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, files: options.files ?? [], clientTiming: report });
+      const grist = await sendTimedGrist({ door: d, uploadDoor, key, mill, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, files: options.files ?? [], clientTiming: report });
       resend = grist.resend;
       return grist;
     };
@@ -423,7 +431,7 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
     sent = true;
     went = { txid, seq };
     const sentAt = Date.now();
-    const sendNetwork = d.total;
+    const sendNetwork = d.total + (uploadDoor?.total ?? 0);
     options.onSent?.(txid, seq);
     const waited = await waitForAnswer(txid, seq, mill, d, key, deadline.signal, events ? { baseUrl: options.baseUrl ?? POSTERN_DOOR, key } : undefined, sentAt);
     const reply = waited.answer;
@@ -436,7 +444,10 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
   } catch (err) {
     if (report && !sent) releaseReport(report.txid);
     // the wait ended with no answer: the phone's network going (the grist that went is for a Retry to find, not to send a second), or the deadline (a Retry asks again)
-    if (err instanceof AwaitAbortedError && !options.signal?.aborted) throw new TutorError('no-answer', phoneIsOffline() ? OFFLINE_MESSAGE : TUTOR_OFFLINE_MESSAGE, offline ? resend : undefined, offline ? went : undefined);
+    if (err instanceof AwaitAbortedError && !options.signal?.aborted) {
+      const tooLong = options.tookTooLong !== undefined && !offline && !phoneIsOffline();
+      throw new TutorError('no-answer', tooLong ? options.tookTooLong! : phoneIsOffline() ? OFFLINE_MESSAGE : TUTOR_OFFLINE_MESSAGE, offline ? resend : undefined, offline ? went : undefined);
+    }
     const failure = explain(err);
     // the grist went (or may have) and the link failed: the backend may hold it, and Retry is to find it, not to send a second
     if (resend && sent && lostOnTheWay(err)) throw new TutorError(failure.failure, failure.message, resend, went);
