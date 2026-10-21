@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.392",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.703",
+    "kind": "fixed",
+    "text": "the page line at the foot of the reader ('Mark 12 · 12%', 'Page 2 of 7') is easier to tap with a thumb, and looks the same."
+  },
+  {
+    "version": "0.1.392",
+    "date": "2026-10-21",
+    "story": "mw-5r3p30.697",
+    "kind": "new",
+    "text": "A Bible reference you share to Lampas opens a small pop-up with the verse in the way you are reading (English, Weave or Greek), and Open takes you to that verse in its chapter."
+  },
+  {
+    "version": "0.1.392",
+    "date": "2026-10-21",
+    "story": "mw-irpgqi.1",
+    "kind": "new",
+    "text": "Tapping a Greek word now has a Paradigm row that opens that word's table with its own form outlined, and Back brings the word back."
+  },
+  {
     "version": "0.1.391",
     "date": "2026-10-21",
     "story": "mw-5r3p30.711",

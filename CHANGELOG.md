@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.392
+_2026-10-21_
+- Fixed: the page line at the foot of the reader ('Mark 12 · 12%', 'Page 2 of 7') is easier to tap with a thumb, and looks the same.
+- New: A Bible reference you share to Lampas opens a small pop-up with the verse in the way you are reading (English, Weave or Greek), and Open takes you to that verse in its chapter.
+- New: Tapping a Greek word now has a Paradigm row that opens that word's table with its own form outlined, and Back brings the word back.
+
 ## 0.1.391
 _2026-10-21_
 - Fixed: Choose a book opens with the search box ready to type in and the keyboard up.
