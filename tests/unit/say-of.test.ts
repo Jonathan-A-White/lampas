@@ -36,6 +36,21 @@ describe('sayOf', () => {
   });
 });
 
+describe('sayOf in the Greek view (mw-5r3p30.701)', () => {
+  it('drops a say that is not Greek letters: a Latin respelling never goes to the el-GR voice', () => {
+    expect(sayOf({ word: 'εἰμι', say: 'ee mee' }, 'greek')).toBe('εἰμι');
+    expect(sayOf({ word: 'εἰμι', say: 'ee mee', tip: 'Say ee-MEE.' }, 'greek')).toBe('εἰμι');
+  });
+
+  it('keeps a say that is Greek letters', () => {
+    expect(sayOf({ word: 'εἰμι', say: 'εἰμί' }, 'greek')).toBe('εἰμί');
+  });
+
+  it('keeps a Latin say in the English view, where the English voice reads it', () => {
+    expect(sayOf({ word: 'εἰμι', say: 'ee mee' })).toBe('ee mee');
+  });
+});
+
 describe('tipRespelling', () => {
   it('skips a run named after not, never, instead of or rather than', () => {
     expect(tipRespelling('LEE-vites')).toBe('lee vites');

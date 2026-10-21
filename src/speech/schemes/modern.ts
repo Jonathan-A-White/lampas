@@ -5,7 +5,7 @@ import type { SoundWords } from '../accents';
 import type { Pronunciation, SoundGuide, SoundLesson, SoundRule, SoundRuleSide, Spelling } from '../pronunciation';
 import type { SoundId } from '../sounds';
 import { isElided, withoutElision } from '../elision';
-import { ONSETS } from '../greekSyllables';
+import { greekSyllables, ONSETS } from '../greekSyllables';
 import { BACK, FRONT, modernLessons } from './modernLessons';
 import { MODERN_HEARD_AS, MODERN_LETTER_NAMES } from './modernSpoken';
 
@@ -436,8 +436,24 @@ export function monotonicModern(text: string): string {
  * initial. espeak-ng el, measured on the box (Praat's pitch tracker over its phoneme times; docs/pronunciation.md 'A word said alone'): the bare πατήρ is
  * 99 Hz on πα and 102 on τήρ, falling to 79 (no peak to hear); 'πατήρ!' is 99 on πα and 115 on τήρ; ἀγάπη! 116 on γά, 83 after; λόγος! 116, then 83. A
  * comma, a question mark, '…' and a carrier before the word ('λέμε πατήρ') put no clearer peak on the stress. Each word keeps one tonos, the first. PROVISIONAL
- * until the Governor has heard it. */
-export const wordFormModern = (word: string): string => `${voiceFormModern(oneStressEach(monotonicModern(word))).replace(/[\s.,;:·!?]+$/u, '')}!`;
+ * until the Governor has heard it. A word of two syllables or more with no accent of its own (the enclitics εἰμι, ἐστιν, τινες, ποτε) is given one first, or the
+ * voice reads its letters apart: his phone said εἰμι 'e, i', not 'ee-mee' (mw-5r3p30.701). */
+export const wordFormModern = (word: string): string => `${voiceFormModern(oneStressEach(stressedAlone(monotonicModern(word)))).replace(/[\s.,;:·!?]+$/u, '')}!`;
+
+/** Each Greek word of `text` of two syllables or more with no tonos given one on its last syllable: the stress of the orthotone form of the New Testament's
+ * unaccented words (εἰμί, ἐστίν, φημί, τινές, ποτέ), which lost theirs to the word before. On the last vowel letter, so a last syllable that is a pair
+ * (ἀγαθοί) keeps it as one sound. A word of one syllable (τις, μου, ὁ, an elided καθ') has nothing to be louder than and is left as it is. */
+const stressedAlone = (text: string): string =>
+  text.replace(/[\p{Script=Greek}\p{M}]+/gu, (word) => {
+    const letters = [...word.normalize('NFD')];
+    if (letters.includes('\u0301') || greekSyllables(word).length < 2) return word;
+    const last = letters.findLastIndex((c) => 'αεηιουω'.includes(c.toLowerCase()));
+    if (last < 0) return word;
+    let at = last + 1;
+    while (at < letters.length && /\p{M}/u.test(letters[at])) at++;
+    letters.splice(at, 0, '\u0301');
+    return letters.join('').normalize('NFC');
+  });
 
 /** Each Greek word of `text` with its first tonos only: the word said alone has one stress, the one respelling stresses; a second accent is one an enclitic
  * gave it (πρῶτός μου), said with the enclitic. */
