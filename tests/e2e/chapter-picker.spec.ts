@@ -120,6 +120,46 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     return picker;
   }
 
+  // mw-5r3p30.711: the sheet opens with the search field focused (the phone's keyboard comes up with it), not the Done button
+  for (const scheme of ['light', 'dark'] as const) {
+    test(`Choose a book opens with the search field focused, so typing filters at once (${scheme})`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      const picker = await openPicker(page);
+      const search = picker.getByRole('searchbox', { name: 'Search books' });
+      await expect(search).toBeFocused();
+      expect(await page.evaluate(() => (document.activeElement as HTMLInputElement | null)?.getAttribute('aria-label'))).toBe('Search books');
+      await page.keyboard.type('Heb');
+      await expect(search).toHaveValue('Heb');
+      await expect(picker.locator('[data-book]')).toHaveCount(1);
+      await expect(picker.getByRole('button', { name: 'Hebrews' })).toBeVisible();
+      await page.keyboard.press('Control+a');
+      await page.keyboard.press('Backspace');
+      await shot(page, `chapter-picker-focused-${scheme}-390x844`);
+
+      // scrolling the list does not steal the focus
+      await picker.getByTestId('chapter-picker-box').evaluate((el) => (el.scrollTop = el.scrollHeight));
+      await expect(search).toBeFocused();
+      // a book, then back to the books: the field is drawn again and focused again
+      await picker.getByRole('button', { name: '1 John' }).click();
+      await picker.getByRole('button', { name: '‹ Books' }).click();
+      await expect(picker.getByRole('searchbox', { name: 'Search books' })).toBeFocused();
+      // Done and Escape still close; the backdrop too
+      await picker.getByRole('button', { name: 'Done', exact: true }).click();
+      await expect(picker).toHaveCount(0);
+    });
+  }
+
+  test('Escape and the backdrop close Choose a book while the search field is focused', async ({ page }) => {
+    const picker = await openPicker(page);
+    await expect(picker.getByRole('searchbox', { name: 'Search books' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(picker).toHaveCount(0);
+    await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
+    await expect(picker).toBeVisible();
+    await page.getByTestId('sheet-backdrop').click({ position: { x: 195, y: 20 } });
+    await expect(picker).toHaveCount(0);
+  });
+
   // mw-5r3p30.678: Go to is a way into the Bible: the Reader on the chapter with the verse at the top of the reading area, the whole chapter there for context
   test('Go to John 18:2 opens John 18 in the Reader with verse 2 at the top, verse 1 above it, not the Verse view', async ({ page }) => {
     const picker = await openPicker(page);
