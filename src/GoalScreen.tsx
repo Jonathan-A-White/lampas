@@ -4,6 +4,7 @@
 // on the goal. The numbers are progressToward's (src/data/grammar/needs.ts), worked out in src/useGoalProgress.ts. Below the main path, the optional
 // 'Hard sounds (optional)' (src/hardSounds/HardSoundsSection.tsx) and 'Learn the IPA sounds' (src/ipa/OptionalEntry.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { approachOf, DEFAULT_APPROACH } from './approaches';
 import { NO_CHAPTER, type Chapter, type GreekWord } from './data/chapter';
@@ -240,11 +241,12 @@ function ListGroup({ level, count, children }: { level: Level; count: number; ch
 /** The one-time note after he switched the pronunciation (mw-5r3p30.231): the sounds are learned per pronunciation, so they start again here and the old ones are kept. Taking it forgets it, so it shows once. */
 function SwitchNote() {
   const [switched, setSwitched] = useState<PronunciationSwitch | null>(null);
+  const alive = useAlive();
   useEffect(() => {
     void takePronunciationSwitch().then((found) => {
-      if (found) setSwitched(found);
+      if (found && alive()) setSwitched(found);
     });
-  }, []);
+  }, [alive]);
   if (!switched) return null;
   return (
     <div role="status" data-testid="pronunciation-switch" className="mx-4 mt-3 flex items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2">
@@ -312,10 +314,11 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
     ],
   });
 
+  const alive = useAlive();
   const add = async (lemma: string, gloss: string): Promise<void> => {
     const result = await addLemmaToLearn({ title: '', chapter: NO_CHAPTER, verse: null }, lemma);
     if (result.result === 'unknown') await addWordToLearn(lemma, gloss);
-    setAdded(lemma);
+    if (alive()) setAdded(lemma);
   };
   const toggle = (which: 'words' | 'ideas') => setOpen(open === which ? null : which);
   const wordGroups = open === 'words' ? groupWords(needs, states) : null;

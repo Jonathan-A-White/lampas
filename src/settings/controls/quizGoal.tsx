@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useId, useRef, useState } from 'react';
 import { getQuizGoal, QUIZ_GOAL_MAX } from '../../data/repositories';
 import { writeSetting } from '../registry';
@@ -38,11 +39,12 @@ function QuizGoalField({ saved }: { saved: string }) {
   const trimmed = text.trim();
   const changed = trimmed !== '' && trimmed !== saved;
   const fieldId = useId();
-  /** Save and Clear end the draft: forget it on the phone too, at once. */
+  const alive = useAlive();
+  /** Save and Clear end the draft: forget it on the phone too, at once (also when Settings was left while the setting was written: the draft the unmount kept goes). */
   const dropDraft = () => {
     latest.current = undefined;
     writeDraft(undefined);
-    setDraft(undefined);
+    if (alive()) setDraft(undefined);
   };
 
   useEffect(() => {
