@@ -3,11 +3,8 @@
 import type { Conversation } from '../data/repositories';
 import { dateText, talkLabel } from './talkPlace';
 
-/** The button style the Share sheet's choices and the list rows share. */
-export const TALK_ROW = 'flex min-h-14 w-full flex-col justify-center rounded-xl border px-4 py-2 text-left active:bg-line border-line bg-surface';
-
-/** The first line of `text` with anything on it: a question of several lines shows its first in a row. */
-export const firstLine = (text: string): string => text.split('\n').map((line) => line.trim()).find(Boolean) ?? '';
+/** The button style of a row: the Share sheet's choices have it too. */
+const TALK_ROW = 'flex min-h-14 w-full flex-col justify-center rounded-xl border px-4 py-2 text-left active:bg-line border-line bg-surface';
 
 /** The row of `talk`; `line` is what is said under its name (its first question in the Share sheet, its last question or the line a search found in Conversations). */
 export function TalkRow({ talk, line, onPick }: { talk: Pick<Conversation, 'ref' | 'lastWhen'>; line: string; onPick: (ref: string) => void }) {

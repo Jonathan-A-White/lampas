@@ -9,9 +9,9 @@ import { listConversations, searchConversations } from './data/repositories';
 import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { TalkHost } from './share/ShareTalk';
-import { placeOf } from './share/talkPlace';
+import { firstLine, placeOf } from './share/talkPlace';
 import { useTalkScope } from './share/talkScope';
-import { firstLine, TalkRow } from './share/TalkRow';
+import { TalkRow } from './share/TalkRow';
 import { focusOnMount } from './ui/focus';
 
 /** The Talk sheet over the conversation `open`, or what stands in its place while its chapter loads or when it cannot be had. */
