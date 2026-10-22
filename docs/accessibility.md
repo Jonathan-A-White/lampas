@@ -1,9 +1,9 @@
 # Accessibility check
 
 `tests/e2e/accessibility.spec.ts` (mw-cwf538.2, the epic 'Lampas for every age and every ability') runs axe (`@axe-core/playwright`) with the WCAG 2.1 A and AA
-rules over the eight main screens, each opened as a thumb opens it at 390x844: the Reader, the Immersive reader (On), Quick test, Read it aloud (with its
-marks), the Talk sheet, Settings, an idea sheet and Placement. Each screen is checked in the phone's light theme, again in its dark theme and again in High contrast. The spec fails on any
-violation: a missing accessible name or role, a label that is not in the name, colour contrast. It names the eight screens in a list of its own (the first
+rules over the eight main screens and the two Library screens (mw-rfjjzd.4: Your Logos library, and Library: Lexicons, a kind's page), each opened as a thumb opens it at 390x844: the Reader, the Immersive reader (On), Quick test, Read it aloud (with its
+marks), the Talk sheet, Settings, an idea sheet, Placement, Your Logos library and a kind's page. Each screen is checked in the phone's light theme, again in its dark theme and again in High contrast. The spec fails on any
+violation: a missing accessible name or role, a label that is not in the name, colour contrast. It names the screens in a list of its own (the first
 test) and ends with a canary: a button that loses its accessible name must make the check fail, or the check looks at nothing.
 
 `npm run test:e2e` runs the whole e2e suite (`playwright test`; `npm run build` first). `npx playwright test tests/e2e/accessibility.spec.ts` runs this spec alone.

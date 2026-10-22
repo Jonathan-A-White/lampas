@@ -1,4 +1,4 @@
-// src/nav/route.ts — nineteen screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — twenty screens, told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -11,7 +11,7 @@ import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
 import { previousAddress } from './lastRoute';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'settings' | 'share' | 'unlock';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'settings' | 'share' | 'unlock';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -71,6 +71,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/about') return 'about';
   if (path === '#/preface') return 'preface';
   if (path === ESSAY_PATH) return 'essay';
+  if (path === '#/library') return 'library';
   if (path === '#/settings') return 'settings';
   if (path === '#/share') return 'share';
   if (path === '#/unlock') return 'unlock';
@@ -215,6 +216,41 @@ export function backTo(route: Route): void {
     return;
   }
   navigate(route);
+}
+
+/** What the address says about the Library screen (src/library/): no kind is the home; a kind (`kind=lexicon`) is that kind's page, and a book (`book=<Resource ID>`) is the one the page opens at. Both are raw text:
+ *  the screen checks them against the catalogue. */
+export interface LibraryAddress {
+  kind?: string;
+  book?: string;
+}
+
+export function libraryOf(hash: string): LibraryAddress {
+  const q = hash.indexOf('?');
+  const params = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1));
+  const address: LibraryAddress = {};
+  const kind = params.get('kind');
+  if (kind) address.kind = kind;
+  const book = params.get('book');
+  if (kind && book) address.book = book;
+  return address;
+}
+
+/** The Library address, always in the same order. */
+export function libraryHash({ kind, book }: LibraryAddress): string {
+  const params = new URLSearchParams();
+  if (kind) params.set('kind', kind);
+  if (kind && book) params.set('book', book);
+  const query = params.toString();
+  return query ? `#/library?${query}` : '#/library';
+}
+
+/** Opens the Library home, a kind's page, or a kind's page at a book, as a new Back step. */
+export function openLibrary(address: LibraryAddress = {}): void {
+  const hash = libraryHash(address);
+  if (window.location.hash === hash) return;
+  window.history.pushState(null, '', urlFor(hash));
+  notify();
 }
 
 /** The screen Your requests was opened from, which its back button returns to: About says so in the address ('#/requests?from=about'); Settings is the rest. */

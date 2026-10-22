@@ -18,6 +18,7 @@ import {
   openGoal,
   openGoalLists,
   openIdea,
+  openLibrary,
   openHebrewGuide,
   openLessonStrip,
   openLetterDrill,
@@ -234,6 +235,8 @@ const MORE_SCREENS: readonly Screen[] = [
   },
   { name: 'Drill it with the Goal screen under it', shot: 'large-text-drill-it-goal', open: async (page) => void (await openDrillIt(page, 'The second declension')) },
   { name: 'Share to Lampas', shot: 'large-text-share', open: async (page) => void (await openShare(page)) },
+  { name: 'Your Logos library', shot: 'large-text-library', open: async (page) => openLibrary(page) },
+  { name: 'Library: Lexicons', shot: 'large-text-library-lexicons', open: async (page) => openLibrary(page, 'lexicon') },
 ];
 
 /** Every control, heading and label on the open screen whose text is cut off, squeezed out or which sticks out of the window, one line each. A row that scrolls sideways
@@ -391,6 +394,8 @@ test('the screens are the ones the stories name', () => {
     'Goal screen, Read Romans 8',
     'Drill it with the Goal screen under it',
     'Share to Lampas',
+    'Your Logos library',
+    'Library: Lexicons',
   ]);
 });
 

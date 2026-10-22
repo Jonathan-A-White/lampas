@@ -40,7 +40,7 @@ async function keepImmersive(page: Page, value: 'on' | 'off') {
 }
 
 interface Screen {
-  /** The name the list shows: the eight screens of the story. */
+  /** The name the list shows: the eight screens of the story and the two Library screens (mw-rfjjzd.4). */
   name: string;
   /** Opens the screen on a fresh page and waits until it has drawn. */
   open: (page: Page) => Promise<void>;
@@ -134,6 +134,24 @@ const SCREENS: readonly Screen[] = [
       await expect(page.getByRole('heading', { name: 'Placement', exact: true, level: 1 })).toBeVisible();
     },
   },
+  {
+    name: 'Your Logos library',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/#/library');
+      await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
+      await expect(page.getByTestId('kind-row')).toHaveCount(7);
+    },
+  },
+  {
+    name: 'Library: Lexicons',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/#/library?kind=lexicon');
+      await expect(page.getByRole('heading', { name: 'Lexicons', level: 1 })).toBeVisible();
+      await expect(page.getByRole('radiogroup', { name: 'BDAG', exact: true })).toBeVisible();
+    },
+  },
 ];
 
 /** Lets every finite transition and animation finish: axe reads the colours as drawn, and a theme change fades them over a moment. */
@@ -157,7 +175,7 @@ async function violationsOn(page: Page): Promise<string[]> {
   });
 }
 
-test('the check names the eight main screens it covers', () => {
+test('the check names the main screens it covers', () => {
   expect(SCREENS.map((s) => s.name)).toEqual([
     'Reader',
     'Immersive reader',
@@ -167,6 +185,8 @@ test('the check names the eight main screens it covers', () => {
     'Settings',
     'Idea sheet',
     'Placement',
+    'Your Logos library',
+    'Library: Lexicons',
   ]);
 });
 
