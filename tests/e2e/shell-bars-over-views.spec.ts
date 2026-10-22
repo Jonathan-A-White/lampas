@@ -45,15 +45,15 @@ async function routeUpdate(page: Page, context: BrowserContext) {
     const response = await route.fetch();
     await route.fulfill({ response, body: `${await response.text()}\n// build ${build}\n`, headers: { ...response.headers(), 'cache-control': 'no-store' } });
   });
-  let lastChainAsk = Date.now();
-  const chainAsked = (request: Request) => /whatsonchain\.com/.test(request.url()) && (lastChainAsk = Date.now());
+  let lastChainAsk = performance.now();
+  const chainAsked = (request: Request) => /whatsonchain\.com/.test(request.url()) && (lastChainAsk = performance.now());
   page.on('request', chainAsked);
   page.on('requestfailed', chainAsked);
   const navigations: string[] = [];
   page.on('framenavigated', (frame) => frame.parentFrame() === null && navigations.push(frame.url()));
   const banner = page.getByRole('button', { name: UPDATE });
   // a tap while the gate's lookups are still going can hang the worker's take-over (update-banner.spec.ts)
-  const quiet = () => expect.poll(() => Date.now() - lastChainAsk, { timeout: 20_000 }).toBeGreaterThan(1500);
+  const quiet = () => expect.poll(() => performance.now() - lastChainAsk, { timeout: 20_000 }).toBeGreaterThan(1500);
   /** The page has been opened and a worker is in control of it. */
   const control = async () => {
     await page.evaluate(async () => {
