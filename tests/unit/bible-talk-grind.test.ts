@@ -665,6 +665,14 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     expect(text).toMatch(/pronunciation_guide[^.]*its "never" wording is for you/i);
   });
 
+  // mw-5r3p30.725: the smoke saw 'because the next letter, τ, is one of those that make it "af" (never "aw" or "ow")': a parenthesis repeating the guide, in an answer that explained the rule
+  it('they say to give the sound alone, with no parenthesis or clause about a sound it is not, and to read the answer through for aw and ow before returning it (mw-5r3p30.725)', () => {
+    expect(text).toMatch(/not even in a parenthesis/i);
+    expect(text).toMatch(/\(never "aw" or "ow"\)/);
+    expect(text).toMatch(/before you return `answer`[^.]*\baw\b[^.]*\bow\b[^.]*cut/i);
+    expect(text).toMatch(/do not explain which letters make αυ af or av/i);
+  });
+
   it('they say never to cut a diphthong across two syllables', () => {
     expect(text).toMatch(/never split a pair of letters that makes one sound[^.]*αυ, ευ, ηυ, ου, αι, ει, οι, υι/i);
     expect(text).toMatch(/unless the second letter carries a diaeresis/);
