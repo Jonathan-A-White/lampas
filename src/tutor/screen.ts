@@ -57,7 +57,7 @@ export const SETTING_NAME_MAX = 40;
 export const SETTING_VALUE_MAX = 80;
 export const SETTING_HELP_MAX = 100;
 /** The most credits a screen sends and the longest name, use, licence and link of one (the input schema's limits). */
-export const MAX_CREDITS = 40;
+export const MAX_CREDITS = 44;
 export const CREDIT_NAME_MAX = 40;
 export const CREDIT_USE_MAX = 160;
 export const CREDIT_LICENCE_MAX = 60;
