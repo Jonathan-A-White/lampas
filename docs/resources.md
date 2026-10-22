@@ -33,8 +33,8 @@ percent-encoded UTF-8, in NFC.
 ## Logos: his lexicons, the scheme and the fallback
 
 With Logos on, Settings shows his Logos lexicons as a searchable, scrolling ticked list (`src/ui/SearchableList.tsx`: a search field, the ticked ones first, a box about five rows high that scrolls on its own; BDAG ticked until he changes it; the ticked ids are a JSON
-array in `resourceOption.logos`). The list is data: `LEXICONS` in `src/resources/logos.ts`, in the order Logos' Bible Word Study
-shows them; adding a lexicon is one line there. Each ticked one gives `Open in Logos: <name>` on the word sheet, and one
+array in `resourceOption.logos`). The list is data: `LEXICONS` in `src/resources/logos.ts`, a view over the catalogue's lexicons (see 'The catalogue' below), in the order Logos' Bible Word Study
+shows them; adding a lexicon is one entry in `data/logos/catalogue-rules.json` and `npm run logos:catalogue`. Each ticked one gives `Open in Logos: <name>` on the word sheet, and one
 `Bible Word Study in Logos` link (for the lemma alone, no verse) always comes with Logos.
 
 **An English word's dictionary (mw-5r3p30.707).** A tap on an English word is looked up in his English dictionary, Webster's 1828 (*An American Dictionary of the English Language*, Noah Webster; the Book Info in Logos prints `LLS:AMDICTENLANG`),
@@ -154,14 +154,11 @@ A link is `logosres:<Resource ID>;ref=<reference>`, its https fallback `https://
 
 The other `ref=` links Lampas builds (swept in mw-5r3p30.618) name no space, so they are not this fault: the Bible links (`Bible.Ro8.31`, `src/resources/logosBible.ts`, `src/data/otBooks.ts`) and the Strong's links (`GreekStrongs.11`, `src/resources/logos.ts`) are a data type, a dot and a key. Their forms stay UNVERIFIED on a device as written elsewhere in this file.
 
-**Adding a book** is one entry in `GRAMMAR_BOOKS` and nothing else: an `id` (kept in the store, never changed), `short`, `name`, the `resource` Logos lists, the `source`, and its `sections` `{title, ref, ideas}` (ladder ids; `tests/unit/grammar-books.test.ts` fails on an id the ladder lacks). For BDF, say:
+**Adding a book** is one `ids` entry of the catalogue rules (`data/logos/catalogue-rules.json`, then `npm run logos:catalogue`; `GRAMMAR_BOOKS` is a view over the grammars that have a `sections` table) and nothing else: an `id` (kept in the store, never changed), `short`, `name`, the `resource` Logos lists, the `source`, and its `sections` `{title, ref, ideas}` (ladder ids; `tests/unit/grammar-books.test.ts` fails on an id the ladder lacks). For BDF, say:
 
-```ts
-const bdf: GrammarBook = {
-  id: 'bdf', short: 'BDF', name: 'A Greek Grammar of the New Testament (BDF)', resource: 'LLS:BDF', source: '…',
-  sections: [{ title: '§ 5. The aorist', ref: 'Page.p+…', ideas: ['tense-aorist'] }],
-};
-export const GRAMMAR_BOOKS: readonly GrammarBook[] = [black, bdf];
+```json
+{"resource": "LLS:BDF", "kind": "grammar", "id": "bdf", "short": "BDF", "title": "A Greek Grammar of the New Testament (BDF)", "source": "…",
+ "sections": [{"title": "§ 5. The aorist", "ref": "Page.p_5", "ideas": ["tense-aorist"]}]}
 ```
 
 Add its row to the table above with its source.
@@ -275,7 +272,7 @@ Sources. Every Resource ID and the books each commentary volume covers were read
 
 Left out: the Old Testament volumes of the commentaries (`CALCOM01GE` ... `CALCOM28HO`; Lampas holds the New Testament), the collection `LLS:CALCOMMHAR` (its listed ranges are patches, not one book), and `LLS:42.110.15`
 (a third Institutes whose edition the listing does not name). **UNVERIFIED on a device:** that `logosres:LLS:...` opens a resource with no `ref`, and that a commentary volume opens at `Bible.<book><ch>.<v>`; the form
-is the one the lexicon and Black links use. Adding a work is one entry in `WORKS` (and its id in the answer schema's `work` enum), the test fails until both agree; update this table.
+is the one the lexicon and Black links use. Adding a work is one `works` entry and its volumes' `ids` entries in the catalogue rules (and its id in the answer schema's `work` enum), the test fails until both agree; update this table.
 
 ## Greek or English: the dial and the lists (mw-5r3p30.710, PROVISIONAL, Governor to confirm)
 
@@ -298,6 +295,33 @@ Who goes through it: Settings > Study resources (the switches: `orderResourceRow
 offered to the tutor and its link is dropped). Not through it, because they ask for one named resource and Logos is `both`: the Today, chapter picker and reference card Logos links, the English dictionary row, the
 tutor's Settings list (the tutor is told every setting, shown or not) and the tips' count of switches on. **When a Logos work is added to `WORKS`, say whether it is Greek or English in `lang`.**
 Not yet marked: the lexicons ticked inside Logos (BDAG, Louw-Nida ...) are Greek but are choices of the one `both` app, so they show at every step.
+
+## The catalogue (mw-rfjjzd.2, PROVISIONAL; docs/design/library-at-scale.md 3.1)
+
+The catalogue is what Lampas knows how to open in a Logos library, and where: one typed table, shipped with the app and grown by the factory, held in `src/resources/catalogue/<kind>.json`, one
+generated file for each of seven kinds (`lexicon`, `grammar`, `greek-text`, `interlinear`, `commentary`, `bible`, `devotional`) and read through `src/resources/catalogue.ts` (`CATALOGUE`,
+`entriesOf(kind)`, `WORK_GROUPS`, and `CATALOGUE_VERSION`, the one stamp in every file: a hash of all the entries, so a library kept on a phone can be re-matched when it changes).
+An entry (`CatalogueEntry`) is a Logos resource by its true Resource ID, a kind, a `title` and `short`, where Lampas opens it (`opens`: a word, a parsing, a verse, a chapter, a day, its start, or a place in
+its own index), one line of `value` (what it adds beyond Logos alone: an entry with none is not in the catalogue), `covers` (a commentary volume's or interlinear's books, read from the export's
+ReferenceSupersets; absent means the whole New Testament), a grammar's `sections`, `starts` (`on` or `pinned`; Off is never a default) and `via` (`id`, `type` or `series`: how it joined).
+
+**The rules** are `data/logos/catalogue-rules.json`, the factory's file: `values` (the value line a kind falls back on), `works` (the groups of volumes the tutor links to as one work), `ids` (a Resource ID, its kind
+and every field the export cannot give, so an id is written from the rules alone and comes out the same whichever export is read), `types` (every row of the export of a Logos type joins: reverse interlinears
+and English Bibles that cover some of the New Testament, calendar devotionals) and `series` (every volume of a series that covers some of the New Testament joins with its `covers`: Baker Exegetical, New International
+Greek Testament, Pillar, Lenski's). **`npm run logos:catalogue -- <export.csv>`** (`scripts/logos-catalogue.ts`; a data tool, not in the gate, like `data:build`) writes the seven files from the rules and the export
+(Library > Save as Spreadsheet; the vault's `plans/lampas-logos-library-2026-10-08.csv` to start; `--out <dir>` writes elsewhere); it is deterministic and a second run changes nothing. It prints a note for
+each thing the rules and the export disagree on (an id the export lacks, a volume whose covers differ). The export is CRLF with RFC 4180 quoting and raw tabs, unquoted, inside the last cell; its parser
+(`parseCsv`, `readExport`) keeps a cell whole until the next unquoted comma. The committed files are written from **`tests/fixtures/logos-export-head.csv`**, the first 60 rows of his export (titles only), so
+they hold the ids the rules name and nothing from the rest of his library; run the tool on a whole export and commit the result only when a type or series rule should add its volumes.
+**`npm run logos:fit -- <export.csv>`** (`scripts/logos-fit.ts`) prints the rows of an export the rules do not take, by the kind each would be, with the Logos type and the data types of its
+ReferenceSupersets (`ltrntg`, `bdf`: the names a section link could use, docs/research/logos-section-refs.md), and counts the rest by type: the Mayor's reading of a list a reader sent.
+
+**Today's lists are views over it** and keep their shapes, so no screen changes: `LEXICONS` (`logos.ts`: the lexicons), `GRAMMAR_BOOKS` (`grammarBooks.ts`: the grammars with a `sections` table; one without it is in the catalogue
+for the tutor only, as it would open at its start), `WORKS` (`works.ts`: the `works` groups and the commentary entries that name them in `work`, the Institutes among them with their `index`), `COMMON_BIBLES` and
+`DEFAULT_LOGOS_BIBLE` (`logosBible.ts`: the Bibles named by id, and the one that `starts` pinned) and `DEVOTIONALS` (`src/data/daily/devotionals.ts`: the devotionals named by id). An entry an export adds by a type or
+series rule is in the catalogue and in none of these until the shelf (S2) and the Library screen (S3) read it. `tests/unit/catalogue.test.ts` fails on a duplicate Resource ID, an entry with no value, a `covers` code that is
+no book, a grammar section idea that is not on the ladder, a rules file that lacks an id of the five lists, a committed file that is not what the tool makes, and on any of the five lists no longer equal to what it was
+(`tests/fixtures/old-resource-exports.json`). Not in the catalogue, by the design's test of value over volume: the pronunciation datasets, the interactives (Morphology Charts among them, a research lead), and a book that opens only at its start.
 
 ## How to add a resource
 

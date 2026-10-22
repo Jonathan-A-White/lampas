@@ -1,0 +1,289 @@
+// scripts/logos-catalogue.ts — writes the Logos catalogue (`npm run logos:catalogue -- <csv>`; mw-rfjjzd.2, docs/design/library-at-scale.md 3.1): one file per kind in
+// src/resources/catalogue/ from the rules in data/logos/catalogue-rules.json and a Logos library export (Library > Save as Spreadsheet; the vault's
+// plans/lampas-logos-library-2026-10-08.csv to start). An id the rules name is written from the rules alone, so the same entry comes out whichever export is read; a type rule or a series
+// rule adds every row of the export it takes. Deterministic: the same rules and export give the same bytes, and a second run changes nothing. `--out <dir>` writes elsewhere (the tests do).
+// A data tool, not in the gate, like data:build (docs/commands.md).
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { BOOKS } from '../src/data/books.ts';
+import type { CatalogueEntry, Kind, KindFile, Opens, Via, WorkGroup } from '../src/resources/catalogue.ts';
+import type { BookSection, ResourceLang } from '../src/resources/types.ts';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+export const RULES_FILE = join(ROOT, 'data/logos/catalogue-rules.json');
+export const CATALOGUE_DIR = join(ROOT, 'src/resources/catalogue');
+
+/** The seven kinds, as src/resources/catalogue.ts lists them (repeated here: this tool must not import the files it writes). */
+export const KIND_LIST: readonly Kind[] = ['lexicon', 'grammar', 'greek-text', 'interlinear', 'commentary', 'bible', 'devotional'];
+
+// ---- The rules file ----
+
+/** An id the rules name: every field of the entry that the export cannot give, so the entry is the same whichever export is read. `value` falls back to the kind's line in `values`. */
+export interface IdRule {
+  resource: string;
+  kind: Kind;
+  title: string;
+  short: string;
+  id?: string;
+  author?: string;
+  series?: string;
+  lang?: ResourceLang;
+  opens?: Opens;
+  value?: string;
+  covers?: string[];
+  sections?: BookSection[];
+  starts?: 'on' | 'pinned';
+  verified?: string;
+  key?: CatalogueEntry['key'];
+  work?: string;
+  source?: string;
+  dayOfYear?: boolean;
+}
+
+/** Every row of the export of this Logos type joins (`needs: 'nt'`: only if it covers some book of the New Testament; `languages`: only if its Languages cell is this). */
+export interface TypeRule {
+  type: string;
+  kind: Kind;
+  needs?: 'nt';
+  languages?: string;
+  lang?: ResourceLang;
+  value?: string;
+  starts?: 'on' | 'pinned';
+}
+
+/** Every commentary volume of the export in this series that covers some book of the New Testament joins, with its `covers` read from its ReferenceSupersets. */
+export interface SeriesRule {
+  series: string;
+  kind: Kind;
+  lang?: ResourceLang;
+  value?: string;
+  starts?: 'on' | 'pinned';
+}
+
+export interface Rules {
+  /** the value line a rule falls back on, for each kind */
+  values: Record<Kind, string>;
+  works: WorkGroup[];
+  ids: IdRule[];
+  types: TypeRule[];
+  series: SeriesRule[];
+}
+
+// ---- The export ----
+
+/** RFC 4180: CRLF or LF line ends, quoted cells with commas, doubled quotes and newlines inside. A raw tab is cell text (the export's last cell holds them, unquoted), and a BOM is dropped. */
+export function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = '';
+  let quoted = false;
+  let started = false;
+  const src = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (quoted) {
+      if (c === '"') {
+        if (src[i + 1] === '"') {
+          cell += '"';
+          i++;
+        } else quoted = false;
+      } else cell += c;
+      continue;
+    }
+    if (c === '"' && cell === '') {
+      quoted = true;
+      started = true;
+    } else if (c === ',') {
+      row.push(cell);
+      cell = '';
+      started = true;
+    } else if (c === '\r' || c === '\n') {
+      if (c === '\r' && src[i + 1] === '\n') i++;
+      if (started || cell !== '') {
+        row.push(cell);
+        rows.push(row);
+      }
+      row = [];
+      cell = '';
+      started = false;
+    } else {
+      cell += c;
+      started = true;
+    }
+  }
+  if (started || cell !== '') {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows;
+}
+
+/** One row of a Logos export. `supersets` is the ReferenceSupersets cell as it is: tokens like `bible.64.1-64.21.25`, separated by raw tabs. */
+export interface ExportRow {
+  resource: string;
+  type: string;
+  abbreviated: string;
+  title: string;
+  series: string;
+  languages: string;
+  supersets: string;
+}
+
+const COLUMNS = ['ResourceId', 'Type', 'AbbreviatedTitle', 'Title', 'Series', 'Languages', 'ReferenceSupersets'];
+
+/** The rows of an export, by its header (the columns may come in any order); throws, naming the column, when one is missing. */
+export function readExport(text: string): ExportRow[] {
+  const [header, ...rows] = parseCsv(text);
+  const at = (name: string): number => {
+    const i = (header ?? []).indexOf(name);
+    if (i < 0) throw new Error(`The export has no ${name} column (it has ${(header ?? []).join(', ') || 'none'}); ${COLUMNS.join(', ')} are expected`);
+    return i;
+  };
+  const [r, t, a, ti, s, l, u] = COLUMNS.map(at);
+  return rows.map((c) => ({ resource: c[r] ?? '', type: c[t] ?? '', abbreviated: c[a] ?? '', title: c[ti] ?? '', series: c[s] ?? '', languages: c[l] ?? '', supersets: c[u] ?? '' })).filter((x) => x.resource !== '');
+}
+
+/** Logos numbers the New Testament's books 61 (Matthew) to 87 (Revelation); our codes follow that order (src/data/books.ts). */
+const FIRST_NT_BOOK = 61;
+
+/** The books of the New Testament a ReferenceSupersets cell covers, as our codes in canonical order: each `bible` token (`bible.64.1-64.21.25`, `bible+esv.61-87`) is a range from its first book number
+ *  to its last; a token of any other type (`dayofyear`, `cicr`), and the Old Testament, cover none. */
+export function coversOfSupersets(supersets: string): string[] {
+  const covered = new Set<string>();
+  for (const token of supersets.split('\t')) {
+    const m = /^bible(?:\+[a-z0-9]+)?\.(\d+)(?:[.\d]*)(?:-(\d+)[.\d]*)?$/.exec(token.trim());
+    if (!m) continue;
+    const [from, to] = [Number(m[1]), Number(m[2] ?? m[1])];
+    for (let n = Math.max(from, FIRST_NT_BOOK); n <= Math.min(to, FIRST_NT_BOOK + BOOKS.length - 1); n++) covered.add(BOOKS[n - FIRST_NT_BOOK].code);
+  }
+  return BOOKS.filter((b) => covered.has(b.code)).map((b) => b.code);
+}
+
+// ---- The catalogue ----
+
+const DEFAULT_LANG: Record<Kind, ResourceLang> = { lexicon: 'grc', grammar: 'grc', 'greek-text': 'grc', interlinear: 'both', commentary: 'en', bible: 'en', devotional: 'en' };
+const DEFAULT_OPENS: Record<Kind, Opens> = { lexicon: 'word', grammar: 'parsing', 'greek-text': 'verse', interlinear: 'verse', commentary: 'verse', bible: 'chapter', devotional: 'day' };
+
+/** The entry with its fields in the one order, and none that is undefined, so the bytes written depend on the data alone. */
+function ordered(e: CatalogueEntry): CatalogueEntry {
+  const order: (keyof CatalogueEntry)[] = ['resource', 'kind', 'title', 'short', 'author', 'series', 'lang', 'opens', 'value', 'covers', 'sections', 'starts', 'verified', 'via', 'id', 'key', 'work', 'source', 'dayOfYear'];
+  return Object.fromEntries(order.filter((k) => e[k] !== undefined).map((k) => [k, e[k]])) as unknown as CatalogueEntry;
+}
+
+/** The version stamp: a hash of every entry and work of the seven kinds, so a file left behind by an edit shows. */
+export function versionOf(files: Record<Kind, Pick<KindFile, 'entries' | 'works'>>): string {
+  const body = KIND_LIST.map((k) => ({ kind: k, works: files[k].works ?? null, entries: files[k].entries.map(ordered) }));
+  return createHash('sha256').update(JSON.stringify(body)).digest('hex').slice(0, 12);
+}
+
+/** The text of one file: its entries one to a line, so a change reads as a diff. */
+export function formatKindFile(file: KindFile): string {
+  const lines = [`  "kind": ${JSON.stringify(file.kind)}`, `  "version": ${JSON.stringify(file.version)}`];
+  if (file.works) lines.push(`  "works": [\n${file.works.map((w) => `    ${JSON.stringify(w)}`).join(',\n')}\n  ]`);
+  lines.push(file.entries.length === 0 ? '  "entries": []' : `  "entries": [\n${file.entries.map((e) => `    ${JSON.stringify(ordered(e))}`).join(',\n')}\n  ]`);
+  return `{\n${lines.join(',\n')}\n}\n`;
+}
+
+export interface Built {
+  files: Record<Kind, KindFile>;
+  /** what the tool says as it goes: ids the rules name that this export lacks, volumes whose covers differ from the export's */
+  notes: string[];
+}
+
+/** The catalogue from the rules and the rows: the ids the rules name, in the rules' order, then the rows a series rule or a type rule takes, by Resource ID. Throws on a rule it cannot write. */
+export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built {
+  const notes: string[] = [];
+  const byKind = Object.fromEntries(KIND_LIST.map((k) => [k, [] as CatalogueEntry[]])) as Record<Kind, CatalogueEntry[]>;
+  const taken = new Set<string>();
+  const valueOf = (rule: { value?: string; kind: Kind }, what: string): string => {
+    const value = (rule.value ?? rules.values[rule.kind] ?? '').trim();
+    if (value === '') throw new Error(`${what} has no value: give it one or give ${rule.kind} a line in "values" (an entry with no value is not in the catalogue)`);
+    return value;
+  };
+  const known = new Set(BOOKS.map((b) => b.code));
+  const workIds = new Set(rules.works.map((w) => w.id));
+
+  for (const rule of rules.ids) {
+    if (!KIND_LIST.includes(rule.kind)) throw new Error(`${rule.resource}: ${rule.kind} is not a kind`);
+    if (taken.has(rule.resource)) throw new Error(`${rule.resource} is named twice in the rules`);
+    for (const code of rule.covers ?? []) if (!known.has(code)) throw new Error(`${rule.resource} covers ${code}, which is no book`);
+    if (rule.work !== undefined && !workIds.has(rule.work)) throw new Error(`${rule.resource} is a volume of ${rule.work}, which the rules do not list under "works"`);
+    taken.add(rule.resource);
+    byKind[rule.kind].push({
+      resource: rule.resource, kind: rule.kind, title: rule.title, short: rule.short, author: rule.author, series: rule.series,
+      lang: rule.lang ?? DEFAULT_LANG[rule.kind],
+      opens: rule.opens ?? (rule.kind === 'grammar' && !rule.sections ? 'start' : DEFAULT_OPENS[rule.kind]),
+      value: valueOf(rule, rule.resource), covers: rule.covers, sections: rule.sections, starts: rule.starts ?? 'on', verified: rule.verified,
+      via: 'id', id: rule.id, key: rule.key, work: rule.work, source: rule.source, dayOfYear: rule.dayOfYear,
+    });
+  }
+
+  const byResource = new Map(rows.map((r) => [r.resource, r]));
+  const missing = rules.ids.filter((r) => !byResource.has(r.resource)).length;
+  if (missing > 0) notes.push(`${missing} of the ${rules.ids.length} ids the rules name are not in this export (they are written from the rules alone)`);
+  for (const rule of rules.ids) {
+    const row = byResource.get(rule.resource);
+    if (!row || !rule.covers) continue;
+    const found = coversOfSupersets(row.supersets);
+    if (found.join() !== rule.covers.join()) notes.push(`${rule.resource}: the rules cover ${rule.covers.join(' ')} but the export's ReferenceSupersets read ${found.join(' ') || 'nothing'}`);
+  }
+
+  const add = (row: ExportRow, kind: Kind, via: Via, rule: { value?: string; lang?: ResourceLang; starts?: 'on' | 'pinned' }, what: string): void => {
+    const covers = coversOfSupersets(row.supersets);
+    byKind[kind].push({
+      resource: row.resource, kind, title: row.title, short: row.abbreviated || row.title, series: row.series || undefined,
+      lang: rule.lang ?? DEFAULT_LANG[kind], opens: DEFAULT_OPENS[kind], value: valueOf({ value: rule.value, kind }, what),
+      covers: covers.length > 0 && covers.length < BOOKS.length ? covers : undefined, starts: rule.starts ?? 'on', via,
+      dayOfYear: kind === 'devotional' ? row.supersets.split('\t').some((t) => t.startsWith('dayofyear')) : undefined,
+    });
+    taken.add(row.resource);
+  };
+  const sorted = [...rows].sort((a, b) => (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0));
+  for (const row of sorted) {
+    if (taken.has(row.resource)) continue;
+    const nt = coversOfSupersets(row.supersets).length > 0;
+    const series = rules.series.find((s) => s.series === row.series && row.type.startsWith('text.monograph.commentary') && nt);
+    if (series) {
+      add(row, series.kind, 'series', series, `series ${series.series}`);
+      continue;
+    }
+    const type = rules.types.find((t) => t.type === row.type && (t.languages === undefined || t.languages === row.languages) && (t.needs !== 'nt' || nt));
+    if (type) add(row, type.kind, 'type', type, `type ${type.type}`);
+  }
+
+  const files = Object.fromEntries(KIND_LIST.map((k) => [k, { kind: k, version: '', entries: byKind[k] }])) as Record<Kind, KindFile>;
+  if (rules.works.length > 0) files.commentary.works = rules.works;
+  const version = versionOf(files);
+  for (const k of KIND_LIST) files[k] = { kind: k, version, ...(files[k].works ? { works: files[k].works } : {}), entries: files[k].entries.map(ordered) };
+  return { files, notes };
+}
+
+export function loadRules(file = RULES_FILE): Rules {
+  return JSON.parse(readFileSync(file, 'utf8')) as Rules;
+}
+
+/** Writes the seven files into `dir`; returns the notes. */
+export function writeCatalogue(csvPath: string, dir = CATALOGUE_DIR, rulesFile = RULES_FILE): string[] {
+  const { files, notes } = buildCatalogue(loadRules(rulesFile), readExport(readFileSync(csvPath, 'utf8')));
+  mkdirSync(dir, { recursive: true });
+  for (const k of KIND_LIST) writeFileSync(join(dir, `${k}.json`), formatKindFile(files[k]));
+  return notes;
+}
+
+function main(argv: string[]): void {
+  const args = argv.slice(2);
+  const outAt = args.indexOf('--out');
+  const out = outAt >= 0 ? resolve(args[outAt + 1] ?? '') : CATALOGUE_DIR;
+  const csv = args.find((a, i) => !a.startsWith('--') && (outAt < 0 || i !== outAt + 1));
+  if (!csv) {
+    console.error('usage: npm run logos:catalogue -- <export.csv> [--out <dir>]');
+    process.exit(2);
+  }
+  const notes = writeCatalogue(resolve(csv), out);
+  for (const n of notes) console.log(`note: ${n}`);
+  console.log(`wrote the seven kinds to ${out}`);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main(process.argv);

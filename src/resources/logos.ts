@@ -2,40 +2,20 @@
 // word's headword, and 'Bible Word Study in Logos' for the lemma alone. Every link is the Logos app's own
 // scheme first (logosres: for a resource, logos4: for a guide) and carries the https ref.ly address as the fallback, opened only when the
 // phone cannot open the scheme (src/resources/openApp.ts). docs/resources.md names the sources and what is UNVERIFIED.
+import { entriesOf, type LexiconKey } from './catalogue';
 import { verseLink } from './logosBible';
 import { resourceLink, type LogosLink } from './logosRes';
 import type { StudyLink, StudyResource, StudyWord } from './types';
 
-/** The key a lexicon is filed under: the Greek lemma (`hw=<lemma>`; `commonLemma` is the same for a book with no proper names), a Strong's number (`ref=GreekStrongs.<n>` or `HebrewStrongs.<n>`, as Greek and Hebrew share numbers),
- *  or an English topic (`hw=<Topic>`). docs/resources.md says where each lexicon's key comes from and what is UNVERIFIED. */
-type Key = 'lemma' | 'commonLemma' | 'strongs' | 'topic';
+/** The key a lexicon is filed under (catalogue.ts LexiconKey): the Greek lemma, a Strong's number or an English topic. docs/resources.md says where each lexicon's key comes from and what is UNVERIFIED. */
+type Key = LexiconKey;
 
-/** His Logos lexicons, in the order Logos' Bible Word Study shows them. `id` is kept in the settings store (never change it); `short` is its tile on the word sheet: the book's title in words that tell it from every other (two lines fit in half a row; the
- *  distinguishing word is never cut, and no two are alike); `resource` is the Resource ID Logos prints on the product's page (https://www.logos.com/product/<n>, 'Resource ID: LLS:...'; the table is in
- *  docs/resources.md). Adding a lexicon is one line here: copy its Resource ID, never guess a short name (mw-5r3p30.64: the guessed 'ednt' opened nothing). */
-const LEXICONS: readonly { id: string; short: string; name: string; resource: string; key?: Key }[] = [
-  { id: 'bdag', short: 'BDAG', name: 'BDAG', resource: 'LLS:46.30.18' },
-  { id: 'louwnida', short: 'Louw-Nida', name: 'Louw-Nida', resource: 'LLS:46.30.4' },
-  { id: 'lexhamtheolwordbk', short: 'Lexham Theological Wordbook', name: 'Lexham Theological Wordbook', resource: 'LLS:LXTHEOWRDBK', key: 'topic' },
-  { id: 'dbl', short: 'DBL Greek', name: 'DBL Greek', resource: 'LLS:46.30.9' },
-  { id: 'ednt', short: 'EDNT', name: 'EDNT', resource: 'LLS:46.10.26' },
-  { id: 'nasbdict', short: 'NASB Dictionaries', name: 'NASB Dictionaries', resource: 'LLS:46.10.12', key: 'strongs' },
-  { id: 'leh', short: 'LEH LXX Lexicon', name: 'LEH LXX Lexicon', resource: 'LLS:46.30.22', key: 'commonLemma' },
-  { id: 'intermediategel', short: 'Intermediate Greek-English Lexicon', name: 'An Intermediate Greek-English Lexicon', resource: 'LLS:46.30.1', key: 'commonLemma' },
-  { id: 'lxgrcanlex', short: 'Lexham Analytical Lexicon of the GNT', name: 'Lexham Analytical Lexicon to the Greek New Testament', resource: 'LLS:LXGRCANLEX' },
-  { id: 'newstrongs', short: "New Strong's Dictionary", name: 'The New Strong\'s Dictionary of Hebrew and Greek Words', resource: 'LLS:46.10.6', key: 'strongs' },
-  { id: 'tdnta', short: 'TDNTA', name: 'TDNTA', resource: 'LLS:46.10.1' },
-  { id: 'vocab3', short: 'NT Greek Vocabulary', name: 'Building Your New Testament Greek Vocabulary 3rd Edition', resource: 'LLS:NTGRKVOCAB' },
-  { id: 'lxgntlex', short: 'Lexham Research Lexicon of the GNT', name: 'Lexham Research Lexicon of the Greek New Testament', resource: 'LLS:FBGNTLEX' },
-  { id: 'lxlxxlex', short: 'Lexham Research Lexicon of the LXX', name: 'Lexham Research Lexicon of the Septuagint', resource: 'LLS:FBLXXLEX' },
-  { id: 'gelnt', short: 'Greek and English Lexicon to the NT', name: 'A Greek and English Lexicon to the New Testament', resource: 'LLS:GRKENGLXCNNTBLMSFIELD', key: 'commonLemma' },
-  { id: 'biblicotheolexicon', short: 'Cremer Biblico-Theological Lexicon', name: 'Biblico-Theological Lexicon of New Testament Greek', resource: 'LLS:LEXNTGRKCREMER' },
-  { id: 'lexhamanalyticallxx', short: 'Lexham Analytical Lexicon of the LXX', name: 'The Lexham Analytical Lexicon of the Septuagint', resource: 'LLS:LXGRKOTANLEX' },
-  { id: 'manualgreeklex', short: 'Abbott-Smith Manual Lexicon', name: 'A Manual Greek Lexicon of the New Testament', resource: 'LLS:MNLGRKLXABBOTSMITH' },
-  { id: 'pocketlex', short: 'Pocket Lexicon to the Greek NT', name: 'A Pocket Lexicon to the Greek New Testament', resource: 'LLS:PCKTLXCNGRKNWTS' },
-  { id: 'concisedict', short: "New Strong's Concise Dictionary", name: 'A Concise Dictionary of the Words in the Greek Testament and The Hebrew Bible', resource: 'LLS:STRNGDICHEBGRK', key: 'strongs' },
-  { id: 'gelntthayer', short: "Thayer's Greek-English Lexicon", name: 'A Greek-English Lexicon of the New Testament', resource: 'LLS:THAYERGELEXNT' },
-];
+/** His Logos lexicons, in the order Logos' Bible Word Study shows them: a view over the catalogue's lexicons (catalogue.ts; docs/resources.md 'The catalogue'). `id` is kept in the settings store (never change it); `short` is its tile on the word sheet: the book's title in
+ *  words that tell it from every other (two lines fit in half a row; the distinguishing word is never cut, and no two are alike); `resource` is the Resource ID Logos prints on the product's page (https://www.logos.com/product/<n>, 'Resource ID: LLS:...').
+ *  Adding a lexicon is one entry in data/logos/catalogue-rules.json and `npm run logos:catalogue`: copy its Resource ID, never guess a short name (mw-5r3p30.64: the guessed 'ednt' opened nothing). */
+export const LEXICONS: readonly { id: string; short: string; name: string; resource: string; key?: Key }[] = entriesOf('lexicon')
+  .filter((e) => e.via === 'id' && e.id !== undefined)
+  .map((e) => ({ id: e.id as string, short: e.short, name: e.title, resource: e.resource, ...(e.key ? { key: e.key } : {}) }));
 
 /** His English dictionary in Logos, for a tapped English word (mw-5r3p30.707): Webster's 1828, 'An American Dictionary of the English Language' (Book Info: LLS:AMDICTENLANG).
  *  `resource` is written as the story's links name it, without `LLS:`; if the Logos app does not open it, the full `LLS:AMDICTENLANG` is the form the lexicons above use.

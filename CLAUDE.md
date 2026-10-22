@@ -42,6 +42,7 @@ npx playwright test  # (npm run test:e2e) all e2e (use --workers=2; `npm run bui
 npm run e2e:live     # the live tests against the DEPLOYED app; not in the gate (docs/commands.md)
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
 npm run ladder:docs  # writes the docs/grammar.md ladder table and the docs/card-audit.md rows from src/data/grammar/ladder.ts (docs/commands.md)
+npm run logos:catalogue -- <csv>  # writes src/resources/catalogue/ from data/logos/catalogue-rules.json and a Logos export; logos:fit prints what the rules leave (docs/commands.md)
 npm run data:build   # also check:step, greek:edition, ladder: data tools, network or slow, not in the gate (docs/commands.md)
 ```
 
