@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.401
+_2026-10-22_
+- New: A long talk with the tutor now remembers what you said at the start, instead of wandering after ten turns.
+
 ## 0.1.400
 _2026-10-21_
 - New: A table opened from a word can now show that word's own forms from the New Testament, with 'not in the NT' for forms it never uses, and a tap on a form shows where it is first used and opens it.

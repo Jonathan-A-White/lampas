@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.401",
+    "date": "2026-10-22",
+    "story": "mw-5r3p30.700",
+    "kind": "new",
+    "text": "A long talk with the tutor now remembers what you said at the start, instead of wandering after ten turns."
+  },
+  {
     "version": "0.1.400",
     "date": "2026-10-21",
     "story": "mw-irpgqi.4",
