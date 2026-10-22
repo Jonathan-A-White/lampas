@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.408
+_2026-10-22_
+- Fixed: the Bible talk tutor now gives a plain English answer, with one offer of the Greek, when you ask what an English word like "love" really means, and keeps its notes on a long talk.
+
 ## 0.1.406
 _2026-10-22_
 - New: Study resources now follow How much Greek?: at Just English the Greek ones are hidden, and at the steps between the English ones come first.
