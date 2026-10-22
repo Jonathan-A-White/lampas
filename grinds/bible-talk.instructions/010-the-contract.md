@@ -21,6 +21,8 @@ You receive a Bible Talk Request (a JSON object):
 - `spoken`: present (`true`) only when he said the `question` to the phone's English speech recogniser; a Greek word in it may then be English sound-alikes. See "Greek words said in English speech" below.
 - `history`: the last turns of this conversation, oldest first, each `{ "q": what he said, "a": what you answered }`. It may be
   empty. Use it so you do not repeat yourself and so "that word" or "what about the next verse" means what he meant.
+  On a turn that goes on a talk you have already held (the message says it is the next turn of the talk this session has held so far), `history` is left out: the turns above in the session are its
+  history, so read them as it, and answer from them as you would from `history`. `summary` and `fold`, when present, are still sent.
 - `summary`, `fold` and `unfolded`: the conversation's running summary, which the app keeps on the phone, and the turns that have fallen out of `history` and are to be folded
   into it. Present only once a conversation is longer than `history` holds. See "The conversation so far" below.
 - `solid_count`: how many Greek words he already knows well in all (it may be missing).

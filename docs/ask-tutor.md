@@ -83,8 +83,8 @@ His ask: 'it wanders'. Every talk (the `talks` table, by `talkRef`) keeps a runn
 `summary` (the kept text, at most TALK_SUMMARY_MAX 1000 characters) and, for the turns older than the window that the summary does not hold yet, `fold`: at most FOLD_MAX_TURNS (3), oldest first, each cut to FOLD_Q_CHARS / FOLD_A_CHARS
 (`foldedTurn`), with `unfolded` (a count) when more wait behind them (a talk that was long before this shipped is worked off three at a time). The grind (instructions part `015-the-conversation-so-far.md`) answers a request with `fold` with a new `summary`
 (the one it was sent and the fold, in one); `useTalk` saves it with `covered` + the fold's length, never when the answer lacks it or the request had no fold, so a missed one is simply sent again. `fitHistory` keeps the `summary` over every other optional part (it goes only after the newest
-turn); a turn it drops from `history` for room moves to `fold` cut short (not while `unfolded` says older ones wait: the summary would skip them) and the fold is shed before the word list, his requests and his notes. The next step (a talk resuming its own
-Claude session with the one-hour cache, then key points and a fresh one) is a decision for the Governor and the mill, not in this story. Checks: tests/unit/talk-summary.test.ts, tests/e2e/talk-summary.spec.ts, grinds/examples/bible-talk/summary-folds-fallen-turns.json and answers-from-summary.json.
+turn); a turn it drops from `history` for room moves to `fold` cut short (not while `unfolded` says older ones wait: the summary would skip them) and the fold is shed before the word list, his requests and his notes. The mill's side (one resumed Claude session per
+talk, key points at its cap) is 'A talk names itself to the mill' below. Checks: tests/unit/talk-summary.test.ts, tests/e2e/talk-summary.spec.ts, grinds/examples/bible-talk/summary-folds-fallen-turns.json and answers-from-summary.json.
 
 Which tutor conversations keep history and get the summary (the sweep of mw-5r3p30.700):
 
@@ -96,6 +96,31 @@ Which tutor conversations keep history and get the summary (the sweep of mw-5r3p
 | The Verse view's Ask the tutor (a verse's answers, `answers` table) | verse-ask | no: each ask is one question and its answer, no `history` in its input schema | no (a conversation there would need its own story) |
 | Reading check, Reading drill | verse-read | no | no |
 | Tips, find-refs (a shared picture), audible-position, drill-items (more questions), feedback | tips, find-refs, audible-position, drill-items, feedback | no, one request each | no |
+
+## A talk names itself to the mill
+
+The mill keeps one Claude session per talk (epic mw-pxji7y: the first turn runs cold, every later turn resumes it with the request's `history` left out, the one-hour cache warm; at its context cap it writes the talk's key points and the next turn starts a fresh session from them). The phone only has to *name* the talk and keep what the mill says back (mw-pxji7y.3):
+
+- **The name** is the grist header's `talk` beside `app`, `kind` and `v` (`src/services/mill.ts` `scriptOf`; left out when none, so the bytes of today's envelope are unchanged): `<ref>@<when of the talk's first turn>`, `rom.8.28@1790000000000`, from `talkNameOf(ref, turns, now)` in `src/services/talk.ts` (at most `TALK_NAME_MAX` 80 bytes: a longer ref is cut, the time stays). A talk with no turns yet is named from the time he asked (`startedAt`) and that very time is the `when` its first turn is stored with (`useTalk`), so every later turn finds the same name from `listTurns(ref)[0].when`. New talk (`deleteTurns`) therefore makes a new name by itself; a quiz (`:quiz` ref), a screen talk and a shared or free talk each have a ref and so a name of their own. `AskOptions.talk` carries it, and `askGrind` sends it only for the kinds in `TALK_KINDS` (`gristKinds.ts`: bible-talk), so verse-ask names none. `fitHistory(request, held, talk)` counts the name's bytes against `MAX_REQUEST_BYTES`.
+- **The history is still sent every turn.** The mill strips it on a resume; it is the fallback when the mill starts a session afresh. The grind's contract (`010-the-contract.md`) says the turns above in the session are its history on a resumed turn.
+- **The answer's `talk` block** (`session` fresh | resumed | refreshed, `reason`, `turns`, `context_tokens`, `key_points` once) comes to `AskOptions.onTalk` (`talkSessionOf` in `mill.ts` reads it; one in a shape this app does not read is no block, as an older mill sends none). On `refreshed` with `key_points` `useTalk` replaces the talk's running summary with them (`summaryOfKeyPoints`: cut to `TALK_SUMMARY_MAX`, since the mill writes up to 1500 characters; `covered` = every turn kept so far) and keeps the full text on the answering turn (`TalkTurn.keyPoints`), which draws one grey line under its answer, 'The tutor wrote down the key points of this talk so far' (`src/talk/KeyPointsLine.tsx`); a tap shows the key points in a sheet. `fresh` and `resumed` show nothing. A first turn that is waited for again after a reload is named by the `startedAt` kept with it; a Retry of a first turn whose grist went and was lost on the link is sent again with its first name but stored with the new time, so the next turn names a new talk (the mill starts afresh from the history).
+- Checks: tests/unit/talk-id.test.ts, tests/unit/mill-envelope.test.ts, tests/e2e/talk-session.spec.ts.
+
+Which tutor conversations name a talk (the sweep of mw-pxji7y.3):
+
+| Conversation | Ref rule | Names a talk |
+| --- | --- | --- |
+| Talk sheet on a chapter, a verse or a passage; a word's, a grammar term's, a paradigm table's, a Quick test question's Ask the tutor | `rom.8`, `rom.8.28`, `rom.8.1-11` (`talkRef`) | yes: `<ref>@<first turn's when>` |
+| Quiz me | `<ref>:quiz` | yes, its own talk beside the talk about the same verses |
+| The round Ask the tutor on a screen | `screen.<slug>` (`screenRef`) | yes |
+| A drill's results | `screen.drill-it.<ms>`, one talk for each drill | yes |
+| A shared talk, Ask for more | `talk.<ms>` (free) | yes |
+| The welcome interview | `screen.welcome` | yes in code (the interview is a few turns) |
+| The Verse view's Ask the tutor (verse-ask) | none: one question and its answer in `answers` | no: `TALK_KINDS` leaves verse-ask out |
+| FormHelper (Let the tutor help me fill this in) | none: its turns live in the component, not in Dexie, so there is no first-turn time | no (a name would be made per opening of the helper; a story of its own) |
+| Reading check, Reading drill, Tips, find-refs, audible-position, drill-items, feedback | none: one request each | no |
+
+Other apps, listed only: where the same `talk` field would go. SpellForge: the `tutor-turn` grists (`src/features/tutor/tutor-flow.ts`) take the id of the tutor session `tutorRepo.createSession` makes for a problem, which already groups the turns that `session_history` carries; `parent-ask` is one question and names none. Legend: `legend-ask` (`src/services/ask.ts`) takes the item's or country's id and the time of the first question kept about it, as `<item id>@<when>`.
 
 Other apps, listed only (read in their rigs, nothing changed there): SpellForge's `tutor-turn` sends `session_history`, the earlier turns compacted by the app to what has been tried, and its `parent-ask` is a single question: neither has a running summary.
 Legend's `legend-ask` sends `history`, up to three earlier questions with their answers, no summary; its coin-from-photos, coin-rarity and item-value grinds are one request each.

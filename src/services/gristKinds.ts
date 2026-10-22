@@ -5,3 +5,6 @@
 export const GRIST_KINDS = ['verse-ask', 'bible-talk', 'verse-read', 'tips', 'feedback', 'drill-items', 'find-refs', 'audible-position'] as const;
 
 export type GristKind = (typeof GRIST_KINDS)[number];
+
+/** The kinds that are turns of a talk, which the mill keeps one session for (grist header `talk`, mw-pxji7y.3): the Bible talk. verse-ask is one question and an answer, so it names none. */
+export const TALK_KINDS: readonly GristKind[] = ['bible-talk'];

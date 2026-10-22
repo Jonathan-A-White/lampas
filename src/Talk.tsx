@@ -18,6 +18,7 @@ import { openRequests } from './nav/route';
 import { TutorLinks } from './TutorLinks';
 import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
+import { KeyPointsLine } from './talk/KeyPointsLine';
 import { revealFoot, revealLines } from './ui/keepInView';
 import { GreekOfferButton } from './talk/GreekOfferButton';
 import { RustyOffer } from './talk/RustyOffer';
@@ -512,6 +513,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
           <AnswerSpeaker turn={turn} />
         </div>
       </div>
+      {turn.keyPoints ? <KeyPointsLine keyPoints={turn.keyPoints} /> : null}
     </article>
   );
 }

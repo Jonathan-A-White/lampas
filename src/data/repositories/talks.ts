@@ -50,6 +50,8 @@ export interface TurnChanges {
   spoken?: boolean;
   /** the pictures he sent with it (mw-y3qno5.1), kept in their own table */
   pictures?: KeptPicture[];
+  /** the key points the tutor wrote at a refresh of the talk's session (mw-pxji7y.3) */
+  keyPoints?: string;
 }
 
 /** A picture to keep with a turn: the bytes that were sent. */
@@ -81,6 +83,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.rustyOffer) turn.rustyOffer = done.rustyOffer;
   if (done?.cleanQ) turn.cleanQ = done.cleanQ;
   if (done?.spoken) turn.spoken = true;
+  if (done?.keyPoints) turn.keyPoints = done.keyPoints;
   return db.transaction('rw', db.talks, db.talkPictures, async () => {
     const id = (await db.talks.add(turn)) as number;
     if (done?.pictures?.length) {
