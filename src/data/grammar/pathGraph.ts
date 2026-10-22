@@ -1,6 +1,9 @@
 // src/data/grammar/pathGraph.ts — a learning path as a directed acyclic graph (mw-svw421.9): ideas, the ideas each one needs, the frontier and the depth, all
 // taking the path AS DATA, so the Lampas ladder (ladder.ts) is one path among any others and nothing here knows a Lampas id. An idea is {id, needs}; a path is
 // the list of ideas in teaching order. Pure: no store, no screen.
+// The graph itself is learn-kit's (mw-79en7t.5): this file names it in Lampas's words (a path, an idea) and keeps Lampas's wording of its errors. Only the picture,
+// layoutPath below, is Lampas's: the kit gives the rows (layers) and the drawing stays in the app.
+import { GraphError, below, depthOf, frontierOf, graphProblems, layers, needsOf, nodeOf, validate, type Graph } from 'learn-kit/graph';
 
 /** What the graph needs of an idea: its id and the ids it rests on. */
 export interface PathIdea {
@@ -8,88 +11,43 @@ export interface PathIdea {
   needs: readonly string[];
 }
 
-/** A path: its ideas in teaching order, by id. */
-export interface Path<T extends PathIdea = PathIdea> {
-  ideas: readonly T[];
-  byId: ReadonlyMap<string, T>;
-}
+/** A path: its ideas in teaching order, by id. It is a learn-kit graph (`nodes` are the `ideas`). */
+export type Path<T extends PathIdea = PathIdea> = Graph<T> & { ideas: readonly T[] };
+
+/** The kit's problems in the words of a path. */
+const inPathWords = (problems: readonly string[]): string[] => problems.map((p) => p.replace(', which is not a node of the graph', ', which is not an idea of the path'));
 
 /** What is wrong with a list of ideas as a path: an id listed twice, a need that names no idea, a need on itself, or a cycle (the cycle is named in full). */
-export function pathProblems(ideas: readonly PathIdea[]): string[] {
-  const problems: string[] = [];
-  const byId = new Map<string, PathIdea>();
-  for (const idea of ideas) {
-    if (byId.has(idea.id)) problems.push(`${idea.id} is listed twice`);
-    else byId.set(idea.id, idea);
-  }
-  for (const idea of ideas) {
-    for (const need of idea.needs) if (!byId.has(need)) problems.push(`${idea.id} needs ${need}, which is not an idea of the path`);
-  }
-  // depth-first colouring: a need that is still 'open' on the walk is a way back to an idea above it, a cycle
-  const state = new Map<string, 'open' | 'done'>();
-  const walk = (id: string, trail: string[]): void => {
-    state.set(id, 'open');
-    for (const need of byId.get(id)?.needs ?? []) {
-      if (!byId.has(need)) continue;
-      const here = [...trail, id];
-      if (state.get(need) === 'open') problems.push(`cycle: ${[...here.slice(here.indexOf(need)), need].join(' needs ')}`);
-      else if (!state.has(need)) walk(need, here);
-    }
-    state.set(id, 'done');
-  };
-  for (const idea of byId.values()) if (!state.has(idea.id)) walk(idea.id, []);
-  return problems;
-}
+export const pathProblems = (ideas: readonly PathIdea[]): string[] => inPathWords(graphProblems(ideas));
 
 /** The path of these ideas. Throws, naming every problem, when they are not a directed acyclic graph. */
 export function makePath<T extends PathIdea>(ideas: readonly T[]): Path<T> {
-  const problems = pathProblems(ideas);
-  if (problems.length > 0) throw new Error(`Not a path: ${problems.join('; ')}`);
-  return { ideas, byId: new Map(ideas.map((i) => [i.id, i])) };
+  try {
+    const graph = validate(ideas);
+    return { ...graph, ideas: graph.nodes };
+  } catch (error) {
+    if (error instanceof GraphError) throw new Error(`Not a path: ${inPathWords(error.problems).join('; ')}`);
+    throw error;
+  }
 }
 
 /** The idea with this id. Throws on one the path does not have. */
 export function ideaIn<T extends PathIdea>(path: Path<T>, id: string): T {
-  const idea = path.byId.get(id);
-  if (!idea) throw new Error(`Unknown grammar idea: ${JSON.stringify(id)}`);
-  return idea;
+  if (!path.byId.has(id)) throw new Error(`Unknown grammar idea: ${JSON.stringify(id)}`);
+  return nodeOf(path, id);
 }
 
 /** The ideas this one rests on directly, in the path's order. */
-export const needsIn = <T extends PathIdea>(path: Path<T>, id: string): T[] => path.ideas.filter((i) => ideaIn(path, id).needs.includes(i.id));
+export const needsIn = <T extends PathIdea>(path: Path<T>, id: string): T[] => needsOf(path, ideaIn(path, id).id);
 
 /** Every idea this one rests on, however far down, in the path's order. */
-export function belowIn<T extends PathIdea>(path: Path<T>, id: string): T[] {
-  const seen = new Set<string>();
-  const walk = (at: string): void => {
-    for (const need of ideaIn(path, at).needs) {
-      if (!seen.has(need)) {
-        seen.add(need);
-        walk(need);
-      }
-    }
-  };
-  walk(id);
-  return path.ideas.filter((i) => seen.has(i.id));
-}
+export const belowIn = <T extends PathIdea>(path: Path<T>, id: string): T[] => below(path, ideaIn(path, id).id);
 
 /** How deep an idea sits: 0 for one that needs nothing, else one more than the deepest idea it needs. */
-export function depthIn<T extends PathIdea>(path: Path<T>, id: string): number {
-  const memo = new Map<string, number>();
-  const depth = (at: string): number => {
-    const known = memo.get(at);
-    if (known !== undefined) return known;
-    const needs = ideaIn(path, at).needs;
-    const d = needs.length === 0 ? 0 : 1 + Math.max(...needs.map(depth));
-    memo.set(at, d);
-    return d;
-  };
-  return depth(id);
-}
+export const depthIn = <T extends PathIdea>(path: Path<T>, id: string): number => depthOf(path, ideaIn(path, id).id);
 
 /** The frontier: the ideas not yet solid whose every need is solid, in the path's order. These, and only these, are ready to learn now. */
-export const frontierIn = <T extends PathIdea>(path: Path<T>, solid: ReadonlySet<string>): T[] =>
-  path.ideas.filter((i) => !solid.has(i.id) && i.needs.every((n) => solid.has(n)));
+export const frontierIn = <T extends PathIdea>(path: Path<T>, solid: ReadonlySet<string>): T[] => frontierOf(path, solid);
 
 // ---- The path drawn (mw-foy5mb.5): where each idea sits on a picture of the graph, taking the path as data ----
 
@@ -101,7 +59,7 @@ export const ROW_GAP = 56;
 
 export interface LaidOutNode {
   id: string;
-  /** the row it sits in: depthIn */
+  /** the row it sits in: depthOf */
   depth: number;
   x: number;
   y: number;
@@ -127,9 +85,7 @@ export interface PathLayout {
  * more than they must). Pure and deterministic: the same path is the same picture.
  */
 export function layoutPath<T extends PathIdea>(path: Path<T>): PathLayout {
-  const depths = new Map(path.ideas.map((i) => [i.id, depthIn(path, i.id)]));
-  const rows: string[][] = [];
-  for (const idea of path.ideas) (rows[depths.get(idea.id)!] ??= []).push(idea.id);
+  const rows = layers(path);
   const dependents = new Map<string, string[]>(path.ideas.map((i) => [i.id, []]));
   for (const idea of path.ideas) for (const need of idea.needs) dependents.get(need)!.push(idea.id);
 

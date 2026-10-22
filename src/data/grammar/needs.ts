@@ -1,14 +1,15 @@
 // src/data/grammar/needs.ts — what a passage needs (mw-hqd5bz.2): the words (dictionary forms, with how often) and the grammar ideas
 // (with a first example) a goal passage requires, worked out from the chapter files alone, and progressToward: how many of them he
 // has solid, on the frontier and not yet. Pure data work: no tutor, no network beyond loadChapter. docs/grammar.md.
+import type { Level } from 'learn-kit/graph';
 import type { WordState } from '../db';
 import { wordGloss, type BookIndex, type Chapter } from '../chapter';
 import type { Goal } from '../goal';
 import { ALWAYS_NEEDED, ideaOf, ideasOfWord } from './ladder';
 import { usesOf, type Use } from './uses';
 
-/** How far he is on one thing. The levels story moves this to its repository; both export the same literal type. */
-export type Level = 'solid' | 'frontier' | 'notYet';
+/** How far he is on one thing: solid, frontier or not yet (learn-kit's Level; db.ts GrammarLevelName is the same literal type). */
+export type { Level };
 
 /** A place in the text, 'jn.1.1' style like the refs in the answers table: book code, chapter, verse. */
 export type Ref = string;
