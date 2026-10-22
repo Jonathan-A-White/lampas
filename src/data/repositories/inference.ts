@@ -9,13 +9,12 @@ import { inferFromAnswer, inferFromDrill, inferFromWord, isInferredSolid, type E
 import { IDEA_KIND } from '../grammar/ladder';
 import { ideaOfStored, isItemId, storedId } from '../grammar/soundScope';
 import type { GrammarQuestion } from '../grammar/questions';
-import { DAY, STEP_DAYS } from '../schedule';
+import { knownSchedule } from '../schedule';
 import { getGreekPronunciation } from './settings';
-import { advanceFrontier, announceAlphabet, frontierIdeas, lowestFrontier, syncAlphabet, type GrammarLevelName, type GroupMoved } from './grammarLevels';
+import { advanceFrontier, announceAlphabet, learningIdeas, lowestFrontier, syncAlphabet, type GrammarLevelName, type GroupMoved } from './grammarLevels';
 import { announceDue, writeScheduled } from './reviews';
 
 const KEY = 'grammarEvidence';
-const KNOWN_START_STEP = STEP_DAYS.indexOf(30);
 
 /** Everything kept, by stored key: a letter, sound or mark idea's evidence under '<scheme>:<id>' (src/data/grammar/soundScope.ts), any other idea's under its id. */
 async function keptEvidence(): Promise<Record<string, unknown>> {
@@ -69,12 +68,12 @@ async function apply(infer: (evidence: EvidenceMap) => Inferred, now: number): P
   const scheme = await getGreekPronunciation();
   const kept = await keptEvidence();
   const result = infer(evidenceIn(kept, scheme));
-  const learning = await frontierIdeas(scheme);
+  const learning = await learningIdeas(scheme);
   await keep(kept, result.evidence, scheme);
   for (const id of result.credited) {
     if (!isInferredSolid(result.evidence.get(id)) || (await db.grammarLevels.get(storedId(id, scheme)))?.level === 'solid') continue;
     await db.grammarLevels.put({ id: storedId(id, scheme), level: 'solid', since: now, how: 'inferred' });
-    await writeScheduled(IDEA_KIND, [storedId(id, scheme)], now, () => ({ step: KNOWN_START_STEP, due: now + 30 * DAY }));
+    await writeScheduled(IDEA_KIND, [storedId(id, scheme)], now, () => knownSchedule(now));
     changed.push({ id, level: 'solid' });
   }
   const fellBack: string[] = [];

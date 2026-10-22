@@ -9,7 +9,7 @@ import { availableCount, paradigmById } from '../paradigms';
 import { PARADIGM_KIND } from '../paradigms/cells';
 import { parseReviewId } from '../readingDrill';
 import { RECENT_ANSWERS } from '../rusty';
-import { DAY, STEP_DAYS, isDue, nextReview } from '../schedule';
+import { DAY, KNOWN_STEP, isDue, nextReview, startSchedule } from '../schedule';
 import { getDrillPlan } from './drillPlans';
 import { listLevels } from './grammarLevels';
 import { planFacetQuestions } from './reviewPassage';
@@ -18,8 +18,6 @@ import { getGreekPronunciation } from './settings';
 export type { Review };
 
 const SEEDED_KEY = 'reviewsSeeded';
-/** The step whose gap is 30 days: where his solid words start. */
-const SOLID_START_STEP = STEP_DAYS.indexOf(30);
 /** His solid words come due one by one over this many days after the upgrade, so he is not flooded. */
 const SPREAD_DAYS = 30;
 
@@ -27,14 +25,14 @@ const SPREAD_DAYS = 30;
 export const SOUND_KIND = 'sound';
 
 /**
- * Puts drilled sounds (ids like 'el:diphthong-ou') or words ('en:blessed') on the schedule: at step 0, due after the first gap (STEP_DAYS[0]). A unit that is
+ * Puts drilled sounds (ids like 'el:diphthong-ou') or words ('en:blessed') on the schedule: at step 0, due after the first gap (startSchedule). A unit that is
  * on the schedule already starts again from step 0 (he missed it again), keeping its lapses. Publishes the new count of what is due.
  */
 export async function scheduleSounds(ids: string[], now = Date.now()): Promise<void> {
   await db.transaction('rw', db.reviews, async () => {
     for (const id of ids) {
       const there = await db.reviews.get([SOUND_KIND, id]);
-      await db.reviews.put({ kind: SOUND_KIND, id, step: 0, due: now + STEP_DAYS[0] * DAY, lastWhen: now, lapses: there?.lapses ?? 0, rights: 0 });
+      await db.reviews.put({ kind: SOUND_KIND, id, ...startSchedule(now), lapses: there?.lapses ?? 0 });
     }
   });
   await announceDue(now);
@@ -233,7 +231,7 @@ export async function seedScheduleIfFirstOpen(now = Date.now()): Promise<boolean
     const solid = words.filter((w) => w.state === 'solid').sort((a, b) => a.lesson - b.lesson || a.lemma.localeCompare(b.lemma));
     const learning = words.filter((w) => w.state === 'learning');
     const rows: Review[] = [
-      ...solid.map((w, i): Review => ({ kind: 'word', id: w.lemma, step: SOLID_START_STEP, due: now + ((i % SPREAD_DAYS) + 1) * DAY, lastWhen: now, lapses: 0, rights: 0 })),
+      ...solid.map((w, i): Review => ({ kind: 'word', id: w.lemma, step: KNOWN_STEP, due: now + ((i % SPREAD_DAYS) + 1) * DAY, lastWhen: now, lapses: 0, rights: 0 })),
       ...learning.map((w): Review => ({ kind: 'word', id: w.lemma, step: 0, due: now, lastWhen: now, lapses: 0, rights: 0 })),
     ];
     // A word that already has a review (answered before the seed ran) keeps it.

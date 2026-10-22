@@ -5,15 +5,15 @@
 // The ideas of the letters, sounds and marks tiers are learned in a pronunciation (mw-5r3p30.231): their level rows and schedule rows are stored under
 // '<scheme>:<id>' (src/data/grammar/soundScope.ts) and every function here reads and writes the SELECTED scheme's; the other schemes' rows are kept as they were.
 // The ideas it is given and returns are plain ids.
+import { frontierOf, levelFromStep } from 'learn-kit/graph';
 import { db, type GrammarLevel, type GrammarLevelHow, type GrammarLevelName } from '../db';
 import { publish } from '../../events/bus';
 import type { DrillResult } from '../grammar/drillIt';
 import { planFrom } from '../grammar/drillPlan';
-import { unmetNeed } from '../grammar/drillIt';
-import { groupIsSolid } from '../grammar/inference';
-import { IDEA_KIND, ITEM_GROUPS, LADDER, itemsOf } from '../grammar/ladder';
+import { groupIsSolid, isSolid } from '../grammar/inference';
+import { IDEA_KIND, ITEM_GROUPS, LADDER, LADDER_PATH, itemsOf } from '../grammar/ladder';
 import { ideaOfStored, isItemId, storedId } from '../grammar/soundScope';
-import { DAY, STEP_DAYS } from '../schedule';
+import { knownSchedule, startSchedule } from '../schedule';
 import { closeDrillPlan, saveDrillPlan } from './drillPlans';
 import { saveDrillRun } from './drillRuns';
 import { getGreekPronunciation } from './settings';
@@ -21,20 +21,10 @@ import { announceDue, writeReview, writeScheduled } from './reviews';
 
 export type { GrammarLevel, GrammarLevelHow, GrammarLevelName };
 
-/** The first step at which an idea counts as solid (step 3: the 14-day gap, as FLASHCARD_STEP). PROVISIONAL, the Governor to confirm. */
-export const SOLID_STEP = 3;
+/** The first step at which an idea counts as solid (step 3: the 14-day gap, as FLASHCARD_STEP), and the level an idea at a step has: learn-kit's, `learn-kit/graph`. PROVISIONAL, the Governor to confirm. */
+export { SOLID_STEP, levelFromStep } from 'learn-kit/graph';
 
 const SEEDED_KEY = 'grammarLevelsSeeded';
-/** The step whose gap is 30 days: where an idea he already knows starts. */
-const KNOWN_START_STEP = STEP_DAYS.indexOf(30);
-/** Where an idea he already knows first comes up: the 30-day step, 30 days from now. */
-const knownStart = (now: number) => ({ step: KNOWN_START_STEP, due: now + 30 * DAY });
-
-/** The level an idea at `step` has: solid from SOLID_STEP up, frontier below it. */
-export function levelFromStep(step: number): GrammarLevelName {
-  return step >= SOLID_STEP ? 'solid' : 'frontier';
-}
-
 /** The pronunciation scheme the sound ideas are being learned in now. */
 const schemeNow = getGreekPronunciation;
 
@@ -77,8 +67,8 @@ const RUNG = new Map(LADDER.map((idea) => [idea.id, idea.rung]));
 /** Lower on the ladder first; an id the ladder does not have comes last, by name. */
 const byLadder = (a: string, b: string): number => (RUNG.get(a) ?? Infinity) - (RUNG.get(b) ?? Infinity) || a.localeCompare(b);
 
-/** The ideas at the frontier in `scheme`, lowest first, the items of a group left out. Reads the table: inside the caller's transaction when it has one. */
-export async function frontierIdeas(scheme: string): Promise<string[]> {
+/** The ideas he is learning now (at the frontier) in `scheme`, lowest first, the items of a group left out. Reads the table: inside the caller's transaction when it has one. */
+export async function learningIdeas(scheme: string): Promise<string[]> {
   const rows = await db.grammarLevels.where('level').equals('frontier').toArray();
   return rows.flatMap((row) => {
     const id = ideaOfStored(row.id, scheme);
@@ -89,14 +79,14 @@ export async function frontierIdeas(scheme: string): Promise<string[]> {
 /** The idea he is learning now other than `id`, the one a second frontier would have to replace; none for an item of a group. */
 export async function otherFrontier(id: string): Promise<string | undefined> {
   if (isItemId(id)) return undefined;
-  return (await frontierIdeas(await schemeNow())).find((other) => other !== id);
+  return (await learningIdeas(await schemeNow())).find((other) => other !== id);
 }
 
 /** Starts an idea's schedule at the first gap (step 0, due after it) unless it has a row already, which keeps its steps, lapses and rights. */
 async function startLearning(id: string, now: number, scheme: string): Promise<void> {
   const key = storedId(id, scheme);
   if (await db.reviews.get([IDEA_KIND, key])) return;
-  await db.reviews.put({ kind: IDEA_KIND, id: key, step: 0, due: now + STEP_DAYS[0] * DAY, lastWhen: now, lapses: 0, rights: 0 });
+  await db.reviews.put({ kind: IDEA_KIND, id: key, ...startSchedule(now) });
 }
 
 /**
@@ -105,7 +95,7 @@ async function startLearning(id: string, now: number, scheme: string): Promise<v
  * caller's transaction (rw over db.grammarLevels and db.reviews); returns the levels it changed for the caller to announce.
  */
 export async function lowestFrontier(wanting: readonly string[], how: GrammarLevelHow, now: number, scheme: string): Promise<GroupMoved[]> {
-  const there = await frontierIdeas(scheme);
+  const there = await learningIdeas(scheme);
   const [winner, ...rest] = [...new Set([...there, ...wanting])].sort(byLadder);
   if (winner === undefined) return [];
   const moved: GroupMoved[] = [];
@@ -128,13 +118,15 @@ export async function lowestFrontier(wanting: readonly string[], how: GrammarLev
  * is not yet. Inside the caller's transaction (rw over db.grammarLevels and db.reviews); returns what it changed.
  */
 export async function advanceFrontier(before: readonly string[], now: number, scheme: string): Promise<GroupMoved[]> {
-  if (before.length === 0 || (await frontierIdeas(scheme)).length > 0) return [];
+  if (before.length === 0 || (await learningIdeas(scheme)).length > 0) return [];
   const levels = new Map((await db.grammarLevels.toArray()).flatMap((row): [string, GrammarLevelName][] => {
     const id = ideaOfStored(row.id, scheme);
     return id === undefined ? [] : [[id, row.level]];
   }));
   if (!before.some((id) => levels.get(id) === 'solid')) return [];
-  const next = LADDER.find((idea) => !isItemId(idea.id) && (levels.get(idea.id) ?? 'notYet') === 'notYet' && unmetNeed(idea.id, levels) === null);
+  // the ideas he has solid as he is held to them (isSolid: a letter of a group he made solid is), and of the ideas ready to learn the lowest not yet
+  const solid = new Set(LADDER.filter((idea) => isSolid(levels, idea.id)).map((idea) => idea.id));
+  const next = frontierOf(LADDER_PATH, solid).find((idea) => !isItemId(idea.id) && (levels.get(idea.id) ?? 'notYet') === 'notYet');
   if (!next) return [];
   await putRow({ id: next.id, level: 'frontier', since: now, how: 'next' }, scheme);
   await startLearning(next.id, now, scheme);
@@ -157,7 +149,7 @@ export async function syncAlphabet(now: number, scheme: string): Promise<GroupMo
     const parent = await db.grammarLevels.get(storedId(group, scheme));
     if (solid && parent?.level !== 'solid') {
       await putRow({ id: group, level: 'solid', since: now, how: 'inferred' }, scheme);
-      await writeScheduled(IDEA_KIND, [storedId(group, scheme)], now, () => knownStart(now));
+      await writeScheduled(IDEA_KIND, [storedId(group, scheme)], now, () => knownSchedule(now));
       moved.push({ id: group, level: 'solid' });
     } else if (!solid && group === 'alphabet' && parent?.how === 'inferred' && parent.level === 'solid') {
       fellBack.push(group);
@@ -183,7 +175,7 @@ export async function announceAlphabet(moved: readonly GroupMoved[], now: number
 export async function setLevel(id: string, level: GrammarLevelName, how: GrammarLevelHow, now = Date.now()): Promise<boolean> {
   const scheme = await schemeNow();
   const moved = await db.transaction('rw', db.grammarLevels, db.reviews, async () => {
-    const before = await frontierIdeas(scheme);
+    const before = await learningIdeas(scheme);
     const idea = !isItemId(id);
     if (idea && level === 'frontier' && how !== 'placement' && how !== 'inferred' && before.some((other) => other !== id)) return undefined;
     await putRow({ id, level, since: now, how }, scheme);
@@ -210,7 +202,7 @@ export async function setLevel(id: string, level: GrammarLevelName, how: Grammar
 export async function recordGrammarAnswer(id: string, right: boolean, now = Date.now()): Promise<GrammarLevelName> {
   const scheme = await schemeNow();
   const { level, changed, moved } = await db.transaction('rw', db.reviews, db.grammarLevels, async () => {
-    const learning = await frontierIdeas(scheme);
+    const learning = await learningIdeas(scheme);
     const review = await writeReview(IDEA_KIND, storedId(id, scheme), right, now);
     const before = (await rowOf(id, scheme))?.level;
     const after = right && before === 'solid' ? 'solid' : levelFromStep(review.step);
@@ -234,7 +226,7 @@ export async function recordGrammarAnswer(id: string, right: boolean, now = Date
  */
 export async function scheduleIdea(id: string, level: GrammarLevelName, now = Date.now()): Promise<number> {
   if (level === 'notYet') return 0;
-  const start = level === 'solid' ? () => knownStart(now) : undefined;
+  const start = level === 'solid' ? () => knownSchedule(now) : undefined;
   const key = storedId(id, await schemeNow());
   const added = await db.transaction('rw', db.reviews, () => writeScheduled(IDEA_KIND, [key], now, start));
   if (added > 0) await announceDue(now);
@@ -265,7 +257,7 @@ export async function teachIdea(id: string, outcome: IdeaOutcome, now = Date.now
   const scheme = await schemeNow();
   const key = storedId(id, scheme);
   const done = await db.transaction('rw', db.reviews, db.grammarLevels, async () => {
-    const learning = await frontierIdeas(scheme);
+    const learning = await learningIdeas(scheme);
     const other = outcome === 'got-it' && !isItemId(id) ? learning.find((idea) => idea !== id) : undefined;
     if (other !== undefined && choice !== 'switch') return { status: choice === 'keep' ? ('kept' as const) : ('busy' as const), other };
     const moved: GroupMoved[] = [];
@@ -276,9 +268,9 @@ export async function teachIdea(id: string, outcome: IdeaOutcome, now = Date.now
     if (outcome === 'not-yet') {
       await db.reviews.where('[kind+id]').equals([IDEA_KIND, key]).delete();
     } else {
-      const start = outcome === 'known' ? knownStart(now) : { step: 0, due: now + STEP_DAYS[0] * DAY };
       const there = await db.reviews.get([IDEA_KIND, key]);
-      await db.reviews.put({ kind: IDEA_KIND, id: key, ...start, lastWhen: now, lapses: there?.lapses ?? 0, rights: there?.rights ?? 0 });
+      const schedule = outcome === 'known' ? knownSchedule(now, there) : { ...startSchedule(now), lapses: there?.lapses ?? 0, rights: there?.rights ?? 0 };
+      await db.reviews.put({ kind: IDEA_KIND, id: key, ...schedule });
     }
     await putRow({ id, level, since: now, how }, scheme);
     moved.push(...(await syncAlphabet(now, scheme)), ...(await advanceFrontier(learning, now, scheme)));
@@ -338,7 +330,7 @@ export async function seedLevelsIfFirstOpen(now = Date.now()): Promise<boolean> 
     const set = await db.grammarLevels.bulkGet(ids.map((id) => storedId(id, scheme)));
     const fresh = ids.filter((_, i) => set[i] === undefined);
     await db.grammarLevels.bulkPut(fresh.map((id): GrammarLevel => ({ id: storedId(id, scheme), level: 'solid', since: now, how: 'marked' })));
-    await writeScheduled(IDEA_KIND, fresh.map((id) => storedId(id, scheme)), now, () => knownStart(now));
+    await writeScheduled(IDEA_KIND, fresh.map((id) => storedId(id, scheme)), now, () => knownSchedule(now));
     await db.meta.put({ key: SEEDED_KEY, value: String(now) });
     return fresh;
   });
