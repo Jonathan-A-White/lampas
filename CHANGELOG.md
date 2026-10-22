@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.403
+_2026-10-22_
+- New: The tutor now keeps one thread through a whole talk, and when a long talk has to start its thread again it writes down the key points so far, which you can read under its answer.
+
 ## 0.1.402
 _2026-10-22_
 - New: After you change chapter by swiping, Lampas offers once to hide the chapter buttons at the end of a chapter, and Settings can bring them back.
