@@ -3,7 +3,7 @@
 // scheme first (logosres: for a resource, logos4: for a guide) and carries the https ref.ly address as the fallback, opened only when the
 // phone cannot open the scheme (src/resources/openApp.ts). docs/resources.md names the sources and what is UNVERIFIED.
 import { verseLink } from './logosBible';
-import { resourceLink } from './logosRes';
+import { resourceLink, type LogosLink } from './logosRes';
 import type { StudyLink, StudyResource, StudyWord } from './types';
 
 /** The key a lexicon is filed under: the Greek lemma (`hw=<lemma>`; `commonLemma` is the same for a book with no proper names), a Strong's number (`ref=GreekStrongs.<n>` or `HebrewStrongs.<n>`, as Greek and Hebrew share numbers),
@@ -36,6 +36,23 @@ const LEXICONS: readonly { id: string; short: string; name: string; resource: st
   { id: 'concisedict', short: "New Strong's Concise Dictionary", name: 'A Concise Dictionary of the Words in the Greek Testament and The Hebrew Bible', resource: 'LLS:STRNGDICHEBGRK', key: 'strongs' },
   { id: 'gelntthayer', short: "Thayer's Greek-English Lexicon", name: 'A Greek-English Lexicon of the New Testament', resource: 'LLS:THAYERGELEXNT' },
 ];
+
+/** His English dictionary in Logos, for a tapped English word (mw-5r3p30.707): Webster's 1828, 'An American Dictionary of the English Language' (Book Info: LLS:AMDICTENLANG).
+ *  `resource` is written as the story's links name it, without `LLS:`; if the Logos app does not open it, the full `LLS:AMDICTENLANG` is the form the lexicons above use.
+ *  One constant and no setting yet: a choice comes when a second dictionary is known to open. docs/resources.md says what is UNVERIFIED. */
+export const ENGLISH_DICTIONARY = { name: "Webster's 1828", resource: 'AMDICTENLANG' } as const;
+
+/** The words of a tapped English chunk as headwords: each lowercased, the marks around it dropped (an apostrophe inside stays), once each, in order. No stemming; Logos finds the nearest headword. */
+export const englishHeadwords = (text: string): string[] => {
+  const words = text.split(/\s+/).map((w) => w.replace(/^[^\p{L}\p{M}]+|[^\p{L}\p{M}]+$/gu, '').toLocaleLowerCase('en')).filter((w) => w !== '');
+  return [...new Set(words)];
+};
+
+/** The link that opens `word` in his English dictionary in Logos (ref.ly as the fallback), or undefined when it has no letters. */
+export const englishDictionaryLink = (word: string): LogosLink | undefined => {
+  const [headword] = englishHeadwords(word);
+  return headword === undefined ? undefined : resourceLink(ENGLISH_DICTIONARY.resource, `hw=${encodeURIComponent(headword)}`);
+};
 
 /** Logos' own name for a Greek lemma is lbs/el/<lemma>, accents and capital kept; the slashes must be escaped or Logos rejects the value (a bare lemma opens a search
  *  'lemma.ιησουσ' that finds nothing). The link names the lemma alone, no ref= (the documented form has none; mw-5r3p30.67). docs/resources.md has the source. */

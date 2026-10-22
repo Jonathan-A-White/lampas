@@ -49,10 +49,14 @@ test.beforeEach(async ({ page }) => {
 
 test('a new phone starts at Just English: the dial on top, no Greek setting, view or word sheet anywhere', async ({ page }) => {
   await openReader(page);
-  // the Reader: no English | Greek switch, and a tap on an English word opens no Greek word sheet
+  // the Reader: no English | Greek switch, and a tap on an English word opens no Greek word sheet, only the small English one (tests/e2e/english-word.spec.ts)
   await expect(language(page)).toHaveCount(0);
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'Therefore', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toHaveCount(0);
+  const english = page.getByRole('dialog', { name: 'English word', exact: true });
+  await expect(english).toBeVisible();
+  await english.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(english).toHaveCount(0);
 
   await openSettings(page);
   // the dial is the first thing: six steps, each with its name; the chosen one says what it means

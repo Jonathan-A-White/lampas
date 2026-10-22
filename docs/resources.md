@@ -37,6 +37,14 @@ array in `resourceOption.logos`). The list is data: `LEXICONS` in `src/resources
 shows them; adding a lexicon is one line there. Each ticked one gives `Open in Logos: <name>` on the word sheet, and one
 `Bible Word Study in Logos` link (for the lemma alone, no verse) always comes with Logos.
 
+**An English word's dictionary (mw-5r3p30.707).** A tap on an English word is looked up in his English dictionary, Webster's 1828 (*An American Dictionary of the English Language*, Noah Webster; the Book Info in Logos prints `LLS:AMDICTENLANG`),
+so a reader at Just English, who has no Greek word sheet, is still helped with the word. `ENGLISH_DICTIONARY` in `src/resources/logos.ts` is the one constant (no setting yet: a choice comes when a second dictionary is known to open); `englishDictionaryLink(word)`
+builds `logosres:AMDICTENLANG;hw=<word>` with the fallback `https://ref.ly/logosres/AMDICTENLANG?hw=<word>` (resourceLink), and `englishHeadwords(text)` is the word as tapped: lowercased, the marks around it dropped, no stemming (Logos finds the nearest headword).
+An English chunk is often more than one word (`we love`): the sheet then has a link for each word (`Look it up in Logos: love`), since a tap names the chunk and not the word. At Just English the small sheet (`src/EnglishWordSheet.tsx`, a dialog named `English word`) holds the word, Listen and the link;
+with Logos off it says `Turn on Logos to look words up` with `Turn on Logos` (one tap, as the chapter picker's Logos off prompt). At the Greek steps the Greek word sheet of a tapped English word (not of a Greek word) ends with the same row, `Look it up in Logos (English)`, drawn only while Logos is on.
+**UNVERIFIED on a device** (his phone is the check): that the Logos app takes `logosres:` with the id `AMDICTENLANG` written without `LLS:` (the form the story gave; the lexicons above keep `LLS:`, the Bibles drop it and lower-case it), that it takes `hw=` for this dictionary, and the ref.ly `?hw=` fallback. If it opens nothing, try `LLS:AMDICTENLANG`, then `amdictenlang`.
+The open-source dictionary a reader without Logos could use is held (a separate ticket).
+
 **The scheme first, https only as the fallback.** A link's `href` is the app's own scheme (`logosres:`, `logos4:`); on a phone
 with Logos the tap hands it to the app. A phone with no app for the scheme does nothing on its own, so the tap also starts a
 timer (`src/resources/openApp.ts`): if the page is still in front 1.5 s later (not hidden, blurred or left), the link's https
