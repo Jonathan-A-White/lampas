@@ -58,8 +58,9 @@ const ignoredStart = (target: EventTarget | null): boolean =>
 
 /** What the layout effect lets the rest of the hook do while the pages are cut. */
 interface Turner {
-  /** Turns at once, with no turn drawn; `quiet` leaves onTurned to the caller. True when a page turned or another chapter opened. */
-  turn(by: 1 | -1, quiet?: boolean): boolean;
+  /** Turns at once, with no turn drawn; `quiet` leaves onTurned to the caller; `swipe` says a swipe or drag made the turn (a chapter it opens is then a swipe's,
+   * mw-5r3p30.706). True when a page turned or another chapter opened. */
+  turn(by: 1 | -1, quiet?: boolean, swipe?: boolean): boolean;
   show(el: Element): void;
   /** the page shown, from 0, and how many */
   where(): { page: number; count: number };
@@ -108,7 +109,7 @@ function drawTurn(t: Turner, box: RefObject<HTMLElement | null>, by: 1 | -1, dra
   const crossing = page + by < 0 || page + by >= count;
   if (!el || reducedMotion() || el.getBoundingClientRect().width <= 0) {
     drawn?.turn?.end();
-    t.turn(by);
+    t.turn(by, false, drawn !== undefined);
     return;
   }
   let turn = drawn?.turn ?? null;
@@ -116,7 +117,7 @@ function drawTurn(t: Turner, box: RefObject<HTMLElement | null>, by: 1 | -1, dra
     if (crossing && !(crossable?.(by) ?? false)) return;
     turn = turnOf(el, t, by, crossing, by > 0 ? TAP_TILT : -TAP_TILT);
   }
-  const moved = t.turn(by, true);
+  const moved = t.turn(by, true, drawn !== undefined);
   if (!turn) return;
   if (!moved) {
     turn.end();
@@ -131,7 +132,7 @@ function drawTurn(t: Turner, box: RefObject<HTMLElement | null>, by: 1 | -1, dra
 }
 
 /** Lays out the text of `box` in pages while `enabled`, and turns them by tap and swipe unless `blocked` (a sheet is open); the page is kept under `chapter`.
- * `onTurned` hears each turn he makes, after the page has changed; `cross` hears a turn past the first or the last page, which is to open the chapter there. */
+ * `onTurned` hears each turn he makes, after the page has changed; `cross` hears a turn past the first or the last page, which is to open the chapter there (`swipe` when a swipe or drag made it). */
 export function usePages(
   enabled: boolean,
   box: RefObject<HTMLElement | null>,
@@ -139,7 +140,7 @@ export function usePages(
   blocked: boolean,
   chapter: string,
   onTurned?: (by: 1 | -1) => void,
-  cross?: (by: 1 | -1) => boolean,
+  cross?: (by: 1 | -1, swipe: boolean) => boolean,
   crossable?: (by: 1 | -1) => boolean,
 ): Pages {
   const [place, setPlace] = useState({ page: 0, count: 1 });
@@ -283,9 +284,9 @@ export function usePages(
     }
 
     turner.current = {
-      turn: (by, quiet = false) => {
+      turn: (by, quiet = false, swipe = false) => {
         const to = page + by;
-        if (to < 0 || to >= count) return crossed.current?.(by) ?? false;
+        if (to < 0 || to >= count) return crossed.current?.(by, swipe) ?? false;
         kept = undefined;
         move(to);
         drawAhead();

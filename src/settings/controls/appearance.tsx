@@ -3,7 +3,7 @@ import { TEXT_SIZES } from '../../appearance/textSizes';
 import { FONTS, type FontId } from '../../appearance/fonts';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
-import { fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
+import { chapterButtonsSetting, fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
 import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
@@ -124,6 +124,26 @@ export const ReadingModeControl: Control = ({ row }) => {
             ['pages', 'Turn pages'],
           ]}
           settingKey="readingMode"
+        />
+      ) : null}
+    </SettingRow>
+  );
+};
+
+export const ChapterButtonsControl: Control = ({ row }) => {
+  const buttons = useSetting(chapterButtonsSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {buttons ? (
+        <ChipRow
+          name={row.label}
+          current={buttons}
+          options={[
+            ['show', 'Show'],
+            ['hide', 'Hide'],
+          ]}
+          settingKey="chapterButtons"
         />
       ) : null}
     </SettingRow>

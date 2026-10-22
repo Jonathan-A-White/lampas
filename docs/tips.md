@@ -75,4 +75,8 @@ commit in `package.json`, the library has no release tag yet); Lampas supplies t
 - `src/tips/HintCard.tsx` draws the next tip of an event: one quiet line, 'Tip: …', and Got it (role `note`; 48 px button). Got it dismisses the
   tip for good. Closing the screen without it keeps the tip for the next time. With the Tips setting Off nothing is drawn.
 - The word sheet (`src/WordSheet.tsx`) holds one, above its scrolling facts so it is seen without a scroll and costs them no room.
+- Two more tips sit on the chapter buttons (`src/ChapterNav.tsx`, mw-5r3p30.706): `swipe-chapters` ('Swipe the text left or right to change chapter', a HintCard on
+  `CHAPTER_NAV_SHOWN`), and `hide-chapter-buttons` (the offer 'You swipe between chapters. Hide these buttons?', Hide or Keep, on `CHAPTER_BUTTONS_OFFER`; its own card in
+  `ChapterNav.tsx`, answering it dismisses it). The offer shows in place of the tip once `chapterSwiped()` (a chapter changed by a swipe, `noteChapterSwipe()`). Both are
+  under the Tips setting; Hide sets Settings > Reading > Chapter buttons, which works with Tips Off.
 - Adding a tip: one line in `HINTS`, and a `<HintCard event="…" />` where it belongs.

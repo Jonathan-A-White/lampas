@@ -567,9 +567,11 @@ textarea,
   widows: 1;
 }
 /* The chapter buttons never stand alone on a page: when the last verse ends right at a page's foot the browser would give them a page of their own, with no
- * verse on it, and break-before: avoid takes the last line of the verse with them (mw-5r3p30.620). */
+ * verse on it, and break-before: avoid takes the last line of the verse with them (mw-5r3p30.620). The nav holds the tip or offer above the buttons
+ * (mw-5r3p30.706): break-inside: avoid keeps them together, else the buttons would fall on a page of their own below the card. */
 [data-reader][data-paging='pages'] > [data-pages] > nav[aria-label='Chapters'] {
   break-before: avoid;
+  break-inside: avoid;
 }
 /* The box can scroll only as far as the last page's text reaches, which stops short of a whole page by the box's right padding: this empty line,
  * a little wider than a page, reaches past it, so the last page sits where every other page does. */

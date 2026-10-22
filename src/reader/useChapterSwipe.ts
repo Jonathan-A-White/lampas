@@ -7,6 +7,7 @@ import { type RefObject, useEffect } from 'react';
 import { neighbours } from '../data/neighbours';
 import type { OpenChapter } from '../data/readerChapter';
 import { openReader } from '../nav/route';
+import { noteChapterSwipe } from '../tips/hints';
 
 export const SWIPE_MIN_PX = 60;
 export const SWIPE_MAX_MS = 600;
@@ -96,7 +97,11 @@ export function useChapterSwipe(
         onEnd(dx < 0 ? 'last' : 'first');
         return;
       }
-      const go = () => openReader({ book: to.book, chapter: to.chapter });
+      const go = () => {
+        // a chapter changed by a swipe is remembered: the next chapter buttons offer to hide themselves (src/tips/hints.ts, mw-5r3p30.706)
+        noteChapterSwipe();
+        openReader({ book: to.book, chapter: to.chapter });
+      };
       if (reducedMotion()) {
         go();
         return;

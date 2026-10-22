@@ -195,7 +195,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (by > 0) hideBars();
   }, [hideBars]);
   // past the first or last page the previous or next chapter opens, on its last or first page (src/reader/crossChapter.ts, mw-5r3p30.620)
-  const cross = useCallback((by: 1 | -1) => crossChapter(BOOK, CHAPTER, by), [BOOK, CHAPTER]);
+  const cross = useCallback((by: 1 | -1, swipe: boolean) => crossChapter(BOOK, CHAPTER, by, swipe), [BOOK, CHAPTER]);
   const crossable = useCallback((by: 1 | -1) => canCross(BOOK, CHAPTER, by), [BOOK, CHAPTER]);
   const around = neighbours(BOOK, CHAPTER);
   // the page follows the finger and every turn is drawn as a page of a book turning (src/reader/pageTurn.ts, mw-5r3p30.621)

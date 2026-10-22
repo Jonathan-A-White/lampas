@@ -147,9 +147,10 @@ describeFeature(feature, ({ Scenario }) => {
         expect(languagePressed()).toBe('English');
         expect(await getWeave()).toBe('off');
         expect(await getNewWordsADay()).toBe(0);
+        // the chips follow the saved pace on the next render, not in the same tick as the write
+        expect(document.querySelector('[data-testid=new-words]')).toBeNull();
+        expect(document.querySelector('[data-testid=weave-count]')).toBeNull();
       });
-      expect(document.querySelector('[data-testid=new-words]')).toBeNull();
-      expect(document.querySelector('[data-testid=weave-count]')).toBeNull();
     });
     And('the welcome talk is open and the tutor asks {string}', asksFirst);
     And('the first bible-talk grist is in welcome mode with no Greek text', async () => {

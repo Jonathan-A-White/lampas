@@ -12,7 +12,8 @@ import { playToOf, type PlayTo } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
-import { immersiveSetting, themeSetting, tipsSetting, weaveSetting } from '../../settings/definitions';
+import { chapterButtonsSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting } from '../../settings/definitions';
+import type { ChapterButtons } from '../../settings/definitions/chapterButtons';
 import type { Immersive } from '../../settings/definitions/immersive';
 import type { Tips } from '../../settings/definitions/tips';
 import type { Weave } from '../../settings/definitions/weave';
@@ -180,6 +181,11 @@ export async function setReadSpan(span: PlayTo): Promise<void> {
 export const getImmersive = (): Promise<Immersive> => getSetting(immersiveSetting);
 /** Saves the Immersive reader choice and tells the bus (setting-changed). */
 export const setImmersive = (immersive: Immersive): Promise<void> => setSetting(immersiveSetting, immersive);
+
+/** The saved Chapter buttons choice; show when he has not chosen yet or the saved value is not one of the two. */
+export const getChapterButtons = (): Promise<ChapterButtons> => getSetting(chapterButtonsSetting);
+/** Saves the Chapter buttons choice and tells the bus (setting-changed). */
+export const setChapterButtons = (buttons: ChapterButtons): Promise<void> => setSetting(chapterButtonsSetting, buttons);
 
 /** The saved Tips choice; on when he has not chosen yet or the saved value is not one of the two. */
 export const getTips = (): Promise<Tips> => getSetting(tipsSetting);

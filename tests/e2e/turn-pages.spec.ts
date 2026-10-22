@@ -108,10 +108,17 @@ async function tapAt(page: Page, share: number) {
   const x = b.left + b.width * share;
   const y = await page.evaluate(({ x, top, bottom }) => {
     const middle = (top + bottom) / 2;
-    for (let d = 0; d < (bottom - top) / 2; d += 6) {
-      for (const y of [middle + d, middle - d]) {
-        const hit = document.elementFromPoint(x, y);
-        if (hit?.closest('[data-reader]') && !hit.closest('button, a')) return y;
+    // on a chapter's last page the foot holds the tip's Got it and the chapter buttons: Chrome snaps a tap near a button to it (mw-5r3p30.706), so a point
+    // whose neighbours 20 px up and down are text or blank is preferred, and the plainer rule (not on a button) is the fallback
+    const plain = (y: number) => {
+      const hit = document.elementFromPoint(x, y);
+      return hit?.closest('[data-reader]') && !hit.closest('button, a');
+    };
+    for (const clear of [true, false]) {
+      for (let d = 0; d < (bottom - top) / 2; d += 6) {
+        for (const y of [middle + d, middle - d]) {
+          if (plain(y) && (!clear || (plain(y - 20) && plain(y + 20)))) return y;
+        }
       }
     }
     return middle;
