@@ -72,7 +72,7 @@ export const logos: StudyResource = {
   lang: 'both',
   name: 'Logos',
   kind: 'app',
-  describe: 'Adds Open in Logos for each lexicon you tick, and Bible Word Study in Logos.',
+  describe: 'Adds Open in Logos for each lexicon in Your Logos library, and Bible Word Study.',
   choices: {
     label: 'Logos lexicons',
     hint: 'Tick the lexicons of your Logos library to open. BDAG is ticked to start with.',

@@ -312,8 +312,8 @@ const logosBibleEntry: SettingEntry = {
   dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
   key: 'logosBible',
   label: 'Bible in Logos',
-  hint: 'The Bible that Old Testament chapters open in, in Logos. It opens Library > Bibles.',
-  help: `The Bible in your Logos library that Old Testament chapters open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible). Lampas has no Old Testament text; it shows only while Logos is On. The row opens Your Logos library at Bibles, where you choose one of the list or type the Resource ID of a Bible it lacks.`,
+  hint: 'The Bible that Old Testament chapters open in, in Logos.',
+  help: `The Bible in your Logos library that Old Testament chapters open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible). Lampas has no Old Testament text; it shows only while Logos is On. It is chosen on Library > Bibles.`,
   allowed: { kind: 'text', valid: isResourceId, example: DEFAULT_LOGOS_BIBLE },
   read: getLogosBible,
   write: async (value) => {
