@@ -16,10 +16,11 @@ export interface SentRef {
 
 /** What a question is doing right now. `sent` is set once the grist went (and stays on a failure of the link, so Retry waits for that grist's answer); `focus` is what a Bible talk's message
  * was asked about, kept for the answer and for Retry; `spoken` is set when the question was sent as spoken (src/speech/spoken.ts forgets the words once they are sent, so Retry and a
- * page that is back carry it here, mw-5r3p30.333). */
+ * page that is back carry it here, mw-5r3p30.333). A failed line keeps `startedAt` too (when the message was first asked), so a Retry of a first turn whose grist went stores it with that time and the talk's name,
+ * `<ref>@<that time>`, stays the same (mw-5r3p30.724). */
 export type AskState =
   | { phase: 'sending' | 'waiting'; question: string; startedAt: number; sent?: SentRef; focus?: TalkFocus; spoken?: true }
-  | { phase: 'failed'; question: string; failure: TutorFailure; detail: string; sent?: SentRef; focus?: TalkFocus; spoken?: true };
+  | { phase: 'failed'; question: string; failure: TutorFailure; detail: string; startedAt?: number; sent?: SentRef; focus?: TalkFocus; spoken?: true };
 
 export type Pending = Record<string, AskState>;
 
@@ -41,7 +42,8 @@ function readState(value: unknown): AskState | undefined {
     return typeof value.startedAt === 'number' ? { phase: value.phase, question: value.question, startedAt: value.startedAt, ...sent, ...focus, ...spoken } : undefined;
   }
   if (value.phase === 'failed' && typeof value.failure === 'string' && typeof value.detail === 'string') {
-    return { phase: 'failed', question: value.question, failure: value.failure as TutorFailure, detail: value.detail, ...sent, ...focus, ...spoken };
+    const startedAt = typeof value.startedAt === 'number' ? { startedAt: value.startedAt } : {};
+    return { phase: 'failed', question: value.question, failure: value.failure as TutorFailure, detail: value.detail, ...startedAt, ...sent, ...focus, ...spoken };
   }
   return undefined;
 }
