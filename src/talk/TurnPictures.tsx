@@ -1,10 +1,10 @@
 // src/talk/TurnPictures.tsx — the pictures of a turn (mw-y3qno5.1): thumbnails above his words, kept with the turn in Dexie (talkPictures), and the
-// full-screen view a tap opens. The view is a Back step of its own (useSheetBack): Back, Close or Escape closes it and leaves the talk as it was.
+// full-screen view a tap opens: pwa-kit's shared picture viewer (a modal dialog on the browser's top layer, so no screen's z-index covers it: Drill it is z-40; pinch, drag
+// and double tap zoom). The view is a Back step of its own (useSheetBack): Back, Close or Escape closes it and leaves the talk as it was.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useMemo, useState } from 'react';
+import { PictureViewer } from 'pwa-kit/picture-viewer';
 import { listTurnPictures } from '../data/repositories';
-import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { dataUrlOf } from './pictures';
 
@@ -14,31 +14,10 @@ export interface ShownPicture {
   url: string;
 }
 
+/** The shared viewer (pwa-kit/picture-viewer), one Back step of its own: Back calls onClose through useSheetBack, and Close and Escape call it too. */
 function Viewer({ name, url, onClose }: { name: string; url: string; onClose: () => void }) {
   useSheetBack(onClose);
-  // Escape closes the picture and not the Talk sheet under it: this listener is first (capture) and ends the key there.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key !== 'Escape') return;
-      e.stopPropagation();
-      onClose();
-    };
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [onClose]);
-  return createPortal(
-    <div role="dialog" aria-modal="true" aria-label={name} className="fixed inset-0 z-20 flex flex-col bg-black">
-      <div className="flex shrink-0 justify-end px-4 pt-3">
-        <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-12 min-w-12 rounded-lg bg-white/15 px-4 text-lg font-medium text-white">
-          Close
-        </button>
-      </div>
-      <div className="flex min-h-0 flex-1 items-center justify-center p-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
-        <img src={url} alt={name} className="max-h-full max-w-full object-contain" />
-      </div>
-    </div>,
-    document.body,
-  );
+  return <PictureViewer src={url} name={name} label={name} onClose={onClose} />;
 }
 
 /** Thumbnails that open full screen on a tap. `align` puts them on his side of the talk. */

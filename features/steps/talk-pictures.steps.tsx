@@ -331,7 +331,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the picture {string} is open full screen', async (_, name: string) => {
       const viewer = await screen.findByRole('dialog', { name });
-      expect(within(viewer).getByRole('img', { name })).toBeInTheDocument();
+      // pwa-kit's viewer names the picture in full: `${name} (full screen)`
+      expect(within(viewer).getByRole('img', { name: `${name} (full screen)` })).toBeInTheDocument();
     });
     When('he presses Back', async () => {
       await act(async () => {
