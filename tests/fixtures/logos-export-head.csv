@@ -1,0 +1,61 @@
+ResourceId,Type,AbbreviatedTitle,Title,Series,Languages,ReferenceSupersets
+DB:BIBLE-XREFS,lbx.biblecrossreferences,,Important Passages,,en,
+DB:BIBLICAL-EVENTS,lbx.biblicalevents,,Biblical Events Dataset,,en,
+DB:BIBLICAL-PEOPLE,lbx.biblicalpeople,,Biblical People Dataset,,en,
+DB:BIBLICAL-PEOPLE-DIAGRAMS,lbx.biblicalpeoplediagrams,,Biblical People Diagrams,,en,
+DB:BIBLICAL-PLACES,lbx.biblicalplaces,,Biblical Places Dataset,,en,
+DB:BIBLICAL-PLACES-MAPS,lbx.biblicalplacesmaps,,Biblical Places Maps,,en,
+DB:BIBLICAL-REFERENTS,lbx.biblicalreferents,,Biblical Referents Dataset,,en,
+DB:BIBLICAL-THINGS,lbx.biblicalthings,,Biblical Things Dataset,,en,
+DB:BIOGRAPHIES,lbx.biographies,,Notable People Dataset,,en,
+LLS:365CALVIN,lbx.calendar-devotional,,365 Days with Calvin,,en,dayofyear.1.1-12.31
+LLS:365SPURGEON1,lbx.calendar-devotional,,365 Days with Spurgeon (Volume 1),365 Days with Spurgeon,en,dayofyear.1.1-12.31
+LLS:365SPURGEON2,lbx.calendar-devotional,,365 Days with Spurgeon (Volume 2),365 Days with Spurgeon,en,dayofyear.1.1-12.31
+LLS:365SPURGEON3,lbx.calendar-devotional,,365 Days with Spurgeon (Volume 3),365 Days with Spurgeon,en,dayofyear.1.1-12.31
+LLS:365SPURGEON4,lbx.calendar-devotional,,365 Days with Spurgeon (Volume 4),365 Days with Spurgeon,en,dayofyear.1.1-12.31
+LLS:365SPURGEON5,lbx.calendar-devotional,,365 Days with Spurgeon (Volume 5),365 Days with Spurgeon,en,dayofyear.1.1-12.31
+LLS:365SPURGEON6,lbx.calendar-devotional,,365 Days with Spurgeon (Volume 6),365 Days with Spurgeon,en,dayofyear.1.1-12.31
+LLS:FSBDEVOTIONAL,lbx.calendar-devotional,,Connect the Testaments: A 365-Day Devotional with Bible Reading Plan,,en,dayofyear.1.1-12.31
+LLS:DLYDCLRTNSSWRFR,lbx.calendar-devotional,,Daily Declarations for Spiritual Warfare,,en,dayofyear.1-12.31
+LLS:DYSHVNLVNGTRTHS,lbx.calendar-devotional,,Days of Heaven upon Earth: A Year Book of Scripture Texts and Living Truths,,en,dayofyear.1.1-12.31
+LLS:20.10.8,lbx.calendar-devotional,,"Ears from Harvested Sheaves, or, Daily Portions",,en,dayofyear.1.1-12.31
+LLS:GDSFTHFL,lbx.calendar-devotional,,God Is Faithful: A Daily Invitation into the Father Heart of God,,en,dayofyear.1.1-12.31
+LLS:20.10.1,lbx.calendar-devotional,,Morning and Evening,,en,dayofyear.1.1.1-12.31.2
+LLS:20.10.2,lbx.calendar-devotional,,My Utmost for His Highest,,en,dayofyear.1.1-12.31
+LLS:STRMSDSRT,lbx.calendar-devotional,,Streams in the Desert,,en,dayofyear.1.1-12.31
+LLS:SPURGINTERP,lbx.calendar-devotional,,The Interpreter: Spurgeon’s Devotional Bible,,en,dayofyear.1.1.1-12.31.2	bible.1.1.1-39.4.6	bible.61.2.1-87.22.21
+LLS:20.10.14,lbx.calendar-devotional,,Thoughts for the Quiet Hour,,en,dayofyear.1.1-12.31
+LLS:TICHDD,lbx.calendar-devotional,,Today in Christian History: Daily Devotionals,Today in Christian History,en,dayofyear.1.1-12.31
+LLS:TICHDQ,lbx.calendar-devotional,,Today in Christian History: Daily Quotes,Today in Christian History,en,dayofyear.1.1-12.31
+LLS:TICHDS,lbx.calendar-devotional,,Today in Christian History: Daily Stories,Today in Christian History,en,dayofyear.1.1-12.31
+LLS:9781496400536,lbx.calendar-devotional,,Turning Points with God: 365 Daily Devotions,,en,dayofyear.1.1-12.31
+LLS:WMNSDLYSPRTWRFR,lbx.calendar-devotional,,Women’s Daily Declarations for Spiritual Warfare,,en,dayofyear.1-12.31
+DB:CHURCH-HISTORY-ONTOLOGY,lbx.churchhistoryontology,,Church History Ontology,,en,
+DB:COUNSELING-THEMES,lbx.counselingthemes,,Counseling Themes Dataset,,en,
+DB:BIBLICAL-THEOLOGY-XREFS,lbx.crossreferences,,Biblical Theology Cross References Dataset,,en,
+DB:CREEDS-COUNCILS-XREFS,lbx.crossreferences,,Confessional Documents References Dataset,,en,
+DB:THEOLOGY-XREFS,lbx.crossreferences,,Systematic Theology Cross References Dataset,,en,
+DB:EXCERPTS,lbx.excerpts,,Resource Excerpts Dataset,,en,
+DB:FB-MEDIA,lbx.fbmedia,,Factbook Media Database,,en,
+INTERACTIVE:EMPTY-TOMB,lbx.interactive,,An Empty Tomb,,en,
+INTERACTIVE:ANCIENT-INSCRIPTIONS,lbx.interactive,,Ancient Inscriptions,,en,
+INTERACTIVE:BEFORE-AND-AFTER,lbx.interactive,,Before and After: Biblical Sites,,en,
+INTERACTIVE:BIBLE-BOOKS,lbx.interactive,,Bible Books Explorer,,en,
+INTERACTIVE:BIBLE-OUTLINE-BROWSER,lbx.interactive,,Bible Outline Browser,,en,
+INTERACTIVE:LIFE-OF-TIMELINES,lbx.interactive,,Bible People Visual Timelines,,en,
+INTERACTIVE:BIBLICAL-EVENT-NAVIGATOR,lbx.interactive,,Biblical Event Navigator,,en,
+INTERACTIVE:CANON-COMPARISON,lbx.interactive,,Canon Comparison,,en,
+INTERACTIVE:OT-COMMANDMENTS,lbx.interactive,,Command­ments of the Law,,en,
+INTERACTIVE:TEN-COMMANDMENTS,lbx.interactive,,Counting the Ten Commandments,,en,
+INTERACTIVE:DAYS-OF-CREATION,lbx.interactive,,Days of Creation,,en,
+INTERACTIVE:BIBLICAL-MANUSCRIPTS,lbx.interactive,,Exploring Biblical Manuscripts,,en,
+INTERACTIVE:GREEK-ALPHABET-TUTOR,lbx.interactive,,Greek Alphabet Tutor,,en,
+INTERACTIVE:HEBREW-ALPHABET-TUTOR,lbx.interactive,,Hebrew Alphabet Tutor,,en,
+INTERACTIVE:HEBREW-MANUSCRIPT-EXPLORER,lbx.interactive,,Hebrew Bible Manuscript Explorer,,en,
+INTERACTIVE:FSB-INFOGRAPHICS,lbx.interactive,FSBII,Interactive Infographics from the Faithlife Study Bible,,en,
+INTERACTIVE:WHAT-IS-AN-INTERLINEAR,lbx.interactive,,Interlinear Explorer,,en,
+INTERACTIVE:FEASTS-AND-SACRIFICES,lbx.interactive,,Israelite Feasts and Sacrifices,,en,
+INTERACTIVE:LISTEN-AND-LEARN-GREEK,lbx.interactive,,Listen & Learn: Greek,,en,
+INTERACTIVE:MIRACLES,lbx.interactive,,Miracles of the Bible,,en,
+INTERACTIVE:MORPH-CHARTS,lbx.interactive,,Morphology Charts,,en,
+INTERACTIVE:NAMES-OF-GOD,lbx.interactive,,Names of God,,en,
