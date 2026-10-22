@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.414
+_2026-10-22_
+- New: A verse now has In Logos and In another book…, which lists your Greek texts and commentaries that cover it, so you can open the verse in any of them.
+
 ## 0.1.411
 _2026-10-22_
 - New: A new Your Logos library screen lists the Logos books Lampas can open, by kind, where you switch each one off, on or pin it, and search by title or author.
