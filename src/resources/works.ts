@@ -6,7 +6,7 @@
 import { bookOf } from '../data/books';
 import { bibleRef } from './logosBible';
 import { resourceLink, resourceStart, type LogosLink } from './logosRes';
-import type { StudyPlace } from './types';
+import type { ResourceLang, StudyPlace } from './types';
 
 /** One Logos resource of a work. A commentary of several volumes has one each, with the books it covers (our book codes); a book has one and no `books`. */
 export interface WorkVolume {
@@ -30,6 +30,8 @@ export interface WorkIndex {
 export interface Work {
   /** kept in the settings store, so it never changes: 'calvin-commentaries' */
   id: string;
+  /** the language the work is in (types.ts ResourceLang): the dial hides a 'grc' one at Just English and lists the English ones first */
+  lang: ResourceLang;
   /** the title Settings lists it by and the chip is named for */
   title: string;
   author: string;
@@ -56,6 +58,7 @@ const INSTITUTES_INDEX: WorkIndex = {
 export const WORKS: readonly Work[] = [
   {
     id: 'calvin-commentaries',
+    lang: 'en',
     title: "Calvin's Commentaries",
     author: 'John Calvin',
     kind: 'commentary',
@@ -75,6 +78,7 @@ export const WORKS: readonly Work[] = [
   },
   {
     id: 'calvin-institutes-lcc',
+    lang: 'en',
     title: 'Institutes of the Christian Religion (Library of Christian Classics)',
     author: 'John Calvin',
     kind: 'book',
@@ -84,6 +88,7 @@ export const WORKS: readonly Work[] = [
   },
   {
     id: 'calvin-institutes-beveridge',
+    lang: 'en',
     title: 'Institutes of the Christian Religion (Beveridge)',
     author: 'John Calvin',
     kind: 'book',

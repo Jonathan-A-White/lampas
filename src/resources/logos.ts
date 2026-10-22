@@ -89,6 +89,7 @@ const keyQuery = (key: Key, word: StudyWord): string | undefined => {
 
 export const logos: StudyResource = {
   id: 'logos',
+  lang: 'both',
   name: 'Logos',
   kind: 'app',
   describe: 'Adds Open in Logos for each lexicon you tick, and Bible Word Study in Logos.',
