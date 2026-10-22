@@ -158,6 +158,7 @@ docs/research/audible-addon-seek.md # research: an add-on that seeks his Audible
 docs/research/greek-speech-libraries.md # research: open-source libraries for Greek sound
 docs/research/kjv-tr.md # research: the KJV and the Greek behind it as a text pair
 docs/research/logos-section-refs.md # research: grammar sections by a book's own Logos data type
+docs/research/logos-morph-charts.md # research: whether Logos's Morphology Charts opens at a lemma from a link; the one link to tap
 docs/research/letter-sounds.md # research: lone vowels and letter sounds in a voice like the phone's
 docs/design/library-at-scale.md # design: the Logos library at scale, mockups and build plan (mw-5r3p30.709)
 ```
