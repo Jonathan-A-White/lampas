@@ -234,7 +234,7 @@ export function useTalk(
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
-          set({ phase: 'failed', question: text, failure, detail: err instanceof Error ? err.message : 'Something went wrong.', ...(err instanceof TutorError && err.sent ? { sent: err.sent } : {}), ...withFocus });
+          set({ phase: 'failed', question: text, failure, detail: err instanceof Error ? err.message : 'Something went wrong.', startedAt, ...(err instanceof TutorError && err.sent ? { sent: err.sent } : {}), ...withFocus });
         } finally {
           stopRunning();
         }
@@ -259,7 +259,8 @@ export function useTalk(
       // a new message ends the speech of the last response
       stopAnswer();
       // spoken is settled as he sends, once: the words he spoke are forgotten as they go, and a Retry carries the mark the failed message had
-      run(scope, text, focus, pictures, same ? same.spoken === true : wasSpoken(text), same?.sent);
+      // and, when its grist went, the time it was first asked, so a first turn is stored under the name it was waited for with (talkNameOf)
+      run(scope, text, focus, pictures, same ? same.spoken === true : wasSpoken(text), same?.sent, same?.sent ? same.startedAt : undefined);
     },
     [book, chapter, run],
   );
@@ -270,7 +271,7 @@ export function useTalk(
       const kept = pendingOf(key);
       if (!kept || kept.phase === 'failed' || !isOrphan(key)) return;
       if (kept.sent) run(scope, kept.question, kept.focus, [], kept.spoken === true, kept.sent, kept.startedAt);
-      else setPending(key, { phase: 'failed', question: kept.question, failure: 'unreachable', detail: 'The page was closed before the message went. Nothing was lost: send it again.', ...(kept.focus ? { focus: kept.focus } : {}) });
+      else setPending(key, { phase: 'failed', question: kept.question, failure: 'unreachable', detail: 'The page was closed before the message went. Nothing was lost: send it again.', startedAt: kept.startedAt, ...(kept.focus ? { focus: kept.focus } : {}) });
     },
     [book, chapter, run],
   );
