@@ -162,4 +162,5 @@ docs/research/logos-section-refs.md # research: grammar sections by a book's own
 docs/research/logos-morph-charts.md # research: whether Logos's Morphology Charts opens at a lemma from a link; the one link to tap
 docs/research/letter-sounds.md # research: lone vowels and letter sounds in a voice like the phone's
 docs/design/library-at-scale.md # design: the Logos library at scale, mockups and build plan (mw-5r3p30.709)
+docs/design/bible-talk-trim-map.md # design: every rule of the bible-talk instructions before the trim under 100,000 bytes, and where it lives now
 ```
