@@ -1,9 +1,10 @@
 // src/resources/works.ts — the works of his Logos library that the tutor may link to (mw-5r3p30.675, PROVISIONAL): a commentary, opened at the passage, or a
 // book, opened at its start, or, when the book has an index of its own (the Institutes: book.chapter.section), at the place the tutor names (mw-5r3p30.708). Lampas cannot read which books he owns, so Settings > Study resources > Works lists these and he ticks the ones he has (none to start
-// with); the tutor is told the ticked ones and names no other. Adding a work is one entry in WORKS, its Resource ID copied from a source named in `source`, never
+// with); the tutor is told the ticked ones and names no other. Adding a work is one entry in data/logos/catalogue-rules.json (then `npm run logos:catalogue`), its Resource ID copied from a source named in `source`, never
 // guessed (mw-5r3p30.64: a guessed id opened nothing). Every link is the Logos scheme first with the ref.ly address as the fallback (logosRes.ts). docs/resources.md
 // names each source and what is UNVERIFIED on a device.
 import { bookOf } from '../data/books';
+import { WORK_GROUPS, entriesOf, type WorkIndex } from './catalogue';
 import { bibleRef } from './logosBible';
 import { resourceLink, resourceStart, type LogosLink } from './logosRes';
 import type { ResourceLang, StudyPlace } from './types';
@@ -16,16 +17,7 @@ export interface WorkVolume {
   books?: readonly string[];
 }
 
-/** A book's own reference type, which Logos opens a book at (`ref=CICR.3.24`): its library listing's ReferenceSupersets column names it ('cicr.1-4.20.32'). The Bible's own
- *  references do not reach into a book that is not versified, so the place is this type's, from the shape below. */
-export interface WorkIndex {
-  /** the data type in the link: 'CICR' */
-  type: string;
-  /** how many chapters each book of the work has, in order: the Institutes' four books have 18, 17, 25 and 20 */
-  chapters: readonly number[];
-  /** what the tutor is told of how a place is written (the request's `places`) */
-  hint: string;
-}
+export type { WorkIndex };
 
 export interface Work {
   /** kept in the settings store, so it never changes: 'calvin-commentaries' */
@@ -44,59 +36,20 @@ export interface Work {
   index?: WorkIndex;
 }
 
-/** The library listing (vault plans/lampas-logos-library-2026-10-08.csv): its ResourceId column is the id, and a commentary's ReferenceSupersets column the books each volume covers (Logos' book numbers: 61 Matthew … 87 Revelation). */
-const LISTING = 'His Logos library listing of 2026-10-08 (vault plans/lampas-logos-library-2026-10-08.csv, ResourceId and ReferenceSupersets columns)';
-
-/** The Institutes' own milestones (a Logos employee on the forum: 'n.n.n', such as 4.2.1) and the listing's 'cicr.1-4.20.32': four books of 18, 17, 25 and 20 chapters. Both editions have it. */
-const INSTITUTES_INDEX: WorkIndex = {
-  type: 'CICR',
-  chapters: [18, 17, 25, 20],
-  hint: "A place in the book is written book.chapter (3.24) or book.chapter.section (3.21.5): the book is 1 to 4, and the chapter one the book has (book 1 has 18 chapters, book 2 17, book 3 25, book 4 20). Name a place only when you know the chapter treats the question.",
-};
-
-/** Every work, in the order Settings lists them. Calvin's commentaries are one volume per book or group of books in Logos; the Old Testament volumes are left out as Lampas holds the New. */
-export const WORKS: readonly Work[] = [
-  {
-    id: 'calvin-commentaries',
-    lang: 'en',
-    title: "Calvin's Commentaries",
-    author: 'John Calvin',
-    kind: 'commentary',
-    source: LISTING,
-    volumes: [
-      { resource: 'LLS:CALCOM61HRMEV', books: ['mat', 'mrk', 'luk'] },
-      { resource: 'LLS:CALCOM64JN', books: ['jhn'] },
-      { resource: 'LLS:CALCOM65AC', books: ['act'] },
-      { resource: 'LLS:CALCOM66RO', books: ['rom'] },
-      { resource: 'LLS:CALCOM67CO1', books: ['1co', '2co'] },
-      { resource: 'LLS:CALCOM69GA', books: ['gal', 'eph'] },
-      { resource: 'LLS:CALCOM71PHP', books: ['php', 'col', '1th', '2th'] },
-      { resource: 'LLS:CALCOM75TI', books: ['1ti', '2ti', 'tit', 'phm'] },
-      { resource: 'LLS:CALCOM79HEB', books: ['heb'] },
-      { resource: 'LLS:CALCOM81CATHEP', books: ['jas', '1pe', '2pe', '1jn', 'jud'] },
-    ],
-  },
-  {
-    id: 'calvin-institutes-lcc',
-    lang: 'en',
-    title: 'Institutes of the Christian Religion (Library of Christian Classics)',
-    author: 'John Calvin',
-    kind: 'book',
-    source: LISTING,
-    volumes: [{ resource: 'LLS:ICRWJKC' }],
-    index: INSTITUTES_INDEX,
-  },
-  {
-    id: 'calvin-institutes-beveridge',
-    lang: 'en',
-    title: 'Institutes of the Christian Religion (Beveridge)',
-    author: 'John Calvin',
-    kind: 'book',
-    source: LISTING,
-    volumes: [{ resource: 'LLS:ICRBEV' }],
-    index: INSTITUTES_INDEX,
-  },
-];
+/** Every work, in the order Settings lists them: a view over the catalogue (catalogue.ts): the works of data/logos/catalogue-rules.json, each with the volumes of the commentary kind that name it. Calvin's commentaries are one volume per book or group of books in Logos;
+ *  the Old Testament volumes are left out as Lampas holds the New. The Institutes' own milestones (a Logos employee on the forum: 'n.n.n', such as 4.2.1) and the listing's 'cicr.1-4.20.32' give four books of 18, 17, 25 and 20 chapters; both editions have them. */
+export const WORKS: readonly Work[] = WORK_GROUPS.map((g) => ({
+  id: g.id,
+  lang: g.lang,
+  title: g.title,
+  author: g.author,
+  kind: g.kind,
+  source: g.source,
+  volumes: entriesOf('commentary')
+    .filter((e) => e.work === g.id)
+    .map((e) => ({ resource: e.resource, ...(g.kind === 'commentary' && e.covers ? { books: e.covers } : {}) })),
+  ...(g.index ? { index: g.index } : {}),
+}));
 
 export const workOf = (id: string): Work | undefined => WORKS.find((w) => w.id === id);
 

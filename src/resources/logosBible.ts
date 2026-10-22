@@ -2,23 +2,20 @@
 // text, so the chapter picker opens the chapter in his own Logos library: the Logos app's own scheme first (`logosres:<Bible>;ref=Bible.<book><chapter>`),
 // with the https ref.ly address as the fallback, opened only when the phone cannot open the scheme (openApp.ts armFallback). docs/resources.md has the sources.
 import { otBookOf } from '../data/otBooks';
+import { entriesOf } from './catalogue';
 import { resourceLink } from './logosRes';
 
-/** His Bible in Logos to start with: the Legacy Standard Bible (vault plans/lampas-logos-library-2026-10-08.csv). */
-export const DEFAULT_LOGOS_BIBLE = 'LLS:LGCYSTNDRDBBLSB';
+/** The short list in Settings: `id` is the Resource ID Logos prints (the library listing); the order is the order shown. A view over the catalogue's Bibles named by id (catalogue.ts), each as 'LSB (Legacy Standard Bible)'. */
+export const COMMON_BIBLES: readonly { id: string; name: string }[] = entriesOf('bible')
+  .filter((e) => e.via === 'id')
+  .map((e) => ({ id: e.resource, name: `${e.short} (${e.title})` }));
 
-/** The short list in Settings: `id` is the Resource ID Logos prints (the library listing); the order is the order shown. */
-export const COMMON_BIBLES: readonly { id: string; name: string }[] = [
-  { id: DEFAULT_LOGOS_BIBLE, name: 'LSB (Legacy Standard Bible)' },
-  { id: 'LLS:1.0.710', name: 'ESV (English Standard Version)' },
-  { id: 'LLS:1.0.71', name: 'NASB95 (New American Standard Bible, 1995)' },
-  { id: 'LLS:NIV2011', name: 'NIV (New International Version, 2011)' },
-  { id: 'LLS:1.0.30', name: 'NKJV (New King James Version)' },
-  { id: 'LLS:CSB', name: 'CSB (Christian Standard Bible)' },
-  { id: 'LLS:1.0.171', name: 'NLT (New Living Translation)' },
-  { id: 'LLS:KJV1900', name: 'KJV (King James Version, 1900)' },
-  { id: 'LLS:LEB', name: 'LEB (Lexham English Bible)' },
-];
+/** His Bible in Logos to start with: the one the catalogue pins, the Legacy Standard Bible (vault plans/lampas-logos-library-2026-10-08.csv). */
+export const DEFAULT_LOGOS_BIBLE: string = (() => {
+  const pinned = entriesOf('bible').find((e) => e.via === 'id' && e.starts === 'pinned');
+  if (!pinned) throw new Error('The catalogue pins no Bible: one Bible named by id in data/logos/catalogue-rules.json has starts "pinned"');
+  return pinned.resource;
+})();
 
 /** What a typed Resource ID may be: `LLS:` and then letters, digits, dots, dashes or underscores (as in the library listing). */
 export const isResourceId = (text: string): boolean => /^LLS:[A-Za-z0-9._-]+$/.test(text.trim());
