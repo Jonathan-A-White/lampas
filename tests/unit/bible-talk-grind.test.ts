@@ -10,7 +10,7 @@ import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } fro
 import { SETTINGS } from '../../src/settings/registry';
 import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
-import { instructionsOf } from '../../scripts/grind-parts';
+import { instructionParts, instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/bible-talk.json');
@@ -774,5 +774,32 @@ describe('a setting is offered only when the turn asks for one', () => {
   it.each(aboutNoSetting)('%s asserts setting_offer absent', (file) => {
     const example = readJson(`${dir}/${file}`) as { expect: Record<string, unknown> };
     expect(example.expect.setting_offer, `${file}: add "setting_offer": { "present": false } to its expect`).toEqual({ present: false });
+  });
+});
+
+// mw-5r3p30.727: the smoke missed now and then because an English word's question (`what does 'love' really mean?`) read as a Greek word's question, so the offer's word
+// went into `words` too, and because a talk's `summary` was left out of an answer to a Greek-word question. The rules say it in one place each.
+describe('two rules the smoke found not to hold (mw-5r3p30.727)', () => {
+  const text = instructionsOf('bible-talk');
+  const part = (title: string) => {
+    const from = text.indexOf(title);
+    const next = text.indexOf('\n## ', from + 5);
+    return text.slice(from, next === -1 ? undefined : next);
+  };
+
+  it('keeps the word of a Greek offer out of `words`: an English word he names gets the offer and nothing in `words`', () => {
+    const offering = part('## Offering the Greek');
+    expect(offering).toMatch(/offer's `lemma` is not a `words` entry/);
+    expect(offering).toMatch(/what does 'love' really mean[^.]*English question/);
+  });
+
+  it('writes `summary` whenever `fold` is present, whatever the question is about', () => {
+    const so = part('## The conversation so far');
+    expect(so).toMatch(/`summary` is part of every answer to a request with `fold`[^.]*whatever the question is about/);
+  });
+
+  it('does not grow: the instructions stay within the size they had when the smoke missed (137,397 bytes)', () => {
+    const bytes = instructionParts('bible-talk').reduce((n, p) => n + Buffer.byteLength(p.text), 0);
+    expect(bytes).toBeLessThanOrEqual(137_397);
   });
 });
