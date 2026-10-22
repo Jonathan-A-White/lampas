@@ -12,7 +12,27 @@ import type { GristKind } from './gristKinds';
 import { currentLicence } from './licenceNow';
 
 export type MillFile = grist.GristFile;
-export type MillAnswer = grist.GristAnswer;
+/** What the mill says of a talk's session beside the answer to a grist that named a talk (mw-pxji7y.3): `fresh` (a new session, `reason` why), `resumed`, or `refreshed` (the session was ended at its cap and this one
+ * starts from its key points, `key_points`, which are sent once, in this answer). */
+export interface TalkSession {
+  session: 'fresh' | 'resumed' | 'refreshed';
+  reason?: string;
+  turns: number;
+  context_tokens: number;
+  key_points?: string;
+}
+export type MillAnswer = grist.GristAnswer & { talk?: TalkSession };
+
+/** The `talk` block of an answer, when the mill sent one in a shape this app reads; anything else is no block (an older mill sends none). */
+export function talkSessionOf(value: unknown): TalkSession | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const t = value as Partial<Record<keyof TalkSession, unknown>>;
+  if (t.session !== 'fresh' && t.session !== 'resumed' && t.session !== 'refreshed') return undefined;
+  if (typeof t.turns !== 'number' || typeof t.context_tokens !== 'number') return undefined;
+  if (t.reason !== undefined && typeof t.reason !== 'string') return undefined;
+  if (t.key_points !== undefined && typeof t.key_points !== 'string') return undefined;
+  return { session: t.session, turns: t.turns, context_tokens: t.context_tokens, ...(t.reason ? { reason: t.reason } : {}), ...(t.key_points ? { key_points: t.key_points } : {}) };
+}
 /** The most files one send carries: bsv-kit's cap. */
 export const MILL_MAX_FILES = grist.MAX_PHOTOS;
 /** How often a screen that waits on the mill pulls (protocol section 19, "Waiting"). */
@@ -102,6 +122,8 @@ export interface SendParams {
   files: MillFile[];
   /** the phone's part of its previous answer, in the plaintext beside `input` (docs/grist-client-timing.md) */
   clientTiming?: ClientTiming;
+  /** the talk this grist is a turn of (the mill keeps one session per talk), in the header beside app, kind and v; left out when none or empty */
+  talk?: string;
 }
 
 /** The kit's types of one kind as a phrase ('a, b or c'), and every kind's for a refusal line: built from grist.GRIST_FILE_TYPES, never written out. */
@@ -132,7 +154,7 @@ function check(files: MillFile[]): void {
 }
 
 function scriptOf(p: SendParams, attachments: grist.Attachment[]): string {
-  const plaintext = { grist: { app: p.app, kind: p.kind, v: p.v }, input: p.input, attachments, ...(p.clientTiming ? { client_timing: p.clientTiming } : {}) };
+  const plaintext = { grist: { app: p.app, kind: p.kind, v: p.v, ...(p.talk ? { talk: p.talk } : {}) }, input: p.input, attachments, ...(p.clientTiming ? { client_timing: p.clientTiming } : {}) };
   return grist.recordScriptHex(grist.sealEnvelope(JSON.stringify(plaintext), p.key, p.mill, Math.floor(Date.now() / 1000)));
 }
 

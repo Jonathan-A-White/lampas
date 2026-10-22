@@ -17,7 +17,7 @@ const realClearTimeout = globalThis.clearTimeout;
 
 /** What the fake opened of a grist: the header, the app's request, the attachments. */
 export interface ReceivedGrist {
-  grist: { app: string; kind: string; v: string; model?: string; effort?: string };
+  grist: { app: string; kind: string; v: string; model?: string; effort?: string; talk?: string };
   input: Record<string, unknown>;
   attachments: { hash: string; size: number; mime: string; name?: string }[];
   /** the phone's part of its previous answer's round trip (docs/ask-tutor.md 'How long an answer takes'), when the grist carries one */
@@ -29,6 +29,8 @@ export interface Reply {
   status: 'answered' | 'refused' | 'failed';
   answer?: unknown;
   reason?: string;
+  /** what the mill says of the talk's session beside an answer to a grist that named a talk (mw-pxji7y.3) */
+  talk?: { session: 'fresh' | 'resumed' | 'refreshed'; reason?: string; turns: number; context_tokens: number; key_points?: string };
 }
 
 export interface FakePostern {

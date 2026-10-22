@@ -17,9 +17,9 @@ import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudge
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
-import type { GristKind } from './gristKinds';
+import { TALK_KINDS, type GristKind } from './gristKinds';
 import { listenForAnswers, type StreamTarget } from './answerStream';
-import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, SendUnknownError, sendTimedGrist, timedDoor, UploadTimeoutError, type MillAnswer, type MillFile, type Page, type Resend, type SentGrist, type TimedDoor } from './mill';
+import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, SendUnknownError, sendTimedGrist, talkSessionOf, timedDoor, UploadTimeoutError, type MillAnswer, type MillFile, type Page, type Resend, type SentGrist, type TalkSession, type TimedDoor } from './mill';
 
 /** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
 export const TUTOR_APP = 'lampas';
@@ -383,6 +383,10 @@ export interface AskOptions {
   tookTooLong?: string;
   /** What the box says when the upload of a file runs out of its time, in place of UPLOAD_TOO_SLOW_MESSAGE: for an ask that can name what was being sent (a reading). */
   uploadSlow?: string;
+  /** The talk this ask is a turn of (src/services/talk.ts talkNameOf), named to the mill in the grist header so it keeps one session for it. Sent for the kinds that keep a talk (TALK_KINDS) alone: any other kind sends none. */
+  talk?: string;
+  /** Called with the `talk` block of the answer (what the mill says of the talk's session: fresh, resumed or refreshed, and the key points once) when the answer carries one in a shape this app reads. */
+  onTalk?: (talk: TalkSession) => void;
   baseUrl?: string;
 }
 
@@ -424,7 +428,7 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
     const { mill, events } = await meOf(d, deadline.signal);
     const contactAt = Date.now();
     const send = async (): Promise<SentGrist> => {
-      const grist = await sendTimedGrist({ door: d, uploadDoor, key, mill, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, files: options.files ?? [], clientTiming: report });
+      const grist = await sendTimedGrist({ door: d, uploadDoor, key, mill, app: TUTOR_APP, kind, v: TUTOR_VERSION, input: request, files: options.files ?? [], clientTiming: report, ...(options.talk && TALK_KINDS.includes(kind) ? { talk: options.talk } : {}) });
       resend = grist.resend;
       return grist;
     };
@@ -446,6 +450,8 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
       throw new TutorError('no-answer', reply.reason ? `The tutor could not answer: ${reply.reason}` : 'The tutor could not answer.');
     }
     if (!isAnswer(reply.answer)) throw new TutorError('no-answer', 'The tutor sent an answer this app could not read.');
+    const session = talkSessionOf(reply.talk);
+    if (session) options.onTalk?.(session);
     if (!options.untimed && !options.resume) noteAnswer(txid, { tapAt, sentAt, seenAt: waited.seenAt, deliveredAt: waited.deliveredAt, sendNetwork, pollNetwork: waited.pollNetwork });
     return reply.answer;
   } catch (err) {

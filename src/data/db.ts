@@ -173,8 +173,10 @@ export interface TalkTurn {
   spoken?: boolean;
   a: string;
   words: AnswerWord[];
-  /** when the answer arrived (ms since the epoch) */
+  /** when the answer arrived (ms since the epoch); for the first turn of a talk the time he asked, which the talk's name to the mill carries (src/services/talk.ts talkNameOf) */
   when: number;
+  /** the key points the tutor wrote when this answer began a fresh session of the talk (mw-pxji7y.3): shown behind 'The tutor wrote down the key points of this talk so far' */
+  keyPoints?: string;
   /** the settings the answer changed, each with what it replaced so Undo can put it back (src/settings/registry.ts) */
   changes?: AppliedChange[];
   /** a sentence for each change the answer asked for that was ignored */

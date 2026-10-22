@@ -36,6 +36,23 @@ export const TALK_KIND = 'bible-talk';
 export const MAX_TALK_CHARS = MAX_QUESTION_CHARS;
 /** How many earlier turns the grind is sent. */
 export const MAX_HISTORY_TURNS = 10;
+
+/** The longest name of a talk the mill takes, in bytes (grist header `talk`). */
+export const TALK_NAME_MAX = 80;
+
+/**
+ * The name this conversation goes by to the mill (mw-pxji7y.3): its ref and the time of its first turn, `rom.8@1790000000000`. `turns` are the conversation's kept turns,
+ * oldest first; with none yet the first turn is this one, and `when` is the time it must be kept with (`now`), so the name is the same on every later turn. New talk deletes the
+ * turns, so the next first turn makes a new name by itself; a quiz, a screen and a free talk have refs of their own. A ref too long for the mill's limit is cut and the time stays.
+ */
+export function talkNameOf(ref: string, turns: readonly { when: number }[], now = Date.now()): { talk: string; when: number } {
+  const when = turns[0]?.when ?? now;
+  const suffix = `@${when}`;
+  return { talk: ref.slice(0, Math.max(0, TALK_NAME_MAX - suffix.length)) + suffix, when };
+}
+
+/** What the grist header's `talk` adds to a request's weight once sealed: `,"talk":"..."`, counted in the cap beside the request. */
+const talkBytes = (talk: string | undefined): number => (talk ? new TextEncoder().encode(`,"talk":${JSON.stringify(talk)}`).length : 0);
 export { MAX_REQUEST_BYTES, GREEK_WORDS_BYTES, TALK_SUMMARY_MAX, FOLD_MAX_TURNS, FOLD_Q_CHARS, FOLD_A_CHARS };
 /** A long answer in the history is cut to this many characters when the request is too big. */
 const CLIPPED_CHARS = 240;
@@ -453,6 +470,9 @@ export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, '
 
 const clipTo = (text: string, max: number): string => (text.length <= max ? text : text.slice(0, max - CLIP_MARK.length).trimEnd() + CLIP_MARK);
 
+/** The key points the mill wrote when it ended a talk's session (at most 1500 characters) as the running summary the device keeps: a summary is at most TALK_SUMMARY_MAX, so longer key points are cut at that, ending in the clip mark. */
+export const summaryOfKeyPoints = (keyPoints: string): string => clipTo(keyPoints.trim(), TALK_SUMMARY_MAX);
+
 /** A turn as the fold carries it: what he said and what the tutor answered, each cut short. */
 export const foldedTurn = (turn: TalkHistoryEntry): TalkHistoryEntry => ({ q: clipTo(turn.q, FOLD_Q_CHARS), a: clipTo(turn.a, FOLD_A_CHARS) });
 
@@ -466,10 +486,10 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
  * The oldest turns go until the newest alone is left; then the oldest of his requests (the last in the list, newest first) go one at a time, then
  * his memory notes, and only then the newest turn (mw-5r3p30.615: a talk from Settings, whose screen weighs most of the record, forgot the question
  * it was answering). A turn dropped for room moves to the fold, cut short, so the tutor folds it into the summary (mw-5r3p30.700); the fold goes before the lesser fields, and the summary after the
- * newest turn, last of all. `held` is how many of the history's oldest turns the summary holds already (they are never folded twice). The questions of a drill's results go after the notes, right answers first. The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
+ * newest turn, last of all. `held` is how many of the history's oldest turns the summary holds already (they are never folded twice). `talk` is the talk's name, which weighs with the request. The questions of a drill's results go after the notes, right answers first. The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
  * the sound rules), except on a sound question.
  */
-export function fitHistory(request: TalkRequest, held = 0): TalkRequest {
+export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkRequest {
   let history = request.history.map((t) => ({ ...t }));
   let summary = request.summary;
   let fold = request.fold ? request.fold.map((t) => ({ ...t })) : [];
@@ -483,7 +503,9 @@ export function fitHistory(request: TalkRequest, held = 0): TalkRequest {
   delete rest.summary;
   delete rest.fold;
   const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
-  const tooBig = (): boolean => sizeOf(fitted()) > MAX_REQUEST_BYTES;
+  // the talk's name travels in the grist header beside the request and weighs with it (mw-pxji7y.3)
+  const named = talkBytes(talk);
+  const tooBig = (): boolean => sizeOf(fitted()) + named > MAX_REQUEST_BYTES;
   for (;;) {
     const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
     if (!tooBig() || long < 0) break;
@@ -625,5 +647,5 @@ export function buildTalkRequest(
 
 /** Sends what he said and waits for the companion's answer. Throws a TutorError (src/services/tutor.ts). */
 export function askTalk(request: TalkRequest, options: AskOptions): Promise<TalkAnswer> {
-  return askGrind(TALK_KIND, fitHistory(request), isTalkAnswer, options);
+  return askGrind(TALK_KIND, fitHistory(request, 0, options.talk), isTalkAnswer, options);
 }

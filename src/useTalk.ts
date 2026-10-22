@@ -15,6 +15,7 @@ import { learnFromTalk } from './data/repositories/profile';
 import { addTurn, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, getWorks, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
 import { resourcesForTutor, worksForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
+import type { TalkSession } from './services/mill';
 import { TutorError } from './services/tutor';
 import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
@@ -31,7 +32,7 @@ import { finishWelcome } from './data/repositories/welcome';
 import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { answerDrawn } from './services/clientTiming';
-import { askTalk, buildTalkRequest, fitHistory, MAX_HISTORY_TURNS, MAX_LINKS, scopeRef, scopeTitle, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
+import { askTalk, buildTalkRequest, fitHistory, MAX_HISTORY_TURNS, MAX_LINKS, scopeRef, scopeTitle, summaryOfKeyPoints, talkNameOf, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
 import { isOrphan, pendingOf, setPending, startRunning, talkKey, usePendingAsks, type AskState, type SentRef } from './pending/pendingAsks';
 
@@ -172,14 +173,21 @@ export function useTalk(
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
           let sentAs: string | undefined;
+          // the talk goes by its ref and the time of its first turn (the mill keeps one session for it); a first turn is kept with that very time, so the name is the same on every turn after it
+          const { talk, when: firstWhen } = talkNameOf(ref, turns, startedAt);
+          const said: { session?: TalkSession } = {};
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
-          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works), kept && { text: kept.summary, covered: kept.covered }), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)));
+          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works), kept && { text: kept.summary, covered: kept.covered }), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const answer = await askTalk(request, {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
             tapAt: startedAt,
             resume,
+            talk,
+            onTalk: (session) => {
+              said.session = session;
+            },
             onSent: (txid, seq) => {
               sentAs = txid;
               set({ phase: 'waiting', question: text, startedAt, sent: { txid, seq }, ...withFocus });
@@ -212,7 +220,10 @@ export function useTalk(
           if (go && !place && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
           // The tutor folded the turns this request carried in `fold` into the summary: keep it, and how many of the oldest turns it holds now; it never fails the talk.
           if (answer.summary && request.fold?.length) await keepTalkSummary(ref, answer.summary, (kept?.covered ?? 0) + request.fold.length).catch(() => undefined);
-          const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, cleanQ: answer.question, spoken, pictures });
+          // The mill ended the talk's session at its cap and began a fresh one from its key points: they are the talk's summary now (they hold every turn so far), and the turn says so (mw-pxji7y.3); it never fails the talk.
+          const keyPoints = said.session?.session === 'refreshed' ? said.session.key_points : undefined;
+          if (keyPoints) await keepTalkSummary(ref, summaryOfKeyPoints(keyPoints), turns.length).catch(() => undefined);
+          const id = await addTurn(ref, text, answer.answer, answer.words, turns.length === 0 ? firstWhen : Date.now(), { keyPoints, opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, cleanQ: answer.question, spoken, pictures });
           pictured.current[ref] = undefined;
           // the answer is kept: the message is done, even if the screen went away as it came
           setPending(key, undefined);
