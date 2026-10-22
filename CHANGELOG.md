@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.402
+_2026-10-22_
+- New: After you change chapter by swiping, Lampas offers once to hide the chapter buttons at the end of a chapter, and Settings can bring them back.
+
 ## 0.1.401
 _2026-10-22_
 - New: A long talk with the tutor now remembers what you said at the start, instead of wandering after ten turns.
