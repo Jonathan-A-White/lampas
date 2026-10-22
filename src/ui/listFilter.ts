@@ -1,16 +1,23 @@
 // src/ui/listFilter.ts — what SearchableList shows: the search filter and the ticked-first order, pure.
 
-export type ListItem = { id: string; name: string };
+/** `also` is more text the search looks in and the list does not show (a book's author and series). */
+export type ListItem = { id: string; name: string; also?: string };
 
 /** Ticked items first, then the rest, each group in the list's own order. */
 export function tickedFirst(items: readonly ListItem[], first: ReadonlySet<string>): ListItem[] {
   return [...items.filter((i) => first.has(i.id)), ...items.filter((i) => !first.has(i.id))];
 }
 
-/** The items whose name holds what he typed (ignoring case and spaces at the ends); all of them for an empty search. */
+/** Items in the order of their rank, the lowest first, each rank in the list's own order; an item with no rank goes last. */
+export function ranked(items: readonly ListItem[], rank: ReadonlyMap<string, number>): ListItem[] {
+  const of = (i: ListItem) => rank.get(i.id) ?? Number.MAX_SAFE_INTEGER;
+  return [...items].sort((a, b) => of(a) - of(b));
+}
+
+/** The items whose name (or `also`) holds what he typed (ignoring case and spaces at the ends); all of them for an empty search. */
 export function matching(items: readonly ListItem[], query: string): ListItem[] {
   const q = query.trim().toLocaleLowerCase();
-  return q === '' ? [...items] : items.filter((i) => i.name.toLocaleLowerCase().includes(q));
+  return q === '' ? [...items] : items.filter((i) => i.name.toLocaleLowerCase().includes(q) || (i.also?.toLocaleLowerCase().includes(q) ?? false));
 }
 
 /** A name as the filter compares it: lower case, no spaces or dots ('1 John' -> '1john'). */
