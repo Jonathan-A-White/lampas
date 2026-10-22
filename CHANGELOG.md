@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.411
+_2026-10-22_
+- New: A new Your Logos library screen lists the Logos books Lampas can open, by kind, where you switch each one off, on or pin it, and search by title or author.
+
 ## 0.1.408
 _2026-10-22_
 - Fixed: the Bible talk tutor now gives a plain English answer, with one offer of the Greek, when you ask what an English word like "love" really means, and keeps its notes on a long talk.
