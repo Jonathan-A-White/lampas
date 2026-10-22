@@ -11,16 +11,16 @@
 // What his right answers show (mw-hqd5bz.17, inference.ts, PROVISIONAL): a form read right credits its letters, sounds and marks, and one with enough
 // right uses is solid (inferred) without being asked. A miss on a needed idea steps down to the letters, sounds and marks of the forms it was asked
 // on (its `focus`), not to the whole alphabet; one of them already solid is passed over.
+import { ANSWERS_PER_NODE, QUESTION_LIMIT, levelOfAnswers } from 'learn-kit/drill';
 import { formOfQuestion, foundationOf, inferFromAnswer, isInferredSolid, type Evidence } from './inference';
 import { TIERS, ideaOf, type Tier } from './ladder';
 import type { Level, PassageNeeds } from './needs';
 import type { QuickRound } from './quickRound';
 import type { GrammarQuestion } from './questions';
 
-/** Questions in one sitting. PROVISIONAL. */
-export const QUESTION_LIMIT = 20;
-/** Questions on one idea. */
-export const ANSWERS_PER_IDEA = 2;
+/** Questions in one sitting (20) and on one idea (2), and the level two answers give: both right solid, one right frontier, none not yet. PROVISIONAL. learn-kit's (`learn-kit/drill`). */
+export { QUESTION_LIMIT, levelOfAnswers };
+export const ANSWERS_PER_IDEA = ANSWERS_PER_NODE;
 
 /** The tiers below the sentence: where the walk starts above, and always on the walk. */
 const FOUNDATION: readonly Tier[] = ['letters', 'sounds', 'marks'];
@@ -121,8 +121,6 @@ export function startPlacement(
  */
 export const reachedFoundation = (state: PlacementState): boolean =>
   state.asked.length === 0 || state.focus !== null || state.asked.some((a) => FOUNDATION.includes(ideaOf(a.ideaId).tier));
-
-export const levelOfAnswers = (rights: number): Level => (rights >= ANSWERS_PER_IDEA ? 'solid' : rights > 0 ? 'frontier' : 'notYet');
 
 /** The next idea up that was not asked in this placement, or -1. */
 function above(state: PlacementState, from: number): number {

@@ -18,21 +18,22 @@
 // levels and, when a prerequisite is not solid, returns {needs: <the lowest>} instead of a walk (the Governor: one solid at a time, then one frontier).
 // The ideas of the letters, sounds and marks tiers are built from their items (drillItems.ts); a noun-like idea is asked by what it is, by spotting it in a verse
 // of `passage`, and by its ending (questions.ts), a preposition by its meaning case by case; with no passage only what the idea says of itself can be asked.
+// The walk and the lowest unmet need are learn-kit's (mw-79en7t.5, `learn-kit/drill`): start and answer hand the walk to the kit's startWalk and answerWalk, and this file keeps
+// Lampas's own: the steps of questions an idea is asked in (drillSteps), the group an item is held to by (isSolid), and the sides of a sound rule.
+import { MAX_QUESTIONS, PROVED_STREAK, answerWalk, startWalk, unmetNeed as kitUnmetNeed, type DrillResult as KitResult, type Walk, type WalkStep } from 'learn-kit/drill';
 import type { Chapter } from '../chapter';
 import { chosenPronunciation } from '../../speech/greek';
 import { soundRuleOf, type Pronunciation } from '../../speech/pronunciation';
 import { mulberry32, shuffle } from '../quiz';
 import { isSolid } from './inference';
 import { collect, itemSteps, perFacet, questionKey, rng, sideFacet, type DrillContext, type RawStep } from './drillItems';
-import { groupOfItem, ideaOf, type Facet } from './ladder';
+import { LADDER_PATH, groupOfItem, ideaOf, type Facet } from './ladder';
 import type { Level } from './needs';
 import { COMPOUND_VERBS, PREPOSITIONS } from './prepositions';
 import { MEANING, buildCompound, buildConcept, buildEnding, buildPreposition, buildTapForm, type GrammarQuestion } from './questions';
 
-/** Questions in one walk. PROVISIONAL. */
-export const MAX_QUESTIONS = 14;
-/** Unhinted rights in a row at the top step that prove the idea. PROVISIONAL. */
-export const PROVED_STREAK = 2;
+/** Questions in one walk (14) and unhinted rights in a row at the top step that prove the idea (2). PROVISIONAL. */
+export { MAX_QUESTIONS, PROVED_STREAK };
 /** Questions kept for one step of a passage-based idea. */
 const STEP_SIZE = 12;
 /** A verse with more words than this is a harder place to spot a form. */
@@ -119,15 +120,17 @@ export function drillSteps(ideaId: string, options: DrillOptions = {}): DrillSte
 // ---- The foundation ----
 
 /**
- * The lowest prerequisite of the idea that is not solid, or null: the idea an item belongs to is not a prerequisite of it, and a missing level is not solid.
- * An item of a group he has made solid (the alphabet marked known on its sheet, whose letters are not each solid) counts as solid (mw-i7xe0n.19).
+ * The levels of an idea's prerequisites as the kit reads them: solid when he has them solid, not yet otherwise; the idea an item belongs to is not a prerequisite of it, and an item of
+ * a group he has made solid (the alphabet marked known on its sheet, whose letters are not each solid) counts as solid (mw-i7xe0n.19, isSolid).
  */
-export function unmetNeed(ideaId: string, levels: ReadonlyMap<string, Level>): string | null {
+function needLevels(ideaId: string, levels: ReadonlyMap<string, Level>): Map<string, Level> {
   const idea = ideaOf(ideaId);
   const group = groupOfItem(idea);
-    const unmet = idea.needs.filter((id) => id !== group && !isSolid(levels, id)).map(ideaOf);
-  return unmet.length === 0 ? null : unmet.sort((a, b) => a.rung - b.rung)[0].id;
+  return new Map(idea.needs.map((id): [string, Level] => [id, id === group || isSolid(levels, id) ? 'solid' : 'notYet']));
 }
+
+/** The lowest prerequisite of the idea that is not solid, or null: lowest by rung (the kit reads it as the idea's level), and a missing level is not solid. */
+export const unmetNeed = (ideaId: string, levels: ReadonlyMap<string, Level>): string | null => kitUnmetNeed(LADDER_PATH, ideaId, needLevels(ideaId, levels));
 
 // ---- The walk ----
 
@@ -178,51 +181,30 @@ export const currentQuestion = (walk: DrillWalk): DrillQuestion | null => walk.c
 /** How the walk ended, or null while it goes on. */
 export const resultOf = (walk: DrillWalk): DrillResult | null => walk.result;
 
-/** The questions asked so far at a facet: [rights, misses]; a hinted right is neither. */
-function tally(asked: readonly DrillAnswer[], steps: readonly DrillStep[]): Map<string, { facet: Facet; right: number; missed: number; word: boolean }> {
-  const facets = new Map<string, { facet: Facet; right: number; missed: number; word: boolean }>();
-  for (const a of asked) {
-    const t = facets.get(a.facet.id) ?? { facet: a.facet, right: 0, missed: 0, word: false };
-    if (!a.right) {
-      t.missed += 1;
-      if (steps[a.step - 1]?.words) t.word = true;
-    } else if (!a.hinted) t.right += 1;
-    facets.set(a.facet.id, t);
-  }
-  return facets;
-}
+// ---- The kit's walk, in Lampas's shape ----
 
-/** Where he stands on each step he was asked: 'held' when his latest sure answer there was right, 'failed' when it was a miss. */
-function standing(asked: readonly DrillAnswer[]): Map<number, 'held' | 'failed'> {
-  const out = new Map<number, 'held' | 'failed'>();
-  for (const a of asked) {
-    if (!a.right) out.set(a.step, 'failed');
-    else if (!a.hinted) out.set(a.step, 'held');
-  }
-  return out;
-}
+/** The form every question of the walk is in for the kit: the kit reads a question's key, step and facet, and carries the rest (`payload`) without looking. */
+const FORM = 'grammar';
 
-const highestHeld = (stood: ReadonlyMap<number, 'held' | 'failed'>, below = Infinity): number =>
-  Math.max(0, ...[...stood].filter(([step, s]) => s === 'held' && step < below).map(([step]) => step));
+/** The steps as the kit walks them: a step of words to read is one that retries a first miss. */
+const kitSteps = (steps: readonly DrillStep[]): WalkStep<DrillQuestion>[] =>
+  steps.map((s) => ({
+    step: s.step,
+    title: s.title,
+    ...(s.words ? { retryFirstMiss: true as const } : {}),
+    questions: s.questions.map((q) => ({ key: q.key, form: FORM, payload: q, facet: q.facet, step: q.step })),
+  }));
 
-/**
- * The next question at `step`: one not asked yet; the facet he just missed first when the walk went back to an easier step (to see whether it is a gap), else a
- * facet not asked yet, else the one asked least. When the step has no question left, the one asked longest ago, but never the one just asked.
- */
-function nextAt(steps: readonly DrillStep[], step: number, asked: readonly DrillAnswer[], retry: string | null): DrillQuestion | null {
-  const pool = steps[step - 1]?.questions ?? [];
-  const last = asked[asked.length - 1]?.key;
-  const seen = new Set(asked.map((a) => a.key));
-  let candidates = pool.filter((q) => !seen.has(q.key));
-  if (candidates.length === 0) {
-    const lastAsked = (q: DrillQuestion): number => asked.reduce((at, a, i) => (a.key === q.key ? i : at), -1);
-    candidates = pool.filter((q) => q.key !== last).sort((a, b) => lastAsked(a) - lastAsked(b));
-  }
-  if (candidates.length === 0) return pool[0] ?? null;
-  const times = (q: DrillQuestion): number => asked.filter((a) => a.facet.id === q.facet.id).length;
-  const again = retry === null ? undefined : candidates.find((q) => q.facet.id === retry);
-  return again ?? candidates.reduce((best, q) => (times(q) < times(best) ? q : best));
-}
+const resultFromKit = (r: KitResult): DrillResult => ({
+  ideaId: r.nodeId,
+  proved: r.proved,
+  edgeStep: r.edgeStep,
+  topStep: r.topStep,
+  strong: r.strong,
+  weak: r.weak,
+  answers: r.answers,
+  ended: r.ended,
+});
 
 /**
  * Begins the walk on an idea at step 1, or, when a prerequisite of the idea is not solid in `levels`, says which one is the lowest: {needs: id}. The questions assume the
@@ -233,23 +215,10 @@ export function start(ideaId: string, levels: ReadonlyMap<string, Level>, option
   if (needs !== null) return { needs };
   const steps = drillSteps(ideaId, options);
   const rule = soundRuleOf(options.scheme ?? chosenPronunciation(), ideaId);
-  const asked = new Set(steps.flatMap((s) => s.questions.map((q) => q.facet.id)));
-  const sides = rule ? rule.sides.map((side) => sideFacet(rule, side).id).filter((id) => asked.has(id)) : [];
-  return { ideaId, steps, step: 1, asked: [], current: nextAt(steps, 1, [], null), streak: 0, result: null, sides };
-}
-
-/** The sides of the idea's sound rule not yet answered right, unhinted. */
-const sidesMissing = (walk: DrillWalk, asked: readonly DrillAnswer[]): string[] =>
-  (walk.sides ?? []).filter((id) => !asked.some((a) => a.facet.id === id && a.right && !a.hinted));
-
-function finish(walk: DrillWalk, asked: DrillAnswer[], ended: DrillEnd, streak: number): DrillWalk {
-  const topStep = walk.steps.length;
-  const facets = [...tally(asked, walk.steps).values()];
-  const isWeak = (t: { right: number; missed: number; word: boolean }): boolean => t.word || (t.missed >= 1 && t.right < 2);
-  const weak = facets.filter(isWeak).map((t) => t.facet);
-  const strong = facets.filter((t) => t.right >= 1 && !isWeak(t)).map((t) => t.facet);
-  const edgeStep = ended === 'proved' ? topStep : highestHeld(standing(asked));
-  return { ...walk, asked, current: null, streak, result: { ideaId: walk.ideaId, proved: ended === 'proved', edgeStep, topStep, strong, weak, answers: asked, ended } };
+  const required = rule ? rule.sides.map((side) => sideFacet(rule, side).id) : [];
+  const walk = startWalk(LADDER_PATH, ideaId, needLevels(ideaId, levels), kitSteps(steps), { required });
+  if ('needs' in walk) return walk;
+  return { ideaId, steps, step: 1, asked: [], current: walk.current?.payload ?? null, streak: 0, result: null, sides: walk.required };
 }
 
 /**
@@ -257,35 +226,19 @@ function finish(walk: DrillWalk, asked: DrillAnswer[], ended: DrillEnd, streak: 
  * the highest step he holds below it and the one missed; a hinted right stays put and breaks the run. A walk that is over does not change.
  */
 export function answer(walk: DrillWalk, right: boolean, hinted: boolean): DrillWalk {
-  const q = walk.current;
-  if (walk.result || !q) return walk;
-  const asked = [...walk.asked, { step: q.step, facet: q.facet, key: q.key, right, hinted }];
-  const top = walk.steps.length;
-  const sure = right && !hinted;
-  const streak = sure && q.step === top ? walk.streak + 1 : 0;
-  const missing = sidesMissing(walk, asked);
-  if (streak >= PROVED_STREAK && missing.length === 0) return finish(walk, asked, 'proved', streak);
-  if (asked.length >= MAX_QUESTIONS) return finish(walk, asked, 'limit', streak);
-
-  const stood = standing(asked);
-  let step = q.step;
-  let retry: string | null = null;
-  if (sure) {
-    // the step he holds has the one above it failed: that is the edge
-    if (stood.get(q.step + 1) === 'failed') return finish(walk, asked, 'edge', streak);
-    step = Math.min(q.step + 1, top);
-  } else if (!right) {
-    const base = highestHeld(stood, q.step);
-    if (base === 0 && q.step === 1 && asked.filter((a) => a.step === 1 && !a.right).length >= 2) return finish(walk, asked, 'edge', streak);
-    step = Math.max(1, Math.floor((base + q.step) / 2));
-    // a first miss on a word asks the same target with another word, at the same step (mw-i7xe0n.12); a second one goes back as any miss does
-    const second = walk.asked.some((a) => a.step === q.step && a.facet.id === q.facet.id && !a.right);
-    if (walk.steps[q.step - 1]?.words && !second) step = q.step;
-    // an easier step asks the facet just missed again; step 1 asks another
-    retry = step < q.step || walk.steps[q.step - 1]?.words ? q.facet.id : null;
-  }
-  // a hinted right on a side of the sound rule still missing asks that side again (mw-i7xe0n.23); else, at the top, a side not yet answered right is asked first
-  if (right && hinted && missing.includes(q.facet.id)) retry = q.facet.id;
-  if (retry === null && step === top) retry = missing[0] ?? null;
-  return { ...walk, step, asked, current: nextAt(walk.steps, step, asked, retry), streak };
+  if (walk.result || !walk.current) return walk;
+  const kit: Walk<DrillQuestion> = {
+    nodeId: walk.ideaId,
+    steps: kitSteps(walk.steps),
+    step: walk.step,
+    asked: walk.asked,
+    current: { key: walk.current.key, form: FORM, payload: walk.current, facet: walk.current.facet, step: walk.current.step },
+    streak: walk.streak,
+    result: null,
+    maxQuestions: MAX_QUESTIONS,
+    provedStreak: PROVED_STREAK,
+    required: walk.sides ?? [],
+  };
+  const next = answerWalk(kit, right, hinted);
+  return { ...walk, step: next.step, asked: next.asked, current: next.current?.payload ?? null, streak: next.streak, result: next.result && resultFromKit(next.result) };
 }
