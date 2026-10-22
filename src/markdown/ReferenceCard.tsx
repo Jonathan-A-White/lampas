@@ -8,12 +8,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, 
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, type Chapter, type Verse } from '../data/chapter';
+import { otBookOf } from '../data/otBooks';
+import { AnotherBookButton } from '../library/InLogosDoors';
 import { getLogosBible, getStudyResources } from '../data/repositories';
 import { openAtVerse } from '../nav/readerRequest';
 import { openSettingsSection } from '../settings/link';
 import { verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
-import { useSheetBack } from '../ui/sheetBack';
+import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
 import { VerseText } from '../reader/VerseText';
 import { useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
@@ -86,14 +88,24 @@ export function ElsewhereLine({ place, said = true, onSettings }: { place: Elsew
   return (
     <>
       {not ? <p className="py-1 text-lg text-muted">{not}</p> : null}
-      <a
-        href={link.url}
-        data-fallback={link.fallback}
-        onClick={() => armFallback(link.fallback)}
-        className="mb-1 inline-flex min-h-11 items-center rounded-lg bg-accent px-5 text-base font-medium text-accent-fg"
-      >
-        Open in Logos<span aria-hidden="true"> ↗</span>
-      </a>
+      <div className="mb-1 flex flex-wrap items-center gap-2">
+        <a
+          href={link.url}
+          data-fallback={link.fallback}
+          onClick={() => armFallback(link.fallback)}
+          className="inline-flex min-h-11 items-center rounded-lg bg-accent px-5 text-base font-medium text-accent-fg"
+        >
+          Open in Logos<span aria-hidden="true"> ↗</span>
+        </a>
+        {/* the second door: his Bibles and interlinears that cover the place (docs/design/library-at-scale.md 3.6; Lampas lists no commentary of the Old Testament) */}
+        {place ? (
+          <AnotherBookButton
+            place={{ book: place.book, chapter: place.chapter, verse: place.verse ?? 1 }}
+            name={`${otBookOf(place.book)?.name ?? place.book} ${place.chapter}:${place.verse ?? 1}`}
+            className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-base font-medium text-accent active:bg-line"
+          />
+        ) : null}
+      </div>
     </>
   );
 }
@@ -209,20 +221,6 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
     </div>,
     document.body,
   );
-}
-
-/** Runs `then` once the history entry of the card, which closing it takes off with a step Back (src/ui/sheetBack.ts), has gone, or at the latest a moment later. */
-function afterSheetEntryGone(then: () => void): void {
-  let done = false;
-  const run = (): void => {
-    if (done) return;
-    done = true;
-    window.removeEventListener('popstate', run);
-    clearTimeout(timer);
-    then();
-  };
-  const timer = setTimeout(run, 400);
-  window.addEventListener('popstate', run);
 }
 
 /** A reference link in an answer: the words stay where they are; a tap opens the card. With `mark` (a Greek form, as a Review question gives it) the card shows

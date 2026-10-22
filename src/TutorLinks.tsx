@@ -16,6 +16,7 @@ import { placeOf, verseChips, wordChips, workChip, type LinkChip } from './resou
 import type { StudyResource } from './resources';
 import { useGreekInterest } from './settings/useGreekInterest';
 import { AppMissingSheet } from './WordSheet';
+import { AnotherBookButton } from './library/InLogosDoors';
 import { greekLang } from './script/greekLang';
 
 /** The Strong's number of each linked lemma, from the lexicon; '' for a lemma it lacks or when it cannot be loaded. Undefined until they are looked up. */
@@ -45,6 +46,8 @@ interface Group {
   greek: boolean;
   /** the Reader chip of a verse link */
   reader?: { book: string; chapter: number; verse?: number };
+  /** a verse link: the second door, In another book, opens the chooser of his Logos shelf at the place */
+  place?: { book: string; chapter: number; verse?: number };
   /** the key of a setting link: its chip opens Settings at that row */
   setting?: string;
   chips: LinkChip[];
@@ -74,7 +77,7 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);
-      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, chips: verseChips(place, place.name, chosen, bible, level) });
+      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, place, chips: verseChips(place, place.name, chosen, bible, level) });
     }
   }
   const drawn = groups.filter((g) => g.reader || g.setting || g.chips.length > 0);
@@ -128,6 +131,7 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
                 {chip.tile}
               </a>
             ))}
+            {group.place ? <AnotherBookButton place={group.place} name={group.name} label="In another book" className={CHIP} /> : null}
           </li>
         ))}
       </ul>

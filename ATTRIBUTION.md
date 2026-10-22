@@ -118,6 +118,8 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   read from a listing of the maker's own Logos library; no text of any of them is kept, shown or sent.
   A screen of its own, Your Logos library (at the address `#/library` until Settings links it), lists the Logos books Lampas knows how to open, by kind (lexicons, grammars, Greek texts, interlinears, commentaries,
   Bibles and devotionals): each is Off, On or Pinned by a tap, and a search finds a book by its title or author. Lampas keeps only those choices on the phone; nothing of your library is read, shown or sent.
+  On a verse (the Verse view, the tutor's verse links, Today's Psalms and Proverbs, the reference card of an Old Testament verse), In Logos opens it in your own Bible and In another book… opens a chooser of the Greek texts,
+  interlinears and commentaries you have switched on that cover it, each row a link to the verse in that book; only links are built, and nothing of those books is read, shown or sent.
   With Logos on, a tap on an English word (at Just English, on the small English word sheet; at the Greek steps, on the word sheet too) offers Look it up in Logos: a link to the word in
   Webster's 1828 *An American Dictionary of the English Language* (Noah Webster) in your own Logos library, if you own it. Only a link is built, from the book's Resource ID; no text of the dictionary is kept, shown or sent.
 - **[Audible](https://www.audible.com)** and **The Word of Promise Audio Bible** (NKJV), by Thomas Nelson. Only if you choose it in Settings > Study resources >

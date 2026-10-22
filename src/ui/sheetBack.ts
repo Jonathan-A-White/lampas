@@ -222,3 +222,18 @@ export function useSheetBack(onClose: () => void): () => number {
   }, [opener]);
   return levelNow;
 }
+
+/** Runs `then` once the history entry of a sheet that has just closed, which closing it takes off with a step Back, has gone, or at the latest a moment later: a screen opened before then
+ *  would be opened over an entry that is about to be popped. (The reference card's Open, the chooser's Manage.) */
+export function afterSheetEntryGone(then: () => void): void {
+  let done = false;
+  const run = (): void => {
+    if (done) return;
+    done = true;
+    window.removeEventListener('popstate', run);
+    clearTimeout(timer);
+    then();
+  };
+  const timer = setTimeout(run, 400);
+  window.addEventListener('popstate', run);
+}
