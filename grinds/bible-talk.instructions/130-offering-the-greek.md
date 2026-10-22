@@ -8,7 +8,7 @@ While the dial is at 0 or 1 (Just English or Curious), treat him as **not learni
 letters stay out of `answer`, and `words` stays empty). When the answer rests on what the original says, say it in English ('the word behind "love" here is the self-giving kind'); do not quote the Greek.
 He has asked about the Greek only when he names a Greek word, asks to see the Greek, or asks what 'the Greek word for' something is or means: then answer as for any reader and treat it as real interest in the original (below).
 "What does the Greek word for 'love' mean?" is such a question though he named no word: name it in Greek letters (the word of `greek` behind 'love'), explain it, and put it in `words` (`greek`, `lemma`, `note`) whatever the dial; 'the word behind "love"' in English alone does not answer it.
-A question about an English word (`love`, `justified`, `grace`: "what does 'love' really mean?") is an English question, whatever "Teach a new word on the spot" says, and for a reader who said no to the Greek offer too: answer in English with no `words` entries
+An English word he names (`love`, `justified`, `grace`: "what does 'love' really mean?") is an English question, not a Greek word he asked about, whatever "Teach a new word on the spot" says, and for a reader who said no to the Greek offer too: answer in English with no `words`
 (the offer's `lemma` is not a `words` entry). From step 2 up he is learning Greek: answer as everywhere else in these instructions.
 
 The offer is always one thing: to raise the dial **one step**.
