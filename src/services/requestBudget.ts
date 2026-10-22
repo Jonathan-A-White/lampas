@@ -8,6 +8,16 @@ export const MAX_REQUEST_BYTES = 8000;
  * keeps whatever he pastes and warns past this (never cuts it); the grinds' input schemas (question) and answer schemas (the cleaned question) say the same. */
 export const MAX_QUESTION_CHARS = 4000;
 
+/** The longest running summary of a talk, in characters (mw-5r3p30.700): what the tutor writes of the turns that fell out of the 10-turn window; the answer schema and the request schema say the same. */
+export const TALK_SUMMARY_MAX = 1000;
+
+/** At most this many turns that fell out of the window are sent to be folded into the summary in one request (`fold`); a longer backlog (an old talk) is worked off a few at a time. */
+export const FOLD_MAX_TURNS = 3;
+
+/** A turn in `fold` is cut to this much of what he said and of what the tutor answered, ending in … where it is cut: the summary keeps the point, not the words. */
+export const FOLD_Q_CHARS = 200;
+export const FOLD_A_CHARS = 300;
+
 /** The mark a clipped text ends with, so the tutor can see the text goes on past what it was sent. */
 export const TEXT_CLIP_MARK = ' …';
 

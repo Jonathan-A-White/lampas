@@ -12,7 +12,7 @@ import { focusLemmaOf, learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { learnFromTalk } from './data/repositories/profile';
-import { addTurn, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getWorks, listLevels, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
+import { addTurn, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, getWorks, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
 import { resourcesForTutor, worksForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { TutorError } from './services/tutor';
@@ -31,7 +31,7 @@ import { finishWelcome } from './data/repositories/welcome';
 import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { answerDrawn } from './services/clientTiming';
-import { askTalk, buildTalkRequest, MAX_LINKS, scopeRef, scopeTitle, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
+import { askTalk, buildTalkRequest, fitHistory, MAX_HISTORY_TURNS, MAX_LINKS, scopeRef, scopeTitle, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
 import { isOrphan, pendingOf, setPending, startRunning, talkKey, usePendingAsks, type AskState, type SentRef } from './pending/pendingAsks';
 
@@ -143,7 +143,7 @@ export function useTalk(
       set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume, ...withFocus } : { phase: 'sending', question: text, startedAt, ...withFocus });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty, works] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty, works, kept] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -162,6 +162,8 @@ export function useTalk(
             // the solid words and ideas he now slips on or has been away from: the tutor says so once and may offer to move them back (src/data/rusty.ts); not in a quiz
             scope.quiz || scope.welcome ? Promise.resolve(undefined) : rustyNow().catch(() => undefined),
             getWorks().catch(() => []),
+            // the running summary of this talk and how many of its oldest turns it holds (mw-5r3p30.700)
+            getTalkSummary(ref).catch(() => undefined),
           ]);
           // What he lacks under the topic his words name, worked out here so the tutor picks from it and never guesses (mw-1vuvq6.5); a quiz is not a place to bridge
           const missing = levels && !scope.quiz && !scope.screen?.credits ? missingFoundations(text, levelsOf(levels), focus && 'term' in focus ? focus.term : undefined) : undefined;
@@ -170,7 +172,9 @@ export function useTalk(
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
           let sentAs: string | undefined;
-          const answer = await askTalk(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works)), {
+          // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
+          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works), kept && { text: kept.summary, covered: kept.covered }), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)));
+          const answer = await askTalk(request, {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
@@ -206,6 +210,8 @@ export function useTalk(
           const stayed = go?.ok && door?.here?.(go.place) ? go.place.title : undefined;
           const unopened = go?.ok && door && !door.allowed(ref) && !stayed ? go.place : undefined;
           if (go && !place && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
+          // The tutor folded the turns this request carried in `fold` into the summary: keep it, and how many of the oldest turns it holds now; it never fails the talk.
+          if (answer.summary && request.fold?.length) await keepTalkSummary(ref, answer.summary, (kept?.covered ?? 0) + request.fold.length).catch(() => undefined);
           const id = await addTurn(ref, text, answer.answer, answer.words, Date.now(), { opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, cleanQ: answer.question, spoken, pictures });
           pictured.current[ref] = undefined;
           // the answer is kept: the message is done, even if the screen went away as it came

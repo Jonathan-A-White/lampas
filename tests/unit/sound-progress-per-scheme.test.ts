@@ -141,7 +141,7 @@ describe('the upgrade from version 19', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(24);
+    expect(db.verno).toBe(25);
     expect((await db.grammarLevels.toArray()).sort((a, b) => a.id.localeCompare(b.id))).toEqual([grammar, { ...sound, id: 'modern:breathing-rough' }]);
     expect((await db.reviews.toArray()).map((r) => `${r.kind}/${r.id}`).sort()).toEqual(['grammar/case-genitive', 'grammar/modern:breathing-rough', 'word/λέγω']);
     expect(await db.reviews.get(['grammar', 'modern:breathing-rough'])).toEqual({ ...soundReview, id: 'modern:breathing-rough' });

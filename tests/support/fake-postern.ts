@@ -49,6 +49,8 @@ export interface FakePostern {
   greekReply: Reply | undefined;
   /** What a grist of a given kind is answered with instead of `autoReply` (a forwarding grind such as 'feedback' answers {status:'sent'} while the tutor answers a talk). */
   kindReplies: Record<string, Reply>;
+  /** What a grist is answered with, worked out from the request it carries (the tutor that reads `history`, `summary` and `fold`); a reply it gives wins over `kindReplies` and `autoReply`, undefined leaves the grist to them. */
+  replyFor: ((input: Record<string, unknown>, kind: string) => Reply | undefined) | undefined;
   /** A grist of a given kind is held: the fake takes it in but its POST does not return until this promise settles (a slow mill or phone on slow data). */
   holds: Record<string, Promise<void>>;
   /** The next POST /api/messages waits this long (ms, on the test's clock) before the fake takes its grist in, as a stalled link that delivers it late does; used once. */
@@ -227,6 +229,7 @@ export function makeFakePostern(): FakePostern {
     autoReply: undefined,
     greekReply: undefined,
     kindReplies: {},
+    replyFor: undefined,
     holds: {},
     slowSendMs: undefined,
     licensed: true,
@@ -281,6 +284,7 @@ export function makeFakePostern(): FakePostern {
       fake.autoReply = reply;
       fake.greekReply = undefined;
       fake.kindReplies = {};
+      fake.replyFor = undefined;
       while (unanswered.length > 0) answerGrist(unanswered.shift() as Waiting, reply);
     },
   };
@@ -373,8 +377,10 @@ export function makeFakePostern(): FakePostern {
         answerGrist(waiting, reply);
       };
       const greek = fake.greekReply !== undefined && (opened.input as { lang?: unknown } | undefined)?.lang === 'el';
+      const byRequest = fake.replyFor?.(opened.input, opened.grist.kind);
       const byKind = fake.kindReplies[opened.grist.kind];
-      if (byKind) answerThis(byKind);
+      if (byRequest) answerThis(byRequest);
+      else if (byKind) answerThis(byKind);
       else if (fake.autoReply) answerThis(greek && fake.greekReply ? fake.greekReply : fake.autoReply);
       else waiters.shift()?.();
       const hold = fake.holds[opened.grist.kind];

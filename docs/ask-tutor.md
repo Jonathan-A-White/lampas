@@ -76,6 +76,30 @@ pictures) and brings the empty state with all of them back, also after a reload.
 A screen talk is kept in the `talks` table under `screen.<slug of the name>` (`screen.goal`, `screen.my-study-way`; `scopeRef`, `screenRef` in
 `data/repositories/talks.ts`), not under a verse or a chapter, and shows again on return. The sheet is titled `Ask the tutor: Goal`.
 
+## A long talk remembers (mw-5r3p30.700, PROVISIONAL)
+
+His ask: 'it wanders'. Every talk (the `talks` table, by `talkRef`) keeps a running summary on the phone: Dexie `talkSummaries` (v25: `{ref, summary, covered, when}`, `getTalkSummary` / `keepTalkSummary` in `data/repositories/talks.ts`;
+`covered` is how many of the talk's oldest turns the summary holds; `deleteTurns`, New talk, forgets it with the turns). The bible-talk request still carries the last 10 turns as `history` and adds
+`summary` (the kept text, at most TALK_SUMMARY_MAX 1000 characters) and, for the turns older than the window that the summary does not hold yet, `fold`: at most FOLD_MAX_TURNS (3), oldest first, each cut to FOLD_Q_CHARS / FOLD_A_CHARS
+(`foldedTurn`), with `unfolded` (a count) when more wait behind them (a talk that was long before this shipped is worked off three at a time). The grind (instructions part `015-the-conversation-so-far.md`) answers a request with `fold` with a new `summary`
+(the one it was sent and the fold, in one); `useTalk` saves it with `covered` + the fold's length, never when the answer lacks it or the request had no fold, so a missed one is simply sent again. `fitHistory` keeps the `summary` over every other optional part (it goes only after the newest
+turn); a turn it drops from `history` for room moves to `fold` cut short (not while `unfolded` says older ones wait: the summary would skip them) and the fold is shed before the word list, his requests and his notes. The next step (a talk resuming its own
+Claude session with the one-hour cache, then key points and a fresh one) is a decision for the Governor and the mill, not in this story. Checks: tests/unit/talk-summary.test.ts, tests/e2e/talk-summary.spec.ts, grinds/examples/bible-talk/summary-folds-fallen-turns.json and answers-from-summary.json.
+
+Which tutor conversations keep history and get the summary (the sweep of mw-5r3p30.700):
+
+| Conversation | Grind | Keeps history | Gets the summary |
+| --- | --- | --- | --- |
+| Talk sheet (chapter, verse, passage), its quiz (Quiz me), a word's Help, a grammar term's, a paradigm table's, a Quick test question's Ask the tutor | bible-talk | yes, last 10 turns | yes |
+| The round Ask the tutor on a screen (`screen.<slug>`), a drill's results (`screen.drill-it.<ms>`), a shared talk (`talk.<ms>`), Ask for more | bible-talk | yes | yes |
+| The welcome interview | bible-talk (mode welcome) | yes (a few turns, never past the window) | yes in code, none kept in practice |
+| The Verse view's Ask the tutor (a verse's answers, `answers` table) | verse-ask | no: each ask is one question and its answer, no `history` in its input schema | no (a conversation there would need its own story) |
+| Reading check, Reading drill | verse-read | no | no |
+| Tips, find-refs (a shared picture), audible-position, drill-items (more questions), feedback | tips, find-refs, audible-position, drill-items, feedback | no, one request each | no |
+
+Other apps, listed only (read in their rigs, nothing changed there): SpellForge's `tutor-turn` sends `session_history`, the earlier turns compacted by the app to what has been tried, and its `parent-ask` is a single question: neither has a running summary.
+Legend's `legend-ask` sends `history`, up to three earlier questions with their answers, no summary; its coin-from-photos, coin-rarity and item-value grinds are one request each.
+
 ## An ask Lampas cannot meet
 
 When he asks for something Lampas does not do ('can this work with Olive Tree?', a new setting, a change), the answer carries `feedback_offer`

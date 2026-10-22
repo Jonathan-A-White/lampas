@@ -53,6 +53,12 @@
       "maxItems": 12,
       "items": { "type": "string", "minLength": 1, "maxLength": 80 }
     },
+    "summary": {
+      "description": "Only when the request carried `fold`: the conversation's new running summary, which the app keeps and sends back as `summary` next time. The request's `summary` (if any) and every turn of `fold`, in order, written as one summary: his name, age and background as he told them, what he is learning and why, the passages and words talked about, what you explained and what he understood or not, what he decided or asked you to remember, and any question left open; never pleasantries, and never anything he has not said. At most 1000 characters, in plain English, and about him in the third person ('He ...'). Leave it out when the request had no `fold`.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
     "study_way_line": {
       "description": "Only in a quiz (mode quiz), and only when he asked for a lasting change to how he is quizzed ('shorter quizzes', 'skip the map', 'more grammar'): one short line, in his terms, that states the change as a standing instruction for later quizzes. The app shows it with a Keep this button and keeps it only if he taps; it is not kept otherwise. Leave it out for anything that is only for today.",
       "type": "string",
