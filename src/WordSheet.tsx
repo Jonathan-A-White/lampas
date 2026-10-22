@@ -12,6 +12,7 @@ import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
 import { useAiAllowed } from './gate/licenceContext';
+import { EnglishDictionaryRow, EnglishWordSheet } from './EnglishWordSheet';
 import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
@@ -331,10 +332,13 @@ interface WordSheetProps {
   onAskTerm?: (ask: TermAsk) => void;
 }
 
-/** The word's sheet is Greek (its word, lemma, parsing and Strong's number), so the Greek dial draws it from Curious up and not at Just English (mw-3ased2.2). */
+/** The word's sheet is Greek (its word, lemma, parsing and Strong's number), so the Greek dial draws it from Curious up (mw-3ased2.2); at Just English an English word opens EnglishWordSheet. */
 export function WordSheet(props: WordSheetProps) {
   const level = useGreekInterest();
-  return level !== undefined && level < GREEK_VIEW_FROM ? null : <WordSheetBody {...props} />;
+  if (level === undefined || level >= GREEK_VIEW_FROM) return <WordSheetBody {...props} />;
+  // at Just English an English word he taps opens the small English sheet instead (mw-5r3p30.707); a Greek word has no sheet
+  const { lookup, onClose } = props;
+  return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} onClose={onClose} /> : null;
 }
 
 function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: WordSheetProps) {
@@ -467,6 +471,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 onMissing={setMissing}
               />
             ))}
+            {heading ? <EnglishDictionaryRow text={bareEnglish(heading)} english /> : null}
           </div>
           {many && moreBelow ? (
             <div
