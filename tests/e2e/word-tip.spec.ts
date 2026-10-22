@@ -81,8 +81,13 @@ test('the first tap on a word shows the tip once; Got it keeps it away; the shee
   await expect(tip).toHaveCount(0);
   await sheet.getByRole('button', { name: 'Done', exact: true }).tap();
   await word.tap();
-  await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
-  await expect(page.getByRole('note')).toHaveCount(0);
+  await expect(sheet).toBeVisible();
+  // The sheet's own tip is gone for good. The Reader's chapter-foot tip (swipe-chapters, mw-5r3p30.706) is a standing part of the Reader, which stays under the
+  // sheet's dimmed backdrop and is not the sheet's to hide: a role=note at page scope would count it, so the sheet's notes are counted in the sheet.
+  await expect(sheet.getByRole('note')).toHaveCount(0);
+  await expect(sheet.locator('[data-hint-card="long-press-word"]')).toHaveCount(0);
+  await expect(page.locator('[data-reader] [data-hint-card="swipe-chapters"]')).toHaveCount(1);
+  await expect(sheet.locator('[data-hint-card="swipe-chapters"]')).toHaveCount(0);
 
   await page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('button', { name: 'Ask the tutor' }).tap();
   const talk = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
