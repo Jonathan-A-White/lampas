@@ -7,7 +7,9 @@
 // A new setting is one entry in the registry (with its section) plus its control in src/settings/controls/ (CONTROLS, index.ts); a test fails until both.
 import { getDeveloper } from '../data/repositories';
 import { SCRIPTS } from '../script/scripts';
-import { greekFrom } from './definitions/greekInterest';
+import { resourceOf } from '../resources';
+import { resourcesForLevel } from '../resources/resourcesForLevel';
+import { greekFrom, type GreekLevel } from './definitions/greekInterest';
 import { helpPlain } from './helpText';
 import { SETTINGS, settingOf, type Dependency, type SectionId } from './registry';
 
@@ -167,6 +169,17 @@ const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...REQ
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = SECTIONS.flatMap((section) => unordered.filter((r) => r.section === section.id));
+
+/** The rows to draw with the study-resource switches (`resource.<id>`) in the order the Greek dial gives (resourcesForLevel: English and 'both' first between Just English and All in), each
+ *  in the place of one of the switches; every other row stays where it is. Hiding a Greek switch at Just English is the row's dependsOn (registry.ts), through the same selector. */
+export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLevel): SettingsRow[] {
+  const isSwitch = (r: SettingsRow): boolean => r.key.startsWith('resource.');
+  const langOf = (r: SettingsRow) => resourceOf(r.key.slice('resource.'.length))?.lang ?? 'both';
+  // ordered only: a switch the dial hides is already not among the rows (dependsOn), and one a link forces into view stays
+  const ordered = resourcesForLevel(rows.filter(isSwitch), Math.max(level, 1) as GreekLevel, langOf);
+  let next = 0;
+  return rows.map((r) => (isSwitch(r) ? ordered[next++] : r)).filter((r): r is SettingsRow => r !== undefined);
+}
 
 /** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the list of Works or Developer mode. */
 export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'works';

@@ -29,6 +29,7 @@ export const strongsUrl = (strongs: string): string | null => {
 
 export const strongs: StudyResource = {
   id: 'strongs',
+  lang: 'grc',
   name: "Strong's",
   kind: 'number',
   describe: "Shows the word's Strong's number, a link to its entry on STEPBible.",

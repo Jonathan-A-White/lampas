@@ -59,9 +59,15 @@ export interface ResourceChoices {
   default: string[];
 }
 
+/** The language a resource is in: 'grc' Greek (a Greek grammar or lexicon), 'en' English, 'both' an app that opens Greek and English (Logos, Accordance). The 'How much Greek?'
+ *  dial hides the 'grc' ones at Just English and puts the 'en' and 'both' ones first at the steps between (src/resources/resourcesForLevel.ts; docs/resources.md). Required, so
+ *  every entry added says it (mw-5r3p30.710). */
+export type ResourceLang = 'grc' | 'en' | 'both';
+
 export interface StudyResource {
   /** kept in the settings store, so it never changes: 'strongs' */
   id: string;
+  lang: ResourceLang;
   /** the switch's name in Settings: 'Logos' */
   name: string;
   kind: 'number' | 'app';
@@ -90,6 +96,7 @@ export interface BookSection {
 export interface GrammarBook {
   /** kept in the settings store, so it never changes: 'black' */
   id: string;
+  lang: ResourceLang;
   /** the book's line on the idea sheet: 'Black, Learn to Read NT Greek' */
   short: string;
   /** its tick in Settings > Study resources > Logos > Grammar books */

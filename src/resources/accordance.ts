@@ -4,6 +4,7 @@ import type { StudyResource } from './types';
 
 export const accordance: StudyResource = {
   id: 'accordance',
+  lang: 'both',
   name: 'Accordance',
   kind: 'app',
   describe: 'Adds Open in Accordance: the word in your own lexicon in the Accordance app.',

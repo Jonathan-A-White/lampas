@@ -3,11 +3,14 @@
 // grammar approach he is on, never an approach of its own. Adding a book is one entry in GRAMMAR_BOOKS: Settings (Logos > Grammar books) and the
 // idea sheet read this list and nothing else. Every link is the Logos scheme first with the https ref.ly address as the fallback (src/resources/openApp.ts),
 // as the lexicon links are (logos.ts). docs/resources.md names each book's source and what is UNVERIFIED.
+import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import { resourceLink } from './logosRes';
+import { resourcesForLevel } from './resourcesForLevel';
 import type { BookSection, GrammarBook, StudyLink } from './types';
 
 const black: GrammarBook = {
   id: 'black',
+  lang: 'grc',
   short: 'Black, Learn to Read NT Greek',
   name: 'Learn to Read New Testament Greek (Black)',
   resource: 'LLS:LRNTOREADNTGRK',
@@ -75,9 +78,10 @@ export interface ReadMoreLine {
   links: StudyLink[];
 }
 
-/** Read more for the idea `ideaId`: one line for each ticked book that teaches it, in GRAMMAR_BOOKS' order (`books` is the list; a test hands it its own). */
-export function readMoreFor(ideaId: string, ticked: readonly string[], books: readonly GrammarBook[] = GRAMMAR_BOOKS): ReadMoreLine[] {
-  return books
+/** Read more for the idea `ideaId`: one line for each ticked book that teaches it, in the order the dial gives GRAMMAR_BOOKS (resourcesForLevel: a Greek book is left out at Just English and
+ *  follows the English ones between; `books` is the list, a test hands it its own). */
+export function readMoreFor(ideaId: string, ticked: readonly string[], books: readonly GrammarBook[] = GRAMMAR_BOOKS, level: GreekLevel = GREEK_TOP): ReadMoreLine[] {
+  return resourcesForLevel(books, level)
     .filter((book) => ticked.includes(book.id))
     .map((book) => ({ book, links: sectionsFor(book, ideaId).map((section) => bookLink(book, section)) }))
     .filter((line) => line.links.length > 0);

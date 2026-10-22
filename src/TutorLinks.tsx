@@ -14,6 +14,7 @@ import { MAX_LINKS } from './services/talk';
 import { armFallback } from './resources/openApp';
 import { placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
 import type { StudyResource } from './resources';
+import { useGreekInterest } from './settings/useGreekInterest';
 import { AppMissingSheet } from './WordSheet';
 import { greekLang } from './script/greekLang';
 
@@ -54,25 +55,26 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
   const chosen = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
   const works = useLiveQuery(getWorks, []);
+  const level = useGreekInterest();
   const shown = links.slice(0, MAX_LINKS);
   const strongs = useStrongs(shown.flatMap((l) => (l.kind === 'word' ? [l.lemma.normalize('NFC')] : [])));
   const [missing, setMissing] = useState<StudyResource | null>(null);
-  if (!chosen || bible === undefined || works === undefined || !strongs) return null;
+  if (!chosen || bible === undefined || works === undefined || !strongs || level === undefined) return null;
 
   const groups: Group[] = [];
   for (const [i, link] of shown.entries()) {
     if (link.kind === 'word') {
       const lemma = link.lemma.normalize('NFC');
-      groups.push({ key: `${i}`, name: lemma, greek: true, chips: wordChips(lemma, strongs[lemma] || undefined, chosen) });
+      groups.push({ key: `${i}`, name: lemma, greek: true, chips: wordChips(lemma, strongs[lemma] || undefined, chosen, level) });
     } else if (link.kind === 'setting') {
       const row = settingLink(link.key) ? rowOf(link.key) : undefined;
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
     } else if (link.kind === 'work') {
-      const found = workChip(link.work, link.reference, works, link.place);
+      const found = workChip(link.work, link.reference, works, link.place, level);
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);
-      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, chips: verseChips(place, place.name, chosen, bible) });
+      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, chips: verseChips(place, place.name, chosen, bible, level) });
     }
   }
   const drawn = groups.filter((g) => g.reader || g.setting || g.chips.length > 0);

@@ -9,8 +9,10 @@ import { titleOf } from '../data/books';
 import { otBookOf } from '../data/otBooks';
 import type { StudyResources } from '../data/repositories';
 import { parseCanonReference } from '../nav/links';
+import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import { optionOf, resourceOf, RESOURCES, type StudyPlace, type StudyResource } from './index';
-import { coversOf, indexPlace, WORKS, workLink, workOf } from './works';
+import { resourcesForLevel } from './resourcesForLevel';
+import { coversOf, indexPlace, WORKS, workLink } from './works';
 
 /** One chip: the app's own address, its https fallback, the short words on it and the accessible name. */
 export interface LinkChip {
@@ -48,13 +50,14 @@ export function placeOf(reference: string): TutorPlace | null {
   return { book, chapter, ...(verse === undefined ? {} : { verse }), name: verse === undefined ? title : `${title}:${verse}`, reader: parsed.testament === 'nt' };
 }
 
-const switchedOn = (chosen: StudyResources): StudyResource[] => RESOURCES.filter((r) => chosen.on.includes(r.id));
+/** The resources he switched on that the dial shows (resourcesForLevel: Greek ones are hidden at Just English and follow the English ones between), in that order. A hidden one keeps its switch. */
+const switchedOn = (chosen: StudyResources, level: GreekLevel): StudyResource[] => resourcesForLevel(RESOURCES, level).filter((r) => chosen.on.includes(r.id));
 
 /** The chips of a word link: the first link of every resource that is on. `strongs` is the lemma's number from the lexicon; without it a resource of
  *  kind 'number' (Strong's) gives no chip, as it has nothing to link. */
-export function wordChips(lemma: string, strongs: string | undefined, chosen: StudyResources): LinkChip[] {
+export function wordChips(lemma: string, strongs: string | undefined, chosen: StudyResources, level: GreekLevel = GREEK_TOP): LinkChip[] {
   const chips: LinkChip[] = [];
-  for (const resource of switchedOn(chosen)) {
+  for (const resource of switchedOn(chosen, level)) {
     if (resource.kind === 'number' && !strongs) continue;
     const [link] = resource.linksFor({ form: lemma, lemma, strongs: strongs ?? '' }, optionOf(resource, chosen.options[resource.id]));
     if (link) chips.push({ resource, label: `${link.label} for ${lemma}`, tile: link.tile ?? link.label, url: link.url, fallback: link.fallback });
@@ -63,9 +66,9 @@ export function wordChips(lemma: string, strongs: string | undefined, chosen: St
 }
 
 /** The chips of a verse link in the apps that are on and can show a Bible (`name` is the reference as written, 'Romans 8:31'); `bible` is his Bible in Logos. */
-export function verseChips(place: StudyPlace, name: string, chosen: StudyResources, bible: string): LinkChip[] {
+export function verseChips(place: StudyPlace, name: string, chosen: StudyResources, bible: string, level: GreekLevel = GREEK_TOP): LinkChip[] {
   const chips: LinkChip[] = [];
-  for (const resource of switchedOn(chosen)) {
+  for (const resource of switchedOn(chosen, level)) {
     const [link] = resource.versesFor?.(place, bible) ?? [];
     if (link) chips.push({ resource, label: link.label.replace(/^Open /, `Open ${name} `), tile: link.tile ?? link.label, url: link.url, fallback: link.fallback });
   }
@@ -82,9 +85,9 @@ export interface TutorResource {
   verses: boolean;
 }
 
-/** The resources he has switched on, in the order Settings lists them: the only ones the tutor is told of, so it never offers a link the app would not draw. */
-export function resourcesForTutor(chosen: StudyResources): TutorResource[] {
-  return switchedOn(chosen).map((r) => ({ id: r.id, name: r.name, words: true, verses: r.versesFor !== undefined }));
+/** The resources he has switched on that the dial shows, in the order Settings lists them: the only ones the tutor is told of, so it never offers a link the app would not draw. */
+export function resourcesForTutor(chosen: StudyResources, level: GreekLevel = GREEK_TOP): TutorResource[] {
+  return switchedOn(chosen, level).map((r) => ({ id: r.id, name: r.name, words: true, verses: r.versesFor !== undefined }));
 }
 
 /** A work of his Logos library as the tutor is told of it (the request's `works`, mw-5r3p30.675): the only works its `work` links may name. */
@@ -99,9 +102,9 @@ export interface TutorWork {
   places?: string;
 }
 
-/** The works he ticked, in the order Settings lists them: the only ones the tutor is told of. */
-export function worksForTutor(ticked: readonly string[]): TutorWork[] {
-  return WORKS.filter((w) => ticked.includes(w.id)).map((w) => {
+/** The works he ticked that the dial shows, in the order Settings lists them: the only ones the tutor is told of. */
+export function worksForTutor(ticked: readonly string[], level: GreekLevel = GREEK_TOP): TutorWork[] {
+  return resourcesForLevel(WORKS, level).filter((w) => ticked.includes(w.id)).map((w) => {
     const covers = coversOf(w);
     return { id: w.id, title: w.title, author: w.author, kind: w.kind, ...(covers ? { covers } : {}), ...(w.index ? { places: w.index.hint } : {}) };
   });
@@ -109,8 +112,8 @@ export function worksForTutor(ticked: readonly string[]): TutorWork[] {
 
 /** The chip of a `work` link: Open in Logos, named for the work's title (and, for a commentary, the passage it opens at). Null when the work is not among the ones he ticked, no
  *  work has the id, or Logos has nowhere to open it (a commentary with no reference, or for a book it does not cover): such a link is dropped, never shown. */
-export function workChip(id: string, reference: string | undefined, ticked: readonly string[], spot?: string): { name: string; chip: LinkChip } | null {
-  const work = ticked.includes(id) ? workOf(id) : undefined;
+export function workChip(id: string, reference: string | undefined, ticked: readonly string[], spot?: string, level: GreekLevel = GREEK_TOP): { name: string; chip: LinkChip } | null {
+  const work = ticked.includes(id) ? resourcesForLevel(WORKS, level).find((w) => w.id === id) : undefined;
   const logos = resourceOf('logos');
   if (!work || !logos) return null;
   const place = reference === undefined ? null : placeOf(reference);

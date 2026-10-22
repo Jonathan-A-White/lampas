@@ -277,10 +277,32 @@ Left out: the Old Testament volumes of the commentaries (`CALCOM01GE` ... `CALCO
 (a third Institutes whose edition the listing does not name). **UNVERIFIED on a device:** that `logosres:LLS:...` opens a resource with no `ref`, and that a commentary volume opens at `Bible.<book><ch>.<v>`; the form
 is the one the lexicon and Black links use. Adding a work is one entry in `WORKS` (and its id in the answer schema's `work` enum), the test fails until both agree; update this table.
 
+## Greek or English: the dial and the lists (mw-5r3p30.710, PROVISIONAL, Governor to confirm)
+
+His ask (2026-10-21): at Just English the Greek grammars and Greek Logos resources are things he "shouldn't really have to think about". Every `StudyResource`, `Work` and `GrammarBook` has a required
+`lang` (`ResourceLang`, `src/resources/types.ts`), so the type refuses an entry that does not say which it is:
+
+| `lang` | meaning | today |
+|---|---|---|
+| `'grc'` | a Greek resource: a Greek grammar or lexicon, the Greek number | Strong's, Black's grammar |
+| `'en'` | an English resource | Calvin's commentaries and both Institutes |
+| `'both'` | an app that opens Greek and English; the dial treats it as English | Logos, Accordance |
+
+The one selector is `resourcesForLevel(list, level)` (`src/resources/resourcesForLevel.ts`); no list filters or orders a resource on its own. **Just English (0):** only `en` and `both`, in their own order.
+**Curious to Reading in Greek (1 to 4):** `en` and `both` first, then `grc`, each side in its own order. **All in (5):** the list unchanged. An unplaced phone reads 5. The Mayor's cheap choice, not his word:
+the Governor may change the rule in that one file. A resource the dial hides keeps its switch or tick (nothing is deleted): the lists draw fewer entries, and the stored ids are written over the whole list.
+
+Who goes through it: Settings > Study resources (the switches: `orderResourceRows` in `src/settings/rows.ts` for the order, the row's `dependsOn` in `registry.ts` for hiding; the Grammar books and the Works in
+`src/settings/controls/resources.tsx`; with no grammar book left the Grammar books group is not drawn), the word sheet's Study row (`studyGroups` in `src/WordSheet.tsx`), the idea sheet's Read more (`readMoreFor`'s
+`level`), and the tutor (`resourcesForTutor`, `worksForTutor`, `wordChips`, `verseChips`, `workChip`, each given the level; `src/useTalk.ts` and `src/TutorLinks.tsx` pass it, and a Greek work the dial hides is not
+offered to the tutor and its link is dropped). Not through it, because they ask for one named resource and Logos is `both`: the Today, chapter picker and reference card Logos links, the English dictionary row, the
+tutor's Settings list (the tutor is told every setting, shown or not) and the tips' count of switches on. **When a Logos work is added to `WORKS`, say whether it is Greek or English in `lang`.**
+Not yet marked: the lexicons ticked inside Logos (BDAG, Louw-Nida ...) are Greek but are choices of the one `both` app, so they show at every step.
+
 ## How to add a resource
 
 1. Add `src/resources/<name>.ts` exporting a `StudyResource` (`src/resources/types.ts`): an `id` (kept in the store, so never
-   changed), a `name` (the switch's label), a `kind`, one line `describe`, an optional `option` (a text field: label, default,
+   changed), a `lang` (`'grc'`, `'en'` or `'both'`; the dial's rule is above), a `name` (the switch's label), a `kind`, one line `describe`, an optional `option` (a text field: label, default,
    hint) and `linksFor(word, option)`, which returns `[{ label, url, fallback? }]` for a `StudyWord` `{ form, lemma, strongs, ref? }`; a resource with a list to tick gives `choices` instead of `option`.
 2. Add it to `RESOURCES` in `src/resources/index.ts`. Settings and the word sheet draw from that list and need no change.
 3. URLs are `https:` or the app's own scheme, with the lemma passed through `encodeURIComponent`; never put lexicon text in one. A scheme link may carry an https `fallback`.

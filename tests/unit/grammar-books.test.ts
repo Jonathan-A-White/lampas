@@ -74,7 +74,7 @@ describe('grammar books', () => {
   });
 
   it('gives one line a ticked book that maps the idea, in the books’ order, and none for an unticked book or an unmapped idea', () => {
-    const book = (id: string, ideas: string[]): GrammarBook => ({ id, short: id.toUpperCase(), name: id, resource: `LLS:${id.toUpperCase()}`, source: 'test', sections: [{ title: 'One', ref: 'Page.p_1', ideas }] });
+    const book = (id: string, ideas: string[]): GrammarBook => ({ id, lang: 'grc', short: id.toUpperCase(), name: id, resource: `LLS:${id.toUpperCase()}`, source: 'test', sections: [{ title: 'One', ref: 'Page.p_1', ideas }] });
     const books = [book('a', ['noun']), book('b', ['verb']), book('c', ['noun'])];
     expect(readMoreFor('noun', ['c', 'a', 'b'], books).map((l) => l.book.id)).toEqual(['a', 'c']);
     expect(readMoreFor('noun', ['b'], books)).toEqual([]);

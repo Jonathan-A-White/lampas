@@ -65,6 +65,7 @@ import { publish, type AppEvent } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
 import { RESOURCES } from '../resources';
+import { resourcesForLevel } from '../resources/resourcesForLevel';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { PLAY_TOS, type PlayTo } from '../speech/readSpan';
 import { chooseAccent } from '../speech/accents';
@@ -336,8 +337,8 @@ const resourceEntries = RESOURCES.map((r) =>
     ON_OFF,
     async () => ((await getStudyResources()).on.includes(r.id) ? 'on' : 'off'),
     (value) => setResourceOn(r.id, value === 'on'),
-    // Strong's is the word sheet's number and its link: the sheet is drawn from Curious up (the Greek dial)
-    { section: 'resources', dependsOn: r.id === 'strongs' ? greekFrom(1) : undefined },
+    // a resource the dial hides at Just English (a Greek one: Strong's, the word sheet's number and its link) is drawn from Curious up; the dial's selector decides (mw-5r3p30.710)
+    { section: 'resources', dependsOn: resourcesForLevel([r], 0).length === 0 ? { key: 'greekInterest', shown: (value) => resourcesForLevel([r], greekLevelOf(value)).length > 0 } : undefined },
   ),
 );
 

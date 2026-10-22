@@ -18,8 +18,8 @@ import { HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
 import { backToSettingsHome, groupIdOf, settingKeyOf } from './settings/link';
 import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
-import { GREEK_LEVELS } from './settings/definitions/greekInterest';
-import { HOME_SECTIONS, SECTIONS, groupById, groupOf, isHomeRow, neededFor, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
+import { GREEK_LEVELS, greekLevelOf } from './settings/definitions/greekInterest';
+import { HOME_SECTIONS, SECTIONS, groupById, groupOf, isHomeRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
 import { settingsForTutor } from './settings/tutorSettings';
 import { useReportScreen } from './tutor/screenContext';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -76,7 +76,7 @@ export function SettingsScreen() {
   const scrollRef = useScrollMemory('settings');
   const [query, setQuery] = useState('');
   const values = useLiveQuery(readValues, []);
-  const rows = rowsAt(values ?? {}, '', linked);
+  const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest));
   const needed = values && linked ? neededFor(values, linked) : undefined;
   // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3)
   const aiAllowed = useAiAllowed();
