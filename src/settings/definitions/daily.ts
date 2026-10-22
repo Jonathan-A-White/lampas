@@ -2,6 +2,7 @@
 // 37 in src/data/daily/devotionals.ts, or Random among those ticked), and whether each piece has a box he ticks himself (On to start, PROVISIONAL). Today itself
 // is a later story (mw-1fwagb.5); these are the settings it reads.
 import { ALL_TICKED, DEFAULT_DEVOTIONAL, DEVOTIONALS, NONE_TICKED, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
+import { devotionalDraw, setDevotionalDraw } from '../../data/repositories/library';
 import { defineSetting, type Allowed, type Dependency, type SectionId } from '../define';
 
 export type DailySwitch = 'on' | 'off';
@@ -68,6 +69,8 @@ export const devotionalDrawSetting = defineSetting<string>({
     note: `'${ALL_TICKED}' for every devotional, '${NONE_TICKED}' for none, or the Logos resource ids of the ones in the draw joined by commas (at most 80 characters, so a talked change can name only a few)`,
   },
   parse: (raw) => (typeof raw === 'string' && raw !== '' ? tickedText(tickedDevotionals(raw)) : ALL_TICKED),
+  // the draw is the devotionals on his shelf (library.ts)
+  store: { read: devotionalDraw, write: setDevotionalDraw },
   section: 'daily',
   label: 'In the draw',
   hint: 'The devotionals Random draws from.',
