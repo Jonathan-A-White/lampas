@@ -5,6 +5,7 @@
 // phone holds; anything else is skipped, and the cursor passes it. bsv-kit's answerIn takes an answer by its `re`; a status has none, so this
 // reads the page itself with the same checks.
 import { door, vault } from 'bsv-kit/bsv';
+import { webLink } from 'pwa-kit/requests';
 import { POSTERN_DOOR } from '../config';
 import { MILL_POLL_MS, openCt, requireLicence, sealerOf } from './mill';
 import { applyRequestStatus, getRequestsCursor, REQUEST_STATUSES, setRequestsCursor, type RequestStatus, type StatusRecord } from '../data/repositories/requests';
@@ -22,12 +23,6 @@ const isObject = (value: unknown): value is Record<string, unknown> => typeof va
 const text = (value: unknown, max: number): string | undefined => (typeof value === 'string' && value.length > 0 ? value.slice(0, max) : undefined);
 const isStatus = (value: unknown): value is RequestStatus => (REQUEST_STATUSES as readonly unknown[]).includes(value);
 
-/** The commit link, when it is a web link: nothing else is ever drawn as one. */
-function webLink(value: unknown): string | undefined {
-  const link = text(value, 300);
-  return link !== undefined && /^https:\/\/\S+$/.test(link) ? link : undefined;
-}
-
 /** A request-status plaintext, read into only what the app keeps; undefined when it is not one. */
 export function readStatus(plain: unknown): StatusRecord | undefined {
   if (!isObject(plain) || plain.kind !== 'request-status') return undefined;
@@ -35,7 +30,7 @@ export function readStatus(plain: unknown): StatusRecord | undefined {
   if (request === undefined || !request.startsWith('direct:') || !isStatus(plain.status)) return undefined;
   if (typeof plain.ts !== 'number' || !Number.isFinite(plain.ts)) return undefined;
   const record: StatusRecord = { request, status: plain.status, ts: plain.ts };
-  const fields = { bead: text(plain.bead, 60), version: text(plain.version, 40), commit: text(plain.commit, 64), url: webLink(plain.url), reason: text(plain.reason, 400), setting: text(plain.setting, 200) };
+  const fields = { bead: text(plain.bead, 60), version: text(plain.version, 40), commit: text(plain.commit, 64), url: webLink(text(plain.url, 300)), reason: text(plain.reason, 400), setting: text(plain.setting, 200) };
   for (const [name, value] of Object.entries(fields)) if (value !== undefined) (record as unknown as Record<string, string>)[name] = value;
   return record;
 }

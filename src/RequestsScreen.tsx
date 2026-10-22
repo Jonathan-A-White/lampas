@@ -2,10 +2,12 @@
 // factory, the newest first, each with where it stands: Sent, Filed, Being built, Adopted in <version> (a link to the commit), Declined: <reason>
 // or Now a setting: <name>. The backend pushes nothing for a grist, so while the screen is up it pulls the mill's request-status records
 // (src/services/requestStatus.ts) when it opens, every requestTimings.pollMs and at once when the phone shows the app again (never while it is
-// hidden); the list is a live query, so a record shows as it is applied.
+// hidden: pwa-kit/requests' watchStatuses, whose statusLine and webLink word each row too); the list is a live query, so a record shows as it is applied.
+// The list is drawn here, not by the kit's RequestsList: a long request opens and folds on a tap.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { listRequests, type RequestRow } from './data/repositories/requests';
+import { statusLine, watchStatuses, webLink } from 'pwa-kit/requests';
+import { listRequests, recordOf, type RequestRow } from './data/repositories/requests';
 import { backTo, requestsOf, useAddress } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { getDeviceKeyBytes } from './services/deviceKey';
@@ -23,65 +25,24 @@ const KIND_NAMES: Record<string, string> = {
   translation: 'Translation',
 };
 
-/** The line that says where a request stands, as plain text (the landed one is drawn as a link when it has one). */
-function statusLine(row: RequestRow): string {
-  switch (row.status) {
-    case 'filed':
-      return 'Filed';
-    case 'building':
-      return 'Being built';
-    case 'landed':
-      return row.version ? `Adopted in ${row.version}` : 'Adopted';
-    case 'declined':
-      return row.reason ? `Declined: ${row.reason}` : 'Declined';
-    case 'adopted-as-setting':
-      return row.setting ? `Now a setting: ${row.setting}` : 'Now a setting';
-    default:
-      return 'Sent';
-  }
-}
-
 const sentOn = (ms: number): string => new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
-/** Pulls the statuses now and then until the screen goes, never while the page is hidden and at once when it is shown again; true while the
- * last pull failed. One pull at a time: shown again during a pull, the next one starts as that one ends. */
+/** Pulls the statuses now and then until the screen goes (pwa-kit/requests' watchStatuses: never while the page is hidden, at once when it is shown
+ * again, one pull at a time); true while the last pull failed. A pull still on its way when the screen goes writes nothing. */
 function useStatusPulling(): boolean {
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     const stop = new AbortController();
-    let timer: ReturnType<typeof setTimeout> | undefined;
     let mill: string | undefined;
-    let pulling = false;
-    let again = false;
-    const run = async (): Promise<void> => {
-      clearTimeout(timer);
-      pulling = true;
-      if (!document.hidden) {
-        try {
-          mill = (await pullStatuses({ key: getDeviceKeyBytes(), signal: stop.signal, mill })).mill;
-          if (!stop.signal.aborted) setFailed(false);
-        } catch {
-          if (!stop.signal.aborted) setFailed(true);
-        }
-      }
-      pulling = false;
-      if (stop.signal.aborted) return;
-      if (again) {
-        again = false;
-        void run();
-      } else timer = setTimeout(() => void run(), requestTimings.pollMs);
-    };
-    const onVisible = (): void => {
-      if (document.hidden) return;
-      if (pulling) again = true;
-      else void run();
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    void run();
+    const unwatch = watchStatuses(
+      async () => {
+        mill = (await pullStatuses({ key: getDeviceKeyBytes(), signal: stop.signal, mill })).mill;
+      },
+      { everyMs: requestTimings.pollMs, onResult: (didFail) => !stop.signal.aborted && setFailed(didFail) },
+    );
     return () => {
       stop.abort();
-      clearTimeout(timer);
-      document.removeEventListener('visibilitychange', onVisible);
+      unwatch();
     };
   }, []);
   return failed;
@@ -122,8 +83,9 @@ function RequestText({ text }: { text: string }) {
 }
 
 function Request({ row }: { row: RequestRow }) {
-  const line = statusLine(row);
-  const adopted = row.status === 'landed' && row.url;
+  const record = recordOf(row);
+  const line = statusLine(record);
+  const link = row.status === 'landed' ? webLink(row.url) : undefined;
   return (
     <li data-request className="border-b border-line py-3">
       <RequestText text={row.summary ?? row.text ?? 'A request'} />
@@ -131,8 +93,8 @@ function Request({ row }: { row: RequestRow }) {
         {KIND_NAMES[row.kind] ?? 'Request'} · {sentOn(row.sentAt)}
       </p>
       <p data-request-status className="pt-1 text-lg font-semibold">
-        {adopted ? (
-          <a href={row.url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-accent underline">
+        {link ? (
+          <a href={link} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-accent underline">
             {line}
           </a>
         ) : (

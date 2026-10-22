@@ -1,7 +1,8 @@
 // src/data/repositories/requests.ts — the requests Lampas sent to the factory (src/services/feedback.ts), each kept with its grist id (txid)
 // so a status that comes back can be matched to it. A row is written when the mill has the grist, with status 'sent'; a request-status record
-// from the mill (Postern's docs/protocol.md section 19, pulled by src/services/requestStatus.ts) moves it on. The cursor of the pulling is kept
+// from the mill (Postern's docs/protocol.md section 19, pulled by src/services/requestStatus.ts) moves it on (pwa-kit/requests' applyUpdates decides how; this file is Dexie as its store). The cursor of the pulling is kept
 // in the settings store ('requestsCursor': a number, no table).
+import { applyUpdates, dayOf, GROWN_UP, REQUEST_STATUSES as KIT_STATUSES, type RequestRecord, type RequestStatus as KitStatus, type RequestStore, type StatusUpdate } from 'pwa-kit/requests';
 import { db, type RequestRow } from '../db';
 
 export type { RequestRow };
@@ -19,50 +20,75 @@ export async function listRequests(): Promise<RequestRow[]> {
   return db.requests.orderBy('sentAt').reverse().toArray();
 }
 
-/** The statuses a request moves through after 'sent', as the record names them. */
-export const REQUEST_STATUSES = ['filed', 'building', 'landed', 'declined', 'adopted-as-setting'] as const;
-export type RequestStatus = (typeof REQUEST_STATUSES)[number];
+/** The statuses a request moves through after 'sent', as the record names them (pwa-kit/requests' list less 'sent'). */
+export const REQUEST_STATUSES = KIT_STATUSES.filter((status): status is RequestStatus => status !== 'sent');
+export type RequestStatus = Exclude<KitStatus, 'sent'>;
 
-/** What a request-status record says (protocol section 19), already read: only fields the status carries. */
-export interface StatusRecord {
-  request: string;
-  status: RequestStatus;
-  ts: number;
-  bead?: string;
-  version?: string;
-  commit?: string;
-  url?: string;
-  reason?: string;
-  setting?: string;
+/** What a request-status record says (protocol section 19), already read: only fields the status carries. It is pwa-kit/requests' StatusUpdate. */
+export type StatusRecord = StatusUpdate;
+
+/** What a status record may carry besides its status. */
+const STATUS_FIELDS = ['bead', 'version', 'commit', 'url', 'reason', 'setting'] as const;
+
+/** The kit's record of a row, for the kit to move on: Lampas keeps no talk or person on a row, so they are the app's one reader's. */
+export function recordOf(row: RequestRow): RequestRecord {
+  const words = row.text ?? row.summary ?? '';
+  const record: RequestRecord = {
+    id: row.txid,
+    kind: row.kind,
+    words,
+    summary: row.summary ?? words,
+    talkId: '',
+    who: GROWN_UP,
+    sentAt: row.sentAt,
+    day: dayOf(row.sentAt),
+    status: row.status as KitStatus,
+  };
+  if (row.statusAt !== undefined) record.statusAt = row.statusAt;
+  for (const field of STATUS_FIELDS) if (row[field] !== undefined) record[field] = row[field];
+  return record;
 }
 
-/** The row after `record`: its sent fields, the new status and only what that status carries. */
-function moved(row: RequestRow, record: StatusRecord): RequestRow {
+/** The row after the kit moved its record: the row's sent fields, the new status and only what that status carries (the kit decides which). */
+function rowOf(row: RequestRow, moved: RequestRecord): RequestRow {
   const { txid, kind, summary, text, app_version, sentAt } = row;
-  const kept: RequestRow = { txid, kind, app_version, sentAt, status: record.status, statusAt: record.ts };
+  const kept: RequestRow = { txid, kind, app_version, sentAt, status: moved.status, statusAt: moved.statusAt };
   if (summary !== undefined) kept.summary = summary;
   if (text !== undefined) kept.text = text;
-  if (record.bead !== undefined) kept.bead = record.bead;
-  if (record.status === 'landed') {
-    if (record.version !== undefined) kept.version = record.version;
-    if (record.commit !== undefined) kept.commit = record.commit;
-    if (record.url !== undefined) kept.url = record.url;
-  }
-  if (record.status === 'declined' && record.reason !== undefined) kept.reason = record.reason;
-  if (record.status === 'adopted-as-setting' && record.setting !== undefined) kept.setting = record.setting;
+  for (const field of STATUS_FIELDS) if (moved[field] !== undefined) kept[field] = moved[field];
   return kept;
 }
 
 /** Applies a status record to the request it names. A request this phone does not hold, or a record no newer than the one the row already took,
- * changes nothing (a status per change, the newest by `ts` shown). Returns whether the row changed. */
+ * changes nothing (a status per change, the newest by `ts` shown: the kit's applyUpdates). Returns whether the row changed. */
 export function applyRequestStatus(record: StatusRecord): Promise<boolean> {
   return db.transaction('rw', db.requests, async () => {
     const row = await db.requests.get(record.request);
     if (!row) return false;
-    if (row.statusAt !== undefined && record.ts <= row.statusAt) return false;
-    await db.requests.put(moved(row, record));
+    const { records, changed } = applyUpdates([recordOf(row)], [record]);
+    if (changed.length === 0) return false;
+    await db.requests.put(rowOf(row, records[0]));
     return true;
   });
+}
+
+/** The store pwa-kit/requests files into, over the requests table (Dexie stays the store): `all` is the rows as the kit's records, newest first, with no `words`:
+ * the table keeps the tutor's summary, not his words, so the kit never takes a row for the same ask filed twice (a request that failed after its grist went out
+ * is sent again on a Retry, never answered as sent); `put` keeps a record the table does not hold yet, as sent (a request already kept with its grist id is left
+ * as it is, so a status it took is never undone). */
+export function requestStore(appVersion: string): RequestStore {
+  return {
+    async all() {
+      return (await listRequests()).map((row) => ({ ...recordOf(row), words: '' }));
+    },
+    async put(record) {
+      await db.transaction('rw', db.requests, async () => {
+        if (await db.requests.get(record.id)) return;
+        const what = record.kind === 'tutor-ask' ? { summary: record.summary } : { text: record.words };
+        await keepRequest({ txid: record.id, kind: record.kind, ...what, app_version: appVersion, sentAt: record.sentAt });
+      });
+    },
+  };
 }
 
 const CURSOR_KEY = 'requestsCursor';
