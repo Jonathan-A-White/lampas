@@ -31,8 +31,8 @@ test('a newer build waits, the banner shows, one tap loads it and the page reloa
   // The gate asks the chain on every return to the foreground and retries for a few seconds (refused here, so
   // it retries). Each ask goes through the worker in control, and Chromium wedges a SKIP_WAITING that lands
   // while the old worker has a request in flight: the new worker then never activates (the full-run failure).
-  let lastChainAsk = Date.now();
-  const chainAsked = (request: Request) => /whatsonchain\.com/.test(request.url()) && (lastChainAsk = Date.now());
+  let lastChainAsk = performance.now();
+  const chainAsked = (request: Request) => /whatsonchain\.com/.test(request.url()) && (lastChainAsk = performance.now());
   page.on('request', chainAsked);
   page.on('requestfailed', chainAsked);
   const navigations: string[] = [];
@@ -59,7 +59,7 @@ test('a newer build waits, the banner shows, one tap loads it and the page reloa
 
   // A tap while the gate's lookups are still going can hang the worker's take-over, so wait for them to end
   // (their retries come about 0.7 s apart at most).
-  await expect.poll(() => Date.now() - lastChainAsk, { timeout: 20_000 }).toBeGreaterThan(1500);
+  await expect.poll(() => performance.now() - lastChainAsk, { timeout: 20_000 }).toBeGreaterThan(1500);
   const before = navigations.length;
   await banner.click();
   await expect.poll(() => navigations.length, { timeout: 20_000 }).toBeGreaterThan(before);
