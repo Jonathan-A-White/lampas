@@ -25,6 +25,8 @@ export interface GrammarIdea {
   tier: Tier;
   /** The ladder's order, from 1, easy first; every idea rests on ideas of a lower rung. */
   rung: number;
+  /** The rung as learn-kit's graph reads it (its `level`: easy low, a node may not need a higher one): the same number. */
+  level: number;
   /** The GRAMMAR_TERMS this idea covers (parseCode.ts); a term belongs to exactly one idea. A letter covers none. */
   terms: string[];
   /** One short paragraph in plain words (under 80 words). For an idea that is about a sound (a letter, a pair, a breathing, their groups) it names
@@ -57,7 +59,7 @@ function conceptText(term: string): string {
   return wordCount(both) < 80 ? both : concept.explanation;
 }
 
-type Def = Omit<GrammarIdea, 'rung' | 'text'> & { text?: string };
+type Def = Omit<GrammarIdea, 'rung' | 'level' | 'text'> & { text?: string };
 
 // ---- The combinations (mw-hqd5bz.18, PROVISIONAL): one item per diphthong, consonant pair and breathing, under its group idea, as the letters sit under 'alphabet' ----
 
@@ -599,22 +601,11 @@ const DEFS: Def[] = [
 ];
 
 /** The ladder, easy first. */
-export const LADDER: readonly GrammarIdea[] = DEFS.map((d, i) => ({ ...d, rung: i + 1, text: d.text ?? conceptText(d.terms[0]) }));
+export const LADDER: readonly GrammarIdea[] = DEFS.map((d, i) => ({ ...d, rung: i + 1, level: i + 1, text: d.text ?? conceptText(d.terms[0]) }));
 
-const BY_ID = new Map<string, GrammarIdea>();
-for (const idea of LADDER) {
-  if (BY_ID.has(idea.id)) throw new Error(`Grammar idea ${idea.id} is listed twice`);
-  BY_ID.set(idea.id, idea);
-}
-/** The ladder as a path (pathGraph.ts): the same graph functions answer for any other path; makePath throws, naming it, on a cycle. */
+/** The ladder as a path (pathGraph.ts, learn-kit's graph): makePath throws, naming it, on an idea listed twice, a need that is no idea, a need of a higher rung or a cycle. */
 export const LADDER_PATH = makePath(LADDER);
-
-for (const idea of LADDER) {
-  for (const need of idea.needs) {
-    const below = BY_ID.get(need);
-    if (!below || below.rung >= idea.rung) throw new Error(`Grammar idea ${idea.id} needs ${need}, which is not an idea of a lower rung`);
-  }
-}
+const BY_ID = LADDER_PATH.byId;
 
 const IDEA_OF_TERM = new Map<string, string>();
 for (const idea of LADDER) {
