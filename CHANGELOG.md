@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.406
+_2026-10-22_
+- New: Study resources now follow How much Greek?: at Just English the Greek ones are hidden, and at the steps between the English ones come first.
+
 ## 0.1.404
 _2026-10-22_
 - Fixed: a picture you send to the tutor now opens full screen on top of everything, even over Drill it, and you can pinch to zoom it.
