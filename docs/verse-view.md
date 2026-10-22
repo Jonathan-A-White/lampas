@@ -87,6 +87,16 @@ verse's words in order), so every action works on it as it works on a verse.
 
 Any run of verses of a chapter opens the same passage view: `src/data/passage.ts` `rangeOf(verses, from, to, heading)`, the address `#/?b=1jn&c=1&p=1&pt=4` (`pt` the last verse, read only with `p`; `openVerseRange`; `openPassage`, `movePassage` and `openVerse` drop `pt`). The heading is the lesson's title when the range is a passage lesson of the chosen approach, else the heading of the first verse, else the reference; a heading equal to the range is said once ('1 John 1:1-4', not twice). The arrows step from the section passage the range starts in. When the range is exactly a lesson (`lessonForRange`), a **Lesson strip** sits under the heading and its Check passes the lesson: docs/grammar.md 'Passage lessons: the Lesson strip and Check'. Opening the view marks nothing. A link with a range ('Heb 7:1-3', `#/?ref=1John.1.1-4`) opens the Verse view on it (`links.ts` `Reference.to`, `LinkOpener`).
 
+## In Logos and In another book… (mw-rfjjzd.9)
+
+With Logos On, a row under the actions has two doors (`src/library/InLogosDoors.tsx`, docs/design/library-at-scale.md 3.6): **In Logos** opens the verse in his Bible in Logos (Settings > Bible in Logos; for a passage, at its first verse) and
+**In another book…** opens the chooser, `<place> in Logos`: Pinned, `Commentaries on <book> (N)`, `Greek texts (N)` and `Interlinears (N)`, each folded to its first three with `N more`, a search field that opens all of them, a row for each
+book on his shelf that covers the place (a link at the verse, `src/library/inLogos.ts`), and `Manage in Your Logos library` at the foot. The second door is not drawn while no Greek text, interlinear or commentary that covers the book is On.
+An interlinear or commentary whose catalogue entry has `covers` opens only for the books it names (no `covers` is the New Testament); an Old Testament place lists Bibles and interlinears that name its book, and no Greek text or commentary.
+A book is listed once: a Pinned one in Pinned and not again in its kind, so the counts are of what each group holds. Where else a verse is shown with an Open in Logos: the tutor's verse chips (chip `In another book`), Today's Psalms and Proverbs
+(a chapter, so its door needs an interlinear that covers it), the Old Testament reference card and the Reader's link notice (`ElsewhereLine`); the New Testament reference card has no Open in Logos (its Open goes to the Reader), the Reader's chapter
+picker and Today's reading-plan chapter open a chapter and not a verse, and Share to Lampas lists references that open the reference card.
+
 ## Quiz me (mw-5r3p30.74)
 
 The Governor, Postern general (2026-10-08): his Bible-reading method (read, quiz, map) as the tutor's, tailored to the reader. Reading is the Listen and
