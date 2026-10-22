@@ -28,6 +28,7 @@ import {
   openWriteIt,
 } from './large-text-titles';
 import { startAtAllIn } from './greek-start';
+import { openLongLibrary } from './long-library';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { talkField } from './talk-field';
@@ -174,6 +175,22 @@ const MORE_SCREENS: readonly Screen[] = [
       await page.goto('/#/?c=8&view=greek');
       await page.locator('[data-verse="1"] [data-word="1"]').click();
       await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
+    },
+  },
+  {
+    // the sheet behind the Study row's door when 21 lexicons are On (mw-rfjjzd.8): its search, its rows and Done and Manage at 200% text
+    name: 'All lexicons sheet',
+    shot: 'large-text-all-lexicons',
+    top: true,
+    open: async (page) => {
+      await openUnlocked(page);
+      await openLongLibrary(page);
+      await page.goto('/#/?c=8&view=greek');
+      await page.locator('[data-verse="1"] [data-word="1"]').click();
+      const word = page.getByRole('dialog', { name: 'Word', exact: true });
+      await expect(word).toBeVisible();
+      await word.getByRole('button', { name: /^All \d+ lexicons ›$/ }).click();
+      await expect(page.getByRole('dialog', { name: 'All lexicons', exact: true })).toBeVisible();
     },
   },
   {
@@ -377,6 +394,7 @@ test('the screens are the ones the stories name', () => {
     'Words',
     'The whole path',
     'Word sheet',
+    'All lexicons sheet',
     'Grammar sheet',
     'Chapter picker',
     'Talk sheet after a reply',

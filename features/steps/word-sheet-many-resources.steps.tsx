@@ -1,5 +1,5 @@
 // features/steps/word-sheet-many-resources.steps.tsx — runs features/word-sheet-many-resources.feature: the word sheet's Study row with every
-// Logos lexicon ticked (mw-5r3p30.135): full-title tiles, one scroll box, a fade while more is below, a Close under the box.
+// Logos lexicon On (mw-5r3p30.135, then mw-rfjjzd.8: the pinned ones and a door): full-title tiles, one scroll box, a fade while more is below, a Close under the box.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,7 +9,8 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { logos } from '../../src/resources/logos';
+import { setKind, setState } from '../../src/data/repositories';
+import { LEXICONS } from '../../src/resources/logos';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 const user = userEvent.setup();
@@ -21,6 +22,8 @@ afterAll(() => {
   db.close();
 });
 
+const LONG = ['Lexham Theological Wordbook', 'NASB Dictionaries', 'Intermediate Greek-English Lexicon'];
+
 async function openWithEveryLexicon(): Promise<void> {
   cleanup();
   clearBus();
@@ -30,11 +33,15 @@ async function openWithEveryLexicon(): Promise<void> {
   stubChapterFetch();
   window.history.replaceState(null, '', '/');
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
   await db.settings.bulkPut([
     { key: 'resource.logos', value: 'on' },
-    { key: 'resourceOption.logos', value: JSON.stringify(logos.choices?.items.map((i) => i.id)) },
+    { key: 'resource.strongs', value: 'on' },
+    { key: 'resource.accordance', value: 'on' },
   ]);
+  // every lexicon On, and the three whose titles are the longest Pinned (setState takes the old keys first; clearing the kind leaves only what is set here)
+  await setKind('lexicon', 'off');
+  for (const l of LEXICONS) await setState(l.resource, LONG.includes(l.short) ? 'pinned' : 'on');
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -51,7 +58,7 @@ const taps = async (_: unknown, text: string, verse: number): Promise<void> => {
 };
 const sheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Word' });
 const study = (): HTMLElement => within(sheet()).getByRole('group', { name: 'Study', exact: true });
-const tiles = (): HTMLElement[] => within(study()).getAllByRole('link');
+const tiles = (): HTMLElement[] => [...within(study()).getAllByRole('link'), ...within(study()).queryAllByRole('button', { name: /^All \d+ lexicons/ })];
 const scrollBox = (): HTMLElement => {
   const box = sheet().querySelector<HTMLElement>('[data-testid="sheet-scroll"]');
   if (!box) throw new Error('no scroll box');
@@ -63,7 +70,7 @@ const feature = await loadFeature('features/word-sheet-many-resources.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   Scenario('Every Logos tile is on the sheet and says which book it opens', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened with every Logos lexicon ticked', openWithEveryLexicon);
+    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's and Accordance on", openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     Then('the Study row has {int} tiles', (_, n: number) => {
       expect(tiles()).toHaveLength(n);
@@ -83,6 +90,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Study tile {string} is one more there in full', (_, title: string) => {
       expect(tiles().some((t) => t.textContent === title)).toBe(true);
     });
+    And('the door {string} is one more', (_, title: string) => {
+      expect(tiles().some((t) => t.textContent === title)).toBe(true);
+    });
     And('no two Study tiles say the same', () => {
       const words = tiles().map((t) => t.textContent);
       expect(new Set(words).size).toBe(words.length);
@@ -90,7 +100,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario("The tiles are in the sheet's scroll box, and Close sits under the box", ({ Given, When, Then, And }) => {
-    Given('Lampas is opened with every Logos lexicon ticked', openWithEveryLexicon);
+    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's and Accordance on", openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     Then("every Study tile is inside the sheet's scroll box", () => {
       const box = scrollBox();
@@ -105,7 +115,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('A fade tells him there is more below until he reaches the end', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened with every Logos lexicon ticked', openWithEveryLexicon);
+    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's and Accordance on", openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     And("the sheet's scroll box holds more than it shows", async () => {
       const box = scrollBox();
@@ -132,7 +142,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Close closes the sheet', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened with every Logos lexicon ticked', openWithEveryLexicon);
+    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's and Accordance on", openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     And('he taps Close on the sheet', async () => {
       await user.click(await within(sheet()).findByRole('button', { name: 'Close' }));

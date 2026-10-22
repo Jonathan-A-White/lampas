@@ -3,7 +3,7 @@
 // outside, a swipe down on its handle, the Done button, Escape or the phone's Back (src/ui/sheetBack.ts). Each word has a Help with this word row (Grammar, Sound it out)
 // when the screen gives it somewhere to send them: the Talk sheet on the word's verse with the first question sent. Every grammar
 // word of the Parsing is a link to its Grammar sheet (src/GrammarSheet.tsx), which opens over this one: underlined until he marks
-// the term I know this, plain after. A Study link whose app did not open (src/resources/openApp.ts) opens the sheet that says the app is not on this phone: Get it, or Turn off its resource. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
+// the term I know this, plain after. With many lexicons On the Logos group draws the pinned ones, Bible Word Study and a door, All N lexicons, to a sheet that lists every one with a search (src/library/AllLexiconsSheet.tsx). A Study link whose app did not open (src/resources/openApp.ts) opens the sheet that says the app is not on this phone: Get it, or Turn off its resource. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
 // and is not drawn when none is on.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -17,12 +17,13 @@ import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
 import { paradigmOfWord } from './data/paradigms';
-import { openParadigm } from './nav/route';
+import { openLibrary, openParadigm } from './nav/route';
 import { holdWord } from './wordReturn';
 import { oneTap } from './ui/settle';
 import { resourcesForLevel } from './resources/resourcesForLevel';
 import { optionOf, RESOURCES, type StudyLink, type StudyRef, type StudyResource } from './resources';
 import { storeUrl } from './resources/appStore';
+import { logos, logosStudy, type LogosStudy } from './resources/logos';
 import { armFallback } from './resources/openApp';
 import { topicOf } from './resources/topic';
 import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
@@ -32,6 +33,7 @@ import { pushSheetStep, sheetsAbove, useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { wordUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
+import { AllLexiconsSheet } from './library/AllLexiconsSheet';
 import { GREEK_VIEW_FROM, type GreekLevel } from './settings/definitions/greekInterest';
 import { useGreekInterest } from './settings/useGreekInterest';
 import { useKnownTerms } from './useKnownTerms';
@@ -105,6 +107,8 @@ function ParseTerms({ parse, known, open }: { parse: string; known: ReadonlySet<
 interface StudyGroup {
   resource: StudyResource;
   links: StudyLink[];
+  /** Logos only, when more lexicons are On than the row draws: the door to the sheet that lists them all (mw-rfjjzd.8) */
+  door?: LogosStudy['door'];
 }
 
 /** The links of every study resource he switched on (Settings > Study resources) that the Greek dial shows, for this word, a group per resource, English resources first (resourcesForLevel). */
@@ -113,7 +117,12 @@ function studyGroups(chosen: StudyResources | undefined, level: GreekLevel | und
   const study = { form: word.t, lemma: wordLemma(word), strongs: word.s, topic: topicOf(gloss), ref };
   return resourcesForLevel(RESOURCES, level)
     .filter((r) => chosen.on.includes(r.id))
-    .map((resource) => ({ resource, links: resource.linksFor(study, optionOf(resource, chosen.options[resource.id])) }))
+    .map((resource): StudyGroup => {
+      const option = optionOf(resource, chosen.options[resource.id]);
+      // Logos draws the lexicons he pinned, Bible Word Study and a door to the rest once more than a few are On
+      if (resource.id === 'logos') return { resource, ...logosStudy(study, option.split(','), chosen.pinnedLexicons ?? []) };
+      return { resource, links: resource.linksFor(study, option) };
+    })
     .filter((g) => g.links.length > 0);
 }
 
@@ -165,12 +174,12 @@ const TILE = `${TILE_BASE} border border-line py-1 text-center leading-tight tex
 
 /** The Study row: the links of each switched-on resource as equal tiles, two to a row, an app's under its name; nothing at all when none is on.
  *  A tile's words wrap to a second line rather than being cut. A tap on an app's link also arms the wait for the app to open (openApp.ts); `onMissing` hears of an app that did not. */
-function StudyRow({ groups, onMissing }: { groups: StudyGroup[]; onMissing: (resource: StudyResource) => void }) {
+function StudyRow({ groups, onMissing, onAll }: { groups: StudyGroup[]; onMissing: (resource: StudyResource) => void; onAll: (door: NonNullable<StudyGroup['door']>) => void }) {
   if (groups.length === 0) return null;
   return (
     <div role="group" aria-label="Study" className="mt-3">
       <p className="mb-1 text-sm text-muted">Study</p>
-      {groups.map(({ resource, links }) => (
+      {groups.map(({ resource, links, door }) => (
         <div key={resource.id} role={resource.kind === 'app' ? 'group' : undefined} aria-label={resource.kind === 'app' ? resource.name : undefined} className="mb-2 last:mb-0">
           {resource.kind === 'app' ? <p className="mb-1 text-sm font-medium">{resource.name}</p> : null}
           <div className="grid grid-cols-2 gap-2">
@@ -187,6 +196,11 @@ function StudyRow({ groups, onMissing }: { groups: StudyGroup[]; onMissing: (res
                 <span className={`min-w-0 break-words ${(link.tile ?? link.label).length > LONG_TILE ? 'text-sm' : ''}`}>{link.tile ?? link.label}</span>
               </a>
             ))}
+            {door ? (
+              <button type="button" onClick={() => onAll(door)} className={TILE}>
+                <span className="min-w-0 break-words">{`All ${door.count} lexicons ›`}</span>
+              </button>
+            ) : null}
           </div>
         </div>
       ))}
@@ -246,7 +260,7 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
   );
 }
 
-function WordCard({ chapter, word, english, pronunciation, known, study, level, onHelp, onTerm, onParadigm, onMissing }: {
+function WordCard({ chapter, word, english, pronunciation, known, study, level, onHelp, onTerm, onParadigm, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
@@ -262,6 +276,8 @@ function WordCard({ chapter, word, english, pronunciation, known, study, level, 
   onParadigm: (word: GreekWord) => void;
   /** a Study link's app did not open */
   onMissing: (resource: StudyResource) => void;
+  /** the door to every lexicon was tapped: the word, and the lexicons On with their links for it */
+  onAll: (word: GreekWord, door: NonNullable<StudyGroup['door']>) => void;
 }) {
   const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   // The Strong's resource shows the number as its link in the Study row; the plain fact would say it twice.
@@ -318,7 +334,7 @@ function WordCard({ chapter, word, english, pronunciation, known, study, level, 
           </Fact>
         ) : null}
       </dl>
-      <StudyRow groups={studyGroupsOf(chapter, word, study, level)} onMissing={onMissing} />
+      <StudyRow groups={studyGroupsOf(chapter, word, study, level)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}
@@ -359,7 +375,9 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
   const [idea, setIdea] = useState<GrammarIdea | null>(null);
   // The sheet that says an app is not on the phone, over this one, after a Study link's app did not open.
   const [missing, setMissing] = useState<StudyResource | null>(null);
-  useEscapeToClose(onClose, grammar === null && missing === null);
+  // The sheet that lists every lexicon On, over this one, after the door of the Logos group was tapped.
+  const [allLexicons, setAllLexicons] = useState<{ word: GreekWord; door: NonNullable<StudyGroup['door']> } | null>(null);
+  useEscapeToClose(onClose, grammar === null && missing === null && allLexicons === null);
   const levelNow = useSheetBack(onClose);
   // Every move he makes inside this sheet (a Related term, an example word) is one Back step (mw-5r3p30.239): Back puts the
   // Grammar sheet, the idea sheet and the word back as they were. `closing` moves close the sheets over this one; their entries
@@ -384,7 +402,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
   const known = useKnownTerms();
   const study = useLiveQuery(getStudyResources, []);
   const level = useGreekInterest();
-  const tiles = lookup.words.reduce((n, w) => n + studyGroupsOf(sheetChapter, w, study, level).reduce((m, g) => m + g.links.length, 0), 0);
+  const tiles = lookup.words.reduce((n, w) => n + studyGroupsOf(sheetChapter, w, study, level).reduce((m, g) => m + g.links.length + (g.door ? 1 : 0), 0), 0);
   const many = tiles > MANY_TILES;
   const heading = lookup.fromEnglish && lookup.english;
   const scroll = useRef<HTMLDivElement>(null);
@@ -475,6 +493,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 onTerm={openTerm}
                 onParadigm={openTable}
                 onMissing={setMissing}
+                onAll={(word, door) => setAllLexicons({ word, door })}
               />
             ))}
             {heading ? <EnglishDictionaryRow text={bareEnglish(heading)} english /> : null}
@@ -535,6 +554,19 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
             }, true)
           }
           onAsk={ask}
+        />
+      ) : null}
+      {allLexicons ? (
+        <AllLexiconsSheet
+          word={wordLemma(allLexicons.word)}
+          entries={allLexicons.door.entries}
+          onClose={() => setAllLexicons(null)}
+          onMissing={() => setMissing(logos)}
+          onManage={() => {
+            // the Lexicons page is a page of its own: the sheet is held with what it showed, and Back brings it back (src/wordReturn.ts)
+            holdWord(sheetChapter, lookup);
+            openLibrary({ kind: 'lexicon' });
+          }}
         />
       ) : null}
       {missing ? (
