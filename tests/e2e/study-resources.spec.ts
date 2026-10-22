@@ -42,17 +42,31 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   }
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
   await turnsOnWithApp(page, section, 'Logos');
-  const bdag = section.getByRole('checkbox', { name: 'BDAG', exact: true });
-  await expect(bdag).toHaveAttribute('aria-checked', 'true');
-  const louw = section.getByRole('checkbox', { name: 'Louw-Nida', exact: true });
-  await louw.scrollIntoViewIfNeeded();
-  await louw.click();
-  await expect(louw).toHaveAttribute('aria-checked', 'true');
-  const tick = await louw.boundingBox();
-  expect(tick?.height).toBeGreaterThanOrEqual(43.5);
-  expect((tick?.x ?? 0) + (tick?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  // the books are in Your Logos library, not in Settings: one row says how many are on and opens it; no lexicon list, Grammar books or Works list is left
+  const library = section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ });
+  await expect(library).toBeVisible();
+  const row = await library.boundingBox();
+  expect(row?.height).toBeGreaterThanOrEqual(43.5);
+  expect((row?.x ?? 0) + (row?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  await expect(section.getByRole('group', { name: 'Logos lexicons' })).toHaveCount(0);
+  await expect(section.getByRole('group', { name: 'Grammar books' })).toHaveCount(0);
+  await expect(section.getByRole('list', { name: 'Works in your Logos library' })).toHaveCount(0);
+  await expect(section.getByRole('checkbox')).toHaveCount(0);
   await shot(page, 'settings-resources');
 
+  // the row's count is the Library's, and its button opens the Library
+  const counted = (await library.innerText()).match(/· (\d+) books on/)?.[1];
+  await library.click();
+  await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
+  await expect(page.getByTestId('library-card')).toContainText(`${counted} of the`);
+  expect(new URL(page.url()).hash).toBe('#/library');
+  // Louw-Nida is turned on there, on the Lexicons page
+  await page.getByTestId('kind-row').filter({ hasText: 'Lexicons' }).getByRole('button').click();
+  await expect(page.getByRole('heading', { name: 'Lexicons', level: 1 })).toBeVisible();
+  await page.getByRole('radiogroup', { name: 'Louw-Nida', exact: true }).getByRole('radio', { name: 'On', exact: true }).click();
+  await expect(page.getByRole('radiogroup', { name: 'Louw-Nida', exact: true }).getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
+
+  await page.goto('/#/settings?group=study');
   await page.reload();
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
   await leaveSettings(page);
@@ -74,7 +88,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await shot(page, 'word-sheet-study');
 });
 
-test('The Logos lexicons are a compact list at 360 px (860 high, the box ends above the round Ask button, mw-5r3p30.279): bounded height, its own scroll, a search, and Accordance below it in reach', async ({ page }) => {
+test('Logos On at 360 px: the library row is one thumb-sized line and the setting below it is in reach (mw-rfjjzd.5)', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 860 });
   await openUnlocked(page);
   await holdAppLinks(page);
@@ -86,55 +100,16 @@ test('The Logos lexicons are a compact list at 360 px (860 high, the box ends ab
   const logosSwitch = section.getByRole('switch', { name: 'Logos', exact: true });
   await turnsOnWithApp(page, section, 'Logos');
 
-  const list = section.getByRole('group', { name: 'Logos lexicons' });
-  const box = list.getByTestId('searchable-list-box');
-  const size = await box.evaluate((el) => ({ client: el.clientHeight, scroll: el.scrollHeight, overflowY: getComputedStyle(el).overflowY }));
-  expect(size.overflowY).toBe('auto');
-  expect(size.client).toBeLessThanOrEqual(300);
-  expect(size.scroll).toBeGreaterThan(size.client * 2);
-
-  // The setting below the Logos card is one swipe away, not 21 rows away. The card holds the lexicons and, since the Grammar books
-  // group joined it (mw-5r3p30.573), the books too, so it is taller than the screen: from the Logos row at the top, one screen's
-  // scroll brings Accordance in (the earlier check wanted it in view with no scroll at all).
-  // The Grammar books group draws when its own live query answers, and a row that draws after the scroll moves what the scroll was measured
-  // against (a loaded host answers late, mw-5r3p30.577): wait for the card to be whole, and measure the one screen's scroll afresh until the screen
-  // has stopped moving. A card that is really too tall fails every try.
-  await expect(section.getByRole('group', { name: 'Grammar books' }).first()).toBeVisible();
-  const accordanceSwitch = section.getByRole('switch', { name: 'Accordance', exact: true });
-  await expect
-    .poll(async () => {
-      await logosSwitch.evaluate((el) => el.scrollIntoView({ block: 'start' }));
-      await page.locator('main.screen').evaluate((el) => el.scrollBy(0, el.clientHeight));
-      return accordanceSwitch.evaluate((el) => {
-        const r = el.getBoundingClientRect();
-        return r.bottom > 0 && r.top < window.innerHeight;
-      });
-    })
-    .toBe(true);
-  await expect(accordanceSwitch).toBeInViewport();
-
-  // BDAG (ticked) leads; the last lexicon is out of sight until the box scrolls.
-  await expect(list.getByRole('checkbox').first()).toHaveAccessibleName('BDAG');
-  const last = list.getByRole('checkbox', { name: 'A Greek-English Lexicon of the New Testament', exact: true });
-  await expect(last).not.toBeInViewport();
-  await last.scrollIntoViewIfNeeded();
-  await expect(last).toBeInViewport();
-
-  const search = list.getByRole('searchbox', { name: 'Search Logos lexicons' });
-  const field = await search.boundingBox();
-  expect(field?.height).toBeGreaterThanOrEqual(43.5);
-  await search.fill('louw');
-  await expect(list.getByRole('checkbox')).toHaveCount(1);
-  await list.getByRole('checkbox', { name: 'Louw-Nida', exact: true }).click();
-  await expect(list.getByRole('checkbox', { name: 'Louw-Nida', exact: true })).toHaveAttribute('aria-checked', 'true');
-  await search.fill('');
-  await expect(list.getByRole('checkbox')).toHaveCount(21);
-  await expect(list.getByRole('checkbox').first()).toHaveAccessibleName('BDAG');
-  await expect(list.getByRole('checkbox').nth(1)).toHaveAccessibleName('Louw-Nida');
+  // Logos' card is short now: the library line, and Accordance's switch is in view from the Logos switch with no scroll at all
+  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
+  await logosSwitch.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+  await expect(section.getByRole('switch', { name: 'Accordance', exact: true })).toBeInViewport();
+  // the library line sits between the Logos switch and Accordance's
+  const order = await section.locator('[data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
+  expect(order.slice(order.indexOf('resource.logos'), order.indexOf('resource.logos') + 2)).toEqual(['resource.logos', 'library']);
   const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
   expect(fits).toBe(true);
-  await logosSwitch.evaluate((el) => el.scrollIntoView({ block: 'start' }));
-  await shot(page, 'settings-logos-list');
+  await shot(page, 'settings-logos-library');
 });
 
 test('The Study links are equal tiles in two columns at 360 px, and an app that does not open says so', async ({ page }) => {
@@ -147,9 +122,15 @@ test('The Study links are equal tiles in two columns at 360 px, and an app that 
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await turnsOnWithApp(page, section, 'Logos');
-  const lexham = section.getByRole('checkbox', { name: 'Lexham Theological Wordbook', exact: true });
-  await lexham.scrollIntoViewIfNeeded();
+  // the Lexham Theological Wordbook is turned On in Your Logos library (Lexicons), the way a book is now chosen
+  await section.getByRole('button', { name: /^Your Logos library/ }).click();
+  await page.getByTestId('kind-row').filter({ hasText: 'Lexicons' }).getByRole('button').click();
+  const lexham = page.getByRole('radiogroup', { name: 'Lexham Theological Wordbook', exact: true }).getByRole('radio', { name: 'On', exact: true });
   await lexham.click();
+  await expect(lexham).toHaveAttribute('aria-checked', 'true');
+  await page.goBack();
+  await page.goBack();
+  await expect(section.getByRole('switch', { name: 'Accordance', exact: true })).toBeVisible();
   await section.getByRole('switch', { name: 'Accordance', exact: true }).evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await turnsOnWithApp(page, section, 'Accordance');
   await leaveSettings(page);

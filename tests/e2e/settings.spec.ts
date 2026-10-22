@@ -209,26 +209,41 @@ test('Settings > Daily: a switch per piece, the devotional picker and Tick boxes
     expect(box?.height).toBeGreaterThanOrEqual(43.5);
   }
 
-  // the devotional starts at Morning and Evening; the draw shows only while Random is chosen
-  const picker = daily.getByRole('combobox', { name: 'Which devotional' });
-  await expect(picker).toHaveValue('LLS:20.10.1');
-  expect(await picker.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+  // Which devotional is a searchable picker of the devotionals that are on in Your Logos library, with Random; it starts at Morning and Evening, and the draw shows only while Random is chosen
+  const picker = daily.getByRole('group', { name: 'Which devotional', exact: true });
+  const choice = (name: string) => picker.getByRole('radio', { name, exact: true });
+  await expect(choice('Random')).toHaveAttribute('aria-checked', 'false');
+  await expect(picker.getByRole('radio').first()).toHaveAccessibleName('Morning and Evening');
+  await expect(picker.getByRole('radio').first()).toHaveAttribute('aria-checked', 'true');
+  expect((await choice('Random').boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  const search = picker.getByRole('searchbox', { name: 'Search Which devotional' });
+  expect((await search.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  await search.fill('spurgeon');
+  await expect(picker.getByRole('radio')).not.toHaveCount(0);
+  await search.fill('');
   await expect(daily.getByRole('group', { name: 'In the draw' })).toHaveCount(0);
-  await picker.selectOption('random');
-  await expect(daily.getByRole('group', { name: 'In the draw' })).toBeVisible();
-  await expect(daily.getByText('37 ticked')).toBeVisible();
+  await choice('Random').click();
+  await expect(choice('Random')).toHaveAttribute('aria-checked', 'true');
+  // In the draw follows the shelf: all 37 are on to start, and the button opens the Library's Devotionals page
+  const draw = daily.getByRole('group', { name: 'In the draw' });
+  await expect(draw).toContainText('37 devotionals are in the draw');
+  expect((await draw.getByRole('button', { name: 'Choose them in Your Logos library' }).boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
 
   await daily.getByRole('group', { name: 'Review', exact: true }).getByRole('button', { name: 'Off', exact: true }).click();
   await daily.getByRole('group', { name: 'Tick boxes', exact: true }).getByRole('button', { name: 'Off', exact: true }).click();
-  await daily.getByRole('group', { name: 'In the draw' }).getByRole('checkbox', { name: 'Morning and Evening', exact: true }).click();
-  await expect(daily.getByText('36 ticked')).toBeVisible();
+  await draw.getByRole('button', { name: 'Choose them in Your Logos library' }).click();
+  await expect(page.getByRole('heading', { name: 'Devotionals', level: 1 })).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('#/library?kind=devotional');
+  await page.getByRole('radiogroup', { name: 'Morning and Evening', exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
+  await page.goto('/#/settings?group=daily');
+  await expect(daily.getByRole('group', { name: 'In the draw' })).toContainText('36 devotionals are in the draw');
 
   await page.reload();
   await expect(daily.getByRole('group', { name: 'Review', exact: true }).getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(daily.getByRole('group', { name: 'Tick boxes', exact: true }).getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(daily.getByRole('group', { name: 'Plan chapter', exact: true }).getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(daily.getByRole('combobox', { name: 'Which devotional' })).toHaveValue('random');
-  await expect(daily.getByText('36 ticked')).toBeVisible();
+  await expect(daily.getByRole('group', { name: 'Which devotional', exact: true }).getByRole('radio', { name: 'Random', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(daily.getByRole('group', { name: 'In the draw' })).toContainText('36 devotionals are in the draw');
   await daily.scrollIntoViewIfNeeded();
   await shot(page, 'settings-daily');
 });

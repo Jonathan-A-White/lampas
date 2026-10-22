@@ -2,7 +2,7 @@
 // first, then those on, then those off (and by name within each), All on / All off, and a search over the kind. The list is the shared SearchableList (src/ui/SearchableList.tsx), which
 // does not re-sort under his thumb. A fourth pin is refused with a line under the book; Bibles are one at a time (Off | Chosen); Devotionals have no Pin.
 import { useState } from 'react';
-import { setKind, setState, type ShelfState } from '../data/repositories';
+import { setKind, setLogosBible, setState, type ShelfState } from '../data/repositories';
 import { backTo } from '../nav/route';
 import { entriesOf, entryOf, type CatalogueEntry, type Kind } from '../resources/catalogue';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
@@ -10,7 +10,8 @@ import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { SearchableList } from '../ui/SearchableList';
 import { ThreeStep } from '../ui/ThreeStep';
-import { countLine, headerCount, infoOf, pinRefusal, type Steps } from './kinds';
+import { countLine, detailOf, headerCount, infoOf, pinRefusal, type Steps } from './kinds';
+import { TypedBible } from './TypedBible';
 import { useShelf } from './useShelf';
 
 const OPTIONS: Record<Steps, readonly (readonly [string, string])[]> = {
@@ -20,9 +21,6 @@ const OPTIONS: Record<Steps, readonly (readonly [string, string])[]> = {
 };
 
 const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
-
-/** What a book is called under its name: the full title when the name is a short one, and its author. */
-const detailOf = (entry: CatalogueEntry): string => [entry.title === entry.short ? '' : entry.title, entry.author ?? ''].filter(Boolean).join(' · ');
 
 export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   const info = infoOf(kind);
@@ -41,6 +39,8 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   const choose = async (entry: CatalogueEntry, to: string): Promise<void> => {
     const result = await setState(entry.resource, to as ShelfState);
     setRefused(result.ok ? null : entry.resource);
+    // the Bible chosen here is the Bible in Logos that Old Testament chapters open in
+    if (result.ok && kind === 'bible' && to !== 'off') await setLogosBible(entry.resource);
   };
   const all = async (to: 'on' | 'off'): Promise<void> => {
     setRefused(null);
@@ -60,6 +60,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
       />
       <main className="screen min-h-0 flex-1 px-4">
         <p className="pt-3 text-base">{info.help}</p>
+        {kind === 'bible' ? <TypedBible /> : null}
         {entries.length === 0 ? (
           <>
             <p className="pt-3 text-base font-medium">No {info.plural.toLowerCase()} yet</p>

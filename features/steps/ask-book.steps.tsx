@@ -56,7 +56,7 @@ async function openSettings(waiting: string[] = []): Promise<void> {
     await db.settings.put({ key: WAITING_KEY, value: JSON.stringify(waiting.map((text, i) => ({ id: `w${i}`, text, queuedAt: 1000 + i }))) });
   }
   render(<SettingsScreen />);
-  await screen.findByRole('group', { name: 'Grammar books' });
+  await screen.findByRole('group', { name: 'Ask for another book' });
 }
 
 const goOffline = (): void => {
@@ -151,7 +151,7 @@ describeFeature(feature, ({ Scenario }) => {
       cleanup();
       goOffline();
       render(<SettingsScreen />);
-      await screen.findByRole('group', { name: 'Grammar books' });
+      await screen.findByRole('group', { name: 'Ask for another book' });
     });
     And('the phone is offline', () => {
       expect(window.navigator.onLine).toBe(false);

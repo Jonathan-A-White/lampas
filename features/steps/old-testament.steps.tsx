@@ -67,12 +67,12 @@ const openSettings = async (): Promise<void> => {
   await openSettingsGroup(user, 'study');
 };
 
-const reopenAtSettings = async (): Promise<void> => {
+const reopen = async (): Promise<void> => {
   cleanup();
   clearBus();
   render(<App />);
-  // the Settings page he was on, the Study resources group's, is what reopens
-  await screen.findByRole('heading', { name: 'Study resources', level: 1 });
+  // the page he was on, Library > Bibles, is what reopens
+  await screen.findByRole('heading', { name: 'Bibles', level: 1 });
 };
 
 const openPicker = async (): Promise<void> => {
@@ -89,8 +89,7 @@ const readInLogos = async (n: number): Promise<HTMLElement> => {
   await user.click(await within(picker()).findByRole('button', { name: `Chapter ${n}` }));
   return within(picker()).findByRole('link', { name: 'Read in Logos' });
 };
-const group = (): HTMLElement => screen.getByRole('group', { name: 'Bible in Logos' });
-const resourceId = (): HTMLInputElement => within(group()).getByRole('textbox', { name: 'Resource ID' });
+const resourceId = (): HTMLInputElement => screen.getByRole('textbox', { name: 'Resource ID' });
 
 const feature = await loadFeature('features/old-testament.feature');
 
@@ -205,44 +204,51 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Settings has Bible in Logos, the Legacy Standard Bible to start', ({ Given, When, Then, And }) => {
+  const opensRow = async () => {
+    await user.click(await screen.findByRole('button', { name: /^Bible in Logos:/ }));
+    await screen.findByRole('heading', { name: 'Bibles', level: 1 });
+  };
+  const pageSays = async (_: unknown, text: string) => {
+    await waitFor(() => expect(screen.getByRole('main')).toHaveTextContent(text));
+  };
+
+  Scenario('Settings has Bible in Logos, the Legacy Standard Bible to start, and it opens Library > Bibles', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with Logos on', () => openWith({ 'resource.logos': 'on' }));
     When("he taps the gear in the reader's header", openSettings);
-    Then('Bible in Logos shows {string}', async (_, name: string) => {
-      const select = await within(await screen.findByRole('group', { name: 'Bible in Logos' })).findByRole('combobox', { name: 'Bible' });
-      expect((select as HTMLSelectElement).selectedOptions[0].textContent).toBe(name);
+    Then('the Bible in Logos row says {string}', async (_, text: string) => {
+      expect(await screen.findByRole('button', { name: new RegExp(`^${text}`) })).toBeInTheDocument();
     });
-    And('the Resource ID field holds {string}', (_, id: string) => {
-      expect(resourceId().value).toBe(id);
+    When('he opens the Bible in Logos row', opensRow);
+    Then('the Bibles page says {string}', pageSays);
+    And('the Resource ID field holds {string}', async (_, id: string) => {
+      await waitFor(() => expect(resourceId().value).toBe(id));
     });
   });
 
-  Scenario('A Bible picked from the short list is kept across a close', ({ Given, When, And, Then }) => {
+  Scenario('A Bible chosen on the Bibles page is kept across a close', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with Logos on', () => openWith({ 'resource.logos': 'on' }));
     When("he taps the gear in the reader's header", openSettings);
-    And('he picks the Bible {string} for Logos', async (_, name: string) => {
-      await user.selectOptions(await within(await screen.findByRole('group', { name: 'Bible in Logos' })).findByRole('combobox', { name: 'Bible' }), name);
+    And('he opens the Bible in Logos row', opensRow);
+    And('he chooses the Bible {string} on the Bibles page', async (_, short: string) => {
+      await user.click(within(await screen.findByRole('radiogroup', { name: short })).getByRole('radio', { name: 'Chosen' }));
     });
-    And('the app is closed and opened again at the Settings address', async () => {
+    And('the app is closed and opened again', async () => {
       await waitFor(async () => expect((await db.settings.get('logosBible'))?.value).toBe('LLS:1.0.710'));
-      await reopenAtSettings();
+      await reopen();
     });
-    Then('Bible in Logos shows {string}', async (_, name: string) => {
-      const select = await within(await screen.findByRole('group', { name: 'Bible in Logos' })).findByRole('combobox', { name: 'Bible' });
-      expect((select as HTMLSelectElement).selectedOptions[0].textContent).toBe(name);
-    });
+    Then('the Bibles page says {string}', pageSays);
   });
 
   Scenario('A typed Resource ID is kept across a close, and a malformed one is not', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with Logos on', () => openWith({ 'resource.logos': 'on' }));
     When("he taps the gear in the reader's header", openSettings);
+    And('he opens the Bible in Logos row', opensRow);
     And('he types the Resource ID {string}', async (_, id: string) => {
-      await screen.findByRole('group', { name: 'Bible in Logos' });
       await user.clear(resourceId());
       await user.type(resourceId(), id);
     });
-    Then('the Resource ID field says {string}', (_, text: string) => {
-      expect(group()).toHaveTextContent(text);
+    Then('the Resource ID field says {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByRole('main')).toHaveTextContent(text));
     });
     And('the setting {string} holds nothing', async (_, key: string) => {
       expect((await db.settings.get(key))?.value).toBeUndefined();
@@ -251,14 +257,11 @@ describeFeature(feature, ({ Scenario }) => {
       await user.clear(resourceId());
       await user.type(resourceId(), id);
     });
-    And('the app is closed and opened again at the Settings address', async () => {
+    And('the app is closed and opened again', async () => {
       await waitFor(async () => expect((await db.settings.get('logosBible'))?.value).toBe('LLS:1.0.91'));
-      await reopenAtSettings();
+      await reopen();
     });
-    Then('Bible in Logos shows {string}', async (_, name: string) => {
-      const select = await within(await screen.findByRole('group', { name: 'Bible in Logos' })).findByRole('combobox', { name: 'Bible' });
-      expect((select as HTMLSelectElement).selectedOptions[0].textContent).toBe(name);
-    });
+    Then('the Bibles page says {string}', pageSays);
     And('the Resource ID field holds {string}', async (_, id: string) => {
       await waitFor(() => expect(resourceId().value).toBe(id));
     });

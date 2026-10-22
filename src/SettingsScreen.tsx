@@ -17,6 +17,7 @@ import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
 import { HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
 import { backToSettingsHome, groupIdOf, settingKeyOf } from './settings/link';
+import { searchLibrary } from './settings/librarySearch';
 import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { GREEK_LEVELS, greekLevelOf } from './settings/definitions/greekInterest';
 import { HOME_SECTIONS, SECTIONS, groupById, groupOf, isHomeRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
@@ -102,7 +103,7 @@ export function SettingsScreen() {
           <div ref={contentRef}>
             <SettingsSearch query={query} onChange={setQuery} />
             {searching ? (
-              values ? <Found rows={found} query={query} /> : null
+              values ? <Found rows={found} books={searchLibrary(query)} query={query} /> : null
             ) : (
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (

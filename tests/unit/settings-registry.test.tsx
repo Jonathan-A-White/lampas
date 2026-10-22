@@ -39,11 +39,11 @@ describe('the registry lists every Settings row', () => {
     render(<SettingsScreen />);
     const drawnOnPage = (): string[] =>
       [
-        // Logos' ticked lists of lexicons and of grammar books (mw-5r3p30.381) and the line that asks for another book (mw-5r3p30.382) belong to the Logos switch, a study resource kept outside the registry; Request a devotional is a request box, not a setting
-        ...screen.queryAllByRole('group').filter((el) => !['Logos lexicons', 'Grammar books', 'Ask for another book', 'Request a devotional'].includes(el.getAttribute('aria-label') ?? '')),
+        // the line that asks for another book (mw-5r3p30.382) belongs to the Logos switch, a study resource kept outside the registry; Request a devotional is a request box, not a setting
+        ...screen.queryAllByRole('group').filter((el) => !['Ask for another book', 'Request a devotional'].includes(el.getAttribute('aria-label') ?? '')),
         ...screen.queryAllByRole('radiogroup'),
-        // the Goal group's own Book, Chapter and Verse pickers, and Bible in Logos' own Bible list, are parts of those one settings
-        ...screen.queryAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"], [role="group"][aria-label="Bible in Logos"]')),
+        // the Goal group's own Book, Chapter and Verse pickers are parts of that one setting
+        ...screen.queryAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"]')),
         ...screen.queryAllByRole('slider'),
       ].map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '');
     // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);

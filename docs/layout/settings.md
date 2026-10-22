@@ -62,11 +62,13 @@ Typing on the home swaps the groups for the rows that match by name or hint (`vi
 
 ```
 src/SettingsScreen.tsx  # the home (search field, groups, found rows) and a group's page (its sections, drawn from the rows, each with its control); reports the screen to the tutor with every setting
-src/settings/rows.ts  # SECTIONS, GROUPS (which group a section is in), ROWS, visibleRows, rowsAt, neededFor, visibleGroups, searchSettings; the links, the Request a devotional box, Works and Developer mode are rows too
+src/settings/rows.ts  # SECTIONS, GROUPS (which group a section is in), ROWS, visibleRows, rowsAt, neededFor, visibleGroups, searchSettings; the links, the Request a devotional box, the Your Logos library row (the door to #/library, not talkable) and Developer mode are rows too
 src/settings/define.ts  # defineSetting and SectionId
 src/settings/definitions/greekInterest.ts  # the Greek dial: GREEK_LEVELS, greekFrom, viewAt / weaveAt / newWordsAt, placementOf, the setting
 src/settings/useGreekInterest.ts  # the step, live
 src/data/repositories/greekInterest.ts  # setGreekInterest, placeGreekInterest, raiseGreekInterest, the kept values
+src/settings/librarySearch.ts  # searchLibrary: the books the Settings search answers ('BDAG · Your Logos library'), drawn by Found in SettingsHome.tsx; a book opens its kind page at it
+src/library/TypedBible.tsx  # the typed Resource ID of Library > Bibles (the one escape hatch), kept as Bible in Logos; choosing a Bible there writes the same setting
 src/library/  # the Library screens: LibraryScreen.tsx (home and the address that picks the page), KindPage.tsx, kinds.ts (names, help lines, counts, pinRefusal), useShelf.ts
 src/ui/ThreeStep.tsx  # Off | On | Pin: a radiogroup of two or three 44 px steps, the segmented look of Chips (the Library's rows)
 src/settings/registry.ts  # every talkable setting: key, label, hint, help, section, dependency, values, read and write

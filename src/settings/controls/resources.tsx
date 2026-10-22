@@ -1,92 +1,23 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
-import { getGrammarBooks, getLogosBible, getStudyResources, getWorks, setGrammarBooks, setResourceOn, setResourceOption, setWorks } from '../../data/repositories';
+import { getLogosBible, getStudyResources, setResourceOn, setResourceOption } from '../../data/repositories';
+import { countsOf } from '../../library/kinds';
+import { useShelf } from '../../library/useShelf';
+import { openLibrary } from '../../nav/route';
 import { StartPlan } from '../../plan/StartPlan';
-import { resourceOf, tickedOf, type ResourceChoices, type StudyResource } from '../../resources';
+import { resourceOf, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
-import { GRAMMAR_BOOKS } from '../../resources/grammarBooks';
+import { KINDS, entryOf } from '../../resources/catalogue';
 import { logos } from '../../resources/logos';
-import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
-import { resourcesForLevel } from '../../resources/resourcesForLevel';
-import { WORKS } from '../../resources/works';
 import { oneTap } from '../../ui/settle';
-import { SearchableList } from '../../ui/SearchableList';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
 import { AskForBook } from './askBook';
 import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
-import { useGreekInterest } from '../useGreekInterest';
 import { useSetting } from '../store';
-import { ON_COLOUR, OnOff, PICKER, RowName, SettingRow } from './SettingRow';
+import { ON_COLOUR, OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
-
-/** The lexicons (or other choices) of a resource, in the shared searchable list; kept as he taps (a JSON array of ids). */
-function ChoiceList({ resourceId, choices, ticked }: { resourceId: string; choices: ResourceChoices; ticked: string[] }) {
-  const toggle = (id: string): void => {
-    const next = ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id];
-    void setResourceOption(resourceId, JSON.stringify(choices.items.map((i) => i.id).filter((i) => next.includes(i))));
-  };
-  return <SearchableList label={choices.label} hint={choices.hint} noun="lexicon" items={choices.items} ticked={ticked} onToggle={toggle} />;
-}
-
-/** Fewer books than this are a plain list of ticks; a longer list is the searchable one (pwa-best-practices 08: a long list is a widget). */
-const LONG_LIST = 8;
-
-/** Logos > Grammar books (mw-5r3p30.381): a tick per book of GRAMMAR_BOOKS, the books that start ticked until he changes them. A ticked book's sections
- *  show under Read more on the idea sheet of each idea it teaches. Kept as he taps. */
-function GrammarBooks() {
-  const ticked = useLiveQuery(getGrammarBooks, []);
-  const level = useGreekInterest();
-  if (!ticked || level === undefined) return null;
-  // the books the dial shows, English first (resourcesForLevel); a hidden book keeps its tick, as toggle writes over all of GRAMMAR_BOOKS
-  const books = resourcesForLevel(GRAMMAR_BOOKS, level);
-  if (books.length === 0) return null;
-  const toggle = (id: string): void => {
-    const next = ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id];
-    void setGrammarBooks(GRAMMAR_BOOKS.map((b) => b.id).filter((b) => next.includes(b)));
-  };
-  const hint = 'Tick the grammar books of your Logos library. An idea sheet links the part of each that teaches the idea.';
-  if (books.length >= LONG_LIST) {
-    return (
-      <>
-        <SearchableList label="Grammar books" hint={hint} noun="book" items={books} ticked={ticked} onToggle={toggle} />
-        <AskForBook />
-      </>
-    );
-  }
-  return (
-    <>
-      <div role="group" aria-label="Grammar books" aria-describedby="grammar-books-hint" className="mt-3">
-        <p className="text-base font-medium">Grammar books</p>
-        <p id="grammar-books-hint" className="pb-1 text-sm text-muted">
-          {hint}
-        </p>
-        <div className="rounded-lg border border-line">
-          {books.map((book) => {
-            const on = ticked.includes(book.id);
-            return (
-              <button
-                key={book.id}
-                type="button"
-                role="checkbox"
-                aria-checked={on}
-                onClick={() => oneTap(`grammar-books:${book.id}`, () => toggle(book.id))}
-                className="flex min-h-12 w-full items-center gap-3 border-t border-line px-3 text-left text-base first:border-t-0"
-              >
-                <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded border border-line ${on ? 'bg-accent text-accent-fg' : ''}`}>
-                  {on ? '✓' : ''}
-                </span>
-                {book.name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      <AskForBook />
-    </>
-  );
-}
 
 /** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types).
  *  A web page cannot see which native apps a phone has, so turning an app On only turns it On: nothing is opened or checked, and it stays On.
@@ -116,8 +47,7 @@ function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource:
                 </a>
               </div>
             ) : null}
-            {resource.choices ? <ChoiceList resourceId={resource.id} choices={resource.choices} ticked={tickedOf(resource, typed)} /> : null}
-            {resource.id === logos.id ? <GrammarBooks /> : null}
+            {resource.id === logos.id ? <AskForBook /> : null}
             {option ? (
               <div className="mt-2">
                 <label className="block">
@@ -165,110 +95,55 @@ function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource:
   );
 }
 
-/** Works in your Logos library (mw-5r3p30.675): a switch for each entry of WORKS, by its full title and author, all off until he switches one on; kept as he taps (a JSON array of ids).
- *  An app cannot read what his Logos library holds, so he says which he owns; the tutor links only these. */
-export const WorksControl: Control = ({ row }) => {
-  const ticked = useLiveQuery(getWorks, []);
-  const level = useGreekInterest();
-  // the works the dial shows, English first (resourcesForLevel); a hidden work keeps its tick, as toggle writes over all of WORKS
-  const works = resourcesForLevel(WORKS, level);
-  const toggle = (id: string, on: boolean): void => {
-    const next = on ? ticked?.filter((t) => t !== id) : [...(ticked ?? []), id];
-    void setWorks(WORKS.map((w) => w.id).filter((w) => next?.includes(w)));
-  };
-  return (
-    <SettingRow row={row}>
-      <RowName row={row} />
-      {ticked && level !== undefined ? (
-        <ul aria-label={row.label} className="rounded-lg border border-line">
-          {works.map((work) => {
-            const on = ticked.includes(work.id);
-            return (
-              <li key={work.id} className="flex min-h-12 items-center justify-between gap-3 border-t border-line px-3 py-2 first:border-t-0">
-                <span className="title-wrap min-w-0 flex-1">
-                  <span className="block text-base font-medium">{work.title}</span>
-                  <span className="block text-sm text-muted">{`by ${work.author}`}</span>
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={on}
-                  aria-label={work.title}
-                  onClick={() => oneTap(`work-switch:${work.id}`, () => toggle(work.id, on))}
-                  className={`min-h-12 min-w-16 shrink-0 rounded-lg px-4 text-base font-medium ${on ? 'bg-accent text-accent-fg' : 'border border-line text-fg'}`}
-                >
-                  {on ? 'On' : 'Off'}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-    </SettingRow>
-  );
-};
-
-/** Bible in Logos: the Bible an Old Testament chapter opens in, from a short list or by typing its Resource ID. A typed ID is kept as soon as it is well formed. */
-function LogosBiblePicker({ saved }: { saved: string }) {
-  const [typed, setTyped] = useState(saved);
-  const listed = COMMON_BIBLES.some((b) => b.id === saved);
-  const bad = typed.trim() !== '' && !isResourceId(typed);
-  return (
-    <div role="group" aria-label="Bible in Logos">
-      <label className="mt-1 block">
-        <span className="block text-base font-medium">Bible</span>
-        <select
-          value={listed ? saved : ''}
-          onChange={(e) => {
-            if (e.target.value === '') return;
-            setTyped(e.target.value);
-            void writeSetting('logosBible', e.target.value);
-          }}
-          className={PICKER}
-        >
-          {listed ? null : <option value="">Another Bible (typed below)</option>}
-          {COMMON_BIBLES.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="mt-3 block">
-        <span className="block text-base font-medium">Resource ID</span>
-        <input
-          type="text"
-          value={typed}
-          aria-describedby="logos-bible-hint"
-          aria-invalid={bad}
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          onChange={(e) => {
-            setTyped(e.target.value);
-            if (isResourceId(e.target.value)) void writeSetting('logosBible', e.target.value.trim());
-          }}
-          className={PICKER}
-        />
-      </label>
-      <p id="logos-bible-hint" role={bad ? 'alert' : undefined} className="pt-1 text-sm text-muted">
-        {bad
-          ? `That is not a Resource ID. It looks like ${DEFAULT_LOGOS_BIBLE}.`
-          : 'Logos shows a book\'s Resource ID in its Information pane. Old Testament chapters open in this Bible.'}
-      </p>
-    </div>
-  );
-}
-
 export const ResourceControl: Control = ({ row }) => {
   const resources = useLiveQuery(getStudyResources, []);
   const resource = resourceOf(row.key.slice('resource.'.length));
   return resources && resource ? <ResourceRow row={row} resource={resource} on={resources.on.includes(resource.id)} typed={resources.options[resource.id] ?? ''} /> : null;
 };
 
+/** Your Logos library (mw-rfjjzd.5): how many books of his shelf are on, and a door to the Library (#/library) where they are chosen. */
+export const LibraryControl: Control = ({ row }) => {
+  const states = useShelf();
+  const on = states === undefined ? undefined : KINDS.reduce((sum, kind) => sum + countsOf(kind, states).on, 0);
+  return (
+    <SettingRow row={row} className="border-b border-line py-2">
+      {on !== undefined ? (
+        <button
+          type="button"
+          onClick={() => openLibrary()}
+          className="flex min-h-12 w-full items-center justify-between gap-3 text-left text-base font-medium"
+        >
+          <span className="title-wrap min-w-0 flex-1">{`${row.label} · ${on} ${on === 1 ? 'book' : 'books'} on`}</span>
+          <span aria-hidden="true" className="shrink-0 text-muted">
+            ›
+          </span>
+        </button>
+      ) : null}
+    </SettingRow>
+  );
+};
+
+/** Bible in Logos: the Bible an Old Testament chapter opens in, named on a row that opens Library > Bibles, where he chooses it (or types the Resource ID of one the catalogue lacks). */
 export const LogosBibleControl: Control = ({ row }) => {
   const logosBible = useLiveQuery(getLogosBible, []);
-  return <SettingRow row={row}>{logosBible !== undefined ? <LogosBiblePicker saved={logosBible} /> : null}</SettingRow>;
+  return (
+    <SettingRow row={row}>
+      {logosBible !== undefined ? (
+        <div role="group" aria-label={row.label}>
+          <button
+            type="button"
+            onClick={() => openLibrary({ kind: 'bible' })}
+            className="flex min-h-12 w-full items-center justify-between gap-3 text-left text-base font-medium"
+          >
+            <span className="title-wrap min-w-0 flex-1">{`${row.label}: ${entryOf(logosBible)?.short ?? logosBible}`}</span>
+            <span aria-hidden="true" className="shrink-0 text-muted">
+              ›
+            </span>
+          </button>
+        </div>
+      ) : null}
+    </SettingRow>
+  );
 };
 
 /** Audio Bible: Off, or an audio Bible the Verse view links to. Stacked, full-width choices: the names are long. */

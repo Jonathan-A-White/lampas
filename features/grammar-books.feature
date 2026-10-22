@@ -30,11 +30,13 @@ Feature: Grammar books in Logos on the idea sheet
     When he opens the idea sheet of "noun"
     Then the idea sheet shows no Read more
 
-  Scenario: Settings ticks Black among the grammar books once Logos is on, and unticking it is kept
+  Scenario: Black is on among the grammar books of Your Logos library once Logos is on, and turning it Off there is kept
     Given Lampas is opened on Romans 8 with no study resources on
     When he turns Logos on in Settings
-    Then Settings shows the grammar book "Learn to Read New Testament Greek (Black)" ticked
-    When he taps the grammar book "Learn to Read New Testament Greek (Black)"
+    And he opens Your Logos library from Settings
+    And he opens its Grammars page
+    Then the library shows the grammar book "Black, Learn to Read NT Greek" as "Pin"
+    When he turns the grammar book "Black, Learn to Read NT Greek" Off
     Then the grammar books kept are none
 
   Scenario: An idea from a lesson of the BMA Tutor order shows the same Read more lines

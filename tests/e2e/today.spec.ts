@@ -500,6 +500,6 @@ test("Settings > Daily shows Today's devotional with Another only while Which de
   expect(await keptRaw(page, 'devotional')).toBe('random');
   await shot(page, 'settings-todays-devotional');
   // with a named devotional the row is not drawn
-  await page.getByRole('combobox', { name: 'Which devotional' }).selectOption('LLS:20.10.2');
+  await page.getByRole('group', { name: 'Which devotional', exact: true }).getByRole('radio', { name: 'My Utmost for His Highest', exact: true }).click();
   await expect(page.getByRole('group', { name: "Today's devotional" })).toHaveCount(0);
 });

@@ -1,7 +1,7 @@
 Feature: Old Testament chapters open in Logos
   Lampas has no Old Testament text. The Reader's chapter picker also lists the 39 Old Testament books, in canon order before
   Matthew, each marked as opening in Logos. Picking one and then a chapter shows a choice (features/chapter-picker.feature); Read in Logos opens
-  that chapter in the Bible he chose in Settings (Bible in Logos, the Legacy Standard Bible to start), by the Logos app's own link, and
+  that chapter in the Bible he chose in Settings (Bible in Logos, the Legacy Standard Bible to start; Settings > Bible in Logos opens Library > Bibles, where it is chosen), by the Logos app's own link, and
   never changes the chapter Lampas has open.
   With Logos off in Settings the books still show; picking one says Logos is off and turns it on in one tap.
 
@@ -49,26 +49,30 @@ Feature: Old Testament chapters open in Logos
     And the picker lists chapters 1 to 40
     And the reader is headed "Romans 8"
 
-  Scenario: Settings has Bible in Logos, the Legacy Standard Bible to start
+  Scenario: Settings has Bible in Logos, the Legacy Standard Bible to start, and it opens Library > Bibles
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
-    Then Bible in Logos shows "LSB (Legacy Standard Bible)"
+    Then the Bible in Logos row says "Bible in Logos: LSB"
+    When he opens the Bible in Logos row
+    Then the Bibles page says "Old Testament chapters open in LSB."
     And the Resource ID field holds "LLS:LGCYSTNDRDBBLSB"
 
-  Scenario: A Bible picked from the short list is kept across a close
+  Scenario: A Bible chosen on the Bibles page is kept across a close
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
-    And he picks the Bible "ESV (English Standard Version)" for Logos
-    And the app is closed and opened again at the Settings address
-    Then Bible in Logos shows "ESV (English Standard Version)"
+    And he opens the Bible in Logos row
+    And he chooses the Bible "ESV" on the Bibles page
+    And the app is closed and opened again
+    Then the Bibles page says "Old Testament chapters open in ESV."
 
   Scenario: A typed Resource ID is kept across a close, and a malformed one is not
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
+    And he opens the Bible in Logos row
     And he types the Resource ID "esv"
     Then the Resource ID field says "That is not a Resource ID. It looks like LLS:LGCYSTNDRDBBLSB."
     And the setting "logosBible" holds nothing
     When he types the Resource ID "LLS:1.0.91"
-    And the app is closed and opened again at the Settings address
-    Then Bible in Logos shows "Another Bible (typed below)"
+    And the app is closed and opened again
+    Then the Bibles page says "Old Testament chapters open in LLS:1.0.91."
     And the Resource ID field holds "LLS:1.0.91"

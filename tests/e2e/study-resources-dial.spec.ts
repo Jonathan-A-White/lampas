@@ -46,23 +46,23 @@ const studySection = async (page: Page): Promise<Locator> => {
   return section;
 };
 
-/** The names of the three resource switches the section draws, in the order drawn (the Works' switches follow them). */
+/** The names of the three resource switches the section draws, in the order drawn. */
 const resourceSwitches = async (section: Locator): Promise<string[]> => {
   const names = await section.getByRole('switch').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? ''));
   return names.filter((n) => ["Strong's", 'Logos', 'Accordance'].includes(n));
 };
 
-test('Just English lists no Greek resource, work or grammar book in Study resources, and a switch he made comes back with the dial', async ({ page }) => {
+test('Just English lists no Greek resource in Study resources, and no book at any step, and a switch he made comes back with the dial', async ({ page }) => {
   await openUnlocked(page);
   await holdAppLinks(page);
   await openReader(page);
-  // at All in the list is as it was: Strong's, Logos, Accordance; Black's grammar is ticked under Logos
+  // at All in the list is as it was: Strong's, Logos, Accordance; the library row is under Logos
   let section = await studySection(page);
   expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos', 'Accordance']);
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
-  await expect(section.getByRole('checkbox', { name: 'Learn to Read New Testament Greek (Black)', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
   await leaveSettings(page);
 
@@ -70,11 +70,9 @@ test('Just English lists no Greek resource, work or grammar book in Study resour
   section = await studySection(page);
   expect(await resourceSwitches(section)).toEqual(['Logos', 'Accordance']);
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveCount(0);
-  // Logos is On: its lexicons are there, the Greek grammar book is not, and Calvin's works (English) are
-  await expect(section.getByRole('checkbox', { name: 'BDAG', exact: true })).toBeVisible();
-  await expect(section.getByRole('group', { name: 'Grammar books' })).toHaveCount(0);
-  await expect(section.getByRole('checkbox', { name: /Learn to Read New Testament Greek/ })).toHaveCount(0);
-  await expect(section.getByRole('switch', { name: "Calvin's Commentaries", exact: true })).toBeVisible();
+  // Logos is On: its library row is there, and no book is listed in Settings, Greek or English (the books are Your Logos library's)
+  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
+  await expect(section.getByRole('checkbox')).toHaveCount(0);
   await section.getByRole('switch', { name: 'Logos', exact: true }).scrollIntoViewIfNeeded();
   await shot(page, 'study-resources-just-english');
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
@@ -85,7 +83,7 @@ test('Just English lists no Greek resource, work or grammar book in Study resour
   section = await studySection(page);
   expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos', 'Accordance']);
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
-  await expect(section.getByRole('checkbox', { name: 'Learn to Read New Testament Greek (Black)', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
 });
 
 test('at a step between, the English resources come before the Greek in Study resources', async ({ page }) => {

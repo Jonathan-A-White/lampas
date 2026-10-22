@@ -1,7 +1,7 @@
 // src/library/kinds.ts — what the Library screen says of each of the seven kinds (docs/design/library-at-scale.md 3.3 and 3.4): their names, the help line of a kind's page, what Pin means for
 // them, and the count line a row reads ('19 on · 2 pinned'). Pure: the screens read the shelf and hand the rows here.
 import { MAX_PINS, type LibraryRow, type ShelfState } from '../data/repositories';
-import { entryOf, KINDS, type Kind } from '../resources/catalogue';
+import { entryOf, KINDS, type CatalogueEntry, type Kind } from '../resources/catalogue';
 
 /** How a kind's rows are set: Off | On | Pin; Off | On (Devotionals have no Pin, the Daily page chooses among them); Off | Chosen (Bibles, one at a time). */
 export type Steps = 'pin' | 'on' | 'chosen';
@@ -64,6 +64,9 @@ const INFO: Record<Kind, Omit<KindInfo, 'kind'>> = {
 export const KIND_INFO: readonly KindInfo[] = KINDS.map((kind) => ({ kind, ...INFO[kind] }));
 
 export const infoOf = (kind: Kind): KindInfo => KIND_INFO.find((i) => i.kind === kind)!;
+
+/** What a book is called under its name: the full title when the name is a short one, and its author. */
+export const detailOf = (entry: CatalogueEntry): string => [entry.title === entry.short ? '' : entry.title, entry.author ?? ''].filter(Boolean).join(' · ');
 
 /** What a book's control shows. */
 export const STATE_LABEL = { off: 'Off', on: 'On', pinned: 'Pinned' } as const;

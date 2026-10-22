@@ -116,8 +116,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he turns the switch {string} On', turnsOn);
     Then('nothing was opened: no navigation, no window.open and no app address', openedNothing);
     And('the switch {string} is On', isSwitch('On'));
-    And('Settings has the group {string}', async (_, name: string) => {
-      expect(await screen.findByRole('group', { name })).toBeInTheDocument();
+    And('Settings has the row {string}', async (_, name: string) => {
+      expect(await screen.findByRole('button', { name: new RegExp(`^${name}`) })).toBeInTheDocument();
     });
     And('Settings says {string}', says);
     And('Settings has a link {string}', hasLink);

@@ -109,15 +109,17 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   Licence: none needed, it is a service used through the mill; its [terms](https://www.anthropic.com/legal/consumer-terms) apply. Changes: none.
 - **[Logos Bible Software](https://www.logos.com)** and **[Accordance](https://www.accordancebible.com)**. Only if you switch them on in
   Settings: Lampas links to a word or a verse in the app you already own, and offers a link to the app's page in your phone's store if you do not have it yet. No text, image or data is taken from either. Their own licences are yours.
-  With Logos on, an idea sheet's Read more links to the lesson that teaches the idea in the grammar books you tick (Settings > Study resources > Logos > Grammar books):
+  With Logos on, an idea sheet's Read more links to the lesson that teaches the idea in the grammar books you turn on (Settings > Study resources > Logos > Your Logos library > Grammars):
   David Alan Black's Learn to Read New Testament Greek (third edition, B&H, 2009) first, whose lesson titles and starting pages Lampas keeps, read from the book's
   table of contents as [Google Books](https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC) lists it. No text of the book is kept.
-  Under the books, Ask for another book sends the title you type (and its author) to the makers as a request, which they weigh against what Lampas is for; nothing of your Logos library is read or sent.
-  Settings > Study resources > Works lists John Calvin's commentaries and his Institutes of the Christian Religion, each a switch you turn on for the ones you own (all start off); Lampas cannot see your Logos library, so
-  it keeps only which switches are on. The tutor is told the title and author of the ones on, and may link one: a commentary opens in Logos at the passage, a book at its start. Only a link is built, from Resource IDs
+  Under the Logos switch, Ask for another book sends the title you type (and its author) to the makers as a request, which they weigh against what Lampas is for; nothing of your Logos library is read or sent.
+  Your Logos library > Commentaries lists John Calvin's commentaries and his Institutes of the Christian Religion, each Off until you turn on the ones you own; Lampas cannot see your Logos library, so
+  it keeps only which books are on. The tutor is told the title and author of the ones on, and may link one: a commentary opens in Logos at the passage, a book at its start. Only a link is built, from Resource IDs
   read from a listing of the maker's own Logos library; no text of any of them is kept, shown or sent.
-  A screen of its own, Your Logos library (at the address `#/library` until Settings links it), lists the Logos books Lampas knows how to open, by kind (lexicons, grammars, Greek texts, interlinears, commentaries,
+  A screen of its own, Your Logos library, lists the Logos books Lampas knows how to open, by kind (lexicons, grammars, Greek texts, interlinears, commentaries,
   Bibles and devotionals): each is Off, On or Pinned by a tap, and a search finds a book by its title or author. Lampas keeps only those choices on the phone; nothing of your library is read, shown or sent.
+  Settings no longer lists the books: with Logos On, Settings > Study resources has one row, Your Logos library, that says how many books are on and opens that screen; Bible in Logos opens its Bibles page,
+  where the Resource ID of a Bible the list lacks can still be typed; Settings > Daily picks the devotional among those that are On there, and the Settings search finds a book by its title.
   With Logos on, a tap on an English word (at Just English, on the small English word sheet; at the Greek steps, on the word sheet too) offers Look it up in Logos: a link to the word in
   Webster's 1828 *An American Dictionary of the English Language* (Noah Webster) in your own Logos library, if you own it. Only a link is built, from the book's Resource ID; no text of the dictionary is kept, shown or sent.
 - **[Audible](https://www.audible.com)** and **The Word of Promise Audio Bible** (NKJV), by Thomas Nelson. Only if you choose it in Settings > Study resources >
