@@ -336,15 +336,16 @@ The Composer holds the waiting pictures itself (a row 'Pictures to send', each w
 - A waiting picture is the Composer's thumbnail with its remove x. Send (the Composer's, or words he holds to say in its bar) sends them as the grist's `attachments` (`picture-N.jpg`) and the request
   has `pictures: N`. Pictures with no words ask "Read the picture and tell me about it." (`PICTURE_ONLY_QUESTION`; the grind knows it).
 - The turn keeps them in Dexie (`talkPictures`, v14: `{turnId, place, bytes, mime, name}`, written with the turn by `addTurn`; `listTurnPictures`), so a reopened
-  talk shows them. His turn draws them as 64 px thumbnails (`src/talk/TurnPictures.tsx`); a tap opens the picture full screen (a Back step of its own,
-  `useSheetBack`; Close, Back or Escape closes it). While the answer is awaited the thumbnails stand above his question. A message sent again unchanged
+  talk shows them. His turn draws them as 64 px thumbnails (`src/talk/TurnPictures.tsx`); a tap opens the picture full screen in pwa-kit's shared viewer
+  (`pwa-kit/picture-viewer`: a modal `<dialog>` on the browser's top layer, so no screen's z-index covers it, Drill it's z-40 included; pinch, drag and double tap zoom;
+  a Back step of its own, `useSheetBack`; Close, Back or Escape closes it). While the answer is awaited the thumbnails stand above his question. A message sent again unchanged
   (Retry) sends the same pictures; a different message does not.
 - The grind (`## Pictures he sends`) tells the tutor to read the text in each picture (Greek, Hebrew, English), say what it is, and **quote every Greek or
   Hebrew word it discusses as plain text, never only describe it**. Every Greek stretch of an answer is a word to tap (`src/script/GreekWord.tsx`: the Greek
   voice, `speakWord`, the same engine as a long press; Hebrew was already one), so the quoted words are there to hear. Scenario:
   `grinds/examples/bible-talk/lexicon-entry-picture.json` (its picture is an invented sample entry).
 - Checks: `features/talk-pictures.feature`, `tests/unit/talk-pictures.test.ts`, `tests/unit/db.test.ts`, and `tests/e2e/talk-pictures.spec.ts` (390 px; shots
-  `talk-pictures-composer`, `talk-pictures-turn`, `talk-pictures-full-screen`).
+  `talk-pictures-composer`, `talk-pictures-turn`, `talk-pictures-full-screen`) and `tests/e2e/talk-picture-viewer.spec.ts` (the viewer is what the viewport's centre hits, from the Reader and from Drill it; the Hebrew guide opens over Drill it).
 
 ## Conversations
 

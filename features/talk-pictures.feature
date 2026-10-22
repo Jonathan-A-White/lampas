@@ -2,7 +2,7 @@ Feature: The tutor talk takes pictures
   In the Talk sheet he can attach a picture (a screenshot of a lexicon entry, a page), take a photo with the camera or paste a copied
   picture into the message. Up to four go with one message, each cut down on the phone to at most 1600 px on the long edge before it is
   sent. They wait in the composer (voice-kit's, named by their files) with a remove x, go with the message as the grist's attachments and show as thumbnails in his turn,
-  where a tap opens one full screen and Back closes it. The pictures are kept with the talk, so a reopened talk still shows them. The
+  where a tap opens one full screen, in pwa-kit's shared viewer on the browser's top layer (over Drill it too; tests/e2e/talk-picture-viewer.spec.ts), and Back closes it. The pictures are kept with the talk, so a reopened talk still shows them. The
   tutor reads the text in them and quotes the words it discusses as plain text, so each quoted Greek word is a word he can tap to hear.
   The mill is the fake Postern of tests/support/fake-postern.ts; speech is the recording fake of tests/support/fake-speech.ts.
 

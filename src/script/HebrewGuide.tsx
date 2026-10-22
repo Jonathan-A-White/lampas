@@ -20,7 +20,7 @@ const HebrewLetters = ({ text }: { text: string }) => (
   </span>
 );
 
-/** The sheet over the Talk sheet: the word large, Hear it, and Syllables and sounds (when the conversation can ask). `noVoice`: the tap that opened it found no Hebrew voice. */
+/** The sheet over the Talk sheet (z-40, drawn into document.body: the Talk sheet may be over Drill it, a z-40 screen, mw-t49ebj.2): the word large, Hear it, and Syllables and sounds (when the conversation can ask). `noVoice`: the tap that opened it found no Hebrew voice. */
 export function HebrewGuide({ word, noVoice, onClose }: { word: string; noVoice: boolean; onClose: () => void }) {
   const asking = useContext(HebrewAskContext);
   const titleId = useId();
@@ -28,7 +28,7 @@ export function HebrewGuide({ word, noVoice, onClose }: { word: string; noVoice:
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   return createPortal(
-    <div className="fixed inset-0 z-20 flex flex-col justify-end">
+    <div className="fixed inset-0 z-40 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
       <div
         role="dialog"
