@@ -47,6 +47,10 @@ Typing on the home swaps the groups for the rows that match by name or hint (`vi
 - `#/settings?section=<id>` (`openSettingsSection`): the page holding that section, scrolled to it. The Goal screen's Choose a goal and Change (`goal`), the reference card's and the link notice's Link Logos in Settings (`resources`) use it.
 - A screen that returns to Settings by `backTo('settings')` (About you, Memory, My study way, Ask for more, Placement) steps Back to the page it came from.
 
+## The Library screens (mw-rfjjzd.4)
+
+`#/library` (route `library`, `src/library/LibraryScreen.tsx`, 'Your Logos library') is a screen of its own, not a Settings page: the card (how many of the catalogue's books are on), a search over every book's name, title, author and series, and seven rows, one for each kind (`KIND_INFO`, `src/library/kinds.ts`), each with its count from the shelf ('3 on · 1 pinned', 'none on', Bibles '1 chosen: LSB'). `#/library?kind=lexicon` (`KindPage.tsx`) is a kind's page: its help line, All on / All off (no All on for Bibles), and the books in a `SearchableList` grown for it (`flat`, `row`, `rankOf`, `status`, `focus`): pinned, on, off, then name, ranked when the page opens and when the search changes, never as he taps. Each row's control is `src/ui/ThreeStep.tsx` (a radiogroup named by the book, each step 44 px, through `oneTap`): Off | On | Pin, Off | On for Devotionals, Off | Chosen for Bibles. A pin the shelf refuses (a kind holds `MAX_PINS`, 3) puts `pinRefusal()` ('Three pinned already: unpin one first') under the book as an alert. A search result opens `#/library?kind=<kind>&book=<Resource ID>` (`openLibrary`, `libraryOf`, `src/nav/route.ts`): the page opens with that book in view and marked (aria-current). The home's back is `backTo('settings')`, a kind page's `backTo('library')`; the screens report their counts to the tutor (`SCREEN_NAMES.library`). Nothing links to it from Settings until S4 of docs/design/library-at-scale.md; it is reached by its address. The shelf is read live through `src/library/useShelf.ts`; the table is touched only in `src/data/repositories/library.ts`. Proof: `features/library.feature`, `tests/e2e/library.spec.ts` (390x844: 44 px, no sideways scroll, the three hit areas), both screens in `large-text.spec.ts` (MORE_SCREENS) and `accessibility.spec.ts`.
+
 ## Adding a setting to a group
 
 1. Declare the setting (`src/settings/definitions/<name>.ts`, one line in its `index.ts`, or an entry in `src/settings/registry.ts`) with its `section`, and write its control in `src/settings/controls/` (`CONTROLS`, `index.ts`).
@@ -63,6 +67,8 @@ src/settings/define.ts  # defineSetting and SectionId
 src/settings/definitions/greekInterest.ts  # the Greek dial: GREEK_LEVELS, greekFrom, viewAt / weaveAt / newWordsAt, placementOf, the setting
 src/settings/useGreekInterest.ts  # the step, live
 src/data/repositories/greekInterest.ts  # setGreekInterest, placeGreekInterest, raiseGreekInterest, the kept values
+src/library/  # the Library screens: LibraryScreen.tsx (home and the address that picks the page), KindPage.tsx, kinds.ts (names, help lines, counts, pinRefusal), useShelf.ts
+src/ui/ThreeStep.tsx  # Off | On | Pin: a radiogroup of two or three 44 px steps, the segmented look of Chips (the Library's rows)
 src/settings/registry.ts  # every talkable setting: key, label, hint, help, section, dependency, values, read and write
 src/settings/link.ts  # the addresses into Settings: a setting, a section, a group; backToSettingsHome
 src/settings/controls/  # the control of each row (CONTROLS by key) and the Section, SettingRow and MoreHelp pieces; ChipRow is src/ui/Chips.tsx bound to a setting

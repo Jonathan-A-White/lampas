@@ -244,3 +244,12 @@ export async function openShare(page: Page): Promise<Locator> {
   await expect(sheet.getByRole('list', { name: 'Recent talks' })).toBeVisible();
   return sheet;
 }
+
+/** The Library screen (#/library, mw-rfjjzd.4): its home, or a kind's page when `kind` is given; a kind page with 19 lexicons on is the one the story names. */
+export async function openLibrary(page: Page, kind?: string): Promise<void> {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse]').first()).toBeVisible();
+  await page.goto(kind ? `/#/library?kind=${kind}` : '/#/library');
+  await expect(page.getByRole('heading', { name: kind ? 'Lexicons' : 'Your Logos library', level: 1 })).toBeVisible();
+}
