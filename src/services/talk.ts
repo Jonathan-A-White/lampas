@@ -28,14 +28,15 @@ import { askGrind, type AskOptions } from './tutor';
 import { clipTexts, FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES, TALK_SUMMARY_MAX } from './requestBudget';
 import { solidWordsField } from './solidWords';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
+import { MAX_HISTORY_TURNS } from 'voice-kit/talks';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
 export const TALK_KIND = 'bible-talk';
 
 /** How long a message may be (src/services/requestBudget.ts: the same as Ask the tutor's). */
 export const MAX_TALK_CHARS = MAX_QUESTION_CHARS;
-/** How many earlier turns the grind is sent. */
-export const MAX_HISTORY_TURNS = 10;
+/** How many earlier turns the grind is sent (voice-kit's @voice-kit/talks has the same ten). */
+export { MAX_HISTORY_TURNS };
 
 /** The longest name of a talk the mill takes, in bytes (grist header `talk`). */
 export const TALK_NAME_MAX = 80;
