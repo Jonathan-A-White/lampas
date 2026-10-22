@@ -80,7 +80,6 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
 
 ## Layout
 
-                     #   Settings (opened by the gear; a setting's details show only while it is on, mw-5r3p30.106: the Weave's Grammar row while the Weave is not Off, New words at and Move it while New words a day is not Off, Bible in Logos while Logos is On) holds the Appearance (Theme Phone | Light | Dark | Sepia | High contrast, Text size Small | Normal | Large | Largest), the Layout (Verse by verse | Paragraph), Section headings (On | Off), the Weave (two rows: Words Off | Solid | + Learning, Grammar Any | Solid | + Frontier), the English and Greek voice pickers (under the Greek one, the name of the voice in use and Test, which says πατήρ then ἀγάπη: settings/controls/voice.tsx GreekVoiceInUse, greek.ts voiceInUse / testGreekVoice, features/greek-voice-test.feature), the English and Greek speed sliders, the Greek pronunciation list, and links to Words and About;
 Which file holds what is in `docs/layout/`, one file per area (listed under Read by need). **A new layout note goes in the docs/layout/ file for its area, never in CLAUDE.md**, which stays under 16,000 bytes (`tests/unit/claude-md.test.ts`).
 
 ## What the tutor is told

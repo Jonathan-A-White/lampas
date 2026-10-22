@@ -33,6 +33,10 @@ The table is `GROUPS` in `src/settings/rows.ts`: one entry per group with its `s
 
 A group's page is `#/settings?group=<id>` (`groupLink`, `groupIdOf`, `openSettingsGroup` in `src/settings/link.ts`; ids `reading greek tutor listening daily study account developer`). It has the group's title, the `‹ Settings` back arrow (`backToSettingsHome`: a step Back when the home is the entry behind, else the home in its place) and the group's sections in `SECTIONS` order. The phone's Back from the home leaves Settings, as before. Each page keeps its own scroll place (`scrollAddress` in `src/nav/scrollMemory.ts`).
 
+## What the Settings screen holds
+
+Settings (opened by the gear; a setting's details show only while it is on, mw-5r3p30.106: the Weave's Grammar row while the Weave is not Off, New words at and Move it while New words a day is not Off, Bible in Logos while Logos is On) holds the Appearance (Theme Phone | Light | Dark | Sepia | High contrast, Text size Small | Normal | Large | Largest), the Layout (Verse by verse | Paragraph), Section headings (On | Off), the Weave (two rows: Words Off | Solid | + Learning, Grammar Any | Solid | + Frontier), the English and Greek voice pickers (under the Greek one, the name of the voice in use and Test, which says πατήρ then ἀγάπη: settings/controls/voice.tsx GreekVoiceInUse, greek.ts voiceInUse / testGreekVoice, features/greek-voice-test.feature), the English and Greek speed sliders, the Greek pronunciation list, and links to Words and About;
+
 ## Search
 
 Typing on the home swaps the groups for the rows that match by name or hint (`visibleRows`; a detail hidden by a setting that is off is found through the row that turns it on). Each result names its group; choosing one opens its page at the row (`openSetting` for a setting of the registry: scrolled to, marked; a row outside the registry, such as a link, opens its page at its section). The field keeps its text when he comes back to the home.
