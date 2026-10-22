@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.404
+_2026-10-22_
+- Fixed: a picture you send to the tutor now opens full screen on top of everything, even over Drill it, and you can pinch to zoom it.
+- New: Tap an English word in Just English mode and a small sheet lets you hear it and look it up in Webster's 1828 dictionary in Logos.
+- Fixed: after a lost connection, retrying the first message of a Bible talk no longer makes the tutor lose the thread of the conversation.
+
 ## 0.1.403
 _2026-10-22_
 - New: The tutor now keeps one thread through a whole talk, and when a long talk has to start its thread again it writes down the key points so far, which you can read under its answer.

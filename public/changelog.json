@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.404",
+    "date": "2026-10-22",
+    "story": "mw-t49ebj.2",
+    "kind": "fixed",
+    "text": "a picture you send to the tutor now opens full screen on top of everything, even over Drill it, and you can pinch to zoom it."
+  },
+  {
+    "version": "0.1.404",
+    "date": "2026-10-22",
+    "story": "mw-5r3p30.707",
+    "kind": "new",
+    "text": "Tap an English word in Just English mode and a small sheet lets you hear it and look it up in Webster's 1828 dictionary in Logos."
+  },
+  {
+    "version": "0.1.404",
+    "date": "2026-10-22",
+    "story": "mw-5r3p30.724",
+    "kind": "fixed",
+    "text": "after a lost connection, retrying the first message of a Bible talk no longer makes the tutor lose the thread of the conversation."
+  },
+  {
     "version": "0.1.403",
     "date": "2026-10-22",
     "story": "mw-pxji7y.3",
