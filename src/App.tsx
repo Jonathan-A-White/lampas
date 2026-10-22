@@ -19,6 +19,7 @@ import { GoalScreen } from './GoalScreen';
 import { HardSoundLesson } from './hardSounds/HardSoundLesson';
 import { IpaCourse } from './ipa/IpaCourse';
 import { LadderGraph } from './LadderGraph';
+import { LibraryScreen } from './library/LibraryScreen';
 import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
 import { WordReturn } from './WordReturn';
@@ -141,6 +142,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <Preface />
       ) : route === 'essay' ? (
         <Essay />
+      ) : route === 'library' ? (
+        <LibraryScreen />
       ) : route === 'settings' ? (
         <SettingsScreen />
       ) : route === 'share' ? (
