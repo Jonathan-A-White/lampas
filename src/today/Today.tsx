@@ -22,6 +22,7 @@ import { StartPlan } from '../plan/StartPlan';
 import { usePlan } from '../plan/usePlan';
 import { useMovePlace } from '../plan/useMovePlace';
 import { useSendOff } from '../plan/useSendOff';
+import { AnotherBookButton } from '../library/InLogosDoors';
 import { devotionalLink } from '../resources/logosDevotional';
 import { chapterLink, verseLink } from '../resources/logosBible';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from '../resources/audioBible';
@@ -244,6 +245,10 @@ function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
               ) : (
                 <p className="px-3 py-2 text-lg">{name}</p>
               )}
+              {/* the second door (docs/design/library-at-scale.md 3.6): the chapter in another book of his shelf; nothing while no interlinear that covers it is On */}
+              <div className="px-2 empty:hidden">
+                <AnotherBookButton place={{ book: reading.code, chapter: reading.chapter }} name={name} className={ACTION} />
+              </div>
             </Piece>
           );
         })}
