@@ -51,7 +51,7 @@ async function mount(): Promise<void> {
 
 async function openFresh(): Promise<void> {
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
   await mount();
   await waitFor(async () => expect(await db.words.count()).toBe(63));
 }
@@ -305,7 +305,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('he types {string} in the Logos lexicons search', typesSearch);
     And('he ticks the Logos lexicon {string}', ticks);
     Then('the setting {string} holds {string}', async (_, key: string, value: string) => {
-      await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
+      // the ticked lexicons are rows of his shelf now (mw-rfjjzd.3): the repository gives them back as the JSON the key held
+      const kept = async (): Promise<string | undefined> => (key === 'resourceOption.logos' ? (await getStudyResources()).options.logos : (await db.settings.get(key))?.value);
+      await waitFor(async () => expect(await kept()).toBe(value));
     });
   });
 

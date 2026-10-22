@@ -67,6 +67,8 @@ export interface SettingDef<T extends SettingValue> {
   /** the longer explanation, for the tutor and the row's 'More help' */
   help?: string;
   dependsOn?: Dependency;
+  /** where the value is kept when it is not a row of the settings store (the devotional draw is on his shelf, src/data/repositories/library.ts): read gives the text, write keeps it */
+  store?: { read(): Promise<string>; write(value: string): Promise<void> };
 }
 
 /** A definition as it is written: a choice may leave out `parse` (the saved value when it is one of the choices, else the default). */

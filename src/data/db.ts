@@ -117,6 +117,19 @@ export interface PictureRefsRow {
   found: KeptReference[];
 }
 
+/** One book of his Logos library that he has touched (src/data/repositories/library.ts, docs/design/library-at-scale.md 3.2): Off is no row. */
+export interface LibraryRow {
+  /** the Logos Resource ID, the catalogue's key ('LLS:46.30.18') */
+  id: string;
+  /** the catalogue's kind of the book (src/resources/catalogue.ts KINDS) */
+  kind: string;
+  state: 'on' | 'pinned';
+  /** when it went On or Pinned (ms since the epoch) */
+  since: number;
+  /** only on the one row that is no book ('#taken', kind 'taken'): the text of each old settings key as the shelf took it */
+  taken?: string;
+}
+
 /** A request Lampas sent to the factory (mw-vy3ghg.2), kept with the grist's id so a status that comes back can be matched to it. */
 export interface RequestRow {
   /** the grist's transaction id: the key */
@@ -480,6 +493,7 @@ class LampasDB extends Dexie {
   passageLessons!: EntityTable<PassageLessonRow, 'key'>;
   pictureRefs!: EntityTable<PictureRefsRow, 'hash'>;
   talkSummaries!: EntityTable<TalkSummaryRow, 'ref'>;
+  library!: EntityTable<LibraryRow, 'id'>;
 
   constructor() {
     super('lampas');
@@ -908,6 +922,34 @@ class LampasDB extends Dexie {
       passageLessons: 'key, state',
       pictureRefs: 'hash, at',
       talkSummaries: 'ref',
+    });
+
+    // v26: his shelf, one row per book he has touched {id, kind, state, since} (src/data/repositories/library.ts, mw-rfjjzd.3); every other table as it was.
+    this.version(26).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+      pictureRefs: 'hash, at',
+      talkSummaries: 'ref',
+      library: 'id, kind',
     });
   }
 }

@@ -8,13 +8,15 @@ import type { SettingDef, SettingValue } from './define';
 
 /** The saved value; the default when nothing is saved or the saved value is not one the setting allows. */
 export async function getSetting<T extends SettingValue>(def: SettingDef<T>): Promise<T> {
+  if (def.store) return def.parse(await def.store.read());
   const row = await db.settings.get(def.key);
   return def.parse(row?.value);
 }
 
 /** Saves `value`, then publishes setting-changed. */
 export async function setSetting<T extends SettingValue>(def: SettingDef<T>, value: T): Promise<void> {
-  await db.settings.put({ key: def.key, value: String(value) });
+  if (def.store) await def.store.write(String(value));
+  else await db.settings.put({ key: def.key, value: String(value) });
   announceSetting(def, value);
 }
 
