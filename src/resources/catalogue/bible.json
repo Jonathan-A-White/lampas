@@ -1,0 +1,15 @@
+{
+  "kind": "bible",
+  "version": "fc3ca10a7bcd",
+  "entries": [
+    {"resource":"LLS:LGCYSTNDRDBBLSB","kind":"bible","title":"Legacy Standard Bible","short":"LSB","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"pinned","via":"id"},
+    {"resource":"LLS:1.0.710","kind":"bible","title":"English Standard Version","short":"ESV","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"on","via":"id"},
+    {"resource":"LLS:1.0.71","kind":"bible","title":"New American Standard Bible, 1995","short":"NASB95","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"on","via":"id"},
+    {"resource":"LLS:NIV2011","kind":"bible","title":"New International Version, 2011","short":"NIV","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"on","via":"id"},
+    {"resource":"LLS:1.0.30","kind":"bible","title":"New King James Version","short":"NKJV","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"on","via":"id"},
+    {"resource":"LLS:CSB","kind":"bible","title":"Christian Standard Bible","short":"CSB","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"on","via":"id"},
+    {"resource":"LLS:1.0.171","kind":"bible","title":"New Living Translation","short":"NLT","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"on","via":"id"},
+    {"resource":"LLS:KJV1900","kind":"bible","title":"King James Version, 1900","short":"KJV","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"on","via":"id"},
+    {"resource":"LLS:LEB","kind":"bible","title":"Lexham English Bible","short":"LEB","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","starts":"on","via":"id"}
+  ]
+}
