@@ -1,13 +1,13 @@
 // src/resources/catalogue.ts — the Logos catalogue (mw-rfjjzd.2, docs/design/library-at-scale.md 3.1): what Lampas knows how to open in his Logos library, and where. One generated
 // JSON file per kind in ./catalogue/, written by `npm run logos:catalogue` (scripts/logos-catalogue.ts) from the rules in data/logos/catalogue-rules.json and a Logos export, and committed.
 // The lists the app read before (LEXICONS in logos.ts, GRAMMAR_BOOKS, WORKS, COMMON_BIBLES, DEVOTIONALS) are views over it and keep their shapes. docs/resources.md has the section.
-import commentary from './catalogue/commentary.json';
-import bible from './catalogue/bible.json';
-import devotional from './catalogue/devotional.json';
-import grammar from './catalogue/grammar.json';
-import greekText from './catalogue/greek-text.json';
-import interlinear from './catalogue/interlinear.json';
-import lexicon from './catalogue/lexicon.json';
+import commentary from './catalogue/commentary.json' with { type: 'json' };
+import bible from './catalogue/bible.json' with { type: 'json' };
+import devotional from './catalogue/devotional.json' with { type: 'json' };
+import grammar from './catalogue/grammar.json' with { type: 'json' };
+import greekText from './catalogue/greek-text.json' with { type: 'json' };
+import interlinear from './catalogue/interlinear.json' with { type: 'json' };
+import lexicon from './catalogue/lexicon.json' with { type: 'json' };
 import type { BookSection, ResourceLang } from './types';
 
 export const KINDS = ['lexicon', 'grammar', 'greek-text', 'interlinear', 'commentary', 'bible', 'devotional'] as const;
