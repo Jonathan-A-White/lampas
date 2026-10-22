@@ -8,6 +8,7 @@ import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { GRAMMAR_BOOKS } from '../../resources/grammarBooks';
 import { logos } from '../../resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
+import { resourcesForLevel } from '../../resources/resourcesForLevel';
 import { WORKS } from '../../resources/works';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
@@ -15,6 +16,7 @@ import { audioBibleSetting, readingPlanSetting } from '../definitions';
 import { AskForBook } from './askBook';
 import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
+import { useGreekInterest } from '../useGreekInterest';
 import { useSetting } from '../store';
 import { ON_COLOUR, OnOff, PICKER, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
@@ -35,16 +37,20 @@ const LONG_LIST = 8;
  *  show under Read more on the idea sheet of each idea it teaches. Kept as he taps. */
 function GrammarBooks() {
   const ticked = useLiveQuery(getGrammarBooks, []);
-  if (!ticked) return null;
+  const level = useGreekInterest();
+  if (!ticked || level === undefined) return null;
+  // the books the dial shows, English first (resourcesForLevel); a hidden book keeps its tick, as toggle writes over all of GRAMMAR_BOOKS
+  const books = resourcesForLevel(GRAMMAR_BOOKS, level);
+  if (books.length === 0) return null;
   const toggle = (id: string): void => {
     const next = ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id];
     void setGrammarBooks(GRAMMAR_BOOKS.map((b) => b.id).filter((b) => next.includes(b)));
   };
   const hint = 'Tick the grammar books of your Logos library. An idea sheet links the part of each that teaches the idea.';
-  if (GRAMMAR_BOOKS.length >= LONG_LIST) {
+  if (books.length >= LONG_LIST) {
     return (
       <>
-        <SearchableList label="Grammar books" hint={hint} noun="book" items={GRAMMAR_BOOKS} ticked={ticked} onToggle={toggle} />
+        <SearchableList label="Grammar books" hint={hint} noun="book" items={books} ticked={ticked} onToggle={toggle} />
         <AskForBook />
       </>
     );
@@ -57,7 +63,7 @@ function GrammarBooks() {
           {hint}
         </p>
         <div className="rounded-lg border border-line">
-          {GRAMMAR_BOOKS.map((book) => {
+          {books.map((book) => {
             const on = ticked.includes(book.id);
             return (
               <button
@@ -163,6 +169,9 @@ function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource:
  *  An app cannot read what his Logos library holds, so he says which he owns; the tutor links only these. */
 export const WorksControl: Control = ({ row }) => {
   const ticked = useLiveQuery(getWorks, []);
+  const level = useGreekInterest();
+  // the works the dial shows, English first (resourcesForLevel); a hidden work keeps its tick, as toggle writes over all of WORKS
+  const works = resourcesForLevel(WORKS, level);
   const toggle = (id: string, on: boolean): void => {
     const next = on ? ticked?.filter((t) => t !== id) : [...(ticked ?? []), id];
     void setWorks(WORKS.map((w) => w.id).filter((w) => next?.includes(w)));
@@ -170,9 +179,9 @@ export const WorksControl: Control = ({ row }) => {
   return (
     <SettingRow row={row}>
       <RowName row={row} />
-      {ticked ? (
+      {ticked && level !== undefined ? (
         <ul aria-label={row.label} className="rounded-lg border border-line">
-          {WORKS.map((work) => {
+          {works.map((work) => {
             const on = ticked.includes(work.id);
             return (
               <li key={work.id} className="flex min-h-12 items-center justify-between gap-3 border-t border-line px-3 py-2 first:border-t-0">

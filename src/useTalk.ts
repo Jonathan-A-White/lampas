@@ -176,8 +176,10 @@ export function useTalk(
           // the talk goes by its ref and the time of its first turn (the mill keeps one session for it); a first turn is kept with that very time, so the name is the same on every turn after it
           const { talk, when: firstWhen } = talkNameOf(ref, turns, startedAt);
           const said: { session?: TalkSession } = {};
+          // the Greek dial's step: the resources and works the tutor is told of follow it (resourcesForLevel)
+          const greekLevel = greekLevelOf(settings.greekInterest);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
-          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works), kept && { text: kept.summary, covered: kept.covered }), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
+          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, greekLevel), kept && { text: kept.summary, covered: kept.covered }), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const answer = await askTalk(request, {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,

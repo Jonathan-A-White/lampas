@@ -52,6 +52,7 @@ import { greekMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { GREEK_LANG } from './script/greekLang';
+import { useGreekInterest } from './settings/useGreekInterest';
 
 // Each button is as wide as its label and shares the rest, so neither wraps at 390 px.
 const BUTTON = 'min-h-12 flex-auto whitespace-nowrap rounded-xl border px-2 text-base font-medium';
@@ -337,7 +338,8 @@ function ReadMore({ ideaId, books }: { ideaId: string; books: readonly GrammarBo
   const [all, setAll] = useState(false);
   const headingId = useId();
   const kept = useLiveQuery(async () => ({ logos: (await getStudyResources()).on.includes('logos'), ticked: await getGrammarBooks() }), []);
-  const lines = kept?.logos ? readMoreFor(ideaId, kept.ticked, books) : [];
+  const level = useGreekInterest();
+  const lines = kept?.logos && level !== undefined ? readMoreFor(ideaId, kept.ticked, books, level) : [];
   if (!lines.length) return null;
   const folded = all ? 0 : Math.max(0, lines.length - SHOWN_BOOKS);
   return (
