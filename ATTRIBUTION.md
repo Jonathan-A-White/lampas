@@ -117,7 +117,9 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   it keeps only which books are on. The tutor is told the title and author of the ones on, and may link one: a commentary opens in Logos at the passage, a book at its start. Only a link is built, from Resource IDs
   read from a listing of the maker's own Logos library; no text of any of them is kept, shown or sent.
   A screen of its own, Your Logos library, lists the Logos books Lampas knows how to open, by kind (lexicons, grammars, Greek texts, interlinears, commentaries,
-  Bibles and devotionals): each is Off, On or Pinned by a tap, and a search finds a book by its title or author. Lampas keeps only those choices on the phone; nothing of your library is read, shown or sent.
+  Bibles and devotionals): each is Off, On or Pinned by a tap, and a search finds a book by its title or author. Lampas keeps only those choices on the phone; nothing of your library is shown or sent.
+  Import reads the list Logos saves (Library > Save as Spreadsheet) when you choose that file: it is read on the phone, matched to the books Lampas knows how to open (by Resource ID, and by the Logos series and type of a book), and kept on the phone, only the books' ids, titles, series, languages and the Bible
+  places they cover, so an update can match it again; Turn on switches the matches On, and nothing is sent.
   On a verse (the Verse view, the tutor's verse links, Today's Psalms and Proverbs, the reference card of an Old Testament verse), In Logos opens it in your own Bible and In another book… opens a chooser of the Greek texts,
   interlinears and commentaries you have switched on that cover it, each row a link to the verse in that book; only links are built, and nothing of those books is read, shown or sent.
   On the word sheet, the Logos lexicons you pin are tiles of its Study row, with Bible Word Study; when more than three are On, a last tile, All N lexicons, opens a sheet with a search that lists every one that is On, each opening the word's entry in it (Manage opens the Lexicons page). Only links are built; nothing of any lexicon is read, shown or sent.

@@ -10,6 +10,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { BOOKS } from '../src/data/books.ts';
 import type { CatalogueEntry, Kind, KindFile, Opens, Via, WorkGroup } from '../src/resources/catalogue.ts';
 import type { BookSection, ResourceLang } from '../src/resources/types.ts';
+import { ruleOf } from '../src/library/exportRules.ts';
+import { coversOfSupersets, parseCsv, readExport, type ExportRow } from '../src/library/parseExport.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const RULES_FILE = join(ROOT, 'data/logos/catalogue-rules.json');
@@ -73,93 +75,8 @@ export interface Rules {
 
 // ---- The export ----
 
-/** RFC 4180: CRLF or LF line ends, quoted cells with commas, doubled quotes and newlines inside. A raw tab is cell text (the export's last cell holds them, unquoted), and a BOM is dropped. */
-export function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let cell = '';
-  let quoted = false;
-  let started = false;
-  const src = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
-  for (let i = 0; i < src.length; i++) {
-    const c = src[i];
-    if (quoted) {
-      if (c === '"') {
-        if (src[i + 1] === '"') {
-          cell += '"';
-          i++;
-        } else quoted = false;
-      } else cell += c;
-      continue;
-    }
-    if (c === '"' && cell === '') {
-      quoted = true;
-      started = true;
-    } else if (c === ',') {
-      row.push(cell);
-      cell = '';
-      started = true;
-    } else if (c === '\r' || c === '\n') {
-      if (c === '\r' && src[i + 1] === '\n') i++;
-      if (started || cell !== '') {
-        row.push(cell);
-        rows.push(row);
-      }
-      row = [];
-      cell = '';
-      started = false;
-    } else {
-      cell += c;
-      started = true;
-    }
-  }
-  if (started || cell !== '') {
-    row.push(cell);
-    rows.push(row);
-  }
-  return rows;
-}
-
-/** One row of a Logos export. `supersets` is the ReferenceSupersets cell as it is: tokens like `bible.64.1-64.21.25`, separated by raw tabs. */
-export interface ExportRow {
-  resource: string;
-  type: string;
-  abbreviated: string;
-  title: string;
-  series: string;
-  languages: string;
-  supersets: string;
-}
-
-const COLUMNS = ['ResourceId', 'Type', 'AbbreviatedTitle', 'Title', 'Series', 'Languages', 'ReferenceSupersets'];
-
-/** The rows of an export, by its header (the columns may come in any order); throws, naming the column, when one is missing. */
-export function readExport(text: string): ExportRow[] {
-  const [header, ...rows] = parseCsv(text);
-  const at = (name: string): number => {
-    const i = (header ?? []).indexOf(name);
-    if (i < 0) throw new Error(`The export has no ${name} column (it has ${(header ?? []).join(', ') || 'none'}); ${COLUMNS.join(', ')} are expected`);
-    return i;
-  };
-  const [r, t, a, ti, s, l, u] = COLUMNS.map(at);
-  return rows.map((c) => ({ resource: c[r] ?? '', type: c[t] ?? '', abbreviated: c[a] ?? '', title: c[ti] ?? '', series: c[s] ?? '', languages: c[l] ?? '', supersets: c[u] ?? '' })).filter((x) => x.resource !== '');
-}
-
-/** Logos numbers the New Testament's books 61 (Matthew) to 87 (Revelation); our codes follow that order (src/data/books.ts). */
-const FIRST_NT_BOOK = 61;
-
-/** The books of the New Testament a ReferenceSupersets cell covers, as our codes in canonical order: each `bible` token (`bible.64.1-64.21.25`, `bible+esv.61-87`) is a range from its first book number
- *  to its last; a token of any other type (`dayofyear`, `cicr`), and the Old Testament, cover none. */
-export function coversOfSupersets(supersets: string): string[] {
-  const covered = new Set<string>();
-  for (const token of supersets.split('\t')) {
-    const m = /^bible(?:\+[a-z0-9]+)?\.(\d+)(?:[.\d]*)(?:-(\d+)[.\d]*)?$/.exec(token.trim());
-    if (!m) continue;
-    const [from, to] = [Number(m[1]), Number(m[2] ?? m[1])];
-    for (let n = Math.max(from, FIRST_NT_BOOK); n <= Math.min(to, FIRST_NT_BOOK + BOOKS.length - 1); n++) covered.add(BOOKS[n - FIRST_NT_BOOK].code);
-  }
-  return BOOKS.filter((b) => covered.has(b.code)).map((b) => b.code);
-}
+// Read by the phone too (src/library/parseExport.ts): the same parser reads an export in both places.
+export { coversOfSupersets, parseCsv, readExport, type ExportRow };
 
 // ---- The catalogue ----
 
@@ -243,14 +160,9 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
   const sorted = [...rows].sort((a, b) => (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0));
   for (const row of sorted) {
     if (taken.has(row.resource)) continue;
-    const nt = coversOfSupersets(row.supersets).length > 0;
-    const series = rules.series.find((s) => s.series === row.series && row.type.startsWith('text.monograph.commentary') && nt);
-    if (series) {
-      add(row, series.kind, 'series', series, `series ${series.series}`);
-      continue;
-    }
-    const type = rules.types.find((t) => t.type === row.type && (t.languages === undefined || t.languages === row.languages) && (t.needs !== 'nt' || nt));
-    if (type) add(row, type.kind, 'type', type, `type ${type.type}`);
+    const found = ruleOf(row, rules);
+    if (found?.by === 'series') add(row, found.rule.kind, 'series', found.rule, `series ${found.rule.series}`);
+    else if (found?.by === 'type') add(row, found.rule.kind, 'type', found.rule, `type ${found.rule.type}`);
   }
 
   const files = Object.fromEntries(KIND_LIST.map((k) => [k, { kind: k, version: '', entries: byKind[k] }])) as Record<Kind, KindFile>;

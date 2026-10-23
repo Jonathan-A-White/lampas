@@ -7,11 +7,13 @@
 // a key that now holds other text (a test's seed, a key the phone's settings sync wrote) is taken again, for its books only; a key that has not changed is ignored, so what he taps
 // on the shelf is never overwritten by an old key.
 import { DEVOTIONALS, ALL_TICKED, NONE_TICKED, tickedDevotionals, tickedText } from '../daily/devotionals';
-import { CATALOGUE, entriesOf, entryOf, type CatalogueEntry, type Kind } from '../../resources/catalogue';
+import { CATALOGUE, CATALOGUE_VERSION, entriesOf, entryOf, type CatalogueEntry, type Kind } from '../../resources/catalogue';
 import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS } from '../../resources/grammarBooks';
 import { LEXICONS } from '../../resources/logos';
 import { WORKS } from '../../resources/works';
-import { db, type LibraryRow } from '../db';
+import { isListed, matchExport, type MatchResult } from '../../library/matchExport';
+import type { ExportRow } from '../../library/parseExport';
+import { db, type ExportedRow, type LibraryRow } from '../db';
 
 export type ShelfState = 'off' | 'on' | 'pinned';
 
@@ -26,7 +28,7 @@ export type ShelfResult = { ok: true } | { ok: false; reason: ShelfRefusal };
 const OK: ShelfResult = { ok: true };
 const refused = (reason: ShelfRefusal): ShelfResult => ({ ok: false, reason });
 
-export type { LibraryRow };
+export type { ExportedRow, LibraryRow };
 
 // --- the old keys ---------------------------------------------------------------------------------------------------------------------------
 
@@ -352,4 +354,126 @@ export async function setDevotionalDraw(text: string): Promise<void> {
     const from = parseFrom((await db.library.get(TAKEN_ID))?.taken);
     await db.library.put({ id: TAKEN_ID, kind: 'taken', state: 'on', since: 0, taken: JSON.stringify({ ...from, [DRAW_KEY]: text }) });
   });
+}
+
+// --- the list he imported (docs/design/library-at-scale.md 5.3 and 6.3) ---------------------------------------------------------------------
+
+/** The meta row that says what the kept list is: when it was imported, how many books it has, how many Lampas lists, how many have come since, and the catalogue version it was last matched under. */
+const IMPORT_KEY = 'libraryImport';
+
+export interface ImportNote {
+  /** when it was imported (ms since the epoch) */
+  at: number;
+  /** how many books the list has */
+  books: number;
+  /** how many of them Lampas lists (opens) */
+  matched: number;
+  /** how many books have joined the catalogue since the import, after updates */
+  newSince: number;
+  /** the catalogue version the list was last matched under */
+  version: string;
+}
+
+/** What the kept list is, undefined while he has imported none. */
+export async function importNote(): Promise<ImportNote | undefined> {
+  const raw = (await db.meta.get(IMPORT_KEY))?.value;
+  if (typeof raw !== 'string') return undefined;
+  try {
+    const note = JSON.parse(raw) as Partial<ImportNote>;
+    if (typeof note.at === 'number' && typeof note.books === 'number' && typeof note.matched === 'number') {
+      return { at: note.at, books: note.books, matched: note.matched, newSince: note.newSince ?? 0, version: note.version ?? '' };
+    }
+  } catch {
+    // unreadable: as if none was kept
+  }
+  return undefined;
+}
+
+/** A book an import turns on, and the state it takes. */
+export interface Turning {
+  entry: CatalogueEntry;
+  state: 'on' | 'pinned';
+}
+
+/** What an import would do, worked out before he taps: the match, the books it would turn on and what stays as he left it. */
+export interface ImportPlan {
+  rows: ExportRow[];
+  result: MatchResult;
+  /** the books to turn on, the Bible first of those he owns in the catalogue's order, pins as far as each kind's pins allow */
+  turning: Turning[];
+  /** matched books he already has on his shelf, or turned Off after an earlier import: they stay as he has them */
+  kept: number;
+  /** matched by a rule whose book this version does not list: nothing is written for them until an update lists them */
+  waiting: number;
+}
+
+/** The list matched, and what turning it on would do on his shelf as it is now. A book he has a row for stays as it is, a book matched by an earlier import and not on the shelf now is one he turned Off
+ *  (his tap wins), and a Bible is taken only while he has none, the first of those he owns in the catalogue's order. */
+export async function planImport(rows: readonly ExportRow[]): Promise<ImportPlan> {
+  await ensureShelf();
+  const result = matchExport(rows);
+  const [shelf, before] = await Promise.all([db.library.toArray(), db.exportRows.toArray()]);
+  const have = new Set(shelf.map((r) => r.id));
+  const earlier = new Set(before.filter((r) => r.matched).map((r) => r.resource));
+  const listed = result.matched.filter(isListed).sort((a, b) => (catalogueOrder.get(a.entry.resource) ?? 1e6) - (catalogueOrder.get(b.entry.resource) ?? 1e6));
+  const pins = new Map<string, number>();
+  for (const r of shelf) if (r.state === 'pinned') pins.set(r.kind, (pins.get(r.kind) ?? 0) + 1);
+  let bible = shelf.some((r) => r.kind === 'bible');
+  const turning: Turning[] = [];
+  for (const m of listed) {
+    const { entry } = m;
+    if (have.has(entry.resource) || earlier.has(entry.resource)) continue;
+    if (entry.kind === 'bible') {
+      if (bible) continue;
+      bible = true;
+    }
+    const pinned = entry.starts === 'pinned' && entry.kind !== 'devotional' && entry.kind !== 'bible' && (pins.get(entry.kind) ?? 0) < MAX_PINS;
+    if (pinned) pins.set(entry.kind, (pins.get(entry.kind) ?? 0) + 1);
+    turning.push({ entry, state: pinned ? 'pinned' : 'on' });
+  }
+  return { rows: [...rows], result, turning, kept: listed.length - turning.length, waiting: result.matched.length - listed.length };
+}
+
+const exportedRow = (r: ExportRow, matched: boolean): ExportedRow => ({ resource: r.resource, type: r.type, title: r.title, series: r.series, languages: r.languages, refs: r.supersets, matched });
+
+/** Turns on the books of the plan and keeps the list (replacing one kept before), so it can be matched again after an update. Returns how many books were added to the shelf. */
+export async function applyImport(plan: ImportPlan, now = Date.now()): Promise<number> {
+  const added = await importShelf(plan.turning.map((t) => ({ resource: t.entry.resource, state: t.state })), now);
+  const listed = new Set(plan.result.matched.filter(isListed).map((m) => m.row.resource));
+  await db.transaction('rw', db.exportRows, db.meta, async () => {
+    await db.exportRows.clear();
+    await db.exportRows.bulkPut(plan.rows.map((r) => exportedRow(r, listed.has(r.resource))));
+    const note: ImportNote = { at: now, books: plan.rows.length, matched: listed.size, newSince: 0, version: CATALOGUE_VERSION };
+    await db.meta.put({ key: IMPORT_KEY, value: JSON.stringify(note) });
+  });
+  return added;
+}
+
+/** Matches the kept list again against the catalogue: the books it lists now that it did not at the last match turn On as an import turns them (a book he has a
+ *  row for stays as it is), and the note counts every one of them as 'new since'. Returns how many are new. Does nothing while no list is kept. */
+export async function rematchImport(now = Date.now()): Promise<number> {
+  const note = await importNote();
+  if (!note) return 0;
+  const kept = await db.exportRows.toArray();
+  const rows: ExportRow[] = kept.map((r) => ({ resource: r.resource, type: r.type, abbreviated: '', title: r.title, series: r.series, languages: r.languages, supersets: r.refs }));
+  const plan = await planImport(rows);
+  const listed = new Set(plan.result.matched.filter(isListed).map((m) => m.row.resource));
+  const before = new Set(kept.filter((r) => r.matched).map((r) => r.resource));
+  const fresh = [...listed].filter((id) => !before.has(id)).length;
+  await importShelf(plan.turning.map((t) => ({ resource: t.entry.resource, state: t.state })), now);
+  await db.transaction('rw', db.exportRows, db.meta, async () => {
+    await db.exportRows.bulkPut(kept.map((r) => ({ ...r, matched: listed.has(r.resource) })));
+    const next: ImportNote = { ...note, matched: listed.size, newSince: note.newSince + fresh, version: CATALOGUE_VERSION };
+    await db.meta.put({ key: IMPORT_KEY, value: JSON.stringify(next) });
+  });
+  return fresh;
+}
+
+/** The first open after an update that changed the catalogue: while a list is kept and was last matched under another catalogue version, the shelf's rows are re-filed (rematch) and the list is matched
+ *  again (rematchImport), which writes the new version into its note, so the next open does nothing. One read of one small row otherwise, and nothing is written for a phone that imported no list. */
+export async function afterCatalogueUpdate(): Promise<void> {
+  const note = await importNote();
+  if (!note || note.version === CATALOGUE_VERSION) return;
+  await rematch();
+  await rematchImport();
 }

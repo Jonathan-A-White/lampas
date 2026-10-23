@@ -15,7 +15,7 @@ import { scopeRef, type TalkScope } from './services/talk';
 import { fitScreen, SCREEN_NAMES, suggestionsFor, type ScreenContext } from './tutor/screen';
 import { askRequestNow, useAskRequest } from './tutor/askNow';
 import { useScreenContext } from './tutor/screenContext';
-import type { Route } from './nav/route';
+import { libraryOf, useAddress, type Route } from './nav/route';
 import { openedByTutor } from './nav/readerRequest';
 import { useSheetOpen } from './ui/sheetBack';
 import { useTalk } from './useTalk';
@@ -62,6 +62,12 @@ export function AskTutorButton({ onClick, lift = '0px', away, inDialog }: { onCl
 
 /** How far a screen's pinned bottom bar raises the button: Import's Add bar (a summary line over a 48 px button, padded). */
 const LIFT: Partial<Record<Route, string>> = { import: 'var(--spacing) * 20 + 3rem' };
+
+/** Import your library (#/library?import, src/library/ImportLibrary.tsx) pins one 48 px button at its foot, padded: the button rises above it. */
+const IMPORT_LIBRARY_LIFT = 'var(--spacing) * 18';
+
+/** How far the screen's pinned bottom bar raises the button: by route, and for the Library by its address (the import page has a bar, the rest of the Library none). */
+const liftFor = (route: Route, address: string): string | undefined => (route === 'library' && libraryOf(address).import ? IMPORT_LIBRARY_LIFT : LIFT[route]);
 
 /** The Reader's Talk bar: its border, 96 px of bar (56 in a short window) and 8 px above and below (src/Talk.tsx TalkBar); src/index.css --lp-talk-lift. */
 export const TALK_BAR_LIFT = 'var(--lp-talk-lift)';
@@ -127,7 +133,8 @@ export function AskTutor({ route }: { route: Route }) {
   const [openOn, setOpenOn] = useState<Route | null>(null);
   const ai = useAiAllowed();
   const speaking = useBarShown();
-  useAskRoom(ai && route !== 'home' && route !== 'share' && route !== 'unlock', speaking || LIFT[route] !== undefined);
+  const lift = liftFor(route, useAddress());
+  useAskRoom(ai && route !== 'home' && route !== 'share' && route !== 'unlock', speaking || lift !== undefined);
   const open = openOn === route;
   const reported = useScreenContext();
   const name = route === 'home' || route === 'share' || route === 'unlock' ? undefined : SCREEN_NAMES[route];
@@ -155,7 +162,7 @@ export function AskTutor({ route }: { route: Route }) {
   return (
     <>
       <AskTutorButton
-        lift={LIFT[route]}
+        lift={lift}
         onClick={() => {
           stopReading();
           setOpenOn(route);

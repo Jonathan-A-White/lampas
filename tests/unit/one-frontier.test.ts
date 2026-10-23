@@ -237,7 +237,7 @@ describe('the upgrade from version 20', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(26);
+    expect(db.verno).toBe(27);
     const after = new Map((await db.grammarLevels.toArray()).map((r) => [r.id, r]));
     expect([...after.values()].filter((r) => r.level === 'frontier' && !r.id.includes('letter-')).map((r) => r.id)).toEqual(['case-dative']);
     expect(after.get('case-genitive')).toMatchObject({ level: 'notYet', since: 100, how: 'review' });

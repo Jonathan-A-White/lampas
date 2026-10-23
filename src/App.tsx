@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { noteDailyChange } from './data/daily/dailyStore';
 import { subscribe } from './events/bus';
-import { seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
+import { afterCatalogueUpdate, seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { Essay } from './Essay';
 import { Preface } from './Preface';
@@ -77,6 +77,10 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   }, []);
   // A change to a Settings > Daily row answers Today's explanation of what it could hold, so it is not shown again (src/data/daily/dailyStore.ts).
   useEffect(() => subscribe('setting-changed', (event) => void noteDailyChange(event.key)), []);
+  // The first open after an update that changed the Logos catalogue: his shelf's rows are re-filed and the Logos list he imported is matched again, so the Library card can say 'N new since' (src/data/repositories/library.ts).
+  useEffect(() => {
+    void afterCatalogueUpdate().catch((error: unknown) => console.error('matching his Logos list again after the update failed', error));
+  }, []);
   // A new install starts empty (mw-5r3p30.385): nothing is put in the word list, on the schedule or on the grammar ladder at the first open.
   // These two are the upgrade paths of a phone that already has data: a store from before v10 that has words but no schedule gets them scheduled, and
   // a store from before v11 has the terms he marked I know this make their ideas solid. Each does nothing without his own rows to work from, and
