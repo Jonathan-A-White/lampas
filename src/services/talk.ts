@@ -19,7 +19,7 @@ import type { TutorRequest } from '../data/requestsForTutor';
 import type { MemoryUpdate } from '../talk/memoryUpdate';
 import type { SettingValue } from '../settings/registry';
 import { GREEK_LEVELS, greekLevelOf, nextGreekStep, type GreekLevel } from '../settings/definitions/greekInterest';
-import type { TutorResource, TutorWork } from '../resources/tutorLinks';
+import { trimWorks, type TutorResource, type TutorWork } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
 import type { FormFieldState, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
@@ -252,7 +252,7 @@ export interface TalkRequest {
   pronunciation_guide?: string;
   /** the study resources he has switched on in Settings (mw-5r3p30.123): the only ones the tutor may link; missing in About, whose request is the credits */
   resources?: TutorResource[];
-  /** the works of his Logos library that he ticked in Settings (mw-5r3p30.675): the only ones the tutor may link as a `work`; missing when none is ticked and in About */
+  /** the digest of his Logos shelf chosen by the place (mw-rfjjzd.10, worksForTutor): the pinned books, the commentaries that cover the chapter, the grammars and Greek texts for a question about a form or a reading, and a closing `more` line; the only books the tutor may link as a `work`; missing when none is on his shelf and in About; fitHistory cuts it from its end after the word list and before the history */
   works?: TutorWork[];
   /** present only when pictures go with the message (mw-y3qno5.1): how many, 1 to 4. They are the grist's attachments; the tutor reads the text in them */
   pictures?: number;
@@ -497,6 +497,7 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
  * Makes the request fit a grist: while it is too big the oldest long answer in the history is cut short; when none is left to cut
  * the words of the text (greek_words) are cut from their end, and when none is left the oldest turn is dropped. The newest turn is
  * the last to be touched (a quiz is nothing without its earlier turns, so they outlast the tail of a long passage's word list).
+ * The digest of his shelf (`works`) is cut from its end once the words are gone (each book it drops is counted into its closing line, trimWorks), before the passage's text is clipped and before any turn is dropped (mw-rfjjzd.10).
  * The text of a passage too long for a request is clipped from its end (clipTexts) once the words are gone, before any turn is dropped.
  * The oldest turns go until the newest alone is left; then the oldest of his requests (the last in the list, newest first) go one at a time, then
  * his memory notes, and only then the newest turn (mw-5r3p30.615: a talk from Settings, whose screen weighs most of the record, forgot the question
@@ -510,6 +511,7 @@ export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkR
   let fold = request.fold ? request.fold.map((t) => ({ ...t })) : [];
   let requests = request.requests;
   let greekWords = request.greek_words;
+  let works = request.works;
   let memoryNotes = request.memory?.notes;
   let guide = request.pronunciation_guide;
   let drill = request.screen?.drill;
@@ -520,7 +522,8 @@ export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkR
   delete rest.summary;
   delete rest.fold;
   delete rest.held_passages;
-  const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(verses ? { verses } : {}), ...(fetched && fetched.length > 0 ? { held_passages: fetched } : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
+  delete rest.works;
+  const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(verses ? { verses } : {}), ...(fetched && fetched.length > 0 ? { held_passages: fetched } : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(works && works.length > 0 ? { works } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   // the talk's name travels in the grist header beside the request and weighs with it (mw-pxji7y.3)
   const named = talkBytes(talk);
   const tooBig = (): boolean => sizeOf(fitted()) + named > MAX_REQUEST_BYTES;
@@ -531,6 +534,8 @@ export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkR
   }
   if (tooBig() && request.focus?.kind !== 'sound') guide = undefined;
   while (greekWords && greekWords.length > 0 && tooBig() && history.length > 0) greekWords = greekWords.slice(0, -1);
+  // the digest of his shelf is cut from its end, each book it drops counted into its closing line (mw-rfjjzd.10), after the word list and before the passages and the turns
+  while (works && works.length > 0 && tooBig()) works = trimWorks(works);
   // the passages the tutor fetched give way the oldest first, before a verse of the talk's own text or a turn (mw-5r3p30.734)
   while (fetched && fetched.length > 0 && tooBig()) fetched = fetched.slice(0, -1);
   // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) gives up whole verses, the farthest from the talk's verse first, before any turn is dropped (mw-5r3p30.733)

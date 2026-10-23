@@ -6,6 +6,7 @@ import { db } from '../../src/data/db';
 import { getWorks, setWorks } from '../../src/data/repositories';
 import { WORKS, workLink, workOf } from '../../src/resources/works';
 import { workChip, worksForTutor } from '../../src/resources/tutorLinks';
+import { WORK_LINK_IDS } from '../../src/resources/workIds';
 import { buildTalkRequest, isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
@@ -109,18 +110,23 @@ describe('the works he ticked', () => {
 });
 
 describe('what the tutor is told', () => {
-  it('lists only the ticked works, with id, title, author and kind, and the books a commentary covers', () => {
-    expect(worksForTutor([])).toEqual([]);
-    const told = worksForTutor(['calvin-commentaries', 'calvin-institutes-lcc']);
-    expect(told.map((w) => w.id)).toEqual(['calvin-commentaries', 'calvin-institutes-lcc']);
-    expect(told[0]).toMatchObject({ title: "Calvin's Commentaries", author: 'John Calvin', kind: 'commentary' });
-    expect(told[0]?.covers).toContain('John');
-    expect(told[0]?.covers).not.toContain('Revelation');
-    expect(told[1]).toMatchObject({ kind: 'book' });
-    expect(told[1]).not.toHaveProperty('covers');
-    expect(told[1]?.places).toMatch(/book.*chapter/i);
-    expect(told[0]).not.toHaveProperty('places');
-    expect(worksForTutor(['nope'])).toEqual([]);
+  /** His shelf as rows: every volume of the works named, On. */
+  const shelfOf = (...ids: string[]) => ids.flatMap((id) => (workOf(id)?.volumes ?? []).map((v, i) => ({ id: v.resource, kind: 'commentary', state: 'on' as const, since: i })));
+  const rom8 = { book: 'rom', chapter: 8 };
+
+  it('lists a work of several volumes as one line {id, t, k}, a book that takes a place with p, and no author or covers', () => {
+    expect(worksForTutor([], rom8, '')).toEqual([]);
+    const told = worksForTutor(shelfOf('calvin-commentaries', 'calvin-institutes-lcc'), rom8, 'What does Calvin say?');
+    expect(told).toEqual([
+      { id: 'calvin-commentaries', t: "Calvin's Commentaries", k: 'c' },
+      { id: 'calvin-institutes-lcc', t: 'ICR', k: 'b', p: 1 },
+    ]);
+  });
+
+  it('names a commentary only when its volume covers the book he is on, and counts the rest in the more line', () => {
+    const rev = worksForTutor(shelfOf('calvin-commentaries'), { book: 'rev', chapter: 1 }, '');
+    expect(rev).toEqual([{ more: { commentary: 1 } }]);
+    expect(worksForTutor(shelfOf('calvin-commentaries'), undefined, '')).toEqual([{ more: { commentary: 1 } }]);
   });
 
   const chapter = { verses: [] } as never;
@@ -128,17 +134,19 @@ describe('what the tutor is told', () => {
   const send = (works?: ReturnType<typeof worksForTutor>) =>
     buildTalkRequest(scope, 'Where does Calvin say this?', [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, undefined, false, undefined, undefined, undefined, undefined, works);
 
-  it('is carried by the request when any is ticked, and left out when none is', () => {
-    expect(send(worksForTutor(['calvin-commentaries'])).works?.map((w) => w.id)).toEqual(['calvin-commentaries']);
-    expect(send(worksForTutor([]))).not.toHaveProperty('works');
+  it('is carried by the request when any is on his shelf, and left out when none is', () => {
+    expect(send(worksForTutor(shelfOf('calvin-commentaries'), { book: 'jhn', chapter: 3 }, '')).works).toEqual([{ id: 'calvin-commentaries', t: "Calvin's Commentaries", k: 'c' }]);
+    expect(send(worksForTutor([], rom8, ''))).not.toHaveProperty('works');
     expect(send()).not.toHaveProperty('works');
   });
 
   it('has the field in the input schema, validates a request that carries it, and is optional', () => {
     expect(inputSchema.required as string[]).not.toContain('works');
-    const request = { ...send(worksForTutor(['calvin-commentaries', 'calvin-institutes-lcc'])), greek: 'Οὕτως γὰρ ἠγάπησεν', english: 'For God so loved' };
+    const request = { ...send(worksForTutor(shelfOf('calvin-commentaries', 'calvin-institutes-lcc'), { book: 'jhn', chapter: 3 }, '')), greek: 'Οὕτως γὰρ ἠγάπησεν', english: 'For God so loved' };
     expect(validate(request, inputSchema)).toEqual([]);
-    expect(validate({ ...request, works: [{ id: 'x', title: 'T', author: 'A', kind: 'pamphlet' }] }, inputSchema)).not.toEqual([]);
+    expect(validate({ ...request, works: [{ id: 'x', t: 'T', k: 'pamphlet' }] }, inputSchema)).not.toEqual([]);
+    expect(validate({ ...request, works: [{ id: 'x', t: 'T', k: 'c' }, { more: { commentary: 2 } }] }, inputSchema)).toEqual([]);
+    expect(validate({ ...request, works: [{ more: { commentary: 2 }, id: 'x' }] }, inputSchema)).not.toEqual([]);
   });
 });
 
@@ -172,14 +180,15 @@ describe('the answer\'s work link', () => {
     expect(isTalkAnswer(answer([{ kind: 'work', work: 'a', reference: 'John 3:16', extra: 1 }]))).toBe(false);
   });
 
-  it('is allowed by the answer schema, for the ids of WORKS only', () => {
+  it('is allowed by the answer schema, for the ids of the catalogue only', () => {
     expect(validate(answer([{ kind: 'work', work: 'calvin-commentaries', reference: 'John 3:16' }]), answerSchema)).toEqual([]);
     expect(validate(answer([{ kind: 'work', work: 'calvin-institutes-lcc' }]), answerSchema)).toEqual([]);
     expect(validate(answer([{ kind: 'work', work: 'calvin-institutes-lcc', place: '3.24' }]), answerSchema)).toEqual([]);
     expect(validate(answer([{ kind: 'work', work: 'calvin-institutes-lcc', place: '' }]), answerSchema)).not.toEqual([]);
     expect(validate(answer([{ kind: 'work', work: 'invented' }]), answerSchema)).not.toEqual([]);
     const enumIds = ((answerSchema.properties?.links as { items: { anyOf: { properties: { kind: { const?: string }; work?: { enum: string[] } } }[] } }).items.anyOf.find((a) => a.properties.kind.const === 'work')?.properties.work?.enum ?? []);
-    expect([...enumIds].sort()).toEqual(WORKS.map((w) => w.id).sort());
+    expect([...enumIds].sort()).toEqual([...WORK_LINK_IDS].sort());
+    for (const w of WORKS) expect(enumIds).toContain(w.id);
   });
 });
 
@@ -187,7 +196,7 @@ describe('the bible-talk instructions on works', () => {
   const text = instructionsOf('bible-talk');
   it('name `works`, say to link a work only when it is in the request, and to give a commentary its reference', () => {
     expect(text).toContain('`works`');
-    expect(text).toMatch(/only\s+(a\s+work\s+)?(that\s+is\s+)?in\s+`works`|only\s+when\s+it\s+is\s+in\s+`works`/i);
+    expect(text).toMatch(/never\s+name\s+a\s+work\s+as\s+his\s+that\s+`works`\s+does\s+not\s+list/i);
     expect(text).toMatch(/commentary[^.]*`reference`/i);
   });
 

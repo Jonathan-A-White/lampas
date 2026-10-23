@@ -14,7 +14,9 @@ import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { applyChanges } from './settings/registry';
 import { settingsSentTo } from './tutor/knows';
-import { addAnswer, getGreekPronunciation, listLevels, listSolidHeadwords, verseRef } from './data/repositories';
+import { addAnswer, getGreekPronunciation, listLevels, listSolidHeadwords, shelfOf, verseRef } from './data/repositories';
+import { worksForTutor } from './resources/tutorLinks';
+import { greekLevelOf } from './settings/definitions/greekInterest';
 import { isOrphan, pendingOf, setPending, startRunning, usePendingAsks, type AskState, type SentRef } from './pending/pendingAsks';
 import { answerDrawn } from './services/clientTiming';
 import { getDeviceKeyBytes } from './services/deviceKey';
@@ -74,10 +76,10 @@ export function useAsks(book: string, chapter: number, title: string, data: Chap
       set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume, ...marked } : { phase: 'sending', question: text, startedAt, ...marked });
       void (async () => {
         try {
-          const [solid, learner, grammar, settings, requests, profile, pronunciation, memory, levels, rusty] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined), listLevels().catch(() => undefined), rustyNow().catch(() => undefined)]);
+          const [solid, learner, grammar, settings, requests, profile, pronunciation, memory, levels, rusty, shelf] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined), listLevels().catch(() => undefined), rustyNow().catch(() => undefined), shelfOf().catch(() => [])]);
           // What he lacks under the topic his words name (mw-1vuvq6.5), worked out here so the tutor picks from it and never guesses
           const missing = levels ? missingFoundations(text, levelsOf(levels)) : undefined;
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty, chapterData.current ?? undefined);
+          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty, chapterData.current ?? undefined, worksForTutor(shelf, { book, chapter, verse: verse.n }, text, greekLevelOf(settings.greekInterest)));
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),

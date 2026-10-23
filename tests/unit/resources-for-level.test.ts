@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import type { StudyResources } from '../../src/data/repositories';
 import { RESOURCES } from '../../src/resources';
+import type { CatalogueEntry } from '../../src/resources/catalogue';
 import { GRAMMAR_BOOKS, readMoreFor } from '../../src/resources/grammarBooks';
 import { resourcesForLevel } from '../../src/resources/resourcesForLevel';
 import { resourcesForTutor, verseChips, wordChips, workChip, worksForTutor } from '../../src/resources/tutorLinks';
@@ -105,10 +106,15 @@ describe('the lists the app draws go through the selector', () => {
     expect(verseChips(place, 'Romans 8:31', all, 'LLS:LGCYSTNDRDBBLSB', 0).map((c) => c.resource.id)).toEqual(verseChips(place, 'Romans 8:31', all, 'LLS:LGCYSTNDRDBBLSB').map((c) => c.resource.id));
   });
 
-  it('the tutor’s works and work chip follow the dial through the selector, and a hidden work keeps its tick', () => {
+  it('the tutor’s digest of his shelf and the work chip follow the dial through the selector, and a hidden work keeps its tick', () => {
     const ticked = WORKS.map((w) => w.id);
-    expect(worksForTutor(ticked, 0).map((w) => w.id)).toEqual(ids(resourcesForLevel(WORKS, 0)));
-    expect(worksForTutor(ticked, 5).map((w) => w.id)).toEqual(ticked);
+    const greek: CatalogueEntry = { resource: 'LLS:GRCCOM', kind: 'commentary', title: 'A Greek commentary', short: 'Greek commentary', lang: 'grc', opens: 'verse', value: 'v', via: 'id', covers: ['rom'] };
+    const english: CatalogueEntry = { ...greek, resource: 'LLS:ENGCOM', title: 'An English commentary', short: 'English commentary', lang: 'en' };
+    const shelf = [greek, english].map((e, i) => ({ id: e.resource, kind: e.kind, state: 'on' as const, since: i }));
+    const place = { book: 'rom', chapter: 8 };
+    const told = (level: GreekLevel) => worksForTutor(shelf, place, '', level, [greek, english]).flatMap((w) => ('id' in w ? [w.id] : []));
+    expect(told(0)).toEqual(['LLS:ENGCOM']);
+    expect(told(5).sort()).toEqual(['LLS:ENGCOM', 'LLS:GRCCOM']);
     expect(workChip('calvin-institutes-lcc', undefined, ticked, undefined, 0)).not.toBeNull();
     expect(ticked).toEqual(WORKS.map((w) => w.id));
   });
