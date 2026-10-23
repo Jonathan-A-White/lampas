@@ -12,7 +12,7 @@ import { focusLemmaOf, learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { learnFromTalk } from './data/repositories/profile';
-import { addTurn, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, getWorks, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
+import { addTurn, keepFetched, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, getWorks, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
 import { resourcesForTutor, worksForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import type { TalkSession } from './services/mill';
@@ -34,6 +34,7 @@ import { finishWelcome } from './data/repositories/welcome';
 import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { answerDrawn } from './services/clientTiming';
+import { fetchPassages } from './services/talkFetch';
 import { askTalk, buildTalkRequest, fitHistory, MAX_HISTORY_TURNS, MAX_LINKS, scopeRef, scopeTitle, summaryOfKeyPoints, talkNameOf, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
 import { isOrphan, pendingOf, setPending, startRunning, talkKey, usePendingAsks, type AskState, type SentRef } from './pending/pendingAsks';
@@ -233,6 +234,9 @@ export function useTalk(
           if (keyPoints) await keepTalkSummary(ref, summaryOfKeyPoints(keyPoints), turns.length).catch(() => undefined);
           const id = await addTurn(ref, text, answer.answer, answer.words, turns.length === 0 ? firstWhen : Date.now(), { keyPoints, opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, todayOffer, cleanQ: answer.question, spoken, pictures });
           pictured.current[ref] = undefined;
+          // The passages the tutor asked for are read from the app's own text in the background, after the answer is kept: he waits for nothing, the turn then says what was read,
+          // and the next request holds them (mw-5r3p30.734, src/services/talkFetch.ts); it never fails the talk.
+          if (answer.fetch?.length) void fetchPassages(answer.fetch).then((read) => (read.length > 0 ? keepFetched(id, read) : undefined)).catch(() => undefined);
           // the answer is kept: the message is done, even if the screen went away as it came
           setPending(key, undefined);
           void answerDrawn(sentAs);

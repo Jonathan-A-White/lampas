@@ -47,6 +47,20 @@ Feature: Bible talk
     And the second grist carries the reference "Revelation 2" and the Greek and the English of verses 8 to 10 of Revelation 2
     And the second grist says it holds the verses "2:8-10"
 
+  @grist
+  Scenario: The tutor asks for Revelation 2:8-11; the app reads it on the phone, says so in one quiet line, and the next request carries it
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern whose answer asks to fetch Revelation 2:8-11
+    And he selects verse 28
+    And he opens Talk
+    When he sends "Which churches suffered for him like this?"
+    Then under the answer one quiet line reads "Tutor fetched Rev 2:8-11"
+    And the mill received 1 grists for the lampas app, kind bible-talk
+    And the first grist holds no passages
+    When he goes on with "Tell me about Smyrna."
+    Then the mill received 2 grists for the lampas app, kind bible-talk
+    And the second grist holds the passage "Revelation 2:8-11" with the Greek and the English of verses 8 to 11 of Revelation 2
+    And the second grist still carries the Greek and the English of verse 28
+
   @answer
   Scenario: The answer shows in the sheet and is read aloud
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern and a phone that speaks English and Greek

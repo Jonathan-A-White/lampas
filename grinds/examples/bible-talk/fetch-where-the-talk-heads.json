@@ -1,0 +1,38 @@
+{
+  "description": "Revelation 2, the request holds verses 1-3 (Ephesus) and he asks which church comes next: the talk is heading to Smyrna (verses 8-11), which he does not hold, so the answer asks for it in `fetch` and answers this turn without saying it is fetching.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Revelation 2",
+    "greek": "Τῷ ἀγγέλῳ τῆς ἐν Ἐφέσῳ ἐκκλησίας γράψον Τάδε λέγει ὁ κρατῶν τοὺς ἑπτὰ ἀστέρας ἐν τῇ δεξιᾷ αὐτοῦ ὁ περιπατῶν ἐν μέσῳ τῶν ἑπτὰ λυχνιῶν τῶν χρυσῶν Οἶδα τὰ ἔργα σου καὶ τὸν κόπον σου καὶ τὴν ὑπομονήν σου καὶ ὅτι οὐ δύνῃ βαστάσαι κακούς καὶ ἐπείρασας τοὺς λέγοντας ἑαυτοὺς ἀποστόλους εἶναι καὶ οὐκ εἰσίν καὶ εὗρες αὐτοὺς ψευδεῖς καὶ ὑπομονὴν ἔχεις καὶ ἐβάστασας διὰ τὸ ὄνομά μου καὶ οὐκ ἐκοπίασας",
+    "english": "“To the angel of the church in Ephesus write: These *are* the words of Him who holds the seven stars in His right hand *and* walks among the seven golden lampstands. I know your deeds, your labor, and your perseverance. *I know* that you cannot tolerate *those who are* evil, and you have tested and exposed as liars those who falsely claim to be apostles. Without growing weary, you have persevered and endured many things for the sake of My name.",
+    "verses": "2:1-3",
+    "question": "Ephesus left its first love. Which church does he write to next, and does he praise it?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    }
+  },
+  "expect": {
+    "fetch": {
+      "present": true
+    },
+    "fetch.0": {
+      "matches": "^Revelation 2:([89]|1[01])"
+    },
+    "answer": {
+      "matches": "Smyrna"
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

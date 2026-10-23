@@ -97,6 +97,19 @@ Which tutor conversations keep history and get the summary (the sweep of mw-5r3p
 | Reading check, Reading drill | verse-read | no | no |
 | Tips, find-refs (a shared picture), audible-position, drill-items (more questions), feedback | tips, find-refs, audible-position, drill-items, feedback | no, one request each | no |
 
+## The tutor fetches the text it needs (mw-5r3p30.734, PROVISIONAL)
+
+His ask (2026-10-23): the tutor should ask for the text it sees the talk heading toward, "the Greek ... the English ... very specific to the version I'm using", without
+interrupting the flow. PROVISIONAL, the Governor to confirm: no sub-agents (the text is on the phone and the read is immediate) and the passages reach the tutor on the next
+turn, not as a second answer. A bible-talk answer may carry `fetch` (1 to MAX_FETCH 4 references, `Revelation 2:8-11`, FETCH_MAX_VERSES 30 in all: a passage that goes over
+is cut, those after it are not read; the instructions' part `220-other-passages.md`). After the answer is kept, `useTalk` reads them in the background
+(`src/services/talkFetch.ts` `fetchPassages`: New Testament only, from the app's chapter data through `loadChapter`, the Greek and the English the Reader shows, the MSB with
+supplied words marked; a passage over HELD_PASSAGES_BYTES 3000 keeps its first verses and its reference says which) and keeps them on the turn (`TalkTurn.fetched`,
+`keepFetched`); the turn draws one muted line under the answer, 'Tutor fetched Rev 2:8-11' (`fetchedLine`, `[data-talk-fetched]`), and nothing else on the sheet changes.
+Every later request of the talk carries `held_passages` (`heldPassagesOf`: the newest turn's first, each reference once, at most 8 and HELD_PASSAGES_BYTES in all; none in
+About); `fitHistory` drops the oldest of them before a verse of the talk's own text or a turn. New talk forgets them with the turns. Checks: tests/unit/talk-fetch.test.ts,
+features/bible-talk.feature (the Revelation 2:8-11 scenario), grinds/examples/bible-talk/fetch-where-the-talk-heads.json and held-passage-answers-from-it.json.
+
 ## A talk names itself to the mill
 
 The mill keeps one Claude session per talk (epic mw-pxji7y: the first turn runs cold, every later turn resumes it with the request's `history` left out, the one-hour cache warm; at its context cap it writes the talk's key points and the next turn starts a fresh session from them). The phone only has to *name* the talk and keep what the mill says back (mw-pxji7y.3):

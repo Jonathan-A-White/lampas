@@ -255,6 +255,16 @@ export interface TalkTurn {
   /** the tutor's offer to open Today (mw-5r3p30.731): only when the request carried `today`; `todayChoice` says what became of it, absent while it waits */
   todayOffer?: true;
   todayChoice?: 'taken' | 'declined';
+  /** the passages the answer asked for in `fetch` (mw-5r3p30.734), read from the app's chapter data after the answer was kept: shown as 'Tutor fetched Rev 2:8-11', and every later
+   * request of the talk holds them (src/services/talkFetch.ts heldPassagesOf) */
+  fetched?: HeldPassage[];
+}
+
+/** A passage the tutor asked for (mw-5r3p30.734): its reference written out ('Revelation 2:8-11'), its Greek and its English (the Reader's, supplied words marked). */
+export interface HeldPassage {
+  reference: string;
+  greek: string;
+  english: string;
 }
 
 /** The rusty items a tutor's answer offered to move back to Frontier: each with the title the request gave it (src/talk/rustyOffer.ts rustyOfferOf). */

@@ -1,7 +1,7 @@
 // src/services/talk.ts — the Bible talk: one thing he says, sent as a grist through Postern (bsv-kit/grist) and answered by
 // the mill's bible-talk grind (grinds/bible-talk.json). The wire work is the tutor's (src/services/tutor.ts askGrind); this
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
-import { markSupplied, type Chapter, type Verse } from '../data/chapter';
+import type { Chapter, Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { QUIZ_GOAL_MAX, type ReaderView } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
@@ -30,6 +30,7 @@ import { clipTexts, FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHA
 import { solidWordsField } from './solidWords';
 import { dropFarthest, heldText, holdText, talkWindow, textOf, versesLabel } from './talkVerses';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
+import { heldPassagesOf, MAX_FETCH, verseEnglish, verseGreek, type HeldPassage } from './talkFetch';
 import { MAX_HISTORY_TURNS } from 'voice-kit/talks';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
@@ -271,6 +272,9 @@ export interface TalkRequest {
   rusty?: RustyItem[];
   /** the items behind the Reader's chip 'Today · N of M', in the order Today draws them, each with its title and whether he ticked it (mw-5r3p30.731, src/data/learnerToday.ts); missing when Today holds nothing; fitHistory never cuts it */
   today?: TodayItem[];
+  /** the passages the tutor asked for in `fetch` on earlier turns of this talk (mw-5r3p30.734, src/services/talkFetch.ts), newest first, under HELD_PASSAGES_BYTES; missing when none, and in About. fitHistory drops the oldest
+   * before a verse of the talk's own text or a turn */
+  held_passages?: HeldPassage[];
 }
 
 /** What the tutor's `rusty_offer` holds: the rusty items (kind and id, as the request listed them) it offers to move back to Frontier. */
@@ -354,6 +358,8 @@ export interface TalkAnswer {
   wished_notes?: string[];
   /** only in the welcome (mw-yrmkdf.3): the interview is over, this answer is its line of thanks; the app ends the welcome */
   welcome_done?: true;
+  /** the passages the talk is heading toward that the tutor does not hold (mw-5r3p30.734): at most MAX_FETCH references, read by the app after the answer is shown (src/services/talkFetch.ts) */
+  fetch?: string[];
 }
 
 /** The most entries a memory_update has, and the most names a wished_notes has; the longest line an append adds (the answer schema's). */
@@ -416,11 +422,12 @@ const isRustyOffer = (value: unknown): value is RustyOfferAnswer =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary' && k !== 'fetch')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
   if ('summary' in value && !isText(value.summary, TALK_SUMMARY_MAX)) return false;
+  if ('fetch' in value && !(Array.isArray(value.fetch) && value.fetch.length <= MAX_FETCH && value.fetch.every((r) => isText(r, 40)))) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('quiz_goal_offer' in value && !isText(value.quiz_goal_offer, QUIZ_GOAL_MAX)) return false;
   if ('profile_update' in value && !(Array.isArray(value.profile_update) && value.profile_update.length <= 3 && value.profile_update.every(isProfileUpdate))) return false;
@@ -466,8 +473,8 @@ export interface TalkScope {
 /** The first thing he says in a quiz (the Start the quiz button sends it): the sheet shows it as his turn. */
 export const quizMeQuestion = (reference: string): string => `Quiz me on ${reference}.`;
 
-const greekOf = (v: Verse): string => v.g.map((w) => w.t).join(' ');
-const englishOf = (v: Verse): string => v.e.map(markSupplied).join(' ');
+const greekOf = verseGreek;
+const englishOf = verseEnglish;
 
 /** The title of the sheet and the reference in the request: 'Romans 8', 'Romans 8:28' or, for a passage, 'Romans 8:1-11'. */
 export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string => (scope.verse ? `${scope.title}:${unitId(scope.verse)}` : scope.title);
@@ -508,10 +515,12 @@ export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkR
   let drill = request.screen?.drill;
   let text = { greek: request.greek ?? '', english: request.english ?? '' };
   let verses = request.verses;
+  let fetched = request.held_passages;
   const rest: Partial<TalkRequest> = { ...request };
   delete rest.summary;
   delete rest.fold;
-  const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(verses ? { verses } : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
+  delete rest.held_passages;
+  const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(verses ? { verses } : {}), ...(fetched && fetched.length > 0 ? { held_passages: fetched } : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   // the talk's name travels in the grist header beside the request and weighs with it (mw-pxji7y.3)
   const named = talkBytes(talk);
   const tooBig = (): boolean => sizeOf(fitted()) + named > MAX_REQUEST_BYTES;
@@ -522,6 +531,8 @@ export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkR
   }
   if (tooBig() && request.focus?.kind !== 'sound') guide = undefined;
   while (greekWords && greekWords.length > 0 && tooBig() && history.length > 0) greekWords = greekWords.slice(0, -1);
+  // the passages the tutor fetched give way the oldest first, before a verse of the talk's own text or a turn (mw-5r3p30.734)
+  while (fetched && fetched.length > 0 && tooBig()) fetched = fetched.slice(0, -1);
   // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) gives up whole verses, the farthest from the talk's verse first, before any turn is dropped (mw-5r3p30.733)
   const hold = heldText(request);
   if (hold && request.greek !== undefined && tooBig()) {
@@ -598,7 +609,7 @@ export function greekInterestField(settings: Record<string, SettingValue>): Gree
 export function buildTalkRequest(
   scope: TalkScope,
   question: string,
-  turns: { q: string; a: string; links?: AnswerLink[] }[],
+  turns: { q: string; a: string; links?: AnswerLink[]; fetched?: HeldPassage[] }[],
   solidWords: string[],
   settings: Record<string, SettingValue> = {},
   focus?: TalkFocus,
@@ -631,10 +642,13 @@ export function buildTalkRequest(
   const verses = hold ? hold.parts.map((p) => p.verse) : [];
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
   const aboutCredits = scope.screen?.credits !== undefined;
+  // the passages the tutor fetched on earlier turns, newest first (mw-5r3p30.734)
+  const held = aboutCredits ? [] : heldPassagesOf(turns);
   const request: TalkRequest = {
     reference: scopeTitle(scope),
     // a talk from a screen is not about a text: it carries the screen and no verse text
     ...(scope.screen || !hold ? { screen: scope.screen } : { ...textOf(hold.parts), ...(hold.parts.length > 0 ? { verses: versesLabel(hold.chapter, hold.parts) } : {}) }),
+    ...(held.length > 0 ? { held_passages: held } : {}),
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
