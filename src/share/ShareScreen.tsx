@@ -83,7 +83,7 @@ function ShareChooser({ row, talks, onPick, onCancel }: { row: ShareRow; talks: 
               </button>
             ) : null}
             {readable ? (
-              <button type="button" ref={newest ? undefined : focusOnMount} onClick={() => onPick(newTalkRef())} className={`${ACTION} border-line bg-surface`}>
+              <button type="button" ref={newest ? undefined : focusOnMount} data-share-new onClick={() => onPick(newTalkRef())} className={`${ACTION} border-line bg-surface`}>
                 <span className="text-lg font-semibold">New talk</span>
               </button>
             ) : null}
