@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.422
+_2026-10-23_
+- Fixed: When you ask about a verse in a chapter talk, the tutor now has that verse's text and says which verses it holds instead of going by memory.
+- New: Your requests are now grouped by kind with a count on each group, and a search box appears once you have more than twenty.
+
 ## 0.1.421
 _2026-10-23_
 - New: Ask the makers for a book from one place, picking it from your imported Logos list or typing its title, and send your whole list of books Lampas could open in one tap.

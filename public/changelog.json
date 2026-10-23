@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.422",
+    "date": "2026-10-23",
+    "story": "mw-5r3p30.733",
+    "kind": "fixed",
+    "text": "When you ask about a verse in a chapter talk, the tutor now has that verse's text and says which verses it holds instead of going by memory."
+  },
+  {
+    "version": "0.1.422",
+    "date": "2026-10-23",
+    "story": "mw-rfjjzd.15",
+    "kind": "new",
+    "text": "Your requests are now grouped by kind with a count on each group, and a search box appears once you have more than twenty."
+  },
+  {
     "version": "0.1.421",
     "date": "2026-10-23",
     "story": "mw-rfjjzd.14",
