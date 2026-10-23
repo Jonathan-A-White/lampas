@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.423
+_2026-10-23_
+- New: Under Read more on an idea sheet, the grammars you pinned now come first, then the others.
+- New: A list of Bible references, and the references you share to Lampas, can be played aloud in order with a bar to pause or stop, skipping Old Testament ones with a spoken note.
+
 ## 0.1.422
 _2026-10-23_
 - Fixed: When you ask about a verse in a chapter talk, the tutor now has that verse's text and says which verses it holds instead of going by memory.
