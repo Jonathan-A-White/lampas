@@ -58,7 +58,7 @@ describe('the upgrade from version 15', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(28);
+    expect(db.verno).toBe(29);
     expect(await db.words.toArray()).toEqual([word]);
     expect(await db.settings.get('theme')).toEqual({ key: 'theme', value: 'dark' });
     expect(await db.talks.toArray()).toEqual([{ ...talk, id: 1 }]);

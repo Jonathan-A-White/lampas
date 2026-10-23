@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { AppliedChange } from '../settings/applied';
 import { cleanGloss } from './gloss';
+import { withAoristNote } from './irregular-aorists';
 import { isItemId, legacyStoredId, plainIdOf } from './grammar/soundScope';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
@@ -1040,6 +1041,47 @@ class LampasDB extends Dexie {
       exportRows: 'resource',
       verseLists: '++id, created',
     });
+
+    // v29: same tables. A word taught before 0.1.419 is stored with the gloss it had ('to come/go'); it gets the aorist note every gloss now comes in with
+    // (src/data/irregular-aorists.ts withAoristNote, mw-bsf54t.12) so Review and the word list read as the word sheet does. A word with no gloss yet stays
+    // without one (addWordToLearn fills it); withAoristNote leaves a gloss that already has its note as it is. The words table is the only one that keeps a gloss.
+    this.version(29)
+      .stores({
+        words: 'lemma, lesson, state, *lemmas',
+        meta: 'key',
+        settings: 'key',
+        results: '++id, [lemma+when]',
+        answers: '++id, [ref+when]',
+        talks: '++id, [ref+when]',
+        drills: '++id, lemma, [lemma+step]',
+        readings: 'ref',
+        grammarKnown: 'term',
+        reviews: '[kind+id], due, kind',
+        grammarLevels: 'id, level',
+        usage: 'key, day, name',
+        tips: 'id, status',
+        talkPictures: '++id, turnId',
+        shares: 'id, createdAt',
+        requests: 'txid, sentAt, status',
+        readingHistory: '++id, ref, [lang+at]',
+        missTally: '[lang+unit], lang',
+        ladder: 'lang',
+        drillRuns: '++id, ideaId, at',
+        passageLessons: 'key, state',
+        pictureRefs: 'hash, at',
+        talkSummaries: 'ref',
+        library: 'id, kind',
+        exportRows: 'resource',
+        verseLists: '++id, created',
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table<Word, string>('words')
+          .toCollection()
+          .modify((word) => {
+            if (typeof word.gloss === 'string' && word.gloss !== '') word.gloss = withAoristNote(word.lemma, word.gloss);
+          });
+      });
   }
 }
 
