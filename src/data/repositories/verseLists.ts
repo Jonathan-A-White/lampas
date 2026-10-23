@@ -63,6 +63,37 @@ export async function appendToVerseList(id: number, refs: readonly string[], now
   });
 }
 
+/** Where `sendVerseListRef` puts a reference: a list he has (by id) or a new list (by name). */
+export type SendTarget = { id: number } | { newName: string };
+
+/** Puts one reference of list `fromId` at the end of another list, or of a new list made for it, and for a move takes it out of `fromId`. Returns the target as it is now and what was done:
+ *  'sent', or 'already' when the target held it, which changes nothing at all (a move keeps it where it was too). Undefined, changing nothing, for a list that is not there. */
+export async function sendVerseListRef(
+  fromId: number,
+  ref: string,
+  to: SendTarget,
+  move: boolean,
+  now: number = Date.now(),
+): Promise<{ status: 'sent' | 'already'; target: VerseListRow } | undefined> {
+  return db.transaction('rw', db.verseLists, async () => {
+    const from = await db.verseLists.get(fromId);
+    if (!from) return undefined;
+    let target: VerseListRow;
+    if ('id' in to) {
+      const held = await db.verseLists.get(to.id);
+      if (!held || held.id === fromId) return undefined;
+      if (held.refs.includes(ref)) return { status: 'already' as const, target: held };
+      target = { ...held, refs: [...held.refs, ref], updated: now };
+      await db.verseLists.put(target);
+    } else {
+      const row: Omit<VerseListRow, 'id'> = { name: to.newName.trim() || UNTITLED_LIST, refs: [ref], created: now, updated: now };
+      target = { ...row, id: await db.verseLists.add(row as VerseListRow) };
+    }
+    if (move) await db.verseLists.put({ ...from, refs: from.refs.filter((r) => r !== ref), updated: now });
+    return { status: 'sent' as const, target };
+  });
+}
+
 /** Removes a list and returns the row it removed, which `restoreVerseList` puts back (Undo); undefined for a list that is not there. */
 export async function removeVerseList(id: number): Promise<VerseListRow | undefined> {
   return db.transaction('rw', db.verseLists, async () => {
