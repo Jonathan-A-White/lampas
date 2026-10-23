@@ -32,6 +32,20 @@ Feature: Bible talk
     Then the mill received 1 grists for the lampas app, kind bible-talk
     And the first grist carries the reference "Romans 8" and the Greek and the English of verses 1 to 3
     And the first grist carries the question "What is this chapter about?"
+    And the first grist says it holds the verses "8:1-3"
+
+  @grist
+  Scenario: A talk about Revelation 2 whose last answer linked 2:9 sends 2:9 in its next request
+    Given Lampas is opened on Revelation 2 with a talk behind a fake Postern whose answer links Revelation 2:9
+    When he opens Talk
+    Then the sheet is titled "Talk about Revelation 2"
+    When he sends "Which church was poor?"
+    And the answer number 1 has arrived
+    And he sends "Why is that?"
+    Then the mill received 2 grists for the lampas app, kind bible-talk
+    And the first grist carries the reference "Revelation 2" and the Greek and the English of verses 1 to 3 of Revelation 2
+    And the second grist carries the reference "Revelation 2" and the Greek and the English of verses 8 to 10 of Revelation 2
+    And the second grist says it holds the verses "2:8-10"
 
   @answer
   Scenario: The answer shows in the sheet and is read aloud

@@ -54,12 +54,13 @@ export async function endScenario(): Promise<void> {
   synth = undefined;
 }
 
-export async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: TALK_ANSWER }), speaks = false): Promise<void> {
+/** `place` is the address to open on ('' for the Reader where it opens: Romans 8). */
+export async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: TALK_ANSWER }), speaks = false, place = ''): Promise<void> {
   await endScenario();
   synth = speaks ? stubSpeech([GREEK_VOICE, ENGLISH_VOICE]) : undefined;
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
-  window.location.hash = '';
+  window.location.hash = place;
   tutorTimings.pollMs = 20;
   clipboard = stubClipboard();
   fake = makeFakePostern();
