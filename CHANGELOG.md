@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.424
+_2026-10-23_
+- New: in a Bible talk the tutor can ask for the passage the talk is heading toward; your phone reads its Greek and English in the background, a quiet 'Tutor fetched ...' line says so, and the tutor has it from your next question on.
+
 ## 0.1.423
 _2026-10-23_
 - New: Under Read more on an idea sheet, the grammars you pinned now come first, then the others.
