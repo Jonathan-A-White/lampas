@@ -1,8 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
-import { logos } from '../../src/resources/logos';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { leaveSettings, openGroup } from './settings-group';
+import { switchOnResources, shelveLexicons } from './long-library';
 
 test.use({ hasTouch: true, viewport: { width: 412, height: 915 } });
 
@@ -10,25 +9,15 @@ test.use({ hasTouch: true, viewport: { width: 412, height: 915 } });
 // heading 'condemnation' peeked out half hidden beneath it. The tip takes its own space above the heading, and the heading its own, which
 // the facts' box never scrolls under: the heading is wholly in view with the tip up, however far the facts are scrolled.
 
-/** Logos on with every lexicon ticked: the sheet is a long one and its facts scroll. */
-async function tickEveryLexicon(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await openGroup(page, 'Study resources');
-  const section = page.getByRole('region', { name: 'Study resources' });
-  await section.getByRole('switch', { name: 'Logos', exact: true }).click();
-  for (const { name } of logos.choices?.items ?? []) {
-    const box = section.getByRole('checkbox', { name, exact: true });
-    await box.scrollIntoViewIfNeeded();
-    if ((await box.getAttribute('aria-checked')) !== 'true') await box.click();
-  }
-  await leaveSettings(page);
-}
-
 async function openSheet(page: Page, options: { long: boolean }) {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  if (options.long) await tickEveryLexicon(page);
+  if (options.long) {
+    // a long sheet: 21 lexicons On and three pinned, with Strong's and Accordance, is 7 tiles
+    await switchOnResources(page);
+    await shelveLexicons(page);
+  }
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'condemnation', exact: true }).tap();
   const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   const tip = sheet.getByRole('note');

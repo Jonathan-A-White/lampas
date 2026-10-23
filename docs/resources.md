@@ -72,7 +72,7 @@ Get <App> and Turn off <App> (`armFallback`). `features/app-on-phone.feature` ho
 
 **The Study row's grid.** The links are equal tiles, two to a row, under the app's name for a resource of kind `'app'`. A link's `label`
 is its accessible name ('Open in Logos: BDAG'); its optional `tile` is the short text on the tile ('BDAG', 'Bible Word Study'; a Logos lexicon's
-is its `short` in `LEXICONS`). A tile names its book in words (mw-5r3p30.135): it may take two lines, never one cut short, so no two tiles are alike and no title is shortened to its first word.
+is its `short` in `LEXICONS`). With more than `LEXICON_FOLD` (3) lexicons On the Logos group draws only the pinned ones, Bible Word Study and a door, `All N lexicons ›` (N counts the lexicons with an entry for the word), to `src/library/AllLexiconsSheet.tsx`: a search, every lexicon On as a row that opens the word's entry (pinned first), and Manage (the Lexicons page; `holdWord` brings the word sheet back on Back); `logosStudy` in `src/resources/logos.ts` builds it, and the tutor's word chip names the first pinned lexicon (`pinnedFirst`, `StudyResources.pinnedLexicons` from `getStudyResources`; mw-rfjjzd.8). A tile names its book in words (mw-5r3p30.135): it may take two lines, never one cut short, so no two tiles are alike and no title is shortened to its first word.
 
 **Resource ids.** The `resource` of each lexicon is the **Resource ID** Logos prints on the product's page (the "resourceId" in the page's data; the
 Information pane of a resource in Logos shows the same), such as `LLS:46.10.26` for EDNT. The earlier short names (`bdag`, `ednt`, `dblgreek` ...) were guesses

@@ -67,6 +67,53 @@ const keyQuery = (key: Key, word: StudyWord): string | undefined => {
   return `hw=${encodeURIComponent(word.lemma)}`;
 };
 
+/** One lexicon of his library and its link for a word. */
+export interface LexiconEntry {
+  /** LEXICONS' id */
+  id: string;
+  /** the lexicon's whole title, for the sheet that lists them all */
+  name: string;
+  link: StudyLink;
+}
+
+/** The links of the lexicons named in `ids`, in that order, for `word`; a lexicon Lampas has no key for (a proper name in a book of common words, a topic the word has none of) is left out, never guessed. */
+export const lexiconLinks = (word: StudyWord, ids: readonly string[]): LexiconEntry[] => {
+  const entries: LexiconEntry[] = [];
+  for (const id of new Set(ids)) {
+    const l = LEXICONS.find((x) => x.id === id);
+    const key = l && keyQuery(l.key ?? 'lemma', word);
+    if (l && key) entries.push({ id: l.id, name: l.name, link: { label: `Open in Logos: ${l.name}`, tile: l.short, ...resourceLink(l.resource, key) } });
+  }
+  return entries;
+};
+
+const bibleWordStudy = (guide: { path: string; fallbackPath: string }): StudyLink => ({ label: 'Bible Word Study in Logos', tile: 'Bible Word Study', url: guide.path, fallback: guide.fallbackPath });
+
+/** His ticked lexicons (`option`: ids joined by commas) with the pinned ones first (each group in the ticked order, which is the library's): the order the word's links and the tutor's chip follow. A pinned lexicon that is not ticked is left out. */
+export const pinnedFirst = (option: string, pinned: readonly string[] | undefined): string => {
+  const ticked = option.split(',');
+  const pins = ticked.filter((id) => pinned?.includes(id));
+  return [...pins, ...ticked.filter((id) => !pins.includes(id))].join(',');
+};
+
+/** With more lexicons than this On, the word sheet draws the pinned ones and a door to the rest; with this many or fewer it draws them all and has no door (docs/design/library-at-scale.md 3.5). */
+export const LEXICON_FOLD = 3;
+
+/** What the Study row's Logos group holds for a word: the tiles to draw, and, when there are more lexicons than it draws, the door to the sheet that lists every one. */
+export interface LogosStudy {
+  links: StudyLink[];
+  door?: { count: number; entries: (LexiconEntry & { pinned: boolean })[] };
+}
+
+/** The Logos group of the word sheet: the lexicons he pinned, then Bible Word Study, then 'All N lexicons' when more than LEXICON_FOLD are On; else every one On and Bible Word Study.
+ *  `ticked` is the ids On, `pinned` the ids Pinned. N counts the lexicons that have an entry for this word. */
+export const logosStudy = (word: StudyWord, ticked: readonly string[], pinned: readonly string[]): LogosStudy => {
+  const guide = bibleWordStudy(study(word));
+  const entries = lexiconLinks(word, pinnedFirst(ticked.join(','), pinned).split(',')).map((e) => ({ ...e, pinned: pinned.includes(e.id) }));
+  if (entries.length <= LEXICON_FOLD) return { links: [...entries.map((e) => e.link), guide] };
+  return { links: [...entries.filter((e) => e.pinned).map((e) => e.link), guide], door: { count: entries.length, entries } };
+};
+
 export const logos: StudyResource = {
   id: 'logos',
   lang: 'both',
@@ -80,19 +127,8 @@ export const logos: StudyResource = {
     default: ['bdag'],
   },
   linksFor: (word, option) => {
-    const ticked = (option ?? '').split(',');
-    const lexicons: StudyLink[] = [];
-    for (const l of LEXICONS.filter((x) => ticked.includes(x.id))) {
-      const key = keyQuery(l.key ?? 'lemma', word);
-      if (!key) continue;
-      lexicons.push({
-        label: `Open in Logos: ${l.name}`,
-        tile: l.short,
-        ...resourceLink(l.resource, key),
-      });
-    }
     const guide = study(word);
-    return [...lexicons, { label: 'Bible Word Study in Logos', tile: 'Bible Word Study', url: guide.path, fallback: guide.fallbackPath }];
+    return [...lexiconLinks(word, (option ?? '').split(',')).map((e) => e.link), bibleWordStudy(guide)];
   },
   versesFor: (place, bible) => {
     const link = verseLink(place.book, place.chapter, place.verse, bible);

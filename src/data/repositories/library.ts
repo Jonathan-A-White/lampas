@@ -307,6 +307,12 @@ export async function lexiconTicks(): Promise<string[]> {
   return LEXICONS.filter((l) => held.has(l.resource)).map((l) => l.id);
 }
 
+/** The ids of the lexicons Pinned on the shelf (in LEXICONS' order, which is the catalogue's): the first is the one the tutor's word chip names, and they are the tiles of the word sheet's Study row. */
+export async function lexiconPins(): Promise<string[]> {
+  const pinned = new Set((await rowsNow()).filter((r) => r.state === 'pinned').map((r) => r.id));
+  return LEXICONS.filter((l) => pinned.has(l.resource)).map((l) => l.id);
+}
+
 export const setLexiconTicks = (ids: readonly string[]): Promise<void> => tick('lexicon', LEXICONS.map((l) => l.resource), lexiconResources(ids));
 
 /** The ids of the grammar books on the shelf (in GRAMMAR_BOOKS' order), then any id the old key holds that no book has (the idea sheet's readMoreFor passes over it, as it did when the key was the only home). */

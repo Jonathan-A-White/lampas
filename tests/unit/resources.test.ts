@@ -185,14 +185,14 @@ describe('the kept choices', () => {
   });
 
   it('starts with every resource off and the default option', async () => {
-    expect(await getStudyResources()).toEqual({ on: [], options: {} });
+    expect(await getStudyResources()).toEqual({ on: [], options: {}, pinnedLexicons: ['bdag'] });
   });
 
   it('keeps a switch and a named option, and turns a switch off again', async () => {
     await setResourceOn('strongs', true);
     await setResourceOn('logos', true);
     await setResourceOption('logos', '["louwnida"]');
-    expect(await getStudyResources()).toEqual({ on: ['logos', 'strongs'], options: { logos: '["louwnida"]' } });
+    expect(await getStudyResources()).toEqual({ on: ['logos', 'strongs'], options: { logos: '["louwnida"]' }, pinnedLexicons: [] });
     await setResourceOn('strongs', false);
     expect((await getStudyResources()).on).toEqual(['logos']);
   });

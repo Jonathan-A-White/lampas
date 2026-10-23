@@ -1,6 +1,6 @@
 // src/resources/tutorLinks.ts — what a link of the tutor's answer (mw-5r3p30.75) becomes: a chip for each study resource he switched on in Settings,
 // and none for a resource he has not (nothing says so). A word link gives the first link of each resource that is on, named for the lemma
-// ('Open in Logos: BDAG for ἀγάπη', his first ticked lexicon); a verse link gives, for each resource that can show a Bible, the verse in it (Logos: his
+// ('Open in Logos: BDAG for ἀγάπη', his first pinned lexicon, else the first he ticked); a verse link gives, for each resource that can show a Bible, the verse in it (Logos: his
 // Bible in Logos). A verse may be in any book of the Bible (placeOf, one canon list: data/books.ts and data/otBooks.ts); the Old Testament has the resources'
 // chips and no Reader chip, as Lampas holds no Old Testament text. Lampas's own Reader is not a resource: the verse chip that opens it is drawn by src/TutorLinks.tsx. Pure: the Strong's number and
 // his Bible are looked up by the caller. Links only, no text of any lexicon (docs/resources.md).
@@ -11,6 +11,7 @@ import type { StudyResources } from '../data/repositories';
 import { parseCanonReference } from '../nav/links';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import { optionOf, resourceOf, RESOURCES, type StudyPlace, type StudyResource } from './index';
+import { pinnedFirst } from './logos';
 import { resourcesForLevel } from './resourcesForLevel';
 import { coversOf, indexPlace, WORKS, workLink } from './works';
 
@@ -59,7 +60,9 @@ export function wordChips(lemma: string, strongs: string | undefined, chosen: St
   const chips: LinkChip[] = [];
   for (const resource of switchedOn(chosen, level)) {
     if (resource.kind === 'number' && !strongs) continue;
-    const [link] = resource.linksFor({ form: lemma, lemma, strongs: strongs ?? '' }, optionOf(resource, chosen.options[resource.id]));
+    // the first link of Logos is the first lexicon he pinned (the first ticked while none is pinned)
+    const option = optionOf(resource, chosen.options[resource.id]);
+    const [link] = resource.linksFor({ form: lemma, lemma, strongs: strongs ?? '' }, resource.id === 'logos' ? pinnedFirst(option, chosen.pinnedLexicons) : option);
     if (link) chips.push({ resource, label: `${link.label} for ${lemma}`, tile: link.tile ?? link.label, url: link.url, fallback: link.fallback });
   }
   return chips;

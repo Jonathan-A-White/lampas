@@ -53,8 +53,8 @@ export function useReturnedWord(): HeldWord | undefined {
   return held !== undefined && window.location.hash === held.hash && sheetDepth() === 0 ? held : undefined;
 }
 
-/** Whether the hold still has a reason to stay: he is at the table, or at the address it was over. */
-export const holdWordStillWanted = (): boolean => held === undefined || window.location.hash === held.hash || window.location.hash.startsWith('#/paradigms');
+/** Whether the hold still has a reason to stay: he is at the table (or, from All lexicons > Manage, the Library), or at the address it was over. */
+export const holdWordStillWanted = (): boolean => held === undefined || window.location.hash === held.hash || window.location.hash.startsWith('#/paradigms') || window.location.hash.startsWith('#/library');
 
 /** Back from the table to the word sheet: a step Back when the sheet is held (the screen under it is as he left it), else (a reload left nothing behind) the list of tables. */
 export function leaveToWord(fallback: () => void): void {
