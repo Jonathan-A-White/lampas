@@ -179,6 +179,26 @@ describe('worksForTutor: the digest of his shelf chosen by the place', () => {
   });
 });
 
+describe('the Verse view ask with the digest of 110 books On', () => {
+  it('cuts the digest from its end after the words of the verse and before his requests, counting what it drops', async () => {
+    const { catalogue, shelf } = hundredAndTen();
+    const works = worksForTutor(shelf, ROMANS_8, FORM, undefined, catalogue);
+    const verse = chapter.verses.find((v) => v.n === 28)!;
+    const request = buildRequest('Romans 8:28', verse, 'What does it mean?', [], await learnerSummary(), await learnerGrammar(), longestSettings() as Record<string, string>, [], undefined, false, undefined, undefined, undefined, undefined, chapter, works);
+    expect(request.works).toEqual(works);
+    const listed = (r: { works?: TutorWork[] }) => lines(r.works ?? []).length;
+    // the guide, his words and the words of the verse have given way already: only the digest, his requests and notes are left to cut
+    const bare = { ...request, greek_words: [], solid_words: [], pronunciation_guide: undefined };
+    const padded = (extra: number) => ({ ...bare, question: 'q'.repeat(Math.max(0, MAX_REQUEST_BYTES - bytes({ ...bare, question: '' }) + extra)) });
+    expect(listed(fitAsk(padded(0)))).toBe(listed(request));
+    const cut = fitAsk(padded(100));
+    expect(listed(cut)).toBeLessThan(listed(request));
+    expect(listed(cut)).toBeGreaterThan(0);
+    expect(bytes(cut)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    expect(Object.values(moreOf(cut.works ?? []) ?? {}).reduce((a, b) => a + b, 0)).toBeGreaterThan(Object.values(moreOf(request.works ?? []) ?? {}).reduce((a, b) => a + b, 0));
+  });
+});
+
 describe('the Bible talk request with the digest of 110 books On', () => {
   /** The second request of a quiz on Romans 8:1-11 with the digest in. */
   async function withDigest(): Promise<TalkRequest> {

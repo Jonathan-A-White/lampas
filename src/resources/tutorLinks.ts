@@ -1,5 +1,5 @@
 // src/resources/tutorLinks.ts — what a link of the tutor's answer (mw-5r3p30.75) becomes: a chip for each study resource he switched on in Settings,
-// and none for a resource he has not (nothing says so). A word link gives the first link of each resource that is on, named for the lemma
+// and none for a resource he has not (nothing says so; a book of his Logos shelf, mw-rfjjzd.10: the tutor is told a digest of it chosen by the place, worksForTutor, at most WORKS_BYTES, and a `work` link opens one book, workChip). A word link gives the first link of each resource that is on, named for the lemma
 // ('Open in Logos: BDAG for ἀγάπη', his first pinned lexicon, else the first he ticked); a verse link gives, for each resource that can show a Bible, the verse in it (Logos: his
 // Bible in Logos). A verse may be in any book of the Bible (placeOf, one canon list: data/books.ts and data/otBooks.ts); the Old Testament has the resources'
 // chips and no Reader chip, as Lampas holds no Old Testament text. Lampas's own Reader is not a resource: the verse chip that opens it is drawn by src/TutorLinks.tsx. Pure: the Strong's number and
