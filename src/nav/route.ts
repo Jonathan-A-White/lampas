@@ -1,4 +1,4 @@
-// src/nav/route.ts — twenty screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — twenty-one screens, told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -11,7 +11,7 @@ import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
 import { previousAddress } from './lastRoute';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'settings' | 'share' | 'unlock';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'settings' | 'share' | 'unlock';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -72,11 +72,15 @@ export function routeOf(hash: string): Route {
   if (path === '#/preface') return 'preface';
   if (path === ESSAY_PATH) return 'essay';
   if (path === '#/library') return 'library';
+  if (path === LISTS_PATH || path.startsWith(`${LISTS_PATH}/`)) return 'lists';
   if (path === '#/settings') return 'settings';
   if (path === '#/share') return 'share';
   if (path === '#/unlock') return 'unlock';
   return 'home';
 }
+
+/** The Verse lists screen (src/lists/); one list is `#/lists/<id>`. */
+export const LISTS_PATH = '#/lists';
 
 /** The in-app copy of Robinson's essay (src/Essay.tsx), a page under the Preface. */
 export const ESSAY_PATH = '#/preface/robinson';
@@ -259,6 +263,22 @@ export function libraryHash({ kind, book, import: importing, share }: LibraryAdd
 /** Opens the Library home, a kind's page, a kind's page at a book, or the import, as a new Back step. */
 export function openLibrary(address: LibraryAddress = {}): void {
   const hash = libraryHash(address);
+  if (window.location.hash === hash) return;
+  window.history.pushState(null, '', urlFor(hash));
+  notify();
+}
+
+/** The id of the verse list an address opens (`#/lists/7`), or undefined for the lists screen and any address that is no list's. */
+export function verseListOf(hash: string): number | undefined {
+  const m = /^#\/lists\/([1-9]\d{0,9})$/.exec(pathOf(hash));
+  return m ? Number(m[1]) : undefined;
+}
+
+export const verseListHash = (id: number): string => `${LISTS_PATH}/${id}`;
+
+/** Opens one verse list, as a new Back step. */
+export function openVerseList(id: number): void {
+  const hash = verseListHash(id);
   if (window.location.hash === hash) return;
   window.history.pushState(null, '', urlFor(hash));
   notify();

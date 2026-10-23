@@ -80,7 +80,7 @@ describe('the upgrade from version 24', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(27);
+    expect(db.verno).toBe(28);
     expect((await db.talks.toArray()).map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => key !== 'id')))).toEqual([kept]);
     expect(await getTalkSummary('rom.8')).toBeUndefined();
     await keepTalkSummary('rom.8', 'Asked about σάρξ.', 1);

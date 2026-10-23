@@ -4,8 +4,8 @@
 // src/share/findRefs.ts, mw-s1dc0n.2) join the same list: while the grist reads, 'Finding Bible references...'; a failure is one line with 'Try again'.
 import { useMemo, useState } from 'react';
 import { ReferenceLink } from '../markdown/ReferenceCard';
-import { inWords, referenceUrl } from '../nav/links';
-import { findReferences, groupedByBook, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
+import { referenceUrl } from '../nav/links';
+import { findReferences, groupedByBook, headingOf, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
 import type { PictureRefs } from './findRefs';
 
 const KEY = 'lampas.shareRefsOrder';
@@ -32,12 +32,6 @@ function keepOrder(order: RefsOrder): void {
 
 const LINK_CLASS = 'flex min-h-12 items-center justify-between gap-3 rounded-xl border border-line bg-surface px-4 py-2 text-lg font-medium text-accent active:bg-line';
 
-/** What a reference is called on its card: in words ('Genesis 1:28', 'Psalm 23', a range 'Genesis 1:28-30'), as the tutor's cards head it. */
-function headingOf(r: ListedReference): string {
-  const words = inWords(r.ref).replace(/^Psalms /, 'Psalm ');
-  return r.lastVerse === undefined ? words : `${words}-${r.lastVerse}`;
-}
-
 /** What a link shows: the words as printed, and how many times the text names it. */
 function Printed({ r }: { r: ListedReference }) {
   return (
@@ -57,10 +51,10 @@ function Printed({ r }: { r: ListedReference }) {
  *  verses in the view he reads in (English, the Weave or Greek) and, for the New Testament, Open, which opens the Reader on the chapter with the verse at the top (not the
  *  Verse view; Back returns to the list). The card is opened by a change of the app's own history entries, not of `location.hash`, whose popstate the open sheet would take for
  *  Back and cancel the share. A reference to the Old Testament, which Lampas does not hold, opens the card that says 'Not in Lampas yet' (with Open in Logos when Logos is
- *  on). A long press or a new tab has the https link. */
-function RefLink({ r }: { r: ListedReference }) {
+ *  on). A long press or a new tab has the https link. `replacing` is false where the list is a screen of its own (the Verse lists, src/lists/): Open then adds an entry after it, and Back returns to the list. */
+export function RefLink({ r, replacing = true }: { r: ListedReference; replacing?: boolean }) {
   const href = referenceUrl(r.book, r.chapter, r.verse);
-  const common = { written: r.printed, replacing: true, href, className: LINK_CLASS, data: { 'data-share-ref': r.ref } };
+  const common = { written: r.printed, replacing, href, className: LINK_CLASS, data: { 'data-share-ref': r.ref } };
   if (r.testament === 'ot') {
     return (
       <ReferenceLink {...common} old={{ heading: headingOf(r), place: { book: r.book, chapter: r.chapter, ...(r.verse === undefined ? {} : { verse: r.verse }) } }}>

@@ -4,11 +4,11 @@ import { db } from '../../src/data/db';
 afterAll(() => db.close());
 
 describe('the Dexie database', () => {
-  it('opens at version 27 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder, drillRuns, passageLessons, pictureRefs, talkSummaries, library and exportRows stores', async () => {
+  it('opens at version 28 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder, drillRuns, passageLessons, pictureRefs, talkSummaries, library, exportRows and verseLists stores', async () => {
     await db.open();
     expect(db.name).toBe('lampas');
-    expect(db.verno).toBe(27);
-    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drillRuns', 'drills', 'exportRows', 'grammarKnown', 'grammarLevels', 'ladder', 'library', 'meta', 'missTally', 'passageLessons', 'pictureRefs', 'readingHistory', 'readings', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talkSummaries', 'talks', 'tips', 'usage', 'words']);
+    expect(db.verno).toBe(28);
+    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drillRuns', 'drills', 'exportRows', 'grammarKnown', 'grammarLevels', 'ladder', 'library', 'meta', 'missTally', 'passageLessons', 'pictureRefs', 'readingHistory', 'readings', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talkSummaries', 'talks', 'tips', 'usage', 'verseLists', 'words']);
     expect(db.words.schema.primKey.name).toBe('lemma');
     expect(db.words.schema.idxByName['lemmas']?.multi).toBe(true);
     expect(db.settings.schema.primKey.name).toBe('key');
@@ -54,5 +54,7 @@ describe('the Dexie database', () => {
     expect(db.library.schema.primKey.name).toBe('id');
     expect(db.library.schema.idxByName['kind']).toBeDefined();
     expect(db.exportRows.schema.primKey.name).toBe('resource');
+    expect(db.verseLists.schema.primKey.auto).toBe(true);
+    expect(db.verseLists.schema.idxByName['created']).toBeDefined();
   });
 });

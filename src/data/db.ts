@@ -485,6 +485,16 @@ export interface TipRow {
   status: 'open' | 'acted' | 'dismissed';
 }
 
+/** A list of Bible references he named and saved (src/data/repositories/verseLists.ts, the Verse lists screen #/lists, mw-9q8wp1.1). */
+export interface VerseListRow {
+  id: number;
+  name: string;
+  /** the references in the order saved, each a canonical OSIS string with an optional last verse: 'Rom.8.28', 'Ps.62.1-2', 'Ps.23' (src/lists/canonical.ts) */
+  refs: string[];
+  created: number;
+  updated: number;
+}
+
 // Never edit an old version(): repeat the whole stores map on each bump with a '// vN:' comment
 // (docs/pwa-best-practices.md section 15).
 class LampasDB extends Dexie {
@@ -513,6 +523,7 @@ class LampasDB extends Dexie {
   talkSummaries!: EntityTable<TalkSummaryRow, 'ref'>;
   library!: EntityTable<LibraryRow, 'id'>;
   exportRows!: EntityTable<ExportedRow, 'resource'>;
+  verseLists!: EntityTable<VerseListRow, 'id'>;
 
   constructor() {
     super('lampas');
@@ -998,6 +1009,36 @@ class LampasDB extends Dexie {
       talkSummaries: 'ref',
       library: 'id, kind',
       exportRows: 'resource',
+    });
+
+    // v28: his lists of Bible references {id, name, refs, created, updated} (src/data/repositories/verseLists.ts, mw-9q8wp1.1); every other table as it was.
+    this.version(28).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+      pictureRefs: 'hash, at',
+      talkSummaries: 'ref',
+      library: 'id, kind',
+      exportRows: 'resource',
+      verseLists: '++id, created',
     });
   }
 }
