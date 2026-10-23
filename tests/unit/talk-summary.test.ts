@@ -176,7 +176,7 @@ describe('fitHistory at the cap keeps the summary over every other optional part
   });
 
   it('does not fold again a turn the summary holds already (`held`): the first `held` turns of the history drop without a fold', () => {
-    const request = build(turns(10).map((t) => ({ q: `${t.q} ${'w'.repeat(500)}`, a: 'x'.repeat(1400) })), { text: 'S', covered: 0 });
+    const request = build(turns(10).map((t) => ({ q: `${t.q} ${'w'.repeat(900)}`, a: 'x'.repeat(1400) })), { text: 'S', covered: 0 });
     const names = (r: TalkRequest) => (r.fold ?? []).map((t) => t.q.split(' ').slice(0, 2).join(' '));
     const free = fitHistory(request, 0);
     expect(names(free)).toContain('Question 1');

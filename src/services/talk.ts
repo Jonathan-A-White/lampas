@@ -28,6 +28,7 @@ import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunc
 import { askGrind, type AskOptions } from './tutor';
 import { clipTexts, FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES, TALK_SUMMARY_MAX } from './requestBudget';
 import { solidWordsField } from './solidWords';
+import { dropFarthest, heldText, holdText, talkWindow, textOf, versesLabel } from './talkVerses';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { MAX_HISTORY_TURNS } from 'voice-kit/talks';
 
@@ -59,8 +60,6 @@ export { MAX_REQUEST_BYTES, GREEK_WORDS_BYTES, TALK_SUMMARY_MAX, FOLD_MAX_TURNS,
 /** A long answer in the history is cut to this many characters when the request is too big. */
 const CLIPPED_CHARS = 240;
 const CLIP_MARK = '…';
-/** The verses of a chapter the grind is given when the talk is about the chapter. */
-const CHAPTER_VERSES = 3;
 
 /** What the grind says to anything outside the Bible (grinds/bible-talk.instructions/), word for word. */
 export const REFUSAL = 'I can only talk about the Bible here; ask for app changes in Postern.';
@@ -205,6 +204,8 @@ export interface TalkRequest {
   /** the verse's, the passage's or the chapter's first verses' Greek; missing in a talk from a screen (`screen`), which is not about a text */
   greek?: string;
   english?: string;
+  /** the verses `greek` and `english` hold (mw-5r3p30.733), the chapter and then the verses: '2:8-10' or '2:9'. The window follows the talk (the verses his question names, the last answer's verse links, the selected verse, else the chapter's first verses) and a clip drops whole verses, so a verse outside this is one the tutor does not hold; missing with `screen` */
+  verses?: string;
   /** each distinct Greek word of `greek` with its dictionary form, gloss and parsing as the chapter data has them (mw-5r3p30.246): the tutor names a word's lemma from here, never from memory */
   greek_words?: GreekWordEntry[];
   question: string;
@@ -506,10 +507,11 @@ export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkR
   let guide = request.pronunciation_guide;
   let drill = request.screen?.drill;
   let text = { greek: request.greek ?? '', english: request.english ?? '' };
+  let verses = request.verses;
   const rest: Partial<TalkRequest> = { ...request };
   delete rest.summary;
   delete rest.fold;
-  const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
+  const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(verses ? { verses } : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   // the talk's name travels in the grist header beside the request and weighs with it (mw-pxji7y.3)
   const named = talkBytes(talk);
   const tooBig = (): boolean => sizeOf(fitted()) + named > MAX_REQUEST_BYTES;
@@ -520,7 +522,20 @@ export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkR
   }
   if (tooBig() && request.focus?.kind !== 'sound') guide = undefined;
   while (greekWords && greekWords.length > 0 && tooBig() && history.length > 0) greekWords = greekWords.slice(0, -1);
-  // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) is sent from its start, cut where it must be, before any turn is dropped
+  // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) gives up whole verses, the farthest from the talk's verse first, before any turn is dropped (mw-5r3p30.733)
+  const hold = heldText(request);
+  if (hold && request.greek !== undefined && tooBig()) {
+    let parts = hold.parts;
+    while (parts.length > 1 && tooBig()) {
+      parts = dropFarthest(parts, hold.anchor);
+      text = textOf(parts);
+      verses = versesLabel(hold.chapter, parts) ?? verses;
+      // the words of a verse that is gone go with it
+      const forms = new Set(text.greek.split(' '));
+      greekWords = greekWords?.filter((w) => forms.has(w.form));
+    }
+  }
+  // one verse longer than a request holds is sent from its start, cut where it must be
   if (request.greek !== undefined && tooBig()) {
     text = clipTexts(text, (t) => {
       text = t;
@@ -579,11 +594,11 @@ export function greekInterestField(settings: Record<string, SettingValue>): Gree
   return { level, name: GREEK_LEVELS[level].name, ...(next ? { next: { level: next.level, name: next.name } } : {}) };
 }
 
-/** The request for what he just said: the verse's or the passage's whole text, or the chapter's first three verses; the last 10 turns, oldest first, the talk's running summary and the next turns to fold into it; the settings as they stand; the word he asked help with, if he did. */
+/** The request for what he just said: the verse's or the passage's whole text, the verses his words or the last answer's links name, or the chapter's first three verses (src/services/talkVerses.ts); the last 10 turns, oldest first, the talk's running summary and the next turns to fold into it; the settings as they stand; the word he asked help with, if he did. */
 export function buildTalkRequest(
   scope: TalkScope,
   question: string,
-  turns: { q: string; a: string }[],
+  turns: { q: string; a: string; links?: AnswerLink[] }[],
   solidWords: string[],
   settings: Record<string, SettingValue> = {},
   focus?: TalkFocus,
@@ -611,13 +626,15 @@ export function buildTalkRequest(
   const from = Math.min(summary?.covered ?? 0, past);
   const folding = turns.slice(from, Math.min(past, from + FOLD_MAX_TURNS)).map(foldedTurn);
   const waiting = past - from - folding.length;
-  const verses = scope.verse ? [scope.verse] : scope.chapter.verses.slice(0, CHAPTER_VERSES);
+  // the verses the talk holds follow the talk (mw-5r3p30.733): those he names, those the last answer linked, the selected verse, else the chapter's first; a quiz holds its passage
+  const hold = scope.screen ? undefined : talkWindow(scope.chapter, scope.verse, question, turns[turns.length - 1], !scope.quiz && !scope.welcome, greekOf, englishOf);
+  const verses = hold ? hold.parts.map((p) => p.verse) : [];
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
   const aboutCredits = scope.screen?.credits !== undefined;
   const request: TalkRequest = {
     reference: scopeTitle(scope),
     // a talk from a screen is not about a text: it carries the screen and no verse text
-    ...(scope.screen ? { screen: scope.screen } : { greek: verses.map(greekOf).join(' '), english: verses.map(englishOf).join(' ') }),
+    ...(scope.screen || !hold ? { screen: scope.screen } : { ...textOf(hold.parts), ...(hold.parts.length > 0 ? { verses: versesLabel(hold.chapter, hold.parts) } : {}) }),
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
     history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
@@ -649,9 +666,9 @@ export function buildTalkRequest(
     ...(rusty && rusty.length > 0 && !aboutCredits && !scope.quiz && !scope.welcome ? { rusty } : {}),
     ...(today && today.length > 0 && !aboutCredits && !scope.quiz && !scope.welcome ? { today } : {}),
   };
-  if (scope.screen) return request;
+  if (scope.screen || !hold) return request;
   // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES
-  return { ...request, greek_words: greekWordsFitting(scope.chapter, verses, request.question, pronunciation, sizeOf({ ...request, history: [] })) };
+  return holdText({ ...request, greek_words: greekWordsFitting(scope.chapter, verses, request.question, pronunciation, sizeOf({ ...request, history: [] })) }, hold);
 }
 
 /** Sends what he said and waits for the companion's answer. Throws a TutorError (src/services/tutor.ts). */

@@ -17,13 +17,14 @@ import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTea
 import { endScenario, fake, history, open, openTalk, received, selectVerse28, send, sheet, turnsKept } from './support';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
-const verseData = (n: number) => {
-  const v = chapter.verses.find((x) => x.n === n);
+const revelation2 = JSON.parse(readFileSync('public/data/rev/2.json', 'utf8')) as Chapter;
+const verseData = (n: number, from: Chapter = chapter) => {
+  const v = from.verses.find((x) => x.n === n);
   if (!v) throw new Error(`no verse ${n}`);
   return v;
 };
-const greekOf = (ns: number[]) => ns.map((n) => verseData(n).g.map((w) => w.t).join(' ')).join(' ');
-const englishOf = (ns: number[]) => ns.map((n) => verseData(n).e.map(markSupplied).join(' ')).join(' ');
+const greekOf = (ns: number[], from: Chapter = chapter) => ns.map((n) => verseData(n, from).g.map((w) => w.t).join(' ')).join(' ');
+const englishOf = (ns: number[], from: Chapter = chapter) => ns.map((n) => verseData(n, from).e.map(markSupplied).join(' ')).join(' ');
 
 const feature = await loadFeature('features/bible-talk.feature');
 
@@ -96,6 +97,40 @@ describeFeature(
       });
       And('the first grist carries the question {string}', (_, question: string) => {
         expect(received(0).input.question).toBe(question);
+      });
+      And('the first grist says it holds the verses {string}', (_, verses: string) => {
+        expect(received(0).input.verses).toBe(verses);
+      });
+    });
+
+    Scenario('A talk about Revelation 2 whose last answer linked 2:9 sends 2:9 in its next request', ({ Given, And, When, Then }) => {
+      Given('Lampas is opened on Revelation 2 with a talk behind a fake Postern whose answer links Revelation 2:9', () =>
+        open((f) => void (f.autoReply = { status: 'answered', answer: { ...TALK_ANSWER, links: [{ kind: 'verse', reference: 'Revelation 2:9' }] } }), false, '#/?b=rev&c=2'),
+      );
+      When('he opens Talk', openTalk);
+      Then('the sheet is titled {string}', (_, title: string) => {
+        expect(sheet()).toHaveAccessibleName(title);
+      });
+      When('he sends {string}', (_, question: string) => send(question));
+      And('the answer number {int} has arrived', (_, n: number) => turnsKept(n));
+      And('he sends {string}', (_, question: string) => send(question));
+      Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+        await waitFor(() => expect(fake.received).toHaveLength(count));
+      });
+      And('the first grist carries the reference {string} and the Greek and the English of verses 1 to 3 of Revelation 2', (_, reference: string) => {
+        const { input } = received(0);
+        expect(input.reference).toBe(reference);
+        expect(input.greek).toBe(greekOf([1, 2, 3], revelation2));
+        expect(input.english).toBe(englishOf([1, 2, 3], revelation2));
+      });
+      And('the second grist carries the reference {string} and the Greek and the English of verses 8 to 10 of Revelation 2', (_, reference: string) => {
+        const { input } = received(1);
+        expect(input.reference).toBe(reference);
+        expect(input.greek).toBe(greekOf([8, 9, 10], revelation2));
+        expect(input.english).toBe(englishOf([8, 9, 10], revelation2));
+      });
+      And('the second grist says it holds the verses {string}', (_, verses: string) => {
+        expect(received(1).input.verses).toBe(verses);
       });
     });
 

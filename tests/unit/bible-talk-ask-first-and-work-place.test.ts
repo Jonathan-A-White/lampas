@@ -1,6 +1,6 @@
 // mw-5r3p30.732: two smoke examples missed 1 of 3 on 2026-10-23: work-at-its-place gave a work link with no `place`, and quiz-goal-ask-first asked
 // "I'd like to know what you want ..." with no question mark. The instructions read by the mill must state each rule once, plainly, with one short example,
-// and stay well under the 100,000-byte ceiling so the next rule has room. The model's side is proved by `mw grist eval` once this lands.
+// and stay well under the 100,000-byte ceiling so the next rule has room (97,000 until mw-5r3p30.733 added the `verses` rule: 97,500 now). The model's side is proved by `mw grist eval` once this lands.
 import { describe, expect, it } from 'vitest';
 import { instructionParts, instructionsOf } from '../../scripts/grind-parts';
 
@@ -9,9 +9,9 @@ const flat = (s: string): string => s.replace(/\s+/g, ' ');
 const count = (haystack: string, needle: RegExp): number => (haystack.match(needle) ?? []).length;
 
 describe('the bible-talk instructions after mw-5r3p30.732', () => {
-  it('are at most 97,000 bytes', () => {
+  it('are at most 97,500 bytes', () => {
     const bytes = instructionParts('bible-talk').reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(bytes).toBeLessThanOrEqual(97_000);
+    expect(bytes).toBeLessThanOrEqual(97_500);
   });
 
   it('say once that asking his quiz goal first is a question that ends with a question mark, with one example', () => {
