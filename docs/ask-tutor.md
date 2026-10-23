@@ -433,7 +433,9 @@ a phone that installed Lampas before this version may need it removed and instal
   licence is not offered the grist (`useAiAllowed`; `features/ai-needs-licence.feature`). The smoke scenario is `grinds/examples/find-refs/kindle-gen-1-28.json` (a Kindle page quoting Gen. 1:28).
 - **Nothing moves under his thumb** (mw-s1dc0n.6, `tests/e2e/share-steady.spec.ts`): the sheet is its full height (85dvh) from the start, so what **Bible order** or
   **Choose a talk** adds goes below the control he tapped instead of lifting the sheet (a double tap on **Bible order** used to land on the **Gen. 1:28** link), and its
-  content never gets shorter while it is up (`src/ui/neverShrink.ts` `useNeverShrink`), so closing a list at the end of a scrolled sheet slides nothing down onto the control.
+  content is held at the tallest it has been (`src/ui/neverShrink.ts` `useNeverShrink`), so closing a list at the end of a scrolled sheet slides nothing down onto the control. The hold ends
+  (mw-5r3p30.736) once the content has stayed shorter for `SHRINK_HOLD_MS` (1.2 s) with no finger on the box: a hold for good left the sheet scrolled over a blank band, with its buttons out of view
+  (`tests/e2e/share-sheet-top.spec.ts`, at 412x892). It is the one user of the hook.
 - **Cancel**, the phone's Back, Escape and a swipe down drop the share (`dropShares`) and open Home; Done or Back on the talk opens Home.
 - Pictures only JPEG, PNG or WebP join the composer (`image/*` from the share sheet may bring a GIF or HEIC: the composer says "Only JPEG, PNG or WebP pictures can
   be sent." as it does for an attach); at most four.
