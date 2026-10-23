@@ -803,3 +803,30 @@ describe('two rules the smoke found not to hold (mw-5r3p30.727)', () => {
     expect(bytes).toBeLessThanOrEqual(137_397);
   });
 });
+
+// mw-5r3p30.737: mw-5r3p30.732's trim kept the line mw-5r3p30.727 added (above) but cut what stood beside it, and two smoke examples missed again on 2026-10-23:
+// summary-folds-fallen-turns (the contract's "`summary` when `fold` is present" became a bare name in a list of fields "only when their section calls for them", and
+// "you must also write the new summary" became "write ... into one new summary") and bridge-quite-a-bit (the sentence to say, 'You are missing quite a bit for this', went).
+describe('two rules the trim of mw-5r3p30.732 left too weak (mw-5r3p30.737)', () => {
+  const text = instructionsOf('bible-talk');
+  const flat = (s: string): string => s.replace(/\s+/g, ' ');
+  const part = (title: string) => {
+    const from = text.indexOf(title);
+    const next = text.indexOf('\n## ', from + 5);
+    return flat(text.slice(from, next === -1 ? undefined : next));
+  };
+
+  it('the contract says `summary` comes with `fold` and `bridge` with `missing_foundations`, where it lists the answer\'s fields', () => {
+    const contract = part('## The contract');
+    expect(contract).toMatch(/`bridge`[^.]{0,60}`missing_foundations`/);
+    expect(contract).toMatch(/`summary` \(with `fold`/);
+  });
+
+  it('"The conversation so far" says you must write the summary whenever `fold` is present', () => {
+    expect(part('## The conversation so far')).toMatch(/you must[^.]{0,60}`summary`/);
+  });
+
+  it('"When he is not ready" has him tell the reader plainly that he is missing quite a bit when `total` is more than three', () => {
+    expect(part('## When he is not ready')).toMatch(/`total` more than three:[^.]*['"]You are missing quite a bit for this/);
+  });
+});
