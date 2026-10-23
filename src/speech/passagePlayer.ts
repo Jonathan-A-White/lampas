@@ -38,6 +38,11 @@ let queue: PassageRef[] = [];
 let at = 0;
 /** which play() this is: a reference fetched for an older one is not read */
 let turn = 0;
+/** Pause was pressed between two references, with no reading of ours live to pause: the next reference waits (`startNext`) until Resume */
+let gapPaused = false;
+let startNext: (() => void) | null = null;
+/** the reading that ended by itself has been handed on to the next reference, whose own reading has not begun */
+let handedOff = false;
 const listeners = new Set<(state: PassageState, current: PassageRef | null) => void>();
 
 export const getPassagePlayer = (): PassagePlayer => player;
@@ -77,16 +82,23 @@ function begin(ref: PassageRef, plan: PlanVerse[], held: HeldPlace): void {
   startReading({ chapter: held.chapter, plan, from: first.n, continuous: true, inBook: held.book, span: 'chapter', answer: PASSAGE_ID, listen: KEY });
 }
 
+/** Starts a reference's reading now, or, when Pause was pressed in the wait before it, when Resume is. */
+function startOrHold(mine: number, start: () => void): void {
+  if (mine !== turn) return;
+  if (gapPaused) startNext = start;
+  else start();
+}
+
 function readNext(mine: number): void {
   if (mine !== turn) return;
   const ref = queue[at];
   if (!ref) return set(IDLE);
-  set({ state: 'playing', current: ref });
+  set({ state: gapPaused ? 'paused' : 'playing', current: ref });
   const { held } = ref;
-  if (!held) return say(skippedLine(ref.heading));
+  if (!held) return startOrHold(mine, () => say(skippedLine(ref.heading)));
   planOfReference(held).then(
-    (plan) => mine === turn && begin(ref, plan, held),
-    () => mine === turn && say(OFFLINE(ref.heading)),
+    (plan) => startOrHold(mine, () => begin(ref, plan, held)),
+    () => startOrHold(mine, () => say(OFFLINE(ref.heading))),
   );
 }
 
@@ -97,6 +109,9 @@ function onReading(): void {
   if (reading.status === 'idle') {
     // between two references there is a moment with no reading: it is not an end, and the next one is already being fetched
     if (listenCompletedNow() !== KEY) return end();
+    // already handed off to the next reference, which is being fetched: a second notice of the same end does not skip it
+    if (handedOff) return;
+    handedOff = true;
     const mine = turn;
     at++;
     // the reading that just ended finishes announcing itself first
@@ -104,12 +119,16 @@ function onReading(): void {
     return;
   }
   if (reading.listen !== KEY) return end();
+  handedOff = false;
   set({ state: reading.status === 'paused' ? 'paused' : 'playing', current: player.current });
 }
 
 function end(): void {
   turn++;
   queue = [];
+  gapPaused = false;
+  startNext = null;
+  handedOff = false;
   set(IDLE);
 }
 
@@ -120,16 +139,31 @@ export function playPassages(refs: PassageRef[]): void {
   turn++;
   queue = refs;
   at = 0;
+  gapPaused = false;
+  startNext = null;
+  handedOff = false;
   readNext(turn);
 }
 
-/** Pauses where the voice is; the reading goes on from that sentence on resumePassage. */
+/** Pauses where the voice is; the reading goes on from that sentence on resumePassage. Between two references there is no reading to pause: the
+ * player pauses on the next one, which is not spoken until Resume (then from its start). */
 export function pausePassage(): void {
-  if (player.state === 'playing') pauseReading();
+  if (player.state !== 'playing') return;
+  if (getReading().listen === KEY && getReading().status !== 'idle') return pauseReading();
+  const next = queue[at];
+  if (!next) return;
+  gapPaused = true;
+  set({ state: 'paused', current: next });
 }
 
 export function resumePassage(): void {
-  if (player.state === 'paused') resumeReading();
+  if (player.state !== 'paused') return;
+  if (!gapPaused) return resumeReading();
+  gapPaused = false;
+  set({ state: 'playing', current: player.current });
+  const start = startNext;
+  startNext = null;
+  start?.();
 }
 
 /** Stops for good: the speech is cancelled and the rest of the list is not read. Another reading in progress is left alone. */
