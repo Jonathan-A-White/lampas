@@ -4,7 +4,7 @@
 // verse (a whole chapter at its first) in the Bible he chose there (src/resources/logosBible.ts), and with no Bible app linked a link to Settings where he links Logos. A tap outside the
 // card (not on the reference itself: a second tap there changes nothing, mw-5r3p30.429), Close, Escape or Back closes it and nothing moves (it is a sheet for Back, src/ui/sheetBack.ts). The card sits below the reference, or above it when
 // there is no room below, so it never covers what was tapped.
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, type Chapter, type Verse } from '../data/chapter';
@@ -15,6 +15,7 @@ import { openAtVerse } from '../nav/readerRequest';
 import { openSettingsSection } from '../settings/link';
 import { verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
+import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage } from '../speech/passagePlayer';
 import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
 import { VerseText } from '../reader/VerseText';
 import { useViewSettings } from '../reader/useViewSettings';
@@ -136,6 +137,35 @@ function onReference(reference: HTMLElement | null, x: number, y: number): boole
   return [...(reference?.getClientRects() ?? [])].some((r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
 }
 
+const PLAY_BUTTON = 'inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-base font-medium text-accent active:bg-line';
+
+/** Play, Pause and Stop for the card's passage (mw-9q8wp1.4): Play reads it through the passage player, in the language he reads in; an Old Testament card's Play says that no
+ *  Old Testament is present. While the card's own reference is being read, Play is Pause (Resume once paused) and Stop. Closing the card stops it (ReferenceCardView). */
+function PlayControls({ card }: { card: Card }) {
+  const player = useSyncExternalStore(
+    (listener) => onPassageChange(listener),
+    getPassagePlayer,
+    getPassagePlayer,
+  );
+  if (player.state === 'idle' || player.current !== card) {
+    return (
+      <button type="button" onClick={() => playPassages([card])} className={PLAY_BUTTON}>
+        <span aria-hidden="true">▶ </span>Play
+      </button>
+    );
+  }
+  return (
+    <>
+      {player.state === 'playing' ? (
+        <button type="button" onClick={pausePassage} className={PLAY_BUTTON}>Pause</button>
+      ) : (
+        <button type="button" onClick={resumePassage} className={PLAY_BUTTON}>Resume</button>
+      )}
+      <button type="button" onClick={stopPassage} className={PLAY_BUTTON}>Stop</button>
+    </>
+  );
+}
+
 function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
   useSheetBack(onClose);
   const { held } = card;
@@ -156,6 +186,14 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
       live = false;
     };
   }, [held]);
+
+  // closing the card (Close, Open, a tap outside, Escape, Back) stops what it is reading, and only that
+  useEffect(
+    () => () => {
+      if (getPassagePlayer().current === card) stopPassage();
+    },
+    [card],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -209,14 +247,19 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
             <MarkedPassage chapter={passage} held={held} mark={mark} />
           )}
         </div>
-        {held ? (
-          <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-2">
-            <span className="text-sm text-muted">{view === 'greek' ? GREEK_TEXT : TRANSLATION}</span>
-            <button type="button" onClick={onOpen} className="min-h-11 rounded-lg bg-accent px-5 text-base font-medium text-accent-fg">
-              Open<span aria-hidden="true"> ›</span>
-            </button>
+        <div className="flex flex-col gap-1 border-t border-line px-4 py-2">
+          {held ? <span className="text-sm text-muted">{view === 'greek' ? GREEK_TEXT : TRANSLATION}</span> : null}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <PlayControls card={card} />
+            </div>
+            {held ? (
+              <button type="button" onClick={onOpen} className="min-h-11 rounded-lg bg-accent px-5 text-base font-medium text-accent-fg">
+                Open<span aria-hidden="true"> ›</span>
+              </button>
+            ) : null}
           </div>
-        ) : null}
+        </div>
       </div>
     </div>,
     document.body,
