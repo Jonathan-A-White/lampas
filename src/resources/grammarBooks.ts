@@ -1,7 +1,7 @@
 // src/resources/grammarBooks.ts — the grammar books of his Logos library that an idea sheet links to under Read more (mw-5r3p30.381, PROVISIONAL):
 // for each book, the sections of its table of contents and the ladder ideas each teaches. A book is a reference inside the learning, whichever
 // grammar approach he is on, never an approach of its own. Adding a book is one entry in data/logos/catalogue-rules.json (then `npm run logos:catalogue`): Settings (Logos > Grammar books) and the
-// idea sheet read GRAMMAR_BOOKS, a view over the catalogue, and nothing else. Every link is the Logos scheme first with the https ref.ly address as the fallback (src/resources/openApp.ts),
+// idea sheet read GRAMMAR_BOOKS, a view over the catalogue, and the shelf's states (shelvedBooks), and nothing else. Every link is the Logos scheme first with the https ref.ly address as the fallback (src/resources/openApp.ts),
 // as the lexicon links are (logos.ts). docs/resources.md names each book's source and what is UNVERIFIED.
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import { entriesOf } from './catalogue';
@@ -44,11 +44,21 @@ export interface ReadMoreLine {
   links: StudyLink[];
 }
 
-/** Read more for the idea `ideaId`: one line for each ticked book that teaches it, in the order the dial gives GRAMMAR_BOOKS (resourcesForLevel: a Greek book is left out at Just English and
- *  follows the English ones between; `books` is the list, a test hands it its own). */
-export function readMoreFor(ideaId: string, ticked: readonly string[], books: readonly GrammarBook[] = GRAMMAR_BOOKS, level: GreekLevel = GREEK_TOP): ReadMoreLine[] {
-  return resourcesForLevel(books, level)
+/** What his shelf says of `books`: the ids of those that are On or Pinned, and of those Pinned, from the shelf's rows (shelfOf('grammar'): a row's id is the book's Resource ID). A book with no row is Off. */
+export function shelvedBooks(books: readonly GrammarBook[], rows: readonly { id: string; state: 'on' | 'pinned' }[]): { ticked: string[]; pinned: string[] } {
+  const state = new Map(rows.map((r) => [r.id, r.state]));
+  return {
+    ticked: books.filter((b) => state.has(b.resource)).map((b) => b.id),
+    pinned: books.filter((b) => state.get(b.resource) === 'pinned').map((b) => b.id),
+  };
+}
+
+/** Read more for the idea `ideaId`: one line for each ticked book that teaches it, the Pinned books first (`pinned`), then the rest, each group in the order the dial gives GRAMMAR_BOOKS
+ *  (resourcesForLevel: a Greek book is left out at Just English and follows the English ones between; `books` is the list, a test hands it its own). */
+export function readMoreFor(ideaId: string, ticked: readonly string[], books: readonly GrammarBook[] = GRAMMAR_BOOKS, level: GreekLevel = GREEK_TOP, pinned: readonly string[] = []): ReadMoreLine[] {
+  const lines = resourcesForLevel(books, level)
     .filter((book) => ticked.includes(book.id))
     .map((book) => ({ book, links: sectionsFor(book, ideaId).map((section) => bookLink(book, section)) }))
     .filter((line) => line.links.length > 0);
+  return [...lines.filter((l) => pinned.includes(l.book.id)), ...lines.filter((l) => !pinned.includes(l.book.id))];
 }

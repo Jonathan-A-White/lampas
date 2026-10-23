@@ -26,7 +26,7 @@ import { stepsOf, teachOf, workedFor, type Teach, type TeachTable } from './data
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getOpenChapter } from './data/readerChapter';
-import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, shelfOf, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { AskForBook } from './library/AskForBook';
 import { DrillItScreen } from './DrillItScreen';
@@ -35,7 +35,7 @@ import { LessonWriteIt } from './handwriting/LessonWriteIt';
 import { LetterDrillScreen } from './LetterDrillScreen';
 import { learnLabel, lessonsForLetter } from './hardSounds/lessons';
 import { openParadigm, openSoundLesson } from './nav/route';
-import { GRAMMAR_BOOKS, readMoreFor } from './resources/grammarBooks';
+import { GRAMMAR_BOOKS, readMoreFor, shelvedBooks } from './resources/grammarBooks';
 import { armFallback } from './resources/openApp';
 import type { GrammarBook } from './resources/types';
 import { useAccent } from './speech/accents/useAccent';
@@ -332,16 +332,17 @@ function Examples({ idea, examples, onWord }: { idea: GrammarIdea; examples: Ide
 const SHOWN_BOOKS = 3;
 
 /**
- * Read more (mw-5r3p30.381, PROVISIONAL): with Logos on, one line for each grammar book he ticked (Settings > Study resources > Logos > Grammar books)
+ * Read more (mw-5r3p30.381, PROVISIONAL): with Logos on, one line for each grammar on his shelf (Library > Grammars: the Pinned ones first, then the On ones)
  * that teaches this idea, the book's name over a link to each of its sections; a tap opens Logos there, or the ref.ly page when the phone has no Logos.
  * Nothing is drawn while the store is read, with Logos off, or when no ticked book teaches the idea. `books` is the list; a test hands it its own.
  */
 function ReadMore({ ideaId, books }: { ideaId: string; books: readonly GrammarBook[] }) {
   const [all, setAll] = useState(false);
   const headingId = useId();
-  const kept = useLiveQuery(async () => ({ logos: (await getStudyResources()).on.includes('logos'), ticked: await getGrammarBooks() }), []);
+  const kept = useLiveQuery(async () => ({ logos: (await getStudyResources()).on.includes('logos'), ticked: await getGrammarBooks(), rows: await shelfOf('grammar') }), []);
   const level = useGreekInterest();
-  const lines = kept?.logos && level !== undefined ? readMoreFor(ideaId, kept.ticked, books, level) : [];
+  const shelved = shelvedBooks(books, kept?.rows ?? []);
+  const lines = kept?.logos && level !== undefined ? readMoreFor(ideaId, [...kept.ticked, ...shelved.ticked], books, level, shelved.pinned) : [];
   if (!lines.length) return null;
   const folded = all ? 0 : Math.max(0, lines.length - SHOWN_BOOKS);
   return (
