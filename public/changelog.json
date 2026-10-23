@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.416",
+    "date": "2026-10-23",
+    "story": "mw-5r3p30.731",
+    "kind": "new",
+    "text": "Ask the tutor \"what's on my drill today?\" and it names what Today holds for you and offers to open Today."
+  },
+  {
     "version": "0.1.415",
     "date": "2026-10-23",
     "story": "mw-rfjjzd.5",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.416
+_2026-10-23_
+- New: Ask the tutor "what's on my drill today?" and it names what Today holds for you and offers to open Today.
+
 ## 0.1.415
 _2026-10-23_
 - New: Settings no longer lists your Logos books; one line shows how many are on and opens Your Logos library, Bible in Logos and the daily devotional picker follow it, and the Settings search finds a book by its title.
