@@ -119,13 +119,13 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.about', label: 'About', hint: 'Where the text comes from, and its licences.', section: 'more' },
 ];
 
-/** The rows that send a request to the factory (Request a devotional): a box, not a setting, so the tutor does not read or change them. */
+/** The rows that send a request to the factory (Ask for a devotional opens Ask for a book): a door, not a setting, so the tutor does not read or change them. */
 const REQUESTS: readonly SettingsRow[] = [
   {
     key: 'request.devotional',
-    label: 'Request a devotional',
+    label: 'Ask for a devotional',
     hint: 'Ask for another devotional to be added to Which devotional.',
-    help: 'Type the title of a devotional in your Logos library and Send. The makers add it to the list when they find its Logos id; Your requests follows it. It goes to the factory through the tutor\'s mill, so it needs a licence.',
+    help: 'Search your Logos list for the devotional, or type its title, and Send. The makers add it to the list when they find its Logos id; Your requests follows it. It goes to the factory through the tutor\'s mill, so it needs a licence.',
     section: 'daily',
   },
 ];

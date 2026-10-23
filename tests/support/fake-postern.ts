@@ -1,7 +1,7 @@
 // tests/support/fake-postern.ts — a Postern backend behind a fetch (docs/api.md): the signed calls the tutor makes
 // (GET /api/challenge, GET /api/me, POST and GET /api/messages), a mill that opens the grist it is sent with its own
 // key and answers it, sealed to the phone. No network. Shared by the tutor feature steps and the e2e specs.
-import { Hash, PrivateKey, PublicKey, Signature, Utils } from '@bsv/sdk';
+import { EncryptedMessage, Hash, PrivateKey, PublicKey, Signature, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
 import { ASYNC_WAIT_MS } from './timeouts';
 
@@ -43,6 +43,8 @@ export interface FakePostern {
   txids: string[];
   /** every sealed upload the phone made to POST /api/blobs: its hash and byte length (a grist's attachments name them) */
   blobs: { hash: string; size: number }[];
+  /** The text of a file a grist attached (its `attachments` entry), opened with the mill's key as the mill opens it; undefined for an upload the fake never saw. */
+  attachmentText(attachment: { hash: string }): string | undefined;
   /** the Authorization header of each signed call */
   authorizations: string[];
   /** Answers a grist as soon as it arrives with this reply; undefined holds every grist until `answer` is called. */
@@ -214,6 +216,8 @@ export function makeFakePostern(): FakePostern {
   const waiters: (() => void)[] = [];
   const streams = new Set<ReadableStreamDefaultController<Uint8Array>>();
   const encoder = new TextEncoder();
+  /** every upload as the phone sealed it, by hash */
+  const sealedBlobs = new Map<string, number[]>();
   let counter = 0;
 
   /** A record taken in: every open event stream is told its seq. */
@@ -227,6 +231,10 @@ export function makeFakePostern(): FakePostern {
     received: [],
     txids: [],
     blobs: [],
+    attachmentText: (attachment) => {
+      const sealed = sealedBlobs.get(attachment.hash);
+      return sealed ? Utils.toUTF8(EncryptedMessage.decrypt(sealed, MILL_KEY)) : undefined;
+    },
     authorizations: [],
     autoReply: undefined,
     greekReply: undefined,
@@ -351,6 +359,7 @@ export function makeFakePostern(): FakePostern {
     if (url.pathname === '/api/blobs' && method === 'POST') {
       const blob = { hash: Utils.toHex(Hash.sha256(bytes)), size: bytes.length };
       fake.blobs.push(blob);
+      sealedBlobs.set(blob.hash, bytes);
       return json(201, blob);
     }
     if (url.pathname === '/api/messages' && method === 'POST') {

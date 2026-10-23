@@ -33,7 +33,7 @@ restoreLastRoute();
 restoreScrolls();
 // Counts today as a visit (the licence tip is due on the third, src/gate/licenceTip.ts).
 noteVisit();
-// A request for a grammar book that waited offline goes when the phone is back online (Settings > Grammar books > Ask for another book).
+// A request for a book that waited offline goes when the phone is back online (Ask for a book).
 startBookRequests();
 
 // The phone is placed on the Greek dial (a new reader at 0, a reader from before by what he has, once) before the first render, so nothing Greek flashes up first.

@@ -9,10 +9,8 @@ import { resourceOf, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { KINDS, entryOf } from '../../resources/catalogue';
-import { logos } from '../../resources/logos';
 import { oneTap } from '../../ui/settle';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
-import { AskForBook } from './askBook';
 import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
 import { useSetting } from '../store';
@@ -47,7 +45,6 @@ function ResourceRow({ row, resource, on, typed }: { row: SettingsRow; resource:
                 </a>
               </div>
             ) : null}
-            {resource.id === logos.id ? <AskForBook /> : null}
             {option ? (
               <div className="mt-2">
                 <label className="block">

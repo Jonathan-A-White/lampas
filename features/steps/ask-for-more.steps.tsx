@@ -30,6 +30,7 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
+/** The four asks under Or fill in a form: three are forms, and A study resource opens Ask for a book (features/ask-for-book.feature). */
 const KINDS = ['An approach or programme', 'A study resource', 'A text', 'A translation'];
 const feedbackSchema = JSON.parse(readFileSync('grinds/feedback.input.schema.json', 'utf8')) as Schema;
 let fake: FakePostern;
@@ -120,7 +121,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       const main = screen.getByRole('main');
       expect(within(main).getAllByRole('button')[0]).toHaveTextContent(label);
     });
-    And('under it {string} offers the four kinds', (_, heading: string) => {
+    And('under it {string} offers the four asks', (_, heading: string) => {
       const main = screen.getByRole('main');
       const kinds = within(main).getAllByRole('button').slice(1);
       const title = within(main).getByRole('heading', { name: heading });

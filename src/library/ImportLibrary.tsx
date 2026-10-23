@@ -1,12 +1,17 @@
 // src/library/ImportLibrary.tsx — Import your library (#/library?import, docs/design/library-at-scale.md 5.1 to 5.4): he chooses the list Logos saved as a spreadsheet, it is read and matched on the phone,
 // and the screen shows counts, not 4,795 rows: how many books were read, how many open from Lampas (by kind, with the pins and his Bible), how many Lampas cannot use yet and why (a page of
-// plain lines), and one button, 'Turn on N books'. It is the words Import's shape (src/ImportScreen.tsx): a preview, counts, one button. Nothing is sent: the file never leaves the phone.
+// plain lines), and one button, 'Turn on N books'. It is the words Import's shape (src/ImportScreen.tsx): a preview, counts, one button. Nothing is sent unless he taps 'Ask the makers about these' (mw-rfjjzd.14,
+// docs/design/library-at-scale.md 6.2): one request for the whole list, the counts by Logos type and the usable books as library.csv, and no second one until the catalogue changes or 30 days pass.
 import { useAlive } from 'pwa-kit/alive';
-import { useEffect, useRef, useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { applyImport, dropShares, planImport, setLogosBible, waitingShare, type ImportPlan } from '../data/repositories';
+import { useAiAllowed } from '../gate/licenceContext';
 import { backTo, libraryOf, navigate, useAddress } from '../nav/route';
 import { KINDS, type Kind } from '../resources/catalogue';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
+import { askAboutLibrary, libraryRefusal } from '../services/bookRequests';
+import { FAILURE_TITLES, TutorError, type TutorFailure } from '../services/tutor';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { isCsvFile } from '../share/target';
@@ -14,6 +19,7 @@ import { readText } from '../ui/readText';
 import { isListed } from './matchExport';
 import { readExport } from './parseExport';
 import { lineText, reasonLines } from './reasons';
+import { usableRows, type ListedRow } from './usableRows';
 
 const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 const PRIMARY = 'min-h-12 w-full rounded-xl bg-accent text-lg font-medium text-accent-fg disabled:opacity-40';
@@ -180,8 +186,59 @@ function Result({ plan, onReasons }: { plan: ImportPlan; onReasons: () => void }
           </button>
         </section>
       ) : null}
-      <p className="mt-4 pb-3 text-base text-muted">Your list stays on this phone. Nothing is sent.</p>
+      <AskMakers plan={plan} />
+      <p className="mt-4 pb-3 text-base text-muted">Your list stays on this phone. Nothing is sent unless you ask the makers.</p>
     </div>
+  );
+}
+
+/** The books of the list that Lampas does not open, as the phone keeps them. */
+const unmatchedOf = (plan: ImportPlan): ListedRow[] =>
+  plan.result.unmatched.map(({ row }) => ({ resource: row.resource, type: row.type, title: row.title, series: row.series, languages: row.languages, refs: row.supersets }));
+
+type Asking = { name: 'idle' } | { name: 'sending' } | { name: 'failed'; failure: TutorFailure; detail: string };
+
+/** 'Ask the makers about these': one request of kind library for the whole list, once. While the last one stands (same catalogue, under 30 days) the card's line is shown instead of the button. */
+function AskMakers({ plan }: { plan: ImportPlan }) {
+  const ai = useAiAllowed();
+  const alive = useAlive();
+  const rows = useMemo(() => unmatchedOf(plan), [plan]);
+  const usable = useMemo(() => usableRows(rows).length, [rows]);
+  const refusal = useLiveQuery(async () => (await libraryRefusal()) ?? null, []);
+  const [asking, setAsking] = useState<Asking>({ name: 'idle' });
+  if (!ai || usable === 0 || refusal === undefined) return null;
+  if (refusal !== null) {
+    return (
+      <p data-testid="library-asked" className="mt-3 text-base">
+        {refusal}
+      </p>
+    );
+  }
+  const send = async (): Promise<void> => {
+    setAsking({ name: 'sending' });
+    try {
+      await askAboutLibrary(rows, plan.rows.length);
+      if (alive()) setAsking({ name: 'idle' });
+    } catch (err) {
+      const error = err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
+      if (alive()) setAsking({ name: 'failed', failure: error.failure, detail: error.message });
+    }
+  };
+  return (
+    <section className="mt-3">
+      <p data-testid="library-sends" className="text-sm text-muted">
+        Sends how many books you have of each kind, and the titles of the {usable.toLocaleString('en')} Lampas could use (never manuscripts), to the makers, once. Nothing else leaves this phone.
+      </p>
+      <button type="button" disabled={asking.name === 'sending'} onClick={() => void send()} className={`${BUTTON} mt-2`}>
+        {asking.name === 'sending' ? 'Sending…' : asking.name === 'failed' ? 'Try again' : 'Ask the makers about these'}
+      </button>
+      {asking.name === 'failed' ? (
+        <div role="alert" className="mt-2 space-y-1">
+          <p className="text-base font-semibold text-bad">{FAILURE_TITLES[asking.failure]}</p>
+          <p className="break-words text-sm text-muted">{asking.detail}</p>
+        </div>
+      ) : null}
+    </section>
   );
 }
 

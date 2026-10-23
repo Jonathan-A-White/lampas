@@ -27,6 +27,8 @@ import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getOpenChapter } from './data/readerChapter';
 import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { useAiAllowed } from './gate/licenceContext';
+import { AskForBook } from './library/AskForBook';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
@@ -377,6 +379,22 @@ function ReadMore({ ideaId, books }: { ideaId: string; books: readonly GrammarBo
   );
 }
 
+/** 'Ask for a grammar ›' (mw-rfjjzd.14): with Logos on, the way to ask the makers for a grammar of his that Read more does not hold: it opens Ask for a book with the kind set to a grammar. Not drawn without a licence. */
+function AskForGrammar() {
+  const ai = useAiAllowed();
+  const logos = useLiveQuery(async () => (await getStudyResources()).on.includes('logos'), []);
+  const [asking, setAsking] = useState(false);
+  if (!ai || !logos) return null;
+  return (
+    <>
+      <button type="button" onClick={() => setAsking(true)} className="mt-2 flex min-h-11 items-center px-1 text-base font-medium text-accent underline underline-offset-4">
+        Ask for a grammar ›
+      </button>
+      {asking ? <AskForBook kind="grammar" onClose={() => setAsking(false)} /> : null}
+    </>
+  );
+}
+
 const RESTORE_MS = 3000;
 
 /** Scrolls the box to `top` once it is tall enough (its text fills in as the passage loads), and leaves it alone from the first touch, wheel or key of his or after RESTORE_MS. */
@@ -648,6 +666,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
             </div>
           ) : null}
           <ReadMore ideaId={idea.id} books={books} />
+          <AskForGrammar />
         </div>
         {/* what is read aloud keeps its Pause and Stop in view: this sheet is over the Grammar and word sheets' own bars */}
         <div className="contents short:col-span-2 short:row-start-3 short:block">

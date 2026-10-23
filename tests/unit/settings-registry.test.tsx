@@ -39,8 +39,7 @@ describe('the registry lists every Settings row', () => {
     render(<SettingsScreen />);
     const drawnOnPage = (): string[] =>
       [
-        // the line that asks for another book (mw-5r3p30.382) belongs to the Logos switch, a study resource kept outside the registry; Request a devotional is a request box, not a setting
-        ...screen.queryAllByRole('group').filter((el) => !['Ask for another book', 'Request a devotional'].includes(el.getAttribute('aria-label') ?? '')),
+        ...screen.queryAllByRole('group'),
         ...screen.queryAllByRole('radiogroup'),
         // the Goal group's own Book, Chapter and Verse pickers are parts of that one setting
         ...screen.queryAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"]')),
