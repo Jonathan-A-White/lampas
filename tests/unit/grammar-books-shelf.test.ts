@@ -8,6 +8,7 @@ import { GRAMMAR_BOOKS, readMoreFor, shelvedBooks } from '../../src/resources/gr
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 import type { GrammarBook } from '../../src/resources/types';
 
+const timeout = ASYNC_WAIT_MS;
 const book = (id: string, ideas: string[] = ['noun']): GrammarBook => ({ id, lang: 'grc', short: id.toUpperCase(), name: id, resource: `LLS:${id.toUpperCase()}`, source: 'test', sections: [{ title: 'One', ref: 'Page.p_1', ideas }] });
 
 describe('grammar books and the shelf', () => {
@@ -22,7 +23,7 @@ describe('grammar books and the shelf', () => {
       { key: 'devotionalDraw', value: 'none' },
     ]);
     await shelfOf();
-    await vi.waitFor(async () => expect(await db.library.get('#taken')).toBeDefined(), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(async () => expect(await db.library.get('#taken')).toBeDefined(), { timeout });
   });
 
   it("are the catalogue's grammars that have a sections table, in the catalogue's order, and no other", () => {
