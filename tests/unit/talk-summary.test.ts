@@ -163,7 +163,7 @@ describe('fitHistory at the cap keeps the summary over every other optional part
   });
 
   it('moves a turn it drops from the history into the fold, clipped, after the turns already there', () => {
-    const request = build(turns(10).map((t) => ({ q: `${t.q} ${'w'.repeat(500)}`, a: 'x'.repeat(1400) })), { text: 'S', covered: 0 }, undefined, 'Next?');
+    const request = build(turns(10).map((t) => ({ q: `${t.q} ${'w'.repeat(900)}`, a: 'x'.repeat(1400) })), { text: 'S', covered: 0 }, undefined, 'Next?');
     const withFold: TalkRequest = { ...request, fold: [turn(0)] };
     const fitted = fitHistory(withFold);
     const dropped = withFold.history.length - fitted.history.length;
