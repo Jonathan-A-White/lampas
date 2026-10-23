@@ -13,6 +13,7 @@ import { cardOf } from '../../src/markdown/verseLinks';
 import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage, type PassageRef, type PassageState } from '../../src/speech/passagePlayer';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
 
 const refOf = (written: string): PassageRef => {
@@ -51,7 +52,7 @@ afterEach(() => {
 /** Lets the voice run until the player has nothing more to say, a reference at a time (the next one is fetched in between). */
 async function listenToTheEnd(): Promise<void> {
   for (let i = 0; i < 50 && getPassagePlayer().state !== 'idle'; i++) {
-    await vi.waitFor(() => expect(synth.speaking || getPassagePlayer().state === 'idle').toBe(true));
+    await vi.waitFor(() => expect(synth.speaking || getPassagePlayer().state === 'idle').toBe(true), { timeout: ASYNC_WAIT_MS });
     if (synth.speaking) synth.finishAll();
     await Promise.resolve();
   }
@@ -110,21 +111,21 @@ describe('an Old Testament reference', () => {
 describe('Pause, Resume and Stop', () => {
   it('pauses the voice, and goes on from where it was', async () => {
     playPassages([refOf('Heb 7:1-2')]);
-    await vi.waitFor(() => expect(synth.speaking).toBe(true));
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout: ASYNC_WAIT_MS });
     expect(getPassagePlayer().state).toBe('playing');
     pausePassage();
-    await vi.waitFor(() => expect(getPassagePlayer().state).toBe('paused'));
+    await vi.waitFor(() => expect(getPassagePlayer().state).toBe('paused'), { timeout: ASYNC_WAIT_MS });
     expect(getSpeech().status).toBe('paused');
     expect(changes.at(-1)).toEqual(['paused', 'Hebrews 7:1-2']);
     resumePassage();
-    await vi.waitFor(() => expect(getPassagePlayer().state).toBe('playing'));
+    await vi.waitFor(() => expect(getPassagePlayer().state).toBe('playing'), { timeout: ASYNC_WAIT_MS });
     expect(getSpeech().status).toBe('playing');
     await listenToTheEnd();
   });
 
   it('stops for good: the speech is cancelled and the rest of the list is not read', async () => {
     playPassages([refOf('Heb 7:1'), refOf('Rom 8:1')]);
-    await vi.waitFor(() => expect(synth.speaking).toBe(true));
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout: ASYNC_WAIT_MS });
     stopPassage();
     expect(getPassagePlayer()).toMatchObject({ state: 'idle', current: null });
     expect(synth.calls).toContain('cancel');
@@ -137,7 +138,7 @@ describe('Pause, Resume and Stop', () => {
 
   it('stops while the next reference is still being fetched', async () => {
     playPassages([refOf('Isa 30:21'), refOf('Rom 8:1')]);
-    await vi.waitFor(() => expect(synth.speaking).toBe(true));
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout: ASYNC_WAIT_MS });
     synth.finishAll();
     stopPassage();
     await new Promise((r) => setTimeout(r, 50));
@@ -146,8 +147,8 @@ describe('Pause, Resume and Stop', () => {
 
   it('is over for the player when something else takes the voice', async () => {
     playPassages([refOf('Heb 7:1-2')]);
-    await vi.waitFor(() => expect(synth.speaking).toBe(true));
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout: ASYNC_WAIT_MS });
     stopReading();
-    await vi.waitFor(() => expect(getPassagePlayer().state).toBe('idle'));
+    await vi.waitFor(() => expect(getPassagePlayer().state).toBe('idle'), { timeout: ASYNC_WAIT_MS });
   });
 });
