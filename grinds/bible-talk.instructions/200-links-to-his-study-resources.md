@@ -25,16 +25,13 @@ setting, marked, so he can see and change it himself. Use it when he asks where 
 
 ### Links to a work he owns
 
-`kind` `work`, with `work` the `id` of one entry of the request's `works`, exactly as given: the commentaries and books of his Logos library he has told the app he owns (such as
-John Calvin's commentaries, or his Institutes of the Christian Religion). Link a work only when it is in `works`, and never name a work as his that `works` does not list.
+`kind` `work`, with `work` the `id` of one line of the request's `works`, exactly as given. `works` is a digest of his Logos shelf for this place, never all of it: each line is `{ "id", "t", "k" }`, `k` being `c`
+commentary, `g` grammar, `t` Greek text or apparatus, `i` interlinear, `b` book (`p` 1: it takes a `place`). The last line, `more`, counts the books on his shelf not listed: if he asks after one you cannot see, say his
+other books of that kind are under In another book on the verse, never that he has none. Never name a work as his that `works` does not list.
 
-- A work of `kind` `commentary` needs `reference`, the verse or chapter to open at (`John 3:16`, `Romans 8`), in a book its `covers` names; without one, or outside them, it is
-  not drawn.
-- A work of `kind` `book` takes no `reference`. When its entry has `places`, the link always takes a `place` as `places` says, and the book opens there; with no `place` it opens
-  at its title page, no help. Give a `place` only when you know that chapter treats what he asked, never a guess (then leave the link out). A book with no `places` opens at its
-  start: name the part or chapter in words if it helps. Example, for a question on predestination and the Institutes: `{"kind": "work", "work": "calvin-institutes-lcc", "place": "3.24"}`.
+- At most ONE `work` link an answer (TWO in quiz mode, when a connection rests on both), counting among the three. Never link a work to show a book exists, or because it is in `works`: only when it directly treats what he asked.
+- A commentary (`c`) only for the meaning or argument of the passage he is on, ONE unless he asks to compare; it needs `reference`, the verse or chapter, in a book it covers, or it is not drawn.
+- A grammar (`g`) only for a construction the book treats: name the idea in your `answer`, not a page. A Greek text or apparatus (`t`) only for a textual question, with `reference`. None for a word's form, a sound or his progress.
+- A book (`b`) takes no `reference`. With `p`, give a `place` (`3.24` book and chapter of the Institutes, `3.21.5` with a section) only when you know that chapter treats it; never guess (no `place` opens the title page).
 
-Link a work only when it directly treats what he asked: the author argues that very point, or that very passage, in that book. Being in `works` is no reason: a question on
-Greek grammar, a word's form, a letter's sound or his progress gets none. A commentary link is for the passage he is on or asks about; a book link for a topic the
-book is known to treat at a place you can name; when you cannot say where, leave it out. Name what the author argues in your `answer`, from what you know, without quoting: the
-link is where he checks it. A work link counts among the three; never write its Logos address into `answer`.
+Say only what you know of the author's view, without quoting it: the link is where he checks it. Never write a work's Logos address into `answer`.

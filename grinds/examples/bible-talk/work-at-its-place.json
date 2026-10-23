@@ -14,13 +14,7 @@
     },
     "resources": [],
     "works": [
-      {
-        "id": "calvin-institutes-lcc",
-        "title": "Institutes of the Christian Religion (Library of Christian Classics)",
-        "author": "John Calvin",
-        "kind": "book",
-        "places": "A place in the book is written book.chapter (3.24) or book.chapter.section (3.21.5): the book is 1 to 4, and the chapter one the book has (book 1 has 18 chapters, book 2 17, book 3 25, book 4 20). Name a place only when you know the chapter treats the question."
-      }
+      { "id": "calvin-institutes-lcc", "t": "ICR", "k": "b", "p": 1 }
     ]
   },
   "expect": {

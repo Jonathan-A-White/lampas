@@ -612,7 +612,7 @@
       "maxLength": 30
     },
     "links": {
-      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, and a work (a commentary or book of his Logos library that he ticked, listed in the request's `works`) opens in Logos. At most three. Leave it out when no lexicon, verse or setting would help him.",
+      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, and a work (a commentary, grammar, Greek text or book on his Logos shelf, listed in the request's `works`) opens in Logos. At most three, and at most one of them a work (two in a quiz). Leave it out when no lexicon, verse or setting would help him.",
       "type": "array",
       "minItems": 1,
       "maxItems": 3,
@@ -653,9 +653,29 @@
             "properties": {
               "kind": { "const": "work" },
               "work": {
-                "description": "The `id` of a work in the request's `works`, exactly as given. Never one that is not listed there.",
+                "description": "The `id` of a line of the request's `works`, exactly as given. Never one that is not listed there.",
                 "type": "string",
-                "enum": ["calvin-commentaries", "calvin-institutes-lcc", "calvin-institutes-beveridge"]
+                "enum": [
+                  "calvin-commentaries",
+                  "calvin-institutes-lcc",
+                  "calvin-institutes-beveridge",
+                  "LLS:LRNTOREADNTGRK",
+                  "LLS:BDF",
+                  "LLS:GGNTLHR",
+                  "LLS:SHGRMRGRKNT",
+                  "LLS:46.20.8",
+                  "LLS:NTGRKBGNNRSMCHN",
+                  "LLS:KAIROSGRAM",
+                  "LLS:INTROGKGRAMEXREV",
+                  "LLS:NTGBYZ2018",
+                  "LLS:1.0.331",
+                  "LLS:SBLGNT",
+                  "LLS:SBLGNTAPP",
+                  "LLS:1.0.325",
+                  "LLS:SCRMORPH",
+                  "LLS:LEXHAMSGNT",
+                  "LLS:LGNTI"
+                ]
               },
               "reference": {
                 "description": "A commentary only: the verse (or chapter) to open it at, such as John 3:16 or Romans 8, in a book the work's `covers` names. Leave it out for a book.",

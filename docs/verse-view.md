@@ -116,7 +116,7 @@ the whole passage.
 * **PROVISIONAL, the Governor to confirm:** the button's names (`Start the quiz`, `Continue the quiz`), that Quiz me has no hold bar (the answers are
   given in the Talk sheet, which has one), the sheet's title `Quiz on …`, the opening message `Quiz me on …`, and the short turns (about 60 words) the
   instructions ask for.
-* **Limits worth knowing:** a request is capped at `MAX_REQUEST_BYTES` (8000) and only the history is trimmed to fit, so a very long passage may be refused
+* **Limits worth knowing:** a request is capped at `MAX_REQUEST_BYTES` (9000) and only the history is trimmed to fit, so a very long passage may be refused
   with 'Could not send the question'; Romans 8:1-11 fits. There is no way to start the same quiz over except to say so in the sheet. Links to study
   resources come with the words the tutor cites (each opens its word sheet and Study row).
 

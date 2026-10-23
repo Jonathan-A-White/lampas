@@ -196,7 +196,7 @@ label is the value itself (`"on" (On)`) is written once. The answer schema still
 - When to link and when not; never invent a reference; never ask which resources he has → kept, the "decoration / to fill the list" rule said once (it was said twice).
 - `resources` decides what can open; empty: no links but a setting link; truly helps; never an address in `answer` → kept.
 - Setting links: `key` from the list, what it opens, when to use, it changes nothing, counts among three, no resource needed, never invent a key, never the address → kept.
-- Work links: `works`; commentary needs `reference` in its `covers`; book `place` from `places`, never guessed; directly treats what he asked; no work for grammar or progress; name the author's view, do not quote; counts among three; never the address → kept.
+- Work links: `works` is a digest of his shelf by place (mw-rfjjzd.10: lines `{id, t, k}`, `p`, a `more` count); at most one link an answer (two in a quiz); a commentary for the passage's meaning, a grammar for a construction, a Greek text for a textual question, never a link to show a book exists; commentary needs `reference`; book `place` (`p`), never guessed; directly treats what he asked; none for a form, a sound or progress; say only what you know of the author's view; counts among three; never the address → kept.
 
 ## 210 to 250
 
