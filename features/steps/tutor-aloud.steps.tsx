@@ -310,9 +310,11 @@ describeFeature(feature, ({ Scenario }) => {
     expect(said.filter((s) => s.lang === 'el-GR').map((s) => s.text)).toContain(greek);
     expect(said.filter((s) => s.lang === 'en-US').map((s) => s.text).join(' ')).toContain('present active indicative');
   };
+  /** The answer is on the screen, and the app has decided what to do with it: the page is hidden, so it is held for his return (tutorWaiting.ts), not
+   * spoken. The decision comes after a read of the setting, so the step waits for the held answer, not for a pause (mw-5r3p30.735). */
   const answerShownSilent = async () => {
     await waitFor(() => expect(document.querySelectorAll('[data-answers-for="28"] [data-answer]').length).toBe(1));
-    await sleep(150);
+    await waitFor(() => expect(waitingAnswer()).not.toBeNull());
     expect(synth.spoken).toHaveLength(0);
   };
   const barIsGone = async () => {
