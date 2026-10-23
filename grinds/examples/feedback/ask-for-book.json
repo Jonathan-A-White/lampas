@@ -1,0 +1,16 @@
+{
+  "description": "A book he asked for from Ask for a book: typed by title, with the kind the place presets (a devotional from Settings > Daily). The mill forwards it and answers that it was sent.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "book",
+    "title": "Spurgeon, Faith's Checkbook",
+    "kindWanted": "devotional",
+    "why": "I would read it each morning in Today.",
+    "app_version": "0.1.420"
+  },
+  "expect": {
+    "status": {
+      "equals": "sent"
+    }
+  }
+}

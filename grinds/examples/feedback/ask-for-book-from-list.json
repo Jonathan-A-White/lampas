@@ -1,0 +1,19 @@
+{
+  "description": "A book he picked from his own Logos list in Ask for a book: the request carries the row's Resource ID, Type, Series and ReferenceSupersets, so the makers can add it to the rules without research.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "book",
+    "title": "Exposition of Paul's Epistle to the Romans",
+    "resource": "LLS:HENDRIKSENROM",
+    "type": "text.monograph.commentary.bible",
+    "series": "New Testament Commentary",
+    "refs": "bible.66.1.1-66.16.27",
+    "kindWanted": "commentary",
+    "app_version": "0.1.420"
+  },
+  "expect": {
+    "status": {
+      "equals": "sent"
+    }
+  }
+}

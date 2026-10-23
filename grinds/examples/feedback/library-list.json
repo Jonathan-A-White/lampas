@@ -1,0 +1,24 @@
+{
+  "description": "The whole list of a Logos import, sent once from Ask the makers about these: the counts by Logos type of the books Lampas cannot use yet and, attached as library.csv (ResourceId, Type, Title, Series, ReferenceSupersets; under 200 KB), the rows it could use. The mill forwards it with the file and answers that it was sent.",
+  "schemaVersion": "1",
+  "photos": [
+    "library.csv"
+  ],
+  "request": {
+    "kind": "library",
+    "books": 4795,
+    "usable": 412,
+    "counts": {
+      "text.monograph.ancient-manuscript": 838,
+      "text.monograph.commentary.bible": 670,
+      "text.monograph.lexicon": 52
+    },
+    "catalogue_version": "2026-10-22",
+    "app_version": "0.1.420"
+  },
+  "expect": {
+    "status": {
+      "equals": "sent"
+    }
+  }
+}

@@ -4,12 +4,16 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { importNote, verseListCount } from '../data/repositories';
+import { libraryAsked } from '../data/repositories/bookRequests';
+import { useAiAllowed } from '../gate/licenceContext';
+import { askedLine } from '../services/bookRequests';
 import { backTo, libraryOf, navigate, openLibrary, useAddress } from '../nav/route';
 import { CATALOGUE, entryOf, KINDS, type CatalogueEntry } from '../resources/catalogue';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { matching } from '../ui/listFilter';
+import { AskForBook } from './AskForBook';
 import { ImportLibrary } from './ImportLibrary';
 import { KindPage } from './KindPage';
 import { countLine, countsOf, infoOf, KIND_INFO, STATE_LABEL } from './kinds';
@@ -34,6 +38,9 @@ function LibraryHome() {
   const states = useShelf();
   const note = useLiveQuery(async () => (await importNote()) ?? null, []);
   const lists = useLiveQuery(verseListCount, []);
+  const asked = useLiveQuery(async () => (await libraryAsked()) ?? null, []);
+  const ai = useAiAllowed();
+  const [asking, setAsking] = useState(false);
   const [query, setQuery] = useState('');
   const on = KINDS.reduce((sum, kind) => sum + (states ? countsOf(kind, states).on : 0), 0);
   const searching = query.trim() !== '';
@@ -58,9 +65,21 @@ function LibraryHome() {
                   Imported {importedOn(note.at)} from a list of {note.books.toLocaleString('en')} books{note.newSince > 0 ? ` · ${note.newSince} new since` : ''}.
                 </p>
               ) : null}
-              <button type="button" className={`${BUTTON} mt-2`} onClick={() => openLibrary({ import: true })}>
-                {note ? 'Import again' : 'Import'}
-              </button>
+              {asked ? (
+                <p data-testid="library-asked" className="mt-1 text-base text-muted">
+                  {askedLine(asked)}
+                </p>
+              ) : null}
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button type="button" className={BUTTON} onClick={() => openLibrary({ import: true })}>
+                  {note ? 'Import again' : 'Import'}
+                </button>
+                {ai ? (
+                  <button type="button" className={BUTTON} onClick={() => setAsking(true)}>
+                    Ask for a book
+                  </button>
+                ) : null}
+              </div>
             </>
           ) : (
             <>
@@ -74,7 +93,17 @@ function LibraryHome() {
                 <button type="button" className={BUTTON} onClick={() => openLibrary({ kind: 'lexicon' })}>
                   Tick by hand
                 </button>
+                {ai ? (
+                  <button type="button" className={BUTTON} onClick={() => setAsking(true)}>
+                    Ask for a book
+                  </button>
+                ) : null}
               </div>
+              {asked ? (
+                <p data-testid="library-asked" className="mt-2 text-base text-muted">
+                  {askedLine(asked)}
+                </p>
+              ) : null}
             </>
           )}
         </section>
@@ -126,6 +155,7 @@ function LibraryHome() {
         )}
         <div className="h-[var(--lp-end-inset)]" aria-hidden="true" />
       </main>
+      {asking ? <AskForBook onClose={() => setAsking(false)} /> : null}
     </>
   );
 }

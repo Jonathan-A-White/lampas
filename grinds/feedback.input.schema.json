@@ -1,46 +1,104 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Feedback Request 1",
-  "description": "Feedback to the makers, forwarded to the Mayor. Eight kinds: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers), grammar-book (Ask for another book: a grammar book of his Logos library), devotional (Settings > Daily > Request a devotional: a devotional of his Logos library, by title), and the four short forms of Settings > Ask for more: approach (an approach or programme), study-resource, text and translation.",
+  "description": "Feedback to the makers, forwarded to the Mayor. Five forms: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers), book (Ask for a book: one book of his Logos library, by title, with the row's Logos details when he picked it from his list), library (Ask the makers about these: the whole list of an import, once, as counts by Logos type with the usable rows attached as library.csv), and the three short forms of Settings > Ask for more: approach (an approach or programme), text and translation.",
   "type": "object",
   "anyOf": [
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "text", "credit", "app_version"],
+      "required": [
+        "kind",
+        "text",
+        "credit",
+        "app_version"
+      ],
       "properties": {
         "kind": {
           "description": "grammar-approach asks for another way of teaching Greek grammar.",
           "type": "string",
-          "enum": ["grammar-approach"]
+          "enum": [
+            "grammar-approach"
+          ]
         },
-        "text": { "description": "What approach he wants and how it teaches, in his words.", "type": "string", "minLength": 1, "maxLength": 1200 },
+        "text": {
+          "description": "What approach he wants and how it teaches, in his words.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200
+        },
         "credit": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["name"],
+          "required": [
+            "name"
+          ],
           "properties": {
-            "name": { "description": "Who made the approach, so the factory can credit them.", "type": "string", "minLength": 1, "maxLength": 120 },
-            "url": { "description": "A link to the approach, when there is one.", "type": "string", "minLength": 1, "maxLength": 300 }
+            "name": {
+              "description": "Who made the approach, so the factory can credit them.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "url": {
+              "description": "A link to the approach, when there is one.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            }
           }
         },
-        "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
+        "app_version": {
+          "description": "The Lampas build he sent it from.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
       }
     },
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "text", "summary", "screen", "reference", "app_version"],
+      "required": [
+        "kind",
+        "text",
+        "summary",
+        "screen",
+        "reference",
+        "app_version"
+      ],
       "properties": {
         "kind": {
           "description": "tutor-ask is something he asked the tutor for that Lampas does not do (work with another app, a new setting, a change); the tutor offered to pass it on and he tapped Send this to the makers.",
           "type": "string",
-          "enum": ["tutor-ask"]
+          "enum": [
+            "tutor-ask"
+          ]
         },
-        "text": { "description": "What he asked the tutor, in his words: at most 4000 characters, as long as a question to the tutor may be.", "type": "string", "minLength": 1, "maxLength": 4000 },
-        "summary": { "description": "The tutor's one-line summary of the ask.", "type": "string", "minLength": 1, "maxLength": 200 },
-        "screen": { "description": "The screen he asked from: its name, or Reader for a talk about the text.", "type": "string", "minLength": 1, "maxLength": 40 },
-        "reference": { "description": "What the talk was about: the screen's name, or the chapter or verse (Romans 8:28).", "type": "string", "minLength": 1, "maxLength": 80 },
+        "text": {
+          "description": "What he asked the tutor, in his words: at most 4000 characters, as long as a question to the tutor may be.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "summary": {
+          "description": "The tutor's one-line summary of the ask.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "screen": {
+          "description": "The screen he asked from: its name, or Reader for a talk about the text.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "reference": {
+          "description": "What the talk was about: the screen's name, or the chapter or verse (Romans 8:28).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
         "facts": {
           "description": "What the screen showed him, as the tutor was told it. Left out when the talk was about the text.",
           "type": "array",
@@ -48,44 +106,198 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["label", "value"],
+            "required": [
+              "label",
+              "value"
+            ],
             "properties": {
-              "label": { "type": "string", "minLength": 1, "maxLength": 40 },
-              "value": { "type": "string", "minLength": 1, "maxLength": 200 }
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
             }
           }
         },
-        "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
+        "app_version": {
+          "description": "The Lampas build he sent it from.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
       }
     },
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "text", "app_version"],
+      "required": [
+        "kind",
+        "title",
+        "app_version"
+      ],
       "properties": {
         "kind": {
-          "description": "grammar-book asks for another grammar book of his Logos library to be added to the idea sheets' Read more.",
+          "description": "book asks for one book of his Logos library to be added: a grammar for the idea sheets' Read more, a devotional for Which devotional, a commentary, lexicon, Greek text or interlinear, or any book he wants Lampas to open.",
           "type": "string",
-          "enum": ["grammar-book"]
+          "enum": [
+            "book"
+          ]
         },
-        "text": { "description": "The book's title, and its author if he gave one, as he typed it (Mounce, Basics of Biblical Greek).", "type": "string", "minLength": 1, "maxLength": 200 },
-        "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
+        "title": {
+          "description": "The book's title, and its author if he gave one, as he typed it (Mounce, Basics of Biblical Greek) or as his Logos list names it.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "resource": {
+          "description": "Optional. The Logos Resource ID of the row he picked from his own list (LLS:46.30.18): the Mayor adds it to the rules without research. Left out when he typed the title.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "type": {
+          "description": "Optional. The row's Logos Type (text.monograph.commentary.bible). Only with a picked row.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "series": {
+          "description": "Optional. The row's Series, when it has one. Only with a picked row.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "refs": {
+          "description": "Optional. The row's ReferenceSupersets cell, tokens separated by tabs (cut at a whole token when long). Only with a picked row.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "kindWanted": {
+          "description": "Optional. The kind of book he wants, when the place he asked from names one (the idea sheet asks for a grammar, Settings > Daily for a devotional).",
+          "type": "string",
+          "enum": [
+            "lexicon",
+            "grammar",
+            "greek-text",
+            "interlinear",
+            "commentary",
+            "bible",
+            "devotional"
+          ]
+        },
+        "why": {
+          "description": "Optional. Why it would help him, in his words. Left out when he wrote nothing.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200
+        },
+        "app_version": {
+          "description": "The Lampas build he sent it from.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
       }
     },
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "name", "app_version"],
+      "required": [
+        "kind",
+        "books",
+        "usable",
+        "counts",
+        "catalogue_version",
+        "app_version"
+      ],
       "properties": {
         "kind": {
-          "description": "An ask that would grow the app, from a short form of Settings > Ask for more: approach (an approach or programme for learning Greek), study-resource (a lexicon, grammar, tool or website), text (a text Lampas does not have: the Septuagint, another edition) or translation (an English translation to read beside the Greek). devotional is a title from Settings > Daily > Request a devotional (name only).",
+          "description": "library is the whole list of an import, sent once when he taps Ask the makers about these. The usable rows are the attached library.csv (ResourceId, Type, Title, Series, ReferenceSupersets; text/csv, under 200 KB), never in this request.",
           "type": "string",
-          "enum": ["approach", "study-resource", "text", "translation", "devotional"]
+          "enum": [
+            "library"
+          ]
         },
-        "name": { "description": "What he wants, by name, as he typed it (The ESV, Logeion, the Polis method).", "type": "string", "minLength": 1, "maxLength": 120 },
-        "text": { "description": "Optional. Why he wants it, or what he would use it for, in his words. Left out when he wrote nothing.", "type": "string", "minLength": 1, "maxLength": 1200 },
-        "url": { "description": "Optional. A link to it, when he gave one.", "type": "string", "minLength": 1, "maxLength": 300 },
-        "app_version": { "description": "The Lampas build he sent it from.", "type": "string", "minLength": 1, "maxLength": 80 }
+        "books": {
+          "description": "How many books the Logos list he imported has.",
+          "type": "number",
+          "minimum": 0
+        },
+        "usable": {
+          "description": "How many rows library.csv holds: the books Lampas could use and does not open yet (commentaries on the New Testament, Greek grammars and lexicons, Greek texts, interlinears, devotionals; never manuscripts).",
+          "type": "number",
+          "minimum": 0
+        },
+        "counts": {
+          "description": "How many books of each Logos type Lampas cannot use yet (the app names at most the 40 types with the most books).",
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "catalogue_version": {
+          "description": "The version of Lampas's catalogue of Logos books when he sent it; the next ask waits for a new one or 30 days.",
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "app_version": {
+          "description": "The Lampas build he sent it from.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name",
+        "app_version"
+      ],
+      "properties": {
+        "kind": {
+          "description": "An ask that would grow the app, from a short form of Settings > Ask for more: approach (an approach or programme for learning Greek), text (a text Lampas does not have: the Septuagint, another edition) or translation (an English translation to read beside the Greek).",
+          "type": "string",
+          "enum": [
+            "approach",
+            "text",
+            "translation"
+          ]
+        },
+        "name": {
+          "description": "What he wants, by name, as he typed it (The ESV, Logeion, the Polis method).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "text": {
+          "description": "Optional. Why he wants it, or what he would use it for, in his words. Left out when he wrote nothing.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200
+        },
+        "url": {
+          "description": "Optional. A link to it, when he gave one.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "app_version": {
+          "description": "The Lampas build he sent it from.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
       }
     }
   ]

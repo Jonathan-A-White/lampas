@@ -389,6 +389,11 @@ export async function importNote(): Promise<ImportNote | undefined> {
   return undefined;
 }
 
+/** The books of the kept list that Lampas does not open (not matched at the last import or re-match): what Ask for a book searches. Empty while no list is kept. */
+export async function unmatchedRows(): Promise<ExportedRow[]> {
+  return (await db.exportRows.toArray()).filter((r) => !r.matched);
+}
+
 /** A book an import turns on, and the state it takes. */
 export interface Turning {
   entry: CatalogueEntry;

@@ -141,30 +141,39 @@ so a status that comes back can be matched to it. A tutor-ask keeps the tutor's 
 Settings > Ask for more (mw-hqd5bz.37, `src/settings/AskMoreScreen.tsx`, #/askmore) leads him here for asks that would grow the app (an approach or programme, a study
 resource, a text, a translation): its first button, **Ask the tutor**, opens the talk of the screen 'Ask for more' with "I'd like Lampas to have " in the composer
 (TalkHost's `shared`, not sent), and the instructions' part 270 has the tutor offer `feedback_offer` for such an ask. Under it, **Or fill in a form**: one short
-form per kind, whose Send is a `feedback` grist of kind `approach`, `study-resource`, `text` or `translation` (`buildMoreRequest`: `name`, `text?` (why), `url?`);
-its request row keeps `name: why` as its `text`.
+form for an approach or programme, a text and a translation, whose Send is a `feedback` grist of kind `approach`, `text` or `translation` (`buildMoreRequest`: `name`, `text?` (why), `url?`);
+its request row keeps `name: why` as its `text`. **A study resource** between them has no form of its own: it opens Ask for a book (below).
 
-### Ask for another book (mw-5r3p30.382, PROVISIONAL)
+### Ask for a book (mw-rfjjzd.14, PROVISIONAL; docs/design/library-at-scale.md section 6)
 
-Settings > Study resources > Logos > Grammar books ends with **Ask for another book** (`src/settings/controls/askBook.tsx` AskForBook; not drawn without a licence), a button that opens the box in place (the Logos card stays short enough that Accordance below it is one screen away, `tests/e2e/study-resources.spec.ts`): a
-'Book title', and the author if he knows it (at most `MAX_BOOK_CHARS` 200, counted not cut), and **Send**. It is a third kind of the one sender: `submitFeedback` with a
-`grammar-book` request `{kind, text, app_version}` (`buildBookRequest`; the input schema's third branch, `grinds/examples/feedback/grammar-book.json`), kept in `requests`
-with his title as `text` (Your requests names it 'Grammar book'; the tutor's `requests` lines use the text). The line under the box says **Asked: <title>** (the three newest
-`grammar-book` rows). Nothing is added to the app until a story adds the book's entry in `src/resources/grammarBooks.ts`; the Mayor weighs each against `VISION.md`.
-The request is kept on the phone first (settings store 'bookRequestsWaiting', `data/repositories/bookRequests.ts`), then sent by `src/services/bookRequests.ts`: offline
-(`navigator.onLine === false`) or with the mill unreachable it stays and the line says **Waiting to send: <title>** (with 'It goes when you are back online.', or the
-failure title and **Try again**); it goes by itself on the window's `online` event (`startBookRequests`, called from `main.tsx`, which also sends what waits at the app's start) and on Try again,
-one send at a time and in the order asked. A request is forgotten when its grist is out (`onSent`), so a receipt that never comes does not send it twice. Note that Talk
-and Ask for another approach do NOT wait offline (they show the failure and Retry); only this one queues. `features/ask-book.feature`, `tests/e2e/ask-book.spec.ts`.
+One sheet, `src/library/AskForBook.tsx` (a `useSheetBack` dialog, drawn in the body), replaced the four boxes that asked for a book (Settings > Grammar books > Ask for another book, Settings > Daily > Request
+a devotional, Ask for more's study-resource form). It opens from the Library card (**Ask for a book**), the idea sheet (**Ask for a grammar ›**, with Logos On: kind Grammar), Settings > Daily (**Ask for a devotional**, the
+row `request.devotional`, a door not a setting: kind Devotional) and Ask for more (**A study resource**): the place presets the **Kind of book** select (`KINDS`; Any kind for the rest). None of them is drawn without a licence.
+With a Logos list kept (Dexie `exportRows`, `unmatchedRows()`: the rows the catalogue did not list) a search over their title, series and Resource ID shows at most 30; a pick fills the request with the row's Resource ID, Type, Series
+and ReferenceSupersets; without one, or by "or type a title", the title is typed (at most `MAX_BOOK_CHARS` 200). **Why would it help?** is optional (`MAX_FEEDBACK_CHARS`, counted not cut). One line (`ask-sends`) says what is sent.
+
+**Send** is a `book` request `{kind, title, resource?, type?, series?, refs?, kindWanted?, why?, app_version}` (`buildBookRequest`; the input schema's `book` branch, `grinds/examples/feedback/ask-for-book.json`
+and `ask-for-book-from-list.json`; `refs` is cut at a whole token to `MAX_REFS` 600), through `submitFeedback`, the one sender. It replaced the `grammar-book`, `devotional` and `study-resource` kinds (a phone that sent one
+keeps its row, which Your requests still names). The row in `requests` keeps the title as `text` and the Resource ID as `resource`. Before it goes, `bookRefusal` (`src/services/bookRequests.ts`) refuses a book the
+catalogue already lists (by Resource ID, or by title, short name or 'author, title': **Lampas opens this one: turn it On**) and a book already asked (a `book`, `grammar-book` or `devotional` row, or one still waiting; by
+Resource ID when both have one, else by the title with case, marks and spaces ignored: **You asked for this on 21 Oct. Your requests follows it.**), and sends nothing.
+
+The request is kept on the phone first (settings store 'bookRequestsWaiting', `data/repositories/bookRequests.ts`; an entry the old box kept, with its title as `text`, is still read), then sent by `src/services/bookRequests.ts`: offline
+(`navigator.onLine === false`) or with the mill unreachable it stays and the sheet says **Waiting to send: <title>** (with 'It goes when you are back online.', or the failure title and **Try again**); it goes by itself on
+the window's `online` event (`startBookRequests`, called from `main.tsx` and from the sheet) and on Try again, one send at a time and in the order asked. A request is forgotten when its grist is out (`onSent`), so a receipt that
+never comes does not send it twice. Note that Talk and Ask for another approach do NOT wait offline (they show the failure and Retry); only a book queues. `features/ask-for-book.feature`.
+
+**The whole list, once.** The import's result screen (`src/library/ImportLibrary.tsx`) has **Ask the makers about these** while the list holds usable books and the phone is licensed. It sends one `library` request
+`{kind, books, usable, counts, catalogue_version, app_version}` (`buildLibraryRequest`; `counts` is every unmatched row by Logos type, the 40 largest) with one attachment, `library.csv` (`text/csv`: ResourceId, Type, Title, Series,
+ReferenceSupersets, under 200 KB, `libraryCsv` in `src/library/usableRows.ts`) holding only the usable rows: commentaries on the New Testament, Greek lexicons and grammars, Greek texts, interlinears of the New Testament and
+devotionals (`usableKind`); never manuscripts, English Bibles, Old Testament books or tools. `feedback.json` takes `text/csv` beside the pictures, bsv-kit's `GRIST_FILE_TYPES` carries it and `src/services/mill.ts` checks it. Flood
+control (`askAboutLibrary`, `libraryRefusal`): a second one is refused until the catalogue version has changed or 30 days have passed; the note (meta `libraryAsked`: when, version, books) shows as **Asked on 21 Oct: 412 books. The
+makers add what fits with each update.** on the result screen in place of the button and on the Library card. Nothing is sent until he taps. Both kinds are kept in `requests` and Your requests names them **Book** and **Your Logos
+library**.
 
 ### Today's devotional (mw-5r3p30.680, PROVISIONAL)
 
 "Pick a different devotional" while Which devotional is Random must not turn Random into a fixed choice, so the registry has `todaysDevotional` (declared in `src/settings/definitions/daily.ts`, its entry in `src/settings/registry.ts`, its row `TodaysDevotionalControl`): the devotional Today shows on the phone's date, read as its Logos id. The tutor writes `"another"` (or a Logos id for today alone); the write ends in `dailyStore.ts` `pickAnotherDevotional` / `setDevotionalPick`, the one function the Another button on Today also taps, and writes nothing to Which devotional. While a devotional is named the entry writes nothing and its row is not drawn: a different one is then a change of Which devotional (the bible-talk instructions say which to use; `grinds/examples/bible-talk/devotional-another-*.json`). `tests/unit/todays-devotional.test.tsx`, `tests/e2e/today.spec.ts`.
-
-### Request a devotional (mw-1fwagb.8, PROVISIONAL)
-
-Settings > Daily ends with **Request a devotional** (`src/settings/controls/requestDevotional.tsx`, the row `request.devotional` in `src/settings/rows.ts`; not a setting, so the tutor neither reads nor changes it, `isTalkable`), a button that opens the box in place: a 'Devotional title' (at most `MAX_MORE_NAME` 120, counted not cut) and **Send**. It is the same one sender: `submitFeedback` with a
-`devotional` request `{kind, name, app_version}` (`buildDevotionalRequest`; the input schema's fourth branch, `grinds/examples/feedback/request-devotional.json`), kept in `requests` with the title as `text` (Your requests names it 'Devotional'). It does not queue offline (a failure shows with **Retry**); with no licence the box says it needs one. The row then says **Sent: the factory has it**. Nothing is added to the app until the Mayor finds its Logos id and adds it to `src/data/daily/devotionals.ts`. `tests/e2e/request-devotional.spec.ts`.
 
 ### Your requests
 

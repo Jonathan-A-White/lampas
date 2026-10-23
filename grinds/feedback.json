@@ -7,7 +7,7 @@
   "attachments": {
     "min": 0,
     "max": 4,
-    "mime": ["image/jpeg", "image/png", "image/webp"],
+    "mime": ["image/jpeg", "image/png", "image/webp", "text/csv"],
     "maxBytes": 8388608
   }
 }

@@ -150,12 +150,14 @@ export interface ExportedRow {
 export interface RequestRow {
   /** the grist's transaction id: the key */
   txid: string;
-  /** 'grammar-approach', 'tutor-ask', 'grammar-book', 'devotional' or one of the Ask for more kinds (src/services/feedback.ts FeedbackKind) */
+  /** 'grammar-approach', 'tutor-ask', 'book', 'library' or one of the Ask for more kinds (src/services/feedback.ts FeedbackKind); an older phone's rows may say 'grammar-book', 'devotional' or 'study-resource' */
   kind: string;
   /** the tutor's one-line summary of the ask (tutor-ask) */
   summary?: string;
-  /** his words (grammar-approach: the approach he described; grammar-book: the title he typed; devotional: its title) */
+  /** his words (grammar-approach: the approach he described; book: its title; library: a line that counts the books) */
   text?: string;
+  /** a book: the Logos Resource ID he picked, which finds the same ask again (no index, no version bump) */
+  resource?: string;
   /** the build that sent it (config __APP_VERSION__) */
   app_version: string;
   /** when the mill took it, ms since the epoch */

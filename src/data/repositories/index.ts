@@ -105,7 +105,7 @@ export { getSavedGoalText } from './goalSaved';
 export { isTermKnown, listKnownTerms, setTermKnown } from './grammar';
 export { getGrammarBooks, getStudyResources, getWorks, setGrammarBooks, setResourceOn, setResourceOption, setWorks } from './resources';
 export type { StudyResources } from './resources';
-export { afterCatalogueUpdate, applyImport, devotionalDraw, grammarBookTicks, importNote, importShelf, lexiconTicks, MAX_PINS, pinnedOf, planImport, rematch, rematchImport, setDevotionalDraw, setKind, setState, shelfOf, stateOf, workTicks } from './library';
+export { afterCatalogueUpdate, applyImport, devotionalDraw, grammarBookTicks, importNote, importShelf, lexiconTicks, MAX_PINS, pinnedOf, planImport, rematch, rematchImport, setDevotionalDraw, setKind, setState, shelfOf, stateOf, unmatchedRows, workTicks } from './library';
 export type { ImportNote, ImportPlan, ImportRow, LibraryRow, ShelfRefusal, ShelfResult, ShelfState, Turning } from './library';
 export { dayOf, lastUsageDayBefore, listUsage, recordUsage, savedSettings, usageCounts } from './usage';
 export type { UsageCounts, UsageRow } from './usage';

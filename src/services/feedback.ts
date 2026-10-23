@@ -1,13 +1,15 @@
-// src/services/feedback.ts — feedback to the factory: a grist of the kind 'feedback' (grinds/feedback.json) with the app's version,
-// his words and, for a grammar approach, who to credit and up to four pictures attached; or, for an ask the tutor could not meet, the
-// tutor's one-line summary and the screen he asked from; or, for a grammar book of his Logos library, the title he typed; or, for a devotional (Settings > Daily > Request a devotional), its title; or, for an ask of Settings >
-// Ask for more (an approach or programme, a study resource, a text, a translation), what he wants, why and a link. This is the ONE sender:
-// Ask for another approach, Ask for another book, the Ask for more forms and the tutor's 'Send this to the makers' all call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The wire work is src/services/tutor.ts's askGrind. The grind forwards
-// ("forward": "mayor"): no model reads it, the mill mails it to the Mayor with the pictures and answers {"status":"sent"}.
+// src/services/feedback.ts — feedback to the factory: a grist of the kind 'feedback' (grinds/feedback.json) with the app's version, his words and, for a grammar approach, who to credit and up to
+// four pictures attached; or, for an ask the tutor could not meet, the tutor's one-line summary and the screen he asked from; or, for a book (Ask for a book, src/library/AskForBook.tsx), its
+// title and, when he picked it from his Logos list, the row's Resource ID, Type, Series and ReferenceSupersets; or, for the whole of an import's list (Ask the makers about these), the counts by Logos
+// type and the usable rows as one attached library.csv; or, for an ask of Settings > Ask for more (an approach or programme, a text, a translation), what he wants, why and a link. This is the ONE
+// sender: Ask for another approach, Ask for a book, the Ask for more forms and the tutor's 'Send this to the makers' all call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The
+// wire work is src/services/tutor.ts's askGrind. The grind forwards ("forward": "mayor"): no model reads it, the mill mails it to the Mayor with the pictures or the file and answers {"status":"sent"}.
 import { createRequests, GROWN_UP } from 'pwa-kit/requests';
 import { publish } from '../events/bus';
+import type { BookAsk } from '../data/repositories/bookRequests';
 import { keepRequest, requestStore } from '../data/repositories/requests';
 import { getDeviceKeyBytes } from './deviceKey';
+import type { Kind } from '../resources/catalogue';
 import { MILL_MAX_FILES, type MillFile } from './mill';
 import { askGrind, TutorError, type AskOptions } from './tutor';
 import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
@@ -55,18 +57,44 @@ export interface TutorAskRequest {
   app_version: string;
 }
 
-/** The most a grammar book's title (and author) may be: the input schema's third branch. */
+/** The most a book's title (and author) may be: the input schema's `book` branch. */
 export const MAX_BOOK_CHARS = 200;
+/** The most a book's Resource ID, Logos type and series may be, and its ReferenceSupersets cell (cut at a whole token when longer). */
+export const MAX_RESOURCE_CHARS = 80;
+export const MAX_TYPE_CHARS = 80;
+export const MAX_SERIES_CHARS = 200;
+export const MAX_REFS = 600;
 
-/** What the grind is sent when he asks for another grammar book of his Logos library (Settings > Grammar books > Ask for another book). */
-export interface GrammarBookRequest {
-  kind: 'grammar-book';
-  text: string;
+/** What the grind is sent when he asks for a book (Ask for a book): its title as he typed it or the picked row's, and from a pick the row's Logos details, so the Mayor can add it to the rules
+ * without research; the kind of book he wants (a grammar, a devotional) and why, when he said. */
+export interface BookRequest {
+  kind: 'book';
+  title: string;
+  resource?: string;
+  type?: string;
+  series?: string;
+  refs?: string;
+  kindWanted?: Kind;
+  why?: string;
   app_version: string;
 }
 
-/** The kinds of ask on Settings > Ask for more, each a short form (the input schema's fourth branch): an approach or programme, a study resource, a text, a translation. */
-export const MORE_KINDS = ['approach', 'study-resource', 'text', 'translation'] as const;
+/** The most types a library request counts: the ones with the most books. */
+export const MAX_COUNT_TYPES = 40;
+
+/** What the grind is sent, once for an import, when he taps Ask the makers about these: how many books the list has, how many rows the attached library.csv holds, the counts by Logos type of the books
+ * Lampas cannot use, and the catalogue version he sent it under. The rows themselves are the file, not the request. */
+export interface LibraryRequest {
+  kind: 'library';
+  books: number;
+  usable: number;
+  counts: Record<string, number>;
+  catalogue_version: string;
+  app_version: string;
+}
+
+/** The kinds of ask on Settings > Ask for more, each a short form (the input schema's last branch): an approach or programme, a text, a translation. A study resource is asked for as a book. */
+export const MORE_KINDS = ['approach', 'text', 'translation'] as const;
 export type MoreKind = (typeof MORE_KINDS)[number];
 
 /** The most the name of what he asks for may be. */
@@ -81,16 +109,7 @@ export interface MoreRequest {
   app_version: string;
 }
 
-/** What the grind is sent when he asks for a devotional of his Logos library (Settings > Daily > Request a devotional): its title as he typed it. The Mayor adds
- * it to src/data/daily/devotionals.ts when he finds its Logos id. It is the fourth branch's shape, so the title is the name's limit. */
-export interface DevotionalRequest {
-  kind: 'devotional';
-  name: string;
-  text?: undefined;
-  app_version: string;
-}
-
-export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | GrammarBookRequest | MoreRequest | DevotionalRequest;
+export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | BookRequest | LibraryRequest | MoreRequest;
 
 /** The kinds of feedback; the bus announces one when the mill has it. */
 export type FeedbackKind = FeedbackRequest['kind'];
@@ -117,14 +136,41 @@ export function buildFeedbackRequest(text: string, creditName: string, creditUrl
   };
 }
 
-/** The request for a grammar book: the title as he typed it, with the author if he gave one. */
-export function buildBookRequest(title: string): GrammarBookRequest {
-  return { kind: 'grammar-book', text: title.trim(), app_version: __APP_VERSION__ };
+/** `refs` cut at a whole token (the cell's tokens are separated by tabs) so it fits `max`. */
+function cutRefs(refs: string, max: number): string {
+  if (refs.length <= max) return refs;
+  const kept: string[] = [];
+  let length = 0;
+  for (const token of refs.split('\t')) {
+    length += token.length + (kept.length ? 1 : 0);
+    if (length > max) break;
+    kept.push(token);
+  }
+  return kept.join('\t');
 }
 
-/** The request for a devotional: the title as he typed it, trimmed. */
-export function buildDevotionalRequest(title: string): DevotionalRequest {
-  return { kind: 'devotional', name: title.trim(), app_version: __APP_VERSION__ };
+/** The request for a book: the title trimmed, and each other field only when it was given (an empty one is left out). */
+export function buildBookRequest(ask: BookAsk): BookRequest {
+  const field = (value: string | undefined, max = Infinity): string => (value?.trim() ?? '').slice(0, max);
+  const [resource, type, series, why] = [field(ask.resource, MAX_RESOURCE_CHARS), field(ask.type, MAX_TYPE_CHARS), field(ask.series, MAX_SERIES_CHARS), field(ask.why)];
+  const refs = cutRefs(field(ask.refs), MAX_REFS);
+  return {
+    kind: 'book',
+    title: ask.title.trim(),
+    ...(resource ? { resource } : {}),
+    ...(type ? { type } : {}),
+    ...(series ? { series } : {}),
+    ...(refs ? { refs } : {}),
+    ...(ask.kindWanted ? { kindWanted: ask.kindWanted } : {}),
+    ...(why ? { why } : {}),
+    app_version: __APP_VERSION__,
+  };
+}
+
+/** The request for the whole list: the counts of the types with the most books (at most MAX_COUNT_TYPES), the number of rows in the file, and the catalogue version. */
+export function buildLibraryRequest(list: { books: number; usable: number; counts: Record<string, number>; version: string }): LibraryRequest {
+  const counts = Object.fromEntries(Object.entries(list.counts).sort((a, b) => b[1] - a[1]).slice(0, MAX_COUNT_TYPES));
+  return { kind: 'library', books: list.books, usable: list.usable, counts, catalogue_version: list.version, app_version: __APP_VERSION__ };
 }
 
 /** The request of an Ask for more form: the name trimmed; why and the link only when he wrote them (https:// put in front of a bare link). */
@@ -161,19 +207,23 @@ export function isFeedbackAnswer(value: unknown): value is FeedbackAnswer {
   return Object.keys(answer).length === 1 && answer.status === 'sent';
 }
 
-/** What the requests table keeps of a request: the tutor's summary for a tutor-ask, his words for a grammar approach or book, and for an
- * Ask for more form the name with why after it ('The ESV: To read it beside the Greek.'). */
+/** What the requests table keeps of a request: the tutor's summary for a tutor-ask, his words for a grammar approach, the title of a book (and its Resource ID, which finds it again), a line that
+ * counts the books of a library request, and for an Ask for more form the name with why after it ('The ESV: To read it beside the Greek.'). */
 function kept(request: FeedbackRequest, txid: string, sentAt: number): Parameters<typeof keepRequest>[0] {
   const what =
     request.kind === 'tutor-ask'
       ? { summary: request.summary }
-      : 'name' in request
-        ? { text: request.text ? `${request.name}: ${request.text}` : request.name }
-        : { text: request.text };
+      : request.kind === 'book'
+        ? { text: request.title, ...(request.resource ? { resource: request.resource } : {}) }
+        : request.kind === 'library'
+          ? { text: `My Logos library: ${request.usable} of ${request.books} books` }
+          : 'name' in request
+            ? { text: request.text ? `${request.name}: ${request.text}` : request.name }
+            : { text: request.text };
   return { txid, kind: request.kind, ...what, app_version: request.app_version, sentAt };
 }
 
-/** Sends the feedback with its pictures (JPEG files, at most MAX_PICTURES) and waits for the mill's receipt. Throws a TutorError. */
+/** Sends the feedback with its files (pictures, at most MAX_PICTURES, or the library.csv) and waits for the mill's receipt. Throws a TutorError. */
 function sendFeedback(request: FeedbackRequest, files: MillFile[], options: AskOptions): Promise<FeedbackAnswer> {
   return askGrind(FEEDBACK_KIND, request, isFeedbackAnswer, { ...options, files, untimed: true });
 }

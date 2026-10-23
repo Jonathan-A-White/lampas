@@ -10,6 +10,7 @@ import { useAiAllowed } from '../gate/licenceContext';
 import { backTo, openLicence } from '../nav/route';
 import { ScreenHeader, HeaderButton } from '../ScreenHeader';
 import { SENT_LINE } from '../AskApproachSheet';
+import { AskForBook } from '../library/AskForBook';
 import { buildMoreRequest, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_MORE_NAME, MORE_KINDS, submitFeedback, type MoreKind } from '../services/feedback';
 import type { TalkScope } from '../services/talk';
 import { scopeRef } from '../services/talk';
@@ -27,18 +28,15 @@ export const ASK_BEGUN = "I'd like Lampas to have ";
 const NAME = SCREEN_NAMES.askmore;
 
 /** What each form asks, in his words. */
+/** A study resource is asked for as a book: its button opens Ask for a book (mw-rfjjzd.14), not a form of its own. */
+const STUDY_RESOURCE = 'A study resource';
+
 const FORMS: Record<MoreKind, { title: string; what: string; whatHint: string; why: string }> = {
   approach: {
     title: 'An approach or programme',
     what: 'Which approach or programme?',
     whatHint: 'Its name, and who made it if you know: a course, a method, a reading programme.',
     why: 'How does it teach, and why do you want it?',
-  },
-  'study-resource': {
-    title: 'A study resource',
-    what: 'Which resource?',
-    whatHint: 'A lexicon, a grammar, a tool or a website.',
-    why: 'What would you use it for?',
   },
   text: {
     title: 'A text',
@@ -57,7 +55,7 @@ const FORMS: Record<MoreKind, { title: string; what: string; whatHint: string; w
 /** What the tutor is told of the page. */
 const FACTS: ScreenFact[] = [
   { label: 'For', value: 'Asks that would grow Lampas: an approach or programme, a study resource, a text or a translation it does not have' },
-  { label: 'Forms', value: MORE_KINDS.map((k) => FORMS[k].title).join(', ') },
+  { label: 'Forms', value: [FORMS.approach.title, STUDY_RESOURCE, FORMS.text.title, FORMS.translation.title].join(', ') },
 ];
 
 const FIELD = 'block w-full rounded-lg border border-line bg-canvas px-3 text-lg text-fg disabled:opacity-60';
@@ -202,6 +200,7 @@ export function AskMoreScreen() {
   const ai = useAiAllowed();
   const [talking, setTalking] = useState(false);
   const [opened, setOpened] = useState<MoreKind | null>(null);
+  const [asking, setAsking] = useState(false);
   useReportScreen({ name: NAME, facts: FACTS });
   const scope = useMemo<TalkScope>(() => ({ title: NAME, chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: NAME, facts: FACTS }) }), []);
   const shared = useMemo(() => ({ files: [], text: ASK_BEGUN }), []);
@@ -226,6 +225,18 @@ export function AskMoreScreen() {
             <h2 className="pt-6 pb-2 text-lg font-semibold">Or fill in a form</h2>
             {MORE_KINDS.map((kind) => (
               <div key={kind}>
+                {kind === 'text' ? (
+                  <button
+                    type="button"
+                    onClick={() => setAsking(true)}
+                    className="mt-2 flex min-h-12 w-full items-center justify-between rounded-xl border border-line px-4 py-2 text-left text-base font-medium"
+                  >
+                    {STUDY_RESOURCE}
+                    <span aria-hidden="true" className="text-muted">
+                      ›
+                    </span>
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   aria-expanded={opened === kind}
@@ -250,6 +261,7 @@ export function AskMoreScreen() {
           </div>
         )}
       </main>
+      {asking ? <AskForBook onClose={() => setAsking(false)} /> : null}
       {talking ? <TalkHost scope={scope} talkRef={scopeRef('', 0, scope)} book="" chapter={0} shared={shared} onClose={() => setTalking(false)} /> : null}
     </>
   );
