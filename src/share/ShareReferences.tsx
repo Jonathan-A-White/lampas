@@ -1,12 +1,14 @@
 // src/share/ShareReferences.tsx — the Bible references in the words that were shared to Lampas (mw-s1dc0n.1): 'Bible references (N)', each one a link that opens
 // the verse's card over the list (mw-5r3p30.697), whose Open goes to the Reader at the verse (a range at its first verse). In the order of the page by default, so he can go through them as he reads; the switch above the list
 // puts them in Bible order, grouped under each book, and the choice is kept on the phone for the next share. The references of a shared picture (the find-refs grist,
-// src/share/findRefs.ts, mw-s1dc0n.2) join the same list: while the grist reads, 'Finding Bible references...'; a failure is one line with 'Try again'.
+// src/share/findRefs.ts, mw-s1dc0n.2) join the same list: while the grist reads, 'Finding Bible references...'; a failure is one line with 'Try again'. 'Save as a list' (SaveAsList.tsx, mw-9q8wp1.2) keeps the references showing, in the order showing, as a verse list.
 import { useMemo, useState } from 'react';
 import { ReferenceLink } from '../markdown/ReferenceCard';
 import { referenceUrl } from '../nav/links';
+import { canonicalOf } from '../lists/canonical';
 import { findReferences, groupedByBook, headingOf, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
 import type { PictureRefs } from './findRefs';
+import { SaveAsList } from './SaveAsList';
 
 const KEY = 'lampas.shareRefsOrder';
 const ORDERS: readonly { id: RefsOrder; label: string }[] = [
@@ -120,6 +122,7 @@ export function ShareReferences({ text, picture, retry }: { text?: string; pictu
           </button>
         ))}
       </div>
+      <SaveAsList refs={listed.map(canonicalOf)} text={text} />
       {order === 'page' ? (
         <ul className="space-y-2">
           {listed.map((r) => (
