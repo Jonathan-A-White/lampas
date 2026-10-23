@@ -11,6 +11,8 @@ import { getPassagePlayer, stopPassage } from '../../src/speech/passagePlayer';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+
+const timeout = ASYNC_WAIT_MS;
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
 
 let synth: FakeSynth;
@@ -47,7 +49,7 @@ describe('Play on a New Testament card', () => {
   it('Play reads the passage and turns into Pause and Stop', async () => {
     const card = await openCard('Heb 7:2', 'Heb 7:2', 'Hebrews 7:2');
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
-    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     expect(synth.spoken[0].text).toContain('Abraham apportioned');
     expect(getPassagePlayer()).toMatchObject({ state: 'playing' });
     expect(within(card).queryByRole('button', { name: 'Play' })).toBeNull();
@@ -58,7 +60,7 @@ describe('Play on a New Testament card', () => {
   it('Pause turns into Play again to go on; Stop ends it and gives Play back', async () => {
     const card = await openCard('Heb 7:2', 'Heb 7:2', 'Hebrews 7:2');
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
-    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     await userEvent.click(within(card).getByRole('button', { name: 'Pause' }));
     await within(card).findByRole('button', { name: 'Resume' });
     expect(getPassagePlayer().state).toBe('paused');
@@ -73,7 +75,7 @@ describe('Play on a New Testament card', () => {
   it('goes back to Play by itself when the passage has been read', async () => {
     const card = await openCard('Heb 7:2', 'Heb 7:2', 'Hebrews 7:2');
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
-    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     synth.finishAll();
     await within(card).findByRole('button', { name: 'Play' });
   });
@@ -83,7 +85,7 @@ describe('Play on an Old Testament card', () => {
   it('says there is no Old Testament present', async () => {
     const card = await openCard('Isa 30:21', 'Isa 30:21', 'Isaiah 30:21');
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
-    await vi.waitFor(() => expect(synth.spoken.length).toBe(1), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(() => expect(synth.spoken.length).toBe(1), { timeout });
     expect(synth.spoken[0].text).toBe('Isaiah 30:21: skipping, no Old Testament present');
     expect(within(card).queryByRole('button', { name: 'Open' })).toBeNull();
   });
@@ -93,7 +95,7 @@ describe('closing the card', () => {
   it('stops the reading', async () => {
     const card = await openCard('Heb 7:2', 'Heb 7:2', 'Hebrews 7:2');
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
-    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(getPassagePlayer().state).toBe('idle');
