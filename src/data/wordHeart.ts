@@ -11,13 +11,13 @@ export const WORD_HEART: Readonly<Record<string, string>> = {
   'αὐτός':
     "αὐτός has three jobs, and where it stands tells you which. Alone it is he, she or it (αὐτοῦ, 'his'); stressed it is 'self', as in αὐτὸς ἐγώ, 'I myself'; and between the article and its noun it is 'same', as in τὸ αὐτό, 'the same thing'.",
   'σύ':
-    "σύ is you, one person, and its plural comes from another stem: ὑμεῖς, ὑμῶν, ὑμῖν, ὑμᾶς. Those differ from ἡμεῖς, we, by a single letter and sound alike, so look twice: ὑ- is you, ἡ- is us. English 'you' hides whether one person or many is meant; Greek always shows it.",
+    "σύ means you, one person, and its plural comes from another stem: ὑμεῖς, ὑμῶν, ὑμῖν, ὑμᾶς. Those differ from ἡμεῖς, we, by a single letter and sound alike, so look twice: ὑ- is you, ἡ- is us. English 'you' hides whether one person or many is meant; Greek always shows it.",
   'δέ':
     "δέ is a light link, 'and', 'but', 'now', 'then', and it never comes first: look for it second in its clause. It often marks the next step of a story rather than a contrast, so 'and', or no word at all, can be better than 'but'. With μέν before it, it makes a pair: on the one hand, on the other.",
   'ἐγώ':
     "ἐγώ, I, takes its plural from another stem: ἡμεῖς, we, and ἡμῶν, our. Its other forms come short and long, μου and ἐμοῦ, με and ἐμέ, and the long one carries weight. Because the verb already says 'I', writing ἐγώ at all often adds emphasis, though not always.",
   'οὐ':
-    "οὐ and μή are both 'not', but οὐ denies a fact outright, mostly with the indicative, while μή goes with commands, wishes, conditions, infinitives and participles. A question asked with οὐ expects the answer yes. Before a smooth vowel it is οὐκ, before a rough one οὐχ, and οὐχί is its strong form.",
+    "οὐ and μή both mean 'not', but οὐ denies a fact outright, mostly with the indicative, while μή goes with commands, wishes, conditions, infinitives and participles. A question asked with οὐ expects the answer yes. Before a smooth vowel it is οὐκ, before a rough one οὐχ, and οὐχί is its strong form.",
   'γάρ':
     "γάρ is 'for' in the sense of because: it gives the reason for what was just said, or explains it. It never comes first; look for it second in its clause. Unlike English 'for' it is never a preposition, so 'for you' is never γάρ.",
   'μή':
@@ -43,13 +43,13 @@ export const WORD_HEART: Readonly<Record<string, string>> = {
 
   // Prepositions: one picture, and the case of the noun chooses the sense.
   'ἐκ':
-    "ἐκ is 'out of', from inside: movement out from within something, and so origin, source, what a thing comes from. ἀπό is 'away from', from the outside; the two overlap, but ἐκ starts inside. Before a vowel it is ἐξ.",
+    "ἐκ means 'out of', from inside: movement out from within something, and so origin, source, what a thing comes from. ἀπό means 'away from', from the outside; the two overlap, but ἐκ starts inside. Before a vowel it is ἐξ.",
   'ἐπί':
     "ἐπί is 'upon' at root, and it spreads with its cases: on, at, over with the genitive; on, at, because of with the dative; onto, to, against with the accusative. Its many glosses are one picture, resting on something or reaching to it, as in ἐπὶ τῆς γῆς, 'on the earth'.",
   'διά':
     "διά is 'through' with the genitive and 'because of' with the accusative: the case of its noun tells you which. διὰ πίστεως is 'through faith', the means, and διὰ τοῦτο, 'because of this', is simply 'therefore'.",
   'ἀπό':
-    "ἀπό is 'away from', from the outside of a thing: separation, distance, a starting point. ἐκ is 'out of', from within, and in the New Testament the two often overlap, so do not press the difference hard.",
+    "ἀπό means 'away from', from the outside of a thing: separation, distance, a starting point. ἐκ means 'out of', from within, and in the New Testament the two often overlap, so do not press the difference hard.",
   'κατά':
     "κατά is 'down' at root, and its case splits it. With the accusative it is according to, along, throughout: κατὰ σάρκα, 'according to the flesh', and κατὰ πόλιν, 'city by city'. With the genitive it is down from, or against, as in κατὰ τοῦ πνεύματος, 'against the Spirit'.",
   'μετά':
@@ -59,7 +59,7 @@ export const WORD_HEART: Readonly<Record<string, string>> = {
   'ὑπό':
     "ὑπό is 'under' at root. With the accusative it is under, as in ὑπὸ νόμον, 'under the law'; with the genitive it names who does the action of a passive verb, 'by', as in ἐβαπτίσθη ὑπὸ Ἰωάννου, 'he was baptized by John'.",
   'ὑπέρ':
-    "ὑπέρ is 'over' at root. With the genitive it is for, on behalf of, for the sake of, as in praying for someone; with the accusative it is above, beyond, more than. So a disciple is not ὑπὲρ τὸν διδάσκαλον, above the teacher.",
+    "ὑπέρ is 'over' at root. With the genitive it is for, on behalf of, for the sake of, so one prays for someone; with the accusative it is above, beyond, more than. So a disciple is not ὑπὲρ τὸν διδάσκαλον, above the teacher.",
 
   // Adjectives.
   'πολύς':
@@ -251,7 +251,7 @@ export const WORD_HEART: Readonly<Record<string, string>> = {
   'ψυχή':
     "ψυχή is breath, then life itself, then the inner self, the seat of will, desire and feeling. So 'whoever would save his ψυχή will lose it' is about his life, and 'my ψυχή is very sorrowful' is my soul, myself. English soul can sound like a separate part; often ψυχή is simply life, or the person.",
   'ζωή':
-    "ζωή is life, being alive, the life one lives by; βίος, its neighbour, is the course of a life, or one's living, livelihood. So the widow put in her whole βίος, all she had to live on, while eternal life is always ζωή. Its verb is ζάω, to live.",
+    "ζωή means life, being alive, the life one lives by; βίος, its neighbour, is the course of a life, or one's living, livelihood. So the widow put in her whole βίος, all she had to live on, while eternal life is always ζωή. Its verb is ζάω, to live.",
   'καιρός':
     "καιρός is time as a fitting moment: the right time, a season, the hour for something. χρόνος, beside it, is time as a stretch, how long. So 'my καιρός has not yet come' is the moment for something, and fruit comes in its καιρός, its season.",
   'εὐαγγέλιον':
