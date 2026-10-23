@@ -110,6 +110,135 @@ describe('an Old Testament reference', () => {
   });
 });
 
+/** Holds the answer to one chapter's fetch open until `release()`; `requested()` is true once the player has asked for it. */
+function holdChapter(path: string): { requested: () => boolean; release: () => void } {
+  const real = globalThis.fetch;
+  let asked = false;
+  let release: () => void = () => undefined;
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    if (String(input).startsWith(path)) {
+      asked = true;
+      await gate;
+    }
+    return real(input, init);
+  });
+  return { requested: () => asked, release };
+}
+
+/** Lets the voice finish what it says until `done()`, the player fetching the next reference in between. */
+async function finishUntil(done: () => boolean): Promise<void> {
+  for (let i = 0; i < 50 && !done(); i++) {
+    if (synth.speaking) synth.finishAll();
+    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 0));
+  }
+  expect(done()).toBe(true);
+}
+
+const quiet = () => new Promise((r) => setTimeout(r, 50));
+
+describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)', () => {
+  it('waiting for the next chapter to load: Pause holds the player on the next reference, and Resume reads it from its start', async () => {
+    const chapter = holdChapter('/data/rom/8.json');
+    playPassages([refOf('Heb 7:1'), refOf('Rom 8:1')]);
+    await finishUntil(chapter.requested);
+    pausePassage();
+    expect(getPassagePlayer()).toMatchObject({ state: 'paused', current: { heading: 'Romans 8:1' } });
+    chapter.release();
+    const heard = synth.spoken.length;
+    await quiet();
+    expect(synth.spoken.length).toBe(heard);
+    expect(synth.speaking).toBe(false);
+    expect(getPassagePlayer().state).toBe('paused');
+    resumePassage();
+    expect(getPassagePlayer()).toMatchObject({ state: 'playing', current: { heading: 'Romans 8:1' } });
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    expect(synth.spoken[heard].text.replace(/\s+/g, ' ').trim()).toContain(englishOf('rom', 8, 1).slice(0, 40));
+    await listenToTheEnd();
+  });
+
+  it('waiting for the next chapter to load: Resume before it arrives reads it when it does', async () => {
+    const chapter = holdChapter('/data/rom/8.json');
+    playPassages([refOf('Heb 7:1'), refOf('Rom 8:1')]);
+    await finishUntil(chapter.requested);
+    pausePassage();
+    resumePassage();
+    expect(getPassagePlayer().state).toBe('playing');
+    const heard = synth.spoken.length;
+    await quiet();
+    expect(synth.spoken.length).toBe(heard);
+    chapter.release();
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    await listenToTheEnd();
+  });
+
+  it('waiting for the next chapter to load: Stop ends the player and the next reference is never spoken', async () => {
+    const chapter = holdChapter('/data/rom/8.json');
+    playPassages([refOf('Heb 7:1'), refOf('Rom 8:1')]);
+    await finishUntil(chapter.requested);
+    stopPassage();
+    expect(getPassagePlayer()).toMatchObject({ state: 'idle', current: null });
+    chapter.release();
+    const heard = synth.spoken.length;
+    await quiet();
+    expect(synth.spoken.length).toBe(heard);
+    expect(getPassagePlayer().state).toBe('idle');
+  });
+
+  it('waiting for the next chapter to load: Pause then Stop ends the player and the next reference is never spoken', async () => {
+    const chapter = holdChapter('/data/rom/8.json');
+    playPassages([refOf('Heb 7:1'), refOf('Rom 8:1')]);
+    await finishUntil(chapter.requested);
+    pausePassage();
+    stopPassage();
+    chapter.release();
+    const heard = synth.spoken.length;
+    await quiet();
+    expect(synth.spoken.length).toBe(heard);
+    expect(getPassagePlayer()).toMatchObject({ state: 'idle', current: null });
+  });
+
+  it('the Old Testament announcement: Pause holds the voice, Resume goes on, and Stop ends the list', async () => {
+    playPassages([refOf('Isa 30:21'), refOf('Rom 8:1')]);
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    pausePassage();
+    await vi.waitFor(() => expect(getPassagePlayer().state).toBe('paused'), { timeout });
+    expect(getSpeech().status).toBe('paused');
+    resumePassage();
+    await vi.waitFor(() => expect(getPassagePlayer().state).toBe('playing'), { timeout });
+    stopPassage();
+    await quiet();
+    expect(getPassagePlayer().state).toBe('idle');
+    // the paused announcement may be said again from its start on Resume; the next reference is never said
+    expect(new Set(synth.spoken.map((s) => s.text))).toEqual(new Set(['Isaiah 30:21: skipping, no Old Testament present']));
+  });
+
+  it('the hand-off to an Old Testament reference: Pause just as one ends holds its announcement until Resume', async () => {
+    playPassages([refOf('Isa 30:21'), refOf('Ps 62:1')]);
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    synth.finishAll();
+    pausePassage();
+    expect(getPassagePlayer()).toMatchObject({ state: 'paused', current: { heading: 'Psalm 62:1' } });
+    await quiet();
+    expect(synth.spoken.map((s) => s.text)).toEqual(['Isaiah 30:21: skipping, no Old Testament present']);
+    resumePassage();
+    await vi.waitFor(() => expect(synth.spoken.length).toBe(2), { timeout });
+    expect(synth.spoken[1].text).toBe('Psalm 62:1: skipping, no Old Testament present');
+    await listenToTheEnd();
+  });
+
+  it('the hand-off to an Old Testament reference: Stop just as one ends means the next is never spoken', async () => {
+    playPassages([refOf('Isa 30:21'), refOf('Ps 62:1')]);
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    synth.finishAll();
+    stopPassage();
+    await quiet();
+    expect(getPassagePlayer().state).toBe('idle');
+    expect(synth.spoken.map((s) => s.text)).toEqual(['Isaiah 30:21: skipping, no Old Testament present']);
+  });
+});
+
 describe('Pause, Resume and Stop', () => {
   it('pauses the voice, and goes on from where it was', async () => {
     playPassages([refOf('Heb 7:1-2')]);
