@@ -12,16 +12,30 @@ const ACTION = 'min-h-12 rounded-lg border border-line px-4 text-base font-mediu
 const CHOICE = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 const SMALL = 'min-h-12 min-w-12 rounded-lg border border-line px-3 text-base font-medium disabled:opacity-40';
 
+/** A button for every list but `listId`. It reads the lists only while the picker is open, so the editing screen holds no second live query of its own. */
+function OtherLists({ listId, onPick }: { listId: number; onPick: (id: number) => void }) {
+  const lists = useLiveQuery(listVerseLists, []);
+  return (
+    <>
+      {(lists ?? [])
+        .filter((l) => l.id !== listId)
+        .map((l) => (
+          <button key={l.id} type="button" onClick={() => onPick(l.id)} className={CHOICE}>
+            {l.name}
+          </button>
+        ))}
+    </>
+  );
+}
+
 /** The editing part of a list's screen: `refs` are the list's references as kept, `listId` the list. */
 export function EditRefs({ listId, refs }: { listId: number; refs: readonly string[] }) {
   const [draft, setDraft] = useState('');
   const [error, setError] = useState('');
-  const lists = useLiveQuery(listVerseLists, []);
   const [picking, setPicking] = useState<{ canonical: string; move: boolean } | null>(null);
   const [naming, setNaming] = useState(false);
   const [newName, setNewName] = useState('');
   const [sent, setSent] = useState('');
-  const others = (lists ?? []).filter((l) => l.id !== listId);
   const closePicker = () => {
     setPicking(null);
     setNaming(false);
@@ -159,11 +173,7 @@ export function EditRefs({ listId, refs }: { listId: number; refs: readonly stri
                       </form>
                     ) : (
                       <>
-                        {others.map((l) => (
-                          <button key={l.id} type="button" onClick={() => void send({ id: l.id })} className={CHOICE}>
-                            {l.name}
-                          </button>
-                        ))}
+                        <OtherLists listId={listId} onPick={(id) => void send({ id })} />
                         <button type="button" onClick={() => setNaming(true)} className={CHOICE}>
                           New list…
                         </button>
