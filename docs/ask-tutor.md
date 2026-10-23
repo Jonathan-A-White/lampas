@@ -380,7 +380,7 @@ Lampas is in the phone's share sheet (mw-y3qno5.2, `features/share-target.featur
 words or a link opens Lampas on **Share to Lampas**, which asks which talk they go to. Chrome lists an installed web app in the share sheet from its manifest, so
 a phone that installed Lampas before this version may need it removed and installed again from Chrome before **Lampas** appears in the list.
 
-- **The manifest** (`pwa-manifest.ts`) has `share_target`: action `/share-target`, POST, `multipart/form-data`, `title`, `text`, `url` and `files` (`image/*`).
+- **The manifest** (`pwa-manifest.ts`) has `share_target`: action `/share-target`, POST, `multipart/form-data`, `title`, `text`, `url` and `files` (`image/*`, `text/csv`, `.csv`: a shared CSV is his Logos list and opens the library import at `#/library?import=<id>`, not this sheet; docs/resources.md).
   `tests/unit/manifest.test.ts` holds it to `src/share/target.ts`.
 - **The worker** (`src/sw.ts`, `src/share/target.ts` `receiveShare`) answers the POST: it reads the files and words, keeps them in Dexie (`shares`, v15,
   `{id, createdAt, text?, files}`; one share waits, a new one replaces it; `src/data/repositories/shares.ts`) and redirects (303) to `/#/share?s=<id>`. A GET to

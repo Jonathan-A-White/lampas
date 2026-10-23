@@ -323,6 +323,15 @@ series rule is in the catalogue and in none of these until the shelf (S2) and th
 no book, a grammar section idea that is not on the ladder, a rules file that lacks an id of the five lists, a committed file that is not what the tool makes, and on any of the five lists no longer equal to what it was
 (`tests/fixtures/old-resource-exports.json`). Not in the catalogue, by the design's test of value over volume: the pronunciation datasets, the interactives (Morphology Charts among them, a research lead), and a book that opens only at its start.
 
+## Share his Logos list to Lampas (mw-rfjjzd.7, PROVISIONAL, UNVERIFIED on a device; docs/design/library-at-scale.md 5.1)
+
+Besides **Choose your Logos list** on Import your library, the list Logos saved as a spreadsheet can be shared to Lampas from Files, Drive or an email (the path for a phone with no computer to hand): the manifest's `share_target`
+accepts `text/csv` and `.csv` as well as `image/*`, the worker parks the file as it parks a picture (`src/share/target.ts` `receiveShare`) and redirects to `#/library?import=<id>`, and Import your library reads the parked file
+as if he had chosen it (the share is dropped when he taps Turn on N books). A shared picture still opens the talk chooser. A file counts as a CSV by its type (`text/csv`, `text/comma-separated-values`) or by a `.csv` name,
+so Windows' `application/vnd.ms-excel` label still lands in the import. **UNVERIFIED on a device until he shares one:** that Chrome on his phone lists Lampas in the share sheet for a `.csv` file from Files or Drive (the
+`accept` is the design's; Android may offer Lampas by extension only, or not for a type it does not know), and what type the shared file arrives with. A phone that installed Lampas before this version may need it removed and
+installed again from Chrome before Lampas is offered for a CSV (the share sheet reads the manifest at install). The tests POST a form to the built worker; they do not prove what Android's share sheet offers.
+
 ## How to add a resource
 
 1. Add `src/resources/<name>.ts` exporting a `StudyResource` (`src/resources/types.ts`): an `id` (kept in the store, so never

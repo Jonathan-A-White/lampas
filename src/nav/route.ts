@@ -219,11 +219,14 @@ export function backTo(route: Route): void {
 }
 
 /** What the address says about the Library screen (src/library/): no kind is the home; a kind (`kind=lexicon`) is that kind's page, and a book (`book=<Resource ID>`) is the one the page opens at. Both are raw text:
- *  the screen checks them against the catalogue. `import` (`#/library?import`) is the page where he imports his Logos list, and wins over a kind. */
+ *  the screen checks them against the catalogue. `import` (`#/library?import`) is the page where he imports his Logos list, and wins over a kind; `import=<id>` (a CSV shared to Lampas,
+ *  src/share/target.ts) names the parked share the page reads the list from. */
 export interface LibraryAddress {
   kind?: string;
   book?: string;
   import?: true;
+  /** the parked share holding the list, when the import was opened by Share to Lampas */
+  share?: string;
 }
 
 export function libraryOf(hash: string): LibraryAddress {
@@ -235,16 +238,21 @@ export function libraryOf(hash: string): LibraryAddress {
   const book = params.get('book');
   if (kind && book) address.book = book;
   if (params.has('import')) address.import = true;
+  const share = params.get('import');
+  if (share) address.share = share;
   return address;
 }
 
 /** The Library address, always in the same order. */
-export function libraryHash({ kind, book, import: importing }: LibraryAddress): string {
+export function libraryHash({ kind, book, import: importing, share }: LibraryAddress): string {
   const params = new URLSearchParams();
   if (kind) params.set('kind', kind);
   if (kind && book) params.set('book', book);
   const query = params.toString();
-  if (importing) return query ? `#/library?${query}&import` : '#/library?import';
+  if (importing) {
+    const flag = share ? `import=${encodeURIComponent(share)}` : 'import';
+    return query ? `#/library?${query}&${flag}` : `#/library?${flag}`;
+  }
   return query ? `#/library?${query}` : '#/library';
 }
 

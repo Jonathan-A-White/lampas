@@ -34,10 +34,10 @@ async function keepPastTalk(page: Page): Promise<void> {
   );
 }
 
-/** What the phone's share sheet does: navigates to the share target with a POSTed multipart form holding a picture and words. */
-async function share(page: Page): Promise<void> {
+/** What the phone's share sheet does: navigates to the share target with a POSTed multipart form holding one file and words. */
+async function share(page: Page, file: { name: string; type: string; bytes: number[] }, text: string): Promise<void> {
   await page.evaluate(
-    async ({ bytes, text }) => {
+    async ({ file, text }) => {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = '/share-target';
@@ -46,7 +46,7 @@ async function share(page: Page): Promise<void> {
       input.type = 'file';
       input.name = 'files';
       const data = new DataTransfer();
-      data.items.add(new File([new Uint8Array(bytes)], 'lexicon-entry.png', { type: 'image/png' }));
+      data.items.add(new File([new Uint8Array(file.bytes)], file.name, { type: file.type }));
       input.files = data.files;
       const words = document.createElement('input');
       words.name = 'text';
@@ -55,22 +55,28 @@ async function share(page: Page): Promise<void> {
       document.body.append(form);
       form.submit();
     },
-    { bytes: Array.from(ENTRY), text: 'ἀγάπη in BDAG' },
+    { file, text },
   );
 }
 
-test('Share > Lampas opens the Share to Lampas sheet, and Continue puts the picture and words in the newest talk, not sent', async ({ page }) => {
+const sharePicture = (page: Page): Promise<void> => share(page, { name: 'lexicon-entry.png', type: 'image/png', bytes: Array.from(ENTRY) }, 'ἀγάπη in BDAG');
+
+/** The worker is in control of the page, as an installed app's is. */
+async function openWithWorker(page: Page): Promise<void> {
   await page.setViewportSize(VIEWPORT);
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse]').first()).toBeVisible();
-  // the worker is in control of the page, as an installed app's is
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
+}
+
+test('Share > Lampas opens the Share to Lampas sheet, and Continue puts the picture and words in the newest talk, not sent', async ({ page }) => {
+  await openWithWorker(page);
   await keepPastTalk(page);
 
-  await share(page);
+  await sharePicture(page);
   const sheet = page.getByRole('dialog', { name: 'Share to Lampas' });
   await expect(sheet).toBeVisible();
   const choices = sheet.getByRole('button');
@@ -93,4 +99,48 @@ test('Share > Lampas opens the Share to Lampas sheet, and Continue puts the pict
   await expect(talk.getByRole('group', { name: 'Pictures to send' }).getByRole('img')).toHaveCount(1);
   await expect((await talkField(talk))).toHaveValue('ἀγάπη in BDAG');
   await shot(page, 'share-target-talk');
+});
+
+/** The shares the phone holds, by file name and kind. */
+const parked = (page: Page): Promise<{ id: string; files: { name: string; type: string; size: number }[] }[]> =>
+  page.evaluate(
+    () =>
+      new Promise((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const all = db.transaction('shares').objectStore('shares').getAll();
+          all.onsuccess = () => {
+            db.close();
+            resolve((all.result as { id: string; files: { name: string; type: string; bytes: ArrayBuffer }[] }[]).map((r) => ({ id: r.id, files: r.files.map((f) => ({ name: f.name, type: f.type, size: f.bytes.byteLength })) })));
+          };
+          all.onerror = () => reject(all.error);
+        };
+      }),
+  );
+
+test('Share > Lampas with a CSV parks it and opens the library import on it, not the talk chooser', async ({ page }) => {
+  const list = readFileSync('tests/fixtures/logos-export-head.csv');
+  await openWithWorker(page);
+  await keepPastTalk(page);
+
+  await share(page, { name: 'Logos list.csv', type: 'text/csv', bytes: Array.from(list) }, '');
+  await expect(page.getByRole('heading', { name: 'Import your library', level: 1 })).toBeVisible();
+  await expect(page).toHaveURL(/#\/library\?import=[^&]+$/);
+  const [row] = await parked(page);
+  expect(new URL(page.url()).hash).toBe(`#/library?import=${encodeURIComponent(row.id)}`);
+  expect(row.files).toEqual([{ name: 'Logos list.csv', type: 'text/csv', size: list.byteLength }]);
+  // the shared list is read as if he had chosen it
+  await expect(page.getByTestId('import-read')).toHaveText('60 books read from your Logos list.');
+  await expect(page.getByRole('dialog', { name: 'Share to Lampas' })).toHaveCount(0);
+  await shot(page, 'share-target-csv');
+});
+
+test('a CSV that Windows labels application/vnd.ms-excel still opens the import by its .csv name', async ({ page }) => {
+  const list = readFileSync('tests/fixtures/logos-export-head.csv');
+  await openWithWorker(page);
+  await share(page, { name: 'library.csv', type: 'application/vnd.ms-excel', bytes: Array.from(list) }, '');
+  await expect(page.getByRole('heading', { name: 'Import your library', level: 1 })).toBeVisible();
+  await expect(page.getByTestId('import-read')).toHaveText('60 books read from your Logos list.');
 });

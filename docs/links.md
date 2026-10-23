@@ -54,6 +54,12 @@ with a notice, as a reference does.
 
 Where Lampas makes one: a `{kind: 'setting', key}` link in a tutor answer (docs/ask-tutor.md) is a chip, `Open Text size in Settings`. The settings-search sheet that once made these (a magnifier in each header, mw-5r3p30.502) is gone (mw-5r3p30.617): Settings keeps its own search field, pinned at the top.
 
+## Share to Lampas: what the share sheet accepts
+
+Lampas is in the phone's share sheet (`pwa-manifest.ts` `share_target`, POST `/share-target`; docs/ask-tutor.md 'Share to Lampas'). Its `files` accept `image/*` (a picture opens the talk chooser, `#/share?s=<id>`),
+`text/csv` and `.csv` (his Logos list, mw-rfjjzd.7: it opens the library import at `#/library?import=<id>`, `<id>` naming the parked share; **UNVERIFIED on a device** until he shares one, docs/resources.md). Words and a
+link (`title`, `text`, `url`) open the talk chooser too.
+
 ## web+lampas:
 
 The manifest declares `protocol_handlers` for `web+lampas` (url `/#/?ref=%s`). Where the browser supports it (Chrome and Edge on Android and on the desktop, once Lampas is installed),

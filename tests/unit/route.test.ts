@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf } from '../../src/nav/route';
+import { libraryHash, libraryOf, paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf } from '../../src/nav/route';
 
 describe('the address', () => {
   it('says where the placement was started from', () => {
@@ -94,5 +94,15 @@ describe('the paradigm address', () => {
     expect(paradigmOf(paradigmHash({ table: 'contract-verbs', lemma: 'ἀγαπάω', own: true }))).toEqual({ table: 'contract-verbs', lemma: 'ἀγαπάω', own: true });
     expect(paradigmOf(paradigmHash({ table: 'contract-verbs', lemma: 'ἀγαπάω' }))).toEqual({ table: 'contract-verbs', lemma: 'ἀγαπάω' });
     expect(paradigmOf('#/paradigms?l=ἀγαπάω&own=1')).toEqual({});
+  });
+});
+
+describe('the library import address', () => {
+  it('names the parked share a shared CSV is read from, and a bare import names none', () => {
+    expect(libraryOf('#/library?import')).toEqual({ import: true });
+    expect(libraryOf('#/library?import=1729-abc')).toEqual({ import: true, share: '1729-abc' });
+    expect(libraryHash({ import: true })).toBe('#/library?import');
+    expect(libraryHash({ import: true, share: '1729-abc' })).toBe('#/library?import=1729-abc');
+    expect(libraryOf(libraryHash({ import: true, share: 'a b' }))).toEqual({ import: true, share: 'a b' });
   });
 });

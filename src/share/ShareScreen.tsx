@@ -2,7 +2,7 @@
 // (src/share/target.ts) and opened the app here, at '#/share?s=<id>': the 'Share to Lampas' sheet asks which talk they go to: 'Continue: <the newest talk> ·
 // <when>' first, 'New talk', 'Choose a talk' (the recent talks, newest first, each with its first question and date), and Cancel. A pick takes the share off
 // the phone's store and opens that talk (the address becomes '#/share?talk=<key>', so a reopen finds him in it) with the pictures waiting in its composer
-// and the words in its field, NOT sent. Shared words are also searched for Bible references, and a shared picture is read for them by the find-refs grist (src/share/findRefs.ts); they are listed above the choice as links (ShareReferences.tsx). A file that is no JPEG, PNG or WebP (a GIF) is not counted and gets a "left out" line (shareText.ts leftOutLine) and stays out of the composer; a share with nothing readable (no words, no such picture: hasReadable) offers only Cancel. The talk is the Talk sheet over its own scope (src/share/ShareTalk.tsx).
+// and the words in its field, NOT sent. Shared words are also searched for Bible references, and a shared picture is read for them by the find-refs grist (src/share/findRefs.ts); they are listed above the choice as links (ShareReferences.tsx). A shared CSV (his Logos list) is not for a talk and goes to the library import (#/library?import=<id>). A file that is no JPEG, PNG or WebP (a GIF) is not counted and gets a "left out" line (shareText.ts leftOutLine) and stays out of the composer; a share with nothing readable (no words, no such picture: hasReadable) offers only Cancel. The talk is the Talk sheet over its own scope (src/share/ShareTalk.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { dropShares, listConversations, waitingShare, type Conversation, type ShareRow } from '../data/repositories';
@@ -17,6 +17,7 @@ import { usePictureRefs } from './findRefs';
 import { ShareReferences } from './ShareReferences';
 import { sharedContentOf, type SharedContent } from './shared';
 import { TalkHost } from './ShareTalk';
+import { importHash, isCsvFile } from './target';
 import { useTalkScope } from './talkScope';
 import { describeShare, hasReadable, leftOutLine, shareTalkHash } from './shareText';
 import { newTalkRef, placeOf, talkLabel, timeAgo } from './talkPlace';
@@ -133,6 +134,10 @@ export function ShareScreen() {
   // A share that is gone (Cancel, a pick, or a reopen long after) leaves nothing to place: Home.
   useEffect(() => {
     if ((!talk && row === null) || (talk && !placeOf(talk))) goHome();
+  }, [talk, row]);
+  // A CSV is his Logos list, not something for a talk: a reopen of its share at the talk chooser's address goes to the library import (src/share/target.ts sends a new share there).
+  useEffect(() => {
+    if (!talk && row?.files.some(isCsvFile)) replaceHash(importHash(row.id));
   }, [talk, row]);
   // The talks he can place it in, read before the sheet is drawn so that what a tap lands on does not change under his thumb.
   const talks = useLiveQuery(() => listConversations().then((all) => all.filter((t) => placeOf(t.ref) !== null)), []);

@@ -60,6 +60,19 @@ describe('the worker taking a share', () => {
     expect(to.hash).toBe(`#/share?s=${encodeURIComponent(rows[0].id)}`);
   });
 
+  it.each([
+    ['text/csv', 'list.csv'],
+    ['application/vnd.ms-excel', 'Logos list.csv'],
+    ['', 'library.CSV'],
+  ])('parks a CSV (%j named %j) and redirects to the library import, not the talk chooser', async (type, name) => {
+    const form = new FormData();
+    form.append('files', new File([new Uint8Array([65, 44, 66])], name, { type }));
+    const answer = await answerTo(post(form));
+    const [row] = await db.shares.toArray();
+    expect(row.files.map((f) => f.name)).toEqual([name]);
+    expect(new URL(answer?.headers.get('Location') ?? '').hash).toBe(`#/library?import=${encodeURIComponent(row.id)}`);
+  });
+
   it('keeps one share only: a second replaces the first', async () => {
     await answerTo(sharePost());
     await answerTo(sharePost());

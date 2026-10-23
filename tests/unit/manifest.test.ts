@@ -39,7 +39,8 @@ describe('pwaManifest', () => {
       enctype: 'multipart/form-data',
       params: { title: 'title', text: 'text', url: 'url', files: [{ name: SHARE_FILES_FIELD, accept: SHARE_FILE_ACCEPT }] },
     });
-    expect(SHARE_FILE_ACCEPT).toEqual(['image/*']);
+    // pictures for the talk chooser, and his Logos list (a CSV) for the library import (mw-rfjjzd.7)
+    expect(SHARE_FILE_ACCEPT).toEqual(['image/*', 'text/csv', '.csv']);
   });
 
   it('raises the precache size limit past workbox default of 2 MiB', () => {

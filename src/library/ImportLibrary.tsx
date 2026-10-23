@@ -2,13 +2,14 @@
 // and the screen shows counts, not 4,795 rows: how many books were read, how many open from Lampas (by kind, with the pins and his Bible), how many Lampas cannot use yet and why (a page of
 // plain lines), and one button, 'Turn on N books'. It is the words Import's shape (src/ImportScreen.tsx): a preview, counts, one button. Nothing is sent: the file never leaves the phone.
 import { useAlive } from 'pwa-kit/alive';
-import { useRef, useState } from 'react';
-import { applyImport, planImport, setLogosBible, type ImportPlan } from '../data/repositories';
-import { backTo, navigate } from '../nav/route';
+import { useEffect, useRef, useState } from 'react';
+import { applyImport, dropShares, planImport, setLogosBible, waitingShare, type ImportPlan } from '../data/repositories';
+import { backTo, libraryOf, navigate, useAddress } from '../nav/route';
 import { KINDS, type Kind } from '../resources/catalogue';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
+import { isCsvFile } from '../share/target';
 import { readText } from '../ui/readText';
 import { isListed } from './matchExport';
 import { readExport } from './parseExport';
@@ -48,27 +49,46 @@ function byKind(plan: ImportPlan): string {
 
 export function ImportLibrary() {
   const input = useRef<HTMLInputElement>(null);
-  const [stage, setStage] = useState<Stage>({ kind: 'choose' });
+  // a list shared to Lampas (src/share/target.ts) is parked in the phone's store: it is read as if he had chosen it
+  const shareId = libraryOf(useAddress()).share;
+  const [stage, setStage] = useState<Stage>(shareId ? { kind: 'reading' } : { kind: 'choose' });
   const alive = useAlive();
   useReportScreen({ name: SCREEN_NAMES.library, facts: [{ label: 'Page', value: 'Import your library from a Logos list (Save as Spreadsheet); nothing is sent' }] });
+
+  /** The list's text read and matched: the result, or the choose page with what went wrong. */
+  const load = async (text: () => Promise<string>): Promise<Stage> => {
+    try {
+      const rows = readExport(await text());
+      if (rows.length === 0) throw new Error('This list has no books in it.');
+      return { kind: 'result', plan: await planImport(rows) };
+    } catch (error) {
+      return { kind: 'choose', problem: error instanceof Error ? error.message : 'This file could not be read.' };
+    }
+  };
 
   const pick = async (file: File | undefined): Promise<void> => {
     if (input.current) input.current.value = '';
     if (!file) return;
     setStage({ kind: 'reading' });
-    try {
-      const rows = readExport(await readText(file));
-      if (rows.length === 0) throw new Error('This list has no books in it.');
-      const plan = await planImport(rows);
-      if (alive()) setStage({ kind: 'result', plan });
-    } catch (error) {
-      if (alive()) setStage({ kind: 'choose', problem: error instanceof Error ? error.message : 'This file could not be read.' });
-    }
+    const next = await load(() => readText(file));
+    if (alive()) setStage(next);
   };
+
+  useEffect(() => {
+    if (!shareId) return;
+    void load(async () => {
+      const shared = (await waitingShare(shareId))?.files.find(isCsvFile);
+      if (!shared) throw new Error('The list you shared is no longer on this phone. Choose it again.');
+      return readText(new File([shared.bytes], shared.name, { type: shared.type }));
+    }).then((next) => alive() && setStage(next));
+    // read once per shared list
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shareId]);
 
   const turnOn = async (plan: ImportPlan): Promise<void> => {
     setStage({ kind: 'saving', plan });
     await applyImport(plan);
+    if (shareId) await dropShares();
     // the Bible chosen here is the Bible in Logos that Old Testament chapters open in (as it is when he chooses one on the Bibles page)
     const bible = plan.turning.find((t) => t.entry.kind === 'bible');
     if (bible) await setLogosBible(bible.entry.resource);
