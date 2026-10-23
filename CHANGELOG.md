@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.418
+_2026-10-23_
+- New: Tapping Play in a Bible reference's pop-up reads the passage aloud, with Pause and Stop; an Old Testament reference says that no Old Testament is present.
+
 ## 0.1.417
 _2026-10-23_
 - New: You can import your Logos library from the spreadsheet Logos saves, and Lampas turns on every book it can open and says what it cannot use and why.

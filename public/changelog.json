@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.418",
+    "date": "2026-10-23",
+    "story": "mw-9q8wp1.4",
+    "kind": "new",
+    "text": "Tapping Play in a Bible reference's pop-up reads the passage aloud, with Pause and Stop; an Old Testament reference says that no Old Testament is present."
+  },
+  {
     "version": "0.1.417",
     "date": "2026-10-23",
     "story": "mw-rfjjzd.6",
