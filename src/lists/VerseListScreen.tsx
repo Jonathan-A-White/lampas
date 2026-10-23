@@ -1,6 +1,6 @@
 // src/lists/VerseListScreen.tsx — one verse list (#/lists/<id>, mw-9q8wp1.1): its name and its references in the order saved, each the link the Share sheet's references are (a tap opens the
 // pop-up with the verse; Open goes to the Reader and Back comes here). Rename is in place: the name becomes a field with Save and Cancel. Delete takes the list away, goes back to the lists
-// and leaves Undo there for a few seconds (src/lists/deleted.ts). Play all (PlayAllBar.tsx, mw-9q8wp1.5) reads the references in order above them. Edit swaps the references for src/lists/EditRefs.tsx (add by typing, remove, move, sort; mw-9q8wp1.3). A list that is not there (deleted, then Back) says so and offers the lists.
+// and leaves Undo there for a few seconds (src/lists/deleted.ts). Play all (PlayAllBar.tsx, mw-9q8wp1.5) reads the references in order above them. Edit swaps the references for src/lists/EditRefs.tsx (add by typing, remove, move, sort, move or copy to another list; mw-9q8wp1.3, .8). A list that is not there (deleted, then Back) says so and offers the lists.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useRef, useState, type FormEvent } from 'react';
 import { getVerseList, removeVerseList, renameVerseList } from '../data/repositories';
