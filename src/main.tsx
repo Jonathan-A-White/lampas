@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import 'pwa-kit/whats-new/styles.css';
+import 'pwa-kit/settings/styles.css';
 import 'voice-kit/speech/styles.css';
 import 'voice-kit/composer/styles.css';
 import { registerSW } from 'virtual:pwa-register';

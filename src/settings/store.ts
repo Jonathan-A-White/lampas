@@ -2,6 +2,7 @@
 // is setSetting: the value is kept (as text, like every setting), then { kind: 'setting-changed', key, value } is published, once. The old
 // getX/setX pairs of src/data/repositories/settings.ts are one-line wrappers over these for the settings declared so (docs/module-map.md R2).
 import { useLiveQuery } from 'dexie-react-hooks';
+import type { SettingsStore } from 'pwa-kit/settings';
 import { db } from '../data/db';
 import { latestSetting, publish, subscribe } from '../events/bus';
 import type { SettingDef, SettingValue } from './define';
@@ -42,3 +43,11 @@ export function toldSetting<T extends SettingValue>(def: SettingDef<T>): T | und
   const event = latestSetting(def.key);
   return event ? def.parse(event.value) : undefined;
 }
+
+/** Lampas's settings store in the shape the kit's registry takes (entryOf, pwa-kit/settings): the same reads, saves and bus events as the functions above. */
+export const settingsStore: SettingsStore = {
+  get: getSetting,
+  set: setSetting,
+  subscribe: (listener) => subscribe('setting-changed', (event) => listener(event.key, String(event.value))),
+  onSetting,
+};

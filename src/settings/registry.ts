@@ -5,6 +5,7 @@
 // told this list (src/settings/grindText.ts builds its schema and instructions from it): a new setting is talkable by adding it
 // here, and tests/unit/settings-registry.test.tsx fails if a control of the Settings screen has no entry. A setting declared once
 // (src/settings/definitions/: theme, weave, tips, immersive, askBy so far) gets its entry from its definition (`fromDefinition`), in its place in the list.
+import { createRegistry, entryOf, MAX_CHANGES, type ChangeResult, type RowMeta as KitRowMeta, type SettingEntry as KitSettingEntry } from 'pwa-kit/settings';
 import type { AppliedChange } from './applied';
 import { TEXT_SIZES } from '../appearance/textSizes';
 import type { Theme } from '../appearance/themes';
@@ -78,7 +79,7 @@ import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
 import { greekFrom, greekInterestSetting, greekLevelOf } from './definitions/greekInterest';
-import { getSetting, setSetting } from './store';
+import { getSetting, setSetting, settingsStore } from './store';
 
 export type { Allowed, Dependency, SectionId, SettingValue };
 
@@ -89,28 +90,10 @@ export const TEXT_MAX = 80;
 export const PHONE_VOICE = 'default';
 
 /** What the Settings screen needs of a row besides its control. */
-export interface RowMeta {
-  section: SectionId;
-  /** the longer explanation, for the tutor and the row's 'More help' */
-  help?: string;
-  dependsOn?: Dependency;
-}
+export type RowMeta = KitRowMeta<SectionId>;
 
-export interface SettingEntry extends RowMeta {
-  /** what the grind and `settings_changes` call it: 'greekRate' */
-  key: string;
-  /** what the Settings screen calls it (the name of its control): 'Greek speed' */
-  label: string;
-  /** one line (at most 90 characters) under the control, searched with the name: what it does */
-  hint: string;
-  allowed: Allowed;
-  /** the saved value, as it was before a change (a voice he chose is its voiceURI) */
-  read(): Promise<SettingValue>;
-  /** saves `value` and tells the bus; `value` is one `read` gave or one `allowed` names */
-  write(value: SettingValue): Promise<void>;
-  /** the value as a person reads it: 'Greek speed 0.8x', 'Theme: Dark' */
-  show(value: SettingValue): string;
-}
+/** An entry of the registry (the kit's, over Lampas's sections): `key` is what the grind and `settings_changes` call it, 'greekRate'; `hint` is one line (at most 90 characters) under the control. */
+export type SettingEntry = KitSettingEntry<SectionId>;
 
 function choice(
   key: string,
@@ -142,26 +125,16 @@ const OLD_KINDS: Readonly<Record<string, (value: SettingValue) => AppEvent>> = {
   immersiveReader: (value) => ({ kind: 'immersive-changed', immersive: value as Immersive }),
 };
 
-/** The entry of a setting declared once (src/settings/definitions/): read and saved through src/settings/store.ts. */
+/** The entry of a setting declared once (src/settings/definitions/): read and saved through src/settings/store.ts, which the kit's entryOf is given; a write also tells the old per-setting kind. */
 function fromDefinition<T extends SettingValue>(def: SettingDef<T>): SettingEntry {
-  const { key, label, hint, help, section, dependsOn, allowed } = def;
   return {
-    key,
-    label,
-    hint,
-    help,
-    section,
-    dependsOn,
-    allowed,
-    read: () => getSetting(def),
+    ...entryOf<SectionId>(def, settingsStore),
     write: async (value) => {
       const parsed = def.parse(value);
       await setSetting(def, parsed);
-      const old = OLD_KINDS[key];
+      const old = OLD_KINDS[def.key];
       if (old) publish(old(parsed));
     },
-    show: (value) =>
-      allowed.kind === 'choice' ? `${label}: ${allowed.values.find((v) => v.value === value)?.label ?? String(value)}` : `${label}: ${String(value)}`,
   };
 }
 
@@ -554,90 +527,27 @@ export const SETTINGS: readonly SettingEntry[] = [
   quizGoalEntry,
 ];
 
-export const settingOf = (key: string): SettingEntry | undefined => SETTINGS.find((s) => s.key === key);
+/** The registry over SETTINGS (the kit's createRegistry): it looks a setting up, saves a change and checks a talked one against what each setting allows. */
+const registry = createRegistry<SectionId>(SETTINGS, { textMax: TEXT_MAX });
 
-/** Saves a choice and tells the bus: what the Settings screen does when he taps a control. */
-export async function writeSetting(key: string, value: SettingValue): Promise<void> {
-  const entry = settingOf(key);
-  if (!entry) throw new Error(`no setting called ${key}`);
-  await entry.write(value);
-}
+export const settingOf = registry.settingOf;
 
-/** The value a talked `value` stands for, or undefined when the setting does not allow it. */
-function allowedValue(entry: SettingEntry, value: unknown): SettingValue | undefined {
-  const { allowed } = entry;
-  if (allowed.kind === 'choice') return typeof value === 'string' && allowed.values.some((v) => v.value === value) ? value : undefined;
-  if (allowed.kind === 'text') return typeof value === 'string' && value.length <= TEXT_MAX && allowed.valid(value) ? value : undefined;
-  return typeof value === 'number' && Number.isFinite(value) && value >= allowed.min && value <= allowed.max ? value : undefined;
-}
+/** Saves a choice and tells the bus: what the Settings screen does when he taps a control. Throws for a key that is no setting. */
+export const writeSetting = registry.write;
 
-export type { AppliedChange };
+export type { AppliedChange, ChangeResult };
+export { MAX_CHANGES };
 
-export interface ChangeResult {
-  applied: AppliedChange[];
-  /** one plain sentence for each change that was ignored */
-  refused: string[];
-}
-
-/** The most changes of one answer that are looked at. */
-export const MAX_CHANGES = 10;
-
-const describe = (value: unknown): string => (typeof value === 'string' ? `"${value}"` : String(value));
-
-/** Checks each change the grind asked for against the registry and applies the valid ones in order, one after the other (so a
- * later change of the same setting is from the earlier one). Anything else is ignored and said so in `refused`. */
-export async function applyChanges(changes: unknown, options: { skipUnchanged?: boolean } = {}): Promise<ChangeResult> {
-  const result: ChangeResult = { applied: [], refused: [] };
-  if (!Array.isArray(changes)) return result;
-  for (const change of changes.slice(0, MAX_CHANGES)) {
-    const asked = typeof change === 'object' && change !== null ? (change as Record<string, unknown>) : {};
-    const entry = typeof asked.key === 'string' ? settingOf(asked.key) : undefined;
-    if (typeof asked.key !== 'string' || !('value' in asked)) {
-      result.refused.push('A change was left out: it was not a setting and a value.');
-    } else if (!entry) {
-      result.refused.push(`Left out "${asked.key}": the app has no such setting.`);
-    } else {
-      const value = allowedValue(entry, asked.value);
-      if (value === undefined) {
-        result.refused.push(`Left out ${entry.label}: ${describe(asked.value)} is not a value it allows.`);
-      } else {
-        const from = await entry.read();
-        // already set that way: nothing changed, so nothing is written and no card says so (Ask the tutor; the Talk keeps its card)
-        if (options.skipUnchanged && from === value) continue;
-        await entry.write(value);
-        result.applied.push({ key: entry.key, label: entry.label, from, to: value, shown: entry.show(value) });
-      }
-    }
-  }
-  if (changes.length > MAX_CHANGES) result.refused.push(`Left out ${changes.length - MAX_CHANGES} more changes than the app takes at once.`);
-  return result;
-}
+/** Checks each change the grind asked for against the registry and applies the valid ones in order, one after the other (so a later change of the same setting is
+ * from the earlier one). Anything else is ignored and said so in `refused`; `skipUnchanged` writes nothing, and says nothing, for a setting already set that way. */
+export const applyChanges = registry.applyChanges;
 
 /** A setting change the tutor offers instead of making (mw-5r3p30.186): `{key, value}` checked as applyChanges would check it, with the sentence the button and the
  * spoken read-back use ('Change Theme: Dark'); undefined for anything the registry would refuse. */
-export function offeredChange(change: unknown): { key: string; value: string | number; text: string } | undefined {
-  if (typeof change !== 'object' || change === null) return undefined;
-  const asked = change as Record<string, unknown>;
-  const entry = typeof asked.key === 'string' ? settingOf(asked.key) : undefined;
-  const value = entry ? allowedValue(entry, asked.value) : undefined;
-  if (!entry || value === undefined) return undefined;
-  return { key: entry.key, value, text: `Change ${entry.show(value)}` };
-}
+export const offeredChange = registry.offeredChange;
 
 /** Puts back what `change` replaced, the same way it was written. */
-export async function undoChange(change: AppliedChange): Promise<void> {
-  await settingOf(change.key)?.write(change.from);
-}
+export const undoChange = registry.undoChange;
 
-/** What each setting holds now, as the grind may name it (a voice he chose is 'other'): sent with every talk, so 'slower' is
- * from where it stands. */
-export async function currentSettings(): Promise<Record<string, SettingValue>> {
-  const entries = await Promise.all(
-    SETTINGS.map(async (s) => {
-      const value = await s.read();
-      const named = s.allowed.kind === 'choice' ? s.allowed.values.some((v) => v.value === value) : true;
-      return [s.key, named ? value : 'other'] as const;
-    }),
-  );
-  return Object.fromEntries(entries);
-}
+/** What each setting holds now, as the grind may name it (a voice he chose is 'other'): sent with every talk, so 'slower' is from where it stands. */
+export const currentSettings = registry.currentSettings;

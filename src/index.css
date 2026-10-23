@@ -809,6 +809,28 @@ textarea,
   --bk-whats-new-target: var(--lp-tap);
 }
 
+/* pwa-kit's Settings home (the search box, a group's button, a found row: pwa-kit/settings, src/settings/SettingsHome.tsx) takes its colours from the palette in force. The bar is
+ * the page's canvas and runs the screen's width over the 1rem gutters (the search box is the surface), as it did before the kit drew it; a found row's name is medium weight. */
+:root {
+  --bk-settings-surface: var(--lp-canvas);
+  --bk-settings-fg: var(--lp-fg);
+  --bk-settings-muted: var(--lp-muted);
+  --bk-settings-line: var(--lp-line);
+  --bk-settings-accent: var(--lp-accent);
+  --bk-settings-target: 3rem;
+}
+.bk-settings__searchbar {
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+}
+.bk-settings__search {
+  background: var(--lp-surface);
+  color: var(--lp-fg);
+}
+.bk-settings__found-label {
+  font-weight: 500;
+}
+
 /* voice-kit's speaking bar (Pause / Resume, Restart, Stop: voice-kit/speech) takes its colours from the palette in force and keeps the phone's own size, like the header. */
 :root {
   --bk-speech-surface: var(--lp-surface);

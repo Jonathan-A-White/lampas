@@ -22,7 +22,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'React', use: 'The interface library', licence: 'MIT', link: 'https://react.dev/' },
   { name: 'Dexie', use: 'Keeps your words and settings on the phone', licence: 'Apache-2.0', link: 'https://dexie.org/' },
   { name: 'bsv-kit', use: 'The licence gate and tutor messages', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/bsv-kit' },
-  { name: 'pwa-kit', use: 'What\'s new, tips, updates, the picture viewer; and learn-kit\'s learning graph', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/pwa-kit' },
+  { name: 'pwa-kit', use: 'What\'s new, tips, updates, the picture viewer, the settings list and its search; and learn-kit\'s learning graph', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/pwa-kit' },
   { name: 'voice-kit', use: 'Read aloud and hold to talk', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/voice-kit' },
   { name: 'BSV SDK', use: 'Keys and signatures under bsv-kit', licence: 'Open BSV License', link: 'https://github.com/bsv-blockchain/ts-stack/tree/main/packages/sdk' },
   { name: 'react-markdown', use: 'Draws the tutor\'s answers', licence: 'MIT', link: 'https://github.com/remarkjs/react-markdown' },

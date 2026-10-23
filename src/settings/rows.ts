@@ -4,21 +4,36 @@
 // the same list. A row is a talkable setting (src/settings/registry.ts SETTINGS: it also carries what to read, write and allow, and the
 // study-resource switches are among them), Developer mode (found on About, kept outside the registry so the tutor cannot change it) or a link
 // to another screen. The tutor may change every row but the last two kinds (tests/unit/settings-registry.test.tsx).
+// The searching, hiding and ordering are the kit's (pwa-kit/settings: rowsInOrder, visibleRows, neededFor, rowsAt, visibleGroups, searchSettings); what is here is Lampas's own: its
+// sections, groups, links and the rows that are not settings, and the same functions with Lampas's list and its Markdown-to-words (helpText.ts) already given.
 // A new setting is one entry in the registry (with its section) plus its control in src/settings/controls/ (CONTROLS, index.ts); a test fails until both.
+import {
+  foldText,
+  groupOf as groupIn,
+  neededFor as neededIn,
+  rowsAt as rowsAtIn,
+  rowsInOrder,
+  searchSettings as searchIn,
+  visibleGroups as visibleGroupsIn,
+  visibleRows as visibleRowsIn,
+  type SearchOptions,
+  type SettingsGroup as KitGroup,
+  type SettingsRow as KitRow,
+  type SettingsSection as KitSection,
+  type Values,
+} from 'pwa-kit/settings';
 import { getDeveloper } from '../data/repositories';
 import { SCRIPTS } from '../script/scripts';
 import { resourceOf } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
 import { greekFrom, type GreekLevel } from './definitions/greekInterest';
 import { helpPlain } from './helpText';
-import { SETTINGS, settingOf, type Dependency, type SectionId } from './registry';
+import { SETTINGS, settingOf, type SectionId } from './registry';
 
-export interface SettingsSection {
-  id: SectionId;
-  title: string;
-  /** under the title, when the rows do not say it */
-  hint?: string;
-}
+export type SettingsSection = KitSection<SectionId>;
+
+export { foldText };
+export type { Values };
 
 /** The sections, in the order the screen draws them (a group's page draws its own, in this order). */
 export const SECTIONS: readonly SettingsSection[] = [
@@ -62,13 +77,7 @@ export const isHomeRow = (row: Pick<SettingsRow, 'section'>): boolean => HOME_SE
 export type GroupId = 'reading' | 'greek' | 'tutor' | 'listening' | 'daily' | 'study' | 'account' | 'developer';
 
 /** A page of Settings (mw-3ased2.1): the home lists the groups and each opens as a page of its own holding its sections. */
-export interface SettingsGroup {
-  id: GroupId;
-  title: string;
-  /** under the title on the home: what is in it */
-  hint: string;
-  sections: readonly SectionId[];
-}
+export type SettingsGroup = KitGroup<SectionId, GroupId>;
 
 /** The groups, in the order the home lists them, and the one table that says which group a section is in (a unit test fails on a section in none or two).
  *  PROVISIONAL: the grouping is the Builder's, to be amended by the Governor. */
@@ -86,28 +95,13 @@ export const GROUPS: readonly SettingsGroup[] = [
 export const groupById = (id: string): SettingsGroup | undefined => GROUPS.find((g) => g.id === id);
 
 /** The group a section is in. */
-export function groupOf(section: SectionId): SettingsGroup {
-  if (HOME_SECTIONS.includes(section)) throw new Error(`section ${section} is on the home, in no group`);
-  const group = GROUPS.find((g) => g.sections.includes(section));
-  if (!group) throw new Error(`section ${section} is in no group`);
-  return group;
-}
+export const groupOf = (section: SectionId): SettingsGroup => groupIn(GROUPS, section, HOME_SECTIONS);
 
-export interface SettingsRow {
-  /** a setting's key ('weave'), a resource switch's ('resource.logos') or a link's ('link.words') */
-  key: string;
-  /** what the row is called: its control's name */
-  label: string;
-  /** one line under the control, searched with the name */
-  hint: string;
-  /** the longer explanation, behind the row's 'More help' and given to the tutor */
-  help?: string;
-  section: SectionId;
-  /** the row is a detail of another: drawn only while that one is on */
-  dependsOn?: Dependency;
+/** A row of Settings (the kit's, over Lampas's sections): `key` is a setting's ('weave'), a resource switch's ('resource.logos') or a link's ('link.words'). */
+export type SettingsRow = KitRow<SectionId> & {
   /** the row sets how the tutor works (the AI: what is sent to the mill): with no licence it is drawn off and greyed, with 'Needs a licence' (mw-8m9dyu.3) */
   ai?: boolean;
-}
+};
 
 /** The settings that only matter to the tutor. A new setting for the tutor is listed here, so an unlicensed phone sees it off with 'Needs a licence'. */
 const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'askBy', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
@@ -178,7 +172,7 @@ function libraryAfterLogos(rows: readonly SettingsRow[]): SettingsRow[] {
 const unordered: readonly SettingsRow[] = libraryAfterLogos([...SETTINGS.map(rowOfSetting), ...REQUESTS, LIBRARY_ROW, DEVELOPER, ...LINKS]);
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
-export const ROWS: readonly SettingsRow[] = SECTIONS.flatMap((section) => unordered.filter((r) => r.section === section.id));
+export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
 
 /** The rows to draw with the study-resource switches (`resource.<id>`) in the order the Greek dial gives (resourcesForLevel: English and 'both' first between Just English and All in), each
  *  in the place of one of the switches; every other row stays where it is. Hiding a Greek switch at Just English is the row's dependsOn (registry.ts), through the same selector. */
@@ -196,9 +190,6 @@ export const isTalkable = (key: string): boolean => !key.startsWith('link.') && 
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 
-/** The values the rows' dependencies read, as text, by row key. */
-export type Values = Readonly<Record<string, string>>;
-
 const DEPENDED_ON = [...new Set(ROWS.flatMap((r) => (r.dependsOn ? [r.dependsOn.key] : [])))];
 
 /** The current value of every row some other row depends on: a setting's value as text (a resource switch is 'on' or 'off'). */
@@ -212,71 +203,25 @@ export async function readValues(): Promise<Values> {
   return Object.fromEntries(entries);
 }
 
-/** Text as the search compares it: no capitals, no accents. */
-export const foldText = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
-
-/** Whether the row's longer help holds the folded query `q`, read as plain words (its Markdown marks are not searched, helpText.ts). */
-const holdsHelp = (row: SettingsRow, q: string): boolean => row.help !== undefined && foldText(helpPlain(row.help)).includes(q);
-
-/** Whether each row's dependency is on, given the values read (a row with no dependency is always on). */
-function reading(values: Values, rows: readonly SettingsRow[]) {
-  const byKey = new Map(rows.map((r) => [r.key, r]));
-  const on = (row: SettingsRow): boolean => {
-    if (!row.dependsOn) return true;
-    const value = values[row.dependsOn.key];
-    const parent = byKey.get(row.dependsOn.key);
-    return value !== undefined && row.dependsOn.shown(value) && (!parent || on(parent));
-  };
-  return { byKey, on };
-}
+/** How the kit's search reads a row's help: as plain words, its Markdown marks not searched (helpText.ts). */
+const SEARCH: SearchOptions<SettingsRow> = { plainHelp: helpPlain };
 
 /** The rows to draw: those whose dependency is on and, when `query` is not empty, whose name, hint or help holds it (ignoring capitals and accents).
  *  A row that matches but is hidden by what it depends on is reached through the row that turns it on, which is shown in its place. */
-export function visibleRows(values: Values, query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
-  const { byKey, on } = reading(values, rows);
-  const q = foldText(query.trim());
-  if (q === '') return rows.filter(on);
-  const shown = new Set<string>();
-  for (const row of rows) {
-    if (!foldText(row.label).includes(q) && !foldText(row.hint).includes(q) && !holdsHelp(row, q)) continue;
-    let at: SettingsRow | undefined = row;
-    while (at && !on(at)) at = at.dependsOn ? byKey.get(at.dependsOn.key) : undefined;
-    if (at) shown.add(at.key);
-  }
-  return rows.filter((r) => shown.has(r.key));
-}
+export const visibleRows = (values: Values, query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] => visibleRowsIn(rows, values, query, SEARCH);
 
 /** The setting to turn on first for the row `key` to be drawn, when it is a detail of one that is off: the nearest row it depends on that is drawn, whose
  *  value hides it. Undefined when the row is drawn as it is (or is no row of the list). */
-export function neededFor(values: Values, key: string, rows: readonly SettingsRow[] = ROWS): SettingsRow | undefined {
-  const { byKey, on } = reading(values, rows);
-  let at = byKey.get(key);
-  if (!at || on(at)) return undefined;
-  while (at && !on(at)) at = at.dependsOn ? byKey.get(at.dependsOn.key) : undefined;
-  return at;
-}
+export const neededFor = (values: Values, key: string, rows: readonly SettingsRow[] = ROWS): SettingsRow | undefined => neededIn(rows, values, key);
 
 /** The rows to draw at a link to the setting `key` (src/settings/link.ts): what visibleRows gives for `query`, and that row though the query or its
  *  dependency would hide it, with the setting to turn on first (neededFor) beside it. */
-export function rowsAt(values: Values, query: string, key: string | null, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
-  const drawn = visibleRows(values, query, rows);
-  if (key === null || !rows.some((r) => r.key === key)) return drawn;
-  const keep = new Set([...drawn.map((r) => r.key), key]);
-  const needed = neededFor(values, key, rows);
-  if (needed) keep.add(needed.key);
-  return rows.filter((r) => keep.has(r.key));
-}
+export const rowsAt = (values: Values, query: string, key: string | null, rows: readonly SettingsRow[] = ROWS): SettingsRow[] => rowsAtIn(rows, values, query, key, SEARCH);
 
 /** The groups the home lists: those with a row drawn, given the values read. Developer is not listed until Developer mode is found (its only row hides until then). */
-export function visibleGroups(values: Values, rows: readonly SettingsRow[] = ROWS): SettingsGroup[] {
-  const drawn = new Set(visibleRows(values, '', rows).filter((r) => !isHomeRow(r)).map((r) => groupOf(r.section).id));
-  return GROUPS.filter((g) => drawn.has(g.id));
-}
+export const visibleGroups = (values: Values, rows: readonly SettingsRow[] = ROWS): SettingsGroup[] => visibleGroupsIn(rows, GROUPS, values, HOME_SECTIONS);
 
 /** The settings (the rows with a link, src/settings/link.ts) whose name, hint or help holds `query`, ignoring capitals and accents, for the search that is
  *  one tap away from every screen. A detail that is hidden while its setting is off is found too: its link says what to turn on first. Nothing for an empty query. */
-export function searchSettings(query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] {
-  const q = foldText(query.trim());
-  if (q === '') return [];
-  return rows.filter((r) => settingOf(r.key) !== undefined && (foldText(r.label).includes(q) || foldText(r.hint).includes(q) || holdsHelp(r, q)));
-}
+export const searchSettings = (query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] =>
+  searchIn(rows, query, { ...SEARCH, only: (row) => settingOf(row.key) !== undefined });
