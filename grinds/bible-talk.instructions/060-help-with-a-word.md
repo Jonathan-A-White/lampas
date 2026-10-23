@@ -5,11 +5,10 @@ a reader must know to read it: the ending, the stem change, the accent or breath
 the chapter you know is there; invent none). End with one check question, such as which person the ending shows. Cite the word in `words`.
 
 - `kind` is `word`: nothing in particular in mind. Open with one line that says what you were handed, in this shape:
-  `About συνεργεῖ (συνεργέω), verb, present active indicative, 3rd person singular.` (form, lemma, parsing), then what it means here, why it has this form, and one way to remember it. Leave `syllables` out.
-- `kind` is `grammar`: what the form is (its parsing, said plainly) and what he needs to know to read it. Leave `syllables` out.
+  `About συνεργεῖ (συνεργέω), verb, present active indicative, 3rd person singular.` (form, lemma, parsing), then what it means here, why it has this form, and one way to remember it.
+- `kind` is `grammar`: what the form is (its parsing, said plainly) and what he needs to know to read it.
 - `kind` is `sound`: how to say it. The app speaks and respells Greek by `pronunciation` (named, with its rules, in `pronunciation_guide`); `focus.respelling` is the word as
-  the app respells it (the stressed syllable in capitals), `focus.syllables` the word cut into syllables, in order, and `focus.stress` the 0-based place of the stressed one
-  (missing when the word has no accent mark). Use them exactly: put `focus.syllables` in `syllables` as they stand (at most 12; joined they spell the word), name the syllables
+  the app respells it (the stressed syllable in capitals), `focus.syllables` the word cut into syllables, in order, and `focus.stress` the 0-based place of the stressed one. Use them exactly: put `focus.syllables` in `syllables` as they stand (at most 12; joined they spell the word), name the syllables
   by them in `answer` ("the first syllable, σβέν") and say the stress falls on `focus.syllables[focus.stress]`. Never count or cut the word yourself and never work out the
   stress yourself. A cluster of consonants such as σβ, πν or στ is never a syllable of its own: it starts the syllable whose vowel follows (σβέν-νυ-τε has three, σβέν stressed).
   In `answer` say how each syllable sounds, which carries the stress and what the accent or breathing tells him, by `pronunciation_guide` and `focus.respelling` alone.
@@ -17,10 +16,10 @@ the chapter you know is there; invent none). End with one check question, such a
   is not a letter: say what it does only as the guide says, and never add a sound `focus.respelling` does not write. The app reads the word and each syllable aloud, so do not
   spell the sounds out at length.
   Describe a sound by what it is, never by a wrong sound to avoid ('not aw', 'not ow', 'don't say taw'), even as a warning: the app reads your answer aloud, so a wrong sound
-  named is spoken to a beginner. Never name a wrong sound in `answer`; a denial names it too ("It is never aw", "never taw"). Where `pronunciation_guide` says
-  "never" about a sound, its "never" wording is for you, not for him. Say the right sound and stop: not even in a parenthesis, an aside or a "because" clause, and do not
-  explain which letters make αυ af or av. An answer that explains the rule tends to close with the guide's warning, as in `(never "aw" or "ow")`. Before you return `answer`,
-  read it through for the words aw and ow (and any "never" or "not" next to a sound); if one is there, cut the whole clause.
+  named is spoken to a beginner. Never name a wrong sound in `answer`; a denial names it too ("It is never aw"). Where `pronunciation_guide` says "never" about a sound, its
+  "never" wording is for you, not for him. Say the right sound and stop: not even in a parenthesis (as in `(never "aw" or "ow")`), an aside or a "because" clause, and do not
+  explain which letters make αυ af or av. Before you return `answer`, read it through for the words aw and ow (and any "never" or "not" next to a sound); if one is there, cut
+  the whole clause.
   Never split a pair of letters that makes one sound across two syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second
   letter carries a diaeresis (ϊ, ϋ), which makes it a syllable of its own.
 - Asked how to say a word with no `focus` ("how do I say σβέννυτε?"): find it in `greek_words` by its `form` and treat its `respelling`, `syllables` and `stress` exactly as

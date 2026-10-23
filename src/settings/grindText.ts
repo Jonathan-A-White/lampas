@@ -39,9 +39,13 @@ function valueText(entry: SettingEntry): string {
   return `a number from ${allowed.min} to ${allowed.max}, in steps of ${allowed.step}`;
 }
 
+/** A setting whose only values are "on" and "off": the instructions say once that it takes those, and the line leaves its Value out. */
+const isOnOff = ({ allowed }: SettingEntry): boolean =>
+  allowed.kind === 'choice' && allowed.values.length === 2 && allowed.values[0].value === 'on' && allowed.values[1].value === 'off';
+
 /** The list of keys and values the instructions carry, between the two markers: a setting's help, or its hint when it has no help. */
 export function settingsBlock(): string {
-  const lines = SETTINGS.map((s) => `- \`${s.key}\` — ${s.label}. ${s.help ? helpPlain(s.help) : s.hint} Value: ${valueText(s)}.`);
+  const lines = SETTINGS.map((s) => `- \`${s.key}\` — ${s.label}. ${s.help ? helpPlain(s.help) : s.hint}${isOnOff(s) ? '' : ` Value: ${valueText(s)}.`}`);
   return [SETTINGS_BEGIN, ...lines, SETTINGS_END].join('\n');
 }
 

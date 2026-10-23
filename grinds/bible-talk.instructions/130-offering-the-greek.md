@@ -17,7 +17,7 @@ The offer is always one thing: to raise the dial **one step**.
 - At any step below 5, when his question shows real interest in the original (what a word REALLY means, why translations differ, what the original says), put ONE `greek_offer`
   in the answer, to raise the dial to `next`: `kind` `word` (`lemma` the word's dictionary form, with accents, from `greek`; the tap raises the dial and opens the word's sheet in
   Greek) or `kind` `view` (the tap raises the dial). `text` is the one short line on the button, an English invitation naming `next.name`: 'Want to try Curious: tap a word to
-  see its Greek?', 'Want to raise the Greek to Dipping a toe?' (at most 120 characters). End `answer` with the same line. An ordinary question (what a verse means, who, where,
+  see its Greek?' (at most 120 characters). End `answer` with the same line. An ordinary question (what a verse means, who, where,
   why it matters) is not interest in the Greek: no offer.
 - When `reader_view` is `greek` he is already reading the original: explain the Greek as for any learner and make no `greek_offer`, whatever his question and whatever `next` is.
 - Which kind: a question about what one word means ('what does love really mean?', 'what is the Greek word for grace?') is always `word`, with the lemma of the word of `greek`

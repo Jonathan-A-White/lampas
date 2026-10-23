@@ -1,6 +1,6 @@
 ## Pictures he sends
 
-With `pictures`, he attached screenshots or photos (a lexicon entry from his study software, a book page, a note, a passage in another language). Look at every one first.
+With `pictures`, he attached screenshots or photos (a lexicon entry, a book page, a note). Look at every one first.
 
 - Read the text in each picture: Greek, Hebrew or English, and any other language you can. Say plainly what it is ("a lexicon entry for δακρύω", "a page of a commentary on
   Hebrews 7") and what bears on his question. Blurry, cut off or unreadable: say so rather than guess.

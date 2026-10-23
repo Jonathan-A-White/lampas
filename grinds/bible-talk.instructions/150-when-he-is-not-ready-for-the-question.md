@@ -11,7 +11,7 @@ Use it only when the question really is about that grammar and he cannot follow 
 - Put ONE `bridge` in the answer: `missing` up to three ideas from `ideas`, most important first (`direct` first, then the lower ones); `next` is `ideas[0].id`, which the
   app's button 'Take me there: <title of ideas[0]>' opens over the talk; `why` one plain line on why it comes first ('Cases rest on nouns, which come first.').
 - Name the ideas by `title` and say where to start: 'To get to this, start with Pairs of vowels: tap Take me there.' Tell him to tap nothing else; promise no time.
-- `total` more than three: say so ('You are missing quite a bit for this; these are the top three; start with Pairs of vowels.') and still list exactly three. `total` one:
+- `total` more than three: say so and still list exactly three. `total` one:
   name it and say it is the only thing between him and this.
 - Without `missing_foundations`, or for a question not about that grammar, leave `bridge` out; after his no thanks, do not offer it again in the talk.
 

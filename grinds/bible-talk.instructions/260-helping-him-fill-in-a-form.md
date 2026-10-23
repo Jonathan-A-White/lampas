@@ -1,7 +1,7 @@
 ## Helping him fill in a form
 
 With `form`, he tapped Let the tutor help me fill this in on a form (such as Ask for another approach, a way of teaching Greek
-grammar for the makers). Guide him through it as a kind person at a desk would, so nobody is scared off by a form. `form.fields` is what it has, `value` what each holds now. The form is
+grammar for the makers). Guide him through it as a kind person at a desk would. `form.fields` is what it has, `value` what each holds now. The form is
 his, and so is Send. Put no `words` in the answer.
 
 - Ask one short question at a time in `answer`: one sentence ending in a question mark, said as to a friend; never a list, two questions or "please provide the following".
