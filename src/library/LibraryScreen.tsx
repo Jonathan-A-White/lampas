@@ -3,8 +3,8 @@
 // a search result opens the page at the book. The address picks the page: a kind it does not know is the home.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
-import { importNote } from '../data/repositories';
-import { backTo, libraryOf, openLibrary, useAddress } from '../nav/route';
+import { importNote, verseListCount } from '../data/repositories';
+import { backTo, libraryOf, navigate, openLibrary, useAddress } from '../nav/route';
 import { CATALOGUE, entryOf, KINDS, type CatalogueEntry } from '../resources/catalogue';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
@@ -33,6 +33,7 @@ export function LibraryScreen() {
 function LibraryHome() {
   const states = useShelf();
   const note = useLiveQuery(async () => (await importNote()) ?? null, []);
+  const lists = useLiveQuery(verseListCount, []);
   const [query, setQuery] = useState('');
   const on = KINDS.reduce((sum, kind) => sum + (states ? countsOf(kind, states).on : 0), 0);
   const searching = query.trim() !== '';
@@ -108,6 +109,22 @@ function LibraryHome() {
             ))}
           </ul>
         )}
+        {searching ? null : (
+          <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
+            <li data-testid="verse-lists-row">
+              <button type="button" onClick={() => navigate('lists')} className="flex min-h-12 w-full items-center gap-3 px-3 py-2 text-left text-base">
+                <span className="min-w-0 flex-1 font-medium">Verse lists</span>{' '}
+                <span data-testid="verse-lists-count" className="shrink-0 text-muted">
+                  {lists === undefined ? '' : lists === 0 ? 'none' : `${lists} ${lists === 1 ? 'list' : 'lists'}`}
+                </span>{' '}
+                <span aria-hidden="true" className="shrink-0 text-muted">
+                  ›
+                </span>
+              </button>
+            </li>
+          </ul>
+        )}
+        <div className="h-[var(--lp-end-inset)]" aria-hidden="true" />
       </main>
     </>
   );

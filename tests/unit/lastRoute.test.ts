@@ -60,6 +60,10 @@ describe('the trail of places he visited', () => {
     expect(isKeptHash('#/askmore')).toBe(true);
     expect(isKeptHash('#/library?kind=lexicon')).toBe(true);
     expect(isKeptHash('#/conversations')).toBe(true);
+    expect(isKeptHash('#/lists')).toBe(true);
+    expect(isKeptHash('#/lists/7')).toBe(true);
+    expect(isKeptHash('#/lists/')).toBe(false);
+    expect(isKeptHash('#/lists/x')).toBe(false);
     expect(isKeptHash('#/preface')).toBe(true);
     expect(isKeptHash('#/preface/robinson')).toBe(true);
     expect(isKeptHash('#/paradigms?t=eimi&mode=review')).toBe(true);

@@ -3,7 +3,7 @@
 // reference keeps the words as printed and its OSIS ref; the list can be kept in the order of the page or in Bible order.
 import { BOOKS, bookOf } from '../data/books';
 import { OT_BOOKS, otBookOf } from '../data/otBooks';
-import { osisOf, parseCanonReference } from './links';
+import { inWords, osisOf, parseCanonReference } from './links';
 
 /** One reference found in the text. A list ('Rom 8:28, 31') is one reference for each verse; a range keeps its first verse and `lastVerse`. */
 export interface FoundReference {
@@ -97,6 +97,12 @@ export function listReferences(found: readonly FoundReference[], order: RefsOrde
   return listed.sort(
     (a, b) => bookPlace(a) - bookPlace(b) || a.chapter - b.chapter || (a.verse ?? 0) - (b.verse ?? 0) || (a.lastVerse ?? 0) - (b.lastVerse ?? 0),
   );
+}
+
+/** What a reference is called on its card: in words ('Genesis 1:28', 'Psalm 23', a range 'Genesis 1:28-30'), as the tutor's cards head it. */
+export function headingOf(r: Pick<FoundReference, 'ref' | 'lastVerse'>): string {
+  const words = inWords(r.ref).replace(/^Psalms /, 'Psalm ');
+  return r.lastVerse === undefined ? words : `${words}-${r.lastVerse}`;
 }
 
 /** A book's name as the lists write it. */

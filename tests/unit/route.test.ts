@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf } from '../../src/nav/route';
+import { paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf, verseListHash, verseListOf } from '../../src/nav/route';
 
 describe('the address', () => {
   it('says where the placement was started from', () => {
@@ -41,6 +41,9 @@ describe('the address', () => {
     expect(routeOf('#/library')).toBe('library');
     expect(routeOf('#/library?kind=lexicon&book=LLS%3A46.30.18')).toBe('library');
     expect(routeOf('#/conversations')).toBe('conversations');
+    expect(routeOf('#/lists')).toBe('lists');
+    expect(routeOf('#/lists/7')).toBe('lists');
+    expect(routeOf('#/listsx')).toBe('home');
     expect(routeOf('#/about')).toBe('about');
     expect(routeOf('#/preface')).toBe('preface');
     expect(routeOf('#/preface/robinson')).toBe('essay');
@@ -94,5 +97,22 @@ describe('the paradigm address', () => {
     expect(paradigmOf(paradigmHash({ table: 'contract-verbs', lemma: 'ἀγαπάω', own: true }))).toEqual({ table: 'contract-verbs', lemma: 'ἀγαπάω', own: true });
     expect(paradigmOf(paradigmHash({ table: 'contract-verbs', lemma: 'ἀγαπάω' }))).toEqual({ table: 'contract-verbs', lemma: 'ἀγαπάω' });
     expect(paradigmOf('#/paradigms?l=ἀγαπάω&own=1')).toEqual({});
+  });
+});
+
+describe('the address of one verse list (#/lists/<id>)', () => {
+  it('reads the id of a list, and nothing from the lists screen or an address that is no id', () => {
+    expect(verseListOf('#/lists/7')).toBe(7);
+    expect(verseListOf('#/lists/12?x=1')).toBe(12);
+    expect(verseListOf('#/lists')).toBeUndefined();
+    expect(verseListOf('#/lists/')).toBeUndefined();
+    expect(verseListOf('#/lists/x')).toBeUndefined();
+    expect(verseListOf('#/lists/0')).toBeUndefined();
+    expect(verseListOf('#/lists/7/8')).toBeUndefined();
+    expect(verseListOf('#/library')).toBeUndefined();
+  });
+
+  it('writes the address back', () => {
+    expect(verseListHash(7)).toBe('#/lists/7');
   });
 });
