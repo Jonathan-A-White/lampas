@@ -42,10 +42,10 @@ describe('a gloss that repeats itself', () => {
     expect(repeatsItself(plain)).toBe(false);
   });
 
-  it('is written once by the data build: ὁράω reads "to see"', () => {
+  it('is written once by the data build: ὁράω reads "to see" and its aorist note (mw-bsf54t.12)', () => {
     const lexicon = JSON.parse(readFileSync(`${DATA}/lexicon.json`, 'utf8')) as LemmaLexicon;
-    expect(lexicon['ὁράω'].g).toBe('to see');
-    for (const [lemma, gloss] of [['καλέω', 'to call'], ['βάλλω', 'to throw'], ['ἀπολύω', 'to release'], ['βασανίζω', 'to torture'], ['αἰών', 'an age'], ['ἀσθενέω', 'be weak']]) {
+    expect(lexicon['ὁράω'].g).toBe('to see (aorist εἶδον)');
+    for (const [lemma, gloss] of [['καλέω', 'to call'], ['βάλλω', 'to throw (aorist ἔβαλον)'], ['ἀπολύω', 'to release'], ['βασανίζω', 'to torture'], ['αἰών', 'an age'], ['ἀσθενέω', 'be weak']]) {
       expect(lexicon[lemma].g).toBe(gloss);
     }
   });

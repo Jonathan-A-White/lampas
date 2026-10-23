@@ -148,6 +148,11 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
   `parseLexicon`, so `lexicon.json` and every chapter's `lex` hold the clean gloss; the seed build and Import run the same
   function on the BMA list, whose case before a preposition's meanings (`dat: in, by, with`) becomes a word after them
   (`in, by, with (dative)`), and Dexie v22 cleans a gloss a phone kept before (mw-5r3p30.384).
+* TBESG: the gloss of a verb whose aorist cannot be guessed ends with it, `to come/go (aorist ἦλθον)`: the 28 verbs of
+  `src/data/irregular-aorists.ts` (the Governor's fourteen and λέγω, then the sweep of the top 300 by frequency: γίνομαι,
+  εὑρίσκω, the compounds of ἔρχομαι, ἀναβαίνω, καταβαίνω, ἄγω, συνάγω, ἐκβάλλω, ἵστημι, ἀνίστημι). `withAoristNote` runs in `parseLexicon` (so
+  `lexicon.json` and every chapter's `lex` hold it) and in the seed build; a regular verb gets none, and
+  `tests/unit/irregular-aorists.test.ts` checks every aorist against the text's own aorist forms (mw-bsf54t.12).
 * TBESG: the definition has its markup, scripture references, daggers and `(AS)` / `(ML)` source tags removed
   and is cut at a word boundary near 300 characters, ending in `…`. This is the "note of changes" CC BY 4.0
   asks for. The full lexicon is at the STEPBible address above.

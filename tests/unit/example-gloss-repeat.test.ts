@@ -39,9 +39,9 @@ describe('the example row for ἑωράκαμεν (ὁράω)', () => {
     return { chapter, word };
   };
 
-  it('reads "to see" from the bundled gloss, not "to see: see"', () => {
+  it('reads "to see" from the bundled gloss (with its aorist note, mw-bsf54t.12), not "to see: see"', () => {
     const { chapter, word } = withoutOwnEnglish(john.lex.G3708.g);
-    expect(exampleGloss(breathings, exampleOf(chapter, 1, word))).toBe('to see');
+    expect(exampleGloss(breathings, exampleOf(chapter, 1, word))).toBe('to see (aorist εἶδον)');
   });
 
   it('reads "to see" even from the raw source form TBESG writes, "to see: see"', () => {

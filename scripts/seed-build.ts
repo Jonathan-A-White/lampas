@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { cleanGloss } from '../src/data/gloss.ts';
+import { withAoristNote } from '../src/data/irregular-aorists.ts';
 import type { SeedWord } from '../src/data/seedWord.ts';
 
 /** The distinct lemmas of the md's table, in the order they first appear. */
@@ -18,7 +19,7 @@ export function parseExampleWords(md: string): SeedWord[] {
     const lemma = rawLemma.normalize('NFC');
     const lesson = Number(lsn);
     const seen = byLemma.get(lemma);
-    if (!seen) byLemma.set(lemma, { lemma, gloss: cleanGloss(gloss), lesson, pos }); // 'dat: in, by, with' is 'in, by, with (dative)'
+    if (!seen) byLemma.set(lemma, { lemma, gloss: withAoristNote(lemma, cleanGloss(gloss)), lesson, pos }); // 'dat: in, by, with' is 'in, by, with (dative)'; a listed verb ends '(aorist X)'
     else if (lesson < seen.lesson) seen.lesson = lesson;
   }
   return [...byLemma.values()];
