@@ -4,10 +4,10 @@ import { db } from '../../src/data/db';
 afterAll(() => db.close());
 
 describe('the Dexie database', () => {
-  it('opens at version 28 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder, drillRuns, passageLessons, pictureRefs, talkSummaries, library, exportRows and verseLists stores', async () => {
+  it('opens at version 29 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder, drillRuns, passageLessons, pictureRefs, talkSummaries, library, exportRows and verseLists stores', async () => {
     await db.open();
     expect(db.name).toBe('lampas');
-    expect(db.verno).toBe(28);
+    expect(db.verno).toBe(29);
     expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'drillRuns', 'drills', 'exportRows', 'grammarKnown', 'grammarLevels', 'ladder', 'library', 'meta', 'missTally', 'passageLessons', 'pictureRefs', 'readingHistory', 'readings', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talkSummaries', 'talks', 'tips', 'usage', 'verseLists', 'words']);
     expect(db.words.schema.primKey.name).toBe('lemma');
     expect(db.words.schema.idxByName['lemmas']?.multi).toBe(true);

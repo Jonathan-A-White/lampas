@@ -50,7 +50,7 @@ describe('the upgrade from version 15', () => {
       shares: 'id, createdAt',
     });
     await old.open();
-    const word = { lemma: 'λέγω', lemmas: [], gloss: 'say', lesson: 1, state: 'solid', since: 5 };
+    const word = { lemma: 'λύω', lemmas: [], gloss: 'say', lesson: 1, state: 'solid', since: 5 };
     const talk = { ref: 'rom.8', q: 'Why?', a: 'Because.', words: [], when: 7 };
     await old.table('words').put(word);
     await old.table('settings').put({ key: 'theme', value: 'dark' });
@@ -58,7 +58,7 @@ describe('the upgrade from version 15', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(28);
+    expect(db.verno).toBe(29);
     expect(await db.words.toArray()).toEqual([word]);
     expect(await db.settings.get('theme')).toEqual({ key: 'theme', value: 'dark' });
     expect(await db.talks.toArray()).toEqual([{ ...talk, id: 1 }]);
