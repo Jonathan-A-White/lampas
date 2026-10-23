@@ -737,6 +737,13 @@
         ]
       }
     },
+    "fetch": {
+      "description": "Only when the talk is heading toward New Testament verses that neither `verses` nor `held_passages` holds (see the instructions, 'Other passages'): their references by book name, chapter and verses, `Revelation 2:8-11`, at most 30 verses in all. The app reads them from his phone after this answer is shown, with no wait and no word to him but one quiet line, 'Tutor fetched Rev 2:8-11', and the next request carries them in `held_passages`. Leave it out otherwise.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": { "type": "string", "minLength": 3, "maxLength": 40 }
+    },
     "go": {
       "description": "Only when he asked, in words, to be taken to a chapter of the New Testament ('switch to Colossians 1', 'open John 3', 'take me to Romans 12'): the book and the chapter. The app opens the Reader there at once and says Opened; say in answer where you are taking him. Never for a chapter outside the 27 books of the New Testament, never on your own, and leave it out when he asked for no move.",
       "type": "object",
