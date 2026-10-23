@@ -1,6 +1,6 @@
 // src/data/repositories/talks.ts — the turns of the Bible talk, kept on the phone per conversation. A repository owns its transactions.
 import type { AppliedChange } from '../../settings/registry';
-import { db, type AnswerLink, type AnswerWord, type Bridge, type GreekOffer, type HebrewSounds, type RustyOffer, type TalkPicture, type TalkSummaryRow, type TalkTurn } from '../db';
+import { db, type AnswerLink, type AnswerWord, type Bridge, type GreekOffer, type HebrewSounds, type HeldPassage, type RustyOffer, type TalkPicture, type TalkSummaryRow, type TalkTurn } from '../db';
 
 export type { TalkPicture, TalkSummaryRow, TalkTurn };
 
@@ -131,6 +131,11 @@ export async function markUnopenedOpened(turnId: number): Promise<void> {
     const { unopened, ...rest } = turn;
     await db.talks.put({ ...rest, opened: unopened.title });
   });
+}
+
+/** Keeps the passages the turn's answer asked for (mw-5r3p30.734), once they are read: the turn then reads 'Tutor fetched ...' and the talk's next request holds them. */
+export async function keepFetched(turnId: number, passages: HeldPassage[]): Promise<void> {
+  await db.talks.update(turnId, { fetched: passages });
 }
 
 /** Marks the turn's feedback offer as sent, so it reads Sent from then on. */

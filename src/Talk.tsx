@@ -19,6 +19,7 @@ import { TutorLinks } from './TutorLinks';
 import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
 import { KeyPointsLine } from './talk/KeyPointsLine';
+import { fetchedLine } from './services/talkFetch';
 import { revealFoot, revealLines } from './ui/keepInView';
 import { GreekOfferButton } from './talk/GreekOfferButton';
 import { RustyOffer } from './talk/RustyOffer';
@@ -515,6 +516,12 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
           <AnswerSpeaker turn={turn} />
         </div>
       </div>
+      {/* the passages the tutor asked for, read in the background (mw-5r3p30.734): one quiet line, nothing to tap */}
+      {turn.fetched?.length ? (
+        <p data-talk-fetched className="px-1 text-base text-muted">
+          {fetchedLine(turn.fetched)}
+        </p>
+      ) : null}
       {turn.keyPoints ? <KeyPointsLine keyPoints={turn.keyPoints} /> : null}
     </article>
   );

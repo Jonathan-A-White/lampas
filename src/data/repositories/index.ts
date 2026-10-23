@@ -81,7 +81,7 @@ export { beginSession, endSession, getReadingPlan, markChapterRead, markDoneBefo
 export type { EndedSession, Heard, ListeningSession, ReadingPlanState } from './readingPlan';
 export { STUDY_WAY_LINE_MAX, STUDY_WAY_MAX, deleteStudyWayLine, editStudyWayLine, keepStudyWayLine, listStudyWay } from './studyWay';
 export type { EditResult, KeepResult } from './studyWay';
-export { addTurn, addTurnChanges, deleteTurns, getTalkSummary, getTurn, listConversations, listTurnPictures, listTurns, markChangeUndone, markBridgeChoice, markFeedbackSent, markFeedbackWithdrawn, markGreekChoice, markQuizGoalChoice, markRustyChoice, markSettingChoice, markTodayChoice, keepTalkSummary, markUnopenedOpened, screenRef, searchConversations, talkRef } from './talks';
+export { addTurn, addTurnChanges, deleteTurns, getTalkSummary, getTurn, keepFetched, listConversations, listTurnPictures, listTurns, markChangeUndone, markBridgeChoice, markFeedbackSent, markFeedbackWithdrawn, markGreekChoice, markQuizGoalChoice, markRustyChoice, markSettingChoice, markTodayChoice, keepTalkSummary, markUnopenedOpened, screenRef, searchConversations, talkRef } from './talks';
 export type { Conversation, ConversationHit, KeptPicture, TalkPicture, TalkTurn, TurnChanges } from './talks';
 export { listDrillResults, recordDrillStep } from './drills';
 export type { DrillResult } from './drills';

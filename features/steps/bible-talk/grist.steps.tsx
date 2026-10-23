@@ -134,6 +134,44 @@ describeFeature(
       });
     });
 
+    Scenario('The tutor asks for Revelation 2:8-11; the app reads it on the phone, says so in one quiet line, and the next request carries it', ({ Given, And, When, Then }) => {
+      Given('Lampas is opened on Romans 8 with a talk behind a fake Postern whose answer asks to fetch Revelation 2:8-11', () =>
+        open((f) => void (f.autoReply = { status: 'answered', answer: { ...TALK_ANSWER, fetch: ['Revelation 2:8-11'] } })),
+      );
+      And('he selects verse 28', selectVerse28);
+      And('he opens Talk', openTalk);
+      When('he sends {string}', (_, question: string) => send(question));
+      Then('under the answer one quiet line reads {string}', async (_, line: string) => {
+        await turnsKept(1);
+        const lines = await waitFor(() => {
+          const found = Array.from(sheet().querySelectorAll<HTMLElement>('[data-talk-fetched]'));
+          expect(found).toHaveLength(1);
+          return found;
+        });
+        expect(lines[0]).toHaveTextContent(line);
+        // a line, not a control: nothing to tap, and the answer's own box is as it was
+        expect(within(lines[0]).queryByRole('button')).toBeNull();
+        expect(lines[0].closest('[data-talk-a]')).toBeNull();
+      });
+      And('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+        await waitFor(() => expect(fake.received).toHaveLength(count));
+      });
+      And('the first grist holds no passages', () => {
+        expect(received(0).input).not.toHaveProperty('held_passages');
+      });
+      When('he goes on with {string}', (_, question: string) => send(question));
+      Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+        await waitFor(() => expect(fake.received).toHaveLength(count));
+      });
+      And('the second grist holds the passage {string} with the Greek and the English of verses 8 to 11 of Revelation 2', (_, reference: string) => {
+        expect(received(1).input.held_passages).toEqual([{ reference, greek: greekOf([8, 9, 10, 11], revelation2), english: englishOf([8, 9, 10, 11], revelation2) }]);
+      });
+      And('the second grist still carries the Greek and the English of verse 28', () => {
+        expect(received(1).input.greek).toBe(greekOf([28]));
+        expect(received(1).input.english).toBe(englishOf([28]));
+      });
+    });
+
     Scenario('The eleventh turn sends only the last 10 as history', ({ Given, And, When, Then }) => {
       Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
       And('ten turns were already kept for verse 28', async () => {
