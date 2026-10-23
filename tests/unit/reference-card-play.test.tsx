@@ -50,7 +50,12 @@ describe('Play on a New Testament card', () => {
     const card = await openCard('Heb 7:2', 'Heb 7:2', 'Hebrews 7:2');
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
-    expect(synth.spoken[0].text).toContain('Abraham apportioned');
+    // the pop-up's Play says the reference first (mw-9q8wp1.9), then the verse
+    expect(synth.spoken[0]).toMatchObject({ text: 'Hebrews 7:2', lang: 'en-US' });
+    synth.finish();
+    await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(1), { timeout });
+    expect(synth.spoken[1].text).toContain('Abraham apportioned');
+    expect(getPassagePlayer()).toMatchObject({ state: 'playing', current: { heading: 'Hebrews 7:2' } });
     expect(getPassagePlayer()).toMatchObject({ state: 'playing' });
     expect(within(card).queryByRole('button', { name: 'Play' })).toBeNull();
     expect(within(card).getByRole('button', { name: 'Pause' })).toBeInTheDocument();

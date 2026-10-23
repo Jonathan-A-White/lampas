@@ -61,7 +61,7 @@ describe('Play all on a verse list', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Play all' }));
     await reading('Reading Romans 8:1 · 1 of 3');
     await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0), { timeout });
-    expect(synth.spoken[0].lang).toBe('en-US');
+    expect(synth.spoken[0]).toMatchObject({ text: 'Romans 8:1', lang: 'en-US' });
 
     await listenUntil('Reading Isaiah 30:21 · 2 of 3');
     await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('Isaiah 30:21: skipping, no Old Testament present'), { timeout });
@@ -71,6 +71,7 @@ describe('Play all on a verse list', () => {
 
     await listenUntil('Reading Hebrews 7:24-25 · 3 of 3');
     await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(skippedAt + 1), { timeout });
+    expect(synth.spoken[skippedAt + 1].text).toBe('Hebrews 7:24-25');
     expect(synth.spoken.slice(skippedAt + 1).every((s) => s.text !== '' && !s.text.includes('skipping'))).toBe(true);
 
     // the end of the list takes the bar away
@@ -134,6 +135,8 @@ describe("Play all on the Share sheet's Bible references", () => {
     await listenUntil('Reading Isaiah 30:21 · 2 of 3');
     await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('Isaiah 30:21: skipping, no Old Testament present'), { timeout });
     await listenUntil('Reading Hebrews 7:24-25 · 3 of 3');
+    // the Share sheet's Play all says each New Testament reference's heading first too
+    expect(synth.spoken.map((s) => s.text)).toContain('Romans 8:1');
     await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
     await waitFor(() => expect(screen.queryByRole('status', { name: 'Playing the list' })).toBeNull(), { timeout });
   });
