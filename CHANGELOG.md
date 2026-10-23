@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.425
+_2026-10-23_
+- New: In a verse list's Edit you can move or copy a reference to another list, or to a new list you name on the spot.
+- New: Play and Play all now say the book, chapter and verse of each New Testament reference before reading it.
+- Fixed: the Share to Lampas sheet no longer stays scrolled with its buttons out of view and a large blank space under the references.
+
 ## 0.1.424
 _2026-10-23_
 - New: in a Bible talk the tutor can ask for the passage the talk is heading toward; your phone reads its Greek and English in the background, a quiet 'Tutor fetched ...' line says so, and the tutor has it from your next question on.

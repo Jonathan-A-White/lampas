@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.425",
+    "date": "2026-10-23",
+    "story": "mw-9q8wp1.8",
+    "kind": "new",
+    "text": "In a verse list's Edit you can move or copy a reference to another list, or to a new list you name on the spot."
+  },
+  {
+    "version": "0.1.425",
+    "date": "2026-10-23",
+    "story": "mw-9q8wp1.9",
+    "kind": "new",
+    "text": "Play and Play all now say the book, chapter and verse of each New Testament reference before reading it."
+  },
+  {
+    "version": "0.1.425",
+    "date": "2026-10-23",
+    "story": "mw-5r3p30.736",
+    "kind": "fixed",
+    "text": "the Share to Lampas sheet no longer stays scrolled with its buttons out of view and a large blank space under the references."
+  },
+  {
     "version": "0.1.424",
     "date": "2026-10-23",
     "story": "mw-5r3p30.734",
