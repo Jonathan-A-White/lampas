@@ -48,7 +48,7 @@ export const BACKEND_MESSAGES: readonly string[] = [
   'registration closed',
   'this registration has expired; start again',
   'that email is already registered',
-  'This licence already has 3 devices. Remove one first.',
+  'This licence already has 5 devices. Remove one first.',
   'this device already belongs to another licence',
   'registration is busy; try again in a few minutes',
   'the verification service could not be reached; try again',

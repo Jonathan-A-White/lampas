@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BACKEND_MESSAGES, confirmRegistration, listDevices, RegisterError, removeDevice, renameDevice, startRegistration } from '../../src/services/register';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
+import { PREFACE_FREE } from '../../src/preface';
 
 const KEY = '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798';
 
@@ -69,8 +70,8 @@ describe('confirmRegistration', () => {
   });
 
   it('keeps the licence-by-hand and the 3-device refusals verbatim', async () => {
-    const full = (await confirmRegistration({ registrationId: 'abc', emailCode: '1', phoneCode: '2' }, { fetch: reply(409, { error: 'This licence already has 3 devices. Remove one first.' }) }).catch((e: unknown) => e)) as RegisterError;
-    expect(full.message).toBe('This licence already has 3 devices. Remove one first.');
+    const full = (await confirmRegistration({ registrationId: 'abc', emailCode: '1', phoneCode: '2' }, { fetch: reply(409, { error: 'This licence already has 5 devices. Remove one first.' }) }).catch((e: unknown) => e)) as RegisterError;
+    expect(full.message).toBe('This licence already has 5 devices. Remove one first.');
     expect(full.startOver).toBe(false);
   });
 });
@@ -89,7 +90,7 @@ describe('every message the backend can answer', () => {
       expect.arrayContaining([
         'registration closed',
         'that email is already registered',
-        'This licence already has 3 devices. Remove one first.',
+        'This licence already has 5 devices. Remove one first.',
         'this device already belongs to another licence',
         'registration is busy; try again in a few minutes',
         'the verification service could not be reached; try again',
@@ -202,5 +203,13 @@ describe('the signed calls of My devices', () => {
     const error = (await listDevices(KEY, { fetch: offline }).catch((e: unknown) => e)) as RegisterError;
     expect(error).toBeInstanceOf(RegisterError);
     expect(error.message).toBe('The backend could not be reached. Try again in a moment.');
+  });
+});
+
+// mw-cvwm1u.19: a licence covers up to five devices.
+describe('the About copy on the licence', () => {
+  it('says a licence covers up to five devices', () => {
+    expect(PREFACE_FREE).toContain('A licence covers up to five devices');
+    expect(PREFACE_FREE).not.toContain('up to three devices');
   });
 });

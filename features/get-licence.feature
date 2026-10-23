@@ -47,15 +47,15 @@ Feature: The Licence page explains what a licence unlocks and has Get a licence
     Then the page shows "that code is not right (4 tries left)"
     And the two code fields are still there
 
-  Scenario: A phone that already has three devices is told so
+  Scenario: A phone that already has five devices is told so
     Given this phone has no licence and the Licence page is open
     When he taps Get a licence
     And he types the email "reader@example.com" and the phone "+1 415 555 0101"
     And he taps Send codes
     And he types the email code "123456" and the phone code "654321"
-    And the backend refuses to confirm with 409 "This licence already has 3 devices. Remove one first."
+    And the backend refuses to confirm with 409 "This licence already has 5 devices. Remove one first."
     And he taps Confirm
-    Then the page shows "This licence already has 3 devices. Remove one first."
+    Then the page shows "This licence already has 5 devices. Remove one first."
 
   Scenario: A closed registration is shown as the backend says it
     Given this phone has no licence and the Licence page is open

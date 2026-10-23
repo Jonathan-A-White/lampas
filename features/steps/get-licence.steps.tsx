@@ -189,7 +189,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A phone that already has three devices is told so', ({ Given, When, And, Then }) => {
+  Scenario('A phone that already has five devices is told so', ({ Given, When, And, Then }) => {
     Given('this phone has no licence and the Licence page is open', () => openLicencePage(false));
     When('he taps Get a licence', () => tap('Get a licence'));
     And('he types the email {string} and the phone {string}', async (_, email: string, phone: string) => {
