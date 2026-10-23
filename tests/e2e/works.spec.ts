@@ -5,37 +5,39 @@ import { openGroup } from './settings-group';
 
 const VIEWPORT = { width: 390, height: 844 };
 
-test('Works at phone width (mw-5r3p30.675): each work by its full title and author, a thumb-sized switch off to start with, kept across a reload', async ({ page }) => {
+// The Works row left Settings with the library (mw-rfjjzd.5): a commentary or a book is a row of Library > Commentaries, Off to start with, kept across a reload (it was mw-5r3p30.675).
+
+test('Settings no longer lists the works; Library > Commentaries does, each Off to start with, a thumb-sized control, kept across a reload', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await openGroup(page, 'Study resources');
+  const section = page.getByRole('region', { name: 'Study resources' });
+  await section.getByRole('switch', { name: 'Logos', exact: true }).click();
+  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Works in your Logos library' })).toHaveCount(0);
+  await expect(page.getByRole('switch', { name: "Calvin's Commentaries", exact: true })).toHaveCount(0);
 
-  const list = page.getByRole('list', { name: 'Works in your Logos library' });
-  await list.scrollIntoViewIfNeeded();
-  const titles = ["Calvin's Commentaries", 'Institutes of the Christian Religion (Library of Christian Classics)', 'Institutes of the Christian Religion (Beveridge)'];
-  for (const title of titles) {
-    const item = list.getByRole('listitem').filter({ has: page.getByRole('switch', { name: title, exact: true }) });
-    await expect(item).toContainText(title);
-    await expect(item).toContainText('by John Calvin');
-    const control = item.getByRole('switch', { name: title, exact: true });
-    await expect(control).toHaveAttribute('aria-checked', 'false');
-    const box = await control.boundingBox();
+  await page.goto('/#/library?kind=commentary');
+  await expect(page.getByRole('heading', { name: 'Commentaries', level: 1 })).toBeVisible();
+  const romans = page.getByRole('radiogroup', { name: 'CC Ro', exact: true });
+  await expect(page.getByText('Commentary on the Epistle of Paul the Apostle to the Romans · John Calvin')).toBeVisible();
+  await expect(romans.getByRole('radio', { name: 'Off', exact: true })).toHaveAttribute('aria-checked', 'true');
+  for (const radio of await romans.getByRole('radio').all()) {
+    const box = await radio.boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(43.5);
     expect(box?.width).toBeGreaterThanOrEqual(43.5);
-    // the whole title is there to read, wrapped rather than cut, and the row stays inside the screen
-    const row = await item.boundingBox();
-    expect((row?.x ?? 0) + (row?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
-    expect(await item.evaluate((li) => li.scrollWidth <= li.clientWidth)).toBe(true);
   }
-  await list.getByRole('switch', { name: "Calvin's Commentaries", exact: true }).click();
-  await expect(list.getByRole('switch', { name: "Calvin's Commentaries", exact: true })).toHaveAttribute('aria-checked', 'true');
+  const row = await romans.boundingBox();
+  expect((row?.x ?? 0) + (row?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  await romans.getByRole('radio', { name: 'On', exact: true }).click();
+  await expect(romans.getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
-  await shot(page, 'settings-works');
+  await shot(page, 'library-commentaries-calvin');
 
   await page.reload();
-  await expect(list.getByRole('switch', { name: "Calvin's Commentaries", exact: true })).toHaveAttribute('aria-checked', 'true');
-  await expect(list.getByRole('switch', { name: 'Institutes of the Christian Religion (Beveridge)', exact: true })).toHaveAttribute('aria-checked', 'false');
+  await expect(page.getByRole('radiogroup', { name: 'CC Ro', exact: true }).getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('radiogroup', { name: 'CC Jn', exact: true }).getByRole('radio', { name: 'Off', exact: true })).toHaveAttribute('aria-checked', 'true');
 });

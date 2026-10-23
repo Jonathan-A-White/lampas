@@ -1,5 +1,5 @@
 // Daily (Settings > Daily): which pieces Today holds (Review, Plan chapter, Psalms and Proverbs, Devotional; all On to start), which devotional it shows (one of the
-// 37 in src/data/daily/devotionals.ts, or Random among those ticked), and whether each piece has a box he ticks himself (On to start, PROVISIONAL). Today itself
+// 37 in src/data/daily/devotionals.ts that are On in Your Logos library, or Random among those), and whether each piece has a box he ticks himself (On to start, PROVISIONAL). Today itself
 // is a later story (mw-1fwagb.5); these are the settings it reads.
 import { ALL_TICKED, DEFAULT_DEVOTIONAL, DEVOTIONALS, NONE_TICKED, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
 import { devotionalDraw, setDevotionalDraw } from '../../data/repositories/library';
@@ -56,7 +56,7 @@ export const devotionalSetting = defineSetting<string>({
   section: 'daily',
   label: 'Which devotional',
   hint: 'The one Today shows, or Random: a different one each day.',
-  help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library, named by its Logos resource id; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start. Random shows a different one each day, drawn from those ticked below; the same one all day.`,
+  help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library, named by its Logos resource id; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start. Random shows a different one each day, drawn from those On in Your Logos library; the same one all day.`,
 });
 
 export const devotionalDrawSetting = defineSetting<string>({
@@ -74,7 +74,7 @@ export const devotionalDrawSetting = defineSetting<string>({
   section: 'daily',
   label: 'In the draw',
   hint: 'The devotionals Random draws from.',
-  help: 'Tick the devotionals Random may show. All are ticked to start. With none ticked, Random shows Morning and Evening. It shows only while Which devotional is Random.',
+  help: 'Random draws from the devotionals On in Your Logos library, all to start. With none On, it shows Morning and Evening. It shows only while Which devotional is Random.',
   dependsOn: { key: 'devotional', shown: (value) => value === RANDOM },
 });
 

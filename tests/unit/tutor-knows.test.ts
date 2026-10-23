@@ -10,6 +10,7 @@ import { setGreekPronunciation } from '../../src/data/repositories';
 import { buildReadingRequest } from '../../src/services/reading';
 import { buildRequest } from '../../src/services/tutor';
 import { currentSettings, SETTINGS } from '../../src/settings/registry';
+import { isTalkable } from '../../src/settings/rows';
 import { buildTipRequest } from '../../src/tips/tip';
 import { BEARS_ON, GRINDS, PROGRESS, TUTOR_KNOWS, settingsSentTo, type GrindKind } from '../../src/tutor/knows';
 import type { Schema } from '../support/schema-validate';
@@ -47,6 +48,12 @@ describe('the table of what each grind is told (src/tutor/knows.ts)', () => {
 
   it('says what every setting of the registry bears on, and nothing else', () => {
     expect(Object.keys(BEARS_ON).sort()).toEqual(SETTINGS.map((s) => s.key).sort());
+  });
+
+  it("keeps his library out of the settings the tutor reads and changes: the shelf reaches it as works, never as a setting (docs/design/library-at-scale.md 3.8)", () => {
+    expect(isTalkable('library')).toBe(false);
+    expect(SETTINGS.some((s) => s.key === 'library')).toBe(false);
+    expect(Object.keys(BEARS_ON)).not.toContain('library');
   });
 
   describe.each(GRINDS)('%s', (kind) => {

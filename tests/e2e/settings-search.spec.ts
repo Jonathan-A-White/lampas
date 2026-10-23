@@ -36,6 +36,28 @@ test('Settings search at phone width: a 48 px field at the top, "logos" lists th
   await shot(page, 'settings-search-cleared');
 });
 
+test('a book\'s title answers a row "BDAG · Your Logos library" that opens its kind page at the book (mw-rfjjzd.5)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  const search = page.getByRole('searchbox', { name: 'Search settings' });
+  await search.fill('bdag');
+  const books = page.getByRole('list', { name: 'Matching books' });
+  const answer = books.getByRole('button', { name: /^BDAG · Your Logos library/ });
+  await expect(answer).toBeVisible();
+  await expect(answer).toContainText('in Lexicons');
+  expect((await answer.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
+  await shot(page, 'settings-search-book');
+  await answer.click();
+  await expect(page.getByRole('heading', { name: 'Lexicons', level: 1 })).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('#/library?kind=lexicon&book=LLS%3A46.30.18');
+  await expect(page.getByRole('radiogroup', { name: 'BDAG', exact: true })).toBeInViewport();
+  await expect(page.locator('[aria-current="true"]')).toContainText('BDAG');
+  // a word that is no book and no setting still says so
+  await page.goto('/#/settings');
+  await page.getByRole('searchbox', { name: 'Search settings' }).fill('zzzz');
+  await expect(page.getByText('Nothing in Settings matches')).toBeVisible();
+});
+
 test('choosing a found setting opens its group page with the row in view; ‹ Settings returns to the search', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings');

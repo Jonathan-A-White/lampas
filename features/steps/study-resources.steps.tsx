@@ -7,7 +7,8 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
-import { getStudyResources } from '../../src/data/repositories';
+import { getStudyResources, setState, stateOf } from '../../src/data/repositories';
+import { LEXICONS } from '../../src/resources/logos';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
@@ -76,27 +77,20 @@ const switchOn = async (_: unknown, name: string): Promise<void> => {
   if (control.getAttribute('aria-checked') !== 'true') await user.click(control);
   await waitFor(() => expect(control).toHaveAttribute('aria-checked', 'true'));
 };
-const lexicon = (name: string): Promise<HTMLElement> => screen.findByRole('checkbox', { name });
-const ticks = async (_: unknown, name: string): Promise<void> => {
-  const box = await lexicon(name);
-  if (box.getAttribute('aria-checked') !== 'true') await user.click(box);
-  await waitFor(() => expect(box).toHaveAttribute('aria-checked', 'true'));
+// The lexicons he uses are the books On in Your Logos library (mw-rfjjzd.5): Settings lists none, so a step turns one on, or asks, through the shelf.
+const lexiconNamed = (name: string) => {
+  const found = LEXICONS.find((l) => l.short === name || l.name === name);
+  if (!found) throw new Error(`no lexicon ${name}`);
+  return found;
 };
-const listNames = (): string[] =>
-  within(screen.getByRole('group', { name: 'Logos lexicons' }))
-    .queryAllByRole('checkbox')
-    .map((c) => c.textContent?.replace('✓', '').trim() ?? '');
-const typesSearch = async (_: unknown, text: string): Promise<void> => {
-  await user.type(await screen.findByRole('searchbox', { name: 'Search Logos lexicons' }), text);
+const turnsOn = async (_: unknown, name: string): Promise<void> => {
+  expect(await setState(lexiconNamed(name).resource, 'on')).toEqual({ ok: true });
 };
-const listShows = async (_: unknown, name: string): Promise<void> => {
-  expect(await screen.findByRole('checkbox', { name })).toBeInTheDocument();
+const isOn = async (_: unknown, name: string): Promise<void> => {
+  await waitFor(async () => expect(await stateOf(lexiconNamed(name).resource)).not.toBe('off'));
 };
-const listLacks = (_: unknown, name: string): void => {
-  expect(screen.queryByRole('checkbox', { name })).toBeNull();
-};
-const listCount = (_: unknown, n: number): void => {
-  expect(listNames()).toHaveLength(n);
+const isNotOn = async (_: unknown, name: string): Promise<void> => {
+  await waitFor(async () => expect(await stateOf(lexiconNamed(name).resource)).toBe('off'));
 };
 const link = (label: string): HTMLElement | null => {
   const row = studyRow();
@@ -160,12 +154,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
     When("he taps the gear in the reader's header", openSettings);
     And('he switches on the study resource {string}', switchOn);
-    Then('the Logos lexicon {string} is ticked', async (_, name: string) => {
-      expect(await lexicon(name)).toHaveAttribute('aria-checked', 'true');
-    });
-    And('the Logos lexicon {string} is not ticked', async (_, name: string) => {
-      expect(await lexicon(name)).toHaveAttribute('aria-checked', 'false');
-    });
+    Then('the Logos lexicon {string} is on in his library', isOn);
+    And('the Logos lexicon {string} is not on in his library', isNotOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
     Then('the Study row has a link {string} to {string}', hasLink);
@@ -177,7 +167,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
     When("he taps the gear in the reader's header", openSettings);
     And('he switches on the study resource {string}', switchOn);
-    And('he ticks the Logos lexicon {string}', ticks);
+    And('he turns on the Logos lexicon {string}', turnsOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
     Then('the Study row has a link {string} to {string}', hasLink);
@@ -189,7 +179,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
     When("he taps the gear in the reader's header", openSettings);
     And('he switches on the study resource {string}', switchOn);
-    And('he ticks the Logos lexicon {string}', ticks);
+    And('he turns on the Logos lexicon {string}', turnsOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
     Then('the Study row has a link {string} to {string}', hasLink);
@@ -254,7 +244,7 @@ describeFeature(feature, ({ Scenario }) => {
     When("he taps the gear in the reader's header", openSettings);
     And('he switches on the study resource {string}', switchOn);
     And('he also switches on the study resource {string}', switchOn);
-    And('he ticks the Logos lexicon {string}', ticks);
+    And('he turns on the Logos lexicon {string}', turnsOn);
     And('Lampas is opened again', mount);
     And('he opens Settings again', openSettings);
     Then('the study resource {string} is switched on', async (_, name: string) => {
@@ -263,64 +253,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the study resource {string} is switched off', async (_, name: string) => {
       expect(await switchOf(name)).toHaveAttribute('aria-checked', 'false');
     });
-    And('the Logos lexicon {string} is ticked', async (_, name: string) => {
-      expect(await lexicon(name)).toHaveAttribute('aria-checked', 'true');
-    });
-    And('the Logos lexicon {string} stays ticked', async (_, name: string) => {
-      expect(await lexicon(name)).toHaveAttribute('aria-checked', 'true');
-    });
-  });
-
-  Scenario('Searching the Logos lexicons narrows the list, and clearing the search brings every lexicon back', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
-    And('he switches on the study resource {string}', switchOn);
-    And('he types {string} in the Logos lexicons search', typesSearch);
-    Then('the Logos lexicons list shows {string}', listShows);
-    And('the Logos lexicons list does not show {string}', listLacks);
-    And('the Logos lexicons list also does not show {string}', listLacks);
-    When('he clears the Logos lexicons search', async () => {
-      await user.clear(screen.getByRole('searchbox', { name: 'Search Logos lexicons' }));
-    });
-    Then('the Logos lexicons list is back with {string}', listShows);
-    And('the Logos lexicons list also shows {string}', listShows);
-    And('the Logos lexicons list holds {int} lexicons', listCount);
-  });
-
-  Scenario('A search with no match says so', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
-    And('he switches on the study resource {string}', switchOn);
-    And('he types {string} in the Logos lexicons search', typesSearch);
-    Then('the Logos lexicons list holds {int} lexicons', listCount);
-    And('the Logos lexicons list says {string}', async (_, text: string) => {
-      expect(await screen.findByText(text)).toBeInTheDocument();
-    });
-  });
-
-  Scenario('Ticking a lexicon found by search is saved as before', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
-    And('he switches on the study resource {string}', switchOn);
-    And('he types {string} in the Logos lexicons search', typesSearch);
-    And('he ticks the Logos lexicon {string}', ticks);
-    Then('the setting {string} holds {string}', async (_, key: string, value: string) => {
-      // the ticked lexicons are rows of his shelf now (mw-rfjjzd.3): the repository gives them back as the JSON the key held
-      const kept = async (): Promise<string | undefined> => (key === 'resourceOption.logos' ? (await getStudyResources()).options.logos : (await db.settings.get(key))?.value);
-      await waitFor(async () => expect(await kept()).toBe(value));
-    });
-  });
-
-  Scenario('Ticked lexicons are listed first', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
-    And('he switches on the study resource {string}', switchOn);
-    And('he ticks the Logos lexicon {string}', ticks);
-    And('Lampas is opened again', mount);
-    And('he opens Settings again', openSettings);
-    Then('the Logos lexicons list starts with {string}, {string}, {string}', async (_, a: string, b: string, c: string) => {
-      await screen.findByRole('checkbox', { name: a });
-      expect(listNames().slice(0, 3)).toEqual([a, b, c]);
-    });
+    And('the Logos lexicon {string} is on in his library', isOn);
+    And('the Logos lexicon {string} stays on in his library', isOn);
   });
 });

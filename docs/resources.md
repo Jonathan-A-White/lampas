@@ -32,8 +32,8 @@ percent-encoded UTF-8, in NFC.
 
 ## Logos: his lexicons, the scheme and the fallback
 
-With Logos on, Settings shows his Logos lexicons as a searchable, scrolling ticked list (`src/ui/SearchableList.tsx`: a search field, the ticked ones first, a box about five rows high that scrolls on its own; BDAG ticked until he changes it; the ticked ids are a JSON
-array in `resourceOption.logos`). The list is data: `LEXICONS` in `src/resources/logos.ts`, a view over the catalogue's lexicons (see 'The catalogue' below), in the order Logos' Bible Word Study
+Since mw-rfjjzd.5 Settings lists no lexicon: with Logos on, the row under it says `Your Logos library · N books on` and opens `#/library` (`LibraryControl`, `src/settings/controls/resources.tsx`), and the lexicons are chosen on Library > Lexicons (BDAG On
+until he changes it; the shelf's rows, `src/data/repositories/library.ts`; `resourceOption.logos` is the old key it took). The list is data: `LEXICONS` in `src/resources/logos.ts`, a view over the catalogue's lexicons (see 'The catalogue' below), in the order Logos' Bible Word Study
 shows them; adding a lexicon is one entry in `data/logos/catalogue-rules.json` and `npm run logos:catalogue`. Each ticked one gives `Open in Logos: <name>` on the word sheet, and one
 `Bible Word Study in Logos` link (for the lemma alone, no verse) always comes with Logos.
 
@@ -131,7 +131,7 @@ entry, the fix is in that resource's file.
 
 ## Grammar books in Logos: Read more on an idea sheet (mw-5r3p30.381, PROVISIONAL, Governor to confirm)
 
-With Logos on, Settings > Study resources > Logos shows **Grammar books** under the lexicons: a tick for each book of `GRAMMAR_BOOKS` in
+With Logos on, Library > Grammars (Settings > Study resources > Logos > Your Logos library; since mw-rfjjzd.5 Settings has no Grammar books list) shows a control for each book of `GRAMMAR_BOOKS` in
 `src/resources/grammarBooks.ts`, Black ticked until he changes it (the ticked ids are a JSON array in the settings store's `grammarBooks`,
 `src/data/repositories/resources.ts` getGrammarBooks / setGrammarBooks; not in the settings registry, like the lexicons). An idea sheet
 (`src/IdeaSheet.tsx` ReadMore) whose idea a ticked book teaches shows **Read more**, after the tables: one line a book (its `short` name over one
@@ -224,7 +224,7 @@ Examples: Ἰησοῦς (G2424) `lemma=lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E
 
 ## Works he holds in Logos (mw-5r3p30.675, PROVISIONAL, Governor to confirm)
 
-Lampas cannot read which books are in his Logos library, so **Settings > Study resources > Works in your Logos library** lists the works the tutor may link, each a switch named by
+Lampas cannot read which books are in his Logos library, so **Library > Commentaries** (Settings > Study resources > Works in your Logos library until mw-rfjjzd.5, which took the list out of Settings) lists the works the tutor may link, each volume a control named by
 its full title with its author (`WORKS` in `src/resources/works.ts`; all off; the ticked ids are a JSON array in the store key `works`, `getWorks` / `setWorks`). The tutor's request
 carries the ticked ones as `works` (`{id, title, author, kind, covers?}`, `worksForTutor`; left out when none is ticked and in About) and its answer may carry `{kind: 'work', work: <id>, reference?}`
 (`grinds/bible-talk.answer.schema.json`; the `work` enum is the ids of `WORKS`, held by `tests/unit/works.test.ts`). `src/TutorLinks.tsx` draws one **Open in Logos** chip named for the title
@@ -289,8 +289,8 @@ The one selector is `resourcesForLevel(list, level)` (`src/resources/resourcesFo
 **Curious to Reading in Greek (1 to 4):** `en` and `both` first, then `grc`, each side in its own order. **All in (5):** the list unchanged. An unplaced phone reads 5. The Mayor's cheap choice, not his word:
 the Governor may change the rule in that one file. A resource the dial hides keeps its switch or tick (nothing is deleted): the lists draw fewer entries, and the stored ids are written over the whole list.
 
-Who goes through it: Settings > Study resources (the switches: `orderResourceRows` in `src/settings/rows.ts` for the order, the row's `dependsOn` in `registry.ts` for hiding; the Grammar books and the Works in
-`src/settings/controls/resources.tsx`; with no grammar book left the Grammar books group is not drawn), the word sheet's Study row (`studyGroups` in `src/WordSheet.tsx`), the idea sheet's Read more (`readMoreFor`'s
+Who goes through it: Settings > Study resources (the switches: `orderResourceRows` in `src/settings/rows.ts` for the order, the row's `dependsOn` in `registry.ts` for hiding; the library row in
+`src/settings/controls/resources.tsx`; Settings lists no book, so the dial's hiding of Greek books is a matter for the Library pages), the word sheet's Study row (`studyGroups` in `src/WordSheet.tsx`), the idea sheet's Read more (`readMoreFor`'s
 `level`), and the tutor (`resourcesForTutor`, `worksForTutor`, `wordChips`, `verseChips`, `workChip`, each given the level; `src/useTalk.ts` and `src/TutorLinks.tsx` pass it, and a Greek work the dial hides is not
 offered to the tutor and its link is dropped). Not through it, because they ask for one named resource and Logos is `both`: the Today, chapter picker and reference card Logos links, the English dictionary row, the
 tutor's Settings list (the tutor is told every setting, shown or not) and the tips' count of switches on. **When a Logos work is added to `WORKS`, say whether it is Greek or English in `lang`.**

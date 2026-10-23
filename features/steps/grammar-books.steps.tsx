@@ -152,7 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Settings ticks Black among the grammar books once Logos is on, and unticking it is kept', ({ Given, When, Then }) => {
+  Scenario('Black is on among the grammar books of Your Logos library once Logos is on, and turning it Off there is kept', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', async () => {
       cleanup();
       clearBus();
@@ -175,14 +175,21 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(logos);
       await waitFor(() => expect(logos).toHaveAttribute('aria-checked', 'true'));
     });
-    Then('Settings shows the grammar book {string} ticked', async (_, name: string) => {
-      const group = await screen.findByRole('group', { name: 'Grammar books' });
-      expect(within(group).getByRole('checkbox', { name })).toHaveAttribute('aria-checked', 'true');
+    And('he opens Your Logos library from Settings', async () => {
+      await user.click(await screen.findByRole('button', { name: /^Your Logos library/ }));
+      await screen.findByRole('heading', { name: 'Your Logos library', level: 1 });
     });
-    When('he taps the grammar book {string}', async (_, name: string) => {
-      const box = within(screen.getByRole('group', { name: 'Grammar books' })).getByRole('checkbox', { name });
-      await user.click(box);
-      await waitFor(() => expect(box).toHaveAttribute('aria-checked', 'false'));
+    And('he opens its Grammars page', async () => {
+      await user.click(await screen.findByRole('button', { name: /^Grammars\b/ }));
+      await screen.findByRole('heading', { name: 'Grammars', level: 1 });
+    });
+    Then('the library shows the grammar book {string} as {string}', async (_, name: string, step: string) => {
+      const group = await screen.findByRole('radiogroup', { name });
+      await waitFor(() => expect(within(group).getByRole('radio', { checked: true })).toHaveTextContent(step));
+    });
+    When('he turns the grammar book {string} Off', async (_, name: string) => {
+      const group = screen.getByRole('radiogroup', { name });
+      await user.click(within(group).getByRole('radio', { name: 'Off' }));
     });
     Then('the grammar books kept are none', async () => {
       await waitFor(async () => expect(await getGrammarBooks()).toEqual([]));

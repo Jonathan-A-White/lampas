@@ -1,11 +1,12 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { DEVOTIONALS, RANDOM, devotionalOf, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
+import { DEVOTIONALS, RANDOM, devotionalOf, tickedDevotionals } from '../../data/daily/devotionals';
+import { openLibrary } from '../../nav/route';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
 import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
 import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
-import { OnOff, PICKER, RowName, SettingRow } from './SettingRow';
+import { OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 const ITEMS = DEVOTIONALS.map((d) => ({ id: d.id, name: d.title }));
@@ -29,40 +30,63 @@ export const DailyPsalmsControl = dailySwitch(dailyPsalmsSetting, 'dailyPsalms')
 export const DailyDevotionalControl = dailySwitch(dailyDevotionalSetting, 'dailyDevotional');
 export const DailyTicksControl = dailySwitch(dailyTicksSetting, 'dailyTicks');
 
-/** Which devotional: one of his 37, or Random. A long list, so a picker, not a page of buttons. */
+/** Which devotional: Random, or one of the devotionals that are On in Your Logos library (the shelf, mw-rfjjzd.5), in the shared searchable list as a choice of one. The one chosen now is always
+ *  listed, though it has been turned Off in the library since, so the picker never hides what Today shows. */
 export const DevotionalControl: Control = ({ row }) => {
   const devotional = useSetting(devotionalSetting);
+  const draw = useSetting(devotionalDrawSetting);
+  if (devotional === undefined || draw === undefined) return null;
+  const on = tickedDevotionals(draw);
+  const ids = [...on, ...(devotional !== RANDOM && !on.includes(devotional) ? [devotional] : [])];
+  const items = [{ id: RANDOM, name: 'Random' }, ...ITEMS.filter((i) => ids.includes(i.id))];
   return (
     <SettingRow row={row}>
-      {devotional !== undefined ? (
-        <label className="block">
-          <span className="block text-base font-medium">{row.label}</span>
-          <select value={devotional} onChange={(e) => void writeSetting(devotionalSetting.key, e.target.value)} className={PICKER}>
-            <option value={RANDOM}>Random</option>
-            {DEVOTIONALS.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.title}
-              </option>
-            ))}
-          </select>
-        </label>
-      ) : null}
+      <SearchableList
+        label={row.label}
+        noun="devotional"
+        items={items}
+        status={devotional === RANDOM ? 'Random: a different one each day' : (devotionalOf(devotional)?.title ?? devotional)}
+        rankOf={(id) => (id === devotional ? 0 : id === RANDOM ? 1 : 2)}
+        row={(item) => (
+          <button
+            type="button"
+            role="radio"
+            aria-checked={item.id === devotional}
+            onClick={() => oneTap(`devotional:${item.id}`, () => void writeSetting(devotionalSetting.key, item.id))}
+            className="flex min-h-12 w-full items-center gap-3 px-3 py-2 text-left text-base"
+          >
+            <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-line ${item.id === devotional ? 'bg-accent text-accent-fg' : ''}`}>
+              {item.id === devotional ? '✓' : ''}
+            </span>
+            <span className="title-wrap min-w-0 flex-1">{item.name}</span>
+          </button>
+        )}
+      />
     </SettingRow>
   );
 };
 
-/** In the draw: the devotionals Random may show, in the shared searchable list (shown only while Random is chosen). */
+/** In the draw: the devotionals Random may show are the ones that are On in Your Logos library, so this says how many and opens the Library's Devotionals page, where they are turned On and Off
+ *  (shown only while Random is chosen). */
 export const DevotionalDrawControl: Control = ({ row }) => {
   const draw = useSetting(devotionalDrawSetting);
   if (draw === undefined) return null;
-  const ticked = tickedDevotionals(draw);
-  const toggle = (id: string): void => {
-    const next = ticked.includes(id) ? ticked.filter((t) => t !== id) : [...ticked, id];
-    void writeSetting(devotionalDrawSetting.key, tickedText(next));
-  };
+  const n = tickedDevotionals(draw).length;
   return (
     <SettingRow row={row}>
-      <SearchableList label={row.label} noun="devotional" items={ITEMS} ticked={ticked} onToggle={toggle} />
+      <div role="group" aria-label={row.label}>
+        <span className="block text-base font-medium">{row.label}</span>
+        <p className="pb-1 text-base">
+          {n === 0 ? 'No devotional is on, so Random shows Morning and Evening.' : `${n} ${n === 1 ? 'devotional is' : 'devotionals are'} in the draw: the ones that are on in Your Logos library.`}
+        </p>
+        <button
+          type="button"
+          onClick={() => openLibrary({ kind: 'devotional' })}
+          className="flex min-h-12 items-center rounded-lg border border-line px-4 text-base font-medium text-accent"
+        >
+          Choose them in Your Logos library
+        </button>
+      </div>
     </SettingRow>
   );
 };

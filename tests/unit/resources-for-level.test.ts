@@ -130,6 +130,6 @@ describe('the Study resources rows follow the dial', () => {
     expect(orderResourceRows(rows, 2)).toHaveLength(rows.length);
     // a switch a link forces into view at Just English is ordered, not dropped
     expect(switches(orderResourceRows(rows, 0))).toHaveLength(3);
-    expect(rowOf('works')).toBeDefined();
+    expect(rowOf('library')).toBeDefined();
   });
 });
