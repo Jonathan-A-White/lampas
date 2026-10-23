@@ -4,8 +4,9 @@
 // Ask for more (an approach or programme, a study resource, a text, a translation), what he wants, why and a link. This is the ONE sender:
 // Ask for another approach, Ask for another book, the Ask for more forms and the tutor's 'Send this to the makers' all call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The wire work is src/services/tutor.ts's askGrind. The grind forwards
 // ("forward": "mayor"): no model reads it, the mill mails it to the Mayor with the pictures and answers {"status":"sent"}.
+import { createRequests, GROWN_UP } from 'pwa-kit/requests';
 import { publish } from '../events/bus';
-import { keepRequest } from '../data/repositories/requests';
+import { keepRequest, requestStore } from '../data/repositories/requests';
 import { getDeviceKeyBytes } from './deviceKey';
 import { MILL_MAX_FILES, type MillFile } from './mill';
 import { askGrind, TutorError, type AskOptions } from './tutor';
@@ -177,21 +178,22 @@ function sendFeedback(request: FeedbackRequest, files: MillFile[], options: AskO
   return askGrind(FEEDBACK_KIND, request, isFeedbackAnswer, { ...options, files, untimed: true });
 }
 
-/** Sends `request` (with its pictures, if any) with the phone's key, keeps it in the requests table with its grist id once it is sent,
- * waits for the mill's receipt and tells the bus ('feedback-sent'). Throws a TutorError whatever went wrong; nothing is announced then. A `signal` that aborts stops the wait. */
-export async function submitFeedback(
-  request: FeedbackRequest,
-  options: { files?: MillFile[]; signal?: AbortSignal; /** called once the grist is out, before the receipt is waited for */ onSent?: () => void } = {},
-): Promise<void> {
+type SubmitOptions = { files?: MillFile[]; signal?: AbortSignal; /** called once the grist is out, before the receipt is waited for */ onSent?: () => void };
+
+/** Sends `request` with the phone's key, keeps it in the requests table with its grist id once it is sent, waits for the mill's receipt and tells the
+ * bus ('feedback-sent'). Resolves with the grist's id. Throws a TutorError whatever went wrong; nothing is announced then. */
+async function deliver(request: FeedbackRequest, options: SubmitOptions): Promise<string> {
   let keeping: Promise<void> = Promise.resolve();
+  let txid = '';
   try {
     await sendFeedback(request, options.files ?? [], {
       key: getDeviceKeyBytes(),
       signal: options.signal,
       // A grist that went out is kept even if the receipt never comes; a failed write never turns a sent request into a failed one.
-      onSent: (txid) => {
+      onSent: (id) => {
+        txid = id;
         options.onSent?.();
-        keeping = keepRequest(kept(request, txid, Date.now())).catch(() => undefined);
+        keeping = keepRequest(kept(request, id, Date.now())).catch(() => undefined);
       },
     });
   } catch (err) {
@@ -199,6 +201,42 @@ export async function submitFeedback(
     throw err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
   }
   await keeping;
-  if (options.signal?.aborted) return;
-  publish({ kind: 'feedback-sent', feedback: request.kind });
+  if (!options.signal?.aborted) publish({ kind: 'feedback-sent', feedback: request.kind });
+  return txid;
+}
+
+/** The tutor's asks, filed through pwa-kit/requests (src/services/feedback.ts is the kit's sender). Lampas counts no requests a day (its caps are the size of a
+ * request, src/services/requestBudget.ts), so the kit's day budget is as large as a number can be. The kit's request has no screen or facts, so the wire request
+ * waits here under the token the kit carries as the talk's id, and `send` takes it back. */
+const NO_DAILY_COUNT = Number.MAX_SAFE_INTEGER;
+const waiting = new Map<string, { request: TutorAskRequest; options: SubmitOptions }>();
+let tokens = 0;
+const tutorAsks = createRequests({
+  appVersion: __APP_VERSION__,
+  perDay: NO_DAILY_COUNT,
+  store: requestStore(__APP_VERSION__),
+  send: async ({ reference }) => {
+    const ask = waiting.get(reference);
+    if (!ask) throw new TutorError('not-sent', 'Something went wrong.');
+    return { id: await deliver(ask.request, ask.options) };
+  },
+});
+
+/** Sends `request` (with its pictures, if any) with the phone's key, keeps it in the requests table with its grist id once it is sent,
+ * waits for the mill's receipt and tells the bus ('feedback-sent'). Throws a TutorError whatever went wrong; nothing is announced then. A `signal` that aborts stops the wait.
+ * The tutor's ask (kind 'tutor-ask', from a talk) is filed through pwa-kit/requests (fileFromTalk: who asked is the one reader, the grown-up); the forms' requests
+ * carry a link, a credit or pictures the kit's request has no place for, so they are delivered directly. */
+export async function submitFeedback(request: FeedbackRequest, options: SubmitOptions = {}): Promise<void> {
+  if (request.kind !== 'tutor-ask') {
+    await deliver(request, options);
+    return;
+  }
+  const token = `tutor-ask-${(tokens += 1)}`;
+  waiting.set(token, { request, options });
+  try {
+    const result = await tutorAsks.fileFromTalk({ talkId: token, words: request.text, who: GROWN_UP, kind: request.kind, summary: request.summary });
+    if (result.outcome === 'refused') throw new TutorError('not-sent', result.message);
+  } finally {
+    waiting.delete(token);
+  }
 }
