@@ -219,10 +219,11 @@ export function backTo(route: Route): void {
 }
 
 /** What the address says about the Library screen (src/library/): no kind is the home; a kind (`kind=lexicon`) is that kind's page, and a book (`book=<Resource ID>`) is the one the page opens at. Both are raw text:
- *  the screen checks them against the catalogue. */
+ *  the screen checks them against the catalogue. `import` (`#/library?import`) is the page where he imports his Logos list, and wins over a kind. */
 export interface LibraryAddress {
   kind?: string;
   book?: string;
+  import?: true;
 }
 
 export function libraryOf(hash: string): LibraryAddress {
@@ -233,19 +234,21 @@ export function libraryOf(hash: string): LibraryAddress {
   if (kind) address.kind = kind;
   const book = params.get('book');
   if (kind && book) address.book = book;
+  if (params.has('import')) address.import = true;
   return address;
 }
 
 /** The Library address, always in the same order. */
-export function libraryHash({ kind, book }: LibraryAddress): string {
+export function libraryHash({ kind, book, import: importing }: LibraryAddress): string {
   const params = new URLSearchParams();
   if (kind) params.set('kind', kind);
   if (kind && book) params.set('book', book);
   const query = params.toString();
+  if (importing) return query ? `#/library?${query}&import` : '#/library?import';
   return query ? `#/library?${query}` : '#/library';
 }
 
-/** Opens the Library home, a kind's page, or a kind's page at a book, as a new Back step. */
+/** Opens the Library home, a kind's page, a kind's page at a book, or the import, as a new Back step. */
 export function openLibrary(address: LibraryAddress = {}): void {
   const hash = libraryHash(address);
   if (window.location.hash === hash) return;

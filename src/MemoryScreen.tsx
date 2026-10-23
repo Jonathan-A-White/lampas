@@ -24,6 +24,7 @@ import {
 import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { LimitedTextarea } from './ui/LimitedField';
+import { readText } from './ui/readText';
 
 const BUTTON = 'min-h-12 min-w-12 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
 const PRIMARY = 'min-h-12 min-w-12 rounded-xl bg-accent px-5 text-base font-medium text-accent-fg';
@@ -158,16 +159,6 @@ function describeFile(file: MemoryFile): string {
 }
 
 const fileName = (): string => `lampas-memory-${new Date().toISOString().slice(0, 10)}.json`;
-
-function readText(file: File): Promise<string> {
-  if (typeof file.text === 'function') return file.text();
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsText(file);
-  });
-}
 
 type Picked = { kind: 'none' } | { kind: 'bad' } | { kind: 'file'; file: MemoryFile } | { kind: 'done'; what: string };
 
