@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.419
+_2026-10-23_
+- New: After a Review ending card, See the table opens the table on that very word's own forms, with the cell you were asked lit.
+- New: Lampas has a Verse lists screen under the Library for lists of Bible references you save, where you can open, rename and delete them (with Undo).
+- Fixed: pressing Pause between two passages in the reference pop-up's reading now holds the next passage instead of letting it start.
+- New: The Greek verbs whose past tense cannot be guessed (come, see, eat, take, find, become and others) now show that form next to their meaning, like 'to come/go (aorist ἦλθον)'.
+- New: You can share your Logos list straight to Lampas from Files or Drive to import your library, without choosing the file inside the app.
+
 ## 0.1.418
 _2026-10-23_
 - New: Tapping Play in a Bible reference's pop-up reads the passage aloud, with Pause and Stop; an Old Testament reference says that no Old Testament is present.

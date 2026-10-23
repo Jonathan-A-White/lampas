@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.1.419",
+    "date": "2026-10-23",
+    "story": "mw-irpgqi.6",
+    "kind": "new",
+    "text": "After a Review ending card, See the table opens the table on that very word's own forms, with the cell you were asked lit."
+  },
+  {
+    "version": "0.1.419",
+    "date": "2026-10-23",
+    "story": "mw-9q8wp1.1",
+    "kind": "new",
+    "text": "Lampas has a Verse lists screen under the Library for lists of Bible references you save, where you can open, rename and delete them (with Undo)."
+  },
+  {
+    "version": "0.1.419",
+    "date": "2026-10-23",
+    "story": "mw-9q8wp1.7",
+    "kind": "fixed",
+    "text": "pressing Pause between two passages in the reference pop-up's reading now holds the next passage instead of letting it start."
+  },
+  {
+    "version": "0.1.419",
+    "date": "2026-10-23",
+    "story": "mw-bsf54t.12",
+    "kind": "new",
+    "text": "The Greek verbs whose past tense cannot be guessed (come, see, eat, take, find, become and others) now show that form next to their meaning, like 'to come/go (aorist ἦλθον)'."
+  },
+  {
+    "version": "0.1.419",
+    "date": "2026-10-23",
+    "story": "mw-rfjjzd.7",
+    "kind": "new",
+    "text": "You can share your Logos list straight to Lampas from Files or Drive to import your library, without choosing the file inside the app."
+  },
+  {
     "version": "0.1.418",
     "date": "2026-10-23",
     "story": "mw-9q8wp1.4",
