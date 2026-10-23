@@ -1,6 +1,6 @@
 // src/lists/VerseListScreen.tsx — one verse list (#/lists/<id>, mw-9q8wp1.1): its name and its references in the order saved, each the link the Share sheet's references are (a tap opens the
 // pop-up with the verse; Open goes to the Reader and Back comes here). Rename is in place: the name becomes a field with Save and Cancel. Delete takes the list away, goes back to the lists
-// and leaves Undo there for a few seconds (src/lists/deleted.ts). A list that is not there (deleted, then Back) says so and offers the lists.
+// and leaves Undo there for a few seconds (src/lists/deleted.ts). Edit swaps the references for src/lists/EditRefs.tsx (add by typing, remove, move, sort; mw-9q8wp1.3). A list that is not there (deleted, then Back) says so and offers the lists.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useRef, useState, type FormEvent } from 'react';
 import { getVerseList, removeVerseList, renameVerseList } from '../data/repositories';
@@ -12,12 +12,14 @@ import { useReportScreen } from '../tutor/screenContext';
 import { focusQuietly } from '../ui/focus';
 import { listedOf, referencesLine } from './canonical';
 import { noteDeleted } from './deleted';
+import { EditRefs } from './EditRefs';
 
 const ACTION = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
 export function VerseListScreen({ id }: { id: number }) {
   const list = useLiveQuery(async () => (await getVerseList(id)) ?? null, [id]);
   const [renaming, setRenaming] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const field = useRef<HTMLInputElement>(null);
   useReportScreen({
@@ -88,12 +90,17 @@ export function VerseListScreen({ id }: { id: number }) {
             <button type="button" onClick={startRename} className={ACTION}>
               Rename
             </button>
+            <button type="button" aria-pressed={editing} onClick={() => setEditing(!editing)} className={`${ACTION} ${editing ? 'bg-accent text-accent-fg' : ''}`}>
+              {editing ? 'Done' : 'Edit'}
+            </button>
             <button type="button" onClick={() => void remove()} className={`${ACTION} text-bad`}>
               Delete
             </button>
           </div>
         )}
-        {shown.length === 0 ? (
+        {editing ? (
+          <EditRefs listId={list.id} refs={list.refs} />
+        ) : shown.length === 0 ? (
           <p className="mt-3 text-base text-muted">This list holds no references yet.</p>
         ) : (
           <ul className="mt-3 space-y-2">
