@@ -1,7 +1,7 @@
 // src/talk/pictures.ts — the pictures of a tutor talk (mw-y3qno5.1): what a message may carry (the bible-talk grind's attachments, grinds/bible-talk.json:
 // up to four JPEG, PNG or WebP files), the cut each picture gets on the phone before it is sent, and what he is told when one is refused.
 import type { ClipboardEvent } from 'react';
-import { dataUrlOf, PICTURE_ONLY_QUESTION } from 'voice-kit/talks';
+import { dataUrlOf, PICTURE_ONLY_QUESTION, type Picture } from 'voice-kit/talks';
 import { shrinkImage } from '../images/shrink';
 import { MILL_PHOTO_MIMES, type MillFile } from '../services/mill';
 
@@ -23,12 +23,8 @@ export const COULD_NOT_USE_LINE = 'That picture could not be used.';
 /** Said when more pictures wait in the composer than one message carries: none is cut, he takes one out and sends again. */
 export const TOO_MANY_TO_SEND_LINE = 'Four pictures at most. Take one out and send again; nothing has been cut.';
 
-/** A picture ready to send, or kept: its bytes (always JPEG after the cut) and the name it goes under. */
-export interface OutgoingPicture {
-  bytes: Uint8Array;
-  mime: string;
-  name: string;
-}
+/** A picture ready to send, or kept: its bytes (always JPEG after the cut) and the name it goes under: voice-kit's Picture. */
+export type OutgoingPicture = Picture;
 
 /** Whether a file may be sent as a picture: its type is one of the grind's. */
 export const isTalkPicture = (file: { type: string }): boolean => TALK_PICTURE_MIMES.includes(file.type);
