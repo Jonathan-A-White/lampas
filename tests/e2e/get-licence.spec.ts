@@ -100,16 +100,16 @@ test('email, phone, two codes: Licensed. Tap Check again., then Check again show
 });
 
 test('the 3-device refusal is shown verbatim', async ({ page }) => {
-  await stubRegister(page, { confirm: [409, { error: 'This licence already has 3 devices. Remove one first.' }] });
+  await stubRegister(page, { confirm: [409, { error: 'This licence already has 5 devices. Remove one first.' }] });
   await openLicencePage(page);
   await fillDetails(page);
   await page.getByRole('button', { name: 'Send codes' }).click();
   await page.getByLabel('Email code').fill('123456');
   await page.getByLabel('Phone code').fill('654321');
   await page.getByRole('button', { name: 'Confirm', exact: true }).click();
-  await expect(page.getByRole('alert')).toHaveText('This licence already has 3 devices. Remove one first.');
+  await expect(page.getByRole('alert')).toHaveText('This licence already has 5 devices. Remove one first.');
   await expectFitsPhone(page);
-  await shot(page, 'get-licence-3-devices');
+  await shot(page, 'get-licence-5-devices');
 });
 
 test('the closed-registration refusal is shown verbatim', async ({ page }) => {
