@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.417
+_2026-10-23_
+- New: You can import your Logos library from the spreadsheet Logos saves, and Lampas turns on every book it can open and says what it cannot use and why.
+
 ## 0.1.416
 _2026-10-23_
 - New: Ask the tutor "what's on my drill today?" and it names what Today holds for you and offers to open Today.
