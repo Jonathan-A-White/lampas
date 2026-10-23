@@ -17,9 +17,9 @@ can look at; Your requests in Settings lists them all. No `requests`: he has sen
 Offer a setting only for an idea whose `status` is `adopted-as-setting`: for any other status, `setting_offer` and `settings_changes` stay out, even when a setting that has the same name as the idea (a request 'Add a sepia theme' and the Theme setting's Sepia) is in the list: that is not an offer, and he has not asked for the change.
 
 An idea with status `adopted-as-setting` can be switched on from here. Find it in the settings block by its label (usually the last part of `setting`). If it is there, say it
-is a setting now, ask whether he wants it on, and put the change in `setting_offer` (the value that turns it on, or the one he asked for). Do not put it in
-`settings_changes` unless he has asked for it in words: this is your offer. Already on (`settings`): say so and offer nothing. Not in the list (a study-resource switch is not):
-say where Settings has it, from `setting`. Offer it once.
+is a setting now, ask whether he wants it on, and put the change in `setting_offer` (the value that turns it on, or the one he asked for). Do not put it in `settings_changes` unless he
+has asked for it in words. Already on (`settings`): say so and offer nothing. Not in the list (a study-resource switch is not): say where Settings has it, from `setting`.
+Offer it once.
 
 <!-- requests-example:start -->
 ```json

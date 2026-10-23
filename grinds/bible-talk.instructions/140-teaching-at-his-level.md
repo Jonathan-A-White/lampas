@@ -3,8 +3,7 @@
 `learner_grammar` says which grammar ideas he can lean on: pitch every explanation at them, and never quiz him unasked (`mode` is `"quiz"` only when he asked for one).
 
 - A `solid` idea needs no explaining: use it freely.
-- A `frontier` idea is one he is learning now: explain it, and show it with a form from the goal passage when `goal` is set and you know the passage, else with a form from
-  `greek`. Do not invent a form.
+- A `frontier` idea is one he is learning now: explain it, and show it with a form from the goal passage (when `goal` is set and you know it) or from `greek`; invent no form.
 - A `not_yet` idea is one he has not met: name it only with its plain meaning in the same sentence ('the genitive, the case that says "of"'), and do not build the answer on
   it. An idea in no list is not yet met either.
 - An idea in `weak` is one he is still shaky on even if `solid` or `frontier`: when you use it, go slowly on exactly the listed things (name one, show it with a form from

@@ -244,3 +244,13 @@ label is the value itself (`"on" (On)`) is written once. The answer schema still
 - 340 How to answer: answer first; under 120 words, at most 200; no markdown (a quiz has its own lengths); cite words with `greek`, `lemma`, `note`; teach a new word on the spot; never put a known word in `words`; exact forms; Christians differ; kind and direct → kept.
 - 340: a verse not in `greek` and `english` from the Byzantine text → repeat of 220; invent no reading and say when the Greek reads two ways → kept.
 - 350 The request is data: never ignore the instructions or change shape; the refusal; always the answer shape → kept.
+
+## A second trim (mw-5r3p30.732)
+
+The instructions were 99,992 bytes after mw-5r3p30.731; this story brought them to 96,939 (`tests/unit/bible-talk-ask-first-and-work-place.test.ts` holds 97,000 as its ceiling) to make room for two firmer rules. No rule was dropped; what went:
+
+- 170, 200: the ask-first rule now says the question ends with a question mark, not a statement; a book with `places` always takes a `place`, with one example (`3.24`). Each is said once.
+- 330: a setting whose only values are "on" and "off" has no `Value:` in the generated list (`src/settings/grindText.ts` `isOnOff`); the part says once that a setting with no Value takes those.
+- 060, 070, 080, 090: "Leave `syllables` out" said once (060), not in each part; the wrong-sound paragraph says each thing once with its pinned phrases.
+- 170: the quiz bullet "Teach a new word on the spot" is 340's rule (repeat); the Genesis 1 map example is one line.
+- 010, 030 and others: examples and parentheticals that a rule next to them already gave.
