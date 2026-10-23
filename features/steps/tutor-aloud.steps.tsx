@@ -11,10 +11,12 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import * as repositories from '../../src/data/repositories';
 import { setReadTutor } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { getReading } from '../../src/speech/readAloud';
+import { dropWaiting, waitingAnswer } from '../../src/speech/tutorWaiting';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { holdBarIn, typeQuestion } from '../../tests/support/composer';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -52,6 +54,9 @@ async function open({ aloud, hash = '', reply }: { aloud: boolean; hash?: string
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = hash;
   visibility = 'visible';
+  slowSetting?.mockRestore();
+  slowSetting = null;
+  dropWaiting();
   stubRecorder();
   stubRecognizer();
   FakeRecorder.denied = false;
@@ -138,6 +143,18 @@ const groupSwitch = async () => within(await screen.findByRole('group', { name: 
 let visibility: DocumentVisibilityState = 'visible';
 Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => visibility });
 Object.defineProperty(document, 'hidden', { configurable: true, get: () => visibility === 'hidden' });
+/** How long a loaded phone takes to read the 'Read the tutor's responses aloud' setting, which the app does after an answer is stored and before it decides to
+ * speak it or hold it for his return (speakTutor): longer than the 150 ms the steps used to wait for silence, so a step that goes by that timer fails. */
+const SLOW_SETTING_MS = 400;
+let slowSetting: { mockRestore: () => void } | null = null;
+const slowSettingRead = () => {
+  slowSetting?.mockRestore();
+  const real = repositories.getReadTutor;
+  slowSetting = vi.spyOn(repositories, 'getReadTutor').mockImplementation(async () => {
+    await sleep(SLOW_SETTING_MS);
+    return real();
+  });
+};
 const setVisibility = (next: DocumentVisibilityState) => {
   visibility = next;
   act(() => {
@@ -293,9 +310,11 @@ describeFeature(feature, ({ Scenario }) => {
     expect(said.filter((s) => s.lang === 'el-GR').map((s) => s.text)).toContain(greek);
     expect(said.filter((s) => s.lang === 'en-US').map((s) => s.text).join(' ')).toContain('present active indicative');
   };
+  /** The answer is on the screen, and the app has decided what to do with it: the page is hidden, so it is held for his return (tutorWaiting.ts), not
+   * spoken. The decision comes after a read of the setting, so the step waits for the held answer, not for a pause (mw-5r3p30.735). */
   const answerShownSilent = async () => {
     await waitFor(() => expect(document.querySelectorAll('[data-answers-for="28"] [data-answer]').length).toBe(1));
-    await sleep(150);
+    await waitFor(() => expect(waitingAnswer()).not.toBeNull());
     expect(synth.spoken).toHaveLength(0);
   };
   const barIsGone = async () => {
@@ -308,7 +327,10 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('An answer that comes while he is in another app waits for him: a bar says so and a tap plays it', ({ Given, And, When, Then }) => {
     Given(readOn, () => open({ aloud: true, reply: 'answer' }));
-    And('he is in another app', () => setVisibility('hidden'));
+    And('he is in another app', () => {
+      slowSettingRead();
+      setVisibility('hidden');
+    });
     And(askFirst, askIt);
     Then('the answer is shown and nothing is spoken', answerShownSilent);
     When('he comes back to Lampas', () => setVisibility('visible'));
@@ -323,7 +345,10 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A new question while the answer waits drops the bar', ({ Given, And, When, Then }) => {
     Given(readOn, () => open({ aloud: true, reply: 'answer' }));
-    And('he is in another app', () => setVisibility('hidden'));
+    And('he is in another app', () => {
+      slowSettingRead();
+      setVisibility('hidden');
+    });
     And(askFirst, askIt);
     And('the answer is shown and nothing is spoken', answerShownSilent);
     And('he comes back to Lampas', () => setVisibility('visible'));
@@ -334,7 +359,10 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Closing the Verse view while the answer waits leaves the bar for the Reader, and a tap plays it', ({ Given, And, When, Then }) => {
     Given(readOn, () => open({ aloud: true, reply: 'answer' }));
-    And('he is in another app', () => setVisibility('hidden'));
+    And('he is in another app', () => {
+      slowSettingRead();
+      setVisibility('hidden');
+    });
     And(askFirst, askIt);
     And('the answer is shown and nothing is spoken', answerShownSilent);
     And('he comes back to Lampas', () => setVisibility('visible'));
@@ -354,7 +382,10 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("The phone's Back out of the Verse view while the answer waits leaves the bar too", ({ Given, And, When, Then }) => {
     Given(readOn, () => open({ aloud: true, reply: 'answer' }));
-    And('he is in another app', () => setVisibility('hidden'));
+    And('he is in another app', () => {
+      slowSettingRead();
+      setVisibility('hidden');
+    });
     And(askFirst, askIt);
     And('the answer is shown and nothing is spoken', answerShownSilent);
     And('he comes back to Lampas', () => setVisibility('visible'));
