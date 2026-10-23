@@ -295,9 +295,9 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           onStep={(step, wasRight) => {
             writing.current = writing.current.then(() => recordParseStep(item, step, wasRight)).catch((error: unknown) => console.error('could not record the step', error));
           }}
-          onSeeTable={(table) => {
+          onSeeTable={(address) => {
             holdRound(round);
-            openParadigm({ table });
+            openParadigm(address);
           }}
         />
         {picked !== null ? (
