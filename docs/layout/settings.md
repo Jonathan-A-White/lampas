@@ -39,6 +39,8 @@ Settings (opened by the gear; a setting's details show only while it is on, mw-5
 
 ## Search
 
+The kit does the work (mw-79en7t.7): `defineSetting`, the registry (`createRegistry`, `entryOf`), `rowsInOrder`, `visibleRows`, `neededFor`, `rowsAt`, `visibleGroups`, `searchSettings` and the search field, group button and found rows are `pwa-kit/settings`'; `src/settings/define.ts`, `registry.ts`, `rows.ts` and `SettingsHome.tsx` keep Lampas's own (its section ids, `SECTIONS`, `GROUPS`, the settings, the links, where a tap goes, the books found) and give the kit's functions Lampas's list and its Markdown-to-words (`helpPlain`). Its look is `pwa-kit/settings/styles.css`, themed in `src/index.css` ('pwa-kit's Settings home'). A setting's `defineSetting` throws at start-up for a default it does not allow.
+
 Typing on the home swaps the groups for the rows that match by name or hint (`visibleRows`; a detail hidden by a setting that is off is found through the row that turns it on). Each result names its group; choosing one opens its page at the row (`openSetting` for a setting of the registry: scrolled to, marked; a row outside the registry, such as a link, opens its page at its section). The field keeps its text when he comes back to the home.
 
 ## Links into Settings
