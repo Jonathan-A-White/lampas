@@ -115,5 +115,5 @@ export { dropShares, parkShare, waitingShare } from './shares';
 export type { ShareRow } from './shares';
 
 export { getPenSeen, getWhySeen, getWriteProgress, handwritingOn, markPenSeen, markWhySeen, recordWrite } from './handwriting';
-export { createVerseList, getVerseList, listVerseLists, removeVerseList, renameVerseList, restoreVerseList, setVerseListRefs, UNTITLED_LIST, verseListCount } from './verseLists';
+export { appendToVerseList, createVerseList, getVerseList, listVerseLists, removeVerseList, renameVerseList, restoreVerseList, setVerseListRefs, UNTITLED_LIST, verseListCount } from './verseLists';
 export type { VerseListRow } from './verseLists';

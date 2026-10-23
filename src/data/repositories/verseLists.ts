@@ -48,6 +48,21 @@ export async function setVerseListRefs(id: number, refs: readonly string[], now:
   });
 }
 
+/** Adds to a list the references it does not hold yet, after the ones it holds, in the order given. Returns the list as it is now and how many were added, or undefined, changing
+ *  nothing, for a list that is not there; when nothing is new the list is left as it was (`updated` too). */
+export async function appendToVerseList(id: number, refs: readonly string[], now: number = Date.now()): Promise<{ row: VerseListRow; added: number } | undefined> {
+  return db.transaction('rw', db.verseLists, async () => {
+    const row = await db.verseLists.get(id);
+    if (!row) return undefined;
+    const held = new Set(row.refs);
+    const fresh = refs.filter((ref) => !held.has(ref) && held.add(ref));
+    if (fresh.length === 0) return { row, added: 0 };
+    const next = { ...row, refs: [...row.refs, ...fresh], updated: now };
+    await db.verseLists.put(next);
+    return { row: next, added: fresh.length };
+  });
+}
+
 /** Removes a list and returns the row it removed, which `restoreVerseList` puts back (Undo); undefined for a list that is not there. */
 export async function removeVerseList(id: number): Promise<VerseListRow | undefined> {
   return db.transaction('rw', db.verseLists, async () => {
