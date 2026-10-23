@@ -81,12 +81,12 @@
       "maxLength": 80
     },
     "pending_offer": {
-      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal), 'bridge' (your `bridge`; `text` is 'Take me there: <title of the idea it opens>'; his yes opens that idea's sheet) 'greek' (your `greek_offer`; `text` is its line; his yes opens the Greek word or switches the Reader to Greek, and his no is kept by the app in the memory index) or 'rusty' (your `rusty_offer`; `text` is 'Move back to Frontier and practise'; his yes moves the rusty items you named back to Frontier and opens their practice). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
+      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal), 'bridge' (your `bridge`; `text` is 'Take me there: <title of the idea it opens>'; his yes opens that idea's sheet) 'greek' (your `greek_offer`; `text` is its line; his yes opens the Greek word or switches the Reader to Greek, and his no is kept by the app in the memory index) 'rusty' (your `rusty_offer`; `text` is 'Move back to Frontier and practise'; his yes moves the rusty items you named back to Frontier and opens their practice) or 'today' (your `today_offer`; `text` is 'Open today's drill'; his yes opens Today). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
       "type": "object",
       "additionalProperties": false,
       "required": ["kind", "text"],
       "properties": {
-        "kind": { "type": "string", "enum": ["feedback", "setting", "quiz-goal", "bridge", "greek", "rusty"] },
+        "kind": { "type": "string", "enum": ["feedback", "setting", "quiz-goal", "bridge", "greek", "rusty", "today"] },
         "text": { "type": "string", "minLength": 1, "maxLength": 200 }
       }
     },
@@ -394,6 +394,21 @@
           "id": { "type": "string", "minLength": 1, "maxLength": 80 },
           "title": { "type": "string", "minLength": 1, "maxLength": 80 },
           "why": { "type": "string", "minLength": 1, "maxLength": 60 }
+        }
+      }
+    },
+    "today": {
+      "description": "Optional. What Today holds for him now: the items behind the 'Today · 2 of 9' chip in the Reader's row, in the order Today draws them, at most 12. Each: `kind` ('review', 'plan', 'psalm', 'proverb' or 'devotional'), `title` (what Today calls it: 'Review: 17 due', 'Reading plan: 3 John 1', 'Psalm 5', the devotional's name) and `done` (true if he ticked it today, false if not; missing for every item while his Tick boxes setting is Off, when nothing can be ticked). Missing when Today holds nothing, and in a quiz and the welcome. It is the app's own list: name items from it when he asks what is on today's drill or what is left, never say you cannot see it, and never add an item to it (see the instructions, 'A talk from a screen').",
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "title"],
+        "properties": {
+          "kind": { "type": "string", "enum": ["review", "plan", "psalm", "proverb", "devotional"] },
+          "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "done": { "type": "boolean" }
         }
       }
     },

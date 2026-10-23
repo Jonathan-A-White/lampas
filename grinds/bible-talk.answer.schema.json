@@ -218,6 +218,11 @@
         }
       }
     },
+    "today_offer": {
+      "description": "Only when the request carried `today` and he asked what is on today's drill, or what he has left to do today (see the instructions, 'The day's list'): true, after you named the items. The app draws one button, 'Open today's drill', and opens Today only on his tap or his yes. At most once in a conversation (the history shows it), never in a quiz, never after his no. Leave it out otherwise.",
+      "type": "boolean",
+      "const": true
+    },
     "greek_asked": {
       "description": "Only when he asked for Greek himself in this turn (the Greek word, the Greek view, what the original says) while `memory.index` holds 'said no to the Greek offer': true. The app then takes that line out of the index. Never to record an answer to your own offer: a yes or a no to the offer goes in `offer_reply`.",
       "type": "boolean",
