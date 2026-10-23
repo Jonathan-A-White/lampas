@@ -234,6 +234,9 @@ export interface TalkTurn {
   /** the tutor's offer to move the rusty items it named back to Frontier and practise them (mw-1vuvq6.6): only items the request listed as rusty; `rustyChoice` says what became of it, absent while it waits */
   rustyOffer?: RustyOffer;
   rustyChoice?: 'taken' | 'declined';
+  /** the tutor's offer to open Today (mw-5r3p30.731): only when the request carried `today`; `todayChoice` says what became of it, absent while it waits */
+  todayOffer?: true;
+  todayChoice?: 'taken' | 'declined';
 }
 
 /** The rusty items a tutor's answer offered to move back to Frontier: each with the title the request gave it (src/talk/rustyOffer.ts rustyOfferOf). */

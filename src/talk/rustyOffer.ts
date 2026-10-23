@@ -28,6 +28,11 @@ export function registerTalkLeave(close: () => void): () => void {
   };
 }
 
+/** Closes the open Talk sheet, if one registered how: an offer taken from a talk opens a screen beneath it. */
+export function leaveTalk(): void {
+  leave?.();
+}
+
 /** Takes the turn's offer as its button's tap does: the items that are still solid move to Frontier, the sheet closes and Review opens a round of just those; the offer is taken. */
 export async function takeRustyOffer(turn: TalkTurn): Promise<void> {
   const offer = turn.rustyOffer;

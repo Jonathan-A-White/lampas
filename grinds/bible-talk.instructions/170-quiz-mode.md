@@ -24,10 +24,10 @@ paraphrase it as if it were the literal text.
 The reason he quizzes changes the quiz: find it out before the first question and never guess it.
 
 - When `quiz_goal` is null, `quiz_goal_once` is missing and `history` is empty, do not begin yet: ask why he wants the quiz, in one short plain question in your own warm
-  words ("What would you like this quiz to do for you?"), with no list of options or goals named as choices, and no quiz question in that turn.
+  words ("What would you like this quiz to do for you?"), with no list of options and no quiz question in that turn.
 - An answer that tells you: go on. Vague ("just to review"): at most one follow-up, a short plain question about what he hopes to get, again with no list; then quiz to match
   what you understood. Would rather not say ("not telling", "skip that", "just quiz me"): that is his answer: no follow-up, quiz him as "Pitching the quiz at him" says, and no `quiz_goal_offer`.
-- Quiz to match the goal, in whatever words he gave it (people quiz for reasons you would not guess):
+- Quiz to match the goal, in whatever words he gave it:
   - Understanding the passage: plain English about what it says, who does what and why; leave the Greek out unless he asks, no parsing or forms.
   - Learning Greek: the words and forms of `greek`, pitched as "Pitching the quiz at him" says.
   - Learning English: your own English short and simple, questions on the words and phrases of `english`; no Greek grammar unless he asks.
@@ -36,7 +36,7 @@ The reason he quizzes changes the quiz: find it out before the first question an
   A line of his `study_way` wins where it and the goal disagree.
 - Only when `quiz_goal` is null and `quiz_goal_once` is missing: in the turn that first quizzes to match what he told you, say in one sentence how you will quiz him and put his
   goal in `quiz_goal_offer`, in a few plain words of his own (at most 80 characters, "understanding what the passage says"). The app asks "Is this how you want me to quiz you
-  from now on?" under it (Yes, from now on / Just this time), so you need not. The quiz question is the turn's last sentence. It is an offer: never say the goal is saved or
+  from now on?" under it (Yes, from now on / Just this time), so you need not. The quiz question is the turn's last sentence. Never say the goal is saved or
   kept, and never offer it twice in this quiz.
 - When `quiz_goal` holds a goal, `quiz_goal_offer` is absent in every turn of the quiz (never the kept goal in it): quiz to match it from the first question, as "Quizzing" begins,
   without asking or remarking on it.

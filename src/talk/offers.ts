@@ -8,12 +8,13 @@ import { liveBridge } from '../data/grammar/bridge';
 import { levelsOf } from '../data/grammar/goalProgress';
 import { ideaOf } from '../data/grammar/ladder';
 import type { Level } from '../data/grammar/needs';
-import { getTurn, listLevels, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markRustyChoice, markSettingChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
+import { getTurn, listLevels, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markRustyChoice, markSettingChoice, markTodayChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
 import type { Bridge } from '../data/db';
 import { noteGreekNo } from '../data/repositories/memory';
 import { RUSTY_BUTTON } from '../data/rusty';
 import { takeGreekOffer } from './greekOffer';
 import { takeRustyOffer } from './rustyOffer';
+import { TODAY_BUTTON, takeTodayOffer } from './todayOffer';
 import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
 import { scopeTitle, type OfferReply, type PendingOffer, type TalkScope } from '../services/talk';
 import { applyChanges, offeredChange, type ChangeResult } from '../settings/registry';
@@ -25,7 +26,7 @@ export const bridgeButtonText = (bridge: Bridge): string => `Take me there: ${id
  * without them, the bridge as the answer came. */
 const bridgeOf = (turn: TalkTurn, levels?: ReadonlyMap<string, Level>): Bridge | undefined => (turn.bridge && levels ? liveBridge(turn.bridge, levels) : turn.bridge);
 
-/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge, then the Greek (mw-yrmkdf.4), then the rust (mw-1vuvq6.6).
+/** The offer a turn holds that no tap or word has settled, or undefined. A turn holds at most one that counts: the makers' first, then the setting, then the quiz goal, then the bridge, then the Greek (mw-yrmkdf.4), then the rust (mw-1vuvq6.6), then Today (mw-5r3p30.731).
  * With `levels`, a bridge to ideas he has taken up since is not one. */
 export function offerOfTurn(turn: TalkTurn, levels?: ReadonlyMap<string, Level>): PendingOffer | undefined {
   if (turn.feedbackOffer && !turn.feedbackSent && !turn.feedbackWithdrawn) return { kind: 'feedback', text: turn.feedbackOffer };
@@ -38,15 +39,17 @@ export function offerOfTurn(turn: TalkTurn, levels?: ReadonlyMap<string, Level>)
   if (bridge && !turn.bridgeChoice) return { kind: 'bridge', text: bridgeButtonText(bridge) };
   if (turn.greekOffer && !turn.greekChoice) return { kind: 'greek', text: turn.greekOffer.text };
   if (turn.rustyOffer && !turn.rustyChoice) return { kind: 'rusty', text: RUSTY_BUTTON };
+  if (turn.todayOffer && !turn.todayChoice) return { kind: 'today', text: TODAY_BUTTON };
   return undefined;
 }
 
-/** An offer whose button stays on screen after his tap (the bridge, the Greek, the rust: a tap opens it again), so a yes to it does what the tap does (mw-1vuvq6.8). */
+/** An offer whose button stays on screen after his tap (the bridge, the Greek, the rust, Today: a tap opens it again), so a yes to it does what the tap does (mw-1vuvq6.8). */
 function takenOfferOf(turn: TalkTurn, levels?: ReadonlyMap<string, Level>): PendingOffer | undefined {
   const bridge = bridgeOf(turn, levels);
   if (bridge && turn.bridgeChoice === 'taken') return { kind: 'bridge', text: bridgeButtonText(bridge) };
   if (turn.greekOffer && turn.greekChoice === 'taken') return { kind: 'greek', text: turn.greekOffer.text };
   if (turn.rustyOffer && turn.rustyChoice === 'taken') return { kind: 'rusty', text: RUSTY_BUTTON };
+  if (turn.todayOffer && turn.todayChoice === 'taken') return { kind: 'today', text: TODAY_BUTTON };
   return undefined;
 }
 
@@ -184,6 +187,7 @@ export async function settleOffer(reply: OfferReply | undefined, waiting: { turn
     else if (offer.kind === 'setting') await markSettingChoice(id, 'declined');
     else if (offer.kind === 'bridge') await markBridgeChoice(id, 'declined');
     else if (offer.kind === 'rusty') await markRustyChoice(id, 'declined');
+    else if (offer.kind === 'today') await markTodayChoice(id, 'declined');
     else if (offer.kind === 'greek') {
       // his no is kept in the index so the tutor offers the Greek no more until he asks for it himself
       await markGreekChoice(id, 'declined');
@@ -198,6 +202,7 @@ export async function settleOffer(reply: OfferReply | undefined, waiting: { turn
     else if (offer.kind === 'bridge') await takeBridgeOffer(turn);
     else if (offer.kind === 'greek') await takeGreekOffer(turn);
     else if (offer.kind === 'rusty') await takeRustyOffer(turn);
+    else if (offer.kind === 'today') await takeTodayOffer(turn);
     else {
       await setQuizGoal(offer.text);
       await markQuizGoalChoice(id, 'kept');

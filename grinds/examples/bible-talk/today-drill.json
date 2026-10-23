@@ -1,0 +1,41 @@
+{
+  "description": "He asks, in a talk on 3 John 1, what words are on his drill for today and to be drilled on them. The request carries Today's list ('Today · 0 of 9'); the tutor names items from it by title (never says it cannot see his drill plan) and offers to open today's drill with today_offer. The answer is checked for naming at least one item of the list and for the offer.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "3 John 1",
+    "greek": "Ὁ πρεσβύτερος Γαΐῳ τῷ ἀγαπητῷ, ὃν ἐγὼ ἀγαπῶ ἐν ἀληθείᾳ.",
+    "english": "The elder, to my beloved Gaius, whom I love in truth.",
+    "question": "What words are on my drill for today? Drill me on them.",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "reader_view": "english",
+    "learner": "solid 3 words; learning: ἀγάπη; new today: ; due now: 17",
+    "today": [
+      { "kind": "review", "title": "Review: 17 due", "done": false },
+      { "kind": "plan", "title": "Reading plan: 3 John 1", "done": false },
+      { "kind": "psalm", "title": "Psalm 22", "done": false },
+      { "kind": "psalm", "title": "Psalm 52", "done": false },
+      { "kind": "psalm", "title": "Psalm 82", "done": false },
+      { "kind": "psalm", "title": "Psalm 112", "done": false },
+      { "kind": "psalm", "title": "Psalm 142", "done": false },
+      { "kind": "proverb", "title": "Proverbs 22", "done": false },
+      { "kind": "devotional", "title": "Morning and Evening", "done": false }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "Review|17|Psalm|Proverbs|Reading plan|Morning and Evening|devotional"
+    },
+    "today_offer": {
+      "equals": true
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
