@@ -135,6 +135,9 @@ const subscribe = (listener: () => void): (() => void) => {
   return () => listeners.delete(listener);
 };
 
+/** Tells `listener` each time the reading changes (the passage player, which hands the voice from one reference to the next, follows it). */
+export const subscribeReading = subscribe;
+
 export function useReading(): ReadingState {
   return useSyncExternalStore(subscribe, getReading, getReading);
 }
@@ -440,7 +443,8 @@ if (typeof window !== 'undefined') subscribeBeside(onBeside);
 /** The speaking bar's Restart on a Listen reads it again from its first verse (the package alone would restart the verse it is in). False when what is
  * being read is not a Listen: the bar then restarts the speech as it always did. */
 export function restartListen(): boolean {
-  if (state.listen === null || state.status === 'idle' || !startedWith) return false;
+  // a reading of an answer (the passage player's too) never set startedWith: the bar restarts its speech
+  if (state.listen === null || state.answer !== null || state.status === 'idle' || !startedWith) return false;
   const first = startedWith.plan[0];
   if (!first) return false;
   startReading({ ...startedWith, from: first.n });
@@ -449,6 +453,9 @@ export function restartListen(): boolean {
 
 /** The key of the Listen on a verse or a passage of a chapter (`unit` is data/passage.ts unitId). */
 export const listenKeyOf = (book: string, chapter: number, unit: string): string => `${book}.${chapter}.${unit}`;
+
+/** The key of the Listen that last ran to its end by itself, or null: how a reading's owner tells its end from a Stop. */
+export const listenCompletedNow = (): string | null => completed;
 
 /** The Listen that last ran to its end by itself, or null (it offers Play again). */
 export function useListenCompleted(): string | null {

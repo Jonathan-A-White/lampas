@@ -3,10 +3,10 @@
 // on a card elsewhere (the Review question's reference, mw-5r3p30.652) reads these, so it is drawn as the Reader draws it and a change made at once reaches it.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
-import { getPlainEnglishUnder, getReaderView, getWeave, getWeaveGrammar, listLearningLemmas, listLevels, listSolidLemmas } from '../data/repositories';
+import { getGreekInterest, getPlainEnglishUnder, getReaderView, getWeave, getWeaveGrammar, listLearningLemmas, listLevels, listSolidLemmas } from '../data/repositories';
 import { weaveOrderSetting } from '../settings/definitions';
 import { viewAt, weaveAt } from '../settings/definitions/greekInterest';
-import { useSetting } from '../settings/store';
+import { getSetting, useSetting } from '../settings/store';
 import { useGreekInterest } from '../settings/useGreekInterest';
 import type { ReaderSettings } from './useReaderSettings';
 
@@ -28,4 +28,21 @@ export function useViewSettings(): Pick<ReaderSettings, 'view' | 'weave' | 'weav
     () => (view && weave && weaveGrammar && weaveOrder && plainUnder !== undefined && levels && solid && learning ? { view, weave, weaveShown: weave !== 'off' && plainUnder !== weave, weaveGrammar, weaveOrder, solid, learning, levels } : undefined),
     [view, weave, plainUnder, weaveGrammar, weaveOrder, levels, solid, learning],
   );
+}
+
+/** The same settings as useViewSettings, read once and outside React: what the passage player (src/speech/passagePlayer.ts) reads aloud in, so it follows the language and weave he reads in. */
+export async function readViewSettings(): Promise<NonNullable<ReturnType<typeof useViewSettings>>> {
+  const [level, savedView, savedWeave, weaveGrammar, weaveOrder, plainUnder, levels, solid, learning] = await Promise.all([
+    getGreekInterest(),
+    getReaderView(),
+    getWeave(),
+    getWeaveGrammar(),
+    getSetting(weaveOrderSetting),
+    getPlainEnglishUnder(),
+    listLevels(),
+    listSolidLemmas(),
+    listLearningLemmas(),
+  ]);
+  const weave = weaveAt(level, savedWeave);
+  return { view: viewAt(level, savedView), weave, weaveShown: weave !== 'off' && plainUnder !== weave, weaveGrammar, weaveOrder, solid, learning, levels };
 }

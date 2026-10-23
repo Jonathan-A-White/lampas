@@ -3,27 +3,34 @@
 import { useMemo } from 'react';
 import type { Chapter, GreekWord } from '../data/chapter';
 import { formPasses } from '../data/grammar/formLevel';
-import { weaveVerse, wovenInOrder } from '../data/weave';
+import { weaveVerse, wovenInOrder, type WovenVerse } from '../data/weave';
 import type { ReaderSettings } from './useReaderSettings';
 
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
+
+/** The weave of every verse of `chapter`, or null when it is not woven: the one rule the Reader's weave and a read-aloud of a passage both follow (mw-9q8wp1.4). `settings` is empty while they load. */
+export function wovenOf(chapter: Chapter | null, settings: Partial<ReaderSettings>): WovenVerse[] | null {
+  const { view, weave, weaveShown, weaveGrammar, weaveOrder, levels, solid, learning } = settings;
+  const weaving = view === 'english' && weaveShown === true && (weave === 'solid' || weave === 'solid+learning');
+  const withLearning = weave === 'solid+learning';
+  if (!chapter || !weaving) return null;
+  const formOk =
+    weaveGrammar === undefined || levels === undefined
+      ? () => false // the dial is still loading: weave nothing rather than flash a verse that then narrows
+      : weaveGrammar === 'any'
+        ? undefined
+        : (w: GreekWord) => formPasses(w.p, levels, weaveGrammar);
+  return chapter.verses.map((v) =>
+    wovenInOrder(v, weaveVerse(v, { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk }), weaveOrder ?? 'english'),
+  );
+}
 
 /** The weave of every verse of `chapter`; `settings` is empty while they load. The grammar dial: with it on, a form stays English unless every idea its parsing needs is at that level.
  * The Order: Greek lays each verse out in the Greek word order (src/data/weave.ts chunkOrder), which VerseText draws and read aloud reads. */
 export function useWoven(chapter: Chapter | null, settings: Partial<ReaderSettings>) {
   const { view, weave, weaveShown, weaveGrammar, weaveOrder, levels, solid, learning } = settings;
-  const weaving = view === 'english' && weaveShown === true && (weave === 'solid' || weave === 'solid+learning');
-  const withLearning = weave === 'solid+learning';
-  return useMemo(() => {
-    if (!chapter || !weaving) return null;
-    const formOk =
-      weaveGrammar === undefined || levels === undefined
-        ? () => false // the dial is still loading: weave nothing rather than flash a verse that then narrows
-        : weaveGrammar === 'any'
-          ? undefined
-          : (w: GreekWord) => formPasses(w.p, levels, weaveGrammar);
-    return chapter.verses.map((v) =>
-      wovenInOrder(v, weaveVerse(v, { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk }), weaveOrder ?? 'english'),
-    );
-  }, [chapter, weaving, withLearning, solid, learning, weaveGrammar, weaveOrder, levels]);
+  return useMemo(
+    () => wovenOf(chapter, { view, weave, weaveShown, weaveGrammar, weaveOrder, levels, solid, learning }),
+    [chapter, view, weave, weaveShown, weaveGrammar, weaveOrder, levels, solid, learning],
+  );
 }
