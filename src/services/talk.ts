@@ -12,6 +12,7 @@ import { isAnswerBridge, type AnswerBridge, type MissingFoundations } from '../d
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
 import { RUSTY_MAX, type RustyItem } from '../data/rusty';
+import type { TodayItem } from '../data/learnerToday';
 import type { MemoryField } from '../data/learnerMemory';
 import { LEARNABLE, LEARNED_VALUE_MAX, type Learnable, type ProfileUpdate } from '../data/repositories/profile';
 import type { TutorRequest } from '../data/requestsForTutor';
@@ -267,6 +268,8 @@ export interface TalkRequest {
   requests?: TutorRequest[];
   /** the solid words and ideas he now slips on or has not met for a long while, worst first, at most 8 (mw-1vuvq6.6, src/data/rusty.ts); missing when none; fitHistory never cuts it */
   rusty?: RustyItem[];
+  /** the items behind the Reader's chip 'Today · N of M', in the order Today draws them, each with its title and whether he ticked it (mw-5r3p30.731, src/data/learnerToday.ts); missing when Today holds nothing; fitHistory never cuts it */
+  today?: TodayItem[];
 }
 
 /** What the tutor's `rusty_offer` holds: the rusty items (kind and id, as the request listed them) it offers to move back to Frontier. */
@@ -288,7 +291,7 @@ export interface FeedbackOffer {
 /** The offer waiting for his tap that his next turn carries (mw-5r3p30.186): its kind and the exact text it would send or do, so the tutor can read it back word for word
  * and tell from his words whether he confirms, declines or asks to hear it. */
 export interface PendingOffer {
-  kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge' | 'greek' | 'rusty';
+  kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge' | 'greek' | 'rusty' | 'today';
   text: string;
 }
 
@@ -334,6 +337,8 @@ export interface TalkAnswer {
   greek_offer?: GreekOffer;
   /** only when the request carried `rusty` (mw-1vuvq6.6): which of those items to offer to move back to Frontier; the app keeps only the ones it listed, and draws the button */
   rusty_offer?: RustyOfferAnswer;
+  /** only when the request carried `today` (mw-5r3p30.731): the tutor offers to open Today (its drill); the app draws one button and opens it on his tap or his yes */
+  today_offer?: true;
   /** true when he asked for Greek himself (mw-yrmkdf.4): the app takes his earlier no to the Greek offer out of the memory index */
   greek_asked?: true;
   /** while the tutor helps with a form (`form` in the request): the values to put in its fields, by field name; the form ignores a name it does not have */
@@ -410,7 +415,7 @@ const isRustyOffer = (value: unknown): value is RustyOfferAnswer =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'welcome_done' && k !== 'summary')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
@@ -426,6 +431,7 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if ('greek_asked' in value && value.greek_asked !== true) return false;
   if ('welcome_done' in value && value.welcome_done !== true) return false;
   if ('rusty_offer' in value && !isRustyOffer(value.rusty_offer)) return false;
+  if ('today_offer' in value && value.today_offer !== true) return false;
   if ('setting_offer' in value && !(isObject(value.setting_offer) && Object.keys(value.setting_offer).length === 2 && isText(value.setting_offer.key, 60) && (isText(value.setting_offer.value, 80) || typeof value.setting_offer.value === 'number'))) return false;
   if ('form_ask' in value && !isText(value.form_ask, 30)) return false;
   if ('form_values' in value && !(Array.isArray(value.form_values) && value.form_values.length <= 8 && value.form_values.every(isFormValue))) return false;
@@ -598,6 +604,7 @@ export function buildTalkRequest(
   rusty?: RustyItem[],
   works: TutorWork[] = [],
   summary?: { text: string; covered: number },
+  today?: TodayItem[],
 ): TalkRequest {
   // the turns older than the window that the summary does not hold yet: the next few, oldest first, for the tutor to fold in (mw-5r3p30.700)
   const past = Math.max(0, turns.length - MAX_HISTORY_TURNS);
@@ -640,6 +647,7 @@ export function buildTalkRequest(
     ...(!scope.screen && !scope.quiz ? { greek_interest: greekInterestField(settings) } : {}),
     ...(requests.length > 0 && !aboutCredits ? { requests } : {}),
     ...(rusty && rusty.length > 0 && !aboutCredits && !scope.quiz && !scope.welcome ? { rusty } : {}),
+    ...(today && today.length > 0 && !aboutCredits && !scope.quiz && !scope.welcome ? { today } : {}),
   };
   if (scope.screen) return request;
   // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES

@@ -22,6 +22,7 @@ import { KeyPointsLine } from './talk/KeyPointsLine';
 import { revealFoot, revealLines } from './ui/keepInView';
 import { GreekOfferButton } from './talk/GreekOfferButton';
 import { RustyOffer } from './talk/RustyOffer';
+import { TodayOffer } from './talk/TodayOffer';
 import { registerTalkLeave } from './talk/rustyOffer';
 import { registerGreekWordOpener } from './talk/greekOffer';
 import { sendMakersOffer, takeBridgeOffer, takeSettingOffer, useOfferSending } from './talk/offers';
@@ -508,6 +509,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         {turn.bridge ? <BridgeOffer bridge={turn.bridge} onTake={() => void takeBridgeOffer(turn)} /> : null}
         <GreekOfferButton turn={turn} />
         <RustyOffer turn={turn} />
+        <TodayOffer turn={turn} />
         <div className="-mb-1 mt-1 flex flex-wrap items-start justify-end gap-1">
           <CopyExchange place={turn.ref} question={turn.cleanQ ?? turn.q} answer={turn.a} />
           <AnswerSpeaker turn={turn} />
@@ -596,7 +598,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
       }),
     [scope],
   );
-  // Taking the tutor's offer to move the rust back, by a tap or a spoken yes, closes this sheet: Review opens (src/talk/rustyOffer.ts)
+  // Taking the tutor's offer to move the rust back or to open Today, by a tap or a spoken yes, closes this sheet: Review or Today opens (src/talk/rustyOffer.ts, todayOffer.ts)
   useEffect(() => registerTalkLeave(onClose), [onClose]);
   const { drag, handle } = useSheetDrag(onClose);
   // The word sheet above this one takes the Escape.

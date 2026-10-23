@@ -27,6 +27,8 @@ import { greekLevelOf } from './settings/definitions/greekInterest';
 import { rustyOfferOf } from './talk/rustyOffer';
 import { quizGoalOfferOf } from './talk/quizGoalOffer';
 import { rustyNow } from './data/learnerRusty';
+import { todayNow } from './data/learnerToday';
+import { todayOfferOf } from './talk/todayOffer';
 import { applyMemoryFromAnswer } from './talk/memoryUpdate';
 import { finishWelcome } from './data/repositories/welcome';
 import { pendingOfferOf, settleOffer } from './talk/offers';
@@ -144,7 +146,7 @@ export function useTalk(
       set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume, ...withFocus } : { phase: 'sending', question: text, startedAt, ...withFocus });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty, works, kept] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty, works, kept, today] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -165,6 +167,8 @@ export function useTalk(
             getWorks().catch(() => []),
             // the running summary of this talk and how many of its oldest turns it holds (mw-5r3p30.700)
             getTalkSummary(ref).catch(() => undefined),
+            // the items behind the Reader's chip 'Today · N of M', so 'what is on my drill today' is answered by name and Today can be offered (src/data/learnerToday.ts); not in a quiz or the welcome
+            scope.quiz || scope.welcome ? Promise.resolve(undefined) : todayNow().catch(() => undefined),
           ]);
           // What he lacks under the topic his words name, worked out here so the tutor picks from it and never guesses (mw-1vuvq6.5); a quiz is not a place to bridge
           const missing = levels && !scope.quiz && !scope.screen?.credits ? missingFoundations(text, levelsOf(levels), focus && 'term' in focus ? focus.term : undefined) : undefined;
@@ -179,7 +183,7 @@ export function useTalk(
           // the Greek dial's step: the resources and works the tutor is told of follow it (resourcesForLevel)
           const greekLevel = greekLevelOf(settings.greekInterest);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
-          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, greekLevel), kept && { text: kept.summary, covered: kept.covered }), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
+          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const answer = await askTalk(request, {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
@@ -211,6 +215,8 @@ export function useTalk(
           const greekOffer = greekOfferOf(answer, scope, turns, memory?.index, waiting?.offer.kind === 'greek' && answer.offer_reply === 'decline', greekLevelOf(settings.greekInterest));
           // The one offer to move the rust back to Frontier: only the items this request listed, once a talk, none after his no in this very answer (src/talk/rustyOffer.ts)
           const rustyOffer = rustyOfferOf(answer, scope, turns, rusty, waiting?.offer.kind === 'rusty' && answer.offer_reply === 'decline');
+          // The one offer to open Today: only when this request listed its items, once a talk, none after his no in this very answer (src/talk/todayOffer.ts)
+          const todayOffer = todayOfferOf(answer, scope, turns, today, waiting?.offer.kind === 'today' && answer.offer_reply === 'decline');
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
           // A chapter he asked to be taken to: opened only while this talk's sheet is open. The chapter he is on stays (said so); one that came after he closed the
           // sheet is kept to open with a tap (said so); any other go is said not to have happened.
@@ -225,7 +231,7 @@ export function useTalk(
           // The mill ended the talk's session at its cap and began a fresh one from its key points: they are the talk's summary now (they hold every turn so far), and the turn says so (mw-pxji7y.3); it never fails the talk.
           const keyPoints = said.session?.session === 'refreshed' ? said.session.key_points : undefined;
           if (keyPoints) await keepTalkSummary(ref, summaryOfKeyPoints(keyPoints), turns.length).catch(() => undefined);
-          const id = await addTurn(ref, text, answer.answer, answer.words, turns.length === 0 ? firstWhen : Date.now(), { keyPoints, opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, cleanQ: answer.question, spoken, pictures });
+          const id = await addTurn(ref, text, answer.answer, answer.words, turns.length === 0 ? firstWhen : Date.now(), { keyPoints, opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, todayOffer, cleanQ: answer.question, spoken, pictures });
           pictured.current[ref] = undefined;
           // the answer is kept: the message is done, even if the screen went away as it came
           setPending(key, undefined);

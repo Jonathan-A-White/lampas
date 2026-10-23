@@ -75,6 +75,7 @@ export const PROGRESS: Readonly<Record<string, string>> = {
   requests: 'what became of the things he asked the factory for (src/data/requestsForTutor.ts)',
   studyWay: 'the lines he kept about how the tutor quizzes him (src/data/repositories/studyWay.ts)',
   rusty: 'the solid words and ideas he now slips on or has not met for a long while (src/data/rusty.ts, src/data/learnerRusty.ts)',
+  today: "the items behind the Reader's chip 'Today · N of M', each with its title and whether he ticked it (src/data/learnerToday.ts)",
 };
 
 export interface GrindKnows {
@@ -103,7 +104,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     // currentSettings(): what every registry setting holds now, in `settings`; the pronunciation also has its own field the sound questions use (mw-5r3p30.241)
     // the Greek dial is also its own field, greek_interest, with the step's name and the one step above it: all the Greek offer may name (mw-3ased2.3)
     settings: { ...everySetting, greekPronunciation: 'pronunciation', greekInterest: 'greek_interest' },
-    progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty' },
+    progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today' },
     notSent: {},
   },
   'verse-ask': {
@@ -132,6 +133,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       greekRate: SPOKEN_LATER,
       quizGoal: NO_QUIZ,
       studyWay: NO_QUIZ,
+      today: 'An ask is about one verse he is reading; what is on his Today list is for the Bible talk, where he can ask what is on his drill and be offered Today.',
     },
   },
   'verse-read': {
@@ -162,6 +164,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       studyWay: NO_QUIZ,
       requests: 'What became of his requests to the factory has no part in the verdict on a reading.',
       rusty: 'A verdict on one reading is about that reading; what he has gone rusty on in his words and grammar is for the talk and the asks to name.',
+      today: 'A verdict on one reading is about that reading; what is on his Today list is for the Bible talk to name and to offer to open.',
     },
   },
   tips: {
@@ -172,6 +175,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       requests: 'A tip is about what he has not yet tried in the app; his requests to the factory are not a feature to try.',
       studyWay: 'A tip may point at My study way through screens_never; the lines he kept change nothing a tip says.',
       rusty: 'A tip is about a feature he has not tried; rust in his words and ideas is the talk\'s to name and to offer to move back.',
+      today: 'A tip is about a feature he has not tried; what is on his Today list is the Bible talk\'s to name and to offer to open.',
     },
   },
 };

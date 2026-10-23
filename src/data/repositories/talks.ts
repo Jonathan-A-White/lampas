@@ -44,6 +44,8 @@ export interface TurnChanges {
   greekOffer?: GreekOffer;
   /** the rusty items the answer offered to move back to Frontier (mw-1vuvq6.6) */
   rustyOffer?: RustyOffer;
+  /** the answer offered to open Today (mw-5r3p30.731) */
+  todayOffer?: boolean;
   /** what he said, cleaned up by the tutor; shown in place of the raw words, which stay as `q` */
   cleanQ?: string;
   /** the question was spoken, so the tutor's cleaned question shows his own words under it (mw-5r3p30.308) */
@@ -81,6 +83,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.bridge) turn.bridge = done.bridge;
   if (done?.greekOffer) turn.greekOffer = done.greekOffer;
   if (done?.rustyOffer) turn.rustyOffer = done.rustyOffer;
+  if (done?.todayOffer) turn.todayOffer = true;
   if (done?.cleanQ) turn.cleanQ = done.cleanQ;
   if (done?.spoken) turn.spoken = true;
   if (done?.keyPoints) turn.keyPoints = done.keyPoints;
@@ -163,6 +166,11 @@ export async function markGreekChoice(turnId: number, choice: 'taken' | 'decline
 /** Records what became of a turn's offer to move rusty items back to Frontier (mw-1vuvq6.6): 'taken' (they were moved and their practice opened) or 'declined'. */
 export async function markRustyChoice(turnId: number, choice: 'taken' | 'declined'): Promise<void> {
   await db.talks.update(turnId, { rustyChoice: choice });
+}
+
+/** Records what became of a turn's offer to open Today (mw-5r3p30.731): 'taken' (Today was opened) or 'declined'. */
+export async function markTodayChoice(turnId: number, choice: 'taken' | 'declined'): Promise<void> {
+  await db.talks.update(turnId, { todayChoice: choice });
 }
 
 /** Records what he did with a turn's quiz goal offer: 'kept' (Yes, from now on; the caller keeps the goal), 'once' (Just this time) or 'declined' (no: nothing kept). */
