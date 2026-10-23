@@ -6,15 +6,16 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildDevotionalRequest, buildFeedbackRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
+import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_REFS, MAX_RESOURCE_CHARS, MAX_SERIES_CHARS, MAX_TYPE_CHARS, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildLibraryRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
+import { KINDS } from '../../src/resources/catalogue';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/feedback.json');
 const input = readJson('grinds/feedback.input.schema.json');
-/** The input schema has one branch for each form of feedback (anyOf): the grammar approach, the ask the tutor could not meet, the grammar book, and
- * the four asks of Ask for more (one branch: the same fields, the kind one of four). */
+/** The input schema has one branch for each form of feedback (anyOf): the grammar approach, the ask the tutor could not meet, the book, the whole list
+ * of a Logos import, and the three asks of Ask for more (one branch: the same fields, the kind one of three). */
 const branches = input.anyOf as Schema[];
 const branch = (kind: string): Schema => branches.find((b) => (b.properties?.kind as { enum?: string[] }).enum?.includes(kind)) as Schema;
 
@@ -26,13 +27,13 @@ describe('grinds/feedback.json', () => {
       kind: 'feedback',
       versions: ['1'],
       forward: 'mayor',
-      attachments: { min: 0, max: grist.MAX_PHOTOS, mime: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 8388608 },
+      attachments: { min: 0, max: grist.MAX_PHOTOS, mime: ['image/jpeg', 'image/png', 'image/webp', 'text/csv'], maxBytes: 8388608 },
     });
     for (const key of ['model', 'effort', 'instructions', 'answerSchema']) expect(grind).not.toHaveProperty(key);
   });
 
   it('takes up to as many images as a grist may carry, and the constant is that number', () => {
-    expect(grind.attachments).toEqual({ min: 0, max: grist.MAX_PHOTOS, mime: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: 8388608 });
+    expect(grind.attachments).toEqual({ min: 0, max: grist.MAX_PHOTOS, mime: ['image/jpeg', 'image/png', 'image/webp', 'text/csv'], maxBytes: 8388608 });
     expect(MAX_PICTURES).toBe(grist.MAX_PHOTOS);
   });
 });
@@ -89,8 +90,9 @@ describe('the tutor-ask kind and buildTutorAskRequest', () => {
   const ask = { text: 'Can this work with Olive Tree?', summary: 'He wants Lampas to work with Olive Tree.', screen: 'Goal', reference: 'Goal' };
 
   it('has a branch for each kind of feedback, and all are the same grist kind', () => {
-    expect(branches).toHaveLength(4);
-    expect(branch('grammar-book')).toBeDefined();
+    expect(branches).toHaveLength(5);
+    expect(branch('book')).toBeDefined();
+    expect(branch('library')).toBeDefined();
     expect(branch('grammar-approach')).toBeDefined();
     expect(branch('tutor-ask')).toBeDefined();
   });
@@ -145,35 +147,102 @@ describe('the tutor-ask kind and buildTutorAskRequest', () => {
   });
 });
 
-describe('the grammar-book kind and buildBookRequest', () => {
+describe('the book kind and buildBookRequest', () => {
   it('builds a request the schema accepts: his title, trimmed, and the build', () => {
-    const request = buildBookRequest('  Mounce, Basics of Biblical Greek ');
-    expect(request).toEqual({ kind: 'grammar-book', text: 'Mounce, Basics of Biblical Greek', app_version: __APP_VERSION__ });
+    const request = buildBookRequest({ title: '  Mounce, Basics of Biblical Greek ' });
+    expect(request).toEqual({ kind: 'book', title: 'Mounce, Basics of Biblical Greek', app_version: __APP_VERSION__ });
     expect(validate(request, input as Schema)).toEqual([]);
   });
 
-  it('has a limit in the schema that is the constant', () => {
-    const props = branch('grammar-book').properties as unknown as Record<string, { maxLength: number }>;
-    expect(props.text.maxLength).toBe(MAX_BOOK_CHARS);
-    expect(validate(buildBookRequest('x'.repeat(MAX_BOOK_CHARS)), input as Schema)).toEqual([]);
-    expect(validate(buildBookRequest('x'.repeat(MAX_BOOK_CHARS + 1)), input as Schema)).not.toEqual([]);
+  it("carries a picked row's Resource ID, Type, Series and ReferenceSupersets, the kind he wants and why, and leaves out what is empty", () => {
+    const request = buildBookRequest({
+      title: 'Interpretation of St Paul\'s Epistle to the Romans',
+      resource: 'LLS:LENSKIROM',
+      type: 'text.monograph.commentary.bible',
+      series: 'Lenski',
+      refs: 'bible.66.1.1-66.16.27',
+      kindWanted: 'commentary',
+      why: '  I read it beside the Greek. ',
+    });
+    expect(request).toEqual({
+      kind: 'book',
+      title: "Interpretation of St Paul's Epistle to the Romans",
+      resource: 'LLS:LENSKIROM',
+      type: 'text.monograph.commentary.bible',
+      series: 'Lenski',
+      refs: 'bible.66.1.1-66.16.27',
+      kindWanted: 'commentary',
+      why: 'I read it beside the Greek.',
+      app_version: __APP_VERSION__,
+    });
+    expect(validate(request, input as Schema)).toEqual([]);
+    expect(buildBookRequest({ title: 'x', resource: '', series: ' ', why: '' })).toEqual({ kind: 'book', title: 'x', app_version: __APP_VERSION__ });
+  });
+
+  it('has limits in the schema that are the constants, and a kind he wants that is one of the catalogue\'s', () => {
+    const props = branch('book').properties as unknown as Record<string, { maxLength?: number; enum?: string[] }>;
+    expect(props.title.maxLength).toBe(MAX_BOOK_CHARS);
+    expect(props.refs.maxLength).toBe(MAX_REFS);
+    expect(props.resource.maxLength).toBe(MAX_RESOURCE_CHARS);
+    expect(props.type.maxLength).toBe(MAX_TYPE_CHARS);
+    expect(props.series.maxLength).toBe(MAX_SERIES_CHARS);
+    expect(props.why.maxLength).toBe(MAX_FEEDBACK_CHARS);
+    expect(props.kindWanted.enum).toEqual([...KINDS]);
+    expect(validate(buildBookRequest({ title: 'x'.repeat(MAX_BOOK_CHARS) }), input as Schema)).toEqual([]);
+    expect(validate(buildBookRequest({ title: 'x'.repeat(MAX_BOOK_CHARS + 1) }), input as Schema)).not.toEqual([]);
+  });
+
+  it('cuts a Resource ID, type or series longer than the schema allows rather than send a request the mill refuses', () => {
+    const request = buildBookRequest({ title: 'x', resource: 'r'.repeat(300), type: 't'.repeat(300), series: 's'.repeat(300) });
+    expect(validate(request, input as Schema)).toEqual([]);
+  });
+
+  it('cuts a ReferenceSupersets cell too long for the schema at a whole token', () => {
+    const token = 'bible.66.1.1-66.16.27';
+    const refs = Array.from({ length: 80 }, () => token).join('\t');
+    const request = buildBookRequest({ title: 'x', refs });
+    expect(request.refs!.length).toBeLessThanOrEqual(MAX_REFS);
+    expect(request.refs!.split('\t').every((t) => t === token)).toBe(true);
+    expect(validate(request, input as Schema)).toEqual([]);
   });
 
   it.each<[string, unknown]>([
-    ['no text', { kind: 'grammar-book', app_version: 'v' }],
-    ['an empty text', { kind: 'grammar-book', text: '', app_version: 'v' }],
-    ['a credit on a book', { kind: 'grammar-book', text: 'x', credit: { name: 'y' }, app_version: 'v' }],
+    ['no title', { kind: 'book', app_version: 'v' }],
+    ['an empty title', { kind: 'book', title: '', app_version: 'v' }],
+    ['the old text field', { kind: 'book', title: 'x', text: 'y', app_version: 'v' }],
+    ['a kind that is not a kind of book', { kind: 'book', title: 'x', kindWanted: 'novel', app_version: 'v' }],
+    ['the old grammar-book kind', { kind: 'grammar-book', text: 'x', app_version: 'v' }],
+    ['the old devotional kind', { kind: 'devotional', name: 'x', app_version: 'v' }],
+    ['the old study-resource kind', { kind: 'study-resource', name: 'x', app_version: 'v' }],
   ])('refuses %s', (_, value) => {
     expect(validate(value, input as Schema)).not.toEqual([]);
   });
 });
 
-describe('the four kinds of Ask for more and buildMoreRequest', () => {
-  it('are an approach or programme, a study resource, a text and a translation', () => {
-    expect(MORE_KINDS).toEqual(['approach', 'study-resource', 'text', 'translation']);
+describe('the library kind and buildLibraryRequest', () => {
+  const counts = { 'text.monograph.commentary.bible': 383, 'text.monograph.ancient-manuscript': 838 };
+
+  it('builds a request the schema accepts: the counts by Logos type, how many rows the file holds, the catalogue version and the build', () => {
+    const request = buildLibraryRequest({ books: 4795, usable: 412, counts, version: '2026-10-22' });
+    expect(request).toEqual({ kind: 'library', books: 4795, usable: 412, counts, catalogue_version: '2026-10-22', app_version: __APP_VERSION__ });
+    expect(validate(request, input as Schema)).toEqual([]);
   });
 
-  it.each(['approach', 'study-resource', 'text', 'translation'] as const)('builds a %s request the schema accepts, with the kind named', (kind) => {
+  it.each<[string, unknown]>([
+    ['no counts', { kind: 'library', books: 1, usable: 1, catalogue_version: 'v', app_version: 'v' }],
+    ['a negative count', { kind: 'library', books: 1, usable: 1, counts: { a: -1 }, catalogue_version: 'v', app_version: 'v' }],
+    ['a row in the payload', { kind: 'library', books: 1, usable: 1, counts: {}, catalogue_version: 'v', rows: [], app_version: 'v' }],
+  ])('refuses %s', (_, value) => {
+    expect(validate(value, input as Schema)).not.toEqual([]);
+  });
+});
+
+describe('the three kinds of Ask for more and buildMoreRequest', () => {
+  it('are an approach or programme, a text and a translation (a study resource is asked for as a book)', () => {
+    expect(MORE_KINDS).toEqual(['approach', 'text', 'translation']);
+  });
+
+  it.each(['approach', 'text', 'translation'] as const)('builds a %s request the schema accepts, with the kind named', (kind) => {
     const full = buildMoreRequest(kind, '  The Septuagint ', '  To read the Old Testament in Greek. ', ' example.org/lxx ');
     expect(full).toEqual({ kind, name: 'The Septuagint', text: 'To read the Old Testament in Greek.', url: 'https://example.org/lxx', app_version: __APP_VERSION__ });
     expect(validate(full, input as Schema)).toEqual([]);
@@ -196,24 +265,7 @@ describe('the four kinds of Ask for more and buildMoreRequest', () => {
     ['an empty name', { kind: 'text', name: '', app_version: 'v' }],
     ['an empty reason', { kind: 'text', name: 'x', text: '', app_version: 'v' }],
     ['a credit on a translation', { kind: 'translation', name: 'x', credit: { name: 'y' }, app_version: 'v' }],
-    ['a name on a grammar book', { kind: 'grammar-book', text: 'x', name: 'y', app_version: 'v' }],
-  ])('refuses %s', (_, value) => {
-    expect(validate(value, input as Schema)).not.toEqual([]);
-  });
-});
-
-describe('the devotional kind and buildDevotionalRequest', () => {
-  it('builds a request the schema accepts: his title, trimmed, the kind named and the build', () => {
-    const request = buildDevotionalRequest("  Spurgeon, Faith's Checkbook ");
-    expect(request).toEqual({ kind: 'devotional', name: "Spurgeon, Faith's Checkbook", app_version: __APP_VERSION__ });
-    expect(validate(request, input as Schema)).toEqual([]);
-    expect(validate(buildDevotionalRequest('x'.repeat(MAX_MORE_NAME)), input as Schema)).toEqual([]);
-    expect(validate(buildDevotionalRequest('x'.repeat(MAX_MORE_NAME + 1)), input as Schema)).not.toEqual([]);
-  });
-
-  it.each<[string, unknown]>([
-    ['no name', { kind: 'devotional', app_version: 'v' }],
-    ['an empty name', { kind: 'devotional', name: '', app_version: 'v' }],
+    ['a name on a book', { kind: 'book', title: 'x', name: 'y', app_version: 'v' }],
   ])('refuses %s', (_, value) => {
     expect(validate(value, input as Schema)).not.toEqual([]);
   });

@@ -16,13 +16,17 @@ import { pullStatuses, requestTimings } from './services/requestStatus';
 const KIND_NAMES: Record<string, string> = {
   'grammar-approach': 'Grammar approach',
   'tutor-ask': 'Asked the tutor',
-  'grammar-book': 'Grammar book',
-  devotional: 'Devotional',
-  // the four forms of Settings > Ask for more
+  // Ask for a book, and Ask the makers about these (the whole list of an import)
+  book: 'Book',
+  library: 'Your Logos library',
+  // the three forms of Settings > Ask for more
   approach: 'Approach or programme',
-  'study-resource': 'Study resource',
   text: 'Text',
   translation: 'Translation',
+  // asks of the boxes Ask for a book replaced, still on a phone that sent one
+  'grammar-book': 'Grammar book',
+  devotional: 'Devotional',
+  'study-resource': 'Study resource',
 };
 
 const sentOn = (ms: number): string => new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });

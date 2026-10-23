@@ -21,6 +21,7 @@ const MIME_BY_EXT: Record<string, string> = {
   '.webm': 'audio/webm',
   '.ogg': 'audio/ogg',
   '.mp4': 'audio/mp4',
+  '.csv': 'text/csv',
 };
 
 const grindFiles = readdirSync('grinds').filter((f) => f.endsWith('.json') && !f.endsWith('.schema.json'));
