@@ -50,7 +50,7 @@ describe('the upgrade from version 15', () => {
       shares: 'id, createdAt',
     });
     await old.open();
-    const word = { lemma: 'λέγω', lemmas: [], gloss: 'say', lesson: 1, state: 'solid', since: 5 };
+    const word = { lemma: 'λύω', lemmas: [], gloss: 'say', lesson: 1, state: 'solid', since: 5 };
     const talk = { ref: 'rom.8', q: 'Why?', a: 'Because.', words: [], when: 7 };
     await old.table('words').put(word);
     await old.table('settings').put({ key: 'theme', value: 'dark' });

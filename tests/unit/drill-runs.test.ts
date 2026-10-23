@@ -68,7 +68,7 @@ describe('the upgrade from version 18', () => {
     await old.open();
     const level = { id: 'case-genitive', level: 'frontier', since: 5, how: 'sheet' };
     const review = { kind: 'grammar', id: 'case-genitive', step: 2, due: 9, lastWhen: 4, lapses: 0, rights: 3 };
-    const word = { lemma: 'λέγω', lemmas: [], gloss: 'say', lesson: 1, state: 'solid', since: 5 };
+    const word = { lemma: 'λύω', lemmas: [], gloss: 'say', lesson: 1, state: 'solid', since: 5 };
     await old.table('grammarLevels').put(level);
     await old.table('reviews').put(review);
     await old.table('words').put(word);
