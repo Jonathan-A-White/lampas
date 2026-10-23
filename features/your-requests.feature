@@ -122,6 +122,28 @@ Feature: Your requests
     Given Your requests is open behind a fake Postern with the requests "Older idea" and "Newer idea"
     Then "Newer idea" is listed above "Older idea"
 
+  Scenario: Requests are grouped by kind, each group with its count, the newest first within a group
+    Given Your requests is open with 3 books, 2 asks of the tutor and a library request
+    Then the groups read "Asked the tutor (2)", "Your Logos library (1)" and "Books (3)", the group holding the newest request first
+    And within "Books (3)" the newest book is listed first
+
+  Scenario: A library request is one row with its count
+    Given Your requests is open with 3 books, 2 asks of the tutor and a library request
+    Then the "Your Logos library" group holds one row reading "My Logos library: 198 of 4597 books"
+
+  Scenario: Twenty requests show no search field
+    Given Your requests is open with 20 requests
+    Then there is no search field
+
+  Scenario: Twenty-one requests show a search field that filters by words
+    Given Your requests is open with 21 requests, 14 of them books
+    Then there is a search field for 21 requests
+    When he types "guzik" in the search field
+    Then only the requests with "guzik" in them are listed
+    And the group headers count what is shown
+    When he clears it and types "zzzz"
+    Then the screen says no request matches
+
   Scenario: A backend that cannot be reached leaves the list as it was and says so
     Given Your requests is open behind a fake Postern with the request "Add a sepia theme"
     When the backend goes down

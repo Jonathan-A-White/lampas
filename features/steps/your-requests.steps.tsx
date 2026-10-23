@@ -43,7 +43,15 @@ function statusFor(txid: string, status: string, more: Record<string, unknown> =
   return { kind: 'request-status', request: txid, bead: 'mw-x.1', status, ts: 1_790_000_000_000 + clock, ...more };
 }
 
+type Seed = { kind: string; text: string; sentAt: number };
+
 async function openWith(summaries: string[], pollMs = 20): Promise<void> {
+  let sentAt = 1_780_000_000_000;
+  await openWithRows(summaries.map((summary) => ({ kind: 'tutor-ask', text: summary, sentAt: (sentAt += 60_000) })), pollMs);
+}
+
+/** Opens the screen over `seeds`: a tutor-ask keeps its words as the summary, every other kind as its text, as src/services/feedback.ts keeps them. */
+async function openWithRows(seeds: Seed[], pollMs = 20): Promise<void> {
   cleanup();
   // the screen of the last scenario may be in the middle of a pull: let it end before the tables are cleared
   await new Promise((r) => setTimeout(r, 100));
@@ -61,10 +69,9 @@ async function openWith(summaries: string[], pollMs = 20): Promise<void> {
   await db.open();
   await Promise.all([db.settings.clear(), db.requests.clear()]);
   txids = new Map();
-  let sentAt = 1_780_000_000_000;
-  for (const summary of summaries) {
-    txids.set(summary, txidOf(summary));
-    await keepRequest({ txid: txidOf(summary), kind: 'tutor-ask', summary, app_version: '0.1.80', sentAt: (sentAt += 60_000) });
+  for (const { kind, text, sentAt } of seeds) {
+    txids.set(text, txidOf(text));
+    await keepRequest({ txid: txidOf(text), kind, ...(kind === 'tutor-ask' ? { summary: text } : { text }), app_version: '0.1.80', sentAt });
   }
   render(<RequestsScreen />);
   await screen.findByRole('heading', { name: 'Your requests', level: 1 });
@@ -377,6 +384,88 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await screen.findByText(newer);
       const rows = Array.from(document.querySelectorAll('[data-request]')).map((r) => r.textContent ?? '');
       expect(rows.findIndex((t) => t.includes(newer))).toBeLessThan(rows.findIndex((t) => t.includes(older)));
+    });
+  });
+
+  const T0 = 1_780_000_000_000;
+  const LIBRARY_LINE = 'My Logos library: 198 of 4597 books';
+  const BOOKS = ['Guzik on Romans', 'Wuest Word Studies', 'Robertson Word Pictures'];
+  const mixed = (): Promise<void> =>
+    openWithRows([
+      ...BOOKS.map((text, i) => ({ kind: 'book', text, sentAt: T0 + (i + 1) * 60_000 })),
+      { kind: 'library', text: LIBRARY_LINE, sentAt: T0 + 4 * 60_000 },
+      { kind: 'tutor-ask', text: 'Add a sepia theme', sentAt: T0 + 5 * 60_000 },
+      { kind: 'tutor-ask', text: 'Slow the Greek down', sentAt: T0 + 6 * 60_000 },
+    ]);
+  const headers = (): string[] => Array.from(document.querySelectorAll('[data-request-group] > h2')).map((h) => h.textContent ?? '');
+  const groupOf = (title: string): HTMLElement => {
+    const found = Array.from(document.querySelectorAll('[data-request-group]')).find((g) => g.querySelector('h2')?.textContent === title);
+    if (!found) throw new Error(`no group ${title}`);
+    return found as HTMLElement;
+  };
+  const texts = (parent: ParentNode): string[] => Array.from(parent.querySelectorAll('[data-request]')).map((r) => r.querySelector('p')?.textContent ?? '');
+  const many = (count: number, books: number, bookName = (i: number) => `Book number ${i}`): Promise<void> =>
+    openWithRows(
+      Array.from({ length: count }, (_, i) =>
+        i < books ? { kind: 'book', text: bookName(i), sentAt: T0 + i * 1000 } : { kind: 'tutor-ask', text: `Idea number ${i}`, sentAt: T0 + i * 1000 },
+      ),
+    );
+  const search = (): HTMLElement | null => screen.queryByRole('searchbox');
+
+  Scenario('Requests are grouped by kind, each group with its count, the newest first within a group', ({ Given, Then, And }) => {
+    Given('Your requests is open with 3 books, 2 asks of the tutor and a library request', mixed);
+    Then('the groups read {string}, {string} and {string}, the group holding the newest request first', async (_, a: string, b: string, c: string) => {
+      await screen.findByText('Add a sepia theme');
+      expect(headers()).toEqual([a, b, c]);
+    });
+    And('within {string} the newest book is listed first', (_, title: string) => {
+      expect(texts(groupOf(title))).toEqual(['Robertson Word Pictures', 'Wuest Word Studies', 'Guzik on Romans']);
+    });
+  });
+
+  Scenario('A library request is one row with its count', ({ Given, Then }) => {
+    Given('Your requests is open with 3 books, 2 asks of the tutor and a library request', mixed);
+    Then('the {string} group holds one row reading {string}', async (_, title: string, line: string) => {
+      await screen.findByText(LIBRARY_LINE);
+      expect(texts(groupOf(`${title} (1)`))).toEqual([line]);
+    });
+  });
+
+  Scenario('Twenty requests show no search field', ({ Given, Then }) => {
+    Given('Your requests is open with 20 requests', () => many(20, 5));
+    Then('there is no search field', async () => {
+      await screen.findByText('Idea number 19');
+      expect(search()).toBeNull();
+    });
+  });
+
+  Scenario('Twenty-one requests show a search field that filters by words', ({ Given, Then, When, And }) => {
+    Given('Your requests is open with 21 requests, 14 of them books', () => many(21, 14, (i) => (i < 2 ? `Guzik volume ${i}` : `Book number ${i}`)));
+    Then('there is a search field for 21 requests', async () => {
+      const field = await screen.findByRole('searchbox', { name: 'Search your requests' });
+      expect(field).toHaveAttribute('placeholder', 'Search 21 requests');
+      expect(headers()).toEqual(['Asked the tutor (7)', 'Books (14)']);
+    });
+    When('he types {string} in the search field', async (_, words: string) => {
+      const field = screen.getByRole('searchbox', { name: 'Search your requests' });
+      await user.clear(field);
+      await user.type(field, words);
+    });
+    Then('only the requests with {string} in them are listed', (_, words: string) => {
+      expect(texts(document.body)).toEqual(['Guzik volume 1', 'Guzik volume 0']);
+      expect(texts(document.body).every((t) => t.toLowerCase().includes(words))).toBe(true);
+    });
+    And('the group headers count what is shown', () => {
+      expect(headers()).toEqual(['Books (2)']);
+    });
+    When('he clears it and types {string}', async (_, words: string) => {
+      const field = screen.getByRole('searchbox', { name: 'Search your requests' });
+      await user.clear(field);
+      await user.type(field, words);
+    });
+    Then('the screen says no request matches', async () => {
+      expect(await screen.findByText('No request matches')).toBeVisible();
+      expect(document.querySelectorAll('[data-request]')).toHaveLength(0);
     });
   });
 

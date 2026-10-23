@@ -50,6 +50,36 @@ async function seed(page: Page, summaries: string[] = REQUESTS.map((r) => r.summ
   );
 }
 
+// Puts rows of any kind in the store, newest last (a day apart); a tutor-ask keeps its words as the summary, the rest as the text.
+async function seedKinds(page: Page, rows: { kind: string; words: string }[]): Promise<void> {
+  const list = rows.map(({ kind, words }, i) => ({
+    txid: txidOf(i),
+    kind,
+    ...(kind === 'tutor-ask' ? { summary: words } : { text: words }),
+    app_version: '0.1.80',
+    sentAt: Date.now() - (rows.length - i) * 86_400_000,
+    status: 'sent',
+  }));
+  await page.evaluate(
+    (put) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const idb = open.result;
+          const tx = idb.transaction('requests', 'readwrite');
+          for (const row of put) tx.objectStore('requests').put(row);
+          tx.oncomplete = () => {
+            idb.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    list,
+  );
+}
+
 const status = (index: number, plain: Record<string, unknown>) =>
   ({ kind: 'request-status', request: txidOf(index), bead: `mw-x.${index}`, ts: 1_790_000_000_000 + index * 1000, ...plain }) as Record<string, unknown>;
 
@@ -131,6 +161,56 @@ for (const { name, width, height } of VIEWPORTS) {
     expect((await wide.boundingBox())?.width ?? 0).toBeLessThanOrEqual(width);
   });
 }
+
+// Thirty requests (mw-rfjjzd.15): grouped by kind with counts, the newest first within a group, the library request one row, a search field over 20 rows that
+// filters by words and counts what is shown; the field is a thumb tall and nothing scrolls sideways.
+test('thirty requests are grouped by kind, counted and searchable at 390x844', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/#/requests');
+  await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
+  const rows = [
+    ...Array.from({ length: 14 }, (_, i) => ({ kind: 'book', words: i === 3 ? 'Guzik on Romans' : `Commentary number ${i + 1}` })),
+    { kind: 'library', words: 'My Logos library: 198 of 4597 books' },
+    ...Array.from({ length: 10 }, (_, i) => ({ kind: 'tutor-ask', words: `Idea number ${i + 1} for the Greek` })),
+    ...Array.from({ length: 5 }, (_, i) => ({ kind: 'approach', words: `Approach number ${i + 1}` })),
+  ];
+  await seedKinds(page, rows);
+  await page.reload();
+
+  const headers = page.locator('[data-request-group] > h2');
+  await expect(headers).toHaveText(['Approaches or programmes (5)', 'Asked the tutor (10)', 'Your Logos library (1)', 'Books (14)']);
+  expect(await page.locator('[data-request]').count()).toBe(30);
+  const books = page.locator('[data-request-group="book"] [data-request]');
+  await expect(books.first()).toContainText('Commentary number 14'); // the newest first within a group
+  await expect(books.last()).toContainText('Commentary number 1');
+  await expect(page.locator('[data-request-group="library"] [data-request]')).toHaveCount(1);
+  await expect(page.locator('[data-request-group="library"] [data-request]')).toContainText('198 of 4597 books');
+
+  const field = page.getByRole('searchbox', { name: 'Search your requests' });
+  await expect(field).toHaveAttribute('placeholder', 'Search 30 requests');
+  expect((await field.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(47.5);
+  const sideways = (): Promise<boolean> => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(await sideways()).toBe(false);
+  await page.locator('.screen').first().evaluate((el) => (el.scrollTop = 0));
+  await shot(page, 'your-requests-30-grouped');
+
+  await field.fill('guzik romans');
+  await expect(page.locator('[data-request]')).toHaveCount(1);
+  await expect(headers).toHaveText(['Books (1)']);
+  await expect(page.getByText('1 of 30 shown')).toBeVisible();
+  await shot(page, 'your-requests-30-search');
+
+  await field.fill('number 1');
+  await expect(headers).toHaveText(['Approaches or programmes (1)', 'Asked the tutor (2)', 'Books (6)']); // 1; 1 and 10; 1 and 10 to 14
+  await field.fill('zzzz');
+  await expect(page.getByText('No request matches')).toBeVisible();
+  await expect(page.locator('[data-request]')).toHaveCount(0);
+  await field.fill('');
+  await expect(page.locator('[data-request]')).toHaveCount(30);
+});
 
 test('Settings has a Your requests row that opens the screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
