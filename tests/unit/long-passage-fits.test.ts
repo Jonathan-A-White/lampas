@@ -2,7 +2,7 @@
 // they must be, and never over the cap (the grist was refused at 23 KB before).
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { Chapter } from '../../src/data/chapter';
+import { markSupplied, type Chapter } from '../../src/data/chapter';
 import { passageVerse, rangeOf } from '../../src/data/passage';
 import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory } from '../../src/services/talk';
 import { buildRequest, fitAsk } from '../../src/services/tutor';
@@ -42,7 +42,13 @@ describe('a whole chapter as the passage', () => {
     expect(fitted.question).toBe('Quiz me on Mark 12:1-44.');
     expect(fitted.greek).toBeDefined();
     expect(request.greek!.startsWith(fitted.greek!.replace(TEXT_CLIP_MARK, ''))).toBe(true);
-    expect(fitted.english!.endsWith(TEXT_CLIP_MARK)).toBe(true);
+    // whole verses from the start of the passage, the last ones given up first (mw-5r3p30.733): the text is not cut mid-verse and the request says which verses it holds
+    expect(fitted.verses).toMatch(/^12:1-\d+$/);
+    const last = Number(fitted.verses!.split('-')[1]);
+    expect(last).toBeLessThan(44);
+    const kept = passageVerse(rangeOf(mark12.verses, 1, last, 'Mark 12')!);
+    expect(fitted.english).toBe(kept.e.map(markSupplied).join(' '));
+    expect(fitted.english!.endsWith(TEXT_CLIP_MARK)).toBe(false);
   });
 
   it('a passage that fits is not cut', () => {
