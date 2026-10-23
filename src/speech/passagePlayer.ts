@@ -1,0 +1,140 @@
+// src/speech/passagePlayer.ts — the one passage player (mw-9q8wp1.4): reads a list of Bible references aloud, one after the other, over the app's read aloud
+// (readAloud.ts startReading), in the language and weave the Reader reads in now (readViewSettings: English, Greek, or the Weave's mix). The reference pop-up's
+// Play (src/markdown/ReferenceCard.tsx) gives it one reference; a list's Play all gives it the list. Lampas holds no Old Testament text, so an Old Testament
+// reference is announced '<reference>: skipping, no Old Testament present' and the player goes on to the next. Pause, Resume and Stop are the reading's own
+// (the package's bar and these agree: a Pause on either moves both). Each reference is a reading of an answer (answer: PASSAGE_ID), so the Reader's highlight and
+// its 'Reading verse N' line stay out of it, and a Listen of its own key, whose natural end (readAloud.ts listenCompletedNow) is how the player knows to go on
+// rather than being stopped: the reading's end by itself goes to the next reference, a Stop or another speech taking the voice ends the player.
+import type { HeldPlace } from '../markdown/verseLinks';
+import { loadChapter } from '../data/chapter';
+import { readViewSettings } from '../reader/useViewSettings';
+import { wovenOf } from '../reader/useWoven';
+import { getReading, listenCompletedNow, pauseReading, planOf, resumeReading, startReading, stopReading, subscribeReading, type PlanVerse } from './readAloud';
+
+/** A reference to read: its heading ('Hebrews 7:1-3') and its place when Lampas holds the text (null for the Old Testament): what src/markdown/verseLinks.ts gives. */
+export interface PassageRef {
+  heading: string;
+  held: HeldPlace | null;
+}
+
+export type PassageState = 'idle' | 'playing' | 'paused';
+
+export interface PassagePlayer {
+  state: PassageState;
+  /** the reference being read (or paused at), null when idle */
+  current: PassageRef | null;
+}
+
+/** The id the reading carries: below zero, so it is never an answer's or a verdict's (readAloud.ts startAnswer). */
+const PASSAGE_ID = -7;
+const KEY = 'passage-player';
+
+export const skippedLine = (heading: string): string => `${heading}: skipping, no Old Testament present`;
+const OFFLINE = (heading: string): string => `${heading}: not on this phone yet, and you are offline`;
+
+const IDLE: PassagePlayer = { state: 'idle', current: null };
+let player: PassagePlayer = IDLE;
+let queue: PassageRef[] = [];
+let at = 0;
+/** which play() this is: a reference fetched for an older one is not read */
+let turn = 0;
+const listeners = new Set<(state: PassageState, current: PassageRef | null) => void>();
+
+export const getPassagePlayer = (): PassagePlayer => player;
+
+/** Tells `listener` each time the player's state or reference changes; returns the way to stop telling. */
+export function onPassageChange(listener: (state: PassageState, current: PassageRef | null) => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function set(next: PassagePlayer): void {
+  if (next.state === player.state && next.current === player.current) return;
+  player = next;
+  [...listeners].forEach((l) => l(next.state, next.current));
+}
+
+/** The verses `held` names, as read aloud reads them in the Reader's view and weave now. */
+async function planOfReference(held: HeldPlace): Promise<PlanVerse[]> {
+  const [chapter, settings] = await Promise.all([loadChapter(held.book, held.chapter), readViewSettings()]);
+  const woven = wovenOf(chapter, settings);
+  const wanted = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => v.n >= held.first && v.n <= held.last);
+  return planOf(
+    wanted.map(({ v }) => v),
+    settings.view,
+    woven ? wanted.map(({ i }) => woven[i] ?? null) : null,
+  );
+}
+
+/** One line said in English, as a reading of its own. */
+function say(line: string): void {
+  startReading({ chapter: 0, plan: [{ n: PASSAGE_ID, runs: [{ text: line, language: 'english' }] }], from: PASSAGE_ID, continuous: false, answer: PASSAGE_ID, listen: KEY });
+}
+
+function begin(ref: PassageRef, plan: PlanVerse[], held: HeldPlace): void {
+  const first = plan[0];
+  if (!first) return say(OFFLINE(ref.heading));
+  startReading({ chapter: held.chapter, plan, from: first.n, continuous: true, inBook: held.book, span: 'chapter', answer: PASSAGE_ID, listen: KEY });
+}
+
+function readNext(mine: number): void {
+  if (mine !== turn) return;
+  const ref = queue[at];
+  if (!ref) return set(IDLE);
+  set({ state: 'playing', current: ref });
+  const { held } = ref;
+  if (!held) return say(skippedLine(ref.heading));
+  planOfReference(held).then(
+    (plan) => mine === turn && begin(ref, plan, held),
+    () => mine === turn && say(OFFLINE(ref.heading)),
+  );
+}
+
+/** The reading changed: follow it. Its natural end goes on to the next reference; anything else that ends it ends the player. */
+function onReading(): void {
+  if (player.state === 'idle') return;
+  const reading = getReading();
+  if (reading.status === 'idle') {
+    // between two references there is a moment with no reading: it is not an end, and the next one is already being fetched
+    if (listenCompletedNow() !== KEY) return end();
+    const mine = turn;
+    at++;
+    // the reading that just ended finishes announcing itself first
+    queueMicrotask(() => readNext(mine));
+    return;
+  }
+  if (reading.listen !== KEY) return end();
+  set({ state: reading.status === 'paused' ? 'paused' : 'playing', current: player.current });
+}
+
+function end(): void {
+  turn++;
+  queue = [];
+  set(IDLE);
+}
+
+subscribeReading(onReading);
+
+/** Reads `refs` aloud in order, from the first; whatever was being read gives way. Call it straight from the tap. */
+export function playPassages(refs: PassageRef[]): void {
+  turn++;
+  queue = refs;
+  at = 0;
+  readNext(turn);
+}
+
+/** Pauses where the voice is; the reading goes on from that sentence on resumePassage. */
+export function pausePassage(): void {
+  if (player.state === 'playing') pauseReading();
+}
+
+export function resumePassage(): void {
+  if (player.state === 'paused') resumeReading();
+}
+
+/** Stops for good: the speech is cancelled and the rest of the list is not read. Another reading in progress is left alone. */
+export function stopPassage(): void {
+  if (player.state === 'idle') return;
+  end();
+  if (getReading().listen === KEY) stopReading();
+}
