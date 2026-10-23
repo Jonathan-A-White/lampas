@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.415
+_2026-10-23_
+- New: Settings no longer lists your Logos books; one line shows how many are on and opens Your Logos library, Bible in Logos and the daily devotional picker follow it, and the Settings search finds a book by its title.
+- New: The word sheet now shows just the lexicons you pinned, with a button "All N lexicons" that opens a searchable list of every lexicon you have on.
+
 ## 0.1.414
 _2026-10-22_
 - New: A verse now has In Logos and In another book…, which lists your Greek texts and commentaries that cover it, so you can open the verse in any of them.

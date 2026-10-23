@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.415",
+    "date": "2026-10-23",
+    "story": "mw-rfjjzd.5",
+    "kind": "new",
+    "text": "Settings no longer lists your Logos books; one line shows how many are on and opens Your Logos library, Bible in Logos and the daily devotional picker follow it, and the Settings search finds a book by its title."
+  },
+  {
+    "version": "0.1.415",
+    "date": "2026-10-23",
+    "story": "mw-rfjjzd.8",
+    "kind": "new",
+    "text": "The word sheet now shows just the lexicons you pinned, with a button \"All N lexicons\" that opens a searchable list of every lexicon you have on."
+  },
+  {
     "version": "0.1.414",
     "date": "2026-10-22",
     "story": "mw-rfjjzd.9",
