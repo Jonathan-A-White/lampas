@@ -61,8 +61,10 @@ export interface GrammarQuestion {
   rule?: string;
   /** a full parsing (kind 'parse', mw-emk3xt.3): the Parsing drill's steps, each a feature with four choices, asked one after the other; `right` is the whole parsing in plain words */
   steps?: ParseStep[];
-  /** the word's headword, whose Parsing drill answers each step is written to (kind 'parse') */
+  /** the word's headword, whose Parsing drill answers each step is written to (kind 'parse'); for an ending, the headword of the form asked, which See the table opens (seeTable.ts) */
   lemma?: string;
+  /** an ending's whole form as the text has it ('ἁμαρτίας'), the word See the table lights in the table (review/seeTable.ts) */
+  word?: string;
 }
 
 /** The words of the pronunciation that gives the syllables: the chosen pronunciation's respell, 'khree-STO'. */
@@ -571,6 +573,8 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
     form: `${stem}_`,
     code: place.word.p,
     table: tableFor(place.word.p, place.word)?.id,
+    word: place.word.t,
+    lemma: nfc(place.word.l),
     facet: ENDING,
   };
 }

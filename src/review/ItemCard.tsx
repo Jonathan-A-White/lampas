@@ -1,5 +1,6 @@
 // src/review/ItemCard.tsx — draws one Review item: a renderer per kind, so a new kind adds its own here.
 import type { ReactNode } from 'react';
+import type { ParadigmAddress } from '../nav/route';
 import type { ParseStep } from '../data/drill';
 import { Flashcard } from '../Flashcard';
 import { GrammarCard } from '../GrammarCard';
@@ -16,7 +17,7 @@ export interface ItemCardProps {
   picked: string | null;
   onPick: (option: string) => void;
   /** Review only: opens the table of the ending just asked (GrammarCard's 'See the table'); a screen that cannot come back to its card leaves it out */
-  onSeeTable?: (table: string) => void;
+  onSeeTable?: (address: ParadigmAddress) => void;
   /** Review only: a step of a full parsing was answered (GrammarCard's `onStep`), to be written to the Parsing drill's answers */
   onStep?: (step: ParseStep, right: boolean) => void;
 }

@@ -8,7 +8,9 @@ import type { GrammarQuestion } from './data/grammar/questions';
 import type { QuestionMode } from './data/schedule';
 import { HINTED_RIGHT, hintLine } from './data/grammar/hint';
 import { GreekRuns } from './FacetLabel';
+import type { ParadigmAddress } from './nav/route';
 import { KNEW_IT, NOT_PARSED } from './review/kinds';
+import { seeTableAddress } from './review/seeTable';
 import { TapToHear } from './TapToHear';
 import { useSettled } from './ui/settle';
 import { SelfGrade } from './ui/SelfGrade';
@@ -67,8 +69,8 @@ interface Props {
   taken?: ReadonlySet<number>;
   /** in a short window (sideways) the question stands at the left and the answers at the right, with tighter buttons (Drill it) */
   sideBySide?: boolean;
-  /** after an ending is answered, 'See the table' opens the table that holds it (Review, mw-svw421.5); without it the card has no such button */
-  onSeeTable?: (table: string) => void;
+  /** after an ending is answered, 'See the table' opens the table that holds it, on the asked word's own forms with its cell lit (Review, mw-svw421.5, mw-irpgqi.6); without it the card has no such button */
+  onSeeTable?: (address: ParadigmAddress) => void;
   /** a full parsing: one of its steps was answered (Review writes it to the Parsing drill's answers); `onPick` comes after the last step, or the first wrong one */
   onStep?: (step: ParseStep, right: boolean) => void;
 }
@@ -76,11 +78,11 @@ interface Props {
 const SEE_TABLE = 'mt-3 min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line';
 
 /** 'See the table' under the answer of an ending (mw-svw421.5): the table the form is in, to look at now that he has been asked it. */
-function SeeTable({ question, onSeeTable }: { question: GrammarQuestion; onSeeTable?: (table: string) => void }) {
-  if (!onSeeTable || question.kind !== 'ending' || !question.table) return null;
-  const table = question.table;
+function SeeTable({ question, onSeeTable }: { question: GrammarQuestion; onSeeTable?: (address: ParadigmAddress) => void }) {
+  const address = seeTableAddress(question);
+  if (!onSeeTable || !address) return null;
   return (
-    <button type="button" data-testid="see-table" data-table={table} onClick={() => onSeeTable(table)} className={SEE_TABLE}>
+    <button type="button" data-testid="see-table" data-table={address.table} onClick={() => onSeeTable(address)} className={SEE_TABLE}>
       See the table
     </button>
   );

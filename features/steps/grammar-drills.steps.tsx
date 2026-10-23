@@ -22,6 +22,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { paradigmOf } from '../../src/nav/route';
 import { GRAMMAR, grammarRandom, gradedVersesOf } from '../../src/review/kinds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
@@ -258,11 +259,13 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await screen.findByRole('button', { name })).toBeVisible();
     });
     When('he taps {string}', async (_, name: string) => user.click(screen.getByRole('button', { name })));
-    Then('the Paradigms screen shows the table {string} to Drill', async (_, name: string) => {
+    Then('the Paradigms screen shows the table {string} in Learn on the asked word', async (_, name: string) => {
       expect(await screen.findByRole('heading', { name, level: 1 })).toBeInTheDocument();
-      expect(window.location.hash).toBe('#/paradigms?t=noun-endings');
-      // the Learn | Drill switch has Drill pressed (mw-irpgqi.2); the line under the title may say the cells are locked (mw-svw421.23)
-      expect(within(screen.getByRole('group', { name: 'Mode' })).getByRole('button', { name: 'Drill' })).toHaveAttribute('aria-pressed', 'true');
+      // the address names the table, Learn, the cell asked, the word as the text has it with its parsing, its lemma, and This word (mw-irpgqi.6)
+      const address = paradigmOf(window.location.hash);
+      expect(address).toMatchObject({ table: 'noun-endings', mode: 'learn', lemma: expected!.lemma, word: expected!.word, parse: expected!.code, own: true });
+      expect(address.cell).toBeTruthy();
+      expect(within(screen.getByRole('group', { name: 'Mode' })).getByRole('button', { name: 'Learn' })).toHaveAttribute('aria-pressed', 'true');
     });
     When('he goes Back', async () => {
       window.history.back();
