@@ -136,7 +136,7 @@ With Logos on, Library > Grammars (Settings > Study resources > Logos > Your Log
 `src/data/repositories/resources.ts` getGrammarBooks / setGrammarBooks; not in the settings registry, like the lexicons). An idea sheet
 (`src/IdeaSheet.tsx` ReadMore) whose idea a ticked book teaches shows **Read more**, after the tables: one line a book (its `short` name over one
 link per section that teaches the idea, such as `Lesson 4: Nouns of the Second Declension`), at most three books in view and the rest under
-`More books (N)`. Logos off, no ticked book, or no section for the idea: no Read more. A book is a reference inside the learning, never a grammar
+`More books (N)`; since mw-rfjjzd.16 the Pinned books come first, then the On ones (`shelvedBooks` reads the shelf's grammar rows, `readMoreFor`'s `pinned`), and a grammar the catalogue gives no sections table is no book. Logos off, no ticked book, or no section for the idea: no Read more. A book is a reference inside the learning, never a grammar
 approach: the sheet is the same whichever approach's lesson opened it (the Lampas ladder, or the record of BMA Tutor's order, tests/support/fixture-path.ts).
 
 A link is `logosres:<Resource ID>;ref=<reference>`, its https fallback `https://ref.ly/logosres/<Resource ID, colon encoded>?ref=<reference>` with the `_` of the reference written `+`, armed by `openApp.ts` as the lexicon links are.
