@@ -1,5 +1,13 @@
 # What's new
 
+## 0.1.421
+_2026-10-23_
+- New: Ask the makers for a book from one place, picking it from your imported Logos list or typing its title, and send your whole list of books Lampas could open in one tap.
+- New: A verse list can now be edited: add a reference by typing it, remove one, move one up or down, or sort the list into Bible order.
+- Fixed: Words you had already learned, like ἔρχομαι, now show their aorist form in Review and the word list, as new words do.
+- Fixed: Lampas now says a licence covers up to five devices, not three.
+- New: On the Share to Lampas sheet, "Save as a list" keeps the Bible references you were shown, in the order you chose, as a new verse list or adds them to one you already have.
+
 ## 0.1.419
 _2026-10-23_
 - New: After a Review ending card, See the table opens the table on that very word's own forms, with the cell you were asked lit.

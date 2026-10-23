@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.1.421",
+    "date": "2026-10-23",
+    "story": "mw-rfjjzd.14",
+    "kind": "new",
+    "text": "Ask the makers for a book from one place, picking it from your imported Logos list or typing its title, and send your whole list of books Lampas could open in one tap."
+  },
+  {
+    "version": "0.1.421",
+    "date": "2026-10-23",
+    "story": "mw-9q8wp1.3",
+    "kind": "new",
+    "text": "A verse list can now be edited: add a reference by typing it, remove one, move one up or down, or sort the list into Bible order."
+  },
+  {
+    "version": "0.1.421",
+    "date": "2026-10-23",
+    "story": "mw-bsf54t.15",
+    "kind": "fixed",
+    "text": "Words you had already learned, like ἔρχομαι, now show their aorist form in Review and the word list, as new words do."
+  },
+  {
+    "version": "0.1.421",
+    "date": "2026-10-23",
+    "story": "mw-cvwm1u.19",
+    "kind": "fixed",
+    "text": "Lampas now says a licence covers up to five devices, not three."
+  },
+  {
+    "version": "0.1.421",
+    "date": "2026-10-23",
+    "story": "mw-9q8wp1.2",
+    "kind": "new",
+    "text": "On the Share to Lampas sheet, \"Save as a list\" keeps the Bible references you were shown, in the order you chose, as a new verse list or adds them to one you already have."
+  },
+  {
     "version": "0.1.419",
     "date": "2026-10-23",
     "story": "mw-irpgqi.6",
