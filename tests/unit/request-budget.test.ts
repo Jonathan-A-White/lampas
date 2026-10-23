@@ -218,6 +218,19 @@ describe('the Bible talk request with the digest of 110 books On', () => {
     expect(MAX_REQUEST_BYTES - bytes(fitted), `the request weighs ${bytes(fitted)} of ${MAX_REQUEST_BYTES}`).toBeGreaterThanOrEqual(HEADROOM_BYTES);
   });
 
+  /** The sweep of mw-rfjjzd.10 (class byte-budget-without-margin): every field of the request at 110 books On, its bytes and its share, so the next cap is seen before it bites. */
+  it('names the byte share of every field of the request at 110 books On, the digest the smaller of the tutor-told fields', async () => {
+    const request = await withDigest();
+    const total = bytes(request);
+    const rows = Object.entries(request)
+      .map(([field, value]) => ({ field, size: bytes(value), share: Math.round((1000 * bytes(value)) / total) / 10 }))
+      .sort((a, b) => b.size - a.size);
+    console.info(`bible-talk request as built (before fitHistory), ${total} bytes against a cap of ${MAX_REQUEST_BYTES}:\n${rows.map((r) => `${r.field.padEnd(22)}${String(r.size).padStart(6)}  ${r.share}%`).join('\n')}`);
+    expect(rows.find((r) => r.field === 'works')?.size).toBeLessThanOrEqual(WORKS_BYTES + 'works'.length);
+    // as built, before fitHistory: the guide and the words of the text are what gives way first, and the fitted request is under the cap
+    expect(bytes(fitHistory(request))).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+  });
+
   it('fitHistory cuts the digest after the word list and before the history', async () => {
     const request = await withDigest();
     const turns = [
