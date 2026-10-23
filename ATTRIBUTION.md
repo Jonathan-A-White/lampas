@@ -31,6 +31,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   glosses and definitions (the definitions are Abbott-Smith's). Data used under the licence.
   Changes: per Strong's number only the first entry is used, with its lemma and gloss as given, except that a gloss
   written as a range and the sense chosen ('spirit/breath: spirit') is shown as one list of meanings ('spirit, breath'); the
+  gloss of a verb whose aorist cannot be guessed (ἔρχομαι) ends with it ('to come/go (aorist ἦλθον)'); the
   Abbott-Smith definition has its markup, scripture references and daggers removed and is cut near 300
   characters (scripts/data-build.ts, docs/data.md).
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer. The short clips of a vowel's sound that play when you hear a Greek word of one
