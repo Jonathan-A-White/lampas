@@ -219,7 +219,7 @@ describe('the upgrade from version 22', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(26);
+    expect(db.verno).toBe(27);
     expect(await db.grammarLevels.toArray()).toEqual([level]);
     expect(await db.reviews.toArray()).toEqual([review]);
     expect(await db.passageLessons.count()).toBe(0);

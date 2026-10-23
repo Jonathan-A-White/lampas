@@ -130,6 +130,21 @@ export interface LibraryRow {
   taken?: string;
 }
 
+/** One row of the Logos list he imported (src/data/repositories/library.ts, docs/design/library-at-scale.md 5.3), kept so it can be matched again after an update. The list's columns, named as Lampas
+ *  reads them, and whether the catalogue had the book when it was matched. 4,795 rows for a large library; nothing here is ever sent. */
+export interface ExportedRow {
+  /** the Logos Resource ID: the key */
+  resource: string;
+  type: string;
+  title: string;
+  series: string;
+  languages: string;
+  /** the ReferenceSupersets cell as it was (raw tabs between its tokens) */
+  refs: string;
+  /** the catalogue had the book (its entry was listed) at the last import or re-match */
+  matched: boolean;
+}
+
 /** A request Lampas sent to the factory (mw-vy3ghg.2), kept with the grist's id so a status that comes back can be matched to it. */
 export interface RequestRow {
   /** the grist's transaction id: the key */
@@ -494,6 +509,7 @@ class LampasDB extends Dexie {
   pictureRefs!: EntityTable<PictureRefsRow, 'hash'>;
   talkSummaries!: EntityTable<TalkSummaryRow, 'ref'>;
   library!: EntityTable<LibraryRow, 'id'>;
+  exportRows!: EntityTable<ExportedRow, 'resource'>;
 
   constructor() {
     super('lampas');
@@ -950,6 +966,35 @@ class LampasDB extends Dexie {
       pictureRefs: 'hash, at',
       talkSummaries: 'ref',
       library: 'id, kind',
+    });
+
+    // v27: the Logos list he imported, one row per book of it {resource, type, title, series, languages, refs, matched} (src/data/repositories/library.ts, mw-rfjjzd.6); every other table as it was.
+    this.version(27).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+      pictureRefs: 'hash, at',
+      talkSummaries: 'ref',
+      library: 'id, kind',
+      exportRows: 'resource',
     });
   }
 }
