@@ -24,8 +24,19 @@ export interface TodayItem {
   done?: boolean;
 }
 
+/** An item with the piece it is: 'review', 'plan', 'devotional' or a passage ('psa.5'), the id Today keeps a tick under (src/data/daily/dailyStore.ts). */
+export interface TodayEntry {
+  id: string;
+  item: TodayItem;
+}
+
 /** The field for what Today holds on `now`, or undefined when it holds nothing. */
 export async function todayNow(now: Date = new Date()): Promise<TodayItem[] | undefined> {
+  return (await todayEntries(now))?.map((entry) => entry.item);
+}
+
+/** The items of todayNow with the piece id of each, for the tutor's tick-today command to find an item by. */
+export async function todayEntries(now: Date = new Date()): Promise<TodayEntry[] | undefined> {
   const [review, plan, psalms, devotional, ticks, choice, draw] = await Promise.all([
     getSetting(dailyReviewSetting),
     getSetting(dailyPlanSetting),
@@ -38,7 +49,7 @@ export async function todayNow(now: Date = new Date()): Promise<TodayItem[] | un
   const pieces = todayPieces({ review, plan, psalms, devotional }, now);
   if (pieces.length === 0) return undefined;
   const day = await getDay(localDate(now));
-  const items: TodayItem[] = [];
+  const items: TodayEntry[] = [];
   for (const id of pieces.slice(0, TODAY_MAX)) {
     const passage = /^(psa|pro)\.(\d+)$/.exec(id);
     let kind: TodayKind;
@@ -58,7 +69,7 @@ export async function todayNow(now: Date = new Date()): Promise<TodayItem[] | un
       kind = passage[1] === 'psa' ? 'psalm' : 'proverb';
       title = passageName(passage[1], Number(passage[2]));
     } else continue;
-    items.push({ kind, title, ...(ticks === 'on' ? { done: day.ticked.includes(id) } : {}) });
+    items.push({ id, item: { kind, title, ...(ticks === 'on' ? { done: day.ticked.includes(id) } : {}) } });
   }
   return items;
 }

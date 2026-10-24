@@ -17,7 +17,8 @@ import { takeRustyOffer } from './rustyOffer';
 import { TODAY_BUTTON, takeTodayOffer } from './todayOffer';
 import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
 import { scopeTitle, type OfferReply, type PendingOffer, type TalkScope } from '../services/talk';
-import { applyChanges, offeredChange, type ChangeResult } from '../settings/registry';
+import { offeredChange, type ChangeResult } from '../settings/registry';
+import { changeSettings } from '../tutor/registry';
 
 /** What the bridge's button says: 'Take me there: Pairs of vowels', the idea it opens (the device's lowest unmet need, src/data/grammar/bridge.ts resolveBridge). */
 export const bridgeButtonText = (bridge: Bridge): string => `Take me there: ${ideaOf(bridge.next).title}`;
@@ -117,9 +118,9 @@ export function sendMakersOffer(turn: TalkTurn, scope: TalkScope): Promise<void>
   return send;
 }
 
-/** Makes the offered setting change as a tap on its button would: the registry checks and writes it, and the offer is taken only when it was applied. */
+/** Makes the offered setting change as a tap on its button would: the set-setting command (src/tutor/registry.ts) checks and writes it, and the offer is taken only when it was applied. */
 export async function takeSettingOffer(turn: TalkTurn): Promise<ChangeResult> {
-  const result = await applyChanges(turn.settingOffer ? [turn.settingOffer] : []);
+  const result = await changeSettings(turn.settingOffer ? [turn.settingOffer] : []);
   if (turn.id !== undefined && result.applied.length > 0) await markSettingChoice(turn.id, 'taken');
   return result;
 }

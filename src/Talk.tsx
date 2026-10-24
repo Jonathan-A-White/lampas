@@ -8,7 +8,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Waiting } from './Ask';
-import { addLemmaToLearn, findGreekWord, glossOf } from './data/answerWord';
+import { findGreekWord, glossOf } from './data/answerWord';
 import type { GreekWord } from './data/chapter';
 import type { AnswerWord } from './data/db';
 import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
@@ -61,6 +61,7 @@ import { setPending, talkKey, type AskState } from './pending/pendingAsks';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
 import { GREEK_LANG } from './script/greekLang';
 import { announce, plainText } from './ui/live';
+import { addWord } from './tutor/registry';
 
 /** The bar pinned at the bottom of the reader: voice-kit's hold-to-talk bar (src/talk/Bars.tsx) labelled Talk. A tap opens
  * the sheet; a hold (half a second) opens it and listens, and what he says goes on release. It is the lowest bar, so it alone
@@ -163,7 +164,7 @@ function AddWord({ scope, word }: { scope: TalkScope; word: AnswerWord }) {
     setBusy(true);
     try {
       // The lexicon's gloss and part of speech; a word it lacks still goes in with the gloss the chapter has, as he asked.
-      const { result } = await addLemmaToLearn(scope, word.lemma);
+      const { result } = await addWord(scope, word.lemma);
       if (result === 'unknown') await addWordToLearn(word.lemma, glossOf(scope, word));
     } finally {
       setBusy(false);

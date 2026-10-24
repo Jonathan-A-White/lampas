@@ -6,7 +6,7 @@ import type { TodayItem } from '../data/learnerToday';
 import { markTodayChoice } from '../data/repositories';
 import { navigate } from '../nav/route';
 import type { TalkAnswer, TalkScope } from '../services/talk';
-import { leaveTalk } from './rustyOffer';
+import { leaveTalk } from './leave';
 
 /** What the offer's button says. */
 export const TODAY_BUTTON = "Open today's drill";

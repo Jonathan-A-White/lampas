@@ -1,5 +1,9 @@
 // tests/unit/settled-offer.test.ts — the quiz-goal step 'the offer says ... and has no buttons' cannot pass on a button's own label (mw-5r3p30.235).
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { db } from '../../src/data/db';
+import type { TalkTurn } from '../../src/data/repositories';
+import { takeSettingOffer } from '../../src/talk/offers';
+import { bibleTalkRegistry } from '../../src/tutor/registry';
 import { offerSettled } from '../support/settled-offer';
 
 /** The offer as Talk.tsx draws it before a choice: a button whose label is the text the settled line will show. */
@@ -36,5 +40,22 @@ describe('offerSettled', () => {
     document.body.append(el);
     await offerSettled(() => el, 'Kept as your quiz goal');
     el.remove();
+  });
+});
+
+describe('the setting offer: his tap runs the set-setting command (mw-t3xu9a.6)', () => {
+  afterAll(() => db.close());
+  beforeEach(async () => {
+    await db.open();
+    await db.settings.clear();
+  });
+
+  it('takeSettingOffer runs set-setting with the offered key and value, and the change it made has the old value for Undo', async () => {
+    const run = vi.spyOn(bibleTalkRegistry().command('set-setting')!, 'run');
+    const result = await takeSettingOffer({ settingOffer: { key: 'theme', value: 'dark' } } as TalkTurn);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledWith({ name: 'theme', value: 'dark' });
+    expect(result.applied).toMatchObject([{ key: 'theme', to: 'dark', shown: 'Theme: Dark' }]);
+    run.mockRestore();
   });
 });

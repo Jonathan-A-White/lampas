@@ -84,6 +84,18 @@ export async function addWordToLearn(lemma: string, gloss = '', now = Date.now()
   });
 }
 
+/** The row of the list that `lemma` stands for (as findListed finds it, a dropped word too), or undefined. */
+export async function listedWord(lemma: string): Promise<Word | undefined> {
+  const { headword, lemmas } = normaliseLemma(lemma);
+  return headword ? findListed(headword, lemmas) : undefined;
+}
+
+/** Puts a row of the list back as it was before an add (the tutor's add-word undo): `before` undefined removes the row the add made; a row, `headword`'s, is written back whole. */
+export async function restoreWord(headword: string, before: Word | undefined): Promise<void> {
+  if (before) await db.words.put(before);
+  else await db.words.delete(headword);
+}
+
 /** Every lemma a solid word goes by (its headword and its lexicon lemmas, NFC): what the weave matches Greek words against. */
 export async function listSolidLemmas(): Promise<Set<string>> {
   const solid = await db.words.where('state').equals('solid').toArray();
