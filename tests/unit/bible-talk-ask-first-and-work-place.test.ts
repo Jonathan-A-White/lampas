@@ -11,7 +11,7 @@ const count = (haystack: string, needle: RegExp): number => (haystack.match(need
 describe('the bible-talk instructions after mw-5r3p30.732', () => {
   it('are at most 97,500 bytes', () => {
     const bytes = instructionParts('bible-talk').reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(bytes).toBeLessThanOrEqual(97_500);
+    expect(bytes).toBeLessThanOrEqual(97_498);
   });
 
   it('say once that asking his quiz goal first is a question that ends with a question mark, with one example', () => {
@@ -19,6 +19,13 @@ describe('the bible-talk instructions after mw-5r3p30.732', () => {
     expect(count(goal, /ends? with a question mark/g)).toBe(1);
     expect(count(goal, /not a statement/g)).toBe(1);
     expect(goal).toMatch(/What would you like this quiz to do for you\?/);
+  });
+
+  it('say that a `p` link with no place is never sent: no chapter you know, no link (mw-5r3p30.743)', () => {
+    const work = flat(text.slice(text.indexOf('### Links to a work he owns'), text.indexOf('### Links to a work he owns') + 4000));
+    expect(count(work, /with no `place` is never sent/g)).toBe(1);
+    expect(work).toMatch(/if you know no chapter, give no link/);
+    expect(work).not.toMatch(/else leave the link out/);
   });
 
   it('say once that a book with `places` takes a `place` in its link, with one short example', () => {
