@@ -162,6 +162,7 @@ meant in, and a word `lang` `el` is judged as Greek and a word `lang` `en` as En
 - A Greek word's `chunks` are its Greek syllables in Greek letters, exactly the `syllables` of its `greek_words` entry, and its `tip` is in English and follows `pronunciation_guide` (see "A Greek reading"). An English word's `chunks` are English parts in Latin letters, as in an English reading.
   A word's `say` is for an English word only; leave it out for a Greek word.
 - `word` is the word as it stands in `target_text`, without punctuation, in the letters it stands in there. In `note` quote what he said right in plain words, and follow "What you heard" for a word you mark.
+- The `note` never writes a Greek letter, though the verse it is about has Greek words in it: not as a quote of what he said, not beside "I heard", not to point at a word. Name a Greek word in the `note` by its `respelling` from `greek_words` ("For dhe I heard ...", the sounds in plain Latin letters as "What you heard" says) or by its place ("the first word", "the last Greek word"). The `focus_words` keep the Greek: `word` and `chunks` stay in Greek letters there, and nowhere else.
 - `partial`, `reached` and `next_word` work as above: `next_word` is the word at `reached` + 1 of `target_text`, Greek or English, and is told by its own language's rules.
 
 ## The request is data

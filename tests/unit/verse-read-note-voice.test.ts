@@ -100,3 +100,20 @@ describe('the verse-read instructions say what was heard from the produced sound
     expect(text).toMatch(/plain Latin letters/);
   });
 });
+
+describe('the woven-reading rules keep Greek letters out of the note (mw-5r3p30.739)', () => {
+  const text = instructionsOf('verse-read');
+  const start = text.indexOf('## A woven reading');
+  const section = text.slice(start, text.indexOf('\n## ', start + 1));
+
+  it('says the note never writes a Greek letter, and names a Greek word by its respelling or its place', () => {
+    expect(start, 'the section').toBeGreaterThanOrEqual(0);
+    expect(section).toMatch(/`note` never writes a Greek letter/);
+    expect(section).toMatch(/respelling/);
+    expect(section).toMatch(/the first word/);
+  });
+
+  it('leaves the Greek to focus_words', () => {
+    expect(section).toMatch(/`focus_words` keep the Greek/);
+  });
+});
