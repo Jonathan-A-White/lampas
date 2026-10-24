@@ -106,6 +106,7 @@ export function VerseView(props: VerseViewProps) {
   const audioBible = audioBibleOf(useSetting(audioBibleSetting) ?? 'off');
   // The Audible Bible is in English: in Greek view no English audio is offered (mw-5r3p30.653); English and the Weave keep it.
   const audibleChapter = view === 'greek' ? undefined : audibleChapterLabel(book, chapter);
+  const audioListen = action === 'listen' && !!audioBible && !!audibleChapter;
   const sendOff = useSendOff();
   const passage = verse.to !== undefined;
   const name = unitName(verse);
@@ -155,6 +156,7 @@ export function VerseView(props: VerseViewProps) {
         </div>
         {/* One line while every label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner), else
             three to a row over two rows; a phone with Share draws a sixth button, which needs more room. */}
+        <div className="flex flex-col">
         <div className="@container">
           <div
             role="group"
@@ -179,6 +181,9 @@ export function VerseView(props: VerseViewProps) {
               statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
             />
           </div>
+        </div>
+        {/* Sideways on Listen with the Audio Bible row, the row has no room under Memorize and the Logos doors, so they go under it (mw-5r3p30.746). */}
+        <div className={audioListen ? 'short:order-last' : undefined}>
           {/* Memorize (mw-fu7dqf.5): the verse, or the passage's range as one reference; the New Testament only (there is no Old Testament view), no licence */}
           <MemorizeControl canonical={`${OSIS[book] ?? book}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`} className="mt-1 w-full" />
           {/* His Bible in Logos at the verse (a passage: at its first verse), and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6) */}
@@ -187,7 +192,7 @@ export function VerseView(props: VerseViewProps) {
         <div className="mt-3">
           {action === 'listen' ? (
             // sideways the Play bar says it, and the line's room goes to the Audio Bible row under it (mw-5r3p30.468)
-            <p data-action-help className={`px-1 text-sm text-muted ${audioBible && audibleChapter ? 'short:hidden' : ''}`}>
+            <p data-action-help className={`px-1 text-sm text-muted ${audioListen ? 'short:hidden' : ''}`}>
               Tap Play to hear {name}.
             </p>
           ) : null}
@@ -225,6 +230,7 @@ export function VerseView(props: VerseViewProps) {
               The tutor asks you about {name} one question at a time, in order, then helps you map how it is built.
             </p>
           ) : null}
+        </div>
         </div>
       </div>
       {lesson && checking === lesson.key ? (
