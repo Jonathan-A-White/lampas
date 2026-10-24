@@ -140,8 +140,8 @@ export const workDoor = { open: (url: string): void => window.location.assign(ur
 
 const workPlace: Place = {
   name: OPEN_WORK,
-  tell: 'Opens one book of his Logos shelf (an id of the works fact) in Logos',
-  args: { type: 'object', required: ['id'], additionalProperties: false, properties: { id: { type: 'string', minLength: 1, maxLength: 80, description: 'the id of a book in the works fact' } } },
+  tell: 'Opens a book of his shelf (from works) in Logos',
+  args: { type: 'object', required: ['id'], additionalProperties: false, properties: { id: { type: 'string', minLength: 1, maxLength: 80 } } },
   open: async (args) => {
     const id = workIdOf(args);
     const [ticked, shelf, settings] = await Promise.all([getWorks(), shelfOf().catch(() => []), currentSettings()]);
@@ -159,12 +159,12 @@ export type SettingRan = CommandResult & ChangeResult;
 /** One change, checked and written by the settings registry; `skipUnchanged` writes nothing, and says nothing, for a setting already set that way. The undo puts the old value back. */
 const setSettingCommand: Command = {
   name: 'set-setting',
-  tell: 'Changes one setting to a value its row allows; the app can put the old value back',
+  tell: 'Changes a setting; the app can undo it',
   args: {
     type: 'object',
     required: ['name', 'value'],
     additionalProperties: false,
-    properties: { name: { type: 'string', minLength: 1, maxLength: 80, description: 'a key of the settings fact' }, value: {}, skipUnchanged: { type: 'boolean' } },
+    properties: { name: { type: 'string', minLength: 1, maxLength: 80 }, value: {}, skipUnchanged: { type: 'boolean' } },
   },
   kind: 'undoable',
   run: async (args): Promise<SettingRan> => {
@@ -203,8 +203,8 @@ export async function changeSettings(changes: unknown, options: { skipUnchanged?
 /** Ticks `item` of Today (its title as the today-drill fact has it, or its piece id), or with `on: false` takes the tick away; the undo puts the tick back as it was. Only while Tick boxes is On. */
 const tickTodayCommand: Command = {
   name: 'tick-today',
-  tell: "Ticks (or with on false unticks) an item of today's drill, named as in today-drill; the app can put the tick back",
-  args: { type: 'object', required: ['item'], additionalProperties: false, properties: { item: { type: 'string', minLength: 1, maxLength: 80, description: 'its title in today-drill' }, on: { type: 'boolean' } } },
+  tell: "Ticks an item of today-drill by its title; on false unticks; undoable",
+  args: { type: 'object', required: ['item'], additionalProperties: false, properties: { item: { type: 'string', minLength: 1, maxLength: 80 }, on: { type: 'boolean' } } },
   kind: 'undoable',
   run: async (args): Promise<CommandResult> => {
     const { item, on = true } = args as { item: string; on?: boolean };
@@ -231,7 +231,7 @@ export async function tickToday(item: string, on: boolean): Promise<string> {
 /** Opens Review, closing an open Talk sheet first. With items (the rusty ones, at most RUSTY_MAX), the ones still solid move to Frontier and the round is made of just those. */
 const startReviewCommand: Command = {
   name: 'start-review',
-  tell: 'Opens a Review round; with items (word or idea, from rusty-words) moves those back to Frontier and practises just them',
+  tell: 'Opens Review; with items (from rusty-words) moves them to Frontier and practises just them',
   args: {
     type: 'object',
     additionalProperties: false,
@@ -258,8 +258,8 @@ export type AddWordRan = CommandResult & AddedLemma;
 /** Puts a word on his words-to-learn list with the lexicon's gloss; the undo puts the list back as it was (the word removed, or a dropped word dropped again). */
 const addWordCommand: Command = {
   name: 'add-word',
-  tell: 'Adds a Greek word (its dictionary form) to his words to learn; the app can take it off again',
-  args: { type: 'object', required: ['word'], additionalProperties: false, properties: { word: { type: 'string', minLength: 1, maxLength: 60, description: 'its lemma' } } },
+  tell: 'Adds a word (its lemma) to his words to learn; undoable',
+  args: { type: 'object', required: ['word'], additionalProperties: false, properties: { word: { type: 'string', minLength: 1, maxLength: 60 } } },
   kind: 'undoable',
   run: async (args): Promise<AddWordRan> => {
     const { word } = args as { word: string };
