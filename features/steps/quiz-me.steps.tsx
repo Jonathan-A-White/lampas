@@ -45,7 +45,7 @@ const greekOf = (from: number, to: number): string =>
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 /** The fields a bible-talk request may hold: the app's text and the reader's own data, nothing fetched from anywhere. */
-const REQUEST_FIELDS = ['reference', 'greek', 'english', 'verses', 'greek_words', 'question', 'history', 'solid_count', 'solid_words', 'settings', 'mode', 'learner', 'learner_grammar', 'focus', 'study_way', 'quiz_goal', 'quiz_goal_once', 'screen', 'resources', 'works', 'pronunciation', 'pronunciation_guide'];
+const REQUEST_FIELDS = ['reference', 'greek', 'english', 'verses', 'greek_words', 'question', 'history', 'solid_count', 'solid_words', 'settings', 'mode', 'learner', 'learner_grammar', 'focus', 'study_way', 'quiz_goal', 'quiz_goal_once', 'screen', 'resources', 'works', 'pronunciation', 'pronunciation_guide', 'facts', 'catalogue'];
 
 async function open(): Promise<void> {
   cleanup();

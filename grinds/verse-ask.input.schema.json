@@ -183,6 +183,25 @@
     },
     "pronunciation": { "description": "Optional. The Greek pronunciation the app speaks and respells in, by its id. Its rules are in pronunciation_guide.", "type": "string", "minLength": 1, "maxLength": 40 },
     "pronunciation_guide": { "description": "Optional. The name of that pronunciation and the sound rules the app speaks and respells by, from its pronunciation scheme. Describe every Greek sound by these rules.", "type": "string", "minLength": 1, "maxLength": 2000 },
+    "facts": { "description": "Optional. What the app read for you before this turn, by name (the app's tutor client, mw-t3xu9a.4): `where-he-is` (the screen he is on, `route`, in the Reader its book, chapter, view and verse, the sheets open), `today-drill` (his drill for today) and `settings` (the same as the field `settings`). Read-only copies of what the app holds now; use them as you use the fields they repeat. A fact the app dropped for room is still in `catalogue`.", "type": "object", "additionalProperties": true },
+    "catalogue": {
+      "description": "Optional. Every fact and place the app has, sorted by `name`: `is` (fact or place), `core` (true for a fact always sent) and `tell`, what it is (cut when the request is too big). Today it only names what the app has; nothing here is asked for or opened by your answer yet.",
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "is"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+          "is": { "type": "string", "enum": ["fact", "place", "command"] },
+          "core": { "type": "boolean" },
+          "kind": { "type": "string", "enum": ["free", "undoable", "confirm"] },
+          "tell": { "type": "string", "maxLength": 160 },
+          "args": { "type": "object" }
+        }
+      }
+    },
     "settings": { "description": "Optional. The app settings that bear on an answer, by key: hebrewDepth (how a Hebrew word is written), askBy (\"speaking\" or \"typing\"), englishAccent (\"american\", \"british\" or \"ipa\": the English the reader hears sounds in), readTutor (whether answers are read aloud to him), weave and weaveGrammar (how much Greek is woven into his English), greekInterest (\"0\" Just English to \"5\" All in: how much Greek he has asked the app to show): { \"hebrewDepth\": \"both\", \"askBy\": \"speaking\" }.", "type": "object" }
   }
 }

@@ -32,8 +32,9 @@ import { solidWordsField } from './solidWords';
 import { holdText, talkWindow, textOf, versesLabel } from './talkVerses';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { heldPassagesOf, MAX_FETCH, verseEnglish, verseGreek, type HeldPassage } from './talkFetch';
-import { clipText as clipTo, fitRequest, isNoteUpdate, jsonBytes, MAX_HISTORY_TURNS } from 'voice-kit/talks';
+import { clipText as clipTo, fitRequest, isNoteUpdate, jsonBytes, MAX_HISTORY_TURNS, type CatalogueEntry } from 'voice-kit/talks';
 import { bibleTalkSteps, talkBytes } from './talkFit';
+import { tutorFitSteps } from '../tutor/fit';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
 export const TALK_KIND = 'bible-talk';
@@ -276,6 +277,10 @@ export interface TalkRequest {
   /** the passages the tutor asked for in `fetch` on earlier turns of this talk (mw-5r3p30.734, src/services/talkFetch.ts), newest first, under HELD_PASSAGES_BYTES; missing when none, and in About. fitHistory drops the oldest
    * before a verse of the talk's own text or a turn */
   held_passages?: HeldPassage[];
+  /** the facts the tutor client read up front, by name (mw-t3xu9a.4, src/tutor/registry.ts): where-he-is, today-drill and settings always, then the screen's up-front list; added to the fields above, which they leave as they are. fitHistory drops one that repeats a field above before it cuts a turn */
+  facts?: Record<string, unknown>;
+  /** every fact and place the tutor may name, sorted, each with its tell line (the client's registry.catalogue()); fitHistory cuts the tell lines first of all */
+  catalogue?: CatalogueEntry[];
 }
 
 /** What the tutor's `rusty_offer` holds: the rusty items (kind and id, as the request listed them) it offers to move back to Frontier. */
@@ -491,12 +496,12 @@ export const foldedTurn = (turn: TalkHistoryEntry): TalkHistoryEntry => ({ q: cl
  * The oldest turns go until the newest alone is left; then the oldest of his requests (the last in the list, newest first) go one at a time, then
  * his memory notes, and only then the newest turn (mw-5r3p30.615: a talk from Settings, whose screen weighs most of the record, forgot the question
  * it was answering). A turn dropped for room moves to the fold, cut short, so the tutor folds it into the summary (mw-5r3p30.700); the fold goes before the lesser fields, and the summary after the
- * newest turn, last of all. `held` is how many of the history's oldest turns the summary holds already (they are never folded twice). `talk` is the talk's name, which weighs with the request. The questions of a drill's results go after the notes, right answers first. The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
+ * newest turn, last of all. The tutor client's part (`facts`, `catalogue`, src/tutor/fit.ts) gives way before all of that: the catalogue's tell lines, then a fact that repeats a field. `held` is how many of the history's oldest turns the summary holds already (they are never folded twice). `talk` is the talk's name, which weighs with the request. The questions of a drill's results go after the notes, right answers first. The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than
  * the sound rules), except on a sound question.
  */
 export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkRequest {
   // the talk's name travels in the grist header beside the request and weighs with it (mw-pxji7y.3)
-  return fitRequest(request, bibleTalkSteps(held), { maxBytes: MAX_REQUEST_BYTES, extraBytes: talkBytes(talk) });
+  return fitRequest(request, [...tutorFitSteps, ...bibleTalkSteps(held)], { maxBytes: MAX_REQUEST_BYTES, extraBytes: talkBytes(talk) });
 }
 
 /** A Greek sound question carries the app's respelling of the word, and its syllables and stressed syllable (mw-5r3p30.274), so the tutor explains the sounds by the pronunciation the app speaks, not by its own habit. */
