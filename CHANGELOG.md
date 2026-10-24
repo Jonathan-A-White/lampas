@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.434
+_2026-10-24_
+- Fixed: Held sideways, the Listen screen shows the Listen in Audible link above the Play button again instead of pushing it out of sight.
+
 ## 0.1.430
 _2026-10-24_
 - Fixed: When the tutor helps fill in a form, it now asks only about the required fields (the photo question aside) and never nags about the optional ones.

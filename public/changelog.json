@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.434",
+    "date": "2026-10-24",
+    "story": "mw-5r3p30.746",
+    "kind": "fixed",
+    "text": "Held sideways, the Listen screen shows the Listen in Audible link above the Play button again instead of pushing it out of sight."
+  },
+  {
     "version": "0.1.430",
     "date": "2026-10-24",
     "story": "mw-m45m0h.6",
