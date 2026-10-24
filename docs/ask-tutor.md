@@ -391,10 +391,10 @@ Every talk with the tutor is kept on the phone per conversation (`repositories/t
 `screen.goal`, a talk of its own `talk.<ms>`). The **Conversations** screen (mw-5r3p30.696; `#/conversations`, route `conversations`, in `KEPT_PATHS`, reached by
 **Conversations** under Settings > Account > More; `src/Conversations.tsx`) is the list of them:
 
-- **The list** is `listConversations()`: one row per conversation, the one with the newest last turn first, each drawn by `src/share/TalkRow.tsx` (the row Share to
+- **The list** is `listConversations()`, a map over the summaries of `bibleTalks.list()` (src/data/repositories/talkReader.ts, a voice-kit `TalkReader` over the kept rows: no new table, no new database version): one row per conversation, the one with the newest last turn first, each drawn by `src/share/TalkRow.tsx` (the row Share to
   Lampas > **Choose a talk** draws too, so the two lists never drift): its place in words (`talkPlace.ts` `talkLabel`: "Romans 8:28", "Quiz on Romans 8:1-11", "Ask
   the tutor: Goal"), the date of its last turn and the first line of its last question (as the tutor cleaned it up when it did). A key this app does not make is not listed.
-- **The search** (one box, "Search conversations") is `searchConversations(query)`: a turn matches when every word typed is in its question or its answer, any case,
+- **The search** (one box, "Search conversations") is `searchConversations(query)`, the kit's `searchTalks` over `bibleTalks` with Lampas's `conversationSearch` (places, fold, line): a turn matches when every word typed is in its question or its answer, any case,
   and the conversation is listed with the line of its newest matching turn that holds the first word (cut to 120 characters around it). It runs on the phone over
   the turns already kept (a phone's few thousand are filtered in memory; no index, no new database version, no grist).
 - **A tap** opens the conversation to carry on: the Talk sheet over a scope made from its key (`talkScope.ts` `useTalkScope`, `ShareTalk.tsx` `TalkHost`, as Share to
