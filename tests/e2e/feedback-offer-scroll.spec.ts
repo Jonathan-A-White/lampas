@@ -13,7 +13,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 const OFFER = {
   answer: 'Lampas does not work with Olive Tree. I can pass your wish to the makers; I cannot say what they will decide.',
   words: [],
-  feedback_offer: { summary: 'He wants Lampas to work with the Olive Tree app, as it does with Accordance.' },
+  feedback_offer: { summary: 'He wants Lampas to work with the Olive Tree app, as it does with Logos.' },
 };
 
 /** Opens the Words screen's talk, asks about Olive Tree and waits for the offer. */

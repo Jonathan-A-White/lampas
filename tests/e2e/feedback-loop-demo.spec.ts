@@ -14,7 +14,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 const COMMIT = '0123456789abcdef0123456789abcdef01234567';
 const COMMIT_URL = `https://github.com/Jonathan-A-White/lampas/commit/${COMMIT}`;
-const OLIVE = 'He wants Lampas to work with the Olive Tree app, as it does with Accordance.';
+const OLIVE = 'He wants Lampas to work with the Olive Tree app, as it does with Logos.';
 const COLOURS = 'Teach the cases with colours, one at a time.';
 const SEPIA = 'A sepia reading theme for the evening.';
 

@@ -37,7 +37,6 @@ async function openWithEveryLexicon(): Promise<void> {
   await db.settings.bulkPut([
     { key: 'resource.logos', value: 'on' },
     { key: 'resource.strongs', value: 'on' },
-    { key: 'resource.accordance', value: 'on' },
   ]);
   // every lexicon On, and the three whose titles are the longest Pinned (setState takes the old keys first; clearing the kind leaves only what is set here)
   await setKind('lexicon', 'off');
@@ -70,7 +69,7 @@ const feature = await loadFeature('features/word-sheet-many-resources.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   Scenario('Every Logos tile is on the sheet and says which book it opens', ({ Given, When, Then, And }) => {
-    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's and Accordance on", openWithEveryLexicon);
+    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's on", openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     Then('the Study row has {int} tiles', (_, n: number) => {
       expect(tiles()).toHaveLength(n);
@@ -100,7 +99,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario("The tiles are in the sheet's scroll box, and Close sits under the box", ({ Given, When, Then, And }) => {
-    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's and Accordance on", openWithEveryLexicon);
+    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's on", openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     Then("every Study tile is inside the sheet's scroll box", () => {
       const box = scrollBox();
@@ -115,7 +114,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('A fade tells him there is more below until he reaches the end', ({ Given, When, Then, And }) => {
-    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's and Accordance on", openWithEveryLexicon);
+    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's on", openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     And("the sheet's scroll box holds more than it shows", async () => {
       const box = scrollBox();
@@ -142,7 +141,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Close closes the sheet', ({ Given, When, And, Then }) => {
-    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's and Accordance on", openWithEveryLexicon);
+    Given("Lampas is opened with every Logos lexicon On, three with long titles pinned, and Strong's on", openWithEveryLexicon);
     When('he taps the word {string} in verse {int}', taps);
     And('he taps Close on the sheet', async () => {
       await user.click(await within(sheet()).findByRole('button', { name: 'Close' }));

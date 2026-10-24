@@ -1,6 +1,6 @@
 // The Study resources follow the 'How much Greek?' dial (mw-5r3p30.710, PROVISIONAL): every resource is marked Greek or English (src/resources/types.ts lang),
 // and Settings > Study resources, the word sheet's look-ups and the tutor's links all go through one selector (src/resources/resourcesForLevel.ts). At Just English the
-// Greek ones (Strong's, the Black grammar) are hidden; between, the English ones and the apps that open both (Logos, Accordance) come first; at All in nothing changes.
+// Greek ones (Strong's, the Black grammar) are hidden; between, the English ones and the apps that open both (Logos) come first; at All in nothing changes.
 // A resource the dial hides keeps its switch. At 390x844, from a phone placed at All in (the config's storage state).
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
@@ -46,19 +46,19 @@ const studySection = async (page: Page): Promise<Locator> => {
   return section;
 };
 
-/** The names of the three resource switches the section draws, in the order drawn. */
+/** The names of the resource switches the section draws, in the order drawn. */
 const resourceSwitches = async (section: Locator): Promise<string[]> => {
   const names = await section.getByRole('switch').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? ''));
-  return names.filter((n) => ["Strong's", 'Logos', 'Accordance'].includes(n));
+  return names.filter((n) => ["Strong's", 'Logos'].includes(n));
 };
 
 test('Just English lists no Greek resource in Study resources, and no book at any step, and a switch he made comes back with the dial', async ({ page }) => {
   await openUnlocked(page);
   await holdAppLinks(page);
   await openReader(page);
-  // at All in the list is as it was: Strong's, Logos, Accordance; the library row is under Logos
+  // at All in the list is as it was: Strong's, Logos; the library row is under Logos
   let section = await studySection(page);
-  expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos', 'Accordance']);
+  expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos']);
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
@@ -68,7 +68,7 @@ test('Just English lists no Greek resource in Study resources, and no book at an
 
   await setStep(page, 'Just English');
   section = await studySection(page);
-  expect(await resourceSwitches(section)).toEqual(['Logos', 'Accordance']);
+  expect(await resourceSwitches(section)).toEqual(['Logos']);
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveCount(0);
   // Logos is On: its library row is there, and no book is listed in Settings, Greek or English (the books are Your Logos library's)
   await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
@@ -81,7 +81,7 @@ test('Just English lists no Greek resource in Study resources, and no book at an
   // back at All in the Greek ones return as he left them
   await setStep(page, 'All in');
   section = await studySection(page);
-  expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos', 'Accordance']);
+  expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos']);
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
   await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
 });
@@ -92,7 +92,7 @@ test('at a step between, the English resources come before the Greek in Study re
   await openReader(page);
   await setStep(page, 'Dipping a toe');
   const section = await studySection(page);
-  expect(await resourceSwitches(section)).toEqual(['Logos', 'Accordance', "Strong's"]);
+  expect(await resourceSwitches(section)).toEqual(['Logos', "Strong's"]);
   await section.getByRole('switch', { name: "Strong's", exact: true }).scrollIntoViewIfNeeded();
   await shot(page, 'study-resources-dipping-a-toe');
 });

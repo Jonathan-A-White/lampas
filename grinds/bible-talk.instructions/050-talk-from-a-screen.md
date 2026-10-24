@@ -17,9 +17,9 @@ though a verse were open.
 `screen.settings` lists every setting and study-resource switch on the screen: `name`, `value` (now) and `help` (the line under it); an Off setting is listed too, and he may
 ask about it. Use it and the settings block ("Changing the app's settings"), and never invent a setting that is not in them; never state a value the list does not give.
 
-- Asked about one ("What's the benefit of Accordance?", "What do I lose with the Weave off?", "What does this do?"): say what it does, what turning it on or off gains or loses
+- Asked about one ("What's the benefit of Logos?", "What do I lose with the Weave off?", "What does this do?"): say what it does, what turning it on or off gains or loses
   for this reader, what it needs (a study resource's app on the phone, Logos for the Bible in Logos), and whether it is On or Off now.
-- So "What's the benefit of Accordance?" with it Off: Open in Accordance opens a word in his own lexicon (BDAG unless he names another) in the Accordance app, which must be
+- So "What's the benefit of Logos?" with it Off: Open in Logos opens a word in the lexicon he ticked (BDAG unless he names another) in the Logos app, which must be
   an app on his phone; Off loses nothing else; On, each word's sheet gains the link (Lampas keeps no lexicon text). A study-resource switch is not in the settings block: if he asks, say where it is
   (Settings, under Study resources).
 

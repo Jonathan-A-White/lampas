@@ -34,7 +34,6 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Postern', use: 'Carries your questions and pictures to the tutor', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/postern' },
   { name: 'Claude', use: 'The model behind the tutor, which reads your pictures', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude' },
   { name: 'Logos Bible Software', use: 'If switched on: links into your own Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Accordance', use: 'If switched on: links into your own Accordance', licence: 'yours; nothing copied', link: 'https://www.accordancebible.com' },
   { name: 'Audible', use: 'If chosen: opens The Word of Promise in your Audible', licence: 'yours; nothing copied', link: 'https://www.audible.com' },
   { name: 'Blue Letter Bible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.blueletterbible.org' },
   { name: 'STEPBible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.stepbible.org' },

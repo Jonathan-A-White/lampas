@@ -3,7 +3,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { shelveLexicons, switchOnResources } from './long-library';
 
-// The word sheet with a long Logos library (mw-5r3p30.135, then mw-rfjjzd.8: docs/design/library-at-scale.md 3.5): 21 lexicons On, three of them pinned, and Strong's and Accordance on. The Study
+// The word sheet with a long Logos library (mw-5r3p30.135, then mw-rfjjzd.8: docs/design/library-at-scale.md 3.5): 21 lexicons On, three of them pinned, and Strong's on. The Study
 // row draws the 3 pinned, Bible Word Study, the door "All 21 lexicons ›" and the two other resources; the sheet behind the door lists all 21 with a search and ends with Manage.
 
 /** Headless Chromium stops at a link to an app scheme; the tap itself still reaches the page. */
@@ -43,8 +43,8 @@ test(`The word sheet with 21 Logos lexicons On at ${VIEWPORT.width}x${VIEWPORT.h
   const study = dialog.getByRole('group', { name: 'Study', exact: true });
   const links = study.getByRole('link');
   const door = study.getByRole('button', { name: 'All 21 lexicons ›', exact: true });
-  // Strong's number, then Logos' 3 pinned, Bible Word Study and the door, then Accordance's one: 7 tiles
-  await expect(links).toHaveCount(6);
+  // Strong's number, then Logos' 3 pinned, Bible Word Study and the door: 6 tiles
+  await expect(links).toHaveCount(5);
   await expect(door).toHaveCount(1);
   const names = await links.allTextContents();
   expect(names.slice(1, 4)).toEqual(['BDAG', 'Lexham Theological Wordbook', 'NASB Dictionaries']);
@@ -74,9 +74,9 @@ test(`The word sheet with 21 Logos lexicons On at ${VIEWPORT.width}x${VIEWPORT.h
 
   // Every tile (the door too) can be scrolled into view, is as wide as half a row, a thumb high, within the screen, and says its whole title.
   const tiles = study.locator('a, button');
-  await expect(tiles).toHaveCount(7);
+  await expect(tiles).toHaveCount(6);
   const titles: string[] = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 6; i++) {
     const tile = tiles.nth(i);
     await tile.scrollIntoViewIfNeeded();
     await expect(tile).toBeInViewport({ ratio: 1 });
@@ -89,7 +89,7 @@ test(`The word sheet with 21 Logos lexicons On at ${VIEWPORT.width}x${VIEWPORT.h
   expect(titles).toContain('Lexham Theological Wordbook');
   expect(titles).toContain('NASB Dictionaries');
   expect(titles).toContain('All 21 lexicons ›');
-  // no two tiles of Logos say the same (Accordance's tile names its own module, BDAG)
+  // no two tiles of Logos say the same
   const logosTitles = (await study.getByRole('group', { name: 'Logos', exact: true }).locator('a, button').allTextContents());
   expect(logosTitles).toHaveLength(5);
   expect(new Set(logosTitles).size).toBe(logosTitles.length);

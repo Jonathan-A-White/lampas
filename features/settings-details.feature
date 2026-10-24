@@ -1,26 +1,26 @@
 Feature: A setting's details show only while it is on
-  Settings does not show the details of something that is off. Accordance Off is its row and nothing else: its one-line help and the
-  On | Off control. Turning it On shows the Accordance resource field and a Get Accordance link (features/app-on-phone.feature; nothing is opened or checked); turning it Off hides them
+  Settings does not show the details of something that is off. Lexapp Off is its row and nothing else: its one-line help and the
+  On | Off control. Turning it On shows the Lexapp resource field and a Get Lexapp link (features/app-on-phone.feature; nothing is opened or checked); turning it Off hides them
   again, and the value typed in the field is kept. The same holds for every setting with details: Bible in Logos is shown only
   while Logos is On, the Weave's Grammar row only while the Weave is not Off, and New words at and Move it only while New words a
   day is not Off. (A reader who wants to know why he would turn one on can ask the tutor from Settings.)
 
-  Scenario: Accordance Off is its row and nothing else
+  Scenario: Lexapp Off is its row and nothing else
     Given Lampas is opened on Settings with nothing chosen
-    Then Settings shows the switch "Accordance" Off with its help "Adds Open in Accordance: the word in your own lexicon in the Accordance app."
-    And Settings has no field "Accordance resource"
-    And Settings does not say "Don't have Accordance?"
-    And Settings has no link "Install Accordance"
+    Then Settings shows the switch "Lexapp" Off with its help "Adds Open in Lexapp: the word in your own lexicon in the Lexapp app."
+    And Settings has no field "Lexapp resource"
+    And Settings does not say "Don't have Lexapp?"
+    And Settings has no link "Install Lexapp"
 
-  Scenario: Turning Accordance On shows its details and Off hides them, keeping what was typed
-    Given Lampas is opened on Settings with Accordance On and the Accordance resource "TDNT"
-    Then Settings has a field "Accordance resource" holding "TDNT"
-    When he turns the switch "Accordance" Off
-    Then Settings has no field "Accordance resource"
-    And the setting "resourceOption.accordance" holds "TDNT"
-    When he turns the switch "Accordance" On
-    Then Settings again has a field "Accordance resource" holding "TDNT"
-    And Settings says "Don't have Accordance?"
+  Scenario: Turning Lexapp On shows its details and Off hides them, keeping what was typed
+    Given Lampas is opened on Settings with Lexapp On and the Lexapp resource "TDNT"
+    Then Settings has a field "Lexapp resource" holding "TDNT"
+    When he turns the switch "Lexapp" Off
+    Then Settings has no field "Lexapp resource"
+    And the setting "resourceOption.sampleapp" holds "TDNT"
+    When he turns the switch "Lexapp" On
+    Then Settings again has a field "Lexapp resource" holding "TDNT"
+    And Settings says "Don't have Lexapp?"
 
   Scenario: Bible in Logos is shown only while Logos is On
     Given Lampas is opened on Settings with nothing chosen

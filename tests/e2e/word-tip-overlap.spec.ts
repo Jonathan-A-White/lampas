@@ -14,7 +14,7 @@ async function openSheet(page: Page, options: { long: boolean }) {
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   if (options.long) {
-    // a long sheet: 21 lexicons On and three pinned, with Strong's and Accordance, is 7 tiles
+    // a long sheet: 21 lexicons On and three pinned, with Strong's, is 6 tiles
     await switchOnResources(page);
     await shelveLexicons(page);
   }

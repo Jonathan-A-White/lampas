@@ -13,6 +13,9 @@ import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 
+// No listed resource has an app link with no https fallback now (mw-5r3p30.738), so this feature lists a sample app of its own (tests/support/sample-app.ts).
+vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original<typeof import('../../src/resources/index')>()));
+
 const user = userEvent.setup();
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36';
@@ -123,44 +126,44 @@ describeFeature(feature, ({ Scenario }) => {
     if (!row) throw new Error('no Study row');
     expect(within(row).getByRole('link', { name })).toBeInTheDocument();
   };
-  const android = (): Promise<void> => openWith(ANDROID, ['accordance']);
+  const android = (): Promise<void> => openWith(ANDROID, ['sampleapp']);
 
-  Scenario('Accordance does not open, so the sheet says it is not on this phone', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Accordance on and the phone is an Android phone', android);
+  Scenario('Lexapp does not open, so the sheet says it is not on this phone', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Lexapp on and the phone is an Android phone', android);
     When('he taps the word {string} in verse {int}', taps);
     And('he taps the Study link {string}', tapsLink);
     And('the page stays in front for the wait', waits);
     Then('a sheet says {string}', sheetSays);
     And('the sheet has a {string} link to the Play Store', async (_, name: string) => {
       const href = within(await theSheet()).getByRole('link', { name }).getAttribute('href') ?? '';
-      expect(href).toBe('https://play.google.com/store/apps/details?id=com.accordancebible.accordance');
+      expect(href).toBe('https://play.google.com/store/search?q=Lexapp&c=apps');
     });
     And('the sheet has a {string} button', async (_, name: string) => {
       expect(within(await theSheet()).getByRole('button', { name })).toBeInTheDocument();
     });
   });
 
-  Scenario('On an iPhone Get Accordance goes to the App Store', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Accordance on and the phone is an iPhone', () => openWith(IPHONE, ['accordance']));
+  Scenario('On an iPhone Get Lexapp goes to the App Store', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Lexapp on and the phone is an iPhone', () => openWith(IPHONE, ['sampleapp']));
     When('he taps the word {string} in verse {int}', taps);
     And('he taps the Study link {string}', tapsLink);
     And('the page stays in front for the wait', waits);
     Then('a sheet says {string}', sheetSays);
     And('the sheet has a {string} link to the App Store', async (_, name: string) => {
       const href = within(await theSheet()).getByRole('link', { name }).getAttribute('href') ?? '';
-      expect(href).toBe('itms-apps://apps.apple.com/app/id411970514');
+      expect(href).toBe('itms-apps://search.itunes.apple.com/WebObjects/MZSearch.woa/wa/search?media=software&q=Lexapp');
     });
   });
 
   Scenario('The wait is about one and a half seconds', ({ Given, Then }) => {
-    Given('Lampas is opened on Romans 8 with Accordance on and the phone is an Android phone', android);
+    Given('Lampas is opened on Romans 8 with Lexapp on and the phone is an Android phone', android);
     Then('the wait for an app to open is {int} milliseconds', (_, ms: number) => {
       expect(browserEnv.waitMs).toBe(ms);
     });
   });
 
-  Scenario('Turn off Accordance switches it off and its link leaves the word sheet', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Accordance on and the phone is an Android phone', android);
+  Scenario('Turn off Lexapp switches it off and its link leaves the word sheet', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Lexapp on and the phone is an Android phone', android);
     When('he taps the word {string} in verse {int}', taps);
     And('he taps the Study link {string}', tapsLink);
     And('the page stays in front for the wait', waits);
@@ -178,8 +181,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Done leaves Accordance on', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Accordance on and the phone is an Android phone', android);
+  Scenario('Done leaves Lexapp on', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Lexapp on and the phone is an Android phone', android);
     When('he taps the word {string} in verse {int}', taps);
     And('he taps the Study link {string}', tapsLink);
     And('the page stays in front for the wait', waits);
@@ -193,7 +196,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Back closes the sheet and leaves the word sheet open', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Accordance on and the phone is an Android phone', android);
+    Given('Lampas is opened on Romans 8 with Lexapp on and the phone is an Android phone', android);
     When('he taps the word {string} in verse {int}', taps);
     And('he taps the Study link {string}', tapsLink);
     And('the page stays in front for the wait', waits);
@@ -208,7 +211,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('When the app takes the page away there is no sheet', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Accordance on and the phone is an Android phone', android);
+    Given('Lampas is opened on Romans 8 with Lexapp on and the phone is an Android phone', android);
     When('he taps the word {string} in verse {int}', taps);
     And('he taps the Study link {string}', tapsLink);
     And('the app takes the page away', leaves);
@@ -228,8 +231,8 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('The Study links are short tiles grouped by app', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 with Logos and Accordance on and Lexham ticked', () =>
-      openWith(ANDROID, ['logos', 'accordance'], ['lexhamtheolwordbk']),
+    Given('Lampas is opened on Romans 8 with Logos and Lexapp on and Lexham ticked', () =>
+      openWith(ANDROID, ['logos', 'sampleapp'], ['lexhamtheolwordbk']),
     );
     When('he taps the word {string} in verse {int}', taps);
     const tiles = (group: string): string[] => {

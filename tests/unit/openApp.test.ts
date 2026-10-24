@@ -2,7 +2,7 @@
 // address is opened only when the page stayed in front for the wait (the phone found no app for the scheme).
 import { describe, expect, it, vi } from 'vitest';
 import { armFallback, browserEnv, type OpenEnv } from '../../src/resources/openApp';
-import { storeUrl } from '../../src/resources/appStore';
+import { STORE_IDS, storeUrl } from '../../src/resources/appStore';
 
 function fakeEnv() {
   const away = new Set<() => void>();
@@ -101,10 +101,14 @@ describe('storeUrl', () => {
   const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8)';
   const IOS = ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)', 'Mozilla/5.0 (iPad; CPU OS 17_5 like Mac OS X)'];
 
-  it('opens Accordance Mobile by its id on Android and anywhere else, and in the App Store on an iPhone or iPad', () => {
-    expect(storeUrl('Accordance', ANDROID)).toBe('https://play.google.com/store/apps/details?id=com.accordancebible.accordance');
-    expect(storeUrl('Accordance', 'Mozilla/5.0 (X11; Linux x86_64)')).toBe('https://play.google.com/store/apps/details?id=com.accordancebible.accordance');
-    for (const ua of IOS) expect(storeUrl('Accordance', ua)).toBe('itms-apps://apps.apple.com/app/id411970514');
+  it('opens an app with a known id by it on Android and anywhere else, and in the App Store on an iPhone or iPad', () => {
+    const known = Object.entries(STORE_IDS);
+    expect(known.length).toBeGreaterThan(0);
+    for (const [app, ids] of known) {
+      expect(storeUrl(app, ANDROID)).toBe(`https://play.google.com/store/apps/details?id=${ids.play}`);
+      expect(storeUrl(app, 'Mozilla/5.0 (X11; Linux x86_64)')).toBe(`https://play.google.com/store/apps/details?id=${ids.play}`);
+      for (const ua of IOS) expect(storeUrl(app, ua)).toBe(`itms-apps://apps.apple.com/app/id${ids.apple}`);
+    }
   });
 
   it('keeps the name search for an app with no known id', () => {

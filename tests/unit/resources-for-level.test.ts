@@ -60,11 +60,10 @@ describe('every entry says which language it is', () => {
     for (const entry of [...RESOURCES, ...WORKS, ...GRAMMAR_BOOKS]) expect(['grc', 'en', 'both'], entry.id).toContain(entry.lang);
   });
 
-  it("marks Strong's and Black grc, Calvin's works en, and the apps that open both Logos and Accordance both", () => {
+  it("marks Strong's and Black grc, Calvin's works en, and the app that opens both, Logos, both", () => {
     const lang = (list: readonly { id: string; lang: ResourceLang }[], id: string) => list.find((e) => e.id === id)?.lang;
     expect(lang(RESOURCES, 'strongs')).toBe('grc');
     expect(lang(RESOURCES, 'logos')).toBe('both');
-    expect(lang(RESOURCES, 'accordance')).toBe('both');
     expect(lang(GRAMMAR_BOOKS, 'black')).toBe('grc');
     for (const work of WORKS) expect(work.lang, work.id).toBe('en');
   });
@@ -90,18 +89,18 @@ describe('the lists the app draws go through the selector', () => {
     expect(readMoreFor('noun', ['greek', 'english'], books).map((l) => l.book.id)).toEqual(['greek', 'english']);
   });
 
-  it("the tutor is told Strong's at every step but Just English, and Logos and Accordance always, English ones first", () => {
-    const all = on('strongs', 'logos', 'accordance');
-    expect(resourcesForTutor(all, 0).map((r) => r.id)).toEqual(['logos', 'accordance']);
-    expect(resourcesForTutor(all, 2).map((r) => r.id)).toEqual(['logos', 'accordance', 'strongs']);
-    expect(resourcesForTutor(all, 5).map((r) => r.id)).toEqual(['strongs', 'logos', 'accordance']);
+  it("the tutor is told Strong's at every step but Just English, and Logos always, English ones first", () => {
+    const all = on('strongs', 'logos');
+    expect(resourcesForTutor(all, 0).map((r) => r.id)).toEqual(['logos']);
+    expect(resourcesForTutor(all, 2).map((r) => r.id)).toEqual(['logos', 'strongs']);
+    expect(resourcesForTutor(all, 5).map((r) => r.id)).toEqual(['strongs', 'logos']);
   });
 
   it('the tutor’s word and verse chips leave out a Greek resource at Just English and keep the rest', () => {
-    const all = on('strongs', 'logos', 'accordance');
-    expect(wordChips('ἀγάπη', 'G26', all, 0).map((c) => c.resource.id)).toEqual(['logos', 'accordance']);
-    expect(wordChips('ἀγάπη', 'G26', all, 3).map((c) => c.resource.id)).toEqual(['logos', 'accordance', 'strongs']);
-    expect(wordChips('ἀγάπη', 'G26', all).map((c) => c.resource.id)).toEqual(['strongs', 'logos', 'accordance']);
+    const all = on('strongs', 'logos');
+    expect(wordChips('ἀγάπη', 'G26', all, 0).map((c) => c.resource.id)).toEqual(['logos']);
+    expect(wordChips('ἀγάπη', 'G26', all, 3).map((c) => c.resource.id)).toEqual(['logos', 'strongs']);
+    expect(wordChips('ἀγάπη', 'G26', all).map((c) => c.resource.id)).toEqual(['strongs', 'logos']);
     const place = { book: 'rom', chapter: 8, verse: 31 };
     expect(verseChips(place, 'Romans 8:31', all, 'LLS:LGCYSTNDRDBBLSB', 0).map((c) => c.resource.id)).toEqual(verseChips(place, 'Romans 8:31', all, 'LLS:LGCYSTNDRDBBLSB').map((c) => c.resource.id));
   });
@@ -125,17 +124,17 @@ describe('the Study resources rows follow the dial', () => {
   const at = (level: GreekLevel): Values => ({ greekInterest: String(level), 'resource.logos': 'on' });
 
   it("hides Strong's at Just English and draws it from Curious up, through the selector", () => {
-    expect(switches(visibleRows(at(0), ''))).toEqual(['resource.logos', 'resource.accordance']);
-    expect(switches(visibleRows(at(1), ''))).toEqual(['resource.strongs', 'resource.logos', 'resource.accordance']);
+    expect(switches(visibleRows(at(0), ''))).toEqual(['resource.logos']);
+    expect(switches(visibleRows(at(1), ''))).toEqual(['resource.strongs', 'resource.logos']);
   });
 
   it('orders the switches English first between, and leaves them as they were at All in', () => {
     const rows = ROWS.filter((r) => r.section === 'resources');
-    expect(switches(orderResourceRows(rows, 2))).toEqual(['resource.logos', 'resource.accordance', 'resource.strongs']);
-    expect(switches(orderResourceRows(rows, 5))).toEqual(['resource.strongs', 'resource.logos', 'resource.accordance']);
+    expect(switches(orderResourceRows(rows, 2))).toEqual(['resource.logos', 'resource.strongs']);
+    expect(switches(orderResourceRows(rows, 5))).toEqual(['resource.strongs', 'resource.logos']);
     expect(orderResourceRows(rows, 2)).toHaveLength(rows.length);
     // a switch a link forces into view at Just English is ordered, not dropped
-    expect(switches(orderResourceRows(rows, 0))).toHaveLength(3);
+    expect(switches(orderResourceRows(rows, 0))).toHaveLength(2);
     expect(rowOf('library')).toBeDefined();
   });
 });

@@ -27,10 +27,10 @@ describe('settingsForTutor', () => {
   });
 
   it('says whether a study resource is on, and follows the switch', async () => {
-    const accordance = async () => (await settingsForTutor()).find((s) => s.name === 'Accordance');
-    expect(await accordance()).toEqual({ name: 'Accordance', value: 'Off', help: expect.stringContaining('Open in Accordance') });
-    await setResourceOn('accordance', true);
-    expect((await accordance())?.value).toBe('On');
+    const logos = async () => (await settingsForTutor()).find((s) => s.name === 'Logos');
+    expect(await logos()).toEqual({ name: 'Logos', value: 'Off', help: expect.stringContaining('Open in Logos') });
+    await setResourceOn('logos', true);
+    expect((await logos())?.value).toBe('On');
   });
 
   it('gives a choice its label and a speed its number, as the screen shows them', async () => {
@@ -55,10 +55,10 @@ describe('the Settings request', () => {
   it('carries each setting in the screen field, after fitting', async () => {
     const settings = await settingsForTutor();
     const scope: TalkScope = { title: 'Settings', chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: 'Settings', facts: [], settings }) };
-    const request = buildTalkRequest(scope, 'What would Accordance give me?', [], []);
+    const request = buildTalkRequest(scope, 'What would Logos give me?', [], []);
     expect(request.screen?.name).toBe('Settings');
     expect(request.screen?.settings).toEqual(settings);
-    expect(JSON.stringify(request.screen)).toContain('Accordance');
+    expect(JSON.stringify(request.screen)).toContain('Logos');
   });
 
   it('is within the size a request may weigh with a full history left to cut', async () => {
@@ -69,11 +69,11 @@ describe('the Settings request', () => {
 });
 
 describe('the questions Settings suggests', () => {
-  it('are about settings, one asks what Accordance would give', () => {
+  it('are about settings, one asks what Logos would give', () => {
     const questions = suggestionsFor('Settings');
     expect(questions.length).toBeGreaterThanOrEqual(2);
     expect(questions.length).toBeLessThanOrEqual(3);
-    expect(questions).toContain('What would Accordance give me?');
+    expect(questions).toContain('What would Logos give me?');
   });
 });
 
