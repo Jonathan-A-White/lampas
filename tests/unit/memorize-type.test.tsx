@@ -100,11 +100,12 @@ describe('Greek', () => {
   it('with Greek keyboard On the field is Greek and a verse typed without accents passes', async () => {
     await setSetting(greekKeyboardSetting, 'on');
     await open('el', 0, 'Rom.8.28');
+    const typeIt = await screen.findByRole('button', { name: 'Type it' });
     expect(screen.queryByText(/Turn on Greek keyboard/)).toBeNull();
     const target = await memorizeTarget('Rom.8.28', 'el');
     const plain = (target && !target.ot ? target.tokens : []).map((t) => t.text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/ς/g, 'σ')).join(' ');
     expect(plain.startsWith('οιδαμεν δε οτι')).toBe(true);
-    fireEvent.click(await screen.findByRole('button', { name: 'Type it' }));
+    fireEvent.click(typeIt);
     expect(screen.getByRole('textbox').getAttribute('lang')).toBe('el');
     typeInto(plain);
     fireEvent.click(screen.getByRole('button', { name: 'Check' }));

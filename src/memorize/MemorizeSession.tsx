@@ -91,7 +91,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
   // 'nothing' shows no word until the recall is judged; a judged verse shows every word, with the missed ones marked
   const shown = rung.kind === 'nothing' && !judged ? [] : tokens;
   const subtitle = `${langName(lang)} · ${rungName(rung)} · step ${session.step + 1} of ${STEPS}`;
-  // Type it: English always, Greek only once he says his phone has a Greek keyboard, the Weave never
+  // Type it: English always, Greek only once he says his phone has a Greek keyboard (the switch reads undefined until it is read: neither Type it nor the line to turn it on), the Weave never
   const canType = lang === 'en' || (lang === 'el' && greekKeyboard === 'on');
   const hearIt = (
     <button type="button" onClick={hear} className={ACTION}>
@@ -157,7 +157,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
                 </>
               ) : null}
             </div>
-            {lang === 'el' && !canType ? (
+            {lang === 'el' && greekKeyboard === 'off' ? (
               <button type="button" onClick={() => openSetting('greekKeyboard')} className="min-h-12 text-left text-base text-accent underline">
                 Turn on Greek keyboard in Settings to type Greek
               </button>
