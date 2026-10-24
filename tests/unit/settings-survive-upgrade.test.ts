@@ -59,7 +59,7 @@ describe('no upgrade, start or speech rewrites a saved setting', () => {
   });
 
   it('keeps every setting, saved away from its default, through every Dexie upgrade', async () => {
-    expect(db.verno).toBe(29);
+    expect(db.verno).toBe(30);
     expect(await rows()).toEqual(before);
     for (const entry of SETTINGS) expect(await entry.read(), entry.key).toEqual(saved[entry.key]);
   });

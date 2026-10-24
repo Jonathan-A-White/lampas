@@ -13,5 +13,12 @@ src/memorize/judge.ts   # judgeSaid / judgeTyped(target: Token[], heard) -> Judg
 #   reads a Weave recall sent to verse-read: well-read passes, some-to-fix marks each focus word's token (index counts wordsOfText) and passes at a tenth or fewer, partial marks tokens past `reached` and fails, incomplete misses all.
 #   asked(target) is the {text, lang} list recordRecall keeps. The folding is learn-kit/recall's fold, which src/services/greekWords.ts (bare) and src/services/reading.ts (normalWord) now use: no folder of their own
 ```
+src/memorize/languages.ts # MemorizeLang 'en' | 'el' | 'weave'; languagesFor(level: GreekLevel): English always, Greek from Curious (GREEK_VIEW_FROM), the Weave from Dipping a toe (GREEK_WEAVE_FROM);
+#   langName ('English', 'Greek', 'Weave'), isMemorizeLang. At 'Just English' only English is offered and nothing else is named
+src/memorize/rung.ts      # rungFor(step) -> Rung {kind 'read' | 'gaps' | 'nothing', share}: step 0 read and say, 1..3 a quarter, half, three quarters of the words gone, 4 and 5 all gone with the first letters,
+#   RARE_STEP (the 90-day check) from nothing; rungName for the screen. PROVISIONAL, the Governor to confirm
+src/data/repositories/memorize.ts # verses on the schedule: kind 'verse' rows, id '<lang>:<canonical ref>' ('en:Rom.8.28'), one per verse per language, kept out of listDue()/countDue() with no kind (Review, Today, the pace and the summary do not count them);
+#   memorize(ref, langs, now) / unmemorize(ref, lang?) / memorizedOf(refs) / listMemorized / listDueVerses / countDueVerses; recordRecall(input, now) writes the `recalls` row (score, missed, asked tokens with their languages, rung, gap in days, how)
+#   and the schedule row (a score of 0.9 or more is right) in one transaction and publishes 'memorize-due-changed'. The ONLY file that names db.recalls; unmemorize keeps the recalls (evidence)
 
-Tests: tests/unit/memorize-judge.test.ts (also greps that greekWords.ts and reading.ts keep no NFD strip), tests/unit/memorize-target.test.ts, memorize-target-scan.test.ts (every NT verse, the tokens agree with src/services/reading.ts readingText and wovenReading), features/memorize-target.feature.
+Tests: tests/unit/memorize-judge.test.ts (also greps that greekWords.ts and reading.ts keep no NFD strip), tests/unit/memorize-target.test.ts, memorize-target-scan.test.ts (every NT verse, the tokens agree with src/services/reading.ts readingText and wovenReading), features/memorize-target.feature; memorize-store.test.ts, memorize-rung.test.ts, features/memorize-schedule.feature (the verse rows and the recalls).

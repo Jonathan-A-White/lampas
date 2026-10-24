@@ -2,7 +2,7 @@
 // is not counted by countDue (the Reader's Due chip) or by the Review screen's Due line (countDue per kind).
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db, type Review } from '../../src/data/db';
-import { countDue, saveDrillPlan } from '../../src/data/repositories';
+import { countDue, listDue, saveDrillPlan } from '../../src/data/repositories';
 import { PROVE_ID, rowId, type DrillPlan } from '../../src/data/grammar/drillPlan';
 import { LESSON_KIND } from '../../src/data/repositories';
 import { DAY } from '../../src/data/schedule';
@@ -10,6 +10,8 @@ import { setGreekPronunciation } from '../../src/data/repositories/settings';
 import { drillSteps } from '../../src/data/grammar/drillIt';
 import { DRILL_PLAN, KINDS, SOUNDS } from '../../src/review/kinds';
 import { mulberry32 } from '../../src/data/quiz';
+import { VERSE_KIND } from '../../src/data/repositories/memorize';
+import { drawReviewRound } from '../../src/review/round';
 
 const NOW = Date.UTC(2026, 9, 20, 9, 0, 0);
 const row = (kind: string, id: string): Review => ({ kind, id, step: 0, rights: 0, due: NOW - 60_000, lastWhen: NOW - 3 * DAY, lapses: 0 });
@@ -76,5 +78,16 @@ describe('a due count that still counts what a round can ask', () => {
     expect(await countDue(NOW, 'sound')).toBe(2);
     expect(await SOUNDS.draw(due, mulberry32(1))).toHaveLength(2);
     expect(await countDue(NOW, 'grammar')).toBe(1);
+  });
+});
+
+describe('a memorized verse is on the schedule but not in Review', () => {
+  it('is not counted, listed or drawn when no kind is asked for, and is when Memorize asks for its kind', async () => {
+    await db.reviews.put(row(VERSE_KIND, 'en:Rom.8.28'));
+    expect(await countDue(NOW)).toBe(0);
+    expect(await listDue(undefined, NOW)).toEqual([]);
+    expect((await drawReviewRound(mulberry32(1), NOW)).due).toBe(0);
+    expect(await countDue(NOW, VERSE_KIND)).toBe(1);
+    expect((await listDue(VERSE_KIND, NOW)).map((r) => r.id)).toEqual(['en:Rom.8.28']);
   });
 });

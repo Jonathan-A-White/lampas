@@ -13,7 +13,7 @@ afterAll(() => db.close());
 
 describe('the verseLists table', () => {
   it('is keyed by an automatic id and holds name, refs, created and updated', async () => {
-    expect(db.verno).toBe(29);
+    expect(db.verno).toBe(30);
     expect(db.verseLists.schema.primKey.auto).toBe(true);
     expect(db.verseLists.schema.primKey.name).toBe('id');
     expect(db.verseLists.schema.idxByName['created']).toBeDefined();
@@ -125,7 +125,7 @@ describe('the upgrade from version 27', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(29);
+    expect(db.verno).toBe(30);
     expect((await db.talks.toArray()).map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => key !== 'id')))).toEqual([kept]);
     expect(await verseListCount()).toBe(0);
     const row = await createVerseList('After the upgrade', ['Rom.8.28'], 1);

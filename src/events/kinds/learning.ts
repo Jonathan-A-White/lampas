@@ -9,6 +9,8 @@ export type LearningEvent =
   | { kind: 'grammar-term-known'; term: string; known: boolean }
   /** the schedule changed (an answer, or items added): `due` is how many items are due now (src/data/schedule.ts) */
   | { kind: 'review-due-changed'; due: number }
+  /** a memorized verse changed (memorized, unmemorized or recalled; src/data/repositories/memorize.ts): `due` is how many verse rows (one per verse per language) are due now; Review's count leaves them out */
+  | { kind: 'memorize-due-changed'; due: number }
   /** grammar idea `id` (src/data/grammar/ladder.ts) got a level: a review answer, the placement, the idea sheet, the tutor, or the first-open seed */
   | { kind: 'grammar-level-changed'; id: string; level: GrammarLevelName }
   /** he told the idea sheet of grammar idea `id` Got it ('got-it': it is on the frontier, due tomorrow) or I know this ('known': solid, the 30-day step) */
