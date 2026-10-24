@@ -34,7 +34,7 @@ export function askAboutWord(book: string, chapter: number, verse: number, quest
 /** The tutor takes him to `chapter` of `book` (the Bible talk answer's `go`, mw-5r3p30.172): the Reader opens there as a new Back step, with the notice 'Opened <title>'. */
 export function openedByTutor(book: string, chapter: number): void {
   publish({ kind: 'reader-requested', id: ++lastId, action: 'opened', book, chapter });
-  openReader({ book, chapter });
+  openReader({ book, chapter }, { tutor: true });
 }
 
 /** Asks the Reader to bring `verse` of `chapter` of `book` to the top of its reading area (mw-5r3p30.678: Choose a book's Go to John 18:2): the whole chapter is there above and
@@ -61,4 +61,41 @@ export function pendingRequest(): ReaderRequest | undefined {
 /** Marks a request as met. */
 export function takeRequest(request: ReaderRequest): void {
   taken = Math.max(taken, request.id);
+}
+
+/** A Talk sheet to open again on a chapter of the Reader (mw-t3xu9a.4): the tutor took him from it to another place, and Back has brought him to the chapter he was on, where the sheet was open
+ * (src/ui/sheetBack.ts leaveSheetForTutor). `about` is what the sheet was about: a verse's number, or null for the chapter. The Reader is made afresh for each chapter, so this is not
+ * the state of one Reader: a Reader that opens finds it (`pendingReturn`), and one already open is told (`watchReturn`). It is good for a moment, no longer. */
+export interface SheetReturn {
+  book: string;
+  chapter: number;
+  about: number | null;
+  at: number;
+}
+
+const RETURN_MS = 2000;
+let returning: SheetReturn | null = null;
+const returnWatchers = new Set<(back: SheetReturn) => void>();
+
+/** Asks for the Talk sheet of `chapter` of `book` to open again on `about`. */
+export function reopenTalk(book: string, chapter: number, about: number | null): void {
+  const back = { book, chapter, about, at: Date.now() };
+  returning = back;
+  returnWatchers.forEach((watcher) => watcher(back));
+}
+
+/** The sheet waiting to open again on this chapter, if one is. It does not take it (see `takeReturn`). */
+export function pendingReturn(book: string, chapter: number): SheetReturn | undefined {
+  return returning && returning.book === book && returning.chapter === chapter && Date.now() - returning.at < RETURN_MS ? returning : undefined;
+}
+
+/** Marks a return as met. */
+export function takeReturn(back: SheetReturn): void {
+  if (returning === back) returning = null;
+}
+
+/** Calls `watcher` when a sheet is asked to open again; the returned function stops it. */
+export function watchReturn(watcher: (back: SheetReturn) => void): () => void {
+  returnWatchers.add(watcher);
+  return () => void returnWatchers.delete(watcher);
 }

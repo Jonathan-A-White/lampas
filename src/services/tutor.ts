@@ -194,6 +194,10 @@ export interface VerseAskRequest {
   rusty?: RustyItem[];
   /** the digest of his Logos shelf chosen by the place (mw-rfjjzd.10, worksForTutor), as the Bible talk is sent it: what he owns that bears on this verse, so the answer can speak of the other books he keeps; missing when none is on his shelf; fitAsk cuts it from its end after the words of the verse */
   works?: TutorWork[];
+  /** the facts the tutor client read up front, by name (mw-t3xu9a.4, src/tutor/registry.ts askRegistry): where-he-is, today-drill and the settings this tutor is told; fitAsk drops `settings` when it repeats the field above */
+  facts?: Record<string, unknown>;
+  /** the facts the tutor may name, sorted, each with its tell line (fitAsk cuts the tell lines first of all) */
+  catalogue?: { name: string; is: string; core?: true; tell?: string }[];
 }
 
 /** What the grind answers (grinds/verse-ask.answer.schema.json). */
@@ -488,8 +492,12 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   let words = request.greek_words;
   let works = request.works;
   let text = { greek: request.greek, english: request.english };
+  let catalogue = request.catalogue;
+  let facts = request.facts;
   const fitted = (): VerseAskRequest => ({
     ...request,
+    ...(catalogue ? { catalogue } : {}),
+    ...(facts ? { facts } : {}),
     ...text,
     pronunciation_guide: guide,
     solid_words: solid,
@@ -500,6 +508,11 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   });
   const tooBig = (): boolean => new TextEncoder().encode(JSON.stringify(fitted())).length > MAX_REQUEST_BYTES;
   if (!tooBig()) return request;
+  // the tutor client's part gives way first (this story changes no behaviour): the tell lines of the catalogue, then the settings the request carries again as a field, then the catalogue and the facts
+  if (catalogue) catalogue = catalogue.map((entry) => ({ ...entry, tell: undefined }));
+  if (facts && request.settings && tooBig()) facts = Object.fromEntries(Object.entries(facts).filter(([name]) => name !== 'settings'));
+  if (tooBig()) catalogue = undefined;
+  if (tooBig()) facts = undefined;
   guide = undefined;
   while (solid.length > 0 && tooBig()) solid = solid.slice(1);
   while (words && words.length > 0 && tooBig()) words = words.slice(0, -1);

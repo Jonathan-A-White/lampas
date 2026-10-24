@@ -114,8 +114,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Reader does not say {string}', async (_, line: string) => {
       await waitFor(() => expect(screen.queryByText(line)).toBeNull());
     });
-    When('he opens Talk again', openTalk);
-    Then('the talk shows the answer and the line {string}', async (_, line: string) => {
+    And('the Talk sheet is open again', async () => {
+      await screen.findByRole('dialog', { name: /^Talk about / });
+    });
+    And('the talk shows the answer and the line {string}', async (_, line: string) => {
       await waitFor(() => expect(sheet()).toHaveTextContent(ANSWER));
       expect(within(sheet()).getByText(line)).toBeInTheDocument();
     });

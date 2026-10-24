@@ -1,10 +1,12 @@
 // The request the bible-talk grind is sent: the scope's text, the last 10 turns, and a fit to the grist's size cap.
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { type Chapter, NO_CHAPTER, markSupplied } from '../../src/data/chapter';
 import { learnerGrammarOf, type LearnerGrammar } from '../../src/data/grammar/learnerGrammar';
 import { greekSyllables, stressedSyllable } from '../../src/speech/greekSyllables';
 import { pronunciationOf, DEFAULT_PRONUNCIATION } from '../../src/speech/pronunciation';
+import { db } from '../../src/data/db';
+import { lampasRegistry, withTutorFacts } from '../../src/tutor/registry';
 import { MAX_HISTORY_TURNS, MAX_REQUEST_BYTES, GREEK_WORDS_BYTES, MAX_TALK_CHARS, buildTalkRequest, fitHistory, scopeRef, termQuestion, type TalkRequest } from '../../src/services/talk';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -320,5 +322,91 @@ describe('a talk from a screen (mw-5r3p30.91)', () => {
     const r = fitHistory(buildTalkRequest(scope, 'Why?', history, []));
     expect(r.screen).toEqual(screen);
     expect(size(r)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+  });
+});
+
+describe('the request through the tutor client (mw-t3xu9a.4)', () => {
+  afterAll(() => db.close());
+  beforeEach(async () => {
+    await db.open();
+    await Promise.all([db.settings.clear(), db.words.clear(), db.reviews.clear(), db.meta.clear()]);
+    await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }]);
+    window.location.hash = '#/?b=rom&c=8&v=28';
+  });
+  const scope = { title: 'Romans 8', chapter, verse: chapter.verses[27] };
+  const fields = () => buildTalkRequest(scope, 'What is on my drill today?', [turn(1), turn(2)], ['λόγος'], { theme: 'dark', greekPronunciation: 'modern' }, undefined, 'solid 1 word', undefined, [], [], 0, { kept: '' }, undefined, [], undefined, DEFAULT_PRONUNCIATION, false, undefined, undefined, undefined, undefined, [], undefined, [{ kind: 'review', title: 'Review: 3 due', done: false }]);
+
+  it('carries the where-he-is, today-drill and settings facts, and the catalogue', async () => {
+    const built = await withTutorFacts(fields(), 2);
+    expect(Object.keys(built.facts ?? {}).sort()).toEqual(['settings', 'today-drill', 'where-he-is']);
+    expect(built.facts?.['where-he-is']).toEqual({ screen: 'Reader', route: 'home', reader: { book: 'rom', chapter: 8, verse: 28 } });
+    expect(built.facts?.settings).toMatchObject({ greekPronunciation: expect.any(String) });
+    expect(Array.isArray(built.facts?.['today-drill'])).toBe(true);
+    expect(built.catalogue?.map((c) => c.name)).toEqual(lampasRegistry().catalogue().map((c) => c.name));
+  });
+
+  it('carries every field it carried before, unchanged: the names and the values', async () => {
+    const before = fields();
+    const built = await withTutorFacts(before, 2);
+    const rest: Partial<TalkRequest> = { ...built };
+    delete rest.facts;
+    delete rest.catalogue;
+    expect(Object.keys(rest)).toEqual(Object.keys(before));
+    expect(rest).toEqual(before);
+    expect(Object.keys(built).filter((k) => !(k in before)).sort()).toEqual(['catalogue', 'facts']);
+  });
+
+  // a request of the size the tutor's part leaves `over` bytes beyond the cap: its learner line (which no cut touches) pads it
+  const padded = async (over: number) => {
+    const base = (pad: number) => ({ ...fields(), history: Array.from({ length: 6 }, (_, i) => turn(i)), learner: 'y'.repeat(pad) });
+    const extra = size(await withTutorFacts(base(0), 6)) - size(base(0));
+    const pad = MAX_REQUEST_BYTES - size(base(0)) - extra + over;
+    return { plain: base(pad), built: await withTutorFacts(base(pad), 6) };
+  };
+
+  it('fits the grist with the facts in it: the tell lines go first and the turns stay', async () => {
+    const { plain, built } = await padded(500);
+    expect(size(plain)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    expect(size(built)).toBeGreaterThan(MAX_REQUEST_BYTES);
+    const fitted = fitHistory(built, 0, 'rom.8@1');
+    expect(size(fitted) + new TextEncoder().encode(',"talk":"rom.8@1"').length).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    expect(fitted.history).toEqual(plain.history);
+    expect(Object.keys(fitted.facts ?? {}).sort()).toEqual(['settings', 'today-drill', 'where-he-is']);
+    expect(fitted.catalogue?.map((c) => c.name)).toEqual(built.catalogue?.map((c) => c.name));
+    expect(fitted.catalogue?.some((c) => c.tell === undefined)).toBe(true);
+  });
+
+  it('then drops the facts that repeat a field of the request, and still keeps the turns', async () => {
+    const { plain, built } = await padded(2000);
+    const fitted = fitHistory(built, 0, 'rom.8@1');
+    expect(fitted.history).toEqual(plain.history);
+    expect(fitted.settings).toEqual(plain.settings);
+    expect(fitted.today).toEqual(plain.today);
+    expect(fitted.facts?.['where-he-is']).toBeDefined();
+    expect('settings' in (fitted.facts ?? {})).toBe(false);
+    expect(fitted.catalogue?.every((c) => c.tell === undefined)).toBe(true);
+  });
+
+  it('keeps no more of the client’s part than the room it leaves: the catalogue goes, then the facts', async () => {
+    const { plain, built } = await padded(3800);
+    const fitted = fitHistory(built, 0, 'rom.8@1');
+    expect(fitted.history).toEqual(plain.history);
+    expect(fitted.catalogue).toBeUndefined();
+    const { plain: tight, built: tightest } = await padded(5600);
+    const none = fitHistory(tightest, 0, 'rom.8@1');
+    expect(none.facts).toBeUndefined();
+    expect(none.history).toEqual(tight.history);
+  });
+
+  it('a request the cap is full of loses the client’s part before a word of his text or a turn', async () => {
+    const built = await withTutorFacts(fields(), 6);
+    const long = { ...built, history: Array.from({ length: 10 }, (_, i) => turn(i, 'x'.repeat(2500))) };
+    const fitted = fitHistory(long, 0, 'rom.8@1');
+    expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    // the same request without the client's part is cut exactly the same
+    const without: TalkRequest = { ...long };
+    delete without.facts;
+    delete without.catalogue;
+    expect(fitted).toEqual(fitHistory(without, 0, 'rom.8@1'));
   });
 });

@@ -20,7 +20,9 @@ import { TutorError } from './services/tutor';
 import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
-import { readGo, type GoPlace } from './talk/go';
+import { readTarget, type GoPlace } from './talk/go';
+import { bibleTalkClient, bibleTalkRegistry, withTutorFacts } from './tutor/registry';
+import { leaveSheetForTutor } from './ui/sheetBack';
 import { applyChanges, currentSettings, offeredChange } from './settings/registry';
 import { greekOfferOf } from './talk/greekOffer';
 import { greekLevelOf } from './settings/definitions/greekInterest';
@@ -93,16 +95,17 @@ function readableSyllables(focus: TalkFocus | undefined, syllables: string[] | u
   return checkedSyllables(focus.form, syllables);
 }
 
-/** How the Reader lets an answer take him to a chapter (mw-5r3p30.172): `allowed(ref)` is true while the sheet of that conversation is open, the only time he is
- * there to be taken; `open(place)` opens the chapter once the answer is kept; `here(place)` (the Reader's) is true for the chapter he is on, where nothing moves
- * and the answer says 'Already on ...' (mw-5r3p30.199). */
+/** How a screen lets an answer take him to a chapter or another place (mw-5r3p30.172, mw-t3xu9a.4): `allowed(ref)` is true while the sheet of that conversation is open, the only time he is
+ * there to be taken; `leave()` is called as the place opens, to close the sheet, and may return how to open it again: Back from the place comes to the sheet (src/ui/sheetBack.ts
+ * leaveSheetForTutor). The place itself opens through the tutor client's registry (src/tutor/registry.ts), as a pushed entry marked as a tutor go. `here(place)` (the Reader's) is true for the chapter
+ * he is on, where nothing moves and the answer says 'Already on ...' (mw-5r3p30.199). */
 export interface GoTo {
   allowed: (ref: string) => boolean;
   here?: (place: GoPlace) => boolean;
-  open: (place: GoPlace) => void;
+  leave?: () => (() => void) | void;
 }
 
-/** `onAnswered(ref, turnId, answer, info)` is called once an answer has been kept, unless the answer took him to another chapter (`goTo.open`). */
+/** `onAnswered(ref, turnId, answer, info)` is called once an answer has been kept, unless the answer took him to another place (`goTo.leave`). */
 export function useTalk(
   book: string,
   chapter: number,
@@ -184,7 +187,7 @@ export function useTalk(
           // the Greek dial's step: the resources and works the tutor is told of follow it (resourcesForLevel)
           const greekLevel = greekLevelOf(settings.greekInterest);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
-          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
+          const request = fitHistory(await withTutorFacts(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const answer = await askTalk(request, {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
@@ -219,20 +222,21 @@ export function useTalk(
           // The one offer to open Today: only when this request listed its items, once a talk, none after his no in this very answer (src/talk/todayOffer.ts)
           const todayOffer = todayOfferOf(answer, scope, turns, today, waiting?.offer.kind === 'today' && answer.offer_reply === 'decline');
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
-          // A chapter he asked to be taken to: opened only while this talk's sheet is open. The chapter he is on stays (said so); one that came after he closed the
+          // A place he asked to be taken to (a chapter, or a screen the registry names): opened only while this talk's sheet is open. The chapter he is on stays (said so); a chapter that came after he closed the
           // sheet is kept to open with a tap (said so); any other go is said not to have happened.
-          const go = readGo(answer.go);
+          const go = readTarget(answer.go, bibleTalkRegistry());
           const door = going.current;
-          const place = go?.ok && door?.allowed(ref) && !door.here?.(go.place) ? go.place : undefined;
-          const stayed = go?.ok && door?.here?.(go.place) ? go.place.title : undefined;
-          const unopened = go?.ok && door && !door.allowed(ref) && !stayed ? go.place : undefined;
-          if (go && !place && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.place.title : go.title}`);
+          const chapterHere = go?.ok && go.target.chapter && door?.here?.(go.target.chapter) ? go.target.chapter : undefined;
+          const target = go?.ok && door?.allowed(ref) && !chapterHere ? go.target : undefined;
+          const stayed = chapterHere?.title;
+          const unopened = go?.ok && door && !door.allowed(ref) && !stayed ? go.target.chapter : undefined;
+          if (go && !target && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.target.title : go.title}`);
           // The tutor folded the turns this request carried in `fold` into the summary: keep it, and how many of the oldest turns it holds now; it never fails the talk.
           if (answer.summary && request.fold?.length) await keepTalkSummary(ref, answer.summary, (kept?.covered ?? 0) + request.fold.length).catch(() => undefined);
           // The mill ended the talk's session at its cap and began a fresh one from its key points: they are the talk's summary now (they hold every turn so far), and the turn says so (mw-pxji7y.3); it never fails the talk.
           const keyPoints = said.session?.session === 'refreshed' ? said.session.key_points : undefined;
           if (keyPoints) await keepTalkSummary(ref, summaryOfKeyPoints(keyPoints), turns.length).catch(() => undefined);
-          const id = await addTurn(ref, text, answer.answer, answer.words, turns.length === 0 ? firstWhen : Date.now(), { keyPoints, opened: place?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, todayOffer, cleanQ: answer.question, spoken, pictures });
+          const id = await addTurn(ref, text, answer.answer, answer.words, turns.length === 0 ? firstWhen : Date.now(), { keyPoints, opened: target?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, todayOffer, cleanQ: answer.question, spoken, pictures });
           pictured.current[ref] = undefined;
           // The passages the tutor asked for are read from the app's own text in the background, after the answer is kept: he waits for nothing, the turn then says what was read,
           // and the next request holds them (mw-5r3p30.734, src/services/talkFetch.ts); it never fails the talk.
@@ -241,8 +245,11 @@ export function useTalk(
           setPending(key, undefined);
           void answerDrawn(sentAs);
           if (signal.aborted) return;
-          if (place) going.current?.open(place);
-          else answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
+          if (target) {
+            const reopen = going.current?.leave?.();
+            if (reopen) leaveSheetForTutor(reopen);
+            await bibleTalkClient().takeAnswer({ go: { name: target.name, args: target.args } }, turns.length).catch(() => undefined);
+          } else answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
         } catch (err) {
           if (signal.aborted) return;
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
