@@ -508,6 +508,30 @@ export interface VerseListRow {
   updated: number;
 }
 
+/** How a recall was taken: said aloud, typed, judged by the mill, or graded by him (I had it / Not yet). */
+export type RecallHow = 'said' | 'typed' | 'mill' | 'self';
+
+/** One time he recalled a memorized verse in one language (src/data/repositories/memorize.ts, the ONLY file that reads or writes the table): the evidence the schedule row does not keep. */
+export interface RecallRow {
+  id?: number;
+  /** canonical reference: 'Rom.8.28' */
+  ref: string;
+  /** 'en' | 'el' | 'weave' (src/memorize/languages.ts) */
+  lang: string;
+  when: number;
+  /** the rung asked (src/memorize/rung.ts): the step's, 0..6 */
+  rung: number;
+  /** 0..1: the share of the target's words he had in order */
+  score: number;
+  /** the target's words he missed */
+  missed: string[];
+  /** every token that was asked, with the language it was asked in (a weave verse mixes English and Greek) */
+  asked: Array<{ token: string; lang: string }>;
+  /** days since the last recall of this verse in this language, 0 for the first */
+  gap: number;
+  how: RecallHow;
+}
+
 // Never edit an old version(): repeat the whole stores map on each bump with a '// vN:' comment
 // (docs/pwa-best-practices.md section 15).
 class LampasDB extends Dexie {
@@ -537,6 +561,7 @@ class LampasDB extends Dexie {
   library!: EntityTable<LibraryRow, 'id'>;
   exportRows!: EntityTable<ExportedRow, 'resource'>;
   verseLists!: EntityTable<VerseListRow, 'id'>;
+  recalls!: EntityTable<RecallRow, 'id'>;
 
   constructor() {
     super('lampas');
@@ -1094,6 +1119,37 @@ class LampasDB extends Dexie {
             if (typeof word.gloss === 'string' && word.gloss !== '') word.gloss = withAoristNote(word.lemma, word.gloss);
           });
       });
+
+    // v30: recalls `++id, [ref+lang], when`, every time he recalled a memorized verse (repositories/memorize.ts, mw-fu7dqf.4); the schedule rows of those verses are kind 'verse' in reviews; every other table as it was.
+    this.version(30).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+      pictureRefs: 'hash, at',
+      talkSummaries: 'ref',
+      library: 'id, kind',
+      exportRows: 'resource',
+      verseLists: '++id, created',
+      recalls: '++id, [ref+lang], when',
+    });
   }
 }
 

@@ -139,6 +139,7 @@ describe('docs/events.md', () => {
       'reader-requested': true,
       'link-opened': true,
       'review-due-changed': true,
+      'memorize-due-changed': true,
       'grammar-level-changed': true,
       'goal-changed': true,
       'approach-changed': true,

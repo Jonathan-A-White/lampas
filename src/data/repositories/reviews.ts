@@ -24,6 +24,9 @@ const SPREAD_DAYS = 30;
 /** The kind of a drilled sound (Greek) or word (English): the reading drill's reviews (src/ReadingDrill.tsx, src/review/kinds.ts SOUND). */
 export const SOUND_KIND = 'sound';
 
+/** The kind of a memorized verse (src/data/repositories/memorize.ts, mw-fu7dqf.4): on this schedule, but never counted with the rest (listDue and countDue with no kind leave it out). */
+export const VERSE_KIND = 'verse';
+
 /**
  * Puts drilled sounds (ids like 'el:diphthong-ou') or words ('en:blessed') on the schedule: at step 0, due after the first gap (startSchedule). A unit that is
  * on the schedule already starts again from step 0 (he missed it again), keeping its lapses. Publishes the new count of what is due.
@@ -168,10 +171,10 @@ function namesSomething(r: Review): boolean {
   return at.lang === 'en' || (ideaExists(at.unit) && ideaOf(at.unit).parent !== undefined);
 }
 
-/** The items due at `now` (of `kind`, or of every kind), the longest overdue first. A word he dropped is not due. */
+/** The items due at `now` (of `kind`, or of every kind but the memorized verses, which Memorize asks for by their own kind), the longest overdue first. A word he dropped is not due. */
 export async function listDue(kind?: string, now = Date.now()): Promise<Review[]> {
   const due = await db.reviews.where('due').belowOrEqual(now).toArray();
-  const wanted = due.filter((r) => isDue(r, now) && (kind === undefined || r.kind === kind));
+  const wanted = due.filter((r) => isDue(r, now) && (kind === undefined ? r.kind !== VERSE_KIND : r.kind === kind));
   return (await inScheme(await live(wanted))).filter(namesSomething).sort((a, b) => a.due - b.due);
 }
 
@@ -182,7 +185,7 @@ export async function reviewsOf(items: Array<Pick<Review, 'kind' | 'id'>>): Prom
   return inScheme(rows.filter((r): r is Review => r !== undefined));
 }
 
-/** How many items are due at `now`, of `kind` or of every kind. */
+/** How many items are due at `now`, of `kind` or of every kind but the memorized verses. */
 export async function countDue(now = Date.now(), kind?: string): Promise<number> {
   return (await listDue(kind, now)).length;
 }
