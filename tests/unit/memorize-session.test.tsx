@@ -320,7 +320,7 @@ describe('a Weave recall goes to the mill', () => {
       throw new TypeError('offline');
     });
     await recordWeave();
-    expect((await screen.findByTestId('note', {}, { timeout: 10_000 })).textContent).toMatch(/grade yourself/);
+    expect((await screen.findByTestId('note')).textContent).toMatch(/grade yourself/);
     expect(screen.getByRole('button', { name: 'I had it' })).toBeTruthy();
   });
 });
