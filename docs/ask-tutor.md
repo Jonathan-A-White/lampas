@@ -349,11 +349,42 @@ A phone that refuses the clipboard shows the Markdown in a field, selected, to c
 Checks: `tests/unit/exchange.test.ts`, "Copy on an answer card ..." and "With several answers ..." in `features/tutor.feature`, "Copy on a turn ...",
 "A talk about the chapter ..." and "With several turns ..." in `features/bible-talk.feature`, and `tests/e2e/tutor.spec.ts`.
 
+## What the tutor can see (mw-t3xu9a.4, PROVISIONAL)
+
+The Governor's words (2026-10-19 and 2026-10-22): everything in the app is an API; the tutor asks the app for what it needs and has it do what he wants. The first slice is the read side. `src/tutor/registry.ts` is Lampas's registry for voice-kit's tutor client (`@voice-kit/talks` `createTutorClient`, README 'The tutor client'): named FACTS the app reads, and PLACES it opens. The client adds two fields to a request, `facts` (the core facts, and the screen's up-front list once the weights tune one, mw-t3xu9a.8) and `catalogue` (every fact and place with its tell line, sorted), and passes every field the request carried before through untouched (`withTutorFacts` for the Bible talk, `askWithFacts` for the verse ask; `tests/unit/talk-request.test.ts` holds the field names and values equal). The grind's input schemas hold `facts` and `catalogue`; the instructions do not teach their use until mw-t3xu9a.5, so today they are the same data under a second name plus where he is.
+
+| Fact | Core | It reads |
+|------|------|----------|
+| `where-he-is` | yes | the screen on show (the name it reported, `route`, its reported facts), in the Reader its `reader` address (book, chapter, view, weave, verse, passage), and `sheets`, the headings of the sheets open (`openSheetTitles`) |
+| `today-drill` | yes | the items behind the Reader's chip 'Today · N of M' (`todayNow`, mw-5r3p30.731: kind, title, done), the same as the request's `today` |
+| `settings` | yes | what every setting holds now (`currentSettings`), the same as the request's `settings` |
+| `progress` | no | the learner line (`learnerSummary`) and his grammar (`learnerGrammar`: goal, counts, suggested move) |
+| `rusty-words` | no | the solid words and ideas he now slips on (`rustyNow`), worst first |
+| `works` | no | the digest of his Logos shelf (`worksForTutor` with no question) |
+
+The verse ask has a smaller set (`askRegistry`): the three core facts, with `settings` the settings that grind is told (`settingsSentTo('verse-ask')`), and no place.
+
+- The client's part gives way before anything of his talk does (`src/tutor/fit.ts`, run first by `fitHistory`): the catalogue's tell lines from its end, then a fact that only repeats a field of the request (`settings`, and `today-drill` when `today` is there), then the catalogue, then the facts that are left, so a request the fit held to `MAX_REQUEST_BYTES` is cut exactly as it was before this story: the cap is kept for his text and turns (a long passage fills it, `features/quiz-me.feature`), and the facts are there when the request has room. `fitAsk` does the same for the verse ask. Making room for them (raising the cap, or letting the old fields give way to the facts) is mw-t3xu9a.5's.
+- The record of ask-backs and misses is the client's memory store, kept while the page lives. Keeping it across a reload, and the weights that tune the up-front list from it, are mw-t3xu9a.8.
+- A new fact is one entry of `FACTS`, with a tell line short enough that the catalogue stays under `tests/unit/tutor-registry.test.ts`'s byte limit; a name is the one way the tutor has to call it, so no fact shares a name with a place.
+
+### ScreenContext facts and registry facts
+
+The screens' own `useReportScreen` facts stay `screen` facts (the screen's name and what it shows, in the `screen` field of a talk from that screen); `where-he-is` repeats the reported name and facts of the screen on show, so the tutor reads them in any talk. What each of the 21 publishers reports is listed on mw-t3xu9a.4's closing comment.
+
+## Where the tutor can take you (mw-t3xu9a.4, PROVISIONAL)
+
+A PLACE is a screen the tutor may take him to. The registry has one for every screen of `src/nav/route.ts` (`ROUTES`: the route table, a new `Route` fails typecheck until it is listed, and `tests/unit/tutor-registry.test.ts` walks it), named by its route: `words`, `review`, `today`, `memorize`, ... the Reader is `reader` and the Settings screen `settings-screen` (`settings` is a fact's name), and `chapter` takes {book, chapter} (the book by name or code, the chapter in the book's range). Sheets open by a tap on something; they are not places yet.
+
+- Every place opens through `navigate` (or `openedByTutor` for a chapter) as a PUSHED history entry marked as a tutor go: `history.state` is `{tutorGo: true}` (`isTutorGo`, `src/nav/route.ts`). Back returns to where he was.
+- The Talk sheet comes back with Back. The sheet that asked closes as `GoTo.leave` is called and gives a way to open it again; `leaveSheetForTutor` (`src/ui/sheetBack.ts`) marks the sheet's own history entry, so the Back that comes to that entry opens the sheet again, taking its entry back, instead of stepping over it. The Reader opens its Talk sheet again on what it was about (`reopenTalk` / `pendingReturn` in `src/nav/readerRequest.ts`: the Reader is made afresh for each chapter, so the return is told to a Reader that is open and found by one that opens). The talk is the stored one, as it was; the quiz of a verse reopens as a plain talk on that verse. A round Ask button's sheet (`AskTutor`) closes with the screen it was on and Back steps over it, as it did.
+- `src/talk/go.ts` `readTarget` reads an answer's `go`: the answer's {book, chapter} as the chapter place, as ever (`readGo`), or {name, args} naming a place of the registry, taken only when the registry would take those args (`registry.refuses`). The place opens through the client's `takeAnswer`, which also records a refused go as a miss. The grind's answer schema holds {book, chapter} only until mw-t3xu9a.5 teaches the tutor to name any place.
+
 ## Taking him to a chapter (mw-5r3p30.172)
 
 Asked in the Talk sheet to switch to, open, go to or take him to a chapter ('can you switch to Colossians 1'), the tutor puts `go` {book, chapter} in its answer (the book's name from the app's own list, `src/data/books.ts`, a chapter in range; `grinds/bible-talk.instructions/` 'Taking him to a chapter') and says where it is taking him. The app reads `go` itself, never the text: `src/talk/go.ts` `readGo`. `isTalkAnswer` lets any `go` through, so a shape the app refuses never costs him the answer.
 
-- A `go` the app can take, while that talk's sheet is open (`useTalk`'s `GoTo.allowed`): the turn is kept with `opened` ('Colossians 1', shown under the answer as `Opened Colossians 1`), the sheet closes and `nav/readerRequest.ts` `openedByTutor` opens the Reader there as a new Back step, which shows the notice `Opened Colossians 1` under the header. The phone's Back returns to the chapter he was on. The answer is not read aloud (the Reader that would read it is gone).
+- A `go` the app can take, while that talk's sheet is open (`useTalk`'s `GoTo.allowed`): the turn is kept with `opened` ('Colossians 1', shown under the answer as `Opened Colossians 1`), the sheet closes and `nav/readerRequest.ts` `openedByTutor` opens the Reader there as a new Back step, which shows the notice `Opened Colossians 1` under the header. The phone's Back returns to the chapter he was on, with the Talk sheet open again on the talk as it was (mw-t3xu9a.4: the entry is marked as a tutor go, 'Where the tutor can take you'). The answer is not read aloud (the Reader that would read it is gone).
 - The same from the round Ask button of any other screen (mw-5r3p30.198, `src/AskTutor.tsx`, `tests/e2e/ask-tutor-go.spec.ts`): the screen's sheet is the talk whose sheet must be open; the Reader opens on the chapter with `Opened Colossians 1` and the phone's Back returns to the screen he asked from. Share links (`ShareTalk.tsx`) keep not opening a go.
 - A `go` to the chapter he is already on (mw-5r3p30.199, `GoTo.here`): nothing moves (the sheet stays, the address keeps its view and weave, no Back step) and the turn says `Already on Romans 8` (`TalkTurn.stayed`).
 - A `go` that arrives after he closed the sheet (pressed Done): nothing moves, the answer is shown, and the turn says `You closed Talk before this came, so John 3 was not opened` with a button `Open John 3` (`TalkTurn.unopened`, kept with the turn): the tap closes the sheet and opens the chapter as `Opened John 3` does. The tap then turns the turn into `Opened John 3` (`markUnopenedOpened`: `unopened` becomes `opened`), so reopening Talk shows no stale line and no button.
