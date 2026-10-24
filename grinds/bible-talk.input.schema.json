@@ -215,7 +215,7 @@
             "required": ["label", "value"],
             "properties": {
               "label": { "type": "string", "minLength": 1, "maxLength": 40 },
-              "value": { "type": "string", "minLength": 1, "maxLength": 200 }
+              "value": { "type": "string", "minLength": 1, "maxLength": 400 }
             }
           }
         },
@@ -474,7 +474,8 @@
             "language": { "description": "Only for a Hebrew word of an answer (the Hebrew guide's Syllables and sounds): he. Absent for a Greek word.", "type": "string", "enum": ["he"] },
             "respelling": { "description": "Only for a Greek word's sound question: the word as the app's pronunciation respells it, the stressed syllable in capitals. Describe each syllable's sound by it.", "type": "string", "minLength": 1, "maxLength": 80 },
             "syllables": { "description": "Only for a Greek word's sound question: the word cut into syllables by the app, in order, in Greek letters. Use these exactly; never count or cut the word yourself.", "type": "array", "minItems": 1, "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 80 } },
-            "stress": { "description": "Only with syllables: the 0-based index of the stressed syllable in syllables (0 is the first). Absent when the word carries no accent.", "type": "number", "minimum": 0, "maximum": 19 }
+            "stress": { "description": "Only with syllables: the 0-based index of the stressed syllable in syllables (0 is the first). Absent when the word carries no accent.", "type": "number", "minimum": 0, "maximum": 19 },
+            "heart": { "description": "Only for a Greek word that has one: the app's own note on the heart of the word, the one thread behind its senses or the trap English sets, as the app shows it to him. Agree with it; never contradict it, and build on it when he asks how to hold the word.", "type": "string", "minLength": 1, "maxLength": 400 }
           }
         },
         {
@@ -533,6 +534,7 @@
             "parse": { "description": "That form's parsing in plain words, when the chapter has the form.", "type": "string", "minLength": 1, "maxLength": 200 },
             "strongs": { "description": "The word's Strong's number: G3551.", "type": "string", "minLength": 1, "maxLength": 20 },
             "pos": { "description": "The word's part of speech: noun, verb ...", "type": "string", "minLength": 1, "maxLength": 40 },
+            "heart": { "description": "Only for a word that has one: the app's own note on the heart of the word, as the app shows it to him after a miss. Agree with it; never contradict it, and build on it when he asks how to hold the word.", "type": "string", "minLength": 1, "maxLength": 400 },
             "question": { "description": "The question as he saw it: What does νόμος mean?", "type": "string", "minLength": 1, "maxLength": 200 },
             "choices": {
               "description": "The glosses the question offered.",

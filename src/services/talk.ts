@@ -3,6 +3,7 @@
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
 import type { Chapter, Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
+import { wordHeart } from '../data/wordHeart';
 import { QUIZ_GOAL_MAX, type ReaderView } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { MEMORY_NAME_MAX, MEMORY_NOTE_MAX } from '../data/repositories/memory';
@@ -89,6 +90,8 @@ export interface WordFocus {
   syllables?: string[];
   /** with `syllables`: the index (0 = the first) of the stressed syllable; absent when the word carries no accent */
   stress?: number;
+  /** a Greek word that has a note (mw-bsf54t.14), added by buildTalkRequest: the heart of the word as the app shows it to him, so the tutor's answer agrees with it */
+  heart?: string;
 }
 
 /** The question the Hebrew guide's Syllables and sounds sends for a Hebrew word of an answer, and the focus that rides with it. */
@@ -120,6 +123,8 @@ export interface QuizFocus {
   strongs?: string;
   /** part of speech ('noun'), from the lexicon */
   pos?: string;
+  /** the heart of the word as the app shows it to him (mw-bsf54t.14), added by buildTalkRequest */
+  heart?: string;
   question: string;
   choices: string[];
   picked: string;
@@ -596,6 +601,13 @@ function withRespelling(focus: TalkFocus, pronunciation: GreekPronunciation): Ta
   return { ...focus, respelling: pronunciationOf(pronunciation).respell(focus.form), syllables, ...(stress >= 0 ? { stress } : {}) };
 }
 
+/** A Greek word that has a note on its heart (src/data/wordHeart.ts) carries it, so the tutor's answer agrees with what the app showed him (mw-bsf54t.14). */
+function withHeart(focus: TalkFocus): TalkFocus {
+  if (!('lemma' in focus) || ('language' in focus && focus.language)) return focus;
+  const heart = wordHeart(focus.lemma);
+  return heart ? { ...focus, heart } : focus;
+}
+
 /** The Greek dial as the request carries it: `greekInterest` of the settings, read as the Reader reads it (All in until the phone is placed). */
 export interface GreekInterestField {
   level: GreekLevel;
@@ -665,7 +677,7 @@ export function buildTalkRequest(
     settings,
     pronunciation,
     pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
-    ...(focus ? { focus: withRespelling(focus, pronunciation) } : {}),
+    ...(focus ? { focus: withHeart(withRespelling(focus, pronunciation)) } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile && !aboutCredits ? { learner_profile: learnerProfile } : {}),

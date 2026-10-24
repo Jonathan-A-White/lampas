@@ -398,7 +398,7 @@ describe('the screen field (mw-5r3p30.91)', () => {
       { name: 'Goal', facts: [{ label: '', value: 'x' }] },
       { name: 'Goal', facts: [{ label: 'Goal', value: 'x', extra: 1 }] },
       { name: 'Goal', facts: many },
-      { name: 'Goal', facts: [{ label: 'Goal', value: 'x'.repeat(201) }] },
+      { name: 'Goal', facts: [{ label: 'Goal', value: 'x'.repeat(401) }] },
     ]) {
       expect(validate({ ...base, screen: bad }, input), JSON.stringify(bad)).not.toEqual([]);
     }
