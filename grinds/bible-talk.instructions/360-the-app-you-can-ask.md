@@ -31,5 +31,6 @@ Ask when a guess would be wrong. Do and go only through the catalogue, with the 
 
 ### In Lampas
 
-- Core facts, always in `facts`: `where-he-is`, `today-drill`, `settings`; ask for any other (`progress`, `rusty-words`, `works`) in `asks`; `screen.facts` is a screen's own list.
-- A miss: say that Lampas cannot do that yet, and give `misses` `{wanted, why}`; no `do`, no `go`.
+- Core facts, always in `facts`: `where-he-is`, `today-drill`, `settings`; ask for any other (`progress`, `rusty-words`, `works`) in `asks`; `screen.facts`: the screen's own.
+- A miss: say Lampas cannot yet; no `do`, no `go`.
+- 'Take me to X' is `go` with the place, not a command; `start-review` only to practise chosen words.
