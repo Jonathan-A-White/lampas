@@ -1,0 +1,219 @@
+{
+  "description": "He asks to be taken to his review: the answer opens the place `review` by `go`, says where it is taking him in `said`, and runs no command.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "Take me to my review.",
+    "history": [],
+    "solid_words": [],
+    "settings": {
+      "theme": "light",
+      "textSize": "normal",
+      "greekInterest": "2",
+      "weave": "solid",
+      "weaveOrder": "english",
+      "readTutor": "on"
+    },
+    "facts": {
+      "where-he-is": {
+        "screen": "Reader",
+        "route": "home",
+        "reader": {
+          "book": "rom",
+          "chapter": 8,
+          "view": "english",
+          "verse": 28
+        }
+      },
+      "today-drill": [
+        {
+          "kind": "review",
+          "title": "Review: 17 due"
+        },
+        {
+          "kind": "psalm",
+          "title": "Psalm 5"
+        }
+      ],
+      "settings": {
+        "theme": "light",
+        "textSize": "normal",
+        "greekInterest": "2",
+        "weave": "solid",
+        "weaveOrder": "english",
+        "readTutor": "on"
+      }
+    },
+    "catalogue": [
+      {
+        "name": "add-word",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Adds a word (its lemma) to his words to learn; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "word"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "word": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          }
+        }
+      },
+      {
+        "name": "chapter",
+        "is": "place",
+        "tell": "Opens a chapter of the New Testament in the Reader",
+        "args": {
+          "type": "object",
+          "required": [
+            "book",
+            "chapter"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "book": {
+              "type": "string",
+              "description": "its name: Colossians"
+            },
+            "chapter": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 150
+            }
+          }
+        }
+      },
+      {
+        "name": "progress",
+        "is": "fact",
+        "tell": "where he stands: the learner line (solid words, learning, due) and his grammar (goal, counts, suggested move)"
+      },
+      {
+        "name": "review",
+        "is": "place",
+        "tell": "Opens Review"
+      },
+      {
+        "name": "rusty-words",
+        "is": "fact",
+        "tell": "the solid words and ideas he now slips on or has been away from, worst first"
+      },
+      {
+        "name": "set-setting",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Changes a setting; the app can undo it",
+        "args": {
+          "type": "object",
+          "required": [
+            "name",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {}
+          }
+        }
+      },
+      {
+        "name": "settings",
+        "is": "fact",
+        "core": true,
+        "tell": "what every setting holds now"
+      },
+      {
+        "name": "start-review",
+        "is": "command",
+        "kind": "free",
+        "tell": "Opens Review; with items (from rusty-words) moves them to Frontier and practises just them",
+        "args": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "items": {
+              "type": "array"
+            }
+          }
+        }
+      },
+      {
+        "name": "tick-today",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Ticks an item of today-drill by its title; on false unticks; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "item"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "item": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "on": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "name": "today",
+        "is": "place",
+        "tell": "Opens Today"
+      },
+      {
+        "name": "today-drill",
+        "is": "fact",
+        "core": true,
+        "tell": "the items of today's drill (the Today chip), each with its title and whether he ticked it"
+      },
+      {
+        "name": "where-he-is",
+        "is": "fact",
+        "core": true,
+        "tell": "the screen he is on, the chapter and verse in the Reader, the sheets open"
+      },
+      {
+        "name": "words",
+        "is": "place",
+        "tell": "Opens Words"
+      },
+      {
+        "name": "works",
+        "is": "fact",
+        "tell": "the digest of his Logos shelf: pinned books, commentaries, grammars"
+      }
+    ]
+  },
+  "expect": {
+    "go.name": {
+      "equals": "review"
+    },
+    "said": {
+      "present": true
+    },
+    "do": {
+      "present": false
+    },
+    "asks": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

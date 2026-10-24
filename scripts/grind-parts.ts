@@ -3,6 +3,7 @@
 // mill reads in name order and joins with one blank line (src/settings/grindText.ts joinGrindParts). npm run grind:build writes through
 // instructionParts, and every test reads a grind's instructions through instructionsOf (tests/unit/grind-parts.test.ts holds them to it).
 import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { answerFragment, instructionsPart } from 'voice-kit/talks/grind';
 import { joinGrindParts } from '../src/settings/grindText.ts';
 
 /** What grinds/<kind>.json names as its instructions: a file or a directory, relative to the repository. */
@@ -26,4 +27,19 @@ export function instructionParts(kind: string): { file: string; text: string }[]
 /** A grind's instructions whole, as the model is told them. */
 export function instructionsOf(kind: string): string {
   return joinGrindParts(instructionParts(kind).map(({ text }) => text));
+}
+
+/** The marker that ends the kit's words in the part that carries them (grinds/bible-talk.instructions/360-the-app-you-can-ask.md): `npm run grind:build` writes the kit's instructions part before it (mw-t3xu9a.5). */
+export const KIT_END = '<!-- kit:end -->';
+
+/** `part` with everything before the kit marker replaced by voice-kit's instructions part (voice-kit/talks/grind), byte for byte. */
+export function withKitPart(part: string): string {
+  const to = part.indexOf(KIT_END);
+  if (to < 0) throw new Error(`the part needs ${KIT_END}`);
+  return instructionsPart + part.slice(to);
+}
+
+/** An answer schema with voice-kit's answer fields (asks, do, go, misses, said) as the kit gives them: the kit's `go` replaces any `go` of the app's own. */
+export function withKitFragment<T extends { properties?: unknown }>(schema: T): T {
+  return { ...schema, properties: { ...(schema.properties as Record<string, unknown>), ...answerFragment.properties } };
 }

@@ -9,8 +9,14 @@ export const SETTINGS_BEGIN = '<!-- settings:begin -->';
 export const SETTINGS_END = '<!-- settings:end -->';
 
 /** A choice's values, each with its label up to any subtitle ('Holiness Day by Day: Transformational Thoughts ...' is named by its title); "on" needs no (On). */
-const choiceText = (values: readonly { value: string; label: string }[]): string =>
-  values.map((v) => (v.label.toLowerCase() === v.value ? `"${v.value}"` : `"${v.value}" (${v.label.split(': ')[0]})`)).join(', ');
+const choiceText = (values: readonly { value: string; label: string }[], help = ''): string =>
+  values
+    .map((v) => {
+      const title = v.label.split(': ')[0];
+      // a label the help already names with its colon ('Atkinson Hyperlegible: Very clear') is not said again beside its value (mw-t3xu9a.5)
+      return v.label.toLowerCase() === v.value || help.includes(`${title}:`) ? `"${v.value}"` : `"${v.value}" (${title})`;
+    })
+    .join(', ');
 
 /**
  * A choice whose values are mostly an earlier setting's (todaysDevotional takes the devotionals Which devotional lists) names that setting
@@ -32,9 +38,9 @@ function sharedChoice(entry: SettingEntry): string | undefined {
   return undefined;
 }
 
-function valueText(entry: SettingEntry): string {
+function valueText(entry: SettingEntry, help: string): string {
   const { allowed } = entry;
-  if (allowed.kind === 'choice') return sharedChoice(entry) ?? choiceText(allowed.values);
+  if (allowed.kind === 'choice') return sharedChoice(entry) ?? choiceText(allowed.values, help);
   if (allowed.kind === 'text') return `text, for example "${allowed.example}" (${allowed.note ?? 'a book, a chapter or a verse; "" for none'})`;
   return `a number from ${allowed.min} to ${allowed.max}, in steps of ${allowed.step}`;
 }
@@ -45,7 +51,10 @@ const isOnOff = ({ allowed }: SettingEntry): boolean =>
 
 /** The list of keys and values the instructions carry, between the two markers: a setting's help, or its hint when it has no help. */
 export function settingsBlock(): string {
-  const lines = SETTINGS.map((s) => `- \`${s.key}\` — ${s.label}. ${s.help ? helpPlain(s.help) : s.hint}${isOnOff(s) ? '' : ` Value: ${valueText(s)}.`}`);
+  const lines = SETTINGS.map((s) => {
+    const help = s.help ? helpPlain(s.help) : s.hint;
+    return `- \`${s.key}\` — ${s.label}. ${help}${isOnOff(s) ? '' : ` Value: ${valueText(s, help)}.`}`;
+  });
   return [SETTINGS_BEGIN, ...lines, SETTINGS_END].join('\n');
 }
 

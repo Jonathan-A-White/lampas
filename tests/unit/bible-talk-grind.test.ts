@@ -10,7 +10,8 @@ import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } fro
 import { SETTINGS } from '../../src/settings/registry';
 import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
-import { instructionParts, instructionsOf } from '../../scripts/grind-parts';
+import { answerFragment, instructionsPart } from 'voice-kit/talks/grind';
+import { KIT_END, instructionParts, instructionsOf, withKitFragment, withKitPart } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/bible-talk.json');
@@ -838,5 +839,97 @@ describe('two rules the trim of mw-5r3p30.732 left too weak (mw-5r3p30.737)', ()
     expect(section).toMatch(/never the most important/);
     const bridgeRule = section.slice(section.indexOf('Put ONE `bridge`'), section.indexOf('Name the ideas'));
     expect(bridgeRule.indexOf('most important first')).toBeLessThan(bridgeRule.indexOf('`next`'));
+  });
+});
+
+// mw-t3xu9a.5: the tutor client's words and answer fields are the kit's (voice-kit/talks/grind), included by `npm run grind:build`; the catalogue is request DATA.
+describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+  const inputProps = input.properties as Record<string, Schema>;
+  const answerProps = schema.properties as Record<string, unknown>;
+  const text = instructionsOf(grind.kind as string);
+  const part = instructionParts(grind.kind as string).find(({ file }) => file.endsWith('360-the-app-you-can-ask.md'));
+  const flat = (s: string): string => s.replace(/\s+/g, ' ');
+
+  it('takes the facts (an object keyed by name), the catalogue and, in a follow-up, what was asked, as request data and never as instructions', () => {
+    expect(inputProps.facts.type).toBe('object');
+    expect(inputProps.catalogue.type).toBe('array');
+    expect(inputProps.asked.type).toBe('object');
+    for (const required of input.required as string[]) expect(['facts', 'catalogue', 'asked']).not.toContain(required);
+    const request = { reference: 'Goal', question: 'what next', history: [], solid_words: [], settings: {}, facts: { 'where-he-is': { screen: 'Goal' } }, catalogue: [{ name: 'where-he-is', is: 'fact', core: true, tell: 'the screen he is on' }], asked: { works: [] } };
+    expect(validate(request, input)).toEqual([]);
+  });
+
+  it('has the five fields of the kit fragment in the answer schema, each identical to the kit’s, and none required', () => {
+    const fragment = answerFragment.properties as Record<string, unknown>;
+    expect(Object.keys(fragment).sort()).toEqual(['asks', 'do', 'go', 'misses', 'said']);
+    for (const key of Object.keys(fragment)) expect(answerProps[key], key).toEqual(fragment[key]);
+    for (const key of Object.keys(fragment)) expect(schema.required).not.toContain(key);
+    expect(readFileSync('node_modules/voice-kit/packages/talks/grind/answer.fragment.json', 'utf8')).toBeTruthy();
+    expect(withKitFragment(schema)).toEqual(schema);
+  });
+
+  it('takes an answer that asks, does, goes and misses, and one that names a place of its own with the chapter as its args', () => {
+    const answer = { answer: 'Taking you there.', question: 'take me to John 3', words: [] };
+    for (const extra of [{ asks: ['works'] }, { do: [{ name: 'set-setting', args: { name: 'weave', value: 'off' } }], said: 'Turned the Greek off.' }, { go: { name: 'chapter', args: { book: 'John', chapter: 3 } } }, { misses: [{ wanted: 'the verses he marked', why: 'no fact holds them' }] }]) {
+      expect(validate({ ...answer, ...extra }, schema as Schema), JSON.stringify(extra)).toEqual([]);
+    }
+    expect(validate({ ...answer, go: { book: 'John', chapter: 3 } }, schema as Schema)).not.toEqual([]);
+    expect(validate({ ...answer, do: [{ args: {} }] }, schema as Schema)).not.toEqual([]);
+  });
+
+  it('includes the kit part byte for byte in part 360, before the marker the build fills, and says the Lampas lines after it', () => {
+    expect(part, 'grinds/bible-talk.instructions/360-the-app-you-can-ask.md').toBeDefined();
+    expect(text).toContain(instructionsPart);
+    expect(part?.text).toContain(`${instructionsPart}${KIT_END}`);
+    expect(withKitPart(part?.text ?? '')).toBe(part?.text);
+    const own = flat(part?.text.slice(part.text.indexOf(KIT_END)) ?? '');
+    for (const core of ['where-he-is', 'today-drill', 'settings']) expect(own).toContain(`\`${core}\``);
+    expect(own).toMatch(/\bmiss/);
+    expect(own).toContain('`screen.facts`');
+  });
+
+  it('keeps the whole of the instructions under the 99,500 bytes the ceiling test holds', () => {
+    const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
+    expect(bytes).toBeLessThanOrEqual(99_500);
+  });
+
+  it('changes a setting by the set-setting command when the catalogue lists it, and by settings_changes when it does not', () => {
+    const settings = flat(text.slice(text.indexOf('## Changing the app'), text.indexOf('<!-- settings:begin -->')));
+    expect(settings).toContain('`set-setting`');
+    expect(settings).toContain('`settings_changes`');
+    expect(settings).toMatch(/Never claim a change the list does not have/);
+  });
+
+  it('takes him to a chapter through the place `chapter`, in the kit’s go', () => {
+    const chapter = flat(text.slice(text.indexOf('## Taking him to a chapter'), text.indexOf('## Adding words')));
+    expect(chapter).toContain('"name": "chapter"');
+    expect(chapter).toContain('"args"');
+  });
+
+  it('has the four examples of the tutor client, each meeting what the kit’s answer examples show', () => {
+    const read = (name: string) => readJson(`grinds/examples/bible-talk/${name}.json`) as unknown as { request: Record<string, unknown>; expect: Record<string, Record<string, unknown>> };
+    const back = read('ask-back-works');
+    expect(back.expect['asks.0']).toEqual({ equals: 'works' });
+    expect(back.expect.words).toEqual({ equals: [] });
+    expect((back.request.facts as Record<string, unknown>).works).toBeUndefined();
+    expect((back.request.catalogue as { name: string; is: string }[]).find((e) => e.name === 'works')?.is).toBe('fact');
+    const set = read('do-setting');
+    expect(set.expect['do.0.name']).toEqual({ equals: 'set-setting' });
+    expect(set.expect['do.0.args']).toEqual({ present: true });
+    expect(set.expect.said).toEqual({ present: true });
+    const go = read('go-review');
+    expect(go.expect['go.name']).toEqual({ equals: 'review' });
+    expect(go.expect.said).toBeDefined();
+    const miss = read('miss-recorded');
+    expect(miss.expect['misses.0.wanted']).toEqual({ present: true });
+    expect(miss.expect.do).toEqual({ present: false });
+    expect(miss.expect.go).toEqual({ present: false });
+  });
+
+  it('is named in docs/ask-tutor.md: the four fields and the said line', () => {
+    const doc = readFileSync('docs/ask-tutor.md', 'utf8');
+    for (const field of ['asks', 'do', 'go', 'misses', 'said']) expect(doc, field).toContain(`\`${field}\``);
+    expect(doc).toContain('360-the-app-you-can-ask.md');
   });
 });

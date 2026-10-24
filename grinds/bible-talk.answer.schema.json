@@ -765,45 +765,13 @@
       "items": { "type": "string", "minLength": 3, "maxLength": 40 }
     },
     "go": {
-      "description": "Only when he asked, in words, to be taken to a chapter of the New Testament ('switch to Colossians 1', 'open John 3', 'take me to Romans 12'): the book and the chapter. The app opens the Reader there at once and says Opened; say in answer where you are taking him. Never for a chapter outside the 27 books of the New Testament, never on your own, and leave it out when he asked for no move.",
+      "description": "The place on the catalogue (is place) to open, with the args its entry describes. At most one.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["book", "chapter"],
+      "required": ["name"],
       "properties": {
-        "book": {
-          "description": "The book's name exactly as in the list.",
-          "type": "string",
-          "enum": [
-            "Matthew",
-            "Mark",
-            "Luke",
-            "John",
-            "Acts",
-            "Romans",
-            "1 Corinthians",
-            "2 Corinthians",
-            "Galatians",
-            "Ephesians",
-            "Philippians",
-            "Colossians",
-            "1 Thessalonians",
-            "2 Thessalonians",
-            "1 Timothy",
-            "2 Timothy",
-            "Titus",
-            "Philemon",
-            "Hebrews",
-            "James",
-            "1 Peter",
-            "2 Peter",
-            "1 John",
-            "2 John",
-            "3 John",
-            "Jude",
-            "Revelation"
-          ]
-        },
-        "chapter": { "description": "The chapter number, from 1 to the book's last chapter.", "type": "number", "minimum": 1, "maximum": 28 }
+        "name": { "description": "The name of a place on the catalogue.", "type": "string", "minLength": 1, "maxLength": 80 },
+        "args": { "description": "The args as that place's entry describes them; leave out when it takes none.", "type": "object" }
       }
     },
     "settings_changes": {
@@ -1199,6 +1167,51 @@
           }
         ]
       }
+    },
+    "asks": {
+      "description": "Names of facts on the catalogue (is fact) that you need before you can answer well. The app reads them and sends the request again with them as asked; ask once, for everything you need.",
+      "type": "array",
+      "maxItems": 8,
+      "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+    },
+    "do": {
+      "description": "Commands on the catalogue (is command) to run, in order, each with the args its entry describes. Only what he asked for.",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": { "description": "The name of a command on the catalogue.", "type": "string", "minLength": 1, "maxLength": 80 },
+          "args": { "description": "The args as that command's entry describes them; leave out when it takes none.", "type": "object" }
+        }
+      }
+    },
+    "misses": {
+      "description": "What he wanted, or you needed, that the catalogue has no fact, command or place for.",
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["wanted", "why"],
+        "properties": {
+          "wanted": { "description": "In a few words, what was missing.", "type": "string", "minLength": 1, "maxLength": 200 },
+          "why": {
+            "description": "What was in the way: which fact, command or place the catalogue lacks.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        }
+      }
+    },
+    "said": {
+      "description": "One plain sentence on what you did through the app, or what you asked of him. Leave it out when you did nothing through the app.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
     }
   }
 }

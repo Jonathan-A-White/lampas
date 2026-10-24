@@ -1,5 +1,5 @@
 {
-  "description": "In a talk on Romans 8 he asks to switch to Colossians 1: the answer carries go for Colossians 1, says where it is taking him, and changes no setting.",
+  "description": "In a talk on Romans 8 he asks to switch to Colossians 1: the answer carries go for the place chapter with Colossians 1 as its args, says where it is taking him, and changes no setting.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8",
@@ -8,11 +8,12 @@
     "question": "can you switch to Colossians 1",
     "history": [],
     "solid_words": [],
-    "settings": { "theme": "light", "textSize": "normal" }
+    "settings": { "theme": "light", "textSize": "normal" },
+    "catalogue": [{ "name": "chapter", "is": "place", "tell": "Opens a chapter of the New Testament in the Reader", "args": { "type": "object", "required": ["book", "chapter"], "additionalProperties": false, "properties": { "book": { "type": "string", "description": "its name: Colossians" }, "chapter": { "type": "integer", "minimum": 1, "maximum": 150 } } } }]
   },
   "expect": {
-    "go.book": { "equals": "Colossians" },
-    "go.chapter": { "equals": 1 },
+    "go.name": { "equals": "chapter" },
+    "go.args": { "present": true },
     "answer": { "contains": "Colossians" },
     "settings_changes": { "present": false },
     "setting_offer": { "present": false }

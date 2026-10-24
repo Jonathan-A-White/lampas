@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { BOOKS } from '../../src/data/books';
 import { isTalkAnswer } from '../../src/services/talk';
-import { readGo } from '../../src/talk/go';
+import { readGo, readTarget } from '../../src/talk/go';
+import { bibleTalkRegistry } from '../../src/tutor/registry';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
 
@@ -51,28 +52,33 @@ describe('isTalkAnswer with go', () => {
 describe('the bible-talk grind and go', () => {
   const go = (schema.properties as Record<string, Schema>).go;
 
-  it('has an optional go of a book from the app’s own list and a chapter in range', () => {
+  // mw-t3xu9a.5: `go` is the kit's {name, args}; the chapter is the place `chapter` with {book, chapter} for args, which the registry checks (src/tutor/registry.ts chapterOf)
+  it('has an optional go that names a place of the catalogue with its args, as the kit has it', () => {
     expect(schema.required).not.toContain('go');
-    expect(go.required).toEqual(['book', 'chapter']);
+    expect(go.required).toEqual(['name']);
     expect(go.additionalProperties).toBe(false);
-    expect((go.properties as Record<string, Schema>).book.enum).toEqual(BOOKS.map((b) => b.name));
-    const chapter = (go.properties as Record<string, Schema>).chapter;
-    expect(chapter.minimum).toBe(1);
-    expect(chapter.maximum).toBe(Math.max(...BOOKS.map((b) => b.chapters)));
+    expect(Object.keys(go.properties as Record<string, Schema>)).toEqual(['name', 'args']);
   });
 
-  it('takes a go for Colossians 1 and refuses a book outside the list, a chapter outside 1 to 28 and an extra key', () => {
+  it('takes a go for the place chapter at Colossians 1, and refuses the old book and chapter keys and an extra key', () => {
     const answer = (value: unknown) => validate({ answer: 'Taking you to Colossians 1.', question: 'What does it say?', words: [], go: value }, schema);
-    expect(answer({ book: 'Colossians', chapter: 1 })).toEqual([]);
-    expect(answer({ book: 'Psalms', chapter: 23 })).not.toEqual([]);
-    expect(answer({ book: 'Colossians', chapter: 0 })).not.toEqual([]);
-    expect(answer({ book: 'Colossians', chapter: 29 })).not.toEqual([]);
-    expect(answer({ book: 'Colossians', chapter: 1, verse: 3 })).not.toEqual([]);
+    expect(answer({ name: 'chapter', args: { book: 'Colossians', chapter: 1 } })).toEqual([]);
+    expect(answer({ name: 'review' })).toEqual([]);
+    expect(answer({ book: 'Colossians', chapter: 1 })).not.toEqual([]);
+    expect(answer({ name: 'chapter', extra: 1 })).not.toEqual([]);
+    expect(answer({ args: {} })).not.toEqual([]);
+  });
+
+  it('says the place chapter takes the book by name and a chapter the app has, in the app’s own list of books', () => {
+    const book = (name: string) => readTarget({ name: 'chapter', args: { book: name, chapter: 1 } }, bibleTalkRegistry());
+    for (const { name } of BOOKS) expect(book(name), name).toMatchObject({ ok: true });
+    expect(book('Psalms')).toEqual({ ok: false, title: 'chapter' });
   });
 
   it('tells the tutor when to use go, what to say, and what not to do', () => {
     expect(instructions).toContain('## Taking him to a chapter');
     expect(instructions).toContain('`go`');
+    expect(instructions).toContain('"name": "chapter"');
     for (const verb of ['switch', 'open', 'go', 'taken to a chapter']) expect(instructions).toContain(verb);
     expect(instructions).toContain('says where you are taking him');
     expect(instructions).toContain('Never say you are taking him anywhere without putting it in `go`');
