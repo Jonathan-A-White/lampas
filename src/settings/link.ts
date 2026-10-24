@@ -1,15 +1,20 @@
 // src/settings/link.ts — a link to each setting (mw-5r3p30.502): '#/settings?setting=<key>' opens Settings scrolled to that row, marks it and shows it though the
 // search or its dependency would hide it (src/SettingsScreen.tsx, src/settings/rows.ts rowsAt). The key is one of the registry's SETTINGS (src/settings/registry.ts):
-// a key that is not has no link, so the tutor's invented key (src/TutorLinks.tsx) and a mistyped address draw nothing. docs/links.md.
+// a key that is not (the door row 'library' is the one exception) has no link, so the tutor's invented key (src/TutorLinks.tsx) and a mistyped address draw nothing. docs/links.md.
 import { forgetScrollsAt } from '../nav/scrollMemory';
 import { previousAddress } from '../nav/lastRoute';
 import { openHash, pathOf, replaceHash } from '../nav/route';
 import { settingOf } from './registry';
 import { groupById, type GroupId } from './rows';
 
-/** The address that opens Settings at the setting `key`, or null when the registry has no such setting. */
+/** The rows that are no setting but have a link: the door to Your Logos library, drawn at the top of the Settings home (mw-5r3p30.752). */
+const DOOR_ROWS: readonly string[] = ['library'];
+
+const linkable = (key: string): boolean => settingOf(key) !== undefined || DOOR_ROWS.includes(key);
+
+/** The address that opens Settings at the setting `key`, or null when the registry has no such setting (or door row). */
 export function settingLink(key: string): string | null {
-  return settingOf(key) ? `#/settings?setting=${encodeURIComponent(key)}` : null;
+  return linkable(key) ? `#/settings?setting=${encodeURIComponent(key)}` : null;
 }
 
 /** The setting an address asks for ('#/settings?setting=textSize'), or null when it is not a Settings address or names no setting of the registry. */
@@ -17,7 +22,7 @@ export function settingKeyOf(hash: string): string | null {
   if (pathOf(hash) !== '#/settings') return null;
   const q = hash.indexOf('?');
   const key = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('setting');
-  return key !== null && settingOf(key) ? key : null;
+  return key !== null && linkable(key) ? key : null;
 }
 
 /** Opens Settings at the setting `key` as a new Back step, from where he is; it starts at the row, not where he last left Settings. Nothing for a key without a link. */

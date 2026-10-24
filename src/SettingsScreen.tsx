@@ -6,7 +6,7 @@
 // (src/settings/controls/, one file per section) names for its key. A row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens the
 // page holding that section, scrolled to it (a link from elsewhere, such as the reference card's 'Link Logos in Settings'). An address '#/settings?setting=textSize' (src/settings/link.ts,
 // docs/links.md) opens the page holding that row, at the row: it is drawn whatever its dependency would hide (rowsAt), scrolled to and marked until his next tap, and a row that
-// depends on a setting that is off says to turn that on first. docs/layout/settings.md.
+// depends on a setting that is off says to turn that on first. Your Logos library is the first row of the home (a link to it, '#/settings?setting=library', marks it there). docs/layout/settings.md.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
@@ -76,6 +76,12 @@ export function SettingsScreen() {
   const page = pageId ? groupById(pageId) : undefined;
   const scrollRef = useScrollMemory('settings');
   const [query, setQuery] = useState('');
+  // a link that names a row of the home (the library door, the dial) clears the search that found it, so the home shows the row marked and not the list of answers
+  const [linkSeen, setLinkSeen] = useState(linked);
+  if (linkSeen !== linked) {
+    setLinkSeen(linked);
+    if (linked !== null && linkedRow && isHomeRow(linkedRow)) setQuery('');
+  }
   const values = useLiveQuery(readValues, []);
   const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest));
   const needed = values && linked ? neededFor(values, linked) : undefined;
@@ -96,6 +102,9 @@ export function SettingsScreen() {
     // the Greek dial is the first thing on the home (mw-3ased2.2); a search lists matching rows instead
     const dialRow = rowOf('greekInterest');
     const Dial = CONTROLS.greekInterest;
+    // the door to Your Logos library is the first thing under the search field (mw-5r3p30.752)
+    const libraryRow = rowOf('library');
+    const Library = CONTROLS.library;
     return (
       <>
         <ScreenHeader title="Settings" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
@@ -108,11 +117,10 @@ export function SettingsScreen() {
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (
                 <>
-                  {dialRow ? (
-                    <HighlightedSetting.Provider value={highlighted}>
-                      <Dial row={dialRow} />
-                    </HighlightedSetting.Provider>
-                  ) : null}
+                  <HighlightedSetting.Provider value={highlighted}>
+                    {libraryRow && Library ? <Library row={libraryRow} /> : null}
+                    {dialRow ? <Dial row={dialRow} /> : null}
+                  </HighlightedSetting.Provider>
                   <ul aria-label="Settings groups">
                     {visibleGroups(values).map((g) => (
                       <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />

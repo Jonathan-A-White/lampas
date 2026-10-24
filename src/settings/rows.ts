@@ -37,6 +37,7 @@ export type { Values };
 
 /** The sections, in the order the screen draws them (a group's page draws its own, in this order). */
 export const SECTIONS: readonly SettingsSection[] = [
+  { id: 'library', title: 'Your Logos library' },
   { id: 'dial', title: 'How much Greek?' },
   { id: 'appearance', title: 'Appearance' },
   { id: 'layout', title: 'Layout' },
@@ -68,10 +69,10 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'more', title: 'More' },
 ];
 
-/** The sections drawn on the Settings home itself, above the groups, not on a group's page: the Greek dial (mw-3ased2.2). They are in no group. */
-export const HOME_SECTIONS: readonly SectionId[] = ['dial'];
+/** The sections drawn on the Settings home itself, above the groups, not on a group's page, in the order the home draws them: the door to Your Logos library (mw-5r3p30.752) and the Greek dial (mw-3ased2.2). They are in no group. */
+export const HOME_SECTIONS: readonly SectionId[] = ['library', 'dial'];
 
-/** Whether a row is drawn on the home (the dial), not on a group's page. */
+/** Whether a row is drawn on the home (the library door, the dial), not on a group's page. */
 export const isHomeRow = (row: Pick<SettingsRow, 'section'>): boolean => HOME_SECTIONS.includes(row.section);
 
 export type GroupId = 'reading' | 'greek' | 'tutor' | 'listening' | 'daily' | 'study' | 'account' | 'developer';
@@ -87,7 +88,7 @@ export const GROUPS: readonly SettingsGroup[] = [
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'hebrew', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
-  { id: 'study', title: 'Study resources', hint: 'Links to the tools you own, and your Logos library.', sections: ['resources', 'logos'] },
+  { id: 'study', title: 'Study resources', hint: 'Links to the tools you own.', sections: ['resources', 'logos'] },
   { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests and About.', sections: ['aboutYou', 'memory', 'more'] },
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
 ];
@@ -130,15 +131,15 @@ const REQUESTS: readonly SettingsRow[] = [
   },
 ];
 
-/** Your Logos library (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8): the one line under Logos that says how many books are on and opens the Library, where the lexicons, grammar books, commentaries and
- *  the rest are chosen. A door, not a setting: the tutor does not read or change it (isTalkable) and learns the shelf as `works`, never as settings. Drawn right after the Logos switch, while Logos is On. */
+/** Your Logos library (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8): the one line that says how many books are on and opens the Library, where the lexicons, grammar books, commentaries and
+ *  the rest are chosen, and his Verse lists are reached. The first row of the Settings home, above the dial (mw-5r3p30.752: he could not find it two taps down in Study resources), drawn
+ *  whether Logos is On or not (the Library holds more than Logos books). A door, not a setting: the tutor does not read or change it (isTalkable) and learns the shelf as `works`, never as settings. */
 const LIBRARY_ROW: SettingsRow = {
   key: 'library',
   label: 'Your Logos library',
   hint: 'The books of your Logos library that Lampas opens, and which are on.',
   help: 'Lampas cannot see your Logos library, so you say which books to use. Open it to tick them by hand or to import your list. The word sheet, the idea sheet and the tutor use the ones that are on; the devotionals that are on are the ones Daily draws from.',
-  section: 'resources',
-  dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
+  section: 'library',
 };
 
 /** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
@@ -161,15 +162,7 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   ai: AI_KEYS.has(s.key) || undefined,
 });
 
-/** The library row moved to follow the Logos switch (the one it is a detail of), whichever place the switch is in. */
-function libraryAfterLogos(rows: readonly SettingsRow[]): SettingsRow[] {
-  const library = rows.find((r) => r.key === LIBRARY_ROW.key);
-  const rest = rows.filter((r) => r !== library);
-  const at = rest.findIndex((r) => r.key === 'resource.logos');
-  return library && at >= 0 ? [...rest.slice(0, at + 1), library, ...rest.slice(at + 1)] : [...rows];
-}
-
-const unordered: readonly SettingsRow[] = libraryAfterLogos([...SETTINGS.map(rowOfSetting), ...REQUESTS, LIBRARY_ROW, DEVELOPER, ...LINKS]);
+const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...REQUESTS, LIBRARY_ROW, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
@@ -182,7 +175,7 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   // ordered only: a switch the dial hides is already not among the rows (dependsOn), and one a link forces into view stays
   const ordered = resourcesForLevel(rows.filter(isSwitch), Math.max(level, 1) as GreekLevel, langOf);
   let next = 0;
-  return libraryAfterLogos(rows.map((r) => (isSwitch(r) ? ordered[next++] : r)).filter((r): r is SettingsRow => r !== undefined));
+  return rows.map((r) => (isSwitch(r) ? ordered[next++] : r)).filter((r): r is SettingsRow => r !== undefined);
 }
 
 /** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library or Developer mode. */

@@ -51,13 +51,15 @@ test('the library at scale end to end: import, counts, reasons, turn on, the wor
   await page.goto('/#/?b=rom&c=8');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
-  // 1. Settings > Study resources > Logos On > Your Logos library > Import: choose the file
+  // 1. Settings > Study resources > Logos On, then Settings > Your Logos library > Import: choose the file
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await openGroup(page, 'Study resources');
   const resources = page.getByRole('region', { name: 'Study resources' });
   await resources.getByRole('switch', { name: 'Logos', exact: true }).click();
   await expect(resources.getByRole('switch', { name: 'Logos', exact: true })).toHaveAttribute('aria-checked', 'true');
-  await resources.getByRole('button', { name: /^Your Logos library/ }).click();
+  // the door is the first row of the Settings home
+  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
+  await page.getByRole('button', { name: /^Your Logos library/ }).click();
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Import your library', level: 1 })).toBeVisible();

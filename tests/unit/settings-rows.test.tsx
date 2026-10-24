@@ -91,7 +91,7 @@ describe('visibleRows', () => {
   });
 
   it('shows the Logos settings for "logos", and the rows whose help names Logos after them in the list\'s order', () => {
-    expect(keys(visibleRows(ALL_ON, 'logos')).slice(0, 3)).toEqual(['resource.logos', 'library', 'logosBible']);
+    expect(keys(visibleRows(ALL_ON, 'logos')).slice(0, 3)).toEqual(['library', 'resource.logos', 'logosBible']);
     expect(keys(visibleRows(ALL_ON, 'logos'))).toEqual(expect.arrayContaining(['dailyPlan', 'dailyDevotional']));
   });
 

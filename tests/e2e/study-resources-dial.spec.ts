@@ -56,22 +56,23 @@ test('Just English lists no Greek resource in Study resources, and no book at an
   await openUnlocked(page);
   await holdAppLinks(page);
   await openReader(page);
-  // at All in the list is as it was: Strong's, Logos; the library row is under Logos
+  // at All in the list is as it was: Strong's, Logos; the library door is on the Settings home, not here
   let section = await studySection(page);
   expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos']);
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
-  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
+  await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
+  await expect(page.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
   await leaveSettings(page);
 
   await setStep(page, 'Just English');
   section = await studySection(page);
   expect(await resourceSwitches(section)).toEqual(['Logos']);
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveCount(0);
-  // Logos is On: its library row is there, and no book is listed in Settings, Greek or English (the books are Your Logos library's)
-  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
+  // Logos is On: no book is listed in Settings, Greek or English (the books are Your Logos library's, whose door is on the home)
+  await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
   await expect(section.getByRole('checkbox')).toHaveCount(0);
   await section.getByRole('switch', { name: 'Logos', exact: true }).scrollIntoViewIfNeeded();
   await shot(page, 'study-resources-just-english');
@@ -83,7 +84,7 @@ test('Just English lists no Greek resource in Study resources, and no book at an
   section = await studySection(page);
   expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos']);
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
-  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
+  await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
 });
 
 test('at a step between, the English resources come before the Greek in Study resources', async ({ page }) => {

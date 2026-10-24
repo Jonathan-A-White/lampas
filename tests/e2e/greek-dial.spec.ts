@@ -59,12 +59,12 @@ test('a new phone starts at Just English: the dial on top, no Greek setting, vie
   await expect(english).toHaveCount(0);
 
   await openSettings(page);
-  // the dial is the first thing: six steps, each with its name; the chosen one says what it means
+  // the dial is the first control, under the one door above it, Your Logos library (mw-5r3p30.752): six steps, each with its name; the chosen one says what it means
   await expect(dial(page)).toBeVisible();
   const box = await dial(page).boundingBox();
   const search = await page.getByRole('searchbox', { name: 'Search settings' }).boundingBox();
   expect(box!.y).toBeGreaterThan(search!.y);
-  expect(box!.y).toBeLessThan(250);
+  expect(box!.y).toBeLessThan(340);
   await expect(dial(page).locator('[data-step]')).toHaveCount(6);
   for (const name of STEPS) await expect(step(page, name)).toBeVisible();
   await expect(step(page, 'Just English')).toHaveAttribute('aria-pressed', 'true');
