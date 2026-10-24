@@ -229,6 +229,9 @@ const conversationsOf = (summaries: TalkSummary<BibleTurnFields>[]): Conversatio
     return { ref: id, firstQuestion, lastQuestion, lastWhen: updatedAt };
   });
 
+/** How many question-and-answer rows are kept in all: a screen that lists the conversations reads its list again when this changes. */
+export const countTurns = (): Promise<number> => db.talks.count();
+
 /** A conversation the search found, with the line of its newest matching turn that holds the first word searched for. */
 export interface ConversationHit extends Conversation {
   line: string;
