@@ -14,4 +14,3 @@ export function registerTalkLeave(close: () => void): () => void {
 export function leaveTalk(): void {
   leave?.();
 }
-

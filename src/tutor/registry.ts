@@ -26,7 +26,7 @@ import { dailyTicksSetting } from '../settings/definitions';
 import { applyChanges, currentSettings, MAX_CHANGES, undoChange, type ChangeResult } from '../settings/registry';
 import { getSetting } from '../settings/store';
 import { leaveTalk } from '../talk/leave';
-import type { TalkRequest } from '../services/talk';
+import type { TalkRequest, TalkScope } from '../services/talk';
 import { openSheetTitles } from '../ui/sheetBack';
 import { settingsSentTo } from './knows';
 import { SCREEN_NAMES } from './screen';
@@ -153,7 +153,7 @@ const workPlace: Place = {
   },
 };
 
-/** What set-setting, tick-today and add-word hand back beside their said line and undo: what the app did, for the caller that keeps it (a talk turn, a button's own line). */
+/** What set-setting hands back beside its said line and undo: the changes it applied (with the old values) and the sentences for what it left out, for the caller that keeps them (a talk turn). */
 export type SettingRan = CommandResult & ChangeResult;
 
 /** One change, checked and written by the settings registry; `skipUnchanged` writes nothing, and says nothing, for a setting already set that way. The undo puts the old value back. */
@@ -164,7 +164,7 @@ const setSettingCommand: Command = {
     type: 'object',
     required: ['name', 'value'],
     additionalProperties: false,
-    properties: { name: { type: 'string', minLength: 1, maxLength: 80 }, value: {}, skipUnchanged: { type: 'boolean' } },
+    properties: { name: { type: 'string' }, value: {}, skipUnchanged: { type: 'boolean' } },
   },
   kind: 'undoable',
   run: async (args): Promise<SettingRan> => {
@@ -250,7 +250,7 @@ const startReviewCommand: Command = {
 };
 
 // The scope an add-word is run for: the chapter whose text gives a gloss when the lexicon cannot be read (src/data/answerWord.ts). Set only around one run, by addWord.
-let addScope: Parameters<typeof addLemmaToLearn>[0] = { title: '', chapter: NO_CHAPTER, verse: null };
+let addScope: TalkScope = { title: '', chapter: NO_CHAPTER, verse: null };
 
 /** What add-word hands back beside its said line and undo: how the add ended, for the caller that says it (Added, already there, not in the lexicon). */
 export type AddWordRan = CommandResult & AddedLemma;
@@ -272,7 +272,7 @@ const addWordCommand: Command = {
 };
 
 /** The way in for a tap on Add to my words and for an answer's words_to_add: the add-word command, for the chapter of `scope`. */
-export async function addWord(scope: Parameters<typeof addLemmaToLearn>[0], lemma: string): Promise<AddWordRan> {
+export async function addWord(scope: TalkScope, lemma: string): Promise<AddWordRan> {
   const kept = addScope;
   addScope = scope;
   try {
