@@ -8,6 +8,7 @@ import { useSettled } from './ui/settle';
 import { WordPicture } from './WordPicture';
 import { GREEK_LANG } from './script/greekLang';
 import { ReferenceLink } from './markdown/ReferenceCard';
+import { HeartOfWord } from './HeartOfWord';
 
 const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
 const OPTION_LOOK = {
@@ -90,6 +91,8 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
       <p data-testid="feedback" className="mt-4 min-h-12 text-center text-lg">
         {feedback}
       </p>
+      {/* a miss shows the heart of the word under the answer: the thread that would have held it (mw-bsf54t.14) */}
+      {answered && picked !== question.gloss ? <HeartOfWord lemma={question.lemma} className="mt-2" /> : null}
     </>
   );
 }

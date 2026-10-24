@@ -41,6 +41,7 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { HintCard } from './tips/HintCard';
 import { WORD_SHEET_OPENED } from './tips/hints';
 import { GREEK_LANG, greekLang } from './script/greekLang';
+import { HeartOfWord } from './HeartOfWord';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
 export interface Lookup {
@@ -334,6 +335,8 @@ function WordCard({ chapter, word, english, pronunciation, known, study, level, 
           </Fact>
         ) : null}
       </dl>
+      {/* the note kept for a word that earns one: the thread behind its senses, always here to go back to (mw-bsf54t.14) */}
+      <HeartOfWord lemma={wordLemma(word)} className="mt-3" />
       <StudyRow groups={studyGroupsOf(chapter, word, study, level)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />

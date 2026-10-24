@@ -8,6 +8,7 @@ import { SelfGrade } from './ui/SelfGrade';
 import { TapToHear } from './TapToHear';
 import { WordPicture } from './WordPicture';
 import { GREEK_LANG } from './script/greekLang';
+import { HeartOfWord } from './HeartOfWord';
 
 interface Props {
   question: Question;
@@ -40,6 +41,8 @@ export function Flashcard({ question, picked, onPick }: Props) {
       <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">
         {!graded ? '' : picked === KNEW_IT ? 'Right.' : 'It comes back tomorrow.'}
       </p>
+      {/* Not yet shows the heart of the word under the answer (mw-bsf54t.14) */}
+      {graded && picked !== KNEW_IT ? <HeartOfWord lemma={question.lemma} className="mt-2" /> : null}
     </>
   );
 }
