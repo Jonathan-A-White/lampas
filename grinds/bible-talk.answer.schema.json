@@ -18,7 +18,7 @@
       "maxLength": 4000
     },
     "words": {
-      "description": "The Greek words the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word.",
+      "description": "The Greek words the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word, or when he names only an English word (what does 'love' mean) and no Greek one: never the `lemma` of a `greek_offer`.",
       "type": "array",
       "maxItems": 12,
       "items": {

@@ -54,4 +54,4 @@ Answer with a Bible Talk Answer (grinds/bible-talk.answer.schema.json): always `
 `transliteration`, `study_way_line`, `quiz_goal_offer`, `profile_update` and `profile_question`, `links`, `feedback_offer`, `form_values` and `form_ask`, `go`, `greek_offer`
 and `greek_asked`, `rusty_offer`, `today_offer`, `memory_update` and `wished_notes`, `welcome_done`, `offer_reply`, `bridge` (with `missing_foundations`), `fetch` and `summary` (with `fold`, always).
 
-`words` lists only Greek words he asked about or that the answer teaches: a word of `solid_words` named in passing is never put in `words`, however you name it ("the words you know well, ὁ and καί"), and on a screen with no Greek text `words` is `[]` unless he asked about a Greek word.
+`words` lists only Greek words he asked about or that the answer teaches: a word of `solid_words` named in passing is never put in `words`, however you name it, nor the `lemma` of a `greek_offer`. For an English word he names (`love`: "what does 'love' really mean?") or on a screen with no Greek text, `words` is `[]` unless he asked about a Greek word.
