@@ -3,7 +3,7 @@ import { DEVOTIONALS, RANDOM, devotionalOf, tickedDevotionals } from '../../data
 import { openLibrary } from '../../nav/route';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
-import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
+import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, greekKeyboardSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
 import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { OnOff, RowName, SettingRow } from './SettingRow';
@@ -12,7 +12,7 @@ import type { Control } from './types';
 const ITEMS = DEVOTIONALS.map((d) => ({ id: d.id, name: d.title }));
 
 /** One On | Off switch of Settings > Daily: a piece of Today, or its Tick boxes. */
-function dailySwitch(def: typeof dailyReviewSetting, settingKey: 'dailyReview' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'dailyTicks'): Control {
+function dailySwitch(def: typeof dailyReviewSetting | typeof greekKeyboardSetting, settingKey: 'dailyReview' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'dailyTicks' | 'greekKeyboard'): Control {
   return function DailySwitch({ row }) {
     const current = useSetting(def);
     return (
@@ -29,6 +29,7 @@ export const DailyPlanControl = dailySwitch(dailyPlanSetting, 'dailyPlan');
 export const DailyPsalmsControl = dailySwitch(dailyPsalmsSetting, 'dailyPsalms');
 export const DailyDevotionalControl = dailySwitch(dailyDevotionalSetting, 'dailyDevotional');
 export const DailyTicksControl = dailySwitch(dailyTicksSetting, 'dailyTicks');
+export const GreekKeyboardControl = dailySwitch(greekKeyboardSetting, 'greekKeyboard');
 
 /** Which devotional: Random, or one of the devotionals that are On in Your Logos library (the shelf, mw-rfjjzd.5), in the shared searchable list as a choice of one. The one chosen now is always
  *  listed, though it has been turned Off in the library since, so the picker never hides what Today shows. */

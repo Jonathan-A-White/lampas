@@ -10,6 +10,7 @@ import { englishAccentSetting } from './englishAccent';
 import { fontSetting } from './font';
 import { paradigmExtentSetting } from './grammarExtent';
 import { greekInterestSetting } from './greekInterest';
+import { greekKeyboardSetting } from './greekKeyboard';
 import { handwritingSetting } from './handwriting';
 import { immersiveSetting } from './immersive';
 import { immersiveHintSetting } from './immersiveHint';
@@ -23,6 +24,6 @@ import { weaveSetting } from './weave';
 import { weaveOrderSetting } from './weaveOrder';
 
 export { ANOTHER } from './daily';
-export { askBySetting, audioBibleSetting, chapterButtonsSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekInterestSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, paradigmExtentSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, weaveOrderSetting, weaveSetting };
+export { askBySetting, audioBibleSetting, chapterButtonsSetting, dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekInterestSetting, greekKeyboardSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, paradigmExtentSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, weaveOrderSetting, weaveSetting };
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readingPlanSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting, handwritingSetting, readingModeSetting, chapterButtonsSetting, fontSetting, greekInterestSetting, dailyReviewSetting, dailyPlanSetting, dailyPsalmsSetting, dailyDevotionalSetting, devotionalSetting, devotionalDrawSetting, dailyTicksSetting, talkSetting, sendSetting, paradigmExtentSetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, askBySetting, audioBibleSetting, readingPlanSetting, readLessonsSetting, englishAccentSetting, weaveOrderSetting, handwritingSetting, readingModeSetting, chapterButtonsSetting, fontSetting, greekInterestSetting, dailyReviewSetting, dailyPlanSetting, dailyPsalmsSetting, dailyDevotionalSetting, devotionalSetting, devotionalDrawSetting, dailyTicksSetting, greekKeyboardSetting, talkSetting, sendSetting, paradigmExtentSetting];

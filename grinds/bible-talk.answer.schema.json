@@ -748,6 +748,7 @@
                   "devotionalDraw",
                   "todaysDevotional",
                   "dailyTicks",
+                  "greekKeyboard",
                   "quizGoal"
                 ]
               }
@@ -1183,6 +1184,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "dailyTicks" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "greekKeyboard" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

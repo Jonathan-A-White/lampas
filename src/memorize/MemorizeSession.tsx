@@ -1,7 +1,7 @@
 // src/memorize/MemorizeSession.tsx — one Memorize session (#/memorize/<ref>/<lang>, mw-fu7dqf.8, docs/layout/memorize.md): the verse at the rung its schedule step gives (HiddenVerse), Hear it, the hold
-// to say it from memory (HeldTalkBar for English and Greek, RecordBar for the Weave: useRecallHold), the judgement with the missed words marked, the recall kept and 'Due <day>', I had it / Not yet when the phone
+// to say it from memory (HeldTalkBar for English and Greek, RecordBar for the Weave: useRecallHold) or Type it (TypeIt.tsx: English always, Greek while Settings > Greek keyboard is On, never the Weave), the judgement with the missed words marked, the recall kept and 'Due <day>', I had it / Not yet when the phone
 // cannot hear him, and Next verse (or Done). The screen reports the verse, its language, its rung and the last score to the tutor.
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { getReading, startAnswer, stopAnswerSpeech, useReading } from '../speech/readAloud';
 import { warmVoices } from '../speech/greek';
@@ -9,12 +9,16 @@ import { HeldTalkBar, RecordBar } from '../talk/Bars';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { closeMemorize, openMemorizeSession } from '../nav/route';
+import { greekKeyboardSetting } from '../settings/definitions';
+import { openSetting } from '../settings/link';
+import { useSetting } from '../settings/store';
 import { foldWords } from 'learn-kit/recall';
 import { HiddenVerse } from './HiddenVerse';
 import { langName, type MemorizeLang } from './languages';
 import { rungName } from './rung';
 import { runsOfTokens } from './runs';
 import type { Token } from './target';
+import { TypeIt } from './TypeIt';
 import { STEPS, useSession, type Kept } from './useSession';
 
 /** The id the reading of a verse carries (readAloud.ts startAnswer): below zero, so it is never a tutor answer's, a verdict's or the passage player's. */
@@ -36,6 +40,8 @@ function judgementLine(kept: Kept, tokens: readonly Token[]): string {
 export function MemorizeSession({ refName, lang }: { refName: string; lang: MemorizeLang }) {
   const session = useSession(refName, lang);
   const reading = useReading();
+  const greekKeyboard = useSetting(greekKeyboardSetting);
+  const [typing, setTyping] = useState(false);
 
   useEffect(() => {
     void warmVoices();
@@ -85,6 +91,8 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
   // 'nothing' shows no word until the recall is judged; a judged verse shows every word, with the missed ones marked
   const shown = rung.kind === 'nothing' && !judged ? [] : tokens;
   const subtitle = `${langName(lang)} · ${rungName(rung)} · step ${session.step + 1} of ${STEPS}`;
+  // Type it: English always, Greek only once he says his phone has a Greek keyboard (the switch reads undefined until it is read: neither Type it nor the line to turn it on), the Weave never
+  const canType = lang === 'en' || (lang === 'el' && greekKeyboard === 'on');
   const hearIt = (
     <button type="button" onClick={hear} className={ACTION}>
       {hearing ? 'Stop hearing it' : 'Hear it'}
@@ -133,6 +141,11 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
             ) : null}
             <div className="flex flex-wrap gap-2">
               {hearIt}
+              {canType && !typing ? (
+                <button type="button" onClick={() => setTyping(true)} className={ACTION}>
+                  Type it
+                </button>
+              ) : null}
               {note ? (
                 <>
                   <button type="button" onClick={() => session.gradeSelf(true)} className={ACTION}>
@@ -144,6 +157,12 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
                 </>
               ) : null}
             </div>
+            {lang === 'el' && greekKeyboard === 'off' ? (
+              <button type="button" onClick={() => openSetting('greekKeyboard')} className="min-h-12 text-left text-base text-accent underline">
+                Turn on Greek keyboard in Settings to type Greek
+              </button>
+            ) : null}
+            {lang !== 'weave' && canType && typing ? <TypeIt lang={lang} disabled={phase === 'sending'} onTyped={session.typed} /> : null}
           </div>
         )}
       </main>
