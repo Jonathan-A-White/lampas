@@ -12,7 +12,10 @@ import { openUnlocked } from './unlocked';
 test.use({ viewport: { width: 390, height: 844 } });
 
 // The page clock starts at the real now and is held there (a date written in a spec goes stale, tests/unit/e2e-clock-is-now.test.ts); what the day should hold is worked out here from its day of the month.
-const FIXED = Date.now();
+// FIXED is read when each test starts, never when the file loads: openUnlocked writes the licence as held a minute before the real now and
+// src/services/licenceCache.ts counts a licence held in the future as not held, so a clock fixed at the load time lost the Ask the tutor button
+// in any test that began more than a minute after the file loaded (mw-5r3p30.749).
+let FIXED = 0;
 const DAY_MS = 86_400_000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const two = (n: number) => String(n).padStart(2, '0');
@@ -20,7 +23,11 @@ const dateOf = (at: number) => {
   const d = new Date(at);
   return { day: d.getDate(), month: MONTHS[d.getMonth()], iso: `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}` };
 };
-const TODAY = dateOf(FIXED);
+let TODAY = dateOf(0);
+test.beforeEach(() => {
+  FIXED = Date.now();
+  TODAY = dateOf(FIXED);
+});
 /** The month of Psalms and Proverbs: on day N, Psalms N, N+30, N+60, N+90 and N+120 (those up to 150), then Proverbs N. */
 const readingsOn = (day: number): string[] => [
   ...[0, 30, 60, 90, 120].map((n) => day + n).filter((n) => n <= 150).map((n) => `Psalm ${n}`),
@@ -311,7 +318,7 @@ const BEFORE_1PE_1 = PLAN_CHAPTERS.slice(0, INDEX_1PE_1).map(keyOf);
 const TO_1_JOHN = STARTS['1jn.1'] - STARTS['1pe.1'] + 5_000;
 const count = (done: number) => `${done.toLocaleString('en-US')} of ${PLAN_CHAPTERS.length.toLocaleString('en-US')} chapters done`;
 /** the plan at 1 Peter 1 with a listening session open there that began long enough ago to have reached 1 John 1 (the page clock is held at FIXED, so the day does not move) */
-const listeningAtPeter = [
+const listeningAtPeter = () => [
   { key: 'readingPlan', value: 'on' },
   { key: 'audioBible', value: 'word-of-promise' },
   { key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: { code: '1pe', chapter: 1 }, done: BEFORE_1PE_1, session: { code: '1pe', chapter: 1, startedAt: FIXED - TO_1_JOHN } }) },
@@ -319,7 +326,7 @@ const listeningAtPeter = [
 const readToday = (page: Page) => piece(page, 'Reading plan').getByTestId('plan-read-today').locator('[data-run-name]');
 
 test('Read today names what he marked read today, a tick on Next marks the next chapter, and an untick takes it back', async ({ page }) => {
-  await openToday(page, listeningAtPeter);
+  await openToday(page, listeningAtPeter());
   // back from Audible: he listened through 2 Peter 3 and is in 1 John 1
   const sheet = page.getByRole('dialog', { name: 'Where did you get to?' });
   await sheet.getByRole('button', { name: 'Stopped in: 1 John 1' }).click();
