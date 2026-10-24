@@ -6,7 +6,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import type { AnswerLink } from './data/db';
 import { lookupLemma } from './data/lexicon';
-import { getLogosBible, getStudyResources, getWorks, setResourceOn } from './data/repositories';
+import { getLogosBible, getStudyResources, getWorks, setResourceOn, shelfOf } from './data/repositories';
 import { openReader } from './nav/route';
 import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
@@ -58,11 +58,12 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
   const chosen = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
   const works = useLiveQuery(getWorks, []);
+  const shelf = useLiveQuery(shelfOf, []);
   const level = useGreekInterest();
   const shown = links.slice(0, MAX_LINKS);
   const strongs = useStrongs(shown.flatMap((l) => (l.kind === 'word' ? [l.lemma.normalize('NFC')] : [])));
   const [missing, setMissing] = useState<StudyResource | null>(null);
-  if (!chosen || bible === undefined || works === undefined || !strongs || level === undefined) return null;
+  if (!chosen || bible === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
 
   const groups: Group[] = [];
   for (const [i, link] of shown.entries()) {
@@ -73,7 +74,7 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
       const row = settingLink(link.key) ? rowOf(link.key) : undefined;
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
     } else if (link.kind === 'work') {
-      const found = workChip(link.work, link.reference, works, link.place, level);
+      const found = workChip(link.work, link.reference, works, link.place, level, shelf.map((row) => row.id));
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);

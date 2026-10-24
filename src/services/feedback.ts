@@ -12,7 +12,7 @@ import { getDeviceKeyBytes } from './deviceKey';
 import type { Kind } from '../resources/catalogue';
 import { MILL_MAX_FILES, type MillFile } from './mill';
 import { askGrind, TutorError, type AskOptions } from './tutor';
-import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
+import { MAX_QUESTION_CHARS } from './requestBudget';
 
 export const FEEDBACK_KIND = 'feedback';
 
@@ -180,8 +180,8 @@ export function buildMoreRequest(kind: MoreKind, name: string, why = '', link = 
   return { kind, name: name.trim(), ...(text ? { text } : {}), ...(url ? { url } : {}), app_version: __APP_VERSION__ };
 }
 
-/** The most a tutor-ask request may weigh, as JSON in UTF-8: the same as a talk's (src/services/requestBudget.ts), so the two cannot drift apart. Greek is two bytes a letter, so the facts are what gives way. */
-export const MAX_ASK_BYTES = MAX_REQUEST_BYTES;
+/** The most a tutor-ask request may weigh, as JSON in UTF-8: what a talk's was (8,000; src/services/requestBudget.ts raised that to 9,000 for the digest of his shelf, mw-rfjjzd.10, which this request never carries). Greek is two bytes a letter, so the facts are what gives way. */
+export const MAX_ASK_BYTES = 8000;
 
 /** The request for an ask the tutor could not meet: his words, the tutor's summary, where he asked and what that screen showed. While it
  * is too big for a grist the screen's last facts are left out, one at a time; his words and the summary are never cut. */

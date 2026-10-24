@@ -12,7 +12,7 @@ import { focusLemmaOf, learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { learnFromTalk } from './data/repositories/profile';
-import { addTurn, keepFetched, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, getWorks, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns } from './data/repositories';
+import { addTurn, keepFetched, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns, shelfOf } from './data/repositories';
 import { resourcesForTutor, worksForTutor } from './resources/tutorLinks';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import type { TalkSession } from './services/mill';
@@ -165,7 +165,7 @@ export function useTalk(
             getReaderView().catch(() => undefined),
             // the solid words and ideas he now slips on or has been away from: the tutor says so once and may offer to move them back (src/data/rusty.ts); not in a quiz
             scope.quiz || scope.welcome ? Promise.resolve(undefined) : rustyNow().catch(() => undefined),
-            getWorks().catch(() => []),
+            shelfOf().catch(() => []),
             // the running summary of this talk and how many of its oldest turns it holds (mw-5r3p30.700)
             getTalkSummary(ref).catch(() => undefined),
             // the items behind the Reader's chip 'Today · N of M', so 'what is on my drill today' is answered by name and Today can be offered (src/data/learnerToday.ts); not in a quiz or the welcome
@@ -184,7 +184,7 @@ export function useTalk(
           // the Greek dial's step: the resources and works the tutor is told of follow it (resourcesForLevel)
           const greekLevel = greekLevelOf(settings.greekInterest);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
-          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
+          const request = fitHistory(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const answer = await askTalk(request, {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,

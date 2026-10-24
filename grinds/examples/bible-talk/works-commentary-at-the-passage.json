@@ -1,0 +1,26 @@
+{
+  "description": "He is on Romans 8:28 and asks to read Calvin on it: the request carries the digest of his shelf for this place (Calvin's commentaries, which cover Romans, and a count of the rest), and the answer carries ONE link of kind work to calvin-commentaries with a reference in Romans 8.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "καὶ οἴδαμεν ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν, τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν.",
+    "english": "And we know that all things work together for good to those who love God, to those who are the called according to His purpose.",
+    "question": "What does Calvin make of this verse? I would like to read him on it in my own copy.",
+    "history": [],
+    "solid_words": [],
+    "settings": { "theme": "light", "textSize": "normal" },
+    "resources": [],
+    "works": [
+      { "id": "calvin-commentaries", "t": "Calvin's Commentaries", "k": "c" },
+      { "id": "calvin-institutes-lcc", "t": "ICR", "k": "b", "p": 1 },
+      { "more": { "commentary": 6, "grammar": 4, "interlinear": 12 } }
+    ]
+  },
+  "expect": {
+    "links.0.kind": { "equals": "work" },
+    "links.0.work": { "equals": "calvin-commentaries" },
+    "links.0.reference": { "contains": "Romans 8" },
+    "links.1": { "present": false },
+    "setting_offer": { "present": false }
+  }
+}

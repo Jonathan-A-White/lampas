@@ -87,6 +87,18 @@ describe('the table of what each grind is told (src/tutor/knows.ts)', () => {
     });
   });
 
+  it('his shelf, works, is sent by the place to the Bible talk and the Verse view ask, and has its reason in the verdict on a reading and in the tips', () => {
+    expect(Object.keys(PROGRESS)).toContain('works');
+    expect(TUTOR_KNOWS['bible-talk'].progress.works).toBe('works');
+    expect(TUTOR_KNOWS['verse-ask'].progress.works).toBe('works');
+    for (const kind of ['verse-read', 'tips'] as const) {
+      expect(TUTOR_KNOWS[kind].progress, `${kind} must not send the shelf`).not.toHaveProperty('works');
+      expect(TUTOR_KNOWS[kind].notSent.works, `${kind} must say why it does not`).toMatch(/\w+ \w+ \w+/);
+    }
+    expect(TUTOR_KNOWS['bible-talk'].notSent).not.toHaveProperty('works');
+    expect(TUTOR_KNOWS['verse-ask'].notSent).not.toHaveProperty('works');
+  });
+
   it('every setting bible-talk is told is a setting it is sent', async () => {
     const sent = Object.keys(await currentSettings());
     expect(Object.keys(TUTOR_KNOWS['bible-talk'].settings).sort()).toEqual(sent.sort());
@@ -111,7 +123,7 @@ describe('the builders send what the table says', () => {
   it('verse-ask: every setting and part of progress the table lists is in the request', async () => {
     await setGreekPronunciation('modern');
     const settings = await settingsSentTo('verse-ask');
-    const request = buildRequest('Romans 8:28', verse, 'What is this?', ['θεός'], 'solid 1 words', grammar, settings, [{ summary: 's', status: 'building' }] as never, profile, false, 'modern', memory, undefined, [{ kind: 'word', id: 'λόγος', title: 'λόγος', why: 'slipped this week' }]) as unknown as Record<string, unknown>;
+    const request = buildRequest('Romans 8:28', verse, 'What is this?', ['θεός'], 'solid 1 words', grammar, settings, [{ summary: 's', status: 'building' }] as never, profile, false, 'modern', memory, undefined, [{ kind: 'word', id: 'λόγος', title: 'λόγος', why: 'slipped this week' }], undefined, [{ id: 'LLS:CALCOM66RO', t: 'CC Ro', k: 'c' }]) as unknown as Record<string, unknown>;
     const knows = TUTOR_KNOWS['verse-ask'];
     for (const key of Object.keys(knows.settings)) expect(at(request, knows.settings[key]), `verse-ask request lacks ${key} at ${knows.settings[key]}`).toBeDefined();
     for (const part of Object.keys(knows.progress)) expect(at(request, knows.progress[part]), `verse-ask request lacks ${part} at ${knows.progress[part]}`).toBeDefined();

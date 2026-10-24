@@ -104,7 +104,7 @@ describe('a Settings talk across turns (mw-5r3p30.615)', () => {
 
   it('drops the oldest turns first and keeps the newest', async () => {
     const turns = [{ q: 'First question', a: 'First answer' }, { q: 'Second question', a: 'Second answer' }, turn1];
-    const fitted = fitHistory(await settingsRequest(turns));
+    const fitted = fitHistory(await settingsRequest(turns, 'n'.repeat(1400)));
     expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(fitted.history.at(-1)?.q).toBe(turn1.q);
     expect(fitted.history.some((t) => t.q === 'First question')).toBe(false);

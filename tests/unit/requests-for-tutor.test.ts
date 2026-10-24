@@ -93,7 +93,7 @@ describe('the requests in the two grinds\' requests', () => {
     );
     const request = buildTalkRequest({ title: 'Romans 8', chapter, verse: null }, 'Why?', [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, full);
     expect(size(fitHistory(request))).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
-    const crowded = { ...request, settings: Object.fromEntries(Array.from({ length: 30 }, (_, i) => [`key${i}`, 'v'.repeat(150)])) };
+    const crowded = { ...request, settings: Object.fromEntries(Array.from({ length: 40 }, (_, i) => [`key${i}`, 'v'.repeat(150)])) };
     const fitted = fitHistory(crowded);
     expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(fitted.requests?.length ?? 0).toBeLessThan(10);

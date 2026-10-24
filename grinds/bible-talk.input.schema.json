@@ -172,21 +172,31 @@
       }
     },
     "works": {
-      "description": "Optional. The works of his Logos library that he ticked in Settings, in the order Settings lists them: the only ones the answer's `links` may name as a `work`. Missing when he has ticked none, and in a talk from About.",
+      "description": "Optional. A digest of his Logos shelf chosen by the place he is on, never the whole shelf: first the books he pinned, then the commentaries whose volume covers this chapter (at most 8), then, for a question about a form or a reading, his grammars (at most 4) and Greek texts (at most 3), then any book that takes a `place`; no lexicon. Each line is `id` (the value of a `work` link, exactly as given), `t` (a short title), `k` (what it is: c commentary, g grammar, t Greek text or apparatus, i interlinear, b book) and `p` (1 for a book that takes a `place` of its own: write it book.chapter, such as 3.24, or book.chapter.section, such as 3.21.5, the Institutes' four books having 18, 17, 25 and 20 chapters; name a place only when you know the chapter treats the question). The last line, `more`, counts the books of his shelf that are not listed, by kind: say 'your other commentaries are under In another book' and never that he has none. Missing when he has nothing of these on his shelf, and in a talk from About.",
       "type": "array",
-      "maxItems": 8,
+      "maxItems": 40,
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["id", "title", "author", "kind"],
-        "properties": {
-          "id": { "description": "The work's key, the value of a `work` link.", "type": "string" },
-          "title": { "description": "The work's title as Settings lists it.", "type": "string" },
-          "author": { "description": "The work's author.", "type": "string" },
-          "kind": { "description": "A commentary opens at a passage of the Bible; a book opens at its start, or at the `place` of the link when the entry has `places`.", "type": "string", "enum": ["commentary", "book"] },
-          "covers": { "description": "A commentary only: the books of the Bible it comments on. Never link it for a book it does not cover.", "type": "string" },
-          "places": { "description": "A book with an index of its own only: how a place in it is written, for the `place` of a `work` link. A book without it opens at its start.", "type": "string" }
-        }
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "t", "k"],
+            "properties": {
+              "id": { "description": "The work's key, the value of a `work` link.", "type": "string" },
+              "t": { "description": "A short title.", "type": "string" },
+              "k": { "description": "c commentary, g grammar, t Greek text or apparatus, i interlinear, b book.", "type": "string", "enum": ["c", "g", "t", "i", "b"] },
+              "p": { "description": "1 for a book that takes a `place` of its own (the Institutes).", "type": "number", "enum": [1] }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["more"],
+            "properties": {
+              "more": { "description": "How many books of each kind (commentary, grammar, greek-text, interlinear, book) are on his shelf and not listed.", "type": "object", "additionalProperties": { "type": "number" } }
+            }
+          }
+        ]
       }
     },
     "screen": {

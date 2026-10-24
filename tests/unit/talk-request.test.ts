@@ -263,14 +263,14 @@ describe('fitHistory', () => {
   });
 
   it('cuts the words of a long passage from the end before it drops a turn of the conversation (a quiz needs its earlier turns)', () => {
-    const words = Array.from({ length: 40 }, (_, i) => ({ form: `φ${i}`.repeat(4), lemma: `λ${i}`.repeat(4), gloss: 'g'.repeat(20), parse: 'noun, nominative plural masculine' }));
+    const words = Array.from({ length: 60 }, (_, i) => ({ form: `φ${i}`.repeat(4), lemma: `λ${i}`.repeat(4), gloss: 'g'.repeat(20), parse: 'noun, nominative plural masculine' }));
     const r = { ...base(Array.from({ length: 10 }, (_, i) => turn(i, 'y'.repeat(1500)))), greek_words: words };
     expect(size(r)).toBeGreaterThan(MAX_REQUEST_BYTES);
     const fitted = fitHistory(r);
     expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(fitted.history).toHaveLength(10);
     expect(fitted.greek_words).toEqual(words.slice(0, fitted.greek_words?.length));
-    expect(fitted.greek_words?.length ?? 0).toBeLessThan(40);
+    expect(fitted.greek_words?.length ?? 0).toBeLessThan(60);
   });
 
   it('keeps the words of the text when clipping the history is enough, and cuts them from the end only when the history is gone', () => {
@@ -289,7 +289,7 @@ describe('fitHistory', () => {
 
   it('drops the whole history when even one clipped turn cannot fit', () => {
     // the weight is a field that is never cut: the text of a passage is clipped before a turn is dropped (tests/unit/long-passage-fits.test.ts)
-    const r = { ...base([turn(1, 'z'.repeat(1500))]), learner: 'l'.repeat(7800) };
+    const r = { ...base([turn(1, 'z'.repeat(1500))]), learner: 'l'.repeat(8800) };
     expect(fitHistory(r).history).toEqual([]);
   });
 });

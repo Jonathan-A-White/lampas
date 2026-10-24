@@ -136,6 +136,34 @@
         }
       }
     },
+    "works": {
+      "description": "Optional. A digest of his Logos shelf chosen by the place he is on, never the whole shelf: first the books he pinned, then the commentaries whose volume covers this chapter (at most 8), then, for a question about a form or a reading, his grammars (at most 4) and Greek texts (at most 3), then any book that takes a `place`; no lexicon. This verse answer links nothing: the digest tells you what he keeps, so you may say that a commentary of his covers this chapter, or that his other books are under In another book on the verse. Each line is `id` (the value of a `work` link, exactly as given), `t` (a short title), `k` (what it is: c commentary, g grammar, t Greek text or apparatus, i interlinear, b book) and `p` (1 for a book that takes a `place` of its own: write it book.chapter, such as 3.24, or book.chapter.section, such as 3.21.5, the Institutes' four books having 18, 17, 25 and 20 chapters; name a place only when you know the chapter treats the question). The last line, `more`, counts the books of his shelf that are not listed, by kind: say 'your other commentaries are under In another book' and never that he has none. Missing when he has nothing of these on his shelf.",
+      "type": "array",
+      "maxItems": 40,
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "t", "k"],
+            "properties": {
+              "id": { "description": "The work's key, the value of a `work` link.", "type": "string" },
+              "t": { "description": "A short title.", "type": "string" },
+              "k": { "description": "c commentary, g grammar, t Greek text or apparatus, i interlinear, b book.", "type": "string", "enum": ["c", "g", "t", "i", "b"] },
+              "p": { "description": "1 for a book that takes a `place` of its own (the Institutes).", "type": "number", "enum": [1] }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["more"],
+            "properties": {
+              "more": { "description": "How many books of each kind (commentary, grammar, greek-text, interlinear, book) are on his shelf and not listed.", "type": "object", "additionalProperties": { "type": "number" } }
+            }
+          }
+        ]
+      }
+    },
     "requests": {
       "description": "Optional. The requests he has sent to the factory (an ask the tutor offered to pass on, an approach he asked for), at most the 10 newest, newest first, each with where it stands. Missing when he has sent none. status: sent (the factory has it, nothing more yet), filed (the makers have it on their list), building (being built now), landed (built and shipped; `version` is the app version it is in), declined (the makers decided not to; `reason` is why) or adopted-as-setting (it became a setting; `setting` is where Settings has it). Answer 'what happened to my idea' from this, never from a guess.",
       "type": "array",

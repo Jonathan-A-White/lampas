@@ -12,6 +12,7 @@ import type { LearnerProfile } from '../data/learnerProfile';
 import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { RustyItem } from '../data/rusty';
+import { trimWorks, type TutorWork } from '../resources/tutorLinks';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
@@ -191,6 +192,8 @@ export interface VerseAskRequest {
   missing_foundations?: MissingFoundations;
   /** the solid words and ideas he now slips on or has not met for a long while (mw-1vuvq6.6, src/data/rusty.ts), as the Bible talk is sent it; missing when none. The tutor may say so in its answer; the offer to move them is the Bible talk's. */
   rusty?: RustyItem[];
+  /** the digest of his Logos shelf chosen by the place (mw-rfjjzd.10, worksForTutor), as the Bible talk is sent it: what he owns that bears on this verse, so the answer can speak of the other books he keeps; missing when none is on his shelf; fitAsk cuts it from its end after the words of the verse */
+  works?: TutorWork[];
 }
 
 /** What the grind answers (grinds/verse-ask.answer.schema.json). */
@@ -232,7 +235,7 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
 }
 
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[], chapter: Chapter = NO_CHAPTER): VerseAskRequest {
+export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[], chapter: Chapter = NO_CHAPTER, works: TutorWork[] = []): VerseAskRequest {
   const request: VerseAskRequest = {
     reference,
     greek: verse.g.map((w) => w.t).join(' '),
@@ -250,6 +253,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(requests.length > 0 ? { requests } : {}),
     ...(missingFoundations ? { missing_foundations: missingFoundations } : {}),
     ...(rusty && rusty.length > 0 ? { rusty } : {}),
+    ...(works.length > 0 ? { works } : {}),
   };
   // the words of the verse weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule, src/services/talk.ts)
   return { ...request, greek_words: greekWordsFitting(chapter, [verse], request.question, pronunciation, new TextEncoder().encode(JSON.stringify(request)).length) };
@@ -482,6 +486,7 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   let requests = request.requests;
   let notes = request.memory?.notes;
   let words = request.greek_words;
+  let works = request.works;
   let text = { greek: request.greek, english: request.english };
   const fitted = (): VerseAskRequest => ({
     ...request,
@@ -489,6 +494,7 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
     pronunciation_guide: guide,
     solid_words: solid,
     ...(words ? { greek_words: words } : {}),
+    ...(works && works.length > 0 ? { works } : { works: undefined }),
     ...(requests ? { requests } : {}),
     ...(request.memory && notes ? { memory: { ...request.memory, notes } } : {}),
   });
@@ -497,6 +503,7 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   guide = undefined;
   while (solid.length > 0 && tooBig()) solid = solid.slice(1);
   while (words && words.length > 0 && tooBig()) words = words.slice(0, -1);
+  while (works && works.length > 0 && tooBig()) works = trimWorks(works);
   while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
   while (notes && notes.length > 0 && tooBig()) notes = notes.slice(0, -1);
   // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) is sent from its start, cut where it must be, and only after all of the above
