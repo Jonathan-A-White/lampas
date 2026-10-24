@@ -21,6 +21,7 @@ import { IpaCourse } from './ipa/IpaCourse';
 import { LadderGraph } from './LadderGraph';
 import { LibraryScreen } from './library/LibraryScreen';
 import { VerseListsScreen } from './lists/VerseListsScreen';
+import { MemorizeScreen } from './memorize/MemorizeScreen';
 import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
 import { WordReturn } from './WordReturn';
@@ -151,6 +152,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <LibraryScreen />
       ) : route === 'lists' ? (
         <VerseListsScreen />
+      ) : route === 'memorize' ? (
+        <MemorizeScreen />
       ) : route === 'settings' ? (
         <SettingsScreen />
       ) : route === 'share' ? (
