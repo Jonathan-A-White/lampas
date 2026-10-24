@@ -33,3 +33,21 @@ describe('`words` for a question about an English word, whatever the Greek offer
     expect(d).toMatch(/names only an English word/);
   });
 });
+
+// mw-5r3p30.750: the smoke after batch 193 found greek-offer-example-words-only ("What does love really mean in Romans 8:28?" at Curious) giving a `words` entry for
+// ἀγαπάω once in three. The English-word rule stood after the Greek-word rule that puts a word in `words` whatever the dial, and the model sometimes followed the
+// first; the English-word case now comes first and names the test that tells the two apart.
+describe('the English-word case comes before the Greek-word case in "Offering the Greek" (mw-5r3p30.750)', () => {
+  it('says the English word first, with the test, and the Greek word after', () => {
+    const english = offering.indexOf('An English word he names');
+    const greekWord = offering.indexOf('"what does the Greek word for');
+    expect(english).toBeGreaterThan(-1);
+    expect(greekWord).toBeGreaterThan(english);
+    expect(offering.slice(english, greekWord)).toMatch(/the test: did he write Greek letters or say "Greek"\? No:/);
+  });
+
+  it('puts a `words` entry for the word behind an English word nowhere', () => {
+    expect(offering.match(/whatever the dial/g)).toHaveLength(1);
+    expect(offering.slice(offering.indexOf('"what does the Greek word for'))).toMatch(/what does the Greek word for 'love' mean\?"[^.]*is asking about a Greek word/);
+  });
+});
