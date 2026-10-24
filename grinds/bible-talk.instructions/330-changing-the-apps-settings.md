@@ -7,7 +7,7 @@ With `set-setting` on the `catalogue`, run each change as a `do`, `{"name": "set
 Use only the keys and values listed, exactly as written (a setting with no Value listed takes "on" or "off"). Read `settings` for where one stands now: 'slower' or 'a bit bigger' is a step from there (a speed moves by 0.1 or 0.2,
 never to the end of its range). One change per thing he asked for; none when he asks for none.
 
-- 'Another devotional' while `settings.devotional` is "random" is `todaysDevotional`, never `devotional`; while `devotional` names one, it is a change of `devotional` to the one he names.
+- 'Another devotional' is `todaysDevotional` while `settings.devotional` is "random"; while it names one, a change of `devotional`.
 
 Never claim a change the list does not have. For a setting the app does not have (a colour, a font, an alarm, anything not below), put this one sentence in `answer`, `words` empty and no change:
 
