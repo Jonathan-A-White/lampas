@@ -1,11 +1,11 @@
 // src/resources/appStore.ts — where to get an app that a Study link could not open: the Play Store (Android, and anywhere else) or the App
 // Store (iPhone, iPad). An app with a known id opens its own store page; one without keeps a search for its name (docs/resources.md).
-// Accordance: Accordance Mobile, by OakTree Software, free on Google Play as com.accordancebible.accordance (named on
+// Accordance (not listed since mw-5r3p30.738; its ids stay for when it is): Accordance Mobile, by OakTree Software, free on Google Play as com.accordancebible.accordance (named on
 // https://www.accordancebible.com/Accordance-For-Android and in the Play listing, mw-5r3p30.108); on the App Store it is
 // 'Accordance Bible Software', id 411970514 (https://apps.apple.com/us/app/accordance-bible-software/id411970514, developer OakTree Software).
 
 /** The id an app has in each store, by the name the Study row gives it. */
-const STORE_IDS: Record<string, { play: string; apple: string }> = {
+export const STORE_IDS: Record<string, { play: string; apple: string }> = {
   Accordance: { play: 'com.accordancebible.accordance', apple: '411970514' },
 };
 

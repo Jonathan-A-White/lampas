@@ -164,8 +164,8 @@
         "additionalProperties": false,
         "required": ["id", "name", "words", "verses"],
         "properties": {
-          "id": { "description": "The resource's key: strongs, logos or accordance.", "type": "string" },
-          "name": { "description": "What Settings calls it: Strong's, Logos, Accordance.", "type": "string" },
+          "id": { "description": "The resource's key: strongs or logos.", "type": "string" },
+          "name": { "description": "What Settings calls it: Strong's, Logos.", "type": "string" },
           "words": { "description": "True when a word's entry can be opened in it (a link of kind word).", "type": "boolean" },
           "verses": { "description": "True when a verse can be opened in it (a link of kind verse).", "type": "boolean" }
         }

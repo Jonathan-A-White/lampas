@@ -13,6 +13,9 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 
+// No listed resource has an app link with no https fallback now (mw-5r3p30.738), so this feature lists a sample app of its own (tests/support/sample-app.ts).
+vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original<typeof import('../../src/resources/index')>()));
+
 const user = userEvent.setup();
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36';
@@ -80,7 +83,7 @@ const feature = await loadFeature('features/app-on-phone.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const android = (): Promise<void> => openSettings(ANDROID);
-  const androidWithAccordance = (): Promise<void> => openSettings(ANDROID, ['accordance']);
+  const androidWithLexapp = (): Promise<void> => openSettings(ANDROID, ['sampleapp']);
   const turnsOn = async (_: unknown, name: string): Promise<void> => {
     await user.click(await switchOf(name));
   };
@@ -123,7 +126,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('Settings has a link {string}', hasLink);
   });
 
-  Scenario('Accordance On offers Get Accordance on Google Play and stays On', ({ Given, When, And, Then }) => {
+  Scenario('Lexapp On offers Get Lexapp on Google Play and stays On', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Settings and the phone is an Android phone', android);
     When('he turns the switch {string} On', async (_, name: string) => {
       const control = await switchOf(name);
@@ -149,7 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Turning an app Off hides its details and says nothing about looking for it', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Settings and the phone is an Android phone with Accordance on', androidWithAccordance);
+    Given('Lampas is opened on Settings and the phone is an Android phone with Lexapp on', androidWithLexapp);
     When('he turns the switch {string} Off', turnsOn);
     Then('the switch {string} is Off', isSwitch('Off'));
     And('Settings has no link {string}', hasNoLink);

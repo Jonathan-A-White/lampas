@@ -2,13 +2,13 @@ Feature: Study resources
   Settings has a Study resources section that lists every resource registered in src/resources/ with an on/off switch,
   all off to start with. A word's sheet shows a Study row with the links of every resource switched on (Strong's: its
   G-number as a link to the public STEPBible entry; Logos: Open in Logos: <lexicon> for each lexicon he has on in Your Logos library (Library > Lexicons), BDAG by default, and
-  Bible Word Study in Logos; Accordance: Open in Accordance, to his own copy of a lexicon), and no row when none is on. An app that does not open says so (features/app-missing.feature). Only links are built; no lexicon text is bundled
+  Bible Word Study in Logos), and no row when none is on. An app that does not open says so (features/app-missing.feature). Only links are built; no lexicon text is bundled
   or fetched. The switches are kept in the settings store and survive a close.
 
-  Scenario: Settings lists Strong's, Logos and Accordance, all switched off
+  Scenario: Settings lists Strong's and Logos, all switched off
     Given Lampas is opened on Romans 8 with no study resources on
     When he taps the gear in the reader's header
-    Then the Study resources section lists Strong's, Logos and Accordance
+    Then the Study resources section lists Strong's and Logos
     And every study resource is switched off
 
   Scenario: With Strong's on, the word sheet shows the word's G-number as a link to its entry
@@ -78,14 +78,6 @@ Feature: Study resources
     And he taps the word "work together" in verse 28
     Then "G4903" appears once on the word sheet
 
-  Scenario: With Accordance on, the word sheet shows Open in Accordance built from the lemma
-    Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
-    And he switches on the study resource "Accordance"
-    And he taps Back on the Settings screen
-    And he taps the word "work together" in verse 28
-    Then the Study row has a link "Open in Accordance" to "accord://search/BDAG?%CF%83%CF%85%CE%BD%CE%B5%CF%81%CE%B3%CE%AD%CF%89"
-
   Scenario: With none on, the word sheet has no Study row
     Given Lampas is opened on Romans 8 with no study resources on
     When he taps the word "work together" in verse 28
@@ -100,6 +92,5 @@ Feature: Study resources
     And Lampas is opened again
     And he opens Settings again
     Then the study resource "Strong's" is switched on
-    And the study resource "Accordance" is switched off
     And the Logos lexicon "Louw-Nida" is on in his library
     And the Logos lexicon "BDAG" stays on in his library

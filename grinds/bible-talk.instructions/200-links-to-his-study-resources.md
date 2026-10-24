@@ -14,7 +14,7 @@ him to turn one on.
 
 `resources` lists the ones he has on. Link only what those can open: a `word` link needs a resource with `words` true, a `verse` link one with `verses` true. With `resources`
 empty or missing, leave `links` out, except a setting link. Link a resource only when it truly helps the question he asked; never link a resource as decoration or to look
-thorough: a plain answer with no link is the usual answer. The only way to link is `links`: never write a web address, a Logos or Accordance address or a
+thorough: a plain answer with no link is the usual answer. The only way to link is `links`: never write a web address, a Logos address or a
 markdown link into `answer` (except a credit's link from About); the app draws every link itself and shows any other address as plain text.
 
 ### Links to a setting

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { getStudyResources, setResourceOption, setResourceOn } from '../../src/data/repositories';
 import { AUDIO_BIBLES } from '../../src/resources/audioBible';
+import { accordance } from '../../src/resources/accordance';
 import { RESOURCES, optionOf, resourceOf, type StudyWord } from '../../src/resources';
 
 const WORD: StudyWord = { form: 'συνεργεῖ', lemma: 'συνεργέω', strongs: 'G4903' };
@@ -17,8 +18,9 @@ const JESUS_LEMMA = 'lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82';
 const JESUS: StudyWord = { form: 'Ἰησοῦ', lemma: 'Ἰησοῦς', strongs: 'G2424', ref: { book: 'rom', chapter: 8, verse: 1 } };
 
 describe('the registry', () => {
-  it('lists Strong\'s, Logos and Accordance with distinct ids and a name and a description each', () => {
-    expect(RESOURCES.map((r) => r.id)).toEqual(['strongs', 'logos', 'accordance']);
+  it('lists Strong\'s and Logos with distinct ids and a name and a description each, and no other', () => {
+    expect(RESOURCES.map((r) => r.id)).toEqual(['strongs', 'logos']);
+    expect(resourceOf('accordance')).toBeUndefined();
     expect(new Set(RESOURCES.map((r) => r.id)).size).toBe(RESOURCES.length);
     for (const r of RESOURCES) {
       expect(r.name).not.toBe('');
@@ -170,11 +172,14 @@ describe('the registry', () => {
     expect(optionOf(logos, 'not json')).toBe('bdag');
   });
 
-  it('puts the named module and the encoded word into the Accordance link by its accord: scheme, BDAG when the name is empty', () => {
+  // Accordance is built but not listed (mw-5r3p30.738): listing it again is one line in src/resources/index.ts, and this keeps that line safe to add.
+  it('still builds the Accordance link by its accord: scheme, BDAG when the name is empty, though it is not listed', () => {
     const lemma = encodeURIComponent('συνεργέω');
-    expect(resourceOf('accordance')?.linksFor(WORD, 'LSJ')[0].url).toBe(`accord://search/LSJ?${lemma}`);
-    expect(resourceOf('accordance')?.linksFor(WORD, '  ')[0].url).toBe(`accord://search/BDAG?${lemma}`);
-    expect(resourceOf('accordance')?.linksFor(BIBLOS, 'BDAG')[0].url).toBe(`accord://search/BDAG?${BIBLOS_URL}`);
+    expect(accordance.linksFor(WORD, 'LSJ')[0].url).toBe(`accord://search/LSJ?${lemma}`);
+    expect(accordance.linksFor(WORD, '  ')[0].url).toBe(`accord://search/BDAG?${lemma}`);
+    expect(accordance.linksFor(BIBLOS, 'BDAG')[0].url).toBe(`accord://search/BDAG?${BIBLOS_URL}`);
+    expect(accordance.kind).toBe('app');
+    expect(RESOURCES).not.toContain(accordance);
   });
 });
 

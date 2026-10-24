@@ -26,7 +26,6 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   tips: 'screen',
   'resource.strongs': 'screen',
   'resource.logos': 'screen', // also gives a tapped English word its Look it up in Logos row (Webster's 1828): an offer on a sheet, it changes no answer
-  'resource.accordance': 'screen',
   logosBible: 'screen',
   audioBible: 'screen',
   readingPlan: 'screen',

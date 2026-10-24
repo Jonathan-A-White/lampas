@@ -157,7 +157,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   'Parsing drill': ['How do I read a Greek verb form?', 'What should I know before I try this drill?'],
   Paradigms: ['How do I learn a paradigm table?', 'Which table should I learn first?'],
   Placement: ['What is the placement for?', 'Where should I start with Greek grammar?'],
-  Settings: ['Which settings suit a beginner?', 'What would Accordance give me?', 'What do I lose with the Weave off?'],
+  Settings: ['Which settings suit a beginner?', 'What would Logos give me?', 'What do I lose with the Weave off?'],
   'My study way': ['What should I write in my study way?', 'How does the tutor use my study way?'],
   'About you': ['What should I tell the tutor about me?', 'How does the tutor use what I write here?'],
   Memory: ['What kind of notes can I keep here?', 'How do I move my notes to another phone?'],

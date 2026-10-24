@@ -100,7 +100,6 @@ describe('the credits cover the sources that are not packages', () => {
     'Biblical Mastery Academy',
     'WhatsOnChain',
     'Logos',
-    'Accordance',
     'Postern',
     'Beads',
     'Gas Town',

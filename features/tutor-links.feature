@@ -1,6 +1,6 @@
 Feature: The tutor links the reader's study resources
   A Bible talk answer may carry up to three links (mw-5r3p30.75): a word (its lemma) or a verse (its reference). Each shows under the
-  answer as a group of chips that open in the study resources he switched on in Settings (Strong's, Logos, Accordance): a word
+  answer as a group of chips that open in the study resources he switched on in Settings (Strong's, Logos): a word
   link in the first link of each, such as his first ticked Logos lexicon at that lemma; a verse link in Lampas's own Reader and, with
   Logos on, in his Bible in Logos. A link to a resource he has not switched on is not shown, and nothing says so.
   An answer may also link a work of his Logos library that he ticked in Settings > Study resources > Works (mw-5r3p30.675): John Calvin's commentaries, opened at the
@@ -17,11 +17,9 @@ Feature: The tutor links the reader's study resources
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the word "ἀγάπη"
     And the study resource "Strong's" is switched on
     And the study resource "Logos" is also switched on
-    And the study resource "Accordance" is switched on as well
     When he asks the tutor about verse 28
     Then the answer shows the study link "G26 for ἀγάπη" to "https://www.stepbible.org/?q=strong=G0026"
     And the answer also shows the study link "Open in Logos: BDAG for ἀγάπη" to "logosres:LLS:46.30.18;hw=%E1%BC%80%CE%B3%CE%AC%CF%80%CE%B7"
-    And the answer has one more study link "Open in Accordance for ἀγάπη" to "accord://search/BDAG?%E1%BC%80%CE%B3%CE%AC%CF%80%CE%B7"
 
   Scenario: A verse link opens the verse in the Reader
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Romans 8:31"
@@ -42,7 +40,7 @@ Feature: The tutor links the reader's study resources
     And the study resource "Strong's" is switched on
     When he asks the tutor about verse 28
     Then the answer shows the study link "G26 for ἀγάπη" to "https://www.stepbible.org/?q=strong=G0026"
-    And the answer shows no Logos link and no Accordance link
+    And the answer shows no Logos link
 
   Scenario: With no study resource on, a word link shows nothing and the answer is still there
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the word "ἀγάπη"

@@ -737,7 +737,6 @@
                   "englishAccent",
                   "resource.strongs",
                   "resource.logos",
-                  "resource.accordance",
                   "audioBible",
                   "readingPlan",
                   "logosBible",
@@ -1028,12 +1027,6 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "resource.logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["key", "value"],
-            "properties": { "key": { "const": "resource.accordance" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

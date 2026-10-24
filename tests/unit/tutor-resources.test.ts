@@ -18,10 +18,11 @@ const input = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'ut
 
 describe('resourcesForTutor', () => {
   it('lists only the resources that are on, in the order Settings lists them, with what each can link', () => {
-    expect(resourcesForTutor(on('accordance', 'logos'))).toEqual([
+    expect(resourcesForTutor(on('logos', 'strongs'))).toEqual([
+      { id: 'strongs', name: "Strong's", words: true, verses: false },
       { id: 'logos', name: 'Logos', words: true, verses: true },
-      { id: 'accordance', name: 'Accordance', words: true, verses: false },
     ]);
+    expect(resourcesForTutor(on('not-listed'))).toEqual([]);
     expect(resourcesForTutor(on('strongs'))).toEqual([{ id: 'strongs', name: "Strong's", words: true, verses: false }]);
   });
 

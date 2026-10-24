@@ -412,10 +412,10 @@ describe('the screen field (mw-5r3p30.91)', () => {
 
 describe('the screen settings (mw-5r3p30.107)', () => {
   const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
-  const base = { reference: 'Settings', question: "What's the benefit of Accordance?", history: [], solid_words: [], settings: {} };
+  const base = { reference: 'Settings', question: "What's the benefit of Logos?", history: [], solid_words: [], settings: {} };
   const settings = [
     { name: 'Weave', value: 'Solid words', help: 'Greek words you know stand in the English.' },
-    { name: 'Accordance', value: 'Off', help: 'Adds Open in Accordance: the word in your own lexicon in the Accordance app.' },
+    { name: 'Logos', value: 'Off', help: 'Adds Open in Logos for each lexicon in Your Logos library, and Bible Word Study.' },
   ];
 
   it('the request schema takes a screen with settings, each a name, a value and its help, and refuses a bad one', () => {
@@ -438,12 +438,12 @@ describe('the screen settings (mw-5r3p30.107)', () => {
     for (const part of ['`screen.settings`', 'what it does', 'gains', 'loses', 'what it needs', 'never invent a setting']) expect(text.toLowerCase()).toContain(part.toLowerCase());
   });
 
-  it('the instructions work "What\'s the benefit of Accordance?" through: it names Accordance, its Open in Accordance link and the app on the phone', () => {
+  it('the instructions work "What\'s the benefit of Logos?" through: it names Logos, its Open in Logos link and the app on the phone', () => {
     const text = instructionsOf(grind.kind as string);
-    const example = text.slice(text.indexOf("What's the benefit of Accordance?"));
+    const example = text.slice(text.indexOf("What's the benefit of Logos?"));
     expect(example.length).toBeGreaterThan(0);
     const worked = example.slice(0, 900);
-    for (const part of ['Accordance', 'Open in Accordance', 'lexicon', 'app on his phone']) expect(worked).toContain(part);
+    for (const part of ['Logos', 'Open in Logos', 'lexicon', 'app on his phone']) expect(worked).toContain(part);
   });
 });
 
@@ -515,8 +515,8 @@ describe('the feedback offer', () => {
     }
   });
 
-  it("carries the worked example 'Can this work with Accordance's competitor, Olive Tree?' and the offer it yields", () => {
-    expect(instructions).toContain("Can this work with Accordance's competitor, Olive Tree?");
+  it("carries the worked example 'Can this work with Logos's competitor, Olive Tree?' and the offer it yields", () => {
+    expect(instructions).toContain("Can this work with Logos's competitor, Olive Tree?");
     const block = /<!-- feedback-offer-example:start -->\s*```json\s*([\s\S]*?)```\s*<!-- feedback-offer-example:end -->/.exec(instructions);
     expect(block, 'the example answer block').not.toBeNull();
     const answer = JSON.parse((block as RegExpExecArray)[1]) as { feedback_offer?: { summary: string } };

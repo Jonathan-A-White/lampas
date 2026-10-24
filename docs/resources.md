@@ -7,13 +7,14 @@ The switches and the names he types are kept in the settings store (`resource.<i
 `resourceOption.<id>` the typed text; `src/data/repositories/resources.ts`) and survive a close. They are not in the
 settings registry (`src/settings/registry.ts`), so the Bible talk cannot change them.
 
-## The three that ship
+## The two that ship
+
+Accordance is built but **not listed** (mw-5r3p30.738: the Governor had not tested it, so a reader is not offered it). `src/resources/accordance.ts` and its store ids in `appStore.ts` stay, and `tests/unit/resources.test.ts` keeps a test that it still builds its link. To list it again, add `import { accordance } from './accordance';` to `src/resources/index.ts` and put `accordance` after `logos` in `RESOURCES`, then `npm run grind:build`; its switch, its Study row and the tutor's knowledge of it return with that one line. A saved `resource.accordance` choice on a phone is ignored while it is unlisted. Asked about it, the tutor says Lampas does not link to it today and points to Settings > More > Ask for more. A spec that needs an app link with no https fallback lists `tests/support/sample-app.ts`'s made-up app.
 
 | id | Switch | Adds to the Study row | Source of the URL form |
 | --- | --- | --- | --- |
 | `strongs` | Strong's | the word's number, such as `G4903`, a link to `https://www.stepbible.org/?q=strong=G0…` | STEPBible's own search address; STEPBible is the lexicon source Lampas already credits (ATTRIBUTION.md) and its data are CC BY 4.0 |
 | `logos` | Logos | `Open in Logos: <lexicon>` per ticked lexicon: `logosres:<Resource ID>;<key>` (the key each lexicon takes: "Logos: the key each lexicon is filed under" below); and `Bible Word Study in Logos`: `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F<lemma>` | `logosres:` form: Logos forum post pairing `logosres:becnt65ac;ref=Bible.Ac6.3;off=114` with `https://ref.ly/logosres/becnt65ac?ref=Bible.Ac6.3&off=114` (the `Bible.Ac6.3` reference form is from it); `logos4:` is Logos' older scheme, which its release notes say still works. `hw=` is **UNVERIFIED** (below); the Guide's `lbs%2Fel%2F<lemma>` form is Logos' own, see "Bible Word Study's lemma" below |
-| `accordance` | Accordance | `Open in Accordance`: `accord://search/<module>?<lemma>` | Accordance's help topic "Using Links for Common Tasks": `accord://search/[module];[field]?[query]` |
 
 STEPBible was chosen over Blue Letter Bible because Lampas already takes its lexicon from STEPBible, so the number and the
 entry agree. The number is written with four digits (`G25` becomes `G0025`), as STEPBible writes it. With Strong's on, the word sheet's plain
@@ -27,7 +28,7 @@ it uses the network) repeats the ask for G1722, G3361, G2424 and the 20 most fre
 `-- --all` for every number the text uses (about 2 minutes). STEP's REST search answers a browser User-Agent only. Run it after `data:build`
 brings in a new number.
 
-Accordance asks for a text field in Settings: the module as Accordance names it (`BDAG`; empty means BDAG). The lemma is
+(Unlisted) Accordance asks for a text field in Settings: the module as Accordance names it (`BDAG`; empty means BDAG). The lemma is
 percent-encoded UTF-8, in NFC.
 
 ## Logos: his lexicons, the scheme and the fallback

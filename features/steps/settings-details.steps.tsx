@@ -13,6 +13,9 @@ import { seedHisWords } from '../../tests/support/his-words';
 import type { GroupId } from '../../src/settings/rows';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 
+// No listed resource has an app link with no https fallback now (mw-5r3p30.738), so this feature lists a sample app of its own (tests/support/sample-app.ts).
+vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original<typeof import('../../src/resources/index')>()));
+
 const user = userEvent.setup();
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36';
@@ -90,7 +93,7 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(within(await screen.findByRole('group', { name: group })).getByRole('button', { name: chip }));
   };
 
-  Scenario('Accordance Off is its row and nothing else', ({ Given, Then, And }) => {
+  Scenario('Lexapp Off is its row and nothing else', ({ Given, Then, And }) => {
     Given('Lampas is opened on Settings with nothing chosen', () => openSettings('study'));
     Then('Settings shows the switch {string} Off with its help {string}', async (_, name: string, help: string) => {
       await waitFor(async () => expect(await switchOf(name)).toHaveAttribute('aria-checked', 'false'));
@@ -101,9 +104,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('Settings has no link {string}', noLink);
   });
 
-  Scenario('Turning Accordance On shows its details and Off hides them, keeping what was typed', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Settings with Accordance On and the Accordance resource {string}', async (_, typed: string) => {
-      await openSettings('study', { 'resource.accordance': 'on', 'resourceOption.accordance': typed });
+  Scenario('Turning Lexapp On shows its details and Off hides them, keeping what was typed', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with Lexapp On and the Lexapp resource {string}', async (_, typed: string) => {
+      await openSettings('study', { 'resource.sampleapp': 'on', 'resourceOption.sampleapp': typed });
     });
     Then('Settings has a field {string} holding {string}', field);
     When('he turns the switch {string} Off', turnsOn);

@@ -59,7 +59,7 @@ export interface ResourceChoices {
   default: string[];
 }
 
-/** The language a resource is in: 'grc' Greek (a Greek grammar or lexicon), 'en' English, 'both' an app that opens Greek and English (Logos, Accordance). The 'How much Greek?'
+/** The language a resource is in: 'grc' Greek (a Greek grammar or lexicon), 'en' English, 'both' an app that opens Greek and English (Logos). The 'How much Greek?'
  *  dial hides the 'grc' ones at Just English and puts the 'en' and 'both' ones first at the steps between (src/resources/resourcesForLevel.ts; docs/resources.md). Required, so
  *  every entry added says it (mw-5r3p30.710). */
 export type ResourceLang = 'grc' | 'en' | 'both';
@@ -78,7 +78,7 @@ export interface StudyResource {
   /** the links for `word`; `option` is `optionOf(resource, kept)`: the typed field, or the ticked ids joined by a comma */
   linksFor(word: StudyWord, option?: string): StudyLink[];
   /** the links that open `place` in the app, when it can show a Bible: `bible` is the Resource ID of his Bible in Logos (Settings > Bible in Logos). Optional: a resource
-   *  with no Bible to show (Strong's, Accordance, whose field names a lexicon) has none. The tutor's verse links use it. */
+   *  with no Bible to show (Strong's) has none. The tutor's verse links use it. */
   versesFor?(place: StudyPlace, bible: string): StudyLink[];
 }
 

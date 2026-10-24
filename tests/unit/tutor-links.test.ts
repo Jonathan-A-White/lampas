@@ -66,8 +66,8 @@ describe('the grind instructions on links', () => {
 
 describe('wordChips', () => {
   it('gives the first link of each resource he switched on, named for the lemma', () => {
-    const chips = wordChips('ἀγάπη', 'G26', on('strongs', 'logos', 'accordance'));
-    expect(chips.map((c) => c.label)).toEqual(['G26 for ἀγάπη', 'Open in Logos: BDAG for ἀγάπη', 'Open in Accordance for ἀγάπη']);
+    const chips = wordChips('ἀγάπη', 'G26', on('strongs', 'logos'));
+    expect(chips.map((c) => c.label)).toEqual(['G26 for ἀγάπη', 'Open in Logos: BDAG for ἀγάπη']);
     expect(chips[1].url).toBe('logosres:LLS:46.30.18;hw=%E1%BC%80%CE%B3%CE%AC%CF%80%CE%B7');
     expect(chips[1].tile).toBe('BDAG');
   });
@@ -84,7 +84,7 @@ describe('wordChips', () => {
   });
 
   it('gives no Strong\'s chip for a word the lexicon does not have', () => {
-    expect(wordChips('ζζζ', undefined, on('strongs', 'accordance')).map((c) => c.label)).toEqual(['Open in Accordance for ζζζ']);
+    expect(wordChips('ζζζ', undefined, on('strongs', 'logos')).map((c) => c.label)).toEqual(['Open in Logos: BDAG for ζζζ']);
   });
 });
 
@@ -103,7 +103,7 @@ describe('verseLink and verseChips', () => {
   });
 
   it('gives Logos\' chip only when Logos is on, in the Bible he chose', () => {
-    expect(verseChips({ book: 'rom', chapter: 8, verse: 31 }, 'Romans 8:31', on('strongs', 'accordance'), 'LLS:LGCYSTNDRDBBLSB')).toEqual([]);
+    expect(verseChips({ book: 'rom', chapter: 8, verse: 31 }, 'Romans 8:31', on('strongs'), 'LLS:LGCYSTNDRDBBLSB')).toEqual([]);
     const [chip] = verseChips({ book: 'rom', chapter: 8, verse: 31 }, 'Romans 8:31', on('logos'), 'LLS:1.0.710');
     expect(chip).toMatchObject({ label: 'Open Romans 8:31 in Logos', tile: 'Logos', url: 'logosres:1.0.710;ref=Bible.Ro8.31' });
   });
@@ -133,7 +133,7 @@ describe('an Old Testament verse link', () => {
   it('gives Logos\' chip in his Bible, no Reader chip, and nothing when Logos is off', () => {
     const place = placeOf('Isaiah 53:5');
     if (!place) throw new Error('no place');
-    const [chip, ...rest] = verseChips(place, place.name, on('strongs', 'logos', 'accordance'), 'LLS:LGCYSTNDRDBBLSB');
+    const [chip, ...rest] = verseChips(place, place.name, on('strongs', 'logos'), 'LLS:LGCYSTNDRDBBLSB');
     expect(rest).toEqual([]);
     expect(chip).toMatchObject({
       label: 'Open Isaiah 53:5 in Logos',
@@ -141,7 +141,7 @@ describe('an Old Testament verse link', () => {
       url: 'logosres:lgcystndrdbblsb;ref=Bible.Isa53.5',
       fallback: 'https://ref.ly/logosres/lgcystndrdbblsb?ref=Bible.Isa53.5',
     });
-    expect(verseChips(place, place.name, on('strongs', 'accordance'), 'LLS:LGCYSTNDRDBBLSB')).toEqual([]);
+    expect(verseChips(place, place.name, on('strongs'), 'LLS:LGCYSTNDRDBBLSB')).toEqual([]);
   });
 
   it('opens in whatever Bible he chose in Settings, never a fixed one', () => {

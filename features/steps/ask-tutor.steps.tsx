@@ -349,12 +349,12 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
   Scenario('On Settings the request carries every setting, its value and its help, and the sheet suggests questions about settings', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/settings with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/settings', goal));
     When('he taps the Ask the tutor control', taps);
-    Then('the sheet suggests a question about Accordance, {string}', async (_, question: string) => {
+    Then('the sheet suggests a question about Logos, {string}', async (_, question: string) => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: Settings' });
       await suggestionWaiting(question);
     });
     When('he taps that suggested question', async () => {
-      await tapsSuggestion('What would Accordance give me?');
+      await tapsSuggestion('What would Logos give me?');
     });
     Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
       await waitFor(() => expect(fake.received).toHaveLength(count));
@@ -375,9 +375,9 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
         expect(s.help, s.name).toBe(wanted.find((r) => r.label === s.name)?.hint);
       }
     });
-    And("the grist's screen settings say Accordance is Off and what it adds", () => {
+    And("the grist's screen settings say Logos is Off and what it adds", () => {
       const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
-      expect(got.find((s) => s.name === 'Accordance')).toMatchObject({ value: 'Off', help: expect.stringContaining('Open in Accordance') });
+      expect(got.find((s) => s.name === 'Logos')).toMatchObject({ value: 'Off', help: expect.stringContaining('Open in Logos') });
     });
     And('the grist carries only fields the input schema allows', () => {
       expect(validate(sent(0), inputSchema)).toEqual([]);

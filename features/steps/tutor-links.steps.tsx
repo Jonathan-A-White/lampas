@@ -113,11 +113,9 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with a link to the word {string}', word);
     And('the study resource {string} is switched on', switchOn);
     And('the study resource {string} is also switched on', switchOn);
-    And('the study resource {string} is switched on as well', switchOn);
     When('he asks the tutor about verse 28', ask);
     Then('the answer shows the study link {string} to {string}', shows);
     And('the answer also shows the study link {string} to {string}', shows);
-    And('the answer has one more study link {string} to {string}', shows);
   });
 
   Scenario('A verse link opens the verse in the Reader', ({ Given, When, And, Then }) => {
@@ -149,7 +147,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the study resource {string} is switched on', switchOn);
     When('he asks the tutor about verse 28', ask);
     Then('the answer shows the study link {string} to {string}', shows);
-    And('the answer shows no Logos link and no Accordance link', () => {
+    And('the answer shows no Logos link', () => {
       expect(links().map((l) => l.getAttribute('aria-label'))).toEqual(['G26 for ἀγάπη']);
     });
   });

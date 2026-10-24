@@ -1,5 +1,5 @@
 // features/steps/study-resources.steps.tsx — runs features/study-resources.feature: the Study resources section of Settings
-// (a switch per registered resource, a name field for Logos' and Accordance's lexicon) and the Study row of the word sheet.
+// (a switch per registered resource, a name field for Logos' lexicon) and the Study row of the word sheet.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -124,14 +124,14 @@ const studyRow = () => within(screen.getByRole('dialog', { name: 'Word' })).quer
 const feature = await loadFeature('features/study-resources.feature');
 
 describeFeature(feature, ({ Scenario }) => {
-  Scenario("Settings lists Strong's, Logos and Accordance, all switched off", ({ Given, When, Then, And }) => {
+  Scenario("Settings lists Strong's and Logos, all switched off", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
     When("he taps the gear in the reader's header", openSettings);
-    Then("the Study resources section lists Strong's, Logos and Accordance", async () => {
+    Then("the Study resources section lists Strong's and Logos", async () => {
       const section = await screen.findByRole('region', { name: 'Study resources' });
       // The switches are drawn once the resources are read (a liveQuery answers later): wait for them.
       await waitFor(() =>
-        expect(within(section).getAllByRole('switch').filter((s) => !s.closest('ul')).map((s) => s.getAttribute('aria-label'))).toEqual(["Strong's", 'Logos', 'Accordance']),
+        expect(within(section).getAllByRole('switch').filter((s) => !s.closest('ul')).map((s) => s.getAttribute('aria-label'))).toEqual(["Strong's", 'Logos']),
       );
     });
     And('every study resource is switched off', () => {
@@ -224,15 +224,6 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('With Accordance on, the word sheet shows Open in Accordance built from the lemma', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
-    And('he switches on the study resource {string}', switchOn);
-    And('he taps Back on the Settings screen', goBack);
-    And('he taps the word {string} in verse {int}', taps);
-    Then('the Study row has a link {string} to {string}', hasLink);
-  });
-
   Scenario('With none on, the word sheet has no Study row', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
     When('he taps the word {string} in verse {int}', tapsWithNoneOn);
@@ -249,9 +240,6 @@ describeFeature(feature, ({ Scenario }) => {
     And('he opens Settings again', openSettings);
     Then('the study resource {string} is switched on', async (_, name: string) => {
       expect(await switchOf(name)).toHaveAttribute('aria-checked', 'true');
-    });
-    And('the study resource {string} is switched off', async (_, name: string) => {
-      expect(await switchOf(name)).toHaveAttribute('aria-checked', 'false');
     });
     And('the Logos lexicon {string} is on in his library', isOn);
     And('the Logos lexicon {string} stays on in his library', isOn);
