@@ -1,5 +1,11 @@
 # What's new
 
+## 0.1.430
+_2026-10-24_
+- Fixed: When the tutor helps fill in a form, it now asks only about the required fields (the photo question aside) and never nags about the optional ones.
+- New: You can mark a Bible verse, or a whole verse list, to learn by heart, in English first and in Greek or the Weave if your Greek setting allows.
+- New: Accordance is no longer offered in Settings or on a word's sheet; if you want it, ask for it in Settings > More > Ask for more.
+
 ## 0.1.427
 _2026-10-24_
 - New: Words that have a note on their heart now show it on the word's sheet, on the card that first teaches the word, and after you miss it in Review, and the tutor is told the same note.

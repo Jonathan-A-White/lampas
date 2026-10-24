@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.1.430",
+    "date": "2026-10-24",
+    "story": "mw-m45m0h.6",
+    "kind": "fixed",
+    "text": "When the tutor helps fill in a form, it now asks only about the required fields (the photo question aside) and never nags about the optional ones."
+  },
+  {
+    "version": "0.1.430",
+    "date": "2026-10-24",
+    "story": "mw-fu7dqf.5",
+    "kind": "new",
+    "text": "You can mark a Bible verse, or a whole verse list, to learn by heart, in English first and in Greek or the Weave if your Greek setting allows."
+  },
+  {
+    "version": "0.1.430",
+    "date": "2026-10-24",
+    "story": "mw-5r3p30.738",
+    "kind": "new",
+    "text": "Accordance is no longer offered in Settings or on a word's sheet; if you want it, ask for it in Settings > More > Ask for more."
+  },
+  {
     "version": "0.1.427",
     "date": "2026-10-24",
     "story": "mw-bsf54t.14",
