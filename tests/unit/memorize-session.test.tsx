@@ -354,18 +354,20 @@ describe('a verse that cannot be learned', () => {
     expect(await screen.findByText('No Old Testament text in Lampas yet')).toBeTruthy();
   });
 
-  it('with nothing due, the home of Memorize says Nothing due', async () => {
+  it('with nothing memorized, the home of Memorize says how to pick verses', async () => {
     window.history.replaceState(null, '', '/#/memorize');
     render(<MemorizeScreen />);
-    expect(await screen.findByText('Nothing due')).toBeTruthy();
+    expect(await screen.findByText('No verses memorized yet.')).toBeTruthy();
     const header = within(screen.getByRole('banner'));
     expect(header.getByRole('heading', { level: 1 }).textContent).toBe('Memorize');
   });
 
-  it('with a verse due, the home of Memorize opens its session', async () => {
+  it('with a verse due, the home of Memorize lists it, and Start opens its session', async () => {
     await seed('en', 0);
     window.history.replaceState(null, '', '/#/memorize');
     render(<MemorizeScreen />);
+    const due = await screen.findByRole('region', { name: 'Due today' });
+    fireEvent.click(await within(due).findByRole('button', { name: 'Start John 1:16 in English' }));
     await screen.findByTestId('memorize-verse');
     expect(memorizeSessionOf(window.location.hash)).toEqual({ ref: REF, lang: 'en' });
   });

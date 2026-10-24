@@ -46,6 +46,30 @@ interface Screen {
   open: (page: Page) => Promise<void>;
 }
 
+/** One list and a memorized verse at step 2 that is due, with a recall of 9 of 10 words, for the Memorize screen. */
+async function seedMemorized(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction(['verseLists', 'reviews', 'recalls'], 'readwrite');
+          const now = Date.now();
+          tx.objectStore('verseLists').add({ name: 'Refuge', refs: ['Rom.8.28'], created: 1000, updated: 1000 });
+          tx.objectStore('reviews').put({ kind: 'verse', id: 'en:Rom.8.28', step: 2, due: now - 1000, lastWhen: now - 259_200_000, lapses: 0, rights: 0 });
+          tx.objectStore('recalls').add({ ref: 'Rom.8.28', lang: 'en', when: now - 259_200_000, rung: 1, score: 0.9, missed: ['all'], asked: Array.from({ length: 10 }, (_, i) => ({ token: `w${i}`, lang: 'en' })), gap: 0, how: 'said' });
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );
+}
+
 const SCREENS: readonly Screen[] = [
   {
     name: 'Reader',
@@ -144,6 +168,19 @@ const SCREENS: readonly Screen[] = [
     },
   },
   {
+    name: 'Memorize',
+    open: async (page) => {
+      await openUnlocked(page);
+      await page.goto('/');
+      await expect(page.locator('[data-verse]').first()).toBeVisible();
+      await seedMemorized(page);
+      await page.goto('/#/memorize');
+      await expect(page.getByRole('heading', { name: 'Memorize', level: 1 })).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Due today' }).getByRole('listitem')).toHaveCount(1);
+      await expect(page.getByRole('img', { name: /^English · Step 3 of 7/ })).toBeVisible();
+    },
+  },
+  {
     name: 'Library: Lexicons',
     open: async (page) => {
       await openUnlocked(page);
@@ -186,6 +223,7 @@ test('the check names the main screens it covers', () => {
     'Idea sheet',
     'Placement',
     'Your Logos library',
+    'Memorize',
     'Library: Lexicons',
   ]);
 });

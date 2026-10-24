@@ -59,4 +59,15 @@ describe('Memorize in the Verse view', () => {
     const sheet = await screen.findByRole('dialog', { name: 'Memorize Rom 8:28' });
     expect(within(sheet).getAllByRole('switch')).toHaveLength(3);
   });
+
+  it('shows the verse\'s progress mark under the control once it is memorized, and not before', async () => {
+    window.history.replaceState(null, '', '/#/?b=rom&c=8&view=english&weave=off&v=28');
+    render(<App />);
+    const region = await view();
+    const control = await within(region).findByRole('button', { name: 'Memorize' });
+    expect(within(region).queryByRole('img', { name: /^Step / })).toBeNull();
+    await userEvent.click(control);
+    const mark = await within(region).findByRole('img', { name: 'Step 1 of 7 · due today' });
+    expect(mark.compareDocumentPosition(await within(region).findByRole('button', { name: 'Memorizing · English' })) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+  });
 });

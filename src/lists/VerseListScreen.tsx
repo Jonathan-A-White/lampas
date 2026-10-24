@@ -7,6 +7,7 @@ import { getVerseList, removeVerseList, renameVerseList } from '../data/reposito
 import { memorizedOf } from '../data/repositories/memorize';
 import { memorizeList, skippedLine, splitRefs, unmemorizeList } from '../memorize/commands';
 import { MemorizeControl } from '../memorize/MemorizeControl';
+import { ProgressMarks } from '../memorize/ProgressMark';
 import { backTo } from '../nav/route';
 import { RefLink } from '../share/ShareReferences';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
@@ -146,6 +147,7 @@ export function VerseListScreen({ id }: { id: number }) {
                 <li key={`${canonical}-${i}`} className="flex items-stretch gap-2">
                   <div className="min-w-0 flex-1">
                     {listed ? <RefLink r={listed} replacing={false} /> : <span className="flex min-h-12 items-center rounded-xl border border-line px-4 text-lg text-muted">{canonical}</span>}
+                    {listed?.testament === 'nt' ? <ProgressMarks canonical={canonical} className="mt-1 px-1" /> : null}
                   </div>
                   {listed?.testament === 'nt' ? <MemorizeControl canonical={canonical} compact /> : null}
                 </li>
