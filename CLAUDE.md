@@ -116,6 +116,7 @@ docs/layout/learner.md # Layout: what the tutor knows of him: About you, Memory,
 docs/layout/settings.md # Layout: src/settings/ (registry, rows, search, defineSetting) and src/resources/ (study resources)
 docs/layout/speech.md # Layout: src/speech/: voices, pronunciation schemes, accents, the speaking bar, read aloud; Tap to hear
 docs/layout/words.md # Layout: Words, Quick test, Review, the schedule, Parsing drill, glosses, pictures, frontier, pace, New words
+docs/layout/memorize.md # Layout: Memorize: src/memorize/, the text a verse is learned in (English, Greek, the weave of the moment)
 docs/layout/grammar.md # Layout: grammar terms, the ladder, inference, Drill it, letter drill, idea sheet, placement, Goal, Paradigms
 docs/layout/data.md # Layout: Dexie and its versions, the repositories, books, chapters, parsing codes, the data build
 docs/layout/licence.md # Layout: the licence gate, the one gated mill client, the device key
