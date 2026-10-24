@@ -18,6 +18,6 @@ export const greekKeyboardSetting = defineSetting<GreekKeyboard>({
   section: 'daily',
   label: 'Greek keyboard',
   hint: 'You have added a Greek keyboard to your phone',
-  help: 'Turn this On once you have added a Greek keyboard to your phone, so Memorize offers Type it for a verse in Greek. Lampas has no keyboard of its own: your phone\'s does the typing. A verse in the Weave is never typed, only spoken. Off to start.\n\nTo add one on Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, then add Greek. Then, in any text box, the globe key switches to it.',
+  help: 'On once you have added a Greek keyboard to your phone, so Memorize offers Type it for a verse in Greek. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Greek.',
   dependsOn: greekFrom(1),
 });
