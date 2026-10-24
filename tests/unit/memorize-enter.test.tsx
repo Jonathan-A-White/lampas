@@ -37,9 +37,11 @@ beforeEach(async () => {
   vi.mocked(commands.memorizeList).mockClear();
   vi.mocked(commands.unmemorizeList).mockClear();
 });
-afterEach(() => {
+afterEach(async () => {
   cleanup();
   vi.unstubAllGlobals();
+  // a sheet left open takes its history entry off with a step Back once it unmounts; that popstate lands later and would reset the next test's address
+  await waitFor(() => expect((window.history.state as { sheet?: number } | null)?.sheet ?? 0).toBe(0));
 });
 
 async function openRefuge(dial: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
@@ -48,6 +50,8 @@ async function openRefuge(dial: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
   window.history.replaceState(null, '', `/#/lists/${row.id}`);
   render(<VerseListsScreen />);
   await screen.findByRole('switch', { name: 'Memorize this list' });
+  // a row's control draws nothing until it has read what is memorized and his Greek dial
+  await waitFor(() => expect(document.querySelectorAll('[data-memorize]')).toHaveLength(2));
 }
 
 const memorized = async (): Promise<string[]> => (await listMemorized()).map((r) => `${r.lang}:${r.ref}`).sort();
@@ -82,8 +86,40 @@ describe('Memorize this list', () => {
     const toggle = screen.getByRole('switch', { name: 'Memorize this list' });
     await waitFor(() => expect(within(rowOf('Romans 8:28')).getByRole('button', { name: /^Memorizing/ })).toBeInTheDocument());
     expect(toggle).toHaveAttribute('aria-checked', 'false');
-    await userEvent.click(within(rowOf('2 Thessalonians 3:3')).getByRole('button', { name: 'Memorize' }));
+    await userEvent.click(await within(rowOf('2 Thessalonians 3:3')).findByRole('button', { name: 'Memorize' }));
     await waitFor(() => expect(toggle).toHaveAttribute('aria-checked', 'true'));
+  });
+});
+
+describe('the progress mark on a row', () => {
+  it('shows under a memorized reference, and not under one that is not memorized or an Old Testament one', async () => {
+    await openRefuge(3);
+    expect(screen.queryAllByRole('img')).toHaveLength(0);
+    await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
+    const mark = await within(rowOf('Romans 8:28')).findByRole('img', { name: 'Step 1 of 7 · due today' });
+    expect(mark.querySelectorAll('[data-cell="filled"]')).toHaveLength(1);
+    expect(mark.querySelectorAll('[data-cell]')).toHaveLength(7);
+    expect(within(rowOf('2 Thessalonians 3:3')).getByRole('img', { name: 'Step 1 of 7 · due today' })).toBeInTheDocument();
+    expect(within(rowOf('Psalm 62:1-2')).queryByRole('img')).toBeNull();
+  });
+
+  it('names the language when the verse is memorized in more than one', async () => {
+    await openRefuge(3);
+    await userEvent.click(within(rowOf('Romans 8:28')).getByRole('button', { name: 'Memorize' }));
+    await userEvent.click(await within(rowOf('Romans 8:28')).findByRole('button', { name: 'Memorizing · English' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Memorize Rom 8:28' });
+    await userEvent.click(within(sheet).getByRole('switch', { name: 'Greek' }));
+    await waitFor(() => expect(within(rowOf('Romans 8:28')).getAllByRole('img').map((m) => m.getAttribute('aria-label'))).toEqual(['English · Step 1 of 7 · due today', 'Greek · Step 1 of 7 · due today']));
+  });
+
+  it('goes when the verse stops being memorized', async () => {
+    await openRefuge(3);
+    await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
+    await within(rowOf('Romans 8:28')).findByRole('img');
+    // the switch reads what is memorized by a query of its own: a tap before it is On would memorize again
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Memorize this list' })).toHaveAttribute('aria-checked', 'true'));
+    await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
+    await waitFor(() => expect(within(rowOf('Romans 8:28')).queryByRole('img')).toBeNull());
   });
 });
 

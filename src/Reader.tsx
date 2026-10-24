@@ -35,7 +35,7 @@ import { blocksOf, DEFAULT_LAYOUT } from './layout/layouts';
 import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
-import { openedByTutor, pendingRequest, takeRequest } from './nav/readerRequest';
+import { pendingRequest, reopenTalk, takeRequest } from './nav/readerRequest';
 import { closeVerse, openPassage, openVerse, openVerseRange, readerOf, routeOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { useAsks } from './useAsks';
@@ -218,6 +218,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const holdTalkRef = useRef<(about: number | null) => void>(() => {});
   const onBar = useTalkHold(send, { holdDelayMs: HOLD_AFTER_MS, onBegin: () => holdTalkRef.current(holdAbout) });
   const closeTalk = useRef<() => void>(() => {});
+  const leaveTalk = useRef<() => () => void>(() => () => {});
   const talk = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
     // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
     if (openTalkRef.current !== ref || isHolding()) return;
@@ -225,13 +226,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (info.focus?.kind === 'sound' && !info.focus.language && info.syllables?.length) startAnswerWhenSeen(id, syllableRuns(info.syllables));
     else speakTutor(id, answerRuns(answer), () => openTalkRef.current === ref);
   }, {
-    // the tutor takes him to a chapter (the answer's `go`) while this talk's sheet is open: the sheet closes, the Reader opens there as a new Back step
+    // the tutor takes him to a chapter or another place (the answer's `go`) while this talk's sheet is open: the sheet closes, the place opens as a new Back step, and Back opens the sheet again
     allowed: (ref) => openTalkRef.current === ref,
     here: (place) => place.book === BOOK && place.chapter === CHAPTER,
-    open: (place) => {
-      closeTalk.current();
-      openedByTutor(place.book, place.chapter);
-    },
+    leave: () => leaveTalk.current(),
   });
   // A tap on a verse number opens the Verse view as a Back step of its own; the address then names the verse and the effect below tells the bus.
   const selectVerse = useCallback((n: number) => openVerse(n), []);
@@ -306,6 +304,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       stopTalking.abort();
       onBar.clearNotice();
       setTalkAbout(undefined);
+    };
+    // the tutor takes him elsewhere: the sheet closes as Done does and gives the way to open it again on what it was about, for Back from where he is taken
+    leaveTalk.current = () => {
+      const about = talkAbout;
+      closeTalk.current();
+      return () => reopenTalk(BOOK, CHAPTER, about ?? null);
     };
   });
   // What he says goes to the open Talk sheet (the Verse view's Ask the tutor has its own composer, src/Ask.tsx).

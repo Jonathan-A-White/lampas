@@ -21,6 +21,7 @@ import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import type { Verse } from './data/chapter';
 import { unitId, unitName, unitReference } from './data/passage';
 import { MemorizeControl } from './memorize/MemorizeControl';
+import { ProgressMarks } from './memorize/ProgressMark';
 import { OSIS, passageUrl, referenceUrl } from './nav/links';
 import { SHORT_BAR } from './ui/barClass';
 import { focusOnMount } from './ui/focus';
@@ -110,6 +111,7 @@ export function VerseView(props: VerseViewProps) {
   const sendOff = useSendOff();
   const passage = verse.to !== undefined;
   const name = unitName(verse);
+  const memorizeRef = `${OSIS[book] ?? book}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`;
   const noun = passage ? 'passage' : 'verse';
   const canShare = typeof navigator.share === 'function';
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
@@ -185,7 +187,8 @@ export function VerseView(props: VerseViewProps) {
         {/* Sideways on Listen with the Audio Bible row, the row has no room under Memorize and the Logos doors, so they go under it (mw-5r3p30.746). */}
         <div className={audioListen ? 'short:order-last' : undefined}>
           {/* Memorize (mw-fu7dqf.5): the verse, or the passage's range as one reference; the New Testament only (there is no Old Testament view), no licence */}
-          <MemorizeControl canonical={`${OSIS[book] ?? book}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`} className="mt-1 w-full" />
+          <MemorizeControl canonical={memorizeRef} className="mt-1 w-full" />
+          <ProgressMarks canonical={memorizeRef} className="mt-1 px-1" />
           {/* His Bible in Logos at the verse (a passage: at its first verse), and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6) */}
           <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} className="mt-1" />
         </div>

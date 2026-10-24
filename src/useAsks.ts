@@ -24,6 +24,7 @@ import { withoutFillers } from './services/fillers';
 import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
 import { TutorError, askByChange, askTutor, buildRequest } from './services/tutor';
+import { askWithFacts } from './tutor/registry';
 
 export type { AskState };
 
@@ -79,7 +80,8 @@ export function useAsks(book: string, chapter: number, title: string, data: Chap
           const [solid, learner, grammar, settings, requests, profile, pronunciation, memory, levels, rusty, shelf] = await Promise.all([listSolidHeadwords(), learnerSummary(), learnerGrammar().catch(() => undefined), settingsSentTo('verse-ask'), requestsForTutor().catch(() => []), learnerProfile().catch(() => undefined), getGreekPronunciation(), learnerMemory(unitReference(title, verse)).catch(() => undefined), listLevels().catch(() => undefined), rustyNow().catch(() => undefined), shelfOf().catch(() => [])]);
           // What he lacks under the topic his words name (mw-1vuvq6.5), worked out here so the tutor picks from it and never guesses
           const missing = levels ? missingFoundations(text, levelsOf(levels)) : undefined;
-          const request = buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty, chapterData.current ?? undefined, worksForTutor(shelf, { book, chapter, verse: verse.n }, text, greekLevelOf(settings.greekInterest)));
+          // the tutor client adds the facts it reads up front and its catalogue to the fields, which stay as they are (src/tutor/registry.ts askRegistry)
+          const request = await askWithFacts(buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty, chapterData.current ?? undefined, worksForTutor(shelf, { book, chapter, verse: verse.n }, text, greekLevelOf(settings.greekInterest))), 0);
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),

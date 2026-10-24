@@ -5,6 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { importNote, verseListCount } from '../data/repositories';
 import { libraryAsked } from '../data/repositories/bookRequests';
+import { countDueVerses } from '../data/repositories/memorize';
 import { useAiAllowed } from '../gate/licenceContext';
 import { askedLine } from '../services/bookRequests';
 import { backTo, libraryOf, navigate, openLibrary, useAddress } from '../nav/route';
@@ -38,6 +39,7 @@ function LibraryHome() {
   const states = useShelf();
   const note = useLiveQuery(async () => (await importNote()) ?? null, []);
   const lists = useLiveQuery(verseListCount, []);
+  const dueVerses = useLiveQuery(() => countDueVerses(), []);
   const asked = useLiveQuery(async () => (await libraryAsked()) ?? null, []);
   const ai = useAiAllowed();
   const [asking, setAsking] = useState(false);
@@ -140,6 +142,17 @@ function LibraryHome() {
         )}
         {searching ? null : (
           <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
+            <li data-testid="memorize-row">
+              <button type="button" onClick={() => navigate('memorize')} className="flex min-h-12 w-full items-center gap-3 px-3 py-2 text-left text-base">
+                <span className="min-w-0 flex-1 font-medium">Memorize</span>{' '}
+                <span data-testid="memorize-count" className="shrink-0 text-muted">
+                  {dueVerses === undefined ? '' : dueVerses === 0 ? 'nothing due' : `${dueVerses} due`}
+                </span>{' '}
+                <span aria-hidden="true" className="shrink-0 text-muted">
+                  ›
+                </span>
+              </button>
+            </li>
             <li data-testid="verse-lists-row">
               <button type="button" onClick={() => navigate('lists')} className="flex min-h-12 w-full items-center gap-3 px-3 py-2 text-left text-base">
                 <span className="min-w-0 flex-1 font-medium">Verse lists</span>{' '}

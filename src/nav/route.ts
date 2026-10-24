@@ -1,4 +1,4 @@
-// src/nav/route.ts — twenty-two screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — twenty-eight screens (ROUTES), told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -13,6 +13,20 @@ import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
 
 export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
+
+const ROUTE_TABLE: Record<Route, true> = {
+  home: true, words: true, import: true, test: true, drill: true, review: true, today: true, paradigms: true, placement: true, goal: true, path: true, ipa: true, sounds: true, studyway: true,
+  aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, about: true, preface: true, essay: true, library: true, lists: true, memorize: true, settings: true, share: true, unlock: true,
+};
+
+/** Every screen of the app, once: the table the tutor's places are checked against (src/tutor/registry.ts, tests/unit/tutor-registry.test.ts). A new Route fails typecheck until it is listed here. */
+export const ROUTES = Object.keys(ROUTE_TABLE) as Route[];
+
+/** What the history entry of a place the tutor took him to carries (mw-t3xu9a.4): a pushed entry, so Back returns to where he was; the Talk sheet beneath it comes back with Back (src/ui/sheetBack.ts leaveSheetForTutor). */
+export type TutorGoEntry = { tutorGo: true };
+
+/** True when the entry he is on is one the tutor took him to. */
+export const isTutorGo = (): boolean => (window.history.state as Partial<TutorGoEntry> | null)?.tutorGo === true;
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -97,7 +111,7 @@ const pageOpenedOnReader = typeof window === 'undefined' || routeOf(window.locat
  * over the saved setting (src/reader/useReaderSettings.ts, mw-5r3p30.658). */
 export const openedOnReader = (): boolean => pageOpenedOnReader;
 
-const hashFor = (route: Route) => (route === 'home' ? '#/' : route === 'essay' ? ESSAY_PATH : `#/${route}`);
+export const hashFor = (route: Route) => (route === 'home' ? '#/' : route === 'essay' ? ESSAY_PATH : `#/${route}`);
 
 const wholeNumber = (text: string | null): number | undefined => (text !== null && /^[1-9]\d{0,3}$/.test(text) ? Number(text) : undefined);
 
@@ -205,11 +219,11 @@ export function paradigmHash({ table, mode, cell, word, parse, lemma, own }: Par
 const urlFor = (hash: string) => `${window.location.pathname}${window.location.search}${hash}`;
 
 /** Opens a screen; `replace` swaps the current history entry instead of adding one. Opening the screen he is already on adds nothing (a double tap). */
-export function navigate(route: Route, options: { replace?: boolean } = {}): void {
+export function navigate(route: Route, options: { replace?: boolean; tutor?: boolean } = {}): void {
   if (options.replace) replaceHash(hashFor(route));
   else {
     if (window.location.hash === hashFor(route)) return;
-    window.history.pushState(null, '', urlFor(hashFor(route)));
+    window.history.pushState(options.tutor ? ({ tutorGo: true } satisfies TutorGoEntry) : null, '', urlFor(hashFor(route)));
     notify();
   }
 }
@@ -360,9 +374,9 @@ export function closeLicence(origin: LicenceOrigin): void {
   navigate(origin === 'reader' ? 'home' : 'settings');
 }
 
-/** Opens the reader at a chapter and verse, as a new Back step. */
-export function openReader(address: Pick<ReaderAddress, 'book' | 'chapter' | 'verse'>): void {
-  window.history.pushState(null, '', urlFor(readerHash(address)));
+/** Opens the reader at a chapter and verse, as a new Back step; `tutor` marks the entry as one the tutor took him to. */
+export function openReader(address: Pick<ReaderAddress, 'book' | 'chapter' | 'verse'>, options: { tutor?: boolean } = {}): void {
+  window.history.pushState(options.tutor ? ({ tutorGo: true } satisfies TutorGoEntry) : null, '', urlFor(readerHash(address)));
   notify();
 }
 

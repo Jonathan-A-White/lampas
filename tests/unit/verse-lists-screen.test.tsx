@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { createVerseList, getVerseList, listVerseLists } from '../../src/data/repositories';
+import { memorize } from '../../src/data/repositories/memorize';
 import { clearBus } from '../../src/events/bus';
 import { LibraryScreen } from '../../src/library/LibraryScreen';
 import { VerseListsScreen } from '../../src/lists/VerseListsScreen';
@@ -19,6 +20,7 @@ beforeEach(async () => {
   window.history.replaceState(null, '', '/#/lists');
   await db.open();
   await db.verseLists.clear();
+  await db.reviews.clear();
 });
 afterEach(() => {
   cleanup();
@@ -179,6 +181,24 @@ describe('the Library', () => {
     expect(row.closest('[data-testid="kind-row"]')).toBeNull();
     await userEvent.click(row);
     expect(window.location.hash).toBe('#/lists');
+  });
+
+  it('has a Memorize row with the verses due, which opens #/memorize', async () => {
+    window.history.replaceState(null, '', '/#/library');
+    await memorize('Rom.8.28', ['en']);
+    await memorize('John.3.16', ['en']);
+    render(<LibraryScreen />);
+    const row = await screen.findByRole('button', { name: /^Memorize/ });
+    await waitFor(() => expect(row).toHaveTextContent('Memorize 2 due'));
+    await userEvent.click(row);
+    expect(window.location.hash).toBe('#/memorize');
+  });
+
+  it('the Memorize row says nothing due when no verse is', async () => {
+    window.history.replaceState(null, '', '/#/library');
+    render(<LibraryScreen />);
+    const row = await screen.findByRole('button', { name: /^Memorize/ });
+    await waitFor(() => expect(row).toHaveTextContent('nothing due'));
   });
 
   it('says none when there is no list', async () => {
