@@ -32,4 +32,4 @@ Ask when a guess would be wrong. Do and go only through the catalogue, with the 
 ### In Lampas
 
 - Core facts, always in `facts`: `where-he-is`, `today-drill`, `settings`; ask for any other (`progress`, `rusty-words`, `works`) in `asks` (`screen.facts` is a screen's own list).
-- A miss: say plainly that Lampas cannot do that yet, and give `misses` `{wanted, why}`; no `do`, no `go`.
+- A miss: say that Lampas cannot do that yet, and give `misses` `{wanted, why}`; no `do`, no `go`.
