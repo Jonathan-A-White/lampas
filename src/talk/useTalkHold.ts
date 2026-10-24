@@ -4,7 +4,7 @@
 // `onWords` is what he said, once he lets go; the words of a hold that ends any other way (a slide off, the phone taking the touch, the recogniser failing, the app
 // hidden) are not sent: they go to `onKept`, by default into the open Talk sheet's field (talk/keptWords.ts), so nothing he said is lost. The bar is the kit's TalkBar (talk/Bars.tsx draws it). What is added to the kit's hold is what the
 // screens ask of it: `abort` (the sheet closed while he held), `clearNotice`, `ready` (the microphone is open), `typing` (counts the holds a phone
-// with no recogniser sent to the typed field), `failure` (why the last hold could not go on) and `pressBegan` / `endsAHold` (the click that ends a hold is not a tap).
+// with no recogniser sent to the typed field), `failureKind` (the kind of failure the last hold could not go on with; the kit's own `failure` is the whole error) and `pressBegan` / `endsAHold` (the click that ends a hold is not a tap).
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTalk, type ListenErrorKind, type Transcriber } from 'voice-kit/composer';
 import { askTranscriber } from '../speech/askTranscriber';
@@ -28,7 +28,7 @@ export type TalkHold = ReturnType<typeof useTalkHold>;
 
 export function useTalkHold(onWords: (text: string) => void, { onBegin, onKept = keepWords, holdDelayMs }: TalkHoldOptions = {}) {
   const [typing, setTyping] = useState(0);
-  const [failure, setFailure] = useState<ListenErrorKind | undefined>(undefined);
+  const [failureKind, setFailure] = useState<ListenErrorKind | undefined>(undefined);
   // the kind of the last failure, read when the hold ends (the state above is for the screen)
   const lastFailure = useRef<ListenErrorKind | undefined>(undefined);
   const held = useRef(false);
@@ -90,5 +90,5 @@ export function useTalkHold(onWords: (text: string) => void, { onBegin, onKept =
   // the hold is dropped as a finger slides off the bar is: nothing is sent
   const abort = useCallback(() => bar.onPointerCancel(), [bar]);
   const clearNotice = useCallback(() => setNotice(undefined), [setNotice]);
-  return { ...talk, ready: talk.mic === 'ready', typing, failure, pressBegan, endsAHold, abort, clearNotice };
+  return { ...talk, ready: talk.mic === 'ready', typing, failureKind, pressBegan, endsAHold, abort, clearNotice };
 }

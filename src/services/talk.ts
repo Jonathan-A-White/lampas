@@ -20,19 +20,20 @@ import type { TutorRequest } from '../data/requestsForTutor';
 import type { MemoryUpdate } from '../talk/memoryUpdate';
 import type { SettingValue } from '../settings/registry';
 import { GREEK_LEVELS, greekLevelOf, nextGreekStep, type GreekLevel } from '../settings/definitions/greekInterest';
-import { trimWorks, type TutorResource, type TutorWork } from '../resources/tutorLinks';
+import { type TutorResource, type TutorWork } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
 import type { FormFieldState, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { askGrind, type AskOptions } from './tutor';
-import { clipTexts, FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES, TALK_SUMMARY_MAX } from './requestBudget';
+import { FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES, TALK_SUMMARY_MAX } from './requestBudget';
 import { solidWordsField } from './solidWords';
-import { dropFarthest, heldText, holdText, talkWindow, textOf, versesLabel } from './talkVerses';
+import { holdText, talkWindow, textOf, versesLabel } from './talkVerses';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { heldPassagesOf, MAX_FETCH, verseEnglish, verseGreek, type HeldPassage } from './talkFetch';
-import { MAX_HISTORY_TURNS } from 'voice-kit/talks';
+import { clipText as clipTo, fitRequest, jsonBytes, MAX_HISTORY_TURNS } from 'voice-kit/talks';
+import { bibleTalkSteps, talkBytes } from './talkFit';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
 export const TALK_KIND = 'bible-talk';
@@ -56,12 +57,7 @@ export function talkNameOf(ref: string, turns: readonly { when: number }[], now 
   return { talk: ref.slice(0, Math.max(0, TALK_NAME_MAX - suffix.length)) + suffix, when };
 }
 
-/** What the grist header's `talk` adds to a request's weight once sealed: `,"talk":"..."`, counted in the cap beside the request. */
-const talkBytes = (talk: string | undefined): number => (talk ? new TextEncoder().encode(`,"talk":${JSON.stringify(talk)}`).length : 0);
 export { MAX_REQUEST_BYTES, GREEK_WORDS_BYTES, TALK_SUMMARY_MAX, FOLD_MAX_TURNS, FOLD_Q_CHARS, FOLD_A_CHARS };
-/** A long answer in the history is cut to this many characters when the request is too big. */
-const CLIPPED_CHARS = 240;
-const CLIP_MARK = '…';
 
 /** What the grind says to anything outside the Bible (grinds/bible-talk.instructions/), word for word. */
 export const REFUSAL = 'I can only talk about the Bible here; ask for app changes in Postern.';
@@ -488,15 +484,11 @@ export const scopeTitle = (scope: Pick<TalkScope, 'title' | 'verse'>): string =>
 export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, 'verse' | 'quiz' | 'screen' | 'free' | 'kept'>): string =>
   scope.free ? scope.free : scope.screen && scope.kept ? scope.kept : scope.screen ? screenRef(slugOf(scope.screen.name)) : talkRef(book, chapter, scope.verse ? unitId(scope.verse) : null, scope.quiz === true);
 
-const clipTo = (text: string, max: number): string => (text.length <= max ? text : text.slice(0, max - CLIP_MARK.length).trimEnd() + CLIP_MARK);
-
 /** The key points the mill wrote when it ended a talk's session (at most 1500 characters) as the running summary the device keeps: a summary is at most TALK_SUMMARY_MAX, so longer key points are cut at that, ending in the clip mark. */
 export const summaryOfKeyPoints = (keyPoints: string): string => clipTo(keyPoints.trim(), TALK_SUMMARY_MAX);
 
 /** A turn as the fold carries it: what he said and what the tutor answered, each cut short. */
 export const foldedTurn = (turn: TalkHistoryEntry): TalkHistoryEntry => ({ q: clipTo(turn.q, FOLD_Q_CHARS), a: clipTo(turn.a, FOLD_A_CHARS) });
-
-const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.stringify(request)).length;
 
 /**
  * Makes the request fit a grist: while it is too big the oldest long answer in the history is cut short; when none is left to cut
@@ -511,86 +503,8 @@ const sizeOf = (request: TalkRequest): number => new TextEncoder().encode(JSON.s
  * the sound rules), except on a sound question.
  */
 export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkRequest {
-  let history = request.history.map((t) => ({ ...t }));
-  let summary = request.summary;
-  let fold = request.fold ? request.fold.map((t) => ({ ...t })) : [];
-  let requests = request.requests;
-  let greekWords = request.greek_words;
-  let works = request.works;
-  let memoryNotes = request.memory?.notes;
-  let guide = request.pronunciation_guide;
-  let drill = request.screen?.drill;
-  let text = { greek: request.greek ?? '', english: request.english ?? '' };
-  let verses = request.verses;
-  let fetched = request.held_passages;
-  const rest: Partial<TalkRequest> = { ...request };
-  delete rest.summary;
-  delete rest.fold;
-  delete rest.held_passages;
-  delete rest.works;
-  const fitted = (): TalkRequest => ({ ...(rest as TalkRequest), ...(summary ? { summary } : {}), ...(fold.length > 0 ? { fold } : {}), ...(request.greek !== undefined ? text : {}), ...(verses ? { verses } : {}), ...(fetched && fetched.length > 0 ? { held_passages: fetched } : {}), ...(request.screen && drill ? { screen: { ...request.screen, drill } } : {}), pronunciation_guide: guide, history, ...(requests ? { requests } : {}), ...(greekWords ? { greek_words: greekWords } : {}), ...(works && works.length > 0 ? { works } : {}), ...(request.memory && memoryNotes ? { memory: { ...request.memory, notes: memoryNotes } } : {}) });
   // the talk's name travels in the grist header beside the request and weighs with it (mw-pxji7y.3)
-  const named = talkBytes(talk);
-  const tooBig = (): boolean => sizeOf(fitted()) + named > MAX_REQUEST_BYTES;
-  for (;;) {
-    const long = history.findIndex((t) => t.a.length > CLIPPED_CHARS);
-    if (!tooBig() || long < 0) break;
-    history[long] = { ...history[long], a: history[long].a.slice(0, CLIPPED_CHARS - CLIP_MARK.length).trimEnd() + CLIP_MARK };
-  }
-  if (tooBig() && request.focus?.kind !== 'sound') guide = undefined;
-  while (greekWords && greekWords.length > 0 && tooBig() && history.length > 0) greekWords = greekWords.slice(0, -1);
-  // the digest of his shelf is cut from its end, each book it drops counted into its closing line (mw-rfjjzd.10), after the word list and before the passages and the turns
-  while (works && works.length > 0 && tooBig()) works = trimWorks(works);
-  // the passages the tutor fetched give way the oldest first, before a verse of the talk's own text or a turn (mw-5r3p30.734)
-  while (fetched && fetched.length > 0 && tooBig()) fetched = fetched.slice(0, -1);
-  // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) gives up whole verses, the farthest from the talk's verse first, before any turn is dropped (mw-5r3p30.733)
-  const hold = heldText(request);
-  if (hold && request.greek !== undefined && tooBig()) {
-    let parts = hold.parts;
-    while (parts.length > 1 && tooBig()) {
-      parts = dropFarthest(parts, hold.anchor);
-      text = textOf(parts);
-      verses = versesLabel(hold.chapter, parts) ?? verses;
-      // the words of a verse that is gone go with it
-      const forms = new Set(text.greek.split(' '));
-      greekWords = greekWords?.filter((w) => forms.has(w.form));
-    }
-  }
-  // one verse longer than a request holds is sent from its start, cut where it must be
-  if (request.greek !== undefined && tooBig()) {
-    text = clipTexts(text, (t) => {
-      text = t;
-      return tooBig();
-    });
-  }
-  // the newest turn is what he is answering ("Here are the others"): the older turns go first, then the lesser fields, and the newest turn last (mw-5r3p30.615)
-  // a turn dropped for room is folded into the summary instead of lost, cut short, behind the turns already waiting to be: only when none is left waiting behind them (`unfolded`), else the summary would skip them
-  // (the first `held` turns of the history are in the summary already, since an earlier fit folded them: they go without a second fold)
-  let covered = held;
-  while (history.length > 1 && tooBig()) {
-    if (covered > 0) covered -= 1;
-    else if (!request.unfolded) fold = [...fold, foldedTurn(history[0])];
-    history = history.slice(1);
-  }
-  // what the cut turns would add is the first to go again when the request is still over: the fold is the oldest turns' last claim on the record
-  while (fold.length > 0 && tooBig()) fold = fold.slice(0, -1);
-  while (greekWords && greekWords.length > 0 && tooBig()) greekWords = greekWords.slice(0, -1);
-  while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
-  // his notes are the next to go, from the end of the list (the notes come in name order: book, topic, word); the index always stays
-  while (memoryNotes && memoryNotes.length > 0 && tooBig()) memoryNotes = memoryNotes.slice(0, -1);
-  // the results of a drill give way a right answer at a time, the oldest first, then the rest from the end: the wrong ones are what he talks about
-  while (drill && drill.length > 0 && tooBig()) {
-    const right = drill.findIndex((d) => d.right);
-    drill = right >= 0 ? drill.filter((_, i) => i !== right) : drill.slice(0, -1);
-  }
-  while (history.length > 0 && tooBig()) history = history.slice(1);
-  // the summary is the last to go, after the newest turn (mw-5r3p30.700)
-  if (tooBig()) {
-    summary = undefined;
-    // a fold with no summary to fold into would replace the kept summary with a part of it
-    if (request.summary) fold = [];
-  }
-  return fitted();
+  return fitRequest(request, bibleTalkSteps(held), { maxBytes: MAX_REQUEST_BYTES, extraBytes: talkBytes(talk) });
 }
 
 /** A Greek sound question carries the app's respelling of the word, and its syllables and stressed syllable (mw-5r3p30.274), so the tutor explains the sounds by the pronunciation the app speaks, not by its own habit. */
@@ -699,7 +613,7 @@ export function buildTalkRequest(
   };
   if (scope.screen || !hold) return request;
   // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES
-  return holdText({ ...request, greek_words: greekWordsFitting(scope.chapter, verses, request.question, pronunciation, sizeOf({ ...request, history: [] })) }, hold);
+  return holdText({ ...request, greek_words: greekWordsFitting(scope.chapter, verses, request.question, pronunciation, jsonBytes({ ...request, history: [] })) }, hold);
 }
 
 /** Sends what he said and waits for the companion's answer. Throws a TutorError (src/services/tutor.ts). */
