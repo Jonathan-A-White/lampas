@@ -1,13 +1,13 @@
 // src/talk/memoryUpdate.ts — what a bible-talk answer does to the reader's memory (mw-yrmkdf.2, docs/ask-tutor.md 'Memory'). `memory_update` is a short
-// list of {name | 'index', append | replace | remove, directed?}: an append goes on the end of the note (or the index) by 'tutor' and needs nothing more; a
-// replace or a remove is applied ONLY when the entry says `directed: true`, which the grind's instructions allow only when he asked for exactly that in
-// his words of this turn. The app does not see his words as meaning anything, so an undirected replace or remove is refused, logged and changes nothing.
+// list of {name | 'index', append | replace | remove}: an append goes on the end of the note (or the index) by 'tutor' and needs nothing more; a
+// replace or a remove is applied ONLY when the entry carries the grind's flag that his own words asked for it, which the grind's instructions allow only when he asked for exactly that in
+// his words of this turn. The app does not see his words as meaning anything, so such a replace or remove without it is refused, logged and changes nothing.
 // That rule, the four lines and the never-throws loop are voice-kit/talks' applyNoteUpdates (mw-o480n1.7); this file gives it Lampas's NoteStore.
 // `wished_notes` are names of notes the tutor would have used had they existed: they are counted and the last names kept (Settings > About), nothing else.
 import { applyNoteUpdates, type NoteStore, type NotesChange, type NoteUpdate } from 'voice-kit/talks';
 import { appendToIndex, appendToNote, clearGreekNo, keepWishedNotes, memoryName, putNote, removeNote, setIndex } from '../data/repositories/memory';
 
-/** One entry of `memory_update`: exactly one of append, replace or remove (the answer guard checks); `directed` only with the last two. The kit's NoteUpdate. */
+/** One entry of `memory_update`: exactly one of append, replace or remove (the answer guard checks); the grind's flag for his own words only with the last two. The kit's NoteUpdate. */
 export type MemoryUpdate = NoteUpdate;
 
 /** The part of a bible-talk answer this reads. */
