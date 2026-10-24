@@ -32,7 +32,7 @@ import { solidWordsField } from './solidWords';
 import { holdText, talkWindow, textOf, versesLabel } from './talkVerses';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { heldPassagesOf, MAX_FETCH, verseEnglish, verseGreek, type HeldPassage } from './talkFetch';
-import { clipText as clipTo, fitRequest, jsonBytes, MAX_HISTORY_TURNS } from 'voice-kit/talks';
+import { clipText as clipTo, fitRequest, isNoteUpdate, jsonBytes, MAX_HISTORY_TURNS } from 'voice-kit/talks';
 import { bibleTalkSteps, talkBytes } from './talkFit';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
@@ -394,16 +394,8 @@ const isProfileUpdate = (value: unknown): value is ProfileUpdate => {
   return 'value' in value ? isText(value.value, LEARNED_VALUE_MAX) : value.declined === true;
 };
 
-const isMemoryUpdate = (value: unknown): value is MemoryUpdate => {
-  if (!isObject(value) || Object.keys(value).some((k) => k !== 'name' && k !== 'append' && k !== 'replace' && k !== 'remove' && k !== 'directed')) return false;
-  if (!isText(value.name, MEMORY_NAME_MAX)) return false;
-  if ('directed' in value && value.directed !== true) return false;
-  const actions = ['append', 'replace', 'remove'].filter((k) => k in value);
-  if (actions.length !== 1) return false;
-  if ('append' in value) return !('directed' in value) && isText(value.append, MEMORY_APPEND_MAX);
-  if ('replace' in value) return isText(value.replace, MEMORY_NOTE_MAX);
-  return value.remove === true;
-};
+const isMemoryUpdate = (value: unknown): value is MemoryUpdate =>
+  isNoteUpdate(value, { nameMax: MEMORY_NAME_MAX, appendMax: MEMORY_APPEND_MAX, replaceMax: MEMORY_NOTE_MAX });
 
 /** The longest line of a Greek offer: the answer schema's. */
 export const GREEK_OFFER_TEXT_MAX = 120;
