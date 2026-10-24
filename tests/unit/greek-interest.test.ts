@@ -33,6 +33,7 @@ const GREEK_ROWS: Readonly<Record<string, GreekLevel>> = {
   greekVoice: 1,
   greekRate: 1,
   greekPronunciation: 1,
+  greekKeyboard: 1,
   'resource.strongs': 1,
   'link.words': 1,
   'link.review': 1,

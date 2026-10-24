@@ -67,6 +67,7 @@ src/SettingsScreen.tsx  # the home (search field, groups, found rows) and a grou
 src/settings/rows.ts  # SECTIONS, GROUPS (which group a section is in), ROWS, visibleRows, rowsAt, neededFor, visibleGroups, searchSettings; the links, the Ask for a devotional door (it opens Ask for a book), the Your Logos library row (the door to #/library, not talkable) and Developer mode are rows too
 src/settings/define.ts  # defineSetting and SectionId
 src/settings/definitions/greekInterest.ts  # the Greek dial: GREEK_LEVELS, greekFrom, viewAt / weaveAt / newWordsAt, placementOf, the setting
+src/settings/definitions/greekKeyboard.ts  # Greek keyboard (mw-fu7dqf.9, section daily beside Memorize, 'on' | 'off', Off to start, shown from Curious by greekFrom(1)): whether he has added a Greek keyboard to his phone; Memorize's Type it is offered in Greek only while it is On. Drawn by controls/daily.tsx like the Daily switches. PROVISIONAL
 src/settings/useGreekInterest.ts  # the step, live
 src/data/repositories/greekInterest.ts  # setGreekInterest, placeGreekInterest, raiseGreekInterest, the kept values
 src/settings/librarySearch.ts  # searchLibrary: the books the Settings search answers ('BDAG · Your Logos library'), drawn by Found in SettingsHome.tsx; a book opens its kind page at it

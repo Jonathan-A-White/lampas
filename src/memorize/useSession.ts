@@ -2,7 +2,7 @@
 //   loading  the row (the step; a verse not on the schedule is at step 0), the target of the moment (memorizeTarget over the Reader's own Weave settings), the rung (rungFor), the words it hides
 //            (learn-kit/recall hideWords over the target, seeded by the row's lastWhen so the same words are gone each time he opens it)
 //   phases   'shown' (the verse at its rung, the hold below it) -> 'sending' (a Weave recording is with the mill) -> 'judged' (misses marked, the recall kept, 'Due <day>')
-//   hearing  useRecallHold(lang): dictation judged by judgeSaid ('said'), a Weave recording sent by sendWeaveRecall and judged by judgeReading ('mill'); a phone that cannot hear that language, is
+//   hearing  useRecallHold(lang): dictation judged by judgeSaid ('said'), a Weave recording sent by sendWeaveRecall and judged by judgeReading ('mill'); typed(text) is judged by judgeTyped ('typed', never for the Weave); a phone that cannot hear that language, is
 //            offline or has no microphone says so (`note`) and lets him grade himself (I had it / Not yet, 'self')
 //   keeping  recordRecall writes the recall and moves the verse on the schedule; the row is read again for its due day
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -12,7 +12,7 @@ import { versesOf } from './refs';
 import { memorizedRowOf, nextDueVerse, recordRecall, type RecallHow } from '../data/repositories/memorize';
 import { wovenOf } from '../reader/useWoven';
 import type { WovenVerse } from '../data/weave';
-import { asked, judgeReading, judgeSaid, type Judgement } from './judge';
+import { asked, judgeReading, judgeSaid, judgeTyped, type Judgement } from './judge';
 import type { MemorizeLang } from './languages';
 import { rungFor, type Rung } from './rung';
 import { sendWeaveRecall } from './sendWeave';
@@ -64,6 +64,8 @@ export type SessionState =
       /** the next verse that is due, once this one is kept; null when none is */
       next: { ref: string; lang: MemorizeLang } | null;
       gradeSelf(passed: boolean): void;
+      /** what he typed (src/memorize/TypeIt.tsx), judged and kept as 'typed' */
+      typed(text: string): void;
     };
 
 interface Loaded {
@@ -183,10 +185,19 @@ export function useSession(ref: string, lang: MemorizeLang): SessionState {
     [keep],
   );
 
+  const typed = useCallback(
+    (text: string): void => {
+      const at = latest.current;
+      if (!at || foldWords(text).length === 0) return;
+      void keep(judgeTyped(at.tokens, text), 'typed');
+    },
+    [keep],
+  );
+
   if (loaded === null) return { status: 'loading' };
   if (loaded === 'ot') return { status: 'ot', heading };
   if (loaded === 'unknown') return { status: 'unknown' };
   const rung = rungFor(loaded.step);
   const hidden = rung.kind === 'gaps' ? hideWords(loaded.tokens.length, rung.share, loaded.seed) : new Set<number>();
-  return { status: 'ready', heading, lang, step: loaded.step, rung, tokens: loaded.tokens, hidden, phase, note, kept, hold, next, gradeSelf };
+  return { status: 'ready', heading, lang, step: loaded.step, rung, tokens: loaded.tokens, hidden, phase, note, kept, hold, next, gradeSelf, typed };
 }

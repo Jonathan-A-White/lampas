@@ -3,7 +3,7 @@ import { ROWS } from '../rows';
 import { AppearanceControl, ChapterButtonsControl, FontControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
 import { ApproachControl } from './approach';
 import { AskDevotionalControl } from './askDevotional';
-import { DailyDevotionalControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, DevotionalDrawControl, TodaysDevotionalControl } from './daily';
+import { DailyDevotionalControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, GreekKeyboardControl, DevotionalDrawControl, TodaysDevotionalControl } from './daily';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
 import { GrammarExtentControl } from './grammarExtent';
@@ -58,6 +58,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   devotionalDraw: DevotionalDrawControl,
   todaysDevotional: TodaysDevotionalControl,
   dailyTicks: DailyTicksControl,
+  greekKeyboard: GreekKeyboardControl,
   'request.devotional': AskDevotionalControl,
   library: LibraryControl,
   tips: TipsControl,
