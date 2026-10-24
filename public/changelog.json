@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.437",
+    "date": "2026-10-24",
+    "story": "mw-t3xu9a.4",
+    "kind": "new",
+    "text": "When the tutor takes you to another chapter, the phone's Back now brings you back to your talk with the tutor, as you left it."
+  },
+  {
+    "version": "0.1.437",
+    "date": "2026-10-24",
+    "story": "mw-fu7dqf.11",
+    "kind": "new",
+    "text": "Memorize is now a screen of its own, reached from the Library, showing the verses due today and every verse you are learning with how far along each is."
+  },
+  {
     "version": "0.1.435",
     "date": "2026-10-24",
     "story": "mw-5r3p30.748",

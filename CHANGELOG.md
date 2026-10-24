@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.437
+_2026-10-24_
+- New: When the tutor takes you to another chapter, the phone's Back now brings you back to your talk with the tutor, as you left it.
+- New: Memorize is now a screen of its own, reached from the Library, showing the verses due today and every verse you are learning with how far along each is.
+
 ## 0.1.435
 _2026-10-24_
 - Fixed: an error message and its Retry button stay on screen when you open a verse again after a question failed, even with the phone held sideways.
