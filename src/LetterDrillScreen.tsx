@@ -207,7 +207,7 @@ function SayFoot({ onHeard, onSkip, onNoMicrophone }: { onHeard: (text: string) 
   };
   // a letter heard before the recogniser gave up (an error, it ending by itself) is the answer he said; a slide off or leaving the app is "never mind", and there is no field to keep it in
   const voice = useTalkHold(heard, { onKept: (text, ended) => (ended === 'error' || ended === 'ended' ? heard(text) : undefined) });
-  const refused = voice.failure !== undefined && NO_MICROPHONE.has(voice.failure);
+  const refused = voice.failureKind !== undefined && NO_MICROPHONE.has(voice.failureKind);
   useEffect(() => {
     if (refused) onNoMicrophone();
   }, [refused, onNoMicrophone]);
