@@ -1,5 +1,9 @@
 # What's new
 
+## 0.1.427
+_2026-10-24_
+- New: Words that have a note on their heart now show it on the word's sheet, on the card that first teaches the word, and after you miss it in Review, and the tutor is told the same note.
+
 ## 0.1.425
 _2026-10-23_
 - New: In a verse list's Edit you can move or copy a reference to another list, or to a new list you name on the spot.
