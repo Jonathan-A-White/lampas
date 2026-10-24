@@ -4,18 +4,50 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useRef, useState, type FormEvent } from 'react';
 import { getVerseList, removeVerseList, renameVerseList } from '../data/repositories';
+import { memorizedOf } from '../data/repositories/memorize';
+import { memorizeList, skippedLine, splitRefs, unmemorizeList } from '../memorize/commands';
+import { MemorizeControl } from '../memorize/MemorizeControl';
 import { backTo } from '../nav/route';
 import { RefLink } from '../share/ShareReferences';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { focusQuietly } from '../ui/focus';
+import { announce } from '../ui/live';
 import { listedOf, referencesLine } from './canonical';
 import { noteDeleted } from './deleted';
 import { EditRefs } from './EditRefs';
 import { PlayAll } from './PlayAllBar';
 
 const ACTION = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
+
+/** 'Memorize this list' (mw-fu7dqf.5): On while every New Testament reference the list holds is memorized in English; a tap goes through the memorize commands, which skip and name the Old Testament ones. */
+function MemorizeList({ listId, refs }: { listId: number; refs: readonly string[] }) {
+  const { nt, ot } = splitRefs(refs);
+  const found = useLiveQuery(() => memorizedOf(nt), [nt.join(' ')]);
+  if (found === undefined) return null;
+  const on = nt.length > 0 && nt.every((ref) => found.get(ref)?.includes('en'));
+  const flip = () => void (on ? unmemorizeList({ listId }) : memorizeList({ listId })).then(({ said }) => announce(said)).catch((error) => console.error('could not change what is memorized', error));
+  const skipped = skippedLine(ot);
+  return (
+    <div className="mt-3">
+      <div className="flex min-h-12 items-center justify-between gap-3">
+        <span className="text-base font-medium">Memorize this list</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label="Memorize this list"
+          onClick={flip}
+          className={`min-h-12 min-w-16 rounded-lg px-4 text-base font-medium ${on ? 'bg-accent text-accent-fg' : 'border border-line text-fg'}`}
+        >
+          {on ? 'On' : 'Off'}
+        </button>
+      </div>
+      {skipped ? <p className="text-sm text-muted">{skipped}</p> : null}
+    </div>
+  );
+}
 
 export function VerseListScreen({ id }: { id: number }) {
   const list = useLiveQuery(async () => (await getVerseList(id)) ?? null, [id]);
@@ -105,13 +137,17 @@ export function VerseListScreen({ id }: { id: number }) {
           <p className="mt-3 text-base text-muted">This list holds no references yet.</p>
         ) : (
           <>
+            <MemorizeList listId={list.id} refs={list.refs} />
             <div className="mt-3">
               <PlayAll refs={shown.flatMap(({ listed }) => (listed ? [listed] : []))} />
             </div>
             <ul className="mt-3 space-y-2">
               {shown.map(({ canonical, listed }, i) => (
-                <li key={`${canonical}-${i}`}>
-                  {listed ? <RefLink r={listed} replacing={false} /> : <span className="flex min-h-12 items-center rounded-xl border border-line px-4 text-lg text-muted">{canonical}</span>}
+                <li key={`${canonical}-${i}`} className="flex items-stretch gap-2">
+                  <div className="min-w-0 flex-1">
+                    {listed ? <RefLink r={listed} replacing={false} /> : <span className="flex min-h-12 items-center rounded-xl border border-line px-4 text-lg text-muted">{canonical}</span>}
+                  </div>
+                  {listed?.testament === 'nt' ? <MemorizeControl canonical={canonical} compact /> : null}
                 </li>
               ))}
             </ul>
