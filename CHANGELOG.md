@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.435
+_2026-10-24_
+- Fixed: an error message and its Retry button stay on screen when you open a verse again after a question failed, even with the phone held sideways.
+- New: Memorize lets you type a verse from memory, in English always and in Greek once you turn on Greek keyboard in Settings.
+
 ## 0.1.434
 _2026-10-24_
 - Fixed: Held sideways, the Listen screen shows the Listen in Audible link above the Play button again instead of pushing it out of sight.

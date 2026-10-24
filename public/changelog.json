@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.435",
+    "date": "2026-10-24",
+    "story": "mw-5r3p30.748",
+    "kind": "fixed",
+    "text": "an error message and its Retry button stay on screen when you open a verse again after a question failed, even with the phone held sideways."
+  },
+  {
+    "version": "0.1.435",
+    "date": "2026-10-24",
+    "story": "mw-fu7dqf.9",
+    "kind": "new",
+    "text": "Memorize lets you type a verse from memory, in English always and in Greek once you turn on Greek keyboard in Settings."
+  },
+  {
     "version": "0.1.434",
     "date": "2026-10-24",
     "story": "mw-5r3p30.746",
