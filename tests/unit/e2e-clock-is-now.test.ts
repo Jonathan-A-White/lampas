@@ -25,4 +25,17 @@ describe('the page clock of an e2e spec', () => {
     }
     expect(offences).toEqual([]);
   });
+
+  // A spec file is loaded once and its tests run minutes later on a busy host: a clock fixed at a Date.now() read when the file loaded stands before the
+  // licence stamp (a minute before the real now at the test's start) once the test starts more than a minute after the load, and the AI controls vanish
+  // (today.spec.ts, mw-5r3p30.749). The clock is read inside the test; a later time (the read plus a listening span) is fine.
+  it('is never fixed at the bare time the spec file was loaded', () => {
+    const offences: string[] = [];
+    for (const file of SPECS) {
+      const text = readFileSync(file, 'utf8');
+      const loadTimes = [...text.matchAll(/^(?:const|let) (\w+) = Date\.now\(\);/gm)].map((m) => m[1]);
+      for (const name of loadTimes) if (new RegExp(`clock\\.(setFixedTime|setSystemTime)\\(\\s*${name}\\s*\\)`).test(text)) offences.push(`${file}: clock fixed at ${name}, read when the file loaded`);
+    }
+    expect(offences).toEqual([]);
+  });
 });
