@@ -50,7 +50,7 @@ export interface ScreenContext {
 /** The most facts a screen sends, the longest label and the longest value (the input schema's limits). */
 export const MAX_FACTS = 12;
 export const FACT_LABEL_MAX = 40;
-export const FACT_VALUE_MAX = 200;
+export const FACT_VALUE_MAX = 400;
 /** The most settings a screen sends and the longest name, value and help of one (the input schema's limits). */
 export const MAX_SETTINGS = 50;
 export const SETTING_NAME_MAX = 40;

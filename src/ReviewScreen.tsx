@@ -7,7 +7,6 @@ import { countDue, LESSON_KIND, listDue, recordRound, reviewsOf } from './data/r
 import { parsePassageKey, passageLabel } from './approaches';
 import { DAY } from './data/schedule';
 import { type Random } from './data/quiz';
-import { ideaOf } from './data/grammar/ladder';
 import { backTo, navigate, openParadigm, openVerseRange } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { askForMoreItems } from './review/moreItems';
@@ -20,7 +19,7 @@ import { hasPractise, takePractise } from './review/practise';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
-import type { ScreenFact } from './tutor/screen';
+import { reviewFacts } from './review/reviewFacts';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 
@@ -111,34 +110,6 @@ function DueLessons({ lessons }: { lessons: { key: string; passage: { book: stri
       ))}
     </div>
   );
-}
-
-/** What the Ask the tutor control tells the tutor about Review: the due line, or the item in hand (its answer only once he has answered), or the score. */
-function reviewFacts(round: Round, dueLine: string | undefined): ScreenFact[] {
-  if (round.status === 'start') return [{ label: 'Due today', value: dueLine ?? '' }];
-  if (round.status === 'done') return [{ label: 'Round', value: `Finished: ${round.right} of ${round.total} right` }];
-  if (round.status === 'loading') return [];
-  const item = round.items[round.index];
-  const kind = item.kind === 'word' ? 'a word' : item.kind === 'sound' ? 'a sound or word he drilled' : item.kind === 'drill-plan' ? 'a step of his drill plan' : item.kind === 'paradigm' ? 'a cell of a table' : 'a grammar idea';
-  const question =
-    item.kind === 'word'
-      ? item.question.prompt
-      : item.kind === 'drill-plan'
-        ? item.item.kind === 'prove'
-          ? `Prove it: a full Drill it of ${ideaOf(item.ideaId).title}`
-          : `A short drill on ${item.item.facet?.label ?? ''} in ${ideaOf(item.ideaId).title}`
-        : item.kind === 'sound' && !item.question
-          ? `Say the word ${item.word ?? ''}`
-          : [item.question?.prompt, item.question?.form].filter(Boolean).join(' ');
-  const facts: ScreenFact[] = [
-    { label: 'Question', value: `${round.index + 1} of ${round.items.length}, ${kind}` },
-    { label: 'In hand', value: question },
-  ];
-  if (round.picked !== null) {
-    facts.push({ label: 'He chose', value: round.picked });
-    if (item.kind !== 'drill-plan') facts.push({ label: 'Right answer', value: item.kind === 'word' ? item.question.gloss : (item.question?.right ?? '') });
-  }
-  return facts;
 }
 
 export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
