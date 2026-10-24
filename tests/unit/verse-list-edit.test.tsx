@@ -51,13 +51,16 @@ describe('editing a list', () => {
     const id = await openEditing(REFUGE);
     await userEvent.click(screen.getByRole('button', { name: 'Remove Psalm 62:1-2' }));
     await waitFor(async () => expect(await savedRefs(id)).toEqual(['2Sam.22.3-4', '2Thess.3.3', 'Heb.7.24-25', 'Isa.30.21']));
-    expect(screen.queryByText('Psalm 62:1-2')).toBeNull();
+    // the screen follows the saved list by a live query, a moment after Dexie holds it
+    await waitFor(() => expect(screen.queryByText('Psalm 62:1-2')).toBeNull());
   });
 
   it('moves a reference up and down and keeps the order', async () => {
     const id = await openEditing(REFUGE);
     await userEvent.click(screen.getByRole('button', { name: 'Move Hebrews 7:24-25 up' }));
     await waitFor(async () => expect(await savedRefs(id)).toEqual(['2Sam.22.3-4', 'Ps.62.1-2', 'Heb.7.24-25', '2Thess.3.3', 'Isa.30.21']));
+    // wait for the screen to show the new order before acting on it
+    await waitFor(() => expect(within(screen.getAllByRole('listitem')[2]).getByRole('button', { name: 'Remove Hebrews 7:24-25' })).toBeInTheDocument());
     await userEvent.click(screen.getByRole('button', { name: 'Move 2 Samuel 22:3-4 down' }));
     await waitFor(async () => expect(await savedRefs(id)).toEqual(['Ps.62.1-2', '2Sam.22.3-4', 'Heb.7.24-25', '2Thess.3.3', 'Isa.30.21']));
   });
