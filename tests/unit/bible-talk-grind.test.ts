@@ -829,4 +829,13 @@ describe('two rules the trim of mw-5r3p30.732 left too weak (mw-5r3p30.737)', ()
   it('"When he is not ready" has him tell the reader plainly that he is missing quite a bit when `total` is more than three', () => {
     expect(part('## When he is not ready')).toMatch(/`total` more than three:[^.]*['"]You are missing quite a bit for this/);
   });
+
+  // mw-5r3p30.742: "most important first" beside `next` was read as the case he asked about (case-nominative, not ideas[0]); `next` has one reading.
+  it('"When he is not ready" says `next` is always `ideas[0].id`, the order the ideas are learned, never the most important one', () => {
+    const section = part('## When he is not ready');
+    expect(section).toMatch(/`next` is always `ideas\[0\]\.id`/);
+    expect(section).toMatch(/never the most important/);
+    const bridgeRule = section.slice(section.indexOf('Put ONE `bridge`'), section.indexOf('Name the ideas'));
+    expect(bridgeRule.indexOf('most important first')).toBeLessThan(bridgeRule.indexOf('`next`'));
+  });
 });
