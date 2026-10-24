@@ -10,7 +10,6 @@ import { approachOf, DEFAULT_APPROACH } from './approaches';
 import { NO_CHAPTER, type Chapter, type GreekWord } from './data/chapter';
 import { goalTitle } from './data/goal';
 import { BOOK_INDEX } from './data/bookIndex';
-import { addLemmaToLearn } from './data/answerWord';
 import { lettersText } from './data/grammar/inference';
 import { groupIdeas, groupWords, learnNext, learningNow, LEVELS, nextWords, placedAt } from './data/grammar/goalProgress';
 import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
@@ -30,6 +29,7 @@ import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
 import { WordSheet, type Lookup } from './WordSheet';
 import { GREEK_LANG } from './script/greekLang';
+import { addWord } from './tutor/registry';
 
 const BUTTON = 'min-h-12 rounded-xl px-4 text-lg font-medium';
 const LEVEL_TITLES: Record<Level, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
@@ -316,7 +316,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
 
   const alive = useAlive();
   const add = async (lemma: string, gloss: string): Promise<void> => {
-    const result = await addLemmaToLearn({ title: '', chapter: NO_CHAPTER, verse: null }, lemma);
+    const result = await addWord({ title: '', chapter: NO_CHAPTER, verse: null }, lemma);
     if (result.result === 'unknown') await addWordToLearn(lemma, gloss);
     if (alive()) setAdded(lemma);
   };

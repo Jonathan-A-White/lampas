@@ -1,5 +1,10 @@
 // src/data/rusty.ts (mw-1vuvq6.6): which SOLID words and ideas have gone rusty, for the `rusty` field the tutor grinds are sent. Pure, from fixtures.
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { db } from '../../src/data/db';
+import type { TalkTurn } from '../../src/data/repositories';
+import { takePractise } from '../../src/review/practise';
+import { takeRustyOffer } from '../../src/talk/rustyOffer';
+import { bibleTalkRegistry } from '../../src/tutor/registry';
 import { DAY, type Review } from '../../src/data/schedule';
 import { RUSTY_MAX, RUSTY_OVERDUE_DAYS, RUSTY_SLIP_DAYS, WELCOME_BACK_ITEMS, overdueOf, rustyOf, type RustyCandidate } from '../../src/data/rusty';
 
@@ -93,5 +98,26 @@ describe('overdue solid items, for Welcome back', () => {
     expect(out).toHaveLength(WELCOME_BACK_ITEMS);
     expect(out.map((o) => o.id)).toEqual(['late-35', 'late-34', 'late-33', 'late-32', 'late-31']);
     expect(overdueOf(rows.slice(0, 4), NOW).map((o) => o.id)).toEqual(['late-20', 'late-9', 'late-5']);
+  });
+});
+
+describe('the rusty offer: a tap and a spoken yes both run the start-review command (mw-t3xu9a.6)', () => {
+  afterAll(() => db.close());
+  beforeEach(async () => {
+    await db.open();
+    await Promise.all([db.words.clear(), db.reviews.clear(), db.meta.clear()]);
+    window.location.hash = '';
+  });
+
+  it('takeRustyOffer runs start-review with the offer\'s items and opens Review', async () => {
+    await db.words.put({ lemma: 'λόγος', lemmas: [], gloss: 'word', lesson: 1, state: 'solid', since: 0 });
+    const run = vi.spyOn(bibleTalkRegistry().command('start-review')!, 'run');
+    const turn = { rustyOffer: { items: [{ kind: 'word', id: 'λόγος', title: 'λόγος' }] } } as TalkTurn;
+    await takeRustyOffer(turn);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenCalledWith({ items: [{ kind: 'word', id: 'λόγος' }] });
+    expect(window.location.hash).toBe('#/review');
+    expect(takePractise()).toEqual([{ kind: 'word', id: 'λόγος' }]);
+    run.mockRestore();
   });
 });

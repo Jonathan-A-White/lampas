@@ -12,7 +12,6 @@ import { requestsForTutor } from './data/requestsForTutor';
 import { learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
-import { applyChanges } from './settings/registry';
 import { settingsSentTo } from './tutor/knows';
 import { addAnswer, getGreekPronunciation, listLevels, listSolidHeadwords, shelfOf, verseRef } from './data/repositories';
 import { worksForTutor } from './resources/tutorLinks';
@@ -24,7 +23,7 @@ import { withoutFillers } from './services/fillers';
 import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
 import { TutorError, askByChange, askTutor, buildRequest } from './services/tutor';
-import { askWithFacts } from './tutor/registry';
+import { askWithFacts, changeSettings } from './tutor/registry';
 
 export type { AskState };
 
@@ -94,7 +93,7 @@ export function useAsks(book: string, chapter: number, title: string, data: Chap
             },
           });
           // The one setting this tutor may switch is Ask by; the registry checks it like any talked change.
-          const { applied } = await applyChanges(askByChange(answer), { skipUnchanged: true });
+          const { applied } = await changeSettings(askByChange(answer), { skipUnchanged: true });
           await addAnswer(verseRef(book, chapter, unitId(verse)), text, answer.answer, answer.words, Date.now(), answer.question && withoutFillers(answer.question), applied, answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, spoken);
           // the answer is kept: the question is done, even if the screen went away as it came
           setPending(key, undefined);

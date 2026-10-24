@@ -7,7 +7,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type ReactNode } from 'react';
 import { RANDOM, devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
-import { getDay, getExplained, localDate, markOpened, noteExplained, pickAnotherDevotional, setTicked } from '../data/daily/dailyStore';
+import { getDay, getExplained, localDate, markOpened, noteExplained, pickAnotherDevotional } from '../data/daily/dailyStore';
 import { dailyReadings } from '../data/daily/psalmsProverbs';
 import { countDue, getLogosBible, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
@@ -35,6 +35,7 @@ import { useReportScreen } from '../tutor/screenContext';
 import { readRanges, readRuns } from './readToday';
 import { openedTitles, passageName, todayFacts } from './tutorFacts';
 import { useToday } from './useToday';
+import { tickToday } from '../tutor/registry';
 
 const LINK = 'flex min-h-12 min-w-0 flex-1 flex-col justify-center rounded-lg px-3 py-2 text-left active:bg-line';
 const ACTION = 'flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line';
@@ -58,7 +59,7 @@ function Piece({ id, label, ticks, children }: { id: string; label: string; tick
           role="checkbox"
           aria-checked={done}
           aria-label={`Done: ${label}`}
-          onClick={() => oneTap(`tick:${id}`, () => void setTicked(ticks.date, id, !done))}
+          onClick={() => oneTap(`tick:${id}`, () => void tickToday(id, !done))}
           className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg active:bg-line"
         >
           <span aria-hidden="true" className={`flex h-7 w-7 items-center justify-center rounded-md border-2 text-base ${done ? 'border-accent bg-accent text-accent-fg' : 'border-line'}`}>

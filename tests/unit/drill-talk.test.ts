@@ -1,7 +1,10 @@
 // What the tutor is told on the results of a drill (mw-5r3p30.649): every question of the run with the idea it tests, what was asked, his answer, the right answer
 // and whether he was right, as the `drill` of the request's `screen`, and the first question the sheet suggests (src/tutor/drillTalk.ts).
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getDay, localDate } from '../../src/data/daily/dailyStore';
+import { db } from '../../src/data/db';
+import { bibleTalkRegistry, tickToday } from '../../src/tutor/registry';
 import { NO_CHAPTER } from '../../src/data/chapter';
 import { drillSteps } from '../../src/data/grammar/drillIt';
 import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory, scopeRef, type TalkScope } from '../../src/services/talk';
@@ -95,5 +98,25 @@ describe('the first question the sheet suggests', () => {
   it('is "What should I practise next?" when all were right', () => {
     const right = run().map((t) => ({ ...t, picked: t.question.right }));
     expect(drillSuggestions(drillScreen({ idea: 'x', headline: 'Proved', tries: right }))[0]).toBe('What should I practise next?');
+  });
+});
+
+describe('the Today tick: his tap on a box runs the tick-today command (mw-t3xu9a.6)', () => {
+  afterAll(() => db.close());
+  beforeEach(async () => {
+    await db.open();
+    await Promise.all([db.settings.clear(), db.words.clear(), db.reviews.clear(), db.meta.clear()]);
+    await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }]);
+  });
+
+  it('tickToday runs tick-today for the piece, ticking and unticking it', async () => {
+    const run = vi.spyOn(bibleTalkRegistry().command('tick-today')!, 'run');
+    await tickToday('devotional', true);
+    expect(run).toHaveBeenLastCalledWith({ item: 'devotional', on: true });
+    expect((await getDay(localDate(new Date()))).ticked).toEqual(['devotional']);
+    await tickToday('devotional', false);
+    expect(run).toHaveBeenCalledTimes(2);
+    expect((await getDay(localDate(new Date()))).ticked).toEqual([]);
+    run.mockRestore();
   });
 });

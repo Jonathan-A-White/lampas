@@ -334,7 +334,9 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     window.location.hash = '#/?b=rom&c=8&v=28';
   });
   const scope = { title: 'Romans 8', chapter, verse: chapter.verses[27] };
-  const fields = () => buildTalkRequest(scope, 'What is on my drill today?', [turn(1), turn(2)], ['λόγος'], { theme: 'dark', greekPronunciation: 'modern' }, undefined, 'solid 1 word', undefined, [], [], 0, { kept: '' }, undefined, [], undefined, DEFAULT_PRONUNCIATION, false, undefined, undefined, undefined, undefined, [], undefined, [{ kind: 'review', title: 'Review: 3 due', done: false }]);
+  // a screen's talk holds no verse text, so the padded requests below have room for the client's part (the catalogue, with its commands, weighs about 4,200 bytes)
+  const screenScope = { title: 'Goal', chapter, verse: null, screen: { name: 'Reader', facts: [] } };
+  const fields = (s: typeof scope | typeof screenScope = scope) => buildTalkRequest(s, 'What is on my drill today?', [turn(1), turn(2)], ['λόγος'], { theme: 'dark', greekPronunciation: 'modern' }, undefined, 'solid 1 word', undefined, [], [], 0, { kept: '' }, undefined, [], undefined, DEFAULT_PRONUNCIATION, false, undefined, undefined, undefined, undefined, [], undefined, [{ kind: 'review', title: 'Review: 3 due', done: false }]);
 
   it('carries the where-he-is, today-drill and settings facts, and the catalogue', async () => {
     const built = await withTutorFacts(fields(), 2);
@@ -358,7 +360,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
 
   // a request of the size the tutor's part leaves `over` bytes beyond the cap: its learner line (which no cut touches) pads it
   const padded = async (over: number) => {
-    const base = (pad: number) => ({ ...fields(), history: Array.from({ length: 6 }, (_, i) => turn(i)), learner: 'y'.repeat(pad) });
+    const base = (pad: number) => ({ ...fields(screenScope), history: Array.from({ length: 6 }, (_, i) => turn(i)), learner: 'y'.repeat(pad) });
     const extra = size(await withTutorFacts(base(0), 6)) - size(base(0));
     const pad = MAX_REQUEST_BYTES - size(base(0)) - extra + over;
     return { plain: base(pad), built: await withTutorFacts(base(pad), 6) };
@@ -377,7 +379,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
   });
 
   it('then drops the facts that repeat a field of the request, and still keeps the turns', async () => {
-    const { plain, built } = await padded(2000);
+    const { plain, built } = await padded(2500);
     const fitted = fitHistory(built, 0, 'rom.8@1');
     expect(fitted.history).toEqual(plain.history);
     expect(fitted.settings).toEqual(plain.settings);
@@ -392,7 +394,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     const fitted = fitHistory(built, 0, 'rom.8@1');
     expect(fitted.history).toEqual(plain.history);
     expect(fitted.catalogue).toBeUndefined();
-    const { plain: tight, built: tightest } = await padded(5600);
+    const { plain: tight, built: tightest } = await padded(6400);
     const none = fitHistory(tightest, 0, 'rom.8@1');
     expect(none.facts).toBeUndefined();
     expect(none.history).toEqual(tight.history);

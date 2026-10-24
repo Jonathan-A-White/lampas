@@ -3,7 +3,6 @@
 // reader goes away, but what each message was doing is kept (src/pending/pendingAsks.ts): a message that had gone is waited for again, never sent a second time, when its sheet
 // is opened on the page that is back (`resume`), and a failure stays with its Retry.
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { addLemmaToLearn } from './data/answerWord';
 import { missingFoundations, resolveBridge } from './data/grammar/bridge';
 import { levelsOf } from './data/grammar/goalProgress';
 import { learnerGrammar } from './data/grammar/learnerGrammar';
@@ -21,9 +20,9 @@ import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
 import { readTarget, type GoPlace } from './talk/go';
-import { bibleTalkClient, bibleTalkRegistry, withTutorFacts } from './tutor/registry';
+import { addWord, bibleTalkClient, bibleTalkRegistry, changeSettings, withTutorFacts } from './tutor/registry';
 import { leaveSheetForTutor } from './ui/sheetBack';
-import { applyChanges, currentSettings, offeredChange } from './settings/registry';
+import { currentSettings, offeredChange } from './settings/registry';
 import { greekOfferOf } from './talk/greekOffer';
 import { greekLevelOf } from './settings/definitions/greekInterest';
 import { rustyOfferOf } from './talk/rustyOffer';
@@ -67,7 +66,7 @@ async function addWords(scope: TalkScope, lemmas: string[]): Promise<{ added: st
   const unknown: string[] = [];
   const seen = new Set<string>();
   for (const lemma of lemmas) {
-    const { headword, result } = await addLemmaToLearn(scope, lemma);
+    const { headword, result } = await addWord(scope, lemma);
     if (!headword || seen.has(headword)) continue;
     seen.add(headword);
     if (result === 'added') added.push(headword);
@@ -204,7 +203,7 @@ export function useTalk(
             },
           });
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
-          const { applied, refused } = await applyChanges(answer.settings_changes);
+          const { applied, refused } = await changeSettings(answer.settings_changes);
           // What his words did to the offer that waited (mw-5r3p30.186): a yes does what its tap does, a no withdraws it, a request to hear it changes nothing.
           const settled = await settleOffer(waiting ? answer.offer_reply : undefined, waiting, scope);
           applied.push(...settled.applied);
