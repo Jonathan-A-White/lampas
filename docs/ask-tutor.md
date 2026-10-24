@@ -147,7 +147,7 @@ Legend's `legend-ask` sends `history`, up to three earlier questions with their 
 
 ## An ask Lampas cannot meet
 
-When he asks for something Lampas does not do ('can this work with Olive Tree?', a new setting, a change), the answer carries `feedback_offer`
+When he asks for something Lampas does not do ('can I read the ESV beside the Greek?', a new setting, a change), the answer carries `feedback_offer`
 `{summary}` (one line, at most 200 characters; `grinds/bible-talk.instructions/` "Asks the app cannot meet": say it plainly, never promise the
 change). The turn then shows the summary and **Send this to the makers** (`FeedbackOffer` in `src/Talk.tsx`, on every Talk sheet, the Reader's too).
 Nothing is sent without the tap. The tap is `submitFeedback` (`src/services/feedback.ts`, the one feedback sender Ask for another approach uses too; a tutor-ask is filed through pwa-kit/requests' `fileFromTalk`, with no count of requests a day, and the kit's `send` is the grist below):

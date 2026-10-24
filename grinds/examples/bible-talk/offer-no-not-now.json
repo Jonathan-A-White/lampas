@@ -6,8 +6,8 @@
     "question": "no not now",
     "history": [
       {
-        "q": "Can this work with Olive Tree?",
-        "a": "Lampas does not work with Olive Tree. I can pass your wish to the makers; I cannot say what they will decide."
+        "q": "Can I read the ESV beside the Greek?",
+        "a": "Lampas does not have the ESV. I can pass your wish to the makers; I cannot say what they will decide."
       }
     ],
     "solid_words": [
@@ -26,7 +26,7 @@
     },
     "pending_offer": {
       "kind": "feedback",
-      "text": "He wants Lampas to work with the Olive Tree app."
+      "text": "He wants the ESV to read beside the Greek."
     }
   },
   "expect": {

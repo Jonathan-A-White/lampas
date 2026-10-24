@@ -515,12 +515,13 @@ describe('the feedback offer', () => {
     }
   });
 
-  it("carries the worked example 'Can this work with Logos's competitor, Olive Tree?' and the offer it yields", () => {
-    expect(instructions).toContain("Can this work with Logos's competitor, Olive Tree?");
+  it("carries the worked example 'Can I read the ESV beside the Greek?' and the offer it yields; no study app gets an offer (mw-5r3p30.745)", () => {
+    expect(instructions).toContain('Can I read the ESV beside the Greek?');
+    expect(instructions).not.toMatch(/olive tree/i);
     const block = /<!-- feedback-offer-example:start -->\s*```json\s*([\s\S]*?)```\s*<!-- feedback-offer-example:end -->/.exec(instructions);
     expect(block, 'the example answer block').not.toBeNull();
     const answer = JSON.parse((block as RegExpExecArray)[1]) as { feedback_offer?: { summary: string } };
-    expect(answer.feedback_offer?.summary).toMatch(/Olive Tree/);
+    expect(answer.feedback_offer?.summary).toMatch(/ESV/);
     expect(validate(answer, schema as Schema)).toEqual([]);
     expect(isTalkAnswer(answer)).toBe(true);
     expect(JSON.stringify(answer)).not.toMatch(/\bwill (build|add|make|do)\b/i);
