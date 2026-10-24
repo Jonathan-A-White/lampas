@@ -156,6 +156,7 @@ docs/demo-shared-composer.md # demo: Postern's composer shared with Lampas (mw-j
 docs/demo-shared-speech.md # demo: one read-aloud bar in Postern, Lampas and SpellForge (mw-m7v5kc.5)
 docs/demo-reading-plan.md # demo: the listening plan in the Bible view (mw-umv8sp.6)
 docs/demo-english-first-memory.md # demo: English first, the welcome, the Greek offer, Memory notes (mw-yrmkdf.6)
+docs/demo-library-at-scale.md # demo: the Logos library at scale, Import to Your requests (mw-rfjjzd.21)
 docs/research/audible-addon-seek.md # research: an add-on that seeks his Audible Bible to the passage
 docs/research/greek-speech-libraries.md # research: open-source libraries for Greek sound
 docs/research/kjv-tr.md # research: the KJV and the Greek behind it as a text pair
