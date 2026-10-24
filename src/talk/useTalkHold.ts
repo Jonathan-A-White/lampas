@@ -22,11 +22,15 @@ export interface TalkHoldOptions {
   onKept?: (text: string, ended: string) => void;
   /** how long a press waits before it is a hold (a press let go sooner is a tap); none: a hold from the first touch, so the first words are kept */
   holdDelayMs?: number;
+  /** the language he is heard in; en-US when not given */
+  lang?: string;
+  /** hear `lang` or nothing (voice-kit's strictLang): a phone that cannot hear it ends the hold with a 'language-not-supported' failure, never English words for Greek ones */
+  strictLang?: boolean;
 }
 
 export type TalkHold = ReturnType<typeof useTalkHold>;
 
-export function useTalkHold(onWords: (text: string) => void, { onBegin, onKept = keepWords, holdDelayMs }: TalkHoldOptions = {}) {
+export function useTalkHold(onWords: (text: string) => void, { onBegin, onKept = keepWords, holdDelayMs, lang = 'en-US', strictLang }: TalkHoldOptions = {}) {
   const [typing, setTyping] = useState(0);
   const [failureKind, setFailure] = useState<ListenErrorKind | undefined>(undefined);
   // the kind of the last failure, read when the hold ends (the state above is for the screen)
@@ -65,7 +69,8 @@ export function useTalkHold(onWords: (text: string) => void, { onBegin, onKept =
   const settings = useTalkSettings();
   const talk = useTalk(holdDelayMs === undefined ? settings : { ...settings, talk: 'hold' }, {
     transcriber,
-    lang: 'en-US',
+    lang,
+    strictLang,
     appName: 'Lampas',
     holdDelayMs,
     onWords: (text, words) => {
