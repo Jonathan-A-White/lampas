@@ -158,8 +158,12 @@ test('Immersive reader: a tap on the place line opens the whole chapter, Back re
   expect(sent.reference).toBe(`Mark 12:1-${LAST}`);
   expect(sent.mode).toBe('quiz');
   expect(sent.question).toBe(`Quiz me on Mark 12:1-${LAST}.`);
-  // a chapter is more than a request holds: the text is sent from verse 1 on and cut at its end
-  expect(String(sent.english)).toMatch(/…$/);
+  // a chapter is more than a request holds: the text is sent from verse 1 on and cut by whole verses at its end (mw-5r3p30.733), `verses` naming the ones it holds
+  const held = /^12:1-(\d+)$/.exec(String(sent.verses));
+  expect(held).not.toBeNull();
+  expect(Number(held?.[1])).toBeGreaterThan(1);
+  expect(Number(held?.[1])).toBeLessThan(LAST);
+  expect(String(sent.english)).not.toMatch(/…$/);
   await sheet.getByRole('button', { name: 'Done', exact: true }).click();
 
   await view.getByRole('button', { name: '‹ Reader' }).click();
