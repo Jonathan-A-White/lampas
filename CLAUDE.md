@@ -151,20 +151,20 @@ docs/path-gaps.md # what the ladder lacks against BMA Tutor and the grammar book
 docs/best-practices-audit.md # the 2026-10-10 audit of Lampas against the PWA best practices
 docs/demo-free-ai-licensed.md # demo: free to read, a licence unlocks the AI (mw-8m9dyu.4)
 docs/demo-lampas-share.md # demo: share or paste a screenshot into a tutor talk (mw-y3qno5.3)
-docs/demo-module-splits.md # demo: the Reader and Settings splits (mw-lwvndc.6)
+docs/demo-module-splits.md # demo: the Reader and Settings splits
 docs/demo-shared-composer.md # demo: Postern's composer shared with Lampas (mw-jtzpw0.6)
 docs/demo-shared-speech.md # demo: one read-aloud bar in Postern, Lampas and SpellForge (mw-m7v5kc.5)
 docs/demo-reading-plan.md # demo: the listening plan in the Bible view (mw-umv8sp.6)
-docs/demo-english-first-memory.md # demo: English first, the welcome, the Greek offer, Memory notes (mw-yrmkdf.6)
-docs/demo-library-at-scale.md # demo: the Logos library at scale, Import to Your requests (mw-rfjjzd.21)
+docs/demo-english-first-memory.md # demo: English first, the welcome, the Greek offer, Memory notes
+docs/demo-library-at-scale.md # demo: the Logos library at scale, Import to Your requests
 docs/research/audible-addon-seek.md # research: an add-on that seeks his Audible Bible to the passage
 docs/research/greek-speech-libraries.md # research: open-source libraries for Greek sound
 docs/research/kjv-tr.md # research: the KJV and the Greek behind it as a text pair
 docs/research/logos-section-refs.md # research: grammar sections by a book's own Logos data type
-docs/research/logos-morph-charts.md # research: whether Logos's Morphology Charts opens at a lemma from a link; the one link to tap
-docs/research/logos-factbook.md # research: Factbook at a proper name from a word sheet: the link form and its source, two built links, how a name is known; the one link to tap
-docs/research/logos-exegetical-guide.md # research: the Exegetical Guide at a verse: the link form and its source, two built links, where the door sits, a sweep of Logos guides and tools; the one link to tap
+docs/research/logos-morph-charts.md # research: Logos's Morphology Charts at a lemma from a link; the one link to tap
+docs/research/logos-factbook.md # research: Factbook at a proper name from a word sheet: the link form, its source, how a name is known; the one link to tap
+docs/research/logos-exegetical-guide.md # research: the Exegetical Guide at a verse: the link form, its source, where the door sits, a sweep of Logos guides; the one link to tap
 docs/research/letter-sounds.md # research: lone vowels and letter sounds in a voice like the phone's
-docs/design/library-at-scale.md # design: the Logos library at scale, mockups and build plan (mw-5r3p30.709)
+docs/design/library-at-scale.md # design: the Logos library at scale, mockups, build plan
 docs/design/bible-talk-trim-map.md # design: every rule of the bible-talk instructions before the trim under 100,000 bytes, and where it lives now
 ```
