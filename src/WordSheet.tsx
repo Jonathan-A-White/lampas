@@ -134,7 +134,7 @@ function studyGroupsOf(chapter: Chapter, word: GreekWord, study: StudyResources 
   return studyGroups(study, level, word, ref, wordGloss(chapter, word));
 }
 
-/** More tiles than this and the sheet is a long one: a Close button sits under its scroll box and a fade says there is more below. 5 since Accordance left the list (mw-5r3p30.738): Strong's, three pinned lexicons, Bible Word Study and the door (6) is still a long sheet. */
+/** More tiles than this and the sheet is a long one: a Close button sits under its scroll box and a fade says there is more below. 5 since the list lost its third app (mw-5r3p30.738): Strong's, three pinned lexicons, Bible Word Study and the door (6) is still a long sheet. */
 const MANY_TILES = 5;
 
 /** The facts' box's height and foot: the heading above it (a line and its padding) takes its room out of the box, so the sheet stays as tall as before. A short sheet

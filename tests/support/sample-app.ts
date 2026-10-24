@@ -1,6 +1,6 @@
 // tests/support/sample-app.ts — a study app that is not a real one, for the specs of what any 'app' resource does (the Get <App> and Turn off <App>
-// sheet when its link does not open, the field and the Get link in Settings): no listed resource has an app link with no https fallback now that
-// Accordance is unlisted (mw-5r3p30.738), so a spec that needs one lists this one. A feature's steps use it with
+// sheet when its link does not open, the field and the Get link in Settings): no listed resource has an app link with no https fallback
+// since the one that had it was unlisted (mw-5r3p30.738), so a spec that needs one lists this one. A feature's steps use it with
 //   vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original()));
 import type { StudyResource } from '../../src/resources/types';
 
