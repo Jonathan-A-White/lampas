@@ -37,9 +37,11 @@ beforeEach(async () => {
   vi.mocked(commands.memorizeList).mockClear();
   vi.mocked(commands.unmemorizeList).mockClear();
 });
-afterEach(() => {
+afterEach(async () => {
   cleanup();
   vi.unstubAllGlobals();
+  // a sheet left open takes its history entry off with a step Back once it unmounts; that popstate lands later and would reset the next test's address
+  await waitFor(() => expect((window.history.state as { sheet?: number } | null)?.sheet ?? 0).toBe(0));
 });
 
 async function openRefuge(dial: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
@@ -48,6 +50,8 @@ async function openRefuge(dial: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
   window.history.replaceState(null, '', `/#/lists/${row.id}`);
   render(<VerseListsScreen />);
   await screen.findByRole('switch', { name: 'Memorize this list' });
+  // a row's control draws nothing until it has read what is memorized and his Greek dial
+  await waitFor(() => expect(document.querySelectorAll('[data-memorize]')).toHaveLength(2));
 }
 
 const memorized = async (): Promise<string[]> => (await listMemorized()).map((r) => `${r.lang}:${r.ref}`).sort();
@@ -112,6 +116,8 @@ describe('the progress mark on a row', () => {
     await openRefuge(3);
     await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
     await within(rowOf('Romans 8:28')).findByRole('img');
+    // the switch reads what is memorized by a query of its own: a tap before it is On would memorize again
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Memorize this list' })).toHaveAttribute('aria-checked', 'true'));
     await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
     await waitFor(() => expect(within(rowOf('Romans 8:28')).queryByRole('img')).toBeNull());
   });
