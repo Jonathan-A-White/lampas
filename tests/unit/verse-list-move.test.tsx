@@ -60,7 +60,7 @@ describe('moving and copying a reference to another list', () => {
     await waitFor(async () => expect(await saved(a)).toEqual(['John.3.16']));
     expect(await saved(b)).toEqual(['Ps.23.1', 'Rom.8.28']);
     expect(await screen.findByRole('status')).toHaveTextContent('Moved Romans 8:28 to Psalms');
-    expect(screen.queryByRole('button', { name: 'Remove Romans 8:28' })).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Remove Romans 8:28' })).toBeNull());
     // kept: a fresh screen shows the same
     cleanup();
     render(<VerseListsScreen />);
