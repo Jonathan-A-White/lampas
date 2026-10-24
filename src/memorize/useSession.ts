@@ -19,6 +19,7 @@ import { sendWeaveRecall } from './sendWeave';
 import { memorizeTarget, type VerseToken } from './target';
 import { useRecallHold, type RecallHold, type RecallUnavailable } from './useRecallHold';
 import { dueWords } from './due';
+import { STEPS } from './progress';
 import { weaveSettingsNow } from './weaveSettings';
 
 /** What the session says when a recall cannot be heard, ahead of the two buttons that let him grade himself. */
@@ -30,8 +31,7 @@ export const UNAVAILABLE_NOTES: Record<RecallUnavailable | 'mill', string> = {
   mill: 'The tutor cannot be reached. Say it, then grade yourself.',
 };
 
-/** The most steps a verse has: 0..RARE_STEP, shown as 'step k of 7'. */
-export const STEPS = 7;
+export { STEPS };
 
 export type SessionPhase = 'shown' | 'sending' | 'judged';
 
