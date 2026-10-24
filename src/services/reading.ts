@@ -1,6 +1,7 @@
 // src/services/reading.ts — the reading check: one verse read aloud, sent as a grist through Postern (bsv-kit/grist) with
 // the recording attached, scored by the mill and answered by its verse-read grind (grinds/verse-read.json). The wire work is
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
+import { fold } from 'learn-kit/recall';
 import { NO_CHAPTER, type Chapter, type GreekWord, type Verse } from '../data/chapter';
 import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { WOVEN_LANG } from '../data/wovenLang';
@@ -273,10 +274,9 @@ export async function askVerseRead(request: VerseReadRequest, recording: Recordi
   });
 }
 
-/** A word as it is compared: no case, no accents or breathings, a final sigma as a sigma, no punctuation. The mill may write
+/** A word as it is compared: no case, no accents or breathings, a final sigma as a sigma, no punctuation (learn-kit/recall's fold). The mill may write
  * a Greek word without its accents, and that must still find the word in the verse. */
-export const normalWord = (word: string): string =>
-  word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/ς/g, 'σ').replace(/[^\p{L}\p{N}]/gu, '');
+export const normalWord = fold;
 
 /** The verse's words as the scorer counts them: split on white space, in order (a focus word's `index` counts these). */
 export const wordsOfText = (text: string): string[] => text.split(/\s+/).filter(Boolean);

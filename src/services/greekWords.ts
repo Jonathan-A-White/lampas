@@ -1,5 +1,6 @@
 // src/services/greekWords.ts — the words of a text as the tutor is handed them (greek_words): the Bible talk's request (src/services/talk.ts) and the Verse view's
 // Ask the tutor (src/services/tutor.ts) both build the list here, so a typed "how do I say σβέννυτε?" reaches either grind with the app's syllables and stress (mw-5r3p30.643).
+import { fold } from 'learn-kit/recall';
 import { wordGloss, wordLemma, wordParse, type Chapter, type Verse } from '../data/chapter';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
@@ -27,10 +28,8 @@ export const GREEK_WORDS_KEY_BYTES = 16;
 /** The most words of the list kept past its byte budget because the question names them. */
 const MAX_NAMED_WORDS = 5;
 
-const bare = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
-
-/** The words of `question`, bare of accents, breathings and case, so "σβεννυτε" and a NFD-typed "σβέννυτε" both name σβέννυτε. */
-const wordsOfQuestion = (question: string): Set<string> => new Set(bare(question).split(/[^\p{L}]+/u).filter((t) => t !== ''));
+/** The words of `question`, folded (learn-kit/recall: no accents, breathings, case or final sigma), so "σβεννυτε" and a NFD-typed "σβέννυτε" both name σβέννυτε. */
+const wordsOfQuestion = (question: string): Set<string> => new Set(question.split(/[^\p{L}\p{M}]+/u).map(fold).filter((t) => t !== ''));
 
 /** The words of `verses` with lemma, gloss and parse from `chapter`, in text order; a word that repeats with the same lemma and parsing is listed once.
  * Each carries the app's respelling, syllables and stress (mw-5r3p30.568). The list stops before the word that would take it over `maxBytes`,
@@ -50,7 +49,7 @@ export function greekWordsOf(chapter: Chapter, verses: Verse[], question: string
     const syllables = greekSyllables(w.t);
     const stress = stressedSyllable(syllables);
     const full = { ...word, respelling: scheme.respell(w.t), syllables, ...(stress >= 0 ? { stress } : {}) };
-    entries.push({ word: full, bytes: new TextEncoder().encode(JSON.stringify(full)).length + 1, named: named.has(bare(w.t)) });
+    entries.push({ word: full, bytes: new TextEncoder().encode(JSON.stringify(full)).length + 1, named: named.has(fold(w.t)) });
   }
   const keepNamed = new Set(entries.filter((e) => e.named).slice(0, MAX_NAMED_WORDS));
   let held = [...keepNamed].reduce((sum, e) => sum + e.bytes, 0);
