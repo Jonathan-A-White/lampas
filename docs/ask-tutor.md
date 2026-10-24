@@ -23,7 +23,7 @@ screen gets `<AskTutor route>` from `App.tsx`, which opens the Talk sheet over a
 ## What the tutor is told
 
 `TalkScope.screen` (`src/services/talk.ts`) is the screen's `ScreenContext` (`src/tutor/screen.ts`): its `name` and `facts`, a list of
-`{ label, value }` (at most 12; label 40 and value 200 characters, `fitScreen`). `buildTalkRequest` sends it as the request's `screen`;
+`{ label, value }` (at most 12; label 40 and value 400 characters, `fitScreen`). `buildTalkRequest` sends it as the request's `screen`;
 `reference` is the screen's name and `greek` and `english` are left out (the talk is not about a text). The input schema
 (`grinds/bible-talk.input.schema.json`) has `screen` and no longer requires `greek` and `english`; the instructions' "Talk from a screen" says how to
 use it. `learner`, `learner_grammar` and `solid_words` ride as in every talk (`solid_words` is his 50 newest solid words and `solid_count` how many he has in all, src/services/solidWords.ts: the request does not grow with the learner; verse-ask is fitted to `MAX_REQUEST_BYTES` by `fitAsk` as the talk is by `fitHistory`).
@@ -56,6 +56,13 @@ one that only changes how the app looks); `tests/unit/tutor-knows.test.ts` fails
 setting has no entry, when a field a row names is not in the grind's input schema, and when a builder does not send what its row says.
 The Greek pronunciation (`pronunciation`, its id) reaches bible-talk, verse-ask and verse-read; verse-ask's `settings` carries the settings the table puts there
 (`settingsSentTo('verse-ask')`). A new setting is classified in `BEARS_ON` and, if it bears on an answer, added to each grind's request or given a reason.
+
+## The heart of the word (mw-bsf54t.14)
+
+A word that has a note in `src/data/wordHeart.ts` shows it to him (word sheet, teach sheet, a Review miss: `src/HeartOfWord.tsx`), and the tutor is told the same note, so its answer
+agrees with it: `focus.heart` on a word (Help with this word, Ask the tutor on the sheet) or a Quick test question (`withHeart` in `buildTalkRequest`, at most 400 characters; a Hebrew word and a
+grammar term carry none), and on Review's Ask the tutor a screen fact, 'Heart of the word', once the answer is in (it explains the answer, so it waits for it as 'Right answer' does). The input
+schema's description of `heart` tells the tutor to agree with it and build on it. A word with no note carries nothing. `tests/unit/word-heart-tutor.test.ts`.
 
 ## Suggested questions
 
