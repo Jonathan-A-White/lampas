@@ -11,7 +11,7 @@ import type { Chapter, Verse } from '../data/chapter';
 import { listTurns, talkRef } from '../data/repositories';
 import type { OpenChapter } from '../data/readerChapter';
 import { publish } from '../events/bus';
-import type { ReaderRequest } from '../nav/readerRequest';
+import { pendingReturn, takeReturn, watchReturn, type ReaderRequest } from '../nav/readerRequest';
 import {
   helpQuestion,
   newWordQuestion,
@@ -64,7 +64,7 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
   const { states, say } = talk;
   // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. A request from another screen opens it first.
   const [talkAbout, setTalkAboutRaw] = useState<number | null | undefined>(() =>
-    request?.action === 'talk' || request?.action === 'word' ? request.verse : undefined,
+    request?.action === 'talk' || request?.action === 'word' ? request.verse : pendingReturn(BOOK, CHAPTER)?.about,
   );
   // The quiz (the Verse view's Quiz me, mw-5r3p30.74): the verse or passage the open Talk sheet quizzes, else null.
   const [quizUnit, setQuizUnit] = useState<Verse | null>(null);
@@ -72,6 +72,16 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     setQuizUnit(null);
     setTalkAboutRaw(about);
   }, []);
+  // The tutor took him to another place from this chapter's Talk sheet and Back has brought him here: the sheet opens again on what it was about (src/nav/readerRequest.ts reopenTalk)
+  useEffect(() => {
+    const back = pendingReturn(BOOK, CHAPTER);
+    if (back) takeReturn(back);
+    return watchReturn((asked) => {
+      if (asked.book !== BOOK || asked.chapter !== CHAPTER) return;
+      takeReturn(asked);
+      setTalkAbout(asked.about);
+    });
+  }, [BOOK, CHAPTER, setTalkAbout]);
   useEffect(() => {
     openTalkRef.current = talkAbout === undefined ? null : quizUnit ? scopeRef(BOOK, CHAPTER, { verse: quizUnit, quiz: true }) : talkRef(BOOK, CHAPTER, talkAbout);
   }, [openTalkRef, talkAbout, quizUnit, BOOK, CHAPTER]);

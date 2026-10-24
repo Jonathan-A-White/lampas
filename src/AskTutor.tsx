@@ -16,7 +16,6 @@ import { fitScreen, SCREEN_NAMES, suggestionsFor, type ScreenContext } from './t
 import { askRequestNow, useAskRequest } from './tutor/askNow';
 import { useScreenContext } from './tutor/screenContext';
 import { libraryOf, useAddress, type Route } from './nav/route';
-import { openedByTutor } from './nav/readerRequest';
 import { useSheetOpen } from './ui/sheetBack';
 import { useTalk } from './useTalk';
 import { isHolding } from './talk/holding';
@@ -116,9 +115,8 @@ function useScreenTalk(scope: TalkScope | null, open: boolean, onClosed: () => v
     if (openRef.current !== ref || isHolding()) return;
     speakTutor(id, answerRuns(answer), () => openRef.current === ref);
   }, {
-    // the tutor takes him to a chapter (the answer's `go`) while this screen's sheet is open: the Reader opens there as a new Back step, and Back returns to this screen
+    // the tutor takes him to a chapter or another place (the answer's `go`) while this screen's sheet is open: the place opens as a new Back step, and Back returns to this screen
     allowed: (ref) => openRef.current === ref,
-    open: (place) => openedByTutor(place.book, place.chapter),
   });
   const ref = scope ? scopeRef('', 0, scope) : null;
   useEffect(() => {

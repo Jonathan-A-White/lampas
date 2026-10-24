@@ -23,6 +23,9 @@
 // Focus goes with the sheet (mw-cwf538.3, for TalkBack and a keyboard): when a sheet opens, focus moves to its heading (a dialog's first h1 to h3), and when it
 // closes, back to what was focused when it opened (what he tapped), unless he has moved on and focus is somewhere else.
 //
+// A sheet the tutor takes him away from (the Talk sheet's go to a place, mw-t3xu9a.4) leaves its entry beneath the place's and marks it (leaveSheetForTutor): the Back that comes to
+// that entry opens the sheet again, which takes the entry back, where any other stale entry is stepped over.
+//
 // A sheet that opens or closes swallows taps for the settle moment (mw-i7xe0n.26): the app-wide guard sees it come and go (src/ui/tapGuard.ts), not this.
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { focusQuietly } from './focus';
@@ -70,9 +73,36 @@ function settle(): void {
   if (extra > 0) window.history.go(-extra);
 }
 
+/** A sheet the tutor took him away from (mw-t3xu9a.4): the depth of its entry, a mark left on that entry, and how to open the sheet again. */
+let comingBack: { token: string; depth: number; reopen: () => void } | null = null;
+
+/**
+ * Call it in the move that closes a sheet to take him to a place the tutor named (the Talk sheet's go), just before the address changes: the sheet's entry stays beneath the
+ * place's, marked, and the Back that comes to it opens the sheet again with `reopen` (the sheet takes the entry it had, no new one), instead of stepping over it. A Back to
+ * any other stale entry, and a sheet that was not remembered, are stepped over as ever.
+ */
+export function leaveSheetForTutor(reopen: () => void): void {
+  const depth = depthOf();
+  if (depth <= 0) return;
+  const token = `${Date.now()}.${depth}`;
+  window.history.replaceState({ ...(window.history.state as object | null), returnTo: token }, '', window.location.href);
+  comingBack = { token, depth, reopen };
+}
+
 /** An entry of a sheet that is no longer open (Back from a page opened over it, or Forward to it): step over it. */
 function skipStale(): void {
   const depth = depthOf();
+  if (comingBack && depth === comingBack.depth && depth > open && (window.history.state as { returnTo?: string } | null)?.returnTo === comingBack.token) {
+    const { reopen } = comingBack;
+    comingBack = null;
+    adopt = [depth];
+    reopen();
+    // a screen that went away cannot open its sheet: the entry it was kept for is let go, and the next Back steps over it
+    setTimeout(() => {
+      if (open === 0) adopt = adopt.filter((level) => level !== depth);
+    }, 500);
+    return;
+  }
   if (depth > open && !steps.has(depth) && !steps.has(depth + 1)) window.history.back();
 }
 
@@ -154,6 +184,13 @@ const closers = new Map<number, { current: () => void }>();
  */
 export function closeAllSheets(): void {
   for (const [, close] of [...closers].sort((a, b) => b[0] - a[0])) close.current();
+}
+
+/** The headings of the sheets open now, the newest last ('Talk', 'Word'): where-he-is (src/tutor/registry.ts) tells the tutor which are on screen. */
+export function openSheetTitles(): string[] {
+  return [...document.querySelectorAll<HTMLElement>('[role="dialog"], [role="alertdialog"]')]
+    .map((dialog) => dialog.querySelector('h1, h2, h3')?.textContent?.trim() || dialog.getAttribute('aria-label') || '')
+    .filter((title) => title !== '');
 }
 
 /** The sheets mounted above `level`. */

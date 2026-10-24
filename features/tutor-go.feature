@@ -1,7 +1,7 @@
 Feature: The tutor takes him to a chapter
   A Bible talk answer may carry `go` (mw-5r3p30.172): a book of the app's own list and a chapter in range. Asked in words to switch
   to, open, go to or take him to a chapter ('can you switch to Colossians 1'), the tutor says where it is taking him and the app opens
-  the Reader there as a new Back step, with the line 'Opened Colossians 1' under the header. The talk he left keeps the same line on
+  the Reader there as a new Back step (marked as a tutor go, mw-t3xu9a.4), with the line 'Opened Colossians 1' under the header, and Back returns to Romans 8 with the Talk sheet open again, the talk as it was. The talk he left keeps the same line on
   that turn. The app reads `go` itself and never free text: a go it cannot take is ignored, the answer is still shown and the talk says
   'Could not open ...' so the text never claims a move that did not happen. A go to the chapter he is already on moves nothing ('Already on Romans 8', no
   new Back step), and an answer that comes after he pressed Done says that is why it did not move him, with a button that opens the chapter then.
@@ -16,8 +16,8 @@ Feature: The tutor takes him to a chapter
     When he taps the phone's Back
     Then the Reader is back on "Romans 8"
     And the Reader does not say "Opened Colossians 1"
-    When he opens Talk again
-    Then the talk shows the answer and the line "Opened Colossians 1"
+    And the Talk sheet is open again
+    And the talk shows the answer and the line "Opened Colossians 1"
 
   Scenario: A chapter the book does not have is not opened and the talk says so
     Given Lampas is opened on Romans 8 and the tutor answers with go "Colossians" 9
