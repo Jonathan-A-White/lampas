@@ -82,8 +82,38 @@ describe('Memorize this list', () => {
     const toggle = screen.getByRole('switch', { name: 'Memorize this list' });
     await waitFor(() => expect(within(rowOf('Romans 8:28')).getByRole('button', { name: /^Memorizing/ })).toBeInTheDocument());
     expect(toggle).toHaveAttribute('aria-checked', 'false');
-    await userEvent.click(within(rowOf('2 Thessalonians 3:3')).getByRole('button', { name: 'Memorize' }));
+    await userEvent.click(await within(rowOf('2 Thessalonians 3:3')).findByRole('button', { name: 'Memorize' }));
     await waitFor(() => expect(toggle).toHaveAttribute('aria-checked', 'true'));
+  });
+});
+
+describe('the progress mark on a row', () => {
+  it('shows under a memorized reference, and not under one that is not memorized or an Old Testament one', async () => {
+    await openRefuge(3);
+    expect(screen.queryAllByRole('img')).toHaveLength(0);
+    await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
+    const mark = await within(rowOf('Romans 8:28')).findByRole('img', { name: 'Step 1 of 7 · due today' });
+    expect(mark.querySelectorAll('[data-cell="filled"]')).toHaveLength(1);
+    expect(mark.querySelectorAll('[data-cell]')).toHaveLength(7);
+    expect(within(rowOf('2 Thessalonians 3:3')).getByRole('img', { name: 'Step 1 of 7 · due today' })).toBeInTheDocument();
+    expect(within(rowOf('Psalm 62:1-2')).queryByRole('img')).toBeNull();
+  });
+
+  it('names the language when the verse is memorized in more than one', async () => {
+    await openRefuge(3);
+    await userEvent.click(within(rowOf('Romans 8:28')).getByRole('button', { name: 'Memorize' }));
+    await userEvent.click(await within(rowOf('Romans 8:28')).findByRole('button', { name: 'Memorizing · English' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Memorize Rom 8:28' });
+    await userEvent.click(within(sheet).getByRole('switch', { name: 'Greek' }));
+    await waitFor(() => expect(within(rowOf('Romans 8:28')).getAllByRole('img').map((m) => m.getAttribute('aria-label'))).toEqual(['English · Step 1 of 7 · due today', 'Greek · Step 1 of 7 · due today']));
+  });
+
+  it('goes when the verse stops being memorized', async () => {
+    await openRefuge(3);
+    await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
+    await within(rowOf('Romans 8:28')).findByRole('img');
+    await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
+    await waitFor(() => expect(within(rowOf('Romans 8:28')).queryByRole('img')).toBeNull());
   });
 });
 

@@ -1,8 +1,8 @@
 # Accessibility check
 
 `tests/e2e/accessibility.spec.ts` (mw-cwf538.2, the epic 'Lampas for every age and every ability') runs axe (`@axe-core/playwright`) with the WCAG 2.1 A and AA
-rules over the eight main screens and the two Library screens (mw-rfjjzd.4: Your Logos library, and Library: Lexicons, a kind's page), each opened as a thumb opens it at 390x844: the Reader, the Immersive reader (On), Quick test, Read it aloud (with its
-marks), the Talk sheet, Settings, an idea sheet, Placement, Your Logos library and a kind's page. Each screen is checked in the phone's light theme, again in its dark theme and again in High contrast. The spec fails on any
+rules over the eight main screens, the two Library screens (mw-rfjjzd.4: Your Logos library, and Library: Lexicons, a kind's page) and Memorize (mw-fu7dqf.11, with a due verse and its progress mark), each opened as a thumb opens it at 390x844: the Reader, the Immersive reader (On), Quick test, Read it aloud (with its
+marks), the Talk sheet, Settings, an idea sheet, Placement, Your Logos library, Memorize and a kind's page. Each screen is checked in the phone's light theme, again in its dark theme and again in High contrast. The spec fails on any
 violation: a missing accessible name or role, a label that is not in the name, colour contrast. It names the screens in a list of its own (the first
 test) and ends with a canary: a button that loses its accessible name must make the check fail, or the check looks at nothing.
 

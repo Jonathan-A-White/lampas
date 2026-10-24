@@ -130,6 +130,19 @@ export async function recallsOf(ref: string, lang?: MemorizeLang): Promise<Recal
   return rows.sort((a, b) => a.when - b.when || (a.id ?? 0) - (b.id ?? 0));
 }
 
+/** A memorized verse in one language with its newest recall (undefined before the first). */
+export interface MemorizedProgress {
+  row: MemorizedRow;
+  last: RecallRow | undefined;
+}
+
+/** Every memorized verse in every language (or only these references') with its newest recall: what the Memorize screen and the progress marks read. */
+export async function listProgress(refs?: readonly string[]): Promise<MemorizedProgress[]> {
+  const wanted = refs && new Set(refs);
+  const rows = (await listMemorized()).filter((row) => !wanted || wanted.has(row.ref));
+  return Promise.all(rows.map(async (row) => ({ row, last: (await recallsOf(row.ref, row.lang)).at(-1) })));
+}
+
 /** The verse the next session is of: the longest overdue of those due at `now`, leaving out `except` (the one just recalled). */
 export async function nextDueVerse(now = Date.now(), except?: { ref: string; lang: MemorizeLang }): Promise<{ ref: string; lang: MemorizeLang } | undefined> {
   const due = (await listDueVerses(now)).flatMap((row) => parseVerseId(row.id) ?? []);
