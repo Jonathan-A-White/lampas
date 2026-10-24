@@ -20,7 +20,8 @@ import { InLogosDoors } from './library/InLogosDoors';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import type { Verse } from './data/chapter';
 import { unitId, unitName, unitReference } from './data/passage';
-import { passageUrl, referenceUrl } from './nav/links';
+import { MemorizeControl } from './memorize/MemorizeControl';
+import { OSIS, passageUrl, referenceUrl } from './nav/links';
 import { SHORT_BAR } from './ui/barClass';
 import { focusOnMount } from './ui/focus';
 import { Icon as PlayIcon } from './speech/ReadControls';
@@ -178,6 +179,8 @@ export function VerseView(props: VerseViewProps) {
               statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
             />
           </div>
+          {/* Memorize (mw-fu7dqf.5): the verse, or the passage's range as one reference; the New Testament only (there is no Old Testament view), no licence */}
+          <MemorizeControl canonical={`${OSIS[book] ?? book}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`} className="mt-1 w-full" />
           {/* His Bible in Logos at the verse (a passage: at its first verse), and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6) */}
           <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} className="mt-1" />
         </div>
