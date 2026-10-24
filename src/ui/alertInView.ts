@@ -42,6 +42,7 @@ function follow(box: HTMLElement, alert: HTMLElement): void {
   const stop = () => {
     resize.disconnect();
     for (const kind of TAKEN) box.removeEventListener(kind, stop);
+    box.removeEventListener('scroll', moved);
     if (followers.get(box) === stop) followers.delete(box);
   };
   const resize = new ResizeObserver(() => (alert.isConnected ? bringInto(box, alert) : stop()));
@@ -49,6 +50,10 @@ function follow(box: HTMLElement, alert: HTMLElement): void {
   for (let el: HTMLElement | null = alert; el && el !== box; el = el.parentElement) resize.observe(el);
   resize.observe(box);
   for (const kind of TAKEN) box.addEventListener(kind, stop, { passive: true });
+  // the browser moves a box by itself too (its scroll anchoring when something under the message changes, a saved place put back, src/nav/scrollMemory.ts) and no size
+  // the follower watches has changed: a box moved off the message is brought back to it, until he takes the box in hand
+  const moved = () => (alert.isConnected ? bringInto(box, alert) : stop());
+  box.addEventListener('scroll', moved, { passive: true });
   followers.set(box, stop);
 }
 
