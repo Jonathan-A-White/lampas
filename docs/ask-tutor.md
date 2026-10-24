@@ -487,7 +487,7 @@ the index stays.
 The bible-talk answer may carry `memory_update` (at most 4 entries `{name | 'index', append | replace | remove, directed?}`) and `wished_notes` (at most 5
 names). `src/talk/memoryUpdate.ts applyMemoryFromAnswer`, called by `useTalk`, appends by 'tutor' (a note that is not there is made); a `replace` or
 `remove` is applied ONLY with `directed: true`, which the grind's instructions allow only when he asked for exactly that in his words of this turn; the
-app cannot hear his words, so an undirected one is refused and logged (`console.warn`) and the note is unchanged. `wished_notes` (names in the naming
+app cannot hear his words, so an undirected one is refused and logged (`console.warn`) and the note is unchanged. That rule and the lines it answers with ('Added to X', 'Replaced X', 'Removed X', 'Did not change X: why') run in voice-kit/talks (`applyNoteUpdates`, mw-o480n1.7) over Lampas's `NoteStore` in `src/talk/memoryUpdate.ts` (book:/word:/topic: names through `memoryName`, 'index' to `appendToIndex`/`setIndex`); the answer guard is the kit's `isNoteUpdate` with Lampas's limits. `wished_notes` (names in the naming
 scheme) are counted and the last 20 names kept (`keepWishedNotes`, settings store key `memoryWished`); About shows 'Notes the tutor wished he had: N' with
 the names under it, and nothing else is sent for them. Examples: `grinds/examples/bible-talk/memory-update-wished.json`, `verse-ask/memory-quiet.json`,
 `verse-read/memory-partial-misread.json`, `tips/memory-index.json`; `features/memory-tutor.feature`, `tests/unit/memory-grist.test.ts`.
