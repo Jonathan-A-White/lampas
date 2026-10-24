@@ -1,4 +1,4 @@
-// src/nav/route.ts — twenty-one screens, told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — twenty-two screens, told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -9,9 +9,10 @@ import { useSyncExternalStore } from 'react';
 import { bookOf } from '../data/books';
 import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
+import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'settings' | 'share' | 'unlock';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
 
 /** What the address says about the reader; a key is missing when the address does not say. */
 export interface ReaderAddress {
@@ -73,6 +74,7 @@ export function routeOf(hash: string): Route {
   if (path === ESSAY_PATH) return 'essay';
   if (path === '#/library') return 'library';
   if (path === LISTS_PATH || path.startsWith(`${LISTS_PATH}/`)) return 'lists';
+  if (path === MEMORIZE_PATH || path.startsWith(`${MEMORIZE_PATH}/`)) return 'memorize';
   if (path === '#/settings') return 'settings';
   if (path === '#/share') return 'share';
   if (path === '#/unlock') return 'unlock';
@@ -81,6 +83,9 @@ export function routeOf(hash: string): Route {
 
 /** The Verse lists screen (src/lists/); one list is `#/lists/<id>`. */
 export const LISTS_PATH = '#/lists';
+
+/** The Memorize screen (src/memorize/); one session is `#/memorize/<canonical reference>/<en|el|weave>`, and the bare address opens the next verse that is due. */
+export const MEMORIZE_PATH = '#/memorize';
 
 /** The in-app copy of Robinson's essay (src/Essay.tsx), a page under the Preface. */
 export const ESSAY_PATH = '#/preface/robinson';
@@ -275,6 +280,32 @@ export function verseListOf(hash: string): number | undefined {
 }
 
 export const verseListHash = (id: number): string => `${LISTS_PATH}/${id}`;
+
+/** The session an address opens (`#/memorize/Rom.8.28/en`): the canonical reference and the language, or undefined for the Memorize home and any address that is no session's. */
+export function memorizeSessionOf(hash: string): { ref: string; lang: MemorizeLang } | undefined {
+  const m = /^#\/memorize\/([^/]+)\/([^/]+)$/.exec(pathOf(hash));
+  if (!m) return undefined;
+  const lang = m[2];
+  const ref = decodeURIComponent(m[1]);
+  return (lang === 'en' || lang === 'el' || lang === 'weave') && /^[0-9A-Za-z]+\.\d+(?:\.\d+(?:-\d+)?)?$/.test(ref) ? { ref, lang } : undefined;
+}
+
+export const memorizeSessionHash = (ref: string, lang: MemorizeLang): string => `${MEMORIZE_PATH}/${encodeURIComponent(ref)}/${lang}`;
+
+/** Opens a Memorize session, as a new Back step; `replace` puts it in the place of the one he is on (Next verse), so the run is one entry and Back leaves it. */
+export function openMemorizeSession(ref: string, lang: MemorizeLang, options: { replace?: boolean } = {}): void {
+  const hash = memorizeSessionHash(ref, lang);
+  if (options.replace) return replaceHash(hash);
+  if (window.location.hash === hash) return;
+  window.history.pushState(null, '', urlFor(hash));
+  notify();
+}
+
+/** Leaves Memorize for where he came from: a step Back when the entry behind this one is the app's own, else Today. */
+export function closeMemorize(): void {
+  if (previousAddress() !== null) window.history.back();
+  else navigate('today', { replace: true });
+}
 
 /** Opens one verse list, as a new Back step. */
 export function openVerseList(id: number): void {

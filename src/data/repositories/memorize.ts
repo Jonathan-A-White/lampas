@@ -89,6 +89,12 @@ export async function listMemorized(): Promise<MemorizedRow[]> {
   return rows.flatMap((row) => memorizedRow(row) ?? []);
 }
 
+/** Where one verse is on the schedule in one language, or undefined when it is not memorized in it. */
+export async function memorizedRowOf(ref: string, lang: MemorizeLang): Promise<MemorizedRow | undefined> {
+  const row = await db.reviews.get([VERSE_KIND, verseId(ref, lang)]);
+  return row && memorizedRow(row);
+}
+
 /** The verse rows due at `now`, the longest overdue first. */
 export const listDueVerses = (now = Date.now()): Promise<Review[]> => listDue(VERSE_KIND, now);
 
@@ -122,4 +128,10 @@ export async function recordRecall(input: RecallInput, now = Date.now()): Promis
 export async function recallsOf(ref: string, lang?: MemorizeLang): Promise<RecallRow[]> {
   const rows = lang === undefined ? await db.recalls.where('[ref+lang]').between([ref, ''], [ref, '￿']).toArray() : await db.recalls.where('[ref+lang]').equals([ref, lang]).toArray();
   return rows.sort((a, b) => a.when - b.when || (a.id ?? 0) - (b.id ?? 0));
+}
+
+/** The verse the next session is of: the longest overdue of those due at `now`, leaving out `except` (the one just recalled). */
+export async function nextDueVerse(now = Date.now(), except?: { ref: string; lang: MemorizeLang }): Promise<{ ref: string; lang: MemorizeLang } | undefined> {
+  const due = (await listDueVerses(now)).flatMap((row) => parseVerseId(row.id) ?? []);
+  return due.find((d) => d.ref !== except?.ref || d.lang !== except.lang);
 }
