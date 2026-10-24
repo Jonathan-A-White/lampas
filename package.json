@@ -39,7 +39,7 @@
     "bsv-kit": "github:Jonathan-A-White/bsv-kit#918c441ce443dff052470de5671c2b1c430f8ebd",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.4.0",
-    "learn-kit": "github:Jonathan-A-White/learn-kit#993ac91b74ca4b34493f734bff2ca1ec61f22b63",
+    "learn-kit": "github:Jonathan-A-White/learn-kit#a4cb23d86f0d1fb75d44026828153fdd4e53c9ac",
     "pwa-kit": "github:Jonathan-A-White/pwa-kit#011083d67ed4eea69f08177ffa2b04a3b57eb51d",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",
