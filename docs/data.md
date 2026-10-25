@@ -217,7 +217,8 @@ The word and chunk keys are the New Testament's (the table above), with this mea
 | `g[].s` | the Strong's number with no padding, `H7225`, the key into `lex`. `''` for the 6,038 words the table gives no number (almost all a preposition with a pronoun suffix, such as `לָהֶם` 'to them'): no number, no `l`, no `lex` entry, no count; the Hebrew epic recovers them |
 | `g[].l` | the TBESH headword (NFC), `''` when `s` is |
 | `g[].p` | the table's SHORT parsing code (`V-Qal-Perf-3ms`, `Prep-b \| N-fs`; `Prep-b` is the prefix and the code after the bar is the word); `''` for the 291 words the table gives none |
-| `g[].e`, `e[].t`, `e[].g`, `e[].s`, `verses[].h`, `verses[].p` | as for the New Testament |
+| `g[].e` | the index into the verse's `e` array of the English chunk this word is part of; absent for a word the table gives no English (`אֵת`, the direct object marker) |
+| `e[].t`, `e[].g`, `e[].s`, `verses[].h`, `verses[].p` | as for the New Testament |
 | `parse` | the short code -> the table's LONG parsing column (`V-Qal-Perf-3ms` -> `Verb - Qal - Perfect - third person masculine singular`): no code table of ours. `N-msc \| 1cs` is read two ways in the table, 1,457 times as a noun with a suffix and once as a 'Preposition'; `PARSE_FIXES` settles it, and any other code read two ways stops the build |
 | `lex[].g`, `lex[].d` | the TBESH gloss (cleaned of its `range: chosen` form, as the Greek's) and definition (markup, references and daggers off, cut at 300 characters) |
 
