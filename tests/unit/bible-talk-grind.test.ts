@@ -889,6 +889,13 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(own).toContain('`screen.facts`');
   });
 
+  it('says a passage already in held_passages is never fetched again, and fetches only what neither verses nor held_passages hold', () => {
+    const part = instructionParts(grind.kind as string).find(({ file }) => file.endsWith('220-other-passages.md'));
+    const text = (part?.text ?? '').replace(/\s+/g, ' ');
+    expect(text).toContain('A passage in `held_passages` or `verses` is never fetched again: answer from it.');
+    expect(text).toContain('Only when the talk heads toward New Testament verses held in neither, name them in `fetch`');
+  });
+
   it('keeps the whole of the instructions under the 99,500 bytes the ceiling test holds', () => {
     const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
     expect(bytes).toBeLessThanOrEqual(99_500);
