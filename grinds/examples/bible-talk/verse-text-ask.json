@@ -1,5 +1,5 @@
 {
-  "description": "He asks to be quizzed on John 3:16, a verse he memorizes, while reading Romans 8: the request carries no verseText, so the answer asks for the fact `verseText` by name, does nothing and goes nowhere.",
+  "description": "He asks to be quizzed on John 3:16, a verse he memorizes, while reading Romans 8: a quiz is a recall session, so the answer does it by `do` of startSession on that verse (John.3.16, in en), asks for no fact and goes nowhere.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -510,17 +510,14 @@
     ]
   },
   "expect": {
-    "asks.0": {
-      "equals": "verseText"
+    "do.0.name": {
+      "equals": "startSession"
     },
-    "do": {
+    "asks": {
       "present": false
     },
     "go": {
       "present": false
-    },
-    "words": {
-      "equals": []
     },
     "setting_offer": {
       "present": false

@@ -1,0 +1,529 @@
+{
+  "description": "He asks what Greek he is memorizing in John 3:16 while reading Romans 8: the request carries no verseText, so the answer asks for the fact `verseText` by name, does nothing and goes nowhere.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for the good of those who love Him, who are called according to His purpose.",
+    "question": "What Greek am I memorizing in John 3:16?",
+    "history": [],
+    "solid_words": [],
+    "settings": {
+      "theme": "light",
+      "textSize": "normal",
+      "greekInterest": "2",
+      "weave": "solid",
+      "weaveOrder": "english",
+      "readTutor": "on"
+    },
+    "facts": {
+      "where-he-is": {
+        "screen": "Reader",
+        "route": "home",
+        "reader": {
+          "book": "rom",
+          "chapter": 8,
+          "view": "english",
+          "verse": 28
+        }
+      },
+      "today-drill": [
+        {
+          "kind": "review",
+          "title": "Review: 17 due"
+        },
+        {
+          "kind": "memorize",
+          "title": "Memorize: 1 verse due"
+        },
+        {
+          "kind": "psalm",
+          "title": "Psalm 5"
+        }
+      ],
+      "settings": {
+        "theme": "light",
+        "textSize": "normal",
+        "greekInterest": "2",
+        "weave": "solid",
+        "weaveOrder": "english",
+        "readTutor": "on"
+      }
+    },
+    "catalogue": [
+      {
+        "name": "about",
+        "is": "place",
+        "tell": "Opens About"
+      },
+      {
+        "name": "aboutyou",
+        "is": "place",
+        "tell": "Opens About you"
+      },
+      {
+        "name": "add-word",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Adds a word (its lemma) to his words to learn; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "word"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "word": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          }
+        }
+      },
+      {
+        "name": "askmore",
+        "is": "place",
+        "tell": "Opens Ask for more"
+      },
+      {
+        "name": "chapter",
+        "is": "place",
+        "tell": "Opens a chapter of the New Testament in the Reader",
+        "args": {
+          "type": "object",
+          "required": [
+            "book",
+            "chapter"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "book": {
+              "type": "string",
+              "description": "its name: Colossians"
+            },
+            "chapter": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 150
+            }
+          }
+        }
+      },
+      {
+        "name": "conversations",
+        "is": "place",
+        "tell": "Opens Conversations"
+      },
+      {
+        "name": "drill",
+        "is": "place",
+        "tell": "Opens Parsing drill"
+      },
+      {
+        "name": "essay",
+        "is": "place",
+        "tell": "Opens The Case for Byzantine Priority"
+      },
+      {
+        "name": "goal",
+        "is": "place",
+        "tell": "Opens Goal"
+      },
+      {
+        "name": "import",
+        "is": "place",
+        "tell": "Opens Import"
+      },
+      {
+        "name": "ipa",
+        "is": "place",
+        "tell": "Opens Learn the IPA sounds"
+      },
+      {
+        "name": "library",
+        "is": "place",
+        "tell": "Opens Your Logos library"
+      },
+      {
+        "name": "lists",
+        "is": "place",
+        "tell": "Opens Verse lists"
+      },
+      {
+        "name": "memorize",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Memorizes a verse (ref Rom.8.28; langs en, el, weave, en by default); undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "ref"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "langs": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "en",
+                  "el",
+                  "weave"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "memorize-screen",
+        "is": "place",
+        "tell": "Opens Memorize; with ref and lang, a session of that verse",
+        "args": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "lang": {
+              "enum": [
+                "en",
+                "el",
+                "weave"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "memorizeEvidence",
+        "is": "fact",
+        "tell": "every recall of his verses and a summary: how memorizing is going"
+      },
+      {
+        "name": "memorizing",
+        "is": "fact",
+        "tell": "his memorized verses: summary, lists (ids), languages, step, due, last score, misses"
+      },
+      {
+        "name": "memory",
+        "is": "place",
+        "tell": "Opens Memory"
+      },
+      {
+        "name": "moveVerse",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Moves a ref between verse lists (ids from memorizing); stays memorized; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "ref",
+            "from",
+            "to"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "from": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "to": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      },
+      {
+        "name": "open-work",
+        "is": "place",
+        "tell": "Opens a book of his shelf (from works) in Logos",
+        "args": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          }
+        }
+      },
+      {
+        "name": "paradigms",
+        "is": "place",
+        "tell": "Opens Paradigms"
+      },
+      {
+        "name": "path",
+        "is": "place",
+        "tell": "Opens The whole path"
+      },
+      {
+        "name": "placement",
+        "is": "place",
+        "tell": "Opens Placement"
+      },
+      {
+        "name": "preface",
+        "is": "place",
+        "tell": "Opens Preface"
+      },
+      {
+        "name": "progress",
+        "is": "fact",
+        "tell": "where he stands: the learner line (solid words, learning, due) and his grammar (goal, counts, suggested move)"
+      },
+      {
+        "name": "reader",
+        "is": "place",
+        "tell": "Opens the Reader"
+      },
+      {
+        "name": "requests",
+        "is": "place",
+        "tell": "Opens Your requests"
+      },
+      {
+        "name": "review",
+        "is": "place",
+        "tell": "Opens Review"
+      },
+      {
+        "name": "rusty-words",
+        "is": "fact",
+        "tell": "the solid words and ideas he now slips on or has been away from, worst first"
+      },
+      {
+        "name": "set-setting",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Changes a setting; the app can undo it",
+        "args": {
+          "type": "object",
+          "required": [
+            "name",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {},
+            "skipUnchanged": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "name": "settings",
+        "is": "fact",
+        "core": true,
+        "tell": "what every setting holds now"
+      },
+      {
+        "name": "settings-screen",
+        "is": "place",
+        "tell": "Opens Settings"
+      },
+      {
+        "name": "share",
+        "is": "place",
+        "tell": "Opens Share"
+      },
+      {
+        "name": "sounds",
+        "is": "place",
+        "tell": "Opens Hard sounds"
+      },
+      {
+        "name": "start-review",
+        "is": "command",
+        "kind": "free",
+        "tell": "Opens Review; with items (from rusty-words) moves them to Frontier and practises just them",
+        "args": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "id"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "word",
+                      "idea"
+                    ]
+                  },
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "startSession",
+        "is": "command",
+        "kind": "free",
+        "tell": "Opens a memorize session of a verse, in one lang",
+        "args": {
+          "type": "object",
+          "required": [
+            "ref",
+            "lang"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "lang": {
+              "enum": [
+                "en",
+                "el",
+                "weave"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "studyway",
+        "is": "place",
+        "tell": "Opens My study way"
+      },
+      {
+        "name": "test",
+        "is": "place",
+        "tell": "Opens Quick test"
+      },
+      {
+        "name": "tick-today",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Ticks an item of today-drill by its title; on false unticks; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "item"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "item": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "on": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "name": "today",
+        "is": "place",
+        "tell": "Opens Today"
+      },
+      {
+        "name": "today-drill",
+        "is": "fact",
+        "core": true,
+        "tell": "the items of today's drill (the Today chip), each with its title and whether he ticked it"
+      },
+      {
+        "name": "unlock",
+        "is": "place",
+        "tell": "Opens Licence"
+      },
+      {
+        "name": "unmemorize",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Stops memorizing a verse, one lang or all; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "ref"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "lang": {
+              "enum": [
+                "en",
+                "el",
+                "weave"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "verseText",
+        "is": "fact",
+        "tell": "the words of each verse he memorizes, per language (en, el, weave)"
+      },
+      {
+        "name": "where-he-is",
+        "is": "fact",
+        "core": true,
+        "tell": "the screen he is on, the chapter and verse in the Reader, the sheets open"
+      },
+      {
+        "name": "words",
+        "is": "place",
+        "tell": "Opens Words"
+      },
+      {
+        "name": "works",
+        "is": "fact",
+        "tell": "the digest of his Logos shelf: pinned books, commentaries, grammars"
+      }
+    ]
+  },
+  "expect": {
+    "asks.0": {
+      "equals": "verseText"
+    },
+    "do": {
+      "present": false
+    },
+    "go": {
+      "present": false
+    },
+    "words": {
+      "equals": []
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
