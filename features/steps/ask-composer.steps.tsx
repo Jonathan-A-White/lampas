@@ -117,13 +117,13 @@ describeFeature(feature, ({ Scenario }) => {
       expect(holdBarIn(viewEl())).toHaveTextContent(bar);
       expect(within(composerIn(viewEl())).getByRole('button', { name: type })).toBeInTheDocument();
     });
-    And('there is no Ask button, no second hold bar, no attach button and no camera button', () => {
+    And('there is no Ask button and no second hold bar, and the composer has an attach button and a camera button', () => {
       const view = viewEl();
       expect(within(view).queryByRole('button', { name: 'Ask', exact: true })).toBeNull();
       expect(view.querySelectorAll('.lp-bar')).toHaveLength(0);
       expect(within(view).queryByRole('button', { name: /^Hold to ask$/ })).toBe(holdBarIn(view));
-      expect(within(view).queryByRole('button', { name: 'Attach files' })).toBeNull();
-      expect(within(view).queryByRole('button', { name: 'Take a photo' })).toBeNull();
+      expect(within(view).getByRole('button', { name: 'Attach a picture' })).toBeInTheDocument();
+      expect(within(view).getByRole('button', { name: 'Take a photo' })).toBeInTheDocument();
     });
   });
 

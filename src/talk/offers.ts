@@ -13,10 +13,9 @@ import type { Bridge } from '../data/db';
 import { noteGreekNo } from '../data/repositories/memory';
 import { RUSTY_BUTTON } from '../data/rusty';
 import { takeGreekOffer } from './greekOffer';
-import { filesOf } from './pictures';
 import { takeRustyOffer } from './rustyOffer';
 import { TODAY_BUTTON, takeTodayOffer } from './todayOffer';
-import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
+import { sendToMakers } from './makers';
 import { scopeTitle, type OfferReply, type PendingOffer, type TalkScope } from '../services/talk';
 import { offeredChange, type ChangeResult } from '../settings/registry';
 import { changeSettings } from '../tutor/registry';
@@ -108,10 +107,14 @@ export function sendMakersOffer(turn: TalkTurn, scope: TalkScope): Promise<void>
     if (kept?.feedbackSent || kept?.feedbackWithdrawn) return;
     // the pictures he attached in the talk go with it, as the kept turn holds them (mw-5r3p30.759)
     const pictures = await listTurnPictures(id);
-    await submitFeedback(
-      buildTutorAskRequest({ text: turn.q, summary, screen: scope.screen?.name ?? 'Reader', reference: scopeTitle(scope), facts: scope.screen?.facts }),
-      { files: filesOf(pictures.map((p) => ({ bytes: new Uint8Array(p.bytes), mime: p.mime, name: p.name }))) },
-    );
+    await sendToMakers({
+      text: turn.q,
+      summary,
+      screen: scope.screen?.name ?? 'Reader',
+      reference: scopeTitle(scope),
+      facts: scope.screen?.facts,
+      pictures: pictures.map((p) => ({ bytes: new Uint8Array(p.bytes), mime: p.mime, name: p.name })),
+    });
     await markFeedbackSent(id);
   })().finally(() => {
     sending.delete(id);

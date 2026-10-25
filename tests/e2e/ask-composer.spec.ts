@@ -1,5 +1,5 @@
 // tests/e2e/ask-composer.spec.ts — Ask the tutor on Romans 8:1-11 is the shared composer (voice-kit/composer, mw-jtzpw0.3) at 412 x 915: one big gold Hold to ask bar,
-// Type a question quietly under it, no Ask button, no attach or camera (the tutor takes no file), no second bar. jsdom has no layout, so the look is proven here.
+// Type a question quietly under it, no Ask button, Attach a picture and Take a photo quiet beside the field (mw-5r3p30.760), no second bar. jsdom has no layout, so the look is proven here.
 import { expect, test } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
@@ -29,8 +29,8 @@ test('Romans 8:1-11, Ask the tutor: one composer with a gold Hold to ask bar and
   // below the bar, quiet
   expect((await typeInstead.boundingBox())!.y).toBeGreaterThan((await askBar(page).boundingBox())!.y);
   await expect(view.getByRole('button', { name: 'Ask', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Attach files' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Take a photo' })).toHaveCount(0);
+  await expect(composerOf(page).getByRole('button', { name: 'Attach a picture' })).toBeVisible();
+  await expect(composerOf(page).getByRole('button', { name: 'Take a photo' })).toBeVisible();
   // Lampas's gold, not the package's blue
   const colour = await askBar(page).evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(colour).not.toBe('rgb(37, 99, 235)');

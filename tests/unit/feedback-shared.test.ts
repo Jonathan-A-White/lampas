@@ -12,16 +12,17 @@ const sources = (dir: string): string[] =>
 const text = (path: string): string => readFileSync(path, 'utf8');
 
 describe('the one feedback sender', () => {
-  it('is used by the tutor (src/talk/offers.ts, which the Send this to the makers button and a spoken yes both call) and by the ask-for-approach and ask-for-more commands (src/services/formCommands.ts)', () => {
-    for (const file of ['src/talk/offers.ts', 'src/services/formCommands.ts']) {
+  it('is used by the tutor (src/talk/makers.ts sendToMakers, which the offer in src/talk/offers.ts, the Talk sheet and the Verse view\'s Ask all call: mw-5r3p30.760) and by the ask-for-approach and ask-for-more commands (src/services/formCommands.ts)', () => {
+    for (const file of ['src/talk/makers.ts', 'src/services/formCommands.ts']) {
       expect(text(file), file).toMatch(/import \{[^}]*\bsubmitFeedback\b[^}]*\} from '\.{1,2}\/(services\/)?feedback'/);
     }
+    expect(text('src/talk/offers.ts')).toMatch(/\bsendToMakers\b/);
     expect(text('src/Talk.tsx')).toMatch(/\bsendMakersOffer\b/);
   });
 
   it('is called by no sheet or screen: submitFeedback( is in the commands, the book requests, feedback.ts and the tutor-ask path (mw-o7cts8.3)', () => {
     const calling = sources('src').filter((f) => /\bsubmitFeedback\(/.test(text(f)));
-    expect(calling.sort()).toEqual(['src/services/bookRequests.ts', 'src/services/feedback.ts', 'src/services/formCommands.ts', 'src/talk/offers.ts']);
+    expect(calling.sort()).toEqual(['src/services/bookRequests.ts', 'src/services/feedback.ts', 'src/services/formCommands.ts', 'src/talk/makers.ts']);
   });
 
   it('is the only code that sends the feedback kind: no other file asks the grind itself', () => {

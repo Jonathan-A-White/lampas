@@ -17,6 +17,10 @@ import { answerRuns } from './speech/answerRuns';
 import { ReadAloud } from './speech/ReadAloud';
 import { askTranscriber } from './speech/askTranscriber';
 import { tapWord, useTalkSettings } from './talkSettings';
+import { failureLine, makersSummary, PICTURES_FOR_THE_MAKERS, sendToMakers } from './talk/makers';
+import { preparePictures, refuseNonPicture, TALK_MAX_PICTURES, TOO_MANY_TO_SEND_LINE } from './talk/pictures';
+import { SendToMakers } from './talk/SendToMakers';
+import { useSendToMakers } from './talk/useSendToMakers';
 import { stopAnswerSpeech } from './speech/readAloud';
 import { askAnswerId, speakTutor, stopOnTap } from './speech/tutorVoice';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
@@ -168,13 +172,16 @@ export function AskStatus({ verse, state, onAsk }: { verse: Verse; state: AskSta
 }
 
 /** The composer for `verse` (or a passage, src/data/passage.ts): voice-kit's Composer, speak-first or, by the setting Ask by, type-first, drawn at the foot of the Verse view. Hold to ask streams
- * his words as he speaks and a release asks; Type a question brings out the field and Send asks. The tutor takes no photo or file, so there is no attach
- * or camera. A question that failed comes back into the field to be sent again, and words typed or pasted and not sent are kept for the verse and put back when the
+ * his words as he speaks and a release asks; Type a question brings out the field and Send asks. It has Attach a picture and Take a photo (mw-5r3p30.760), but this
+ * tutor does not look at pictures: they go with Send to the makers (src/talk/SendToMakers.tsx), which files what is in the composer as a request to the makers, and Send
+ * with a picture in the row says so and sends nothing. A question that failed comes back into the field to be sent again, and words typed or pasted and not sent are kept for the verse and put back when the
  * composer opens again (src/ui/unsentDraft.ts, mw-5r3p30.495). */
-export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null }: {
+export function AskComposer({ book, chapter, verse, reference, state, onAsk, prefill = null }: {
   book: string;
   chapter: number;
   verse: Verse;
+  /** what the Verse view is about: 'Romans 8:1-11' */
+  reference: string;
   state: AskState | undefined;
   onAsk: (verse: Verse, question: string) => void;
   /** a question to put in the field when the composer opens on that verse (the Parsing drill's link); he sends it himself */
@@ -208,8 +215,23 @@ export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null
     return () => keep(box?.querySelector('textarea') ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftKey]);
-  const send = ({ text }: ComposerMessage): boolean => {
+  const makers = useSendToMakers();
+  const sendToTheMakers = async ({ text, files }: ComposerMessage): Promise<void> => {
+    const message = text.trim();
+    if (message.length > MAX_QUESTION_CHARS) throw new Error(`${message.length} of ${MAX_QUESTION_CHARS}: the message is too long to send. Shorten it; nothing has been cut.`);
+    if (files.length > TALK_MAX_PICTURES) throw new Error(TOO_MANY_TO_SEND_LINE);
+    const pictures = await preparePictures(files);
+    try {
+      await sendToMakers({ text: message || PICTURES_FOR_THE_MAKERS, summary: makersSummary(message), screen: 'Verse view', reference, pictures });
+    } catch (err) {
+      throw new Error(failureLine(err));
+    }
+    sent.current = true;
+    writeDraft(draftKey, '');
+  };
+  const send = ({ text, files }: ComposerMessage): boolean => {
     const question = text.trim();
+    if (files.length > 0) throw new Error(PICTURES_NEED_THE_MAKERS);
     if (!question || busy) return false;
     if (question.length > MAX_QUESTION_CHARS) throw new Error(`${question.length} of ${MAX_QUESTION_CHARS}: the question is too long to send. Shorten it; nothing has been cut.`);
     onAsk(verse, question);
@@ -219,18 +241,20 @@ export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null
   };
   return (
     <section ref={section} aria-label="Ask the tutor" data-ask={unitId(verse)} onInput={onInput}>
+      <SendToMakers action={makers} host={section} />
       {/* a failed question remounts the composer with it in the field */}
       <Composer
         key={`${unitId(verse)}:${failed}`}
         mode={askBy === 'typing' ? 'type' : 'speak'}
-        settings={talkSettings}
+        settings={{ ...talkSettings, attach: true, camera: true }}
+        refuseFile={refuseNonPicture}
         transcriber={askTranscriber}
         lang="en-US"
         appName="Lampas"
         labels={{ ...ASK_LABELS, hold: tapWord('Hold to ask', talkSettings.talk) }}
         initialText={failed || prefilled || readDraft(draftKey)}
         disabled={busy}
-        onSend={send}
+        onSend={(message) => makers.dispatch(message, sendToTheMakers, send)}
       />
     </section>
   );
@@ -243,4 +267,10 @@ const ASK_LABELS: Partial<ComposerLabels> = {
   placeholder: 'Type a question',
   message: 'Your question',
   speak: 'Ask by speaking',
+  attach: 'Attach a picture',
+  camera: 'Take a photo',
+  toSend: 'Pictures to send',
 };
+
+/** Said when Send has a picture in the row: the tutor here does not look at pictures, and a picture is never dropped without his knowing. */
+const PICTURES_NEED_THE_MAKERS = 'The tutor here does not look at pictures. Tap Send to the makers to send them, or take them out and ask again.';
