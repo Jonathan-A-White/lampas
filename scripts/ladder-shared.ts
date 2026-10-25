@@ -15,7 +15,7 @@ export interface LadderEntry {
 export { reasons };
 
 interface IndexFile {
-  books: { code: string; chapters: number }[];
+  books: { code: string; chapters: number; lang?: string }[];
 }
 export interface ChapterFile {
   verses: { n: number; g: { t: string }[]; e: { t: string }[] }[];
@@ -26,6 +26,7 @@ export function buildLadderWith(dataDir: string, outFile: string, score: (verse:
   const index = JSON.parse(readFileSync(join(dataDir, 'index.json'), 'utf8')) as IndexFile;
   const entries: LadderEntry[] = [];
   for (const book of index.books) {
+    if (book.lang === 'hbo') continue; // the ladders are Greek: the Old Testament's chapters (mw-uqlxea.1) are not scored
     for (let chapter = 1; chapter <= book.chapters; chapter++) {
       const file = JSON.parse(readFileSync(join(dataDir, book.code, `${chapter}.json`), 'utf8')) as ChapterFile;
       for (const verse of file.verses) entries.push({ ref: `${book.code}.${chapter}.${verse.n}`, ...score(verse) });

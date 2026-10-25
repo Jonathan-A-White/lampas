@@ -485,7 +485,7 @@ export async function run(options: { rawDir: string; outFile: string; log: (line
   const table: TableVerse[] = parseMsb(tsv).map((v) => {
     const code = BOOKS.find(([, name]) => name === v.book)?.[0];
     if (!code) throw new Error(`MSB table: unknown book ${JSON.stringify(v.book)}`);
-    const text = [...v.words].sort((a, b) => a.greekSort - b.greekSort).map((w) => w.greek).join(' ');
+    const text = [...v.words].sort((a, b) => a.sourceSort - b.sourceSort).map((w) => w.text).join(' ');
     return { code, chapter: v.chapter, verse: v.n, ref: `${v.book} ${v.chapter}:${v.n}`, text };
   });
   log(`${table.length} verses; reading RP2018 and RP2005 from GitHub`);

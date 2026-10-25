@@ -48,11 +48,12 @@ export function lemmaForms(chapters) {
 /** The file's text for one lemma. */
 export const fileText = (lemma, entries) => `${JSON.stringify({ l: lemma, f: entries })}\n`;
 
-/** The chapters of public/data in canonical order (index.json's), read from `dataDir`. */
+/** The chapters of public/data in canonical order (index.json's), read from `dataDir`: the books read in Greek, until the Hebrew lemma forms (the Hebrew epic). */
 export function readChapters(dataDir) {
   const index = JSON.parse(readFileSync(join(dataDir, 'index.json'), 'utf8'));
   const chapters = [];
   for (const book of index.books) {
+    if (book.lang === 'hbo') continue; // the forms are Greek: the Old Testament's chapters (mw-uqlxea.1) are not read
     for (let n = 1; n <= book.chapters; n++) {
       const path = join(dataDir, book.code, `${n}.json`);
       if (existsSync(path)) chapters.push(JSON.parse(readFileSync(path, 'utf8')));
