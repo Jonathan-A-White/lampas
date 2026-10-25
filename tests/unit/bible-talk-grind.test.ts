@@ -828,6 +828,20 @@ describe('two rules the trim of mw-5r3p30.732 left too weak (mw-5r3p30.737)', ()
     expect(part('## The conversation so far')).toMatch(/you must[^.]{0,60}`summary`/);
   });
 
+  // mw-pn6o9b: the smoke example summary-folds-fallen-turns missed 2 of 3 on 2026-10-25 (`summary` absent). The rule stood in the middle of a part and once more in the contract; it now opens the
+  // part as a rule of its own, with the cost of breaking it, and the last thing "How to answer" says is a check of it.
+  it('"The conversation so far" opens with `fold` means `summary`, every time, and says an answer without it is wrong', () => {
+    const so = part('## The conversation so far');
+    const first = so.slice('## The conversation so far'.length).trim();
+    expect(first).toMatch(/^\*\*[^*]*`fold`[^*]*MUST[^*]*`summary`[^*]*every time[^*]*\*\*/);
+    expect(first.slice(0, first.indexOf('**', 2))).toMatch(/without it[^.]*wrong|wrong[^.]*without it/);
+  });
+
+  it('"How to answer" ends with a check: `fold` in the request is `summary` in the answer', () => {
+    const how = part('## How to answer');
+    expect(how.slice(-260)).toMatch(/`fold`[^.]*`summary`/);
+  });
+
   it('"When he is not ready" has him tell the reader plainly that he is missing quite a bit when `total` is more than three', () => {
     expect(part('## When he is not ready')).toMatch(/`total` more than three:[^.]*['"]You are missing quite a bit for this/);
   });
