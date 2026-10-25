@@ -100,12 +100,14 @@ async function expectAnswerReadable(view: Locator, viewport: { width: number; he
     const a = await box(card.locator('.markdown, p').nth(1));
     return { s, q, a };
   };
-  // the box is tall enough to read in, and the question and the first answer line sit wholly inside it
+  // the box is tall enough to read in, and the question and the first answer line sit wholly inside it. 90 px: the card's question line (20 px) and its first
+  // answer line with the card's padding need about 70, and the 28 px of mw-5r3p30.188 is far below it. It was 100 until 'Send to the makers' (commit b5efb771)
+  // put a row of 34 px into the composer, leaving 95 px beside the speaking bar in landscape: the lines are wholly in view at 95, so 100 asked for more than reading needs.
   await expect
     .poll(async () => {
       const { s, q, a } = await settled();
       const c = await box(card);
-      return s.height >= 100 && c.y >= s.y - 0.5 && q.y >= s.y - 0.5 && a.y + 24 <= s.y + s.height + 0.5 && q.y + q.height <= a.y + 0.5;
+      return s.height >= 90 && c.y >= s.y - 0.5 && q.y >= s.y - 0.5 && a.y + 24 <= s.y + s.height + 0.5 && q.y + q.height <= a.y + 0.5;
     }, { message: 'the answer card is in view with its top edge, its question and its first line' })
     .toBe(true);
   const { s } = await settled();
