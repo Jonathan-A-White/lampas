@@ -18,6 +18,7 @@ import { openRequests } from './nav/route';
 import { TutorLinks } from './TutorLinks';
 import { offeredChange, settingOf, undoChange, type AppliedChange } from './settings/registry';
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
+import { DoneLine, LookingLine } from './talk/DoneLine';
 import { KeyPointsLine } from './talk/KeyPointsLine';
 import { fetchedLine } from './services/talkFetch';
 import { revealFoot, revealLines } from './ui/keepInView';
@@ -427,10 +428,13 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} onOpen={onLeave} />
         </div>
-        {turn.changes?.length || turn.refused?.length || turn.opened || turn.stayed || turn.unopened || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
+        {turn.changes?.length || turn.done?.length || turn.refused?.length || turn.opened || turn.stayed || turn.unopened || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
             {turn.changes?.map((c, i) => (
               <ChangeRow key={i} turn={turn} change={c} index={i} />
+            ))}
+            {turn.done?.map((d, i) => (
+              <DoneLine key={`d${i}`} turn={turn} index={i} done={d} />
             ))}
             {turn.refused?.map((r, i) => (
               <li key={`r${i}`} className="py-1 text-base text-muted">
@@ -890,7 +894,10 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
                     </div>
                   </div>
                 ) : (
-                  <Waiting state={state} />
+                  <>
+                    {state.phase === 'waiting' && state.looking ? <LookingLine text={state.looking} /> : null}
+                    <Waiting state={state} />
+                  </>
                 )}
               </div>
             ) : null}

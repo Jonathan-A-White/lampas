@@ -20,7 +20,9 @@ import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
 import { readTarget, type GoPlace } from './talk/go';
-import { addWord, bibleTalkClient, bibleTalkRegistry, changeSettings, withTutorFacts } from './tutor/registry';
+import { addWord, askBack, askedNames, bibleTalkClient, bibleTalkRegistry, changeSettings, lookingLine, noteLateAsks, withTutorFacts } from './tutor/registry';
+import { doneLinesOf } from './talk/doneLines';
+import { holdUndo } from './talk/doneUndo';
 import { leaveSheetForTutor } from './ui/sheetBack';
 import { currentSettings, offeredChange } from './settings/registry';
 import { greekOfferOf } from './talk/greekOffer';
@@ -180,6 +182,7 @@ export function useTalk(
           // a goal he chose Just this time for earlier in this quiz is sent for this quiz alone
           const once = turns.findLast((t) => t.quizGoalChoice === 'once')?.quizGoalOffer;
           let sentAs: string | undefined;
+          let sentRef: SentRef | undefined = resume;
           // the talk goes by its ref and the time of its first turn (the mill keeps one session for it); a first turn is kept with that very time, so the name is the same on every turn after it
           const { talk, when: firstWhen } = talkNameOf(ref, turns, startedAt);
           const said: { session?: TalkSession } = {};
@@ -187,21 +190,46 @@ export function useTalk(
           const greekLevel = greekLevelOf(settings.greekInterest);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
           const request = fitHistory(await withTutorFacts(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
-          const answer = await askTalk(request, {
+          const options = {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,
             signal,
-            tapAt: startedAt,
-            resume,
             talk,
-            onTalk: (session) => {
+            onTalk: (session: TalkSession) => {
               said.session = session;
             },
+          };
+          let answer = await askTalk(request, {
+            ...options,
+            tapAt: startedAt,
+            resume,
             onSent: (txid, seq) => {
               sentAs = txid;
-              set({ phase: 'waiting', question: text, startedAt, sent: { txid, seq }, ...withFocus });
+              sentRef = { txid, seq };
+              set({ phase: 'waiting', question: text, startedAt, sent: sentRef, ...withFocus });
             },
           });
+          // The answer asks for facts of the app first (`asks`): the sheet says what the tutor is looking at, the registry reads those facts (recording each ask-back) and the request goes again, in the same talk, with
+          // them as `asked`. The second answer stands: what it asks for again is not read (a turn has two rounds). An answer that asks for nothing shows no such line (mw-t3xu9a.7).
+          const asks = askedNames(answer.asks);
+          if (asks.length > 0) {
+            const looking = lookingLine(asks);
+            void answerDrawn(sentAs);
+            const followedAt = Date.now();
+            set({ phase: 'waiting', question: text, startedAt, ...(sentRef ? { sent: sentRef } : {}), looking, ...withFocus });
+            const asked = await askBack(asks, turns.length);
+            answer = await askTalk({ ...request, asked }, {
+              ...options,
+              tapAt: followedAt,
+              onSent: (txid, seq) => {
+                sentAs = txid;
+                sentRef = { txid, seq };
+                set({ phase: 'waiting', question: text, startedAt, sent: sentRef, looking, ...withFocus });
+              },
+            });
+            const again = askedNames(answer.asks);
+            if (again.length > 0) await noteLateAsks(again, turns.length);
+          }
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await changeSettings(answer.settings_changes);
           // What his words did to the offer that waited (mw-5r3p30.186): a yes does what its tap does, a no withdraws it, a request to hear it changes nothing.
@@ -221,6 +249,11 @@ export function useTalk(
           // The one offer to open Today: only when this request listed its items, once a talk, none after his no in this very answer (src/talk/todayOffer.ts)
           const todayOffer = todayOfferOf(answer, scope, turns, today, waiting?.offer.kind === 'today' && answer.offer_reply === 'decline');
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
+          // The commands the answer names (`do`), run by the tutor client in order through the registry; a refused name or args is recorded as a miss, as are the misses the answer names. What each did is a line of the turn:
+          // the app's own words for it, with its Undo when it can be undone, or for a command that needs his yes the question and a button (src/talk/DoneLine.tsx). It never fails the talk.
+          const taken = answer.do?.length || answer.misses?.length ? await bibleTalkClient().takeAnswer({ do: answer.do, misses: answer.misses }, turns.length).catch(() => undefined) : undefined;
+          const ranDo = taken ? doneLinesOf(answer.do ?? [], taken, bibleTalkRegistry()) : undefined;
+          if (ranDo) refused.push(...ranDo.refused);
           // A place he asked to be taken to (a chapter, or a screen the registry names): opened only while this talk's sheet is open. The chapter he is on stays (said so); a chapter that came after he closed the
           // sheet is kept to open with a tap (said so); any other go is said not to have happened.
           const go = readTarget(answer.go, bibleTalkRegistry());
@@ -235,8 +268,9 @@ export function useTalk(
           // The mill ended the talk's session at its cap and began a fresh one from its key points: they are the talk's summary now (they hold every turn so far), and the turn says so (mw-pxji7y.3); it never fails the talk.
           const keyPoints = said.session?.session === 'refreshed' ? said.session.key_points : undefined;
           if (keyPoints) await keepTalkSummary(ref, summaryOfKeyPoints(keyPoints), turns.length).catch(() => undefined);
-          const id = await addTurn(ref, text, answer.answer, answer.words, turns.length === 0 ? firstWhen : Date.now(), { keyPoints, opened: target?.title, stayed, unopened, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, todayOffer, cleanQ: answer.question, spoken, pictures });
+          const id = await addTurn(ref, text, answer.answer, answer.words, turns.length === 0 ? firstWhen : Date.now(), { keyPoints, opened: target?.title, stayed, unopened, done: ranDo?.lines, changes: applied, refused, added, already, unknown, links: answer.links?.slice(0, MAX_LINKS), studyWayLine: scope.quiz ? answer.study_way_line : undefined, quizGoalOffer: scope.quiz ? quizGoalOfferOf(answer.quiz_goal_offer, { kept: goal, once }) : undefined, guide: hebrewGuideOf(focus, answer), feedbackOffer: answer.feedback_offer?.summary, settingOffer: settingOfferOf(answer), bridge: answer.bridge ? resolveBridge(answer.bridge, missing) : undefined, greekOffer, rustyOffer, todayOffer, cleanQ: answer.question, spoken, pictures });
           pictured.current[ref] = undefined;
+          ranDo?.undos.forEach((undo, i) => (undo ? holdUndo(id, i, undo) : undefined));
           // The passages the tutor asked for are read from the app's own text in the background, after the answer is kept: he waits for nothing, the turn then says what was read,
           // and the next request holds them (mw-5r3p30.734, src/services/talkFetch.ts); it never fails the talk.
           if (answer.fetch?.length) void fetchPassages(answer.fetch).then((read) => (read.length > 0 ? keepFetched(id, read) : undefined)).catch(() => undefined);
