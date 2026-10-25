@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sentence Diagram Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "clauses"
+  ],
+  "properties": {
+    "clauses": {
+      "description": "The verse's clauses in the order they stand. The first is the main clause; each later one is coordinate with the one before it, unless it hangs inside a clause as a subordinate one.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "clause"
+        ],
+        "properties": {
+          "clause": {
+            "$ref": "#/$defs/clause"
+          },
+          "joinedBy": {
+            "$ref": "#/$defs/token"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "token": {
+      "description": "A word of the diagram: a word that was sent (`i`, its place in `words`), or an understood word the sentence does not spell out (`implied`, such as 'you' of a command, or 'ὑμεῖς' for a Greek ending). Each word sent is named exactly once in the whole answer.",
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "i"
+          ],
+          "properties": {
+            "i": {
+              "description": "The word's place in the request's `words`.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 399
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implied"
+          ],
+          "properties": {
+            "implied": {
+              "description": "The understood word, written as it would be said.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            }
+          }
+        }
+      ]
+    },
+    "slot": {
+      "description": "One place on a line: its words and what hangs beneath them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "words",
+        "modifiers"
+      ],
+      "properties": {
+        "words": {
+          "description": "The words that stand in this place, side by side, in order. They may be understood words as well as words sent.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/token"
+          }
+        },
+        "modifiers": {
+          "description": "What hangs beneath this place, the first nearest the word. [] when nothing does.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/modifier"
+          }
+        }
+      }
+    },
+    "modifier": {
+      "description": "What hangs under a word: a word on a slanted line, a prepositional phrase, or a subordinate clause.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/wordModifier"
+        },
+        {
+          "$ref": "#/$defs/prepositionalModifier"
+        },
+        {
+          "$ref": "#/$defs/clauseModifier"
+        }
+      ]
+    },
+    "wordModifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "word",
+        "modifiers"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "word"
+          ]
+        },
+        "word": {
+          "$ref": "#/$defs/token"
+        },
+        "modifiers": {
+          "description": "What modifies this word in turn. [] when nothing does.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/modifier"
+          }
+        }
+      }
+    },
+    "prepositionalModifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "preposition",
+        "object"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "prepositional"
+          ]
+        },
+        "preposition": {
+          "$ref": "#/$defs/token"
+        },
+        "object": {
+          "$ref": "#/$defs/slot"
+        }
+      }
+    },
+    "clauseModifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "clause"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "clause"
+          ]
+        },
+        "connector": {
+          "$ref": "#/$defs/token"
+        },
+        "clause": {
+          "$ref": "#/$defs/clause"
+        }
+      }
+    },
+    "clause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "verb"
+      ],
+      "properties": {
+        "subject": {
+          "$ref": "#/$defs/slot"
+        },
+        "verb": {
+          "$ref": "#/$defs/slot"
+        },
+        "complement": {
+          "description": "What completes the verb. Left out when nothing does.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "slot"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "direct-object",
+                "indirect-object",
+                "predicate-nominative",
+                "predicate-adjective"
+              ]
+            },
+            "slot": {
+              "$ref": "#/$defs/slot"
+            }
+          }
+        }
+      }
+    }
+  }
+}

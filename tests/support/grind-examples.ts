@@ -1,7 +1,7 @@
 // tests/support/grind-examples.ts — support for the grind scenarios under grinds/examples/<kind>/<name>.json
 // (format: grinds/examples/README.md). Test-side only: the app never imports it. `mw grist smoke` sends each
 // scenario's request through the live grist and runs the same checks (checkExpect) on the answer.
-import { validate, type Schema } from './schema-validate';
+import { resolveRef, validate, type Schema } from './schema-validate';
 
 /** An example photo or recording has to stay public-safe and small. */
 export const EXAMPLE_FILE_MAX_BYTES = 200 * 1024;
@@ -70,7 +70,7 @@ function schemasAt(root: Schema, path: string): Schema[] {
   let nodes: Schema[] = [root];
   for (const part of path.split('.')) {
     const next: Schema[] = [];
-    for (const node of nodes.flatMap(branches)) {
+    for (const node of nodes.flatMap((n) => branches(n, root))) {
       const keyed = typeof node.additionalProperties === 'object' ? node.additionalProperties : undefined;
       const sub = /^\d+$/.test(part) && node.type === 'array' ? node.items : (node.properties?.[part] ?? keyed);
       if (sub) next.push(sub);
@@ -78,13 +78,17 @@ function schemasAt(root: Schema, path: string): Schema[] {
     if (next.length === 0) return [];
     nodes = next;
   }
-  return nodes.flatMap(branches);
+  return nodes.flatMap((n) => branches(n, root));
 }
 
-const branches = (schema: Schema): Schema[] => (schema.anyOf ? schema.anyOf.flatMap(branches) : [schema]);
+/** A schema's anyOf branches (and a `$ref`, followed into the root's `$defs`), each a schema of its own. */
+const branches = (schema: Schema, root: Schema): Schema[] => {
+  const s = resolveRef(schema, root);
+  return s.anyOf ? s.anyOf.flatMap((b) => branches(b, root)) : [s];
+};
 
 /** What is wrong with one check (or one of an `all` list) at `path`, against the schemas that path can stand at. */
-function checkProblems(path: string, check: unknown, schemas: Schema[]): string[] {
+function checkProblems(path: string, check: unknown, schemas: Schema[], root: Schema): string[] {
   if (typeof check === 'string' && check in CAMEL_CHECKS) return [`${path}: "${check}" looks like a check name; write ${CAMEL_CHECKS[check]}`];
   if (typeof check !== 'object' || check === null || Array.isArray(check)) return [`${path}: must be an object of checks`];
   const problems: string[] = [];
@@ -92,7 +96,7 @@ function checkProblems(path: string, check: unknown, schemas: Schema[]): string[
   if (keys.length === 0) problems.push(`${path}: has no checks`);
   for (const key of keys) if (!CHECKS.includes(key)) problems.push(`${path}: unknown check "${key}"`);
   const c = check as FieldCheck;
-  const allowed = (value: unknown): boolean => schemas.some((s) => validate(value, s).length === 0);
+  const allowed = (value: unknown): boolean => schemas.some((s) => validate(value, s, '$', root).length === 0);
   if ('equals' in c && !allowed(c.equals)) problems.push(`${path}: equals ${JSON.stringify(c.equals)} is never a valid answer`);
   if ('one_of' in c) {
     if (!Array.isArray(c.one_of) || c.one_of.length === 0) problems.push(`${path}: one_of must be a non-empty list`);
@@ -118,7 +122,7 @@ function checkProblems(path: string, check: unknown, schemas: Schema[]): string[
   }
   if ('all' in c) {
     if (!Array.isArray(c.all) || c.all.length === 0) problems.push(`${path}: all must be a non-empty list of checks`);
-    else c.all.forEach((inner, i) => problems.push(...checkProblems(`${path}.all.${i}`, inner, schemas)));
+    else c.all.forEach((inner, i) => problems.push(...checkProblems(`${path}.all.${i}`, inner, schemas, root)));
   }
   return problems;
 }
@@ -132,7 +136,7 @@ export function expectProblems(expectBlock: unknown, answerSchema: Schema): stri
   for (const [path, check] of entries) {
     const schemas = schemasAt(answerSchema, path);
     if (schemas.length === 0) problems.push(`${path}: not a field of the answer schema`);
-    else problems.push(...checkProblems(path, check, schemas));
+    else problems.push(...checkProblems(path, check, schemas, answerSchema));
   }
   return problems;
 }

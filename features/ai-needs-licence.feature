@@ -24,6 +24,10 @@ Feature: Lampas AI needs a licence
     Then the Verse view offers only the action "Listen", with Copy link
     And the Verse view has no Read it aloud, no Hold to read bar and no Reading ladder
 
+  Scenario: With no licence the Verse view offers no Diagram
+    Given this phone has no licence and the Verse view of verse 28 is open
+    Then the Verse view has no button named Diagram
+
   Scenario: With a licence the Verse view offers Ask the tutor and Quiz me and the Hold to ask bar
     Given this phone has a licence and the Verse view of verse 28 is open, last left on Ask the tutor
     Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor" and "Quiz me"

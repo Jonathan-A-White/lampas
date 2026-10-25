@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sentence Diagram Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ref",
+    "lang",
+    "words"
+  ],
+  "properties": {
+    "ref": {
+      "description": "The verse or passage, such as 'Colossians 3:1' or 'Colossians 3:1-2'.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+    },
+    "lang": {
+      "description": "english: the words are the verse's English, split from the translation's chunks. greek: the words are the verse's Greek.",
+      "type": "string",
+      "enum": [
+        "english",
+        "greek"
+      ]
+    },
+    "words": {
+      "description": "The words to diagram, in order. `i` is the word's place in this list, 0 on: it is what the answer's `i` names. Every one appears in the diagram exactly once.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 400,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "i",
+          "text"
+        ],
+        "properties": {
+          "i": {
+            "description": "The word's place in `words`, counting from 0.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 399
+          },
+          "text": {
+            "description": "The word with no punctuation.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "chunk": {
+            "description": "English only: the translation chunk the word is part of; the words of one chunk render the same Greek word or words. Counted within its verse.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 400
+          },
+          "lemma": {
+            "description": "Greek only: the word's dictionary form.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "parse": {
+            "description": "Greek only: the Robinson-Pierpont parsing code, such as 'N-DSM' (noun, dative singular masculine) or 'V-PAM-2P'.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          },
+          "verse": {
+            "description": "Only when the request spans several verses: the number of the verse the word is in.",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      }
+    },
+    "greek": {
+      "description": "English only: the verse's Greek words in Greek order, as context for placing the English words by function. Each is part of the English chunk named.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 400,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text",
+          "lemma",
+          "parse"
+        ],
+        "properties": {
+          "text": {
+            "description": "The Greek word as the verse has it.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "lemma": {
+            "description": "Its dictionary form.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "parse": {
+            "description": "Its Robinson-Pierpont parsing code.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          },
+          "chunk": {
+            "description": "The English chunk that renders it, when the translation has one.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 400
+          },
+          "verse": {
+            "description": "Only when the request spans several verses: the number of the verse the word is in.",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      }
+    },
+    "faults": {
+      "description": "Only on a second ask: what was wrong with the first answer, each in a line. Make the diagram again and put right every one.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 40,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 240
+      }
+    }
+  }
+}

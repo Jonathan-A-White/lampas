@@ -1,0 +1,120 @@
+{
+  "description": "Colossians 3:1 in Greek: a diagram comes back with the main clause first, and its verb is ζητεῖτε.",
+  "schemaVersion": "1",
+  "request": {
+    "ref": "Colossians 3:1",
+    "lang": "greek",
+    "words": [
+      {
+        "i": 0,
+        "text": "Εἰ",
+        "lemma": "εἰ",
+        "parse": "COND"
+      },
+      {
+        "i": 1,
+        "text": "οὖν",
+        "lemma": "οὖν",
+        "parse": "CONJ"
+      },
+      {
+        "i": 2,
+        "text": "συνηγέρθητε",
+        "lemma": "συνεγείρω",
+        "parse": "V-API-2P"
+      },
+      {
+        "i": 3,
+        "text": "τῷ",
+        "lemma": "ὁ",
+        "parse": "T-DSM"
+      },
+      {
+        "i": 4,
+        "text": "χριστῷ",
+        "lemma": "Χριστός",
+        "parse": "N-DSM"
+      },
+      {
+        "i": 5,
+        "text": "τὰ",
+        "lemma": "ὁ",
+        "parse": "T-APN"
+      },
+      {
+        "i": 6,
+        "text": "ἄνω",
+        "lemma": "ἄνω",
+        "parse": "ADV"
+      },
+      {
+        "i": 7,
+        "text": "ζητεῖτε",
+        "lemma": "ζητέω",
+        "parse": "V-PAM-2P"
+      },
+      {
+        "i": 8,
+        "text": "οὗ",
+        "lemma": "οὗ",
+        "parse": "ADV"
+      },
+      {
+        "i": 9,
+        "text": "ὁ",
+        "lemma": "ὁ",
+        "parse": "T-NSM"
+      },
+      {
+        "i": 10,
+        "text": "χριστός",
+        "lemma": "Χριστός",
+        "parse": "N-NSM"
+      },
+      {
+        "i": 11,
+        "text": "ἐστιν",
+        "lemma": "εἰμί",
+        "parse": "V-PAI-3S"
+      },
+      {
+        "i": 12,
+        "text": "ἐν",
+        "lemma": "ἐν",
+        "parse": "PREP"
+      },
+      {
+        "i": 13,
+        "text": "δεξιᾷ",
+        "lemma": "δεξιός",
+        "parse": "A-DSF"
+      },
+      {
+        "i": 14,
+        "text": "τοῦ",
+        "lemma": "ὁ",
+        "parse": "T-GSM"
+      },
+      {
+        "i": 15,
+        "text": "θεοῦ",
+        "lemma": "θεός",
+        "parse": "N-GSM"
+      },
+      {
+        "i": 16,
+        "text": "καθήμενος",
+        "lemma": "κάθημαι",
+        "parse": "V-PNP-NSM"
+      }
+    ]
+  },
+  "expect": {
+    "clauses": {
+      "present": true
+    },
+    "clauses.0.clause.verb.words.0.i": {
+      "equals": 7
+    }
+  }
+}

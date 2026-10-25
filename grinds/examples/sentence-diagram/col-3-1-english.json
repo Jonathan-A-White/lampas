@@ -1,0 +1,234 @@
+{
+  "description": "Colossians 3:1 in English: a diagram comes back with the main clause first, and its verb is 'strive'.",
+  "schemaVersion": "1",
+  "request": {
+    "ref": "Colossians 3:1",
+    "lang": "english",
+    "words": [
+      {
+        "i": 0,
+        "text": "Therefore",
+        "chunk": 0
+      },
+      {
+        "i": 1,
+        "text": "since",
+        "chunk": 1
+      },
+      {
+        "i": 2,
+        "text": "you",
+        "chunk": 2
+      },
+      {
+        "i": 3,
+        "text": "have",
+        "chunk": 2
+      },
+      {
+        "i": 4,
+        "text": "been",
+        "chunk": 2
+      },
+      {
+        "i": 5,
+        "text": "raised",
+        "chunk": 2
+      },
+      {
+        "i": 6,
+        "text": "with",
+        "chunk": 2
+      },
+      {
+        "i": 7,
+        "text": "Christ",
+        "chunk": 3
+      },
+      {
+        "i": 8,
+        "text": "strive",
+        "chunk": 4
+      },
+      {
+        "i": 9,
+        "text": "for",
+        "chunk": 4
+      },
+      {
+        "i": 10,
+        "text": "the",
+        "chunk": 5
+      },
+      {
+        "i": 11,
+        "text": "things",
+        "chunk": 5
+      },
+      {
+        "i": 12,
+        "text": "above",
+        "chunk": 6
+      },
+      {
+        "i": 13,
+        "text": "where",
+        "chunk": 7
+      },
+      {
+        "i": 14,
+        "text": "Christ",
+        "chunk": 8
+      },
+      {
+        "i": 15,
+        "text": "is",
+        "chunk": 9
+      },
+      {
+        "i": 16,
+        "text": "seated",
+        "chunk": 10
+      },
+      {
+        "i": 17,
+        "text": "at",
+        "chunk": 11
+      },
+      {
+        "i": 18,
+        "text": "the",
+        "chunk": 12
+      },
+      {
+        "i": 19,
+        "text": "right",
+        "chunk": 12
+      },
+      {
+        "i": 20,
+        "text": "hand",
+        "chunk": 12
+      },
+      {
+        "i": 21,
+        "text": "of",
+        "chunk": 13
+      },
+      {
+        "i": 22,
+        "text": "God",
+        "chunk": 13
+      }
+    ],
+    "greek": [
+      {
+        "text": "Εἰ",
+        "lemma": "εἰ",
+        "parse": "COND",
+        "chunk": 1
+      },
+      {
+        "text": "οὖν",
+        "lemma": "οὖν",
+        "parse": "CONJ",
+        "chunk": 0
+      },
+      {
+        "text": "συνηγέρθητε",
+        "lemma": "συνεγείρω",
+        "parse": "V-API-2P",
+        "chunk": 2
+      },
+      {
+        "text": "τῷ",
+        "lemma": "ὁ",
+        "parse": "T-DSM"
+      },
+      {
+        "text": "χριστῷ",
+        "lemma": "Χριστός",
+        "parse": "N-DSM",
+        "chunk": 3
+      },
+      {
+        "text": "τὰ",
+        "lemma": "ὁ",
+        "parse": "T-APN",
+        "chunk": 5
+      },
+      {
+        "text": "ἄνω",
+        "lemma": "ἄνω",
+        "parse": "ADV",
+        "chunk": 6
+      },
+      {
+        "text": "ζητεῖτε",
+        "lemma": "ζητέω",
+        "parse": "V-PAM-2P",
+        "chunk": 4
+      },
+      {
+        "text": "οὗ",
+        "lemma": "οὗ",
+        "parse": "ADV",
+        "chunk": 7
+      },
+      {
+        "text": "ὁ",
+        "lemma": "ὁ",
+        "parse": "T-NSM"
+      },
+      {
+        "text": "χριστός",
+        "lemma": "Χριστός",
+        "parse": "N-NSM",
+        "chunk": 8
+      },
+      {
+        "text": "ἐστιν",
+        "lemma": "εἰμί",
+        "parse": "V-PAI-3S",
+        "chunk": 9
+      },
+      {
+        "text": "ἐν",
+        "lemma": "ἐν",
+        "parse": "PREP",
+        "chunk": 11
+      },
+      {
+        "text": "δεξιᾷ",
+        "lemma": "δεξιός",
+        "parse": "A-DSF",
+        "chunk": 12
+      },
+      {
+        "text": "τοῦ",
+        "lemma": "ὁ",
+        "parse": "T-GSM"
+      },
+      {
+        "text": "θεοῦ",
+        "lemma": "θεός",
+        "parse": "N-GSM",
+        "chunk": 13
+      },
+      {
+        "text": "καθήμενος",
+        "lemma": "κάθημαι",
+        "parse": "V-PNP-NSM",
+        "chunk": 10
+      }
+    ]
+  },
+  "expect": {
+    "clauses": {
+      "present": true
+    },
+    "clauses.0.clause.verb.words.0.i": {
+      "equals": 8
+    }
+  }
+}
