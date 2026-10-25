@@ -291,7 +291,8 @@ describeFeature(feature, ({ Scenario }) => {
       });
     });
     Then('the pane draws the Greek diagram of Colossians 3:1', async () => {
-      expect(await within(pane()).findByRole('img', { name: 'Sentence diagram of Colossians 3:1, Greek' })).toBeInTheDocument();
+      // the switch of view is a new pane (keyed by the mode), so the pane is found again on each try rather than held
+      await waitFor(() => expect(within(pane()).getByRole('img', { name: 'Sentence diagram of Colossians 3:1, Greek' })).toBeInTheDocument());
     });
   });
 });
