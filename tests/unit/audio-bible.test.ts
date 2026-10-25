@@ -1,6 +1,6 @@
 // tests/unit/audio-bible.test.ts — src/resources/audioBible.ts: the audio Bibles a reader can turn on and the chapter Audible is told to pick.
 import { describe, expect, it } from 'vitest';
-import { BOOKS } from '../../src/data/books';
+import { BOOKS, NT_BOOKS } from '../../src/data/books';
 import { wordOfPromiseStart } from 'audible-kit';
 import { AUDIO_BIBLES, audibleChapterLabel, audibleListen, audibleStartOf, audioBibleOf } from '../../src/resources/audioBible';
 
@@ -53,9 +53,9 @@ describe('audibleStartOf', () => {
     expect(audibleStartOf('jhn', 3)).toBe(305111142);
   });
 
-  it("has a start for every one of Lampas's 260 New Testament chapters, and for the Old Testament's Psalm 23 too", () => {
+  it("has a start for every one of the 260 chapters of the New Testament, and for the Old Testament's Psalm 23 too", () => {
     let count = 0;
-    for (const book of BOOKS) {
+    for (const book of NT_BOOKS) {
       for (let chapter = 1; chapter <= book.chapters; chapter++) {
         count++;
         const start = audibleStartOf(book.code, chapter);
