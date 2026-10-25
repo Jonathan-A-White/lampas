@@ -1,5 +1,10 @@
 # What's new
 
+## 0.2.14
+_2026-10-25_
+- Fixed: The Library now lists all your Lenski, Baker, Pillar and NIGTC commentaries (and your interlinears and more Bibles), and its search says "commentaries" properly.
+- New: The verse screen has a Diagram button that has the tutor draw the verse as a sentence diagram you can slide sideways and tap any word of.
+
 ## 0.2.11
 _2026-10-25_
 - New: When the tutor helps you fill in a form you can now answer it by holding to talk, typing, or attaching or taking a photo, the same way you ask it about a verse.

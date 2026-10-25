@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.2.14",
+    "date": "2026-10-25",
+    "story": "mw-efwust",
+    "kind": "fixed",
+    "text": "The Library now lists all your Lenski, Baker, Pillar and NIGTC commentaries (and your interlinears and more Bibles), and its search says \"commentaries\" properly."
+  },
+  {
+    "version": "0.2.14",
+    "date": "2026-10-25",
+    "story": "mw-souyao.3",
+    "kind": "new",
+    "text": "The verse screen has a Diagram button that has the tutor draw the verse as a sentence diagram you can slide sideways and tap any word of."
+  },
+  {
     "version": "0.2.11",
     "date": "2026-10-25",
     "story": "mw-5r3p30.761",
