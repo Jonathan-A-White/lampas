@@ -53,7 +53,7 @@ Answer with a Tutor Weights Answer (grinds/tutor-weights.answer.schema.json).
 meets it again and again, and it is something the app could plausibly have (a fact, a command, a place). Name it with a `title` as a story's title would say it
 ('A fact for the verses he marked'), a `why` (what he wanted, how often, what is missing), and the `screen` and `name` exactly as the report has them: the app
 looks the count up from those, and drops a miss it cannot find. Leave out a miss that was wanted once, that asks for something the app should not do, or that a
-fact already on the catalogue meets. Leave the field out when none is worth a story.
+fact already on the catalogue meets. Leave the field out (never an empty list) when none is worth a story.
 
 ## Asking first
 
@@ -65,5 +65,5 @@ counts alone cannot tell you whether it is worth carrying, for example you canno
 ## The shape of the answer
 
 ```
-{"lists": {"Reader": ["rusty-words"]}, "reasons": ["The Reader asked for your rusty words 5 times lately, so it is read up front there now."], "misses_worth_a_story": []}
+{"lists": {"Reader": ["rusty-words"]}, "reasons": ["The Reader asked for your rusty words 5 times lately, so it is read up front there now."]}
 ```

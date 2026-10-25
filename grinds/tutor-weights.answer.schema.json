@@ -20,6 +20,7 @@
     "misses_worth_a_story": {
       "description": "Misses in the report that are worth building something for: asked for more than once, or by the same screen over and over. Each names the screen and the miss's `name` exactly as the report has them, so the app can count it. Leave the list out when no miss is worth a story.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 5,
       "items": {
         "type": "object",
@@ -36,6 +37,7 @@
     "asks": {
       "description": "Names of facts on the catalogue (is fact) that you need before you can decide well. The app reads them and sends the request again with them as asked; ask once, for everything you need. Leave it out when the report is enough.",
       "type": "array",
+      "minItems": 1,
       "maxItems": 8,
       "items": { "type": "string", "minLength": 1, "maxLength": 80 }
     }
