@@ -80,6 +80,43 @@ test('Lexicons with 19 on: All on, two off, each of the three hit areas selects,
   await expect(page.getByRole('radiogroup', { name: 'EDNT', exact: true }).getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'true');
 });
 
+test('Commentaries, several hundred of them: All on, a search narrows them, the box scrolls to the last, pinned lead (mw-vb8krt)', async ({ page }) => {
+  await open(page, 'library?kind=commentary', 'Commentaries');
+  const field = page.getByRole('searchbox', { name: 'Search Commentaries' });
+  const total = Number((await field.getAttribute('placeholder'))!.match(/Search (\d+) commentaries/)![1]);
+  expect(total).toBeGreaterThan(300);
+  await page.getByRole('button', { name: 'All on', exact: true }).click();
+  await expect(page.getByTestId('kind-status')).toHaveText(`${total} on`);
+
+  // a search narrows the list and says how many of them remain
+  await field.fill('Guzik');
+  await expect(page.getByText(/\d+ of \d+ shown/)).toBeVisible();
+  const guzik = await page.getByRole('radiogroup').count();
+  expect(guzik).toBeGreaterThan(20);
+  expect(guzik).toBeLessThan(total / 4);
+  await field.fill('zzzz nothing');
+  await expect(page.getByText('No commentary matches')).toBeVisible();
+  await field.fill('');
+
+  // the box scrolls to the bottom of the list, and nothing runs off the screen sideways
+  await page.locator('.screen').evaluate((box) => void (box.scrollTop = box.scrollHeight));
+  await expect(page.getByRole('radiogroup').last()).toBeVisible();
+  const wide = await page.evaluate(() => ({ page: document.documentElement.scrollWidth, screen: (document.querySelector('.screen') as HTMLElement).scrollWidth, box: (document.querySelector('.screen') as HTMLElement).clientWidth }));
+  expect(wide.page).toBeLessThanOrEqual(390);
+  expect(wide.screen).toBeLessThanOrEqual(wide.box);
+
+  // a pinned one leads the list when it is opened again
+  const last = page.getByRole('radiogroup').last();
+  const name = (await last.getAttribute('aria-label'))!;
+  await last.getByRole('radio', { name: 'Pin', exact: true }).click();
+  await expect(last.getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await page.waitForTimeout(350);
+  await page.reload();
+  await expect(page.getByRole('radiogroup').first()).toHaveAttribute('aria-label', name);
+  await page.locator('.screen').evaluate((box) => void (box.scrollTop = 0));
+  await shot(page, 'library-commentaries');
+});
+
 test('a fourth pin is refused with its line under the book', async ({ page }) => {
   await open(page, 'library?kind=lexicon', 'Lexicons');
   // a new phone starts with BDAG pinned: two more fill the three

@@ -78,7 +78,9 @@ test('the head of his export is read on the phone: counts, one button and the re
 
 test('a long list turns on in one tap and the Library says when it came', async ({ page }) => {
   await open(page, 'library?import', 'Import your library');
-  await page.getByLabel('Logos list file').setInputFiles({ name: 'logos-list.csv', mimeType: 'text/csv', buffer: Buffer.from(longList(), 'utf8') });
+  const list = longList();
+  const books = list.trim().split('\r\n').length - 1;
+  await page.getByLabel('Logos list file').setInputFiles({ name: 'logos-list.csv', mimeType: 'text/csv', buffer: Buffer.from(list, 'utf8') });
   await expect(page.getByTestId('import-left')).toHaveText('1,000 Lampas cannot use yet');
   const button = page.getByRole('button', { name: /^Turn on \d+ books$/ });
   await expect(button).toBeVisible();
@@ -89,7 +91,7 @@ test('a long list turns on in one tap and the Library says when it came', async 
   await shot(page, 'library-import-long');
   await button.click();
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
-  await expect(page.getByTestId('import-line')).toContainText('from a list of 1,095 books');
+  await expect(page.getByTestId('import-line')).toContainText(`from a list of ${books.toLocaleString('en')} books`);
   await expect(page.getByRole('button', { name: 'Import again', exact: true })).toBeVisible();
   await expectThumbSized(page);
   await shot(page, 'library-after-import');
