@@ -164,14 +164,14 @@ export function VerseView(props: VerseViewProps) {
           )}
         </div>
         {/* One line while every label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner), else
-            three to a row over two rows: the five actions and Copy link are six cells. A phone with Share keeps two rows by putting Share beside Copy link in the sixth cell
+            three to a row over two rows (two to a row at 15 rem of room or less, where a three-column cell is too narrow for 'Diagram' at 200 % text): the five actions and Copy link are six cells. A phone with Share keeps two rows by putting Share beside Copy link in the sixth cell
             (mw-souyao.3); only a wide row spreads them into seven. */}
         <div className="flex flex-col">
         <div className="@container">
           <div
             role="group"
             aria-label="Actions"
-            className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
+            className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 @max-[15rem]:grid-cols-2 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
           >
             {actionsFor(ai).map((a) => (
               <button
@@ -187,7 +187,7 @@ export function VerseView(props: VerseViewProps) {
             <LinkActions
               url={verse.to === undefined ? referenceUrl(book, chapter, verse.n) : passageUrl(book, chapter, verse.n, verse.to)}
               title={reference}
-              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_input]:col-span-3 [&_input]:col-start-1 [&_input]:row-start-3 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_input]:@[29rem]:col-span-7 [&_input]:@[29rem]:row-start-2' : '[&>div]:contents [&_input]:@[25rem]:col-span-6 [&_input]:@[25rem]:row-start-2'}`}
+              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_input]:col-span-3 [&_input]:col-start-1 [&_input]:row-start-3 [&_input]:@max-[15rem]:col-span-2 [&_input]:@max-[15rem]:row-start-4 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_input]:@[29rem]:col-span-7 [&_input]:@[29rem]:row-start-2' : '[&>div]:contents [&_input]:@[25rem]:col-span-6 [&_input]:@[25rem]:row-start-2'}`}
               statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
             />
           </div>
@@ -241,7 +241,7 @@ export function VerseView(props: VerseViewProps) {
               The tutor asks you about {name} one question at a time, in order, then helps you map how it is built.
             </p>
           ) : null}
-          {action === 'diagram' && ai ? <DiagramPane key={`${unitId(verse)}:${view}`} chapter={chapterText} verse={verse} view={view} onLook={onLook} /> : null}
+          {action === 'diagram' && ai ? <DiagramPane key={`${book}.${chapter}.${unitId(verse)}:${view}`} chapter={chapterText} verse={verse} view={view} onLook={onLook} /> : null}
         </div>
         </div>
       </div>
