@@ -1,10 +1,10 @@
 // src/data/repositories/talks.ts — the turns of the Bible talk, kept on the phone per conversation. A repository owns its transactions.
 import { searchTalks, type TalkSummary } from 'voice-kit/talks';
 import type { AppliedChange } from '../../settings/registry';
-import { db, type AnswerLink, type AnswerWord, type Bridge, type GreekOffer, type HebrewSounds, type HeldPassage, type RustyOffer, type TalkPicture, type TalkSummaryRow, type TalkTurn } from '../db';
+import { db, type AnswerLink, type AnswerWord, type Bridge, type GreekOffer, type HebrewSounds, type HeldPassage, type RustyOffer, type TalkPicture, type TalkSummaryRow, type TalkTurn, type TurnDone } from '../db';
 import { bibleTalks, conversationSearch, type BibleTurnFields, type ConversationFields } from './talkReader';
 
-export type { TalkPicture, TalkSummaryRow, TalkTurn };
+export type { TalkPicture, TalkSummaryRow, TalkTurn, TurnDone };
 
 /** The key a conversation is kept under: the chapter 'rom.8', one of its verses 'rom.8.28' or a passage 'rom.8.1-11' (a string, src/data/passage.ts unitId).
  * A quiz (mw-5r3p30.74) is a conversation of its own beside the talk about the same verses: 'rom.8.1-11:quiz'. */
@@ -56,6 +56,8 @@ export interface TurnChanges {
   pictures?: KeptPicture[];
   /** the key points the tutor wrote at a refresh of the talk's session (mw-pxji7y.3) */
   keyPoints?: string;
+  /** what the commands of the answer's `do` did (mw-t3xu9a.7) */
+  done?: TurnDone[];
 }
 
 /** A picture to keep with a turn: the bytes that were sent. */
@@ -89,6 +91,7 @@ export async function addTurn(ref: string, q: string, a: string, words: AnswerWo
   if (done?.cleanQ) turn.cleanQ = done.cleanQ;
   if (done?.spoken) turn.spoken = true;
   if (done?.keyPoints) turn.keyPoints = done.keyPoints;
+  if (done?.done?.length) turn.done = done.done;
   return db.transaction('rw', db.talks, db.talkPictures, async () => {
     const id = (await db.talks.add(turn)) as number;
     if (done?.pictures?.length) {
@@ -114,6 +117,15 @@ export async function markChangeUndone(turnId: number, index: number): Promise<v
     if (!turn?.changes?.[index]) return;
     const changes = turn.changes.map((c, i) => (i === index ? { ...c, undone: true } : c));
     await db.talks.update(turnId, { changes });
+  });
+}
+
+/** Changes line number `index` of a turn's `done` (Put back after an Undo; what a confirm command said once its button ran). */
+export async function updateDone(turnId: number, index: number, patch: Partial<TurnDone>): Promise<void> {
+  await db.transaction('rw', db.talks, async () => {
+    const turn = await db.talks.get(turnId);
+    if (!turn?.done?.[index]) return;
+    await db.talks.update(turnId, { done: turn.done.map((d, i) => (i === index ? { ...d, ...patch } : d)) });
   });
 }
 

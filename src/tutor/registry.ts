@@ -3,7 +3,7 @@
 // when asked (the core ones ride in every request); a PLACE is a screen it can open, through `navigate`, as a pushed history entry marked as a tutor go, so Back returns to where he was.
 // The request is built by the client (`withTutorFacts`: the facts and the catalogue added to the app's own fields, which pass through untouched). A COMMAND (mw-t3xu9a.6) is something the app does: the app's own
 // buttons go through the same named commands the tutor calls (set-setting, tick-today, start-review, add-word, and the place open-work), so a tap, a spoken yes and a tutor `do` run the one function.
-import { createMemoryStore, createTutorClient, defineRegistry, type Command, type CommandResult, type Fact, type Place, type Registry, type TutorClient } from 'voice-kit/talks';
+import { createMemoryStore, createTutorClient, defineRegistry, type Command, type CommandResult, type Fact, type Place, type Registry, type TutorClient, type TutorRecord } from 'voice-kit/talks';
 import { addLemmaToLearn, type AddedLemma } from '../data/answerWord';
 import { BOOKS, titleOf } from '../data/books';
 import { getDay, localDate, setTicked } from '../data/daily/dailyStore';
@@ -327,4 +327,50 @@ export async function withTutorFacts(request: TalkRequest, turn: number): Promis
 /** The same for the verse ask's request, with its smaller set. */
 export async function askWithFacts<F extends object>(request: F, turn: number): Promise<F> {
   return askClientOf().buildRequest(turn, request);
+}
+
+/** What a fact is called in the line 'Looking at your ...' while the tutor's follow-up is out; a fact with no entry here goes by its name with spaces. */
+const LOOKING_AT: Readonly<Record<string, string>> = {
+  'where-he-is': 'place in the app',
+  'today-drill': "today's drill",
+  settings: 'settings',
+  progress: 'progress',
+  'rusty-words': 'rusty words',
+  works: 'Logos books',
+};
+
+/** The line the sheet shows (and says) while the tutor looks at `names`: 'Looking at your Logos books', 'Looking at your progress and settings'. */
+export function lookingLine(names: readonly string[]): string {
+  const parts = [...new Set(names)].map((name) => LOOKING_AT[name] ?? name.replace(/-/g, ' '));
+  const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
+  return `Looking at your ${list}`;
+}
+
+/** A fact name an answer asked for, as written: text of a sensible length, once each, at most the schema's eight. */
+export const askedNames = (asks: unknown): string[] => (Array.isArray(asks) ? [...new Set(asks.filter((n): n is string => typeof n === 'string' && n.length > 0))] : []);
+
+/**
+ * The ask-back of turn `turn` (docs/ask-tutor.md 'What you see when the tutor does something'): reads each fact `names` asks for, from the registry, and returns them by name for the follow-up's `asked`; a name that is
+ * no fact, or a read that fails, is left out and recorded as a miss, as every ask-back is recorded for the screen he is on (the client's store, for the weights a later story tunes). Never throws.
+ */
+export async function askBack(names: readonly string[], turn: number): Promise<Record<string, unknown>> {
+  const registry = bibleTalkRegistry();
+  const screen = screenKey();
+  const records: TutorRecord[] = [];
+  const asked: Record<string, unknown> = {};
+  for (const name of names) {
+    const read = await registry.read(name);
+    if (read.ok) {
+      asked[name] = read.value;
+      records.push({ at: Date.now(), screen, kind: 'ask', name, turn });
+    } else records.push({ at: Date.now(), screen, kind: 'miss', name, turn, why: read.why });
+  }
+  await store.note(records).catch(() => undefined);
+  return asked;
+}
+
+/** A turn has two rounds: what the follow-up's answer asks for again is not read, and is recorded as a miss, as the client's own `ask` does. */
+export async function noteLateAsks(names: readonly string[], turn: number): Promise<void> {
+  const screen = screenKey();
+  await store.note(names.map((name) => ({ at: Date.now(), screen, kind: 'miss' as const, name, turn, why: 'asked for after the follow-up: a turn has 2 rounds' }))).catch(() => undefined);
 }

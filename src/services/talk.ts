@@ -281,7 +281,23 @@ export interface TalkRequest {
   facts?: Record<string, unknown>;
   /** every fact and place the tutor may name, sorted, each with its tell line (the client's registry.catalogue()); fitHistory cuts the tell lines first of all */
   catalogue?: CatalogueEntry[];
+  /** only in a follow-up (mw-t3xu9a.7): the facts the answer to the request before asked for (`asks`), by name, as the registry read them */
+  asked?: Record<string, unknown>;
 }
+
+/** One command an answer asks the app to run. */
+export interface DoCall {
+  name: string;
+  args?: unknown;
+}
+
+/** The most commands, facts and misses one answer names (the schema's limits, grinds/bible-talk.answer.schema.json). */
+const MAX_DO = 8;
+const MAX_ASKS = 8;
+const MAX_MISSES = 5;
+
+const isDoCall = (value: unknown): value is DoCall => isObject(value) && isText(value.name, 80) && Object.keys(value).every((k) => k === 'name' || k === 'args');
+const isMiss = (value: unknown): boolean => isObject(value) && Object.keys(value).length === 2 && isText(value.wanted, 200) && isText(value.why, 300);
 
 /** What the tutor's `rusty_offer` holds: the rusty items (kind and id, as the request listed them) it offers to move back to Frontier. */
 export interface RustyOfferAnswer {
@@ -358,6 +374,14 @@ export interface TalkAnswer {
   form_ask?: string;
   /** a chapter he asked to be taken to (mw-5r3p30.172): {book, chapter}. Read by src/talk/go.ts; whatever else arrives is ignored there, not refused here. */
   go?: unknown;
+  /** names of facts of the app's registry the tutor needs before it answers (mw-t3xu9a.5): the app reads them and sends the request again with `asked` (src/useTalk.ts) */
+  asks?: string[];
+  /** commands of the registry to run, in order (mw-t3xu9a.5): `[{name, args}]`, carried out by the tutor client (src/tutor/registry.ts); the sheet shows each one's line (src/talk/DoneLine.tsx) */
+  do?: DoCall[];
+  /** what the tutor wanted that the registry lacks (mw-t3xu9a.5): `[{wanted, why}]`, recorded as misses by the client */
+  misses?: { wanted: string; why: string }[];
+  /** the tutor's one line on what it did through the app; the sheet shows the app's own line for each command, so this one is only checked */
+  said?: string;
   /** what to add to the reader's memory (mw-yrmkdf.2): at most MAX_MEMORY_UPDATES entries, applied by src/talk/memoryUpdate.ts (a replace or remove only when `directed`) */
   memory_update?: MemoryUpdate[];
   /** names of notes the tutor would have used had they existed (book:<Book>, word:<lemma>, topic:<slug>): counted and the last names kept, nothing more */
@@ -420,11 +444,15 @@ const isRustyOffer = (value: unknown): value is RustyOfferAnswer =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary' && k !== 'fetch')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary' && k !== 'fetch' && k !== 'asks' && k !== 'do' && k !== 'misses' && k !== 'said')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
   if ('summary' in value && !isText(value.summary, TALK_SUMMARY_MAX)) return false;
+  if ('asks' in value && !(Array.isArray(value.asks) && value.asks.length <= MAX_ASKS && value.asks.every((n) => isText(n, 80)))) return false;
+  if ('do' in value && !(Array.isArray(value.do) && value.do.length <= MAX_DO && value.do.every(isDoCall))) return false;
+  if ('misses' in value && !(Array.isArray(value.misses) && value.misses.length <= MAX_MISSES && value.misses.every(isMiss))) return false;
+  if ('said' in value && !isText(value.said, 300)) return false;
   if ('fetch' in value && !(Array.isArray(value.fetch) && value.fetch.length <= MAX_FETCH && value.fetch.every((r) => isText(r, 40)))) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('quiz_goal_offer' in value && !isText(value.quiz_goal_offer, QUIZ_GOAL_MAX)) return false;

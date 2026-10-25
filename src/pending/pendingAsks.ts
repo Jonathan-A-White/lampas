@@ -17,9 +17,10 @@ export interface SentRef {
 /** What a question is doing right now. `sent` is set once the grist went (and stays on a failure of the link, so Retry waits for that grist's answer); `focus` is what a Bible talk's message
  * was asked about, kept for the answer and for Retry; `spoken` is set when the question was sent as spoken (src/speech/spoken.ts forgets the words once they are sent, so Retry and a
  * page that is back carry it here, mw-5r3p30.333). A failed line keeps `startedAt` too (when the message was first asked), so a Retry of a first turn whose grist went stores it with that time and the talk's name,
- * `<ref>@<that time>`, stays the same (mw-5r3p30.724). */
+ * `<ref>@<that time>`, stays the same (mw-5r3p30.724). `looking` is set while a Bible talk's follow-up is out (the answer asked for facts of the app first): the line 'Looking at your ...'
+ * the sheet shows until the second answer lands (mw-t3xu9a.7); it is there only for a message whose answer asked for something. */
 export type AskState =
-  | { phase: 'sending' | 'waiting'; question: string; startedAt: number; sent?: SentRef; focus?: TalkFocus; spoken?: true }
+  | { phase: 'sending' | 'waiting'; question: string; startedAt: number; sent?: SentRef; focus?: TalkFocus; spoken?: true; looking?: string }
   | { phase: 'failed'; question: string; failure: TutorFailure; detail: string; startedAt?: number; sent?: SentRef; focus?: TalkFocus; spoken?: true };
 
 export type Pending = Record<string, AskState>;
@@ -39,7 +40,8 @@ function readState(value: unknown): AskState | undefined {
   const focus = isObject(value.focus) ? { focus: value.focus as unknown as TalkFocus } : {};
   const spoken = value.spoken === true ? { spoken: true as const } : {};
   if (value.phase === 'sending' || value.phase === 'waiting') {
-    return typeof value.startedAt === 'number' ? { phase: value.phase, question: value.question, startedAt: value.startedAt, ...sent, ...focus, ...spoken } : undefined;
+    const looking = value.phase === 'waiting' && typeof value.looking === 'string' ? { looking: value.looking } : {};
+    return typeof value.startedAt === 'number' ? { phase: value.phase, question: value.question, startedAt: value.startedAt, ...sent, ...focus, ...spoken, ...looking } : undefined;
   }
   if (value.phase === 'failed' && typeof value.failure === 'string' && typeof value.detail === 'string') {
     const startedAt = typeof value.startedAt === 'number' ? { startedAt: value.startedAt } : {};

@@ -258,6 +258,20 @@ export interface TalkTurn {
   /** the passages the answer asked for in `fetch` (mw-5r3p30.734), read from the app's chapter data after the answer was kept: shown as 'Tutor fetched Rev 2:8-11', and every later
    * request of the talk holds them (src/services/talkFetch.ts heldPassagesOf) */
   fetched?: HeldPassage[];
+  /** what the commands the answer ran (`do`) did, in order (mw-t3xu9a.7, src/talk/DoneLine.tsx): the app's own line for each, and for a confirm command the args it waits to run with */
+  done?: TurnDone[];
+}
+
+/** One command an answer's `do` named, as the turn keeps it. The undo itself is a function and lives only while the page does (src/talk/doneUndo.ts); `state` is what became of the line. */
+export interface TurnDone {
+  name: string;
+  kind: 'free' | 'undoable' | 'confirm';
+  /** the line the sheet shows: what the command said when it ran, or for a confirm command the question put to him */
+  said: string;
+  /** a confirm command's args, kept so the button can still run it after a reload */
+  args?: unknown;
+  /** 'undone': the Undo was tapped (the line reads Put back); 'ran': a confirm command's button was tapped and `said` is what it said */
+  state?: 'undone' | 'ran';
 }
 
 /** A passage the tutor asked for (mw-5r3p30.734): its reference written out ('Revelation 2:8-11'), its Greek and its English (the Reader's, supplied words marked). */
