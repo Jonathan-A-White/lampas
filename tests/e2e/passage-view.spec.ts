@@ -38,7 +38,7 @@ test('the heading is one 44 px button over its whole width and sits where the he
   expect(await heading.evaluate((el) => getComputedStyle(el).fontSize)).toBe('18px');
 });
 
-test('Listen: the heading and range at the top, the passage big, the row of actions on one line, the one bar', async ({ page }) => {
+test('Listen: the heading and range at the top, the passage big, the row of actions in two rows of three, the one bar', async ({ page }) => {
   await start(page);
   await page.locator('[data-heading]', { hasText: HEADING }).getByRole('button').click();
   const view = page.getByRole('region', { name: 'Verse view' });
@@ -69,7 +69,7 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
     expect(b.height).toBeGreaterThanOrEqual(43.5);
     tops.add(Math.round(b.y));
   }
-  expect(tops.size).toBe(1);
+  expect(tops.size).toBe(2);
 
   // the passage is longer than the screen: it scrolls in a box of its own, and the row of actions is in sight under it
   const box = view.locator('[data-passage-box]');

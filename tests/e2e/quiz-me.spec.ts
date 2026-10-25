@@ -28,11 +28,11 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
   const view = page.getByRole('region', { name: 'Verse view' });
   await expect(view).toBeVisible();
 
-  // five actions on one line, each inside the phone and a thumb tall
+  // five actions and Copy link in two rows of three, each inside the phone and a thumb tall
   const row = view.getByRole('group', { name: 'Actions', exact: true });
   const tops = new Set<number>();
   const buttons = await row.getByRole('button').all();
-  expect(buttons).toHaveLength(5);
+  expect(buttons).toHaveLength(6);
   for (const button of buttons) {
     const b = await button.boundingBox();
     if (!b) throw new Error('no button box');
@@ -41,7 +41,7 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
     expect(b.height).toBeGreaterThanOrEqual(43.5);
     tops.add(Math.round(b.y));
   }
-  expect(tops.size).toBe(1);
+  expect(tops.size).toBe(2);
 
   await view.getByRole('button', { name: 'Quiz me', exact: true }).click();
   await expect(view.getByRole('button', { name: 'Quiz me', exact: true })).toHaveAttribute('aria-pressed', 'true');

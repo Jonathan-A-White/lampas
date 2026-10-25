@@ -60,7 +60,7 @@ async function expectPlay(page: Page, label: string): Promise<void> {
   await expect(page.locator('[data-talk-bar]')).toHaveCount(0);
 }
 
-test('Listen: the verse big, one row of actions on one line, and the one Play button', async ({ page }) => {
+test('Listen: the verse big, the row of actions in two rows of three, and the one Play button', async ({ page }) => {
   await start(page, '/#/?c=8&view=english&weave=solid');
   const line = page.locator('[data-verse="11"] [data-text]');
   const lineSize = await line.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
@@ -69,7 +69,7 @@ test('Listen: the verse big, one row of actions on one line, and the one Play bu
   const verse = view.locator('[data-sheet-verse]');
   expect(await verse.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThan(lineSize);
 
-  // the row of actions: every button inside the phone, on one line (or at most the height of two when the text size is large)
+  // the row of actions: every button inside the phone, in two rows of three (the five actions and Copy link, mw-souyao.3)
   const row = view.getByRole('group', { name: 'Actions', exact: true });
   const buttons = await row.getByRole('button').all();
   expect(buttons.length).toBeGreaterThanOrEqual(4);
@@ -82,7 +82,7 @@ test('Listen: the verse big, one row of actions on one line, and the one Play bu
     expect(b.height).toBeGreaterThanOrEqual(43.5);
     tops.add(Math.round(b.y));
   }
-  expect(tops.size).toBe(1);
+  expect(tops.size).toBe(2);
   await expect(view.getByRole('button', { name: 'Quiz me', exact: true })).toHaveCount(1);
 
   await expect(view.getByRole('button', { name: 'Listen', exact: true })).toHaveAttribute('aria-pressed', 'true');

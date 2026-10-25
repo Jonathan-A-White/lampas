@@ -1,5 +1,5 @@
 // tests/e2e/verse-actions.spec.ts — the Verse view's row of actions on the phones' narrow widths (mw-5r3p30.105): no label wraps past two lines, every
-// button keeps a 44x44 target, and the page never scrolls sideways, with and without Share (a phone that has navigator.share draws six buttons).
+// button keeps a 44x44 target, and the page never scrolls sideways, with and without Share (a phone that has navigator.share draws seven buttons, Share beside Copy link in the sixth cell: two rows of three, mw-souyao.3).
 // jsdom has no layout, so every size is measured here.
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
@@ -28,7 +28,7 @@ for (const phone of PHONES) {
       const view = await openVerseView(page, 1);
       const row = view.getByRole('group', { name: 'Actions', exact: true });
       const buttons = await row.getByRole('button').all();
-      expect(buttons).toHaveLength(share ? 6 : 5);
+      expect(buttons).toHaveLength(share ? 7 : 6);
       for (const button of buttons) {
         const name = (await button.textContent()) ?? '';
         const b = await button.boundingBox();
