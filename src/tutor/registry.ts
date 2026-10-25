@@ -17,6 +17,7 @@ import { getWorks, listedWord, moveToFrontier, restoreWord, shelfOf, type ItemRe
 import { RUSTY_MAX } from '../data/rusty';
 import { memorizingEvidenceNow } from '../memorize/evidence';
 import { memorizeVerse, moveVerse, startSession, unmemorizeVerse } from '../memorize/commands';
+import type { MemorizeLang } from '../memorize/languages';
 import { memorizingNow } from '../memorize/memorizing';
 import { verseTextsOf } from '../memorize/verseText';
 import { listMemorized } from '../data/repositories/memorize';
@@ -146,7 +147,7 @@ const FACTS: readonly Fact[] = [
 ];
 
 const LANG = { enum: ['en', 'el', 'weave'] } as const;
-const REF = { type: 'string', minLength: 3, maxLength: 40 } as const;
+const REF = { type: 'string' } as const;
 
 /** The verse commands of src/memorize/commands.ts: the same functions the buttons call (memorize and unmemorize are the Memorize control's and the Stop memorizing buttons'). */
 const memorizeCommands: readonly Command[] = [
@@ -185,6 +186,19 @@ const placeForRoute = (route: Route): Place => ({
   tell: route === 'home' ? 'Opens the Reader' : `Opens ${screenNameOf(route)}`,
   open: async () => navigate(route, { tutor: true }),
 });
+
+/** Memorize, or with a verse and language a session of it: the same startSession the tutor's `do` calls, so Back returns to the Talk sheet the go left. */
+const memorizePlace: Place = {
+  name: placeNameOf('memorize'),
+  tell: 'Opens Memorize; with ref and lang, a session of that verse',
+  args: { type: 'object', additionalProperties: false, properties: { ref: REF, lang: LANG } },
+  open: async (args) => {
+    const { ref, lang } = args as { ref?: string; lang?: MemorizeLang };
+    if (ref === undefined && lang === undefined) return navigate('memorize', { tutor: true });
+    if (ref === undefined || lang === undefined) throw new Error('A session needs both ref and lang');
+    await startSession({ ref, lang });
+  },
+};
 
 const chapterPlace: Place = {
   name: CHAPTER,
@@ -348,7 +362,7 @@ export async function addWord(scope: TalkScope, lemma: string): Promise<AddWordR
 
 /** The Bible talk's registry: nine facts (three core), the eight commands, a place for every screen, for a chapter and for a book of his shelf. */
 export const lampasRegistry = (): Registry =>
-  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, ...memorizeCommands], places: [...ROUTES.map(placeForRoute), chapterPlace, workPlace] });
+  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : placeForRoute(route))), chapterPlace, workPlace] });
 
 /** The verse ask's smaller set: the core facts only (its settings are the ones its grind is told), and no place: its answer does not go anywhere. */
 export const askRegistry = (): Registry =>

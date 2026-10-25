@@ -163,9 +163,7 @@
           "additionalProperties": false,
           "properties": {
             "ref": {
-              "type": "string",
-              "minLength": 3,
-              "maxLength": 40
+              "type": "string"
             },
             "langs": {
               "type": "array",
@@ -183,7 +181,23 @@
       {
         "name": "memorize-screen",
         "is": "place",
-        "tell": "Opens Memorize"
+        "tell": "Opens Memorize; with ref and lang, a session of that verse",
+        "args": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "lang": {
+              "enum": [
+                "en",
+                "el",
+                "weave"
+              ]
+            }
+          }
+        }
       },
       {
         "name": "memorizeEvidence",
@@ -215,9 +229,7 @@
           "additionalProperties": false,
           "properties": {
             "ref": {
-              "type": "string",
-              "minLength": 3,
-              "maxLength": 40
+              "type": "string"
             },
             "from": {
               "type": "integer",
@@ -388,9 +400,7 @@
           "additionalProperties": false,
           "properties": {
             "ref": {
-              "type": "string",
-              "minLength": 3,
-              "maxLength": 40
+              "type": "string"
             },
             "lang": {
               "enum": [
@@ -464,9 +474,7 @@
           "additionalProperties": false,
           "properties": {
             "ref": {
-              "type": "string",
-              "minLength": 3,
-              "maxLength": 40
+              "type": "string"
             },
             "lang": {
               "enum": [

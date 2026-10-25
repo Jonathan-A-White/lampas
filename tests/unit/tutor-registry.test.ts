@@ -98,7 +98,7 @@ describe('the catalogue and the screen key', () => {
     const catalogue = registry.catalogue();
     expect(catalogue.map((c) => c.name)).toEqual([...catalogue.map((c) => c.name)].sort());
     expect(catalogue.every((c) => c.tell && c.tell.length > 0)).toBe(true);
-    // 4200 before memorizing (mw-fu7dqf.12) added three facts and four commands, 1,655 bytes; every request carries it
+    // 4200 before memorizing (mw-fu7dqf.12) added three facts, four commands and the session args of a place, 1,712 bytes; every request carries it
     expect(JSON.stringify(catalogue).length).toBeLessThan(5900);
   });
 

@@ -12,6 +12,7 @@ import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { listMemorized, memorize, recordRecall } from '../../src/data/repositories/memorize';
 import { clearBus } from '../../src/events/bus';
+import { nameOf } from '../../src/memorize/commands';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -152,6 +153,35 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Memorize screen is open', async () => {
       expect(await screen.findByRole('heading', { name: 'Memorize', level: 1 })).toBeInTheDocument();
       expect(window.location.hash).toBe('#/memorize');
+    });
+    And('the Talk sheet is closed', sheetGone);
+    When("he taps the phone's Back", async () => {
+      window.history.back();
+    });
+    Then('the Talk sheet is open again', async () => {
+      await screen.findByRole('dialog', { name: /^Talk about / });
+    });
+    And('the Memorize screen is not open', () => {
+      expect(screen.queryByRole('heading', { name: 'Memorize', level: 1 })).toBeNull();
+    });
+  });
+
+  Scenario('Start a session of a verse he memorizes', ({ Given, And, When, Then }) => {
+    Given('he memorizes {string} and Lampas is opened on Romans 8 with the tutor taking him to the session of it when he asks', (async (_: unknown, ref: string) => {
+      await open(
+        (input) => (String(input.question).includes('practise') ? answered({ go: { name: 'memorize-screen', args: { ref, lang: 'en' } }, said: 'Opening the session.' }) : answered()),
+        async () => void (await memorize(ref, ['en'])),
+      );
+    }) as never);
+    And('he opens Talk', openTalk);
+    When('he sends {string}', async (_, question: string) => {
+      const before = await db.talks.count();
+      await send(question);
+      await waitFor(async () => expect(await db.talks.count()).toBe(before + 1));
+    });
+    Then('the session of {string} in {string} is open', async (_, ref: string, lang: string) => {
+      await waitFor(() => expect(window.location.hash).toBe(`#/memorize/${ref}/${lang}`));
+      expect(await screen.findByRole('heading', { name: nameOf(ref), level: 1 })).toBeInTheDocument();
     });
     And('the Talk sheet is closed', sheetGone);
     When("he taps the phone's Back", async () => {

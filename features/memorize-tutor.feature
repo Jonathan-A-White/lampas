@@ -33,3 +33,13 @@ Feature: The tutor knows his memorizing and works the Memorize screen
     When he taps the phone's Back
     Then the Talk sheet is open again
     And the Memorize screen is not open
+
+  Scenario: Start a session of a verse he memorizes
+    Given he memorizes "Rom.8.28" and Lampas is opened on Romans 8 with the tutor taking him to the session of it when he asks
+    And he opens Talk
+    When he sends "let's practise Romans 8:28"
+    Then the session of "Rom.8.28" in "en" is open
+    And the Talk sheet is closed
+    When he taps the phone's Back
+    Then the Talk sheet is open again
+    And the Memorize screen is not open

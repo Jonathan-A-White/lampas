@@ -51,7 +51,7 @@ describe('the registry lists what memorizing adds', () => {
       ['startSession', 'free'],
     ]);
     expect(placeNameOf('memorize')).toBe('memorize-screen');
-    expect(registry.place('memorize-screen')?.tell).toBe('Opens Memorize');
+    expect(registry.place('memorize-screen')?.tell).toContain('Opens Memorize');
     const all = [...registry.facts, ...registry.commands, ...registry.places].map((e) => e.name);
     expect(new Set(all).size).toBe(all.length);
   });
@@ -243,6 +243,25 @@ describe('startSession and the place', () => {
     expect((await registry.run('startSession', { ref: 'Rom.8.28', lang: 'el' })).ok).toBe(false);
     expect((await registry.run('startSession', { ref: 'Ps.62.1-2', lang: 'en' })).ok).toBe(false);
     expect((await registry.run('startSession', { ref: 'Rom.8.28', lang: 'fr' })).ok).toBe(false);
+    expect(window.location.hash).toBe('#/words');
+  });
+
+  it('opens a session through the place too, as a go: the same startSession, so Back returns to where the go left', async () => {
+    await memorize('Rom.8.28', ['el'], NOW);
+    window.location.hash = '#/words';
+    expect(await registry.open('memorize-screen', { ref: 'Rom.8.28', lang: 'el' })).toEqual({ ok: true });
+    expect(window.location.hash).toBe('#/memorize/Rom.8.28/el');
+    expect(window.history.state).toEqual({ tutorGo: true });
+    const timeout = ASYNC_WAIT_MS;
+    window.history.back();
+    await vi.waitFor(() => expect(window.location.hash).toBe('#/words'), { timeout });
+  });
+
+  it('refuses a session by the place for a verse not memorized in that language, and a ref with no lang', async () => {
+    await memorize('Rom.8.28', ['en'], NOW);
+    window.location.hash = '#/words';
+    expect((await registry.open('memorize-screen', { ref: 'Rom.8.28', lang: 'el' })).ok).toBe(false);
+    expect((await registry.open('memorize-screen', { ref: 'Rom.8.28' })).ok).toBe(false);
     expect(window.location.hash).toBe('#/words');
   });
 

@@ -358,7 +358,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     expect(Object.keys(built).filter((k) => !(k in before)).sort()).toEqual(['catalogue', 'facts']);
   });
 
-  // The three `over` sizes below are hand-sized to the catalogue (the cut of tells, then the catalogue, then the facts): memorizing's seven entries (mw-fu7dqf.12) moved them by 1,655 bytes
+  // The three `over` sizes below are hand-sized to the catalogue (the cut of tells, then the catalogue, then the facts): memorizing's seven entries (mw-fu7dqf.12) moved them by 1,712 bytes (the first from 500 to 800: the request is already over the cap before its padding)
   // a request of the size the tutor's part leaves `over` bytes beyond the cap: its learner line (which no cut touches) pads it
   const padded = async (over: number) => {
     const base = (pad: number) => ({ ...fields(screenScope), history: Array.from({ length: 6 }, (_, i) => turn(i)), learner: 'y'.repeat(pad) });
@@ -368,7 +368,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
   };
 
   it('fits the grist with the facts in it: the tell lines go first and the turns stay', async () => {
-    const { plain, built } = await padded(500);
+    const { plain, built } = await padded(800);
     expect(size(plain)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(size(built)).toBeGreaterThan(MAX_REQUEST_BYTES);
     const fitted = fitHistory(built, 0, 'rom.8@1');

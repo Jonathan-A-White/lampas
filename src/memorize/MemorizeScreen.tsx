@@ -17,7 +17,6 @@ import { ProgressMark } from './ProgressMark';
 import { useProgress, type VerseProgress } from './useProgress';
 
 const BUTTON = 'min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium';
-/** The name of a reference as the lists print it ('Romans 8:28'). */
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section aria-label={title} className="mt-4">
