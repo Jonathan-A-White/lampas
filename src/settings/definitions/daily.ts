@@ -36,14 +36,14 @@ export const dailyPlanSetting = piece(
   'dailyPlan',
   'Plan chapter',
   "Today holds your reading plan's chapter.",
-  "Whether Today holds the reading plan's chapter for the day. With no plan started there is nothing to show.",
+  "Whether Today holds the reading plan's chapter for the day, to read in Logos. With no plan started there is nothing to show.",
 );
 
 export const dailyPsalmsSetting = piece(
   'dailyPsalms',
   'Psalms and Proverbs',
   "Today holds the day's Psalms and Proverbs.",
-  "Whether Today holds the day's Psalms and Proverbs: on day N of the month, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N.",
+  "Whether Today holds the day's Psalms and Proverbs: on day N, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N.",
 );
 
 export const dailyDevotionalSetting = piece(
