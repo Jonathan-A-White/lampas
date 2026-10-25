@@ -10,7 +10,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { parkShare, setLogosBible, setResourceOn } from '../../src/data/repositories';
+import { listVerseLists, parkShare, setLogosBible, setResourceOn } from '../../src/data/repositories';
 import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { clearBus } from '../../src/events/bus';
 import { imageSeam } from '../../src/images/shrink';
@@ -67,7 +67,7 @@ async function open(text: string, fresh: boolean, picture: false | 'held' | 'fai
   imageSeam.decode = async () => ({ width: 1200, height: 800, source: null });
   imageSeam.encode = async () => new Blob([new Uint8Array(50_000).fill(7)], { type: 'image/jpeg' });
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.talkPictures.clear(), db.shares.clear(), db.pictureRefs.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.talkPictures.clear(), db.shares.clear(), db.pictureRefs.clear(), db.verseLists.clear()]);
   await parkShare({
     id: 'share-1',
     createdAt: Date.now(),
@@ -363,6 +363,64 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('only one grist went to the mill', () => {
       expect(fake.received).toHaveLength(1);
+    });
+  });
+  Scenario('Let the tutor do it saves the references as a list: the tutor fills where and the name, and its Send saves', ({ Given, When, Then, And }) => {
+    const panel = () => screen.getByRole('region', { name: 'The tutor is helping with this form' });
+    const form = () => sheet().querySelector('form') as HTMLFormElement;
+    const tutor = (answer: string, ask: string | undefined, values: { field: string; value: string }[] = []) => {
+      fake.autoReply = { status: 'answered', answer: { answer, words: [], ...(values.length ? { form_values: values } : {}), ...(ask ? { form_ask: ask } : {}) } };
+    };
+    const asks = async (_: unknown, question: string) => {
+      await waitFor(() => expect(within(panel()).getByText(question)).toBeInTheDocument());
+    };
+    Given('the Share screen is opened with a share of the words {string}', sharedWords);
+    When('he taps {string}', async (_, label: string) => {
+      await user.click(within(sheet()).getByRole('button', { name: label }));
+    });
+    And('he lets the tutor do it above the form', async () => {
+      tutor('Where should these go: a new list, or one you have?', 'where');
+      await user.click(within(sheet()).getByRole('button', { name: 'Let the tutor do it' }));
+    });
+    Then('the tutor asks one question: {string}', asks);
+    When('he answers {string} and the tutor fills where with {string}', async (_, said: string, value: string) => {
+      tutor('What should the list be called?', 'name', [{ field: 'where', value }]);
+      await user.type(within(panel()).getByRole('textbox', { name: 'Your answer' }), said);
+      await user.click(within(panel()).getByRole('button', { name: 'Reply' }));
+    });
+    Then('the field {string} holds {string} and is ringed', async (_, label: string, value: string) => {
+      const select = await within(form()).findByRole('combobox', { name: label });
+      expect(within(select as HTMLElement).getByRole('option', { name: value, selected: true })).toBeInTheDocument();
+      expect(select.className).toMatch(/ring-accent/);
+    });
+    And('the tutor asks one question: {string}', asks);
+    When('he answers {string} and the tutor fills name with {string}', async (_, said: string, value: string) => {
+      tutor('That is everything I need.', undefined, [{ field: 'name', value }]);
+      await user.type(within(panel()).getByRole('textbox', { name: 'Your answer' }), said);
+      await user.click(within(panel()).getByRole('button', { name: 'Reply' }));
+    });
+    Then('the field {string} holds {string}', async (_, label: string, value: string) => {
+      await waitFor(() => expect(within(form()).getByRole('textbox', { name: label })).toHaveValue(value));
+    });
+    And('the panel shows {string} with a Send button', async (_, offer: string) => {
+      await waitFor(() => expect(within(panel()).getByText(offer)).toBeInTheDocument());
+      expect(within(panel()).getByRole('button', { name: 'Send' })).toBeEnabled();
+    });
+    And('no list is kept yet', async () => {
+      expect(await listVerseLists()).toHaveLength(0);
+    });
+    When('he taps Send in the panel', async () => {
+      await user.click(within(panel()).getByRole('button', { name: 'Send' }));
+    });
+    Then('the sheet shows {string} with Open', async (_, line: string) => {
+      const status = await within(sheet()).findByTestId('saved-as-list');
+      expect(status).toHaveTextContent(line);
+      expect(within(status).getByRole('button', { name: 'Open' })).toBeInTheDocument();
+    });
+    And('one list {string} holds {string} then {string}', async (_, name: string, a: string, b: string) => {
+      const lists = await listVerseLists();
+      expect(lists).toHaveLength(1);
+      expect(lists[0]).toMatchObject({ name, refs: [a, b] });
     });
   });
 });
