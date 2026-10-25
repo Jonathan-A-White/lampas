@@ -14,7 +14,7 @@ import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS } from '../../src/resources/gramma
 import { LEXICONS } from '../../src/resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { WORKS } from '../../src/resources/works';
-import { buildCatalogue, coversOfSupersets, formatKindFile, parseCsv, readExport, versionOf, type Rules } from '../../scripts/logos-catalogue';
+import { buildCatalogue, coversOfSupersets, parseCsv, readExport, versionOf, type Rules } from '../../scripts/logos-catalogue';
 
 const root = join(__dirname, '../..');
 const RULES = JSON.parse(readFileSync(join(root, 'data/logos/catalogue-rules.json'), 'utf8')) as Rules;
