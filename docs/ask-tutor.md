@@ -221,6 +221,42 @@ Scenarios: `features/tutor-requests.feature`, `grinds/examples/{bible-talk,verse
 
 The whole loop is walked at 390x844 by `tests/e2e/feedback-loop-demo.spec.ts` (mw-vy3ghg.7: three requests sent, the fake mill's filed, building, landed with its link, declined and adopted-as-setting, then 'What happened to my idea?'; shots `your-requests-demo-1-sent` to `-6-tutor`). Live: he sends from the tutor, the Mayor runs `mw grist request <bead> <txid>`, and Your requests moves on its own.
 
+## Send to the makers, any time (mw-5r3p30.760)
+
+His words (Lampas feedback grist, 2026-10-25): "requestability of the make from any tutor interaction. And every tutor interaction has files, camera, voice and typing." The tutor's own offer
+above is no longer the only way to the makers: the Talk sheet and the Verse view's Ask each have **Send to the makers** (`src/talk/SendToMakers.tsx`, `data-makers-send`), a thumb-sized button
+just above the composer, on screen whether or not the tutor offered anything. It files what is in the composer as it stands: his words (typed, or a hold's words kept in the box with
+Settings > Talk's By button), and the pictures he attached or took (up to four, cut down on the phone like any talk picture). It asks the tutor nothing and adds no turn.
+
+- **One function.** `sendToMakers` (`src/talk/makers.ts`) is `submitFeedback` with a `tutor-ask` request and the pictures as the grist's files. The tutor's offer (`sendMakersOffer`), the Talk
+  sheet's action and the Ask's action all call it (`tests/unit/send-to-makers.test.ts` asserts the offer does; `feedback-shared.test.ts` keeps `submitFeedback(` out of every sheet and screen).
+- **How the action reaches the composer.** The kit's Composer keeps its words and files inside and hands them on only through its Send, so the action (`useSendToMakers`) presses that Send with a
+  mark on it and the Composer's `onSend`, wrapped in `dispatch`, sees the mark and sends to the makers instead of the tutor. With nothing in the composer it sends nothing and says "Say or type what
+  the makers should know, or add a picture, then tap Send to the makers."
+- **The request.** `text` his words (pictures alone: "See the pictures."); `summary` the talk's kept running summary when it has one (Talk sheet only), else his words on one line (`makersSummary`, at most
+  200 characters); `screen` the screen's name (`Reader` for a talk about the text, as the offer's) or `Verse view` for the Ask; `reference` the talk's title ('Romans 8:28') or the passage ('Romans 8:1-11'); `facts` the
+  screen's, for a screen's talk. Your requests lists it by that summary with "1 picture" (the `requests` row is the offer's: kind `tutor-ask`, `pictures`).
+- **Sent** reads "Sent to the makers. The answer will come back." with **Your requests** (the sheet closes first). A failure shows the usual title and detail in the composer's own line and keeps the words and pictures in it.
+- **The Verse view's Ask has Attach a picture and Take a photo** now (the Composer's `attach` and `camera`, `refuseFile` as the Talk sheet's). The verse-ask tutor does not read pictures, so its Send with a picture in the row
+  sends nothing and says "The tutor here does not look at pictures. Tap Send to the makers to send them, or take them out and ask again." (a picture is never dropped without his knowing).
+- Checks: `features/send-to-makers.feature`, `tests/unit/send-to-makers.test.ts`, `tests/e2e/send-to-makers.spec.ts` (390 x 844; shots `send-to-makers-talk`, `-talk-sent`, `-ask`, `-ask-sent`).
+
+### Every tutor surface: files, camera, voice, typing, a request to the makers (sweep of src/, mw-5r3p30.760)
+
+| Surface | Files and camera | Voice | Typing | A request to the makers |
+|---|---|---|---|---|
+| Talk sheet (`TalkSheet`, `src/Talk.tsx`: the Reader's Talk bar and verse numbers, the round Ask the tutor button of any other screen (`AskTutor.tsx`, `DialogAskTutor` of the drills), Welcome, Share to Lampas' `ShareTalk`) | yes: Attach a picture, Take a photo, paste | yes: Hold to talk (Tap and By button as Settings > Talk) | yes: Type a message | yes: Send to the makers, and the tutor's offer |
+| Verse view's Ask (`AskComposer`, `src/Ask.tsx`) | yes since this story (to the makers only; the verse-ask tutor does not read pictures) | yes: Hold to ask | yes: Type a question | yes: Send to the makers (this story); no tutor offer (the verse-ask grind has no `feedback_offer`) |
+| Word help (the word sheet's Grammar, Sound it out, Ask the tutor; `useReaderTutor.ts` helpWithWord / askAboutTerm) | opens the Talk sheet: as the Talk sheet | as the Talk sheet | as the Talk sheet | as the Talk sheet |
+| Drill and quiz results (`QuizScreen` Ask the tutor, Drill it, the Plan drill, the Parsing drill's link) | open the Talk sheet (or the Verse view's Ask with the question in the field): as that surface | same | same | same |
+| Welcome interview (`Welcome.tsx`) | the Talk sheet's, so yes | yes | yes | yes (the action shows there too) |
+| The FormHelper (`src/formHelper/FormHelper.tsx`: Ask for another approach, Ask for more, Ask for a book, Save as list) | no (mw-5r3p30.761, the door epic) | no (mw-5r3p30.761) | yes: its own field | the forms are themselves requests to the makers; the helper itself has no action (mw-5r3p30.761) |
+| Reading check (`ReadCheck.tsx`, Read it aloud) and Memorize (`MemorizeSession.tsx`) | no | yes: it records or listens | Memorize: yes (Type it) | no: they are not a talk with the tutor; nothing to say to the makers there |
+| Background asks (tips, the Audible position, finding references in a picture, more drill items, the nightly weights) | none: no composer | none | none | none: the app asks, not he |
+
+Gaps this story leaves, not covered by it or mw-5r3p30.761: the verse-ask tutor takes no pictures (so a picture attached in the Ask can go only to the makers); the Welcome interview shows the action although
+a request to the makers is out of place there; neither the Talk sheet nor the Ask can send voice notes (`voiceNote` is off in both Composers).
+
 ## Answering an offer by voice (mw-5r3p30.186)
 
 The tutor leaves three kinds of offer for a tap: **Send this to the makers** (`feedback_offer`), a setting change (`setting_offer` `{key, value}`, checked by
