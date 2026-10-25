@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.2
+_2026-10-25_
+- New: the tutor now knows which verses you are memorizing, can start memorizing one when you ask, and you can choose to send your memorizing progress with an Ask for more.
+
 ## 0.2.0
 _2026-10-25_
 - New: About now says when the tutor last tuned what it looks up for you, and why.
