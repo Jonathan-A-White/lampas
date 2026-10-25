@@ -6,7 +6,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BOOKS } from '../../src/data/books';
+import { NT_BOOKS as BOOKS } from '../../src/data/books';
 import { DEVOTIONALS } from '../../src/data/daily/devotionals';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { CATALOGUE, CATALOGUE_VERSION, KINDS, WORK_GROUPS, entriesOf, type CatalogueEntry, type Kind, type KindFile } from '../../src/resources/catalogue';
