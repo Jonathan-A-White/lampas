@@ -71,6 +71,19 @@ export async function unmemorize(ref: string, lang?: MemorizeLang, now = Date.no
   await announceDueVerses(now);
 }
 
+/** The schedule rows of a verse as they are now (one language's, or every language's), to put back when the tutor's unmemorize is undone. */
+export async function verseRowsOf(ref: string, lang?: MemorizeLang): Promise<Review[]> {
+  const langs = lang === undefined ? MEMORIZE_LANGS : [lang];
+  const rows = await Promise.all(langs.map((l) => db.reviews.get([VERSE_KIND, verseId(ref, l)])));
+  return rows.flatMap((row) => row ?? []);
+}
+
+/** Puts back schedule rows `verseRowsOf` returned, as they were (the step and the due date too). */
+export async function restoreVerseRows(rows: readonly Review[], now = Date.now()): Promise<void> {
+  await db.reviews.bulkPut([...rows]);
+  await announceDueVerses(now);
+}
+
 /** For each of these references that is memorized, the languages it is in (English, Greek, Weave order). A reference that is not memorized is not in the map. */
 export async function memorizedOf(refs: readonly string[]): Promise<Map<string, MemorizeLang[]>> {
   const rows = await Promise.all(refs.flatMap((ref) => MEMORIZE_LANGS.map((lang) => db.reviews.get([VERSE_KIND, verseId(ref, lang)]))));
@@ -127,6 +140,12 @@ export async function recordRecall(input: RecallInput, now = Date.now()): Promis
 /** Every recall of a verse (all languages, or one), oldest first: the evidence the tutor and the schedule models read. */
 export async function recallsOf(ref: string, lang?: MemorizeLang): Promise<RecallRow[]> {
   const rows = lang === undefined ? await db.recalls.where('[ref+lang]').between([ref, ''], [ref, '￿']).toArray() : await db.recalls.where('[ref+lang]').equals([ref, lang]).toArray();
+  return rows.sort((a, b) => a.when - b.when || (a.id ?? 0) - (b.id ?? 0));
+}
+
+/** Every recall of every verse, oldest first: the evidence the tutor reads (src/memorize/evidence.ts). */
+export async function listRecalls(): Promise<RecallRow[]> {
+  const rows = await db.recalls.toArray();
   return rows.sort((a, b) => a.when - b.when || (a.id ?? 0) - (b.id ?? 0));
 }
 

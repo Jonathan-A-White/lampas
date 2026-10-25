@@ -306,12 +306,12 @@ export function memorizeSessionOf(hash: string): { ref: string; lang: MemorizeLa
 
 export const memorizeSessionHash = (ref: string, lang: MemorizeLang): string => `${MEMORIZE_PATH}/${encodeURIComponent(ref)}/${lang}`;
 
-/** Opens a Memorize session, as a new Back step; `replace` puts it in the place of the one he is on (Next verse), so the run is one entry and Back leaves it. */
-export function openMemorizeSession(ref: string, lang: MemorizeLang, options: { replace?: boolean } = {}): void {
+/** Opens a Memorize session, as a new Back step; `replace` puts it in the place of the one he is on (Next verse), so the run is one entry and Back leaves it; `tutor` marks the entry as one the tutor took him to. */
+export function openMemorizeSession(ref: string, lang: MemorizeLang, options: { replace?: boolean; tutor?: boolean } = {}): void {
   const hash = memorizeSessionHash(ref, lang);
   if (options.replace) return replaceHash(hash);
   if (window.location.hash === hash) return;
-  window.history.pushState(null, '', urlFor(hash));
+  window.history.pushState(options.tutor ? ({ tutorGo: true } satisfies TutorGoEntry) : null, '', urlFor(hash));
   notify();
 }
 

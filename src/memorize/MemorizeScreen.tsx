@@ -9,8 +9,7 @@ import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { announce } from '../ui/live';
-import { listedOf } from '../lists/canonical';
-import { printedRef, unmemorizeVerse } from './commands';
+import { nameOf, unmemorizeVerse } from './commands';
 import { langName, MEMORIZE_LANGS } from './languages';
 import { MemorizeSession } from './MemorizeSession';
 import { groupVerses } from './progress';
@@ -19,8 +18,6 @@ import { useProgress, type VerseProgress } from './useProgress';
 
 const BUTTON = 'min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium';
 /** The name of a reference as the lists print it ('Romans 8:28'). */
-const nameOf = (canonical: string): string => listedOf(canonical)?.printed || printedRef(canonical);
-
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section aria-label={title} className="mt-4">
