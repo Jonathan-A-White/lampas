@@ -158,6 +158,8 @@ export interface RequestRow {
   text?: string;
   /** a book: the Logos Resource ID he picked, which finds the same ask again (no index, no version bump) */
   resource?: string;
+  /** tutor-ask: how many of the talk's pictures went with it (absent for none) */
+  pictures?: number;
   /** the build that sent it (config __APP_VERSION__) */
   app_version: string;
   /** when the mill took it, ms since the epoch */

@@ -8,11 +8,12 @@ import { liveBridge } from '../data/grammar/bridge';
 import { levelsOf } from '../data/grammar/goalProgress';
 import { ideaOf } from '../data/grammar/ladder';
 import type { Level } from '../data/grammar/needs';
-import { getTurn, listLevels, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markRustyChoice, markSettingChoice, markTodayChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
+import { getTurn, listLevels, listTurnPictures, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markRustyChoice, markSettingChoice, markTodayChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
 import type { Bridge } from '../data/db';
 import { noteGreekNo } from '../data/repositories/memory';
 import { RUSTY_BUTTON } from '../data/rusty';
 import { takeGreekOffer } from './greekOffer';
+import { filesOf } from './pictures';
 import { takeRustyOffer } from './rustyOffer';
 import { TODAY_BUTTON, takeTodayOffer } from './todayOffer';
 import { buildTutorAskRequest, submitFeedback } from '../services/feedback';
@@ -105,8 +106,11 @@ export function sendMakersOffer(turn: TalkTurn, scope: TalkScope): Promise<void>
     // send finished (mw-5r3p30.286). One offer reaches the makers once.
     const kept = await getTurn(id);
     if (kept?.feedbackSent || kept?.feedbackWithdrawn) return;
+    // the pictures he attached in the talk go with it, as the kept turn holds them (mw-5r3p30.759)
+    const pictures = await listTurnPictures(id);
     await submitFeedback(
       buildTutorAskRequest({ text: turn.q, summary, screen: scope.screen?.name ?? 'Reader', reference: scopeTitle(scope), facts: scope.screen?.facts }),
+      { files: filesOf(pictures.map((p) => ({ bytes: new Uint8Array(p.bytes), mime: p.mime, name: p.name }))) },
     );
     await markFeedbackSent(id);
   })().finally(() => {

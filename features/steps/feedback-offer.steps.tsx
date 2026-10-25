@@ -11,6 +11,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { clearBus, latest } from '../../src/events/bus';
+import { imageSeam } from '../../src/images/shrink';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
@@ -18,7 +19,10 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 
+const realSeam = { ...imageSeam };
+
 afterAll(() => {
+  Object.assign(imageSeam, realSeam);
   cleanup();
   stopReading();
   clearBus();
@@ -45,6 +49,7 @@ async function openAt(address: string, offers: boolean): Promise<void> {
   clearBus();
   forgetTrail();
   vi.unstubAllGlobals();
+  Object.assign(imageSeam, realSeam);
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.history.replaceState(null, '', `/${address}`);
@@ -58,7 +63,7 @@ async function openAt(address: string, offers: boolean): Promise<void> {
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.requests.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.talkPictures.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.requests.clear()]);
   render(<App />);
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
 }
@@ -167,6 +172,35 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the turn shows {string} and {string}', async () => {
       await seesSent();
+    });
+  });
+
+  Scenario('A picture attached in the talk goes to the makers with the ask', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on the Reader behind a fake Postern whose tutor offers feedback', async () => {
+      await openAt('', true);
+      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+    });
+    When('he opens the Talk sheet on the chapter, attaches a picture and sends {string}', async (_, question: string) => {
+      // jsdom has no canvas: the picture decodes to a size and every try at it is a small JPEG
+      imageSeam.decode = async () => ({ width: 1200, height: 800, source: null });
+      imageSeam.encode = async () => new Blob([new Uint8Array(120_000).fill(7)], { type: 'image/jpeg' });
+      await taps();
+      const picker = sheet().querySelector<HTMLInputElement>('input[type="file"]:not([capture])') as HTMLInputElement;
+      await user.upload(picker, new File([new Uint8Array(2_000)], 'shot-1.png', { type: 'image/png' }));
+      await send(question);
+    });
+    And('he taps Send this to the makers', tapOffer);
+    Then('the mill received {int} grists for the lampas app, the second of kind feedback', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+      expect(fake.received[1].grist).toMatchObject({ app: 'lampas', kind: 'feedback', v: '1' });
+    });
+    And('the feedback grist carries one picture', () => {
+      expect(feedbackGrist().input).toMatchObject({ kind: 'tutor-ask' });
+      expect(feedbackGrist().attachments).toHaveLength(1);
+      expect(feedbackGrist().attachments[0]).toMatchObject({ mime: 'image/jpeg', name: 'picture-1.jpg' });
+    });
+    And('the phone keeps one request row that says {int} picture went with it', async (_, count: number) => {
+      await waitFor(async () => expect(await db.requests.toArray()).toMatchObject([{ txid: fake.txids[1], kind: 'tutor-ask', pictures: count }]));
     });
   });
 

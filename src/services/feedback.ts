@@ -238,7 +238,7 @@ export function isFeedbackAnswer(value: unknown): value is FeedbackAnswer {
 
 /** What the requests table keeps of a request: the tutor's summary for a tutor-ask, his words for a grammar approach, the title of a book (and its Resource ID, which finds it again), a line that
  * counts the books of a library request, and for an Ask for more form the name with why after it ('The ESV: To read it beside the Greek.'). */
-function kept(request: FeedbackRequest, txid: string, sentAt: number): Parameters<typeof keepRequest>[0] {
+function kept(request: FeedbackRequest, txid: string, sentAt: number, files: readonly MillFile[]): Parameters<typeof keepRequest>[0] {
   const what =
     request.kind === 'tutor-ask'
       ? { summary: request.summary }
@@ -249,7 +249,9 @@ function kept(request: FeedbackRequest, txid: string, sentAt: number): Parameter
           : 'name' in request
             ? { text: request.text ? `${request.name}: ${request.text}` : request.name }
             : { text: request.text };
-  return { txid, kind: request.kind, ...what, app_version: request.app_version, sentAt };
+  // a tutor-ask's files are the talk's pictures: the row says how many went (Your requests shows it)
+  const pictures = request.kind === 'tutor-ask' && files.length > 0 ? { pictures: files.length } : {};
+  return { txid, kind: request.kind, ...what, ...pictures, app_version: request.app_version, sentAt };
 }
 
 /** Sends the feedback with its files (pictures, at most MAX_PICTURES, or the library.csv) and waits for the mill's receipt. Throws a TutorError. */
@@ -272,7 +274,7 @@ async function deliver(request: FeedbackRequest, options: SubmitOptions): Promis
       onSent: (id) => {
         txid = id;
         options.onSent?.();
-        keeping = keepRequest(kept(request, id, Date.now())).catch(() => undefined);
+        keeping = keepRequest(kept(request, id, Date.now(), options.files ?? [])).catch(() => undefined);
       },
     });
   } catch (err) {

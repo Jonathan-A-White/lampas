@@ -35,6 +35,14 @@ Feature: An ask Lampas cannot meet is offered to the makers
     And the feedback grist is for the screen "Reader" and the reference "Romans 8"
     And the turn shows "Sent" and "The answer will come back."
 
+  Scenario: A picture attached in the talk goes to the makers with the ask
+    Given Lampas is opened on the Reader behind a fake Postern whose tutor offers feedback
+    When he opens the Talk sheet on the chapter, attaches a picture and sends "Add a Greek keyboard please"
+    And he taps Send this to the makers
+    Then the mill received 2 grists for the lampas app, the second of kind feedback
+    And the feedback grist carries one picture
+    And the phone keeps one request row that says 1 picture went with it
+
   Scenario: A mill that is down shows Could not reach the tutor and Retry, and Sent stays after the sheet is reopened
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
     When he taps the Ask the tutor control
