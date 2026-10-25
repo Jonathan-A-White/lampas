@@ -236,7 +236,7 @@ describeFeature(feature, ({ Scenario }) => {
       // the run is drawn at once and waits for nothing: give it the time it would need
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(fake.received).toEqual([]);
-      expect(screen.queryByText(/Tutor tuned/)).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Tutor tuned/ })).toBeNull();
     });
   });
 

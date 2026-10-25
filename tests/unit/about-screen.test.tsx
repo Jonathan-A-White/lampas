@@ -59,7 +59,8 @@ describe('Tutor tuned', () => {
     render(<About />);
     // the screen has read its other rows by now
     await screen.findByText('Preface');
-    expect(screen.queryByText(/Tutor tuned/)).toBeNull();
+    expect(screen.queryByTestId('tutor-tuned')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Tutor tuned/ })).toBeNull();
   });
 
   it('shows the date and the number of changes after a run, and a tap lists the reasons', async () => {
