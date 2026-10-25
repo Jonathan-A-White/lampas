@@ -1,17 +1,25 @@
 # Layout: the sentence diagram
 
-Which file holds what for the sentence diagram (the epic mw-souyao): a verse worked out as a tree by the tutor, kept, and drawn as a Reed-Kellogg diagram that scrolls sideways, every word a tap target. This story (mw-souyao.1) is the renderer, proven on hand-written fixtures; the grind that makes the tree, the Verse view's Diagram action and the kept diagrams are the next stories. A story that adds a file of `src/diagram/` writes its line here, in the same form (the path, then `#` and what it holds; a continuation line starts `#   `), never in CLAUDE.md.
+Which file holds what for the sentence diagram (the epic mw-souyao): a verse worked out as a tree by the tutor, kept, and drawn as a Reed-Kellogg diagram that scrolls sideways, every word a tap target. The renderer (mw-souyao.1) is proven on hand-written fixtures; the grind that makes the tree, its request and the kept diagrams are mw-souyao.2; the Verse view's Diagram action is the next story. A story that adds a file of `src/diagram/` writes its line here, in the same form (the path, then `#` and what it holds; a continuation line starts `#   `), never in CLAUDE.md.
 
 ```
 src/diagram/types.ts      # the tree the grind answers with: Diagram {clauses: ClauseEntry[]}, ClauseEntry {clause, joinedBy?}, Clause {subject, verb, complement?}, Slot {words, modifiers}, the three Modifier kinds ('word',
 #   'prepositional', 'clause' with an optional connector), Complement {kind: 'direct-object' | 'indirect-object' | 'predicate-nominative' | 'predicate-adjective', slot}, TokenRef {i} | {implied};
-#   DiagramWords: the words {i} indexes, each {text, chunk} (English, split from the chapter's chunks) or {text, word} (Greek, the verse's own word index). The grind's answer schema mirrors it
+#   DiagramWords: the words {i} indexes, each {text, chunk} (English, split from the chapter's chunks) or {text, word} (Greek, the verse's own word index).  A passage's words also carry `verse`. The grind's answer schema mirrors it
 src/diagram/validate.ts   # validateDiagram(tree, wordCount) -> {ok: true} | {ok: false, faults}: THE RULE, every word sent appears exactly once across the tree, and each fault is named (out-of-range, used-twice, missing,
 #   empty-subject, empty-verb) with where in the tree. An implied-only subject (a Greek verb's ending, an English imperative) is allowed; so is an implied-only verb
 src/diagram/layout.ts     # layoutDiagram(tree, words, measure) -> {width, height, segments, labels}, pure: positions only, from a measure(text) width, nothing scaled (jsdom tests pass a fixed measure). Segments are kinds
 #   (base, bar-full, bar-half, bar-predicate, modifier, foot, prep-slant, object-line, indirect-slant, join, step); labels carry their word's index (none when implied), their role and clause
 src/diagram/ReedKellogg.tsx # <ReedKellogg diagram words mode reference onWord measure?>: the layout as one SVG (role img, 'Sentence diagram of Colossians 3:1, English') with a button over each word, in a box that
 #   scrolls sideways (overflow-x-auto, which useChapterSwipe skips); implied words are text in parentheses, no button; Greek labels carry GREEK_LANG; the face is measured from a probe span by canvas
+src/diagram/request.ts    # buildDiagramRequest(chapter, verses, view) -> {request, words}: the sentence-diagram grind's input ({ref, lang, words: [{i, text, chunk | lemma, parse}], greek (English only: the verse's Greek with parse),
+#   faults (a second ask only)}) and the DiagramWords the renderer indexes; English words are each chunk's words split on spaces with the marks stripped, Greek words verse.g with the marks stripped (an elision's apostrophe stays); a passage
+#   counts on through its verses, `chunk`/`word` stay within the verse and each word carries its `verse`; diagramReference names the unit ('Colossians 3:1-2')
+src/diagram/fetchDiagram.ts # fetchDiagram(chapter, verses, view, {redraw, key, signal, ask}) -> {ok: true, diagram, words, kept} | {ok: false, faults}: the kept diagram (repositories/diagrams.ts, db v31) unless redraw, else askGrind('sentence-diagram')
+#   with the answer guard isDiagramAnswer, validateDiagram, one more ask with the faults on a fault, then the faults (no throw, nothing kept); a good tree is kept before it is returned. `ask` is a seam for a fake askGrind
+grinds/sentence-diagram.json + .instructions.md + .input.schema.json + .answer.schema.json  # the grind (sonnet, high): its own instructions file, under 12,000 bytes (tests/unit/sentence-diagram-grind.test.ts); the answer schema mirrors types.ts with
+#   $defs and $ref (the tree is recursive; tests/support/schema-validate.ts follows '#/$defs/<name>'); grinds/examples/sentence-diagram/col-3-1-english.json and -greek.json are what request.ts builds for Colossians 3:1 (the mill cannot run a new kind
+#   before it lands, rig memory mw-t3xu9a.8: the first run is `mw grist eval lampas sentence-diagram --example <name>` after landing)
 tests/fixtures/diagrams/col-3-1-english.json, col-3-1-greek.json  # Colossians 3:1 in each mode: {reference, mode, words, diagram}; the words are read from public/data/col/3.json (tests/unit/diagram-validate.test.ts
 #   checks it), the diagram is hand-written; they are the sentence-diagram grind's two example answers
 tests/support/diagram-fixtures.ts  # loadFixture(mode) and the little slots the layout tests build

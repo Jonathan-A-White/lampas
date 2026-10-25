@@ -61,8 +61,11 @@ export interface Diagram {
 
 export type DiagramMode = 'english' | 'greek';
 
-/** One word the tree indexes: English words are split from the chapter's chunks (`chunk` is the English chunk it came from, whose Greek words a tap opens), Greek words are the verse's own (`word` is the Greek word index). */
-export type DiagramWord = { text: string; chunk: number } | { text: string; word: number };
+/** One word the tree indexes: English words are split from the chapter's chunks (`chunk` is the English chunk it came from, whose Greek words a tap opens), Greek words are the verse's own (`word` is the Greek word index); in a passage each also names its `verse`. */
+export type DiagramWord = ({ text: string; chunk: number } | { text: string; word: number }) & {
+  /** the verse's number, only on the words of a passage of several verses: `chunk` and `word` count within that verse */
+  verse?: number;
+};
 
 /** The words of a request, in order: TokenRef {i} is a position in this list. */
 export type DiagramWords = DiagramWord[];

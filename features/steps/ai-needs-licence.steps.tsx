@@ -164,6 +164,13 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('With no licence the Verse view offers no Diagram', ({ Given, Then }) => {
+    Given('this phone has no licence and the Verse view of verse 28 is open', () => openVerseView(false, 'listen'));
+    Then('the Verse view has no button named Diagram', () => {
+      expect(within(verseView()).queryByRole('button', { name: 'Diagram' })).toBeNull();
+    });
+  });
+
   Scenario('With a licence the Verse view offers Ask the tutor and Quiz me and the Hold to ask bar', ({ Given, Then, And }) => {
     Given('this phone has a licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(true, 'ask'));
     Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {

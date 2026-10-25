@@ -75,7 +75,7 @@ describe('the upgrade from version 18', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(30);
+    expect(db.verno).toBe(31);
     expect(await db.grammarLevels.toArray()).toEqual([level]);
     expect(await db.reviews.toArray()).toEqual([review]);
     expect(await db.words.toArray()).toEqual([word]);

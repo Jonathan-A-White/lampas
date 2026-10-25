@@ -1,0 +1,18 @@
+{
+  "grind": 1,
+  "app": "lampas",
+  "kind": "sentence-diagram",
+  "versions": [
+    "1"
+  ],
+  "model": "sonnet",
+  "effort": "high",
+  "instructions": "grinds/sentence-diagram.instructions.md",
+  "answerSchema": "grinds/sentence-diagram.answer.schema.json",
+  "attachments": {
+    "min": 0,
+    "max": 0,
+    "mime": [],
+    "maxBytes": 0
+  }
+}

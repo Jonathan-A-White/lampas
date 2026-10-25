@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { AppliedChange } from '../settings/applied';
+import type { Diagram } from '../diagram/types';
 import { cleanGloss } from './gloss';
 import { withAoristNote } from './irregular-aorists';
 import { isItemId, legacyStoredId, plainIdOf } from './grammar/soundScope';
@@ -548,6 +549,20 @@ export interface RecallRow {
   how: RecallHow;
 }
 
+/** A sentence diagram the tutor drew of a verse or a passage, kept so it is drawn again with no ask (src/data/repositories/diagrams.ts, the ONLY file that reads or writes the table; src/diagram/fetchDiagram.ts, mw-souyao.2). */
+export interface DiagramRow {
+  /** the unit as the screen names it: 'Colossians 3:1', 'Colossians 3:1-2' */
+  ref: string;
+  /** the mode it is diagrammed in: its words are the English chunks' or the Greek words */
+  lang: 'english' | 'greek';
+  /** the sentence-diagram grind's version (grinds/sentence-diagram.json versions): a later grind's diagrams are another row */
+  version: string;
+  /** the tree (src/diagram/types.ts Diagram), checked by validateDiagram before it was kept */
+  diagram: Diagram;
+  /** when it was kept (epoch ms) */
+  at: number;
+}
+
 // Never edit an old version(): repeat the whole stores map on each bump with a '// vN:' comment
 // (docs/pwa-best-practices.md section 15).
 class LampasDB extends Dexie {
@@ -578,6 +593,7 @@ class LampasDB extends Dexie {
   exportRows!: EntityTable<ExportedRow, 'resource'>;
   verseLists!: EntityTable<VerseListRow, 'id'>;
   recalls!: EntityTable<RecallRow, 'id'>;
+  diagrams!: EntityTable<DiagramRow, 'ref' | 'lang' | 'version'>;
 
   constructor() {
     super('lampas');
@@ -1165,6 +1181,38 @@ class LampasDB extends Dexie {
       exportRows: 'resource',
       verseLists: '++id, created',
       recalls: '++id, [ref+lang], when',
+    });
+
+    // v31: diagrams `[ref+lang+version]`, the sentence diagram the tutor drew of each verse or passage in each mode {ref, lang, version, diagram, at} (repositories/diagrams.ts, mw-souyao.2); every other table as it was.
+    this.version(31).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+      pictureRefs: 'hash, at',
+      talkSummaries: 'ref',
+      library: 'id, kind',
+      exportRows: 'resource',
+      verseLists: '++id, created',
+      recalls: '++id, [ref+lang], when',
+      diagrams: '[ref+lang+version]',
     });
   }
 }
