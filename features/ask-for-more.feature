@@ -56,6 +56,25 @@ Feature: Ask for more
     And he taps Send on the form
     Then the mill received one feedback grist of kind "translation" with the name "The NASB" alone and the app version
 
+  Scenario: His memorizing evidence goes with an ask only when he turns it on, each time
+    Given the Ask for more page is open in the app and he has recalled "Rom.8.28" 3 times
+    When he opens the form "A text"
+    Then the form offers "Include my memorizing evidence", Off, with the line "1 verse, 3 recalls, 3 passed, gap 2 days"
+    When he types only the name "Logeion"
+    And he taps Send on the form
+    Then the mill received one feedback grist of kind "text" with the name "Logeion" alone and the app version
+    When he turns to the form "A translation"
+    Then the translation form offers "Include my memorizing evidence" Off again
+    When he turns on "Include my memorizing evidence"
+    And he types the name "The NASB" alone
+    And he sends the form with the evidence
+    Then the mill received a second grist of kind "translation" that carries "1 verse, 3 recalls, 3 passed, gap 2 days" and the 3 recalls of "Rom.8.28"
+
+  Scenario: A phone that has recalled nothing is not offered his evidence
+    Given the Ask for more page is open in the app
+    When he opens the form "A text"
+    Then the form has no "Include my memorizing evidence" switch
+
   Scenario: A mill that is down shows Could not reach the tutor and Retry
     Given the Ask for more page is open in the app and the mill is down
     When he opens the form "A text"

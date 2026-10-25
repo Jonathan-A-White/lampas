@@ -13,6 +13,7 @@ import type { Kind } from '../resources/catalogue';
 import { MILL_MAX_FILES, type MillFile } from './mill';
 import { askGrind, TutorError, type AskOptions } from './tutor';
 import { MAX_QUESTION_CHARS } from './requestBudget';
+import type { MemorizingEvidence } from '../memorize/evidence';
 
 export const FEEDBACK_KIND = 'feedback';
 
@@ -100,12 +101,13 @@ export type MoreKind = (typeof MORE_KINDS)[number];
 /** The most the name of what he asks for may be. */
 export const MAX_MORE_NAME = 120;
 
-/** What the grind is sent from an Ask for more form: what he wants by name, why (when he said), and a link (when he gave one). */
+/** What the grind is sent from an Ask for more form: what he wants by name, why (when he said), a link (when he gave one) and, only when he turned it on for this ask, his memorizing evidence (mw-fu7dqf.12). */
 export interface MoreRequest {
   kind: MoreKind;
   name: string;
   text?: string;
   url?: string;
+  memorizing?: MemorizingEvidence;
   app_version: string;
 }
 
@@ -200,11 +202,11 @@ export function buildLibraryRequest(list: { books: number; usable: number; count
   return { kind: 'library', books: list.books, usable: list.usable, counts, catalogue_version: list.version, app_version: __APP_VERSION__ };
 }
 
-/** The request of an Ask for more form: the name trimmed; why and the link only when he wrote them (https:// put in front of a bare link). */
-export function buildMoreRequest(kind: MoreKind, name: string, why = '', link = ''): MoreRequest {
+/** The request of an Ask for more form: the name trimmed; why and the link only when he wrote them (https:// put in front of a bare link); `memorizing` only when he said to send his evidence. */
+export function buildMoreRequest(kind: MoreKind, name: string, why = '', link = '', memorizing?: MemorizingEvidence): MoreRequest {
   const text = why.trim();
   const url = linkOf(link);
-  return { kind, name: name.trim(), ...(text ? { text } : {}), ...(url ? { url } : {}), app_version: __APP_VERSION__ };
+  return { kind, name: name.trim(), ...(text ? { text } : {}), ...(url ? { url } : {}), ...(memorizing ? { memorizing } : {}), app_version: __APP_VERSION__ };
 }
 
 /** The most a tutor-ask request may weigh, as JSON in UTF-8: what a talk's was (8,000; src/services/requestBudget.ts raised that to 9,000 for the digest of his shelf, mw-rfjjzd.10, which this request never carries). Greek is two bytes a letter, so the facts are what gives way. */

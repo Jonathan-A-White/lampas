@@ -4,9 +4,11 @@
 // (grinds/bible-talk.instructions/270-asks-the-app-cannot-meet.md). Under it, Or fill in a form: one short form per kind (what, why, a link), opened in
 // place one at a time; Send posts one 'feedback' grist of that kind through submitFeedback (src/services/feedback.ts), the one sender. Both go to the
 // mill, so without a licence the page says so and offers Needs a licence instead.
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { NO_CHAPTER } from '../data/chapter';
 import { useAiAllowed } from '../gate/licenceContext';
+import { evidenceSummary, memorizingEvidenceNow, NO_RECALLS } from '../memorize/evidence';
 import { backTo, openLicence } from '../nav/route';
 import { ScreenHeader, HeaderButton } from '../ScreenHeader';
 import { SENT_LINE } from '../AskApproachSheet';
@@ -69,7 +71,11 @@ function MoreForm({ kind }: { kind: MoreKind }) {
   const [why, setWhy] = useState('');
   const [link, setLink] = useState('');
   const [phase, setPhase] = useState<Phase>({ name: 'editing' });
-  const ids = { name: useId(), nameHint: useId(), why: useId(), whyHint: useId(), count: useId(), link: useId(), linkHint: useId() };
+  // his say-so, each time: Off for every form he opens, and only offered once he has recalled a verse (mw-fu7dqf.12)
+  const [withEvidence, setWithEvidence] = useState(false);
+  const evidence = useLiveQuery(evidenceSummary, []);
+  const hasEvidence = evidence !== undefined && evidence !== NO_RECALLS;
+  const ids = { evidence: useId(), name: useId(), nameHint: useId(), why: useId(), whyHint: useId(), count: useId(), link: useId(), linkHint: useId() };
   const live = useRef(new AbortController());
   useEffect(() => {
     const controller = live.current;
@@ -83,7 +89,8 @@ function MoreForm({ kind }: { kind: MoreKind }) {
     if (!ready || busy) return;
     setPhase({ name: 'sending' });
     try {
-      await submitFeedback(buildMoreRequest(kind, name, why, link), { signal: live.current.signal });
+      const memorizing = withEvidence && hasEvidence ? await memorizingEvidenceNow() : undefined;
+      await submitFeedback(buildMoreRequest(kind, name, why, link, memorizing), { signal: live.current.signal });
       if (live.current.signal.aborted) return;
       setPhase({ name: 'sent' });
     } catch (err) {
@@ -171,6 +178,27 @@ function MoreForm({ kind }: { kind: MoreKind }) {
               Optional. Where the makers can find it.
             </p>
           </div>
+          {hasEvidence ? (
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p id={ids.evidence} className="text-base font-medium">
+                  Include my memorizing evidence
+                </p>
+                <p className="text-sm text-muted">{evidence}. Only with this ask.</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={withEvidence}
+                aria-labelledby={ids.evidence}
+                disabled={busy}
+                onClick={() => setWithEvidence(!withEvidence)}
+                className={`min-h-12 min-w-16 shrink-0 rounded-lg px-4 text-base font-medium ${withEvidence ? 'bg-accent text-accent-fg' : 'border border-line text-fg'}`}
+              >
+                {withEvidence ? 'On' : 'Off'}
+              </button>
+            </div>
+          ) : null}
           {phase.name === 'failed' ? (
             <div role="alert" className="space-y-1">
               <p className="text-base font-semibold text-bad">{FAILURE_TITLES[phase.failure]}</p>

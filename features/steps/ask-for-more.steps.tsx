@@ -54,7 +54,7 @@ async function openAt(address: string, licensed = true): Promise<void> {
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.meta.clear(), db.settings.clear(), db.talks.clear(), db.requests.clear()]);
+  await Promise.all([db.meta.clear(), db.settings.clear(), db.talks.clear(), db.requests.clear(), db.recalls.clear()]);
   const unlicensed = { licence: 'not-licensed' as const, locked: null, publicKeyHex: '', checkAgain: () => {} };
   render(licensed ? <App /> : <LicenceContext.Provider value={unlicensed}><App /></LicenceContext.Provider>);
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
@@ -244,6 +244,60 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       const input = fake.received[0].input;
       expect(input).toEqual({ kind, name, app_version: __APP_VERSION__ });
       expect(validate(input, feedbackSchema)).toEqual([]);
+    });
+  });
+
+  Scenario('His memorizing evidence goes with an ask only when he turns it on, each time', ({ Given, When, And, Then }) => {
+    Given('the Ask for more page is open in the app and he has recalled {string} {int} times', async (_, ref: string, times: number) => {
+      await openPage();
+      await db.recalls.bulkAdd(
+        Array.from({ length: times }, (_, i) => ({ ref, lang: 'en', when: Date.UTC(2026, 9, 1 + 2 * i, 12), rung: i, score: 1, missed: [], asked: [{ token: 'all', lang: 'en' }], gap: i === 0 ? 0 : 2, how: 'said' as const })),
+      );
+    });
+    When('he opens the form {string}', (_, name: string) => openForm(name));
+    Then('the form offers {string}, Off, with the line {string}', async (_, label: string, line: string) => {
+      const toggle = await within(form(opened)).findByRole('switch', { name: label });
+      expect(toggle).toHaveAttribute('aria-checked', 'false');
+      expect(within(form(opened)).getByText(new RegExp(`^${line}`))).toBeInTheDocument();
+    });
+    When('he types only the name {string}', async (_, name: string) => {
+      await user.type(fields()[0], name);
+    });
+    And('he taps Send on the form', tapSend);
+    Then('the mill received one feedback grist of kind {string} with the name {string} alone and the app version', async (_, kind: string, name: string) => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      expect(fake.received[0].input).toEqual({ kind, name, app_version: __APP_VERSION__ });
+    });
+    When('he turns to the form {string}', (_, name: string) => openForm(name));
+    Then('the translation form offers {string} Off again', async (_, label: string) => {
+      expect(await within(form(opened)).findByRole('switch', { name: label })).toHaveAttribute('aria-checked', 'false');
+    });
+    When('he turns on {string}', async (_, label: string) => {
+      const toggle = within(form(opened)).getByRole('switch', { name: label });
+      await user.click(toggle);
+      expect(toggle).toHaveAttribute('aria-checked', 'true');
+    });
+    And('he types the name {string} alone', async (_, name: string) => {
+      await user.type(fields()[0], name);
+    });
+    And('he sends the form with the evidence', tapSend);
+    Then('the mill received a second grist of kind {string} that carries {string} and the {int} recalls of {string}', async (_, kind: string, summary: string, count: number, ref: string) => {
+      await waitFor(() => expect(fake.received).toHaveLength(2));
+      const input = fake.received[1].input as { kind: string; memorizing: { summary: string; evidence: Array<{ ref: string; recalls: unknown[] }> } };
+      expect(input.kind).toBe(kind);
+      expect(input.memorizing.summary).toBe(summary);
+      expect(input.memorizing.evidence.map((v) => [v.ref, v.recalls.length])).toEqual([[ref, count]]);
+      expect(validate(input, feedbackSchema)).toEqual([]);
+    });
+  });
+
+  Scenario('A phone that has recalled nothing is not offered his evidence', ({ Given, When, Then }) => {
+    Given('the Ask for more page is open in the app', openPage);
+    When('he opens the form {string}', (_, name: string) => openForm(name));
+    Then('the form has no {string} switch', async (_, label: string) => {
+      // the evidence is read as the form opens: give it its moment before saying it is not there
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(within(form(opened)).queryByRole('switch', { name: label })).toBeNull();
     });
   });
 

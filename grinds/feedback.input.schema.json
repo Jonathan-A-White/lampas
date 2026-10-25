@@ -292,6 +292,115 @@
           "minLength": 1,
           "maxLength": 300
         },
+        "memorizing": {
+          "description": "Optional. His memorizing evidence, only when he turned on Include my memorizing evidence for this ask: a summary line and his recalls of the verses he memorizes (src/memorize/evidence.ts). Left out otherwise.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "summary",
+            "evidence"
+          ],
+          "properties": {
+            "summary": {
+              "description": "One line: how many verses, recalls and passes, and the gaps between recalls (3 verses, 14 recalls, 11 passed, gaps 1 to 7 days).",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "evidence": {
+              "description": "The recalls of each verse in each language, the most recently recalled first, at most the last 30 of each, under 6,000 bytes.",
+              "type": "array",
+              "maxItems": 120,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "ref",
+                  "lang",
+                  "recalls"
+                ],
+                "properties": {
+                  "ref": {
+                    "description": "The verse as a canonical reference (Rom.8.28).",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "lang": {
+                    "description": "The language he memorizes it in: en, el or weave.",
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "el",
+                      "weave"
+                    ]
+                  },
+                  "recalls": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 30,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "on",
+                        "rung",
+                        "score",
+                        "gap",
+                        "how"
+                      ],
+                      "properties": {
+                        "on": {
+                          "description": "The day of the recall (2026-10-24).",
+                          "type": "string",
+                          "minLength": 10,
+                          "maxLength": 10
+                        },
+                        "rung": {
+                          "description": "The rung asked: the schedule step, 0 (read and say) to 6 (from nothing).",
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 6
+                        },
+                        "score": {
+                          "description": "The share of the words he had in order, 0 to 1.",
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "missed": {
+                          "description": "The words he missed, at most 12. Left out when none.",
+                          "type": "array",
+                          "maxItems": 12,
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          }
+                        },
+                        "gap": {
+                          "description": "Days since the last recall of this verse in this language, 0 for the first.",
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "how": {
+                          "description": "How it was heard: said, typed, mill (the verse-read grind) or self (he graded himself).",
+                          "type": "string",
+                          "enum": [
+                            "said",
+                            "typed",
+                            "mill",
+                            "self"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "app_version": {
           "description": "The Lampas build he sent it from.",
           "type": "string",
