@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.0
+_2026-10-25_
+- New: About now says when the tutor last tuned what it looks up for you, and why.
+
 ## 0.1.440
 _2026-10-25_
 - New: When you ask the tutor for something in the app, you now see what it is doing: a short line while it looks something up, a line with Undo for a change it makes, and Back brings you back to your talk after it takes you to another screen.
