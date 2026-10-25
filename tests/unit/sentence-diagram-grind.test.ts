@@ -2,6 +2,7 @@
 // diagrams of Colossians 3:1 (tests/fixtures/diagrams) are answers it takes and the validator passes, the instructions are one file under their size and say THE RULE, and the examples'
 // requests are what the builder makes.
 import { readFileSync, readdirSync } from 'node:fs';
+import { instructionsOf } from '../../scripts/grind-parts';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { buildDiagramRequest } from '../../src/diagram/request';
@@ -97,7 +98,7 @@ describe('the answer schema', () => {
 });
 
 describe('the instructions', () => {
-  const text = readFileSync('grinds/sentence-diagram.instructions.md', 'utf8');
+  const text = instructionsOf('sentence-diagram');
 
   it('are one file under 12,000 bytes', () => {
     expect(Buffer.byteLength(text, 'utf8')).toBeLessThan(12_000);
