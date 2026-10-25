@@ -1,5 +1,10 @@
 # What's new
 
+## 0.2.5
+_2026-10-25_
+- New: Ask for another approach and Ask for more now have a button, Let the tutor do it, that asks you the questions and fills in the form for you.
+- Fixed: Quiz me on a whole chapter now sends the tutor whole verses from the start, not a text cut off mid-sentence.
+
 ## 0.2.3
 _2026-10-25_
 - New: Ask for a book (and Ask for another approach) now has "Let the tutor do it", where the tutor asks you in a talk, fills in the form as you answer and ends with a Send button for you to tap.
