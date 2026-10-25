@@ -1,6 +1,6 @@
 # Layout: the sentence diagram
 
-Which file holds what for the sentence diagram (the epic mw-souyao): a verse worked out as a tree by the tutor, kept, and drawn as a Reed-Kellogg diagram that scrolls sideways, every word a tap target. The renderer (mw-souyao.1) is proven on hand-written fixtures; the grind that makes the tree, its request and the kept diagrams are mw-souyao.2; the Verse view's Diagram action is the next story. A story that adds a file of `src/diagram/` writes its line here, in the same form (the path, then `#` and what it holds; a continuation line starts `#   `), never in CLAUDE.md.
+Which file holds what for the sentence diagram (the epic mw-souyao): a verse worked out as a tree by the tutor, kept, and drawn as a Reed-Kellogg diagram that scrolls sideways, every word a tap target. The renderer (mw-souyao.1) is proven on hand-written fixtures; the grind that makes the tree, its request and the kept diagrams are mw-souyao.2; the Verse view's Diagram action and its pane are mw-souyao.3. A story that adds a file of `src/diagram/` writes its line here, in the same form (the path, then `#` and what it holds; a continuation line starts `#   `), never in CLAUDE.md.
 
 ```
 src/diagram/types.ts      # the tree the grind answers with: Diagram {clauses: ClauseEntry[]}, ClauseEntry {clause, joinedBy?}, Clause {subject, verb, complement?}, Slot {words, modifiers}, the three Modifier kinds ('word',
@@ -20,10 +20,15 @@ src/diagram/fetchDiagram.ts # fetchDiagram(chapter, verses, view, {redraw, key, 
 grinds/sentence-diagram.json + .instructions.md + .input.schema.json + .answer.schema.json  # the grind (sonnet, high): its own instructions file, under 12,000 bytes (tests/unit/sentence-diagram-grind.test.ts); the answer schema mirrors types.ts with
 #   $defs and $ref (the tree is recursive; tests/support/schema-validate.ts follows '#/$defs/<name>'); grinds/examples/sentence-diagram/col-3-1-english.json and -greek.json are what request.ts builds for Colossians 3:1 (the mill cannot run a new kind
 #   before it lands, rig memory mw-t3xu9a.8: the first run is `mw grist eval lampas sentence-diagram --example <name>` after landing)
+src/diagram/DiagramPane.tsx # <DiagramPane chapter verse view onLook>: the Verse view's Diagram action (mw-souyao.3), drawn under the row when the action is diagram (VerseView keys it by the unit and the view). unitVerses(chapter, verse) are the unit's verses;
+#   fetchDiagram asks (the kept diagram, else the tutor); while waiting 'Working it out…' (role status, with seconds); then ReedKellogg, Redraw (fetchDiagram redraw: the old picture stays, dimmed, until the new one comes) and 'Drawn by the tutor; Redraw if a word sits wrong';
+#   a tree that broke THE RULE twice or a TutorError is 'The tutor could not diagram this verse', why (TutorError.message, or how many faults) and Try again. A tapped word is lookupOfWord(verses, word): English, {words: the chunk's Greek words, english: the chunk's text, fromEnglish: true};
+#   Greek, {words: [that word], english: its chunk, fromEnglish: false} - what Reader.tsx's own taps give (VerseText). THE WIRING: Reader.tsx passes VerseView `chapterText` and `onLook={setLookup}`, so the tap opens the Reader's one WordSheet (over the Verse view, z above it); Back (ui/sheetBack)
+#   closes the sheet and the pane under it is untouched, still drawn
 tests/fixtures/diagrams/col-3-1-english.json, col-3-1-greek.json  # Colossians 3:1 in each mode: {reference, mode, words, diagram}; the words are read from public/data/col/3.json (tests/unit/diagram-validate.test.ts
 #   checks it), the diagram is hand-written; they are the sentence-diagram grind's two example answers
 tests/support/diagram-fixtures.ts  # loadFixture(mode) and the little slots the layout tests build
-features/sentence-diagram.feature  # the renderer on both fixtures (features/steps/sentence-diagram.steps.tsx)
+features/sentence-diagram.feature  # the renderer on both fixtures and the Verse view's Diagram through the whole app with a fake mill (features/steps/sentence-diagram.steps.tsx); tests/e2e/sentence-diagram.spec.ts at 390x844 (the row, the sideways box, the word sheet, no second ask)
 ```
 
 ## The Reed-Kellogg conventions, as drawn
