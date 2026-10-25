@@ -1,7 +1,8 @@
 Feature: Ask the tutor uses the shared composer
   The Verse view's Ask the tutor action is voice-kit's Composer, the way Postern asks: one big Hold to ask bar with his words as he speaks, and a quiet
   Type a question under it. There is no separate Ask button and no second hold bar. What he says or types goes to the tutor as it always did, with the
-  verses of the passage or the verse in the reference. The tutor takes no photo or file, so the composer shows no attach or camera button.
+  verses of the passage or the verse in the reference. The composer also has Attach a picture and Take a photo (mw-5r3p30.760): the tutor there does not look at
+  pictures, so they go with Send to the makers (features/send-to-makers.feature).
 
   The Talk sheet's input is the same Composer (with attach and camera, mw-06ggew.15). With the keyboard up (a window 450 px high) the typing box keeps at
   least half of its row (the mic and Send beside it), 'es' stays on one line, the box grows upward line by line to the kit's 200 px and then scrolls, no control
@@ -13,7 +14,7 @@ Feature: Ask the tutor uses the shared composer
     When he taps the heading "Walking by the Spirit"
     And he chooses "Ask the tutor"
     Then one composer is on screen with a "Hold to ask" bar and a "Type a question" button
-    And there is no Ask button, no second hold bar, no attach button and no camera button
+    And there is no Ask button and no second hold bar, and the composer has an attach button and a camera button
 
   Scenario: Holding shows his words as he speaks and letting go asks about verses 1-11
     Given Lampas is opened on Romans 8 in the English view with a tutor and a recogniser behind a fake Postern

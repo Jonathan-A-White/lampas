@@ -11,7 +11,7 @@ import { Waiting } from './Ask';
 import { findGreekWord, glossOf } from './data/answerWord';
 import type { GreekWord } from './data/chapter';
 import type { AnswerWord } from './data/db';
-import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
+import { addTurnChanges, addWordToLearn, getTalkSummary, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { openedByTutor } from './nav/readerRequest';
 import { openRequests } from './nav/route';
@@ -28,13 +28,16 @@ import { TodayOffer } from './talk/TodayOffer';
 import { registerTalkLeave } from './talk/rustyOffer';
 import { registerGreekWordOpener } from './talk/greekOffer';
 import { sendMakersOffer, takeBridgeOffer, takeSettingOffer, useOfferSending } from './talk/offers';
+import { failureLine, makersSummary, PICTURES_FOR_THE_MAKERS, sendToMakers } from './talk/makers';
+import { SendToMakers } from './talk/SendToMakers';
+import { useSendToMakers } from './talk/useSendToMakers';
 import { isTooLong } from './ui/lengthLimit';
 import { LengthNote } from './ui/LengthNote';
 import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkScope } from './services/talk';
 import { HebrewSoundGuide } from './script/HebrewGuide';
 import { HebrewAskContext } from './script/hebrewSpeech';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
-import { dataUrlOf, isTalkPicture, NOT_A_PICTURE_LINE, PICTURE_ONLY_QUESTION, preparePictures, TALK_MAX_PICTURES, TOO_MANY_TO_SEND_LINE, type OutgoingPicture } from './talk/pictures';
+import { dataUrlOf, PICTURE_ONLY_QUESTION, preparePictures, refuseNonPicture, TALK_MAX_PICTURES, TOO_MANY_TO_SEND_LINE, type OutgoingPicture } from './talk/pictures';
 import { PictureThumbs, TurnPictures } from './talk/TurnPictures';
 import { holdBegan, holdEnded } from './talk/holding';
 import { registerKeeper } from './talk/keptWords';
@@ -113,9 +116,6 @@ function SendArrow({ slot, why }: { slot: SendSlot; why: string | undefined }) {
     </button>
   );
 }
-
-/** Only pictures of the kinds the grind takes go in the composer's waiting row. */
-const refuseNonPicture = (file: { type: string }): string | undefined => (isTalkPicture(file) ? undefined : NOT_A_PICTURE_LINE);
 
 /** The speaker under an answer: reads it, or stops it while it is being read (a tutor's answer read by itself is read under the turn's id, so the button knows). */
 function AnswerSpeaker({ turn }: { turn: TalkTurn }) {
@@ -794,6 +794,27 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
     onSay(message || PICTURE_ONLY_QUESTION, undefined, pictures);
     return true;
   };
+  // 'Send to the makers': what is in the Composer goes to the makers as it stands, whenever he likes (src/talk/SendToMakers.tsx); the Composer's Send is still the tutor's
+  const makers = useSendToMakers();
+  const sendToTheMakers = async ({ text: said, files }: ComposerMessage): Promise<void> => {
+    const message = said.trim();
+    if (message.length > MAX_TALK_CHARS) throw new Error(`${message.length} of ${MAX_TALK_CHARS}: the message is too long to send. Shorten it; nothing has been cut.`);
+    if (files.length > TALK_MAX_PICTURES) throw new Error(TOO_MANY_TO_SEND_LINE);
+    const pictures = await preparePictures(files);
+    const kept = await getTalkSummary(ref);
+    try {
+      await sendToMakers({
+        text: message || PICTURES_FOR_THE_MAKERS,
+        summary: makersSummary(message, kept?.summary),
+        screen: scope.screen?.name ?? 'Reader',
+        reference: scopeTitle(scope),
+        facts: scope.screen?.facts,
+        pictures,
+      });
+    } catch (err) {
+      throw new Error(failureLine(err));
+    }
+  };
   const ask = (question: string): void => {
     if (question === SEND_A_SCREENSHOT) openPicker();
     else if (question.trim() && !busy) onSay(question.trim());
@@ -917,6 +938,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
               </p>
             ) : null}
             <LengthNote id={countId} text={text} max={MAX_TALK_CHARS} what="question" />
+            <SendToMakers action={makers} host={composer} onLeave={onClose} />
             {/* The kit's Composer, as Ask the tutor draws it: Hold to talk (or Tap to talk, Settings > Talk), Type a message, Attach a picture, Take a photo. Anything playing aloud is paused
                 while he holds (src/speech/askTranscriber.ts), and an answer that arrives meanwhile waits (src/talk/holding.ts). A question over the cap is kept, not sent (sendBlocked). */}
             <Composer
@@ -934,7 +956,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
               disabled={busy}
               onHoldStart={holdBegan}
               onHoldEnd={holdEnded}
-              onSend={sendMessage}
+              onSend={(message) => makers.dispatch(message, sendToTheMakers, sendMessage)}
             />
           </div>
         </div>
