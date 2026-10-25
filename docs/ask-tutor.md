@@ -356,16 +356,16 @@ PROVISIONAL). The forms that have the door, each with the command its Send runs 
 | Save as a list | the Share sheet, under Bible references (N) | `save-as-list` (`src/services/formCommands.ts` `saveAsListCommand(refs, names)`) | `saveListForm(names)` (`src/share/saveListForm.ts`; `SAVE_LIST_FORM` is it with no lists): `where` (a choice: `New list` and the names of his lists, read when the form opens), `name` (at most `LIST_NAME_MAX`, 60) |
 
 (A study resource is asked for as a book.) It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
-asks ONE question at a time in plain words (`What approach would you like to suggest, and how does it teach?`), he answers in the panel's field and
-`Reply`, and the matching field of the form fills and is ringed and scrolled into view, so he sees it fill. When the tutor asks for a photo the panel
-offers `Choose a photo` (the form's own file picker, opened in that tap) and `No photo`; a photo he adds meanwhile is told to the tutor. A **choice** field
+asks ONE question at a time in plain words (`What approach would you like to suggest, and how does it teach?`), he answers in the panel's Composer (voice-kit's, the one the Talk sheet and the Verse view's Ask use: the `Hold to answer` bar, `Type an answer`,
+`Attach a picture` and `Take a photo`) and `Reply`, and the matching field of the form fills and is ringed and scrolled into view, so he sees it fill. When the tutor asks for a photo the panel
+offers `No photo`, and a photo he attaches or takes in the Composer goes to the form as its own picker's would (`onPictures`: shrunk and listed in the form; a form with no pictures field refuses a picture with `This form has no place for a picture.`); a photo he adds meanwhile is told to the tutor. A **choice** field
 (Ask for a book's Kind of book) is not drawn in the panel: the tutor answers with one of its options exactly and the form's own select is set and ringed;
 an answer that is not one of the options fills nothing.
 
 **The Send rule.** The tutor never sends: Send is his. A form without a command says, when every required field holds something and the tutor has nothing
 more to ask, `Everything required is filled in` (and scrolls to its top to be read); he taps the form's own Send. A form with a command (`command` prop:
 the voice-kit `Command` its own Send runs) shows instead the command's offer line (`Send: Lenski, Romans, Grammar?`) and a **Send** button in the panel
-(the `Your answer` box stays, for the optional fields the tutor named). His tap on it runs `command.run(argsOf(form, values))`, the very call the sheet's own
+(the Composer stays, for the optional fields the tutor named). His tap on it runs `command.run(argsOf(form, values))`, the very call the sheet's own
 Send makes, so the refusal, the waiting and the sent line are the same from either and the sheet shows them (a refusal is also said in the panel).
 A tap is his yes: a share-like send gets a confirm first (tutor-drives Q2) and this is it. The panel offers Send only when the values pass the command's args
 schema (a title that is too long does not).

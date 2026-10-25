@@ -46,7 +46,6 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>({ name: 'editing' });
   const [filled, setFilled] = useState<string | null>(null);
-  const picker = useRef<HTMLInputElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const atTop = useRef(false);
   const { drag, handle } = useSheetDrag(onClose);
@@ -161,7 +160,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
             values={{ approach: text, pictures: pictures.length ? `${pictures.length} ${pictures.length === 1 ? 'picture' : 'pictures'} added` : '', credit: name, link }}
             onFill={fill}
             command={door}
-            onPicker={() => picker.current?.click()}
+            onPictures={(files) => void add(files)}
             onReady={() => {
               atTop.current = true;
               scroller.current?.scrollTo?.({ top: 0 });
@@ -199,7 +198,6 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
                     type="file"
                     accept="image/*"
                     multiple
-                    ref={picker}
                     disabled={busy}
                     className="sr-only"
                     onChange={(e) => {

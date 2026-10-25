@@ -18,13 +18,11 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const realSeam = { ...imageSeam };
 let fake: FakePostern;
-let clicks: ReturnType<typeof vi.spyOn> | undefined;
 
 afterAll(() => {
   cleanup();
   clearBus();
   Object.assign(imageSeam, realSeam);
-  clicks?.mockRestore();
   vi.unstubAllGlobals();
   db.close();
 });
@@ -62,8 +60,6 @@ async function openSheet(): Promise<void> {
   );
   imageSeam.decode = async () => ({ width: 4000, height: 3000, source: null });
   imageSeam.encode = async () => new Blob([new Uint8Array(120_000).fill(7)], { type: 'image/jpeg' });
-  clicks?.mockRestore();
-  clicks = vi.spyOn(HTMLInputElement.prototype, 'click');
   await db.open();
   await db.settings.clear();
   render(<SettingsScreen />);
@@ -129,7 +125,7 @@ const asks = async (_: unknown, question: string) => tutorAsks(question);
 const holds = async (_: unknown, label: string, value: string) => {
   await waitFor(() => expect(field(label)).toHaveValue(value));
 };
-const picker = () => within(sheet()).getByLabelText('Add a screenshot or photo');
+const panelPicker = () => helper().querySelector<HTMLInputElement>('input[type="file"]:not([capture])') as HTMLInputElement;
 
 describeFeature(feature, ({ Scenario }) => {
   Scenario('The tutor takes him through the Ask for another approach form, one question at a time', ({ Given, Then, When, And }) => {
@@ -161,15 +157,15 @@ describeFeature(feature, ({ Scenario }) => {
     And('a button {string} is offered', (_, name: string) => {
       expect(within(helper()).getByRole('button', { name })).toBeInTheDocument();
     });
-    When('he presses {string}', async (_, name: string) => {
+    And("the tutor's panel answers with the shared Composer's Attach a picture and Take a photo", () => {
+      expect(within(helper()).getByRole('button', { name: 'Attach a picture' })).toBeInTheDocument();
+      expect(within(helper()).getByRole('button', { name: 'Take a photo' })).toBeInTheDocument();
+      expect(within(helper()).queryByRole('button', { name: 'Choose a photo' })).not.toBeInTheDocument();
+    });
+    When("he attaches a photo in the tutor's panel and taps Reply", async () => {
       fake.autoReply = reply(Q_LINK, 'link');
-      await user.click(within(helper()).getByRole('button', { name }));
-    });
-    Then("the form's own picker opens", () => {
-      expect(clicks?.mock.contexts).toContain(picker());
-    });
-    When('he picks a photo', async () => {
-      await user.upload(picker(), new File([new Uint8Array(2_000_000)], 'shot.png', { type: 'image/png' }));
+      await user.upload(panelPicker(), new File([new Uint8Array(2_000_000)], 'shot.png', { type: 'image/png' }));
+      await user.click(within(helper()).getByRole('button', { name: 'Reply' }));
     });
     Then('one picture is listed in the form', async () => {
       await waitFor(() => expect(sheet().querySelectorAll('[data-picture]')).toHaveLength(1));

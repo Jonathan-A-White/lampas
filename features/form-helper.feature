@@ -1,6 +1,6 @@
 Feature: Let the tutor do it
   A form in Lampas can offer a button at its top, 'Let the tutor do it'. The tutor then takes him through the form one
-  question at a time in plain words, asks for a photo at the moment it is needed (the form's own picker), and after each answer the
+  question at a time in plain words, asks for a photo at the moment it is needed (he attaches or takes it in the panel's Composer, the one the Talk sheet uses, and the form lists it), and after each answer the
   matching field of the form fills, where he sees it. When every required field is filled the tutor says so; he reads the form, changes
   anything and taps Send himself: the tutor never sends. The first form to offer it is Ask for another approach. A form that has a command its own
   Send runs (Ask for another approach: ask-for-approach, Ask for a book: ask-for-book, Ask for more: ask-for-more) ends the panel with the command's offer line and a Send button; his tap on it runs the very command
@@ -18,10 +18,9 @@ Feature: Let the tutor do it
     When he then answers "Anna Example"
     Then the field "Who to credit" now holds "Anna Example"
     And the tutor next asks one question: "Do you have a screenshot or a photo of it?"
-    And a button "Choose a photo" is offered
-    When he presses "Choose a photo"
-    Then the form's own picker opens
-    When he picks a photo
+    And a button "No photo" is offered
+    And the tutor's panel answers with the shared Composer's Attach a picture and Take a photo
+    When he attaches a photo in the tutor's panel and taps Reply
     Then one picture is listed in the form
     And the tutor lastly asks one question: "Is there a link where it can be found?"
     When he finally answers "example.org/greek"

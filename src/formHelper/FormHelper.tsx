@@ -1,16 +1,22 @@
 // src/formHelper/FormHelper.tsx — 'Let the tutor do it' (mw-5r3p30.117, docs/ask-tutor.md): one button at the top of a form and, once tapped, a panel where the
-// tutor asks ONE question at a time in plain words, asks for a photo at the moment it is needed (the form's own picker) and, after each answer, fills the matching
+// tutor asks ONE question at a time in plain words, asks for a photo at the moment it is needed and, after each answer, fills the matching
 // field of the form, which he sees filled (a choice field too: the tutor answers with one of its options and onFill sets the form's own select). The tutor never
 // sends: Send is his. A form with a `command` (the Command its own Send runs, voice-kit's formCommand) ends the panel with that command's offer line and a Send button
-// that runs it with the form's values; without one the panel says to tap the form's Send. A form adds it with one element:
-//   <FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => open the picker} command={COMMAND} />
+// that runs it with the form's values; without one the panel says to tap the form's Send. He answers in voice-kit's Composer, the one the Talk sheet and the Verse
+// view's Ask use (Hold to answer, Type an answer, Attach a picture, Take a photo; mw-5r3p30.761): the pictures in a Reply go to the form as Files (`onPictures`, the same
+// call the form's own picker makes), and a form with no `onPictures` has no place for one, so the Composer refuses it. A form adds it with one element:
+//   <FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPictures={(files) => add the pictures} command={COMMAND} />
 // The tutor is the bible-talk grind (src/services/talk.ts) in a talk from a screen named for the form, with `form` in the request.
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Composer, type ComposerLabels, type ComposerMessage } from 'voice-kit/composer';
 import { checkArgs, type Command } from 'voice-kit/talks';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askTalk, MAX_HISTORY_TURNS, type TalkHistoryEntry } from '../services/talk';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from '../services/tutor';
 import { currentSettings } from '../settings/registry';
+import { askTranscriber } from '../speech/askTranscriber';
+import { tapWord, useTalkSettings } from '../talkSettings';
+import { refuseNonPicture } from '../talk/pictures';
 import { START_LABEL } from './startLabel';
 import { applyFormValues, argsOf, buildFormRequest, FORM_START, oneQuestion, requiredFilled, type FormArgs, type FormSpec } from './formHelper';
 
@@ -20,6 +26,21 @@ export const NO_PHOTO = 'I have no photo.';
 export const ADDED_PHOTO = 'I added a photo.';
 export const READY_LINE = 'Everything required is filled in. Read the form, change anything you like, then tap Send yourself.';
 
+/** The Composer's words for answering the tutor. */
+const ANSWER_LABELS: Partial<ComposerLabels> = {
+  hold: 'Hold to answer', // tapWord makes it Tap to answer while Talk is Tap
+  typeInstead: 'Type an answer',
+  placeholder: 'Your answer',
+  message: 'Your answer',
+  speak: 'Answer by speaking',
+  send: 'Reply',
+  attach: 'Attach a picture',
+  camera: 'Take a photo',
+  toSend: 'Pictures to send',
+};
+/** Said, in the Composer's own line, when he adds a picture to a form that has no place for one. */
+export const NO_PLACE_FOR_PICTURE = 'This form has no place for a picture.';
+
 type Phase = { name: 'idle' } | { name: 'sending' } | { name: 'failed'; failure: TutorFailure; detail: string };
 
 export interface FormHelperProps {
@@ -28,8 +49,8 @@ export interface FormHelperProps {
   values: Record<string, string>;
   /** puts the tutor's value in the field (the form does the setting and shows it) */
   onFill: (field: string, value: string) => void;
-  /** opens the form's own picker for the pictures field; called in the tap that asks for it, so the phone allows it */
-  onPicker?: (field: string) => void;
+  /** the pictures he attached or took in the Composer, as Files: the form adds them as its own picker's would (shrinks them, lists them). A form without it has no place for a picture. */
+  onPictures?: (files: File[]) => void;
   /** called when the tutor has nothing more to ask and every required field holds something: the form may bring its top into view to be read */
   onReady?: () => void;
   /** the command the form's own Send runs: when the tutor has nothing more to ask and every required field holds something, the panel shows its offer line and a Send button that runs it */
@@ -38,17 +59,16 @@ export interface FormHelperProps {
   commandArgs?: FormArgs;
 }
 
-export function FormHelper({ form, values, onFill, onPicker, onReady, command, commandArgs }: FormHelperProps) {
+export function FormHelper({ form, values, onFill, onPictures, onReady, command, commandArgs }: FormHelperProps) {
   const [open, setOpen] = useState(false);
   const [say, setSay] = useState('');
   const [ask, setAsk] = useState<string | undefined>(undefined);
   const [phase, setPhase] = useState<Phase>({ name: 'idle' });
-  const [typed, setTyped] = useState('');
   const [running, setRunning] = useState(false);
   /** what the last Send said, and the values it sent (the line goes when he changes them) */
   const [done, setDone] = useState<{ said: string; of: string } | null>(null);
   const [sendProblem, setSendProblem] = useState<string | null>(null);
-  const answerId = useId();
+  const talkSettings = useTalkSettings();
   const turns = useRef<TalkHistoryEntry[]>([]);
   const latest = useRef({ form, values, onFill, onReady, command, commandArgs });
   const live = useRef<AbortController>(new AbortController());
@@ -124,7 +144,6 @@ export function FormHelper({ form, values, onFill, onPicker, onReady, command, c
     setSendProblem(null);
     setSay('');
     setAsk(undefined);
-    setTyped('');
     setOpen(true);
     void send(FORM_START);
   }
@@ -137,11 +156,16 @@ export function FormHelper({ form, values, onFill, onPicker, onReady, command, c
     setPhase({ name: 'idle' });
   }
 
-  function reply(): void {
-    const text = typed.trim();
-    if (!text || phase.name === 'sending') return;
-    setTyped('');
-    void send(text);
+  /** The Composer's Reply: the pictures go to the form first (the form lists them, and a picture added while the tutor asks for one is told to the tutor at once), then the words go to the tutor. */
+  function reply({ text, files }: ComposerMessage): boolean {
+    if (phase.name === 'sending') return false;
+    const words = text.trim();
+    if (files.length > 0) {
+      if (!onPictures) throw new Error(NO_PLACE_FOR_PICTURE);
+      onPictures(files.map((f) => new File([f.bytes as BlobPart], f.name, { type: f.type })));
+    }
+    if (words) void send(words);
+    return true;
   }
 
   if (!open) {
@@ -203,32 +227,22 @@ export function FormHelper({ form, values, onFill, onPicker, onReady, command, c
         </p>
       ) : null}
       {pictureField && !sending ? (
-        <div className="flex gap-2">
-          <button type="button" onClick={() => onPicker?.(pictureField.name)} className="min-h-12 flex-1 rounded-xl bg-accent px-4 text-base font-medium text-accent-fg">
-            Choose a photo
-          </button>
-          <button type="button" onClick={() => void send(NO_PHOTO)} className="min-h-12 flex-1 rounded-xl border border-line px-4 text-base font-medium">
-            No photo
-          </button>
-        </div>
+        <button type="button" onClick={() => void send(NO_PHOTO)} className="min-h-12 w-full rounded-xl border border-line px-4 text-base font-medium">
+          No photo
+        </button>
       ) : null}
       {!ready || sending || command ? (
-        <div className="space-y-2">
-          <label htmlFor={answerId} className="block text-base font-medium">
-            Your answer
-          </label>
-          <textarea
-            id={answerId}
-            rows={2}
-            value={typed}
-            disabled={sending}
-            onChange={(e) => setTyped(e.target.value)}
-            className="block w-full resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-lg text-fg disabled:opacity-60"
-          />
-          <button type="button" disabled={sending || typed.trim() === ''} onClick={reply} className="min-h-12 w-full rounded-xl border border-line px-4 text-base font-medium disabled:opacity-40">
-            Reply
-          </button>
-        </div>
+        <Composer
+          mode="speak"
+          settings={{ ...talkSettings, attach: true, camera: true }}
+          refuseFile={(file) => (onPictures ? refuseNonPicture(file) : NO_PLACE_FOR_PICTURE)}
+          transcriber={askTranscriber}
+          lang="en-US"
+          appName="Lampas"
+          labels={{ ...ANSWER_LABELS, hold: tapWord('Hold to answer', talkSettings.talk) }}
+          disabled={sending}
+          onSend={reply}
+        />
       ) : null}
       <button type="button" onClick={stop} className="min-h-12 w-full rounded-xl px-4 text-base font-medium text-accent">
         Stop helping

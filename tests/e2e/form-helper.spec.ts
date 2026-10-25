@@ -1,12 +1,20 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 import { START_LABEL } from '../../src/formHelper/startLabel';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 // 412 px: the width the Governor asked the pictures at (mw-5r3p30.117).
 const PHONE = { width: 412, height: 915 };
+
+/** He types his answer: the Composer shows the hold-to-talk bar first, and Type an answer brings the box out (it stays out after a Reply, or comes back with the bar: either way, ask for it only if it is not there). */
+async function typeAnswer(helper: Locator, text: string): Promise<void> {
+  const box = helper.getByRole('textbox', { name: 'Your answer' });
+  if (!(await box.isVisible())) await helper.getByRole('button', { name: 'Type an answer' }).click();
+  await box.fill(text);
+}
 
 const answered = (answer: string, ask?: string, values: { field: string; value: string }[] = []) => ({
   status: 'answered' as const,
@@ -45,40 +53,40 @@ test(`${START_LABEL} at phone width: the button, a question with a field filling
 
   // he answers; the tutor's next question shows with the approach field filled and in view beneath it
   fake.autoReply = answered('Who made this approach, so we can credit them?', 'credit', [{ field: 'approach', value: 'Teach the cases with colours, one case at a time.' }]);
-  await helper.getByLabel('Your answer').fill('I want the cases taught with colours, one case at a time.');
+  await typeAnswer(helper, 'I want the cases taught with colours, one case at a time.');
   await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(helper.getByText('Who made this approach, so we can credit them?')).toBeVisible();
   await expect(text).toHaveValue('Teach the cases with colours, one case at a time.');
   await expect(text).toBeInViewport();
   await shot(page, 'form-helper-filling');
 
-  // the photo question offers the form's own picker
+  // the photo question: the panel's Composer takes the photo (Attach a picture opens the phone's chooser), and No photo answers without one
   fake.autoReply = answered('Do you have a screenshot or a photo of it?', 'pictures', [{ field: 'credit', value: 'Anna Example' }]);
-  await helper.getByLabel('Your answer').fill('Anna Example');
+  await typeAnswer(helper, 'Anna Example');
   await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(name).toHaveValue('Anna Example');
   const chooser = page.waitForEvent('filechooser');
-  await helper.getByRole('button', { name: 'Choose a photo' }).click();
+  await helper.getByRole('button', { name: 'Attach a picture' }).click();
   expect((await chooser).isMultiple()).toBe(true);
   fake.autoReply = answered('Is there a link where it can be found?', 'link');
   await helper.getByRole('button', { name: 'No photo' }).click();
   await expect(helper.getByText('Is there a link where it can be found?')).toBeVisible();
 
   fake.autoReply = answered('That is everything I need: every required field is filled in.', undefined, [{ field: 'link', value: 'example.org/greek' }]);
-  await helper.getByLabel('Your answer').fill('example.org/greek');
+  await typeAnswer(helper, 'example.org/greek');
   await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(link).toHaveValue('example.org/greek');
   // the approach form has a command (ask-for-approach): the panel ends with its offer line and a Send, and the sheet's own Send stays below
   await expect(helper.getByText('Send this approach, credit Anna Example?')).toBeVisible();
   await expect(send.last()).toBeEnabled();
 
-  // every control of the panel clears 48 px and fits the phone; nothing was sent
-  for (const control of await helper.getByRole('button').all()) {
+  // every control of the panel's own (the Composer's buttons are the kit's, sized by --lp-tap) clears 48 px and fits the phone; nothing was sent
+  for (const control of await helper.locator('button:not([data-testid="composer"] button)').all()) {
     const box = await control.boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(47.5);
     expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(PHONE.width);
   }
-  expect(await helper.getByLabel('Your answer').count()).toBe(1);
+  expect(await helper.getByTestId('composer').count()).toBe(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
   expect(fake.received.filter((r) => r.grist.kind === 'feedback')).toHaveLength(0);
   await shot(page, 'form-helper-finished');
@@ -108,19 +116,19 @@ test('The door on Ask for a book at phone width: the panel, the choice filling t
   const title = sheet.getByRole('textbox', { name: 'Book title' });
   const kind = sheet.getByRole('combobox', { name: 'Kind of book' });
   fake.autoReply = answered('That is everything I need. Tell me the kind of book or why it would help, or tap Send.', undefined, [{ field: 'title', value: 'Lenski, Romans' }]);
-  await helper.getByLabel('Your answer').fill('Lenski, Romans');
+  await typeAnswer(helper, 'Lenski, Romans');
   await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(title).toHaveValue('Lenski, Romans');
   await expect(helper.getByText('Send: Lenski, Romans?')).toBeVisible();
 
   fake.autoReply = answered('Anything else you want to add?', undefined, [{ field: 'kind', value: 'Commentary' }]);
-  await helper.getByLabel('Your answer').fill('It is a commentary.');
+  await typeAnswer(helper, 'It is a commentary.');
   await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(kind).toHaveValue('commentary');
   await expect(helper.getByText('Send: Lenski, Romans, Commentary?')).toBeVisible();
 
-  // every control of the panel clears 48 px and fits the phone; the sheet stays inside it; nothing was sent
-  for (const control of await helper.getByRole('button').all()) {
+  // every control of the panel's own (the Composer's buttons are the kit's, sized by --lp-tap) clears 48 px and fits the phone; the sheet stays inside it; nothing was sent
+  for (const control of await helper.locator('button:not([data-testid="composer"] button)').all()) {
     const box = await control.boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(47.5);
     expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(PHONE.width);
@@ -135,4 +143,44 @@ test('The door on Ask for a book at phone width: the panel, the choice filling t
   await expect(sheet.getByText('Sent: the factory has it')).toBeVisible();
   expect(fake.received.filter((r) => r.grist.kind === 'feedback')[0].input).toMatchObject({ kind: 'book', title: 'Lenski, Romans', kindWanted: 'commentary' });
   await shot(page, 'form-helper-book-sent');
+});
+
+test('Let the tutor do it on Ask for a book at 390x844: the hold-to-talk bar, Take a photo and Attach a picture, and typing', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = answered('Which book would you like to ask the makers for?', 'title');
+  await routePostern(page, fake);
+  await honestMic(page);
+  await openUnlocked(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/#/library');
+  await page.getByRole('button', { name: 'Ask for a book' }).click();
+
+  const sheet = page.getByRole('dialog', { name: 'Ask for a book' });
+  await sheet.getByRole('button', { name: START_LABEL }).click();
+  const helper = sheet.getByRole('region', { name: 'The tutor is helping with this form' });
+  await expect(helper.getByText('Which book would you like to ask the makers for?')).toBeVisible();
+
+  const bar = helper.getByRole('button', { name: /^(Hold|Tap) to answer/ });
+  const attach = helper.getByRole('button', { name: 'Attach a picture' });
+  const camera = helper.getByRole('button', { name: 'Take a photo' });
+  await expect(bar).toBeVisible();
+  await expect(attach).toBeVisible();
+  await expect(camera).toBeVisible();
+  // all three are inside the phone, inside the panel, and the bar is a big target
+  for (const control of [bar, attach, camera]) {
+    const box = await control.boundingBox();
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+    expect(await control.evaluate((el) => el.getBoundingClientRect().bottom <= (el.closest('[role="region"]')?.getBoundingClientRect().bottom ?? 0) + 0.5)).toBe(true);
+  }
+  expect((await bar.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  expect(await helper.locator('textarea').count()).toBeLessThanOrEqual(1);
+  await shot(page, 'form-helper-composer');
+
+  // he can still type: Type an answer brings out the box, and Reply tells the tutor
+  fake.autoReply = answered('That is everything I need.', undefined, [{ field: 'title', value: 'Lenski, Romans' }]);
+  await helper.getByRole('button', { name: 'Type an answer' }).click();
+  await helper.getByRole('textbox', { name: 'Your answer' }).fill('Lenski, Romans');
+  await helper.getByRole('button', { name: 'Reply', exact: true }).click();
+  await expect(sheet.getByRole('textbox', { name: 'Book title' })).toHaveValue('Lenski, Romans');
 });
