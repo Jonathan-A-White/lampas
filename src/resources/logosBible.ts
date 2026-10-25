@@ -1,6 +1,7 @@
 // src/resources/logosBible.ts — an Old Testament chapter in Logos, in the Bible he chose (Settings > Bible in Logos). Lampas has no Old Testament
 // text, so the chapter picker opens the chapter in his own Logos library: the Logos app's own scheme first (`logosres:<Bible>;ref=Bible.<book><chapter>`),
 // with the https ref.ly address as the fallback, opened only when the phone cannot open the scheme (openApp.ts armFallback). docs/resources.md has the sources.
+import { CANON } from '../data/canon';
 import { otBookOf } from '../data/otBooks';
 import { entriesOf } from './catalogue';
 import { resourceLink } from './logosRes';
@@ -33,11 +34,8 @@ export function chapterLink(code: string, chapter: number, resourceId: string): 
 }
 
 /** The New Testament books' abbreviations in a Logos reference (Logos' own list, https://www.logos.com/bible-book-abbreviations, written like the Old Testament's in
- *  data/otBooks.ts; UNVERIFIED on a device, docs/resources.md), by our book code. */
-const NT_LOGOS: Readonly<Record<string, string>> = {
-  mat: 'Mt', mrk: 'Mk', luk: 'Lk', jhn: 'Jn', act: 'Ac', rom: 'Ro', '1co': '1Co', '2co': '2Co', gal: 'Ga', eph: 'Eph', php: 'Php', col: 'Col', '1th': '1Th', '2th': '2Th',
-  '1ti': '1Ti', '2ti': '2Ti', tit: 'Tit', phm: 'Phm', heb: 'Heb', jas: 'Jas', '1pe': '1Pe', '2pe': '2Pe', '1jn': '1Jn', '2jn': '2Jn', '3jn': '3Jn', jud: 'Jud', rev: 'Re',
-};
+ *  data/otBooks.ts; UNVERIFIED on a device, docs/resources.md), by our book code: the canon's (data/canon.ts). */
+const NT_LOGOS: Readonly<Record<string, string>> = Object.fromEntries(CANON.filter((b) => b.lang === 'grc').map((b) => [b.code, b.logos]));
 
 /** The link that opens a chapter, or one verse of it, of any book of the Bible (the 27 above, the 39 of data/otBooks.ts) in the Bible `resourceId` in Logos (the
  *  chapter link's form, `Bible.Ro8.31`); undefined for a book that is in neither list or a chapter or verse below 1. The tutor's verse links use it

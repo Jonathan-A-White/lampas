@@ -1,5 +1,6 @@
-// src/data/otBooks.ts — the 39 books of the Old Testament in canon order. Lampas holds no Old Testament text (public/data is the New Testament
-// only, tests/unit/books.test.ts), so this is a list for the chapter picker: each book opens in Logos (src/resources/logosBible.ts). `code` is
+// src/data/otBooks.ts — the 39 books of the Old Testament in canon order. The Old Testament's text is in public/data (docs/data.md 'The Old Testament data',
+// built by scripts/data-build-ot.ts) but no screen reads it yet, so this is still a list for the chapter picker: each book opens in Logos (src/resources/logosBible.ts);
+// canon.ts (the 66 books) is built from it and mw-uqlxea.2 folds it in. `code` is
 // ours (three letters, never one of data/books.ts); `logos` is the book's abbreviation in a Logos reference, taken from Logos' own list
 // (https://www.logos.com/bible-book-abbreviations, docs/resources.md); `chapters` is the Protestant chapter count, the one Logos' Bibles use.
 export interface OtBook {

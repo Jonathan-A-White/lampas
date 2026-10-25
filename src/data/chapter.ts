@@ -1,8 +1,17 @@
-// One chapter of the Greek New Testament as public/data/<book>/<chapter>.json holds it (docs/data.md).
-// Screens read a chapter through loadChapter and the word helpers below, never through the short keys.
+// One chapter of the Bible as public/data/<book>/<chapter>.json holds it (docs/data.md): the Greek New Testament, and the Old Testament
+// with its Hebrew words kept. A chapter says its source language (`lang`) and its translation (`translation`); the word and chunk keys
+// are the same for every source language. Screens read a chapter through loadChapter and the word helpers below, never through the short keys.
 
-import { BOOK_INDEX } from './bookIndex';
+import { CANON_INDEX, greekBooks } from './bookIndex';
 
+/** The language a chapter's words are in: Koine Greek ('grc') or Biblical Hebrew ('hbo', whose Aramaic verses are words of the same chapter). */
+export type SourceLanguage = 'grc' | 'hbo';
+
+/**
+ * A word of the source text. The name is the Greek one it was born with; the same keys hold a Hebrew word (docs/data.md has each key's meaning for it).
+ * For a Hebrew word: `t` is the pointed word as the table's WLC column has it, `tr` the table's transliteration, `s` the Strong's number with
+ * no padding ('H7225'; '' where the table gives none), `l` the TBESH headword, `p` the table's short parsing code ('V-Qal-Perf-3ms').
+ */
 export interface GreekWord {
   /** the word as the Byzantine text has it */
   t: string;
@@ -129,6 +138,10 @@ export interface Chapter {
   book: string;
   code: string;
   chapter: number;
+  /** the language the words of `verses` are in; absent means 'grc': the New Testament's files carry neither this nor `translation`, and loadChapter fills them (sourceLanguage reads it) */
+  lang?: SourceLanguage;
+  /** the translation the English chunks are from: 'msb', the Majority Standard Bible (its Old Testament is the Berean Standard Bible's); absent means 'msb' */
+  translation?: string;
   /** every Strong's number used in this file -> its gloss and definition, once */
   lex: Record<string, LexEntry>;
   /** every parsing code used in this file -> plain words, once */
@@ -137,7 +150,13 @@ export interface Chapter {
 }
 
 /** A chapter with no text: the stand-in where a talk is about a screen, not a text (src/tutor/screen.ts), or a word is added with no chapter open. */
-export const NO_CHAPTER: Chapter = { book: '', code: '', chapter: 0, lex: {}, parse: {}, verses: [] };
+export const NO_CHAPTER: Chapter = { book: '', code: '', chapter: 0, lang: 'grc', translation: 'msb', lex: {}, parse: {}, verses: [] };
+
+/** The language a chapter's words are in: 'grc' for a chapter that does not say. */
+export const sourceLanguage = (chapter: Pick<Chapter, 'lang'>): SourceLanguage => chapter.lang ?? 'grc';
+
+/** A chapter as its file has it, with the language and translation an older file leaves out filled in ('grc', 'msb'), so a chapter kept on a phone still reads. */
+export const fillChapter = (file: Chapter): Chapter => ({ ...file, lang: file.lang ?? 'grc', translation: file.translation ?? 'msb' });
 
 export interface BookInfo {
   code: string;
@@ -148,6 +167,8 @@ export interface BookInfo {
   /** each chapter's fingerprint, in order: the first 12 hex of the SHA-256 of its file ('' for a chapter a test slice lacks). The app asks for
    * /data/<book>/<n>.json?v=<fingerprint>, so the phone keeps a chapter until its data changes (mw-5r3p30.276) */
   fingerprints: string[];
+  /** the language the book is read in; absent in an index from before the Old Testament means 'grc' */
+  lang?: SourceLanguage;
 }
 
 export interface BookIndex {
@@ -164,7 +185,7 @@ const chapters = new Map<string, Promise<Chapter>>();
  * The worker keeps a chapter under that address until its fingerprint changes (src/dataCache.ts), so an unchanged chapter is never fetched
  * again. A chapter the index has no fingerprint for is asked for plain. */
 export function chapterUrl(book: string, n: number): string {
-  const fingerprint = BOOK_INDEX.books.find((b) => b.code === book)?.fingerprints[n - 1];
+  const fingerprint = CANON_INDEX.books.find((b) => b.code === book)?.fingerprints[n - 1];
   return `/data/${book}/${n}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
 }
 
@@ -175,7 +196,7 @@ export function loadChapter(book: string, n: number): Promise<Chapter> {
   if (known) return known;
   const request = fetch(chapterUrl(book, n)).then(async (response) => {
     if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
-    return (await response.json()) as Chapter;
+    return fillChapter((await response.json()) as Chapter);
   });
   chapters.set(key, request);
   // A failure is not kept: the next call asks again.
@@ -187,8 +208,8 @@ export function loadChapter(book: string, n: number): Promise<Chapter> {
 
 let index: Promise<BookIndex> | null = null;
 
-/** Fetches /data/index.json (precached) once: the books and how many chapters each has. A failure is not kept. */
-export function loadIndex(): Promise<BookIndex> {
+/** Fetches /data/index.json (precached) once: the 66 books of the canon and how many chapters each has. A failure is not kept. */
+export function loadCanonIndex(): Promise<BookIndex> {
   if (index) return index;
   const request = fetch('/data/index.json').then(async (response) => {
     if (!response.ok) throw new Error(`Could not load the book index: ${response.status}`);
@@ -200,6 +221,9 @@ export function loadIndex(): Promise<BookIndex> {
   });
   return request;
 }
+
+/** The books of the New Testament and how many chapters each has, from the same file: what the pickers and goals read until the Old Testament opens (mw-uqlxea.2). */
+export const loadIndex = (): Promise<BookIndex> => loadCanonIndex().then(greekBooks);
 
 /** Drops every chapter and the index held in memory (tests). */
 export function forgetChapters(): void {

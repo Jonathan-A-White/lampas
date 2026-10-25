@@ -29,7 +29,7 @@ const markWord = (abbreviation: string): string => MARKS[abbreviation.toLowerCas
 const senseKey = (sense: string): string => sense.toLowerCase().replace(/^(?:to|be|a|an|the)\s+/, '');
 
 /** 'spirit/breath: spirit' is 'spirit, breath'; 'to keep: observe' is 'to keep, observe': the range's senses, then the chosen one when the range lacks it. */
-function rangeAndChosen(range: string, chosen: string): string {
+export function rangeAndChosen(range: string, chosen: string): string {
   const senses: string[] = [];
   for (const sense of [...range.split('/'), ...chosen.split('/')].map((s) => s.trim()).filter(Boolean)) {
     if (!senses.some((kept) => senseKey(kept) === senseKey(sense))) senses.push(sense);
