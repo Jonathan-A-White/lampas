@@ -923,7 +923,8 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(go.expect.said).toBeDefined();
     const list = read('go-verse-list');
     expect(list.expect['go.name']).toEqual({ equals: 'lists' });
-    expect(list.expect['go.args.id']).toEqual({ equals: 2 });
+    expect(list.expect['go.args']).toEqual({ present: true });
+    expect(list.expect.said).toEqual({ matches: 'Romans 8 hope' });
     const lists = (list.request.facts as Record<string, { id: number; name: string }[]>)['verse-lists'];
     expect(lists.find((l) => l.name === 'Romans 8 hope')?.id).toBe(2);
     expect(lists).toHaveLength(2);

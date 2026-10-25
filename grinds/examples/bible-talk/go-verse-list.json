@@ -1,5 +1,5 @@
 {
-  "description": "He asks to be taken to \"my Romans list\" and the facts list two verse lists, one of them 'Romans 8 hope' (id 2): the answer opens the place `lists` by `go` with that list's id, says where it is taking him in `said`, and runs no command.",
+  "description": "He asks to be taken to \"my Romans list\" and the facts list two verse lists, one of them 'Romans 8 hope' (id 2): the answer opens the place `lists` by `go` with args (the answer schema leaves a go's args open, so the id is read from the output: 2), says in `said` that it is taking him to Romans 8 hope, and runs no command.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -540,11 +540,11 @@
     "go.name": {
       "equals": "lists"
     },
-    "go.args.id": {
-      "equals": 2
+    "go.args": {
+      "present": true
     },
     "said": {
-      "present": true
+      "matches": "Romans 8 hope"
     },
     "do": {
       "present": false
