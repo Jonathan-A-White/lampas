@@ -25,7 +25,7 @@ Feature: The Verse view
   Scenario: One row of actions and exactly one control at the foot, and no Talk bar
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Copy link"
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Diagram" and "Copy link"
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
     And the Reader's Talk bar is not on screen
 

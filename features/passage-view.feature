@@ -31,7 +31,7 @@ Feature: A section heading opens the Verse view for its passage
   Scenario: The passage has the same one row of actions and exactly one control at the foot
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Copy link"
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Diagram" and "Copy link"
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
 
   Scenario: Listen reads the whole passage aloud to its end by itself
