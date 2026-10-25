@@ -59,8 +59,9 @@ describe('the place lists', () => {
     expect(await registry.open('lists', { id: romans.id })).toEqual({ ok: true });
     expect(window.location.hash).toBe(`#/lists/${romans.id}`);
     expect(window.history.state).toEqual({ tutorGo: true });
+    const timeout = ASYNC_WAIT_MS;
     window.history.back();
-    await vi.waitFor(() => expect(window.location.hash).toBe('#/words'), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(() => expect(window.location.hash).toBe('#/words'), { timeout });
   });
 
   it('with no id opens the Verse lists screen, as a tutor go', async () => {
