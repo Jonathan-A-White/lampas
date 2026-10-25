@@ -1,0 +1,69 @@
+{
+  "description": "He asked the tutor to do the empty Ask for a book form with him: the first reply is ONE short question on one line, about the title (the one required field), and nothing is filled yet.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Ask for a book",
+    "question": "Help me fill this in.",
+    "history": [],
+    "solid_words": [],
+    "settings": {},
+    "screen": {
+      "name": "Ask for a book",
+      "facts": []
+    },
+    "form": {
+      "name": "Ask for a book",
+      "command": "ask-for-book",
+      "fields": [
+        {
+          "name": "title",
+          "label": "Which book?",
+          "hint": "The title, and its author if you know it",
+          "required": true,
+          "kind": "text",
+          "value": ""
+        },
+        {
+          "name": "kind",
+          "label": "Kind of book",
+          "required": false,
+          "kind": "choice",
+          "value": "",
+          "options": [
+            "Lexicon",
+            "Grammar",
+            "Greek text",
+            "Interlinear",
+            "Commentary",
+            "Bible",
+            "Devotional"
+          ]
+        },
+        {
+          "name": "why",
+          "label": "Why would it help?",
+          "required": false,
+          "kind": "text",
+          "value": ""
+        }
+      ]
+    }
+  },
+  "expect": {
+    "words": {
+      "equals": []
+    },
+    "answer": {
+      "matches": "^[^\\n]{10,200}\\?$"
+    },
+    "form_ask": {
+      "equals": "title"
+    },
+    "form_values": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

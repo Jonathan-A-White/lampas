@@ -1,0 +1,78 @@
+{
+  "description": "The title is held and the tutor said the form is ready, naming the kind and the reason as things he may add; he says it is a grammar: the tutor puts Grammar (one of the options, exactly) in the kind field, asks nothing more and never sends.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Ask for a book",
+    "question": "It is a grammar.",
+    "history": [
+      {
+        "q": "Help me fill this in.",
+        "a": "Which book would you like to ask for?"
+      },
+      {
+        "q": "Mounce, Basics of Biblical Greek",
+        "a": "That is everything I need. You can tell me the kind of book or why it would help, or read it and tap Send yourself."
+      }
+    ],
+    "solid_words": [],
+    "settings": {},
+    "screen": {
+      "name": "Ask for a book",
+      "facts": []
+    },
+    "form": {
+      "name": "Ask for a book",
+      "command": "ask-for-book",
+      "fields": [
+        {
+          "name": "title",
+          "label": "Which book?",
+          "hint": "The title, and its author if you know it",
+          "required": true,
+          "kind": "text",
+          "value": "Mounce, Basics of Biblical Greek"
+        },
+        {
+          "name": "kind",
+          "label": "Kind of book",
+          "required": false,
+          "kind": "choice",
+          "value": "",
+          "options": [
+            "Lexicon",
+            "Grammar",
+            "Greek text",
+            "Interlinear",
+            "Commentary",
+            "Bible",
+            "Devotional"
+          ]
+        },
+        {
+          "name": "why",
+          "label": "Why would it help?",
+          "required": false,
+          "kind": "text",
+          "value": ""
+        }
+      ]
+    }
+  },
+  "expect": {
+    "words": {
+      "equals": []
+    },
+    "form_values.0.field": {
+      "equals": "kind"
+    },
+    "form_values.0.value": {
+      "equals": "Grammar"
+    },
+    "form_ask": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

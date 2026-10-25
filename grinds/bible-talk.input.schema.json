@@ -271,12 +271,13 @@
       }
     },
     "form": {
-      "description": "Optional. Present while he is being helped to fill in a form of the app (the button 'Let the tutor help me fill this in'): the form's name and its fields in screen order, each with the name you answer with, the label he sees, the hint under it if any, whether it is required, its kind and what it holds now ('' when empty; for pictures, how many he has added). `screen` is also present, with the form's name and no facts; `greek` and `english` are missing.",
+      "description": "Optional. Present while he is being helped to fill in a form of the app (the button 'Let the tutor do it'): the form's name and its fields in screen order, each with the name you answer with, the label he sees, the hint under it if any, whether it is required, its kind and what it holds now ('' when empty; for pictures, how many he has added). `screen` is also present, with the form's name and no facts; `greek` and `english` are missing.",
       "type": "object",
       "additionalProperties": false,
       "required": ["name", "fields"],
       "properties": {
         "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "command": { "description": "Optional. The name of the command the form's Send runs. When present, the app shows a Send button (his to tap) once every required field holds something.", "type": "string", "minLength": 1, "maxLength": 40 },
         "fields": {
           "type": "array",
           "maxItems": 8,
@@ -289,7 +290,8 @@
               "label": { "description": "What the form calls the field on screen.", "type": "string", "minLength": 1, "maxLength": 80 },
               "hint": { "description": "The line under the field, when the form has one.", "type": "string", "minLength": 1, "maxLength": 120 },
               "required": { "description": "Whether the form cannot be sent without it.", "type": "boolean" },
-              "kind": { "description": "text: any words; link: a web address; pictures: screenshots or photos, which only he can add (you cannot fill them).", "type": "string", "enum": ["text", "link", "pictures"] },
+              "kind": { "description": "text: any words; link: a web address; choice: one of its `options`; pictures: screenshots or photos, which only he can add (you cannot fill them).", "type": "string", "enum": ["text", "link", "choice", "pictures"] },
+              "options": { "description": "A choice's options: answer with one of them exactly as written.", "type": "array", "minItems": 1, "maxItems": 12, "items": { "type": "string", "minLength": 1, "maxLength": 40 } },
               "value": { "description": "What the field holds now, cut at 600 characters; empty when nothing is in it. For pictures, a count such as '2 pictures added'.", "type": "string", "maxLength": 600 }
             }
           }

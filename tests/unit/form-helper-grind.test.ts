@@ -2,7 +2,9 @@
 // app: a grep proves each rule is named. The first reply for an empty form is also a grind scenario (grinds/examples/bible-talk/
 // form-approach-first-question.json) that `mw grist smoke lampas` runs against the live grist.
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { instructionsOf } from '../../scripts/grind-parts';
+import { validate, type Schema } from '../support/schema-validate';
 
 const text = instructionsOf('bible-talk');
 const section = (): string => {
@@ -55,4 +57,26 @@ describe('the form helper section of the instructions', () => {
   it('is listed in the contract with the request field', () => {
     expect(text).toMatch(/- `form`: present only while/);
   });
+});
+
+describe('the choice field and the Send button (mw-o7cts8.2)', () => {
+  it('teaches a choice answered with one of its options exactly, and a Send button the tutor never presses', () => {
+    const s = section();
+    expect(s).toContain('`choice`');
+    expect(s).toContain('`options`');
+    expect(s).toContain('exactly as written');
+    expect(s).toContain('`form.command`');
+    expect(s).toContain('send button');
+    expect(s).toContain('never send');
+  });
+
+  const input = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
+  for (const name of ['form-book-first-question', 'form-book-kind']) {
+    it(`${name}: the request fits the input schema and names the ask-for-book command and the kind's options`, () => {
+      const example = JSON.parse(readFileSync(`grinds/examples/bible-talk/${name}.json`, 'utf8')) as { request: { form: { command: string; fields: { name: string; kind: string; options?: string[] }[] } } };
+      expect(validate(example.request, input)).toEqual([]);
+      expect(example.request.form.command).toBe('ask-for-book');
+      expect(example.request.form.fields.find((f) => f.kind === 'choice')?.options).toContain('Grammar');
+    });
+  }
 });
