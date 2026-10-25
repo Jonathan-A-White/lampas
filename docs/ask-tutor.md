@@ -114,7 +114,7 @@ is cut, those after it are not read; the instructions' part `220-other-passages.
 supplied words marked; a passage over HELD_PASSAGES_BYTES 3000 keeps its first verses and its reference says which) and keeps them on the turn (`TalkTurn.fetched`,
 `keepFetched`); the turn draws one muted line under the answer, 'Tutor fetched Rev 2:8-11' (`fetchedLine`, `[data-talk-fetched]`), and nothing else on the sheet changes.
 Every later request of the talk carries `held_passages` (`heldPassagesOf`: the newest turn's first, each reference once, at most 8 and HELD_PASSAGES_BYTES in all; none in
-About); `fitHistory` drops the oldest of them before a verse of the talk's own text or a turn. New talk forgets them with the turns. Checks: tests/unit/talk-fetch.test.ts,
+About); `fitHistory` drops the oldest of them before a verse of the talk's own text or a turn. New talk forgets them with the turns. The instructions' part 220 says a passage already in `held_passages` or `verses` is never fetched again, only verses held in neither (mw-shkz42: the smoke example held-passage-answers-from-it once fetched Revelation 2:8-11 again). Checks: tests/unit/talk-fetch.test.ts,
 features/bible-talk.feature (the Revelation 2:8-11 scenario), grinds/examples/bible-talk/fetch-where-the-talk-heads.json and held-passage-answers-from-it.json.
 
 ## A talk names itself to the mill
