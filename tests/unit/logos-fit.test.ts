@@ -63,6 +63,16 @@ describe('logos:fit', () => {
     expect(text).toContain('other (38): lbx.interactive 22');
   });
 
+  it('names each rule of the catalogue that matches no row of the export it is given', () => {
+    const report = fitReport(RULES, readExport(FIXTURE));
+    expect(report.unmatchedRules).toEqual(expect.arrayContaining(['type lbx.reverse-interlinear', 'series Pillar New Testament Commentary', 'id LLS:46.30.18']));
+    expect(report.unmatchedRules).not.toContain('type lbx.calendar-devotional');
+    expect(formatFit(report)).toMatch(/rules that match no row \(\d+\): .*series Pillar New Testament Commentary/);
+    const row = 'LLS:PNTCX,text.monograph.commentary.bible,,Romans,Pillar New Testament Commentary,en,bible.66.1.1-66.16.27';
+    const withPillar = fitReport(RULES, readExport(`${FIXTURE}${row}\r\n`));
+    expect(withPillar.unmatchedRules).not.toContain('series Pillar New Testament Commentary');
+  });
+
   it('runs from the command line on the fixture', () => {
     const out = execFileSync(process.execPath, ['--import', 'tsx', join(root, 'scripts/logos-fit.ts'), join(root, 'tests/fixtures/logos-export-head.csv')], { cwd: root, encoding: 'utf8' });
     expect(out).toContain('60 rows: 22 taken by the catalogue, 38 not');

@@ -107,6 +107,8 @@ export interface Built {
   files: Record<Kind, KindFile>;
   /** what the tool says as it goes: ids the rules name that this export lacks, volumes whose covers differ from the export's */
   notes: string[];
+  /** the rules that took no row of this export, by name and in the rules' order: 'id <Resource ID>', 'type <Logos type>', 'series <name>' (a series whose volumes are all on the Old Testament takes none) */
+  unmatched: string[];
 }
 
 /** The catalogue from the rules and the rows: the ids the rules name, in the rules' order, then the rows a series rule or a type rule takes, by Resource ID. Throws on a rule it cannot write. */
@@ -138,8 +140,6 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
   }
 
   const byResource = new Map(rows.map((r) => [r.resource, r]));
-  const missing = rules.ids.filter((r) => !byResource.has(r.resource)).length;
-  if (missing > 0) notes.push(`${missing} of the ${rules.ids.length} ids the rules name are not in this export (they are written from the rules alone)`);
   for (const rule of rules.ids) {
     const row = byResource.get(rule.resource);
     if (!row || !rule.covers) continue;
@@ -165,11 +165,23 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
     else if (found?.by === 'type') add(row, found.rule.kind, 'type', found.rule, `type ${found.rule.type}`);
   }
 
+  const used = new Set<unknown>();
+  for (const row of sorted) {
+    const found = ruleOf(row, rules);
+    if (found) used.add(found.rule);
+  }
+  const unmatched = [
+    ...rules.ids.filter((r) => !byResource.has(r.resource)).map((r) => `id ${r.resource}`),
+    ...rules.types.filter((r) => !used.has(r)).map((r) => `type ${r.type}`),
+    ...rules.series.filter((r) => !used.has(r)).map((r) => `series ${r.series}`),
+  ];
+  if (unmatched.length > 0) notes.push(`${unmatched.length} of the ${rules.ids.length + rules.types.length + rules.series.length} rules match no row of this export (an id is then written from the rules alone): ${unmatched.join('; ')}`);
+
   const files = Object.fromEntries(KIND_LIST.map((k) => [k, { kind: k, version: '', entries: byKind[k] }])) as Record<Kind, KindFile>;
   if (rules.works.length > 0) files.commentary.works = rules.works;
   const version = versionOf(files);
   for (const k of KIND_LIST) files[k] = { kind: k, version, ...(files[k].works ? { works: files[k].works } : {}), entries: files[k].entries.map(ordered) };
-  return { files, notes };
+  return { files, notes, unmatched };
 }
 
 export function loadRules(file = RULES_FILE): Rules {

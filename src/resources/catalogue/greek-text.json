@@ -1,6 +1,6 @@
 {
   "kind": "greek-text",
-  "version": "fc3ca10a7bcd",
+  "version": "b3b18635f6c5",
   "entries": [
     {"resource":"LLS:NTGBYZ2018","kind":"greek-text","title":"The New Testament in the Original Greek: Byzantine Text Form","short":"Byz 2018","lang":"grc","opens":"verse","value":"The other Greek text at this verse beside Lampas's Byzantine: the textual question answered where Lampas cannot.","starts":"on","via":"id"},
     {"resource":"LLS:1.0.331","kind":"greek-text","title":"The New Testament in the Original Greek: Byzantine Textform 2005","short":"Byz 2005","lang":"grc","opens":"verse","value":"The other Greek text at this verse beside Lampas's Byzantine: the textual question answered where Lampas cannot.","starts":"on","via":"id"},

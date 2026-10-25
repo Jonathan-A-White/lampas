@@ -20,7 +20,7 @@ npm run ladder:docs  # scripts/ladder-docs.ts writes the ladder table of docs/gr
                      #   is its entry, its card, then `npm run ladder:docs && npm run grind:build`; tests/unit/ladder-single-source.test.ts fails, naming the idea and the file, on a missing card,
                      #   a stale table or audit row, a grind built before the ladder changed, an unknown need or a cycle; a second run changes nothing
 npm run logos:catalogue -- <export.csv>  # scripts/logos-catalogue.ts writes src/resources/catalogue/<kind>.json (the seven kinds) from data/logos/catalogue-rules.json and a Logos library export (Library > Save as Spreadsheet);
-                     #   `--out <dir>` writes elsewhere; deterministic, a second run changes nothing; prints a note for each id the rules name that the export lacks; not in the gate; docs/resources.md 'The catalogue'
+                     #   `--out <dir>` writes elsewhere; deterministic, a second run changes nothing; prints a note naming each rule (id, type, series) that matches no row of the export; not in the gate; docs/resources.md 'The catalogue'
 npm run logos:fit -- <export.csv>  # scripts/logos-fit.ts prints the rows of an export the catalogue's rules do not take, by kind, with their Logos types and the data types of their ReferenceSupersets, and counts the rest
                      #   by type; writes nothing; the Mayor's reading of a list a reader sent
 npm run check:step   # asks STEPBible what each Strong's link finds (G1722, G3361, G2424 and Romans 8's 20 commonest lemmas; `-- G25 ...` or `-- --all`); network, not in the gate; docs/resources.md

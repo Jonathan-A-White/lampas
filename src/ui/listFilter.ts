@@ -3,6 +3,14 @@
 /** `also` is more text the search looks in and the list does not show (a book's author and series). */
 export type ListItem = { id: string; name: string; also?: string };
 
+/** The noun for a count: `noun` for one, its plural otherwise ('commentary' -> 'commentaries', 'index' -> 'indexes', 'lexicon' -> 'lexicons'). */
+export function pluralOf(noun: string, count: number): string {
+  if (count === 1) return noun;
+  if (/[^aeiou]y$/i.test(noun)) return `${noun.slice(0, -1)}ies`;
+  if (/(s|x|z|ch|sh)$/i.test(noun)) return `${noun}es`;
+  return `${noun}s`;
+}
+
 /** Ticked items first, then the rest, each group in the list's own order. */
 export function tickedFirst(items: readonly ListItem[], first: ReadonlySet<string>): ListItem[] {
   return [...items.filter((i) => first.has(i.id)), ...items.filter((i) => !first.has(i.id))];

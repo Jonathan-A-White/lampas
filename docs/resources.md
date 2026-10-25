@@ -313,9 +313,11 @@ and every field the export cannot give, so an id is written from the rules alone
 and English Bibles that cover some of the New Testament, calendar devotionals) and `series` (every volume of a series that covers some of the New Testament joins with its `covers`: Baker Exegetical, New International
 Greek Testament, Pillar, Lenski's). **`npm run logos:catalogue -- <export.csv>`** (`scripts/logos-catalogue.ts`; a data tool, not in the gate, like `data:build`) writes the seven files from the rules and the export
 (Library > Save as Spreadsheet; the vault's `plans/lampas-logos-library-2026-10-08.csv` to start; `--out <dir>` writes elsewhere); it is deterministic and a second run changes nothing. It prints a note for
-each thing the rules and the export disagree on (an id the export lacks, a volume whose covers differ). The export is CRLF with RFC 4180 quoting and raw tabs, unquoted, inside the last cell; its parser
-(`parseCsv`, `readExport`) keeps a cell whole until the next unquoted comma. The committed files are written from **`tests/fixtures/logos-export-head.csv`**, the first 60 rows of his export (titles only), so
-they hold the ids the rules name and nothing from the rest of his library; run the tool on a whole export and commit the result only when a type or series rule should add its volumes.
+each thing the rules and the export disagree on (a volume whose covers differ, and each rule that matches no row, by name: `id LLS:...`, `type ...`, `series ...`). The export is CRLF with RFC 4180 quoting and raw tabs, unquoted, inside the last cell; its parser
+(`parseCsv`, `readExport`) keeps a cell whole until the next unquoted comma. The committed files are written from **his whole export** (mw-efwust; they were once written from the 60-row fixture, so the series rules produced nothing and Library > Commentaries held Calvin only):
+run the tool on the whole export and commit all seven files together, as they share one version stamp. The export is his library, so it is not in the repo: the vault's copy is read by the tests that
+need it (`LAMPAS_LOGOS_EXPORT` points elsewhere; they are skipped where there is none), and `tests/fixtures/logos-export-head.csv`, its first 60 rows (titles only), stands in for the rest. Whatever
+the committed files hold must hold a volume for every series rule and every type rule (`tests/unit/catalogue.test.ts`). The search over a kind counts in the right plural (`pluralOf`, `src/ui/listFilter.ts`).
 **`npm run logos:fit -- <export.csv>`** (`scripts/logos-fit.ts`) prints the rows of an export the rules do not take, by the kind each would be, with the Logos type and the data types of its
 ReferenceSupersets (`ltrntg`, `bdf`: the names a section link could use, docs/research/logos-section-refs.md), and counts the rest by type: the Mayor's reading of a list a reader sent.
 

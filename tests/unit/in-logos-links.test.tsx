@@ -84,7 +84,10 @@ describe('the rows of the chooser', () => {
   it('name no book that does not cover the place, and the Old Testament no Greek text or commentary', () => {
     const states = new Map(CATALOGUE.map((e) => [e.resource, 'on' as const]));
     const john = inLogosRows(CATALOGUE, states, { book: 'jhn', chapter: 3, verse: 16 }).filter((r) => r.entry.kind === 'commentary');
-    expect(john.map((r) => r.entry.short)).toEqual(['CC Jn']);
+    expect(john.map((r) => r.entry.resource).sort()).toEqual(['LLS:CALCOM64JN', 'LLS:LENSKI04']);
+    // Romans 8 (mw-efwust): the series volumes of his export that cover Romans join Calvin's: Lenski's Romans (none of BECNT, Pillar or NIGTC in his library is on Romans)
+    const romans = inLogosRows(CATALOGUE, states, { book: 'rom', chapter: 8, verse: 31 }).filter((r) => r.entry.kind === 'commentary');
+    expect(romans.map((r) => r.entry.resource).sort()).toEqual(['LLS:CALCOM66RO', 'LLS:LENSKI06']);
     const psalm = inLogosRows(CATALOGUE, states, { book: 'psa', chapter: 23, verse: 1 });
     expect(new Set(psalm.map((r) => r.entry.kind))).toEqual(new Set(['bible']));
   });

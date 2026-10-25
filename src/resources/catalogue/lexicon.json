@@ -1,6 +1,6 @@
 {
   "kind": "lexicon",
-  "version": "fc3ca10a7bcd",
+  "version": "b3b18635f6c5",
   "entries": [
     {"resource":"LLS:46.30.18","kind":"lexicon","title":"BDAG","short":"BDAG","lang":"grc","opens":"word","value":"From the word he is learning (its lemma, parse, gloss and his level) straight into the entry: Logos needs a Bible open and a long press first.","starts":"pinned","via":"id","id":"bdag"},
     {"resource":"LLS:46.30.4","kind":"lexicon","title":"Louw-Nida","short":"Louw-Nida","lang":"grc","opens":"word","value":"From the word he is learning (its lemma, parse, gloss and his level) straight into the entry: Logos needs a Bible open and a long press first.","starts":"pinned","via":"id","id":"louwnida"},
