@@ -30,6 +30,9 @@
     "links.0.reference": {
       "present": false
     },
+    "links.1": {
+      "present": false
+    },
     "setting_offer": {
       "present": false
     }

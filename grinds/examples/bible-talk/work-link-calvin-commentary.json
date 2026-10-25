@@ -18,6 +18,7 @@
     "links.0.kind": { "equals": "work" },
     "links.0.work": { "equals": "calvin-commentaries" },
     "links.0.reference": { "contains": "John 3" },
+    "links.1": { "present": false },
     "setting_offer": { "present": false }
   }
 }
