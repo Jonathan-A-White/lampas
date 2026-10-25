@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.2.7",
+    "date": "2026-10-25",
+    "story": "mw-5r3p30.759",
+    "kind": "fixed",
+    "text": "Sending an ask to the makers from a talk now sends the pictures you attached to it, and Your requests shows how many went."
+  },
+  {
+    "version": "0.2.7",
+    "date": "2026-10-25",
+    "story": "mw-o7cts8.4",
+    "kind": "new",
+    "text": "Saving the Bible references from a shared message as a list now has \"Let the tutor do it\", so the tutor can ask which list and what name and save them when you tap Send."
+  },
+  {
     "version": "0.2.5",
     "date": "2026-10-25",
     "story": "mw-o7cts8.3",

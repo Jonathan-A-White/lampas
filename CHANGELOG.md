@@ -1,5 +1,10 @@
 # What's new
 
+## 0.2.7
+_2026-10-25_
+- Fixed: Sending an ask to the makers from a talk now sends the pictures you attached to it, and Your requests shows how many went.
+- New: Saving the Bible references from a shared message as a list now has "Let the tutor do it", so the tutor can ask which list and what name and save them when you tap Send.
+
 ## 0.2.5
 _2026-10-25_
 - New: Ask for another approach and Ask for more now have a button, Let the tutor do it, that asks you the questions and fills in the form for you.
