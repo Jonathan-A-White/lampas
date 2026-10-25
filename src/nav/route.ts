@@ -321,11 +321,11 @@ export function closeMemorize(): void {
   else navigate('today', { replace: true });
 }
 
-/** Opens one verse list, as a new Back step. */
-export function openVerseList(id: number): void {
+/** Opens one verse list, as a new Back step; `tutor` marks the entry as one the tutor took him to. */
+export function openVerseList(id: number, options: { tutor?: boolean } = {}): void {
   const hash = verseListHash(id);
   if (window.location.hash === hash) return;
-  window.history.pushState(null, '', urlFor(hash));
+  window.history.pushState(options.tutor ? ({ tutorGo: true } satisfies TutorGoEntry) : null, '', urlFor(hash));
   notify();
 }
 

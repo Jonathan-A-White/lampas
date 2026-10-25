@@ -21,8 +21,9 @@ import type { MemorizeLang } from '../memorize/languages';
 import { memorizingNow } from '../memorize/memorizing';
 import { verseTextsOf } from '../memorize/verseText';
 import { listMemorized } from '../data/repositories/memorize';
+import { getVerseList, listVerseLists } from '../data/repositories/verseLists';
 import { openedByTutor } from '../nav/readerRequest';
-import { memorizeSessionOf, navigate, ROUTES, readerOf, routeOf, type Route } from '../nav/route';
+import { memorizeSessionOf, navigate, openVerseList, ROUTES, readerOf, routeOf, type Route } from '../nav/route';
 import { CATALOGUE } from '../resources/catalogue';
 import { armFallback } from '../resources/openApp';
 import { worksForTutor, workChip } from '../resources/tutorLinks';
@@ -41,7 +42,7 @@ import { SCREEN_NAMES } from './screen';
 import { screenContextNow } from './screenContext';
 
 /** The facts' names: a name is the one way the tutor has to call a fact or a place, so no screen goes by one of them. */
-const FACT_NAMES: readonly string[] = ['where-he-is', 'today-drill', 'settings', 'progress', 'rusty-words', 'works', 'memorizing', 'verseText', 'memorizeEvidence'];
+const FACT_NAMES: readonly string[] = ['where-he-is', 'today-drill', 'settings', 'progress', 'rusty-words', 'works', 'memorizing', 'verseText', 'memorizeEvidence', 'verse-lists'];
 
 /** The commands' names, kept from the screens' the same way: the command memorize is the tutor's to call, so the screen Memorize is the place 'memorize-screen'. */
 const COMMAND_NAMES: readonly string[] = ['set-setting', 'tick-today', 'start-review', 'add-word', 'memorize', 'unmemorize', 'moveVerse', 'startSession'];
@@ -115,6 +116,9 @@ const settingsFact: Fact = { name: 'settings', tell: 'what every setting holds n
 /** The words of the verses he memorizes, the one he has a session open on first. */
 const verseTextNow = async (): Promise<unknown> => verseTextsOf([...new Set((await listMemorized()).map((row) => row.ref))].sort(), memorizeSessionOf(window.location.hash)?.ref);
 
+/** His verse lists as the Verse lists screen shows them (newest first): each one's id, name and how many references it holds; the references stay out, so the request stays small. */
+const verseListsNow = async (): Promise<Array<{ id: number; name: string; count: number }>> => (await listVerseLists()).map((list) => ({ id: list.id, name: list.name, count: list.refs.length }));
+
 const FACTS: readonly Fact[] = [
   whereHeIsFact,
   todayDrillFact,
@@ -144,6 +148,11 @@ const FACTS: readonly Fact[] = [
     name: 'memorizeEvidence',
     tell: 'every recall of his verses and a summary: how memorizing is going',
     read: memorizingEvidenceNow,
+  },
+  {
+    name: 'verse-lists',
+    tell: 'his verse lists, newest first: id (for the place lists), name, count',
+    read: verseListsNow,
   },
 ];
 
@@ -198,6 +207,19 @@ const memorizePlace: Place = {
     if (ref === undefined && lang === undefined) return navigate('memorize', { tutor: true });
     if (ref === undefined || lang === undefined) throw new Error('A session needs both ref and lang');
     await startSession({ ref, lang });
+  },
+};
+
+/** The Verse lists screen, or with an id that list, as the Verse lists screen opens one (`#/lists/<id>`); an id that is no list's is refused. */
+const listsPlace: Place = {
+  name: placeNameOf('lists'),
+  tell: 'Opens Verse lists; with id (from verse-lists), one list',
+  args: { type: 'object', additionalProperties: false, properties: { id: { type: 'integer', minimum: 1 } } },
+  open: async (args) => {
+    const { id } = args as { id?: number };
+    if (id === undefined) return navigate('lists', { tutor: true });
+    if (!(await getVerseList(id))) throw new Error('he has no verse list with that id');
+    openVerseList(id, { tutor: true });
   },
 };
 
@@ -361,9 +383,9 @@ export async function addWord(scope: TalkScope, lemma: string): Promise<AddWordR
   }
 }
 
-/** The Bible talk's registry: nine facts (three core), the eight commands, a place for every screen, for a chapter and for a book of his shelf. */
+/** The Bible talk's registry: ten facts (three core), the eight commands, a place for every screen, for a chapter and for a book of his shelf. */
 export const lampasRegistry = (): Registry =>
-  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : placeForRoute(route))), chapterPlace, workPlace] });
+  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
 
 /** The verse ask's smaller set: the core facts only (its settings are the ones its grind is told), and no place: its answer does not go anywhere. */
 export const askRegistry = (): Registry =>
@@ -433,6 +455,7 @@ const LOOKING_AT: Readonly<Record<string, string>> = {
   memorizing: 'memorized verses',
   verseText: 'verses you memorize',
   memorizeEvidence: 'memorizing record',
+  'verse-lists': 'verse lists',
 };
 
 /** The line the sheet shows (and says) while the tutor looks at `names`: 'Looking at your Logos books', 'Looking at your progress and settings'. */
