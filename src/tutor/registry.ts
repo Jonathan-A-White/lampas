@@ -15,8 +15,13 @@ import { rustyNow } from '../data/learnerRusty';
 import { todayEntries, todayNow } from '../data/learnerToday';
 import { getWorks, listedWord, moveToFrontier, restoreWord, shelfOf, type ItemRef } from '../data/repositories';
 import { RUSTY_MAX } from '../data/rusty';
+import { memorizingEvidenceNow } from '../memorize/evidence';
+import { memorizeVerse, moveVerse, startSession, unmemorizeVerse } from '../memorize/commands';
+import { memorizingNow } from '../memorize/memorizing';
+import { verseTextsOf } from '../memorize/verseText';
+import { listMemorized } from '../data/repositories/memorize';
 import { openedByTutor } from '../nav/readerRequest';
-import { navigate, ROUTES, readerOf, routeOf, type Route } from '../nav/route';
+import { memorizeSessionOf, navigate, ROUTES, readerOf, routeOf, type Route } from '../nav/route';
 import { CATALOGUE } from '../resources/catalogue';
 import { armFallback } from '../resources/openApp';
 import { worksForTutor, workChip } from '../resources/tutorLinks';
@@ -34,12 +39,15 @@ import { SCREEN_NAMES } from './screen';
 import { screenContextNow } from './screenContext';
 
 /** The facts' names: a name is the one way the tutor has to call a fact or a place, so no screen goes by one of them. */
-const FACT_NAMES: readonly string[] = ['where-he-is', 'today-drill', 'settings', 'progress', 'rusty-words', 'works'];
+const FACT_NAMES: readonly string[] = ['where-he-is', 'today-drill', 'settings', 'progress', 'rusty-words', 'works', 'memorizing', 'verseText', 'memorizeEvidence'];
 
-/** The name of the place that opens a screen: the route's own, the Reader's being 'reader' and the Settings screen 'settings-screen' (its name is the fact's). */
+/** The commands' names, kept from the screens' the same way: the command memorize is the tutor's to call, so the screen Memorize is the place 'memorize-screen'. */
+const COMMAND_NAMES: readonly string[] = ['set-setting', 'tick-today', 'start-review', 'add-word', 'memorize', 'unmemorize', 'moveVerse', 'startSession'];
+
+/** The name of the place that opens a screen: the route's own, the Reader's being 'reader', the Settings screen 'settings-screen' (its name is the fact's) and Memorize 'memorize-screen' (its name is the command's). */
 export const placeNameOf = (route: Route): string => {
   const name = route === 'home' ? 'reader' : route;
-  return FACT_NAMES.includes(name) ? `${name}-screen` : name;
+  return FACT_NAMES.includes(name) || COMMAND_NAMES.includes(name) ? `${name}-screen` : name;
 };
 
 const READER = 'Reader';
@@ -102,6 +110,9 @@ const whereHeIsFact: Fact = { name: 'where-he-is', tell: 'the screen he is on, t
 const todayDrillFact: Fact = { name: 'today-drill', tell: "the items of today's drill (the Today chip), each with its title and whether he ticked it", core: true, read: () => todayNow() };
 const settingsFact: Fact = { name: 'settings', tell: 'what every setting holds now', core: true, read: currentSettings };
 
+/** The words of the verses he memorizes, the one he has a session open on first. */
+const verseTextNow = async (): Promise<unknown> => verseTextsOf([...new Set((await listMemorized()).map((row) => row.ref))].sort(), memorizeSessionOf(window.location.hash)?.ref);
+
 const FACTS: readonly Fact[] = [
   whereHeIsFact,
   todayDrillFact,
@@ -116,6 +127,56 @@ const FACTS: readonly Fact[] = [
     name: 'works',
     tell: 'the digest of his Logos shelf: pinned books, commentaries, grammars',
     read: async () => worksForTutor(await shelfOf().catch(() => []), undefined, '', greekLevelOf((await currentSettings()).greekInterest)),
+  },
+  {
+    name: 'memorizing',
+    tell: 'his memorized verses: summary, lists (ids), languages, step, due, last score, misses',
+    read: memorizingNow,
+  },
+  {
+    name: 'verseText',
+    tell: 'the words of each verse he memorizes, per language (en, el, weave)',
+    read: verseTextNow,
+  },
+  {
+    name: 'memorizeEvidence',
+    tell: 'every recall of his verses and a summary: how memorizing is going',
+    read: memorizingEvidenceNow,
+  },
+];
+
+const LANG = { enum: ['en', 'el', 'weave'] } as const;
+const REF = { type: 'string', minLength: 3, maxLength: 40 } as const;
+
+/** The verse commands of src/memorize/commands.ts: the same functions the buttons call (memorize and unmemorize are the Memorize control's and the Stop memorizing buttons'). */
+const memorizeCommands: readonly Command[] = [
+  {
+    name: 'memorize',
+    tell: 'Memorizes a verse (ref Rom.8.28; langs en, el, weave, en by default); undoable',
+    args: { type: 'object', required: ['ref'], additionalProperties: false, properties: { ref: REF, langs: { type: 'array', items: LANG } } },
+    kind: 'undoable',
+    run: memorizeVerse,
+  },
+  {
+    name: 'unmemorize',
+    tell: 'Stops memorizing a verse, one lang or all; undoable',
+    args: { type: 'object', required: ['ref'], additionalProperties: false, properties: { ref: REF, lang: LANG } },
+    kind: 'undoable',
+    run: unmemorizeVerse,
+  },
+  {
+    name: 'moveVerse',
+    tell: 'Moves a ref between verse lists (ids from memorizing); stays memorized; undoable',
+    args: { type: 'object', required: ['ref', 'from', 'to'], additionalProperties: false, properties: { ref: REF, from: { type: 'integer', minimum: 1 }, to: { type: 'integer', minimum: 1 } } },
+    kind: 'undoable',
+    run: moveVerse,
+  },
+  {
+    name: 'startSession',
+    tell: 'Opens a memorize session of a verse, in one lang',
+    args: { type: 'object', required: ['ref', 'lang'], additionalProperties: false, properties: { ref: REF, lang: LANG } },
+    kind: 'free',
+    run: startSession,
   },
 ];
 
@@ -285,9 +346,9 @@ export async function addWord(scope: TalkScope, lemma: string): Promise<AddWordR
   }
 }
 
-/** The Bible talk's registry: six facts (three core), the four commands, a place for every screen, for a chapter and for a book of his shelf. */
+/** The Bible talk's registry: nine facts (three core), the eight commands, a place for every screen, for a chapter and for a book of his shelf. */
 export const lampasRegistry = (): Registry =>
-  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand], places: [...ROUTES.map(placeForRoute), chapterPlace, workPlace] });
+  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, ...memorizeCommands], places: [...ROUTES.map(placeForRoute), chapterPlace, workPlace] });
 
 /** The verse ask's smaller set: the core facts only (its settings are the ones its grind is told), and no place: its answer does not go anywhere. */
 export const askRegistry = (): Registry =>
@@ -351,6 +412,9 @@ const LOOKING_AT: Readonly<Record<string, string>> = {
   progress: 'progress',
   'rusty-words': 'rusty words',
   works: 'Logos books',
+  memorizing: 'memorized verses',
+  verseText: 'verses you memorize',
+  memorizeEvidence: 'memorizing record',
 };
 
 /** The line the sheet shows (and says) while the tutor looks at `names`: 'Looking at your Logos books', 'Looking at your progress and settings'. */

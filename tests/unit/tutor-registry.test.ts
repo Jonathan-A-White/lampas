@@ -23,8 +23,8 @@ afterEach(() => {
 const registry = lampasRegistry();
 
 describe('the facts', () => {
-  it('defines the six facts, three of them core', () => {
-    expect(registry.facts.map((f) => f.name).sort()).toEqual(['progress', 'rusty-words', 'settings', 'today-drill', 'where-he-is', 'works']);
+  it('defines the nine facts (the three of memorizing are in tests/unit/tutor-memorize.test.ts), three of them core', () => {
+    expect(registry.facts.map((f) => f.name).sort()).toEqual(['memorizeEvidence', 'memorizing', 'progress', 'rusty-words', 'settings', 'today-drill', 'verseText', 'where-he-is', 'works']);
     expect(registry.facts.filter((f) => f.core).map((f) => f.name).sort()).toEqual(['settings', 'today-drill', 'where-he-is']);
     for (const fact of registry.facts) expect(fact.tell.length).toBeGreaterThan(10);
   });
@@ -98,7 +98,8 @@ describe('the catalogue and the screen key', () => {
     const catalogue = registry.catalogue();
     expect(catalogue.map((c) => c.name)).toEqual([...catalogue.map((c) => c.name)].sort());
     expect(catalogue.every((c) => c.tell && c.tell.length > 0)).toBe(true);
-    expect(JSON.stringify(catalogue).length).toBeLessThan(4200);
+    // 4200 before memorizing (mw-fu7dqf.12) added three facts and four commands, 1,655 bytes; every request carries it
+    expect(JSON.stringify(catalogue).length).toBeLessThan(5900);
   });
 
   it('keys the up-front list by the screen name, the Reader for the plain address', () => {

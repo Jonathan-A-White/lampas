@@ -37,13 +37,14 @@ const registry = lampasRegistry();
 const scope = { title: '', chapter: NO_CHAPTER, verse: null };
 
 describe('the registry lists the commands and the work place', () => {
-  it('has the four commands with their kinds, and open-work as a place', () => {
-    expect(registry.commands.map((c) => [c.name, c.kind])).toEqual([
+  it('has the four commands of this story with their kinds (memorizing adds four, tests/unit/tutor-memorize.test.ts), and open-work as a place', () => {
+    expect(registry.commands.map((c) => [c.name, c.kind]).slice(0, 4)).toEqual([
       ['set-setting', 'undoable'],
       ['tick-today', 'undoable'],
       ['start-review', 'free'],
       ['add-word', 'undoable'],
     ]);
+    expect(registry.commands).toHaveLength(8);
     expect(registry.place('open-work')).toBeDefined();
     for (const command of registry.commands) expect(command.tell.length).toBeGreaterThan(10);
   });
