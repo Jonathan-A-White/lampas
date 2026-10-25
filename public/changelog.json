@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.440",
+    "date": "2026-10-25",
+    "story": "mw-t3xu9a.7",
+    "kind": "new",
+    "text": "When you ask the tutor for something in the app, you now see what it is doing: a short line while it looks something up, a line with Undo for a change it makes, and Back brings you back to your talk after it takes you to another screen."
+  },
+  {
+    "version": "0.1.440",
+    "date": "2026-10-25",
+    "story": "mw-fu7dqf.10",
+    "kind": "new",
+    "text": "Today now has a Memorize piece that tells you how many verses are due and starts the first one with a tap; you can switch it off in Settings under Daily."
+  },
+  {
     "version": "0.1.438",
     "date": "2026-10-24",
     "story": "mw-5r3p30.752",

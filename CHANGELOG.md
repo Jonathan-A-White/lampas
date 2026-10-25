@@ -1,5 +1,10 @@
 # What's new
 
+## 0.1.440
+_2026-10-25_
+- New: When you ask the tutor for something in the app, you now see what it is doing: a short line while it looks something up, a line with Undo for a change it makes, and Back brings you back to your talk after it takes you to another screen.
+- New: Today now has a Memorize piece that tells you how many verses are due and starts the first one with a tap; you can switch it off in Settings under Daily.
+
 ## 0.1.438
 _2026-10-24_
 - New: Your Logos library, with your Verse lists, is now the first thing in Settings instead of two taps down.
