@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.2.3",
+    "date": "2026-10-25",
+    "story": "mw-o7cts8.2",
+    "kind": "new",
+    "text": "Ask for a book (and Ask for another approach) now has \"Let the tutor do it\", where the tutor asks you in a talk, fills in the form as you answer and ends with a Send button for you to tap."
+  },
+  {
     "version": "0.2.2",
     "date": "2026-10-25",
     "story": "mw-fu7dqf.12",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.3
+_2026-10-25_
+- New: Ask for a book (and Ask for another approach) now has "Let the tutor do it", where the tutor asks you in a talk, fills in the form as you answer and ends with a Send button for you to tap.
+
 ## 0.2.2
 _2026-10-25_
 - New: the tutor now knows which verses you are memorizing, can start memorizing one when you ask, and you can choose to send your memorizing progress with an Ask for more.
