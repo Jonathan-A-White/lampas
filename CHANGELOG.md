@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.10
+_2026-10-25_
+- New: From any talk with the tutor, and from the Ask on a verse, you can send the makers a request with Send to the makers, with pictures or a photo and your words.
+
 ## 0.2.8
 _2026-10-25_
 - New: Ask the tutor to take you to one of your verse lists by name, and Back brings you back to the talk.
