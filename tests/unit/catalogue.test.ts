@@ -2,7 +2,7 @@
 // tool writes the seven kinds from the rules and an export and a second run changes nothing, the generated kinds are sound (no duplicate Resource ID, a value
 // line each, covers codes that are books, grammar sections that are ladder ideas), and the five old exports are views over it that still equal what they were.
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -19,6 +19,8 @@ import { buildCatalogue, coversOfSupersets, formatKindFile, parseCsv, readExport
 const root = join(__dirname, '../..');
 const RULES = JSON.parse(readFileSync(join(root, 'data/logos/catalogue-rules.json'), 'utf8')) as Rules;
 const FIXTURE = join(root, 'tests/fixtures/logos-export-head.csv');
+/** His whole Logos export: it is his library, so it is not in the repo; the tests that read it are skipped where it is not (set LAMPAS_LOGOS_EXPORT to point at it). */
+const VAULT_EXPORT = process.env.LAMPAS_LOGOS_EXPORT ?? '/home/jwhite/millwright-vault/plans/lampas-logos-library-2026-10-08.csv';
 /** The five old exports as they were before they became views (tests/fixtures/old-resource-exports.json): the proof that no screen changes. */
 const OLD = JSON.parse(readFileSync(join(root, 'tests/fixtures/old-resource-exports.json'), 'utf8')) as {
   LEXICONS: { id: string; resource: string }[];
@@ -102,10 +104,14 @@ describe('the generated kinds', () => {
     expect(versionOf(files)).toBe(CATALOGUE_VERSION);
   });
 
-  it('is what the tool makes from the rules and the fixture export (the version is a hash of the entries, so a stale file shows)', () => {
+  it('holds, for every id the rules name, the entry the tool makes from the rules alone; the rows a series or type rule took come from his whole export (below)', () => {
     const { files } = buildCatalogue(RULES, readExport(readFileSync(FIXTURE, 'utf8')));
-    expect(files.devotional.version).toBe(CATALOGUE_VERSION);
-    for (const kind of KINDS) expect(formatKindFile(files[kind]), kind).toBe(readFileSync(join(root, `src/resources/catalogue/${kind}.json`), 'utf8'));
+    for (const kind of KINDS) {
+      const committed = JSON.parse(readFileSync(join(root, `src/resources/catalogue/${kind}.json`), 'utf8')) as KindFile;
+      const byId = (f: KindFile) => f.entries.filter((e) => e.via === 'id');
+      expect(byId(committed), kind).toEqual(byId(files[kind]));
+      expect(committed.works ?? null, kind).toEqual(files[kind].works ?? null);
+    }
   });
 
   it('has no duplicate Resource ID, every entry a value, every covers code a book, every grammar section idea a rung of the ladder', () => {
@@ -133,6 +139,53 @@ describe('the generated kinds', () => {
     expect(problemsOf([entry({ value: ' ' })])).toEqual(['LLS:X has no value']);
     expect(problemsOf([entry({ covers: ['mat', 'gen'] })])).toEqual(['LLS:X covers gen, which is no book']);
     expect(problemsOf([entry({ sections: [{ title: 'L1', ref: 'Page.p_1', ideas: ['alphabet', 'no-such-idea'] }] })])).toEqual(['LLS:X section L1 names no-such-idea, which is not on the ladder']);
+  });
+});
+
+describe('the committed catalogue is written from his whole library, not from the fixture (mw-efwust)', () => {
+  const kindEntries = (kind: Kind) => entriesOf(kind);
+
+  it('holds volumes taken by each series rule and by each type rule', () => {
+    for (const s of RULES.series) expect(CATALOGUE.filter((e) => e.via === 'series' && e.series === s.series).length, `series ${s.series}`).toBeGreaterThan(0);
+    // the devotionals are all named by id, so their type rule adds none; the interlinears and the English Bibles of the New Testament come only by type
+    for (const t of RULES.types.filter((x) => x.kind !== 'devotional')) expect(CATALOGUE.filter((e) => e.via === 'type' && e.kind === t.kind).length, `type ${t.type}`).toBeGreaterThan(0);
+  });
+
+  it('holds the 24 volumes of the four commentary series, each with the books it covers', () => {
+    const bySeries = (name: string) => kindEntries('commentary').filter((e) => e.via === 'series' && e.series === name);
+    expect(bySeries('Lenski’s Commentary on the New Testament')).toHaveLength(12);
+    expect(bySeries('Baker Exegetical Commentary on the New Testament')).toHaveLength(6);
+    expect(bySeries('Pillar New Testament Commentary')).toHaveLength(4);
+    expect(bySeries('New International Greek Testament Commentary')).toHaveLength(2);
+    for (const e of kindEntries('commentary').filter((x) => x.via === 'series')) expect(e.covers?.length, e.resource).toBeGreaterThan(0);
+    expect(kindEntries('commentary')).toHaveLength(36);
+  });
+});
+
+describe('a rule that matches no row of the export is named (mw-efwust)', () => {
+  const row = (over: Partial<Parameters<typeof buildCatalogue>[1][number]>) => ({ resource: 'LLS:NEW', type: 'text.monograph.commentary.bible', abbreviated: '', title: 'A Title', series: '', languages: 'en', supersets: '', ...over });
+
+  it('names a series rule, a type rule and an id rule with no row, and none that has one', () => {
+    const rules: Rules = {
+      ...RULES,
+      works: [],
+      ids: [{ resource: 'LLS:HERE', kind: 'lexicon', title: 'Here', short: 'Here' }, { resource: 'LLS:GONE', kind: 'lexicon', title: 'Gone', short: 'Gone' }],
+      types: [{ type: 'lbx.reverse-interlinear', kind: 'interlinear', needs: 'nt' }],
+      series: [{ series: 'Seen', kind: 'commentary' }, { series: 'Unseen', kind: 'commentary' }],
+    };
+    const rows = [row({ resource: 'LLS:HERE', type: 'text.monograph.lexicon' }), row({ resource: 'LLS:S1', series: 'Seen', supersets: 'bible.66.1.1-66.16.27' })];
+    expect(buildCatalogue(rules, rows).unmatched).toEqual(['id LLS:GONE', 'type lbx.reverse-interlinear', 'series Unseen']);
+    expect(buildCatalogue(rules, rows).notes.join('\n')).toMatch(/id LLS:GONE.*type lbx\.reverse-interlinear.*series Unseen|series Unseen/s);
+  });
+
+  it('counts a series whose volumes are all on the Old Testament as matching no row', () => {
+    const rules: Rules = { ...RULES, works: [], ids: [], types: [], series: [{ series: 'OT only', kind: 'commentary' }] };
+    expect(buildCatalogue(rules, [row({ series: 'OT only', supersets: 'bible.1.1.1-1.50.26' })]).unmatched).toEqual(['series OT only']);
+  });
+
+  it.skipIf(!existsSync(VAULT_EXPORT))('every series rule and type rule of the rules file matches a row of his whole export (set LAMPAS_LOGOS_EXPORT, or have it in the vault)', () => {
+    const { unmatched } = buildCatalogue(RULES, readExport(readFileSync(VAULT_EXPORT, 'utf8')));
+    expect(unmatched.filter((u) => !u.startsWith('id '))).toEqual([]);
   });
 });
 
@@ -171,12 +224,20 @@ describe('the tool', () => {
   const run = (out: string, csv = FIXTURE) => execFileSync(process.execPath, ['--import', 'tsx', join(root, 'scripts/logos-catalogue.ts'), csv, '--out', out], { cwd: root, encoding: 'utf8' });
   const read = (dir: string) => Object.fromEntries(readdirSync(dir).sort().map((f) => [f, readFileSync(join(dir, f), 'utf8')]));
 
-  it('writes the seven kinds from the fixture, the same as the committed ones, and a second run changes nothing', () => {
+  it('writes the seven kinds from the fixture, and a second run changes nothing', () => {
     const [a, b] = [mkdtempSync(join(tmpdir(), 'cat-a-')), mkdtempSync(join(tmpdir(), 'cat-b-'))];
     run(a);
     run(a);
     run(b);
     expect(Object.keys(read(a))).toEqual(KINDS.map((k) => `${k}.json`).sort());
+    expect(read(a)).toEqual(read(b));
+  }, 60_000);
+
+  it.skipIf(!existsSync(VAULT_EXPORT))('writes the committed seven kinds from his whole export, and a second run changes nothing (the vault copy, or LAMPAS_LOGOS_EXPORT)', () => {
+    const [a, b] = [mkdtempSync(join(tmpdir(), 'cat-c-')), mkdtempSync(join(tmpdir(), 'cat-d-'))];
+    run(a, VAULT_EXPORT);
+    run(a, VAULT_EXPORT);
+    run(b, VAULT_EXPORT);
     expect(read(a)).toEqual(read(b));
     expect(read(a)).toEqual(read(join(root, 'src/resources/catalogue')));
   }, 60_000);

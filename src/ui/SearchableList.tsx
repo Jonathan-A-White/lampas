@@ -5,13 +5,13 @@
 // line, `flat` lets the list be as long as the page's own box (the field then stays at the box's top) and `focus` marks one book and brings it into view.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { oneTap } from './settle';
-import { matching, ranked, type ListItem } from './listFilter';
+import { matching, pluralOf, ranked, type ListItem } from './listFilter';
 
 type Props = {
   /** Names the group and, as 'Search <label>', the field. */
   label: string;
   hint?: string;
-  /** What one item is called, for the empty search: 'No <noun> matches'. */
+  /** What one item is called, in the singular: 'No <noun> matches' for the empty search, and 'Search 36 <nouns>' (pluralOf) on the field. */
   noun: string;
   items: readonly ListItem[];
   ticked?: readonly string[];
@@ -52,7 +52,7 @@ export function SearchableList({ label, hint, noun, items, ticked = [], onToggle
         <input
           type="search"
           value={query}
-          placeholder={`Search ${items.length} ${noun}s`}
+          placeholder={`Search ${items.length} ${pluralOf(noun, items.length)}`}
           aria-label={`Search ${label}`}
           aria-describedby={hint ? hintId : undefined}
           autoCapitalize="none"

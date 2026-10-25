@@ -50,11 +50,13 @@ export interface Fit {
   matched: number;
   unmatched: number;
   byKind: FitKindRows[];
+  /** the rules of the catalogue that took no row of this export, by name (buildCatalogue's `unmatched`) */
+  unmatchedRules: string[];
 }
 
 /** What the rules take of the export and what they leave, by kind (the seven, then 'other'). */
 export function fitReport(rules: Rules, rows: readonly ExportRow[]): Fit {
-  const { files } = buildCatalogue(rules, rows);
+  const { files, unmatched } = buildCatalogue(rules, rows);
   const taken = new Set(KIND_LIST.flatMap((k) => files[k].entries.map((e) => e.resource)));
   const byKind: FitKindRows[] = [...KIND_LIST, 'other' as const].map((kind) => ({ kind, rows: [], types: {} }));
   let matched = 0;
@@ -68,12 +70,13 @@ export function fitReport(rules: Rules, rows: readonly ExportRow[]): Fit {
     bucket.rows.push({ resource: row.resource, type: row.type, title: row.title, dataTypes: dataTypesOf(row.supersets), ...(offTestament ? { reason: 'Old Testament' } : {}) });
     bucket.types[row.type] = (bucket.types[row.type] ?? 0) + 1;
   }
-  return { rows: rows.length, matched, unmatched: rows.length - matched, byKind };
+  return { rows: rows.length, matched, unmatched: rows.length - matched, byKind, unmatchedRules: unmatched };
 }
 
 /** The report as text: a line of totals, then each kind that has rows left: its rows (resource, type, title, data types, reason), or for 'other' its types with counts. */
 export function formatFit(fit: Fit): string {
   const lines = [`${fit.rows} rows: ${fit.matched} taken by the catalogue, ${fit.unmatched} not.`];
+  if (fit.unmatchedRules.length > 0) lines.push(`rules that match no row (${fit.unmatchedRules.length}): ${fit.unmatchedRules.join('; ')}`);
   for (const { kind, rows, types } of fit.byKind) {
     if (rows.length === 0) continue;
     if (kind === 'other') {
