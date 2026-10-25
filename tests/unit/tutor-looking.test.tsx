@@ -88,7 +88,7 @@ describe('the lines of a do', () => {
     ]);
     expect(undos[0]).toBeTypeOf('function');
     expect(undos[1]).toBeUndefined();
-    expect(refused).toEqual(['Could not break it: break-it failed: it broke', 'Could not no such: there is no command or place called "no-such"']);
+    expect(refused).toEqual(['Could not break it: break-it failed: it broke', 'Could not no such: there is no command called "no-such"']);
     expect(ran).toBe(0);
   });
 
