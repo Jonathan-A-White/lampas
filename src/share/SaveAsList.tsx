@@ -10,6 +10,7 @@ import { useAiAllowed } from '../gate/licenceContext';
 import { openVerseList } from '../nav/route';
 import { saveAsListCommand, type ListSaved } from '../services/formCommands';
 import { focusQuietly } from '../ui/focus';
+import { LimitedInput } from '../ui/LimitedField';
 import { LIST_NAME_MAX, suggestedListName } from './listName';
 import { NAME_LABEL, NEW_LIST_CHOICE, saveListForm, WHERE_LABEL } from './saveListForm';
 
@@ -104,7 +105,7 @@ export function SaveAsList({ refs, text }: { refs: readonly string[]; text?: str
               </select>
             </label>
             {target === NEW_LIST ? (
-              <input
+              <LimitedInput
                 ref={field}
                 type="text"
                 value={name}
