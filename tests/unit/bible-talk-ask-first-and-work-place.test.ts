@@ -36,3 +36,12 @@ describe('the bible-talk instructions after mw-5r3p30.732', () => {
     expect(count(text, /"place":\s*"3\.24"/g)).toBe(1);
   });
 });
+
+// mw-5r3p30.755: asked about a verse past the held range, one run in three said where the text stops ("Your text stops at Revelation 2:3") and left the
+// range out; the `verses` rule now says to name the whole range, with the words.
+describe('the bible-talk `verses` rule after mw-5r3p30.755', () => {
+  it('says to name the whole held range in words, not only where it stops', () => {
+    const rule = flat(text.slice(text.indexOf('- `verses`:'), text.indexOf('- `greek_words`:')));
+    expect(rule).toMatch(/name the whole range \("I hold verses 1 to 3"\), not only where it stops/);
+  });
+});
