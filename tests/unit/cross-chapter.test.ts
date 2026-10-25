@@ -34,11 +34,19 @@ it('crosses from one book to the next and back', () => {
   expect(here()).toBe('jud/1');
 });
 
-it('opens nothing before Matthew 1 or after Revelation 22', () => {
+it('crosses from Matthew 1 back into Malachi 4 and from Malachi 4 on into Matthew 1', () => {
   window.history.replaceState(null, '', '/#/?b=mat&c=1');
   crossChapter('mat', 1, -1);
+  expect(here()).toBe('mal/4');
+  crossChapter('mal', 4, 1);
   expect(here()).toBe('mat/1');
-  expect(keptPage('mat/0')).toBeUndefined();
+});
+
+it('opens nothing before Genesis 1 or after Revelation 22', () => {
+  window.history.replaceState(null, '', '/#/?b=gen&c=1');
+  crossChapter('gen', 1, -1);
+  expect(here()).toBe('gen/1');
+  expect(keptPage('gen/0')).toBeUndefined();
   window.history.replaceState(null, '', '/#/?b=rev&c=22');
   crossChapter('rev', 22, 1);
   expect(here()).toBe('rev/22');
