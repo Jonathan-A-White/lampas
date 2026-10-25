@@ -250,5 +250,61 @@ describeFeature(feature, ({ Scenario }) => {
       expect(document.getElementById(why as string)).toHaveTextContent(/too long/i);
     });
   });
+  Scenario("The tap on the form's Send and the door's Send post the same body for the same values", ({ Given, When, Then, And }) => {
+    let byHand: Record<string, unknown> = {};
+    const link = 'https://example.org/greek';
+    const oneFeedback = async (): Promise<Record<string, unknown>> => {
+      const grists = () => fake.received.filter((r) => r.grist.kind === 'feedback');
+      await waitFor(() => expect(grists()).toHaveLength(1));
+      expect(grists()[0].grist).toMatchObject({ app: 'lampas', kind: 'feedback', v: '1' });
+      return grists()[0].input as Record<string, unknown>;
+    };
+    Given('the Ask for another approach sheet is open', async () => {
+      await openSettings();
+      await openSheet();
+    });
+    When("he types the approach, the credit name and the link by hand and taps the form's Send", async () => {
+      await fillText();
+      await fillName();
+      await fillLink(link);
+      await user.click(send());
+    });
+    Then("the mill received one grist of the kind feedback, kept as the hand's body", async () => {
+      byHand = await oneFeedback();
+      expect(byHand).toEqual({ kind: 'grammar-approach', text: APPROACH, credit: { name: 'Anna Example', url: link }, app_version: __APP_VERSION__ });
+    });
+    When('the sheet is opened again and the tutor fills the same three values', async () => {
+      await openSettings();
+      fake.kindReplies = {
+        feedback: { status: 'answered', answer: { status: 'sent' } },
+        'bible-talk': {
+          status: 'answered',
+          answer: {
+            answer: 'That is everything I need.',
+            words: [],
+            form_values: [
+              { field: 'approach', value: APPROACH },
+              { field: 'credit', value: 'Anna Example' },
+              { field: 'link', value: link },
+            ],
+          },
+        },
+      };
+      await openSheet();
+    });
+    And('he lets the tutor do it and taps the Send the panel ends with', async () => {
+      await user.click(within(sheet()).getByRole('button', { name: 'Let the tutor do it' }));
+      const panel = await screen.findByRole('region', { name: 'The tutor is helping with this form' });
+      await user.click(await within(panel).findByRole('button', { name: 'Send' }));
+    });
+    Then("the mill received one grist of the kind feedback whose body is the hand's, field by field", async () => {
+      const byTutor = await oneFeedback();
+      expect(Object.keys(byTutor).sort()).toEqual(Object.keys(byHand).sort());
+      for (const key of Object.keys(byHand)) expect(byTutor[key], key).toEqual(byHand[key]);
+    });
+    And('the sheet shows {string}', async (_, line: string) => {
+      expect(await within(sheet()).findByText(line)).toBeInTheDocument();
+    });
+  });
 });
 

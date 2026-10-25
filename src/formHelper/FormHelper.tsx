@@ -12,7 +12,7 @@ import { askTalk, MAX_HISTORY_TURNS, type TalkHistoryEntry } from '../services/t
 import { FAILURE_TITLES, TutorError, type TutorFailure } from '../services/tutor';
 import { currentSettings } from '../settings/registry';
 import { START_LABEL } from './startLabel';
-import { applyFormValues, argsOf, buildFormRequest, FORM_START, oneQuestion, requiredFilled, type FormSpec } from './formHelper';
+import { applyFormValues, argsOf, buildFormRequest, FORM_START, oneQuestion, requiredFilled, type FormArgs, type FormSpec } from './formHelper';
 
 export { START_LABEL };
 /** What he says for the buttons that answer without typing. */
@@ -34,9 +34,11 @@ export interface FormHelperProps {
   onReady?: () => void;
   /** the command the form's own Send runs: when the tutor has nothing more to ask and every required field holds something, the panel shows its offer line and a Send button that runs it */
   command?: Command;
+  /** what the command takes beside the form's fields (ask-for-more's `kind`: one command name serves three forms) */
+  commandArgs?: FormArgs;
 }
 
-export function FormHelper({ form, values, onFill, onPicker, onReady, command }: FormHelperProps) {
+export function FormHelper({ form, values, onFill, onPicker, onReady, command, commandArgs }: FormHelperProps) {
   const [open, setOpen] = useState(false);
   const [say, setSay] = useState('');
   const [ask, setAsk] = useState<string | undefined>(undefined);
@@ -48,11 +50,11 @@ export function FormHelper({ form, values, onFill, onPicker, onReady, command }:
   const [sendProblem, setSendProblem] = useState<string | null>(null);
   const answerId = useId();
   const turns = useRef<TalkHistoryEntry[]>([]);
-  const latest = useRef({ form, values, onFill, onReady, command });
+  const latest = useRef({ form, values, onFill, onReady, command, commandArgs });
   const live = useRef<AbortController>(new AbortController());
   const lastMessage = useRef('');
   useEffect(() => {
-    latest.current = { form, values, onFill, onReady, command };
+    latest.current = { form, values, onFill, onReady, command, commandArgs };
   });
   useEffect(() => {
     if (live.current.signal.aborted) live.current = new AbortController();
@@ -99,15 +101,16 @@ export function FormHelper({ form, values, onFill, onPicker, onReady, command }:
 
   /** His tap on the panel's Send: the form's own command, with the values the form holds now. What it did (sent, waiting, refused) is the sheet's to show; the panel says it too. */
   async function sendForm(): Promise<void> {
-    const { form: spec, values: held, command: run } = latest.current;
+    const { form: spec, values: held, command: run, commandArgs: beside } = latest.current;
     if (!run || running) return;
+    const given = { ...argsOf(spec, held), ...beside };
     const signal = live.current.signal;
     setRunning(true);
     setDone(null);
     setSendProblem(null);
     try {
-      const result = await run.run(argsOf(spec, held));
-      if (!signal.aborted) setDone({ said: result.said, of: JSON.stringify(argsOf(spec, held)) });
+      const result = await run.run(given);
+      if (!signal.aborted) setDone({ said: result.said, of: JSON.stringify(given) });
     } catch (err) {
       if (!signal.aborted) setSendProblem(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
@@ -153,7 +156,7 @@ export function FormHelper({ form, values, onFill, onPicker, onReady, command }:
 
   const sending = phase.name === 'sending';
   const ready = requiredFilled(form, values) && !ask;
-  const args = argsOf(form, values);
+  const args = { ...argsOf(form, values), ...commandArgs };
   const sendable = command !== undefined && ready && !sending && (command.args ? checkArgs(command.args, args) === undefined : true);
   return (
     <section role="region" aria-label="The tutor is helping with this form" className="max-h-[45dvh] shrink-0 space-y-3 overflow-y-auto overscroll-contain border-t border-line bg-canvas px-4 py-3">

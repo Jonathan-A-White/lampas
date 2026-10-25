@@ -1,4 +1,4 @@
-// There is ONE feedback sender (src/services/feedback.ts): the tutor's 'Send this to the makers' and Ask for another approach both send
+// There is ONE feedback sender (src/services/feedback.ts): the tutor's 'Send this to the makers', Ask for another approach and Ask for more (their commands, src/services/formCommands.ts) all send
 // through it, and nothing else in the app talks to the feedback grind. This reads the sources, so a second copy fails here.
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -12,11 +12,16 @@ const sources = (dir: string): string[] =>
 const text = (path: string): string => readFileSync(path, 'utf8');
 
 describe('the one feedback sender', () => {
-  it('is used by the tutor (src/talk/offers.ts, which the Send this to the makers button and a spoken yes both call) and by Ask for another approach (AskApproachSheet.tsx)', () => {
-    for (const file of ['src/talk/offers.ts', 'src/AskApproachSheet.tsx']) {
-      expect(text(file), file).toMatch(/import \{[^}]*\bsubmitFeedback\b[^}]*\} from '\.{1,2}\/services\/feedback'/);
+  it('is used by the tutor (src/talk/offers.ts, which the Send this to the makers button and a spoken yes both call) and by the ask-for-approach and ask-for-more commands (src/services/formCommands.ts)', () => {
+    for (const file of ['src/talk/offers.ts', 'src/services/formCommands.ts']) {
+      expect(text(file), file).toMatch(/import \{[^}]*\bsubmitFeedback\b[^}]*\} from '\.{1,2}\/(services\/)?feedback'/);
     }
     expect(text('src/Talk.tsx')).toMatch(/\bsendMakersOffer\b/);
+  });
+
+  it('is called by no sheet or screen: submitFeedback( is in the commands, the book requests, feedback.ts and the tutor-ask path (mw-o7cts8.3)', () => {
+    const calling = sources('src').filter((f) => /\bsubmitFeedback\(/.test(text(f)));
+    expect(calling.sort()).toEqual(['src/services/bookRequests.ts', 'src/services/feedback.ts', 'src/services/formCommands.ts', 'src/talk/offers.ts']);
   });
 
   it('is the only code that sends the feedback kind: no other file asks the grind itself', () => {

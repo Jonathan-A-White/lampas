@@ -291,6 +291,40 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
+  Scenario('On A text the tutor can do the form: Let the tutor do it is at its top and its Send posts the grist', ({ Given, When, Then, And }) => {
+    Given('the Ask for more page is open in the app', openPage);
+    When('he opens the form {string}', (_, name: string) => openForm(name));
+    Then('{string} is at the top of the form', (_, label: string) => {
+      const button = screen.getByRole('button', { name: label });
+      expect(button.compareDocumentPosition(fields()[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(button.closest('form')).toBeNull();
+      expect(form(opened).parentElement?.contains(button)).toBe(true);
+    });
+    When('he lets the tutor do it and its answer fills {string} with {string}', async (_, label: string, value: string) => {
+      fake.kindReplies['bible-talk'] = {
+        status: 'answered',
+        answer: { answer: 'That is everything I need.', words: [], form_values: [{ field: 'name', value }] },
+      };
+      await user.click(screen.getByRole('button', { name: 'Let the tutor do it' }));
+      await screen.findByRole('region', { name: 'The tutor is helping with this form' });
+      await waitFor(() => expect(within(form(opened)).getByRole('textbox', { name: label })).toHaveValue(value));
+    });
+    Then('the form holds {string} in {string}', (_, value: string, label: string) => {
+      expect(within(form(opened)).getByRole('textbox', { name: label })).toHaveValue(value);
+    });
+    When('he taps the Send the panel ends with', async () => {
+      const panel = screen.getByRole('region', { name: 'The tutor is helping with this form' });
+      await user.click(await within(panel).findByRole('button', { name: 'Send' }));
+    });
+    Then('the mill received one feedback grist of kind {string} with the name {string} alone and the app version', async (_, kind: string, name: string) => {
+      await waitFor(() => expect(fake.received.filter((r) => r.grist.kind === 'feedback')).toHaveLength(1));
+      const [grist] = fake.received.filter((r) => r.grist.kind === 'feedback');
+      expect(grist.input).toEqual({ kind, name, app_version: __APP_VERSION__ });
+      expect(validate(grist.input, feedbackSchema)).toEqual([]);
+    });
+    And('the form says "Sent: the factory has it"', () => says(undefined, 'Sent: the factory has it'));
+  });
+
   Scenario('A phone that has recalled nothing is not offered his evidence', ({ Given, When, Then }) => {
     Given('the Ask for more page is open in the app', openPage);
     When('he opens the form {string}', (_, name: string) => openForm(name));
@@ -333,6 +367,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('it has no {string} button and no form', (_, label: string) => {
       expect(screen.queryByRole('button', { name: label })).toBeNull();
       for (const kind of KINDS) expect(screen.queryByRole('button', { name: kind })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Let the tutor do it' })).toBeNull();
     });
   });
 });
