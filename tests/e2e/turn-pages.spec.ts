@@ -294,8 +294,10 @@ for (const look of [
 }
 
 // Every way a page turns draws the one turn: a tap on a third, a swipe, a drag, the Next and Previous page buttons, and the turn into the next chapter
-// or back into the previous one.
+// or back into the previous one. Twenty-six turns, each followed by a settled() wait (about 1.3 s on a quiet host), so it runs 35 s alone and outran the 60 s
+// budget in the nightly whole suite (mw-5r3p30.758): it has the long walks' budget.
 test('every way a page turns, and the turn across a chapter, draws the same page curl', async ({ page }) => {
+  test.setTimeout(240_000);
   await openMark12(page, 'pages');
   await watchTurns(page);
   let turns = 0;
