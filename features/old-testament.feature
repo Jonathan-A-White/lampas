@@ -72,7 +72,7 @@ Feature: Old Testament chapters open in Logos
     And he types the Resource ID "esv"
     Then the Resource ID field says "That is not a Resource ID. It looks like LLS:LGCYSTNDRDBBLSB."
     And the setting "logosBible" holds nothing
-    When he types the Resource ID "LLS:1.0.91"
+    When he types the Resource ID "LLS:1.0.9991"
     And the app is closed and opened again
-    Then the Bibles page says "Old Testament chapters open in LLS:1.0.91."
-    And the Resource ID field holds "LLS:1.0.91"
+    Then the Bibles page says "Old Testament chapters open in LLS:1.0.9991."
+    And the Resource ID field holds "LLS:1.0.9991"

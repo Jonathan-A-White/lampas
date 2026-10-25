@@ -258,7 +258,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.type(resourceId(), id);
     });
     And('the app is closed and opened again', async () => {
-      await waitFor(async () => expect((await db.settings.get('logosBible'))?.value).toBe('LLS:1.0.91'));
+      await waitFor(async () => expect((await db.settings.get('logosBible'))?.value).toBe('LLS:1.0.9991'));
       await reopen();
     });
     Then('the Bibles page says {string}', pageSays);

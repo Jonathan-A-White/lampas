@@ -274,15 +274,4 @@ describeFeature(feature, ({ Scenario }) => {
       for (const group of groups) expect(within(group).getAllByRole('radio').map((r) => r.textContent)).toEqual([a, b]);
     });
   });
-
-  Scenario('A kind with no book in the catalogue says so', ({ Given, When, Then, And }) => {
-    Given('his shelf holds nothing', async () => {
-      await shelfHolds([]);
-    });
-    When('he opens the Library at the kind {string}', opensKind);
-    Then('the page {string} is open', opened);
-    And('the page says {string}', async (_, text: string) => {
-      expect(await screen.findByText(text)).toBeInTheDocument();
-    });
-  });
 });

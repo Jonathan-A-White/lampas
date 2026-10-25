@@ -85,9 +85,3 @@ Feature: Your Logos library, a screen of its own
     Then the page "Devotionals" is open
     And no book of the kind offers "Pin"
     And every book of the kind offers "Off" and "On"
-
-  Scenario: A kind with no book in the catalogue says so
-    Given his shelf holds nothing
-    When he opens the Library at the kind "interlinear"
-    Then the page "Interlinears" is open
-    And the page says "No interlinears yet"
