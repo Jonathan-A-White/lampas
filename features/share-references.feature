@@ -109,3 +109,19 @@ Feature: Share to Lampas lists the Bible references in the shared words
     Then the sheet "Genesis 1:28" is not there
     And the sheet shows the link "Gen. 1:28" again
     And only one grist went to the mill
+
+  Scenario: Let the tutor do it saves the references as a list: the tutor fills where and the name, and its Send saves
+    Given the Share screen is opened with a share of the words "Safe places: Rom 8:28 and John 3:16."
+    When he taps "Save as a list"
+    And he lets the tutor do it above the form
+    Then the tutor asks one question: "Where should these go: a new list, or one you have?"
+    When he answers "A new list" and the tutor fills where with "New list"
+    Then the field "Save to" holds "New list" and is ringed
+    And the tutor asks one question: "What should the list be called?"
+    When he answers "Refuge" and the tutor fills name with "Refuge"
+    Then the field "List name" holds "Refuge"
+    And the panel shows "Save 2 references as a new list, Refuge?" with a Send button
+    And no list is kept yet
+    When he taps Send in the panel
+    Then the sheet shows "Saved 2 references to Refuge" with Open
+    And one list "Refuge" holds "Rom.8.28" then "John.3.16"

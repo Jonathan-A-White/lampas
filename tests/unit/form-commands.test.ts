@@ -1,5 +1,6 @@
 // The ask-for-approach and ask-for-more commands (src/services/formCommands.ts, mw-o7cts8.3): the one path a form's own Send and the tutor's Send both run.
 // Each posts through submitFeedback with the body the builders give; a value over its limit is refused before anything is posted.
+import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../src/services/feedback', async (importOriginal) => ({
@@ -10,7 +11,10 @@ vi.mock('../../src/services/feedback', async (importOriginal) => ({
 import { argsOf } from '../../src/formHelper/formHelper';
 import { MORE_FORMS } from '../../src/formHelper/moreForms';
 import { APPROACH_FORM } from '../../src/formHelper/approachForm';
-import { askForApproachCommand, askForMoreCommand, approachCommand } from '../../src/services/formCommands';
+import { db } from '../../src/data/db';
+import { createVerseList, getVerseList, listVerseLists } from '../../src/data/repositories';
+import { LIST_NAME_MAX } from '../../src/share/listName';
+import { askForApproachCommand, askForMoreCommand, approachCommand, saveAsListCommand } from '../../src/services/formCommands';
 import {
   buildFeedbackRequest,
   buildMoreRequest,
@@ -186,5 +190,69 @@ describe('what the form’s own Send passes', () => {
       }),
     ).toEqual({ approach: 'A', credit: 'B' });
     expect(argsOf(MORE_FORMS.text, { name: ' The LXX ', why: '', link: 'x.org' })).toEqual({ name: 'The LXX', link: 'x.org' });
+  });
+});
+
+describe('the save-as-list command', () => {
+  const REFS = ['Rom.8.28', 'Gen.1.1', 'John.3.16-17'];
+  const namesOf = async () => (await listVerseLists()).map((l) => l.name);
+
+  beforeEach(async () => {
+    await db.open();
+    await db.verseLists.clear();
+  });
+
+  it('is a confirm command that requires where and name, where one of New list and the lists he has', async () => {
+    await createVerseList('Peace', [], 1);
+    await createVerseList('Refuge', [], 2);
+    const command = saveAsListCommand(REFS, await namesOf());
+    expect(command.name).toBe('save-as-list');
+    expect(command.kind).toBe('confirm');
+    const args = command.args!;
+    expect(args.required).toEqual(['where', 'name']);
+    expect(args.additionalProperties).toBe(false);
+    expect(args.properties?.where).toMatchObject({ type: 'string', enum: ['New list', 'Refuge', 'Peace'] });
+    expect(args.properties?.name).toMatchObject({ type: 'string', maxLength: LIST_NAME_MAX });
+  });
+
+  it('with New list makes a list with the references and says how many it saved', async () => {
+    const saved = vi.fn();
+    const result = await saveAsListCommand(REFS, [], { onSaved: saved }).run({ where: 'New list', name: 'Refuge' });
+    expect(result.said).toBe('Saved 3 references to Refuge');
+    const [list] = await listVerseLists();
+    expect(list).toMatchObject({ name: 'Refuge', refs: REFS });
+    expect(saved).toHaveBeenCalledWith({ id: list.id, line: 'Saved 3 references to Refuge' });
+  });
+
+  it('with a list he has adds only the references it does not hold, and keeps the list its own name', async () => {
+    const peace = await createVerseList('Peace', ['John.3.16-17', 'Ps.23'], 1);
+    const result = await saveAsListCommand(REFS, ['Peace']).run({ where: 'Peace', name: 'Ignored' });
+    expect(result.said).toBe('Saved 2 references to Peace');
+    expect((await getVerseList(peace.id))?.refs).toEqual(['John.3.16-17', 'Ps.23', 'Rom.8.28', 'Gen.1.1']);
+    expect(await namesOf()).toEqual(['Peace']);
+  });
+
+  it('says so, and changes nothing, when the list held every reference', async () => {
+    const all = await createVerseList('All', REFS, 1);
+    const result = await saveAsListCommand(REFS, ['All']).run({ where: 'All', name: 'x' });
+    expect(result.said).toBe('All 3 references were already in All');
+    expect((await getVerseList(all.id))?.refs).toEqual(REFS);
+  });
+
+  it('refuses a where that is not among the lists, and a name over its limit, before anything is written', async () => {
+    await createVerseList('Peace', [], 1);
+    await expect(saveAsListCommand(REFS, ['Peace']).run({ where: 'Nowhere', name: 'A' })).rejects.toThrow(/not saved/i);
+    await expect(saveAsListCommand(REFS, ['Peace']).run({ where: 'New list', name: 'x'.repeat(LIST_NAME_MAX + 1) })).rejects.toThrow(/at most/i);
+    await expect(saveAsListCommand(REFS, ['Peace']).run({ where: 'New list' })).rejects.toThrow(/not saved/i);
+    expect(await namesOf()).toEqual(['Peace']);
+    expect((await listVerseLists())[0].refs).toEqual([]);
+  });
+
+  it('refuses a list that went away since the sheet opened, writing nothing', async () => {
+    const gone = await createVerseList('Gone', [], 1);
+    const command = saveAsListCommand(REFS, ['Gone']);
+    await db.verseLists.delete(gone.id);
+    await expect(command.run({ where: 'Gone', name: 'A' })).rejects.toThrow(/not there any more/i);
+    expect(await namesOf()).toEqual([]);
   });
 });

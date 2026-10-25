@@ -3,11 +3,15 @@
 // do it' ends with, src/formHelper/FormHelper.tsx) both run, so the two paths are one. Each posts one 'feedback' grist through submitFeedback (src/services/feedback.ts), the
 // one sender, with the body the builders give; a value over its limit is refused before anything is posted. The args are the form's fields (APPROACH_FORM,
 // MORE_FORMS[kind]); ask-for-more also takes `kind`, so one name serves the three forms. The pictures are never the tutor's: the approach sheet hands its own through `pictures`.
+// `save-as-list` (mw-o7cts8.4) is the Share sheet's Save as a list: its Save and the helper's Send both make the list or add to the one he has (src/share/SaveAsList.tsx).
 import { checkArgs, type ArgsSchema, type Command } from 'voice-kit/talks';
 import { APPROACH_FORM } from '../formHelper/approachForm';
 import { formCommand, type FormArgs } from '../formHelper/formHelper';
 import { MORE_FORMS } from '../formHelper/moreForms';
+import { appendToVerseList, createVerseList, listVerseLists } from '../data/repositories';
+import { referencesLine } from '../lists/canonical';
 import type { MemorizingEvidence } from '../memorize/evidence';
+import { NEW_LIST_CHOICE, saveListForm } from '../share/saveListForm';
 import { buildFeedbackRequest, buildMoreRequest, MORE_KINDS, submitFeedback, type MoreKind } from './feedback';
 import type { MillFile } from './mill';
 
@@ -30,9 +34,9 @@ export interface MoreHooks extends SendHooks {
 }
 
 /** Throws, before anything is posted, when `args` break the command's own schema (a value over its limit, a missing required field). */
-function check(schema: ArgsSchema, args: FormArgs): void {
+function check(schema: ArgsSchema, args: FormArgs, refusal = 'Not sent'): void {
   const problem = checkArgs(schema, args);
-  if (problem) throw new Error(`Not sent: ${problem}`);
+  if (problem) throw new Error(`${refusal}: ${problem}`);
 }
 
 export const SENT_LINE = 'Sent: the factory has it';
@@ -84,4 +88,44 @@ export function askForMoreCommand(kind: MoreKind, hooks: MoreHooks = {}): Comman
   };
   const command: Command = { ...form, args };
   return command;
+}
+
+/** What Save as a list did, for the sheet that ran it: the list to Open (none when it saved nothing) and the line it shows. */
+export type ListSaved = { id: number; line: string } | { id: null; line: string };
+
+export interface SaveListHooks {
+  onSaved?: (saved: ListSaved) => void;
+}
+
+/** The save-as-list command for `refs` (canonical strings, in the order showing) with `names`, the lists he has when the sheet opened, as the choices of `where`.
+ *  'New list' makes a list called `name`; a list he has takes only the references it does not hold and keeps its own name. A `where` that is no list now is refused, writing nothing. */
+export function saveAsListCommand(refs: readonly string[], names: readonly string[], hooks: SaveListHooks = {}): Command {
+  const form = saveListForm(names);
+  const command: Command = formCommand(form, {
+    name: 'save-as-list',
+    tell: 'saves the Bible references of a share as a new verse list, or adds them to a list he has',
+    offer: (values) => (values.where === NEW_LIST_CHOICE ? `Save ${referencesLine(refs.length)} as a new list, ${values.name}?` : `Add ${referencesLine(refs.length)} to ${values.where}?`),
+    async send(values) {
+      check(command.args!, values, 'Not saved');
+      const saved = await save(refs, values.where, values.name);
+      hooks.onSaved?.(saved);
+      return { said: saved.line };
+    },
+  });
+  return command;
+}
+
+async function save(refs: readonly string[], where: string, name: string): Promise<ListSaved> {
+  if (where === NEW_LIST_CHOICE) {
+    const row = await createVerseList(name, refs);
+    return { id: row.id, line: `Saved ${referencesLine(refs.length)} to ${row.name}` };
+  }
+  const found = (await listVerseLists()).find((l) => l.name === where);
+  const result = found ? await appendToVerseList(found.id, refs) : undefined;
+  if (!result) throw new Error(`Not saved: ${where} is not there any more. Choose another, or a new list.`);
+  const { row, added } = result;
+  return {
+    id: row.id,
+    line: added === 0 ? `${refs.length === 1 ? 'The reference was' : `All ${refs.length} references were`} already in ${row.name}` : `Saved ${referencesLine(added)} to ${row.name}`,
+  };
 }

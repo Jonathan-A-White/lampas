@@ -305,7 +305,7 @@ around them) before it is kept (mw-5r3p30.193; `umbrella` and `Uh-oh` are not to
 Checks: `tests/unit/fillers.test.ts`, `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
 in `features/bible-talk.feature` and "What he asked is shown above the answer cleaned up" in `features/tutor.feature`.
 
-## Let the tutor do it (mw-5r3p30.117, mw-o7cts8.2, mw-o7cts8.3)
+## Let the tutor do it (mw-5r3p30.117, mw-o7cts8.2, mw-o7cts8.3, mw-o7cts8.4)
 
 A form must never scare him off, so a form can offer a button at its top, `Let the tutor do it` (one label on every form; `src/formHelper/startLabel.ts`;
 PROVISIONAL). The forms that have the door, each with the command its Send runs (`name`, a `confirm` command):
@@ -315,6 +315,7 @@ PROVISIONAL). The forms that have the door, each with the command its Send runs 
 | Ask for another approach | Settings > Grammar approach | `ask-for-approach` (`src/services/formCommands.ts` `askForApproachCommand`) | `APPROACH_FORM` (`approachForm.ts`): `approach`, `pictures`, `credit`, `link` |
 | An approach or programme, A text, A translation | Settings > More > Ask for more | `ask-for-more` (`askForMoreCommand(kind)`; its args carry `kind`, one of `MORE_KINDS`, beside the fields) | `MORE_FORMS[kind]` (`moreForms.ts`): `name`, `why`, `link` |
 | Ask for a book | the Library card, the idea sheet, Settings > Daily, Ask for more | `ask-for-book` (`src/library/bookCommand.ts`) | `BOOK_FORM` (`bookForm.ts`): `title`, `kind`, `why` |
+| Save as a list | the Share sheet, under Bible references (N) | `save-as-list` (`src/services/formCommands.ts` `saveAsListCommand(refs, names)`) | `saveListForm(names)` (`src/share/saveListForm.ts`; `SAVE_LIST_FORM` is it with no lists): `where` (a choice: `New list` and the names of his lists, read when the form opens), `name` (at most `LIST_NAME_MAX`, 60) |
 
 (A study resource is asked for as a book.) It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
 asks ONE question at a time in plain words (`What approach would you like to suggest, and how does it teach?`), he answers in the panel's field and
@@ -352,6 +353,13 @@ catalogue lists the book or it was asked (nothing kept), else `askForBook`, whic
 a title that is the one row of his kept Logos list (the row he picked, or the one `matching()` finds for the title the tutor filled, which then shows picked) carries that
 row's Resource ID, Type, Series and ReferenceSupersets (PROVISIONAL). The tutor is not given the command to call yet (it is not in `src/tutor/registry.ts`): the panel's Send is his tap.
 
+**Save as a list** (mw-o7cts8.4, PROVISIONAL): the Share sheet's form (`src/share/SaveAsList.tsx`) is `Save to` (`New list` or a list he has) and, for a new list, `List name`, offered from the shared title. Its Save and the panel's Send both run
+`save-as-list`, a `confirm` command (`undoable`, with the new list's delete as the undo, is the alternative): `New list` makes a list called `name` with the references showing (`createVerseList`); a list he has takes only the
+references it does not hold (`appendToVerseList`) and keeps its own name, so `name` matters only for a new list. The line is `Saved N references to <name>` (or `All N references were already in <name>`) with Open; `createVerseList(` and
+`appendToVerseList(` are called only in `formCommands.ts` for this sheet. A `where` that is not `New list` or a list he has, and a name over 60 characters, are refused before anything is written (`Not saved: ...`); a list that went away
+since the form opened is refused with `<name> is not there any more`. Two lists with one name: the command takes the newest. The panel's offer lines: `Save 2 references as a new list, Refuge?`, `Add 2 references to Peace?`. Without a
+licence the door is not drawn and the form is as it was. Checks: `tests/unit/form-commands.test.ts`, `tests/unit/share-save-list.test.tsx` (the hand), `features/share-references.feature` (Let the tutor do it saves the references as a list).
+
 The tutor is the `bible-talk` grind in a talk from a screen named for the form (`screen` {name, facts: []}, no verse text), so the mill needs no new
 kind. The request adds `form` {name, command?, fields [{name, label, hint?, required, kind, value, options?}]} (`buildFormRequest`; a value is cut at 600 characters); the
 answer adds `form_values` [{field, value}] (the whole new value of each field) and `form_ask` (the field the question is about, a pictures field when
@@ -363,6 +371,26 @@ kept in the panel only (no table): closing the sheet ends it.
 Checks: `features/form-helper.feature` (both forms), `features/ask-for-book.feature` (the hand's Send and the door's post the same fields), `tests/unit/form-helper.test.ts`,
 `tests/unit/book-command.test.ts`, `tests/unit/form-commands.test.ts`, `tests/unit/form-helper-grind.test.ts`, the scenarios `grinds/examples/bible-talk/form-approach-*.json` and `form-book-*.json`, and
 `tests/e2e/form-helper.spec.ts` (412 px; shots `form-helper-button`, `form-helper-filling`, `form-helper-finished`, `form-helper-book-*`).
+
+## Forms with no door, and why (mw-o7cts8.4)
+
+The Governor's rule (Postern general, 2026-10-23): never make people fill out forms without an option for a tutor to handle the interaction for them. Every form of Lampas that sends or saves several things has `Let the tutor do it`
+(above). These do not, and the rule is kept knowingly (PROVISIONAL: he may waive or change any of them):
+
+| Form | File | Why it has no door |
+| --- | --- | --- |
+| Get a licence | `src/gate/GetLicence.tsx` | Email and phone, then two codes sent to them. Without a licence there is no tutor, so a door cannot exist there; the codes are typed from the phone's own messages. |
+| Rename a device | `src/gate/MyDevices.tsx` | One field. |
+| Rename a list | `src/lists/VerseListScreen.tsx` | One field. |
+| Add a reference | `src/lists/EditRefs.tsx` | One field. |
+| The chapter search | `src/ChapterPicker.tsx` | One field. |
+| Import words | `src/ImportScreen.tsx` | One field. |
+| Typed Bible | `src/library/TypedBible.tsx` | One field. |
+| About you | `src/AboutYouScreen.tsx` | A page that saves as he types: there is nothing to send. |
+| Memory | `src/MemoryScreen.tsx` | A page that saves as he types: there is nothing to send. |
+| My study way | `src/StudyWayScreen.tsx` | A page that saves as he types: there is nothing to send. |
+
+A one-field form is its own question: a helper that asks the one question the field already asks adds a step, not help. A new form with two fields or more that sends or saves gets the door, or a line in this table with its reason.
 
 ## Copy an exchange
 
