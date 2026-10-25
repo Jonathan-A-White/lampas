@@ -567,6 +567,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           title={TITLE}
           book={BOOK}
           chapter={CHAPTER}
+          chapterText={chapter}
+          onLook={setLookup}
           verse={viewUnit}
           view={view}
           immersive={immersive}

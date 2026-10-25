@@ -1,11 +1,12 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable); under it one row of actions (Listen, Read it aloud,
-// Ask the tutor, Quiz me and Copy link); then what the chosen action shows; and at the foot ONE control
+// Ask the tutor, Quiz me, Diagram and Copy link); then what the chosen action shows; and at the foot ONE control
 // that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar), or for Ask the tutor voice-kit's Composer
 // (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar with his words above it, and Type a question beneath). Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
 // Quiz me (mw-5r3p30.74) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
+// Diagram (mw-souyao.3) has no foot: its pane (src/diagram/DiagramPane.tsx) is drawn under the row, and a tapped word of it opens the Reader's WordSheet through `onLook`.
 // The Reader's Talk bar is not drawn while the view is open, so two bars never stack. The chosen action is kept (src/verse/action.ts); the
 // arrows go to the verse before and the verse after, across a chapter's end. The action bodies draw their bar into `slot`, the foot of the view.
 // A section heading opens the same view for its passage (mw-5r3p30.73): `verse` is then the passage as one Verse (src/data/passage.ts: `n` its
@@ -18,7 +19,9 @@ import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
 import { InLogosDoors } from './library/InLogosDoors';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
-import type { Verse } from './data/chapter';
+import type { Chapter, Verse } from './data/chapter';
+import { DiagramPane } from './diagram/DiagramPane';
+import type { Lookup } from './WordSheet';
 import { unitId, unitName, unitReference } from './data/passage';
 import { MemorizeControl } from './memorize/MemorizeControl';
 import { ProgressMarks } from './memorize/ProgressMark';
@@ -54,6 +57,10 @@ export interface VerseViewProps {
   title: string;
   book: string;
   chapter: number;
+  /** the chapter's text: the Diagram action draws the verse's words from it */
+  chapterText: Chapter;
+  /** a word of the Diagram was tapped: the Reader opens its WordSheet on this Lookup (the way a word of the verse above opens it) */
+  onLook: (lookup: Lookup) => void;
   /** the verse shown, or the passage under a heading as one Verse (`to` set) */
   verse: Verse;
   view: 'english' | 'greek';
@@ -96,7 +103,7 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 }
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weave, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
+  const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weave, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
   const [checking, setChecking] = useState<string | null>(null);
   // The foot of the view, where the chosen action draws its bar.
@@ -157,13 +164,14 @@ export function VerseView(props: VerseViewProps) {
           )}
         </div>
         {/* One line while every label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner), else
-            three to a row over two rows; a phone with Share draws a sixth button, which needs more room. */}
+            three to a row over two rows: the five actions and Copy link are six cells. A phone with Share keeps two rows by putting Share beside Copy link in the sixth cell
+            (mw-souyao.3); only a wide row spreads them into seven. */}
         <div className="flex flex-col">
         <div className="@container">
           <div
             role="group"
             aria-label="Actions"
-            className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 ${canShare ? '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr' : '@[21rem]:grid-flow-col @[21rem]:grid-cols-none @[21rem]:auto-cols-fr'}`}
+            className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
           >
             {actionsFor(ai).map((a) => (
               <button
@@ -179,7 +187,7 @@ export function VerseView(props: VerseViewProps) {
             <LinkActions
               url={verse.to === undefined ? referenceUrl(book, chapter, verse.n) : passageUrl(book, chapter, verse.n, verse.to)}
               title={reference}
-              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&>div]:contents [&_input]:col-span-3 [&_input]:col-start-1 [&_input]:row-start-3 ${canShare ? '[&_input]:@[25rem]:col-span-6 [&_input]:@[25rem]:row-start-2' : '[&_input]:@[21rem]:col-span-6 [&_input]:@[21rem]:row-start-2'}`}
+              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_input]:col-span-3 [&_input]:col-start-1 [&_input]:row-start-3 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_input]:@[29rem]:col-span-7 [&_input]:@[29rem]:row-start-2' : '[&>div]:contents [&_input]:@[25rem]:col-span-6 [&_input]:@[25rem]:row-start-2'}`}
               statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
             />
           </div>
@@ -233,6 +241,7 @@ export function VerseView(props: VerseViewProps) {
               The tutor asks you about {name} one question at a time, in order, then helps you map how it is built.
             </p>
           ) : null}
+          {action === 'diagram' && ai ? <DiagramPane key={`${unitId(verse)}:${view}`} chapter={chapterText} verse={verse} view={view} onLook={onLook} /> : null}
         </div>
         </div>
       </div>

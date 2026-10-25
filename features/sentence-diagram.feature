@@ -3,7 +3,9 @@ Feature: Lampas draws a verse as a Reed-Kellogg diagram
   carrying the subject, the verb and what completes it, modifiers on slanted lines beneath, a subordinate clause on a base line below joined
   by a dotted line. It is wide, so it scrolls sideways in its own box and never shrinks its type. Every word is a button that reports which
   word was tapped; a word the sentence only understands is in parentheses and is no button. The renderer is proven here on the hand-written
-  diagrams of Colossians 3:1 in English and in Greek (tests/fixtures/diagrams); no screen shows it yet.
+  diagrams of Colossians 3:1 in English and in Greek (tests/fixtures/diagrams). The Verse view of a licensed phone offers it as the Diagram action
+  (mw-souyao.3): the pane asks the tutor for the verse's diagram in the Reader's mode, says it is working while the tutor thinks, draws it, opens a tapped
+  word's word sheet, offers Redraw and, when the tutor could not, says so and offers Try again.
 
   Scenario: Colossians 3:1 in English
     Given the English diagram of Colossians 3:1 is drawn
@@ -34,3 +36,42 @@ Feature: Lampas draws a verse as a Reed-Kellogg diagram
   Scenario: The picture is as wide as its words make it
     Given the English diagram of Colossians 3:1 is drawn
     Then the picture is exactly as wide as the layout says and is not scaled
+
+  Scenario: Diagram draws the verse once the tutor has worked it out
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor is slow to answer
+    When he taps Diagram
+    Then the pane says "Working it out…"
+    When the tutor answers with the English diagram
+    Then the pane draws the English diagram of Colossians 3:1 with Redraw and the line "Drawn by the tutor; Redraw if a word sits wrong"
+    And the tutor was asked once
+
+  Scenario: A tap on a word of the diagram opens its word sheet and Back returns to the diagram
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once
+    When he taps Diagram
+    And he taps the first "Christ" of the diagram
+    Then the word sheet opens with the Greek "χριστῷ"
+    When he goes Back
+    Then the word sheet is closed and the English diagram is still drawn
+
+  Scenario: A diagram the tutor could not make shows why and offers Try again
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers a tree that leaves words out
+    When he taps Diagram
+    Then the pane says "The tutor could not diagram this verse" and offers Try again
+    And no diagram is drawn
+    And nothing is kept for Colossians 3:1
+
+  Scenario: A kept diagram opens with no ask
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once
+    When he taps Diagram
+    Then the pane draws the English diagram of Colossians 3:1 with Redraw and the line "Drawn by the tutor; Redraw if a word sits wrong"
+    When he leaves the Verse view and opens it again on Diagram
+    Then the pane shows the kept diagram with the line "Drawn by the tutor; Redraw if a word sits wrong" and never says "Working it out…"
+    And the tutor was asked once
+
+  Scenario: Redraw asks the tutor again and Greek is drawn for the Greek
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once
+    When he taps Diagram
+    And he taps Redraw
+    Then the tutor was asked 2 times
+    When he switches the Reader to Greek
+    Then the pane draws the Greek diagram of Colossians 3:1

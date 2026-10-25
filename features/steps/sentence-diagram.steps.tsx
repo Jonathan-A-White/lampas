@@ -1,17 +1,28 @@
 // features/steps/sentence-diagram.steps.tsx — runs features/sentence-diagram.feature: the Reed-Kellogg renderer drawing the hand-written diagrams of Colossians 3:1
 // (tests/fixtures/diagrams). jsdom has no layout, so the renderer is given a fixed-width measure; the lines are counted in the SVG by data-kind.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
+import { App } from '../../src/App';
+import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
+import { db } from '../../src/data/db';
+import { getDiagram, setGreekInterest, setReaderView, setWeave } from '../../src/data/repositories';
+import { clearBus } from '../../src/events/bus';
+import { tutorTimings } from '../../src/services/tutor';
+import { setVerseAction } from '../../src/verse/action';
 import { layoutDiagram } from '../../src/diagram/layout';
 import { ReedKellogg } from '../../src/diagram/ReedKellogg';
 import type { DiagramMode } from '../../src/diagram/types';
+import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { loadFixture, type DiagramFixture } from '../../tests/support/diagram-fixtures';
+import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 
 afterAll(() => {
   cleanup();
+  vi.unstubAllGlobals();
+  db.close();
 });
 
 const user = userEvent.setup();
@@ -58,6 +69,66 @@ function named(mode: string): void {
   expect(box().className).toMatch(/overflow-x-auto/);
   const picture = within(box()).getByRole('img');
   expect(picture.getAttribute('aria-label')).toBe(`Sentence diagram of Colossians 3:1, ${mode}`);
+}
+
+// ---- the Verse view's Diagram action (mw-souyao.3): the whole app, a licensed phone, a fake mill that answers the sentence-diagram grind ----
+const PHONE_KEY = '00'.repeat(31) + '02';
+const WORKING = 'Working it out…';
+let fake: FakePostern;
+let release: () => void = () => undefined;
+
+/** A tree that leaves almost every word out: THE RULE fails it, on the first ask and the second. */
+const LEAVES_WORDS_OUT = { clauses: [{ clause: { subject: { words: [{ i: 0 }], modifiers: [] }, verb: { words: [{ i: 1 }], modifiers: [] } } }] };
+
+const diagramGrists = (): number => fake.received.filter((r) => r.grist.kind === 'sentence-diagram').length;
+const verseView = (): HTMLElement => screen.getByRole('region', { name: 'Verse view' });
+const pane = (): HTMLElement => within(verseView()).getByRole('region', { name: 'Diagram' });
+
+/** Opens the app on Colossians 3:1's Verse view (the address names the verse), the tutor slow, at once, or unable. */
+async function openVerse(how: 'slow' | 'at once' | 'unable'): Promise<void> {
+  cleanup();
+  clearBus();
+  vi.unstubAllGlobals();
+  window.localStorage.clear();
+  window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
+  window.localStorage.setItem('lampas.welcome', 'done');
+  window.history.replaceState(null, '', '/');
+  tutorTimings.pollMs = 20;
+  fake = makeFakePostern();
+  const english = loadFixture('english').diagram;
+  const greek = loadFixture('greek').diagram;
+  fake.replyFor = (input, kind) => {
+    if (kind !== 'sentence-diagram') return undefined;
+    if (how === 'unable') return { status: 'answered', answer: LEAVES_WORDS_OUT };
+    return { status: 'answered', answer: input.lang === 'greek' ? greek : english };
+  };
+  if (how === 'slow') fake.holds['sentence-diagram'] = new Promise<void>((resolve) => (release = resolve));
+  stubChapterFetch();
+  const chapterFetch = globalThis.fetch;
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
+  await db.open();
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.diagrams.clear()]);
+  await setGreekInterest(5);
+  await setReaderView('english');
+  await setWeave('off');
+  setVerseAction('listen');
+  window.history.replaceState(null, '', '/#/?ref=Col.3.1');
+  render(<App />);
+  await screen.findByRole('region', { name: 'Verse view' });
+}
+
+async function drawnWithRedraw(_: unknown, line: string): Promise<void> {
+  expect(await within(pane()).findByRole('img', { name: 'Sentence diagram of Colossians 3:1, English' })).toBeInTheDocument();
+  expect(within(pane()).getByRole('button', { name: 'Redraw', exact: true })).toBeInTheDocument();
+  expect(within(pane()).getByText(line)).toBeInTheDocument();
+}
+
+/** The Verse view closed by its ‹ Reader and opened again on the same verse. */
+async function reopen(): Promise<void> {
+  await user.click(within(verseView()).getByRole('button', { name: /Reader/ }));
+  await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
+  await user.click(await screen.findByRole('button', { name: 'Verse 1', exact: true }));
+  await screen.findByRole('region', { name: 'Verse view' });
 }
 
 const feature = await loadFeature('features/sentence-diagram.feature');
@@ -122,6 +193,105 @@ describeFeature(feature, ({ Scenario }) => {
       expect(svg.getAttribute('width')).toBe(String(layout.width));
       expect(svg.getAttribute('height')).toBe(String(layout.height));
       expect(svg.getAttribute('viewBox')).toBe(`0 0 ${layout.width} ${layout.height}`);
+    });
+  });
+
+  Scenario('Diagram draws the verse once the tutor has worked it out', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor is slow to answer', () => openVerse('slow'));
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    Then('the pane says {string}', async (_, text: string) => {
+      expect(await within(pane()).findByText(text)).toBeInTheDocument();
+      expect(within(pane()).queryByRole('img')).toBeNull();
+    });
+    When('the tutor answers with the English diagram', () => release());
+    Then('the pane draws the English diagram of Colossians 3:1 with Redraw and the line {string}', async (_, line: string) => {
+      expect(await within(pane()).findByRole('img', { name: 'Sentence diagram of Colossians 3:1, English' })).toBeInTheDocument();
+      expect(within(pane()).queryByText(WORKING)).toBeNull();
+      expect(within(pane()).getAllByRole('button', { name: 'Christ' })).toHaveLength(2);
+      expect(within(pane()).getByRole('button', { name: 'Redraw', exact: true })).toBeInTheDocument();
+      expect(within(pane()).getByText(line)).toBeInTheDocument();
+    });
+    And('the tutor was asked once', () => expect(diagramGrists()).toBe(1));
+  });
+
+  Scenario('A tap on a word of the diagram opens its word sheet and Back returns to the diagram', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    And('he taps the first {string} of the diagram', async (_, text: string) => {
+      await user.click((await within(pane()).findAllByRole('button', { name: text }))[0]);
+    });
+    Then('the word sheet opens with the Greek {string}', async (_, greek: string) => {
+      const sheet = await screen.findByRole('dialog', { name: 'Word' });
+      expect(within(sheet).getByTestId('sheet-word').textContent?.normalize('NFC')).toBe(greek.normalize('NFC'));
+    });
+    When('he goes Back', () => {
+      act(() => window.history.back());
+    });
+    Then('the word sheet is closed and the English diagram is still drawn', async () => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
+      expect(within(pane()).getByRole('img', { name: 'Sentence diagram of Colossians 3:1, English' })).toBeInTheDocument();
+      expect(diagramGrists()).toBe(1);
+    });
+  });
+
+  Scenario('A diagram the tutor could not make shows why and offers Try again', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers a tree that leaves words out', () => openVerse('unable'));
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    Then('the pane says {string} and offers Try again', async (_, text: string) => {
+      expect(await within(pane()).findByText(text)).toBeInTheDocument();
+      expect(within(pane()).getByRole('button', { name: 'Try again', exact: true })).toBeInTheDocument();
+    });
+    And('no diagram is drawn', () => {
+      expect(within(pane()).queryByRole('img')).toBeNull();
+      expect(within(pane()).queryByRole('button', { name: 'Redraw' })).toBeNull();
+    });
+    And('nothing is kept for Colossians 3:1', async () => {
+      expect(await getDiagram('Colossians 3:1', 'english')).toBeUndefined();
+    });
+  });
+
+  Scenario('A kept diagram opens with no ask', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    Then('the pane draws the English diagram of Colossians 3:1 with Redraw and the line {string}', drawnWithRedraw);
+    When('he leaves the Verse view and opens it again on Diagram', async () => {
+      await reopen();
+    });
+    Then('the pane shows the kept diagram with the line {string} and never says {string}', async (_, line: string, working: string) => {
+      expect(within(pane()).getByRole('img', { name: 'Sentence diagram of Colossians 3:1, English' })).toBeInTheDocument();
+      expect(within(pane()).getByText(line)).toBeInTheDocument();
+      expect(within(pane()).queryByText(working)).toBeNull();
+    });
+    And('the tutor was asked once', () => expect(diagramGrists()).toBe(1));
+  });
+
+  Scenario('Redraw asks the tutor again and Greek is drawn for the Greek', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    And('he taps Redraw', async () => {
+      await user.click(await within(pane()).findByRole('button', { name: 'Redraw', exact: true }));
+    });
+    Then('the tutor was asked {int} times', async (_, n: number) => {
+      await waitFor(() => expect(diagramGrists()).toBe(n));
+      await within(pane()).findByRole('button', { name: 'Redraw', exact: true });
+    });
+    When('he switches the Reader to Greek', async () => {
+      await act(async () => {
+        await setReaderView('greek');
+      });
+    });
+    Then('the pane draws the Greek diagram of Colossians 3:1', async () => {
+      expect(await within(pane()).findByRole('img', { name: 'Sentence diagram of Colossians 3:1, Greek' })).toBeInTheDocument();
     });
   });
 });
