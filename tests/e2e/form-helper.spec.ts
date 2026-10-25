@@ -68,8 +68,9 @@ test(`${START_LABEL} at phone width: the button, a question with a field filling
   await helper.getByLabel('Your answer').fill('example.org/greek');
   await helper.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(link).toHaveValue('example.org/greek');
-  await expect(helper.getByText(/Everything required is filled in/)).toBeVisible();
-  await expect(send).toBeEnabled();
+  // the approach form has a command (ask-for-approach): the panel ends with its offer line and a Send, and the sheet's own Send stays below
+  await expect(helper.getByText('Send this approach, credit Anna Example?')).toBeVisible();
+  await expect(send.last()).toBeEnabled();
 
   // every control of the panel clears 48 px and fits the phone; nothing was sent
   for (const control of await helper.getByRole('button').all()) {
@@ -77,7 +78,7 @@ test(`${START_LABEL} at phone width: the button, a question with a field filling
     expect(box?.height).toBeGreaterThanOrEqual(47.5);
     expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(PHONE.width);
   }
-  expect(await helper.getByLabel('Your answer').count()).toBe(0);
+  expect(await helper.getByLabel('Your answer').count()).toBe(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
   expect(fake.received.filter((r) => r.grist.kind === 'feedback')).toHaveLength(0);
   await shot(page, 'form-helper-finished');

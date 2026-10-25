@@ -70,6 +70,16 @@ Feature: Ask for more
     And he sends the form with the evidence
     Then the mill received a second grist of kind "translation" that carries "1 verse, 3 recalls, 3 passed, gap 2 days" and the 3 recalls of "Rom.8.28"
 
+  Scenario: On A text the tutor can do the form: Let the tutor do it is at its top and its Send posts the grist
+    Given the Ask for more page is open in the app
+    When he opens the form "A text"
+    Then "Let the tutor do it" is at the top of the form
+    When he lets the tutor do it and its answer fills "Which text?" with "The Septuagint"
+    Then the form holds "The Septuagint" in "Which text?"
+    When he taps the Send the panel ends with
+    Then the mill received one feedback grist of kind "text" with the name "The Septuagint" alone and the app version
+    And the form says "Sent: the factory has it"
+
   Scenario: A phone that has recalled nothing is not offered his evidence
     Given the Ask for more page is open in the app
     When he opens the form "A text"

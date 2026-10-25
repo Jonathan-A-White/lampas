@@ -305,11 +305,18 @@ around them) before it is kept (mw-5r3p30.193; `umbrella` and `Uh-oh` are not to
 Checks: `tests/unit/fillers.test.ts`, `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
 in `features/bible-talk.feature` and "What he asked is shown above the answer cleaned up" in `features/tutor.feature`.
 
-## Let the tutor do it (mw-5r3p30.117, mw-o7cts8.2)
+## Let the tutor do it (mw-5r3p30.117, mw-o7cts8.2, mw-o7cts8.3)
 
 A form must never scare him off, so a form can offer a button at its top, `Let the tutor do it` (one label on every form; `src/formHelper/startLabel.ts`;
-PROVISIONAL). The forms that have the door: **Ask for another approach** (Settings > Grammar approach) and **Ask for a book** (the Library card, the idea
-sheet, Settings > Daily, Ask for more). It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
+PROVISIONAL). The forms that have the door, each with the command its Send runs (`name`, a `confirm` command):
+
+| Form | Where | Command | Its FormSpec |
+| --- | --- | --- | --- |
+| Ask for another approach | Settings > Grammar approach | `ask-for-approach` (`src/services/formCommands.ts` `askForApproachCommand`) | `APPROACH_FORM` (`approachForm.ts`): `approach`, `pictures`, `credit`, `link` |
+| An approach or programme, A text, A translation | Settings > More > Ask for more | `ask-for-more` (`askForMoreCommand(kind)`; its args carry `kind`, one of `MORE_KINDS`, beside the fields) | `MORE_FORMS[kind]` (`moreForms.ts`): `name`, `why`, `link` |
+| Ask for a book | the Library card, the idea sheet, Settings > Daily, Ask for more | `ask-for-book` (`src/library/bookCommand.ts`) | `BOOK_FORM` (`bookForm.ts`): `title`, `kind`, `why` |
+
+(A study resource is asked for as a book.) It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
 asks ONE question at a time in plain words (`What approach would you like to suggest, and how does it teach?`), he answers in the panel's field and
 `Reply`, and the matching field of the form fills and is ringed and scrolled into view, so he sees it fill. When the tutor asks for a photo the panel
 offers `Choose a photo` (the form's own file picker, opened in that tap) and `No photo`; a photo he adds meanwhile is told to the tutor. A **choice** field
@@ -328,7 +335,16 @@ It is one reusable piece in `src/formHelper/`, on voice-kit's `@voice-kit/forms`
 `requiredFilled`, `oneQuestion`, `argsOf` and `formCommand`, re-exported by `formHelper.ts` under the names Lampas uses; Lampas keeps only
 `buildFormRequest`). A form describes itself as a `FormSpec` (name, and per field its `name`, `label`, `hint`, `required`, `kind` text | link | choice | pictures,
 `maxLength`, a choice's `options`; the approach form is `approachForm.ts`, Ask for a book's is `src/library/bookForm.ts` `BOOK_FORM`) and adds the door with one
-element: `<FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => ...} onReady={...} command={COMMAND} />`.
+element: `<FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => ...} onReady={...} command={COMMAND} commandArgs={{ kind }} />` (`commandArgs`: what the command takes beside the fields).
+
+**Ask for another approach and Ask for more** (mw-o7cts8.3): each form's own Send and the panel's Send are one path, the sheet's `sendWith(args)` (sending, sent, failed with Retry), which
+runs the command, and the command posts one `feedback` grist through `submitFeedback` (`buildFeedbackRequest` for `ask-for-approach`, `buildMoreRequest` for `ask-for-more`): what is sent is
+what each form sent before. A value over its limit (the args schema's, `checkArgs`) is refused before anything is posted. The pictures are never the tutor's: the approach sheet hands the command
+the pictures it holds (`approachCommand({ pictures })`) and the picker stays the form's own. `ask-for-more` takes `kind` beside the fields, so one name serves the three forms; the panel gives it
+through `FormHelper`'s `commandArgs`. His memorizing evidence goes with an Ask for more ask only when its switch is On when he taps Send, from either Send. The page keeps its Ask the tutor over
+`ASK_BEGUN`, and with no licence draws no form and no door. `submitFeedback(` is called only in `formCommands.ts`, `bookRequests.ts`, `feedback.ts` and `talk/offers.ts` (`tests/unit/feedback-shared.test.ts`).
+The panel's offer lines: `Send this approach, credit Anna Example?`, `Send A text: The Septuagint?`. Checks: `tests/unit/form-commands.test.ts`, `features/ask-approach.feature` (the form's Send and the door's post the same body),
+`features/ask-for-more.feature` (A text through the door).
 
 **Ask for a book** (`src/library/AskForBook.tsx`): fields `title` (`Which book?`), `kind` (a choice over the kinds' singular names: Lexicon, Grammar, ...) and `why`.
 `src/library/bookCommand.ts` is the command `ask-for-book` (`formCommand(BOOK_FORM, ...)`; `askForBook(` is called only there): `bookRefusal`'s line when the
@@ -345,7 +361,7 @@ the choice rule and the Send rule are in it; the instructions stay under the 99,
 kept in the panel only (no table): closing the sheet ends it.
 
 Checks: `features/form-helper.feature` (both forms), `features/ask-for-book.feature` (the hand's Send and the door's post the same fields), `tests/unit/form-helper.test.ts`,
-`tests/unit/book-command.test.ts`, `tests/unit/form-helper-grind.test.ts`, the scenarios `grinds/examples/bible-talk/form-approach-*.json` and `form-book-*.json`, and
+`tests/unit/book-command.test.ts`, `tests/unit/form-commands.test.ts`, `tests/unit/form-helper-grind.test.ts`, the scenarios `grinds/examples/bible-talk/form-approach-*.json` and `form-book-*.json`, and
 `tests/e2e/form-helper.spec.ts` (412 px; shots `form-helper-button`, `form-helper-filling`, `form-helper-finished`, `form-helper-book-*`).
 
 ## Copy an exchange

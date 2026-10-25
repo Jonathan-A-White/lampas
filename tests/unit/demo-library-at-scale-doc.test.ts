@@ -67,7 +67,7 @@ const STEPS: { step: number; labels: [label: string, file: string, drawn?: strin
       ['Ask for a book', 'src/library/LibraryScreen.tsx'],
       ['Search your other books', 'src/library/AskForBook.tsx'],
       ['Send', 'src/library/AskForBook.tsx'],
-      ['Sent: the factory has it', 'src/AskApproachSheet.tsx'],
+      ['Sent: the factory has it', 'src/services/formCommands.ts'],
       ['Your requests', 'src/settings/rows.ts'],
       ['Account', 'src/settings/rows.ts'],
       ['Filed', 'node_modules/pwa-kit/packages/requests/dist/status.js'],

@@ -1,12 +1,15 @@
 // src/AskApproachSheet.tsx — Settings > Grammar approach > Ask for another approach: the bottom sheet where he says what approach he
 // wants and how it teaches, adds up to four screenshots or photos (each shrunk on the phone, src/images/shrink.ts) and names who to
-// credit, with a link if there is one. Send posts a 'feedback' grist to the factory (src/services/feedback.ts). Send waits for the
-// text and the credit; Back, Done, Escape, a swipe down or a tap outside close the sheet (src/ui/sheetBack.ts).
+// credit, with a link if there is one. Send posts a 'feedback' grist to the factory through the ask-for-approach command (src/services/formCommands.ts), the one
+// path the sheet's Send and the Send of 'Let the tutor do it' (src/formHelper/) both take. Send waits for the text and the credit; Back, Done, Escape, a swipe
+// down or a tap outside close the sheet (src/ui/sheetBack.ts).
 import { useEffect, useId, useRef, useState } from 'react';
+import { argsOf, type FormArgs } from './formHelper/formHelper';
 import { FormHelper } from './formHelper/FormHelper';
 import { APPROACH_FORM, CREDIT_HINT, LINK_HINT } from './formHelper/approachForm';
 import { shrinkImage } from './images/shrink';
-import { buildFeedbackRequest, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, submitFeedback } from './services/feedback';
+import { MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES } from './services/feedback';
+import { approachCommand, askForApproachCommand, SENT_LINE } from './services/formCommands';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
 import { focusOnMount } from './ui/focus';
 import { isTooLong } from './ui/lengthLimit';
@@ -15,7 +18,7 @@ import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { LimitedInput } from './ui/LimitedField';
 
-export const SENT_LINE = 'Sent: the factory has it';
+export { SENT_LINE };
 
 const NUMBER_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
 /** The line when he picks more pictures than a grist carries. */
@@ -106,21 +109,30 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
     setNotice(null);
   }
 
-  async function send(): Promise<void> {
-    if (!ready || busy) return;
+  /** The one way to the grist: his tap on this sheet's Send and the Send the tutor's panel ends with both come here, and the sheet shows what it did. */
+  async function sendWith(args: FormArgs): Promise<{ said: string }> {
+    if (busy) return { said: 'Sending…' };
+    if (shrinking > 0) return { said: 'The pictures are still being shrunk.' };
     setPhase({ name: 'sending' });
     try {
-      const files = await Promise.all(
-        pictures.map(async (p, i) => ({ bytes: new Uint8Array(await p.blob.arrayBuffer()), mime: 'image/jpeg', name: `picture-${i + 1}.jpg` })),
-      );
-      await submitFeedback(buildFeedbackRequest(text, name, link), { files, signal: live.current.signal });
-      if (live.current.signal.aborted) return;
-      setPhase({ name: 'sent' });
+      // the one command both Sends run, with the pictures this sheet holds
+      const result = await approachCommand({
+        pictures: () => Promise.all(pictures.map(async (p, i) => ({ bytes: new Uint8Array(await p.blob.arrayBuffer()), mime: 'image/jpeg', name: `picture-${i + 1}.jpg` }))),
+        signal: () => live.current.signal,
+      }).run(args);
+      if (!live.current.signal.aborted) setPhase({ name: 'sent' });
+      return result;
     } catch (err) {
-      if (live.current.signal.aborted) return;
       const error = err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
-      setPhase({ name: 'failed', failure: error.failure, detail: error.message });
+      if (!live.current.signal.aborted) setPhase({ name: 'failed', failure: error.failure, detail: error.message });
+      return { said: FAILURE_TITLES[error.failure] };
     }
+  }
+  const door = { ...askForApproachCommand, run: sendWith };
+
+  async function send(): Promise<void> {
+    if (!ready || busy) return;
+    await sendWith(argsOf(APPROACH_FORM, { approach: text, credit: name, link }));
   }
 
   const sent = phase.name === 'sent';
@@ -148,6 +160,7 @@ export function AskApproachSheet({ onClose }: { onClose: () => void }) {
             form={APPROACH_FORM}
             values={{ approach: text, pictures: pictures.length ? `${pictures.length} ${pictures.length === 1 ? 'picture' : 'pictures'} added` : '', credit: name, link }}
             onFill={fill}
+            command={door}
             onPicker={() => picker.current?.click()}
             onReady={() => {
               atTop.current = true;

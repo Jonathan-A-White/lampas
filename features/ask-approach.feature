@@ -61,3 +61,12 @@ Feature: Ask for another approach
     Then the approach box holds all 1500 characters
     And the sheet shows "1500 of 1200" in the warning colour
     And the Send button is disabled and says the approach is too long
+
+  Scenario: The tap on the form's Send and the door's Send post the same body for the same values
+    Given the Ask for another approach sheet is open
+    When he types the approach, the credit name and the link by hand and taps the form's Send
+    Then the mill received one grist of the kind feedback, kept as the hand's body
+    When the sheet is opened again and the tutor fills the same three values
+    And he lets the tutor do it and taps the Send the panel ends with
+    Then the mill received one grist of the kind feedback whose body is the hand's, field by field
+    And the sheet shows "Sent: the factory has it"

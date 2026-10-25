@@ -177,11 +177,13 @@ describeFeature(feature, ({ Scenario }) => {
     And('the tutor lastly asks one question: {string}', asks);
     When('he finally answers {string}', (_, text: string) => answers(text));
     Then('the field {string} also holds {string}', holds);
-    And('the tutor says everything required is filled in', async () => {
-      await waitFor(() => expect(within(helper()).getByText(/Everything required is filled in/)).toBeInTheDocument());
-    });
-    And('the Send button is enabled', () => {
-      expect(within(sheet()).getByRole('button', { name: 'Send' })).toBeEnabled();
+    And('the panel shows {string} with a Send button', panelOffers);
+    And("the sheet's own Send button is enabled", () => {
+      const own = within(sheet())
+        .getAllByRole('button', { name: 'Send' })
+        .filter((button) => !helper().contains(button));
+      expect(own).toHaveLength(1);
+      expect(own[0]).toBeEnabled();
     });
     And('the form was not sent', () => {
       expect(fake.received.filter((r) => r.grist.kind === 'feedback')).toHaveLength(0);
