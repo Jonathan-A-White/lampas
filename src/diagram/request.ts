@@ -69,7 +69,7 @@ export function buildDiagramRequest(chapter: Chapter, verses: readonly Verse[], 
         }
       });
       verse.g.forEach((word) => {
-        greek.push({ text: word.t.replace(GREEK_EDGE, ''), lemma: word.l, parse: word.p, ...(word.e !== undefined ? { chunk: word.e } : {}), ...mark });
+        greek.push({ text: greekText(word), lemma: word.l, parse: word.p, ...(word.e !== undefined ? { chunk: word.e } : {}), ...mark });
       });
     } else {
       verse.g.forEach((word, w) => {
