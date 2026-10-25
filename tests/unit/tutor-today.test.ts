@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { localDate, setTicked } from '../../src/data/daily/dailyStore';
-import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalSetting } from '../../src/settings/definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalSetting } from '../../src/settings/definitions';
 import { setSetting } from '../../src/settings/store';
 import { db } from '../../src/data/db';
 import { dailyReadings } from '../../src/data/daily/psalmsProverbs';
@@ -44,11 +44,12 @@ describe('todayNow: the items behind the chip', () => {
     const readings = dailyReadings(NOW);
     const items = await todayNow(NOW);
     expect(items).toBeDefined();
-    // review, plan (no plan started), the day's passages, devotional: as many as todayPieces counts
-    expect(items).toHaveLength(2 + readings.length + 1);
+    // review, memorize (nothing memorized), plan (no plan started), the day's passages, devotional: as many as todayPieces counts
+    expect(items).toHaveLength(3 + readings.length + 1);
     expect(items![0]).toEqual({ kind: 'review', title: 'Review: 1 due', done: true });
-    expect(items![1]).toEqual({ kind: 'plan', title: 'Reading plan', done: false });
-    const passages = items!.slice(2, 2 + readings.length);
+    expect(items![1]).toEqual({ kind: 'memorize', title: 'Memorize: pick verses in a list', done: false });
+    expect(items![2]).toEqual({ kind: 'plan', title: 'Reading plan', done: false });
+    const passages = items!.slice(3, 3 + readings.length);
     expect(passages.map((i) => i.kind)).toEqual(readings.map((r) => (r.code === 'psa' ? 'psalm' : 'proverb')));
     expect(passages[0].title).toMatch(/^(Psalm|Proverbs) \d+$/);
     expect(items!.at(-1)).toMatchObject({ kind: 'devotional', done: false });
@@ -66,6 +67,8 @@ describe('todayNow: the items behind the chip', () => {
   it('leaves out a piece that is Off, and is undefined when Today holds nothing', async () => {
     await setSetting(dailyReviewSetting, 'off');
     await setSetting(dailyPsalmsSetting, 'off');
+    expect((await todayNow(NOW))!.map((i) => i.kind)).toEqual(['memorize', 'plan', 'devotional']);
+    await setSetting(dailyMemorizeSetting, 'off');
     expect((await todayNow(NOW))!.map((i) => i.kind)).toEqual(['plan', 'devotional']);
     await setSetting(dailyPlanSetting, 'off');
     await setSetting(dailyDevotionalSetting, 'off');
@@ -74,6 +77,7 @@ describe('todayNow: the items behind the chip', () => {
 
   it('names the devotional Today shows', async () => {
     await setSetting(dailyReviewSetting, 'off');
+    await setSetting(dailyMemorizeSetting, 'off');
     await setSetting(dailyPlanSetting, 'off');
     await setSetting(dailyPsalmsSetting, 'off');
     await setSetting(devotionalSetting, 'LLS:20.10.1');

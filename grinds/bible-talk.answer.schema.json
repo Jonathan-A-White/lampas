@@ -741,6 +741,7 @@
                   "readingPlan",
                   "logosBible",
                   "dailyReview",
+                  "dailyMemorize",
                   "dailyPlan",
                   "dailyPsalms",
                   "dailyDevotional",
@@ -1020,6 +1021,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "dailyReview" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "dailyMemorize" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

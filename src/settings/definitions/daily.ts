@@ -1,4 +1,4 @@
-// Daily (Settings > Daily): which pieces Today holds (Review, Plan chapter, Psalms and Proverbs, Devotional; all On to start), which devotional it shows (one of the
+// Daily (Settings > Daily): which pieces Today holds (Review, Memorize, Plan chapter, Psalms and Proverbs, Devotional; all On to start), which devotional it shows (one of the
 // 37 in src/data/daily/devotionals.ts that are On in Your Logos library, or Random among those), and whether each piece has a box he ticks himself (On to start, PROVISIONAL). Today itself
 // is a later story (mw-1fwagb.5); these are the settings it reads.
 import { ALL_TICKED, DEFAULT_DEVOTIONAL, DEVOTIONALS, NONE_TICKED, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
@@ -25,25 +25,32 @@ export const dailyReviewSetting = piece(
   'Whether Today holds a Review piece: the words and ideas that are due.',
 );
 
+export const dailyMemorizeSetting = piece(
+  'dailyMemorize',
+  'Memorize',
+  'Today holds the verses due to recall.',
+  'Whether Today holds the verses due to recall.',
+);
+
 export const dailyPlanSetting = piece(
   'dailyPlan',
   'Plan chapter',
   "Today holds your reading plan's chapter.",
-  "Whether Today holds the reading plan's chapter for the day, to read in Logos. With no plan started there is nothing to show.",
+  "Whether Today holds the reading plan's chapter for the day. With no plan started there is nothing to show.",
 );
 
 export const dailyPsalmsSetting = piece(
   'dailyPsalms',
   'Psalms and Proverbs',
   "Today holds the day's Psalms and Proverbs.",
-  "Whether Today holds the day's Psalms and Proverbs: on day N of the month, Psalms N, N+30, N+60, N+90 and N+120 (those up to 150) and Proverbs N, each opened in Logos.",
+  "Whether Today holds the day's Psalms and Proverbs: on day N of the month, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N.",
 );
 
 export const dailyDevotionalSetting = piece(
   'dailyDevotional',
   'Devotional',
   'Today holds one devotional for the day.',
-  'Whether Today holds a devotional, opened in Logos at the day. Which one is the choice below.',
+  'Whether Today holds a devotional, opened in Logos at the day.',
 );
 
 export const devotionalSetting = defineSetting<string>({

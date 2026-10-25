@@ -1,7 +1,7 @@
 Feature: The Reader's top is one slim row of chips
   Today, the goal, the tip and New words used to be three or four full-width strips between the header and the text, and the
   reading text started a third of the way down the screen. They are now compact chips in ONE slim row under the header (src/ReaderChips.tsx):
-  'Today · 1 of 7', 'Goal 6/16', 'Tip' and 'New 3'. The Today chip (src/today/TodayChip.tsx) replaced the Due and Plan chips: Review and the reading plan are pieces of Today. It counts the
+  'Today · 1 of 7', 'Goal 6/16', 'Tip' and 'New 3'. The Today chip (src/today/TodayChip.tsx) replaced the Due and Plan chips: Review, Memorize and the reading plan are pieces of Today. It counts the
   pieces Today holds and those he has ticked ('Today · k of n'), says just 'Today' with Tick boxes off, and is not drawn when every Daily piece is off. Each chip does on tap what its strip did,
   a chip with nothing to show is not drawn, and each keeps an accessible name with the full text. The row is hidden while a chapter is read aloud, as the strips were. The line '<n> words in Greek' sits at its right end.
 

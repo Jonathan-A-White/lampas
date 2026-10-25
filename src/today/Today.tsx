@@ -1,4 +1,4 @@
-// src/today/Today.tsx — Today (#/today, mw-1fwagb.5, the grilling mw-6ww.126): the day's pieces in one list, each a tap into its drill or Logos: Review (n due, opens Review), the
+// src/today/Today.tsx — Today (#/today, mw-1fwagb.5, the grilling mw-6ww.126): the day's pieces in one list, each a tap into its drill or Logos: Review (n due, opens Review), Memorize (n verses due, a tap starts the longest overdue verse's session; pick verses in a list while none is memorized), the
 // reading plan's next chapter (Read in Logos, Read in Lampas, Listen in Audible), the day's Psalms and Proverbs (src/data/daily/psalmsProverbs.ts, each opens Logos), and today's
 // devotional (opens Logos at the day). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Read in Logos needs Logos On, Listen in Audible an
 // Audio Bible). A tap on the plan's place opens src/plan/PlacePicker.tsx, where he says where he is (I'm at the Reader's chapter, or Pick a place), with Undo for a few seconds. With Tick boxes On each piece has a box HE ticks (nothing ticks by itself, not even by opening the link); Off, Today is a plain list of links. A link tap is also kept as
@@ -12,7 +12,7 @@ import { dailyReadings } from '../data/daily/psalmsProverbs';
 import { countDue, getLogosBible, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
-import { backTo, navigate, openReader } from '../nav/route';
+import { backTo, navigate, openMemorizeSession, openReader } from '../nav/route';
 import { oneTap } from '../ui/settle';
 import { useScrollMemory } from '../nav/scrollMemory';
 import { chapterName } from '../plan/chapterName';
@@ -28,10 +28,11 @@ import { chapterLink, verseLink } from '../resources/logosBible';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from '../resources/audioBible';
 import { armFallback } from '../resources/openApp';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
-import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, audioBibleSetting, devotionalDrawSetting, devotionalSetting } from '../settings/definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, audioBibleSetting, devotionalDrawSetting, devotionalSetting } from '../settings/definitions';
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { useReportScreen } from '../tutor/screenContext';
+import { memorizeLine, memorizeToday } from './memorizeLine';
 import { readRanges, readRuns } from './readToday';
 import { openedTitles, passageName, todayFacts } from './tutorFacts';
 import { useToday } from './useToday';
@@ -100,6 +101,31 @@ function ReviewPiece({ ticks }: { ticks: Ticks }) {
           <button type="button" onClick={open} className={LINK}>
             <span className="text-lg font-medium text-accent">{due === 0 ? 'Nothing due' : `${due} due`}</span>
             <span className="text-sm text-muted">{due === 0 ? 'Open Review anyway' : 'Open Review'}</span>
+          </button>
+        </Piece>
+      </List>
+    </section>
+  );
+}
+
+/** Memorize: how many verses are due; a tap starts the longest overdue verse's session, or opens the Memorize home when none is due, or the lists while no verse is memorized. */
+function MemorizePiece({ ticks }: { ticks: Ticks }) {
+  const today = useLatestLiveQuery(() => memorizeToday());
+  if (today === undefined) return null;
+  const line = memorizeLine(today);
+  const open = (): void => {
+    void markOpened(ticks.date, 'memorize');
+    if (today.first) openMemorizeSession(today.first.ref, today.first.lang);
+    else navigate(today.any ? 'memorize' : 'lists');
+  };
+  return (
+    <section aria-label="Memorize">
+      <h2 className={HEADING}>Memorize</h2>
+      <List>
+        <Piece id="memorize" label="Memorize" ticks={ticks}>
+          <button type="button" onClick={open} className={LINK}>
+            <span className="text-lg font-medium text-accent">{line}</span>
+            <span className="text-sm text-muted">{today.first ? 'Start the first verse' : today.any ? 'Open Memorize' : 'Open your verse lists'}</span>
           </button>
         </Piece>
       </List>
@@ -290,6 +316,7 @@ function DevotionalPiece({ ticks, today, pick }: { ticks: Ticks; today: Date; pi
 /** What Today could hold, each with the Settings row that turns it on. */
 const COULD_HOLD: readonly { key: string; name: string; text: string }[] = [
   { key: 'dailyReview', name: 'Review', text: 'the words and ideas that are due' },
+  { key: 'dailyMemorize', name: 'Memorize', text: 'the verses you are memorizing that are due' },
   { key: 'dailyPlan', name: 'Reading plan', text: "the reading plan's chapter for the day" },
   { key: 'dailyPsalms', name: 'Psalms and Proverbs', text: "the day's Psalms and Proverbs, opened in Logos" },
   { key: 'dailyDevotional', name: 'Devotional', text: 'one devotional for the day, opened in Logos' },
@@ -335,13 +362,14 @@ export function Today() {
   const today = useToday();
   const date = localDate(today);
   const review = useSetting(dailyReviewSetting);
+  const memorize = useSetting(dailyMemorizeSetting);
   const plan = useSetting(dailyPlanSetting);
   const psalms = useSetting(dailyPsalmsSetting);
   const devotional = useSetting(dailyDevotionalSetting);
   const tickBoxes = useSetting(dailyTicksSetting);
   const day = useLiveQuery(() => getDay(date), [date]);
   const scrollRef = useScrollMemory('today');
-  const shown = [review, plan, psalms, devotional];
+  const shown = [review, memorize, plan, psalms, devotional];
   const ready = !shown.includes(undefined) && tickBoxes !== undefined && day !== undefined;
   const none = ready && shown.every((s) => s === 'off');
   // what the tutor is told: the date, what is On and the pieces he opened today by name (this date's list only), so it can open by naming what he read
@@ -367,6 +395,7 @@ export function Today() {
         <div>
           {!ready ? null : none ? <Nothing /> : null}
           {ready && review === 'on' ? <ReviewPiece ticks={ticks} /> : null}
+          {ready && memorize === 'on' ? <MemorizePiece ticks={ticks} /> : null}
           {ready && plan === 'on' ? <PlanPiece ticks={ticks} date={date} /> : null}
           {ready && psalms === 'on' ? <PsalmsPiece ticks={ticks} today={today} /> : null}
           {ready && devotional === 'on' ? <DevotionalPiece ticks={ticks} today={today} pick={day?.devotional} /> : null}

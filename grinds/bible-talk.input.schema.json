@@ -424,7 +424,7 @@
       }
     },
     "today": {
-      "description": "Optional. What Today holds for him now: the items behind the 'Today · 2 of 9' chip in the Reader's row, in the order Today draws them, at most 12. Each: `kind` ('review', 'plan', 'psalm', 'proverb' or 'devotional'), `title` (what Today calls it: 'Review: 17 due', 'Reading plan: 3 John 1', 'Psalm 5', the devotional's name) and `done` (true if he ticked it today, false if not; missing for every item while his Tick boxes setting is Off, when nothing can be ticked). Missing when Today holds nothing, and in a quiz and the welcome. It is the app's own list: name items from it when he asks what is on today's drill or what is left, never say you cannot see it, and never add an item to it (see the instructions, 'A talk from a screen').",
+      "description": "Optional. What Today holds for him now: the items behind the 'Today · 2 of 9' chip in the Reader's row, in the order Today draws them, at most 12. Each: `kind` ('review', 'memorize', 'plan', 'psalm', 'proverb' or 'devotional'), `title` (what Today calls it: 'Review: 17 due', 'Memorize: 2 verses due', 'Reading plan: 3 John 1', 'Psalm 5', the devotional's name) and `done` (true if he ticked it today, false if not; missing for every item while his Tick boxes setting is Off, when nothing can be ticked). Missing when Today holds nothing, and in a quiz and the welcome. It is the app's own list: name items from it when he asks what is on today's drill or what is left, never say you cannot see it, and never add an item to it (see the instructions, 'A talk from a screen').",
       "type": "array",
       "maxItems": 12,
       "items": {
@@ -432,7 +432,7 @@
         "additionalProperties": false,
         "required": ["kind", "title"],
         "properties": {
-          "kind": { "type": "string", "enum": ["review", "plan", "psalm", "proverb", "devotional"] },
+          "kind": { "type": "string", "enum": ["review", "memorize", "plan", "psalm", "proverb", "devotional"] },
           "title": { "type": "string", "minLength": 1, "maxLength": 120 },
           "done": { "type": "boolean" }
         }

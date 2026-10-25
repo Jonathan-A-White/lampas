@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { CHIP, CHIP_ACCENT } from '../chipStyle';
 import { getDay, localDate } from '../data/daily/dailyStore';
 import { navigate } from '../nav/route';
-import { dailyDevotionalSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting } from '../settings/definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting } from '../settings/definitions';
 import { useSetting } from '../settings/store';
 import { todayPieces, tickedCount } from './pieces';
 import { useToday } from './useToday';
@@ -14,13 +14,14 @@ export function TodayChip() {
   const today = useToday();
   const date = localDate(today);
   const review = useSetting(dailyReviewSetting);
+  const memorize = useSetting(dailyMemorizeSetting);
   const plan = useSetting(dailyPlanSetting);
   const psalms = useSetting(dailyPsalmsSetting);
   const devotional = useSetting(dailyDevotionalSetting);
   const tickBoxes = useSetting(dailyTicksSetting);
   const day = useLiveQuery(() => getDay(date), [date]);
-  if (review === undefined || plan === undefined || psalms === undefined || devotional === undefined || tickBoxes === undefined || day === undefined) return null;
-  const pieces = todayPieces({ review, plan, psalms, devotional }, today);
+  if (review === undefined || memorize === undefined || plan === undefined || psalms === undefined || devotional === undefined || tickBoxes === undefined || day === undefined) return null;
+  const pieces = todayPieces({ review, plan, psalms, devotional, memorize }, today);
   if (pieces.length === 0) return null;
   const text = tickBoxes === 'on' ? `Today · ${tickedCount(pieces, day.ticked)} of ${pieces.length}` : 'Today';
   return (

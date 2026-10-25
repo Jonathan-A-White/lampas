@@ -141,17 +141,17 @@ async function openToday(page: Page, rows: { key: string; value: string }[] = []
 const piece = (page: Page, name: string) => page.getByRole('region', { name, exact: true });
 const boxes = (page: Page) => page.getByRole('checkbox');
 
-test('Today lists the four pieces by default, and the Psalms and Proverbs are those of the date', async ({ page }) => {
+test('Today lists the five pieces by default, and the Psalms and Proverbs are those of the date', async ({ page }) => {
   await openToday(page);
-  for (const name of ['Review', 'Reading plan', 'Psalms and Proverbs', 'Devotional']) await expect(piece(page, name)).toBeVisible();
+  for (const name of ['Review', 'Memorize', 'Reading plan', 'Psalms and Proverbs', 'Devotional']) await expect(piece(page, name)).toBeVisible();
 
   const psalms = piece(page, 'Psalms and Proverbs');
   await expect(psalms.locator('[data-piece]')).toHaveText(readingsOn(TODAY.day).map((name) => `${name}Open in Logos`));
   await expect(piece(page, 'Reading plan').getByRole('button', { name: 'Start a plan' })).toBeVisible();
   await expect(piece(page, 'Devotional')).toContainText('Morning and Evening');
   await expect(piece(page, 'Review')).toContainText(/\d+ due|Nothing due/);
-  // a box for each piece: Review, plan, the passages, devotional
-  await expect(boxes(page)).toHaveCount(3 + readingsOn(TODAY.day).length);
+  // a box for each piece: Review, Memorize, plan, the passages, devotional
+  await expect(boxes(page)).toHaveCount(4 + readingsOn(TODAY.day).length);
   for (const box of await boxes(page).all()) {
     const size = await box.boundingBox();
     expect(size?.height).toBeGreaterThanOrEqual(43.5);
@@ -252,11 +252,11 @@ test('the plan row offers Read in Logos only with Logos on and Listen in Audible
 });
 
 test('with everything off Today explains what it could hold, with a link to each row, and says it once', async ({ page }) => {
-  const off = ['dailyReview', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' }));
+  const off = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' }));
   await openToday(page, off);
   const explained = page.getByTestId('today-explained');
   await expect(explained).toBeVisible();
-  for (const name of ['Review', 'Reading plan', 'Psalms and Proverbs', 'Devotional']) await expect(explained.getByRole('button', { name: `Turn on ${name} in Settings` })).toBeVisible();
+  for (const name of ['Review', 'Memorize', 'Reading plan', 'Psalms and Proverbs', 'Devotional']) await expect(explained.getByRole('button', { name: `Turn on ${name} in Settings` })).toBeVisible();
   await expect(boxes(page)).toHaveCount(0);
   await shot(page, 'today-explained');
 

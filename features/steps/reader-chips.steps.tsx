@@ -163,7 +163,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   /** What Today holds on the day with every Daily piece On (the settings' defaults), the day's Psalms and Proverbs counted one by one. */
-  const holds = (): number => todayPieces({ review: 'on', plan: 'on', psalms: 'on', devotional: 'on' }, new Date()).length;
+  const holds = (): number => todayPieces({ review: 'on', memorize: 'on', plan: 'on', psalms: 'on', devotional: 'on' }, new Date()).length;
   const countRead = (ticked: number) => async () => {
     await waitFor(async () => expect((await todayChip()).textContent).toBe(`Today · ${ticked} of ${holds()}`));
   };
@@ -191,7 +191,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given(WITH_EVERYTHING, withEverything);
     When('he turns every Daily piece off', async () => {
       await todayChip();
-      await db.settings.bulkPut(['dailyReview', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' })));
+      await db.settings.bulkPut(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' })));
     });
     Then('the row under the header has no Today chip', async () => {
       await waitFor(() => expect(screen.queryByTestId('today-chip')).toBeNull());

@@ -11,12 +11,12 @@ export interface PieceNames {
   devotional?: string;
 }
 
-/** The names of the pieces whose link he opened ('review', 'plan', 'devotional', 'psa.5'), in the order he opened them; a piece it cannot name is left out. */
+/** The names of the pieces whose link he opened ('review', 'memorize', 'plan', 'devotional', 'psa.5'), in the order he opened them; a piece it cannot name is left out. */
 export function openedTitles(opened: readonly string[], names: PieceNames): string[] {
   const titles: string[] = [];
   for (const id of opened) {
     const passage = /^(psa|pro)\.(\d+)$/.exec(id);
-    const title = id === 'review' ? 'Review' : id === 'plan' ? names.plan : id === 'devotional' ? names.devotional : passage ? passageName(passage[1], Number(passage[2])) : undefined;
+    const title = id === 'review' ? 'Review' : id === 'memorize' ? 'Memorize' : id === 'plan' ? names.plan : id === 'devotional' ? names.devotional : passage ? passageName(passage[1], Number(passage[2])) : undefined;
     if (title) titles.push(title);
   }
   return titles;

@@ -1,7 +1,7 @@
 // src/data/daily/dailyStore.ts — what Today remembers (mw-1fwagb.5): per LOCAL date, the pieces he ticked himself and the pieces whose link he opened (the opened list is
 // for the later stories that count days), and whether the 'what Today could hold' explanation has been shown and then answered. One JSON object in the settings
 // store under 'dailyDone' (like readingPlan.ts), outside the settings registry; no Dexie version. A date is 'YYYY-MM-DD' on the phone's clock, never the UTC one, so
-// a new local date starts empty. A piece is 'review', 'plan', 'devotional' or a passage ('psa.5', 'pro.5'). Nothing ticks by itself: only setTicked writes a tick.
+// a new local date starts empty. A piece is 'review', 'memorize', 'plan', 'devotional' or a passage ('psa.5', 'pro.5'). Nothing ticks by itself: only setTicked writes a tick.
 import { db } from '../db';
 import { anotherDevotional } from './devotionals';
 
@@ -12,7 +12,7 @@ const EXPLAINED_KEY = 'todayExplained';
 export const KEPT_DAYS = 90;
 
 /** The keys of Settings > Daily (src/settings/definitions/daily.ts). Changing any of them answers the explanation. */
-export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'dailyTicks'];
+export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'dailyTicks'];
 
 export interface DayRecord {
   /** the pieces he ticked, in the order he ticked them */

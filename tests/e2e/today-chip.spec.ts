@@ -6,11 +6,11 @@ import { openUnlocked } from './unlocked';
 // The Reader's Today chip (src/today/TodayChip.tsx, mw-1fwagb.6): it replaced the Due and Plan chips, counts the pieces Today holds and those he ticked, and opens Today.
 test.use({ viewport: { width: 390, height: 844 } });
 
-const DAILY = ['dailyReview', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'];
-/** The day's pieces with a box: Review, plan, devotional and each of the Psalms and Proverbs (on day N: Psalms N, N+30, ... up to 150, and Proverbs N). */
+const DAILY = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'];
+/** The day's pieces with a box: Review, Memorize, plan, devotional and each of the Psalms and Proverbs (on day N: Psalms N, N+30, ... up to 150, and Proverbs N). */
 const piecesToday = (): number => {
   const day = new Date().getDate();
-  return 3 + [0, 30, 60, 90, 120].filter((n) => day + n <= 150).length + (day <= 31 ? 1 : 0);
+  return 4 + [0, 30, 60, 90, 120].filter((n) => day + n <= 150).length + (day <= 31 ? 1 : 0);
 };
 
 /** Puts rows in the app's own settings store through raw IndexedDB, as the app wrote them. */
@@ -80,7 +80,7 @@ test('the Reader shows the Today chip and no Due or Plan chip; it opens Today an
 
 test('a piece switched off is not counted, and with Tick boxes off the chip says just Today', async ({ page }) => {
   await openReader(page, [{ key: 'dailyPsalms', value: 'off' }]);
-  await expect(todayChip(page)).toHaveText('Today · 0 of 3');
+  await expect(todayChip(page)).toHaveText('Today · 0 of 4');
 
   await putSettings(page, [{ key: 'dailyTicks', value: 'off' }]);
   await page.reload();

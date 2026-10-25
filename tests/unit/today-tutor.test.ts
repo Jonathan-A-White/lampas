@@ -20,6 +20,11 @@ describe('the pieces opened today, by name', () => {
     expect(openedTitles(['review', 'plan', 'psa.5', 'pro.5', 'devotional'], NAMES)).toEqual(['Review', 'John 3', 'Psalm 5', 'Proverbs 5', 'Morning and Evening']);
   });
 
+  it('names the Memorize piece', () => {
+    expect(openedTitles(['review', 'memorize'], NAMES)).toEqual(['Review', 'Memorize']);
+    expect(todayFacts({ date: '2026-10-19', on: ['Review', 'Memorize'], opened: ['Memorize'] })).toContainEqual({ label: 'On Today', value: 'Review, Memorize' });
+  });
+
   it('leaves out a piece it cannot name', () => {
     expect(openedTitles(['plan', 'devotional', 'psa.5'], {})).toEqual(['Psalm 5']);
   });

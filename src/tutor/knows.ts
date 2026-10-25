@@ -30,6 +30,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   audioBible: 'screen',
   readingPlan: 'screen',
   dailyReview: 'screen',
+  dailyMemorize: 'screen',
   dailyPlan: 'screen',
   dailyPsalms: 'screen',
   dailyDevotional: 'screen',
