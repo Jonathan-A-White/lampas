@@ -1,7 +1,9 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { About } from '../../src/About';
+import { db } from '../../src/data/db';
+import { keepTuned } from '../../src/data/repositories/tuned';
 import { parseAttribution, plainText } from '../../src/attribution';
 import { screenContextNow } from '../../src/tutor/screenContext';
 import { suggestionsFor } from '../../src/tutor/screen';
@@ -43,5 +45,43 @@ describe('the About screen and ATTRIBUTION.md', () => {
     const firstCredit = screen.getAllByRole('listitem')[0];
     expect(note?.compareDocumentPosition(firstCredit) ?? 0).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(note?.closest('li')).toBeNull();
+  });
+});
+
+// mw-t3xu9a.8: the line the nightly tutor-weights run leaves (docs/ask-tutor.md 'How the tutor learns what to carry'): 'Tutor tuned <date>: N changes', and a tap shows the reasons.
+describe('Tutor tuned', () => {
+  beforeEach(async () => {
+    await db.open();
+    await db.settings.clear();
+  });
+
+  it('shows nothing before any run', async () => {
+    render(<About />);
+    // the screen has read its other rows by now
+    await screen.findByText('Preface');
+    expect(screen.queryByTestId('tutor-tuned')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Tutor tuned/ })).toBeNull();
+  });
+
+  it('shows the date and the number of changes after a run, and a tap lists the reasons', async () => {
+    await keepTuned({ date: '2026-10-25', at: Date.UTC(2026, 9, 25, 4), changes: 2, reasons: ['rusty-words was asked back 5 times on the Reader', 'progress, twice on Words'], forwarded: 0 });
+    render(<About />);
+    const line = await screen.findByRole('button', { name: /Tutor tuned 2026-10-25: 2 changes/ });
+    expect(line).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('progress, twice on Words')).toBeNull();
+    fireEvent.click(line);
+    expect(line).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('rusty-words was asked back 5 times on the Reader')).toBeVisible();
+    expect(screen.getByText('progress, twice on Words')).toBeVisible();
+  });
+
+  it('says one change in the singular and no change as 0 changes', async () => {
+    await keepTuned({ date: '2026-10-25', at: 1, changes: 1, reasons: [], forwarded: 0 });
+    render(<About />);
+    expect(await screen.findByRole('button', { name: /Tutor tuned 2026-10-25: 1 change$/ })).toBeVisible();
+    cleanup();
+    await keepTuned({ date: '2026-10-26', at: 2, changes: 0, reasons: ['nothing needed to change'], forwarded: 0 });
+    render(<About />);
+    expect(await screen.findByRole('button', { name: /Tutor tuned 2026-10-26: 0 changes/ })).toBeVisible();
   });
 });

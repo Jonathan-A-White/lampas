@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_REFS, MAX_RESOURCE_CHARS, MAX_SERIES_CHARS, MAX_TYPE_CHARS, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildLibraryRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer } from '../../src/services/feedback';
+import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_REFS, MAX_RESOURCE_CHARS, MAX_SERIES_CHARS, MAX_TYPE_CHARS, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildLibraryRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer, buildMissesRequest, MAX_MISSES } from '../../src/services/feedback';
 import { KINDS } from '../../src/resources/catalogue';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
@@ -15,7 +15,7 @@ const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSy
 const grind = readJson('grinds/feedback.json');
 const input = readJson('grinds/feedback.input.schema.json');
 /** The input schema has one branch for each form of feedback (anyOf): the grammar approach, the ask the tutor could not meet, the book, the whole list
- * of a Logos import, and the three asks of Ask for more (one branch: the same fields, the kind one of three). */
+ * of a Logos import, the three asks of Ask for more (one branch: the same fields, the kind one of three) and the misses the nightly run forwards. */
 const branches = input.anyOf as Schema[];
 const branch = (kind: string): Schema => branches.find((b) => (b.properties?.kind as { enum?: string[] }).enum?.includes(kind)) as Schema;
 
@@ -90,11 +90,12 @@ describe('the tutor-ask kind and buildTutorAskRequest', () => {
   const ask = { text: 'Can this work with Olive Tree?', summary: 'He wants Lampas to work with Olive Tree.', screen: 'Goal', reference: 'Goal' };
 
   it('has a branch for each kind of feedback, and all are the same grist kind', () => {
-    expect(branches).toHaveLength(5);
+    expect(branches).toHaveLength(6);
     expect(branch('book')).toBeDefined();
     expect(branch('library')).toBeDefined();
     expect(branch('grammar-approach')).toBeDefined();
     expect(branch('tutor-ask')).toBeDefined();
+    expect(branch('tutor-misses')).toBeDefined();
   });
 
   it('builds a request the schema accepts, with and without the screen facts', () => {
@@ -284,5 +285,30 @@ describe('isFeedbackAnswer', () => {
     ['the old model answer', { received: true }],
   ])('refuses %s', (_, value) => {
     expect(isFeedbackAnswer(value)).toBe(false);
+  });
+});
+
+describe('the tutor-misses kind and buildMissesRequest (the nightly run\'s forward, mw-t3xu9a.8)', () => {
+  const miss = { title: 'A fact for the verses he marked', why: 'He wanted them twice and no fact holds them.', screen: 'Reader', count: 2 };
+
+  it('builds a request the schema accepts: a line of words for each miss, and the misses as data', () => {
+    const request = buildMissesRequest([miss, { ...miss, title: 'Undo a tick', screen: 'Today', count: 1 }]);
+    expect(request).toEqual({
+      kind: 'tutor-misses',
+      text: 'A fact for the verses he marked (Reader, missed 2 times): He wanted them twice and no fact holds them.\nUndo a tick (Today, missed 1 time): He wanted them twice and no fact holds them.',
+      summary: 'Tutor misses worth a story: 2',
+      misses: [miss, { ...miss, title: 'Undo a tick', screen: 'Today', count: 1 }],
+      app_version: __APP_VERSION__,
+    });
+    expect(validate(request, input as Schema)).toEqual([]);
+  });
+
+  it('carries at most MAX_MISSES and cuts each to the schema\'s lengths', () => {
+    const many = Array.from({ length: MAX_MISSES + 3 }, (_, i) => ({ ...miss, title: `T${i}`.padEnd(300, 'x'), why: 'w'.repeat(900) }));
+    const request = buildMissesRequest(many);
+    expect(request.misses).toHaveLength(MAX_MISSES);
+    expect(request.misses[0].title).toHaveLength(120);
+    expect(request.misses[0].why).toHaveLength(400);
+    expect(validate(request, input as Schema)).toEqual([]);
   });
 });

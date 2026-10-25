@@ -1,0 +1,317 @@
+{
+  "description": "The Reader asked back for works 4 times and the report cannot say what works weighs: the answer asks for works first and changes nothing; after the app sends it (a short digest) the second answer puts works on the Reader's list.",
+  "schemaVersion": "1",
+  "request": {
+    "report": {
+      "since": 1792300000000,
+      "at": 1792900000000,
+      "changed": true,
+      "screens": {
+        "Reader": {
+          "turns": 30,
+          "windowTurns": 30,
+          "counts": {
+            "works": 4
+          },
+          "upFront": [
+            "where-he-is",
+            "today-drill",
+            "settings"
+          ],
+          "rate": {
+            "overall": 13.3
+          }
+        }
+      },
+      "misses": []
+    },
+    "facts": {
+      "where-he-is": {
+        "screen": "nightly",
+        "route": "home"
+      },
+      "today-drill": [
+        {
+          "kind": "review",
+          "title": "Review: 12 due"
+        },
+        {
+          "kind": "psalm",
+          "title": "Psalm 23"
+        }
+      ],
+      "settings": {
+        "theme": "light",
+        "textSize": "normal",
+        "greekInterest": "2",
+        "weave": "solid",
+        "readTutor": "on"
+      }
+    },
+    "catalogue": [
+      {
+        "name": "add-word",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Adds a word (its lemma) to his words to learn; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "word"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "word": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          }
+        }
+      },
+      {
+        "name": "progress",
+        "is": "fact",
+        "tell": "where he stands: the learner line (solid words, learning, due) and his grammar (goal, counts, suggested move)"
+      },
+      {
+        "name": "reader",
+        "is": "place",
+        "tell": "Opens the Reader"
+      },
+      {
+        "name": "rusty-words",
+        "is": "fact",
+        "tell": "the solid words and ideas he now slips on or has been away from, worst first"
+      },
+      {
+        "name": "set-setting",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Changes a setting; the app can undo it",
+        "args": {
+          "type": "object",
+          "required": [
+            "name",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {},
+            "skipUnchanged": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "name": "settings",
+        "is": "fact",
+        "core": true,
+        "tell": "what every setting holds now"
+      },
+      {
+        "name": "start-review",
+        "is": "command",
+        "kind": "free",
+        "tell": "Opens Review; with items (from rusty-words) moves them to Frontier and practises just them"
+      },
+      {
+        "name": "today-drill",
+        "is": "fact",
+        "core": true,
+        "tell": "the items of today's drill (the Today chip), each with its title and whether he ticked it"
+      },
+      {
+        "name": "where-he-is",
+        "is": "fact",
+        "core": true,
+        "tell": "the screen he is on, the chapter and verse in the Reader, the sheets open"
+      },
+      {
+        "name": "words-screen",
+        "is": "place",
+        "tell": "Opens Words"
+      },
+      {
+        "name": "works",
+        "is": "fact",
+        "tell": "the digest of his Logos shelf: pinned books, commentaries, grammars"
+      }
+    ],
+    "app_version": "0.1.440"
+  },
+  "turn_2": {
+    "request": {
+      "report": {
+        "since": 1792300000000,
+        "at": 1792900000000,
+        "changed": true,
+        "screens": {
+          "Reader": {
+            "turns": 30,
+            "windowTurns": 30,
+            "counts": {
+              "works": 4
+            },
+            "upFront": [
+              "where-he-is",
+              "today-drill",
+              "settings"
+            ],
+            "rate": {
+              "overall": 13.3
+            }
+          }
+        },
+        "misses": []
+      },
+      "facts": {
+        "where-he-is": {
+          "screen": "nightly",
+          "route": "home"
+        },
+        "today-drill": [
+          {
+            "kind": "review",
+            "title": "Review: 12 due"
+          },
+          {
+            "kind": "psalm",
+            "title": "Psalm 23"
+          }
+        ],
+        "settings": {
+          "theme": "light",
+          "textSize": "normal",
+          "greekInterest": "2",
+          "weave": "solid",
+          "readTutor": "on"
+        }
+      },
+      "catalogue": [
+        {
+          "name": "add-word",
+          "is": "command",
+          "kind": "undoable",
+          "tell": "Adds a word (its lemma) to his words to learn; undoable",
+          "args": {
+            "type": "object",
+            "required": [
+              "word"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "word": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              }
+            }
+          }
+        },
+        {
+          "name": "progress",
+          "is": "fact",
+          "tell": "where he stands: the learner line (solid words, learning, due) and his grammar (goal, counts, suggested move)"
+        },
+        {
+          "name": "reader",
+          "is": "place",
+          "tell": "Opens the Reader"
+        },
+        {
+          "name": "rusty-words",
+          "is": "fact",
+          "tell": "the solid words and ideas he now slips on or has been away from, worst first"
+        },
+        {
+          "name": "set-setting",
+          "is": "command",
+          "kind": "undoable",
+          "tell": "Changes a setting; the app can undo it",
+          "args": {
+            "type": "object",
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {},
+              "skipUnchanged": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        {
+          "name": "settings",
+          "is": "fact",
+          "core": true,
+          "tell": "what every setting holds now"
+        },
+        {
+          "name": "start-review",
+          "is": "command",
+          "kind": "free",
+          "tell": "Opens Review; with items (from rusty-words) moves them to Frontier and practises just them"
+        },
+        {
+          "name": "today-drill",
+          "is": "fact",
+          "core": true,
+          "tell": "the items of today's drill (the Today chip), each with its title and whether he ticked it"
+        },
+        {
+          "name": "where-he-is",
+          "is": "fact",
+          "core": true,
+          "tell": "the screen he is on, the chapter and verse in the Reader, the sheets open"
+        },
+        {
+          "name": "words-screen",
+          "is": "place",
+          "tell": "Opens Words"
+        },
+        {
+          "name": "works",
+          "is": "fact",
+          "tell": "the digest of his Logos shelf: pinned books, commentaries, grammars"
+        }
+      ],
+      "app_version": "0.1.440",
+      "asked": {
+        "works": [
+          {
+            "title": "Black's Grammar",
+            "kind": "grammar",
+            "pinned": true
+          },
+          {
+            "title": "Calvin's Commentaries",
+            "kind": "commentary",
+            "pinned": false
+          }
+        ]
+      }
+    }
+  },
+  "expect": {
+    "lists.Reader.0": {
+      "equals": "works"
+    },
+    "reasons.0": {
+      "present": true
+    },
+    "asks": {
+      "present": false
+    }
+  }
+}

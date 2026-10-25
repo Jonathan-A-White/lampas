@@ -6,6 +6,7 @@ import { attribution } from './attribution';
 import { BuildVersion } from './BuildVersion';
 import { setDeveloper } from './data/repositories';
 import { getWishedNotes } from './data/repositories/memory';
+import { getTuned, type Tuned } from './data/repositories/tuned';
 import { backTo, navigate, openRequests } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { usePageActions } from './PageActions';
@@ -39,6 +40,27 @@ export const DEVELOPER_TAP_WINDOW_MS = 3000;
 
 const BMA_URL = 'https://biblicalmastery.academy/';
 
+/** 'Tutor tuned 2026-10-25: 2 changes' (the night's run, mw-t3xu9a.8): a tap shows the reasons it gave. */
+function TutorTuned({ tuned }: { tuned: Tuned }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div data-testid="tutor-tuned" className="pt-2 text-sm text-muted">
+      <button type="button" aria-expanded={open} aria-controls="tutor-tuned-reasons" onClick={() => setOpen((was) => !was)} className="min-h-12 w-full text-left">
+        Tutor tuned {tuned.date}: {tuned.changes} {tuned.changes === 1 ? 'change' : 'changes'}
+      </button>
+      {open ? (
+        <ul id="tutor-tuned-reasons" className="list-none space-y-1 pb-2">
+          {tuned.reasons.map((reason) => (
+            <li key={reason} className="break-words">
+              {reason}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 export function About() {
   useReportScreen({ name: 'About', facts: [], credits: CREDITS });
   const scrollRef = useScrollMemory('about');
@@ -50,6 +72,8 @@ export function About() {
   const answerLine = lastAnswerLine();
   // the notes the tutor said it would have used had they existed (mw-yrmkdf.2): a count and the last names, nothing more is sent for them
   const wished = useLiveQuery(getWishedNotes, []);
+  // the line the nightly tutor-weights run leaves (src/tutor/weightsRun.ts): nothing before the first run
+  const tuned = useLiveQuery(getTuned, []);
   const tapVersion = () => {
     const now = Date.now();
     const t = taps.current;
@@ -131,6 +155,7 @@ export function About() {
               </ul>
             </div>
           ) : null}
+          {tuned ? <TutorTuned tuned={tuned} /> : null}
           <BuildVersion onTap={tapVersion} />
           <VersionLink />
           <div className="pb-4" />

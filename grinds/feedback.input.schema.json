@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Feedback Request 1",
-  "description": "Feedback to the makers, forwarded to the Mayor. Five forms: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers), book (Ask for a book: one book of his Logos library, by title, with the row's Logos details when he picked it from his list), library (Ask the makers about these: the whole list of an import, once, as counts by Logos type with the usable rows attached as library.csv), and the three short forms of Settings > Ask for more: approach (an approach or programme), text and translation.",
+  "description": "Feedback to the makers, forwarded to the Mayor. Six forms: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers), book (Ask for a book: one book of his Logos library, by title, with the row's Logos details when he picked it from his list), library (Ask the makers about these: the whole list of an import, once, as counts by Logos type with the usable rows attached as library.csv), the three short forms of Settings > Ask for more: approach (an approach or programme), text and translation, and tutor-misses (sent by the nightly tutor-weights run, not by him: what the tutor wanted that the app lacks, when it is worth a story).",
   "type": "object",
   "anyOf": [
     {
@@ -294,6 +294,85 @@
         },
         "app_version": {
           "description": "The Lampas build he sent it from.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "text",
+        "summary",
+        "misses",
+        "app_version"
+      ],
+      "properties": {
+        "kind": {
+          "description": "tutor-misses is sent by the nightly tutor-weights run (not by him) when it finds misses worth a story: what the tutor wanted that the app has no fact, command or place for, counted since the last run.",
+          "type": "string",
+          "enum": [
+            "tutor-misses"
+          ]
+        },
+        "text": {
+          "description": "The misses as lines of words, one for each: the title, the screen, how often and why.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "summary": {
+          "description": "One line: how many misses are worth a story.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "misses": {
+          "description": "The same misses as data.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "title",
+              "why",
+              "screen",
+              "count"
+            ],
+            "properties": {
+              "title": {
+                "description": "What to build, as a story's title.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "why": {
+                "description": "Why it is worth building.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "screen": {
+                "description": "The screen the tutor missed it on.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "count": {
+                "description": "How many times it was missed since the last run.",
+                "type": "number",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "app_version": {
+          "description": "The Lampas build that sent it.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80

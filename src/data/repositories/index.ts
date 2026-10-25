@@ -119,3 +119,5 @@ export type { ShareRow } from './shares';
 export { getPenSeen, getWhySeen, getWriteProgress, handwritingOn, markPenSeen, markWhySeen, recordWrite } from './handwriting';
 export { appendToVerseList, createVerseList, getVerseList, listVerseLists, removeVerseList, renameVerseList, restoreVerseList, sendVerseListRef, setVerseListRefs, UNTITLED_LIST, verseListCount } from './verseLists';
 export type { SendTarget, VerseListRow } from './verseLists';
+export { getTuned, keepTuned } from './tuned';
+export type { Tuned } from './tuned';

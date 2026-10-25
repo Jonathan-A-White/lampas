@@ -65,13 +65,14 @@ export function usesBeyondRe2(pattern: string): boolean {
   return false;
 }
 
-/** The schemas a path can stand at: a field name, or an array place (a number) into `items`; anyOf branches are all tried. */
+/** The schemas a path can stand at: a field name (or, in an object whose keys are the data's own, a key: its `additionalProperties` schema), or an array place (a number) into `items`; anyOf branches are all tried. */
 function schemasAt(root: Schema, path: string): Schema[] {
   let nodes: Schema[] = [root];
   for (const part of path.split('.')) {
     const next: Schema[] = [];
     for (const node of nodes.flatMap(branches)) {
-      const sub = /^\d+$/.test(part) && node.type === 'array' ? node.items : node.properties?.[part];
+      const keyed = typeof node.additionalProperties === 'object' ? node.additionalProperties : undefined;
+      const sub = /^\d+$/.test(part) && node.type === 'array' ? node.items : (node.properties?.[part] ?? keyed);
       if (sub) next.push(sub);
     }
     if (next.length === 0) return [];

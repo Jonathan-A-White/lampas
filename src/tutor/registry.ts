@@ -3,7 +3,8 @@
 // when asked (the core ones ride in every request); a PLACE is a screen it can open, through `navigate`, as a pushed history entry marked as a tutor go, so Back returns to where he was.
 // The request is built by the client (`withTutorFacts`: the facts and the catalogue added to the app's own fields, which pass through untouched). A COMMAND (mw-t3xu9a.6) is something the app does: the app's own
 // buttons go through the same named commands the tutor calls (set-setting, tick-today, start-review, add-word, and the place open-work), so a tap, a spoken yes and a tutor `do` run the one function.
-import { createMemoryStore, createTutorClient, defineRegistry, type Command, type CommandResult, type Fact, type Place, type Registry, type TutorClient, type TutorRecord } from 'voice-kit/talks';
+import { createTutorClient, defineRegistry, type Command, type CommandResult, type Fact, type Place, type Registry, type TutorClient, type TutorRecord } from 'voice-kit/talks';
+import { createDexieStore } from 'voice-kit/talks/dexie';
 import { addLemmaToLearn, type AddedLemma } from '../data/answerWord';
 import { BOOKS, titleOf } from '../data/books';
 import { getDay, localDate, setTicked } from '../data/daily/dailyStore';
@@ -294,19 +295,26 @@ export const askRegistry = (): Registry =>
     facts: [whereHeIsFact, todayDrillFact, { ...settingsFact, tell: 'what the settings this tutor is told hold now', read: () => settingsSentTo('verse-ask') }],
   });
 
-/** The tutor's record (the ask-backs and misses of each screen, for the weights a later story tunes) is kept while the page lives; the clients of both grinds write to it. */
-const store = createMemoryStore();
+/** The tutor's record (the ask-backs and misses of each screen) and the up-front list of each screen are kept on the phone, in a database of their own (the kit's Dexie store; its talks table is not used: the Bible talks are Lampas's own,
+ * src/data/repositories/talks.ts), so that the counts last from one launch to the next and the nightly run (src/tutor/weightsRun.ts) has a week of them to read. The clients of both grinds and the nightly one write to it. */
+// the page's own IndexedDB handed over, since the kit's Dexie (its own copy) looks for one when it loads, which a test's fake is not yet
+const store = createDexieStore({ name: 'lampas-tutor', indexedDB: globalThis.indexedDB, IDBKeyRange: globalThis.IDBKeyRange });
 
-const clientOf = (registry: Registry): TutorClient<never> =>
+/** The up-front budget of the nightly request: the grist's payload is capped at 20 KiB sealed (src/services/requestBudget.ts), and the report is the field the client cannot cut. */
+const NIGHTLY_BYTES = 11_000;
+
+const clientOf = (registry: Registry, screen: () => string = screenKey, budgetBytes?: number): TutorClient<never> =>
   createTutorClient<never>({
     store,
     registry,
-    screen: screenKey,
-    // Lampas sends its own requests (src/services/talk.ts askTalk, src/services/tutor.ts askTutor): the client builds them and carries out the answer's go
+    screen,
+    ...(budgetBytes ? { budgetBytes } : {}),
+    // Lampas sends its own requests (src/services/talk.ts askTalk, src/services/tutor.ts askTutor, src/tutor/weightsRun.ts): the client builds them and carries out the answer's go
     send: () => Promise.reject(new Error('the client sends nothing: the app does')),
   });
 
 let talkClient: TutorClient<never> | undefined;
+let nightClient: TutorClient<never> | undefined;
 let askClient: TutorClient<never> | undefined;
 let talkRegistry: Registry | undefined;
 
@@ -315,6 +323,12 @@ export const bibleTalkClient = (): TutorClient<never> => (talkClient ??= clientO
 
 /** The Bible talk's registry, made once. */
 export const bibleTalkRegistry = (): Registry => (talkRegistry ??= lampasRegistry());
+
+/** The screen the nightly run's requests are built on: no screen of his, so the lists of his screens are not read for it and nothing it reads is counted for one. */
+export const NIGHTLY_SCREEN = 'nightly';
+
+/** The client of the nightly tutor-weights run: the Bible talk's registry and record, on the screen 'nightly' (mw-t3xu9a.8). */
+export const nightlyClient = (): TutorClient<never> => (nightClient ??= clientOf(bibleTalkRegistry(), () => NIGHTLY_SCREEN, NIGHTLY_BYTES));
 
 /** The client of the verse ask. */
 export const askClientOf = (): TutorClient<never> => (askClient ??= clientOf(askRegistry()));

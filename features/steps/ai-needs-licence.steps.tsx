@@ -2,6 +2,7 @@
 // (the Talk bar, the round Ask the tutor button, the Verse view's Ask the tutor and Quiz me, the word sheet's Help with this word); with a licence they are.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -12,6 +13,9 @@ import { parkShare } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus } from '../../src/events/bus';
 import { LicenceProvider } from '../../src/gate/LicenceProvider';
+import { NightlyTuning } from '../../src/tutor/NightlyTuning';
+import { askBack } from '../../src/tutor/registry';
+import { forgetNightlyStart } from '../../src/tutor/weightsRun';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { setVerseAction, type VerseAction } from '../../src/verse/action';
@@ -46,7 +50,7 @@ async function fresh(): Promise<void> {
 }
 
 /** The whole app under the provider, as src/main.tsx draws it, with a stub chain that holds a licence for this phone's key or does not; waits for the answer. */
-async function openApp(hash: string, licensed: boolean): Promise<void> {
+async function openApp(hash: string, licensed: boolean, beside?: ReactNode): Promise<void> {
   const chain = newChain();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, HOLDER.toHex());
   if (licensed) addMint(chain);
@@ -54,6 +58,7 @@ async function openApp(hash: string, licensed: boolean): Promise<void> {
   restoreLastRoute();
   render(
     <LicenceProvider issuer={ISSUER_PUB} now={() => NOW} check={(key) => fetchLicenceStatus(key, { issuer: ISSUER_PUB, reader: chain })}>
+      {beside}
       <App />
       <LicenceProbe />
     </LicenceProvider>,
@@ -95,6 +100,24 @@ async function openShare(licensed: boolean): Promise<void> {
   await parkShare({ id: 'share-1', createdAt: NOW, files: [{ name: 'shared-1.png', type: 'image/png', bytes: new Uint8Array([1, 2, 3]).buffer }] });
   await openApp('#/share?s=share-1', licensed);
   await screen.findByRole('dialog', { name: 'Share to Lampas' });
+}
+
+/** A phone whose tutor was asked back for facts, with 03:00 gone, the nightly run drawn beside the app as src/main.tsx draws it, and a mill that sees every call. */
+const AFTER_THREE = { now: () => new Date(2026, 9, 25, 4, 0, 0) };
+async function openNight(licensed: boolean): Promise<void> {
+  await fresh();
+  forgetNightlyStart();
+  fake = makeFakePostern();
+  fake.kindReplies = {
+    'tutor-weights': { status: 'answered', answer: { lists: { Reader: ['progress', 'rusty-words', 'works'] }, reasons: ['The Reader asked for your progress lately, so it is read up front there now.'] } },
+  };
+  const chapterFetch = globalThis.fetch;
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
+  window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, HOLDER.toHex());
+  // asked back on the Reader, the screen the plain address is
+  window.history.replaceState(null, '', '/');
+  await askBack(['progress', 'progress', 'rusty-words'], 1);
+  await openApp('#/about', licensed, <NightlyTuning delayMs={0} deps={AFTER_THREE} />);
 }
 
 const askButton = () => document.querySelector('[data-ask-tutor]');
@@ -203,6 +226,25 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Goal screen has the Reading ladder in Greek and English', () => {
       expect(screen.getByRole('button', { name: 'Reading ladder: Greek' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Reading ladder: English' })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('With no licence the nightly run asks the mill nothing and About has no Tutor tuned line', ({ Given, Then }) => {
+    Given('this phone has no licence and the tutor was asked back for facts, after 03:00', () => openNight(false));
+    Then('the mill is sent no tutor-weights grist and About has no Tutor tuned line', async () => {
+      await screen.findByRole('heading', { name: 'About' });
+      // the run is drawn at once and waits for nothing: give it the time it would need
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(fake.received).toEqual([]);
+      expect(screen.queryByRole('button', { name: /^Tutor tuned/ })).toBeNull();
+    });
+  });
+
+  Scenario('With a licence the nightly run tunes the tutor and About says Tutor tuned', ({ Given, Then }) => {
+    Given('this phone has a licence and the tutor was asked back for facts, after 03:00', () => openNight(true));
+    Then('the mill is sent one tutor-weights grist and About says Tutor tuned 2026-10-25', async () => {
+      expect(await screen.findByRole('button', { name: /^Tutor tuned 2026-10-25: 1 change$/ })).toBeInTheDocument();
+      expect(fake.received.map((r) => r.grist.kind)).toEqual(['tutor-weights']);
     });
   });
 

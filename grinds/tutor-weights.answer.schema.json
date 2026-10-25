@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tutor Weights Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["lists", "reasons"],
+  "properties": {
+    "lists": {
+      "description": "For each screen whose up-front list should change, the facts to read up front there besides the core ones, most useful first. A screen left out keeps the list it has. Only screens that are in the report; only facts that are on the catalogue and not core. An empty list takes every extra fact off that screen.",
+      "type": "object",
+     
+      "additionalProperties": { "type": "array", "maxItems": 8, "items": { "type": "string", "minLength": 1, "maxLength": 80 } }
+    },
+    "reasons": {
+      "description": "One plain sentence for each change in `lists`, saying what in the counts made it, for him to read in About. When nothing changes, one sentence saying so.",
+      "type": "array",
+      "maxItems": 10,
+      "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+    },
+    "misses_worth_a_story": {
+      "description": "Misses in the report that are worth building something for: asked for more than once, or by the same screen over and over. Each names the screen and the miss's `name` exactly as the report has them, so the app can count it. Leave the list out when no miss is worth a story.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "why", "screen", "name"],
+        "properties": {
+          "title": { "description": "What to build, as a story's title.", "type": "string", "minLength": 1, "maxLength": 120 },
+          "why": { "description": "Why it is worth building: what he wanted, how often, what the app lacks.", "type": "string", "minLength": 1, "maxLength": 400 },
+          "screen": { "description": "The report's screen, exactly.", "type": "string", "minLength": 1, "maxLength": 80 },
+          "name": { "description": "The report miss's `name`, exactly.", "type": "string", "minLength": 1, "maxLength": 200 }
+        }
+      }
+    },
+    "asks": {
+      "description": "Names of facts on the catalogue (is fact) that you need before you can decide well. The app reads them and sends the request again with them as asked; ask once, for everything you need. Leave it out when the report is enough.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+    }
+  }
+}

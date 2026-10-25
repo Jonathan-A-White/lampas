@@ -109,6 +109,33 @@ export interface MoreRequest {
   app_version: string;
 }
 
+/** One miss the nightly run found worth a story: what to build, why, the screen the tutor missed it on and how many times since the last run. */
+export interface MissWorthAStory {
+  title: string;
+  why: string;
+  screen: string;
+  count: number;
+}
+
+/** What the grind is sent by the nightly tutor-weights run (src/tutor/weightsRun.ts), not by him: the misses worth a story, as lines of words and as data. It is not kept in Your requests: he did not ask. */
+export interface MissesRequest {
+  kind: 'tutor-misses';
+  text: string;
+  summary: string;
+  misses: MissWorthAStory[];
+  app_version: string;
+}
+
+/** The most misses one forward carries: the input schema's. */
+export const MAX_MISSES = 5;
+
+/** The request for `misses` (at most MAX_MISSES, each cut to the schema's lengths): a line for each in words, and the same as data. */
+export function buildMissesRequest(misses: readonly MissWorthAStory[]): MissesRequest {
+  const kept = misses.slice(0, MAX_MISSES).map((m) => ({ title: m.title.slice(0, 120), why: m.why.slice(0, 400), screen: m.screen.slice(0, 80), count: m.count }));
+  const text = kept.map((m) => `${m.title} (${m.screen}, missed ${m.count} ${m.count === 1 ? 'time' : 'times'}): ${m.why}`).join('\n');
+  return { kind: 'tutor-misses', text, summary: `Tutor misses worth a story: ${kept.length}`, misses: kept, app_version: __APP_VERSION__ };
+}
+
 export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | BookRequest | LibraryRequest | MoreRequest;
 
 /** The kinds of feedback; the bus announces one when the mill has it. */
@@ -224,7 +251,7 @@ function kept(request: FeedbackRequest, txid: string, sentAt: number): Parameter
 }
 
 /** Sends the feedback with its files (pictures, at most MAX_PICTURES, or the library.csv) and waits for the mill's receipt. Throws a TutorError. */
-function sendFeedback(request: FeedbackRequest, files: MillFile[], options: AskOptions): Promise<FeedbackAnswer> {
+function sendFeedback(request: FeedbackRequest | MissesRequest, files: MillFile[], options: AskOptions): Promise<FeedbackAnswer> {
   return askGrind(FEEDBACK_KIND, request, isFeedbackAnswer, { ...options, files, untimed: true });
 }
 
@@ -289,4 +316,9 @@ export async function submitFeedback(request: FeedbackRequest, options: SubmitOp
   } finally {
     waiting.delete(token);
   }
+}
+
+/** Forwards the misses the nightly run found worth a story to the factory: one feedback grist, mailed to the Mayor by the mill, with the phone's key. Not kept in Your requests and not announced on the bus. Throws a TutorError. */
+export async function forwardMisses(misses: readonly MissWorthAStory[], options: { key?: Uint8Array; signal?: AbortSignal } = {}): Promise<void> {
+  await sendFeedback(buildMissesRequest(misses), [], { key: options.key ?? getDeviceKeyBytes(), signal: options.signal });
 }

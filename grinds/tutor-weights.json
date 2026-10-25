@@ -1,0 +1,16 @@
+{
+  "grind": 1,
+  "app": "lampas",
+  "kind": "tutor-weights",
+  "versions": ["1"],
+  "model": "sonnet",
+  "effort": "medium",
+  "instructions": "grinds/tutor-weights.instructions.md",
+  "answerSchema": "grinds/tutor-weights.answer.schema.json",
+  "attachments": {
+    "min": 0,
+    "max": 0,
+    "mime": [],
+    "maxBytes": 0
+  }
+}
