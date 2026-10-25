@@ -1,0 +1,196 @@
+Heb Sort	Greek Sort	BSB Sort	Verse	Language	WLC / Nestle Base TR RP WH NE NA SBL	WLC / Nestle Base {TR} ⧼RP⧽ (WH) 〈NE〉 [NA] ‹SBL› [[ECM]]	Translit	Parsing	Parsing	Str Heb	Str Grk	VerseId	Hdg	Crossref	Par	Space	begQ	 BSB version 	pnc	endQ	footnotes	End text
+1	0	1	1	Hebrew	בְּרֵאשִׁ֖ית	בְּרֵאשִׁ֖ית	bə·rê·šîṯ	Prep-b | N-fs	Preposition-b | Noun - feminine singular	7225		Genesis 1:1	<p class=|hdg|>The Creation	<br /><span class=|cross|>(<a href =|../john/1.htm|>John 1:1–5</a>; <a href =|../hebrews/11.htm|>Hebrews 11:1–3</a>)</span>	<p class=|reg|>			 In the beginning 				
+3	0	2	1	Hebrew	אֱלֹהִ֑ים	אֱלֹהִ֑ים	’ĕ·lō·hîm	N-mp	Noun - masculine plural	430								 God 				
+4	0	3	1	Hebrew	אֵ֥ת	אֵ֥ת	’êṯ	DirObjM	Direct object marker	853								 - 				
+2	0	4	1	Hebrew	בָּרָ֣א	בָּרָ֣א	bā·rā	V-Qal-Perf-3ms	Verb - Qal - Perfect - third person masculine singular	1254								 created 				
+5	0	5	1	Hebrew	הַשָּׁמַ֖יִם	הַשָּׁמַ֖יִם	haš·šā·ma·yim	Art | N-mp	Article | Noun - masculine plural	8064								 the heavens 				
+6	0	6	1	Hebrew	וְאֵ֥ת	וְאֵ֥ת	wə·’êṯ	Conj-w | DirObjM	Conjunctive waw | Direct object marker	853								 and 				
+7	0	7	1	Hebrew	הָאָֽרֶץ׃	הָאָֽרֶץ׃	hā·’ā·reṣ	Art | N-fs	Article | Noun - feminine singular	776								 the earth 	.			
+8	0	8	1	Hebrew																		
+9	0	9	1	Hebrew																		
+10	0	10	1	Hebrew																		
+11	0	11	1	Hebrew																		
+12	0	12	1	Hebrew																		
+13	0	13	1	Hebrew																		
+14	0	14	1	Hebrew																		
+15	0	15	1	Hebrew																		
+16	0	16	1	Hebrew																		
+17	0	17	1	Hebrew																		
+18	0	18	2	Hebrew	וְהָאָ֗רֶץ	וְהָאָ֗רֶץ	wə·hā·’ā·reṣ	Conj-w, Art | N-fs	Conjunctive waw, Article | Noun - feminine singular	776		Genesis 1:2			<p class=|reg|>			 Now the earth 				
+19	0	19	2	Hebrew	הָיְתָ֥ה	הָיְתָ֥ה	hā·yə·ṯāh	V-Qal-Perf-3fs	Verb - Qal - Perfect - third person feminine singular	1961								 was 				
+20	0	20	2	Hebrew	תֹ֙הוּ֙	תֹ֙הוּ֙	ṯō·hū	N-ms	Noun - masculine singular	8414								 formless 				
+21	0	21	2	Hebrew	וָבֹ֔הוּ	וָבֹ֔הוּ	wā·ḇō·hū	Conj-w | N-ms	Conjunctive waw | Noun - masculine singular	922								 and void 	,			
+22	0	22	2	Hebrew	וְחֹ֖שֶׁךְ	וְחֹ֖שֶׁךְ	wə·ḥō·šeḵ	Conj-w | N-ms	Conjunctive waw | Noun - masculine singular	2822								 and darkness 				
+23	0	23	2	Hebrew	עַל־	עַל־	‘al-	Prep	Preposition	5921								 was over 				
+24	0	24	2	Hebrew	פְּנֵ֣י	פְּנֵ֣י	pə·nê	N-cpc	Noun - common plural construct	6440								 the surface 				
+25	0	25	2	Hebrew	תְה֑וֹם	תְה֑וֹם	ṯə·hō·wm	N-cs	Noun - common singular	8415								 of the deep 	.			
+26	0	26	2	Hebrew	וְר֣וּחַ	וְר֣וּחַ	wə·rū·aḥ	Conj-w | N-csc	Conjunctive waw | Noun - common singular construct	7307								 And the Spirit 				
+27	0	27	2	Hebrew	אֱלֹהִ֔ים	אֱלֹהִ֔ים	’ĕ·lō·hîm	N-mp	Noun - masculine plural	430								 of God 				
+28	0	28	2	Hebrew	מְרַחֶ֖פֶת	מְרַחֶ֖פֶת	mə·ra·ḥe·p̄eṯ	V-Piel-Prtcpl-fs	Verb - Piel - Participle - feminine singular	7363								 was hovering 				
+29	0	29	2	Hebrew	עַל־	עַל־	‘al-	Prep	Preposition	5921								 over 				
+30	0	30	2	Hebrew	פְּנֵ֥י	פְּנֵ֥י	pə·nê	N-cpc	Noun - common plural construct	6440								 the surface 				
+31	0	31	2	Hebrew	הַמָּֽיִם׃	הַמָּֽיִם׃	ham·mā·yim	Art | N-mp	Article | Noun - masculine plural	4325								 of the waters 	.			
+32	0	32	2	Hebrew																		
+33	0	33	2	Hebrew																		
+34	0	34	2	Hebrew																		
+35	0	35	2	Hebrew																		
+36	0	36	2	Hebrew																		
+37	0	37	2	Hebrew																		
+38	0	38	2	Hebrew																		
+39	0	39	2	Hebrew																		
+40	0	40	2	Hebrew																		
+41	0	41	2	Hebrew																		
+43	0	42	3	Hebrew	אֱלֹהִ֖ים	אֱלֹהִ֖ים	’ĕ·lō·hîm	N-mp	Noun - masculine plural	430		Genesis 1:3	<p class=|subhdg|>The First Day		<p class=|tab1stline|>			 And God 				
+42	0	43	3	Hebrew	וַיֹּ֥אמֶר	וַיֹּ֥אמֶר	way·yō·mer	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	559								 said 	,			
+44	0	44	3	Hebrew	יְהִ֣י	יְהִ֣י	yə·hî	V-Qal-Imperf.Jus-3ms	Verb - Qal - Imperfect Jussive - third person masculine singular	1961							“	 Let there be 				
+45	0	45	3	Hebrew	א֑וֹר	א֑וֹר	’ō·wr	N-cs	Noun - common singular	216								 light 	,	” 	Cited in 2 Corinthians 4:6	
+46	0	46	3	Hebrew	וַֽיְהִי־	וַֽיְהִי־	way·hî-	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	1961								 and there was 				
+47	0	47	3	Hebrew	אֽוֹר׃	אֽוֹר׃	’ō·wr	N-cs	Noun - common singular	216								 light 	.			
+48	0	48	3	Hebrew																		
+49	0	49	3	Hebrew																		
+50	0	50	3	Hebrew																		
+51	0	51	3	Hebrew																		
+52	0	52	3	Hebrew																		
+53	0	53	3	Hebrew																		
+54	0	54	3	Hebrew																		
+55	0	55	3	Hebrew																		
+56	0	56	3	Hebrew																		
+57	0	57	3	Hebrew																		
+59	0	58	4	Hebrew	אֱלֹהִ֛ים	אֱלֹהִ֛ים	’ĕ·lō·hîm	N-mp	Noun - masculine plural	430		Genesis 1:4						 And God 				
+60	0	59	4	Hebrew	אֶת־	אֶת־	’eṯ-	DirObjM	Direct object marker	853								 - 				
+58	0	60	4	Hebrew	וַיַּ֧רְא	וַיַּ֧רְא	way·yar	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	7200								 saw 				
+62	0	61	4	Hebrew	כִּי־	כִּי־	kî-	Conj	Conjunction	3588								 that 				
+61	0	62	4	Hebrew	הָא֖וֹר	הָא֖וֹר	hā·’ō·wr	Art | N-cs	Article | Noun - common singular	216								 the light 				
+63	0	63	4	Hebrew	ט֑וֹב	ט֑וֹב	ṭō·wḇ	Adj-ms	Adjective - masculine singular	2896								 [was] good 	,			
+65	0	64	4	Hebrew	אֱלֹהִ֔ים	אֱלֹהִ֔ים	’ĕ·lō·hîm	N-mp	Noun - masculine plural	430								 and [He] 				
+64	0	65	4	Hebrew	וַיַּבְדֵּ֣ל	וַיַּבְדֵּ֣ל	way·yaḇ·dêl	Conj-w | V-Hifil-ConsecImperf-3ms	Conjunctive waw | Verb - Hifil - Consecutive imperfect - third person masculine singular	914								 separated 				
+67	0	66	4	Hebrew	הָא֖וֹר	הָא֖וֹר	hā·’ō·wr	Art | N-cs	Article | Noun - common singular	216								 the light 				
+68	0	67	4	Hebrew	וּבֵ֥ין	וּבֵ֥ין	ū·ḇên	Conj-w | Prep	Conjunctive waw | Preposition	996								 from 				
+66	0	68	4	Hebrew	בֵּ֥ין	בֵּ֥ין	bên	Prep	Preposition	996								 . . . 				
+69	0	69	4	Hebrew	הַחֹֽשֶׁךְ׃	הַחֹֽשֶׁךְ׃	ha·ḥō·šeḵ	Art | N-ms	Article | Noun - masculine singular	2822								 the darkness 	.			
+70	0	70	4	Hebrew																		
+71	0	71	4	Hebrew																		
+72	0	72	4	Hebrew																		
+73	0	73	4	Hebrew																		
+74	0	74	4	Hebrew																		
+75	0	75	4	Hebrew																		
+76	0	76	4	Hebrew																		
+77	0	77	4	Hebrew																		
+78	0	78	4	Hebrew																		
+79	0	79	4	Hebrew																		
+81	0	80	5	Hebrew	אֱלֹהִ֤ים׀	אֱלֹהִ֤ים׀	’ĕ·lō·hîm	N-mp	Noun - masculine plural	430		Genesis 1:5						 God 				
+80	0	81	5	Hebrew	וַיִּקְרָ֨א	וַיִּקְרָ֨א	way·yiq·rā	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	7121								 called 				
+82	0	82	5	Hebrew	לָאוֹר֙	לָאוֹר֙	lā·’ō·wr	Prep-l, Art | N-cs	Preposition-l, Article | Noun - common singular	216								 the light 				
+83	0	83	5	Hebrew	י֔וֹם	י֔וֹם	yō·wm	N-ms	Noun - masculine singular	3117							“ 	 day 	,	”		
+84	0	84	5	Hebrew	וְלַחֹ֖שֶׁךְ	וְלַחֹ֖שֶׁךְ	wə·la·ḥō·šeḵ	Conj-w, Prep-l, Art | N-ms	Conjunctive waw, Preposition-l, Article | Noun - masculine singular	2822								 and the darkness 				
+85	0	85	5	Hebrew	קָ֣רָא	קָ֣רָא	qā·rā	V-Qal-Perf-3ms	Verb - Qal - Perfect - third person masculine singular	7121								 He called 				
+86	0	86	5	Hebrew	לָ֑יְלָה	לָ֑יְלָה	lā·yə·lāh	N-ms	Noun - masculine singular	3915							“ 	 night 	.	”		
+87	0	87	5	Hebrew	וַֽיְהִי־	וַֽיְהִי־	way·hî-	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	1961					<p class=|tab1stline|>			 And there was 				
+88	0	88	5	Hebrew	עֶ֥רֶב	עֶ֥רֶב	‘e·reḇ	N-ms	Noun - masculine singular	6153								 evening 	,			
+89	0	89	5	Hebrew	וַֽיְהִי־	וַֽיְהִי־	way·hî-	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	1961								 and there was 				
+90	0	90	5	Hebrew	בֹ֖קֶר	בֹ֖קֶר	ḇō·qer	N-ms	Noun - masculine singular	1242								 morning 	 — 			
+92	0	91	5	Hebrew	אֶחָֽד׃פ	אֶחָֽד׃פ	’e·ḥāḏ	Number-ms	Number - masculine singular	259								 the first 				
+91	0	92	5	Hebrew	י֥וֹם	י֥וֹם	yō·wm	N-ms	Noun - masculine singular	3117								 day 	.		Literally <i>day one</i>	
+94	0	93	5	Hebrew																		
+95	0	94	5	Hebrew																		
+96	0	95	5	Hebrew																		
+97	0	96	5	Hebrew																		
+98	0	97	5	Hebrew																		
+99	0	98	5	Hebrew																		
+100	0	99	5	Hebrew																		
+101	0	100	5	Hebrew																		
+102	0	101	5	Hebrew																		
+103	0	102	5	Hebrew																		
+509582	0	503184	21763	Hebrew	הַכַּשְׂדִּ֛ים	הַכַּשְׂדִּ֛ים	hak·kaś·dîm	Art | N-proper-mp	Article | Noun - proper - masculine plural	3778		Daniel 2:4			<p class=|reg|>			 Then the astrologers 				
+509581	0	503185	21763	Hebrew	וַֽיְדַבְּר֧וּ	וַֽיְדַבְּר֧וּ	way·ḏab·bə·rū	Conj-w | V-Piel-ConsecImperf-3mp	Conjunctive waw | Verb - Piel - Consecutive imperfect - third person masculine plural	1696								 answered 				
+509583	0	503186	21763	Hebrew	לַמֶּ֖לֶךְ	לַמֶּ֖לֶךְ	lam·me·leḵ	Prep-l, Art | N-ms	Preposition-l, Article | Noun - masculine singular	4428								 the king 				
+509584	0	503187	21763	Hebrew	אֲרָמִ֑ית	אֲרָמִ֑ית	’ă·rā·mîṯ	N-proper-fs	Noun - proper - feminine singular	762								 in Aramaic 	,		The original text from this point of Daniel 2:4 through Daniel 7:28 is in Aramaic.	
+509585	0	503188	21763	Aramaic	מַלְכָּא֙	מַלְכָּא֙	mal·kā	N-msd	Noun - masculine singular determinate	4430							“ 	 O king 	,			
+509587	0	503189	21763	Aramaic	חֱיִ֔י	חֱיִ֔י	ḥĕ·yî	V-Qal-Imp-ms	Verb - Qal - Imperative - masculine singular	2418								 may you live 				
+509586	0	503190	21763	Aramaic	לְעָלְמִ֣ין	לְעָלְמִ֣ין	lə·‘ā·lə·mîn	Prep-l | N-mp	Preposition-l | Noun - masculine plural	5957								 forever 	!			
+509588	0	503191	21763	Aramaic	אֱמַ֥ר	אֱמַ֥ר	’ĕ·mar	V-Qal-Imp-ms	Verb - Qal - Imperative - masculine singular	560								 Tell 				
+509592	0	503192	21763	Aramaic	לְעַבְדַּיִךְ	לְעַבְדַּיִךְ	lə·ʿaḇ·da·yiḵ	Prep-l | N-mpc | 2ms	Preposition-l | Noun - masculine plural construct | second person masculine singular	5649								 your servants 				
+509589	0	503193	21763	Aramaic	חֶלְמָ֛א	חֶלְמָ֛א	ḥel·mā	N-msd	Noun - masculine singular determinate	2493								 the dream 	,			
+509595	0	503194	21763	Aramaic	נְחַוֵּֽא׃	נְחַוֵּֽא׃	nə·ḥaw·wê	V-Piel-Imperf-1cp	Verb - Piel - Imperfect - first person common plural	2324								 and we will give 				
+509594	0	503195	21763	Aramaic	וּפִשְׁרָ֥א	וּפִשְׁרָ֥א	ū·p̄iš·rā	Conj-w | N-msd	Conjunctive waw | Noun - masculine singular determinate	6591								 the interpretation 	.	”		
+509596	0	503196	21763	Aramaic																		
+509597	0	503197	21763	Aramaic																		
+509598	0	503198	21763	Aramaic																		
+509599	0	503199	21763	Aramaic																		
+509600	0	503200	21763	Aramaic																		
+509601	0	503201	21763	Aramaic																		
+509602	0	503202	21763	Aramaic																		
+509603	0	503203	21763	Aramaic																		
+509604	0	503204	21763	Aramaic																		
+509605	0	503205	21763	Aramaic																		
+529009	0	522133	22533	Hebrew	דְּבַר־	דְּבַר־	də·ḇar-	N-msc	Noun - masculine singular construct	1697		Jonah 1:1	<p class=|hdg|>Jonah Flees from the LORD	<br /><span class=|cross|>(<a href =|../nahum/1.htm|>Nahum 1:1–15</a>)</span>	<p class=|reg|>			 Now the word 				
+529010	0	522134	22533	Hebrew	יְהוָ֔ה	יְהוָ֔ה	Yah·weh	N-proper-ms	Noun - proper - masculine singular	3068								 of the LORD 				
+529008	0	522135	22533	Hebrew	וַֽיְהִי֙	וַֽיְהִי֙	way·hî	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	1961								 came 				
+529011	0	522136	22533	Hebrew	אֶל־	אֶל־	’el-	Prep	Preposition	413								 to 				
+529012	0	522137	22533	Hebrew	יוֹנָ֥ה	יוֹנָ֥ה	yō·w·nāh	N-proper-ms	Noun - proper - masculine singular	3124								 Jonah 				
+529013	0	522138	22533	Hebrew	בֶן־	בֶן־	ḇen-	N-msc	Noun - masculine singular construct	1121								 son 				
+529014	0	522139	22533	Hebrew	אֲמִתַּ֖י	אֲמִתַּ֖י	’ă·mit·tay	N-proper-ms	Noun - proper - masculine singular	573								 of Amittai 	,			
+529015	0	522140	22533	Hebrew	לֵאמֹֽר׃	לֵאמֹֽר׃	lê·mōr	Prep-l | V-Qal-Inf	Preposition-l | Verb - Qal - Infinitive construct	559								 saying 	,			
+529016	0	522141	22533	Hebrew																		
+529017	0	522142	22533	Hebrew																		
+529018	0	522143	22533	Hebrew																		
+529019	0	522144	22533	Hebrew																		
+529020	0	522145	22533	Hebrew																		
+529021	0	522146	22533	Hebrew																		
+529022	0	522147	22533	Hebrew																		
+529023	0	522148	22533	Hebrew																		
+529024	0	522149	22533	Hebrew																		
+529025	0	522150	22533	Hebrew																		
+529026	0	522151	22534	Hebrew	ק֠וּם	ק֠וּם	qūm	V-Qal-Imp-ms	Verb - Qal - Imperative - masculine singular	6965		Jonah 1:2					“	 Get up 	!			
+529027	0	522152	22534	Hebrew	לֵ֧ךְ	לֵ֧ךְ	lêḵ	V-Qal-Imp-ms	Verb - Qal - Imperative - masculine singular	1980								 Go 				
+529028	0	522153	22534	Hebrew	אֶל־	אֶל־	’el-	Prep	Preposition	413								 to 				
+529031	0	522154	22534	Hebrew	הַגְּדוֹלָ֖ה	הַגְּדוֹלָ֖ה	hag·gə·ḏō·w·lāh	Art | Adj-fs	Article | Adjective - feminine singular	1419								 the great 				
+529030	0	522155	22534	Hebrew	הָעִ֥יר	הָעִ֥יר	hā·‘îr	Art | N-fs	Article | Noun - feminine singular	5892								 city 				
+529029	0	522156	22534	Hebrew	נִֽינְוֵ֛ה	נִֽינְוֵ֛ה	nî·nə·wêh	N-proper-fs	Noun - proper - feminine singular	5210								 of Nineveh 				
+529032	0	522157	22534	Hebrew	וּקְרָ֣א	וּקְרָ֣א	ū·qə·rā	Conj-w | V-Qal-Imp-ms	Conjunctive waw | Verb - Qal - Imperative - masculine singular	7121								 and preach 				
+529033	0	522158	22534	Hebrew	עָלֶ֑יהָ	עָלֶ֑יהָ	‘ā·le·hā	Prep | 3fs	Preposition | third person feminine singular	5921								 against it 	,			
+529034	0	522159	22534	Hebrew	כִּֽי־	כִּֽי־	kî-	Conj	Conjunction	3588								 because 				
+529036	0	522160	22534	Hebrew	רָעָתָ֖ם	רָעָתָ֖ם	rā·‘ā·ṯām	N-fsc | 3mp	Noun - feminine singular construct | third person masculine plural	7451								 its wickedness 				
+529035	0	522161	22534	Hebrew	עָלְתָ֥ה	עָלְתָ֥ה	‘ā·lə·ṯāh	V-Qal-Perf-3fs	Verb - Qal - Perfect - third person feminine singular	5927								 has come up 				
+529037	0	522162	22534	Hebrew	לְפָנָֽי׃	לְפָנָֽי׃	lə·p̄ā·nāy	Prep-l | N-mpc | 1cs	Preposition-l | Noun - masculine plural construct | first person common singular	6440								 before Me 	.	”		
+529038	0	522163	22534	Hebrew																		
+529039	0	522164	22534	Hebrew																		
+529040	0	522165	22534	Hebrew																		
+529041	0	522166	22534	Hebrew																		
+529042	0	522167	22534	Hebrew																		
+529043	0	522168	22534	Hebrew																		
+529044	0	522169	22534	Hebrew																		
+529045	0	522170	22534	Hebrew																		
+529046	0	522171	22534	Hebrew																		
+529047	0	522172	22534	Hebrew																		
+529049	0	522173	22535	Hebrew	יוֹנָה֙	יוֹנָה֙	yō·w·nāh	N-proper-ms	Noun - proper - masculine singular	3124		Jonah 1:3			<p class=|reg|>			 Jonah, however 	,			
+529048	0	522174	22535	Hebrew	וַיָּ֤קָם	וַיָּ֤קָם	way·yā·qām	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	6965								 got up 				
+529050	0	522175	22535	Hebrew	לִבְרֹ֣חַ	לִבְרֹ֣חַ	liḇ·rō·aḥ	Prep-l | V-Qal-Inf	Preposition-l | Verb - Qal - Infinitive construct	1272								 to flee 				
+529051	0	522176	22535	Hebrew	תַּרְשִׁ֔ישָׁה	תַּרְשִׁ֔ישָׁה	tar·šî·šāh	N-proper-fs | 3fs	Noun - proper - feminine singular | third person feminine singular	8659								 to Tarshish 	,			
+529052	0	522177	22535	Hebrew	מִלִּפְנֵ֖י	מִלִּפְנֵ֖י	mil·lip̄·nê	Prep-m, Prep-l | N-cpc	Preposition-m, Preposition-l | Noun - common plural construct	6440								 away from the presence 				
+529053	0	522178	22535	Hebrew	יְהוָ֑ה	יְהוָ֑ה	Yah·weh	N-proper-ms	Noun - proper - masculine singular	3068								 of the LORD 	.			
+529054	0	522179	22535	Hebrew	וַיֵּ֨רֶד	וַיֵּ֨רֶד	way·yê·reḏ	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	3381								 He went down 				
+529055	0	522180	22535	Hebrew	יָפ֜וֹ	יָפ֜וֹ	yā·p̄ōw	N-proper-fs	Noun - proper - feminine singular	3305								 to Joppa 				
+529056	0	522181	22535	Hebrew	וַיִּמְצָ֥א	וַיִּמְצָ֥א	way·yim·ṣā	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	4672								 and found 				
+529057	0	522182	22535	Hebrew	אָנִיָּ֣ה׀	אָנִיָּ֣ה׀	ʾå̄·nī·yå̄h	N-fs	Noun - feminine singular	591								 a ship 				
+529058	0	522183	22535	Hebrew	בָּאָ֣ה	בָּאָ֣ה	bā·’āh	V-Qal-Prtcpl-fs	Verb - Qal - Participle - feminine singular	935								 bound 				
+529059	0	522184	22535	Hebrew	תַרְשִׁ֗ישׁ	תַרְשִׁ֗ישׁ	ṯar·šîš	N-proper-fs	Noun - proper - feminine singular	8659								 for Tarshish 	.			
+529060	0	522185	22535	Hebrew	וַיִּתֵּ֨ן	וַיִּתֵּ֨ן	way·yit·tên	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	5414								 So he paid 				
+529061	0	522186	22535	Hebrew	שְׂכָרָ֜הּ	שְׂכָרָ֜הּ	śə·ḵā·rāh	N-msc | 3fs	Noun - masculine singular construct | third person feminine singular	7939								 the fare 				
+529062	0	522187	22535	Hebrew	וַיֵּ֤רֶד	וַיֵּ֤רֶד	way·yê·reḏ	Conj-w | V-Qal-ConsecImperf-3ms	Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular	3381								 and went aboard 				
+529063	0	522188	22535	Hebrew	בָּהּ֙	בָּהּ֙	bāh	Prep | 3fs	Preposition | third person feminine singular									 . . . 				
+529064	0	522189	22535	Hebrew	לָב֤וֹא	לָב֤וֹא	lā·ḇō·w	Prep-l | V-Qal-Inf	Preposition-l | Verb - Qal - Infinitive construct	935								 to sail 				
+529065	0	522190	22535	Hebrew	עִמָּהֶם֙	עִמָּהֶם֙	‘im·mā·hem	Prep | 3mp	Preposition | third person masculine plural	5973								 . . . 				
+529066	0	522191	22535	Hebrew	תַּרְשִׁ֔ישָׁה	תַּרְשִׁ֔ישָׁה	tar·šî·šāh	N-proper-fs | 3fs	Noun - proper - feminine singular | third person feminine singular	8659								 for Tarshish 	,			
+529067	0	522192	22535	Hebrew	מִלִּפְנֵ֖י	מִלִּפְנֵ֖י	mil·lip̄·nê	Prep-m, Prep-l | N-cpc	Preposition-m, Preposition-l | Noun - common plural construct	6440								 away from the presence 				
+529068	0	522193	22535	Hebrew	יְהוָֽה׃	יְהוָֽה׃	Yah·weh	N-proper-ms	Noun - proper - masculine singular	3068								 of the LORD 	.			
+529069	0	522194	22535	Hebrew																		
+529070	0	522195	22535	Hebrew																		
+529071	0	522196	22535	Hebrew																		
+529072	0	522197	22535	Hebrew																		
+529073	0	522198	22535	Hebrew																		
+529074	0	522199	22535	Hebrew																		
+529075	0	522200	22535	Hebrew																		
+529076	0	522201	22535	Hebrew																		
+529077	0	522202	22535	Hebrew																		
+529078	0	522203	22535	Hebrew																		

@@ -22,6 +22,7 @@
     "seed:build": "node scripts/seed-build.ts",
     "pictures:queue": "tsx scripts/pictures-queue.ts",
     "data:build": "tsx scripts/data-build.ts",
+    "data:build:ot": "tsx scripts/data-build-ot.ts",
     "ladder": "tsx scripts/ladder-el.ts && tsx scripts/ladder-en.ts",
     "check:step": "tsx scripts/step-check.ts",
     "greek:edition": "tsx scripts/greek-edition.ts",
