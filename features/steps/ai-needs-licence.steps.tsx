@@ -171,6 +171,13 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('With a licence the Verse view offers Diagram', ({ Given, Then }) => {
+    Given('this phone has a licence and the Verse view of verse 28 is open', () => openVerseView(true, 'listen'));
+    Then('the Verse view has a button named Diagram', () => {
+      expect(within(verseView()).getByRole('button', { name: 'Diagram' })).toBeInTheDocument();
+    });
+  });
+
   Scenario('With a licence the Verse view offers Ask the tutor and Quiz me and the Hold to ask bar', ({ Given, Then, And }) => {
     Given('this phone has a licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(true, 'ask'));
     Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
