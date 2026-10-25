@@ -7,8 +7,17 @@ import { SEND_TO_MAKERS } from './makers';
 import type { MakersAction } from './useSendToMakers';
 
 /** The action's button, with what it is doing under it: Sending…, or Sent with the way to Your requests (`onLeave` first closes what stands over that screen). */
-export function SendToMakers({ action, host, onLeave }: { action: MakersAction; host: RefObject<HTMLElement | null>; onLeave?: () => void }) {
+export function SendToMakers({ action, host, onLeave, show = 'all' }: {
+  action: MakersAction;
+  host: RefObject<HTMLElement | null>;
+  onLeave?: () => void;
+  /** 'button' only the button, 'status' only what it says (Sending, Sent, the note), 'all' both: a sheet sideways has the button in its header and the status in its foot */
+  show?: 'all' | 'button' | 'status';
+}) {
   const sending = action.phase === 'sending';
+  const status = action.phase !== undefined || action.note !== undefined;
+  if (show === 'status' && !status) return null;
+  if (show === 'button') return <MakersButton action={action} host={host} sending={sending} />;
   return (
     <div data-makers-send className="flex flex-wrap items-center justify-end gap-x-3">
       {sending ? (
@@ -38,14 +47,21 @@ export function SendToMakers({ action, host, onLeave }: { action: MakersAction; 
           {action.note}
         </p>
       ) : null}
-      <button
-        type="button"
-        disabled={sending}
-        onClick={() => action.start(host.current)}
-        className="min-h-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent active:bg-line disabled:opacity-40"
-      >
-        {SEND_TO_MAKERS}
-      </button>
+      {show === 'all' ? <MakersButton action={action} host={host} sending={sending} /> : null}
     </div>
+  );
+}
+
+function MakersButton({ action, host, sending }: { action: MakersAction; host: RefObject<HTMLElement | null>; sending: boolean }) {
+  return (
+    <button
+      type="button"
+      data-makers-button
+      disabled={sending}
+      onClick={() => action.start(host.current)}
+      className="min-h-11 shrink-0 rounded-lg px-3 text-base font-medium text-accent active:bg-line disabled:opacity-40"
+    >
+      {SEND_TO_MAKERS}
+    </button>
   );
 }

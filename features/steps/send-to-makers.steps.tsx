@@ -168,13 +168,28 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Send to the makers with nothing in the composer sends nothing and says why', ({ Given, When, And, Then }) => {
+  Scenario('In the Talk sheet Send to the makers shows once there is something to send', ({ Given, When, Then, And }) => {
     Given(opened, openReader);
     When('he opens the Talk sheet on the chapter', openSheet);
-    And('he taps Send to the makers', () => tapMakers(sheet()));
+    Then('the Talk sheet shows no button {string}', (_, name: string) => {
+      expect(within(sheet()).queryByRole('button', { name })).toBeNull();
+    });
+    When('he types {string} in the Talk sheet without sending it', (_, words: string) => typeInSheet(words));
+    Then('the Talk sheet shows the button {string}', async (_, name: string) => {
+      expect(await within(sheet()).findByRole('button', { name })).toBeInTheDocument();
+    });
+    And('the mill received {int} grists for the lampas app, kind feedback', grists);
+  });
+
+  Scenario("In the Verse view's Ask, Send to the makers with nothing in the composer sends nothing and says why", ({ Given, When, And, Then }) => {
+    Given(askOpened, async () => {
+      await openReader();
+      await openAsk();
+    });
+    When('he taps Send to the makers', () => tapMakers(view()));
     Then('the mill received {int} grists for the lampas app, kind feedback', grists);
     And('the composer says {string}', async (_, line: string) => {
-      expect(await within(sheet()).findByText(new RegExp(line))).toBeInTheDocument();
+      expect(await within(view()).findByText(new RegExp(line))).toBeInTheDocument();
     });
   });
 

@@ -2,7 +2,8 @@ Feature: He can send a request to the makers from any tutor talk, whenever he li
   The makers' offer used to exist only when the tutor made it. Now the Talk sheet and the Verse view's Ask each have a 'Send to the makers' action: it files what is in
   the composer (his words, the pictures he attached or took) as a request, through the one sender the tutor's own offer uses (src/talk/makers.ts sendToMakers), and
   asks the tutor nothing. The Verse view's Ask has Attach a picture and Take a photo for it; the tutor there does not look at pictures, so Send with a picture in
-  the row says so and sends nothing. Settings > Your requests lists what was sent from each. These scenarios run against a fake Postern whose mill answers a talk
+  the row says so and sends nothing. In the Talk sheet (portrait) the action shows once the composer holds something to send, so an empty sheet keeps the whole room for the
+  conversation; sideways it stands in the header. In the Ask it is always there. Settings > Your requests lists what was sent from each. These scenarios run against a fake Postern whose mill answers a talk
   with the tutor's answer and a feedback grist with {"status":"sent"}.
 
   Scenario: In the Talk sheet Send to the makers files his words and the screen without asking the tutor
@@ -23,12 +24,13 @@ Feature: He can send a request to the makers from any tutor talk, whenever he li
     And the feedback grist carries one picture
     And the phone keeps one request row that says 1 picture went with it
 
-  Scenario: Send to the makers with nothing in the composer sends nothing and says why
+  Scenario: In the Talk sheet Send to the makers shows once there is something to send
     Given Lampas is opened on the Reader behind a fake Postern whose tutor offers nothing
     When he opens the Talk sheet on the chapter
-    And he taps Send to the makers
-    Then the mill received 0 grists for the lampas app, kind feedback
-    And the composer says "tap Send to the makers"
+    Then the Talk sheet shows no button "Send to the makers"
+    When he types "A Greek keyboard, please" in the Talk sheet without sending it
+    Then the Talk sheet shows the button "Send to the makers"
+    And the mill received 0 grists for the lampas app, kind feedback
 
   Scenario: The Verse view's Ask has Attach a picture and Take a photo, and Send to the makers files words and a picture
     Given Lampas is opened on Romans 8 with the Verse view's Ask open behind a fake Postern whose tutor offers nothing
@@ -42,6 +44,12 @@ Feature: He can send a request to the makers from any tutor talk, whenever he li
     And the phone keeps one request row, kind tutor-ask, with his words as its line
     When he opens Your requests
     Then Your requests lists "The Greek is too small here"
+
+  Scenario: In the Verse view's Ask, Send to the makers with nothing in the composer sends nothing and says why
+    Given Lampas is opened on Romans 8 with the Verse view's Ask open behind a fake Postern whose tutor offers nothing
+    When he taps Send to the makers
+    Then the mill received 0 grists for the lampas app, kind feedback
+    And the composer says "tap Send to the makers"
 
   Scenario: Send in the Verse view's Ask with a picture in the row asks the tutor nothing and says where pictures go
     Given Lampas is opened on Romans 8 with the Verse view's Ask open behind a fake Postern whose tutor offers nothing

@@ -14,6 +14,8 @@ export interface MakersAction {
   phase: Phase;
   /** a line that says why the tap sent nothing */
   note: string | undefined;
+  /** forget what the last send said (Sent, the note): he has begun something new */
+  reset: () => void;
   /** the tap: presses the Composer's Send, marked */
   start: (host: HTMLElement | null) => void;
   /** The Composer's onSend: a send marked by `start` goes to the makers (`toMakers`), any other is the Composer's own (`toTutor`). */
@@ -50,6 +52,10 @@ export function useSendToMakers(): MakersAction {
       marked.current = false;
     }
   };
+  const reset = (): void => {
+    setPhase((now) => (now === 'sending' ? now : undefined));
+    setNote(undefined);
+  };
   const dispatch: MakersAction['dispatch'] = (message, toMakers, toTutor) => {
     if (!marked.current) return toTutor(message);
     marked.current = false;
@@ -65,5 +71,5 @@ export function useSendToMakers(): MakersAction {
       return true;
     })();
   };
-  return { phase, note, start, dispatch };
+  return { phase, note, start, reset, dispatch };
 }

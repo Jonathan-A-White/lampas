@@ -225,7 +225,9 @@ The whole loop is walked at 390x844 by `tests/e2e/feedback-loop-demo.spec.ts` (m
 
 His words (Lampas feedback grist, 2026-10-25): "requestability of the make from any tutor interaction. And every tutor interaction has files, camera, voice and typing." The tutor's own offer
 above is no longer the only way to the makers: the Talk sheet and the Verse view's Ask each have **Send to the makers** (`src/talk/SendToMakers.tsx`, `data-makers-send`), a thumb-sized button
-just above the composer, on screen whether or not the tutor offered anything. It files what is in the composer as it stands: his words (typed, or a hold's words kept in the box with
+just above the composer, there whether or not the tutor offered anything. In the Ask it is always there; in the Talk sheet it shows once the composer holds something to send (words, or a
+picture alone: `SendArrow` tells the sheet what the Composer's own Send knows), because a row of its own cost the answers box 52 px (`feedback-offer-scroll.spec.ts` guards that room), and sideways
+(`useShort`) it stands in the header, always, with what it says (Sending, Sent, the note) in the foot. It files what is in the composer as it stands: his words (typed, or a hold's words kept in the box with
 Settings > Talk's By button), and the pictures he attached or took (up to four, cut down on the phone like any talk picture). It asks the tutor nothing and adds no turn.
 
 - **One function.** `sendToMakers` (`src/talk/makers.ts`) is `submitFeedback` with a `tutor-ask` request and the pictures as the grist's files. The tutor's offer (`sendMakersOffer`), the Talk

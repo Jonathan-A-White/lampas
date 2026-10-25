@@ -31,6 +31,7 @@ import { sendMakersOffer, takeBridgeOffer, takeSettingOffer, useOfferSending } f
 import { failureLine, makersSummary, PICTURES_FOR_THE_MAKERS, sendToMakers } from './talk/makers';
 import { SendToMakers } from './talk/SendToMakers';
 import { useSendToMakers } from './talk/useSendToMakers';
+import { useShort } from './ui/useShort';
 import { isTooLong } from './ui/lengthLimit';
 import { LengthNote } from './ui/LengthNote';
 import { hebrewSoundAsk, MAX_TALK_CHARS, scopeTitle, type TalkFocus, type TalkScope } from './services/talk';
@@ -100,7 +101,13 @@ const TALK_LABELS: Partial<ComposerLabels> = {
 };
 
 /** The kit's Send arrow, drawn here so the button can point at the count that says why it is off (aria-describedby): the kit's own Send cannot. */
-function SendArrow({ slot, why }: { slot: SendSlot; why: string | undefined }) {
+function SendArrow({ slot, why, onCanSend }: { slot: SendSlot; why: string | undefined; onCanSend: (can: boolean) => void }) {
+  // the sheet shows Send to the makers while the composer holds something to send: the Composer says so only through this button
+  const { canSend } = slot;
+  useEffect(() => {
+    onCanSend(canSend);
+    return () => onCanSend(false);
+  }, [canSend, onCanSend]);
   return (
     <button
       type="button"
@@ -796,6 +803,9 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   };
   // 'Send to the makers': what is in the Composer goes to the makers as it stands, whenever he likes (src/talk/SendToMakers.tsx); the Composer's Send is still the tutor's
   const makers = useSendToMakers();
+  // a sheet on its side has no room for a row of its own above the composer: the button stands in its header (src/ui/useShort.ts), what it says stays in the foot
+  const short = useShort();
+  const [toSend, setToSend] = useState(false);
   const sendToTheMakers = async ({ text: said, files }: ComposerMessage): Promise<void> => {
     const message = said.trim();
     if (message.length > MAX_TALK_CHARS) throw new Error(`${message.length} of ${MAX_TALK_CHARS}: the message is too long to send. Shorten it; nothing has been cut.`);
@@ -853,6 +863,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
                   Skip
                 </button>
               ) : null}
+              {short ? <SendToMakers action={makers} host={composer} show="button" /> : null}
               {turnCount > 0 && !busy && !scope.welcome ? (
                 <button
                   type="button"
@@ -938,7 +949,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
               </p>
             ) : null}
             <LengthNote id={countId} text={text} max={MAX_TALK_CHARS} what="question" />
-            <SendToMakers action={makers} host={composer} onLeave={onClose} />
+            {short || toSend || makers.phase !== undefined || makers.note !== undefined ? <SendToMakers action={makers} host={composer} onLeave={onClose} show={short ? 'status' : 'all'} /> : null}
             {/* The kit's Composer, as Ask the tutor draws it: Hold to talk (or Tap to talk, Settings > Talk), Type a message, Attach a picture, Take a photo. Anything playing aloud is paused
                 while he holds (src/speech/askTranscriber.ts), and an answer that arrives meanwhile waits (src/talk/holding.ts). A question over the cap is kept, not sent (sendBlocked). */}
             <Composer
@@ -948,11 +959,14 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
               appName="Lampas"
               labels={{ ...TALK_LABELS, hold: tapWord('Hold to talk', talkSettings.talk), tryAgain: tapWord('Hold to talk', talkSettings.talk) }}
               text={text}
-              onTextChange={setText}
+              onTextChange={(words) => {
+                setText(words);
+                if (words) makers.reset();
+              }}
               incomingFiles={sharedFiles}
               refuseFile={refuseNonPicture}
               sendBlocked={tooLong}
-              renderSend={(slot) => <SendArrow slot={slot} why={tooLong ? countId : undefined} />}
+              renderSend={(slot) => <SendArrow slot={slot} why={tooLong ? countId : undefined} onCanSend={setToSend} />}
               disabled={busy}
               onHoldStart={holdBegan}
               onHoldEnd={holdEnded}

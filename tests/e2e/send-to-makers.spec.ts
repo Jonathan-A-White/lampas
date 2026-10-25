@@ -38,8 +38,10 @@ test('the Talk sheet: Send to the makers is on screen and sends his words and a 
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
   const action = sheet.getByRole('button', { name: 'Send to the makers', exact: true });
-  await expectTappable(action);
+  // an empty sheet keeps all its room for the talk: the action shows once the composer holds something to send, a picture alone too
+  await expect(action).toHaveCount(0);
   await pictureInput(sheet).setInputFiles(PICTURE);
+  await expectTappable(action);
   await (await talkField(sheet)).fill('The Greek keyboard is missing');
   await expectTappable(action);
   await shot(page, 'send-to-makers-talk');
@@ -77,4 +79,23 @@ test("the Verse view's Ask: Attach a picture, Take a photo and Send to the maker
   expect(fake.received[0].attachments).toHaveLength(1);
   expect(fake.received.filter((g) => g.grist.kind === 'verse-ask')).toHaveLength(0);
   await shot(page, 'send-to-makers-ask-sent');
+});
+
+test('the Talk sheet on its side: Send to the makers stands in the header, tappable, and Sent shows in the foot', async ({ page }) => {
+  const fake = await start(page);
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto('/');
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  const action = sheet.getByRole('button', { name: 'Send to the makers', exact: true });
+  await expect(action).toBeVisible();
+  const box = await action.boundingBox();
+  const header = await sheet.getByRole('button', { name: 'Done' }).boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(43.5);
+  expect(Math.abs(box!.y - header!.y)).toBeLessThan(12);
+  await (await talkField(sheet)).fill('The Greek keyboard is missing');
+  await action.click();
+  await expect(sheet.getByText('Sent to the makers. The answer will come back.')).toBeVisible();
+  await expect.poll(() => fake.received.filter((g) => g.grist.kind === 'feedback').length).toBe(1);
+  await shot(page, 'send-to-makers-talk-sideways');
 });
