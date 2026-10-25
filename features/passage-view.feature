@@ -102,8 +102,8 @@ Feature: A section heading opens the Verse view for its passage
     When he goes to the next passage
     Then the Verse view is headed "Greetings from Paul and Sosthenes, 1 Corinthians 1:1-3"
 
-  Scenario: Matthew 1's first passage has no previous arrow
-    Given Lampas is opened at the book "mat" chapter 1, the passage that starts at verse 1
+  Scenario: Genesis 1's first passage has no previous arrow
+    Given Lampas is opened at the book "gen" chapter 1, the passage that starts at verse 1
     Then the previous passage arrow is off
     And the next passage arrow is on
 

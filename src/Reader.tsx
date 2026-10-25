@@ -189,7 +189,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (link) takeLink(link);
   }, [link]);
   const [notice, setNotice] = useState(link?.notice ?? (request?.action === 'opened' ? `Opened ${TITLE}` : null));
-  // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Matthew 1 or Revelation 22 a short note says so.
+  // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Genesis 1 or Revelation 22 a short note says so.
   const sheetOpen = useSheetOpen();
   const inner = useRef<HTMLDivElement | null>(null);
   const [swipeEnd, setSwipeEnd] = useState<SwipeEnd | null>(null);

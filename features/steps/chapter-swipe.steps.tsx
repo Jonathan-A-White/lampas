@@ -127,7 +127,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the reader is headed {string}', headed);
   });
 
-  Scenario('A right swipe on Matthew 1 says it is the first chapter', ({ Given, When, Then, And }) => {
+  Scenario('A right swipe on Genesis 1 says it is the first chapter', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} chapter {int}', (_, book: string, n: number) => openOn(book, n));
     When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
     Then('the note says {string}', async (_, text: string) => {

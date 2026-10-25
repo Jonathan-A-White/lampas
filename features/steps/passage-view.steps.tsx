@@ -383,7 +383,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Verse view is headed {string}', headed);
   });
 
-  Scenario("Matthew 1's first passage has no previous arrow", ({ Given, Then, And }) => {
+  Scenario("Genesis 1's first passage has no previous arrow", ({ Given, Then, And }) => {
     Given('Lampas is opened at the book {string} chapter {number}, the passage that starts at verse {number}', openAt);
     Then('the previous passage arrow is off', arrowOff('previous'));
     And('the next passage arrow is on', arrowOn('next'));

@@ -1,6 +1,6 @@
 // src/ChapterNav.tsx — the two buttons at the foot of a chapter, after the last verse (mw-5r3p30.63): '‹ 1 John 1' and '1 John 3 ›'.
 // The header has no width for them (docs: the title already truncates at 360 px). A tap opens the chapter from the top as a new Back
-// step, the way the picker does; a chapter that is not on the phone says so in the Reader. Matthew 1 has no previous, Revelation 22 no next.
+// step, the way the picker does; a chapter that is not on the phone says so in the Reader. Genesis 1 has no previous, Revelation 22 no next (the Old Testament's chapters run into Matthew 1, mw-uqlxea.2).
 // Above the buttons sits one small card (mw-5r3p30.706, under the Tips setting): a tip that a swipe changes chapter; once he has changed chapter by a swipe
 // (src/tips/hints.ts chapterSwiped), in its place an offer to hide the buttons, Hide or Keep, answered for good. Settings > Chapter buttons sets Hide and
 // brings them back; with Hide this draws nothing.

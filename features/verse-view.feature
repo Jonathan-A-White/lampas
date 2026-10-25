@@ -124,8 +124,8 @@ Feature: The Verse view
     When he goes to the previous verse
     Then the Verse view is again headed "Romans 8:39"
 
-  Scenario: There is no arrow before the first verse of Matthew
-    Given Lampas is opened on Matthew 1 in the English view with the weave "Off"
+  Scenario: There is no arrow before the first verse of Genesis
+    Given Lampas is opened on Genesis 1 in the English view with the weave "Off"
     When he taps the number of verse 1
     Then the previous verse arrow is off
     And the next verse arrow is on

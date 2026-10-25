@@ -394,8 +394,8 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Verse view is again headed {string}', headed);
   });
 
-  Scenario('There is no arrow before the first verse of Matthew', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Matthew 1 in the English view with the weave {string}', (_, weave: string) => open(weaveOf(weave), { hash: '#/?b=mat&c=1' }));
+  Scenario('There is no arrow before the first verse of Genesis', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 in the English view with the weave {string}', (_, weave: string) => open(weaveOf(weave), { hash: '#/?b=gen&c=1' }));
     When('he taps the number of verse 1', (ctx) => tapNumber(ctx, 1));
     Then('the previous verse arrow is off', arrow('previous', false));
     And('the next verse arrow is on', arrow('next', true));
