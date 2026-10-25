@@ -33,7 +33,7 @@ import { holdText, talkWindow, textOf, versesLabel } from './talkVerses';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { heldPassagesOf, MAX_FETCH, verseEnglish, verseGreek, type HeldPassage } from './talkFetch';
 import { clipText as clipTo, fitRequest, isNoteUpdate, jsonBytes, MAX_HISTORY_TURNS, type CatalogueEntry } from 'voice-kit/talks';
-import { bibleTalkSteps, talkBytes } from './talkFit';
+import { bibleTalkSteps, carryingHold, talkBytes } from './talkFit';
 import { tutorFitSteps } from '../tutor/fit';
 
 /** The kind the mill runs the grind under (grinds/bible-talk.json). */
@@ -529,7 +529,7 @@ export const foldedTurn = (turn: TalkHistoryEntry): TalkHistoryEntry => ({ q: cl
  */
 export function fitHistory(request: TalkRequest, held = 0, talk?: string): TalkRequest {
   // the talk's name travels in the grist header beside the request and weighs with it (mw-pxji7y.3)
-  return fitRequest(request, [...tutorFitSteps, ...bibleTalkSteps(held)], { maxBytes: MAX_REQUEST_BYTES, extraBytes: talkBytes(talk) });
+  return fitRequest(request, [...tutorFitSteps.map(carryingHold), ...bibleTalkSteps(held)], { maxBytes: MAX_REQUEST_BYTES, extraBytes: talkBytes(talk) });
 }
 
 /** A Greek sound question carries the app's respelling of the word, and its syllables and stressed syllable (mw-5r3p30.274), so the tutor explains the sounds by the pronunciation the app speaks, not by its own habit. */
