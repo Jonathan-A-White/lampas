@@ -45,3 +45,21 @@ describe('the bible-talk `verses` rule after mw-5r3p30.755', () => {
     expect(rule).toMatch(/name the whole range \("I hold verses 1 to 3"\), not only where it stops/);
   });
 });
+
+// mw-5r3p30.751: two smoke examples missed 1 of 3 on 2026-10-24 for a rule stated once and without its limit: bridge-quite-a-bit taught first and never said how much
+// he is missing ("Answer him first, briefly" read as teaching first), works-commentary-at-the-passage linked a second Calvin work (the Institutes) beside the commentary.
+describe('two rules said with their limit (mw-5r3p30.751)', () => {
+  const section = (from: string, to: string): string => flat(text.slice(text.indexOf(from), text.indexOf(to)));
+
+  it('"When he is not ready" has the FIRST sentence of the answer say how much he is missing, before any teaching, and no line saying to answer first', () => {
+    const ready = section('## When he is not ready', '## When he has gone rusty');
+    expect(count(ready, /FIRST sentence[^.]*how much he is missing[^.]*before any teaching/g)).toBe(1);
+    expect(ready).not.toMatch(/Answer him first/);
+  });
+
+  it('"Links to a work he owns" gives the work he names ONE link, never a second work beside it, not another by the same author, and no line allows two', () => {
+    const work = section('### Links to a work he owns', '## Words the voice can misread');
+    expect(count(work, /ONE link[^.]*never a second work beside it, not another by the same author/g)).toBe(1);
+    expect(work).not.toMatch(/unless he asks to compare/);
+  });
+});
