@@ -140,6 +140,7 @@ function Request({ row }: { row: RequestRow }) {
       <RequestText text={wordsOf(row)} />
       <p data-request-sent className="pt-1 text-sm text-muted">
         {KIND_NAMES[row.kind] ?? 'Request'} · {sentOn(row.sentAt)}
+        {row.pictures ? ` · ${row.pictures === 1 ? '1 picture' : `${row.pictures} pictures`}` : ''}
       </p>
       <p data-request-status className="pt-1 text-lg font-semibold">
         {link ? (

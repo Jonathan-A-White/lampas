@@ -51,11 +51,12 @@ export function recordOf(row: RequestRow): RequestRecord {
 
 /** The row after the kit moved its record: the row's sent fields, the new status and only what that status carries (the kit decides which). */
 function rowOf(row: RequestRow, moved: RequestRecord): RequestRow {
-  const { txid, kind, summary, text, resource, app_version, sentAt } = row;
+  const { txid, kind, summary, text, resource, pictures, app_version, sentAt } = row;
   const kept: RequestRow = { txid, kind, app_version, sentAt, status: moved.status, statusAt: moved.statusAt };
   if (summary !== undefined) kept.summary = summary;
   if (text !== undefined) kept.text = text;
   if (resource !== undefined) kept.resource = resource;
+  if (pictures !== undefined) kept.pictures = pictures;
   for (const field of STATUS_FIELDS) if (moved[field] !== undefined) kept[field] = moved[field];
   return kept;
 }
