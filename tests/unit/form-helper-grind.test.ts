@@ -74,6 +74,12 @@ describe('the choice field and the Send button (mw-o7cts8.2)', () => {
     expect(section()).toContain('say so in one sentence and ask nothing more, not even about an optional field');
   });
 
+  it('forbids naming an empty optional field once every required field holds something, instead of allowing it (mw-5r3p30.766)', () => {
+    const s = section();
+    expect(s).toContain('do not name an empty optional field');
+    expect(s).not.toContain('it may name the empty optional fields');
+  });
+
   const input = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
   for (const name of ['form-book-first-question', 'form-book-kind']) {
     it(`${name}: the request fits the input schema and names the ask-for-book command and the kind's options`, () => {
