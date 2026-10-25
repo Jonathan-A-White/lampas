@@ -142,12 +142,18 @@ export const bibleTalkSteps = (held: number): readonly Cut<TalkRequest>[] => {
     dropNewestTurn,
     dropSummary,
   ];
-  return steps.map((step) => {
-    const carried: Cut<TalkRequest> = (request) => {
-      const next = step(request);
-      const hold = heldText(request);
-      return next && hold && !heldText(next) ? holdText(next, hold) : next;
-    };
-    return Object.defineProperty(carried, 'name', { value: step.name });
-  });
+  return steps.map(carryingHold);
+};
+
+/**
+ * The cut `step` made to keep the passage's verses (talkVerses holdText) from the request it cut. Every step run by fitHistory is wrapped so, the tutor client's own (tutorFitSteps) too: a step
+ * that drops the hold leaves the passage to be clipped by characters, and the request still names the verses it was built with (mw-5r3p30.757).
+ */
+export const carryingHold = (step: Cut<TalkRequest>): Cut<TalkRequest> => {
+  const carried: Cut<TalkRequest> = (request) => {
+    const next = step(request);
+    const hold = heldText(request);
+    return next && hold && !heldText(next) ? holdText(next, hold) : next;
+  };
+  return Object.defineProperty(carried, 'name', { value: step.name });
 };

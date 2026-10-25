@@ -34,6 +34,7 @@ import { applyChanges, currentSettings, MAX_CHANGES, undoChange, type ChangeResu
 import { getSetting } from '../settings/store';
 import { leaveTalk } from '../talk/leave';
 import type { TalkRequest, TalkScope } from '../services/talk';
+import { heldText, holdText } from '../services/talkVerses';
 import { openSheetTitles } from '../ui/sheetBack';
 import { settingsSentTo } from './knows';
 import { SCREEN_NAMES } from './screen';
@@ -410,7 +411,10 @@ export const askClientOf = (): TutorClient<never> => (askClient ??= clientOf(ask
 
 /** The request for turn `turn` of a talk: `request` (the app's own fields, passed through untouched) with the facts read up front and the catalogue. */
 export async function withTutorFacts(request: TalkRequest, turn: number): Promise<TalkRequest> {
-  return bibleTalkClient().buildRequest(turn, request);
+  const built = await bibleTalkClient().buildRequest(turn, request);
+  // the client returns a new object: the verses the request was built from go with it, or the fit would clip the passage by characters instead of dropping whole verses (mw-5r3p30.757)
+  const hold = heldText(request);
+  return hold ? holdText(built, hold) : built;
 }
 
 /** The same for the verse ask's request, with its smaller set. */
