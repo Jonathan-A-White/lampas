@@ -148,6 +148,7 @@ const KINDS: Record<GristKind, { hidden: string[]; feature: string }> = {
   'drill-items': { hidden: ['More drill items'], feature: 'features/fetched-drill-items.feature' },
   'find-refs': { hidden: ['Bible references from a picture'], feature: 'features/ai-needs-licence.feature' },
   'audible-position': { hidden: ['Send a screenshot'], feature: 'features/reading-plan-screenshot.feature' },
+  'tutor-weights': { hidden: ['Tutor tuned'], feature: 'features/ai-needs-licence.feature' },
 };
 
 /** The kinds the app's code sends: the first argument of each askGrind call, a literal or a constant (`export const X = '...'`) found in any file. */

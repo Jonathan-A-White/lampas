@@ -64,3 +64,11 @@ Feature: Lampas AI needs a licence
   Scenario: With no licence a shared picture is not read for Bible references
     Given this phone has no licence and a picture was shared to Lampas
     Then the Share sheet does not read the picture: no Bible references from a picture, nothing sent to the mill
+
+  Scenario: With no licence the nightly run asks the mill nothing and About has no Tutor tuned line
+    Given this phone has no licence and the tutor was asked back for facts, after 03:00
+    Then the mill is sent no tutor-weights grist and About has no Tutor tuned line
+
+  Scenario: With a licence the nightly run tunes the tutor and About says Tutor tuned
+    Given this phone has a licence and the tutor was asked back for facts, after 03:00
+    Then the mill is sent one tutor-weights grist and About says Tutor tuned 2026-10-25

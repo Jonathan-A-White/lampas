@@ -19,6 +19,7 @@ import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
 import { startBookRequests } from './services/bookRequests';
 import { LicensedTips } from './tips/LicensedTips';
+import { NightlyTuning } from './tutor/NightlyTuning';
 import { hasNewsSince } from './whatsNew/hasNewsSince';
 import { installScrollGuard } from './ui/scrollGuard';
 import { leaveStaleSheets } from './ui/sheetBack';
@@ -43,6 +44,7 @@ const render = (): void =>
       <ErrorBoundary where="app">
         <LicenceProvider>
           <LicensedTips />
+          <NightlyTuning />
           <App />
         </LicenceProvider>
       </ErrorBoundary>
