@@ -116,6 +116,7 @@ docs/layout/learner.md # Layout: what the tutor knows of him: About you, Memory,
 docs/layout/settings.md # Layout: src/settings/ (registry, rows, search, defineSetting) and src/resources/ (study resources)
 docs/layout/speech.md # Layout: src/speech/: voices, pronunciation schemes, accents, the speaking bar, read aloud; Tap to hear
 docs/layout/words.md # Layout: Words, Quick test, Review, the schedule, Parsing drill, glosses, pictures, frontier, pace, New words
+docs/layout/diagram.md # Layout: the sentence diagram, src/diagram/ (Reed-Kellogg)
 docs/layout/memorize.md # Layout: Memorize: src/memorize/, the text a verse is learned in (English, Greek, the weave of the moment)
 docs/layout/grammar.md # Layout: grammar terms, the ladder, inference, Drill it, letter drill, idea sheet, placement, Goal, Paradigms
 docs/layout/data.md # Layout: Dexie and its versions, the repositories, books, chapters, parsing codes, the data build
@@ -161,9 +162,9 @@ docs/research/audible-addon-seek.md # research: an add-on that seeks his Audible
 docs/research/greek-speech-libraries.md # research: open-source libraries for Greek sound
 docs/research/kjv-tr.md # research: the KJV and the Greek behind it as a text pair
 docs/research/logos-section-refs.md # research: grammar sections by a book's own Logos data type
-docs/research/logos-morph-charts.md # research: Logos's Morphology Charts at a lemma from a link; the one link to tap
-docs/research/logos-factbook.md # research: Factbook at a proper name from a word sheet: the link form, its source, how a name is known; the one link to tap
-docs/research/logos-exegetical-guide.md # research: the Exegetical Guide at a verse: the link form, its source, where the door sits, a sweep of Logos guides; the one link to tap
+docs/research/logos-morph-charts.md # research: Logos's Morphology Charts at a lemma from a link
+docs/research/logos-factbook.md # research: Factbook at a proper name from a word sheet: the link form, its source, how a name is known
+docs/research/logos-exegetical-guide.md # research: the Exegetical Guide at a verse: the link form, its source, where the door sits, a sweep of Logos guides
 docs/research/letter-sounds.md # research: lone vowels and letter sounds in a voice like the phone's
 docs/design/library-at-scale.md # design: the Logos library at scale, mockups, build plan
 docs/design/bible-talk-trim-map.md # design: every rule of the bible-talk instructions before the trim under 100,000 bytes, and where it lives now
