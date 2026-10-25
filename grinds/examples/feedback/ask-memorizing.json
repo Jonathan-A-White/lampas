@@ -1,0 +1,28 @@
+{
+  "description": "A text he asked for on Settings > Ask for more with Include my memorizing evidence on: the request carries the optional `memorizing` object (a summary and his recalls), the live schema accepts it, and the mill answers that it was sent.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "text",
+    "name": "The Septuagint",
+    "text": "To read the Old Testament in Greek.",
+    "app_version": "0.2.2",
+    "memorizing": {
+      "summary": "1 verse, 2 recalls, 1 passed, gaps 0 to 1 days",
+      "evidence": [
+        {
+          "ref": "John.3.16",
+          "lang": "en",
+          "recalls": [
+            { "on": "2026-10-24", "rung": 2, "score": 1, "gap": 1, "how": "typed" },
+            { "on": "2026-10-23", "rung": 1, "score": 0.8, "gap": 0, "how": "typed", "missed": ["only"] }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "status": {
+      "equals": "sent"
+    }
+  }
+}

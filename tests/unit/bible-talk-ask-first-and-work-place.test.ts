@@ -2,6 +2,7 @@
 // "I'd like to know what you want ..." with no question mark. The instructions read by the mill must state each rule once, plainly, with one short example,
 // and stay well under the 100,000-byte ceiling so the next rule has room (97,000 until mw-5r3p30.733 added the `verses` rule: 97,500 now). The model's side is proved by `mw grist eval` once this lands.
 // Raised from 97,500 by mw-5r3p30.753 so stories stop trimming rules to fit; 100,000 stays the cost warning.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { instructionParts, instructionsOf } from '../../scripts/grind-parts';
 
@@ -61,5 +62,29 @@ describe('two rules said with their limit (mw-5r3p30.751)', () => {
     const work = section('### Links to a work he owns', '## Words the voice can misread');
     expect(count(work, /ONE link[^.]*never a second work beside it, not another by the same author/g)).toBe(1);
     expect(work).not.toMatch(/unless he asks to compare/);
+  });
+});
+
+// mw-fu7dqf.14: "Quiz me on John 3:16, the verse I'm memorizing" got startSession live, twice, where the example wanted asks verseText. A quiz is a recall session, so the
+// instructions say startSession for a recall request on a verse he memorizes, and asks verseText only for a question about the Greek of the verse he memorizes.
+describe('the bible-talk instructions on a verse he memorizes (mw-fu7dqf.14)', () => {
+  const own = flat(text.slice(text.indexOf('### In Lampas')));
+  const read = (name: string): { request: { question: string }; expect: Record<string, Record<string, unknown>> } =>
+    JSON.parse(readFileSync(`grinds/examples/bible-talk/${name}.json`, 'utf8'));
+
+  it('says a recall request on a verse he memorizes is `do` of `startSession`, and a question about the Greek he memorizes in it asks `verseText`', () => {
+    expect(count(own, /quiz me on John 3:16[^.]*`startSession`/gi)).toBe(1);
+    expect(count(own, /Greek am I memorizing[^.]*asks? `verseText`/gi)).toBe(1);
+  });
+
+  it('has verse-text-ask expect startSession, and verse-text-words expect asks.0 verseText, each with the other left out', () => {
+    const quiz = read('verse-text-ask');
+    expect(quiz.request.question).toMatch(/Quiz me on John 3:16/);
+    expect(quiz.expect['do.0.name']).toEqual({ equals: 'startSession' });
+    expect(quiz.expect['asks']).toEqual({ present: false });
+    const words = read('verse-text-words');
+    expect(words.request.question).toMatch(/Greek am I memorizing in John 3:16/);
+    expect(words.expect['asks.0']).toEqual({ equals: 'verseText' });
+    expect(words.expect['do']).toEqual({ present: false });
   });
 });

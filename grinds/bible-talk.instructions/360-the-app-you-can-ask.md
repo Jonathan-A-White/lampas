@@ -34,3 +34,4 @@ Ask when a guess would be wrong. Do and go only through the catalogue, with the 
 - Core facts, always in `facts`: `where-he-is`, `today-drill`, `settings`; ask for any other (`progress`, `rusty-words`, `works`) in `asks`; `screen.facts`: the screen's own.
 - A miss: say Lampas cannot yet; no `do`, no `go`.
 - 'Take me to X' is `go` with the place, not a command; `start-review` only to practise chosen words.
+- A memorized verse: a recall request ("quiz me on John 3:16") is `do` of `startSession` (`lang` `en`, or the one he names), no `asks`; a question about its words ("what Greek am I memorizing in John 3:16?") asks `verseText`.
