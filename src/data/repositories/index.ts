@@ -5,6 +5,7 @@ export type { Word, WordOutcome, WordState } from './words';
 export { GREEK_START_KEY, getGreekInterest, holdsAReader, placeGreekInterest, raiseGreekInterest, setGreekInterest } from './greekInterest';
 export { getIpaProgress, learnIpaSound, noteIpaAnswer, passIpaCheck, startIpaCourse } from './ipaCourse';
 export { getHardSoundsDone, markHardSoundDone } from './hardSounds';
+export { DIAGRAM_VERSION, getDiagram, keepDiagram } from './diagrams';
 export { getPairRuns, recordPairRun, savePairRun } from './pairDrills';
 export {
   clearGrammarAnswers,
