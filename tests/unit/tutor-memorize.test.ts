@@ -233,7 +233,8 @@ describe('startSession and the place', () => {
     expect(window.location.hash).toBe('#/memorize/Rom.8.28/en');
     expect(isTutorGo()).toBe(true);
     window.history.back();
-    await vi.waitFor(() => expect(window.location.hash).toBe('#/words'), { timeout: ASYNC_WAIT_MS });
+    const timeout = ASYNC_WAIT_MS;
+    await vi.waitFor(() => expect(window.location.hash).toBe('#/words'), { timeout });
   });
 
   it('refuses a verse that is not memorized in that language, an Old Testament reference and a language that is no language', async () => {
