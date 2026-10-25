@@ -29,6 +29,9 @@ export type OutgoingPicture = Picture;
 /** Whether a file may be sent as a picture: its type is one of the grind's. */
 export const isTalkPicture = (file: { type: string }): boolean => TALK_PICTURE_MIMES.includes(file.type);
 
+/** The Composer's refuseFile for a tutor talk: only pictures of the kinds the grind takes go in its waiting row. */
+export const refuseNonPicture = (file: { type: string }): string | undefined => (isTalkPicture(file) ? undefined : NOT_A_PICTURE_LINE);
+
 /** The picture as the phone sends it: a JPEG of at most TALK_MAX_EDGE on the long edge and under TALK_PICTURE_MAX_BYTES. */
 export async function preparePicture(file: Blob, place: number): Promise<OutgoingPicture> {
   const shrunk = await shrinkImage(file, { maxEdge: TALK_MAX_EDGE, maxBytes: TALK_PICTURE_MAX_BYTES });
