@@ -1,8 +1,11 @@
-// The form helper (mw-5r3p30.117): 'Let the tutor help me fill this in'. What it sends the grind, what it believes of the answer, and
+// The form helper (mw-5r3p30.117): 'Let the tutor do it'. What it sends the grind, what it believes of the answer, and
 // which fields an answer may fill. The rest (the panel, the tutor faked) is features/form-helper.feature.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { APPROACH_FORM } from '../../src/formHelper/approachForm';
+import { BOOK_FORM } from '../../src/library/bookForm';
+import { KINDS } from '../../src/resources/catalogue';
+import { infoOf } from '../../src/library/kinds';
 import { applyFormValues, buildFormRequest, FORM_FIELD_MAX, oneQuestion, type FormSpec } from '../../src/formHelper/formHelper';
 import { isTalkAnswer, MAX_REQUEST_BYTES } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
@@ -36,6 +39,37 @@ describe('the form helper request', () => {
     const request = buildFormRequest(APPROACH_FORM, { approach: 'x'.repeat(1200) }, 'Go on.', []);
     expect(request.form?.fields[0].value.length).toBeLessThanOrEqual(FORM_FIELD_MAX);
     expect(validate(request, input)).toEqual([]);
+  });
+});
+
+describe('the Ask for a book form request (the door on a form with a choice field and a command)', () => {
+  const singulars = KINDS.map((k) => infoOf(k).singular);
+
+  it('carries the three fields in screen order, the choice field with its options, and the command the Send runs', () => {
+    const request = buildFormRequest(BOOK_FORM, { title: 'Mounce, Basics of Biblical Greek' }, 'Help me fill this in.', [], {}, 'ask-for-book');
+    expect(request.form?.name).toBe('Ask for a book');
+    expect(request.form?.command).toBe('ask-for-book');
+    expect(request.form?.fields).toEqual([
+      { name: 'title', label: 'Which book?', hint: 'The title, and its author if you know it', required: true, kind: 'text', value: 'Mounce, Basics of Biblical Greek' },
+      { name: 'kind', label: 'Kind of book', required: false, kind: 'choice', value: '', options: singulars },
+      { name: 'why', label: 'Why would it help?', required: false, kind: 'text', value: '' },
+    ]);
+  });
+
+  it('fits the bible-talk input schema and is under the request limit', () => {
+    const request = buildFormRequest(BOOK_FORM, {}, 'Help me fill this in.', [], {}, 'ask-for-book');
+    expect(validate(request, input)).toEqual([]);
+    expect(bytes(request)).toBeLessThan(MAX_REQUEST_BYTES);
+  });
+
+  it('leaves `command` out when the form has none: the approach form is as before', () => {
+    const request = buildFormRequest(APPROACH_FORM, {}, 'Help me fill this in.', []);
+    expect(request.form && 'command' in request.form).toBe(false);
+  });
+
+  it('fills the kind with one of the options and with nothing else', () => {
+    expect(applyFormValues(BOOK_FORM, [{ field: 'kind', value: 'Grammar' }])).toEqual([{ field: 'kind', value: 'Grammar' }]);
+    expect(applyFormValues(BOOK_FORM, [{ field: 'kind', value: 'Cookbook' }])).toEqual([]);
   });
 });
 

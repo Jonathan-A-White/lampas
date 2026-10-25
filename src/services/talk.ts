@@ -22,7 +22,7 @@ import type { SettingValue } from '../settings/registry';
 import { GREEK_LEVELS, greekLevelOf, nextGreekStep, type GreekLevel } from '../settings/definitions/greekInterest';
 import { type TutorResource, type TutorWork } from '../resources/tutorLinks';
 import { slugOf, type ScreenContext } from '../tutor/screen';
-import type { FormFieldState, FormValue } from '../formHelper/formHelper';
+import type { FormRequest, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
@@ -247,7 +247,7 @@ export interface TalkRequest {
   /** present only in a quiz in which he chose Just this time for a goal the tutor offered: that goal, for this quiz alone (`quiz_goal` stays null) */
   quiz_goal_once?: string;
   /** present only while the tutor helps him fill in a form (mw-5r3p30.117, src/formHelper/): the form's name and its fields with what each holds now */
-  form?: { name: string; fields: FormFieldState[] };
+  form?: FormRequest;
   /** the Greek pronunciation the app speaks and respells in (mw-5r3p30.241, src/speech/pronunciation.ts), such as 'modern': a sound is described by it */
   pronunciation?: GreekPronunciation;
   /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): the grind describes every sound by them */
