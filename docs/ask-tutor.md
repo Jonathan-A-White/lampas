@@ -137,7 +137,7 @@ Which tutor conversations name a talk (the sweep of mw-pxji7y.3):
 | A shared talk, Ask for more | `talk.<ms>` (free) | yes |
 | The welcome interview | `screen.welcome` | yes in code (the interview is a few turns) |
 | The Verse view's Ask the tutor (verse-ask) | none: one question and its answer in `answers` | no: `TALK_KINDS` leaves verse-ask out |
-| FormHelper (Let the tutor help me fill this in) | none: its turns live in the component, not in Dexie, so there is no first-turn time | no (a name would be made per opening of the helper; a story of its own) |
+| FormHelper (Let the tutor do it) | none: its turns live in the component, not in Dexie, so there is no first-turn time | no (a name would be made per opening of the helper; a story of its own) |
 | Reading check, Reading drill, Tips, find-refs, audible-position, drill-items, feedback | none: one request each | no |
 
 Other apps, listed only: where the same `talk` field would go. SpellForge: the `tutor-turn` grists (`src/features/tutor/tutor-flow.ts`) take the id of the tutor session `tutorRepo.createSession` makes for a problem, which already groups the turns that `session_history` carries; `parent-ask` is one question and names none. Legend: `legend-ask` (`src/services/ask.ts`) takes the item's or country's id and the time of the first question kept about it, as `<item id>@<when>`.
@@ -305,30 +305,48 @@ around them) before it is kept (mw-5r3p30.193; `umbrella` and `Uh-oh` are not to
 Checks: `tests/unit/fillers.test.ts`, `tests/unit/cleaned-question.test.ts`, `grinds/examples/*/cleaned-question.json`, and the scenarios "What he said is shown back cleaned up"
 in `features/bible-talk.feature` and "What he asked is shown above the answer cleaned up" in `features/tutor.feature`.
 
-## Let the tutor help me fill this in (mw-5r3p30.117)
+## Let the tutor do it (mw-5r3p30.117, mw-o7cts8.2)
 
-A form must never scare him off, so a form can offer a button at its top, `Let the tutor help me fill this in`. The first is Ask for another
-approach (Settings > Grammar approach). It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
+A form must never scare him off, so a form can offer a button at its top, `Let the tutor do it` (one label on every form; `src/formHelper/startLabel.ts`;
+PROVISIONAL). The forms that have the door: **Ask for another approach** (Settings > Grammar approach) and **Ask for a book** (the Library card, the idea
+sheet, Settings > Daily, Ask for more). It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
 asks ONE question at a time in plain words (`What approach would you like to suggest, and how does it teach?`), he answers in the panel's field and
 `Reply`, and the matching field of the form fills and is ringed and scrolled into view, so he sees it fill. When the tutor asks for a photo the panel
-offers `Choose a photo` (the form's own file picker, opened in that tap) and `No photo`; a photo he adds meanwhile is told to the tutor. When every
-required field holds something and the tutor has nothing more to ask, the panel says `Everything required is filled in` and the form scrolls to its
-top for him to read. The tutor never sends: Send is the form's and his. `Stop helping` closes the panel and leaves the form as it is.
+offers `Choose a photo` (the form's own file picker, opened in that tap) and `No photo`; a photo he adds meanwhile is told to the tutor. A **choice** field
+(Ask for a book's Kind of book) is not drawn in the panel: the tutor answers with one of its options exactly and the form's own select is set and ringed;
+an answer that is not one of the options fills nothing.
 
-It is one reusable piece in `src/formHelper/`. A form describes itself as a `FormSpec` (`formHelper.ts`: name, and per field its `name`, `label`, `hint`,
-`required`, `kind` text | link | pictures, `maxLength`; the approach form is `approachForm.ts`) and adds the button with one element:
-`<FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => ...} onReady={...} />`.
+**The Send rule.** The tutor never sends: Send is his. A form without a command says, when every required field holds something and the tutor has nothing
+more to ask, `Everything required is filled in` (and scrolls to its top to be read); he taps the form's own Send. A form with a command (`command` prop:
+the voice-kit `Command` its own Send runs) shows instead the command's offer line (`Send: Lenski, Romans, Grammar?`) and a **Send** button in the panel
+(the `Your answer` box stays, for the optional fields the tutor named). His tap on it runs `command.run(argsOf(form, values))`, the very call the sheet's own
+Send makes, so the refusal, the waiting and the sent line are the same from either and the sheet shows them (a refusal is also said in the panel).
+A tap is his yes: a share-like send gets a confirm first (tutor-drives Q2) and this is it. The panel offers Send only when the values pass the command's args
+schema (a title that is too long does not).
+
+It is one reusable piece in `src/formHelper/`, on voice-kit's `@voice-kit/forms` (`voice-kit/forms`: the types, `requestFields`, `applyValues`,
+`requiredFilled`, `oneQuestion`, `argsOf` and `formCommand`, re-exported by `formHelper.ts` under the names Lampas uses; Lampas keeps only
+`buildFormRequest`). A form describes itself as a `FormSpec` (name, and per field its `name`, `label`, `hint`, `required`, `kind` text | link | choice | pictures,
+`maxLength`, a choice's `options`; the approach form is `approachForm.ts`, Ask for a book's is `src/library/bookForm.ts` `BOOK_FORM`) and adds the door with one
+element: `<FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => ...} onReady={...} command={COMMAND} />`.
+
+**Ask for a book** (`src/library/AskForBook.tsx`): fields `title` (`Which book?`), `kind` (a choice over the kinds' singular names: Lexicon, Grammar, ...) and `why`.
+`src/library/bookCommand.ts` is the command `ask-for-book` (`formCommand(BOOK_FORM, ...)`; `askForBook(` is called only there): `bookRefusal`'s line when the
+catalogue lists the book or it was asked (nothing kept), else `askForBook`, which keeps it on the phone and sends it. The sheet's own Send calls the same command;
+a title that is the one row of his kept Logos list (the row he picked, or the one `matching()` finds for the title the tutor filled, which then shows picked) carries that
+row's Resource ID, Type, Series and ReferenceSupersets (PROVISIONAL). The tutor is not given the command to call yet (it is not in `src/tutor/registry.ts`): the panel's Send is his tap.
 
 The tutor is the `bible-talk` grind in a talk from a screen named for the form (`screen` {name, facts: []}, no verse text), so the mill needs no new
-kind. The request adds `form` {name, fields [{name, label, hint?, required, kind, value}]} (`buildFormRequest`; a value is cut at 600 characters); the
+kind. The request adds `form` {name, command?, fields [{name, label, hint?, required, kind, value, options?}]} (`buildFormRequest`; a value is cut at 600 characters); the
 answer adds `form_values` [{field, value}] (the whole new value of each field) and `form_ask` (the field the question is about, a pictures field when
 it asks for a photo; left out when there is nothing more to ask). `isTalkAnswer` believes both; `applyFormValues` fills only fields the form has,
-never a pictures field, trimmed and cut to the field's `maxLength`. The method is the grind's `## Helping him fill in a form`. The model now and then asks its question and keeps talking, so the panel shows the answer cut after its first question (`oneQuestion`, mw-5r3p30.158). The conversation is
+never a pictures field, a choice only with one of its options, trimmed and cut to the field's `maxLength`. The method is the grind's `## Helping him fill in a form` (part 260:
+the choice rule and the Send rule are in it; the instructions stay under the 99,500 bytes `tests/unit/bible-talk-grind.test.ts` holds). The model now and then asks its question and keeps talking, so the panel shows the answer cut after its first question (`oneQuestion`, mw-5r3p30.158). The conversation is
 kept in the panel only (no table): closing the sheet ends it.
 
-Checks: `features/form-helper.feature`, `tests/unit/form-helper.test.ts`, `tests/unit/form-helper-grind.test.ts`, the scenarios
-`grinds/examples/bible-talk/form-approach-*.json`, and `tests/e2e/form-helper.spec.ts` (412 px; shots `form-helper-button`, `form-helper-filling`,
-`form-helper-finished`).
+Checks: `features/form-helper.feature` (both forms), `features/ask-for-book.feature` (the hand's Send and the door's post the same fields), `tests/unit/form-helper.test.ts`,
+`tests/unit/book-command.test.ts`, `tests/unit/form-helper-grind.test.ts`, the scenarios `grinds/examples/bible-talk/form-approach-*.json` and `form-book-*.json`, and
+`tests/e2e/form-helper.spec.ts` (412 px; shots `form-helper-button`, `form-helper-filling`, `form-helper-finished`, `form-helper-book-*`).
 
 ## Copy an exchange
 
