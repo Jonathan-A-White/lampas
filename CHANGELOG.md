@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.11
+_2026-10-25_
+- New: When the tutor helps you fill in a form you can now answer it by holding to talk, typing, or attaching or taking a photo, the same way you ask it about a verse.
+
 ## 0.2.10
 _2026-10-25_
 - New: From any talk with the tutor, and from the Ask on a verse, you can send the makers a request with Send to the makers, with pictures or a photo and your words.
