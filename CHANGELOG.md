@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.8
+_2026-10-25_
+- New: Ask the tutor to take you to one of your verse lists by name, and Back brings you back to the talk.
+
 ## 0.2.7
 _2026-10-25_
 - Fixed: Sending an ask to the makers from a talk now sends the pictures you attached to it, and Your requests shows how many went.
