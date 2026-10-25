@@ -1,0 +1,284 @@
+{
+  "reference": "Col.3.1",
+  "mode": "english",
+  "words": [
+    {
+      "text": "Therefore",
+      "chunk": 0
+    },
+    {
+      "text": "since",
+      "chunk": 1
+    },
+    {
+      "text": "you",
+      "chunk": 2
+    },
+    {
+      "text": "have",
+      "chunk": 2
+    },
+    {
+      "text": "been",
+      "chunk": 2
+    },
+    {
+      "text": "raised",
+      "chunk": 2
+    },
+    {
+      "text": "with",
+      "chunk": 2
+    },
+    {
+      "text": "Christ",
+      "chunk": 3
+    },
+    {
+      "text": "strive",
+      "chunk": 4
+    },
+    {
+      "text": "for",
+      "chunk": 4
+    },
+    {
+      "text": "the",
+      "chunk": 5
+    },
+    {
+      "text": "things",
+      "chunk": 5
+    },
+    {
+      "text": "above",
+      "chunk": 6
+    },
+    {
+      "text": "where",
+      "chunk": 7
+    },
+    {
+      "text": "Christ",
+      "chunk": 8
+    },
+    {
+      "text": "is",
+      "chunk": 9
+    },
+    {
+      "text": "seated",
+      "chunk": 10
+    },
+    {
+      "text": "at",
+      "chunk": 11
+    },
+    {
+      "text": "the",
+      "chunk": 12
+    },
+    {
+      "text": "right",
+      "chunk": 12
+    },
+    {
+      "text": "hand",
+      "chunk": 12
+    },
+    {
+      "text": "of",
+      "chunk": 13
+    },
+    {
+      "text": "God",
+      "chunk": 13
+    }
+  ],
+  "diagram": {
+    "clauses": [
+      {
+        "clause": {
+          "subject": {
+            "words": [
+              {
+                "implied": "you"
+              }
+            ],
+            "modifiers": []
+          },
+          "verb": {
+            "words": [
+              {
+                "i": 8
+              }
+            ],
+            "modifiers": [
+              {
+                "kind": "word",
+                "word": {
+                  "i": 0
+                },
+                "modifiers": []
+              },
+              {
+                "kind": "prepositional",
+                "preposition": {
+                  "i": 9
+                },
+                "object": {
+                  "words": [
+                    {
+                      "i": 11
+                    }
+                  ],
+                  "modifiers": [
+                    {
+                      "kind": "word",
+                      "word": {
+                        "i": 10
+                      },
+                      "modifiers": []
+                    },
+                    {
+                      "kind": "word",
+                      "word": {
+                        "i": 12
+                      },
+                      "modifiers": [
+                        {
+                          "kind": "clause",
+                          "connector": {
+                            "i": 13
+                          },
+                          "clause": {
+                            "subject": {
+                              "words": [
+                                {
+                                  "i": 14
+                                }
+                              ],
+                              "modifiers": []
+                            },
+                            "verb": {
+                              "words": [
+                                {
+                                  "i": 15
+                                }
+                              ],
+                              "modifiers": []
+                            },
+                            "complement": {
+                              "kind": "predicate-adjective",
+                              "slot": {
+                                "words": [
+                                  {
+                                    "i": 16
+                                  }
+                                ],
+                                "modifiers": [
+                                  {
+                                    "kind": "prepositional",
+                                    "preposition": {
+                                      "i": 17
+                                    },
+                                    "object": {
+                                      "words": [
+                                        {
+                                          "i": 20
+                                        }
+                                      ],
+                                      "modifiers": [
+                                        {
+                                          "kind": "word",
+                                          "word": {
+                                            "i": 18
+                                          },
+                                          "modifiers": []
+                                        },
+                                        {
+                                          "kind": "word",
+                                          "word": {
+                                            "i": 19
+                                          },
+                                          "modifiers": []
+                                        },
+                                        {
+                                          "kind": "prepositional",
+                                          "preposition": {
+                                            "i": 21
+                                          },
+                                          "object": {
+                                            "words": [
+                                              {
+                                                "i": 22
+                                              }
+                                            ],
+                                            "modifiers": []
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "kind": "clause",
+                "connector": {
+                  "i": 1
+                },
+                "clause": {
+                  "subject": {
+                    "words": [
+                      {
+                        "i": 2
+                      }
+                    ],
+                    "modifiers": []
+                  },
+                  "verb": {
+                    "words": [
+                      {
+                        "i": 3
+                      },
+                      {
+                        "i": 4
+                      },
+                      {
+                        "i": 5
+                      }
+                    ],
+                    "modifiers": [
+                      {
+                        "kind": "prepositional",
+                        "preposition": {
+                          "i": 6
+                        },
+                        "object": {
+                          "words": [
+                            {
+                              "i": 7
+                            }
+                          ],
+                          "modifiers": []
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
