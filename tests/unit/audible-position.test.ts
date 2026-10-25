@@ -4,7 +4,6 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { BOOKS } from '../../src/data/books';
-import { OT_BOOKS } from '../../src/data/otBooks';
 import { osisOf } from '../../src/nav/links';
 import { buildAudiblePositionRequest, checkedReading, CONFIDENCE_WORDS, isAudiblePositionAnswer, type AudiblePositionAnswer } from '../../src/plan/audiblePosition';
 import { validate, type Schema } from '../support/schema-validate';
@@ -35,7 +34,7 @@ describe('the audible-position answer', () => {
 
   it('knows every one of the 66 books by the OSIS code the instructions give', () => {
     const instructions = instructionsOf('audible-position');
-    for (const book of [...OT_BOOKS, ...BOOKS]) {
+    for (const book of BOOKS) {
       const osis = osisOf(book.code);
       expect(instructions, `${book.name} \`${osis}\``).toContain(`${book.name} \`${osis}\``);
       expect(checkedReading(answer(osis, book.chapters))?.chapter, osis).toEqual({ code: book.code, chapter: book.chapters });

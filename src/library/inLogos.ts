@@ -1,8 +1,7 @@
 // src/library/inLogos.ts — what the chooser behind "In another book…" holds for one place (docs/library-at-scale.md 3.6, mw-rfjjzd.9): the books of his shelf that open at a verse, as rows
 // with their Logos links, and the rows as groups (Pinned, Commentaries on <book>, Greek texts, Interlinears; for an Old Testament place, Bibles and Interlinears). Pure: the sheet reads
 // the shelf and hands the states here, and a test hands its own entries.
-import { bookOf } from '../data/books';
-import { otBookOf } from '../data/otBooks';
+import { bookOf, otBookOf } from '../data/books';
 import type { ShelfState } from '../data/repositories';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import type { CatalogueEntry, Kind } from '../resources/catalogue';
@@ -81,7 +80,7 @@ const TITLES: Record<Kind, (book: string) => string> = {
 /** The groups the sheet draws for `rows`: Pinned first (a book once, not again in its kind), then the kinds in order; a group with no rows is left out. `query` keeps only the rows it matches. */
 export function inLogosGroups(rows: readonly InLogosRow[], place: StudyPlace, query = ''): InLogosGroup[] {
   const kinds = isOldTestament(place) ? OT_KINDS : NT_KINDS;
-  const book = (otBookOf(place.book) ?? bookOf(place.book))?.name ?? place.book;
+  const book = bookOf(place.book)?.name ?? place.book;
   const kept = rows.filter((r) => answers(r.entry, query));
   const pinned = kept.filter((r) => r.state === 'pinned' && r.entry.kind !== 'bible');
   const groups: InLogosGroup[] = [{ key: 'pinned', title: 'Pinned', rows: pinned }];

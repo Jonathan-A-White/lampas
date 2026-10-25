@@ -7,7 +7,6 @@
 import { writeFileSync } from 'node:fs';
 import { WORD_OF_PROMISE_ASIN, fetchChapterStarts, wordOfPromiseChapters } from 'audible-kit';
 import { BOOKS } from '../src/data/books';
-import { OT_BOOKS } from '../src/data/otBooks';
 import { audibleChapterLabel } from '../src/resources/audioBible';
 
 const SOURCE = `https://api.audible.com/1.0/content/${WORD_OF_PROMISE_ASIN}/metadata?response_groups=chapter_info`;
@@ -18,7 +17,7 @@ const titles = new Set(starts.map((s) => s.title.replace(/\s+/g, ' ').trim()));
 
 const chapters: Record<string, number> = {};
 const problems: string[] = [];
-for (const book of [...OT_BOOKS, ...BOOKS]) {
+for (const book of BOOKS) {
   for (let chapter = 1; chapter <= book.chapters; chapter++) {
     const start = byName[`${book.name} ${chapter}`];
     if (start === undefined) problems.push(`no start for ${book.name} ${chapter}`);

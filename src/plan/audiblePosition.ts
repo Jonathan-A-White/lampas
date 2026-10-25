@@ -5,7 +5,6 @@
 // chapter, so the plan stays on it; the end of the chapter means he finished it.
 import { BOOKS } from '../data/books';
 import type { Heard } from '../data/repositories/readingPlan';
-import { OT_BOOKS } from '../data/otBooks';
 import type { PlanChapter } from '../data/plans';
 import { OSIS, OT_OSIS } from '../nav/links';
 import { getDeviceKeyBytes } from '../services/deviceKey';
@@ -68,7 +67,7 @@ export function isAudiblePositionAnswer(value: unknown): value is AudiblePositio
 
 /** OSIS code, lower-cased -> the book's code and its number of chapters, for both testaments. */
 const BY_OSIS = new Map(
-  [...OT_BOOKS, ...BOOKS].map((b) => [(OSIS[b.code] ?? OT_OSIS[b.code] ?? b.code).toLowerCase(), { code: b.code, chapters: b.chapters }] as const),
+  BOOKS.map((b) => [(OSIS[b.code] ?? OT_OSIS[b.code] ?? b.code).toLowerCase(), { code: b.code, chapters: b.chapters }] as const),
 );
 
 /** The reading the answer gives, or null when it names no chapter Lampas can place: a book that is not one of the Bible's, or a chapter the book does not have. */

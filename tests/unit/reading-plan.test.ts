@@ -1,9 +1,8 @@
 // tests/unit/reading-plan.test.ts — reading plans (mw-umv8sp.1): the plan registry (src/data/plans/) and the per-phone readingPlan repository
 // (src/data/repositories/readingPlan.ts, JSON in the settings store). No screen yet.
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { BOOKS } from '../../src/data/books';
+import { NT_BOOKS, OT_BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
-import { OT_BOOKS } from '../../src/data/otBooks';
 import { listPlans, planOf } from '../../src/data/plans';
 import * as repositories from '../../src/data/repositories';
 import {
@@ -40,7 +39,7 @@ describe('the plan registry', () => {
     expect(chapters[0]).toEqual({ code: 'gen', chapter: 1 });
     expect(chapters[chapters.length - 1]).toEqual({ code: 'rev', chapter: 22 });
     expect(chapters[50]).toEqual({ code: 'exo', chapter: 1 });
-    const firstNt = chapters.findIndex((c) => c.code === BOOKS[0]!.code);
+    const firstNt = chapters.findIndex((c) => c.code === NT_BOOKS[0]!.code);
     expect(firstNt).toBe(OT_BOOKS.reduce((n, b) => n + b.chapters, 0));
     expect(new Set(chapters.map((c) => `${c.code}.${c.chapter}`)).size).toBe(1189);
   });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { dailyReadings } from '../../src/data/daily/psalmsProverbs';
 import { DEFAULT_LOGOS_BIBLE, chapterLink } from '../../src/resources/logosBible';
-import { otBookOf } from '../../src/data/otBooks';
+import { otBookOf } from '../../src/data/books';
 
 const onDay = (day: number) => dailyReadings(new Date(2026, 9, day));
 const names = (day: number) => onDay(day).map((c) => `${c.code} ${c.chapter}`);

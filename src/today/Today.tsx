@@ -11,7 +11,7 @@ import { getDay, getExplained, localDate, markOpened, noteExplained, pickAnother
 import { dailyReadings } from '../data/daily/psalmsProverbs';
 import { countDue, getLogosBible, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
-import { bookOf } from '../data/books';
+import { ntBookOf } from '../data/books';
 import { backTo, navigate, openMemorizeSession, openReader } from '../nav/route';
 import { oneTap } from '../ui/settle';
 import { useScrollMemory } from '../nav/scrollMemory';
@@ -184,7 +184,7 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
     const logosOn = resources.on.includes('logos');
     const logos = logosOn ? verseLink(next.code, next.chapter, undefined, bible) : undefined;
     const audio = audioBibleOf(audioId);
-    const inLampas = bookOf(next.code) !== undefined;
+    const inLampas = ntBookOf(next.code) !== undefined;
     const listen = audio && audibleChapterLabel(next.code, next.chapter) !== undefined ? audio : undefined;
     const opened = (): void => void markOpened(date, 'plan');
     body = (

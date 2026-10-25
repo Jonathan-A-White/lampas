@@ -2,8 +2,7 @@
 // parseTypedReference (src/nav/links.ts, the one table of book names, never a second: it takes a unique start of a name too, 'ep 4:15') plus the checks a field needs: a book's name alone is not a place (the field
 // filters its list as before), and a chapter the book does not have says how many it has. Pure. A field that takes a book or a place (the Reader's Choose a book
 // search, the reading plan's pick) reads what he typed with `readPlace` and nothing else; tests/unit/parse-reference.test.ts fails on a second table of names.
-import { bookOf } from '../data/books';
-import { otBookOf } from '../data/otBooks';
+import { ntBookOf, otBookOf } from '../data/books';
 import { parseTypedReference } from './links';
 
 /** What a field makes of what he typed. */
@@ -22,7 +21,7 @@ export function readPlace(text: string): PlaceRead {
   const found = parseTypedReference(text);
   if (!found || found.chapter === undefined) return { kind: 'none' };
   const { testament, book, chapter, verse, to } = found;
-  const held = testament === 'nt' ? bookOf(book) : otBookOf(book);
+  const held = testament === 'nt' ? ntBookOf(book) : otBookOf(book);
   if (!held) return { kind: 'none' };
   if (chapter < 1 || chapter > held.chapters) return { kind: 'bad', message: hasChapters(held.name, held.chapters) };
   return { kind: 'place', testament, book, chapter, ...(verse === undefined ? {} : { verse }), ...(to === undefined ? {} : { to }) };

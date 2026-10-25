@@ -8,7 +8,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalS
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, type Chapter, type Verse } from '../data/chapter';
-import { otBookOf } from '../data/otBooks';
+import { otBookOf } from '../data/books';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { getLogosBible, getStudyResources } from '../data/repositories';
 import { openAtVerse } from '../nav/readerRequest';

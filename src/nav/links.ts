@@ -2,11 +2,10 @@
 // verse, #/?word=G3551 (or the lemma) opens a word's sheet, and the browser's web+lampas: scheme (the manifest's protocol_handlers) lands on the
 // same ref. This file is the pure part: reading the text of a link, finding the place or the word it names (against the book index and the
 // lexicon, handed in), and writing the https form of a link. docs/links.md lists every form it accepts.
-import { BOOKS, bookOf, titleOf } from '../data/books';
+import { NT_BOOKS, OT_BOOKS, bookOf, titleOf } from '../data/books';
 import type { BookIndex, Chapter } from '../data/chapter';
 import type { Lookup } from '../WordSheet';
 import type { LemmaEntry, LemmaLexicon } from '../data/lexicon';
-import { OT_BOOKS, otBookOf } from '../data/otBooks';
 import type { OpenChapter } from '../data/readerChapter';
 import { LINK_ORIGIN } from '../config';
 import { pathOf } from './route';
@@ -37,7 +36,7 @@ const EXTRA_NAMES: Readonly<Record<string, readonly string[]>> = {
 const squash = (name: string): string => name.toLowerCase().replace(/[\s.]/g, '');
 
 const BOOK_BY_NAME: ReadonlyMap<string, string> = new Map(
-  BOOKS.flatMap(({ code, name }) => [code, OSIS[code], name, ...(EXTRA_NAMES[code] ?? [])].map((n): [string, string] => [squash(n), code])),
+  NT_BOOKS.flatMap(({ code, name }) => [code, OSIS[code], name, ...(EXTRA_NAMES[code] ?? [])].map((n): [string, string] => [squash(n), code])),
 );
 
 /** What a reference says: the book's code, and the chapter and verse when it gives them. */
@@ -145,7 +144,7 @@ export interface Opened {
 export function inWords(asked: string): string {
   const parsed = parseCanonReference(asked);
   if (!parsed) return asked;
-  const name = (parsed.testament === 'nt' ? bookOf(parsed.book)?.name : otBookOf(parsed.book)?.name) ?? parsed.book;
+  const name = bookOf(parsed.book)?.name ?? parsed.book;
   if (parsed.chapter === undefined) return name;
   return `${name} ${parsed.chapter}${parsed.verse === undefined ? '' : `:${parsed.verse}`}`;
 }

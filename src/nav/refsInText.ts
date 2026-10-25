@@ -1,8 +1,7 @@
 // src/nav/refsInText.ts — every Bible reference in free text (mw-s1dc0n.1, Share to Lampas): 'Gen. 1:28 ESV', 'Rom 8:28-30', '1 John 1:1', 'Ps 23', 'Rom 8:28, 31'.
 // Pure. The book names are links.ts's (parseCanonReference, never a second table); a translation tag after a reference (ESV, NIV, KJV) is not part of it. Each
 // reference keeps the words as printed and its OSIS ref; the list can be kept in the order of the page or in Bible order.
-import { BOOKS, bookOf } from '../data/books';
-import { OT_BOOKS, otBookOf } from '../data/otBooks';
+import { BOOKS, bookOf, ntBookOf, otBookOf } from '../data/books';
 import { inWords, osisOf, parseCanonReference } from './links';
 
 /** One reference found in the text. A list ('Rom 8:28, 31') is one reference for each verse; a range keeps its first verse and `lastVerse`. */
@@ -41,7 +40,7 @@ const NOT_ENGLISH = (name: string, chapterOnly: boolean): boolean => {
   return word.length > 2 || /^\d/.test(word) || capital;
 };
 
-export const chaptersOf = (book: string, testament: 'nt' | 'ot'): number | undefined => (testament === 'nt' ? bookOf(book)?.chapters : otBookOf(book)?.chapters);
+export const chaptersOf = (book: string, testament: 'nt' | 'ot'): number | undefined => (testament === 'nt' ? ntBookOf(book)?.chapters : otBookOf(book)?.chapters);
 
 /** Every reference in `text`, in the order the text has them (a reference named twice is found twice). */
 export function findReferences(text: string): FoundReference[] {
@@ -78,9 +77,8 @@ export function findReferences(text: string): FoundReference[] {
   return found;
 }
 
-/** Where a book stands in the Bible: the Old Testament's books first, then the New's. */
-const bookPlace = (r: Pick<FoundReference, 'book' | 'testament'>): number =>
-  r.testament === 'ot' ? OT_BOOKS.findIndex((b) => b.code === r.book) : OT_BOOKS.length + BOOKS.findIndex((b) => b.code === r.book);
+/** Where a book stands in the Bible: canon order, the Old Testament's books first, then the New's. */
+const bookPlace = (r: Pick<FoundReference, 'book'>): number => BOOKS.findIndex((b) => b.code === r.book);
 
 const sameReference = (a: FoundReference, b: FoundReference): boolean => a.ref === b.ref && a.lastVerse === b.lastVerse;
 
@@ -106,7 +104,7 @@ export function headingOf(r: Pick<FoundReference, 'ref' | 'lastVerse'>): string 
 }
 
 /** A book's name as the lists write it. */
-export const bookNameOf = (r: Pick<FoundReference, 'book' | 'testament'>): string => (r.testament === 'nt' ? bookOf(r.book)?.name : otBookOf(r.book)?.name) ?? r.book;
+export const bookNameOf = (r: Pick<FoundReference, 'book' | 'testament'>): string => bookOf(r.book)?.name ?? r.book;
 
 /** A list in Bible order cut into its books, each with its references. */
 export function groupedByBook(listed: readonly ListedReference[]): { book: string; name: string; refs: ListedReference[] }[] {

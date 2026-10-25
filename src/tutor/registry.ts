@@ -6,7 +6,7 @@
 import { createTutorClient, defineRegistry, type Command, type CommandResult, type Fact, type Place, type Registry, type TutorClient, type TutorRecord } from 'voice-kit/talks';
 import { createDexieStore } from 'voice-kit/talks/dexie';
 import { addLemmaToLearn, type AddedLemma } from '../data/answerWord';
-import { BOOKS, titleOf } from '../data/books';
+import { NT_BOOKS, titleOf } from '../data/books';
 import { getDay, localDate, setTicked } from '../data/daily/dailyStore';
 import { NO_CHAPTER } from '../data/chapter';
 import { learnerGrammar } from '../data/grammar/learnerGrammar';
@@ -65,7 +65,7 @@ export const screenKey = (): string => screenContextNow()?.name ?? screenNameOf(
 export function chapterOf(args: unknown): { book: string; chapter: number; title: string } | undefined {
   const asked = typeof args === 'object' && args !== null ? (args as Record<string, unknown>) : {};
   const name = typeof asked.book === 'string' ? asked.book.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase() : '';
-  const book = BOOKS.find((b) => b.code === name || b.name.toLowerCase() === name);
+  const book = NT_BOOKS.find((b) => b.code === name || b.name.toLowerCase() === name);
   const chapter = asked.chapter;
   if (!book || typeof chapter !== 'number' || !Number.isInteger(chapter) || chapter < 1 || chapter > book.chapters) return undefined;
   return { book: book.code, chapter, title: titleOf(book.code, chapter) };

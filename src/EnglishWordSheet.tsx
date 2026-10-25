@@ -14,9 +14,9 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
 const ROW = 'flex min-h-12 items-center justify-center rounded-xl border border-line px-3 text-center text-base font-medium text-accent active:bg-line';
 
-/** One Look it up in Logos link for each word of `text` (one word: 'Look it up in Logos'; several: 'Look it up in Logos: <word>'). `english` adds ' (English)' to the name, for the Greek word sheet.
+/** One Look it up in Logos link for each word of `text` (one word: 'Look it up in Logos'; several, or `named`: 'Look it up in Logos: <word>'). `english` adds ' (English)' to the name, for the Greek word sheet.
  * `offer` draws the Turn on Logos line when Logos is off; without it, a Logos that is off draws nothing. Nothing while it is not known whether Logos is on. */
-export function EnglishDictionaryRow({ text, english = false, offer = false }: { text: string; english?: boolean; offer?: boolean }) {
+export function EnglishDictionaryRow({ text, english = false, offer = false, named = false }: { text: string; english?: boolean; offer?: boolean; named?: boolean }) {
   const study = useLiveQuery(getStudyResources, []);
   const words = englishHeadwords(text);
   if (study === undefined || words.length === 0) return null;
@@ -36,7 +36,7 @@ export function EnglishDictionaryRow({ text, english = false, offer = false }: {
       {words.map((word) => {
         const link = englishDictionaryLink(word);
         if (!link) return null;
-        const name = `Look it up in Logos${english ? ' (English)' : ''}${words.length > 1 ? `: ${word}` : ''}`;
+        const name = `Look it up in Logos${english ? ' (English)' : ''}${words.length > 1 || named ? `: ${word}` : ''}`;
         return (
           <a key={word} href={link.url} data-fallback={link.fallback} onClick={() => armFallback(link.fallback)} className={ROW}>
             {name}
@@ -47,11 +47,18 @@ export function EnglishDictionaryRow({ text, english = false, offer = false }: {
   );
 }
 
-export function EnglishWordSheet({ english, onClose }: { english: string; onClose: () => void }) {
+/** The words of a chunk, each as bareEnglish gives it ('the beginning,' is 'the' and 'beginning'), for the sheet that lists a chunk of more than one word. */
+const wordsOf = (chunk: string): string[] => chunk.split(/\s+/).map(bareEnglish).filter((w) => /[\p{L}\p{N}]/u.test(w));
+
+/** `listWords` (an Old Testament chunk, mw-uqlxea.2, where there is no Greek word to open): a chunk of more than one word lists each word under the heading, with its own Listen and its own
+ * Look it up in Logos (Webster's 1828), so the sheet answers for any word of the chunk; a chunk of one word is the sheet as it always was. */
+export function EnglishWordSheet({ english, onClose, listWords = false }: { english: string; onClose: () => void; listWords?: boolean }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   const word = bareEnglish(english);
+  const each = listWords ? wordsOf(english) : [];
+  const several = each.length > 1;
   return (
     // z-35 like the Greek word sheet: above the sheets it opens over, below the full-screen dialogs and the shell bars
     <div className="fixed inset-0 z-35 flex flex-col justify-end">
@@ -78,7 +85,23 @@ export function EnglishWordSheet({ english, onClose }: { english: string; onClos
             </h2>
             <SpeakButton text={word} id={`english-word:${word}`} label="Listen" kind="speaker" language="english" className="shrink-0" />
           </div>
-          <EnglishDictionaryRow text={word} offer />
+          {several ? (
+            <ul aria-label="Words" className="mt-2 flex flex-col">
+              {each.map((w, i) => (
+                <li key={i} data-chunk-word className="border-t border-line pb-3 pt-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span lang="en" className="min-w-0 break-words text-xl font-semibold">
+                      {w}
+                    </span>
+                    <SpeakButton text={w} id={`english-word:${w}:${i}`} label={`Listen: ${w}`} kind="speaker" language="english" className="shrink-0" />
+                  </div>
+                  <EnglishDictionaryRow text={w} offer={i === 0} named />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EnglishDictionaryRow text={word} offer />
+          )}
         </div>
       </div>
     </div>

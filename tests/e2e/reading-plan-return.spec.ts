@@ -3,7 +3,7 @@
 // chapters take in audibleStarts.json, and leaving and coming back are the page's own visibilitychange and focus events.
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { OT_BOOKS } from '../../src/data/otBooks';
+import { OT_BOOKS } from '../../src/data/books';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 

@@ -1,7 +1,7 @@
 // The Old Testament books and the Logos chapter link (mw-5r3p30.71): 39 books in canon order, Logos's own abbreviation for each,
 // and the link that opens a chapter in the Bible he chose (logosres: first, ref.ly as the fallback).
 import { describe, expect, it } from 'vitest';
-import { OT_BOOKS, otBookOf } from '../../src/data/otBooks';
+import { OT_BOOKS, otBookOf } from '../../src/data/books';
 import { AUDIO_BIBLES, audibleListen, audibleStartOf } from '../../src/resources/audioBible';
 import { DEFAULT_LOGOS_BIBLE, COMMON_BIBLES, isResourceId, chapterLink } from '../../src/resources/logosBible';
 import { oldTestamentChoices } from '../../src/resources/oldTestamentChoices';

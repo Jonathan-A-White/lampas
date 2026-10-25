@@ -17,7 +17,7 @@ const KEY = 'lampas.chapter';
 /** What a fresh install opens, and what a stored value that cannot be read falls back to. */
 export const DEFAULT_CHAPTER: OpenChapter = { book: 'rom', chapter: 8, title: 'Romans 8' };
 
-/** The open chapter for a book and a chapter number, or undefined when the book is not one of the 27 or the number is not a chapter. */
+/** The open chapter for a book and a chapter number, or undefined when the book is not one of the 66 or the number is not a chapter. */
 export function chapterOf(book: string, chapter: number): OpenChapter | undefined {
   if (!bookOf(book) || !Number.isInteger(chapter) || chapter < 1 || chapter > 150) return undefined;
   return { book, chapter, title: titleOf(book, chapter) };

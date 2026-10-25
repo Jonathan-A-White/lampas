@@ -5,8 +5,7 @@
 // chips and no Reader chip, as Lampas holds no Old Testament text. Lampas's own Reader is not a resource: the verse chip that opens it is drawn by src/TutorLinks.tsx. Pure: the Strong's number and
 // his Bible are looked up by the caller. Links only, no text of any lexicon (docs/resources.md).
 import { BOOK_INDEX } from '../data/bookIndex';
-import { titleOf } from '../data/books';
-import { otBookOf } from '../data/otBooks';
+import { titleOf, otBookOf } from '../data/books';
 import type { StudyResources } from '../data/repositories';
 import { parseCanonReference } from '../nav/links';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';

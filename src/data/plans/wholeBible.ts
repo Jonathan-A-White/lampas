@@ -1,7 +1,6 @@
-// src/data/plans/wholeBible.ts — the whole Bible, Genesis to Revelation: every chapter of the 39 Old Testament books (data/otBooks.ts) and then the 27
-// of the New (data/books.ts), in canon order, 1,189 in all.
+// src/data/plans/wholeBible.ts — the whole Bible, Genesis to Revelation: every chapter of the 66 books (data/books.ts), the 39 of the Old Testament and then the 27
+// of the New, in canon order, 1,189 in all.
 import { BOOKS } from '../books';
-import { OT_BOOKS } from '../otBooks';
 import type { Plan, PlanChapter } from './plan';
 
 const chaptersOf = (books: readonly { code: string; chapters: number }[]): PlanChapter[] =>
@@ -10,5 +9,5 @@ const chaptersOf = (books: readonly { code: string; chapters: number }[]): PlanC
 export const wholeBible: Plan = {
   id: 'whole-bible',
   name: 'The whole Bible',
-  chapters: () => [...chaptersOf(OT_BOOKS), ...chaptersOf(BOOKS)],
+  chapters: () => chaptersOf(BOOKS),
 };
