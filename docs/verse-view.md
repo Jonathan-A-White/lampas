@@ -12,7 +12,7 @@ And if the Spirit of Him who ...              the verse, big, woven as the Reade
 [ Play verse 11 ]                             ONE control at the foot: Listen's Play button, or the hold bar (Postern's) of the other actions
 ```
 
-The row is one line while each label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner); narrower, it is three buttons to a row over two rows. With the Diagram action the row is six cells (five actions and Copy link): two rows of three on a phone, one row from 25 rem of room. A phone with Share puts Share beside Copy link in the sixth cell (seven buttons, still two rows of three) and spreads them into one row only from 29 rem. No label is ever past two lines and every button is at least 44 px (tests/e2e/verse-actions.spec.ts at 360 and 412 px).
+The row is one line while each label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner); narrower, it is three buttons to a row over two rows. With the Diagram action the row is six cells (five actions and Copy link): two rows of three on a phone, one row from 25 rem of room, two to a row under 15 rem (a phone at 200 % text, where 'Diagram' is too wide for a third of the row). A phone with Share puts Share beside Copy link in the sixth cell (seven buttons, still two rows of three) and spreads them into one row only from 29 rem. No label is ever past two lines and every button is at least 44 px (tests/e2e/verse-actions.spec.ts at 360 and 412 px).
 
 | Action | What it shows | The bar | A hold does |
 | --- | --- | --- | --- |
