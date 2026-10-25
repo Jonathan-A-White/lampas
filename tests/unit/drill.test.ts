@@ -7,6 +7,7 @@ import type { Word, WordState } from '../../src/data/db';
 import { DRILL_SIZE, buildSteps, drawDrill } from '../../src/data/drill';
 import { decodeParse, splitParse } from '../../src/data/parseCode';
 import { mulberry32 } from '../../src/data/quiz';
+import { isGreekBook } from '../support/data-books';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const codes = [...new Set(rom8.verses.flatMap((v) => v.g.map((g) => g.p)))];
@@ -59,7 +60,7 @@ describe('splitParse: an RP code as a part of speech and the features it names',
 
   it('agrees with decodeParse on every code of the New Testament', () => {
     const decoded = new Set<string>();
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && isGreekBook(d.name))) {
       for (const file of readdirSync(`public/data/${book.name}`)) {
         const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
         for (const code of Object.keys(chapter.parse)) decoded.add(code);

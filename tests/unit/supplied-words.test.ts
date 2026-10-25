@@ -2,10 +2,11 @@
 // chunk's white-space separated words), the reader italicises only those, and the tutor is sent them between asterisks.
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { type BookIndex, type Chapter, type EnglishChunk, englishRuns, markSupplied } from '../../src/data/chapter';
+import { type Chapter, type EnglishChunk, englishRuns, markSupplied } from '../../src/data/chapter';
 import { buildRequest } from '../../src/services/tutor';
 import { buildTalkRequest } from '../../src/services/talk';
 import { instructionsOf } from '../../scripts/grind-parts';
+import { GREEK_BOOKS, isGreekBook } from '../support/data-books';
 
 const load = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;
 const hebrews7 = load('heb/7');
@@ -16,9 +17,9 @@ const chunkOf = (text: string): EnglishChunk => {
   return c;
 };
 const allChunks = (): EnglishChunk[] => {
-  const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
-  const files = readdirSync('public/data', { recursive: true }).map(String).filter((p) => /^[0-9a-z]+[\\/]\d+\.json$/.test(p));
-  expect(files.length).toBe(Object.values(index.books).reduce((n, b) => n + b.chapters, 0));
+  // the Greek text's chunks: the table below is the New Testament's
+  const files = readdirSync('public/data', { recursive: true }).map(String).filter((p) => /^[0-9a-z]+[\\/]\d+\.json$/.test(p) && isGreekBook(p.split(/[\\/]/)[0]));
+  expect(files.length).toBe(GREEK_BOOKS.reduce((n, b) => n + b.chapters, 0));
   return files.flatMap((f) => load(f.replace(/\.json$/, '')).verses.flatMap((v) => v.e));
 };
 const alnum = (s: string): string => s.replace(/[^\p{L}\p{N}]/gu, '');

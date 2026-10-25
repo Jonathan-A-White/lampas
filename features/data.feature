@@ -1,12 +1,18 @@
-Feature: The New Testament data
+Feature: The Bible data
   Every chapter of the Greek New Testament (Byzantine text, Majority Standard Bible alignment) is a
   small JSON file the app loads on demand: Greek words in Greek order with their lemma, gloss and
   parsing, and the English chunks in English order. npm run data:build makes them from two public
-  sources; the JSON is committed.
+  sources; the JSON is committed. The Old Testament (the Berean Standard Bible's tables, the Majority
+  Standard Bible's Old Testament) is the same shape with the Hebrew words kept: each chapter says its
+  source language and its translation. npm run data:build:ot makes those. No screen opens them yet.
 
-  Scenario: The index lists the whole New Testament
+  Scenario: The index lists the whole Bible
     Given the committed index
-    Then it lists 27 books in canonical order with 260 chapters
+    Then it lists 66 books in canon order with 1189 chapters
+
+  Scenario: The index lists the New Testament's 27 books with 260 chapters
+    Given the committed index
+    Then 27 of its books are read in Greek, in canonical order, with 260 chapters
 
   Scenario: Every chapter file is there and parses
     Given the committed index
@@ -34,10 +40,42 @@ Feature: The New Testament data
     Given the committed index
     Then every parsing code in its chapters has a decoding
 
+  Scenario: Genesis 1:1 is seven Hebrew words with the English aligned to them
+    Given the committed chapter gen 1
+    Then it says its source language is "hbo" and its translation is "msb"
+    And verse 1 begins with the Hebrew words "בְּרֵאשִׁ֖ית" and has 7 words
+    And the English of verse 1 begins "In the beginning" and the direct object marker has no English
+
+  Scenario: Jonah 1 is a chapter of the Old Testament
+    Given the committed chapter jon 1
+    Then it says its source language is "hbo" and its translation is "msb"
+
+  Scenario: Daniel 2:4 keeps its Aramaic words as words of its Hebrew chapter
+    Given the committed chapter dan 2
+    Then it says its source language is "hbo" and its translation is "msb"
+    And verse 4 has the Aramaic word "מַלְכָּא֙"
+
+  Scenario: Every Hebrew word of the Old Testament has what the table gave it
+    Given the committed index
+    Then every chapter read in Hebrew says "hbo", and each of its words with a Strong's number has a headword and a gloss, and each with a parsing code has a decoding
+
+  Scenario: The Old Testament can be walked word by word within the gate's time
+    Given the committed index
+    Then every word of the 929 Old Testament chapters is walked in under 30 seconds
+
+  Scenario: The Hebrew lexicon and word frequencies are built with the chapters
+    Given the committed index
+    Then public/data/lexicon-hbo.json holds each Hebrew lemma once and public/data/frequency-hbo.json counts every Strong's number of the Old Testament chapters
+
   Scenario: Building twice changes nothing
     Given the source slices
     When the data is built twice
     Then the second run writes the same bytes as the first
+
+  Scenario: Building the Old Testament twice changes nothing
+    Given the Old Testament source slices
+    When the Old Testament data is built twice
+    Then the second run writes nothing and the New Testament's files are not touched
 
   Scenario: The frequency table is built with the chapters
     Given the committed index
@@ -46,7 +84,7 @@ Feature: The New Testament data
 
   Scenario: Only the index, the lemma lexicon, the frequency table and Romans 8 are precached
     Given the app is built
-    Then the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter
+    Then the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter or Old Testament file
     And the service worker serves other chapters cache-first from a runtime cache
 
   Scenario: Every chapter in the index has a fingerprint of its file

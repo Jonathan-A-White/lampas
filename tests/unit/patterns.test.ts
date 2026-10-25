@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord } from '../../src/data/chapter';
 import { ideasOf, ideasOfWord } from '../../src/data/grammar/ladder';
 import { PATTERN_IDEAS, patternsOf } from '../../src/data/grammar/patterns';
+import { isGreekBook } from '../support/data-books';
 
 const bareOf = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const chapter = (book: string, n: number): Chapter => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
@@ -184,7 +185,7 @@ describe('ideasOfWord', () => {
 describe('a walk of every token of the 260 chapter files', () => {
   it('gives no feminine adjective in a first-declension ending the third declension unless its lemma is a two-ending one', () => {
     const wrong = new Map<string, number>();
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && isGreekBook(d.name))) {
       for (const file of readdirSync(`public/data/${book.name}`)) {
         const c = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
         for (const w of c.verses.flatMap((v) => v.g)) {
@@ -205,7 +206,7 @@ describe('a walk of every token of the 260 chapter files', () => {
   it('names only ideas the ladder has, and throws nothing', () => {
     const seen = new Map<string, number>();
     let files = 0;
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && isGreekBook(d.name))) {
       for (const file of readdirSync(`public/data/${book.name}`)) {
         files += 1;
         const c = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;

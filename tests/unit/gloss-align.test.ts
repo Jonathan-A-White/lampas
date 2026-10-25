@@ -7,6 +7,7 @@ import { bareEnglish, loadChapter, type Chapter, type GreekWord } from '../../sr
 import { exampleGloss, exampleMeaning, ideaExamples, wordEnglish, type IdeaExample } from '../../src/data/grammar/ideaSheet';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { isGreekBook } from '../support/data-books';
 
 let john: Chapter;
 
@@ -57,7 +58,7 @@ describe('the example rows of 1 John 1:1 (the Rho and Phi sheets)', () => {
 // supplied words; it is the same fault as 'touched with' and 'this is' wherever it sits.
 describe('the per-word English of every chapter', () => {
   const DATA = join(process.cwd(), 'public/data');
-  const books = readdirSync(DATA).filter((b) => /^[0-9a-z]+$/.test(b) && b !== 'ladder' && statSync(join(DATA, b)).isDirectory());
+  const books = readdirSync(DATA).filter((b) => /^[0-9a-z]+$/.test(b) && b !== 'ladder' && isGreekBook(b) && statSync(join(DATA, b)).isDirectory());
 
   const leaks = (chapter: Chapter): { verse: number; word: string; shown: string }[] => {
     const found: { verse: number; word: string; shown: string }[] = [];

@@ -9,6 +9,7 @@ import { ideaOfTerm, ideasOf, LADDER } from '../../src/data/grammar/ladder';
 import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { isGreekBook } from '../support/data-books';
 
 let index: BookIndex;
 let john: Chapter;
@@ -265,7 +266,7 @@ describe('the idea sheet agrees with the word sheet over every parse code of the
   it('lists every idea the word sheet links for a code (number, case, gender, person, tense, voice, mood) in ideasOf(code)', () => {
     const dir = join(process.cwd(), 'public', 'data');
     const codes = new Set<string>();
-    for (const book of readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory())) {
+    for (const book of readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory() && isGreekBook(d.name))) {
       for (const file of readdirSync(join(dir, book.name))) {
         const chapter = JSON.parse(readFileSync(join(dir, book.name, file), 'utf8')) as { parse?: Record<string, string> };
         // ladder/ and the like hold other files than chapters

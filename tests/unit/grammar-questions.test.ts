@@ -25,6 +25,7 @@ import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { mulberry32 } from '../../src/data/quiz';
 import { formOfQuestion } from '../../src/data/grammar/inference';
 import { usesOf } from '../../src/data/grammar/uses';
+import { isGreekBook } from '../support/data-books';
 
 const load = (file: string) => JSON.parse(readFileSync(`public/data/${file}.json`, 'utf8')) as Chapter;
 const jn1 = load('1jn/1');
@@ -179,7 +180,7 @@ describe('a tap-the-form prompt names one value of each feature (mw-svw421.38)',
 
   it('holds over every chapter of the data and every idea of the ladder', () => {
     const bad: string[] = [];
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && isGreekBook(d.name))) {
       for (const file of readdirSync(`public/data/${book.name}`)) {
         if (!file.endsWith('.json')) continue;
         const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;

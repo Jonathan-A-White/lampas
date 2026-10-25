@@ -5,6 +5,7 @@ import type { Chapter, Verse } from '../../src/data/chapter';
 import { wovenOf } from '../../src/reader/useWoven';
 import { readingText, wovenReading } from '../../src/services/reading';
 import { tokensOf } from '../../src/memorize/target';
+import { isGreekBook } from '../support/data-books';
 
 const words = (text: string): string[] => text.split(/\s+/).filter(Boolean);
 
@@ -12,7 +13,7 @@ describe('sweep: every chapter in public/data', () => {
   it('every verse has en and el tokens, none empty; en reads the English; a fully solid weave reads as the reading check does', () => {
     let verses = 0;
     const problems: string[] = [];
-    for (const book of readdirSync('public/data').filter((b) => statSync(`public/data/${b}`).isDirectory())) {
+    for (const book of readdirSync('public/data').filter((b) => statSync(`public/data/${b}`).isDirectory() && isGreekBook(b))) {
       for (const file of readdirSync(`public/data/${book}`)) {
         if (!/^\d+\.json$/.test(file)) continue;
         const chapter = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter;

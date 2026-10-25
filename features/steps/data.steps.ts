@@ -8,7 +8,10 @@ import { join } from 'node:path';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { runBuild } from '../../scripts/data-build';
-import type { BookIndex, Chapter } from '../../src/data/chapter';
+import { BSB_FILE, TBESH_FILE, runBuildOt } from '../../scripts/data-build-ot';
+import { CANON } from '../../src/data/canon';
+import { sourceLanguage, type BookIndex, type Chapter } from '../../src/data/chapter';
+import type { LemmaLexicon } from '../../src/data/lexicon';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import { serveChapter } from '../../src/dataCache';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
@@ -20,6 +23,9 @@ const readJson = <T>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) 
 const chapterPath = (code: string, n: number) => `public/data/${code}/${n}.json`;
 const greekOf = (chapter: Chapter, verse: number, words: number) =>
   (chapter.verses.find((v) => v.n === verse)?.g ?? []).slice(0, words).map((w) => w.t).join(' ');
+
+/** The books read in Greek: the New Testament scenarios walk these. */
+const greek = (i: BookIndex) => i.books.filter((b) => b.lang === 'grc');
 
 const tmpDirs: string[] = [];
 const tmp = () => {
@@ -39,18 +45,35 @@ let swText: string;
 const feature = await loadFeature('features/data.feature');
 
 describeFeature(feature, ({ Scenario }) => {
-  Scenario('The index lists the whole New Testament', ({ Given, Then }) => {
+  Scenario('The index lists the whole Bible', ({ Given, Then }) => {
     Given('the committed index', () => {
       index = readJson<BookIndex>('public/data/index.json');
     });
-    Then('it lists 27 books in canonical order with 260 chapters', () => {
-      expect(index.books.map((b) => b.code)).toEqual([
+    Then('it lists 66 books in canon order with 1189 chapters', () => {
+      expect(index.books.map((b) => b.code)).toEqual(CANON.map((b) => b.code));
+      expect(index.books[0].name).toBe('Genesis');
+      expect(index.books[65].name).toBe('Revelation');
+      expect(index.books.reduce((n, b) => n + b.chapters, 0)).toBe(1189);
+      expect(index.books.filter((b) => b.lang === 'hbo').reduce((n, b) => n + b.chapters, 0)).toBe(929);
+      for (const b of index.books) {
+        expect(b.verses).toHaveLength(b.chapters);
+        expect(b.lang === 'hbo' || b.lang === 'grc').toBe(true);
+      }
+    });
+  });
+
+  Scenario("The index lists the New Testament's 27 books with 260 chapters", ({ Given, Then }) => {
+    Given('the committed index', () => {
+      index = readJson<BookIndex>('public/data/index.json');
+    });
+    Then('27 of its books are read in Greek, in canonical order, with 260 chapters', () => {
+      const greek = index.books.filter((b) => b.lang === 'grc');
+      expect(greek.map((b) => b.code)).toEqual([
         'mat', 'mrk', 'luk', 'jhn', 'act', 'rom', '1co', '2co', 'gal', 'eph', 'php', 'col', '1th', '2th',
         '1ti', '2ti', 'tit', 'phm', 'heb', 'jas', '1pe', '2pe', '1jn', '2jn', '3jn', 'jud', 'rev',
       ]);
-      expect(index.books.reduce((n, b) => n + b.chapters, 0)).toBe(260);
-      for (const b of index.books) expect(b.verses).toHaveLength(b.chapters);
-      const rom = index.books.find((b) => b.code === 'rom');
+      expect(greek.reduce((n, b) => n + b.chapters, 0)).toBe(260);
+      const rom = greek.find((b) => b.code === 'rom');
       expect(rom?.name).toBe('Romans');
       expect(rom?.verses[7]).toBe(39);
     });
@@ -65,6 +88,9 @@ describeFeature(feature, ({ Scenario }) => {
       for (const b of index.books) {
         for (let n = 1; n <= b.chapters; n++) {
           const c = readJson<Chapter>(chapterPath(b.code, n));
+          // a chapter read in Hebrew says so (the New Testament's files leave `lang` out and mean Greek)
+          if (b.lang === 'hbo') expect(c.lang).toBe('hbo');
+          expect(sourceLanguage(c)).toBe(b.lang);
           expect(c.code).toBe(b.code);
           expect(c.book).toBe(b.name);
           expect(c.chapter).toBe(n);
@@ -78,10 +104,10 @@ describeFeature(feature, ({ Scenario }) => {
           files++;
         }
       }
-      expect(files).toBe(260);
-      // data:build's output; ladder/el.json is scripts/ladder-el.ts's
+      expect(files).toBe(1189);
+      // data:build's and data:build:ot's output; ladder/el.json is scripts/ladder-el.ts's
       const onDisk = readdirSync('public/data', { recursive: true }).map(String).filter((p) => p.endsWith('.json') && !p.startsWith('ladder'));
-      expect(onDisk).toHaveLength(263);
+      expect(onDisk).toHaveLength(1189 + 5);
     });
   });
 
@@ -128,7 +154,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('no Greek word in any of its chapters lacks a lemma or a gloss', () => {
       let words = 0;
       const misses: string[] = [];
-      for (const b of index.books) {
+      for (const b of greek(index)) {
         for (let n = 1; n <= b.chapters; n++) {
           const c = readJson<Chapter>(chapterPath(b.code, n));
           for (const v of c.verses) {
@@ -150,13 +176,163 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('every parsing code in its chapters has a decoding', () => {
       const unknown: string[] = [];
-      for (const b of index.books) {
+      for (const b of greek(index)) {
         for (let n = 1; n <= b.chapters; n++) {
           const c = readJson<Chapter>(chapterPath(b.code, n));
           for (const v of c.verses) for (const w of v.g) if (!c.parse[w.p]) unknown.push(`${b.code} ${n}:${v.n} ${w.p}`);
         }
       }
       expect(unknown).toEqual([]);
+    });
+  });
+
+  Scenario('Genesis 1:1 is seven Hebrew words with the English aligned to them', ({ Given, Then, And }) => {
+    Given('the committed chapter gen 1', () => {
+      chapter = readJson<Chapter>(chapterPath('gen', 1));
+    });
+    Then('it says its source language is {string} and its translation is {string}', (_ctx, lang: string, translation: string) => {
+      expect(chapter.lang).toBe(lang);
+      expect(chapter.translation).toBe(translation);
+    });
+    And('verse 1 begins with the Hebrew words {string} and has {int} words', (_ctx, words: string, count: number) => {
+      expect(chapter.verses[0].g).toHaveLength(count);
+      expect(chapter.verses[0].g[0].t.normalize('NFC')).toBe(words.normalize('NFC'));
+      expect(chapter.verses[0].g[0].s).toBe('H7225');
+    });
+    And('the English of verse 1 begins {string} and the direct object marker has no English', (_ctx, start: string) => {
+      expect(chapter.verses[0].e[0].t).toBe(start);
+      const marker = chapter.verses[0].g.find((w) => w.s === 'H853' && w.p === 'DirObjM');
+      expect(marker?.e).toBeUndefined();
+    });
+  });
+
+  Scenario('Jonah 1 is a chapter of the Old Testament', ({ Given, Then }) => {
+    Given('the committed chapter jon 1', () => {
+      chapter = readJson<Chapter>(chapterPath('jon', 1));
+    });
+    Then('it says its source language is {string} and its translation is {string}', (_ctx, lang: string, translation: string) => {
+      expect(chapter.lang).toBe(lang);
+      expect(chapter.translation).toBe(translation);
+      expect(chapter.verses).toHaveLength(17);
+    });
+  });
+
+  Scenario('Daniel 2:4 keeps its Aramaic words as words of its Hebrew chapter', ({ Given, Then, And }) => {
+    Given('the committed chapter dan 2', () => {
+      chapter = readJson<Chapter>(chapterPath('dan', 2));
+    });
+    Then('it says its source language is {string} and its translation is {string}', (_ctx, lang: string, translation: string) => {
+      expect(chapter.lang).toBe(lang);
+      expect(chapter.translation).toBe(translation);
+    });
+    And('verse 4 has the Aramaic word {string}', (_ctx, word: string) => {
+      const verse = chapter.verses.find((v) => v.n === 4);
+      expect(verse?.g.map((w) => w.t.normalize('NFC'))).toContain(word.normalize('NFC'));
+    });
+  });
+
+  Scenario('Every Hebrew word of the Old Testament has what the table gave it', ({ Given, Then }) => {
+    Given('the committed index', () => {
+      index = readJson<BookIndex>('public/data/index.json');
+    });
+    Then('every chapter read in Hebrew says "hbo", and each of its words with a Strong\'s number has a headword and a gloss, and each with a parsing code has a decoding', () => {
+      const misses: string[] = [];
+      let words = 0;
+      let noStrongs = 0;
+      for (const b of index.books.filter((x) => x.lang === 'hbo')) {
+        for (let n = 1; n <= b.chapters; n++) {
+          const c = readJson<Chapter>(chapterPath(b.code, n));
+          if (c.lang !== 'hbo' || c.translation !== 'msb') misses.push(`${b.code} ${n} says ${c.lang}/${c.translation}`);
+          for (const v of c.verses) {
+            for (const w of v.g) {
+              words++;
+              if (!w.t) misses.push(`${b.code} ${n}:${v.n} a word with no text`);
+              if (w.s === '') noStrongs++;
+              else if (!w.l || !c.lex[w.s]?.g) misses.push(`${b.code} ${n}:${v.n} ${w.t} ${w.s}`);
+              if (w.p && !c.parse[w.p]) misses.push(`${b.code} ${n}:${v.n} ${w.p}`);
+            }
+          }
+        }
+      }
+      expect(words).toBeGreaterThan(300_000);
+      // the table gives a preposition with a pronoun suffix no Strong number (docs/data.md 'The Old Testament data')
+      expect(noStrongs).toBeLessThan(7000);
+      expect(misses).toEqual([]);
+    });
+  });
+
+  // The walk reads every chapter file (73 MB of JSON) and visits every word, one chapter at a time, so nothing is held: the measured time is in mw-uqlxea.1's closing comment.
+  Scenario("The Old Testament can be walked word by word within the gate's time", ({ Given, Then }) => {
+    Given('the committed index', () => {
+      index = readJson<BookIndex>('public/data/index.json');
+    });
+    Then('every word of the 929 Old Testament chapters is walked in under 30 seconds', () => {
+      const started = performance.now();
+      let words = 0;
+      let chapters = 0;
+      for (const b of index.books.filter((x) => x.lang === 'hbo')) {
+        for (let n = 1; n <= b.chapters; n++) {
+          const c = readJson<Chapter>(chapterPath(b.code, n));
+          chapters++;
+          for (const v of c.verses) for (const w of v.g) if (w.t.length > 0) words++;
+        }
+      }
+      expect(chapters).toBe(929);
+      expect(words).toBeGreaterThan(300_000);
+      expect(performance.now() - started).toBeLessThan(30_000);
+    });
+  });
+
+  Scenario('The Hebrew lexicon and word frequencies are built with the chapters', ({ Given, Then }) => {
+    Given('the committed index', () => {
+      index = readJson<BookIndex>('public/data/index.json');
+    });
+    Then("public/data/lexicon-hbo.json holds each Hebrew lemma once and public/data/frequency-hbo.json counts every Strong's number of the Old Testament chapters", () => {
+      const lexicon = readJson<LemmaLexicon>('public/data/lexicon-hbo.json');
+      const table = readJson<FrequencyEntry[]>('public/data/frequency-hbo.json');
+      const counts = new Map<string, number>();
+      const lemmas = new Set<string>();
+      for (const b of index.books.filter((x) => x.lang === 'hbo')) {
+        for (let n = 1; n <= b.chapters; n++) {
+          for (const v of readJson<Chapter>(chapterPath(b.code, n)).verses) {
+            for (const w of v.g) {
+              if (w.l) lemmas.add(w.l);
+              if (w.s) counts.set(w.s, (counts.get(w.s) ?? 0) + 1);
+            }
+          }
+        }
+      }
+      expect(Object.keys(lexicon).sort()).toEqual([...lemmas].sort());
+      expect(table).toHaveLength(counts.size);
+      for (const e of table) expect(e.count).toBe(counts.get(e.strongs));
+      expect(table[0].count).toBeGreaterThanOrEqual(table[1].count);
+    });
+  });
+
+  Scenario('Building the Old Testament twice changes nothing', ({ Given, When, Then }) => {
+    let rawDir = '';
+    let firstWrites = 0;
+    let secondWrites = 0;
+    Given('the Old Testament source slices', () => {
+      rawDir = tmp();
+      writeFileSync(join(rawDir, BSB_FILE), readFileSync('tests/fixtures/data/bsb_tables_slice.tsv'));
+      writeFileSync(join(rawDir, TBESH_FILE), readFileSync('tests/fixtures/data/tbesh_slice.txt'));
+      outDir = join(rawDir, 'out');
+      // a New Testament file already there: the Old Testament build leaves it alone
+      mkdirSync(join(outDir, 'rom'), { recursive: true });
+      writeFileSync(join(outDir, 'rom', '8.json'), '{"kept":true}');
+    });
+    When('the Old Testament data is built twice', async () => {
+      const download = async () => {
+        throw new Error('the raw files are there; nothing should be downloaded');
+      };
+      firstWrites = (await runBuildOt({ rawDir, outDir, download })).written;
+      secondWrites = (await runBuildOt({ rawDir, outDir, download })).written;
+    });
+    Then("the second run writes nothing and the New Testament's files are not touched", () => {
+      expect(firstWrites).toBeGreaterThan(3);
+      expect(secondWrites).toBe(0);
+      expect(readFileSync(join(outDir, 'rom', '8.json'), 'utf8')).toBe('{"kept":true}');
     });
   });
 
@@ -199,7 +375,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then("public/data/frequency.json counts every Strong's number of its chapters, with καί first and ἐν in the top five", () => {
       const table = readJson<FrequencyEntry[]>('public/data/frequency.json');
       const counts = new Map<string, number>();
-      for (const b of index.books) {
+      for (const b of greek(index)) {
         for (let n = 1; n <= b.chapters; n++) {
           for (const v of readJson<Chapter>(chapterPath(b.code, n)).verses) for (const w of v.g) if (w.s !== 'G3588') counts.set(w.s, (counts.get(w.s) ?? 0) + 1);
         }
@@ -232,7 +408,7 @@ describeFeature(feature, ({ Scenario }) => {
       execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', outDir, '--emptyOutDir', '--logLevel', 'error'], { stdio: 'inherit' });
       swText = readFileSync(join(outDir, 'sw.js'), 'utf8');
     });
-    Then('the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter', () => {
+    Then('the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter or Old Testament file', () => {
       const urls = [...swText.matchAll(/"url":"([^"]+)"/g)].map((m) => m[1]);
       const data = urls.filter((u) => u.startsWith('data/')).sort();
       expect(data).toEqual(['data/frequency.json', 'data/index.json', 'data/lexicon.json', 'data/rom/8.json']);

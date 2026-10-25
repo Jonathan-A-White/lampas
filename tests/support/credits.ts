@@ -5,6 +5,7 @@
 //  - Every font file and every shipped data file is named by a credit (bundledFiles: which credit each one needs).
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { OT_BOOKS } from '../../src/data/otBooks';
 
 export interface CreditSection {
   title: string | null;
@@ -66,6 +67,9 @@ function creditFor(path: string): string | null | undefined {
     return (FAMILY.exec(file)?.[1] ?? file.replace(FONT, '')).replace(/-/g, ' ');
   }
   if (path === 'public/data/lexicon.json') return 'TBESG';
+  if (path === 'public/data/lexicon-hbo.json') return 'TBESH'; // the Hebrew lemmas, with TBESH's glosses (scripts/data-build-ot.ts)
+  if (OT_BOOKS.some((b) => path.startsWith(`public/data/${b.code}/`))) return 'Berean Standard Bible'; // the Old Testament: the Berean tables, whose English the Majority Standard Bible's Old Testament is
+  if (path === 'public/data/frequency-hbo.json') return 'Berean Standard Bible';
   if (path.startsWith('public/data/')) return 'Majority Standard Bible';
   if (path.startsWith('public/lemma-forms/')) return 'Majority Standard Bible'; // the forms of each lemma the text uses, made from the chapters (scripts/build-lemma-forms.mjs)
   if (path.startsWith('public/sounds/')) return 'eSpeak NG'; // the clips of a one-letter Greek word's sound, made by eSpeak NG (scripts/sounds-build.sh)

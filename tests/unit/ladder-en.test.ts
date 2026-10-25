@@ -6,6 +6,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { buildLadder, scoreEnglish, syllablesOf } from '../../scripts/ladder-en';
 import type { LadderEntry } from '../../scripts/ladder-shared';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
+import { GREEK_BOOKS } from '../support/data-books';
 
 describe('syllables of an English word', () => {
   it.each([
@@ -64,8 +65,7 @@ describe('the English ladder of the whole New Testament', () => {
   const second = join(tmp, 'b', 'en.json');
   const verseCount = (): number => {
     let n = 0;
-    const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: { code: string; chapters: number }[] };
-    for (const b of index.books) {
+    for (const b of GREEK_BOOKS) {
       for (let c = 1; c <= b.chapters; c++) n += (JSON.parse(readFileSync(`public/data/${b.code}/${c}.json`, 'utf8')) as { verses: unknown[] }).verses.length;
     }
     return n;
@@ -105,7 +105,7 @@ describe('the English ladder of the whole New Testament', () => {
 
   it('breaks a tie by canonical order', () => {
     const ladder = load();
-    const books = (JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: { code: string }[] }).books.map((b) => b.code);
+    const books = GREEK_BOOKS.map((b) => b.code);
     const place = (ref: string): number => {
       const [b, c, v] = ref.split('.');
       return books.indexOf(b) * 1_000_000 + Number(c) * 1000 + Number(v);

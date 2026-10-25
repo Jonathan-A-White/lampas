@@ -34,7 +34,8 @@ async function openSettings(): Promise<void> {
   await openSettingsGroup(user, 'account');
 }
 
-const credit = (name: string): HTMLElement => screen.getByText(new RegExp(name)).closest('li') as HTMLElement;
+// the first mention: a credit's own name comes first, and a later bullet may say another's in passing (the Berean tables' bullet says 'the Majority Standard Bible's Old Testament')
+const credit = (name: string): HTMLElement => screen.getAllByText(new RegExp(name))[0].closest('li') as HTMLElement;
 
 const feature = await loadFeature('features/about.feature');
 

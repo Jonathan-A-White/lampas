@@ -8,7 +8,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
-import type { BookIndex, Chapter } from '../../src/data/chapter';
+import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
@@ -19,6 +19,7 @@ import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { GREEK_BOOKS } from '../../tests/support/data-books';
 
 const realEnv = { ...browserEnv };
 let timers: (() => void)[] = [];
@@ -34,7 +35,6 @@ afterAll(() => {
 });
 
 const user = userEvent.setup();
-const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
 const chapterFile = (book: string, n: number) => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
 
 let offline = false;
@@ -149,7 +149,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(shown).toHaveLength(27);
       expect(shown[0]).toBe(first);
       expect(shown[26]).toBe(last);
-      expect(shown).toEqual(index.books.map((b) => b.name));
+      expect(shown).toEqual(GREEK_BOOKS.map((b) => b.name));
     });
     When('he chooses the book {string}', (_, name: string) => chooseBook(name));
     Then('the picker lists chapters {int} to {int}', async (_, from: number, to: number) => {

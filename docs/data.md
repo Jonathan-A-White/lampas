@@ -1,9 +1,13 @@
-# The New Testament data
+# The Bible data
 
 `npm run data:build` turns two public sources into `public/data/`: `index.json` and one JSON file per chapter,
-`public/data/<book>/<chapter>.json`, for all 27 books (260 chapters, about 30 MB uncompressed). The JSON is
-committed; the raw downloads are not. The app loads one chapter at a time through `src/data/chapter.ts`
+`public/data/<book>/<chapter>.json`, for all 27 books of the New Testament (260 chapters, about 30 MB uncompressed). The JSON is
+committed; the raw downloads are not. `npm run data:build:ot` does the same for the 39 books of the Old Testament, with the Hebrew words kept
+(929 chapters, about 75 MB; 'The Old Testament data' below). The app loads one chapter at a time through `src/data/chapter.ts`
 (`loadChapter`, `wordLemma`, `wordGloss`, `wordParse`) and never reads the short keys below directly.
+
+**The rule (mw-uqlxea):** a chapter says its source language (`lang`: `'grc'` or `'hbo'`) and its translation (`translation`: `'msb'`); the word and chunk keys are the same for every source language.
+The reader, the word sheet, the voices and the drills read the chapter's `lang` (`sourceLanguage(chapter)`) and never assume Greek; code that says 'greek' where it means 'the source language' is generalised when touched, never in a rename sweep.
 
 ## Building
 
@@ -29,11 +33,13 @@ The table's Greek is the Robinson-Pierpont 2005 edition, not 2018: `docs/greek-e
 ## `index.json`
 
 ```json
-{"books":[{"code":"rom","name":"Romans","chapters":16,"verses":[32,29,31,25,21,23,25,39,33,21,36,21,14,26,33,24],"fingerprints":["0123456789ab","..."]}]}
+{"books":[{"code":"rom","name":"Romans","chapters":16,"verses":[32,29,31,25,21,23,25,39,33,21,36,21,14,26,33,24],"fingerprints":["0123456789ab","..."],"lang":"grc"}]}
 ```
 
-The 27 books in canonical order. `code` is lower-case: `mat mrk luk jhn act rom 1co 2co gal eph php col 1th 2th
-1ti 2ti tit phm heb jas 1pe 2pe 1jn 2jn 3jn jud rev`. `verses[i]` is the number of verses in chapter `i + 1`. `fingerprints[i]` is the first 12 hex characters of the SHA-256 of chapter `i + 1`'s file (`chapterFingerprint` in `scripts/data-build.ts`; the same bytes give the same fingerprint; empty for a chapter a test slice lacks). The app asks for a chapter as `/data/<book>/<n>.json?v=<fingerprint>` (`chapterUrl` in `src/data/chapter.ts`, the index read from the bundle).
+The 66 books in canon order, Genesis to Revelation (`CANON` in `src/data/canon.ts`; `tests/unit/books.test.ts` holds it equal to this file). `lang` is the language the book is read in: `hbo` for the 39 of the Old Testament, `grc` for the 27 of the New. `code` is lower-case: the Old Testament's
+`gen exo lev num deu jos jdg rut 1sa 2sa 1ki 2ki 1ch 2ch ezr neh est job psa pro ecc sng isa jer lam ezk dan hos jol amo oba jon mic nam hab zep hag zec mal`, then the New Testament's `mat mrk luk jhn act rom 1co 2co gal eph php col 1th 2th
+1ti 2ti tit phm heb jas 1pe 2pe 1jn 2jn 3jn jud rev`. Each build writes its own language's books and keeps the other's from the index already on disk (`mergeIndex` in `scripts/data/chapterWriter.ts`), so building one Testament never loses the other's entries.
+`BOOKS` (`src/data/books.ts`) is the canon's `grc` 27 until the readers move to the canon (mw-uqlxea.2), and `BOOK_INDEX` and `loadIndex` give the same 27 of this file: nothing on a screen reads an Old Testament book yet; `CANON_INDEX` and `loadCanonIndex` give all 66. `verses[i]` is the number of verses in chapter `i + 1`. `fingerprints[i]` is the first 12 hex characters of the SHA-256 of chapter `i + 1`'s file (`chapterFingerprint` in `scripts/data-build.ts`; the same bytes give the same fingerprint; empty for a chapter a test slice lacks). The app asks for a chapter as `/data/<book>/<n>.json?v=<fingerprint>` (`chapterUrl` in `src/data/chapter.ts`, the index read from the bundle).
 
 ## `lexicon.json`
 
@@ -98,6 +104,8 @@ Compact: short keys, no indentation, each lexicon entry once per file.
 
 | Key | Meaning |
 | --- | --- |
+| `lang` | the language the words are in, `grc` or `hbo`. The New Testament's files leave it out and mean `grc`; `loadChapter` fills it (`fillChapter`), so a chapter kept on a phone from before it still reads. Always present in an Old Testament file |
+| `translation` | the translation the English chunks are from, `msb` (the Majority Standard Bible; its Old Testament is the Berean Standard Bible's). Absent in the New Testament's files, filled by `loadChapter` |
 | `lex` | every Strong's number used in the file, once: `g` gloss (TBESG), `d` definition (plain text, at most about 300 characters) |
 | `parse` | every parsing code used in the file, once, decoded to words by `src/data/parseCode.ts` |
 | `verses[].n` | the verse number; a verse the Byzantine text lacks is not listed |
@@ -171,6 +179,67 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
   (`features/data.feature` walks all of them). An unknown code or a Strong's number the lexicon lacks fails the
   build instead of shipping a guess.
 
+## The Old Testament data
+
+`scripts/data-build-ot.ts` (`npm run data:build:ot`) writes `public/data/<code>/<n>.json` for the 39 books and their 929 chapters, `lexicon-hbo.json` and `frequency-hbo.json`, and adds the 39 to `index.json`. **Nothing on a screen opens them yet** (mw-uqlxea.2 does): the picker still sends an Old Testament chapter to Logos or Audible, and `pwa-precache.ts` is not widened, so the install stays the same size.
+
+### Source and licences
+
+| Source | Licence | Used for |
+| --- | --- | --- |
+| Berean Standard Bible tables, https://bereanbible.com/bsb_tables.tsv | public domain (berean.bible/licensing.htm); the Majority Standard Bible's Old Testament is the Berean Standard Bible's | the pointed Hebrew and Aramaic words (the WLC text), their transliteration, Strong's numbers and parsing, and the English aligned word by word |
+| STEPBible TBESH (Translators Brief lexicon of Extended Strongs for Hebrew), https://github.com/STEPBible/STEPBible-Data (Lexicons folder) | CC BY 4.0, credit STEPBible / Tyndale House, Cambridge | headword, gloss and definition per Strong's number (the definitions are the Abridged BDB's, by Online Bible, for guidance) |
+
+`ATTRIBUTION.md` names both. The table holds the New Testament too (the same file, Greek rows after the Hebrew); the Old Testament build keeps the rows whose `Language` is `Hebrew` or `Aramaic` and leaves the rest.
+
+### The build
+
+```bash
+npm run data:build:ot   # downloads data/raw/bsb_tables.tsv (85 MB) and data/raw/tbesh.txt if absent, then writes public/data
+```
+
+It reads the table **as a stream**, a line at a time (`readLines`), keeps the rows of one verse group, builds a chapter the moment the next begins, writes it and lets it go: the table is never held whole (about 4.5 s on the Laptop). The first line must be the header the build was written against
+(`OT_EXPECTED_HEADER`, the names the table had on 2026-10-25): a table that renames a column stops the build with the differing column named, and so does a Strong number, a book or a parsing code it does not know.
+It is deterministic, a file is rewritten only when its bytes differ, and the files of the Old Testament's own dirs that it no longer produces are deleted; the New Testament build (`npm run data:build`) leaves the Old Testament's files alone, and this one the New Testament's.
+The two builds share the table reader (`scripts/data/bereanTable.ts`), the TBES lexicon reader (`scripts/data/tbes.ts`) and the chapter writer (`scripts/data/chapterWriter.ts`: the English alignment, supplied words, headings, paragraphs, fingerprints, the index, the files), so a chapter of either Testament is aligned by one function.
+Tests use `tests/fixtures/data/bsb_tables_slice.tsv` (the header and the verse groups of Genesis 1:1-5, Jonah 1:1-3 and Daniel 2:4) and `tbesh_slice.txt`, made from the real files with
+`awk -F'\t' -v refs='Genesis 1:1|Genesis 1:2|Genesis 1:3|Genesis 1:4|Genesis 1:5|Jonah 1:1|Jonah 1:2|Jonah 1:3|Daniel 2:4' 'BEGIN{n=split(refs,a,"|");for(i=1;i<=n;i++)want[a[i]]=1} FNR==NR{ if($13 in want) g[$4]=1; next} FNR==1||($4 in g && $5!="Greek")' bsb_tables.tsv bsb_tables.tsv`
+and the TBESH lines of the Strong numbers those rows use.
+
+### The keys for a Hebrew word
+
+The word and chunk keys are the New Testament's (the table above), with this meaning for a Hebrew word:
+
+| Key | Meaning for a Hebrew word |
+| --- | --- |
+| `g[].t` | the pointed word as the table's WLC column has it (NFC), with its cantillation marks and a maqqef (`־`) where the word has one; 15 words end in ` פ`, the petuhah mark the column glues to the last word of a section, so a word may hold a space |
+| `g[].tr` | the table's transliteration (`bə·rê·šîṯ`; the dots mark the syllables) |
+| `g[].s` | the Strong's number with no padding, `H7225`, the key into `lex`. `''` for the 6,038 words the table gives no number (almost all a preposition with a pronoun suffix, such as `לָהֶם` 'to them'): no number, no `l`, no `lex` entry, no count; the Hebrew epic recovers them |
+| `g[].l` | the TBESH headword (NFC), `''` when `s` is |
+| `g[].p` | the table's SHORT parsing code (`V-Qal-Perf-3ms`, `Prep-b \| N-fs`; `Prep-b` is the prefix and the code after the bar is the word); `''` for the 291 words the table gives none |
+| `g[].e`, `e[].t`, `e[].g`, `e[].s`, `verses[].h`, `verses[].p` | as for the New Testament |
+| `parse` | the short code -> the table's LONG parsing column (`V-Qal-Perf-3ms` -> `Verb - Qal - Perfect - third person masculine singular`): no code table of ours. `N-msc \| 1cs` is read two ways in the table, 1,457 times as a noun with a suffix and once as a 'Preposition'; `PARSE_FIXES` settles it, and any other code read two ways stops the build |
+| `lex[].g`, `lex[].d` | the TBESH gloss (cleaned of its `range: chosen` form, as the Greek's) and definition (markup, references and daggers off, cut at 300 characters) |
+
+* **Aramaic.** The Aramaic verses of Daniel (2:4 to 7:28), Ezra and Jeremiah 10:11 are rows with `Language` `Aramaic` and are kept as words of their `hbo` chapter; a per-word language mark is LATER.
+* **TBESH keys.** A Strong's number with several senses is `H0834a`, `H0834b` ... in the file; the number resolves to the first (`a`), as the Greek resolves to its first entry. `H0001` with several entries resolves to the first too.
+* **Order.** Hebrew words are in `Heb Sort` order (Hebrew reading order), the English chunks in `BSB Sort` order. As in the New Testament, a chunk is the English of one table row (so Genesis 1:1's `and` and `the earth` are two chunks, one for וְאֵת and one for הָאָרֶץ), a word whose English is `-`, `vvv` or empty has no `e` (the direct object marker `אֵת`), and `. . .` joins the chunk that completes it.
+* **Headings.** `Hdg` carries the section heading (`hdg`), the Song of Solomon's speaker (`ihdg`), a Psalm's book and title lines and the acrostic letters of Psalm 119; the tags come off with a space in their place and a numeric character reference is written out (`א ALEPH`).
+* **Paragraphs.** `p: 1` as for the New Testament (`PARAGRAPH_OPENER`): the poetry lines (`indent1`, `indent2`) and a Psalm's `selah` are not openers.
+* **A Psalm's number mark.** The table puts the title of a Psalm in verse 1 and marks the verse's own first word with its number; that mark (`<span class=|reftext|>`) is not text and is dropped.
+* **Missing verses.** A verse the Hebrew text lacks (Nehemiah 7:68) has a row in the table and no words; it is left out, as the Greek's are.
+
+### `lexicon-hbo.json` and `frequency-hbo.json`
+
+The shapes of `lexicon.json` and `frequency.json`. `lexicon-hbo.json` has every Hebrew lemma of the text once (7,828, 445 KB), `{"g": TBESH gloss, "s": "H7225", "c": "noun"}`, the part of speech the TBESH morph names (`verb`, `noun`, `preposition` ...), from the lemma's first use in canon order; keys NFC, in sort order.
+`frequency-hbo.json` has one entry per Strong's number the text uses (8,539, 711 KB), commonest first, ties by number; `proper` is true when TBESH calls the entry a name (a person, a place or a people: the morph's language `N`). **Nothing is left out** (the Greek leaves out the article, which Hebrew writes as a prefix the table does not number): אֵת (the object marker, 10,937) is first.
+Neither is loaded by the app yet.
+
+### Sizes (2026-10-25)
+
+`public/data` was 33,979,126 bytes and is 110,165,157 with the Old Testament: 75,009,674 bytes of the 929 chapter files (the largest, Psalm 119, 236,644 bytes), `index.json` 27,092 (it was 2 KB), `lexicon-hbo.json` 444,690 and `frequency-hbo.json` 711,270. A walk of every word of every chapter takes about 0.6 s.
+Only `index.json` is precached, as before; an Old Testament chapter is fetched on first read and kept by the worker's `/data/` route like a New Testament one.
+
 ## The spaced schedule (Dexie v10)
 
 Not part of the text data: the phone's own store (`src/data/db.ts`, version 10) has a `reviews` table, one row per
@@ -218,6 +287,6 @@ The store's version 11 adds `grammarLevels`, one row per grammar idea, key `id` 
 ## Offline
 
 Only `data/index.json`, `data/lexicon.json`, `data/frequency.json` and `data/rom/8.json` are in the service worker's precache (`pwa-precache.ts`; the
-globs name those four files, with no wildcard). Every other chapter is fetched when first opened and kept by a
+globs name those four files, with no wildcard; `lexicon-hbo.json`, `frequency-hbo.json` and the Old Testament's chapters are not). Every other chapter is fetched when first opened and kept by a
 CacheFirst route for `/data/` in `src/sw.ts` (cache `lampas-data-v<N>`, `src/dataCache.ts`: raise the version in a deploy that changes the data's shape, and the old cache is dropped on activate), so a chapter once read stays offline.
 A chapter is kept under its fingerprinted address (`?v=`), so an update that leaves a chapter's data alone never fetches it again, and one that changes it fetches only that chapter and drops its old copy (`serveChapter`, `src/dataCache.ts`); the version is raised only for a change of the cache's own layout (3 is the `?v=` keys). The ladder lists (`/data/ladder/*.json`) are still plain CacheFirst.
