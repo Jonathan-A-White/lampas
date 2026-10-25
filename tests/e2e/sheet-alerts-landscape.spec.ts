@@ -262,7 +262,7 @@ for (const size of SIZES) {
       const sheet = page.getByRole('dialog', { name: 'Ask for another approach' });
       await expect(sheet).toBeVisible();
       fake.licensed = false;
-      await sheet.getByRole('button', { name: 'Let the tutor help me fill this in' }).click();
+      await sheet.getByRole('button', { name: 'Let the tutor do it' }).click();
       const helper = sheet.getByRole('region', { name: 'The tutor is helping with this form' });
       await expect(helper.getByRole('alert')).toContainText('No licence');
       await expectFailureShown(helper, ['Retry'], 'The tutor helping with the form');

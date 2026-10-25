@@ -3,15 +3,18 @@
 // more ('A study resource'), with the kind of book preset where the place has one. With a Logos list kept he searches the books Lampas does not open and a pick fills the request with the row's Resource ID,
 // Type, Series and ReferenceSupersets, so the makers add it without research; without one he types the title. One line says what is sent. Send keeps the request on the phone and sends it
 // (src/services/bookRequests.ts): offline it waits and goes by itself; a book already in the catalogue or already asked is refused with its line. Your requests follows it from there. Sent to the mill, so
-// the places that open it are not drawn without a licence.
+// the places that open it are not drawn without a licence. At its top, 'Let the tutor do it' (src/formHelper/): the tutor asks which book, what kind and why in a talk, fills the fields he sees
+// and ends with a Send button; that Send and this sheet's own run the one command, ask-for-book (bookCommand.ts), so the refusal, the waiting and the sent line are the same from either.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useId, useMemo, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { SENT_LINE } from '../AskApproachSheet';
-import { listWaitingBooks, type BookAsk } from '../data/repositories/bookRequests';
+import { listWaitingBooks } from '../data/repositories/bookRequests';
 import { unmatchedRows, type ExportedRow } from '../data/repositories/library';
 import { KINDS, type Kind } from '../resources/catalogue';
-import { askForBook, bookRefusal, bookSending, sendWaitingBooks, startBookRequests, subscribeBookSending } from '../services/bookRequests';
+import { argsOf } from '../formHelper/formHelper';
+import { FormHelper } from '../formHelper/FormHelper';
+import { bookSending, sendWaitingBooks, startBookRequests, subscribeBookSending } from '../services/bookRequests';
 import { MAX_BOOK_CHARS, MAX_FEEDBACK_CHARS } from '../services/feedback';
 import { FAILURE_TITLES } from '../services/tutor';
 import { focusOnMount } from '../ui/focus';
@@ -21,6 +24,8 @@ import { LimitedInput } from '../ui/LimitedField';
 import { matching } from '../ui/listFilter';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose } from '../ui/sheetDrag';
+import { bookCommand } from './bookCommand';
+import { BOOK_FORM } from './bookForm';
 import { infoOf } from './kinds';
 import { usableKind } from './usableRows';
 
@@ -65,6 +70,19 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
   const [refusal, setRefusal] = useState<string | null>(null);
   const [asked, setAsked] = useState<{ id: string; title: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [filled, setFilled] = useState<string | null>(null);
+  // the one command both Sends run; it tells the sheet what it did, and which row of his list is picked
+  const command = useMemo(
+    () =>
+      bookCommand(
+        (result) => {
+          if ('refusal' in result) setRefusal(result.refusal);
+          else setAsked({ id: result.kept.id, title: result.kept.title });
+        },
+        () => picked,
+      ),
+    [picked],
+  );
   useEffect(() => startBookRequests(), []);
 
   const items = useMemo(() => (rows ?? []).map((r) => ({ id: r.resource, name: r.title, also: `${r.series} ${r.resource}` })), [rows]);
@@ -76,25 +94,32 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
   const tooLong = isTooLong(words, MAX_BOOK_CHARS) || isTooLong(why, MAX_FEEDBACK_CHARS);
   const ready = words.trim().length > 0 && !tooLong && !busy;
 
+  const values = { title: words, kind: wanted ? infoOf(wanted).singular : '', why };
+
   async function send(): Promise<void> {
     if (!ready) return;
-    const ask: BookAsk = {
-      title: words,
-      ...(picked ? { resource: picked.resource, type: picked.type, series: picked.series, refs: picked.refs } : {}),
-      ...(wanted ? { kindWanted: wanted } : {}),
-      why,
-    };
     setBusy(true);
+    setRefusal(null);
     try {
-      const refused = await bookRefusal(ask);
-      setRefusal(refused ?? null);
-      if (refused) return;
-      const kept = await askForBook(ask);
-      setAsked({ id: kept.id, title: ask.title.trim() });
+      await command.run(argsOf(BOOK_FORM, values));
     } finally {
       setBusy(false);
     }
   }
+
+  /** The tutor filled a field: the field shows it, ringed. A title that is the one book of his list that matches picks that book, as tapping it would. */
+  function fill(field: string, value: string): void {
+    if (field === 'title') {
+      setTitle(value);
+      setRefusal(null);
+      const found = matching(items, value);
+      setPicked(rows && found.length === 1 ? (byId.get(found[0].id) ?? null) : null);
+    } else if (field === 'kind') setWanted(KINDS.find((k) => infoOf(k).singular === value) ?? '');
+    else if (field === 'why') setWhy(value);
+    else return;
+    setFilled(field);
+  }
+  const ring = (field: string): string => (filled === field ? ' ring-2 ring-accent' : '');
 
   const stillWaiting = asked !== null && (waiting ?? []).some((w) => w.id === asked.id);
   // drawn in the body: a sheet that opens inside another (the idea sheet is dragged by a transform) would be placed by it
@@ -108,6 +133,7 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
             Done
           </button>
         </div>
+        {asked ? null : <FormHelper form={BOOK_FORM} values={values} onFill={fill} command={command} />}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-2">
           {asked ? (
             <div className="space-y-2 pt-2">
@@ -150,7 +176,7 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
               <p className="text-base font-medium">Which book?</p>
               {rows && rows.length > 0 ? (
                 picked ? (
-                  <div data-testid="ask-picked" className="rounded-lg border border-line px-3 py-2">
+                  <div data-testid="ask-picked" className={`rounded-lg border border-line px-3 py-2${ring('title')}`}>
                     <p className="title-wrap text-base font-medium">{picked.title}</p>
                     <p className="text-sm text-muted">{[kindWord(picked), picked.series].filter(Boolean).join(' · ')}</p>
                     <button type="button" onClick={() => setPicked(null)} className="mt-1 min-h-11 text-base font-medium text-accent underline underline-offset-4">
@@ -209,7 +235,7 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
                       setTitle(e.target.value);
                       setRefusal(null);
                     }}
-                    className={`${FIELD} min-h-12`}
+                    className={`${FIELD} min-h-12${ring('title')}`}
                   />
                 </div>
               )}
@@ -221,7 +247,7 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
                   id={ids.kind}
                   value={wanted}
                   onChange={(e) => setWanted(e.target.value as Kind | '')}
-                  className={`${FIELD} min-h-12`}
+                  className={`${FIELD} min-h-12${ring('kind')}`}
                 >
                   <option value="">Any kind</option>
                   {KINDS.map((k) => (
@@ -242,7 +268,7 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
                   aria-describedby={ids.whyCount}
                   aria-invalid={isTooLong(why, MAX_FEEDBACK_CHARS) || undefined}
                   onChange={(e) => setWhy(e.target.value)}
-                  className={`${FIELD} resize-none py-2`}
+                  className={`${FIELD} resize-none py-2${ring('why')}`}
                 />
                 <p className="pt-1 text-sm text-muted">Optional.</p>
                 <LengthNote id={ids.whyCount} text={why} max={MAX_FEEDBACK_CHARS} what="answer" className="pt-1" />

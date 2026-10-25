@@ -141,9 +141,12 @@ const noGrist = (): void => {
   expect(fake.received).toHaveLength(0);
 };
 const oneBook = async (): Promise<Record<string, unknown>> => {
-  await waitFor(() => expect(fake.received).toHaveLength(1));
-  expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'feedback', v: '1' });
-  const input = fake.received[0].input;
+  // the tutor's talk (a bible-talk grist) may have come first, as in the door's scenario: the book is the one feedback grist
+  const grists = () => fake.received.filter((r) => r.grist.kind === 'feedback');
+  await waitFor(() => expect(grists()).toHaveLength(1));
+  expect(fake.received).toHaveLength(grists().length + fake.received.filter((r) => r.grist.kind === 'bible-talk').length);
+  expect(grists()[0].grist).toMatchObject({ app: 'lampas', kind: 'feedback', v: '1' });
+  const input = grists()[0].input;
   expect(validate(input, feedbackSchema)).toEqual([]);
   return input;
 };
@@ -290,6 +293,51 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(await oneBook()).toEqual({ kind: 'book', title, app_version: __APP_VERSION__ });
     });
     And('the sheet says {string}', sheetSays);
+  });
+
+  Scenario("The tutor's Send and the sheet's own Send post the same request fields for the same values", ({ Given, When, Then, And }) => {
+    let byHand: Record<string, unknown> = {};
+    Given('the app is open at the Library behind a fake Postern with no list kept', () => openAt('#/library'));
+    When('he opens Ask for a book', opensTheSheet);
+    And('he types the title {string}, picks the kind {string} and writes the reason {string}', async (_, title: string, kind: string, why: string) => {
+      await user.type(titleBox(), title);
+      await user.selectOptions(inSheet().getByRole('combobox', { name: 'Kind of book' }), kind);
+      await user.type(inSheet().getByRole('textbox', { name: 'Why would it help?' }), why);
+    });
+    And('he taps Send in the sheet', sends);
+    Then('the mill received one feedback grist of kind book, which is kept as the hand\'s request', async () => {
+      byHand = await oneBook();
+      expect(byHand).toMatchObject({ kind: 'book', title: 'Lenski, Romans', kindWanted: 'commentary', why: 'To read beside the Greek.' });
+    });
+    When('the app is opened again behind a fake Postern whose tutor will fill those same three values', async () => {
+      await openAt('#/library');
+      fake.kindReplies = {
+        feedback: { status: 'answered', answer: { status: 'sent' } },
+        'bible-talk': {
+          status: 'answered',
+          answer: {
+            answer: 'That is everything I need.',
+            words: [],
+            form_values: [
+              { field: 'title', value: 'Lenski, Romans' },
+              { field: 'kind', value: 'Commentary' },
+              { field: 'why', value: 'To read beside the Greek.' },
+            ],
+          },
+        },
+      };
+    });
+    And('he opens Ask for a book', opensTheSheet);
+    And('he lets the tutor do it and taps the Send the panel ends with', async () => {
+      await user.click(inSheet().getByRole('button', { name: 'Let the tutor do it' }));
+      const panel = await screen.findByRole('region', { name: 'The tutor is helping with this form' });
+      await user.click(await within(panel).findByRole('button', { name: 'Send' }));
+    });
+    Then("the mill received one feedback grist of kind book whose fields are the hand's request, field by field", async () => {
+      const byTutor = await oneBook();
+      expect(Object.keys(byTutor).sort()).toEqual(Object.keys(byHand).sort());
+      for (const key of Object.keys(byHand)) expect(byTutor[key], key).toEqual(byHand[key]);
+    });
   });
 
   Scenario('Ask the makers about these sends the whole list once, with the usable rows attached', ({ Given, Then, When, And }) => {

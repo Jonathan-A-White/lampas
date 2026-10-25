@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { START_LABEL } from '../../src/formHelper/startLabel';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -12,7 +13,7 @@ const answered = (answer: string, ask?: string, values: { field: string; value: 
   answer: { answer, words: [], ...(values.length ? { form_values: values } : {}), ...(ask ? { form_ask: ask } : {}) },
 });
 
-test('Let the tutor help me fill this in at phone width: the button, a question with a field filling, the finished form', async ({ page }) => {
+test(`${START_LABEL} at phone width: the button, a question with a field filling, the finished form`, async ({ page }) => {
   const fake = makeFakePostern();
   await routePostern(page, fake);
   await openUnlocked(page);
@@ -23,7 +24,7 @@ test('Let the tutor help me fill this in at phone width: the button, a question 
   await open.click();
 
   const sheet = page.getByRole('dialog', { name: 'Ask for another approach' });
-  const start = sheet.getByRole('button', { name: 'Let the tutor help me fill this in' });
+  const start = sheet.getByRole('button', { name: START_LABEL });
   await expect(start).toBeVisible();
   // the button is the first control under the title and clears 48 px
   const startBox = await start.boundingBox();
@@ -80,4 +81,57 @@ test('Let the tutor help me fill this in at phone width: the button, a question 
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
   expect(fake.received.filter((r) => r.grist.kind === 'feedback')).toHaveLength(0);
   await shot(page, 'form-helper-finished');
+});
+
+test('The door on Ask for a book at phone width: the panel, the choice filling the select, and its own Send', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.kindReplies = { feedback: { status: 'answered', answer: { status: 'sent' } } };
+  fake.autoReply = answered('Which book would you like to ask the makers for?', 'title');
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.setViewportSize(PHONE);
+  await page.goto('/#/library');
+  await page.getByRole('button', { name: 'Ask for a book' }).click();
+
+  const sheet = page.getByRole('dialog', { name: 'Ask for a book' });
+  const start = sheet.getByRole('button', { name: START_LABEL });
+  await expect(start).toBeVisible();
+  const startBox = await start.boundingBox();
+  expect(startBox?.height).toBeGreaterThanOrEqual(47.5);
+  await shot(page, 'form-helper-book-button');
+
+  await start.click();
+  const helper = sheet.getByRole('region', { name: 'The tutor is helping with this form' });
+  await expect(helper.getByText('Which book would you like to ask the makers for?')).toBeVisible();
+
+  const title = sheet.getByRole('textbox', { name: 'Book title' });
+  const kind = sheet.getByRole('combobox', { name: 'Kind of book' });
+  fake.autoReply = answered('That is everything I need. Tell me the kind of book or why it would help, or tap Send.', undefined, [{ field: 'title', value: 'Lenski, Romans' }]);
+  await helper.getByLabel('Your answer').fill('Lenski, Romans');
+  await helper.getByRole('button', { name: 'Reply', exact: true }).click();
+  await expect(title).toHaveValue('Lenski, Romans');
+  await expect(helper.getByText('Send: Lenski, Romans?')).toBeVisible();
+
+  fake.autoReply = answered('Anything else you want to add?', undefined, [{ field: 'kind', value: 'Commentary' }]);
+  await helper.getByLabel('Your answer').fill('It is a commentary.');
+  await helper.getByRole('button', { name: 'Reply', exact: true }).click();
+  await expect(kind).toHaveValue('commentary');
+  await expect(helper.getByText('Send: Lenski, Romans, Commentary?')).toBeVisible();
+
+  // every control of the panel clears 48 px and fits the phone; the sheet stays inside it; nothing was sent
+  for (const control of await helper.getByRole('button').all()) {
+    const box = await control.boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(47.5);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(PHONE.width);
+  }
+  const frame = await sheet.boundingBox();
+  expect((frame?.y ?? 0) + (frame?.height ?? 0)).toBeLessThanOrEqual(PHONE.height + 0.5);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
+  expect(fake.received.filter((r) => r.grist.kind === 'feedback')).toHaveLength(0);
+  await shot(page, 'form-helper-book-ready');
+
+  await helper.getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(sheet.getByText('Sent: the factory has it')).toBeVisible();
+  expect(fake.received.filter((r) => r.grist.kind === 'feedback')[0].input).toMatchObject({ kind: 'book', title: 'Lenski, Romans', kindWanted: 'commentary' });
+  await shot(page, 'form-helper-book-sent');
 });

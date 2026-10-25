@@ -77,6 +77,17 @@ Feature: Ask for a book
     Then the mill received one feedback grist of kind book with the title "Mounce, Basics of Biblical Greek" and no Logos details
     And the sheet says "Sent: the factory has it"
 
+  Scenario: The tutor's Send and the sheet's own Send post the same request fields for the same values
+    Given the app is open at the Library behind a fake Postern with no list kept
+    When he opens Ask for a book
+    And he types the title "Lenski, Romans", picks the kind "Commentary" and writes the reason "To read beside the Greek."
+    And he taps Send in the sheet
+    Then the mill received one feedback grist of kind book, which is kept as the hand's request
+    When the app is opened again behind a fake Postern whose tutor will fill those same three values
+    And he opens Ask for a book
+    And he lets the tutor do it and taps the Send the panel ends with
+    Then the mill received one feedback grist of kind book whose fields are the hand's request, field by field
+
   Scenario: Ask the makers about these sends the whole list once, with the usable rows attached
     Given his Logos list is read on the import screen and holds books Lampas cannot use
     Then nothing has been sent

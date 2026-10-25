@@ -1,17 +1,20 @@
-// src/formHelper/FormHelper.tsx — 'Let the tutor help me fill this in' (mw-5r3p30.117, docs/ask-tutor.md): one button at the top of a form and,
-// once tapped, a panel where the tutor asks ONE question at a time in plain words, asks for a photo at the moment it is needed (the form's own
-// picker) and, after each answer, fills the matching field of the form, which he sees filled. The tutor never sends: Send is the form's, and his.
-// A form adds it with one element:
-//   <FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => open the picker} />
+// src/formHelper/FormHelper.tsx — 'Let the tutor do it' (mw-5r3p30.117, docs/ask-tutor.md): one button at the top of a form and, once tapped, a panel where the
+// tutor asks ONE question at a time in plain words, asks for a photo at the moment it is needed (the form's own picker) and, after each answer, fills the matching
+// field of the form, which he sees filled (a choice field too: the tutor answers with one of its options and onFill sets the form's own select). The tutor never
+// sends: Send is his. A form with a `command` (the Command its own Send runs, voice-kit's formCommand) ends the panel with that command's offer line and a Send button
+// that runs it with the form's values; without one the panel says to tap the form's Send. A form adds it with one element:
+//   <FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => open the picker} command={COMMAND} />
 // The tutor is the bible-talk grind (src/services/talk.ts) in a talk from a screen named for the form, with `form` in the request.
 import { useEffect, useId, useRef, useState } from 'react';
+import { checkArgs, type Command } from 'voice-kit/talks';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askTalk, MAX_HISTORY_TURNS, type TalkHistoryEntry } from '../services/talk';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from '../services/tutor';
 import { currentSettings } from '../settings/registry';
-import { applyFormValues, buildFormRequest, FORM_START, oneQuestion, requiredFilled, type FormSpec } from './formHelper';
+import { START_LABEL } from './startLabel';
+import { applyFormValues, argsOf, buildFormRequest, FORM_START, oneQuestion, requiredFilled, type FormSpec } from './formHelper';
 
-export const START_LABEL = 'Let the tutor help me fill this in';
+export { START_LABEL };
 /** What he says for the buttons that answer without typing. */
 export const NO_PHOTO = 'I have no photo.';
 export const ADDED_PHOTO = 'I added a photo.';
@@ -29,21 +32,27 @@ export interface FormHelperProps {
   onPicker?: (field: string) => void;
   /** called when the tutor has nothing more to ask and every required field holds something: the form may bring its top into view to be read */
   onReady?: () => void;
+  /** the command the form's own Send runs: when the tutor has nothing more to ask and every required field holds something, the panel shows its offer line and a Send button that runs it */
+  command?: Command;
 }
 
-export function FormHelper({ form, values, onFill, onPicker, onReady }: FormHelperProps) {
+export function FormHelper({ form, values, onFill, onPicker, onReady, command }: FormHelperProps) {
   const [open, setOpen] = useState(false);
   const [say, setSay] = useState('');
   const [ask, setAsk] = useState<string | undefined>(undefined);
   const [phase, setPhase] = useState<Phase>({ name: 'idle' });
   const [typed, setTyped] = useState('');
+  const [running, setRunning] = useState(false);
+  /** what the last Send said, and the values it sent (the line goes when he changes them) */
+  const [done, setDone] = useState<{ said: string; of: string } | null>(null);
+  const [sendProblem, setSendProblem] = useState<string | null>(null);
   const answerId = useId();
   const turns = useRef<TalkHistoryEntry[]>([]);
-  const latest = useRef({ form, values, onFill, onReady });
+  const latest = useRef({ form, values, onFill, onReady, command });
   const live = useRef<AbortController>(new AbortController());
   const lastMessage = useRef('');
   useEffect(() => {
-    latest.current = { form, values, onFill, onReady };
+    latest.current = { form, values, onFill, onReady, command };
   });
   useEffect(() => {
     if (live.current.signal.aborted) live.current = new AbortController();
@@ -56,7 +65,7 @@ export function FormHelper({ form, values, onFill, onPicker, onReady }: FormHelp
     const signal = live.current.signal;
     setPhase({ name: 'sending' });
     try {
-      const request = buildFormRequest(latest.current.form, latest.current.values, message, turns.current.slice(-MAX_HISTORY_TURNS), await currentSettings());
+      const request = buildFormRequest(latest.current.form, latest.current.values, message, turns.current.slice(-MAX_HISTORY_TURNS), await currentSettings(), latest.current.command?.name);
       const answer = await askTalk(request, { key: getDeviceKeyBytes(), signal });
       if (signal.aborted) return;
       const said = oneQuestion(answer.answer);
@@ -88,8 +97,28 @@ export function FormHelper({ form, values, onFill, onPicker, onReady }: FormHelp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pictureHeld]);
 
+  /** His tap on the panel's Send: the form's own command, with the values the form holds now. What it did (sent, waiting, refused) is the sheet's to show; the panel says it too. */
+  async function sendForm(): Promise<void> {
+    const { form: spec, values: held, command: run } = latest.current;
+    if (!run || running) return;
+    const signal = live.current.signal;
+    setRunning(true);
+    setDone(null);
+    setSendProblem(null);
+    try {
+      const result = await run.run(argsOf(spec, held));
+      if (!signal.aborted) setDone({ said: result.said, of: JSON.stringify(argsOf(spec, held)) });
+    } catch (err) {
+      if (!signal.aborted) setSendProblem(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      if (!signal.aborted) setRunning(false);
+    }
+  }
+
   function start(): void {
     turns.current = [];
+    setDone(null);
+    setSendProblem(null);
     setSay('');
     setAsk(undefined);
     setTyped('');
@@ -100,6 +129,7 @@ export function FormHelper({ form, values, onFill, onPicker, onReady }: FormHelp
   function stop(): void {
     live.current.abort();
     live.current = new AbortController();
+    setRunning(false);
     setOpen(false);
     setPhase({ name: 'idle' });
   }
@@ -123,6 +153,8 @@ export function FormHelper({ form, values, onFill, onPicker, onReady }: FormHelp
 
   const sending = phase.name === 'sending';
   const ready = requiredFilled(form, values) && !ask;
+  const args = argsOf(form, values);
+  const sendable = command !== undefined && ready && !sending && (command.args ? checkArgs(command.args, args) === undefined : true);
   return (
     <section role="region" aria-label="The tutor is helping with this form" className="max-h-[45dvh] shrink-0 space-y-3 overflow-y-auto overscroll-contain border-t border-line bg-canvas px-4 py-3">
       {say ? (
@@ -144,9 +176,27 @@ export function FormHelper({ form, values, onFill, onPicker, onReady }: FormHelp
           </button>
         </div>
       ) : null}
-      {ready && !sending ? (
+      {ready && !sending && !command ? (
         <p role="status" className="text-base font-medium text-good">
           {READY_LINE}
+        </p>
+      ) : null}
+      {sendable ? (
+        <div className="space-y-2">
+          <p className="break-words text-base font-medium text-good">{command.offer?.(args) ?? command.tell}</p>
+          <button type="button" disabled={running} onClick={() => void sendForm()} className="min-h-12 w-full rounded-xl bg-accent px-4 text-lg font-medium text-accent-fg disabled:opacity-40">
+            Send
+          </button>
+        </div>
+      ) : null}
+      {done && done.of === JSON.stringify(args) ? (
+        <p role="status" className="break-words text-base font-semibold">
+          {done.said}
+        </p>
+      ) : null}
+      {sendProblem ? (
+        <p role="alert" className="break-words text-base font-semibold text-bad">
+          {sendProblem}
         </p>
       ) : null}
       {pictureField && !sending ? (
@@ -159,7 +209,7 @@ export function FormHelper({ form, values, onFill, onPicker, onReady }: FormHelp
           </button>
         </div>
       ) : null}
-      {!ready || sending ? (
+      {!ready || sending || command ? (
         <div className="space-y-2">
           <label htmlFor={answerId} className="block text-base font-medium">
             Your answer

@@ -10,6 +10,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { imageSeam } from '../../src/images/shrink';
 import { tutorTimings } from '../../src/services/tutor';
+import { AskForBook } from '../../src/library/AskForBook';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 
@@ -28,7 +29,7 @@ afterAll(() => {
   db.close();
 });
 
-const START = 'Let the tutor help me fill this in';
+const START = 'Let the tutor do it';
 const sheet = () => screen.getByRole('dialog', { name: 'Ask for another approach' });
 const helper = () => screen.getByRole('region', { name: 'The tutor is helping with this form' });
 const field = (label: string) => within(sheet()).getByRole('textbox', { name: label });
@@ -43,6 +44,8 @@ const Q_CREDIT = 'Who made this approach, so we can credit them?';
 const Q_PICTURE = 'Do you have a screenshot or a photo of it?';
 const Q_LINK = 'Is there a link where it can be found?';
 const APPROACH = 'Teach the cases with colours, one case at a time.';
+const Q_BOOK = 'Which book would you like to ask the makers for?';
+const READY_BOOK = 'That is everything I need. Tell me the kind of book or why it would help, or tap Send.';
 
 async function openSheet(): Promise<void> {
   cleanup();
@@ -68,6 +71,32 @@ async function openSheet(): Promise<void> {
   await screen.findByRole('dialog', { name: 'Ask for another approach' });
 }
 
+/** Ask for a book, drawn on its own (the door and its Send are the same wherever the sheet is opened from). */
+async function openBookSheet(): Promise<void> {
+  cleanup();
+  clearBus();
+  vi.unstubAllGlobals();
+  window.localStorage.clear();
+  window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
+  window.history.replaceState(null, '', '/#/library');
+  tutorTimings.pollMs = 20;
+  fake = makeFakePostern();
+  fake.autoReply = reply(Q_BOOK, 'title');
+  fake.kindReplies = { feedback: { status: 'answered', answer: { status: 'sent' } } };
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
+    String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : Promise.resolve(new Response('{}', { status: 404 })),
+  );
+  await db.open();
+  await Promise.all([db.settings.clear(), db.requests.clear(), db.exportRows.clear()]);
+  render(<AskForBook onClose={() => undefined} />);
+  await screen.findByRole('dialog', { name: 'Ask for a book' });
+}
+async function panelOffers(_: unknown, offer: string): Promise<void> {
+  await waitFor(() => expect(within(helper()).getByText(offer)).toBeInTheDocument());
+  expect(within(helper()).getByRole('button', { name: 'Send' })).toBeEnabled();
+}
+const bookSheet = () => screen.getByRole('dialog', { name: 'Ask for a book' });
+
 const startHelp = () => user.click(within(sheet()).getByRole('button', { name: START }));
 const tutorAsks = async (question: string) => {
   await waitFor(() => expect(within(helper()).getByText(question)).toBeInTheDocument());
@@ -82,6 +111,9 @@ const feature = await loadFeature('features/form-helper.feature');
 const NEXT: Record<string, ReturnType<typeof reply>> = {
   [APPROACH]: reply(Q_CREDIT, 'credit', [{ field: 'approach', value: APPROACH }]),
   'Anna Example': reply(Q_PICTURE, 'pictures', [{ field: 'credit', value: 'Anna Example' }]),
+  'Lenski, Romans': reply(READY_BOOK, undefined, [{ field: 'title', value: 'Lenski, Romans' }]),
+  'It is a grammar.': reply(READY_BOOK, undefined, [{ field: 'kind', value: 'Grammar' }]),
+  'It explains the cases.': reply('Anything else you want to add?', undefined, [{ field: 'why', value: 'It explains the cases.' }]),
   'example.org/greek': reply('That is everything I need: every required field is filled in. Read it, change anything you like, then tap Send yourself.', undefined, [
     { field: 'link', value: 'example.org/greek' },
   ]),
@@ -102,11 +134,11 @@ const picker = () => within(sheet()).getByLabelText('Add a screenshot or photo')
 describeFeature(feature, ({ Scenario }) => {
   Scenario('The tutor takes him through the Ask for another approach form, one question at a time', ({ Given, Then, When, And }) => {
     Given('the Ask for another approach sheet is open behind a fake Postern', openSheet);
-    Then('the sheet offers "Let the tutor help me fill this in" at its top', () => {
+    Then('the sheet offers "Let the tutor do it" at its top', () => {
       const button = within(sheet()).getByRole('button', { name: START });
       expect(button.compareDocumentPosition(field('What approach, and how does it teach?')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
-    When('he taps "Let the tutor help me fill this in"', startHelp);
+    When('he taps "Let the tutor do it"', startHelp);
     Then('the tutor asks one question: {string}', asks);
     And('the mill received one bible-talk grist whose form lists the four fields with their labels, hints and required flags', () => {
       expect(talks()).toHaveLength(1);
@@ -161,14 +193,14 @@ describeFeature(feature, ({ Scenario }) => {
     And('the tutor will answer with a value for a field the form does not have', () => {
       fake.autoReply = reply(Q_APPROACH, 'approach', [{ field: 'send', value: 'now' }]);
     });
-    When('he taps "Let the tutor help me fill this in"', startHelp);
+    When('he taps "Let the tutor do it"', startHelp);
     Then('the form is unchanged', async () => {
       await tutorAsks(Q_APPROACH);
       for (const label of ['What approach, and how does it teach?', 'Who to credit', 'Link']) expect(field(label)).toHaveValue('');
       expect(within(sheet()).getByRole('button', { name: 'Send' })).toBeDisabled();
     });
     When('he stops the help', () => user.click(within(helper()).getByRole('button', { name: 'Stop helping' })));
-    Then('the button "Let the tutor help me fill this in" is offered again', () => {
+    Then('the button "Let the tutor do it" is offered again', () => {
       expect(within(sheet()).getByRole('button', { name: START })).toBeInTheDocument();
     });
   });
@@ -178,10 +210,61 @@ describeFeature(feature, ({ Scenario }) => {
     And('the tutor will ask a question and then add more sentences', () => {
       fake.autoReply = reply(`${Q_CREDIT} If it's the Greek Colour Method, I can note that down for you.`, 'credit');
     });
-    When('he taps "Let the tutor help me fill this in"', startHelp);
+    When('he taps "Let the tutor do it"', startHelp);
     Then('the tutor asks one question: {string}', asks);
     And("the tutor's extra sentences are not shown", () => {
       expect(within(helper()).queryByText(/Greek Colour Method/)).not.toBeInTheDocument();
+    });
+  });
+
+  Scenario("Ask for a book: the tutor asks which book, fills the fields and ends with a Send that runs the form's own command", ({ Given, Then, When, And }) => {
+    Given('the Ask for a book sheet is open behind a fake Postern', openBookSheet);
+    Then('the book sheet offers "Let the tutor do it" at its top', () => {
+      const button = within(bookSheet()).getByRole('button', { name: START });
+      expect(button.compareDocumentPosition(within(bookSheet()).getByRole('textbox', { name: 'Book title' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+    When('he taps "Let the tutor do it" on the book sheet', () => user.click(within(bookSheet()).getByRole('button', { name: START })));
+    Then('the tutor asks one question: {string}', asks);
+    And('the mill received one bible-talk grist whose form is Ask for a book with its three fields, the kind a choice, and the command ask-for-book', () => {
+      expect(talks()).toHaveLength(1);
+      const form = talks()[0].input.form as { name: string; command?: string; fields: { name: string; label: string; required: boolean; kind: string; value: string; options?: string[] }[] };
+      expect(form.name).toBe('Ask for a book');
+      expect(form.command).toBe('ask-for-book');
+      expect(form.fields.map((f) => [f.name, f.label, f.required, f.kind, f.value])).toEqual([
+        ['title', 'Which book?', true, 'text', ''],
+        ['kind', 'Kind of book', false, 'choice', ''],
+        ['why', 'Why would it help?', false, 'text', ''],
+      ]);
+      expect(form.fields[1].options).toContain('Grammar');
+    });
+    When('he answers {string}', (_, text: string) => answers(text));
+    Then('the book title holds {string} and is ringed', async (_, title: string) => {
+      const box = within(bookSheet()).getByRole('textbox', { name: 'Book title' });
+      await waitFor(() => expect(box).toHaveValue(title));
+      expect(box.className).toContain('ring-2');
+    });
+    And('the panel shows {string} with a Send button', panelOffers);
+    When('he then answers {string}', (_, text: string) => answers(text));
+    Then('Kind of book is {string}', async (_, kind: string) => {
+      const select = within(bookSheet()).getByRole('combobox', { name: 'Kind of book' });
+      await waitFor(() => expect((select as HTMLSelectElement).selectedOptions[0].textContent).toBe(kind));
+      expect(select.className).toContain('ring-2');
+    });
+    When('he next answers {string}', (_, text: string) => answers(text));
+    Then('Why would it help? holds {string}', async (_, why: string) => {
+      await waitFor(() => expect(within(bookSheet()).getByRole('textbox', { name: 'Why would it help?' })).toHaveValue(why));
+    });
+    And('the panel now shows {string} with a Send button', panelOffers);
+    And('the book was not sent', () => {
+      expect(fake.received.filter((r) => r.grist.kind === 'feedback')).toHaveLength(0);
+    });
+    When('he taps Send in the panel', () => user.click(within(helper()).getByRole('button', { name: 'Send' })));
+    Then('the mill received one feedback grist of kind book with the title {string}, the kind grammar and the reason {string}', async (_, title: string, why: string) => {
+      await waitFor(() => expect(fake.received.filter((r) => r.grist.kind === 'feedback')).toHaveLength(1));
+      expect(fake.received.filter((r) => r.grist.kind === 'feedback')[0].input).toEqual({ kind: 'book', title, kindWanted: 'grammar', why, app_version: __APP_VERSION__ });
+    });
+    And('the book sheet says {string}', async (_, line: string) => {
+      expect(await within(bookSheet()).findByText(line)).toBeInTheDocument();
     });
   });
 });
