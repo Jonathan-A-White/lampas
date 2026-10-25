@@ -1,15 +1,17 @@
 // tests/unit/match-export.test.ts — src/library/matchExport.ts and reasons.ts (mw-rfjjzd.6, docs/design/library-at-scale.md 5.2 and 5.4): a row of his Logos list matches by Resource ID,
 // by a series rule or by a type rule, its covers are read from ReferenceSupersets, and every row left over carries the key of a reason the table can say in words.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { isListed, matchExport } from '../../src/library/matchExport';
-import { readExport, type ExportRow } from '../../src/library/parseExport';
+import { coversOldTestament, readExport, type ExportRow } from '../../src/library/parseExport';
 import { lineText, reasonLines, reasonOf, REASONS } from '../../src/library/reasons';
 import { CATALOGUE } from '../../src/resources/catalogue';
 
 const FIXTURE = readExport(readFileSync('tests/fixtures/logos-export-head.csv', 'utf8'));
 
 const row = (over: Partial<ExportRow>): ExportRow => ({ resource: 'LLS:X', type: 'text.monograph', abbreviated: '', title: 'A book', series: '', languages: 'en', supersets: '', ...over });
+/** His whole Logos export: it is his library, so it is not in the repo; the test that reads it is skipped where it is not (set LAMPAS_LOGOS_EXPORT to point at it). */
+const VAULT_EXPORT = process.env.LAMPAS_LOGOS_EXPORT ?? '/home/jwhite/millwright-vault/plans/lampas-logos-library-2026-10-08.csv';
 const BDAG = CATALOGUE.find((e) => e.short === 'BDAG')!;
 
 describe('matchExport on the head of his export', () => {
@@ -59,8 +61,14 @@ describe('matchExport by id, by series and by type', () => {
     expect(unmatched[0].reason).toBe('old-testament');
   });
 
-  it('leaves a commentary of a series no rule names with the reason about the Greek text', () => {
-    const { unmatched } = matchExport([row({ resource: 'LLS:OTHER-SERIES', type: 'text.monograph.commentary.bible', series: 'A Series Nobody Asked For', supersets: 'bible.61.1.1-87.22.21' })]);
+  it('takes by type a commentary on the New Testament alone, whatever its series (mw-vb8krt)', () => {
+    const { matched, unmatched } = matchExport([row({ resource: 'LLS:OTHER-SERIES', type: 'text.monograph.commentary.bible', series: 'A Series Nobody Asked For', supersets: 'bible.66.1.1-66.16.27' })]);
+    expect(unmatched).toEqual([]);
+    expect(matched.map((m) => [m.row.resource, m.by, m.kind, m.covers])).toEqual([['LLS:OTHER-SERIES', 'type', 'commentary', ['rom']]]);
+  });
+
+  it('leaves a commentary on the whole Bible with the reason about the Old Testament, until its reader lands (mw-vb8krt)', () => {
+    const { unmatched } = matchExport([row({ resource: 'LLS:WHOLE-BIBLE', type: 'text.monograph.commentary.bible', series: 'A Series Nobody Asked For', supersets: 'bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21' })]);
     expect(unmatched[0].reason).toBe('new-testament-commentaries');
   });
 
@@ -112,5 +120,21 @@ describe('the reasons', () => {
     const keys = ['tools', 'data', 'data', 'books', 'books', 'books'];
     expect(reasonLines(keys).map((l) => [l.key, l.count])).toEqual([['books', 3], ['data', 2], ['tools', 1]]);
     expect(reasonLines([...REASONS.map((r) => r.key), 'unknown', 'made-up']).length).toBeLessThanOrEqual(12);
+  });
+});
+
+describe.skipIf(!existsSync(VAULT_EXPORT))('matchExport on his whole export (mw-vb8krt)', () => {
+  const { matched, unmatched } = matchExport(readExport(readFileSync(VAULT_EXPORT, 'utf8')));
+
+  it('opens every book of the catalogue and lists them all: nothing waits for an update', () => {
+    expect(matched).toHaveLength(CATALOGUE.length);
+    expect(matched.every(isListed)).toBe(true);
+  });
+
+  it('leaves 4,231 of the 4,795 books, and of the commentaries only the 23 that reach beyond the New Testament', () => {
+    expect(unmatched).toHaveLength(4795 - CATALOGUE.length);
+    const commentaries = unmatched.filter((u) => u.reason === 'new-testament-commentaries');
+    expect(commentaries).toHaveLength(23);
+    for (const u of commentaries) expect(coversOldTestament(u.row.supersets), u.row.title).toBe(true);
   });
 });

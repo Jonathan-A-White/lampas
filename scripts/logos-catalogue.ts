@@ -44,11 +44,11 @@ export interface IdRule {
   dayOfYear?: boolean;
 }
 
-/** Every row of the export of this Logos type joins (`needs: 'nt'`: only if it covers some book of the New Testament; `languages`: only if its Languages cell is this). */
+/** Every row of the export of this Logos type joins (`needs: 'nt'`: only if it covers some book of the New Testament; `'nt-only'`: only if it covers some and none of the Old Testament; `languages`: only if its Languages cell is this). */
 export interface TypeRule {
   type: string;
   kind: Kind;
-  needs?: 'nt';
+  needs?: 'nt' | 'nt-only';
   languages?: string;
   lang?: ResourceLang;
   value?: string;
@@ -152,7 +152,7 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
     byKind[kind].push({
       resource: row.resource, kind, title: row.title, short: row.abbreviated || row.title, series: row.series || undefined,
       lang: rule.lang ?? DEFAULT_LANG[kind], opens: DEFAULT_OPENS[kind], value: valueOf({ value: rule.value, kind }, what),
-      covers: covers.length > 0 && covers.length < BOOKS.length ? covers : undefined, starts: rule.starts ?? 'on', via,
+      covers: covers.length > 0 && (covers.length < BOOKS.length || kind === 'commentary') ? covers : undefined, starts: rule.starts ?? 'on', via,
       dayOfYear: kind === 'devotional' ? row.supersets.split('\t').some((t) => t.startsWith('dayofyear')) : undefined,
     });
     taken.add(row.resource);

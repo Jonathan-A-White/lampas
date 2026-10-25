@@ -14,6 +14,7 @@ import { listSolidHeadwords } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import type { LibraryRow } from '../../src/data/db';
 import type { CatalogueEntry, Kind } from '../../src/resources/catalogue';
+import { CATALOGUE } from '../../src/resources/catalogue';
 import { worksForTutor, type TutorWork } from '../../src/resources/tutorLinks';
 import { MAX_REQUEST_BYTES, WORKS_BYTES } from '../../src/services/requestBudget';
 import { buildTalkRequest, fitHistory, type TalkRequest } from '../../src/services/talk';
@@ -141,6 +142,20 @@ describe('worksForTutor: the digest of his shelf chosen by the place', () => {
     expect(works.at(-1)).toHaveProperty('more');
     expect(moreOf(works)).toEqual({ commentary: 11, grammar: 6, 'greek-text': 2, interlinear: 44 });
     expect(bytes(works), `the digest weighs ${bytes(works)}`).toBeLessThanOrEqual(WORKS_BYTES);
+  });
+
+  it('with every book of the real catalogue On, hundreds of commentaries on Romans, still lists at most 8 commentaries and fits the budget (mw-vb8krt)', () => {
+    const shelf = CATALOGUE.map((e, i): LibraryRow => ({ id: e.resource, kind: e.kind, state: 'on', since: 1000 + i }));
+    const onRomans = CATALOGUE.filter((e) => e.kind === 'commentary' && e.covers?.includes('rom') && !e.work);
+    expect(onRomans.length).toBeGreaterThan(50);
+    for (const question of [FORM, 'What is Paul arguing in this chapter?']) {
+      const works = worksForTutor(shelf, ROMANS_8, question);
+      const commentaries = lines(works).filter((w) => w.k === 'c');
+      expect(commentaries.length).toBeLessThanOrEqual(8);
+      expect(commentaries.length).toBeGreaterThan(0);
+      expect(moreOf(works)?.commentary, 'the rest wait in the closing more line').toBeGreaterThan(300);
+      expect(bytes(works), `the digest weighs ${bytes(works)}`).toBeLessThanOrEqual(WORKS_BYTES);
+    }
   });
 
   it('lists no lexicon, no devotional and no book the place does not fit, and says how many it leaves out', () => {

@@ -93,3 +93,11 @@ export function coversOfSupersets(supersets: string): string[] {
   }
   return BOOKS.filter((b) => covered.has(b.code)).map((b) => b.code);
 }
+
+/** Whether a ReferenceSupersets cell reaches into anything before the New Testament (the Old Testament, or books between): a commentary on the whole Bible does, and one on the New Testament alone does not. */
+export function coversOldTestament(supersets: string): boolean {
+  return supersets.split('\t').some((token) => {
+    const m = /^bible(?:\+[a-z0-9]+)?\.(\d+)/.exec(token.trim());
+    return m !== null && Number(m[1]) >= 1 && Number(m[1]) < FIRST_NT_BOOK;
+  });
+}

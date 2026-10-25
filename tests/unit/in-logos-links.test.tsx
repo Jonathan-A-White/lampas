@@ -84,10 +84,14 @@ describe('the rows of the chooser', () => {
   it('name no book that does not cover the place, and the Old Testament no Greek text or commentary', () => {
     const states = new Map(CATALOGUE.map((e) => [e.resource, 'on' as const]));
     const john = inLogosRows(CATALOGUE, states, { book: 'jhn', chapter: 3, verse: 16 }).filter((r) => r.entry.kind === 'commentary');
-    expect(john.map((r) => r.entry.resource).sort()).toEqual(['LLS:CALCOM64JN', 'LLS:LENSKI04']);
-    // Romans 8 (mw-efwust): the series volumes of his export that cover Romans join Calvin's: Lenski's Romans (none of BECNT, Pillar or NIGTC in his library is on Romans)
+    expect(john.map((r) => r.entry.resource)).toEqual(expect.arrayContaining(['LLS:CALCOM64JN', 'LLS:LENSKI04']));
+    for (const r of john) expect(r.entry.covers, r.entry.resource).toContain('jhn');
+    // Romans 8 (mw-vb8krt): every commentary of his export that is on the New Testament alone and covers Romans joins Calvin's and Lenski's (Guzik, Barnes, the Bible Speaks Today ...)
     const romans = inLogosRows(CATALOGUE, states, { book: 'rom', chapter: 8, verse: 31 }).filter((r) => r.entry.kind === 'commentary');
-    expect(romans.map((r) => r.entry.resource).sort()).toEqual(['LLS:CALCOM66RO', 'LLS:LENSKI06']);
+    expect(romans.length).toBeGreaterThan(50);
+    expect(romans.map((r) => r.entry.resource)).toEqual(expect.arrayContaining(['LLS:CALCOM66RO', 'LLS:LENSKI06']));
+    for (const series of ['David Guzik’s Commentaries on the Bible', 'Barnes’ Notes on the Old and New Testaments', 'The Bible Speaks Today']) expect(romans.some((r) => r.entry.series === series), series).toBe(true);
+    for (const r of romans) expect(r.entry.covers, r.entry.resource).toContain('rom');
     const psalm = inLogosRows(CATALOGUE, states, { book: 'psa', chapter: 23, verse: 1 });
     expect(new Set(psalm.map((r) => r.entry.kind))).toEqual(new Set(['bible']));
   });
