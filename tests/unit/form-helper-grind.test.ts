@@ -70,6 +70,10 @@ describe('the choice field and the Send button (mw-o7cts8.2)', () => {
     expect(s).toContain('never send');
   });
 
+  it('says to ask nothing, not even about an optional field, once every required field holds something (mw-5r3p30.765)', () => {
+    expect(section()).toContain('say so in one sentence and ask nothing more, not even about an optional field');
+  });
+
   const input = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
   for (const name of ['form-book-first-question', 'form-book-kind']) {
     it(`${name}: the request fits the input schema and names the ask-for-book command and the kind's options`, () => {
