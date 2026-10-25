@@ -172,7 +172,7 @@ describe('the control on a row', () => {
     expect(await memorized()).toEqual([]);
     // the tutor asking for Greek at this setting gets English
     const done = await commands.memorizeVerse({ ref: 'Rom.8.28', langs: ['el', 'weave'] });
-    expect(done.said).toBe('Memorizing in English');
+    expect(done.said).toBe('Memorizing Romans 8:28 in English');
     expect(await memorized()).toEqual(['en:Rom.8.28']);
   });
 
