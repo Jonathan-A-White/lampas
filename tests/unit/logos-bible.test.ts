@@ -13,7 +13,7 @@ describe('the Old Testament books', () => {
     expect(OT_BOOKS[38].name).toBe('Malachi');
     expect(OT_BOOKS.map((b) => b.name).slice(8, 12)).toEqual(['1 Samuel', '2 Samuel', '1 Kings', '2 Kings']);
     expect(new Set(OT_BOOKS.map((b) => b.code)).size).toBe(39);
-    const nt = (await import('../../src/data/books')).BOOKS.map((b) => b.code);
+    const nt = (await import('../../src/data/books')).NT_BOOKS.map((b) => b.code);
     expect(OT_BOOKS.filter((b) => nt.includes(b.code))).toEqual([]);
   });
 
