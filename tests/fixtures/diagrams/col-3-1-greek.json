@@ -1,0 +1,242 @@
+{
+  "reference": "Col.3.1",
+  "mode": "greek",
+  "words": [
+    {
+      "text": "Εἰ",
+      "word": 0
+    },
+    {
+      "text": "οὖν",
+      "word": 1
+    },
+    {
+      "text": "συνηγέρθητε",
+      "word": 2
+    },
+    {
+      "text": "τῷ",
+      "word": 3
+    },
+    {
+      "text": "χριστῷ",
+      "word": 4
+    },
+    {
+      "text": "τὰ",
+      "word": 5
+    },
+    {
+      "text": "ἄνω",
+      "word": 6
+    },
+    {
+      "text": "ζητεῖτε",
+      "word": 7
+    },
+    {
+      "text": "οὗ",
+      "word": 8
+    },
+    {
+      "text": "ὁ",
+      "word": 9
+    },
+    {
+      "text": "χριστός",
+      "word": 10
+    },
+    {
+      "text": "ἐστιν",
+      "word": 11
+    },
+    {
+      "text": "ἐν",
+      "word": 12
+    },
+    {
+      "text": "δεξιᾷ",
+      "word": 13
+    },
+    {
+      "text": "τοῦ",
+      "word": 14
+    },
+    {
+      "text": "θεοῦ",
+      "word": 15
+    },
+    {
+      "text": "καθήμενος",
+      "word": 16
+    }
+  ],
+  "diagram": {
+    "clauses": [
+      {
+        "clause": {
+          "subject": {
+            "words": [
+              {
+                "implied": "ὑμεῖς"
+              }
+            ],
+            "modifiers": []
+          },
+          "verb": {
+            "words": [
+              {
+                "i": 7
+              }
+            ],
+            "modifiers": [
+              {
+                "kind": "word",
+                "word": {
+                  "i": 1
+                },
+                "modifiers": []
+              },
+              {
+                "kind": "clause",
+                "connector": {
+                  "i": 0
+                },
+                "clause": {
+                  "subject": {
+                    "words": [
+                      {
+                        "implied": "ὑμεῖς"
+                      }
+                    ],
+                    "modifiers": []
+                  },
+                  "verb": {
+                    "words": [
+                      {
+                        "i": 2
+                      }
+                    ],
+                    "modifiers": []
+                  },
+                  "complement": {
+                    "kind": "indirect-object",
+                    "slot": {
+                      "words": [
+                        {
+                          "i": 4
+                        }
+                      ],
+                      "modifiers": [
+                        {
+                          "kind": "word",
+                          "word": {
+                            "i": 3
+                          },
+                          "modifiers": []
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "complement": {
+            "kind": "direct-object",
+            "slot": {
+              "words": [
+                {
+                  "i": 6
+                }
+              ],
+              "modifiers": [
+                {
+                  "kind": "word",
+                  "word": {
+                    "i": 5
+                  },
+                  "modifiers": []
+                },
+                {
+                  "kind": "clause",
+                  "connector": {
+                    "i": 8
+                  },
+                  "clause": {
+                    "subject": {
+                      "words": [
+                        {
+                          "i": 10
+                        }
+                      ],
+                      "modifiers": [
+                        {
+                          "kind": "word",
+                          "word": {
+                            "i": 9
+                          },
+                          "modifiers": []
+                        }
+                      ]
+                    },
+                    "verb": {
+                      "words": [
+                        {
+                          "i": 11
+                        }
+                      ],
+                      "modifiers": [
+                        {
+                          "kind": "prepositional",
+                          "preposition": {
+                            "i": 12
+                          },
+                          "object": {
+                            "words": [
+                              {
+                                "i": 13
+                              }
+                            ],
+                            "modifiers": [
+                              {
+                                "kind": "word",
+                                "word": {
+                                  "i": 15
+                                },
+                                "modifiers": [
+                                  {
+                                    "kind": "word",
+                                    "word": {
+                                      "i": 14
+                                    },
+                                    "modifiers": []
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "complement": {
+                      "kind": "predicate-adjective",
+                      "slot": {
+                        "words": [
+                          {
+                            "i": 16
+                          }
+                        ],
+                        "modifiers": []
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}
