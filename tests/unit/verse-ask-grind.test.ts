@@ -140,3 +140,13 @@ describe('his requests (mw-vy3ghg.6)', () => {
     expect(text).toContain('For any other setting do not put it in `settings_changes`');
   });
 });
+
+describe('the bridge says how many ideas it names (mw-5r3p30.764)', () => {
+  const text = instructionsOf('verse-ask').replace(/\s+/g, ' ');
+
+  it('asks for exactly three in `missing` when `total` is more than three, and never offers "up to three" as the rule', () => {
+    expect(text).toMatch(/When `total` is more than three[^`]*list exactly three in `missing`/);
+    expect(text).toMatch(/`missing` is (exactly )?three ideas from `ideas`/);
+    expect(text).not.toContain('up to three ideas from `ideas`');
+  });
+});
