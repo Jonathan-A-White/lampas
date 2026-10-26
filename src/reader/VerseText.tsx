@@ -1,16 +1,16 @@
 // src/reader/VerseText.tsx — how one verse's words are drawn (moved as is from src/Reader.tsx, module map R1a).
 import type { BarHandlers } from 'voice-kit/composer';
 import { Fragment, useEffect, useRef, type ReactNode } from 'react';
-import { type EnglishChunk, type GreekWord, type Verse, englishRuns } from '../data/chapter';
+import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { useAiAllowed } from '../gate/licenceContext';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
-import { speakWord } from '../speech/greek';
+import { hasVoice, speakWord } from '../speech/greek';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
-import { GREEK_LANG } from '../script/greekLang';
+import { sourceAttrs, sourceFace, sourceSpeech } from './sourceText';
 // 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
 // about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
 // box stays --lp-tap tall, so the spare pixels cost no layout.
@@ -41,12 +41,14 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
  * space is inside so the gap between two words is tappable too. It has no horizontal padding: the gap between two words is that one space (mw-5r3p30.127). A finger held on it for half a second (`onLongPress`)
  * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
  * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
-function Tap({ onTap, onLongPress, still, lang, className, children, ...data }: {
+function Tap({ onTap, onLongPress, still, lang, dir, className, children, ...data }: {
   onTap: () => void;
   onLongPress: () => void;
   /** read only (a verse on a card): a plain span, not a button */
   still?: boolean;
   lang?: string;
+  /** the direction the word is isolated in: an Old Testament weave puts English chunks (ltr) and Hebrew ones (rtl) in one row, each its own way round */
+  dir?: 'ltr' | 'rtl';
   'data-lang'?: string;
   className?: string;
   children: ReactNode;
@@ -61,17 +63,20 @@ function Tap({ onTap, onLongPress, still, lang, className, children, ...data }: 
   if (still) {
     return (
       <>
-        <span lang={lang} {...data} className={className}>
+        <span lang={lang} dir={dir} {...data} className={className}>
           {children}
         </span>{' '}
       </>
     );
   }
-  return (
+  // A word with a direction of its own is a bidi isolate and its trailing space stands outside it: inside, the space would sit on the isolate's own end, which is the side of the previous neighbour
+  // for a left-to-right chunk and of the next for a right-to-left one, and the gaps in a row of both would fall unevenly.
+  const word = (
     <span
       role="button"
       tabIndex={0}
       lang={lang}
+      dir={dir}
       {...data}
       {...press}
       onKeyDown={(e) => {
@@ -82,8 +87,16 @@ function Tap({ onTap, onLongPress, still, lang, className, children, ...data }: 
       }}
       className={`cursor-pointer ${NO_SELECT} rounded active:bg-line ${className ?? ''}`}
     >
-      {children}{' '}
+      {children}
+      {dir ? null : ' '}
     </span>
+  );
+  return dir ? (
+    <>
+      {word}{' '}
+    </>
+  ) : (
+    word
   );
 }
 
@@ -171,6 +184,8 @@ export function VerseNumber({ n, selected, onSelect, talk, className, children }
 export interface VerseProps {
   verse: Verse;
   view: ReaderView;
+  /** the language of the chapter's own words, the source view's: Greek unless the chapter is Hebrew ('hbo') */
+  source?: SourceLanguage;
   /** per English chunk, the Greek words shown in its place or null, and the order the chunks are laid out in; null for the whole verse when the weave is off */
   woven: WovenVerse | null;
   selected: boolean;
@@ -188,7 +203,14 @@ const MARKED = 'font-bold underline decoration-2 underline-offset-4';
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
  * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). `marked` are indices into `verse.g` drawn marked (data-marked; in the English view
  * the chunk that stands for one); `still` draws the words as plain text for a verse shown on a card, where a tap has nothing to open. */
-export function VerseText({ verse, view, woven, onLook, marked, still }: Pick<VerseProps, 'verse' | 'view' | 'woven' | 'onLook'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, still }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+  const hebrew = source === 'hbo';
+  const own = sourceAttrs(source);
+  const face = sourceFace(source);
+  const ownSpeech = sourceSpeech(source);
+  // an Old Testament weave has Hebrew and English side by side: each chunk is isolated in its own direction, whichever way the row runs
+  const chunkDir = hebrew ? ('ltr' as const) : undefined;
+  const ownDir = hebrew ? ('rtl' as const) : undefined;
   const isMarked = (c: EnglishChunk): boolean => marked !== undefined && c.g.some((i) => marked.has(i));
   const lookGreek = (w: GreekWord) =>
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
@@ -197,13 +219,15 @@ export function VerseText({ verse, view, woven, onLook, marked, still }: Pick<Ve
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
   // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.
   const say = (text: string, language: SpeechLanguage) => {
+    // a phone that lists no Hebrew voice says nothing: its default voice would read the letters as English (the reading shows the line about it, ReadControls)
+    if (language === 'hebrew' && hasVoice('hebrew') === false) return;
     if (speakWord(text, language)) publish({ kind: 'word-spoken', text, language, verse: verse.n });
   };
   return (
     <span data-text>
       {view === 'greek'
         ? verse.g.map((w, i) => (
-            <Tap key={i} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, 'greek')}>
+            <Tap key={i} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
               {w.t}
             </Tap>
           ))
@@ -215,16 +239,16 @@ export function VerseText({ verse, view, woven, onLook, marked, still }: Pick<Ve
             if (weft && weft.words.length > 1) {
               // Two Greek words behind one English chunk ("to you." is ὑμῖν γράφω): the wrapper only holds the chunk's marks, each word is its own target (mw-5r3p30.614).
               const words = weft.words.map((w, k) => (
-                <Tap key={k} still={still} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, 'greek')}>
+                <Tap key={k} still={still} dir={ownDir} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, ownSpeech)}>
                   {w.t}
                 </Tap>
               ));
               return (
-                <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-learning={weft.learning ? '' : undefined} {...GREEK_LANG} className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${isMarked(c) ? MARKED : ''}`}>
+                <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-learning={weft.learning ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${isMarked(c) ? MARKED : ''}`}>
                   {weft.learning ? (
                     <span className="inline-flex flex-col items-center align-top leading-tight">
                       <span data-greek>{words}</span>
-                      <Tap still={still} data-hint="" lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
+                      <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
                         {c.t}
                       </Tap>
                     </span>
@@ -242,15 +266,16 @@ export function VerseText({ verse, view, woven, onLook, marked, still }: Pick<Ve
                 data-woven=""
                 data-marked={isMarked(c) ? '' : undefined}
                 data-learning={weft.learning ? '' : undefined}
-                {...GREEK_LANG}
-                className={`font-greek text-[length:var(--lp-greek-size)] text-accent ${TAP_PAD} ${isMarked(c) ? MARKED : ''}`}
+                {...own}
+                dir={ownDir}
+                className={`${face} text-accent ${TAP_PAD} ${isMarked(c) ? MARKED : ''}`}
                 onTap={() => lookEnglish(c)}
-                onLongPress={() => say(weft.words.map((w) => w.t).join(' '), 'greek')}
+                onLongPress={() => say(weft.words.map((w) => w.t).join(' '), ownSpeech)}
               >
                 {weft.learning ? (
                   <span className="inline-flex flex-col items-center align-top leading-tight">
                     <span data-greek>{weft.words.map((w) => w.t).join(' ')}</span>
-                    <span data-hint lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted">
+                    <span data-hint lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted">
                       {c.t}
                     </span>
                   </span>
@@ -259,7 +284,7 @@ export function VerseText({ verse, view, woven, onLook, marked, still }: Pick<Ve
                 )}
               </Tap>
             ) : (
-              <Tap key={i} still={still} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
+              <Tap key={i} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
                 {c.s ? <SuppliedText chunk={c} /> : c.t}
               </Tap>
             );

@@ -2,6 +2,7 @@
 // English | Weave | Greek, the Play button of Read aloud and the gear that opens Settings. While a reading the speaking bar does not hold waits for Pause
 // or Play, the header gives its room to those and Stop; the title stays for screen readers.
 import { useEffect, useRef, useState } from 'react';
+import type { SourceLanguage } from '../data/chapter';
 import { chooseReaderLanguage, type ReaderLanguage, type ReaderView, type Weave } from '../data/repositories';
 import { navigate } from '../nav/route';
 import { weaveOrderSetting } from '../settings/definitions';
@@ -12,14 +13,20 @@ import type { ReadingState } from '../speech/readAloud';
 import { ReadFromButton } from '../speech/ReadControls';
 
 const TOAST_MS = 2500;
-const WORD_ORDER_NAME: Record<WeaveOrder, string> = { english: 'English word order', greek: 'Greek word order' };
+const WORD_ORDER_NAME: Record<SourceLanguage, Record<WeaveOrder, string>> = {
+  grc: { english: 'English word order', greek: 'Greek word order' },
+  hbo: { english: 'English word order', greek: 'Hebrew word order' },
+};
+/** What the switch calls the chapter's own words: its source view's label. */
+const SOURCE_NAME: Record<SourceLanguage, string> = { grc: 'Greek', hbo: 'Hebrew' };
 
 /** Under 390 px (a narrow phone or a split-screen window, mw-5r3p30.768) the header cannot hold the title, the switch, Play and the gear on one line: the switch (the
  * widest, `order-1` below) goes to a line of its own, and the title, Play and the gear stay together on the first, so no line holds a lone button.
  *
  * English | Weave | Greek while the Weave is on (English | Greek with it Off): English is plain English, Weave the woven English, and a long press on
- * Weave flips the woven text between the English and the Greek word order (the Weave's Order setting) and says which in a toast (mw-5r3p30.651). */
-function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder }) {
+ * Weave flips the woven text between the English and the Greek word order (the Weave's Order setting) and says which in a toast (mw-5r3p30.651). On an Old
+ * Testament chapter the last choice, the chapter's source view, reads Hebrew and the order's name is the Hebrew word order (mw-5vvlay.1). */
+function ViewSwitch({ view, weave, weaveShown, weaveOrder, source }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder; source: SourceLanguage }) {
   const [toast, setToast] = useState<{ text: string; top: number } | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -32,7 +39,7 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView;
     void setSetting(weaveOrderSetting, next);
     choose('weave');
     // the toast stands under the header (or the switch's own line, where a narrow window makes the header `display: contents`), so it never hides the switch it speaks of
-    setToast({ text: WORD_ORDER_NAME[next], top: Math.max(box.current?.closest('header')?.getBoundingClientRect().bottom ?? 0, box.current?.getBoundingClientRect().bottom ?? 0) });
+    setToast({ text: WORD_ORDER_NAME[source][next], top: Math.max(box.current?.closest('header')?.getBoundingClientRect().bottom ?? 0, box.current?.getBoundingClientRect().bottom ?? 0) });
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setToast(null), TOAST_MS);
   };
@@ -52,7 +59,7 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView;
       <div ref={box} role="group" aria-label="Language" className="flex shrink-0 rounded-xl border border-line p-0.5 max-[389px]:order-1">
         {button('english', 'English')}
         {weaveOn ? button('weave', 'Weave') : null}
-        {button('greek', 'Greek')}
+        {button('greek', SOURCE_NAME[source])}
       </div>
       {toast ? (
         <p role="status" style={{ top: toast.top + 8 }} className="pointer-events-none fixed inset-x-3 z-20 rounded-xl border border-line bg-surface px-4 py-3 text-base text-fg shadow-lg">
@@ -84,6 +91,8 @@ export interface ReaderHeaderProps {
   title: string;
   /** undefined while the settings load: the English | Weave | Greek switch is not drawn */
   view: ReaderView | undefined;
+  /** the language of the chapter's own words: the switch's last choice is its name (Greek unless the chapter is Hebrew) */
+  source?: SourceLanguage;
   weave: Weave;
   /** the woven English is shown (useReaderSettings weaveShown) */
   weaveShown: boolean;
@@ -124,7 +133,7 @@ function titleRoom(name: string): string {
   return `${(name.length * LETTER_EM * TITLE_MIN_REM).toFixed(2)}rem`;
 }
 
-export function ReaderHeader({ title, view, weave, weaveShown, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead }: ReaderHeaderProps) {
+export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
   return (
@@ -149,7 +158,7 @@ export function ReaderHeader({ title, view, weave, weaveShown, weaveOrder, chapt
         </button>
       </h1>
       {headerButtons ? <span className="flex-1" /> : null}
-      {view ? <ViewSwitch view={view} weave={weave} weaveShown={weaveShown} weaveOrder={weaveOrder} /> : null}
+      {view ? <ViewSwitch view={view} weave={weave} weaveShown={weaveShown} weaveOrder={weaveOrder} source={source} /> : null}
       {canRead ? <ReadFromButton from={from} reading={reading} onRead={onRead} /> : null}
       <button
         type="button"
