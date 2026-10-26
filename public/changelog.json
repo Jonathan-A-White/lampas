@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.2.25",
+    "date": "2026-10-26",
+    "story": "mw-5vvlay.2",
+    "kind": "new",
+    "text": "Tap a Hebrew word in an Old Testament chapter and see its sheet, with its meaning, grammar, Strong's number, sound and links to your Hebrew lexicons in Logos."
+  },
+  {
     "version": "0.2.24",
     "date": "2026-10-26",
     "story": "mw-5r3p30.775",

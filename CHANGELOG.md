@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.25
+_2026-10-26_
+- New: Tap a Hebrew word in an Old Testament chapter and see its sheet, with its meaning, grammar, Strong's number, sound and links to your Hebrew lexicons in Logos.
+
 ## 0.2.24
 _2026-10-26_
 - Fixed: with the Audio Bible on and the text at its largest, the "Listen in Audible" link is no longer cut off by the Play button.
