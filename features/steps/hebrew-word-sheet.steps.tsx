@@ -14,6 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { clickWordOf, unstubRangeRects } from '../../tests/support/fake-layout';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 
 const user = userEvent.setup();
@@ -47,6 +48,7 @@ async function openOn(title: string | null, phone: Phone = {}): Promise<void> {
   localStorage.clear();
   vi.unstubAllGlobals();
   stubChapterFetch();
+  unstubRangeRects();
   synth = phone.speaks ? stubSpeech([ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE]) : undefined;
   if (phone.hash === undefined) {
     const at = (title ?? '').lastIndexOf(' ');
@@ -285,6 +287,50 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('its parsing is made of tappable grammar terms', async () => {
       expect(within(await fact('sheet-parse')).getAllByRole('button').length).toBeGreaterThan(0);
+    });
+  });
+
+  const tapsWordOfChunk = async (_: unknown, word: string, chunk: string, n: number): Promise<void> => clickWordOf(chunkEl(n, chunk), word);
+  const onlyWord = async (_: unknown, word: string, name: string): Promise<void> => {
+    const items = within(await sheet()).getAllByRole('listitem');
+    expect(items.map((li) => squash(li.querySelector('[lang="en"]')?.textContent))).toEqual([word.replace(/\W+$/, '')]);
+    expect((await within(items[0]).findAllByRole('link')).map((l) => l.textContent)).toEqual([name]);
+  };
+
+  Scenario('Tapping "of" in "of Amittai," lists only "of" under the Hebrew word', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Jonah 1 with nothing saved and Logos on', () => openOn('Jonah 1', { settings: LOGOS }));
+    When('he taps the word {string} of the chunk {string} of verse {int}', tapsWordOfChunk);
+    Then('the Hebrew word sheet is headed {string}', async (_, english: string) => {
+      expect(await within(await sheet()).findByTestId('sheet-heading')).toHaveTextContent(english);
+    });
+    And('under the Hebrew words it lists only the English word {string}, with the link {string}', onlyWord);
+  });
+
+  Scenario('Tapping "Amittai," lists only "Amittai" under the Hebrew word', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Jonah 1 with nothing saved and Logos on', () => openOn('Jonah 1', { settings: LOGOS }));
+    When('he taps the word {string} of the chunk {string} of verse {int}', tapsWordOfChunk);
+    Then('under the Hebrew words it lists only the English word {string}, with the link {string}', onlyWord);
+  });
+
+  Scenario('The Hebrew word of the chunk stays whichever English word he taps', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Jonah 1 with nothing saved and Logos on', () => openOn('Jonah 1', { settings: LOGOS }));
+    When('he taps the word {string} of the chunk {string} of verse {int}', tapsWordOfChunk);
+    Then('the Hebrew word sheet shows one Hebrew word', async () => {
+      expect(await within(await sheet()).findAllByTestId('sheet-word')).toHaveLength(1);
+    });
+  });
+
+  Scenario('At Just English a tapped word of a chunk lists only that word', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Greek dial at Just English and Logos on', () => openOn('Genesis 1', { settings: { greekInterest: '0', ...LOGOS } }));
+    When('he taps the word {string} of the chunk {string} of verse {int}', tapsWordOfChunk);
+    Then('the English word sheet is headed {string}', async (_, word: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'English word' });
+      expect(within(dialog).getByTestId('english-word')).toHaveTextContent(word);
+    });
+    And('the English word sheet has the one link {string}', async (_, name: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'English word' });
+      await within(dialog).findAllByRole('link');
+      expect(within(dialog).getAllByRole('link').map((l) => l.textContent)).toEqual([name]);
     });
   });
 });

@@ -1,6 +1,6 @@
 // src/reader/VerseText.tsx — how one verse's words are drawn (moved as is from src/Reader.tsx, module map R1a).
 import type { BarHandlers } from 'voice-kit/composer';
-import { Fragment, useEffect, useRef, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, type MouseEvent, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
@@ -11,6 +11,7 @@ import { hasVoice, speakWord } from '../speech/greek';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
 import { sourceAttrs, sourceFace, sourceSpeech } from './sourceText';
+import { wordAtPoint } from './tappedWord';
 // 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
 // about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
 // box stays --lp-tap tall, so the spare pixels cost no layout.
@@ -42,7 +43,8 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
  * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
  * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
 function Tap({ onTap, onLongPress, still, lang, dir, className, children, ...data }: {
-  onTap: () => void;
+  /** a tap by touch or mouse gives its click: where on the word the finger was; the keyboard's Enter gives none */
+  onTap: (e?: MouseEvent<HTMLElement>) => void;
   onLongPress: () => void;
   /** read only (a verse on a card): a plain span, not a button */
   still?: boolean;
@@ -59,7 +61,7 @@ function Tap({ onTap, onLongPress, still, lang, dir, className, children, ...dat
   'data-hint'?: string;
   'data-marked'?: string;
 }) {
-  const press = useLongPress(onTap, onLongPress);
+  const press = useLongPress((e) => onTap(e as MouseEvent<HTMLElement>), onLongPress);
   if (still) {
     return (
       <>
@@ -215,7 +217,9 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   const lookGreek = (w: GreekWord) =>
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
   const lookWord = (w: GreekWord, c: EnglishChunk) => onLook({ words: [w], english: c.t, fromEnglish: false });
-  const lookEnglish = (c: EnglishChunk) => onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true });
+  // `tapped` is the one English word of the chunk his finger was on, when the chunk is drawn in English and holds more than one (the sheet then looks up that word alone, mw-5r3p30.782)
+  const lookEnglish = (c: EnglishChunk, e?: MouseEvent<HTMLElement>) =>
+    onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true, tapped: e ? wordAtPoint(e.currentTarget, e.clientX, e.clientY) : undefined });
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
   // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.
   const say = (text: string, language: SpeechLanguage) => {
@@ -248,7 +252,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                   {weft.learning ? (
                     <span className="inline-flex flex-col items-center align-top leading-tight">
                       <span data-greek>{words}</span>
-                      <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
+                      <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
                         {c.t}
                       </Tap>
                     </span>
@@ -284,7 +288,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 )}
               </Tap>
             ) : (
-              <Tap key={i} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={() => lookEnglish(c)} onLongPress={() => say(c.t, 'english')}>
+              <Tap key={i} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
                 {c.s ? <SuppliedText chunk={c} /> : c.t}
               </Tap>
             );

@@ -17,10 +17,11 @@ export interface LongPressHandlers {
   onPointerUp: () => void;
   onPointerCancel: () => void;
   onContextMenu: (e: MouseEvent) => void;
-  onClick: () => void;
+  onClick: (e: MouseEvent) => void;
 }
 
-export function useLongPress(onTap: () => void, onLongPress: () => void): LongPressHandlers {
+/** `onTap` is given the click that made it (a tap by the keyboard has none, the caller calls its own onTap), for the caller that needs to know where on the word the finger was. */
+export function useLongPress(onTap: (e: MouseEvent) => void, onLongPress: () => void): LongPressHandlers {
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const from = useRef({ x: 0, y: 0 });
   // the press that is going on was a long press or a drag: its click is not a tap
@@ -47,9 +48,9 @@ export function useLongPress(onTap: () => void, onLongPress: () => void): LongPr
     onPointerUp: stopTimer,
     onPointerCancel: stopTimer,
     onContextMenu: (e) => e.preventDefault(),
-    onClick: () => {
+    onClick: (e) => {
       if (notATap.current) notATap.current = false;
-      else onTap();
+      else onTap(e);
     },
   };
 }
