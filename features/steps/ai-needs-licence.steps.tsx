@@ -143,7 +143,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('With no licence the Verse view offers neither Ask the tutor nor Quiz me, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
     Given('this phone has no licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(false, 'ask'));
-    Then('the Verse view offers only the action {string}, with Copy link', offersOnlyListen);
+    Then('the Verse view offers only the action {string}, with Copy', offersOnlyListen);
     And('the Verse view has no Hold to ask', () => {
       expect(within(verseView()).queryByTestId('composer')).toBeNull();
       expect(within(verseView()).queryByRole('button', { name: 'Hold to ask' })).toBeNull();
@@ -153,7 +153,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('With no licence the Verse view of a Hebrew verse offers neither Ask the tutor nor Quiz me, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
     Given('this phone has no licence and the Verse view of Genesis 1:1 is open, last left on Ask the tutor', () => openVerseView(false, 'ask', 'Gen.1.1'));
-    Then('the Verse view offers only the action {string}, with Copy link', offersOnlyListen);
+    Then('the Verse view offers only the action {string}, with Copy', offersOnlyListen);
     And('the Verse view has no Hold to ask', () => {
       expect(within(verseView()).queryByTestId('composer')).toBeNull();
       expect(within(verseView()).queryByRole('button', { name: 'Hold to ask' })).toBeNull();
@@ -163,7 +163,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('With no licence the Verse view has no Read it aloud, no Hold to read bar and no Reading ladder, even if Read it aloud was the action he left it on', ({ Given, Then, And }) => {
     Given('this phone has no licence and the Verse view of verse 28 is open, last left on Read it aloud', () => openVerseView(false, 'read'));
-    Then('the Verse view offers only the action {string}, with Copy link', offersOnlyListen);
+    Then('the Verse view offers only the action {string}, with Copy', offersOnlyListen);
     And('the Verse view has no Read it aloud, no Hold to read bar and no Reading ladder', () => {
       expect(within(verseView()).queryByRole('button', { name: 'Read it aloud' })).toBeNull();
       expect(within(verseView()).queryByRole('region', { name: 'Reading check' })).toBeNull();
@@ -289,7 +289,7 @@ function offersOnlyListen(_: unknown, only: string): void {
   expect(actionNames()).not.toContain('Read it aloud');
   expect(actionNames()).not.toContain('Ask the tutor');
   expect(actionNames()).not.toContain('Quiz me');
-  expect(within(verseView()).getByRole('button', { name: 'Copy link' })).toBeInTheDocument();
+  expect(within(verseView()).getByRole('button', { name: 'Copy' })).toBeInTheDocument();
 }
 
 async function tapWord(_: unknown, verse: number): Promise<void> {

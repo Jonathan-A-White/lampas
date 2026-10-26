@@ -87,16 +87,16 @@ Feature: Lampas takes links in
     And the notice reads "“G99999” is not in Lampas; showing Romans 8."
     And no word sheet is open
 
-  Scenario: The Verse view of an Old Testament verse copies the https link of its verse
+  Scenario: The Verse view of an Old Testament verse copies its text ending in the https link
     Given a link "#/?ref=Jon.1.10" is opened
-    When he taps Copy link on the Verse view
-    Then the clipboard holds "https://lampas.allmymind.org/#/?ref=Jonah.1.10"
+    When he taps Copy on the Verse view
+    Then the clipboard text ends with "https://lampas.allmymind.org/#/?ref=Jonah.1.10"
 
-  Scenario: The Verse view copies the https link of its verse
+  Scenario: The Verse view copies its text ending in the https link
     Given a link "#/?ref=Rom.8.28" is opened
-    When he taps Copy link on the Verse view
-    Then the clipboard holds "https://lampas.allmymind.org/#/?ref=Rom.8.28"
-    And the Verse view says "Link copied"
+    When he taps Copy on the Verse view
+    Then the clipboard text ends with "https://lampas.allmymind.org/#/?ref=Rom.8.28"
+    And the Verse view says "Copied"
 
   Scenario: The Verse view has no Share button where the phone cannot share
     Given a link "#/?ref=Rom.8.28" is opened
@@ -113,8 +113,8 @@ Feature: Lampas takes links in
     When he taps Copy link on the word sheet
     Then the clipboard holds "https://lampas.allmymind.org/#/?word=G3551"
 
-  Scenario: A phone that refuses the clipboard shows the link to copy by hand
+  Scenario: A phone that refuses the clipboard shows the text to copy by hand
     Given a link "#/?ref=Rom.8.28" is opened
     And the clipboard refuses
-    When he taps Copy link on the Verse view
-    Then the Verse view shows the link "https://lampas.allmymind.org/#/?ref=Rom.8.28" to copy by hand
+    When he taps Copy on the Verse view
+    Then the Verse view shows the text ending in "https://lampas.allmymind.org/#/?ref=Rom.8.28" to copy by hand

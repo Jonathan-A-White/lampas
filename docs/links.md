@@ -5,8 +5,9 @@ Lampas takes links in, as Logos does (logos4:, ref.ly). The https form always wo
 ## The https form
 
 `https://lampas.allmymind.org/#/?ref=<reference>` opens the reader on a verse. `https://lampas.allmymind.org/#/?word=<word>` opens a word's sheet.
-The verse panel (under a tapped verse) and the word sheet each have **Copy link**, and **Share** where the phone has `navigator.share`; they give
-this form. A phone that refuses the clipboard shows the link in a box to copy by hand.
+The word sheet has **Copy link**, and **Share** where the phone has `navigator.share`; they give this form. The Verse view has **Copy** and **Share**: the verse, passage
+or chapter in the format of Settings > Reading > When you copy (docs/layout/reader.md), the link on its last line while Link is On. A phone that refuses the clipboard shows the
+link (the word sheet) or the text (the Verse view) in a box to copy by hand.
 
 ### `ref=` — a verse, a chapter or a book
 

@@ -1,9 +1,13 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useEffect, useState } from 'react';
+import { copyText, copyUnitOf, type CopyFormat } from '../../copy/format';
+import { useCopyFormat } from '../../copy/useCopyFormat';
+import { loadChapter, type Chapter } from '../../data/chapter';
 import { TEXT_SIZES } from '../../appearance/textSizes';
 import { FONTS, type FontId } from '../../appearance/fonts';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
-import { chapterButtonsSetting, fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
+import { chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
 import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
@@ -168,4 +172,46 @@ export const ImmersiveHintControl: Control = ({ row }) => {
 export const HeadingsControl: Control = ({ row }) => {
   const headings = useLiveQuery(getSectionHeadings, []);
   return <SettingRow row={row}>{headings ? <OnOff name={row.label} current={headings} settingKey="sectionHeadings" /> : null}</SettingRow>;
+};
+
+const COPY_ROWS = {
+  copyText: { setting: copyTextSetting, options: [['english', 'English'], ['original', 'The original'], ['both', 'Both']] },
+  copyReference: { setting: copyReferenceSetting, options: [['after', 'After'], ['before', 'Before'], ['off', 'Off']] },
+  copyNumbers: { setting: copyNumbersSetting, options: [['on', 'On'], ['off', 'Off']] },
+  copyLink: { setting: copyLinkSetting, options: [['on', 'On'], ['off', 'Off']] },
+} as const;
+
+/** One line under the last row of When you copy: Colossians 3:1 as it will be copied (the chapter is the app's own file, kept by the worker). */
+function CopyPreview({ format }: { format: CopyFormat }) {
+  const [chapter, setChapter] = useState<Chapter | null>(null);
+  useEffect(() => {
+    let alive = true;
+    loadChapter('col', 3).then(
+      (c) => alive && setChapter(c),
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const verse = chapter?.verses.find((v) => v.n === 1);
+  if (!chapter || !verse) return null;
+  return (
+    <p data-copy-preview className="mt-2 whitespace-pre-wrap break-words rounded-lg border border-line bg-surface p-2 text-base text-muted">
+      {copyText(copyUnitOf(chapter, verse), format)}
+    </p>
+  );
+}
+
+/** The four rows of When you copy: Text, Reference, Verse numbers and Link, each a chip row; the last has the preview under its hint. */
+export const CopyFormatControl: Control = ({ row }) => {
+  const { setting, options } = COPY_ROWS[row.key as keyof typeof COPY_ROWS];
+  const current = useSetting(setting);
+  const format = useCopyFormat();
+  return (
+    <SettingRow row={row} details={row.key === 'copyLink' && format ? <CopyPreview format={format} /> : undefined}>
+      <RowName row={row} />
+      {current ? <ChipRow name={row.label} current={current} options={options} settingKey={row.key as keyof typeof COPY_ROWS} /> : null}
+    </SettingRow>
+  );
 };

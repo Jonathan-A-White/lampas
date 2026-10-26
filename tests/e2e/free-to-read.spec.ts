@@ -65,7 +65,7 @@ for (const [name, size] of [['upright', { width: 390, height: 844 }], ['sideways
     await expect(view).toBeVisible();
     const actions = view.getByRole('group', { name: 'Actions', exact: true });
     await expect(actions.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
-    await expect(actions.getByRole('button', { name: 'Copy link', exact: true })).toBeVisible();
+    await expect(actions.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
     await expect(view.getByRole('button', { name: 'Read it aloud' })).toHaveCount(0);
     await expect(view.getByRole('button', { name: /^Hold to read/ })).toHaveCount(0);
     await expect(view.getByRole('button', { name: 'Reading ladder' })).toHaveCount(0);

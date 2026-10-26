@@ -646,14 +646,15 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Copy link on an Old Testament verse writes its OSIS reference', ({ Given, When, Then }) => {
+  Scenario('Copy on an Old Testament verse ends with its OSIS reference', ({ Given, When, Then }) => {
     Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
     When('he taps the number of verse {int}', tapVerseNumber);
     Then("the Verse view's link is {string}", async (_, url: string) => {
       const written: string[] = [];
       Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText: (text: string) => (written.push(text), Promise.resolve()) } });
-      await user.click(within(viewEl()).getByRole('button', { name: 'Copy link' }));
-      await waitFor(() => expect(written).toEqual([url]));
+      await user.click(within(viewEl()).getByRole('button', { name: 'Copy' }));
+      await waitFor(() => expect(written).toHaveLength(1));
+      expect(written[0].split('\n').at(-1)).toBe(url);
     });
   });
 

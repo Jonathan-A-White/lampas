@@ -23,5 +23,5 @@ Feature: The tutor and a Hebrew verse
   Scenario: Quiz me is not offered on Jonah 1:10, and Ask the tutor is
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor" and "Copy link"
+    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor" and "Copy"
     And the Verse view has no "Quiz me" and no "Diagram"

@@ -1,7 +1,7 @@
 Feature: A section heading opens the Verse view for its passage
   Tapping a section heading in the Reader opens the same Verse view a verse number opens (mw-5r3p30.73), for the passage under the
   heading (the heading to the next heading): the heading and its verse range at the top, the passage's verses set as the Reader sets its text, the same one row of
-  actions (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and the same ONE control at the foot, each doing its action for the whole passage.
+  actions (Listen, Read it aloud, Ask the tutor, Quiz me, Copy) and the same ONE control at the foot, each doing its action for the whole passage.
   Romans 8 has five headings: 8:1-11, 8:12-17, 8:18-27, 8:28-34 and 8:35-39. The phone's Back returns to the Reader.
 
   Scenario: Tapping the heading of Romans 8:1-11 opens the Verse view headed with the heading and its range
@@ -31,7 +31,7 @@ Feature: A section heading opens the Verse view for its passage
   Scenario: The passage has the same one row of actions and exactly one control at the foot
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Diagram" and "Copy link"
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Diagram" and "Copy"
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
 
   Scenario: Listen reads the whole passage aloud to its end by itself
@@ -68,12 +68,12 @@ Feature: A section heading opens the Verse view for its passage
     And the answer shows in the Verse view
     And the answer is kept under "rom.8.1-11" and not under verse 1
 
-  Scenario: Copy link copies the passage's link
+  Scenario: Copy copies the passage with its link on the last line
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
-    And he taps "Copy link"
-    Then the phone's clipboard holds the link of Romans 8:1-11
-    And the Verse view says "Link copied"
+    And he taps "Copy"
+    Then the phone's clipboard ends with the link of Romans 8:1-11
+    And the Verse view says "Copied"
 
   Scenario: The arrows go to the passage before and the passage after
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
