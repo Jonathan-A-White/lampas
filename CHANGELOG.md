@@ -1,5 +1,10 @@
 # What's new
 
+## 0.2.17
+_2026-10-26_
+- New: You can now read the whole Old Testament in English in Lampas, tap an English word to look it up, listen to it, and carry straight on from Malachi into Matthew.
+- New: The sentence diagram now follows the Weave, so a word the Weave shows in Greek is drawn in Greek in the diagram.
+
 ## 0.2.16
 _2026-10-26_
 - New: Your Logos library now opens several hundred more of your New Testament commentaries (every series in your list) from Lampas, searchable, at the verse you are reading.
