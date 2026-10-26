@@ -67,7 +67,7 @@ for (const scheme of ['light', 'dark'] as const) {
     await expect.poll(() => picture.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
     expect((await picture.boundingBox())?.width).toBeGreaterThanOrEqual(48);
     // A word with no picture has no image.
-    await expect(page.locator('[data-lemma="γάρ"] img')).toHaveCount(0);
+    await expect(page.locator('[data-lemma="ἀμήν"] img')).toHaveCount(0);
     await expectFitsPhone(page);
 
     await shot(page, scheme === 'light' ? 'words-pictures' : 'words-pictures-dark');

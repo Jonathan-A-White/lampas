@@ -529,4 +529,21 @@ describeFeature(feature, ({ Scenario }) => {
       expect(synth.spoken[0].lang).toBe('el-GR');
     });
   });
+
+  Scenario('A word question on a link word shows its picture', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
+      await freshStore();
+      await makeDue([lemma], () => ({ step, rights: 0 }));
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then('the question for {string} shows its picture beside the word', (_, lemma: string) => {
+      expect(promptLemma()).toBe(lemma);
+      expect(options()).toHaveLength(4);
+      const img = screen.getByTestId('picture');
+      expect(img.getAttribute('src')).toBe('/pictures/hoti.svg');
+      expect(img.getAttribute('alt')).toBe('');
+    });
+  });
 });

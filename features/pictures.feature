@@ -11,8 +11,8 @@ Feature: Memory pictures
   Scenario: A word with no picture shows none on its Words card
     Given Lampas is opened for the first time
     When he opens Words
-    Then the card for "γάρ" shows no picture
-    And the card for "γάρ" still shows its gloss and state
+    Then the card for "ἀμήν" shows no picture
+    And the card for "ἀμήν" still shows its gloss and state
 
   Scenario: A word with a picture shows it in the quick test
     Given Lampas holds only the word "ἀγαπάω"
