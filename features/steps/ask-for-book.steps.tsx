@@ -360,7 +360,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
         kind: 'library',
         books: 5,
         usable: 2,
-        counts: { 'text.monograph.lexicon': 2, 'text.monograph.ancient-manuscript': 1, 'text.monograph.commentary.bible': 1 },
+        counts: { 'text.monograph.lexicon': 2, 'text.monograph.ancient-manuscript': 1, 'text.monograph.commentary': 1 },
         catalogue_version: CATALOGUE_VERSION,
         app_version: __APP_VERSION__,
       });
