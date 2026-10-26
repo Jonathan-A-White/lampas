@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.3.1",
+    "date": "2026-10-26",
+    "story": "mw-9txn0x1.1",
+    "kind": "new",
+    "text": "Copy in the verse view now copies the verse, passage or chapter with its reference, and you choose in Settings what it includes: English, the Greek or Hebrew, or both, the reference, verse numbers and the link."
+  },
+  {
+    "version": "0.3.1",
+    "date": "2026-10-26",
+    "story": "mw-gdcyf98.25",
+    "kind": "new",
+    "text": "The tutor can now take you to any chapter of the Bible, Old Testament as well as New, when you ask it to."
+  },
+  {
     "version": "0.3.0",
     "date": "2026-10-26",
     "story": "mw-zbjgn3r.3",

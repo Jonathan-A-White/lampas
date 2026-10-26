@@ -1,5 +1,10 @@
 # What's new
 
+## 0.3.1
+_2026-10-26_
+- New: Copy in the verse view now copies the verse, passage or chapter with its reference, and you choose in Settings what it includes: English, the Greek or Hebrew, or both, the reference, verse numbers and the link.
+- New: The tutor can now take you to any chapter of the Bible, Old Testament as well as New, when you ask it to.
+
 ## 0.3.0
 _2026-10-26_
 - New: The Maps sheet for a verse now puts the maps that show the places named in that verse first, with those places listed under each map.
