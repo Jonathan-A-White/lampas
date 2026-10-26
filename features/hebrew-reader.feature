@@ -2,7 +2,7 @@ Feature: The Reader reads an Old Testament chapter in the Hebrew
   On a chapter of the Old Testament (its words are Hebrew) the header's switch reads English | Hebrew, as a Greek chapter's reads English | Greek: in code the
   second choice is the chapter's one source view, so the view he saved ('greek') opens a Hebrew chapter in Hebrew and a Greek chapter in Greek. The Hebrew view draws
   each verse right to left, pointed as the data has it, in the app's Hebrew face, the words in the chapter's order, and every word is a tap that does what the
-  English word does (until the Hebrew word sheet comes, it opens the English word sheet of the chunk the word stands in). With the Weave on, the English is woven with
+  English word does: it opens the word sheet (features/hebrew-word-sheet.feature has its facts). With the Weave on, the English is woven with
   the Hebrew of his solid words, and a long press on Weave flips the order to the Hebrew word order, laid out right to left. A long press on a Hebrew word says it, and
   Listen and Read from the top read the Hebrew, in the phone's he-IL voice with the cantillation marks taken off. Genesis 1 is the copy of the built chapter in
   tests/fixtures/data/gen/1.json (scripts/fixture-chapter.mjs). The Greek and the English views are as they were.
@@ -31,23 +31,23 @@ Feature: The Reader reads an Old Testament chapter in the Hebrew
     Then the first word of verse 1 is "בְּרֵאשִׁ֖ית"
     And the paragraph holding verse 1 is a row of Hebrew, right to left, in the Hebrew face
 
-  Scenario: A tap on a Hebrew word opens the English word sheet of its chunk
+  Scenario: A tap on a Hebrew word opens the Hebrew word sheet of the word
     Given Lampas is opened on Genesis 1 with the saved view "greek"
     When he taps the Hebrew word "הַשָּׁמַ֖יִם" of verse 1
-    Then the English word sheet opens headed "the heavens"
+    Then the Hebrew word sheet opens for "שָׁמַיִם"
     And the reader is still showing Genesis 1
 
-  Scenario: A Hebrew word the English has no chunk for opens nothing and nothing breaks
+  Scenario: A Hebrew word the English has no chunk for opens its sheet and nothing breaks
     Given Lampas is opened on Genesis 1 with the saved view "greek"
     When he taps the Hebrew word "אֵ֥ת" of verse 1
-    Then no word sheet opens
+    Then the Hebrew word sheet opens for "אֵת"
     And the reader is still showing Genesis 1
 
-  Scenario: The English view still opens the English word sheet
+  Scenario: An English tap opens the word sheet with the English words under the Hebrew ones
     Given Lampas is opened on Genesis 1 with nothing saved
     When he taps the chunk "God" of verse 1
-    Then the English word sheet opens headed "God"
-    And the Hebrew word sheet is not opened
+    Then the word sheet opens headed "God"
+    And it lists the English word "God" under the Hebrew word
 
   Scenario: The weave lays the English against the Hebrew, in the English order to start
     Given Lampas is opened on Genesis 1 with the Weave on Solid words and the solid Hebrew words "רֵאשִׁית" and "אֱלֹהִים"

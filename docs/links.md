@@ -44,6 +44,8 @@ A notice names what was asked for in words (`“Romans 8:99”`, never the code 
 | --- | --- |
 | `#/?word=G3551`, `#/?word=g3551`, `#/?word=3551` | the word sheet of νόμος (Strong's number) |
 | `#/?word=νόμος` (percent-encoded in a real link), `#/?word=νομος` | the same, by lemma (accents optional) |
+| `#/?word=H7225`, `#/?word=h7225` | the Hebrew word sheet of רֵאשִׁית (a Hebrew Strong's number, mw-5vvlay.2; a bare number is Greek) |
+| `#/?word=רֵאשִׁית`, `#/?word=ראשית` (percent-encoded in a real link) | the same, by lemma (pointed or with the vowel points off) |
 
 The sheet is the word as its lemma stands, with its meaning and Strong's number; it has no Parsing (no verse is around it). A word the text never uses opens the reader
 with a notice, as a reference does.

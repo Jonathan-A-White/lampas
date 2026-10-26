@@ -122,13 +122,31 @@ and the resource forms `https://ref.ly/logosres/dblgreek?hw=ἄνθρωπος` (
 | Strong's number | `logosres:<id>;ref=GreekStrongs.11` or `ref=HebrewStrongs.539` (https `?ref=…`): the letter of the word's number picks Greek or Hebrew, the digits lose their padding | NASB Dictionaries, New Strong's, Concise Dictionary | the data type names `GreekStrongs` (PBB tutorial, wiki) and `HebrewStrongs`, in the `?ref=<DataType>.<key>` form of the DBL example. Greek and Hebrew numbers overlap (a bare `11` or `539` lands in the wrong language: NASB opened Hebrew 539 אָמַן for Ἀβραάμ), so the data type is always named. These three are filed by Strong's number per their product pages (the Concise Dictionary's title names both testaments). **The `logosres:` + `ref=GreekStrongs.n` pairing and `HebrewStrongs` are UNVERIFIED on a device**; no word has no number, and with no readable number there is no tile |
 | English topic | `logosres:LLS:LXTHEOWRDBK;hw=<Topic>`, the topic capitalised (https `?hw=<Topic>`) | Lexham Theological Wordbook | it is headed by English topics (Condemnation), not Greek words, so the Greek lemma finds nothing (the Governor's screenshot, 2026-10-09: "Navigation failed" at Hebrew עָנָן). Lampas has no topic list: the word sheet offers the lexicon's gloss (`src/resources/topic.ts`) when it is a plain noun-like phrase (`condemnation`, not `to preach` or `implanted/ingrafted`), and without a topic there is no tile. **UNVERIFIED on a device**: that the wordbook takes `hw=` at all, and that a gloss is its topic (`condemnation` for κατάκριμα should land on Condemnation; a gloss that is not a topic will not). The tutor's chips (`wordChips`) carry no topic, so Lexham gives none there |
 
-A Hebrew word is not yet shown in Lampas; the Hebrew form is built and tested for when it is.
+A Hebrew word is shown since mw-5vvlay.2: its links are in 'A Hebrew word in Logos' below.
 
 **Not verified on a device (no phone with Logos or Accordance was available).** Unverified: that `logosres:<Resource ID>;hw=<lemma>`
 opens that lexicon at the headword (the `hw` part, and the other keys in the table above), that `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fel%2F...` opens the Bible
 Word Study guide, that the Logos Android app claims `logosres:` and `logos4:` at all, and that the
 Accordance `accord://search/<module>?<lemma>` form finds a word in a lexicon module. The https fallback is kept for all of them. If a link does not open the
 entry, the fix is in that resource's file.
+
+## A Hebrew word in Logos (mw-5vvlay.2, PROVISIONAL, UNVERIFIED on a device)
+
+The word sheet of a Hebrew word (docs/layout/word-sheet.md) has the Study row of a Greek word, built from the same code (`studyGroups` in `src/WordSheet.tsx`, `logosStudy` in `src/resources/logos.ts`); the word's language is told by `wordLanguage` (an `H` number, else Hebrew letters in the lemma).
+
+| link | form | source |
+| --- | --- | --- |
+| Strong's number (the Strong's resource) | `https://www.stepbible.org/?q=strong=H7225` (`strongsUrl`: STEPBible takes `H` numbers padded to four digits as it takes `G` ones) | STEPBible's search by Strong's number |
+| Strong's Hebrew in Logos: New Strong's (`newstrongs`), NASB Dictionaries (`nasbdict`), the Concise Dictionary (`concisedict`) | `logosres:LLS:46.10.6;ref=HebrewStrongs.7225` (https `?ref=HebrewStrongs.7225`): the three dictionaries of both testaments, filed by Strong's number, are offered for an H word as for a G one (`key: 'strongs'`); the data type `HebrewStrongs` is the one already used for Hebrew numbers (above) | their products' pages name both testaments; **UNVERIFIED on a device** |
+| Bible Word Study | `logos4:Guide;t=Bible%20Word%20Study;lemma=lbs%2Fhe%2F<consonants>`: the lemma with its vowel points and accents taken off (`consonants()`), the slashes escaped, no `ref=` | the language-tagged lemma `lbs/he/חסד` of the pull request https://github.com/robrawks/LogosBibleSoftwareMCP/pull/8 ("Word study lemmas are language-tagged (`lbs/el/λόγος`, `lbs/he/חסד`, `lbs/en/love`) ... Verified for all three", on Windows Verbum, read 2026-10-26). Its Hebrew example is the consonants alone, so the points are taken off; **UNVERIFIED on a device**, and that Logos opens the Hebrew guide at a pointed form is not known either way |
+| His Hebrew lexicons (lang `he`) | `logosres:<id>;hw=<consonants>` for BDB, Abridged BDB, Gesenius, TLOT, the Lexham Research Lexicon of the OT and the Lexham Analytical Lexicon of the OT; `logosres:<id>;ref=HebrewStrongs.<n>` for DBL Hebrew and TWOT (key `strongs`: their ReferenceSupersets name `strongs+h`) | the `hw=` headword form of the Greek lexicons above, with the consonants alone as the one documented Hebrew spelling; **`hw=` at a Hebrew headword is UNVERIFIED on a device** (BDB's own reference type is `bdb`, by page, and Gesenius' `geslex`: neither is a key Lampas has) |
+
+A lexicon is offered to a word of its own language only (`opensFor`): a Hebrew lexicon never for a Greek word (it has no Greek headword), a Greek one never for a Hebrew word, except the three Strong's dictionaries. The Lexham Theological Wordbook (filed by English topic, `lang` grc) is not offered for a Hebrew word.
+
+**His Hebrew lexicons, found in his library export of 2026-10-08** (type `text.monograph.lexicon`; Resource ID as the export has it): Enhanced Brown-Driver-Briggs (`bdb`, `LLS:46.30.16`, pinned), DBL Hebrew (`dblhebrew`, `LLS:46.30.10`), TWOT (`twot`, `LLS:46.50.3`), Gesenius (`gesenius`, `LLS:46.30.24`),
+the Abridged BDB (`abridgedbdb`, `LLS:46.30.7`), the Theological Lexicon of the Old Testament (`tlot`, `LLS:TLOT`), the Lexham Research Lexicon of the Hebrew Bible (`lxhotlex`, `LLS:FBHOTLEX`) and the Lexham Analytical Lexicon of the Hebrew Bible
+(`lexhamanalyticalhebrew`, `LLS:LXHEBANLEX`). Looked for and not in the export: HALOT (Koehler-Baumgartner), Holladay's Concise Hebrew and Aramaic Lexicon, NIDOTTE. Left out, being Aramaic and not Hebrew lexicons: DBL Aramaic (`LLS:46.30.8`), the Lexham Research Lexicon of the Aramaic Portions of the Hebrew Bible
+(`LLS:FBARCLEX`) and the Targum Lexicon (`LLS:46.30.28`). A phone that imported his list has them On after the update (the catalogue's version changed, so `afterCatalogueUpdate` re-matches the list); one that did not has only what it ticked (BDAG), and ticks the Hebrew ones in Library > Lexicons.
 
 ## Grammar books in Logos: Read more on an idea sheet (mw-5r3p30.381, PROVISIONAL, Governor to confirm)
 
@@ -289,11 +307,12 @@ His ask (2026-10-21): at Just English the Greek grammars and Greek Logos resourc
 | `lang` | meaning | today |
 |---|---|---|
 | `'grc'` | a Greek resource: a Greek grammar or lexicon, the Greek number | Strong's, Black's grammar |
+| `'he'` | a Hebrew lexicon (mw-5vvlay.2): opened for a Hebrew word only; the dial treats it like `'grc'` (hidden at Just English, after the English ones between) | BDB, TWOT, Gesenius ... |
 | `'en'` | an English resource | Calvin's commentaries and both Institutes |
 | `'both'` | an app that opens Greek and English; the dial treats it as English | Logos, Accordance |
 
 The one selector is `resourcesForLevel(list, level)` (`src/resources/resourcesForLevel.ts`); no list filters or orders a resource on its own. **Just English (0):** only `en` and `both`, in their own order.
-**Curious to Reading in Greek (1 to 4):** `en` and `both` first, then `grc`, each side in its own order. **All in (5):** the list unchanged. An unplaced phone reads 5. The Mayor's cheap choice, not his word:
+**Curious to Reading in Greek (1 to 4):** `en` and `both` first, then `grc` and `he`, each side in its own order. **All in (5):** the list unchanged. An unplaced phone reads 5. The Mayor's cheap choice, not his word:
 the Governor may change the rule in that one file. A resource the dial hides keeps its switch or tick (nothing is deleted): the lists draw fewer entries, and the stored ids are written over the whole list.
 
 Who goes through it: Settings > Study resources (the switches: `orderResourceRows` in `src/settings/rows.ts` for the order, the row's `dependsOn` in `registry.ts` for hiding; the library row in
@@ -325,7 +344,7 @@ the committed files hold must hold a volume for every series rule and every type
 **`npm run logos:fit -- <export.csv>`** (`scripts/logos-fit.ts`) prints the rows of an export the rules do not take, by the kind each would be, with the Logos type and the data types of its
 ReferenceSupersets (`ltrntg`, `bdf`: the names a section link could use, docs/research/logos-section-refs.md), and counts the rest by type: the Mayor's reading of a list a reader sent.
 
-**Today's lists are views over it** and keep their shapes, so no screen changes: `LEXICONS` (`logos.ts`: the lexicons), `GRAMMAR_BOOKS` (`grammarBooks.ts`: the grammars with a `sections` table; one without it is in the catalogue
+**Today's lists are views over it** and keep their shapes, so no screen changes: `LEXICONS` (`logos.ts`: the lexicons, the Greek ones and then the eight Hebrew ones, each with its `lang`), `GRAMMAR_BOOKS` (`grammarBooks.ts`: the grammars with a `sections` table; one without it is in the catalogue
 for the tutor only, as it would open at its start), `WORKS` (`works.ts`: the `works` groups and the commentary entries that name them in `work`, the Institutes among them with their `index`), `COMMON_BIBLES` and
 `DEFAULT_LOGOS_BIBLE` (`logosBible.ts`: the Bibles named by id, and the one that `starts` pinned) and `DEVOTIONALS` (`src/data/daily/devotionals.ts`: the devotionals named by id). An entry an export adds by a type or
 series rule is in the catalogue and in none of these until the shelf (S2) and the Library screen (S3) read it. `tests/unit/catalogue.test.ts` fails on a duplicate Resource ID, an entry with no value, a `covers` code that is

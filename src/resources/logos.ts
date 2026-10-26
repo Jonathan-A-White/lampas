@@ -5,7 +5,7 @@
 import { entriesOf, type LexiconKey } from './catalogue';
 import { verseLink } from './logosBible';
 import { resourceLink, type LogosLink } from './logosRes';
-import type { StudyLink, StudyResource, StudyWord } from './types';
+import type { ResourceLang, StudyLink, StudyResource, StudyWord } from './types';
 
 /** The key a lexicon is filed under (catalogue.ts LexiconKey): the Greek lemma, a Strong's number or an English topic. docs/resources.md says where each lexicon's key comes from and what is UNVERIFIED. */
 type Key = LexiconKey;
@@ -13,9 +13,17 @@ type Key = LexiconKey;
 /** His Logos lexicons, in the order Logos' Bible Word Study shows them: a view over the catalogue's lexicons (catalogue.ts; docs/resources.md 'The catalogue'). `id` is kept in the settings store (never change it); `short` is its tile on the word sheet: the book's title in
  *  words that tell it from every other (two lines fit in half a row; the distinguishing word is never cut, and no two are alike); `resource` is the Resource ID Logos prints on the product's page (https://www.logos.com/product/<n>, 'Resource ID: LLS:...').
  *  Adding a lexicon is one entry in data/logos/catalogue-rules.json and `npm run logos:catalogue`: copy its Resource ID, never guess a short name (mw-5r3p30.64: the guessed 'ednt' opened nothing). */
-export const LEXICONS: readonly { id: string; short: string; name: string; resource: string; key?: Key }[] = entriesOf('lexicon')
+export const LEXICONS: readonly { id: string; short: string; name: string; resource: string; lang: ResourceLang; key?: Key }[] = entriesOf('lexicon')
   .filter((e) => e.via === 'id' && e.id !== undefined)
-  .map((e) => ({ id: e.id as string, short: e.short, name: e.title, resource: e.resource, ...(e.key ? { key: e.key } : {}) }));
+  .map((e) => ({ id: e.id as string, short: e.short, name: e.title, resource: e.resource, lang: e.lang, ...(e.key ? { key: e.key } : {}) }));
+
+/** The language of a word's own text: Hebrew for an H number (or, with no number, a lemma written in Hebrew letters), else Greek. */
+export const wordLanguage = (word: Pick<StudyWord, 'lemma' | 'strongs'>): 'grc' | 'hbo' =>
+  word.strongs.startsWith('H') || (!/^G/.test(word.strongs) && /\p{Script=Hebrew}/u.test(word.lemma)) ? 'hbo' : 'grc';
+
+/** Whether a lexicon is opened for a word of this language (mw-5vvlay.2): a Hebrew lexicon (`lang` 'he') for a Hebrew word only; a Greek one for a Greek word only, except a Strong's
+ *  dictionary (`key` 'strongs', the three that cover both testaments: NASB Dictionaries, New Strong's, the Concise Dictionary), which is opened for either. */
+const opensFor = (l: { lang: ResourceLang; key?: Key }, language: 'grc' | 'hbo'): boolean => (language === 'hbo' ? l.lang === 'he' || l.key === 'strongs' : l.lang !== 'he');
 
 /** His English dictionary in Logos, for a tapped English word (mw-5r3p30.707): Webster's 1828, 'An American Dictionary of the English Language' (Book Info: LLS:AMDICTENLANG).
  *  `resource` is written as the story's links name it, without `LLS:`; if the Logos app does not open it, the full `LLS:AMDICTENLANG` is the form the lexicons above use.
@@ -34,10 +42,14 @@ export const englishDictionaryLink = (word: string): LogosLink | undefined => {
   return headword === undefined ? undefined : resourceLink(ENGLISH_DICTIONARY.resource, `hw=${encodeURIComponent(headword)}`);
 };
 
+/** A Hebrew word with its vowel points and accent marks taken off: the consonants, as Logos' own example of a Hebrew lemma writes it (`lbs/he/חסד`, docs/resources.md). */
+export const consonants = (word: string): string => word.normalize('NFD').replace(/\p{M}/gu, '').normalize('NFC');
+
 /** Logos' own name for a Greek lemma is lbs/el/<lemma>, accents and capital kept; the slashes must be escaped or Logos rejects the value (a bare lemma opens a search
- *  'lemma.ιησουσ' that finds nothing). The link names the lemma alone, no ref= (the documented form has none; mw-5r3p30.67). docs/resources.md has the source. */
+ *  'lemma.ιησουσ' that finds nothing). A Hebrew lemma is lbs/he/<consonants> (mw-5vvlay.2). The link names the lemma alone, no ref= (the documented form has none; mw-5r3p30.67). docs/resources.md has the source. */
 const study = (word: StudyWord): { path: string; fallbackPath: string } => {
-  const guide = `Guide;t=${encodeURIComponent('Bible Word Study')};lemma=${encodeURIComponent(`lbs/el/${word.lemma.normalize('NFC')}`)}`;
+  const lemma = wordLanguage(word) === 'hbo' ? `lbs/he/${consonants(word.lemma)}` : `lbs/el/${word.lemma.normalize('NFC')}`;
+  const guide = `Guide;t=${encodeURIComponent('Bible Word Study')};lemma=${encodeURIComponent(lemma)}`;
   return { path: `logos4:${guide}`, fallbackPath: `https://ref.ly/logos4/${guide}` };
 };
 
@@ -64,7 +76,7 @@ const keyQuery = (key: Key, word: StudyWord): string | undefined => {
     return topic && `hw=${encodeURIComponent(topic.charAt(0).toLocaleUpperCase('en') + topic.slice(1))}`;
   }
   if (key === 'commonLemma' && isProperName(word.lemma)) return undefined;
-  return `hw=${encodeURIComponent(word.lemma)}`;
+  return `hw=${encodeURIComponent(wordLanguage(word) === 'hbo' ? consonants(word.lemma) : word.lemma)}`;
 };
 
 /** One lexicon of his library and its link for a word. */
@@ -76,12 +88,14 @@ export interface LexiconEntry {
   link: StudyLink;
 }
 
-/** The links of the lexicons named in `ids`, in that order, for `word`; a lexicon Lampas has no key for (a proper name in a book of common words, a topic the word has none of) is left out, never guessed. */
+/** The links of the lexicons named in `ids`, in that order, for `word`; a lexicon Lampas has no key for (a proper name in a book of common words, a topic the word has none of) or that is
+ *  in the other language (a Hebrew lexicon for a Greek word, mw-5vvlay.2) is left out, never guessed. */
 export const lexiconLinks = (word: StudyWord, ids: readonly string[]): LexiconEntry[] => {
   const entries: LexiconEntry[] = [];
+  const language = wordLanguage(word);
   for (const id of new Set(ids)) {
     const l = LEXICONS.find((x) => x.id === id);
-    const key = l && keyQuery(l.key ?? 'lemma', word);
+    const key = l && opensFor(l, language) ? keyQuery(l.key ?? 'lemma', word) : undefined;
     if (l && key) entries.push({ id: l.id, name: l.name, link: { label: `Open in Logos: ${l.name}`, tile: l.short, ...resourceLink(l.resource, key) } });
   }
   return entries;

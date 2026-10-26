@@ -1,6 +1,6 @@
 {
   "kind": "commentary",
-  "version": "d99753496880",
+  "version": "a6d5d681af9e",
   "works": [
     {"id":"calvin-commentaries","lang":"en","title":"Calvin's Commentaries","author":"John Calvin","kind":"commentary","source":"His Logos library listing of 2026-10-08 (vault plans/lampas-logos-library-2026-10-08.csv, ResourceId and ReferenceSupersets columns)"},
     {"id":"calvin-institutes-lcc","lang":"en","title":"Institutes of the Christian Religion (Library of Christian Classics)","author":"John Calvin","kind":"book","source":"His Logos library listing of 2026-10-08 (vault plans/lampas-logos-library-2026-10-08.csv, ResourceId and ReferenceSupersets columns)","index":{"type":"CICR","chapters":[18,17,25,20],"hint":"A place in the book is written book.chapter (3.24) or book.chapter.section (3.21.5): the book is 1 to 4, and the chapter one the book has (book 1 has 18 chapters, book 2 17, book 3 25, book 4 20). Name a place only when you know the chapter treats the question."}},

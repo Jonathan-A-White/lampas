@@ -78,7 +78,6 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { useBarShown } from './speech/barShown';
 import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
-import { EnglishWordSheet } from './EnglishWordSheet';
 import { ChapterActions } from './reader/ChapterActions';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
 import { VerseText, type VerseTalk } from './reader/VerseText';
@@ -165,9 +164,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const selectedEvent = useLatest('verse-selected');
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
-  // A tap on a word of an Old Testament chapter opens the English word sheet for its chunk (the Hebrew word sheet is the next story's): the Greek word sheet is never opened for a Hebrew word,
-  // and a Hebrew word the English has no chunk for opens nothing.
-  const look = useCallback((l: Lookup) => setLookup(hbo ? { words: [], english: l.english, fromEnglish: true } : l), [hbo]);
+  // A tap on a word of an Old Testament chapter opens the word sheet like a Greek word's, but Hebrew (mw-5vvlay.2): a Hebrew word's own sheet, an English chunk's sheet with the Hebrew words it renders
+  // and, under them, the English sheet of its words; below the Greek dial's Curious step an English chunk opens the English sheet alone (WordSheet).
   // The teach sheet (src/TeachSheet.tsx), opened by the 'New N' chip.
   const [teaching, setTeaching] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
@@ -498,7 +496,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       reading={readingVerse}
                       onSelect={selectVerse}
                       onPlay={(n) => readFrom(n, false)}
-                      onLook={look}
+                      onLook={setLookup}
                       talk={verseTalk}
                     />
                   ) : (
@@ -511,7 +509,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       reading={readingVerse === first.n}
                       onSelect={() => selectVerse(first.n)}
                       onPlay={() => readFrom(first.n, false)}
-                      onLook={look}
+                      onLook={setLookup}
                       talk={verseTalk}
                     />
                   )}
@@ -587,7 +585,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           book={BOOK}
           chapter={CHAPTER}
           chapterText={chapter}
-          onLook={look}
+          onLook={setLookup}
           verse={viewUnit}
           view={sheetView}
           immersive={immersive}
@@ -599,10 +597,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 layout={layout ?? DEFAULT_LAYOUT}
                 wovenOf={(v) => sheetWoven?.[chapter.verses.indexOf(v)] ?? null}
                 reading={readingVerse}
-                onLook={look}
+                onLook={setLookup}
               />
             ) : (
-              <VerseText verse={viewUnit} view={sheetView} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={look} />
+              <VerseText verse={viewUnit} view={sheetView} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} />
             )
           }
           previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
@@ -634,11 +632,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
       {linked ? <WordSheet chapter={linked.chapter} lookup={linked.lookup} onClose={() => setLinked(null)} /> : null}
       {chapter && lookup ? (
-        hbo ? (
-          lookup.english ? <EnglishWordSheet english={lookup.english} listWords onClose={closeSheet} /> : null
-        ) : (
-          <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={tutor.helpWithWord} onAskTerm={tutor.askAboutTerm} />
-        )
+        // Help with this word and Ask the tutor on a term are the Greek word's until the tutor learns Hebrew (mw-5vvlay.3)
+        <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={hbo ? undefined : tutor.helpWithWord} onAskTerm={hbo ? undefined : tutor.askAboutTerm} />
       ) : null}
     </>
   );

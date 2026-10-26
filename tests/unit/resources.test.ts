@@ -6,6 +6,7 @@ import { getStudyResources, setResourceOption, setResourceOn } from '../../src/d
 import { AUDIO_BIBLES } from '../../src/resources/audioBible';
 import { accordance } from '../../src/resources/accordance';
 import { RESOURCES, optionOf, resourceOf, type StudyWord } from '../../src/resources';
+import { LEXICONS } from '../../src/resources/logos';
 
 const WORD: StudyWord = { form: 'συνεργεῖ', lemma: 'συνεργέω', strongs: 'G4903' };
 /** βίβλος, tapped at Acts 19:19 */
@@ -13,6 +14,8 @@ const BIBLOS: StudyWord = { form: 'βίβλους', lemma: 'βίβλος', stron
 const BIBLOS_URL = encodeURIComponent('βίβλος');
 /** Logos names a Greek lemma lbs/el/<lemma>, its slashes escaped (Logos' own Copy-location form; docs/resources.md) */
 const BIBLOS_LEMMA = encodeURIComponent('lbs/el/βίβλος');
+/** אַבְרָהָם, Genesis 17:5, Strong's H85: a Hebrew word, for the Hebrew lexicons */
+const ABRAHAM_H: StudyWord = { form: 'אַבְרָהָם', lemma: 'אַבְרָהָם', strongs: 'H85' };
 const JESUS_LEMMA = 'lbs%2Fel%2F%E1%BC%B8%CE%B7%CF%83%CE%BF%E1%BF%A6%CF%82';
 /** Ἰησοῦς, tapped as Ἰησοῦ at Romans 8:1 */
 const JESUS: StudyWord = { form: 'Ἰησοῦ', lemma: 'Ἰησοῦς', strongs: 'G2424', ref: { book: 'rom', chapter: 8, verse: 1 } };
@@ -97,7 +100,9 @@ describe('the registry', () => {
       gelntthayer: 'LLS:THAYERGELEXNT', // 5682
     };
     const logos = resourceOf('logos');
-    expect(Object.keys(IDS).sort()).toEqual((logos?.choices?.items ?? []).map((i) => i.id).sort());
+    // his Hebrew lexicons (mw-5vvlay.2) are opened for a Hebrew word and are tested in logos-links.test.ts; these are the Greek ones
+    const greek = (logos?.choices?.items ?? []).filter((i) => LEXICONS.find((l) => l.id === i.id)?.lang !== 'he');
+    expect(Object.keys(IDS).sort()).toEqual(greek.map((i) => i.id).sort());
     // the key after the Resource ID depends on how the lexicon is filed (tests/unit/logos-keys.test.ts); here the topic is given so every lexicon has a tile
     const word = { ...BIBLOS, topic: 'book' };
     for (const [id, resource] of Object.entries(IDS)) {
@@ -157,7 +162,7 @@ describe('the registry', () => {
 
   it('lists his lexicons as data, in the order Logos shows them, each with a Logos resource id', () => {
     const items = resourceOf('logos')?.choices?.items ?? [];
-    expect(items.length).toBe(21);
+    expect(items.length).toBe(21 + 8);
     expect(items.slice(0, 2).map((i) => i.name)).toEqual(['BDAG', 'Louw-Nida']);
     expect(new Set(items.map((i) => i.id)).size).toBe(items.length);
     expect(resourceOf('logos')?.choices?.default).toEqual(['bdag']);
@@ -204,8 +209,8 @@ describe('the kept choices', () => {
 });
 
 describe('every resource is named in words, never by a code (mw-5r3p30.148)', () => {
-  /** acronyms the books are known by, and that Logos prints in the product's own title ('... | EDNT (3 vols.)', '(TDNTA)', '(BDAG)') */
-  const KNOWN_ABBREVIATIONS = new Set(['BDAG', 'EDNT', 'TDNTA']);
+  /** acronyms the books are known by, and that Logos prints in the product's own title ('... | EDNT (3 vols.)', '(TDNTA)', '(BDAG)'; BDB and TWOT for his Hebrew lexicons) */
+  const KNOWN_ABBREVIATIONS = new Set(['BDAG', 'EDNT', 'TDNTA', 'BDB', 'TWOT']);
   /** a code: capitals, digits and punctuation only (LXGRCANLEX, FBGNTLEX, 46.30.18), unless it is a known abbreviation */
   const isCode = (text: string): boolean => /^[A-Z0-9.:_-]+$/.test(text.trim()) && !KNOWN_ABBREVIATIONS.has(text.trim());
   const word = { ...BIBLOS, topic: 'book', strongs: 'G976' };
@@ -213,7 +218,7 @@ describe('every resource is named in words, never by a code (mw-5r3p30.148)', ()
   it('gives no Logos tile or lexicon name that is its Resource ID or any code in capitals', () => {
     const logos = resourceOf('logos');
     for (const item of logos?.choices?.items ?? []) {
-      const link = logos?.linksFor(word, item.id)[0];
+      const link = logos?.linksFor(LEXICONS.find((l) => l.id === item.id)?.lang === 'he' ? { ...ABRAHAM_H, topic: 'father' } : word, item.id)[0];
       const code = /^logosres:LLS:([^;]+);/.exec(link?.url ?? '')?.[1] ?? '';
       expect(code, item.id).not.toBe('');
       for (const [what, text] of [['name', item.name], ['label', link?.label.replace(/^Open in Logos: /, '') ?? ''], ['tile', link?.tile ?? '']]) {
@@ -226,7 +231,7 @@ describe('every resource is named in words, never by a code (mw-5r3p30.148)', ()
 
   it('gives no two Logos tiles the same words', () => {
     const logos = resourceOf('logos');
-    const tiles = (logos?.choices?.items ?? []).map((i) => logos?.linksFor(word, i.id)[0].tile);
+    const tiles = (logos?.choices?.items ?? []).map((i) => logos?.linksFor(LEXICONS.find((l) => l.id === i.id)?.lang === 'he' ? ABRAHAM_H : word, i.id)[0].tile);
     expect(new Set(tiles).size).toBe(tiles.length);
   });
 

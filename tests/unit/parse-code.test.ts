@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeParse } from '../../src/data/parseCode';
+import { decodeParse, parseSegments } from '../../src/data/parseCode';
 
 describe('decodeParse: Robinson RP codes in plain words', () => {
   it.each([
@@ -68,5 +68,21 @@ describe('decodeParse: Robinson RP codes in plain words', () => {
     expect(() => decodeParse('Z-NSM')).toThrow(/Z-NSM/);
     expect(() => decodeParse('V-XYZ-3S')).toThrow(/V-XYZ-3S/);
     expect(() => decodeParse('')).toThrow();
+  });
+});
+
+describe('parseSegments by the language of the chapter (mw-5vvlay.2)', () => {
+  it('cuts a Greek parsing into its grammar terms, as it always did', () => {
+    const segments = parseSegments(decodeParse('V-PAI-3S'));
+    expect(segments.filter((s) => s.term).map((s) => s.term)).toEqual(['verb', 'present', 'active', 'indicative', '3rd person', 'singular']);
+    expect(parseSegments(decodeParse('V-PAI-3S'), 'grc')).toEqual(segments);
+  });
+
+  it('keeps a Hebrew parsing, as the chapter\'s parse map decodes it, whole and plain: no term of it is a link to a Greek Grammar sheet', () => {
+    const decoded = 'Verb - Qal - Perfect - third person masculine singular';
+    expect(parseSegments(decoded, 'hbo')).toEqual([{ text: decoded }]);
+    expect(parseSegments('', 'hbo')).toEqual([]);
+    // the Greek cut of the same words would have linked 'masculine' and 'singular'
+    expect(parseSegments(decoded).some((s) => s.term)).toBe(true);
   });
 });

@@ -1,6 +1,8 @@
 // Robinson's RP (Robinson-Pierpont) parsing codes in plain words: 'V-PAP-DPM' is
 // 'verb, present active participle, dative plural masculine'. A code this does not know throws, so a
-// new source release that adds one fails the data build instead of shipping a guess.
+// new source release that adds one fails the data build instead of shipping a guess. A Hebrew word's parsing is decoded by the data build into the chapter's own
+// parse map (docs/data.md), so only the way the word sheet cuts it (parseSegments) knows the language.
+import type { SourceLanguage } from './chapter';
 
 const WORDS: Record<string, string> = {
   PREP: 'preposition',
@@ -294,8 +296,11 @@ const TERM_PATTERN = new RegExp(
 );
 
 /** A decoded parsing ('verb, present active indicative, 3rd person singular') cut into its terms and the text between them; the
- * segments' texts joined are the parsing itself. */
-export function parseSegments(decoded: string): ParseSegment[] {
+ * segments' texts joined are the parsing itself. A Hebrew word's parsing (`language` 'hbo') is one plain stretch, no term a link. */
+export function parseSegments(decoded: string, language: SourceLanguage = 'grc'): ParseSegment[] {
+  // A Hebrew parsing arrives decoded in the chapter's own parse map ('Verb - Qal - Perfect - third person masculine singular'); the Grammar sheet explains Greek terms only
+  // (Hebrew grammar is a later story of the epic, mw-5vvlay), so no word of it is a link
+  if (language === 'hbo') return decoded === '' ? [] : [{ text: decoded }];
   const out: ParseSegment[] = [];
   let at = 0;
   for (const m of decoded.matchAll(TERM_PATTERN)) {

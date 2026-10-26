@@ -9,7 +9,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 // 48 px is the floor for the picker's buttons (the Governor reads one-handed); a pixel of margin for sub-pixel layout.
 const TAP = 47.5;
 
-test('the picker lists the 66 books; Jonah 1 opens in the Reader in English, and a tap on a word opens the English word sheet', async ({ page }) => {
+test('the picker lists the 66 books; Jonah 1 opens in the Reader in English, and a tap on a word opens the word sheet of its Hebrew word', async ({ page }) => {
   await routePostern(page, makeFakePostern());
   await openUnlocked(page);
   await page.goto('/');
@@ -43,12 +43,13 @@ test('the picker lists the 66 books; Jonah 1 opens in the Reader in English, and
   const wide = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
   expect(wide.scroll).toBeLessThanOrEqual(wide.client);
 
-  // a tap on a word: the English word sheet, not the Greek one
+  // a tap on a word: the word sheet of the Hebrew word it stands for (דָּג), the English word under it (mw-5vvlay.2)
   await page.locator('[data-verse="17"] [data-chunk]', { hasText: /^fish\s*$/ }).first().click();
-  const sheet = page.getByRole('dialog', { name: 'English word' });
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(sheet).toBeVisible();
-  await expect(sheet.getByTestId('english-word')).toHaveText('fish');
-  await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toHaveCount(0);
+  await expect(sheet.getByTestId('sheet-heading')).toContainText('fish');
+  await expect(sheet.getByTestId('sheet-lemma')).toHaveText('דָּג');
+  await expect(page.getByRole('dialog', { name: 'English word' })).toHaveCount(0);
   await shot(page, 'old-testament-jonah');
   await sheet.getByRole('button', { name: 'Done' }).click();
   await expect(sheet).toHaveCount(0);

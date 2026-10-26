@@ -22,14 +22,7 @@ export function EnglishDictionaryRow({ text, english = false, offer = false, nam
   if (study === undefined || words.length === 0) return null;
   if (!study.on.includes('logos')) {
     if (!offer) return null;
-    return (
-      <div role="status" className="mt-3">
-        <p className="text-base text-muted">Turn on Logos to look words up</p>
-        <button type="button" onClick={() => void setResourceOn('logos', true)} className="mt-2 min-h-12 rounded-xl bg-accent px-6 text-base font-medium text-accent-fg">
-          Turn on Logos
-        </button>
-      </div>
-    );
+    return <TurnOnLogos />;
   }
   return (
     <div role="group" aria-label={`English dictionary: ${ENGLISH_DICTIONARY.name}`} className="mt-3 flex flex-col gap-2">
@@ -49,6 +42,40 @@ export function EnglishDictionaryRow({ text, english = false, offer = false, nam
 
 /** The words of a chunk, each as bareEnglish gives it ('the beginning,' is 'the' and 'beginning'), for the sheet that lists a chunk of more than one word. */
 const wordsOf = (chunk: string): string[] => chunk.split(/\s+/).map(bareEnglish).filter((w) => /[\p{L}\p{N}]/u.test(w));
+
+/** The Turn on Logos line: what the sheets say while Logos is off, with the one tap that turns it on. */
+export function TurnOnLogos() {
+  return (
+    <div role="status" className="mt-3">
+      <p className="text-base text-muted">Turn on Logos to look words up</p>
+      <button type="button" onClick={() => void setResourceOn('logos', true)} className="mt-2 min-h-12 rounded-xl bg-accent px-6 text-base font-medium text-accent-fg">
+        Turn on Logos
+      </button>
+    </div>
+  );
+}
+
+/** The words of an English chunk of an Old Testament chapter, one row each under the Hebrew words it renders (the Hebrew word sheet of an English tap, mw-5vvlay.2): the word, its own Listen and its
+ *  own Look it up in Logos (Webster's 1828). The Turn on Logos line is the Hebrew words' own, so the rows say nothing of Logos while it is off. */
+export function EnglishWordList({ text }: { text: string }) {
+  const each = wordsOf(text);
+  if (each.length === 0) return null;
+  return (
+    <ul aria-label="English words" className="mt-3 flex flex-col">
+      {each.map((w, i) => (
+        <li key={i} data-chunk-word className="border-t border-line pb-3 pt-2">
+          <div className="flex items-center justify-between gap-2">
+            <span lang="en" className="min-w-0 break-words text-xl font-semibold">
+              {w}
+            </span>
+            <SpeakButton text={w} id={`english-word:${w}:${i}`} label={`Listen: ${w}`} kind="speaker" language="english" className="shrink-0" />
+          </div>
+          <EnglishDictionaryRow text={w} named={each.length > 1} />
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /** `listWords` (an Old Testament chunk, mw-uqlxea.2, where there is no Greek word to open): a chunk of more than one word lists each word under the heading, with its own Listen and its own
  * Look it up in Logos (Webster's 1828), so the sheet answers for any word of the chunk; a chunk of one word is the sheet as it always was. */

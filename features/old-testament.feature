@@ -2,7 +2,8 @@ Feature: Lampas reads the Old Testament in English
   The Reader's chapter picker lists the 66 books of the Bible in canon order, Genesis to Revelation. An Old Testament chapter opens in the Reader like any
   other: the header's switch reads English | Hebrew (the Hebrew view and the weave are features/hebrew-reader.feature's), and the view he saved ('greek' in code, the
   chapter's source view) opens it in Hebrew, as it opens a New Testament chapter in Greek. Every other setting applies. A tap on an English chunk
-  opens the English word sheet (the chunk, and a Webster's 1828 row in Logos for each of its words); Listen and Read from the top read the English;
+  opens the word sheet: the Hebrew words of the chunk (features/hebrew-word-sheet.feature) and, under them, the English sheet of its words (each with its Listen and a Webster's 1828 row
+  in Logos); at Just English the small English sheet alone; Listen and Read from the top read the English;
   the chapter before Matthew 1 is Malachi 4 and Genesis 1 has no chapter before it. At the foot of the chapter, Read in Logos opens it in the Bible he
   chose in Settings (Bible in Logos, the Legacy Standard Bible to start; Settings > Bible in Logos opens Library > Bibles, where it is chosen), by the
   Logos app's own link, and Listen in Audible opens The Word of Promise at the chapter, each only while its setting is on. Jonah 1 is the copy of the
@@ -39,24 +40,25 @@ Feature: Lampas reads the Old Testament in English
     And the page text is at 160% of the phone's size
     And the reader turns pages
 
-  Scenario: A tap on "fish" opens the English word sheet with a Webster's row for it
+  Scenario: A tap on "fish" opens the word sheet with the Hebrew word and a Webster's row for the English one
     Given Lampas is opened on Jonah 1 with Logos on
     When he taps the chunk "fish" of verse 17
-    Then the English word sheet opens headed "fish"
+    Then the word sheet opens headed "fish"
     And it has one "Look it up in Logos" link to "fish" in Webster's 1828
+    And the Hebrew word of the chunk, "דָּג", is on the sheet
     And the Greek word sheet is not opened
 
   Scenario: A chunk of two words lists two rows
     Given Lampas is opened on Jonah 1 with Logos on
     When he taps the chunk "of Amittai," of verse 1
-    Then the English word sheet opens headed "of Amittai"
+    Then the word sheet opens headed "of Amittai"
     And it lists the words "of" and "Amittai", each with its Listen
     And it has the links "Look it up in Logos: of" and "Look it up in Logos: amittai"
 
-  Scenario: With Logos off the English word sheet offers to turn it on
+  Scenario: With Logos off the word sheet offers to turn it on
     Given Lampas is opened on Jonah 1 with Logos off
     When he taps the chunk "fish" of verse 17
-    Then the English word sheet opens headed "fish"
+    Then the word sheet opens headed "fish"
     And it says "Turn on Logos to look words up"
 
   Scenario: A long press on a chunk says it in English
@@ -90,7 +92,7 @@ Feature: Lampas reads the Old Testament in English
     And he taps Read from the top
     And the phone finishes speaking verse 1
     When he taps the chunk "fish" of verse 17
-    And he taps Listen on the English word sheet
+    And he taps Listen: fish on the word sheet
     Then the reading is paused
     And the phone is saying "fish" alone
     When the phone finishes the word

@@ -11,7 +11,7 @@ import { DEVOTIONALS } from '../../src/data/daily/devotionals';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { CATALOGUE, CATALOGUE_VERSION, KINDS, WORK_GROUPS, entriesOf, type CatalogueEntry, type Kind, type KindFile } from '../../src/resources/catalogue';
 import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS } from '../../src/resources/grammarBooks';
-import { LEXICONS } from '../../src/resources/logos';
+import { LEXICONS, lexiconLinks } from '../../src/resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { WORKS } from '../../src/resources/works';
 import { buildCatalogue, coversOfSupersets, parseCsv, readExport, versionOf, type Rules } from '../../scripts/logos-catalogue';
@@ -223,10 +223,50 @@ describe('a rule that matches no row of the export is named (mw-efwust)', () => 
   });
 });
 
+describe('the Hebrew lexicons (mw-5vvlay.2)', () => {
+  const hebrewRules = RULES.ids.filter((r) => r.kind === 'lexicon' && r.lang === 'he');
+  const H_WORD = { form: 'רֵאשִׁית', lemma: 'רֵאשִׁית', strongs: 'H7225' };
+  const G_WORD = { form: 'λόγος', lemma: 'λόγος', strongs: 'G3056' };
+
+  it('are rules of the lexicon kind with lang he, each keyed by Strong\'s number or by the lemma as the resource opens', () => {
+    expect(hebrewRules.length).toBe(8);
+    for (const r of hebrewRules) expect(['strongs', undefined], r.resource).toContain(r.key);
+    expect(entriesOf('lexicon').filter((e) => e.lang === 'he').map((e) => e.resource)).toEqual(hebrewRules.map((r) => r.resource));
+  });
+
+  it('is offered on an H word and not on a G word', () => {
+    const ids = hebrewRules.map((r) => r.id as string);
+    expect(lexiconLinks(H_WORD, ids).map((e) => e.id)).toEqual(ids);
+    expect(lexiconLinks(G_WORD, ids)).toEqual([]);
+    // a Greek-only lexicon is the other way about
+    expect(lexiconLinks(G_WORD, ['bdag']).map((e) => e.id)).toEqual(['bdag']);
+    expect(lexiconLinks(H_WORD, ['bdag'])).toEqual([]);
+  });
+
+  it('pins BDB and starts the other seven On, none Off', () => {
+    const state = (resource: string) => CATALOGUE.find((e) => e.resource === resource)?.starts;
+    expect(state('LLS:46.30.16')).toBe('pinned');
+    for (const r of hebrewRules.filter((x) => x.resource !== 'LLS:46.30.16')) expect(state(r.resource), r.resource).toBe('on');
+  });
+
+  it.skipIf(!existsSync(VAULT_EXPORT))('every one is a lexicon of his Logos export, and the Hebrew lexicons of the export that are not here are Aramaic or Targum ones', () => {
+    const rows = readExport(readFileSync(VAULT_EXPORT, 'utf8'));
+    const byId = new Map(rows.map((r) => [r.resource, r]));
+    for (const r of hebrewRules) expect(byId.get(r.resource)?.type, r.resource).toBe('text.monograph.lexicon');
+    const here = new Set(hebrewRules.map((r) => r.resource));
+    const left = rows.filter((r) => r.type === 'text.monograph.lexicon' && /hebrew|aramaic|targum/i.test(r.title) && !here.has(r.resource)).map((r) => r.resource);
+    // the Strong's dictionaries of both testaments are the Greek lexicons' rules (opened for either), the others are Aramaic
+    expect(left.sort()).toEqual(['LLS:46.10.12', 'LLS:46.10.6', 'LLS:46.30.28', 'LLS:46.30.8', 'LLS:FBARCLEX', 'LLS:STRNGDICHEBGRK'].sort());
+  });
+});
+
 describe('the five old exports as views over the catalogue', () => {
-  it('LEXICONS is the catalogue’s lexicons, as it was', () => {
-    expect(LEXICONS).toEqual(OLD.LEXICONS);
-    expect(entriesOf('lexicon').map((e) => e.resource)).toEqual(OLD.LEXICONS.map((l) => l.resource));
+  it('LEXICONS is the catalogue’s lexicons, as it was, and then his Hebrew ones (mw-5vvlay.2)', () => {
+    const greek = LEXICONS.filter((l) => l.lang !== 'he');
+    expect(greek.map(({ id, short, name, resource, key }) => ({ id, short, name, resource, ...(key ? { key } : {}) }))).toEqual(OLD.LEXICONS);
+    expect(LEXICONS.slice(0, OLD.LEXICONS.length)).toEqual(greek);
+    expect(entriesOf('lexicon').map((e) => e.resource)).toEqual(LEXICONS.map((l) => l.resource));
+    expect(LEXICONS.slice(OLD.LEXICONS.length).every((l) => l.lang === 'he')).toBe(true);
   });
 
   it('GRAMMAR_BOOKS is the catalogue’s grammars that have a sections table, as it was; the rest are listed for the tutor only', () => {

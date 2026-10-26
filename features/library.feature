@@ -37,7 +37,7 @@ Feature: Your Logos library, a screen of its own
     And he taps "All on"
     Then every lexicon is set to On or Pin
     And "BDAG" is set to "Pin"
-    And the page says "21 on"
+    And the page says "29 on"
     When he then taps "All off"
     Then every lexicon is set to "Off"
     And the count reads "none on"

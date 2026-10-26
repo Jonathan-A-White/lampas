@@ -179,7 +179,7 @@ export interface FoundWord {
   entry: LemmaEntry;
 }
 
-/** A Greek word with its accents, breathings and capitals taken off, for matching a lemma typed without them. */
+/** A word with its accents, breathings, vowel points and capitals taken off, for matching a lemma typed without them (Greek, or Hebrew: the points and accent marks are marks too). */
 const bare = (word: string): string =>
   word.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/ς/g, 'σ');
 
@@ -198,14 +198,21 @@ function indexOf(lexicon: LemmaLexicon) {
   return held;
 }
 
-/** The word a link names: a Strong's number ('G3551', 'g3551', '3551') or a lemma (accents optional), or undefined when the text never uses it. */
-export function findWord(text: string, lexicon: LemmaLexicon): FoundWord | undefined {
+/** Text that names a Hebrew word: an H number ('H7225', 'h7225') or a word written in Hebrew letters, pointed or not. */
+export const isHebrewText = (text: string): boolean => /^[hH]0*\d+$/.test(text.trim()) || /\p{Script=Hebrew}/u.test(text);
+
+/** The word a link names: a Strong's number ('G3551', 'g3551', '3551'; 'H7225' for a Hebrew one) or a lemma (accents optional; a Hebrew lemma pointed or not: the vowel points are
+ *  taken off on both sides), or undefined when the text never uses it. A Hebrew number or lemma is looked up in `hebrew` (the Hebrew lexicon, src/data/lexicon.ts loadLexicon('hbo')), else in `lexicon`. */
+export function findWord(text: string, lexicon: LemmaLexicon, hebrew?: LemmaLexicon): FoundWord | undefined {
   const wanted = text.trim();
   if (wanted === '') return undefined;
-  const { byStrongs, byBare } = indexOf(lexicon);
-  const number = /^[gG]?0*(\d+)$/.exec(wanted);
-  const lemma = number ? byStrongs.get(`G${number[1]}`) : Object.hasOwn(lexicon, wanted.normalize('NFC')) ? wanted.normalize('NFC') : byBare.get(bare(wanted));
-  return lemma === undefined ? undefined : { lemma, entry: lexicon[lemma] };
+  const lex = isHebrewText(wanted) ? hebrew ?? lexicon : lexicon;
+  const { byStrongs, byBare } = indexOf(lex);
+  const number = /^([gGhH]?)0*(\d+)$/.exec(wanted);
+  const lemma = number
+    ? byStrongs.get(`${number[1].toUpperCase() || 'G'}${number[2]}`)
+    : Object.hasOwn(lex, wanted.normalize('NFC')) ? wanted.normalize('NFC') : byBare.get(bare(wanted));
+  return lemma === undefined ? undefined : { lemma, entry: lex[lemma] };
 }
 
 /** A link in the address: a reference to open the reader on, or a word to open the sheet of. */
@@ -253,12 +260,13 @@ export function wordUrl(strongs: string): string {
 }
 
 /** What the word sheet needs to show a word by itself, with no chapter around it: the word as its lemma stands (no parsing, no verse, so no Parsing row,
- * no Help with this word), its gloss and its Strong's number. */
+ * no Help with this word), its gloss and its Strong's number. An H number is a Hebrew word: its sheet is the Hebrew one (a chapter of language 'hbo'). */
 export function lemmaSheet(word: { lemma: string; strongs: string; gloss: string }): { chapter: Chapter; lookup: Lookup } {
   const chapter: Chapter = {
     book: '',
     code: '',
     chapter: 0,
+    ...(word.strongs.startsWith('H') ? { lang: 'hbo' as const } : {}),
     lex: { [word.strongs]: { g: word.gloss, d: '' } },
     parse: {},
     verses: [],
