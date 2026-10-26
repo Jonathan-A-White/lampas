@@ -195,8 +195,9 @@ export function VerseView(props: VerseViewProps) {
             />
           </div>
         </div>
-        {/* Sideways on Listen with the Audio Bible row, the row has no room under Memorize and the Logos doors, so they go under it (mw-5r3p30.746). */}
-        <div className={audioListen ? 'short:order-last' : undefined}>
+        {/* On Listen with the Audio Bible row, the row has no room under Memorize and the Logos doors (sideways, and upright at the largest text), so they go under it
+            at every size, and the link is above the Play bar at rest (mw-5r3p30.746, .775). */}
+        <div className={audioListen ? 'order-last' : undefined}>
           {/* Memorize (mw-fu7dqf.5): the verse, or the passage's range as one reference; an Old Testament verse is learned in English only, no licence */}
           <MemorizeControl canonical={memorizeRef} className="mt-1 w-full" />
           <ProgressMarks canonical={memorizeRef} className="mt-1 px-1" />
