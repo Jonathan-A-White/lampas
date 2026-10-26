@@ -16,17 +16,17 @@ Feature: Lampas AI needs a licence
 
   Scenario: With no licence the Verse view offers neither Ask the tutor nor Quiz me, even if Ask the tutor was the action he left it on
     Given this phone has no licence and the Verse view of verse 28 is open, last left on Ask the tutor
-    Then the Verse view offers only the action "Listen", with Copy link
+    Then the Verse view offers only the action "Listen", with Copy
     And the Verse view has no Hold to ask
 
   Scenario: With no licence the Verse view of a Hebrew verse offers neither Ask the tutor nor Quiz me, even if Ask the tutor was the action he left it on
     Given this phone has no licence and the Verse view of Genesis 1:1 is open, last left on Ask the tutor
-    Then the Verse view offers only the action "Listen", with Copy link
+    Then the Verse view offers only the action "Listen", with Copy
     And the Verse view has no Hold to ask
 
   Scenario: With no licence the Verse view has no Read it aloud, no Hold to read bar and no Reading ladder, even if Read it aloud was the action he left it on
     Given this phone has no licence and the Verse view of verse 28 is open, last left on Read it aloud
-    Then the Verse view offers only the action "Listen", with Copy link
+    Then the Verse view offers only the action "Listen", with Copy
     And the Verse view has no Read it aloud, no Hold to read bar and no Reading ladder
 
   Scenario: With no licence the Verse view offers no Diagram

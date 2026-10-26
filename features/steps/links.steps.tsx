@@ -231,23 +231,25 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The Verse view of an Old Testament verse copies the https link of its verse', ({ Given, When, Then }) => {
+  Scenario('The Verse view of an Old Testament verse copies its text ending in the https link', ({ Given, When, Then }) => {
     Given('a link {string} is opened', (_, hash: string) => openLink(hash));
-    When('he taps Copy link on the Verse view', async () => {
-      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy link' }));
+    When('he taps Copy on the Verse view', async () => {
+      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy' }));
     });
-    Then('the clipboard holds {string}', async (_, url: string) => {
-      await waitFor(() => expect(copied).toEqual([url]));
+    Then('the clipboard text ends with {string}', async (_, url: string) => {
+      await waitFor(() => expect(copied).toHaveLength(1));
+      expect(copied[0].split('\n').at(-1)).toBe(url);
     });
   });
 
-  Scenario('The Verse view copies the https link of its verse', ({ Given, When, Then, And }) => {
+  Scenario('The Verse view copies its text ending in the https link', ({ Given, When, Then, And }) => {
     Given('a link {string} is opened', (_, hash: string) => openLink(hash));
-    When('he taps Copy link on the Verse view', async () => {
-      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy link' }));
+    When('he taps Copy on the Verse view', async () => {
+      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy' }));
     });
-    Then('the clipboard holds {string}', async (_, url: string) => {
-      await waitFor(() => expect(copied).toEqual([url]));
+    Then('the clipboard text ends with {string}', async (_, url: string) => {
+      await waitFor(() => expect(copied).toHaveLength(1));
+      expect(copied[0].split('\n').at(-1)).toBe(url);
     });
     And('the Verse view says {string}', async (_, text: string) => {
       await waitFor(() => expect(panel()).toHaveTextContent(text));
@@ -262,7 +264,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Verse view has no Share button', async () => {
       await headed('Romans 8');
       await screen.findByRole('region', { name: 'Verse view' });
-      expect(within(panel()).getByRole('button', { name: 'Copy link' })).toBeInTheDocument();
+      expect(within(panel()).getByRole('button', { name: 'Copy' })).toBeInTheDocument();
       expect(within(panel()).queryByRole('button', { name: 'Share' })).toBeNull();
     });
   });
@@ -301,16 +303,16 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A phone that refuses the clipboard shows the link to copy by hand', ({ Given, And, When, Then }) => {
+  Scenario('A phone that refuses the clipboard shows the text to copy by hand', ({ Given, And, When, Then }) => {
     Given('a link {string} is opened', (_, hash: string) => openLink(hash));
     And('the clipboard refuses', () => {
       stubClipboard(true);
     });
-    When('he taps Copy link on the Verse view', async () => {
-      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy link' }));
+    When('he taps Copy on the Verse view', async () => {
+      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy' }));
     });
-    Then('the Verse view shows the link {string} to copy by hand', async (_, url: string) => {
-      await waitFor(() => expect(within(panel()).getByRole('textbox', { name: 'Link to copy' })).toHaveValue(url));
+    Then('the Verse view shows the text ending in {string} to copy by hand', async (_, url: string) => {
+      await waitFor(() => expect((within(panel()).getByRole('textbox', { name: 'Text to copy' }) as HTMLTextAreaElement).value.split('\n').at(-1)).toBe(url));
     });
   });
 });

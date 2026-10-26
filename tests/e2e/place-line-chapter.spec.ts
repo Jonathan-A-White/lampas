@@ -119,7 +119,7 @@ async function openFromLine(page: Page) {
   await expect(view.getByRole('heading', { name: `Mark 12, Mark 12:1-${LAST}` })).toBeVisible();
   await expect(view.locator('[data-passage-verse]')).toHaveCount(LAST);
   const row = view.getByRole('group', { name: 'Actions', exact: true });
-  for (const name of ['Listen', 'Read it aloud', 'Ask the tutor', 'Quiz me', 'Copy link', 'Share']) {
+  for (const name of ['Listen', 'Read it aloud', 'Ask the tutor', 'Quiz me', 'Copy', 'Share']) {
     await expect(row.getByRole('button', { name, exact: true })).toBeVisible();
   }
   await expect(view.locator('[data-verse-bar]').getByRole('button', { name: `Play verses 1-${LAST}`, exact: true })).toBeVisible();

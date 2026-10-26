@@ -20,7 +20,7 @@ export const NIGHT_HOUR = 3;
 /** The kind of the grind (grinds/tutor-weights.json). */
 export const WEIGHTS_KIND = 'tutor-weights';
 
-/** The most the request may weigh, as JSON in UTF-8: the grist's payload is capped at 20 KiB sealed, and a request at 9,000 seals to about 12 KiB (src/services/requestBudget.ts), so 14,000 leaves the envelope room. */
+/** The most the request may weigh, as JSON in UTF-8: the grist's payload is capped at 20 KiB sealed, and a request at 9,200 seals to about 12 KiB (src/services/requestBudget.ts), so 14,000 leaves the envelope room. */
 export const WEIGHTS_MAX_BYTES = 14_000;
 
 /** The limits of the input schema's report: screens and misses. */

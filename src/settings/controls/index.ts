@@ -1,6 +1,6 @@
 import { SCRIPTS } from '../../script/scripts';
 import { ROWS } from '../rows';
-import { AppearanceControl, ChapterButtonsControl, FontControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
+import { AppearanceControl, ChapterButtonsControl, CopyFormatControl, FontControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
 import { ApproachControl } from './approach';
 import { AskDevotionalControl } from './askDevotional';
 import { DailyDevotionalControl, DailyMemorizeControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, GreekKeyboardControl, DevotionalDrawControl, TodaysDevotionalControl } from './daily';
@@ -27,6 +27,10 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   layout: LayoutControl,
   readingMode: ReadingModeControl,
   chapterButtons: ChapterButtonsControl,
+  copyText: CopyFormatControl,
+  copyReference: CopyFormatControl,
+  copyNumbers: CopyFormatControl,
+  copyLink: CopyFormatControl,
   sectionHeadings: HeadingsControl,
   immersiveReader: ImmersiveControl,
   immersiveHint: ImmersiveHintControl,

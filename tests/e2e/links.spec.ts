@@ -46,13 +46,15 @@ test('the web+lampas: form the browser hands over opens the same verse', async (
   await expect(page.locator('[data-verse="28"]')).toHaveAttribute('data-selected', 'true');
 });
 
-test('Copy link in the Verse view puts the https link on the clipboard', async ({ page, context }) => {
+test('Copy in the Verse view puts the verse, its reference and the https link on the clipboard', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '#/?ref=Rom.8.28');
   const panel = page.getByRole('region', { name: 'Verse view' });
-  await panel.getByRole('button', { name: 'Copy link' }).click();
-  await expect(panel.getByText('Link copied')).toBeVisible();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('https://lampas.allmymind.org/#/?ref=Rom.8.28');
+  await panel.getByRole('button', { name: 'Copy', exact: true }).click();
+  await expect(panel.getByText('Copied', { exact: true })).toBeVisible();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toContain('— Romans 8:28 (MSB)');
+  expect(copied.split('\n').at(-1)).toBe('https://lampas.allmymind.org/#/?ref=Rom.8.28');
   await shot(page, 'links-copy');
 });
 

@@ -1429,6 +1429,10 @@
                   "sectionHeadings",
                   "readingMode",
                   "chapterButtons",
+                  "copyText",
+                  "copyReference",
+                  "copyNumbers",
+                  "copyLink",
                   "immersiveReader",
                   "immersiveHint",
                   "readSpan",
@@ -1549,6 +1553,30 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "chapterButtons" }, "value": { "type": "string", "enum": ["show", "hide"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "copyText" }, "value": { "type": "string", "enum": ["english", "original", "both"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "copyReference" }, "value": { "type": "string", "enum": ["after", "before", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "copyNumbers" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "copyLink" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

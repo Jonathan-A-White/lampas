@@ -186,7 +186,7 @@ Feature: Lampas reads the Old Testament in English
     When he taps the number of verse 10
     Then the Verse view is headed "Jonah 1:10"
     And the Verse view shows the verse in English
-    And the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Copy link" and "Share"
+    And the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Copy" and "Share"
     And the Verse view has no "Quiz me" and no "Diagram"
 
   Scenario: Quiz me kept from a New Testament verse opens an Old Testament verse on Listen and is kept
@@ -207,7 +207,7 @@ Feature: Lampas reads the Old Testament in English
     When he taps the number of verse 10
     Then "In Logos" links to "logosres:lgcystndrdbblsb;ref=Bible.Jon1.10"
 
-  Scenario: Copy link on an Old Testament verse writes its OSIS reference
+  Scenario: Copy on an Old Testament verse ends with its OSIS reference
     Given Lampas is opened on Jonah 1 with Logos on
     When he taps the number of verse 10
     Then the Verse view's link is "https://lampas.allmymind.org/#/?ref=Jonah.1.10"

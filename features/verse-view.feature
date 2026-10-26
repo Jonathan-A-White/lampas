@@ -1,6 +1,6 @@
 Feature: The Verse view
   Tapping a verse number opens the verse on a screen of its own (mw-5r3p30.79): the verse big at the top, woven as the Reader
-  weaves it, one row of actions under it (Listen, Read it aloud, Ask the tutor, Quiz me, Copy link) and ONE control at the bottom that
+  weaves it, one row of actions under it (Listen, Read it aloud, Ask the tutor, Quiz me, Copy) and ONE control at the bottom that
   does the chosen action: Listen's Play button, or the hold bar of Read it aloud and Ask the tutor. The phone's Back returns to the Reader where it was. The Reader's Talk bar is not shown under it.
 
   Scenario: Tapping verse 11 opens the Verse view with the verse big and woven
@@ -25,7 +25,7 @@ Feature: The Verse view
   Scenario: One row of actions and exactly one control at the foot, and no Talk bar
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Diagram" and "Copy link"
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Diagram" and "Copy"
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
     And the Reader's Talk bar is not on screen
 
@@ -89,12 +89,12 @@ Feature: The Verse view
     Then the Ask box says "No licence"
     And the Ask field holds "What does ζωοποιήσει mean?"
 
-  Scenario: Copy link copies the verse's link
+  Scenario: Copy copies the verse with its link on the last line
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11
-    And he taps "Copy link"
-    Then the phone's clipboard holds the link of Romans 8:11
-    And the Verse view says "Link copied"
+    And he taps "Copy"
+    Then the phone's clipboard ends with the link of Romans 8:11
+    And the Verse view says "Copied"
 
   Scenario: The chosen action is remembered from verse to verse
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"

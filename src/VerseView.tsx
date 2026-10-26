@@ -12,7 +12,7 @@
 // A section heading opens the same view for its passage (mw-5r3p30.73): `verse` is then the passage as one Verse (src/data/passage.ts: `n` its
 // first verse, `to` its last), the title is the heading and its range, every action works on the whole passage, and the arrows go to the passage
 // before and after in the chapter. Nothing else differs, so there is one view engine.
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnswerCards, AskComposer, AskStatus } from './Ask';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
@@ -26,11 +26,13 @@ import type { Lookup } from './WordSheet';
 import { unitId, unitName, unitReference } from './data/passage';
 import { MemorizeControl } from './memorize/MemorizeControl';
 import { ProgressMarks } from './memorize/ProgressMark';
-import { osisOf, passageUrl, referenceUrl } from './nav/links';
+import { osisOf } from './nav/links';
 import { SHORT_BAR } from './ui/barClass';
 import { focusOnMount } from './ui/focus';
 import { Icon as PlayIcon } from './speech/ReadControls';
 import { LinkActions } from './ui/LinkActions';
+import { COPY_DEFAULTS, copyLink, copyText, copyUnitOf } from './copy/format';
+import { useCopyFormat } from './copy/useCopyFormat';
 import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './useAsks';
@@ -125,6 +127,9 @@ export function VerseView(props: VerseViewProps) {
   const memorizeRef = `${osisOf(book)}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`;
   const noun = passage ? 'passage' : 'verse';
   const canShare = typeof navigator.share === 'function';
+  // Copy and Share give the unit in the format of Settings > Reading > When you copy (src/copy/format.ts); the defaults until the four rows are read
+  const copyFormat = useCopyFormat() ?? COPY_DEFAULTS;
+  const copyUnit = useMemo(() => copyUnitOf(chapterText, verse), [chapterText, verse]);
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
   const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
@@ -191,9 +196,12 @@ export function VerseView(props: VerseViewProps) {
               </button>
             ))}
             <LinkActions
-              url={verse.to === undefined ? referenceUrl(book, chapter, verse.n) : passageUrl(book, chapter, verse.n, verse.to)}
+              url={copyLink(copyUnit)}
               title={reference}
-              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_input]:col-span-3 [&_input]:col-start-1 [&_input]:row-start-3 [&_input]:@max-[15rem]:col-span-2 [&_input]:@max-[15rem]:row-start-4 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_input]:@[29rem]:col-span-7 [&_input]:@[29rem]:row-start-2' : '[&>div]:contents [&_input]:@[25rem]:col-span-6 [&_input]:@[25rem]:row-start-2'}`}
+              text={copyText(copyUnit, copyFormat)}
+              shareText={copyText(copyUnit, { ...copyFormat, link: 'off' })}
+              shareUrl={copyFormat.link === 'on' ? copyLink(copyUnit) : undefined}
+              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_:is(input,textarea)]:col-span-3 [&_:is(input,textarea)]:col-start-1 [&_:is(input,textarea)]:row-start-3 [&_:is(input,textarea)]:@max-[15rem]:col-span-2 [&_:is(input,textarea)]:@max-[15rem]:row-start-4 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_:is(input,textarea)]:@[29rem]:col-span-7 [&_:is(input,textarea)]:@[29rem]:row-start-2' : '[&>div]:contents [&_:is(input,textarea)]:@[25rem]:col-span-6 [&_:is(input,textarea)]:@[25rem]:row-start-2'}`}
               statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
             />
           </div>

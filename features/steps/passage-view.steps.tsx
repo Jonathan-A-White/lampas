@@ -332,14 +332,15 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario("Copy link copies the passage's link", ({ Given, When, Then, And }) => {
+  Scenario("Copy copies the passage with its link on the last line", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);
     And('he taps {string}', async (_, name: string) => {
       await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
     });
-    Then("the phone's clipboard holds the link of Romans 8:1-11", () => {
-      expect(copied).toEqual([`${LINK_ORIGIN}/#/?ref=Rom.8.1-11`]);
+    Then("the phone's clipboard ends with the link of Romans 8:1-11", () => {
+      expect(copied).toHaveLength(1);
+      expect(copied[0].split('\n').at(-1)).toBe(`${LINK_ORIGIN}/#/?ref=Rom.8.1-11`);
     });
     And('the Verse view says {string}', async (_, words: string) => {
       expect(await within(viewEl()).findByText(words)).toBeInTheDocument();

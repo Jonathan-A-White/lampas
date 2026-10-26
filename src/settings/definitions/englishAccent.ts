@@ -12,5 +12,5 @@ export const englishAccentSetting = defineSetting<string>({
   section: 'pronunciation',
   label: 'English accent',
   hint: 'The English your sound hints and the tutor use: American, British, or IPA.',
-  help: 'Which English the hints for Greek sounds are said in, everywhere at once: the letter tiles, the idea sheets, the lessons, the drills and the quiz choices, and the examples the tutor gives:\n\n- **American**: the default.\n- **British**\n- **IPA** (the standard): for readers who know it. Each sound is shown by its own symbol, such as /o/, in place of an English word.\n\nYou can also ask the tutor to switch it.',
+  help: 'Which English the hints for Greek sounds are said in, everywhere at once: the letter tiles, the idea sheets, the lessons, the drills and the quiz choices, and the examples the tutor gives:\n\n- **American**: the default.\n- **British**\n- **IPA** (the standard): for readers who know it. Each sound is shown by its own symbol, such as /o/, in place of an English word.',
 });
