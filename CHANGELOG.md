@@ -1,5 +1,11 @@
 # What's new
 
+## 0.4.0
+_2026-10-26_
+- New: Under every sentence diagram a quiet "How to read this" opens the diagram lesson, and until you have finished or dismissed it, the first diagrams you open invite you to learn to read one.
+- New: Settings now has a Maps section with an On/Off switch for each source of maps, ready for a second atlas to sit beside Bible Mapper.
+- New: Holding a section heading or the line under the chapter now copies its passage or the whole chapter, in the format chosen under When you copy.
+
 ## 0.3.2
 _2026-10-26_
 - New: Copy now gives the verse the way you are reading it, English, Greek, Hebrew or the Weave, and Settings > Reading > Copy: text has a new choice, As you read it, which is the default.

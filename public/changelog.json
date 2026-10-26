@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.4.0",
+    "date": "2026-10-26",
+    "story": "mw-q6t5tvn.2",
+    "kind": "new",
+    "text": "Under every sentence diagram a quiet \"How to read this\" opens the diagram lesson, and until you have finished or dismissed it, the first diagrams you open invite you to learn to read one."
+  },
+  {
+    "version": "0.4.0",
+    "date": "2026-10-26",
+    "story": "mw-zbjgn3r.6",
+    "kind": "new",
+    "text": "Settings now has a Maps section with an On/Off switch for each source of maps, ready for a second atlas to sit beside Bible Mapper."
+  },
+  {
+    "version": "0.4.0",
+    "date": "2026-10-26",
+    "story": "mw-9txn0x1.2",
+    "kind": "new",
+    "text": "Holding a section heading or the line under the chapter now copies its passage or the whole chapter, in the format chosen under When you copy."
+  },
+  {
     "version": "0.3.2",
     "date": "2026-10-26",
     "story": "mw-9txn0x1.4",
