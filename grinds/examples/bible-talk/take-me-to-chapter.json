@@ -9,7 +9,7 @@
     "history": [],
     "solid_words": [],
     "settings": { "theme": "light", "textSize": "normal" },
-    "catalogue": [{ "name": "chapter", "is": "place", "tell": "Opens a chapter of the New Testament in the Reader", "args": { "type": "object", "required": ["book", "chapter"], "additionalProperties": false, "properties": { "book": { "type": "string", "description": "its name: Colossians" }, "chapter": { "type": "integer", "minimum": 1, "maximum": 150 } } } }]
+    "catalogue": [{ "name": "chapter", "is": "place", "tell": "Opens a chapter of the Bible in the Reader", "args": { "type": "object", "required": ["book", "chapter"], "additionalProperties": false, "properties": { "book": { "type": "string", "description": "its name: Colossians" }, "chapter": { "type": "integer", "minimum": 1, "maximum": 150 } } } }]
   },
   "expect": {
     "go.name": { "equals": "chapter" },

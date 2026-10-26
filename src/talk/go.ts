@@ -2,8 +2,8 @@
 // the tutor to {book, chapter}, a book of the app's own list and a chapter in range; the app reads whatever arrives and takes only what this accepts, so a
 // go it cannot take never costs him the answer, and the talk never claims a move that did not happen.
 import type { Registry } from 'voice-kit/talks';
-import { NT_BOOKS, titleOf } from '../data/books';
-import { chapterOf, titleOfPlace } from '../tutor/registry';
+import { titleOf } from '../data/books';
+import { bookNamed, chapterOf, titleOfPlace } from '../tutor/registry';
 
 /** A chapter the app can open. */
 export interface GoPlace {
@@ -28,7 +28,7 @@ export function readGo(go: unknown): GoReading | undefined {
   const raw = asked?.chapter;
   const chapter = typeof raw === 'number' ? raw : typeof raw === 'string' && /^\d{1,3}$/.test(raw.trim()) ? Number(raw) : NaN;
   if (!name || Number.isNaN(chapter)) return { ok: false, title: typeof go === 'string' && go.trim() ? clip(go.trim()) : name && raw !== undefined ? clip(`${name} ${String(raw)}`) : 'that chapter' };
-  const book = NT_BOOKS.find((b) => fold(b.name) === fold(name));
+  const book = bookNamed(fold(name));
   if (!book || !Number.isInteger(chapter) || chapter < 1 || chapter > book.chapters) return { ok: false, title: clip(`${name} ${chapter}`) };
   return { ok: true, place: { book: book.code, chapter, title: titleOf(book.code, chapter) } };
 }

@@ -1,7 +1,7 @@
 # Find references
 
 You read the text in one picture, a screenshot or photo of a page of a book, an article or a message, and list the Bible
-references the text names. A phone app for reading the New Testament in Greek turns your list into links. Write nothing
+references the text names. A phone app for reading the Bible in English, Greek and Hebrew turns your list into links. Write nothing
 but the answer.
 
 ## The contract

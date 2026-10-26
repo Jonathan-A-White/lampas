@@ -28,12 +28,19 @@ Feature: The tutor takes him to a chapter
     And the Reader is open on "Romans 8"
 
   Scenario: A book the app does not have is not opened and the talk says so
+    Given Lampas is opened on Romans 8 and the tutor answers with go "Enoch" 23
+    And he opens Talk
+    When he sends "open Enoch 23"
+    Then the answer shows in the sheet
+    And the sheet says "Could not open Enoch 23" and nothing was opened
+    And the Reader is open on "Romans 8"
+
+  Scenario: Taking him to an Old Testament chapter opens the Reader there
     Given Lampas is opened on Romans 8 and the tutor answers with go "Psalms" 23
     And he opens Talk
-    When he sends "open Psalm 23"
-    Then the answer shows in the sheet
-    And the sheet says "Could not open Psalms 23" and nothing was opened
-    And the Reader is open on "Romans 8"
+    When he sends "take me to Psalm 23"
+    Then the Reader is open on "Psalms 23"
+    And the Talk sheet is closed
 
   Scenario: A go in a shape the app refuses is ignored and the answer is still shown
     Given Lampas is opened on Romans 8 and the tutor answers with the go text "Colossians 1"

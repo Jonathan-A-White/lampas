@@ -70,7 +70,7 @@
       {
         "name": "chapter",
         "is": "place",
-        "tell": "Opens a chapter of the New Testament in the Reader",
+        "tell": "Opens a chapter of the Bible in the Reader",
         "args": {
           "type": "object",
           "required": [

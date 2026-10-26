@@ -6,7 +6,7 @@
 import { createTutorClient, defineRegistry, type Command, type CommandResult, type Fact, type Place, type Registry, type TutorClient, type TutorRecord } from 'voice-kit/talks';
 import { createDexieStore } from 'voice-kit/talks/dexie';
 import { addLemmaToLearn, type AddedLemma } from '../data/answerWord';
-import { NT_BOOKS, titleOf } from '../data/books';
+import { BOOKS, titleOf, type Book } from '../data/books';
 import { getDay, localDate, setTicked } from '../data/daily/dailyStore';
 import { NO_CHAPTER } from '../data/chapter';
 import { learnerGrammar } from '../data/grammar/learnerGrammar';
@@ -61,11 +61,14 @@ const screenNameOf = (route: Route): string => (route === 'home' ? READER : rout
 /** The key of the screen he is on now, for the tutor client's up-front list and record: the name the screen reported, else the one its address gives (the Reader for the plain address). */
 export const screenKey = (): string => screenContextNow()?.name ?? screenNameOf(routeOf(window.location.hash));
 
-/** A chapter of the app's books, from args as the tutor wrote them: the book by name ('Colossians', 'colossians') or by code ('col'), the chapter in the book's range. */
+/** A book of the Bible by the name he or the tutor says it ('Colossians', 'psalm'), already folded (trimmed, one space, lower case), or by its code ('col'). */
+export const bookNamed = (name: string): Book | undefined => BOOKS.find((b) => b.code === name || b.name.toLowerCase() === name || (b.code === 'psa' && name === 'psalm'));
+
+/** A chapter of any book the Reader opens, from args as the tutor wrote them: the book by name ('Colossians', 'colossians', 'Psalm') or by code ('col'), the chapter in the book's range. */
 export function chapterOf(args: unknown): { book: string; chapter: number; title: string } | undefined {
   const asked = typeof args === 'object' && args !== null ? (args as Record<string, unknown>) : {};
   const name = typeof asked.book === 'string' ? asked.book.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase() : '';
-  const book = NT_BOOKS.find((b) => b.code === name || b.name.toLowerCase() === name);
+  const book = bookNamed(name);
   const chapter = asked.chapter;
   if (!book || typeof chapter !== 'number' || !Number.isInteger(chapter) || chapter < 1 || chapter > book.chapters) return undefined;
   return { book: book.code, chapter, title: titleOf(book.code, chapter) };
@@ -225,7 +228,7 @@ const listsPlace: Place = {
 
 const chapterPlace: Place = {
   name: CHAPTER,
-  tell: 'Opens a chapter of the New Testament in the Reader',
+  tell: 'Opens a chapter of the Bible in the Reader',
   args: { type: 'object', required: ['book', 'chapter'], additionalProperties: false, properties: { book: { type: 'string', description: 'its name: Colossians' }, chapter: { type: 'integer', minimum: 1, maximum: 150 } } },
   open: async (args) => {
     const chapter = chapterOf(args);
