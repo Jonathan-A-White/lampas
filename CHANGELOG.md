@@ -1,5 +1,9 @@
 # What's new
 
+## 0.3.0
+_2026-10-26_
+- New: The Maps sheet for a verse now puts the maps that show the places named in that verse first, with those places listed under each map.
+
 ## 0.2.30
 _2026-10-26_
 - Fixed: The About you screen now asks about any Greek or Hebrew you have had before, and the Hebrew word meanings for Jonah's great fish and the verb "appointed" are right.

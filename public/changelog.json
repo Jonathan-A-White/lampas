@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.3.0",
+    "date": "2026-10-26",
+    "story": "mw-zbjgn3r.3",
+    "kind": "new",
+    "text": "The Maps sheet for a verse now puts the maps that show the places named in that verse first, with those places listed under each map."
+  },
+  {
     "version": "0.2.30",
     "date": "2026-10-26",
     "story": "mw-gdcyf98.7",
