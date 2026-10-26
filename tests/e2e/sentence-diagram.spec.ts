@@ -12,14 +12,14 @@ import { openVerseView } from './verse-view';
 const VIEWPORT = { width: 390, height: 844 };
 const ENGLISH = (JSON.parse(readFileSync('tests/fixtures/diagrams/col-3-1-english.json', 'utf8')) as { diagram: unknown }).diagram;
 
-async function start(page: Page, options: { share?: boolean } = {}): Promise<FakePostern> {
+async function start(page: Page, options: { share?: boolean; weave?: 'off' | 'solid' } = {}): Promise<FakePostern> {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.kindReplies['sentence-diagram'] = { status: 'answered', answer: ENGLISH };
   await routePostern(page, fake);
   await openUnlocked(page);
   if (options.share) await page.addInitScript(() => Object.defineProperty(navigator, 'share', { value: () => Promise.resolve(), configurable: true }));
-  await page.goto('/#/?b=col&c=3&view=english&weave=off');
+  await page.goto(`/#/?b=col&c=3&view=english&weave=${options.weave ?? 'off'}`);
   return fake;
 }
 
@@ -108,4 +108,32 @@ test('On a phone with Share, the five actions, Copy link and Share still fit two
   expect(row.count).toBe(7);
   expect(row.tops.size).toBe(2);
   await shot(page, 'sentence-diagram-share-row');
+});
+
+test('With the Weave on, the diagram draws the words it shows in Greek in Greek, and no word overflows', async ({ page }) => {
+  const fake = await start(page, { weave: 'solid' });
+  const view = await openVerseView(page, 1);
+  await view.getByRole('button', { name: 'Diagram', exact: true }).click();
+  const pane = view.getByRole('region', { name: 'Diagram' });
+  await expect(pane.getByRole('img', { name: 'Sentence diagram of Colossians 3:1, English' })).toBeVisible();
+
+  // Christ is Greek twice (Χριστός is solid); the English words are still English
+  await expect(pane.getByRole('button', { name: 'χριστῷ' })).toBeVisible();
+  await expect(pane.getByRole('button', { name: 'χριστός' })).toBeVisible();
+  await expect(pane.getByRole('button', { name: 'Christ' })).toHaveCount(0);
+  await expect(pane.getByRole('button', { name: 'strive' })).toBeVisible();
+  const greek = await pane.getByRole('button', { name: 'χριστῷ' }).evaluate((el) => getComputedStyle(el).fontFamily);
+  const english = await pane.getByRole('button', { name: 'strive' }).evaluate((el) => getComputedStyle(el).fontFamily);
+  expect(greek).not.toBe(english);
+
+  // no label's text is wider than its button, and the page does not scroll sideways
+  const overflowing = await pane.locator('[data-diagram] button').evaluateAll((buttons) => buttons.filter((b) => b.scrollWidth > b.clientWidth + 1).map((b) => b.textContent));
+  expect(overflowing).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await shot(page, 'sentence-diagram-weave');
+
+  // the Greek word opens its word sheet
+  await pane.getByRole('button', { name: 'χριστῷ' }).click();
+  await expect(page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-word')).toHaveText(/χριστῷ/i);
+  expect(fake.received.filter((r) => r.grist.kind === 'sentence-diagram')).toHaveLength(1);
 });
