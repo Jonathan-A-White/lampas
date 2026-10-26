@@ -25,7 +25,7 @@ The first thing on the home, under the search field, is **How much Greek?**: six
 | The tutor | readTutor, askBy, talk (Talk Hold | Tap, Send On release | By button), hebrew, tips, studyWay (Quiz goal, My study way) |
 | Listening | readAloud, voices, speed, pronunciation |
 | Daily | daily |
-| Study resources | resources, logos |
+| Study resources | resources, logos, maps |
 | Account | aboutYou, memory, more (Words, Review, Paradigms, Ask for more, Your requests, About) |
 | Developer | developer (listed on the home only once Developer mode is found on About) |
 
@@ -67,6 +67,7 @@ src/SettingsScreen.tsx  # the home (search field, groups, found rows) and a grou
 src/settings/rows.ts  # SECTIONS, GROUPS (which group a section is in), ROWS, visibleRows, rowsAt, neededFor, visibleGroups, searchSettings; the links, the Ask for a devotional door (it opens Ask for a book), the Your Logos library row (the door to #/library, not talkable) and Developer mode are rows too
 src/settings/define.ts  # defineSetting and SectionId
 src/settings/definitions/greekInterest.ts  # the Greek dial: GREEK_LEVELS, greekFrom, viewAt / weaveAt / newWordsAt, placementOf, the setting
+src/settings/definitions/maps.ts  # mapSourceSetting(source) (mw-zbjgn3r.6): the On/Off setting 'maps.<source.id>' of a map source (section maps, 'Maps' in Study resources after Bible in Logos; label source.name, hint source.describe, default source.default; dependsOn resource.logos when source.needs is 'logos'); the registry makes one entry per member of SOURCES (src/maps/sources/index.ts), controls/maps.tsx draws each as a plain On | Off, the tutor may flip it by talk, and src/maps/enabled.ts reads them
 src/settings/definitions/greekKeyboard.ts  # Greek keyboard (mw-fu7dqf.9, section daily beside Memorize, 'on' | 'off', Off to start, shown from Curious by greekFrom(1)): whether he has added a Greek keyboard to his phone; Memorize's Type it is offered in Greek only while it is On. Drawn by controls/daily.tsx like the Daily switches. PROVISIONAL
 src/settings/useGreekInterest.ts  # the step, live
 src/data/repositories/greekInterest.ts  # setGreekInterest, placeGreekInterest, raiseGreekInterest, the kept values
