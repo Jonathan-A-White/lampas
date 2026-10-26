@@ -78,7 +78,7 @@ describe('the upgrade from version 18', () => {
     expect(db.verno).toBe(32);
     expect(await db.grammarLevels.toArray()).toEqual([level]);
     expect(await db.reviews.toArray()).toEqual([review]);
-    expect(await db.words.toArray()).toEqual([word]);
+    expect(await db.words.toArray()).toEqual([{ ...word, lang: 'grc' }]) // v32 stamps the language;
     expect(await db.drillRuns.count()).toBe(0);
     await saveDrillRun(run('case-genitive'), 11);
     expect(await db.drillRuns.count()).toBe(1);
