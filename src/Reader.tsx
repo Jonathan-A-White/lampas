@@ -15,6 +15,7 @@ import { Away } from './Away';
 import { setImmersiveReader } from './appearance/appearanceSync';
 import { moveBox, useImmersive, useImmersiveSetting, useScrolledPercent } from './immersive';
 import { PlaceLine } from './PlaceLine';
+import { useCopyHold } from './copy/useCopyHold';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ReaderControls } from './ReaderControls';
 import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
@@ -250,6 +251,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     openVerseRange({ book: BOOK, chapter: CHAPTER, from: verses[0].n, to: verses[verses.length - 1].n, view: v, weave: w });
   }, [chapter, BOOK, CHAPTER]);
   const [action, chooseAction] = useVerseAction(hbo ? 'hbo' : 'grc');
+  const woven = useWoven(chapter, settings);
+  // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
+  const copyHold = useCopyHold(chapter, view ? { view, woven } : undefined, openChapter);
   // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
   useEffect(() => {
     if (request?.action === 'ask') chooseAction('ask');
@@ -337,7 +341,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, [paging, showPage]);
   const closeTeach = useCallback(() => setTeaching(false), []);
   const verseTalk: VerseTalk = { handlers: pressOn, listening: onBar.listening };
-  const woven = useWoven(chapter, settings);
   // what the Verse view shows and reads: for an Old Testament chapter the plain English (see the reading check above), else what the Reader shows
   const sheetView: ReaderView | undefined = hbo ? 'english' : view;
   const sheetWoven = hbo ? null : woven;
@@ -470,6 +473,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           inert={sheetOpen || viewUnit !== undefined}
         />
       ) : null}
+      {copyHold.said ? (
+        <p role="status" data-copied className="pointer-events-none fixed inset-x-3 toast-top z-20 rounded-xl border border-line bg-surface px-4 py-3 text-base text-fg shadow-lg">
+          {copyHold.said}
+        </p>
+      ) : null}
       {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
@@ -485,7 +493,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               const wovenOf = (v: Verse) => woven?.[chapter.verses.indexOf(v)] ?? null;
               return (
                 <Fragment key={first.n}>
-                  {headings === 'on' && first.h ? <SectionHeading text={first.h} onOpen={() => openPassage(first.n)} mirrored={source === 'hbo' && view === 'greek'} /> : null}
+                  {headings === 'on' && first.h ? <SectionHeading text={first.h} onOpen={() => openPassage(first.n)} onCopy={() => copyHold.passage(first.n)} mirrored={source === 'hbo' && view === 'greek'} /> : null}
                   {layout === 'paragraph' ? (
                     <ParagraphView
                       verses={block}
@@ -495,6 +503,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       selected={selected}
                       reading={readingVerse}
                       onSelect={selectVerse}
+                      onCopy={copyHold.verse}
                       onPlay={(n) => readFrom(n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
@@ -508,6 +517,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       selected={selected === first.n}
                       reading={readingVerse === first.n}
                       onSelect={() => selectVerse(first.n)}
+                      onCopy={() => copyHold.verse(first.n)}
                       onPlay={() => readFrom(first.n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
@@ -527,7 +537,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </div>
       </main>
       {/* with Turn pages the round button's room is under the place line, beside the button, so the page reaches down to the line (mw-5r3p30.610) */}
-      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} floor={footBare && !barUp} room={away || !ai ? '0px' : `calc(${ASK_BUTTON_ROOM})`} /> : null}
+      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={footBare && !barUp} room={away || !ai ? '0px' : `calc(${ASK_BUTTON_ROOM})`} /> : null}
       <BarSlot level={1} inset={footBare && !(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {chapter && !viewUnit && ai ? (
@@ -542,7 +552,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           />
         </Away>
       ) : null}
-      {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} visible={away} floor /> : null}
+      {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} visible={away} floor /> : null}
       {chapter && !viewUnit ? (
         <AskTutorButton
           away={immersive ? away : undefined}

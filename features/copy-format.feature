@@ -64,3 +64,57 @@ Feature: When you copy
     Given Lampas is opened on Colossians 3:1 in the Weave with When you copy set to Text "english"
     When he taps "Copy"
     Then the phone's clipboard starts with "Therefore, since you have been raised with Christ,"
+
+  Scenario: Holding a verse number copies the verse at once where no tutor is offered
+    Given Lampas is opened on Romans 8 on a phone with no licence and When you copy at its defaults
+    When he holds the number of verse 11
+    Then the phone's clipboard holds the English of verse 11, then the line "— Romans 8:11 (MSB)", then the link of Romans 8:11
+    And the Reader says "Copied Romans 8:11"
+    And the Verse view is not open
+
+  Scenario: Holding a section heading copies its passage
+    Given Lampas is opened on Romans 8 with When you copy at its defaults
+    When he holds the heading "Walking by the Spirit"
+    Then the phone's clipboard starts with "1 Therefore there is now no condemnation"
+    And the phone's clipboard holds the line "— Romans 8:1-11 (MSB)"
+    And the Reader says "Copied Romans 8:1-11"
+    And the Verse view is not open
+
+  Scenario: Holding the place line copies the whole chapter
+    Given Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults
+    When he holds the place line
+    Then the phone's clipboard starts with "1 Therefore there is now no condemnation"
+    And the phone's clipboard holds the line "— Romans 8 (MSB)"
+    And the Reader says "Copied Romans 8"
+    And the Verse view is not open
+
+  Scenario: Holding a verse number in the Greek view copies the Greek
+    Given Lampas is opened on Colossians 3 in the Greek view on a phone with no licence and When you copy at its defaults
+    When he holds the number of verse 1
+    Then the phone's clipboard starts with "Εἰ οὖν συνηγέρθητε τῷ χριστῷ τὰ ἄνω ζητεῖτε"
+    And the Reader says "Copied Colossians 3:1"
+
+  Scenario: Where the tutor is offered a hold on a verse number still talks about the verse
+    Given Lampas is opened on Romans 8 with When you copy at its defaults
+    When he holds the number of verse 11
+    Then the Talk sheet is open and nothing was copied
+
+  Scenario: A tap on a verse number still opens the Verse view
+    Given Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults
+    When he taps the number of verse 11
+    Then the Verse view is open and nothing was copied
+
+  Scenario: A tap on a section heading still opens the Verse view
+    Given Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults
+    When he taps the heading "Walking by the Spirit"
+    Then the Verse view is open and nothing was copied
+
+  Scenario: A tap on the place line still opens the Verse view
+    Given Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults
+    When he taps the place line
+    Then the Verse view is open and nothing was copied
+
+  Scenario: A phone that refuses the clipboard shows the text to copy by hand
+    Given Lampas is opened on Romans 8 on a phone with no licence and a clipboard that refuses and When you copy at its defaults
+    When he holds the number of verse 11
+    Then the Verse view is open on verse 11 with the text shown selected to copy by hand

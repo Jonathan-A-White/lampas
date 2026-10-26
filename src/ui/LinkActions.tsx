@@ -1,10 +1,11 @@
 // src/ui/LinkActions.tsx — Copy link (and Share, where the phone has navigator.share) for the https link of a word (src/nav/links.ts wordUrl). Copying says
 // 'Link copied'; a phone that refuses the clipboard shows the link itself, selected, to copy by hand: the tap never ends in nothing. Used on the word sheet.
 // Given `text` (the Verse view's: what When you copy makes of the verse, passage or chapter, src/copy/format.ts) the buttons are Copy and Share, it says
-// 'Copied' and shows the text to copy by hand; Share hands the share sheet `shareText` and, when there is one, `shareUrl` as its link.
+// 'Copied' and shows the text to copy by hand (`startByHand` shows it from the start, selected); Share hands the share sheet `shareText` and, when there is one, `shareUrl` as its link.
 import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useRef, useState } from 'react';
 import { copy } from './clipboard';
+import { focusOnMount } from './focus';
 
 const BUTTON = 'min-h-11 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
 
@@ -20,6 +21,7 @@ export function LinkActions({
   shareUrl,
   className,
   statusClassName = 'text-sm text-muted',
+  startByHand,
 }: {
   url: string;
   title: string;
@@ -28,10 +30,12 @@ export function LinkActions({
   shareUrl?: string;
   className?: string;
   statusClassName?: string;
+  /** open with the text shown selected to copy by hand: a hold in the Reader that the clipboard refused (src/copy/useCopyHold.ts) */
+  startByHand?: boolean;
 }) {
   const whole = text !== undefined;
   const value = text ?? url;
-  const [state, setState] = useState<'idle' | 'copied' | 'by-hand'>('idle');
+  const [state, setState] = useState<'idle' | 'copied' | 'by-hand'>(startByHand && whole ? 'by-hand' : 'idle');
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const alive = useAlive();
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -73,6 +77,7 @@ export function LinkActions({
           <textarea
             readOnly
             aria-label="Text to copy"
+            ref={startByHand ? focusOnMount : undefined}
             value={value}
             rows={Math.min(8, value.split('\n').length + 1)}
             onFocus={(e) => e.currentTarget.select()}

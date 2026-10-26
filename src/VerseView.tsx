@@ -33,6 +33,7 @@ import { Icon as PlayIcon } from './speech/ReadControls';
 import { LinkActions } from './ui/LinkActions';
 import { COPY_DEFAULTS, copyLink, copyText, copyUnitOf } from './copy/format';
 import { useCopyFormat } from './copy/useCopyFormat';
+import { takeByHand } from './copy/useCopyHold';
 import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './useAsks';
@@ -129,6 +130,8 @@ export function VerseView(props: VerseViewProps) {
   const canShare = typeof navigator.share === 'function';
   // Copy and Share give the unit in the format of Settings > Reading > When you copy (src/copy/format.ts); the defaults until the four rows are read
   const copyFormat = useCopyFormat() ?? COPY_DEFAULTS;
+  // a hold in the Reader that the clipboard refused opens the view with its text shown selected, to copy by hand (src/copy/useCopyHold.ts)
+  const [startByHand] = useState(takeByHand);
   // 'As you read it' is the view the Reader draws this verse in: its view and, in the Weave, its woven chunks
   const copyUnit = useMemo(() => copyUnitOf(chapterText, verse, { view, woven: wovenChapter ?? null }), [chapterText, verse, view, wovenChapter]);
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
@@ -200,6 +203,7 @@ export function VerseView(props: VerseViewProps) {
               url={copyLink(copyUnit)}
               title={reference}
               text={copyText(copyUnit, copyFormat)}
+              startByHand={startByHand}
               shareText={copyText(copyUnit, { ...copyFormat, link: 'off' })}
               shareUrl={copyFormat.link === 'on' ? copyLink(copyUnit) : undefined}
               className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_:is(input,textarea)]:col-span-3 [&_:is(input,textarea)]:col-start-1 [&_:is(input,textarea)]:row-start-3 [&_:is(input,textarea)]:@max-[15rem]:col-span-2 [&_:is(input,textarea)]:@max-[15rem]:row-start-4 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_:is(input,textarea)]:@[29rem]:col-span-7 [&_:is(input,textarea)]:@[29rem]:row-start-2' : '[&>div]:contents [&_:is(input,textarea)]:@[25rem]:col-span-6 [&_:is(input,textarea)]:@[25rem]:row-start-2'}`}

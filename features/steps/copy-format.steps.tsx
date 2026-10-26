@@ -7,11 +7,13 @@ import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { LicenceContext } from '../../src/gate/licenceContext';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { setGreekInterest, setReaderView, setWeave, type ReaderView, type Weave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { passageUrl, referenceUrl } from '../../src/nav/links';
+import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -43,7 +45,12 @@ const clip = (): string => {
   return copied[0];
 };
 
-async function open(settings: Record<string, string>, hash = '', read: { view: ReaderView; weave: Weave } = { view: 'english', weave: 'off' }): Promise<void> {
+async function open(
+  settings: Record<string, string>,
+  hash = '',
+  read: { view: ReaderView; weave: Weave } = { view: 'english', weave: 'off' },
+  options: { refuses?: boolean; unlicensed?: boolean } = {},
+): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -55,8 +62,10 @@ async function open(settings: Record<string, string>, hash = '', read: { view: R
   copied = [];
   Object.defineProperty(window.navigator, 'clipboard', {
     configurable: true,
-    value: { writeText: (text: string) => (copied.push(text), Promise.resolve()) },
+    value: { writeText: (text: string) => (options.refuses ? Promise.reject(new Error('refused')) : (copied.push(text), Promise.resolve())) },
   });
+  // a page that refuses the modern API refuses the old way too
+  Object.defineProperty(document, 'execCommand', { configurable: true, value: undefined });
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.readings.clear()]);
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
@@ -65,7 +74,15 @@ async function open(settings: Record<string, string>, hash = '', read: { view: R
   await setReaderView(read.view);
   await seedHisWords();
   await setWeave(read.weave);
-  render(<App />);
+  render(
+    options.unlicensed ? (
+      <LicenceContext.Provider value={{ licence: 'not-licensed', locked: null, publicKeyHex: '', checkAgain: () => undefined }}>
+        <App />
+      </LicenceContext.Provider>
+    ) : (
+      <App />
+    ),
+  );
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
@@ -203,5 +220,132 @@ describeFeature(feature, ({ Scenario }) => {
     Then("the phone's clipboard starts with {string}", starts);
     And("the phone's clipboard holds the line {string}", holdsLine);
     And("the phone's clipboard ends with the link of Romans 8:1-39", () => endsWithLink(passageUrl('rom', 8, 1, 39)));
+  });
+  // A hold: the finger goes down on the target and stays past LONG_PRESS_MS (src/ui/longPress.ts); then it lifts, and the click that ends it is not a tap.
+  const holdOn = async (target: HTMLElement) => {
+    await user.pointer({ keys: '[MouseLeft>]', target });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150));
+    });
+    await user.pointer({ keys: '[/MouseLeft]', target });
+  };
+  const numberOf = (n: number) => document.querySelector<HTMLElement>(`[data-reader] [data-verse="${n}"] [data-verse-number]`)!;
+  const headingButton = (text: string) => {
+    const heading = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => squash(h.textContent) === text);
+    if (!heading) throw new Error(`no heading ${text}`);
+    return within(heading).getByRole('button');
+  };
+  const placeLine = () => document.querySelector<HTMLElement>('[data-place-line]')!;
+  const readerSays = async (_: unknown, words: string) => {
+    expect(await screen.findByText(words, { selector: '[role="status"]' })).toBeInTheDocument();
+  };
+  const waitCopied = () => waitFor(() => expect(copied).toHaveLength(1));
+  const noVerseView = () => {
+    expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull();
+  };
+  const pages = () => open({ readingMode: 'pages' });
+  const unlicensed = () => open({}, '', undefined, { unlicensed: true });
+
+  Scenario('Holding a verse number copies the verse at once where no tutor is offered', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 on a phone with no licence and When you copy at its defaults', unlicensed);
+    When('he holds the number of verse {int}', async (_, n: number) => {
+      await holdOn(numberOf(n));
+      await waitCopied();
+    });
+    Then("the phone's clipboard holds the English of verse 11, then the line {string}, then the link of Romans 8:11", (_, reference: string) => {
+      expect(clip()).toBe(`${english(11)}\n${reference}\n${referenceUrl('rom', 8, 11)}`);
+    });
+    And('the Reader says {string}', readerSays);
+    And('the Verse view is not open', noVerseView);
+  });
+
+  Scenario('Holding a section heading copies its passage', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with When you copy at its defaults', defaults);
+    When('he holds the heading {string}', async (_, text: string) => {
+      await holdOn(headingButton(text));
+      await waitCopied();
+    });
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard holds the line {string}", holdsLine);
+    And('the Reader says {string}', readerSays);
+    And('the Verse view is not open', noVerseView);
+  });
+
+  Scenario('Holding the place line copies the whole chapter', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults', pages);
+    When('he holds the place line', async () => {
+      await holdOn(placeLine());
+      await waitCopied();
+    });
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard holds the line {string}", holdsLine);
+    And('the Reader says {string}', readerSays);
+    And('the Verse view is not open', noVerseView);
+  });
+
+  Scenario('Holding a verse number in the Greek view copies the Greek', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Colossians 3 in the Greek view on a phone with no licence and When you copy at its defaults', () =>
+      open({}, '#/?b=col&c=3', { view: 'greek', weave: 'off' }, { unlicensed: true }),
+    );
+    When('he holds the number of verse {int}', async (_, n: number) => {
+      await holdOn(numberOf(n));
+      await waitCopied();
+    });
+    Then("the phone's clipboard starts with {string}", starts);
+    And('the Reader says {string}', readerSays);
+  });
+
+  const openedAndNothingCopied = async () => {
+    await screen.findByRole('region', { name: 'Verse view' });
+    expect(copied).toEqual([]);
+  };
+
+  Scenario('Where the tutor is offered a hold on a verse number still talks about the verse', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with When you copy at its defaults', defaults);
+    When('he holds the number of verse {int}', async (_, n: number) => {
+      await holdOn(numberOf(n));
+    });
+    Then('the Talk sheet is open and nothing was copied', async () => {
+      expect(await screen.findByRole('dialog', { name: /^Talk about Romans 8:11/ })).toBeInTheDocument();
+      expect(copied).toEqual([]);
+    });
+  });
+
+  Scenario('A tap on a verse number still opens the Verse view', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults', pages);
+    When('he taps the number of verse {int}', async (_, n: number) => {
+      await user.click(numberOf(n));
+    });
+    Then('the Verse view is open and nothing was copied', openedAndNothingCopied);
+  });
+
+  Scenario('A tap on a section heading still opens the Verse view', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults', pages);
+    When('he taps the heading {string}', async (_, text: string) => {
+      await user.click(headingButton(text));
+    });
+    Then('the Verse view is open and nothing was copied', openedAndNothingCopied);
+  });
+
+  Scenario('A tap on the place line still opens the Verse view', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults', pages);
+    When('he taps the place line', async () => {
+      await user.click(placeLine());
+    });
+    Then('the Verse view is open and nothing was copied', openedAndNothingCopied);
+  });
+
+  Scenario('A phone that refuses the clipboard shows the text to copy by hand', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Romans 8 on a phone with no licence and a clipboard that refuses and When you copy at its defaults', () =>
+      open({}, '', undefined, { unlicensed: true, refuses: true }),
+    );
+    When('he holds the number of verse {int}', (_, n: number) => holdOn(numberOf(n)));
+    Then('the Verse view is open on verse 11 with the text shown selected to copy by hand', async () => {
+      const box = await within(await screen.findByRole('region', { name: 'Verse view' })).findByRole<HTMLTextAreaElement>('textbox', { name: 'Text to copy' });
+      expect(box.value).toBe(`${english(11)}\n— Romans 8:11 (MSB)\n${referenceUrl('rom', 8, 11)}`);
+      expect(document.activeElement).toBe(box);
+      expect(box.selectionStart).toBe(0);
+      expect(box.selectionEnd).toBe(box.value.length);
+    });
   });
 });

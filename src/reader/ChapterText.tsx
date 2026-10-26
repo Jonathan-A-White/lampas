@@ -12,10 +12,11 @@ import { READING_CLASS, textClass } from './textClass';
 import { VerseNumber, VerseText, type VerseProps, type VerseTalk } from './VerseText';
 import { langOf } from '../script/greekLang';
 import { isOrdered, rowAttrs } from './sourceText';
+import { NO_SELECT, useLongPress } from '../ui/longPress';
 
 /** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
 export function VerseLine(props: VerseProps) {
-  const { verse, view, source = 'grc', woven, selected, reading, onSelect, onPlay, talk } = props;
+  const { verse, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, talk } = props;
   // an Old Testament chapter's rows run right to left in the Hebrew view and in a weave laid out in the Hebrew order; the number and the play button follow the row's direction
   const row = rowAttrs(view, source, isOrdered([woven]));
   return (
@@ -30,6 +31,7 @@ export function VerseLine(props: VerseProps) {
         n={verse.n}
         selected={selected}
         onSelect={onSelect}
+        onCopy={onCopy}
         talk={talk}
         className="inline-block min-h-(--lp-tap) min-w-(--lp-tap) pe-1 text-start align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted"
       >
@@ -44,7 +46,7 @@ export function VerseLine(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onPlay, onLook, talk }: {
+export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, talk }: {
   verses: Verse[];
   view: ReaderView;
   source?: SourceLanguage;
@@ -53,6 +55,7 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
   /** the verse being read aloud */
   reading: number | null;
   onSelect: (n: number) => void;
+  onCopy?: (n: number) => void;
   onPlay: (n: number) => void;
   onLook: (lookup: Lookup) => void;
   talk: VerseTalk;
@@ -65,6 +68,7 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
             n={verse.n}
             selected={selected === verse.n}
             onSelect={() => onSelect(verse.n)}
+            onCopy={onCopy ? () => onCopy(verse.n) : undefined}
             talk={talk}
             className="-mx-3 inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)"
           >
@@ -80,12 +84,17 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
   );
 }
 
-/** A section heading: the MSB's own English, whichever view is on. The whole heading is a button that opens the Verse view for its passage; its
+/** A section heading: the MSB's own English, whichever view is on. The whole heading is a button that opens the Verse view for its passage (a hold copies it); its
  * padding (the heading's own side padding moved onto it, so it spans the whole width) and the negative margin that takes the vertical padding back keep the text where it was and give a thumb 44 px (`flow-root` keeps the margin inside). */
-export function SectionHeading({ text, onOpen, mirrored }: { text: string; onOpen: () => void; /** the chapter runs right to left (the Hebrew view): the heading sits at the right edge, its English still left to right */ mirrored?: boolean }) {
+export function SectionHeading({ text, onOpen, onCopy, mirrored }: { text: string; onOpen: () => void; /** a hold copies the heading's passage (src/copy/useCopyHold.ts) */ onCopy?: () => void; /** the chapter runs right to left (the Hebrew view): the heading sits at the right edge, its English still left to right */ mirrored?: boolean }) {
+  const press = useLongPress(onOpen, () => onCopy?.());
   return (
     <h2 data-heading lang="en" className="mb-1 mt-5 flow-root font-sans text-lg font-semibold leading-snug text-accent">
-      <button type="button" onClick={onOpen} className={`-my-2.5 block w-full rounded-lg px-2 py-2.5 active:bg-line ${mirrored ? 'text-right' : 'text-left'}`}>
+      <button
+        type="button"
+        {...(onCopy ? press : { onClick: onOpen })}
+        className={`${onCopy ? NO_SELECT : ''} -my-2.5 block w-full rounded-lg px-2 py-2.5 active:bg-line ${mirrored ? 'text-right' : 'text-left'}`}
+      >
         {text}
       </button>
     </h2>

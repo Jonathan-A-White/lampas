@@ -17,13 +17,15 @@
 //
 // A tap on the line opens the whole chapter in the view a section heading opens (`onOpen`, mw-5r3p30.699). The line is then a button with the row's own
 // type, padding and place, so it is no bigger than it was; an underline is all that says it can be tapped, as a heading's active tint does.
-// Its tap area is 44 px tall (--lp-tap, mw-5r3p30.703), a hit box that paints nothing and reaches above the row, so the row is not clipped once it has slid in.
+// A hold on it copies the whole chapter (`onCopy`, src/copy/useCopyHold.ts, useLongPress). Its tap area is 44 px tall (--lp-tap, mw-5r3p30.703), a hit box that paints nothing and reaches above the row, so the row is not clipped once it has slid in.
 import { useEffect, useState } from 'react';
+import { NO_SELECT, useLongPress } from './ui/longPress';
 
 /** How long the row takes to slide: `.place-box` in src/index.css. */
 const SLIDE_MS = 200;
 
-export function PlaceLine({ title, at, visible = true, floor = false, room, onOpen }: { title: string; at: string; visible?: boolean; floor?: boolean; room?: string; onOpen?: () => void }) {
+export function PlaceLine({ title, at, visible = true, floor = false, room, onOpen, onCopy }: { title: string; at: string; visible?: boolean; floor?: boolean; room?: string; onOpen?: () => void; onCopy?: () => void }) {
+  const press = useLongPress(() => onOpen?.(), () => onCopy?.());
   // `drawn`: in the page, from the moment it is wanted until it has slid out. A row wanted while the page is up slides in (`slides`, a CSS animation that
   // starts with the bars' own slide, so the box never grows past its end); one drawn with the Reader is at full height from the start.
   const [drawn, setDrawn] = useState(visible);
@@ -49,7 +51,7 @@ export function PlaceLine({ title, at, visible = true, floor = false, room, onOp
     <div className="place-box" style={room ? { minHeight: room } : undefined} data-slides={slides ? '' : undefined} data-closed={visible ? undefined : ''} aria-hidden={visible ? undefined : true} inert={!visible}>
       <div className="place-inner">
         {onOpen ? (
-          <button type="button" onClick={onOpen} data-place-line data-tap data-floor={floor ? '' : undefined} style={room ? { paddingInline: `max(1rem, ${room})` } : undefined} className="place-line block w-full">
+          <button type="button" {...(onCopy ? press : { onClick: onOpen })} data-place-line data-tap data-floor={floor ? '' : undefined} style={room ? { paddingInline: `max(1rem, ${room})` } : undefined} className={`place-line block w-full ${onCopy ? NO_SELECT : ''}`}>
             <span className="underline decoration-dotted underline-offset-2">
               {title} · {at}
             </span>

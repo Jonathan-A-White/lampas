@@ -109,11 +109,13 @@ export interface VerseTalk {
   listening: boolean;
 }
 
-/** The button with a verse's number: a tap selects the verse, a hold (half a second) talks about it. */
-export function VerseNumber({ n, selected, onSelect, talk, className, children }: {
+/** The button with a verse's number: a tap selects the verse, a hold (half a second) talks about it. Where the tutor is not offered (no licence) the hold copies the verse
+ * instead, at once (`onCopy`, src/copy/useCopyHold.ts: useLongPress, the app's one hold). */
+export function VerseNumber({ n, selected, onSelect, onCopy, talk, className, children }: {
   n: number;
   selected: boolean;
   onSelect: () => void;
+  onCopy?: () => void;
   talk: VerseTalk;
   className: string;
   children: ReactNode;
@@ -129,12 +131,16 @@ export function VerseNumber({ n, selected, onSelect, talk, className, children }
   const guard = useRef<(() => void) | null>(null);
   useEffect(() => () => guard.current?.(), []);
   const handlers = ai ? talk.handlers(n) : null;
+  const press = useLongPress(onSelect, () => onCopy?.());
+  const copying = !ai && onCopy !== undefined;
   return (
     <button
       type="button"
       {...(handlers ?? {})}
       onPointerDown={
-        handlers
+        copying
+          ? press.onPointerDown
+          : handlers
           ? (e) => {
               held.current = false;
               // the page does not scroll under a finger that holds (React's touchmove is passive: a listener of our own, on while he presses)
@@ -152,8 +158,11 @@ export function VerseNumber({ n, selected, onSelect, talk, className, children }
             }
           : undefined
       }
+      {...(copying ? { onPointerMove: press.onPointerMove, onContextMenu: press.onContextMenu } : {})}
       onPointerUp={
-        handlers
+        copying
+          ? press.onPointerUp
+          : handlers
           ? () => {
               if (listening.current) held.current = true;
               guard.current?.();
@@ -162,21 +171,27 @@ export function VerseNumber({ n, selected, onSelect, talk, className, children }
           : undefined
       }
       onPointerCancel={
-        handlers
+        copying
+          ? press.onPointerCancel
+          : handlers
           ? () => {
               guard.current?.();
               handlers.onPointerCancel();
             }
           : undefined
       }
-      onClick={() => {
-        if (held.current) held.current = false;
-        else onSelect();
-      }}
+      onClick={
+        copying
+          ? press.onClick
+          : () => {
+              if (held.current) held.current = false;
+              else onSelect();
+            }
+      }
       data-verse-number
       aria-label={`Verse ${n}`}
       aria-pressed={selected}
-      className={`select-none [-webkit-touch-callout:none] ${className}`}
+      className={`${NO_SELECT} ${className}`}
     >
       {children}
     </button>
@@ -194,6 +209,8 @@ export interface VerseProps {
   /** this verse is the one being read aloud */
   reading: boolean;
   onSelect: () => void;
+  /** a hold on the verse's number with no tutor to talk to copies the verse */
+  onCopy?: () => void;
   onPlay: () => void;
   onLook: (lookup: Lookup) => void;
   talk: VerseTalk;
