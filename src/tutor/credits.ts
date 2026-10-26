@@ -11,7 +11,7 @@ export const MAX_CREDITS_BYTES = 5600;
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
   { name: 'Byzantine Priority', use: 'Robinson\'s essay, read on the Preface', licence: 'Public domain', link: 'https://byzantinetext.com/study/editions/robinson-pierpont/' },
-  { name: 'TBESG', use: 'STEPBible (Tyndale House): each word\'s lemma, gloss and definition', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
+  { name: 'TBESG', use: 'STEPBible: each word\'s lemma, gloss, definition; a verse\'s places', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places, by David P. Barrett', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
   { name: 'eSpeak NG', use: 'The sound of ὁ and of δ\'', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },
   { name: 'Piper', use: 'Trial Greek sound clips, not in screens', licence: 'MIT', link: 'https://github.com/rhasspy/piper' },
