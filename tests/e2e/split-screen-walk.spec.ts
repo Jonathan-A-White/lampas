@@ -317,11 +317,6 @@ const SCREENS: { name: string; walk: Walk }[] = [
  * (test.fail: it goes red when the bug is mended, and the line is deleted). Keys are 'screen@size'.
  */
 const KNOWN: Record<string, string> = {
-  'reader-english@portrait-third': 'the Talk bar is cut off at the foot of a 260 px window: the header, the chips and the verse text keep their room and push the bar and its 48 px bottom inset past the window',
-  'reader-weave@portrait-third': 'the Talk bar is cut off at the foot of a 260 px window (as reader-english)',
-  'reader-greek@portrait-third': 'the Talk bar is cut off at the foot of a 260 px window (as reader-english)',
-  'ask@portrait-third': 'the Ask composer (Hold to ask, Attach a picture, Take a photo, Type a question) is cut off at the foot of a 260 px window by the speaking bar and Send to the makers above it',
-  'reference-popup@portrait-third': 'the reference pop-up\'s Play and Open buttons are cut off at the foot of a 260 px window',
 };
 
 for (const size of SIZES) {
