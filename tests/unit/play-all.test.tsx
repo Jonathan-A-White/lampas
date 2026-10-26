@@ -69,11 +69,9 @@ describe('Play all on a verse list', () => {
     const isaiahAt = synth.spoken.findIndex((s) => s.text === 'Isaiah 30:21');
     expect(isaiahAt).toBeGreaterThan(0);
     expect(synth.spoken.every((s) => !s.text.includes('skipping'))).toBe(true);
-    await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(isaiahAt + 1), { timeout });
-    expect(synth.spoken[isaiahAt + 1].lang).toBe('en-US');
-
     await listenUntil('Reading Hebrews 7:24-25 · 3 of 3');
     await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('Hebrews 7:24-25'), { timeout });
+    expect(synth.spoken[isaiahAt + 1]).toMatchObject({ lang: 'en-US', text: expect.stringContaining('This is the way') });
     expect(synth.spoken.every((s) => s.text !== '' && !s.text.includes('skipping'))).toBe(true);
 
     // the end of the list takes the bar away
