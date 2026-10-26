@@ -120,15 +120,19 @@ interface Spot {
   maxHeight: number;
 }
 
-/** Where the card goes: below the reference when it fits, else above it, else on the roomier side with its text scrolling. `floor` is the top of the layer it is placed in
+/** Where the card goes: below the reference when it fits, else above it, else on the roomier side with its text scrolling. `chrome` is the height of what must always show
+ * (the heading and the footer). `floor` is the top of the layer it is placed in
  * (the foot of the shell's bars, mw-5r3p30.644): the card does not go above it, and its `top` is counted from it. */
-function spotFor(anchor: DOMRect, natural: number, floor: number): Spot {
+function spotFor(anchor: DOMRect, natural: number, floor: number, chrome: number): Spot {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const width = Math.min(WIDTH, vw - 2 * MARGIN);
   const left = Math.min(Math.max(anchor.left, MARGIN), vw - width - MARGIN);
   const below = vh - anchor.bottom - GAP - MARGIN;
   const above = anchor.top - floor - GAP - MARGIN;
+  // a window so short that neither side has room for the card's heading and its Play and Open (a third of a phone's height, split-screen, mw-5r3p30.773): the card
+  // takes the whole layer, over the reference, rather than be cut off at the window's foot
+  if (Math.max(below, above) < chrome) return { top: MARGIN, left, width, maxHeight: Math.max(vh - floor - 2 * MARGIN, 0) };
   if (natural <= below || (natural > above && below >= above)) return { top: anchor.bottom + GAP - floor, left, width, maxHeight: Math.max(below, 0) };
   const height = Math.min(natural, above);
   return { top: anchor.top - GAP - height - floor, left, width, maxHeight: Math.max(above, 0) };
@@ -176,6 +180,8 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   const view = passage !== null && passage !== 'failed' && sourceLanguage(passage) !== 'grc' ? 'english' : saved;
   const box = useRef<HTMLDivElement>(null);
   const layer = useRef<HTMLDivElement>(null);
+  const head = useRef<HTMLDivElement>(null);
+  const foot = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState<Spot | null>(null);
 
   useEffect(() => {
@@ -209,7 +215,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   // Placed once drawn, and again when its text arrives or the screen turns (the card's own height is read from its content).
   useLayoutEffect(() => {
     const place = (): void => {
-      if (anchor.current && box.current && layer.current) setSpot(spotFor(anchor.current.getBoundingClientRect(), box.current.scrollHeight, layer.current.getBoundingClientRect().top));
+      if (anchor.current && box.current && layer.current) setSpot(spotFor(anchor.current.getBoundingClientRect(), box.current.scrollHeight, layer.current.getBoundingClientRect().top, (head.current?.offsetHeight ?? 0) + (foot.current?.offsetHeight ?? 0) + 2));
     };
     place();
     window.addEventListener('resize', place);
@@ -233,7 +239,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
         style={spot ? { top: spot.top, left: spot.left, width: spot.width, maxHeight: spot.maxHeight } : { top: 0, left: MARGIN, width: Math.min(WIDTH, window.innerWidth - 2 * MARGIN), visibility: 'hidden' }}
         className="absolute flex flex-col overflow-hidden rounded-xl border border-line bg-surface text-fg shadow-lg"
       >
-        <div className="flex items-center justify-between gap-2 px-4 pt-2">
+        <div ref={head} className="flex items-center justify-between gap-2 px-4 pt-2">
           <h2 className="text-lg font-semibold">{card.heading}</h2>
           <button type="button" onClick={onClose} className="-mr-2 min-h-11 min-w-11 rounded-lg px-2 text-base text-muted">
             Close
@@ -250,7 +256,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
             <MarkedPassage chapter={passage} held={held} mark={mark} />
           )}
         </div>
-        <div className="flex flex-col gap-1 border-t border-line px-4 py-2">
+        <div ref={foot} className="flex flex-col gap-1 border-t border-line px-4 py-2">
           {held ? <span className="text-sm text-muted">{view === 'greek' ? GREEK_TEXT : TRANSLATION}</span> : null}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">

@@ -131,6 +131,8 @@ export function VerseView(props: VerseViewProps) {
   const typeClass = `leading-(--lp-leading) ${big} ${size}`;
   return (
     <section aria-label="Verse view" data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
+      {/* No box of its own, except in a window under 300 px tall with the Ask open (src/index.css): there the header and the text scroll together above the composer (mw-5r3p30.773). */}
+      <div data-verse-scroll className="contents">
       {/* At 20 rem or less of the phone's own text (390 px at 200%) the title takes a row of its own under ‹ Reader and the arrows, so a passage's heading has the whole width and is not clamped (mw-cwf538.9). */}
       <div className="@container shrink-0 border-b border-line">
       <header className="flex flex-wrap items-center gap-1 px-2 py-2">
@@ -248,6 +250,7 @@ export function VerseView(props: VerseViewProps) {
           {action === 'diagram' && ai ? <DiagramPane key={`${book}.${chapter}.${unitId(verse)}:${view}`} chapter={chapterText} verse={verse} view={view} woven={wovenChapter} onLook={onLook} /> : null}
         </div>
         </div>
+      </div>
       </div>
       {lesson && checking === lesson.key ? (
         <CheckSheet

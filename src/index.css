@@ -244,6 +244,12 @@
   .reader-top > [data-testid="reader-chips"] {
     margin-inline-end: var(--lp-ask-gutter);
   }
+
+  /* The Reader's box above a Talk bar ends 8 px short of the bar, not 128 px: the bar already carries the phone's bar under it, and the box's end padding
+   * (a scroll box's padding cannot shrink) was 136 px of the 260 left under the header, so the bar was pushed past the window's foot (mw-5r3p30.773). */
+  [data-reader]:has(~ * [data-talk-bar]) {
+    padding-bottom: 0.5rem;
+  }
 }
 
 @media (prefers-color-scheme: light) {
@@ -993,6 +999,21 @@ textarea,
  * window (landscape) that padding alone would push the composer below the screen's edge (mw-5r3p30.170). Type a question is a 44 px thumb target. */
 [data-verse-view] .screen {
   padding-bottom: 1rem;
+}
+/* In a window under 300 px tall with the Ask open (a third of a phone's height, split-screen) the header, the speaking bar and the composer's 169 px left the text no room
+ * at all and pushed the composer past the window's foot (mw-5r3p30.773). The header and the text scroll together in one box above the pinned composer and the speaking
+ * bar, which never give way (src/ui/reveal.ts scrollBoxOf finds that box). */
+@media (max-height: 299px) {
+  [data-verse-view]:has([data-ask]) > [data-verse-scroll] {
+    display: block;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  [data-verse-view]:has([data-ask]) > [data-verse-scroll] > .screen {
+    overflow: visible;
+  }
 }
 /* Unlock has no round Ask button either, so it keeps no 140 px floor under its last row, and it keeps room above its icon (mw-5r3p30.183): the content
  * centres in what is left and scrolls from its top when it does not fit. */

@@ -27,7 +27,7 @@ import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
 import { openBridgeIdea } from './talk/offers';
 import { PendingQuestion } from './ui/PendingQuestion';
 import { keepPlaced, revealFoot, revealLines } from './ui/keepInView';
-import { revealTop } from './ui/reveal';
+import { revealTop, scrollBoxOf } from './ui/reveal';
 import { YouSaid } from './ui/YouSaid';
 import { useElapsed } from './ui/useElapsed';
 import { askDraftKey, readDraft, writeDraft } from './ui/unsentDraft';
@@ -74,7 +74,7 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
       // the answer comes under a long passage: bring its first lines into view, clear of the composer and the speaking bar (mw-5r3p30.170); and under a long question
       // of his own, the first lines of the answer, not the top of his question (mw-5r3p30.493)
       const card = cards.current?.querySelector<HTMLElement>('[data-answer]:last-of-type') ?? null;
-      const box = card?.closest<HTMLElement>('.screen');
+      const box = scrollBoxOf(card);
       const text = card?.querySelector<HTMLElement>('[data-answer-text]');
       if (card && box && text) keepPlaced(box, () => {
         revealTop(card);
@@ -143,7 +143,7 @@ export function AskStatus({ verse, state, onAsk }: { verse: Verse; state: AskSta
   // block is brought in, no further than the wait's own line at the box's top
   useEffect(() => {
     const block = pending.current;
-    const box = block?.closest<HTMLElement>('.screen');
+    const box = scrollBoxOf(block);
     const wait = block?.querySelector<HTMLElement>('[role="status"]');
     if (!block || !box || !wait) return;
     return keepPlaced(box, () => revealFoot(box, block, wait), [block]);
