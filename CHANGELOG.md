@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.30
+_2026-10-26_
+- Fixed: The About you screen now asks about any Greek or Hebrew you have had before, and the Hebrew word meanings for Jonah's great fish and the verb "appointed" are right.
+
 ## 0.2.29
 _2026-10-26_
 - New: Chapters and verses now show a quiet Maps button that opens Bible Mapper's maps for the place, each with its dates, credit and a link back to the site.

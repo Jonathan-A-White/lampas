@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.2.30",
+    "date": "2026-10-26",
+    "story": "mw-gdcyf98.7",
+    "kind": "fixed",
+    "text": "The About you screen now asks about any Greek or Hebrew you have had before, and the Hebrew word meanings for Jonah's great fish and the verb \"appointed\" are right."
+  },
+  {
     "version": "0.2.29",
     "date": "2026-10-26",
     "story": "mw-zbjgn3r.2",
