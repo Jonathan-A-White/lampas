@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.24
+_2026-10-26_
+- Fixed: with the Audio Bible on and the text at its largest, the "Listen in Audible" link is no longer cut off by the Play button.
+
 ## 0.2.22
 _2026-10-26_
 - Fixed: when you ask the Bible talk what an English word like "love" really means, the tutor now reliably answers in English and offers the Greek word as a button.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.2.24",
+    "date": "2026-10-26",
+    "story": "mw-5r3p30.775",
+    "kind": "fixed",
+    "text": "with the Audio Bible on and the text at its largest, the \"Listen in Audible\" link is no longer cut off by the Play button."
+  },
+  {
     "version": "0.2.22",
     "date": "2026-10-26",
     "story": "mw-5r3p30.772",
