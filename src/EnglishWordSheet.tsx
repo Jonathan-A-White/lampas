@@ -56,8 +56,9 @@ export function TurnOnLogos() {
 }
 
 /** The words of an English chunk of an Old Testament chapter, one row each under the Hebrew words it renders (the Hebrew word sheet of an English tap, mw-5vvlay.2): the word, its own Listen and its
- *  own Look it up in Logos (Webster's 1828). The Turn on Logos line is the Hebrew words' own, so the rows say nothing of Logos while it is off. */
-export function EnglishWordList({ text }: { text: string }) {
+ *  own Look it up in Logos (Webster's 1828). The Turn on Logos line is the Hebrew words' own, so the rows say nothing of Logos while it is off. `text` is the one word he tapped when it is known
+ *  (mw-5r3p30.782), and `named` then names it in its row. */
+export function EnglishWordList({ text, named = false }: { text: string; named?: boolean }) {
   const each = wordsOf(text);
   if (each.length === 0) return null;
   return (
@@ -70,7 +71,7 @@ export function EnglishWordList({ text }: { text: string }) {
             </span>
             <SpeakButton text={w} id={`english-word:${w}:${i}`} label={`Listen: ${w}`} kind="speaker" language="english" className="shrink-0" />
           </div>
-          <EnglishDictionaryRow text={w} named={each.length > 1} />
+          <EnglishDictionaryRow text={w} named={named || each.length > 1} />
         </li>
       ))}
     </ul>
@@ -78,13 +79,14 @@ export function EnglishWordList({ text }: { text: string }) {
 }
 
 /** `listWords` (an Old Testament chunk, mw-uqlxea.2, where there is no Greek word to open): a chunk of more than one word lists each word under the heading, with its own Listen and its own
- * Look it up in Logos (Webster's 1828), so the sheet answers for any word of the chunk; a chunk of one word is the sheet as it always was. */
-export function EnglishWordSheet({ english, onClose, listWords = false }: { english: string; onClose: () => void; listWords?: boolean }) {
+ * Look it up in Logos (Webster's 1828), so the sheet answers for any word of the chunk; a chunk of one word is the sheet as it always was. `tapped`, the one word of the chunk he tapped when that is
+ * known (mw-5r3p30.782), is the only word looked up: the heading stays the chunk. */
+export function EnglishWordSheet({ english, tapped, onClose, listWords = false }: { english: string; tapped?: string; onClose: () => void; listWords?: boolean }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   const word = bareEnglish(english);
-  const each = listWords ? wordsOf(english) : [];
+  const each = listWords ? wordsOf(tapped ?? english) : [];
   const several = each.length > 1;
   return (
     // z-35 like the Greek word sheet: above the sheets it opens over, below the full-screen dialogs and the shell bars
@@ -127,7 +129,7 @@ export function EnglishWordSheet({ english, onClose, listWords = false }: { engl
               ))}
             </ul>
           ) : (
-            <EnglishDictionaryRow text={word} offer />
+            <EnglishDictionaryRow text={tapped ?? word} offer named={tapped !== undefined} />
           )}
         </div>
       </div>

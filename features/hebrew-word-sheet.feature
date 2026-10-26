@@ -96,3 +96,26 @@ Feature: The Hebrew word sheet
     When he taps the Greek word "Οὐδὲν" of verse 1
     Then the Greek word sheet shows the form "Οὐδὲν", its respelling and no transliteration
     And its parsing is made of tappable grammar terms
+
+  Scenario: Tapping "of" in "of Amittai," lists only "of" under the Hebrew word
+    Given Lampas is opened on Jonah 1 with nothing saved and Logos on
+    When he taps the word "of" of the chunk "of Amittai," of verse 1
+    Then the Hebrew word sheet is headed "of Amittai"
+    And under the Hebrew words it lists only the English word "of", with the link "Look it up in Logos: of"
+
+  Scenario: Tapping "Amittai," lists only "Amittai" under the Hebrew word
+    Given Lampas is opened on Jonah 1 with nothing saved and Logos on
+    When he taps the word "Amittai," of the chunk "of Amittai," of verse 1
+    Then under the Hebrew words it lists only the English word "Amittai", with the link "Look it up in Logos: amittai"
+
+  Scenario: The Hebrew word of the chunk stays whichever English word he taps
+    Given Lampas is opened on Jonah 1 with nothing saved and Logos on
+    When he taps the word "of" of the chunk "of Amittai," of verse 1
+    Then the Hebrew word sheet shows one Hebrew word
+
+  Scenario: At Just English a tapped word of a chunk lists only that word
+    Given Lampas is opened on Genesis 1 with the Greek dial at Just English and Logos on
+    When he taps the word "heavens" of the chunk "the heavens" of verse 1
+    Then the English word sheet is headed "the heavens"
+    And the English word sheet has the one link "Look it up in Logos: heavens"
+

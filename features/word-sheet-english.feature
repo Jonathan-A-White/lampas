@@ -23,3 +23,25 @@ Feature: The word sheet's English is the words alone
     Given Lampas is opened on 1 Corinthians 10 in Greek
     When he taps "κυρίου" in verse 26
     Then the word sheet shows the English "Lord’s"
+
+  Scenario: Tapping "of" in "of Nineveh" looks up only "of" in Webster's
+    Given Lampas is opened on Matthew 12 in English with Logos on
+    When he taps the word "of" of the chunk "of Nineveh" in verse 41
+    Then the word sheet is headed with the English "of Nineveh"
+    And the word sheet has the one English lookup "Look it up in Logos (English): of"
+
+  Scenario: Tapping "Nineveh" in "of Nineveh" looks up only "nineveh"
+    Given Lampas is opened on Matthew 12 in English with Logos on
+    When he taps the word "Nineveh" of the chunk "of Nineveh" in verse 41
+    Then the word sheet has the one English lookup "Look it up in Logos (English): nineveh"
+
+  Scenario: A sheet opened with no tapped word known lists a row for each word of the chunk
+    Given Lampas is opened on Matthew 12 in English with Logos on
+    When he taps the chunk "of Nineveh" in verse 41 where no word is known
+    Then the word sheet has the English lookups "Look it up in Logos (English): of" and "Look it up in Logos (English): nineveh"
+
+  Scenario: The Greek word of the chunk stays whichever English word he taps
+    Given Lampas is opened on Matthew 12 in English with Logos on
+    When he taps the word "of" of the chunk "of Nineveh" in verse 41
+    Then the word sheet shows the Greek word "Νινευῖται"
+

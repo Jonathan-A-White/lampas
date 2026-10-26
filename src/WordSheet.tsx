@@ -51,6 +51,8 @@ export interface Lookup {
   english?: string;
   /** true when the English was what he tapped (the sheet then heads with it) */
   fromEnglish: boolean;
+  /** the one English word of the tapped chunk his finger was on, when that is known (a tap on a chunk of more than one word): the sheet's English lookups are for it alone; a sheet opened with none (a link, a list) lists a row for each word of the chunk */
+  tapped?: string;
 }
 
 /** What a tap on Grammar or Sound it out asks for: the word as it stands, its lemma, its parsing as the sheet shows it, and
@@ -432,7 +434,7 @@ export function WordSheet(props: WordSheetProps) {
   if (level === undefined || level >= GREEK_VIEW_FROM) return <WordSheetBody {...props} />;
   // at Just English an English word he taps opens the small English sheet instead (mw-5r3p30.707); a Greek word has no sheet. An Old Testament chunk lists each of its words (mw-uqlxea.2).
   const { lookup, onClose, chapter } = props;
-  return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} listWords={sourceLanguage(chapter) === 'hbo'} onClose={onClose} /> : null;
+  return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} tapped={lookup.tapped} listWords={sourceLanguage(chapter) === 'hbo'} onClose={onClose} /> : null;
 }
 
 function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: WordSheetProps) {
@@ -584,7 +586,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
               />
             ))}
             {/* an English tap in an Old Testament chapter ends with the English sheet of its words (mw-uqlxea.2: each with its Listen and its Webster's row), under the Hebrew words it renders */}
-            {heading ? hebrew ? <EnglishWordList text={bareEnglish(heading)} /> : <EnglishDictionaryRow text={bareEnglish(heading)} english /> : null}
+            {heading ? hebrew ? <EnglishWordList text={lookup.tapped ?? bareEnglish(heading)} named={lookup.tapped !== undefined} /> : <EnglishDictionaryRow text={lookup.tapped ?? bareEnglish(heading)} english named={lookup.tapped !== undefined} /> : null}
           </div>
           {many && moreBelow ? (
             <div
