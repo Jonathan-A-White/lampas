@@ -1,7 +1,7 @@
 // features/steps/copy-format.steps.tsx — runs features/copy-format.feature (mw-9txn0x1.1): the Verse view's Copy gives the verse, passage or chapter in
 // the format of Settings > Reading > When you copy (src/copy/format.ts). The clipboard is a fake that keeps what was written.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
@@ -75,7 +75,14 @@ describeFeature(feature, ({ Scenario }) => {
   const defaults = () => open({});
   const chosen = (_: unknown, text: string, reference: string, numbers: string, link: string) =>
     open({ copyText: text, copyReference: reference, copyNumbers: numbers, copyLink: link });
-  const woven = (_: unknown, text?: string) => open(text === undefined ? {} : { copyText: text }, '#/?ref=Col.3.1', { view: 'english', weave: 'solid' });
+  const woven = async (_: unknown, text?: string) => {
+    await open(text === undefined ? {} : { copyText: text }, '#/?ref=Col.3.1', { view: 'english', weave: 'solid' });
+    await screen.findByRole('region', { name: 'Verse view' });
+    // the Verse view copies by the defaults (As you read it) until its four settings have been read from the store: let the choice of Text reach it
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+  };
   const tapNumber = async (_: unknown, n: number) => {
     await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
     await screen.findByRole('region', { name: 'Verse view' });
