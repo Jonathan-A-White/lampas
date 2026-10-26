@@ -126,7 +126,7 @@ for (const size of SIZES) {
 // The screens that draw the shared ScreenHeader (src/ScreenHeader.tsx: back, title, action) get the same check at the same six sizes: no two controls of the header
 // overlap and none is outside the window. The walk of everything else on these screens is mw-5r3p30.769.
 const SCREENS = [
-  'words', 'import', 'test', 'drill', 'review', 'today', 'paradigms', 'placement', 'goal', 'path', 'ipa', 'sounds', 'studyway', 'aboutyou', 'memory', 'requests',
+  'words', 'import', 'test', 'drill', 'review', 'today', 'paradigms', 'placement', 'goal', 'path', 'ipa', 'diagram-lesson', 'sounds', 'studyway', 'aboutyou', 'memory', 'requests',
   'conversations', 'askmore', 'about', 'preface', 'essay', 'library', 'lists', 'memorize', 'settings', 'share',
 ];
 
