@@ -7,7 +7,7 @@ import { recordAnswer } from '../../src/data/repositories/results';
 const SINCE = Date.UTC(2026, 9, 8, 9, 0, 0);
 const MINUTE = 60 * 1000;
 
-const learning = () => db.words.put({ lemma: 'λέγω', lemmas: [], gloss: 'say', lesson: 1, state: 'learning', since: SINCE });
+const learning = () => db.words.put({ lemma: 'λέγω', lang: 'grc', lemmas: [], gloss: 'say', lesson: 1, state: 'learning', since: SINCE });
 
 beforeEach(async () => {
   await db.open();
@@ -35,7 +35,7 @@ describe('the two-in-a-row count when the phone clock steps back (mw-5r3p30.144)
   });
 
   it('two misses move a solid word to learning when the clock steps back between them', async () => {
-    await db.words.put({ lemma: 'λέγω', lemmas: [], gloss: 'say', lesson: 1, state: 'solid', since: SINCE });
+    await db.words.put({ lemma: 'λέγω', lang: 'grc', lemmas: [], gloss: 'say', lesson: 1, state: 'solid', since: SINCE });
     await recordAnswer('λέγω', false, SINCE - 5 * MINUTE);
     expect(await recordAnswer('λέγω', false, SINCE - 6 * MINUTE)).toBe('learning');
   });

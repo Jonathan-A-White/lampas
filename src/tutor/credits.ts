@@ -6,19 +6,19 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 5600;
+export const MAX_CREDITS_BYTES = 5700;
 
 export const CREDITS: ScreenCredit[] = [
-  { name: 'Majority Standard Bible', use: 'The Greek you read, aligned to its English, with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
+  { name: 'Majority Standard Bible', use: 'The Greek and the Old Testament\'s Hebrew (Berean Standard Bible, WLC), aligned to the English with Strong\'s and parsing', licence: 'Public domain', link: 'https://majoritybible.com' },
   { name: 'Byzantine Priority', use: 'Robinson\'s essay, read on the Preface', licence: 'Public domain', link: 'https://byzantinetext.com/study/editions/robinson-pierpont/' },
-  { name: 'TBESG', use: 'STEPBible: each word\'s lemma, gloss, definition; a verse\'s places', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
+  { name: 'TBESG', use: 'STEPBible: each Greek or Hebrew word\'s lemma, gloss and definition (TBESH for Hebrew); a verse\'s places', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places, by David P. Barrett', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
   { name: 'eSpeak NG', use: 'The sound of ὁ and of δ\'', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },
   { name: 'Piper', use: 'Trial Greek sound clips, not in screens', licence: 'MIT', link: 'https://github.com/rhasspy/piper' },
   { name: 'IPA', use: 'The symbols of the optional IPA course', licence: 'none needed; a standard', link: 'https://www.internationalphoneticassociation.org' },
   { name: 'Biblical Mastery Academy', use: 'Inspired Lampas\'s path and its order; nothing of theirs is copied', licence: 'none taken; nothing copied', link: 'https://biblicalmastery.academy/' },
   { name: 'Gentium Plus', use: 'The Greek type of the reader', licence: 'SIL OFL 1.1', link: 'https://software.sil.org/gentium/' },
-  { name: 'Noto Serif Hebrew', use: 'The Hebrew type of answers', licence: 'SIL OFL 1.1', link: 'https://github.com/notofonts/hebrew' },
+  { name: 'Noto Serif Hebrew', use: 'The Hebrew type of the text and answers', licence: 'SIL OFL 1.1', link: 'https://github.com/notofonts/hebrew' },
   { name: 'Literata, Atkinson Hyperlegible, Lexend', use: 'The English fonts to choose in Settings', licence: 'SIL OFL 1.1', link: 'https://github.com/googlefonts/literata' },
   { name: 'React', use: 'The interface library', licence: 'MIT', link: 'https://react.dev/' },
   { name: 'Dexie', use: 'Keeps your words and settings on the phone', licence: 'Apache-2.0', link: 'https://dexie.org/' },

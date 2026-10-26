@@ -21,7 +21,7 @@ afterEach(() => {
 describe('teachWord', () => {
   it('Got it: a learning word from his reading, lesson 0, step 0 and due now', async () => {
     await teachWord('αὐτός', 'it/s/he', 'got-it', 1000);
-    expect(await listWords()).toEqual([{ lemma: 'αὐτός', lemmas: ['αὐτός'], gloss: 'it/s/he', lesson: 0, source: 'frontier', state: 'learning', since: 1000 }]);
+    expect(await listWords()).toEqual([{ lemma: 'αὐτός', lang: 'grc', lemmas: ['αὐτός'], gloss: 'it/s/he', lesson: 0, source: 'frontier', state: 'learning', since: 1000 }]);
     expect(await db.reviews.get(['word', 'αὐτός'])).toMatchObject({ step: 0, due: 1000 });
     expect(latest('frontier-taught')).toEqual({ kind: 'frontier-taught', lemma: 'αὐτός', outcome: 'got-it' });
   });
@@ -34,17 +34,17 @@ describe('teachWord', () => {
   });
 
   it('a word already listed keeps its place and takes the state; a review row already there is kept', async () => {
-    await db.words.add({ lemma: 'εἰς', lemmas: ['εἰς'], gloss: 'toward', lesson: 4, state: 'learning', since: 1 });
+    await db.words.add({ lemma: 'εἰς', lang: 'grc', lemmas: ['εἰς'], gloss: 'toward', lesson: 4, state: 'learning', since: 1 });
     await db.reviews.add({ kind: 'word', id: 'εἰς', step: 2, due: 5, lastWhen: 1, lapses: 1, rights: 1 });
     await teachWord('εἰς', 'toward', 'known', 1000);
-    expect(await listWords()).toEqual([{ lemma: 'εἰς', lemmas: ['εἰς'], gloss: 'toward', lesson: 4, state: 'solid', since: 1000 }]);
+    expect(await listWords()).toEqual([{ lemma: 'εἰς', lang: 'grc', lemmas: ['εἰς'], gloss: 'toward', lesson: 4, state: 'solid', since: 1000 }]);
     expect(await db.reviews.get(['word', 'εἰς'])).toMatchObject({ step: 2, due: 5 });
   });
 
   it('lists the lemmas of the words he dropped', async () => {
     await db.words.bulkAdd([
-      { lemma: 'α', lemmas: ['α'], gloss: '', lesson: 1, state: 'dropped', since: 1 },
-      { lemma: 'β', lemmas: ['β'], gloss: '', lesson: 1, state: 'solid', since: 1 },
+      { lemma: 'α', lang: 'grc', lemmas: ['α'], gloss: '', lesson: 1, state: 'dropped', since: 1 },
+      { lemma: 'β', lang: 'grc', lemmas: ['β'], gloss: '', lesson: 1, state: 'solid', since: 1 },
     ]);
     expect([...(await listDroppedLemmas())]).toEqual(['α']);
   });

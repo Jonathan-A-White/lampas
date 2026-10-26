@@ -7,10 +7,12 @@ import { isItemId, legacyStoredId, plainIdOf } from './grammar/soundScope';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
 
-/** A Greek word he is learning. */
+/** A word he is learning, Greek or Hebrew. */
 export interface Word {
-  /** The plain headword, the key: 'ἄνθρωπος'. */
+  /** The plain headword, the key: 'ἄνθρωπος'; for a Hebrew word the pointed TBESH headword, whole: 'בָּרָא'. */
   lemma: string;
+  /** The language the word is in: 'grc' (Koine Greek) or 'hbo' (Biblical Hebrew); not indexed (v32 stamped every word that was stored before 'grc'). */
+  lang: 'grc' | 'hbo';
   /** The lexicon lemmas that match it (see lemma.ts); indexed so the weave can look a lemma up. */
   lemmas: string[];
   gloss: string;
@@ -1214,6 +1216,47 @@ class LampasDB extends Dexie {
       recalls: '++id, [ref+lang], when',
       diagrams: '[ref+lang+version]',
     });
+
+    // v32: same tables. Every stored word is Greek until now; the upgrade stamps each `lang: 'grc'` (a Hebrew word of the list, mw-gdcyf98.16, says 'hbo'). `lang` is not indexed.
+    this.version(32)
+      .stores({
+        words: 'lemma, lesson, state, *lemmas',
+        meta: 'key',
+        settings: 'key',
+        results: '++id, [lemma+when]',
+        answers: '++id, [ref+when]',
+        talks: '++id, [ref+when]',
+        drills: '++id, lemma, [lemma+step]',
+        readings: 'ref',
+        grammarKnown: 'term',
+        reviews: '[kind+id], due, kind',
+        grammarLevels: 'id, level',
+        usage: 'key, day, name',
+        tips: 'id, status',
+        talkPictures: '++id, turnId',
+        shares: 'id, createdAt',
+        requests: 'txid, sentAt, status',
+        readingHistory: '++id, ref, [lang+at]',
+        missTally: '[lang+unit], lang',
+        ladder: 'lang',
+        drillRuns: '++id, ideaId, at',
+        passageLessons: 'key, state',
+        pictureRefs: 'hash, at',
+        talkSummaries: 'ref',
+        library: 'id, kind',
+        exportRows: 'resource',
+        verseLists: '++id, created',
+        recalls: '++id, [ref+lang], when',
+        diagrams: '[ref+lang+version]',
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table<Word, string>('words')
+          .toCollection()
+          .modify((word) => {
+            word.lang = 'grc';
+          });
+      });
   }
 }
 

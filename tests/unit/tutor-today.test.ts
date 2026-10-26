@@ -38,7 +38,7 @@ const request = (today?: TodayItem[], s: TalkScope = scope) =>
 
 describe('todayNow: the items behind the chip', () => {
   it('lists every piece Today holds, in the order it draws them, each with its title and whether he ticked it', async () => {
-    await db.words.put({ lemma: 'λόγος', lemmas: [], gloss: 'word', lesson: 1, state: 'learning', since: 0 });
+    await db.words.put({ lemma: 'λόγος', lang: 'grc', lemmas: [], gloss: 'word', lesson: 1, state: 'learning', since: 0 });
     await db.reviews.put({ kind: 'word', id: 'λόγος', step: 0, due: NOW.getTime() - DAY, lastWhen: 0, lapses: 0, rights: 0 });
     await setTicked(localDate(NOW), 'review', true);
     const readings = dailyReadings(NOW);

@@ -29,7 +29,7 @@ beforeEach(async () => {
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }, { key: 'grammarLevelsSeeded', value: '1' }]);
 });
 
-const word = (lemma: string, state: 'solid' | 'learning' = 'solid') => ({ lemma, lemmas: [], gloss: 'g', lesson: 1, state, since: 0 });
+const word = (lemma: string, state: 'solid' | 'learning' = 'solid') => ({ lemma, lang: 'grc' as const, lemmas: [], gloss: 'g', lesson: 1, state, since: 0 });
 const row = (kind: string, id: string, over: Record<string, unknown> = {}) => ({ kind, id, step: 3, due: ago(0) + 5 * DAY, lastWhen: ago(1), lapses: 0, rights: 0, ...over });
 
 describe('the schedule keeps an item\'s last answers', () => {

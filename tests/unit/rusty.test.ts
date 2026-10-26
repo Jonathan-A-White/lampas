@@ -110,7 +110,7 @@ describe('the rusty offer: a tap and a spoken yes both run the start-review comm
   });
 
   it('takeRustyOffer runs start-review with the offer\'s items and opens Review', async () => {
-    await db.words.put({ lemma: 'λόγος', lemmas: [], gloss: 'word', lesson: 1, state: 'solid', since: 0 });
+    await db.words.put({ lemma: 'λόγος', lang: 'grc', lemmas: [], gloss: 'word', lesson: 1, state: 'solid', since: 0 });
     const run = vi.spyOn(bibleTalkRegistry().command('start-review')!, 'run');
     const turn = { rustyOffer: { items: [{ kind: 'word', id: 'λόγος', title: 'λόγος' }] } } as TalkTurn;
     await takeRustyOffer(turn);

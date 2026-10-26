@@ -1,5 +1,6 @@
 // src/data/repositories/words.ts — the words he knows. A repository owns its transactions.
 import { publish } from '../../events/bus';
+import type { SourceLanguage } from '../chapter';
 import { db, type Word, type WordState } from '../db';
 import type { ImportWord } from '../importWords';
 import { normaliseLemma } from '../lemma';
@@ -38,13 +39,13 @@ export async function setWordState(lemma: string, state: WordState, now = Date.n
   await db.words.update(lemma, { state, since: now });
 }
 
-/** Adds imported words as learning; a lemma already in the list keeps its state. Returns how many were new. */
-export async function addImportedWords(words: ImportWord[], now = Date.now()): Promise<{ added: number; existing: number }> {
+/** Adds imported words as learning, each in the language `lang` names ('grc' until a caller says otherwise: Import reads Greek); a lemma already in the list keeps its state. Returns how many were new. */
+export async function addImportedWords(words: ImportWord[], now = Date.now(), lang: SourceLanguage = 'grc'): Promise<{ added: number; existing: number }> {
   return db.transaction('rw', db.words, async () => {
     let added = 0;
     for (const w of words) {
       if (await db.words.get(w.headword)) continue;
-      await db.words.add({ lemma: w.headword, lemmas: w.lemmas, gloss: w.gloss, lesson: w.lesson, state: 'learning', since: now });
+      await db.words.add({ lemma: w.headword, lang, lemmas: w.lemmas, gloss: w.gloss, lesson: w.lesson, state: 'learning', since: now });
       added += 1;
     }
     return { added, existing: words.length - added };
@@ -67,15 +68,16 @@ export async function wordIsListed(lemma: string): Promise<boolean> {
 /**
  * Puts a lemma on the list as a word he is learning (the Talk answer's Add to my words, and a words_to_add the tutor sends).
  * 'already' when it is there (as a learning or solid word, found by headword or lexicon lemma): nothing changes. A dropped word
- * goes back to learning. 'ignored' for a blank lemma. A new word has no lesson (0), the gloss given and, when given, its part of speech.
+ * goes back to learning. 'ignored' for a blank lemma. A new word has no lesson (0), the gloss given and, when given, its part of speech, and is in
+ * the language `lang` names ('grc' for the Greek callers that do not say: the Talk answer's Add to my words, the Goal screen).
  */
-export async function addWordToLearn(lemma: string, gloss = '', now = Date.now(), pos = ''): Promise<'added' | 'already' | 'ignored'> {
+export async function addWordToLearn(lemma: string, gloss = '', now = Date.now(), pos = '', lang: SourceLanguage = 'grc'): Promise<'added' | 'already' | 'ignored'> {
   const { headword, lemmas } = normaliseLemma(lemma);
   if (!headword) return 'ignored';
   return db.transaction('rw', db.words, async () => {
     const found = await findListed(headword, lemmas);
     if (!found) {
-      await db.words.add({ lemma: headword, lemmas, gloss, ...(pos ? { pos } : {}), lesson: 0, state: 'learning', since: now });
+      await db.words.add({ lemma: headword, lang, lemmas, gloss, ...(pos ? { pos } : {}), lesson: 0, state: 'learning', since: now });
       return 'added';
     }
     if (found.state !== 'dropped') return 'already';
@@ -96,15 +98,21 @@ export async function restoreWord(headword: string, before: Word | undefined): P
   else await db.words.delete(headword);
 }
 
-/** Every lemma a solid word goes by (its headword and its lexicon lemmas, NFC): what the weave matches Greek words against. */
-export async function listSolidLemmas(): Promise<Set<string>> {
-  const solid = await db.words.where('state').equals('solid').toArray();
+/** The words of a state in the language `lang`; with no language, in every language (a word stored before v32 says 'grc'). */
+async function wordsIn(state: WordState, lang?: SourceLanguage): Promise<Word[]> {
+  const words = await db.words.where('state').equals(state).toArray();
+  return lang ? words.filter((w) => w.lang === lang) : words;
+}
+
+/** Every lemma a solid word goes by (its headword and its lexicon lemmas, NFC): what the weave matches words against. With no language, every language's: the Greek weave and the Hebrew one each match against their own text. */
+export async function listSolidLemmas(lang?: SourceLanguage): Promise<Set<string>> {
+  const solid = await wordsIn('solid', lang);
   return new Set(solid.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
 }
 
-/** Every lemma a learning word goes by (NFC), like listSolidLemmas: what the weave stands in Greek with its English beneath. */
-export async function listLearningLemmas(): Promise<Set<string>> {
-  const learning = await db.words.where('state').equals('learning').toArray();
+/** Every lemma a learning word goes by (NFC), like listSolidLemmas: what the weave stands in its source language with its English beneath. */
+export async function listLearningLemmas(lang?: SourceLanguage): Promise<Set<string>> {
+  const learning = await wordsIn('learning', lang);
   return new Set(learning.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
 }
 
@@ -132,14 +140,14 @@ export type WordOutcome = 'got-it' | 'known';
  * list keeps its place there and takes the state; one already on the schedule keeps its row. Publishes frontier-taught after the
  * write.
  */
-export async function teachWord(lemma: string, gloss: string, outcome: WordOutcome, now = Date.now()): Promise<void> {
+export async function teachWord(lemma: string, gloss: string, outcome: WordOutcome, now = Date.now(), lang: SourceLanguage = 'grc'): Promise<void> {
   const { headword, lemmas } = normaliseLemma(lemma);
   if (!headword) return;
   const state: WordState = outcome === 'known' ? 'solid' : 'learning';
   await db.transaction('rw', db.words, db.reviews, async () => {
     const found = (await db.words.get(headword)) ?? (await db.words.where('lemmas').anyOf(lemmas).first());
     if (found) await db.words.update(found.lemma, { state, since: now });
-    else await db.words.add({ lemma: headword, lemmas, gloss, lesson: 0, source: 'frontier', state, since: now });
+    else await db.words.add({ lemma: headword, lang, lemmas, gloss, lesson: 0, source: 'frontier', state, since: now });
     const start = outcome === 'known' ? () => knownSchedule(now) : undefined;
     await writeScheduled('word', [found?.lemma ?? headword], now, start);
   });

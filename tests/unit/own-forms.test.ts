@@ -8,10 +8,12 @@ import { cellName, cellsOf, paradigmById, paradigmOfWord, tableFor } from '../..
 import { fitsNoTable, ownFormOf as appOwnFormOf, ownFormsOf, ownTable, referenceText, type OwnForm } from '../../src/data/paradigms/ownForms';
 import type { Paradigm } from '../../src/data/paradigms/types';
 
+// the New Testament's chapters: this file is the Greek index (the Hebrew one is tests/unit/lemma-forms-hbo.test.ts)
+const greekChapters = () => readChapters('public/data').filter((c) => c.lang !== 'hbo');
 let index: Map<string, LemmaFormEntry[]>;
 let texts: Set<string>;
 beforeAll(() => {
-  const chapters = readChapters('public/data');
+  const chapters = greekChapters();
   index = lemmaForms(chapters);
   // every form the text has, as it is written in it (grave accents and capitals aside), to prove nothing is made up
   texts = new Set(chapters.flatMap((c) => c.verses.flatMap((v) => v.g.map((w) => ownFormOf(w.t, w.l)))));
@@ -51,7 +53,7 @@ describe('the index from a lemma to its forms', () => {
   });
 
   it('the app’s ownFormOf is the build’s for every word of the text', () => {
-    for (const chapter of readChapters('public/data'))
+    for (const chapter of greekChapters())
       for (const verse of chapter.verses) for (const w of verse.g) expect(appOwnFormOf(w.t, w.l)).toBe(ownFormOf(w.t, w.l));
   });
 

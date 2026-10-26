@@ -15,6 +15,7 @@ import type { Word, WordState } from '../../src/data/db';
 
 const word = (lemma: string, state: WordState, gloss = `gloss of ${lemma}`): Word => ({
   lemma,
+  lang: 'grc',
   lemmas: [lemma],
   gloss,
   lesson: 1,

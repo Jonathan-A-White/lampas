@@ -140,7 +140,7 @@ describe('tick-today', () => {
 
 describe('start-review', () => {
   it('opens Review as takeRustyOffer did: the sheet closes, the items are practised, and the address is the Review screen', async () => {
-    await db.words.put({ lemma: 'λόγος', lemmas: [], gloss: 'word', lesson: 1, state: 'solid', since: 0 });
+    await db.words.put({ lemma: 'λόγος', lang: 'grc', lemmas: [], gloss: 'word', lesson: 1, state: 'solid', since: 0 });
     let closed = 0;
     const unregister = registerTalkLeave(() => closed++);
     const ran = await registry.run('start-review', { items: [{ kind: 'word', id: 'λόγος' }] });
@@ -181,7 +181,7 @@ describe('add-word', () => {
   });
 
   it('a word he dropped comes back as learning, and its undo drops it again as it was', async () => {
-    await db.words.put({ lemma: 'λόγος', lemmas: [], gloss: 'word', lesson: 4, state: 'dropped', since: 5 });
+    await db.words.put({ lemma: 'λόγος', lang: 'grc', lemmas: [], gloss: 'word', lesson: 4, state: 'dropped', since: 5 });
     const ran = await registry.run('add-word', { word: 'λόγος' });
     expect((await db.words.get('λόγος'))?.state).toBe('learning');
     if (!ran.ok || !ran.undo) throw new Error('no undo');
@@ -190,7 +190,7 @@ describe('add-word', () => {
   });
 
   it('a word already on the list changes nothing and has no undo; one the lexicon lacks is not added', async () => {
-    await db.words.put({ lemma: 'λόγος', lemmas: [], gloss: 'word', lesson: 1, state: 'solid', since: 0 });
+    await db.words.put({ lemma: 'λόγος', lang: 'grc', lemmas: [], gloss: 'word', lesson: 1, state: 'solid', since: 0 });
     const already = await registry.run('add-word', { word: 'λόγος' });
     expect(already.ok && already.undo).toBeUndefined();
     expect((await db.words.get('λόγος'))?.state).toBe('solid');

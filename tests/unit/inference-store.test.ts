@@ -66,7 +66,7 @@ describe('the evidence kept', () => {
   });
 
   it('is credited by a Quick test word read right, not by one read wrong', async () => {
-    await db.words.put({ lemma: 'ξένος', lemmas: ['ξένος'], gloss: 'stranger', lesson: 0, state: 'learning', since: NOW });
+    await db.words.put({ lemma: 'ξένος', lang: 'grc', lemmas: ['ξένος'], gloss: 'stranger', lesson: 0, state: 'learning', since: NOW });
     await recordAnswer('ξένος', false, NOW);
     expect((await getEvidence()).get('letter-xi')).toBeUndefined();
     await recordAnswer('ξένος', true, NOW);

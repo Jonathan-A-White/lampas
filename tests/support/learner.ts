@@ -16,7 +16,7 @@ export function pinClockAtNoon(): void {
 /** Puts `lemma` on his list as a word he is learning, added just now, with the clock pinned at noon (see pinClockAtNoon). */
 export async function learnWordToday(lemma: string): Promise<void> {
   pinClockAtNoon();
-  await db.words.put({ lemma, lemmas: [], gloss: 'flesh', lesson: 0, state: 'learning', since: Date.now() });
+  await db.words.put({ lemma, lang: 'grc', lemmas: [], gloss: 'flesh', lesson: 0, state: 'learning', since: Date.now() });
 }
 
 /** The 'learner' field of a grist's input must name the solid count, `lemma` as learning and as new today, and what is due. */

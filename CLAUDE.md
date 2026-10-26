@@ -35,7 +35,7 @@ npm test             # vitest run: unit tests and feature specs
 npm run test:bdd     # vitest run, features/steps only
 npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (build first, or `npm run gate:shots`); writes shots/<name>.png
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
-npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
+npm run seed:build   # rebuild src/data/seed-words.ts (docs/example-words.md) and seed-words-hbo.ts (plain node, 22.18+)
 npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
 npx playwright test  # (npm run test:e2e) all e2e (use --workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
 npm run e2e:live     # the live tests against the DEPLOYED app; not in the gate (docs/commands.md)

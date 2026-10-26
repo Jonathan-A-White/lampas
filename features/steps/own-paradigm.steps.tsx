@@ -22,7 +22,7 @@ const CONTRACT_IDEAS = ['verb', 'mood-indicative', 'voice-active', 'person-1st',
 
 let forms: Map<string, LemmaFormEntry[]>;
 beforeAll(() => {
-  forms = lemmaForms(readChapters('public/data'));
+  forms = lemmaForms(readChapters('public/data').filter((c) => c.lang !== 'hbo')); // the Greek index, as before the Hebrew lemmas were added
 }, HOOK_TIMEOUT_MS);
 
 afterAll(async () => {
