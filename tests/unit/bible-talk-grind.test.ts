@@ -8,6 +8,7 @@ import { pronunciationOf } from '../../src/speech/pronunciation';
 import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
 import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
 import { SETTINGS } from '../../src/settings/registry';
+import { lampasRegistry } from '../../src/tutor/registry';
 import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
 import { answerFragment, instructionsPart } from 'voice-kit/talks/grind';
@@ -959,5 +960,25 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     const doc = readFileSync('docs/ask-tutor.md', 'utf8');
     for (const field of ['asks', 'do', 'go', 'misses', 'said']) expect(doc, field).toContain(`\`${field}\``);
     expect(doc).toContain('360-the-app-you-can-ask.md');
+  });
+});
+
+// mw-033i3s: asked what Greek he is memorizing in a verse not on the screen, the tutor asked for `memorizing`, a real fact (his verses' state) that
+// does not hold their words, where the example wants `verseText`. The instructions name every fact the asks list allows, once, as the registry spells it,
+// and say which of the memorize facts holds the words.
+describe('the bible-talk instructions name each fact the tutor can ask for (mw-033i3s)', () => {
+  const own = instructionsOf(grind.kind as string);
+  const lampas = own.slice(own.indexOf('### In Lampas'));
+  const askable = lampasRegistry().facts.map((fact) => fact.name).filter((name) => !['where-he-is', 'today-drill', 'settings'].includes(name));
+
+  it('lists every askable fact in the one line that names them, spelled as the registry spells it', () => {
+    expect(askable).toContain('verseText');
+    const line = lampas.split('\n').find((l) => l.startsWith('- Core facts')) ?? '';
+    for (const name of askable) expect(line, name).toContain(`\`${name}\``);
+  });
+
+  it('says the words of a memorized verse are `verseText`, not `memorizing`', () => {
+    const rule = lampas.split('\n').find((l) => l.startsWith('- A memorized verse')) ?? '';
+    expect(rule.replace(/\s+/g, ' ')).toMatch(/asks `verseText`[^.;]*not `memorizing`/);
   });
 });
