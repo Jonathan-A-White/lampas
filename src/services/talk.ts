@@ -26,6 +26,8 @@ import type { FormRequest, FormValue } from '../formHelper/formHelper';
 import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
+import { mapsForTutor, type TutorMap } from '../maps/forTutor';
+import type { MapCard } from '../maps/types';
 import { askGrind, type AskOptions } from './tutor';
 import { FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES, TALK_SUMMARY_MAX } from './requestBudget';
 import { solidWordsField } from './solidWords';
@@ -256,6 +258,8 @@ export interface TalkRequest {
   resources?: TutorResource[];
   /** the digest of his Logos shelf chosen by the place (mw-rfjjzd.10, worksForTutor): the pinned books, the commentaries that cover the chapter, the grammars and Greek texts for a question about a form or a reading, and a closing `more` line; the only books the tutor may link as a `work`; missing when none is on his shelf and in About; fitHistory cuts it from its end after the word list and before the history */
   works?: TutorWork[];
+  /** the maps of the chapter of the passage the talk holds (mw-zbjgn3r.4, src/maps/forTutor.ts), at most 12, each {id, title, period, places}: `places` are the names the held verse or range speaks, empty for a chapter; the only maps a `map` link may name; missing when the chapter has none, with no passage held (a talk from a screen) and in About; fitHistory cuts it after the shelf digest */
+  maps?: TutorMap[];
   /** present only when pictures go with the message (mw-y3qno5.1): how many, 1 to 4. They are the grist's attachments; the tutor reads the text in them */
   pictures?: number;
   /** present only while an offer waits for his tap (mw-5r3p30.186): the newest one in this talk, its kind and the exact text */
@@ -410,7 +414,7 @@ const isWorkLink = (value: Record<string, unknown>): boolean =>
 const isAnswerLink = (value: unknown): value is AnswerLink =>
   isObject(value) &&
   (isWorkLink(value) ||
-    (Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)) || (value.kind === 'setting' && isText(value.key, 40)))));
+    (Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)) || (value.kind === 'setting' && isText(value.key, 40)) || (value.kind === 'map' && isText(value.map, 80)))));
 
 const isFormValue = (value: unknown): value is FormValue =>
   isObject(value) && Object.keys(value).length === 2 && isText(value.field, 30) && isText(value.value, 1200);
@@ -587,6 +591,7 @@ export function buildTalkRequest(
   works: TutorWork[] = [],
   summary?: { text: string; covered: number },
   today?: TodayItem[],
+  maps: MapCard[] = [],
 ): TalkRequest {
   // the turns older than the window that the summary does not hold yet: the next few, oldest first, for the tutor to fold in (mw-5r3p30.700)
   const past = Math.max(0, turns.length - MAX_HISTORY_TURNS);
@@ -600,6 +605,8 @@ export function buildTalkRequest(
   const aboutCredits = scope.screen?.credits !== undefined;
   // the passages the tutor fetched on earlier turns, newest first (mw-5r3p30.734)
   const held = aboutCredits ? [] : heldPassagesOf(turns);
+  // the maps of the chapter the talk holds: the places they name are those of the held verse or range, none for a chapter
+  const mapsHeld = hold && !aboutCredits ? mapsForTutor(maps, scope.verse ? textOf(hold.parts).english : undefined) : [];
   const request: TalkRequest = {
     reference: scopeTitle(scope),
     // a talk from a screen is not about a text: it carries the screen and no verse text
@@ -627,6 +634,7 @@ export function buildTalkRequest(
     ...(scope.quiz && quizGoal.kept === '' && quizGoal.once ? { quiz_goal_once: quizGoal.once } : {}),
     ...(aboutCredits ? {} : { resources }),
     ...(works.length > 0 && !aboutCredits ? { works } : {}),
+    ...(mapsHeld.length > 0 ? { maps: mapsHeld } : {}),
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
     ...(missingFoundations && !aboutCredits ? { missing_foundations: missingFoundations } : {}),

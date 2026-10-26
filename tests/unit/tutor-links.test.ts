@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MAX_LINKS, isTalkAnswer } from '../../src/services/talk';
 import { verseLink } from '../../src/resources/logosBible';
-import { placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
+import { mapChip, placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
+import { TEST_CARDS } from '../support/test-maps';
 import type { StudyResources } from '../../src/data/repositories';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
@@ -149,5 +150,40 @@ describe('an Old Testament verse link', () => {
     if (!place) throw new Error('no place');
     expect(verseChips(place, place.name, on('logos'), 'LLS:1.0.710')[0].url).toBe('logosres:1.0.710;ref=Bible.Ge15.6');
     expect(verseChips(place, place.name, on('logos'), 'LLS:KJV1900')[0].url).toBe('logosres:kjv1900;ref=Bible.Ge15.6');
+  });
+});
+
+describe('a map link (mw-zbjgn3r.4)', () => {
+  const map = { kind: 'map', map: 'SodomAndGomorrah' };
+
+  it('is optional like the others: the schema and the guard take {kind: map, map: <id>} within the three', () => {
+    const value = { ...base, links: [map, verse, word] };
+    expect(validate(value, schema), JSON.stringify(value)).toEqual([]);
+    expect(isTalkAnswer(value)).toBe(true);
+    expect(validate({ ...base, links: [map, map, map, map] }, schema)).not.toEqual([]);
+  });
+
+  it.each([
+    ['no map id', { kind: 'map' }],
+    ['an empty id', { kind: 'map', map: '' }],
+    ['a lemma beside the id', { kind: 'map', map: 'Ararat', lemma: 'ἀγάπη' }],
+    ['a reference instead of an id', { kind: 'map', reference: 'Genesis 10:19' }],
+  ])('refuses %s in both', (_, link) => {
+    expect(validate({ ...base, links: [link] }, schema)).not.toEqual([]);
+    expect(isTalkAnswer({ ...base, links: [link] })).toBe(false);
+  });
+
+  it('the schema says the id is a line of the request\'s maps and never one not listed', () => {
+    expect(JSON.stringify(schema.properties?.links)).toMatch(/line of the request's `maps`, exactly as given; never one not listed/);
+  });
+
+  it('is a chip \'Map: <title>\' for an id among the maps of the chapter', () => {
+    expect(mapChip('SodomAndGomorrah', TEST_CARDS['gen.10'])).toMatchObject({ label: 'Map: Sodom and Gomorrah Are Destroyed', card: { id: 'SodomAndGomorrah' } });
+  });
+
+  it('is no chip for an id the chapter lacks, for a video, or for no maps at all', () => {
+    expect(mapChip('NoSuchMap', TEST_CARDS['gen.10'])).toBeNull();
+    expect(mapChip('Genesis_10', TEST_CARDS['gen.10'])).toBeNull();
+    expect(mapChip('SodomAndGomorrah', [])).toBeNull();
   });
 });

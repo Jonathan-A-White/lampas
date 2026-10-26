@@ -514,7 +514,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
           </dl>
         ) : null}
         {turn.guide ? <HebrewSoundGuide guide={turn.guide} /> : null}
-        {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} /> : null}
+        {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} place={scope.screen ? undefined : { book: scope.chapter.code, chapter: scope.chapter.chapter }} /> : null}
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
         <QuizGoalOffer turn={turn} />
         <SettingOffer turn={turn} />

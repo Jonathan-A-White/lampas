@@ -13,6 +13,7 @@ import { learnerSummary } from './data/learnerSummary';
 import { learnFromTalk } from './data/repositories/profile';
 import { addTurn, keepFetched, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns, shelfOf } from './data/repositories';
 import { resourcesForTutor, worksForTutor } from './resources/tutorLinks';
+import { mapsFor } from './maps';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import type { TalkSession } from './services/mill';
 import { TutorError } from './services/tutor';
@@ -151,7 +152,7 @@ export function useTalk(
       set(resume ? { phase: 'waiting', question: text, startedAt, sent: resume, ...withFocus } : { phase: 'sending', question: text, startedAt, ...withFocus });
       void (async () => {
         try {
-          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty, works, kept, today] = await Promise.all([
+          const [turns, solid, settings, learner, grammar, way, chosen, goal, requests, profile, pronunciation, memory, levels, readerView, rusty, works, kept, today, chapterMaps] = await Promise.all([
             listTurns(ref),
             listSolidHeadwords(),
             currentSettings(),
@@ -174,6 +175,8 @@ export function useTalk(
             getTalkSummary(ref).catch(() => undefined),
             // the items behind the Reader's chip 'Today · N of M', so 'what is on my drill today' is answered by name and Today can be offered (src/data/learnerToday.ts); not in a quiz or the welcome
             scope.quiz || scope.welcome ? Promise.resolve(undefined) : todayNow().catch(() => undefined),
+            // the maps of the chapter the talk holds, for the tutor to link (src/maps/forTutor.ts); a talk from a screen holds none
+            scope.screen ? Promise.resolve([]) : mapsFor({ book, chapter }).catch(() => []),
           ]);
           // What he lacks under the topic his words name, worked out here so the tutor picks from it and never guesses (mw-1vuvq6.5); a quiz is not a place to bridge
           const missing = levels && !scope.quiz && !scope.screen?.credits ? missingFoundations(text, levelsOf(levels), focus && 'term' in focus ? focus.term : undefined) : undefined;
@@ -189,7 +192,7 @@ export function useTalk(
           // the Greek dial's step: the resources and works the tutor is told of follow it (resourcesForLevel)
           const greekLevel = greekLevelOf(settings.greekInterest);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
-          const request = fitHistory(await withTutorFacts(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
+          const request = fitHistory(await withTutorFacts(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today, chapterMaps), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const options = {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,

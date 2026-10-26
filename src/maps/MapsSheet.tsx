@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { MapsFrame } from './MapsFrame';
 import { MapView } from './MapView';
-import { closeMaps, useOpenMaps } from './openMaps';
+import { closeMaps, useOpenMapCard, useOpenMaps } from './openMaps';
 import { placeName } from './placeName';
 import type { MapCard, MapKind, MapRef } from './types';
 import { useMaps } from './useMaps';
@@ -49,9 +49,14 @@ function Row({ card, onOpen, shows = false }: { card: MapCard; onOpen: (card: Ma
   );
 }
 
-export function MapsSheet({ mapRef, onClose }: { mapRef: MapRef; onClose: () => void }) {
+/** `openCard` is the id of a card to open over the sheet at once (the tutor's map link): found among the place's maps, opened once, and Back returns to the sheet. */
+export function MapsSheet({ mapRef, onClose, openCard }: { mapRef: MapRef; onClose: () => void; openCard?: string | null }) {
   const cards = useMaps(mapRef);
-  const [map, setMap] = useState<MapCard | null>(null);
+  const [picked, setPicked] = useState<MapCard | null>(null);
+  // the card asked for stays open until Back, once
+  const [backed, setBacked] = useState(false);
+  const asked = !backed && openCard ? cards?.find((c) => c.id === openCard && c.kind !== 'video') : undefined;
+  const map = picked ?? asked ?? null;
   const title = `Maps for ${placeName(mapRef)}`;
   const forVerse = (cards ?? []).filter((c) => (c.matched?.length ?? 0) > 0);
   const rest = forVerse.length === 0 ? (cards ?? []) : (cards ?? []).filter((c) => (c.matched?.length ?? 0) === 0);
@@ -67,7 +72,7 @@ export function MapsSheet({ mapRef, onClose }: { mapRef: MapRef; onClose: () => 
             <h3 className="pb-1 text-base font-semibold">{passage ? 'For these verses' : 'For this verse'}</h3>
             <div className="flex flex-col gap-2">
               {forVerse.map((card) => (
-                <Row key={`${card.source}:${card.id}`} card={card} onOpen={setMap} shows />
+                <Row key={`${card.source}:${card.id}`} card={card} onOpen={setPicked} shows />
               ))}
             </div>
           </div>
@@ -81,7 +86,7 @@ export function MapsSheet({ mapRef, onClose }: { mapRef: MapRef; onClose: () => 
                 <Level className="pb-1 text-base font-semibold text-muted">{group}</Level>
                 <div className="flex flex-col gap-2">
                   {rows.map((card) => (
-                    <Row key={`${card.source}:${card.id}`} card={card} onOpen={setMap} />
+                    <Row key={`${card.source}:${card.id}`} card={card} onOpen={setPicked} />
                   ))}
                 </div>
               </div>
@@ -89,7 +94,10 @@ export function MapsSheet({ mapRef, onClose }: { mapRef: MapRef; onClose: () => 
           })}
         </div>
       </MapsFrame>
-      {map ? <MapView card={map} mapRef={mapRef} onClose={() => setMap(null)} /> : null}
+      {map ? <MapView card={map} mapRef={mapRef} onClose={() => {
+          setPicked(null);
+          setBacked(true);
+        }} /> : null}
     </>
   );
 }
@@ -97,5 +105,6 @@ export function MapsSheet({ mapRef, onClose }: { mapRef: MapRef; onClose: () => 
 /** Draws the sheet for the place openMaps was last called with; mounted once, in App. */
 export function MapsHost() {
   const ref = useOpenMaps();
-  return ref ? <MapsSheet key={placeName(ref)} mapRef={ref} onClose={closeMaps} /> : null;
+  const card = useOpenMapCard();
+  return ref ? <MapsSheet key={`${placeName(ref)}:${card ?? ''}`} mapRef={ref} onClose={closeMaps} openCard={card} /> : null;
 }

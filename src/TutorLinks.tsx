@@ -12,7 +12,10 @@ import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS } from './services/talk';
 import { armFallback } from './resources/openApp';
-import { placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
+import { mapChip, placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
+import { openMaps } from './maps/openMaps';
+import { useMaps } from './maps/useMaps';
+import type { MapRef } from './maps/types';
 import type { StudyResource } from './resources';
 import { useGreekInterest } from './settings/useGreekInterest';
 import { AppMissingSheet } from './WordSheet';
@@ -50,20 +53,25 @@ interface Group {
   place?: { book: string; chapter: number; verse?: number };
   /** the key of a setting link: its chip opens Settings at that row */
   setting?: string;
+  /** a map link: its chip opens that map in the app (openMaps) */
+  map?: { id: string; label: string };
   chips: LinkChip[];
 }
 
-/** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. */
-export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: () => void }) {
+/** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. */
+export function TutorLinks({ links, onLeave, place }: { links: AnswerLink[]; onLeave: () => void; place?: MapRef }) {
   const chosen = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
   const works = useLiveQuery(getWorks, []);
   const shelf = useLiveQuery(shelfOf, []);
   const level = useGreekInterest();
   const shown = links.slice(0, MAX_LINKS);
+  // the maps of the chapter are read only for an answer that links one
+  const mapCards = useMaps(place && shown.some((l) => l.kind === 'map') ? place : null);
   const strongs = useStrongs(shown.flatMap((l) => (l.kind === 'word' ? [l.lemma.normalize('NFC')] : [])));
   const [missing, setMissing] = useState<StudyResource | null>(null);
   if (!chosen || bible === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
+  if (place && shown.some((l) => l.kind === 'map') && mapCards === undefined) return null;
 
   const groups: Group[] = [];
   for (const [i, link] of shown.entries()) {
@@ -73,6 +81,9 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
     } else if (link.kind === 'setting') {
       const row = settingLink(link.key) ? rowOf(link.key) : undefined;
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
+    } else if (link.kind === 'map') {
+      const found = place && mapCards ? mapChip(link.map, mapCards) : null;
+      if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label }, chips: [] });
     } else if (link.kind === 'work') {
       const found = workChip(link.work, link.reference, works, link.place, level, shelf.map((row) => row.id));
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
@@ -81,7 +92,7 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
       if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, place, chips: verseChips(place, place.name, chosen, bible, level) });
     }
   }
-  const drawn = groups.filter((g) => g.reader || g.setting || g.chips.length > 0);
+  const drawn = groups.filter((g) => g.reader || g.setting || g.map || g.chips.length > 0);
   if (drawn.length === 0) return null;
 
   return (
@@ -117,6 +128,19 @@ export function TutorLinks({ links, onLeave }: { links: AnswerLink[]; onLeave: (
                 className={CHIP}
               >
                 Settings
+              </button>
+            ) : null}
+            {group.map && place ? (
+              <button
+                type="button"
+                aria-label={group.map.label}
+                onClick={() => {
+                  onLeave();
+                  openMaps({ book: place.book, chapter: place.chapter }, (group.map as NonNullable<Group['map']>).id);
+                }}
+                className={CHIP}
+              >
+                Map
               </button>
             ) : null}
             {group.chips.map((chip) => (

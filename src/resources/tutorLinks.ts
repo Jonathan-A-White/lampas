@@ -13,6 +13,7 @@ import { optionOf, resourceOf, RESOURCES, type StudyPlace, type StudyResource } 
 import { CATALOGUE, WORK_GROUPS, type CatalogueEntry, type Kind, type WorkGroup } from './catalogue';
 import { TUTOR_KINDS } from './workIds';
 import type { LibraryRow } from '../data/db';
+import type { MapCard } from '../maps/types';
 import { WORKS_BYTES } from '../services/requestBudget';
 import { pinnedFirst } from './logos';
 import { bibleRef } from './logosBible';
@@ -251,4 +252,11 @@ function bookChip(id: string, place: TutorPlace | null, shelf: readonly string[]
   const link = ref ? resourceLink(entry.resource, `ref=${ref}`) : resourceStart(entry.resource);
   const name = entry.opens === 'verse' && place ? `${entry.short} at ${place.name}` : entry.short;
   return { name, chip: { resource: logos, label: `Open in Logos: ${name}`, tile: 'Open in Logos', ...link } };
+}
+
+/** The chip of a `map` link (mw-zbjgn3r.4): 'Map: <title>' for the card among `cards` (the maps of the talk's chapter) with that id. Null when the chapter has no such map, or the card is a video (a page in the browser, not a map the app opens):
+ *  an id the tutor was not told of draws nothing. */
+export function mapChip(id: string, cards: readonly MapCard[]): { label: string; card: MapCard } | null {
+  const card = cards.find((c) => c.id === id && c.kind !== 'video');
+  return card ? { label: `Map: ${card.title}`, card } : null;
 }

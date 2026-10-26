@@ -81,6 +81,7 @@ export const PROGRESS: Readonly<Record<string, string>> = {
   studyWay: 'the lines he kept about how the tutor quizzes him (src/data/repositories/studyWay.ts)',
   rusty: 'the solid words and ideas he now slips on or has not met for a long while (src/data/rusty.ts, src/data/learnerRusty.ts)',
   works: 'his Logos shelf: the pinned books, the commentaries covering the chapter, and for a question about a form or a reading the grammars and Greek texts, chosen by the place (src/resources/tutorLinks.ts worksForTutor, src/data/repositories/library.ts)',
+  maps: 'the maps of the passage the talk holds, as the tutor may link them: the chapter\'s maps with the places the held verse or range names (src/maps/forTutor.ts, Bible Mapper through src/maps)',
   today: "the items behind the Reader's chip 'Today · N of M', each with its title and whether he ticked it (src/data/learnerToday.ts)",
 };
 
@@ -110,7 +111,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     // currentSettings(): what every registry setting holds now, in `settings`; the pronunciation also has its own field the sound questions use (mw-5r3p30.241)
     // the Greek dial is also its own field, greek_interest, with the step's name and the one step above it: all the Greek offer may name (mw-3ased2.3)
     settings: { ...everySetting, greekPronunciation: 'pronunciation', greekInterest: 'greek_interest' },
-    progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works' },
+    progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works', maps: 'maps' },
     notSent: {},
   },
   'verse-ask': {
@@ -140,6 +141,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       quizGoal: NO_QUIZ,
       studyWay: NO_QUIZ,
       today: 'An ask is about one verse he is reading; what is on his Today list is for the Bible talk, where he can ask what is on his drill and be offered Today.',
+      maps: 'An ask is about one verse and links no map; the maps of its chapter are the Bible talk\'s to name and to link, and the Verse view has its own Maps door.',
     },
   },
   'verse-read': {
@@ -172,6 +174,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       rusty: 'A verdict on one reading is about that reading; what he has gone rusty on in his words and grammar is for the talk and the asks to name.',
       today: 'A verdict on one reading is about that reading; what is on his Today list is for the Bible talk to name and to offer to open.',
       works: 'A verdict on one reading is about that reading as he said it; the books of his Logos shelf have no part in it, and the verdict links nothing.',
+      maps: 'A verdict on one reading is about that reading as he said it; the maps of its chapter have no part in it, and the verdict links nothing.',
     },
   },
   tips: {
@@ -184,6 +187,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       rusty: 'A tip is about a feature he has not tried; rust in his words and ideas is the talk\'s to name and to offer to move back.',
       today: 'A tip is about a feature he has not tried; what is on his Today list is the Bible talk\'s to name and to offer to open.',
       works: 'A tip is about a feature he has not tried; which books his Logos shelf holds is for the talk and the asks to speak of.',
+      maps: 'A tip is about a feature he has not tried; which maps a chapter has is for the Bible talk to name and to link.',
     },
   },
 };

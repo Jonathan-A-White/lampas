@@ -99,6 +99,15 @@ describe('the table of what each grind is told (src/tutor/knows.ts)', () => {
     expect(TUTOR_KNOWS['verse-ask'].notSent).not.toHaveProperty('works');
   });
 
+  it('the maps of the passage are sent to the Bible talk alone (mw-zbjgn3r.4); the other grinds say why not', () => {
+    expect(Object.keys(PROGRESS)).toContain('maps');
+    expect(TUTOR_KNOWS['bible-talk'].progress.maps).toBe('maps');
+    for (const kind of ['verse-ask', 'verse-read', 'tips'] as const) {
+      expect(TUTOR_KNOWS[kind].progress, `${kind} must not send the maps`).not.toHaveProperty('maps');
+      expect(TUTOR_KNOWS[kind].notSent.maps, `${kind} must say why it does not`).toMatch(/\w+ \w+ \w+/);
+    }
+  });
+
   it('every setting bible-talk is told is a setting it is sent', async () => {
     const sent = Object.keys(await currentSettings());
     expect(Object.keys(TUTOR_KNOWS['bible-talk'].settings).sort()).toEqual(sent.sort());

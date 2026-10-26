@@ -36,6 +36,9 @@ export const trimGreekWordsWhileHistory: Cut<TalkRequest> = (request) =>
 export const trimShelfDigest: Cut<TalkRequest> = (request) =>
   request.works && request.works.length > 0 ? withoutEmpty({ ...request, works: trimWorks(request.works) }, 'works') : null;
 
+/** The maps of the passage's chapter (mw-zbjgn3r.4) go whole, after the shelf digest: a map the tutor is not told of is a link it does not offer; null when the request has none. */
+export const dropMaps: Cut<TalkRequest> = (request) => (request.maps ? without(request, 'maps') : null);
+
 /** The oldest of the passages the tutor fetched (the last in the list, newest first), before a verse of the talk's own text or a turn (mw-5r3p30.734); null when none is held. */
 export const dropOldestHeldPassage: Cut<TalkRequest> = (request) =>
   request.held_passages && request.held_passages.length > 0 ? withoutEmpty({ ...request, held_passages: request.held_passages.slice(0, -1) }, 'held_passages') : null;
@@ -130,6 +133,7 @@ export const bibleTalkSteps = (held: number): readonly Cut<TalkRequest>[] => {
     dropPronunciationGuide,
     trimGreekWordsWhileHistory,
     trimShelfDigest,
+    dropMaps,
     dropOldestHeldPassage,
     dropFarthestVerse,
     clipPassageText,
