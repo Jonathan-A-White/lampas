@@ -157,35 +157,37 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A tap on a Hebrew word opens the English word sheet of its chunk', ({ Given, When, Then, And }) => {
+  Scenario('A tap on a Hebrew word opens the Hebrew word sheet of the word', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with the saved view {string}', (_, view: string) => openOn('Genesis 1', { readerView: view }));
     When('he taps the Hebrew word {string} of verse {int}', async (_, word: string, n: number) => user.click(wordEl(n, word)));
-    Then('the English word sheet opens headed {string}', async (_, word: string) => {
-      const dialog = await screen.findByRole('dialog', { name: 'English word' });
-      expect(within(dialog).getByTestId('english-word')).toHaveTextContent(word);
+    Then('the Hebrew word sheet opens for {string}', async (_, lemma: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Word' });
+      expect(squash(within(dialog).getByTestId('sheet-lemma').textContent)).toBe(lemma);
     });
     And('the reader is still showing Genesis 1', stillShowing);
   });
 
-  Scenario('A Hebrew word the English has no chunk for opens nothing and nothing breaks', ({ Given, When, Then, And }) => {
+  Scenario('A Hebrew word the English has no chunk for opens its sheet and nothing breaks', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with the saved view {string}', (_, view: string) => openOn('Genesis 1', { readerView: view }));
     When('he taps the Hebrew word {string} of verse {int}', async (_, word: string, n: number) => user.click(wordEl(n, word)));
-    Then('no word sheet opens', () => {
-      expect(sheet('English word')).toBeNull();
-      expect(sheet('Word')).toBeNull();
+    Then('the Hebrew word sheet opens for {string}', async (_, lemma: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Word' });
+      expect(squash(within(dialog).getByTestId('sheet-lemma').textContent)).toBe(lemma);
     });
     And('the reader is still showing Genesis 1', stillShowing);
   });
 
-  Scenario('The English view still opens the English word sheet', ({ Given, When, Then, And }) => {
+  Scenario('An English tap opens the word sheet with the English words under the Hebrew ones', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with nothing saved', () => openOn('Genesis 1'));
     When('he taps the chunk {string} of verse {int}', async (_, text: string, n: number) => user.click(chunkEl(n, text)));
-    Then('the English word sheet opens headed {string}', async (_, word: string) => {
-      const dialog = await screen.findByRole('dialog', { name: 'English word' });
-      expect(within(dialog).getByTestId('english-word')).toHaveTextContent(word);
+    Then('the word sheet opens headed {string}', async (_, word: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Word' });
+      expect(within(dialog).getByTestId('sheet-heading')).toHaveTextContent(word);
     });
-    And('the Hebrew word sheet is not opened', () => {
-      expect(sheet('Word')).toBeNull();
+    And('it lists the English word {string} under the Hebrew word', async (_, word: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Word' });
+      expect(within(dialog).getByRole('listitem')).toHaveTextContent(word);
+      expect(within(dialog).getByTestId('sheet-word')).toHaveAttribute('lang', 'he');
     });
   });
 

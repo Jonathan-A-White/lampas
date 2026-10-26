@@ -55,12 +55,12 @@ Like the Greek view it shows from the Greek dial's Curious step up (`viewAt`).
 
 - **The Hebrew view** draws each verse right to left (`lang="he" dir="rtl"`, the `.script-he` face at the Greek size, `.reader-hebrew`), the words in the chapter's own order, pointed and accented as the data has
   them (the WLC's cantillation is drawn: it is the text; it is only taken off when the phone speaks it). The verse number stands at the right edge, a section heading is right-aligned, the play button is at the left.
-  Every word is a tap (44 px high, `data-word` its index in the verse). Until the Hebrew word sheet comes, a tap opens the English word sheet of the chunk the word stands in (a word the English has no chunk for,
-  such as the sign of the direct object אֵת, opens nothing).
+  Every word is a tap (44 px high, `data-word` its index in the verse). A tap opens the Hebrew word sheet (mw-5vvlay.2, docs/layout/word-sheet.md): the pointed form, its transliteration, the lemma, gloss, definition and parsing, Strong's number and Listen (a word the English has no chunk for,
+  such as the sign of the direct object אֵת, has its sheet too).
 - **The weave** lays the English chunks against the Hebrew words of his solid (and learning) Hebrew lemmas, exactly as the Greek weave does: a chunk whose every Hebrew word is a lemma of his stands in Hebrew,
   the others stay English. A long press on **Weave** flips the Order: **Hebrew word order** lays the chunks out in the Hebrew order, right to left (each English chunk an isolated left-to-right piece); **English word order** puts it back.
   The count line says '2 words in Hebrew'.
 - **Speech**: a long press on a Hebrew word says it (`speakWord(text, 'hebrew')`); Read from the top, a verse's play button and the weave read Hebrew pieces (`runsOf`) in the phone's he-IL voice, the weave in each
   piece's own language. The text is handed to the voice through the Hebrew pronunciation registry's one scheme, **Israeli** (docs/pronunciation.md): as written, pointed, with the cantillation marks taken off. A phone with
   no he-IL voice says nothing for a long press and shows 'No Hebrew voice on this phone' on the reading bar.
-- Not yet: the Verse view of an Old Testament verse stays English, and the Hebrew word sheet, paradigms and quizzes are later stories of the epic.
+- Not yet: the Verse view of an Old Testament verse stays English, and the paradigms, the Help with this word row and the quizzes of a Hebrew word are later stories of the epic.

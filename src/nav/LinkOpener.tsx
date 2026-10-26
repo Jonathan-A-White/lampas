@@ -6,7 +6,7 @@ import { loadCanonIndex } from '../data/chapter';
 import { loadLexicon } from '../data/lexicon';
 import { getOpenChapter } from '../data/readerChapter';
 import { announceLink } from './linkRequest';
-import { findWord, notHeld, resolveReference, type Link } from './links';
+import { findWord, isHebrewText, notHeld, resolveReference, type Link } from './links';
 import { openVerseAt, openVerseRange, readerHash, readerOf, replaceHash, type ReaderAddress } from './route';
 
 /** The address the link opens, keeping the view and weave the link carried. */
@@ -31,7 +31,8 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
     } else replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter }));
     return;
   }
-  const lexicon = await loadLexicon().catch(() => null);
+  // the Hebrew lexicon is asked for only when the text names a Hebrew word (an H number or Hebrew letters): a Greek link loads what it always did
+  const lexicon = await loadLexicon(isHebrewText(link.text) ? 'hbo' : 'grc').catch(() => null);
   if (!current()) return;
   const found = lexicon ? findWord(link.text, lexicon) : undefined;
   const notice = found ? null : lexicon ? notHeld(link.text, there.title) : `Could not look up “${link.text}” just now; showing ${there.title}.`;

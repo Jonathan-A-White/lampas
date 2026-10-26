@@ -4,10 +4,11 @@ import type { BookIndex } from '../../src/data/chapter';
 import { NT_BOOKS as BOOKS, OT_BOOKS } from '../../src/data/books';
 import type { LemmaLexicon } from '../../src/data/lexicon';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
-import { findWord, inWords, linkOf, OSIS, parseCanonReference, parseReference, referenceUrl, resolveReference, wordUrl } from '../../src/nav/links';
+import { findWord, inWords, isHebrewText, lemmaSheet, linkOf, parseTypedReference, OSIS, parseCanonReference, parseReference, referenceUrl, resolveReference, wordUrl } from '../../src/nav/links';
 
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
 const lexicon = JSON.parse(readFileSync('public/data/lexicon.json', 'utf8')) as LemmaLexicon;
+const hebrew = JSON.parse(readFileSync('public/data/lexicon-hbo.json', 'utf8')) as LemmaLexicon;
 
 describe('parseReference', () => {
   it.each([
@@ -183,6 +184,51 @@ describe('findWord', () => {
     expect(findWord('G99999', lexicon)).toBeUndefined();
     expect(findWord('ζζζζ', lexicon)).toBeUndefined();
     expect(findWord('', lexicon)).toBeUndefined();
+  });
+});
+
+describe('findWord for a Hebrew word (mw-5vvlay.2)', () => {
+  it('finds רֵאשִׁית three ways: by H7225, by its pointed lemma and by the lemma with the points off', () => {
+    for (const text of ['H7225', 'h7225', 'H07225', ' H7225 ', 'רֵאשִׁית', 'ראשית', 'רֵאשִׁית'.normalize('NFD')]) {
+      expect(findWord(text, lexicon, hebrew), text).toMatchObject({ lemma: 'רֵאשִׁית', entry: { s: 'H7225', g: 'first, beginning' } });
+    }
+  });
+
+  it('looks in the Hebrew lexicon alone when that is the only one given', () => {
+    expect(findWord('ראשית', hebrew)?.entry.s).toBe('H7225');
+    expect(findWord('H7225', hebrew)?.lemma).toBe('רֵאשִׁית');
+  });
+
+  it('keeps a bare number Greek, and finds no Hebrew word when no Hebrew lexicon is given', () => {
+    expect(findWord('7225', lexicon, hebrew)).toBeUndefined();
+    expect(findWord('3551', lexicon, hebrew)?.lemma).toBe('νόμος');
+    expect(findWord('H7225', lexicon)).toBeUndefined();
+    expect(findWord('H99999', lexicon, hebrew)).toBeUndefined();
+    expect(findWord('בבבבבב', lexicon, hebrew)).toBeUndefined();
+  });
+
+  it('is the Hebrew word of a link in the address, #/?word=H7225 or the letters', () => {
+    expect(linkOf('#/?word=H7225')).toEqual({ kind: 'word', text: 'H7225' });
+    expect(linkOf(`#/?word=${encodeURIComponent('ראשית')}`)).toEqual({ kind: 'word', text: 'ראשית' });
+    expect(isHebrewText('H7225')).toBe(true);
+    expect(isHebrewText('ראשית')).toBe(true);
+    expect(isHebrewText('G3551')).toBe(false);
+    expect(isHebrewText('νόμος')).toBe(false);
+    expect(wordUrl('H7225')).toBe('https://lampas.allmymind.org/#/?word=H7225');
+  });
+
+  it('is never taken for a book of the Bible when he types the Hebrew letters of it', () => {
+    expect(parseTypedReference('ראשית')).toBeNull();
+    expect(parseTypedReference('רֵאשִׁית')).toBeNull();
+  });
+
+  it('opens the Hebrew sheet for a linked word: a chapter of language hbo, the gloss under its number', () => {
+    const found = findWord('H7225', hebrew);
+    if (!found) throw new Error('no word');
+    const sheet = lemmaSheet({ lemma: found.lemma, strongs: found.entry.s, gloss: found.entry.g });
+    expect(sheet.chapter.lang).toBe('hbo');
+    expect(sheet.chapter.lex.H7225.g).toBe('first, beginning');
+    expect(lemmaSheet({ lemma: 'νόμος', strongs: 'G3551', gloss: 'law' }).chapter.lang).toBeUndefined();
   });
 });
 

@@ -77,10 +77,10 @@ test('Genesis 1 in the Hebrew view: right to left, pointed, in the Hebrew face, 
   expect(await heading.evaluate((el) => getComputedStyle(el).textAlign)).toBe('right');
   await shot(page, 'hebrew-genesis-1');
 
-  // a tap on a word: the English word sheet of its chunk (the Hebrew word sheet is the next story's)
+  // a tap on a word: its Hebrew word sheet (tests/e2e/hebrew-word-sheet.spec.ts has its layout)
   await row.locator('[data-word="4"]').click();
-  const sheet = page.getByRole('dialog', { name: 'English word' });
-  await expect(sheet.getByTestId('english-word')).toHaveText('the heavens');
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(sheet.getByTestId('sheet-lemma')).toHaveText('שָׁמַיִם');
   await sheet.getByRole('button', { name: 'Done' }).click();
 
   // a long press says the word in Hebrew, the cantillation marks off

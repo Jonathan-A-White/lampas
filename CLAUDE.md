@@ -33,15 +33,14 @@ npm run typecheck    # tsc -b --noEmit, strict
 npm run lint         # eslint (no explicit any)
 npm test             # vitest run: unit tests and feature specs
 npm run test:bdd     # vitest run, features/steps only
-npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (run `npm run build` first,
-                     #   or use `npm run gate:shots`); writes shots/<name>.png
+npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (build first, or `npm run gate:shots`); writes shots/<name>.png
 npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts from docs/example-words.md (plain node, 22.18+)
 npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
 npx playwright test  # (npm run test:e2e) all e2e (use --workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
 npm run e2e:live     # the live tests against the DEPLOYED app; not in the gate (docs/commands.md)
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
-npm run ladder:docs  # writes the docs/grammar.md ladder table and the docs/card-audit.md rows from src/data/grammar/ladder.ts (docs/commands.md)
+npm run ladder:docs  # writes the ladder table of docs/grammar.md and the rows of docs/card-audit.md (docs/commands.md)
 npm run logos:catalogue -- <csv>  # writes src/resources/catalogue/ from a Logos export; logos:fit prints what is left (docs/commands.md)
 npm run data:build   # also check:step, greek:edition, ladder, fixture:chapter: data tools, not in the gate (docs/commands.md)
 ```
@@ -108,7 +107,8 @@ One line per file under `docs/`: open the ones your story touches. `tests/unit/c
 
 ```
 docs/layout/app.md # Layout: the shell, build, manifest, worker, updates and What's new, the bus, appearance, src/ui/, public/
-docs/layout/reader.md # Layout: the Reader: nav, swipe, src/nav/ and links in, chips, Immersive, word sheet, weave, Old Testament
+docs/layout/reader.md # Layout: the Reader: nav, swipe, src/nav/ and links in, chips, Immersive, weave, Old Testament
+docs/layout/word-sheet.md # Layout: the word sheet, Greek and Hebrew, and a word by link
 docs/layout/chapter-picker.md # Layout: the chapter picker, the 66 books
 docs/layout/verse-and-reading.md # Layout: the Verse view (Listen, Quiz me, passages) and Read it aloud, the Reading ladder and drill
 docs/layout/tutor.md # Layout: asking the tutor: the round button, Ask, services/tutor.ts, grinds/, tips, links, Markdown, Hebrew

@@ -1,4 +1,4 @@
-// src/WordSheet.tsx — the bottom sheet a tapped word opens: the Greek word as it stands, how to say it (a respelling
+// src/WordSheet.tsx — the bottom sheet a tapped word opens: the Greek word as it stands (or, in an Old Testament chapter, the Hebrew word: HebrewCard, mw-5vvlay.2), how to say it (a respelling
 // in the pronunciation chosen in Settings), lemma, parsing in plain words, gloss and Strong's. Closes by a tap
 // outside, a swipe down on its handle, the Done button, Escape or the phone's Back (src/ui/sheetBack.ts). Each word has a Help with this word row (Grammar, Sound it out)
 // when the screen gives it somewhere to send them: the Talk sheet on the word's verse with the first question sent. Every grammar
@@ -7,12 +7,13 @@
 // and is not drawn when none is on.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { bareEnglish, type Chapter, type GreekWord, wordGloss, wordLemma, wordParse } from './data/chapter';
+import { bareEnglish, type Chapter, type GreekWord, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
 import { useAiAllowed } from './gate/licenceContext';
-import { EnglishDictionaryRow, EnglishWordSheet } from './EnglishWordSheet';
+import { EnglishDictionaryRow, EnglishWordList, EnglishWordSheet, TurnOnLogos } from './EnglishWordSheet';
+import { useLogosOn } from './useLogosOn';
 import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
@@ -42,6 +43,7 @@ import { HintCard } from './tips/HintCard';
 import { WORD_SHEET_OPENED } from './tips/hints';
 import { GREEK_LANG, greekLang } from './script/greekLang';
 import { HeartOfWord } from './HeartOfWord';
+import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
 export interface Lookup {
@@ -68,11 +70,15 @@ export interface TermAsk {
   verse: number;
 }
 
-function Fact({ label, children, testId, greek }: { label: string; children: ReactNode; testId: string; greek?: boolean }) {
+function Fact({ label, children, testId, greek, hebrew }: { label: string; children: ReactNode; testId: string; greek?: boolean; hebrew?: boolean }) {
   return (
     <div className="flex gap-3 py-1">
       <dt className="w-20 shrink-0 text-sm text-muted">{label}</dt>
-      <dd data-testid={testId} {...greekLang(greek === true)} className={`min-w-0 break-words ${greek ? 'font-greek text-xl' : 'text-base'}`}>
+      <dd
+        data-testid={testId}
+        {...(hebrew ? { ...HEBREW_LANG_ATTRS, dir: 'rtl' as const } : greekLang(greek === true))}
+        className={`min-w-0 break-words ${greek ? 'font-greek text-xl' : hebrew ? 'script-he text-xl' : 'text-base'}`}
+      >
         {children}
       </dd>
     </div>
@@ -80,10 +86,10 @@ function Fact({ label, children, testId, greek }: { label: string; children: Rea
 }
 
 /** The Parsing in plain words with each grammar word a link (a 44 px tap target): underlined, or plain once he knows it. */
-function ParseTerms({ parse, known, open }: { parse: string; known: ReadonlySet<string>; open: (term: string) => void }) {
+function ParseTerms({ parse, known, open, language = 'grc' }: { parse: string; known: ReadonlySet<string>; open: (term: string) => void; language?: SourceLanguage }) {
   return (
     <>
-      {parseSegments(parse).map((segment, i) => {
+      {parseSegments(parse, language).map((segment, i) => {
         const term = segment.term;
         if (term === undefined) return segment.text;
         const isKnown = known.has(term);
@@ -261,6 +267,71 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
   );
 }
 
+/** A Hebrew word's card (an Old Testament chapter, mw-5vvlay.2): the pointed form large, right to left, with Listen in the phone's he-IL voice; its transliteration where the Greek has the respelling;
+ * the lemma, the Parsing as the chapter's parse map decodes it (plain words: the Grammar sheet explains Greek terms only), the Meaning and the Definition of the chapter's lex, Strong's and the English
+ * of its chunk. No Paradigm row, Heart note or Help with this word row yet: they are Greek-only for now (docs/layout/word-sheet.md lists them as LATER). With Logos off the first card offers to turn it on. */
+function HebrewCard({ chapter, word, english, study, level, offerLogos, onMissing, onAll }: {
+  chapter: Chapter;
+  word: GreekWord;
+  english?: string;
+  study: StudyResources | undefined;
+  level: GreekLevel | undefined;
+  offerLogos: boolean;
+  onMissing: (resource: StudyResource) => void;
+  onAll: (word: GreekWord, door: NonNullable<StudyGroup['door']>) => void;
+}) {
+  const strongsOn = study?.on.includes('strongs') ?? false;
+  const logosOn = useLogosOn();
+  const parse = wordParse(chapter, word);
+  const definition = chapter.lex[word.s]?.d ?? '';
+  return (
+    <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
+      <div className="flex items-start justify-between gap-2">
+        <SpeakButton text={word.t} id={`word:${word.t}`} label="Listen" kind="speaker" language="hebrew" className="shrink-0" />
+        <h2 data-testid="sheet-word" {...HEBREW_LANG_ATTRS} dir="rtl" className="script-he min-w-0 flex-1 break-words text-4xl font-bold">
+          {word.t}
+        </h2>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-x-2">
+        <p data-testid="sheet-transliteration" lang="en" className="min-w-0 break-words text-xl text-muted">
+          {word.tr}
+        </p>
+        <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" />
+      </div>
+      <dl className="mt-2">
+        <Fact label="Lemma" testId="sheet-lemma" hebrew>
+          {wordLemma(word)}
+        </Fact>
+        {parse ? (
+          <Fact label="Parsing" testId="sheet-parse">
+            <ParseTerms parse={parse} known={new Set()} open={() => undefined} language="hbo" />
+          </Fact>
+        ) : null}
+        <Fact label="Meaning" testId="sheet-gloss">
+          {wordGloss(chapter, word)}
+        </Fact>
+        {definition ? (
+          <Fact label="Definition" testId="sheet-definition">
+            <span className="text-sm">{definition}</span>
+          </Fact>
+        ) : null}
+        {strongsOn || word.s === '' ? null : (
+          <Fact label="Strong's" testId="sheet-strongs">
+            {word.s}
+          </Fact>
+        )}
+        {english ? (
+          <Fact label="English" testId="sheet-english">
+            {bareEnglish(english)}
+          </Fact>
+        ) : null}
+      </dl>
+      <StudyRow groups={studyGroupsOf(chapter, word, study, level)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
+      {offerLogos && logosOn === false ? <TurnOnLogos /> : null}
+    </section>
+  );
+}
+
 function WordCard({ chapter, word, english, pronunciation, known, study, level, onHelp, onTerm, onParadigm, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
@@ -355,13 +426,13 @@ interface WordSheetProps {
   onAskTerm?: (ask: TermAsk) => void;
 }
 
-/** The word's sheet is Greek (its word, lemma, parsing and Strong's number), so the Greek dial draws it from Curious up (mw-3ased2.2); at Just English an English word opens EnglishWordSheet. */
+/** The word's sheet is the source language's (its word, lemma, parsing and Strong's number: Greek, or Hebrew in an Old Testament chapter), so the Greek dial draws it from Curious up (mw-3ased2.2); at Just English an English word opens EnglishWordSheet. */
 export function WordSheet(props: WordSheetProps) {
   const level = useGreekInterest();
   if (level === undefined || level >= GREEK_VIEW_FROM) return <WordSheetBody {...props} />;
-  // at Just English an English word he taps opens the small English sheet instead (mw-5r3p30.707); a Greek word has no sheet
-  const { lookup, onClose } = props;
-  return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} onClose={onClose} /> : null;
+  // at Just English an English word he taps opens the small English sheet instead (mw-5r3p30.707); a Greek word has no sheet. An Old Testament chunk lists each of its words (mw-uqlxea.2).
+  const { lookup, onClose, chapter } = props;
+  return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} listWords={sourceLanguage(chapter) === 'hbo'} onClose={onClose} /> : null;
 }
 
 function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: WordSheetProps) {
@@ -374,6 +445,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
   const lookup = shown && shown.base === opened ? shown.lookup : opened;
   const elsewhere = shown && shown.base === opened ? shown.chapter : undefined;
   const sheetChapter = elsewhere ?? chapter;
+  const hebrew = sourceLanguage(sheetChapter) === 'hbo';
   // The idea sheet over the Grammar sheet (Learn this idea).
   const [idea, setIdea] = useState<GrammarIdea | null>(null);
   // The sheet that says an app is not on the phone, over this one, after a Study link's app did not open.
@@ -480,9 +552,21 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
           <div
             ref={scroll}
             data-testid="sheet-scroll"
-            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${scrollHeight(many, heading, lookup.words.some((w) => paradigmOfWord(w) !== undefined))}`}
+            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${scrollHeight(many, heading, lookup.words.some((w) => !hebrew && paradigmOfWord(w) !== undefined))}`}
           >
-            {lookup.words.map((w, i) => (
+            {lookup.words.map((w, i) => hebrew ? (
+              <HebrewCard
+                key={i}
+                chapter={sheetChapter}
+                word={w}
+                english={lookup.fromEnglish ? undefined : lookup.english}
+                study={study}
+                level={level}
+                offerLogos={i === 0}
+                onMissing={setMissing}
+                onAll={(word, door) => setAllLexicons({ word, door })}
+              />
+            ) : (
               <WordCard
                 key={i}
                 chapter={sheetChapter}
@@ -499,7 +583,8 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 onAll={(word, door) => setAllLexicons({ word, door })}
               />
             ))}
-            {heading ? <EnglishDictionaryRow text={bareEnglish(heading)} english /> : null}
+            {/* an English tap in an Old Testament chapter ends with the English sheet of its words (mw-uqlxea.2: each with its Listen and its Webster's row), under the Hebrew words it renders */}
+            {heading ? hebrew ? <EnglishWordList text={bareEnglish(heading)} /> : <EnglishDictionaryRow text={bareEnglish(heading)} english /> : null}
           </div>
           {many && moreBelow ? (
             <div

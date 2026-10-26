@@ -1,5 +1,5 @@
 // features/steps/old-testament.steps.tsx — runs features/old-testament.feature: the Reader reads the Old Testament in English (Jonah 1 is the copy in tests/fixtures/data/jon/1.json,
-// scripts/fixture-chapter.mjs): the picker lists the 66 books, the chapter opens with no English | Greek switch and no weave, a tap on a chunk opens the English word sheet, Listen and Read
+// scripts/fixture-chapter.mjs): the picker lists the 66 books, the chapter opens with no English | Greek switch and no weave, a tap on a chunk opens the word sheet (the Hebrew words of the chunk, the English words under them), Listen and Read
 // from the top speak English, Malachi 4 runs into Matthew 1, and Read in Logos / Listen in Audible stand at the foot of the chapter (the Logos app's own link, ref.ly only when the page stays in front).
 // Settings > Bible in Logos picks the Bible. Speech is voice-kit's honest fake (tests/support/fake-speech.ts).
 import '@testing-library/react/dont-cleanup-after-each';
@@ -129,7 +129,8 @@ const footDrawn = async (): Promise<HTMLElement> => {
   return foot() as HTMLElement;
 };
 const nav = (): Promise<HTMLElement> => screen.findByRole('navigation', { name: 'Chapters' });
-const sheet = (): HTMLElement => screen.getByRole('dialog', { name: 'English word' });
+/** The word sheet an English chunk of an Old Testament chapter opens (mw-5vvlay.2): the Hebrew words of the chunk, and the English words under them */
+const sheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Word' });
 const speakingBar = (): HTMLElement => screen.getByRole('region', { name: 'Speaking' });
 const onBar = (name: string): HTMLElement | null => within(speakingBar()).queryByRole('button', { name });
 const speakingBarShows = (_: unknown, a: string, b: string, c: string): void => {
@@ -270,29 +271,32 @@ describeFeature(feature, ({ Scenario }) => {
     And('the reader turns pages', () => expect(reader().getAttribute('data-paging')).toBe('pages'));
   });
 
-  Scenario('A tap on "fish" opens the English word sheet with a Webster\'s row for it', ({ Given, When, Then, And }) => {
+  Scenario('A tap on "fish" opens the word sheet with the Hebrew word and a Webster\'s row for the English one', ({ Given, When, Then, And }) => {
     Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
     When('he taps the chunk {string} of verse {int}', tapChunk);
-    Then('the English word sheet opens headed {string}', async (_, word: string) => {
-      await screen.findByRole('dialog', { name: 'English word' });
-      expect(within(sheet()).getByTestId('english-word')).toHaveTextContent(word);
+    Then('the word sheet opens headed {string}', async (_, word: string) => {
+      await screen.findByRole('dialog', { name: 'Word' });
+      expect(within(sheet()).getByTestId('sheet-heading')).toHaveTextContent(word);
     });
     And('it has one {string} link to {string} in Webster\'s 1828', (_, name: string, word: string) => {
       const links = within(sheet()).getAllByRole('link', { name });
       expect(links).toHaveLength(1);
       expect(links[0].getAttribute('href')).toBe(englishDictionaryLink(word)?.url);
     });
+    And('the Hebrew word of the chunk, {string}, is on the sheet', (_, lemma: string) => {
+      expect(squash(within(sheet()).getByTestId('sheet-lemma').textContent)).toBe(lemma);
+    });
     And('the Greek word sheet is not opened', () => {
-      expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull();
+      expect(within(sheet()).getByTestId('sheet-word')).toHaveAttribute('lang', 'he');
     });
   });
 
   Scenario('A chunk of two words lists two rows', ({ Given, When, Then, And }) => {
     Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
     When('he taps the chunk {string} of verse {int}', tapChunk);
-    Then('the English word sheet opens headed {string}', async (_, word: string) => {
-      await screen.findByRole('dialog', { name: 'English word' });
-      expect(within(sheet()).getByTestId('english-word')).toHaveTextContent(word);
+    Then('the word sheet opens headed {string}', async (_, word: string) => {
+      await screen.findByRole('dialog', { name: 'Word' });
+      expect(within(sheet()).getByTestId('sheet-heading')).toHaveTextContent(word);
     });
     And('it lists the words {string} and {string}, each with its Listen', (_, a: string, b: string) => {
       const items = within(sheet()).getAllByRole('listitem');
@@ -300,18 +304,19 @@ describeFeature(feature, ({ Scenario }) => {
       for (const [i, word] of [a, b].entries()) expect(within(items[i]).getByRole('button', { name: `Listen: ${word}` })).toBeInTheDocument();
     });
     And('it has the links {string} and {string}', (_, a: string, b: string) => {
-      const links = within(sheet()).getAllByRole('link');
+      // the Hebrew words' own Study links are on the sheet too: these are the English rows'
+      const links = within(sheet()).getAllByRole('link').filter((l) => l.textContent?.startsWith('Look it up in Logos'));
       expect(links.map((l) => l.textContent)).toEqual([a, b]);
       expect(links[1].getAttribute('href')).toBe(englishDictionaryLink('amittai')?.url);
     });
   });
 
-  Scenario('With Logos off the English word sheet offers to turn it on', ({ Given, When, Then, And }) => {
+  Scenario('With Logos off the word sheet offers to turn it on', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with Logos off', () => openOn('Jonah 1', withLogos(false)));
     When('he taps the chunk {string} of verse {int}', tapChunk);
-    Then('the English word sheet opens headed {string}', async (_, word: string) => {
-      await screen.findByRole('dialog', { name: 'English word' });
-      expect(within(sheet()).getByTestId('english-word')).toHaveTextContent(word);
+    Then('the word sheet opens headed {string}', async (_, word: string) => {
+      await screen.findByRole('dialog', { name: 'Word' });
+      expect(within(sheet()).getByTestId('sheet-heading')).toHaveTextContent(word);
     });
     And('it says {string}', (_, text: string) => {
       expect(sheet()).toHaveTextContent(text);
@@ -331,6 +336,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('no English word sheet opens', () => {
       expect(screen.queryByRole('dialog', { name: 'English word' })).toBeNull();
+      expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull();
     });
   });
 
@@ -373,9 +379,9 @@ describeFeature(feature, ({ Scenario }) => {
       synth?.finish();
     });
     When('he taps the chunk {string} of verse {int}', tapChunk);
-    And('he taps Listen on the English word sheet', async () => {
-      await screen.findByRole('dialog', { name: 'English word' });
-      await user.click(within(sheet()).getByRole('button', { name: 'Listen' }));
+    And('he taps Listen: fish on the word sheet', async () => {
+      await screen.findByRole('dialog', { name: 'Word' });
+      await user.click(within(sheet()).getByRole('button', { name: 'Listen: fish' }));
     });
     Then('the reading is paused', () => expect(getReading().status).toBe('paused'));
     And('the phone is saying {string} alone', (_, word: string) => expect(lastSpoken()).toMatchObject({ text: word, lang: 'en-US' }));
