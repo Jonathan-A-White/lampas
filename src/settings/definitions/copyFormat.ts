@@ -1,15 +1,16 @@
 // When you copy (Settings > Reading, mw-9txn0x1.1): what the Verse view's Copy and Share give for a verse, a passage or a chapter (src/copy/format.ts copyText).
-// Four rows, each a setting of its own: Text (English | the original | both), Reference (after | before | off), Verse numbers (on | off), Link (on | off).
-// The defaults copy the English, the reference after it, the verse numbers of more than one verse, and the link.
+// Four rows, each a setting of its own: Text (as you read it | English | the original | both), Reference (after | before | off), Verse numbers (on | off), Link (on | off).
+// The defaults copy the text as he reads it (his view on now, the Weave included), the reference after it, the verse numbers of more than one verse, and the link.
 import { defineSetting } from '../define';
 import type { CopyReference, CopyText, OnOffChoice } from '../../copy/format';
 
 export const copyTextSetting = defineSetting<CopyText>({
   key: 'copyText',
-  default: 'english',
+  default: 'asread',
   allowed: {
     kind: 'choice',
     values: [
+      { value: 'asread', label: 'As you read it' },
       { value: 'english', label: 'English' },
       { value: 'original', label: 'The original' },
       { value: 'both', label: 'Both' },
@@ -17,8 +18,8 @@ export const copyTextSetting = defineSetting<CopyText>({
   },
   section: 'reading',
   label: 'Copy: text',
-  hint: 'When you copy: the words, in English, the Greek or Hebrew, or both.',
-  help: 'What Copy and Share give for a verse, a passage or a chapter: **English**, the default; **The original**, Greek or Hebrew; or **Both**, English then the original.',
+  hint: 'When you copy: the words as you read them, in English, the Greek or Hebrew, or both.',
+  help: 'What Copy and Share give for a verse, a passage or a chapter: **As you read it**, the default, the view on now (English, Greek, Hebrew or the Weave); **English**; **The original**; or **Both**, English then the original.',
 });
 
 export const copyReferenceSetting = defineSetting<CopyReference>({

@@ -1572,7 +1572,7 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
-            "properties": { "key": { "const": "copyText" }, "value": { "type": "string", "enum": ["english", "original", "both"] } }
+            "properties": { "key": { "const": "copyText" }, "value": { "type": "string", "enum": ["asread", "english", "original", "both"] } }
           },
           {
             "type": "object",

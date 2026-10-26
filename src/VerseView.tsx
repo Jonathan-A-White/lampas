@@ -129,7 +129,8 @@ export function VerseView(props: VerseViewProps) {
   const canShare = typeof navigator.share === 'function';
   // Copy and Share give the unit in the format of Settings > Reading > When you copy (src/copy/format.ts); the defaults until the four rows are read
   const copyFormat = useCopyFormat() ?? COPY_DEFAULTS;
-  const copyUnit = useMemo(() => copyUnitOf(chapterText, verse), [chapterText, verse]);
+  // 'As you read it' is the view the Reader draws this verse in: its view and, in the Weave, its woven chunks
+  const copyUnit = useMemo(() => copyUnitOf(chapterText, verse, { view, woven: wovenChapter ?? null }), [chapterText, verse, view, wovenChapter]);
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
   const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';

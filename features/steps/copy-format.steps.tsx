@@ -1,7 +1,7 @@
 // features/steps/copy-format.steps.tsx — runs features/copy-format.feature (mw-9txn0x1.1): the Verse view's Copy gives the verse, passage or chapter in
 // the format of Settings > Reading > When you copy (src/copy/format.ts). The clipboard is a fake that keeps what was written.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
@@ -9,7 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { setReaderView, setWeave } from '../../src/data/repositories';
+import { setGreekInterest, setReaderView, setWeave, type ReaderView, type Weave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { passageUrl, referenceUrl } from '../../src/nav/links';
 import { stopReading } from '../../src/speech/readAloud';
@@ -43,7 +43,7 @@ const clip = (): string => {
   return copied[0];
 };
 
-async function open(settings: Record<string, string>, hash = ''): Promise<void> {
+async function open(settings: Record<string, string>, hash = '', read: { view: ReaderView; weave: Weave } = { view: 'english', weave: 'off' }): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -60,9 +60,11 @@ async function open(settings: Record<string, string>, hash = ''): Promise<void> 
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.readings.clear()]);
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
-  await setReaderView('english');
-  await setWeave('off');
+  // the Weave and the Greek view are shown for the Greek he has asked for (the Greek dial) and the words he knows
+  await setGreekInterest(5);
+  await setReaderView(read.view);
   await seedHisWords();
+  await setWeave(read.weave);
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
@@ -73,6 +75,14 @@ describeFeature(feature, ({ Scenario }) => {
   const defaults = () => open({});
   const chosen = (_: unknown, text: string, reference: string, numbers: string, link: string) =>
     open({ copyText: text, copyReference: reference, copyNumbers: numbers, copyLink: link });
+  const woven = async (_: unknown, text?: string) => {
+    await open(text === undefined ? {} : { copyText: text }, '#/?ref=Col.3.1', { view: 'english', weave: 'solid' });
+    await screen.findByRole('region', { name: 'Verse view' });
+    // the Verse view copies by the defaults (As you read it) until its four settings have been read from the store: let the choice of Text reach it
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+  };
   const tapNumber = async (_: unknown, n: number) => {
     await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
     await screen.findByRole('region', { name: 'Verse view' });
@@ -156,6 +166,32 @@ describeFeature(feature, ({ Scenario }) => {
     And("the phone's clipboard has no reference", () => {
       expect(clip()).not.toContain('(MSB)');
     });
+  });
+
+  Scenario('In the Weave, Copy pastes the woven verse', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Colossians 3:1 in the Weave with When you copy at its defaults', woven);
+    When('he taps {string}', tapCopy);
+    Then("the phone's clipboard holds the woven verse as the Verse view shows it, then the line {string}", (_, line: string) => {
+      const shown = squash(viewEl().querySelector('[data-sheet-verse]')?.textContent);
+      expect(shown).toContain('χριστῷ');
+      expect(lines(clip()).slice(0, 2)).toEqual([shown, line]);
+    });
+    And("the phone's clipboard holds {string}", holds);
+    And("the phone's clipboard has no {string}", (_, words: string) => {
+      expect(clip()).not.toContain(words);
+    });
+  });
+
+  Scenario('In the Greek view, Copy pastes the Greek', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Colossians 3:1 in the Greek view with When you copy at its defaults', () => open({}, '#/?ref=Col.3.1', { view: 'greek', weave: 'off' }));
+    When('he taps {string}', tapCopy);
+    Then("the phone's clipboard starts with {string}", starts);
+  });
+
+  Scenario('Text English copies the English even in the Weave', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Colossians 3:1 in the Weave with When you copy set to Text {string}', woven);
+    When('he taps {string}', tapCopy);
+    Then("the phone's clipboard starts with {string}", starts);
   });
 
   Scenario('Copy on a whole chapter names the chapter', ({ Given, When, Then, And }) => {

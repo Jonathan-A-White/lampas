@@ -276,7 +276,7 @@ describe('currentSettings', () => {
       copyLink: 'on',
       copyNumbers: 'on',
       copyReference: 'after',
-      copyText: 'english',
+      copyText: 'asread',
       sectionHeadings: 'on',
       immersiveReader: 'off',
       immersiveHint: 'on',
