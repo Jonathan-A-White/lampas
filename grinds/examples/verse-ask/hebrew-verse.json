@@ -111,8 +111,7 @@
         "gloss": "night",
         "parse": "Noun - masculine plural"
       }
-    ],
-    "pronunciation": "modern"
+    ]
   },
   "expect": {
     "answer": {
