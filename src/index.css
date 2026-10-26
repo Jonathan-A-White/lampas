@@ -169,6 +169,12 @@
   --lp-ask-gutter: 0px;
 }
 
+/* The Reader's reading box draws no scroll indicator: a chapter is long, so the phone's overlay thumb was a small grey square that sat on the line under the
+ * header, beside the round Ask button, in a short window (mw-5r3p30.768). The scrolling itself is unchanged. */
+[data-reader] {
+  scrollbar-width: none;
+}
+
 /* The Reader's header and chips row in one box (src/Reader.tsx): no box of its own upright, one row in a short window (below). */
 .reader-top {
   display: contents;
@@ -184,7 +190,9 @@
   }
 
   /* Sideways the chips row joins the header's row (src/Reader.tsx .reader-top): 40 px more for the text. The row's border is the wrapper's, so one
-   * line runs under both; a tip opened from the Tip chip takes a full row of its own under them. */
+   * line runs under both; a tip opened from the Tip chip takes a full row of its own under them. Both are sized by their content, so the chips row
+   * joins the header's line only when the header's controls and the chips fit side by side, and drops to a line of its own, the full width and
+   * scrolling sideways if need be, when they do not (a split-screen window 390 px wide: mw-5r3p30.768); the header never gives up its room to it. */
   .reader-top {
     display: flex;
     flex-wrap: wrap;
@@ -192,18 +200,49 @@
     border-bottom: 1px solid var(--lp-line);
   }
   .reader-top > header {
-    flex: 1 1 0;
+    flex: 1000 1 auto;
     min-width: 0;
     border-bottom-width: 0;
   }
   .reader-top > [data-testid="reader-chips"] {
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     min-width: 0;
     border-bottom-width: 0;
     align-self: center;
   }
   .reader-top > :not(header):not([data-testid="reader-chips"]) {
     flex: 1 0 100%;
+  }
+}
+
+/* A window under 360 px wide and 500 px tall (a third of a phone's width split-screen, sideways: mw-5r3p30.768) has no room for a line of chips under the
+ * header's two lines and 40% of its height for the text. The header's controls and the chips become one wrapping row (src/reader/ReaderHeader.tsx: the
+ * title, Play and the gear on the first line, the switch the second) and the chips take the rest of the switch's line, scrolling sideways in it; a tip
+ * opened from the Tip chip still takes a full line of its own under them. */
+@media (max-height: 500px) and (max-width: 359px) {
+  .reader-top {
+    gap: 0.25rem;
+    padding-inline: 0.25rem;
+    align-items: center;
+  }
+  .reader-top > header {
+    display: contents;
+  }
+  .reader-top > [data-testid="reader-chips"] {
+    flex: 1 1 0;
+    order: 2;
+    padding-inline: 0;
+  }
+  .reader-top > :not(header):not([data-testid="reader-chips"]) {
+    order: 3;
+  }
+}
+
+/* In a window under 300 px tall the round Ask button, raised over the Talk bar, reaches up to the chips row: the row stops short of the gutter the button
+ * keeps beside the text (mw-5r3p30.768). */
+@media (max-height: 299px) {
+  .reader-top > [data-testid="reader-chips"] {
+    margin-inline-end: var(--lp-ask-gutter);
   }
 }
 

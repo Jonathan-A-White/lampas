@@ -14,7 +14,10 @@ import { ReadFromButton } from '../speech/ReadControls';
 const TOAST_MS = 2500;
 const WORD_ORDER_NAME: Record<WeaveOrder, string> = { english: 'English word order', greek: 'Greek word order' };
 
-/** English | Weave | Greek while the Weave is on (English | Greek with it Off): English is plain English, Weave the woven English, and a long press on
+/** Under 390 px (a narrow phone or a split-screen window, mw-5r3p30.768) the header cannot hold the title, the switch, Play and the gear on one line: the switch (the
+ * widest, `order-1` below) goes to a line of its own, and the title, Play and the gear stay together on the first, so no line holds a lone button.
+ *
+ * English | Weave | Greek while the Weave is on (English | Greek with it Off): English is plain English, Weave the woven English, and a long press on
  * Weave flips the woven text between the English and the Greek word order (the Weave's Order setting) and says which in a toast (mw-5r3p30.651). */
 function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder }) {
   const [toast, setToast] = useState<{ text: string; top: number } | null>(null);
@@ -28,8 +31,8 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView;
     const next: WeaveOrder = weaveOrder === 'greek' ? 'english' : 'greek';
     void setSetting(weaveOrderSetting, next);
     choose('weave');
-    // the toast stands under the header, so it never hides the switch it speaks of
-    setToast({ text: WORD_ORDER_NAME[next], top: (box.current?.closest('header') ?? box.current)?.getBoundingClientRect().bottom ?? 0 });
+    // the toast stands under the header (or the switch's own line, where a narrow window makes the header `display: contents`), so it never hides the switch it speaks of
+    setToast({ text: WORD_ORDER_NAME[next], top: Math.max(box.current?.closest('header')?.getBoundingClientRect().bottom ?? 0, box.current?.getBoundingClientRect().bottom ?? 0) });
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setToast(null), TOAST_MS);
   };
@@ -46,7 +49,7 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder }: { view: ReaderView;
   );
   return (
     <>
-      <div ref={box} role="group" aria-label="Language" className="flex shrink-0 rounded-xl border border-line p-0.5">
+      <div ref={box} role="group" aria-label="Language" className="flex shrink-0 rounded-xl border border-line p-0.5 max-[389px]:order-1">
         {button('english', 'English')}
         {weaveOn ? button('weave', 'Weave') : null}
         {button('greek', 'Greek')}
