@@ -29,7 +29,7 @@ export interface InLogosGroup {
 /** How many rows a group draws before the rest wait under 'N more'. */
 export const SHOWN_ROWS = 3;
 
-/** The kinds a New Testament verse is opened in, and an Old Testament one (a commentary opens there when its `covers` name the book: none of the catalogue does yet; the Hebrew epic adds
+/** The kinds a New Testament verse is opened in, and an Old Testament one (a commentary opens there when its `covers` name the book: his commentaries on the Old Testament do; the Hebrew epic adds
  *  Hebrew lexicons), in the order the groups are drawn. */
 const NT_KINDS: readonly Kind[] = ['commentary', 'greek-text', 'interlinear'];
 const OT_KINDS: readonly Kind[] = ['bible', 'commentary', 'interlinear'];

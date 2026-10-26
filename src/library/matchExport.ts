@@ -22,7 +22,7 @@ export interface Matched {
   /** how the row matched: its Resource ID is in the catalogue, or a series rule or a type rule takes it */
   by: 'id' | 'series' | 'type';
   kind: Kind;
-  /** the New Testament books the row covers (our codes), from its ReferenceSupersets; empty is none */
+  /** the books of the Bible the row covers (our codes), from its ReferenceSupersets; empty is none */
   covers: string[];
   /** the catalogue's entry, when the catalogue lists the book; undefined while only a rule takes it */
   entry?: CatalogueEntry;

@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Kind } from '../src/resources/catalogue.ts';
-import { KIND_LIST, buildCatalogue, coversOfSupersets, loadRules, readExport, type ExportRow, type Rules } from './logos-catalogue.ts';
+import { KIND_LIST, buildCatalogue, coversNewTestament, loadRules, readExport, type ExportRow, type Rules } from './logos-catalogue.ts';
 
 export type FitKind = Kind | 'other';
 
@@ -66,7 +66,7 @@ export function fitReport(rules: Rules, rows: readonly ExportRow[]): Fit {
       continue;
     }
     const bucket = byKind.find((b) => b.kind === guessKind(row)) as FitKindRows;
-    const offTestament = ['commentary', 'interlinear', 'bible'].includes(bucket.kind) && row.supersets.includes('bible') && coversOfSupersets(row.supersets).length === 0;
+    const offTestament = ['commentary', 'interlinear', 'bible'].includes(bucket.kind) && row.supersets.includes('bible') && coversNewTestament(row.supersets).length === 0;
     bucket.rows.push({ resource: row.resource, type: row.type, title: row.title, dataTypes: dataTypesOf(row.supersets), ...(offTestament ? { reason: 'Old Testament' } : {}) });
     bucket.types[row.type] = (bucket.types[row.type] ?? 0) + 1;
   }

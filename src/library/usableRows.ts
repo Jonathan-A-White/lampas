@@ -1,8 +1,8 @@
 // src/library/usableRows.ts — the rows of his Logos list that Lampas could use and does not open yet (docs/design/library-at-scale.md 6.2): what 'Ask the makers about these' attaches as library.csv. They
-// are commentaries on the New Testament, lexicons and grammars of Greek, Greek texts, interlinears of the New Testament and devotionals; never a manuscript, a Bible in English, a book of the Old Testament
-// or a tool. The Mayor judges each against the vision (npm run logos:fit prints the same reading); this is only what is worth sending. Pure.
+// are commentaries on a book of the Bible, lexicons and grammars of Greek, Greek texts, interlinears of the New Testament and devotionals; never a manuscript, a Bible in English, a book of the Old Testament
+// that is not a commentary, or a tool. The Mayor judges each against the vision (npm run logos:fit prints the same reading); this is only what is worth sending. Pure.
 import type { Kind } from '../resources/catalogue';
-import { coversOfSupersets } from './parseExport';
+import { coversNewTestament, coversOfSupersets } from './parseExport';
 
 /** A row as the phone keeps it (src/data/db.ts ExportedRow): the list's columns, named as Lampas reads them; `refs` is the ReferenceSupersets cell. */
 export interface ListedRow {
@@ -27,9 +27,9 @@ const isType = (row: ListedRow, prefix: string): boolean => row.type === prefix 
 
 /** The kind of book a row would be if Lampas opened it, or undefined when it is not one Lampas could use. */
 export function usableKind(row: ListedRow): Kind | undefined {
-  const nt = coversOfSupersets(row.refs).length > 0;
+  const nt = coversNewTestament(row.refs).length > 0;
   if (isType(row, 'text.monograph.ancient-manuscript')) return undefined;
-  if (isType(row, 'text.monograph.commentary')) return nt ? 'commentary' : undefined;
+  if (isType(row, 'text.monograph.commentary')) return coversOfSupersets(row.refs).length > 0 ? 'commentary' : undefined;
   if (isType(row, 'text.monograph.lexicon')) return forGreek(row.languages) ? 'lexicon' : undefined;
   if (isType(row, 'text.monograph.grammar')) return forGreek(row.languages) ? 'grammar' : undefined;
   if (isType(row, 'text.monograph.critical-apparatus')) return 'greek-text';

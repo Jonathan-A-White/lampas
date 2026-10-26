@@ -1,7 +1,7 @@
 // src/library/parseExport.ts — reads a Logos library export (Library > Save as Spreadsheet; docs/design/library-at-scale.md 5.1 and 5.2), pure and on the phone: `parseCsv` is RFC 4180
 // (CRLF or LF line ends, quoted cells with commas, doubled quotes and newlines inside, a BOM dropped) and takes a raw tab as cell text, because the export's last cell,
 // ReferenceSupersets, holds tabs unquoted; `readExport` turns the rows into `ExportRow`s by the header. scripts/logos-catalogue.ts reads exports with these same functions.
-import { NT_BOOKS as BOOKS } from '../data/books.ts';
+import { BOOKS, NT_BOOKS, OT_BOOKS, ntBookOf } from '../data/books.ts';
 
 /** RFC 4180: CRLF or LF line ends, quoted cells with commas, doubled quotes and newlines inside. A raw tab is cell text (the export's last cell holds them, unquoted), and a BOM is dropped. */
 export function parseCsv(text: string): string[][] {
@@ -78,26 +78,36 @@ export function readExport(text: string): ExportRow[] {
     .filter((x) => x.resource !== '');
 }
 
-/** Logos numbers the New Testament's books 61 (Matthew) to 87 (Revelation); our codes follow that order (src/data/books.ts). */
+/** Logos numbers the Old Testament's 39 books 1 (Genesis) to 39 (Malachi) and the New Testament's 27 books 61 (Matthew) to 87 (Revelation), with the Apocrypha between; our codes follow the canon (src/data/books.ts),
+ *  so the Old Testament's are the first 39 and the New's the 27 after them. */
+const FIRST_OT_BOOK = 1;
 const FIRST_NT_BOOK = 61;
+const LAST_NT_BOOK = FIRST_NT_BOOK + NT_BOOKS.length - 1;
 
-/** The books of the New Testament a ReferenceSupersets cell covers, as our codes in canonical order: each `bible` token (`bible.64.1-64.21.25`, `bible+esv.61-87`) is a range from its first book number
- *  to its last; a token of any other type (`dayofyear`, `cicr`), and the Old Testament, cover none. */
+/** The code of the book Logos numbers `n`: undefined for the Apocrypha, which Lampas does not hold. */
+function codeOfLogosBook(n: number): string | undefined {
+  if (n >= FIRST_OT_BOOK && n < FIRST_OT_BOOK + OT_BOOKS.length) return OT_BOOKS[n - FIRST_OT_BOOK].code;
+  if (n >= FIRST_NT_BOOK && n <= LAST_NT_BOOK) return NT_BOOKS[n - FIRST_NT_BOOK].code;
+  return undefined;
+}
+
+/** The books of the Bible a ReferenceSupersets cell covers, as our codes in canon order: each `bible` token (`bible.64.1-64.21.25`, `bible+esv.61-87`) is a range from its first book number to its last;
+ *  a token of any other type (`dayofyear`, `cicr`), and the Apocrypha, cover none. */
 export function coversOfSupersets(supersets: string): string[] {
   const covered = new Set<string>();
   for (const token of supersets.split('\t')) {
     const m = /^bible(?:\+[a-z0-9]+)?\.(\d+)(?:[.\d]*)(?:-(\d+)[.\d]*)?$/.exec(token.trim());
     if (!m) continue;
     const [from, to] = [Number(m[1]), Number(m[2] ?? m[1])];
-    for (let n = Math.max(from, FIRST_NT_BOOK); n <= Math.min(to, FIRST_NT_BOOK + BOOKS.length - 1); n++) covered.add(BOOKS[n - FIRST_NT_BOOK].code);
+    for (let n = from; n <= Math.min(to, LAST_NT_BOOK); n++) {
+      const code = codeOfLogosBook(n);
+      if (code) covered.add(code);
+    }
   }
   return BOOKS.filter((b) => covered.has(b.code)).map((b) => b.code);
 }
 
-/** Whether a ReferenceSupersets cell reaches into anything before the New Testament (the Old Testament, or books between): a commentary on the whole Bible does, and one on the New Testament alone does not. */
-export function coversOldTestament(supersets: string): boolean {
-  return supersets.split('\t').some((token) => {
-    const m = /^bible(?:\+[a-z0-9]+)?\.(\d+)/.exec(token.trim());
-    return m !== null && Number(m[1]) >= 1 && Number(m[1]) < FIRST_NT_BOOK;
-  });
+/** The books of the New Testament alone that a ReferenceSupersets cell covers: what a Greek book (an interlinear, a lexicon) needs to be of use. */
+export function coversNewTestament(supersets: string): string[] {
+  return coversOfSupersets(supersets).filter((code) => ntBookOf(code) !== undefined);
 }

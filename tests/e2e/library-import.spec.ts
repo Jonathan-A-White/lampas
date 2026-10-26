@@ -76,6 +76,28 @@ test('the head of his export is read on the phone: counts, one button and the re
   expect(sent, 'the file and the list were not sent anywhere').toEqual([]);
 });
 
+test('commentaries on the Old Testament and the whole Bible are open from Lampas, and no line about them is left among the reasons (mw-eup64h)', async ({ page }) => {
+  await open(page, 'library?import', 'Import your library');
+  const list = [
+    HEADER,
+    'LLS:GUZIKCOMM32JON,text.monograph.commentary.bible,DGCB Jon,Jonah,David Guzik’s Commentaries on the Bible,en,bible.32.1-32.4.11',
+    'LLS:29.1.1,text.monograph.commentary.bible,BKC,The Bible Knowledge Commentary,,en,"bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21"',
+    'LLS:HEBREWSERMONS,text.monograph.sermons,,Sermons on the Psalms,,en,bible.19.1.1-19.150.6',
+  ].join('\r\n') + '\r\n';
+  await page.getByLabel('Logos list file').setInputFiles({ name: 'logos-list.csv', mimeType: 'text/csv', buffer: Buffer.from(list, 'utf8') });
+  await expect(page.getByTestId('import-read')).toHaveText('3 books read from your Logos list.');
+  await expect(page.getByTestId('import-open')).toHaveText('2 open from Lampas');
+  await expect(page.getByTestId('import-kinds')).toHaveText('2 commentaries');
+  await expect(page.getByTestId('import-waiting')).toHaveCount(0);
+  await expect(page.getByTestId('import-left')).toHaveText('1 Lampas cannot use yet');
+  await page.getByRole('button', { name: /^What they are/ }).click();
+  const reasons = page.getByTestId('import-reasons');
+  await expect(reasons.getByRole('listitem')).toHaveCount(1);
+  await expect(reasons).not.toContainText(/Old Testament reader|Commentaries that reach/);
+  await expectThumbSized(page);
+  await shot(page, 'library-import-old-testament-commentaries');
+});
+
 test('a long list turns on in one tap and the Library says when it came', async ({ page }) => {
   await open(page, 'library?import', 'Import your library');
   const list = longList();

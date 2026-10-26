@@ -1,6 +1,6 @@
 // The rows of his list that Lampas could use (src/library/usableRows.ts): what 'Ask the makers about these' attaches as library.csv
-// (docs/design/library-at-scale.md 6.2): commentaries on the New Testament, Greek grammars and lexicons, Greek texts, interlinears and
-// devotionals; never a manuscript, a Bible in English, an Old Testament book or a tool.
+// (docs/design/library-at-scale.md 6.2): commentaries on any book of the Bible, Greek grammars and lexicons, Greek texts, interlinears and
+// devotionals; never a manuscript, a Bible in English, a lexicon of Hebrew or a tool.
 import { describe, expect, it } from 'vitest';
 import { countsByType, libraryCsv, MAX_LIBRARY_CSV_BYTES, usableKind, usableRows, type ListedRow } from '../../src/library/usableRows';
 import { parseCsv } from '../../src/library/parseExport';
@@ -13,7 +13,7 @@ describe('usableKind', () => {
   it.each<[string, ListedRow, string | undefined]>([
     ['a commentary on the New Testament', row('text.monograph.commentary.bible', { refs: NT }), 'commentary'],
     ['a commentary on Romans only', row('text.monograph.commentary.bible', { refs: 'bible.66.1.1-66.16.27' }), 'commentary'],
-    ['a commentary on the Old Testament', row('text.monograph.commentary.bible', { refs: OT }), undefined],
+    ['a commentary on the Old Testament', row('text.monograph.commentary.bible', { refs: OT }), 'commentary'],
     ['a commentary with no verses', row('text.monograph.commentary'), undefined],
     ['a Greek lexicon', row('text.monograph.lexicon', { languages: 'el,en' }), 'lexicon'],
     ['a lexicon whose languages are not named', row('text.monograph.lexicon', { languages: '' }), 'lexicon'],

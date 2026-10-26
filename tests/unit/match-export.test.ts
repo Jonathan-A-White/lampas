@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { isListed, matchExport } from '../../src/library/matchExport';
-import { coversOldTestament, readExport, type ExportRow } from '../../src/library/parseExport';
+import { coversOfSupersets, readExport, type ExportRow } from '../../src/library/parseExport';
 import { lineText, reasonLines, reasonOf, REASONS } from '../../src/library/reasons';
 import { CATALOGUE } from '../../src/resources/catalogue';
 
@@ -54,11 +54,11 @@ describe('matchExport by id, by series and by type', () => {
     expect(isListed(m)).toBe(true);
   });
 
-  it('leaves a volume of a series rule on the Old Testament with the reason old-testament (Calvin on Genesis)', () => {
+  it('leaves a volume of a series rule on the Old Testament to the type rule (Calvin on Genesis is a commentary on Genesis)', () => {
     const genesis = row({ resource: 'LLS:PILLAR-GEN', type: 'text.monograph.commentary.bible', series: 'Pillar New Testament Commentary', supersets: 'bible.1.1.1-1.50.26' });
     const { matched, unmatched } = matchExport([genesis]);
-    expect(matched).toEqual([]);
-    expect(unmatched[0].reason).toBe('old-testament');
+    expect(unmatched).toEqual([]);
+    expect(matched.map((m) => [m.row.resource, m.by, m.kind, m.covers])).toEqual([['LLS:PILLAR-GEN', 'type', 'commentary', ['gen']]]);
   });
 
   it('takes by type a commentary on the New Testament alone, whatever its series (mw-vb8krt)', () => {
@@ -67,9 +67,12 @@ describe('matchExport by id, by series and by type', () => {
     expect(matched.map((m) => [m.row.resource, m.by, m.kind, m.covers])).toEqual([['LLS:OTHER-SERIES', 'type', 'commentary', ['rom']]]);
   });
 
-  it('leaves a commentary on the whole Bible with the reason about the Old Testament, until its reader lands (mw-vb8krt)', () => {
-    const { unmatched } = matchExport([row({ resource: 'LLS:WHOLE-BIBLE', type: 'text.monograph.commentary.bible', series: 'A Series Nobody Asked For', supersets: 'bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21' })]);
-    expect(unmatched[0].reason).toBe('new-testament-commentaries');
+  it('takes by type a commentary on the Old Testament or on the whole Bible, with the books it covers (mw-eup64h)', () => {
+    const whole = row({ resource: 'LLS:WHOLE-BIBLE', type: 'text.monograph.commentary.bible', series: 'A Series Nobody Asked For', supersets: 'bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21' });
+    const jonah = row({ resource: 'LLS:JONAH', type: 'text.monograph.commentary.bible', supersets: 'bible.32.1-32.4.11' });
+    const { matched, unmatched } = matchExport([whole, jonah]);
+    expect(unmatched).toEqual([]);
+    expect(matched.map((m) => [m.row.resource, m.by, m.kind, m.covers.length])).toEqual([['LLS:WHOLE-BIBLE', 'type', 'commentary', 66], ['LLS:JONAH', 'type', 'commentary', 1]]);
   });
 
   it('matches a reverse interlinear that covers the New Testament by the type rule, and not one on the Old Testament alone', () => {
@@ -99,8 +102,8 @@ describe('the reasons', () => {
 
   it('say the kinds of book in one sentence each', () => {
     expect(key({ type: 'text.monograph.ancient-manuscript.translation' })).toBe('manuscripts');
-    expect(key({ type: 'text.monograph.commentary.bible', supersets: 'bible.1.1.1-39.4.6' })).toBe('old-testament');
-    expect(key({ type: 'text.monograph.commentary.bible', supersets: 'bible.61.1.1-61.28.20' }, ['mat'])).toBe('new-testament-commentaries');
+    expect(key({ type: 'text.monograph.lexicon', supersets: 'bible.1.1.1-39.4.6' }, ['gen'])).toBe('old-testament');
+    expect(REASONS.map((r) => r.key)).not.toContain('new-testament-commentaries');
     expect(key({ type: 'text.monograph.lexicon' })).toBe('lexicons');
     expect(key({ type: 'text.monograph.grammar' })).toBe('grammars');
     expect(key({ type: 'lbx.interactive' })).toBe('tools');
@@ -131,10 +134,8 @@ describe.skipIf(!existsSync(VAULT_EXPORT))('matchExport on his whole export (mw-
     expect(matched.every(isListed)).toBe(true);
   });
 
-  it('leaves 4,231 of the 4,795 books, and of the commentaries only the 23 that reach beyond the New Testament', () => {
+  it('leaves the rest of the 4,795 books, and no commentary on a book of the Bible', () => {
     expect(unmatched).toHaveLength(4795 - CATALOGUE.length);
-    const commentaries = unmatched.filter((u) => u.reason === 'new-testament-commentaries');
-    expect(commentaries).toHaveLength(23);
-    for (const u of commentaries) expect(coversOldTestament(u.row.supersets), u.row.title).toBe(true);
+    for (const u of unmatched.filter((x) => x.row.type === 'text.monograph.commentary.bible')) expect(coversOfSupersets(u.row.supersets), u.row.title).toEqual([]);
   });
 });

@@ -3,7 +3,7 @@
 // list is refused with one plain line.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { coversOfSupersets, NOT_A_LIST, parseCsv, readExport } from '../../src/library/parseExport';
+import { coversNewTestament, coversOfSupersets, NOT_A_LIST, parseCsv, readExport } from '../../src/library/parseExport';
 
 const BOM = String.fromCharCode(0xfeff);
 const FIXTURE = readFileSync('tests/fixtures/logos-export-head.csv', 'utf8');
@@ -67,9 +67,19 @@ describe('readExport', () => {
 });
 
 describe('coversOfSupersets', () => {
-  it('reads the New Testament books of the bible tokens', () => {
+  it('reads the books of the Bible the bible tokens cover, Old Testament too (mw-eup64h)', () => {
     expect(coversOfSupersets('bible.75.1.1-77.3.15')).toEqual(['1ti', '2ti', 'tit']);
-    expect(coversOfSupersets('bible.1.1.1-39.4.6')).toEqual([]);
+    expect(coversOfSupersets('bible.32.1-32.4.11')).toEqual(['jon']);
+    expect(coversOfSupersets('bible.28.1.1-33.7.20')).toEqual(['hos', 'jol', 'amo', 'oba', 'jon', 'mic']);
+    expect(coversOfSupersets('bible.1.1.1-39.4.6')).toHaveLength(39);
+    expect(coversOfSupersets('bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21')).toHaveLength(66);
+    expect(coversOfSupersets('bible.40-60')).toEqual([]);
     expect(coversOfSupersets('dayofyear.1.1-12.31')).toEqual([]);
+  });
+
+  it('reads the New Testament books alone with coversNewTestament', () => {
+    expect(coversNewTestament('bible.75.1.1-77.3.15')).toEqual(['1ti', '2ti', 'tit']);
+    expect(coversNewTestament('bible.1.1.1-39.4.6')).toEqual([]);
+    expect(coversNewTestament('bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21')).toHaveLength(27);
   });
 });
