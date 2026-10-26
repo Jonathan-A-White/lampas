@@ -8,16 +8,17 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { fileText, lemmaFileName, lemmaForms, readChapters, writeLemmaForms, type LemmaFormEntry } from '../../scripts/build-lemma-forms.mjs';
 import type { Chapter } from '../../src/data/chapter';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const BARA = 'בָּרָא';
 let chapters: Chapter[];
 let index: Map<string, LemmaFormEntry[]>;
 const scratch = mkdtempSync(join(tmpdir(), 'lemma-forms-hbo-'));
-afterAll(() => rmSync(scratch, { recursive: true, force: true }));
+afterAll(() => rmSync(scratch, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
 beforeAll(() => {
   chapters = readChapters('public/data');
   index = lemmaForms(chapters.filter((c) => c.lang === 'hbo'));
-}, 120_000);
+}, HOOK_TIMEOUT_MS);
 
 const treeHash = (dir: string): string => {
   const hash = createHash('sha256');
