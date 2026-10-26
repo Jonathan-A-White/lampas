@@ -1,5 +1,10 @@
 # What's new
 
+## 0.2.20
+_2026-10-26_
+- New: Your Old Testament and whole-Bible commentaries from Logos now open at an Old Testament verse, under "In another book…".
+- Fixed: In a short split-screen window the reading screen's top no longer overlaps itself, and the Play button and gear stay on the same line as the title.
+
 ## 0.2.19
 _2026-10-26_
 - New: Old Testament verses now open in the Verse view, in English, and links, lists and memorizing work for them.

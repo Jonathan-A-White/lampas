@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.2.20",
+    "date": "2026-10-26",
+    "story": "mw-eup64h",
+    "kind": "new",
+    "text": "Your Old Testament and whole-Bible commentaries from Logos now open at an Old Testament verse, under \"In another book…\"."
+  },
+  {
+    "version": "0.2.20",
+    "date": "2026-10-26",
+    "story": "mw-5r3p30.768",
+    "kind": "fixed",
+    "text": "In a short split-screen window the reading screen's top no longer overlaps itself, and the Play button and gear stay on the same line as the title."
+  },
+  {
     "version": "0.2.19",
     "date": "2026-10-26",
     "story": "mw-uqlxea.3",
