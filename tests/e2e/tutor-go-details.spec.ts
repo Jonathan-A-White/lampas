@@ -68,7 +68,10 @@ async function expectWholeTitle(page: Page, title: string) {
   expect(header.wide).toBe(false);
   const box = await heading.boundingBox();
   const switchBox = await page.getByRole('group', { name: 'Language', exact: true }).boundingBox();
-  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual((switchBox?.x ?? 0) + 0.5);
+  // Beside the switch on a line the title shares with it, the title ends before the switch begins; under 390 px (mw-5r3p30.768) the switch has a line of
+  // its own below the title, and the title is then wholly above it.
+  const below = (switchBox?.y ?? 0) >= (box?.y ?? 0) + (box?.height ?? 0) - 0.5;
+  if (!below) expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual((switchBox?.x ?? 0) + 0.5);
 }
 
 for (const viewport of [
