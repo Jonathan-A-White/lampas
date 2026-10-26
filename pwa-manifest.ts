@@ -7,7 +7,7 @@ export const THEME_COLOR = '#0a0e17';
 export const pwaManifest: Partial<ManifestOptions> = {
   name: 'Lampas',
   short_name: 'Lampas',
-  description: 'Read the New Testament in Koine Greek, with the English woven in',
+  description: 'Read the Bible in Greek and Hebrew, with the English woven in',
   display: 'standalone',
   orientation: 'portrait',
   start_url: '/',

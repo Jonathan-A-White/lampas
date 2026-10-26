@@ -4,7 +4,7 @@ Read this first (CLAUDE.md is the law, this is the map). Update it only when a s
 
 ## What Lampas is
 
-Lampas is a licence-gated PWA for reading the New Testament in Koine Greek, for readers of any mother tongue, with a tutor on the verse; for a reader who never learns the Greek it is a good plain-English Bible with the Greek one tap away. It is free to read and a licence unlocks only the AI; the Governor's lines are in `VISION.md`, and a change that crosses one stops and says so.
+Lampas is a licence-gated PWA for reading the Bible in Koine Greek and Biblical Hebrew, for readers of any mother tongue, with a tutor on the verse; for a reader who never learns the languages it is a good plain-English Bible with the Greek or Hebrew one tap away. It is free to read and a licence unlocks only the AI; the Governor's lines are in `VISION.md`, and a change that crosses one stops and says so.
 
 ## Gate command
 
