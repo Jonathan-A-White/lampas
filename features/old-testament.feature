@@ -1,7 +1,7 @@
 Feature: Lampas reads the Old Testament in English
   The Reader's chapter picker lists the 66 books of the Bible in canon order, Genesis to Revelation. An Old Testament chapter opens in the Reader like any
-  other, but it is read in English only (its words are Hebrew, which Lampas does not teach): the English | Greek switch and the weave's controls are not
-  drawn, and the view he has saved is not changed, so the next New Testament chapter keeps it. Every other setting applies. A tap on an English chunk
+  other: the header's switch reads English | Hebrew (the Hebrew view and the weave are features/hebrew-reader.feature's), and the view he saved ('greek' in code, the
+  chapter's source view) opens it in Hebrew, as it opens a New Testament chapter in Greek. Every other setting applies. A tap on an English chunk
   opens the English word sheet (the chunk, and a Webster's 1828 row in Logos for each of its words); Listen and Read from the top read the English;
   the chapter before Matthew 1 is Malachi 4 and Genesis 1 has no chapter before it. At the foot of the chapter, Read in Logos opens it in the Bible he
   chose in Settings (Bible in Logos, the Legacy Standard Bible to start; Settings > Bible in Logos opens Library > Bibles, where it is chosen), by the
@@ -24,15 +24,14 @@ Feature: Lampas reads the Old Testament in English
     And verse 1 reads "Now the word of the LORD came to Jonah son of Amittai, saying,"
     And the heading "Jonah Flees from the LORD" stands before verse 1
 
-  Scenario: The English | Greek switch and the weave are not there, and his saved view is not changed
+  Scenario: The switch reads English | Hebrew, and his saved view opens Jonah 1 in Hebrew and Matthew 1 in Greek
     Given Lampas is opened on Jonah 1 with the Greek view and the Weave on Solid words saved
-    Then the reader is in the English view with the Weave off
-    And there is no English | Greek switch
-    And there are no woven words and no count of words in Greek
+    Then the reader is in the "greek" view
+    And the language switch offers "English", "Weave" and "Hebrew"
     And the saved view is still "greek" and the saved Weave is still "solid"
     When he opens Matthew 1 from the picker
-    Then the reader is in the "greek" view
-    And the English | Greek switch is there
+    Then Matthew 1 is in the "greek" view
+    And its switch reads "English", "Weave" and "Greek"
 
   Scenario: His other settings apply to an Old Testament chapter
     Given Lampas is opened on Jonah 1 with Theme Dark, Text size Largest and Turn pages

@@ -22,7 +22,8 @@ import {
 import { useSpeech } from 'voice-kit/speech/react';
 import { ClipPlayer } from '../audio/clipPlayer';
 import { isElided, joinElidedLetters, withoutElision } from './elision';
-import { DEFAULT_RATE, DEFAULT_RATES, HEBREW_LANG, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
+import { DEFAULT_RATE, DEFAULT_RATES, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
+import { DEFAULT_HEBREW_PRONUNCIATION, hebrewPronunciationOf, hebrewVoiceForm } from './hebrewPronunciation';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
 /** how long warmVoices() waits for the phone to list its voices */
@@ -41,7 +42,7 @@ export const greekLang = (): string => pronunciationOf(pronunciation).lang;
 
 /** The language tag put on an utterance in `language`. */
 const langOf = (language: SpeechLanguage): string =>
-  language === 'greek' ? greekLang() : language === 'hebrew' ? HEBREW_LANG : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en-US');
+  language === 'greek' ? greekLang() : language === 'hebrew' ? hebrewPronunciationOf(DEFAULT_HEBREW_PRONUNCIATION).lang : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en-US');
 
 /** How fast `language` is spoken: his speed for it, or the normal one for a language with no speed of its own (Hebrew). */
 const rateOf = (language: SpeechLanguage): number => (language === 'hebrew' ? DEFAULT_RATE : rates[language]);
@@ -545,7 +546,7 @@ export function speakSound(text: string): boolean {
 }
 
 const wordSpeech = (text: string, language: SpeechLanguage): { text: string; language: SpeechLanguage } =>
-  language === 'greek' ? { text: greekPhraseSpeech(text), language } : { text, language };
+  language === 'greek' ? { text: greekPhraseSpeech(text), language } : language === 'hebrew' ? { text: hebrewVoiceForm(text), language } : { text, language };
 
 /** What the Greek voice is handed for a word or a few (a word list's 'ἄγγελος, -ου, ὁ'): each word of one letter in it on a line of its own as its
  * loneLetterForm, and each stretch between as greekWordSpeech hands it ('ἄγγελος, -ου!' then 'οο'), so the voice never names the letter (mw-5r3p30.448). A

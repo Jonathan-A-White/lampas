@@ -5,6 +5,7 @@
 // has no Goal or Tip chip beside it (the 'New' words chip is the chapter's own and was always drawn).
 // The count of words woven into Greek ('<n> words in Greek', a status, not a control) sits at the row's right end. A chapter being read aloud
 // hides the chips, as it hid the strips; the count stays.
+import type { SourceLanguage } from './data/chapter';
 import { GoalChip } from './GoalStrip';
 import { NewWordsChip } from './NewWordsStrip';
 import { TipChip } from './tips/TipCard';
@@ -19,6 +20,7 @@ export function ReaderChips({
   tipOpen,
   onTip,
   wovenCount,
+  source = 'grc',
 }: {
   hidden: boolean;
   newWords: number;
@@ -27,6 +29,8 @@ export function ReaderChips({
   onTip: () => void;
   /** words shown in Greek by the weave, or null when the text is not woven */
   wovenCount: number | null;
+  /** the language the woven words are in: 'Greek', or 'Hebrew' on an Old Testament chapter */
+  source?: SourceLanguage;
 }) {
   const goal = useGoalProgress();
   const tip = useOpenTip();
@@ -47,7 +51,7 @@ export function ReaderChips({
       )}
       {wovenCount === null ? null : (
         <p data-testid="weave-count" className="ml-auto flex shrink-0 items-center whitespace-nowrap pl-2 text-sm text-muted">
-          {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in Greek
+          {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in {source === 'hbo' ? 'Hebrew' : 'Greek'}
         </p>
       )}
     </div>

@@ -19,11 +19,12 @@ import type { Tips } from '../../settings/definitions/tips';
 import type { Weave } from '../../settings/definitions/weave';
 import { getSetting, setSetting } from '../../settings/store';
 
+/** The Reader's view: English, or 'greek', which is the chapter's SOURCE view: the Greek of a New Testament chapter and the Hebrew of an Old Testament one (mw-5vvlay.1; src/reader/sourceText.ts). */
 export type ReaderView = 'english' | 'greek';
 
 const READER_VIEW_KEY = 'readerView';
 
-/** The saved English | Greek choice; English when he has not chosen yet or the saved value is not one of the two. */
+/** The saved English | source choice (Greek or Hebrew, by the chapter); English when he has not chosen yet or the saved value is not one of the two. */
 export async function getReaderView(): Promise<ReaderView> {
   const row = await db.settings.get(READER_VIEW_KEY);
   return row?.value === 'greek' ? 'greek' : 'english';

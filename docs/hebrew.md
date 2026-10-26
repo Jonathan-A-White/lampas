@@ -1,6 +1,6 @@
 # Hebrew in the tutor (mw-5r3p30.97)
 
-Scope: the tutor's conversations (Ask the tutor, the Talk sheet), not a Hebrew Old Testament reader. Nothing here is Hebrew-only in its
+Scope: the tutor's conversations (Ask the tutor, the Talk sheet) and, since mw-5vvlay.1, the Reader's Hebrew view of an Old Testament chapter (the last section). Nothing here is Hebrew-only in its
 names or types: the depth setting, the font and the splitting are per language (`he` for Hebrew), so a Hebrew reader later, or another
 language, reuses them. A language is one more entry in `SCRIPTS` (`src/script/scripts.ts`).
 
@@ -46,3 +46,21 @@ each a 56 px button that says it in Hebrew. The Greek 'Sound it out' reading of 
 
 Not done: the answers read aloud still leave Hebrew out (the English voice would garble it), and the Verse view's Ask answers have the guide
 without Syllables and sounds (no conversation to ask in).
+
+## The Reader's Hebrew view (mw-5vvlay.1)
+
+On an Old Testament chapter the header's switch reads **English | Hebrew** (with the Weave on, **English | Weave | Hebrew**); on a Greek chapter it reads English | Greek as before. In code the second choice is
+the chapter's one *source view* (`ReaderView` 'greek', labelled by `sourceLanguage(chapter)`, src/reader/sourceText.ts), so the choice he saved opens an Old Testament chapter in Hebrew and a New Testament one in Greek.
+Like the Greek view it shows from the Greek dial's Curious step up (`viewAt`).
+
+- **The Hebrew view** draws each verse right to left (`lang="he" dir="rtl"`, the `.script-he` face at the Greek size, `.reader-hebrew`), the words in the chapter's own order, pointed and accented as the data has
+  them (the WLC's cantillation is drawn: it is the text; it is only taken off when the phone speaks it). The verse number stands at the right edge, a section heading is right-aligned, the play button is at the left.
+  Every word is a tap (44 px high, `data-word` its index in the verse). Until the Hebrew word sheet comes, a tap opens the English word sheet of the chunk the word stands in (a word the English has no chunk for,
+  such as the sign of the direct object אֵת, opens nothing).
+- **The weave** lays the English chunks against the Hebrew words of his solid (and learning) Hebrew lemmas, exactly as the Greek weave does: a chunk whose every Hebrew word is a lemma of his stands in Hebrew,
+  the others stay English. A long press on **Weave** flips the Order: **Hebrew word order** lays the chunks out in the Hebrew order, right to left (each English chunk an isolated left-to-right piece); **English word order** puts it back.
+  The count line says '2 words in Hebrew'.
+- **Speech**: a long press on a Hebrew word says it (`speakWord(text, 'hebrew')`); Read from the top, a verse's play button and the weave read Hebrew pieces (`runsOf`) in the phone's he-IL voice, the weave in each
+  piece's own language. The text is handed to the voice through the Hebrew pronunciation registry's one scheme, **Israeli** (docs/pronunciation.md): as written, pointed, with the cantillation marks taken off. A phone with
+  no he-IL voice says nothing for a long press and shows 'No Hebrew voice on this phone' on the reading bar.
+- Not yet: the Verse view of an Old Testament verse stays English, and the Hebrew word sheet, paradigms and quizzes are later stories of the epic.

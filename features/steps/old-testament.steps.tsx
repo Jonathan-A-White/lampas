@@ -231,20 +231,15 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The English | Greek switch and the weave are not there, and his saved view is not changed', ({ Given, Then, And, When }) => {
+  Scenario('The switch reads English | Hebrew, and his saved view opens Jonah 1 in Hebrew and Matthew 1 in Greek', ({ Given, Then, And, When }) => {
     Given('Lampas is opened on Jonah 1 with the Greek view and the Weave on Solid words saved', () =>
       openOn('Jonah 1', { readerView: 'greek', weave: 'solid' }),
     );
-    Then('the reader is in the English view with the Weave off', () => {
-      expect(reader().getAttribute('data-view')).toBe('english');
-      expect(reader().getAttribute('data-weave')).toBe('off');
+    Then('the reader is in the {string} view', async (_, view: string) => {
+      await waitFor(() => expect(reader().getAttribute('data-view')).toBe(view));
     });
-    And('there is no English | Greek switch', () => {
-      expect(screen.queryByRole('group', { name: 'Language' })).toBeNull();
-    });
-    And('there are no woven words and no count of words in Greek', () => {
-      expect(document.querySelector('[data-woven]')).toBeNull();
-      expect(screen.queryByTestId('weave-count')).toBeNull();
+    And('the language switch offers {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
+      expect(within(screen.getByRole('group', { name: 'Language' })).getAllByRole('button').map((x) => x.textContent)).toEqual([a, b, c]);
     });
     And('the saved view is still {string} and the saved Weave is still {string}', async (_, view: string, weave: string) => {
       expect((await db.settings.get('readerView'))?.value).toBe(view);
@@ -256,11 +251,11 @@ describeFeature(feature, ({ Scenario }) => {
       await pickChapter(1)();
       await screen.findByRole('heading', { name: 'Matthew 1', level: 1 });
     });
-    Then('the reader is in the {string} view', async (_, view: string) => {
+    Then('Matthew 1 is in the {string} view', async (_, view: string) => {
       await waitFor(() => expect(reader().getAttribute('data-view')).toBe(view));
     });
-    And('the English | Greek switch is there', () => {
-      expect(screen.getByRole('group', { name: 'Language' })).toBeInTheDocument();
+    And('its switch reads {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
+      expect(within(screen.getByRole('group', { name: 'Language' })).getAllByRole('button').map((x) => x.textContent)).toEqual([a, b, c]);
     });
   });
 

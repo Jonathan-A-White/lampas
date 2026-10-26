@@ -226,3 +226,17 @@ moving to the next syllable the longest group of consonants that can open a Gree
 
 A test adds a scheme for one scenario with `registerPronunciation(scheme)`, which returns the function that takes
 it out again (features/pronunciation.feature).
+
+## Hebrew (mw-5vvlay.1)
+
+Hebrew has a registry of its own, `src/speech/hebrewPronunciation.ts`, shaped like the Greek one but smaller: a list `HEBREW_PRONUNCIATIONS` of
+`{ id, label, lang, note, voiceForm(text) }`, `hebrewPronunciationOf(id?)` (the default for an id it does not hold) and `hebrewVoiceForm(text)`, which the
+speech code (`src/speech/greek.ts` `wordSpeech` for a held word or a speaker, `readAloud.ts` `textOf` for a verse read aloud) hands every Hebrew text through.
+There is no setting to choose a scheme yet, so the default is the one in use. Each scheme is one file in `src/speech/schemes/`.
+
+The one scheme is **Israeli** (`schemes/hebrew-israeli.ts`, `israeli`, language `he-IL`): the text is spoken as written, pointed, to the phone's he-IL voice,
+which says the points as modern Hebrew does. Its `voiceForm` is `stripCantillation`, which takes off the cantillation marks (the Masoretic accents) so a voice
+does not stumble on them: U+0591 to U+05AF, the meteg U+05BD, the rafe U+05BF, the paseq U+05C0, the sof pasuq U+05C3, the upper and lower dots U+05C4 and U+05C5 and the nun hafukha U+05C6.
+It keeps every vowel point (U+05B0 to U+05BB), the dagesh U+05BC, the maqaf U+05BE, the shin and sin dots U+05C1 and U+05C2 and the qamats qatan U+05C7 (a vowel, so it
+is not in the accents' range U+05C3 to U+05C7 that the story first named). `tests/unit/hebrew-pronunciation.test.ts` lists both sets and holds the whole of Genesis 1 to them.
+A new scheme gives its own `voiceForm` (and, as the Greek ones do, whatever else the language needs) and one line in the list.

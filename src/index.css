@@ -763,6 +763,13 @@ textarea,
   line-height: 1.4;
 }
 
+/* The Reader's Hebrew view (src/reader/sourceText.ts, mw-5vvlay.1): the same face at the Greek size the text-size setting scales, in the Reader's own leading; it follows
+ * .script-he, which is unlayered like it, so these two win over the utilities that set the same properties on a verse row. */
+.reader-hebrew {
+  font-size: var(--lp-greek-size);
+  line-height: var(--lp-leading);
+}
+
 /* The tutor's Markdown (src/markdown/Markdown.tsx): the size and colour of the surroundings, lists with their marks. */
 .markdown {
   overflow-wrap: anywhere;

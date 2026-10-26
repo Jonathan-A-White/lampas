@@ -22,8 +22,8 @@ import { useAiAllowed } from './gate/licenceContext';
 import { LicenceTip } from './gate/LicenceTip';
 import { ReaderTalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
-import type { Verse } from './data/chapter';
-import { getGrammarApproach, getGreekPronunciation, setReaderView, talkRef } from './data/repositories';
+import { sourceLanguage, type SourceLanguage, type Verse } from './data/chapter';
+import { getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
 import { neighbours, verseNeighbours } from './data/neighbours';
 import { passageAt, passageVerse, passagesOf, rangeOf, unitId, type Passage } from './data/passage';
@@ -128,14 +128,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const { book: BOOK, chapter: CHAPTER, title: TITLE } = open;
   const [picking, setPicking] = useState(false);
   const closePicker = useCallback(() => setPicking(false), []);
-  // An Old Testament chapter ('hbo') is read in English only (mw-uqlxea.2): its view is English and its weave is off whatever is saved; the saved view is not changed,
-  // so the next New Testament chapter keeps his view. The English | Greek switch and the weave's controls are not drawn for it.
+  // An Old Testament chapter ('hbo') is read in English or in its Hebrew (mw-5vvlay.1): the switch's second choice is the chapter's one source view ('greek' in code, the Hebrew of this
+  // chapter and the Greek of a New Testament one, so the saved view opens either), and the weave lays the English against the Hebrew.
   const hbo = isHebrewBook(BOOK);
-  const saved = useReaderSettings() ?? NO_SETTINGS;
-  const settings = useMemo<Partial<ReaderSettings>>(() => (hbo && saved.view ? { ...saved, view: 'english', weave: 'off', weaveShown: false } : saved), [hbo, saved]);
+  const settings = useReaderSettings() ?? NO_SETTINGS;
   const { greek, view, weave, weaveShown, weaveOrder, solid, learning, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
   const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
+  // the language of the chapter's own words (the switch's last choice, the Hebrew or the Greek view); the book says it before the chapter has loaded
+  const source: SourceLanguage = chapter ? sourceLanguage(chapter) : hbo ? 'hbo' : 'grc';
   // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse (the view and weave it names are
   // put back in the settings by useReaderSettings). The address is the place; the settings follow it.
   const [opened] = useState(() => readerOf(window.location.hash));
@@ -159,13 +160,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const address = useAddress();
   const current = useRef({ view });
   useEffect(() => {
-    // the view an address names is put back in the settings (below); an Old Testament chapter shows English whatever the address says, so it has none to put back
-    current.current = { view: hbo ? undefined : view };
+    current.current = { view };
   });
   const selectedEvent = useLatest('verse-selected');
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
-  // A tap on an English word of an Old Testament chapter opens the English word sheet for its chunk: no source words go with it, so the Greek word sheet is never opened for one.
+  // A tap on a word of an Old Testament chapter opens the English word sheet for its chunk (the Hebrew word sheet is the next story's): the Greek word sheet is never opened for a Hebrew word,
+  // and a Hebrew word the English has no chunk for opens nothing.
   const look = useCallback((l: Lookup) => setLookup(hbo ? { words: [], english: l.english, fromEnglish: true } : l), [hbo]);
   // The teach sheet (src/TeachSheet.tsx), opened by the 'New N' chip.
   const [teaching, setTeaching] = useState(false);
@@ -215,7 +216,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
-  const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation, undefined, chapter);
+  // the Verse view of an Old Testament chapter stays English for now (the Hebrew Verse view is a later story's): its reading check is of the English
+  const checks = useReadChecks(BOOK, CHAPTER, TITLE, hbo ? 'english' : view ?? 'english', pronunciation, undefined, chapter);
   // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
   const openTalkRef = useRef<string | null>(null);
   // Push-to-talk (voice-kit's TalkBar through src/talk/useTalkHold.ts): what he says goes as the turn of the conversation the sheet is open on. `onBar` is the Talk bar and a verse
@@ -338,19 +340,22 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const closeTeach = useCallback(() => setTeaching(false), []);
   const verseTalk: VerseTalk = { handlers: pressOn, listening: onBar.listening };
   const woven = useWoven(chapter, settings);
+  // what the Verse view shows and reads: for an Old Testament chapter the plain English (see the reading check above), else what the Reader shows
+  const sheetView: ReaderView | undefined = hbo ? 'english' : view;
+  const sheetWoven = hbo ? null : woven;
   // The Verse view's verse or passage as the weave shows it to be read (mw-5r3p30.411): the words shown in Greek in Greek and the others in English, in the order drawn, each verse
   // of a passage after the one before. The reading check sends them as segments, so the mill scores each word in its own language. null when nothing is shown in Greek.
   const viewWeave = useMemo(() => {
-    if (!viewUnit || !chapter || !woven || view === 'greek') return null;
+    if (!viewUnit || !chapter || !sheetWoven || sheetView === 'greek') return null;
     const verses = viewPassage ? viewPassage.verses : [viewUnit];
-    return wovenReading(verses, verses.map((v) => woven[chapter.verses.indexOf(v)] ?? null), pronunciationOf(pronunciation).scoringLang);
-  }, [viewUnit, viewPassage, chapter, woven, view, pronunciation]);
+    return wovenReading(verses, verses.map((v) => sheetWoven[chapter.verses.indexOf(v)] ?? null), pronunciationOf(pronunciation).scoringLang);
+  }, [viewUnit, viewPassage, chapter, sheetWoven, sheetView, pronunciation]);
   // The Verse view's Read bar: the hold of the reading check for the verse the view shows.
   const readOf = (verse: Verse): ReadHold => {
     const phase = checks.states[unitId(verse)]?.phase;
     return { onPress: () => checks.press(verse, viewWeave), onRelease: checks.release, onDrop: checks.drop, disabled: phase === 'sending' || phase === 'waiting' };
   };
-  const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit);
+  const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit, sheetView ? { view: sheetView, woven: sheetWoven } : undefined);
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
   const headerButtons = chapterReading && !reading.onBar;
@@ -432,7 +437,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       <div data-reader-top className="reader-top">
       <ReaderHeader
         title={TITLE}
-        view={!hbo && view && greek !== undefined && greek >= GREEK_VIEW_FROM ? view : undefined}
+        view={view && greek !== undefined && greek >= GREEK_VIEW_FROM ? view : undefined}
+        source={source}
         weave={weave ?? 'off'}
         weaveShown={weaveShown ?? false}
         weaveOrder={weaveOrder ?? 'english'}
@@ -451,6 +457,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         tipOpen={tipOpen}
         onTip={() => setTipOpen((open) => !open)}
         wovenCount={woven ? wovenCount : null}
+        source={source}
       />
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
       </div>
@@ -480,11 +487,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               const wovenOf = (v: Verse) => woven?.[chapter.verses.indexOf(v)] ?? null;
               return (
                 <Fragment key={first.n}>
-                  {headings === 'on' && first.h ? <SectionHeading text={first.h} onOpen={() => openPassage(first.n)} /> : null}
+                  {headings === 'on' && first.h ? <SectionHeading text={first.h} onOpen={() => openPassage(first.n)} mirrored={source === 'hbo' && view === 'greek'} /> : null}
                   {layout === 'paragraph' ? (
                     <ParagraphView
                       verses={block}
                       view={view}
+                      source={source}
                       woven={block.map(wovenOf)}
                       selected={selected}
                       reading={readingVerse}
@@ -497,6 +505,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                     <VerseLine
                       verse={first}
                       view={view}
+                      source={source}
                       woven={wovenOf(first)}
                       selected={selected === first.n}
                       reading={readingVerse === first.n}
@@ -572,7 +581,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onAsk={ai ? tutor.askAboutNewWord : undefined}
         />
       ) : null}
-      {chapter && viewUnit && view ? (
+      {chapter && viewUnit && sheetView ? (
         <VerseView
           title={TITLE}
           book={BOOK}
@@ -580,20 +589,20 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           chapterText={chapter}
           onLook={look}
           verse={viewUnit}
-          view={view}
+          view={sheetView}
           immersive={immersive}
           text={
             viewPassage ? (
               <PassageText
                 passage={viewPassage}
-                view={view}
+                view={sheetView}
                 layout={layout ?? DEFAULT_LAYOUT}
-                wovenOf={(v) => woven?.[chapter.verses.indexOf(v)] ?? null}
+                wovenOf={(v) => sheetWoven?.[chapter.verses.indexOf(v)] ?? null}
                 reading={readingVerse}
                 onLook={look}
               />
             ) : (
-              <VerseText verse={viewUnit} view={view} woven={woven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={look} />
+              <VerseText verse={viewUnit} view={sheetView} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={look} />
             )
           }
           previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
@@ -609,7 +618,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           checks={checks}
           read={readOf(viewUnit)}
           weave={viewWeave}
-          wovenChapter={woven}
+          wovenChapter={sheetWoven}
           onRetryRead={() => checks.retry(viewUnit)}
           ask={asks[unitId(viewUnit)]}
           onAsk={(verse, question) => {

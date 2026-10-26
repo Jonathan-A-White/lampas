@@ -1,7 +1,7 @@
 // src/reader/useWoven.ts — the chapter's diglot weave (docs/module-map.md R1): each verse's English chunks with the Greek of his words shown in their
 // place (src/data/weave.ts), or null while the weave is off, plain English or the Greek view is chosen in the header's switch, or the chapter is not here.
 import { useMemo } from 'react';
-import type { Chapter, GreekWord } from '../data/chapter';
+import { sourceLanguage, type Chapter, type GreekWord } from '../data/chapter';
 import { formPasses } from '../data/grammar/formLevel';
 import { weaveVerse, wovenInOrder, type WovenVerse } from '../data/weave';
 import type { ReaderSettings } from './useReaderSettings';
@@ -14,8 +14,11 @@ export function wovenOf(chapter: Chapter | null, settings: Partial<ReaderSetting
   const weaving = view === 'english' && weaveShown === true && (weave === 'solid' || weave === 'solid+learning');
   const withLearning = weave === 'solid+learning';
   if (!chapter || !weaving) return null;
+  // the grammar dial reads the Greek parsing codes (src/data/grammar): an Old Testament chapter's forms are not held to it
   const formOk =
-    weaveGrammar === undefined || levels === undefined
+    sourceLanguage(chapter) !== 'grc'
+      ? undefined
+      : weaveGrammar === undefined || levels === undefined
       ? () => false // the dial is still loading: weave nothing rather than flash a verse that then narrows
       : weaveGrammar === 'any'
         ? undefined

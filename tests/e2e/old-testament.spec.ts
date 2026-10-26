@@ -29,7 +29,7 @@ test('the picker lists the 66 books; Jonah 1 opens in the Reader in English, and
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
   await shot(page, 'old-testament-picker');
 
-  // Jonah, then chapter 1: the chapter opens in the Reader, in English, with no English | Greek switch
+  // Jonah, then chapter 1: the chapter opens in the Reader, in English, with the switch English | Hebrew
   await picker.getByRole('button', { name: /^Jonah/ }).click();
   await expect(picker.locator('[data-chapter]')).toHaveCount(4);
   await picker.getByRole('button', { name: 'Chapter 1', exact: true }).click();
@@ -39,7 +39,7 @@ test('the picker lists the 66 books; Jonah 1 opens in the Reader in English, and
   await expect(reader).toHaveAttribute('data-view', 'english');
   await expect(reader).toHaveAttribute('data-weave', 'off');
   await expect(page.locator('[data-verse]')).toHaveCount(17);
-  await expect(page.getByRole('group', { name: 'Language' })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'Language' }).getByRole('button')).toHaveText(['English', 'Hebrew']);
   const wide = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
   expect(wide.scroll).toBeLessThanOrEqual(wide.client);
 
@@ -76,7 +76,7 @@ test('Malachi 4 runs into Matthew 1 and back, and an Old Testament chapter offer
   await back.scrollIntoViewIfNeeded();
   await back.getByRole('button', { name: '‹ Malachi 4' }).click();
   await expect(page.getByRole('heading', { name: 'Malachi 4', level: 1 })).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Language' })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'Language' }).getByRole('button')).toHaveText(['English', 'Hebrew']);
 });
 
 /** Turns Logos on in the app's store through raw IndexedDB, as the app wrote it (Settings > Study resources does the same). */
