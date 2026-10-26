@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.2.19",
+    "date": "2026-10-26",
+    "story": "mw-uqlxea.3",
+    "kind": "new",
+    "text": "Old Testament verses now open in the Verse view, in English, and links, lists and memorizing work for them."
+  },
+  {
     "version": "0.2.17",
     "date": "2026-10-26",
     "story": "mw-uqlxea.2",

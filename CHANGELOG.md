@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.19
+_2026-10-26_
+- New: Old Testament verses now open in the Verse view, in English, and links, lists and memorizing work for them.
+
 ## 0.2.17
 _2026-10-26_
 - New: You can now read the whole Old Testament in English in Lampas, tap an English word to look it up, listen to it, and carry straight on from Malachi into Matthew.
