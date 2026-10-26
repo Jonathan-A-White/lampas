@@ -51,9 +51,10 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('An Old Testament verse has no text', ({ Given, When, Then }) => {
+  Scenario('An Old Testament verse is its English', ({ Given, When, Then, And }) => {
     Given('the verse {string}', (_, r: string) => { ref = r; solid = new Set(); });
-    When('it is memorized in English', () => memorize('en'));
-    Then('it is said that there is no text for it', () => expect(target).toEqual({ ot: true, heading: 'Psalm 62:1-2' }));
+    When('it is memorized in Greek', () => memorize('el'));
+    Then('its words are English', () => expect(new Set(tokens().map((t) => t.lang))).toEqual(new Set(['en'])));
+    And('it is headed {string}', (_, heading: string) => expect(target?.heading).toBe(heading));
   });
 });

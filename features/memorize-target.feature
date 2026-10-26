@@ -1,6 +1,6 @@
 Feature: The text a verse is memorized in
   Lampas helps him memorize verses. Before anything is asked of him, the app knows exactly which words make up a verse in the language he chooses:
-  English, Greek, or the weave as it stands for him now, with the Greek of the words he has learned. The Old Testament has no text in Lampas yet.
+  English, Greek, or the weave as it stands for him now, with the Greek of the words he has learned. An Old Testament verse is learned in its English only, whatever language is asked for.
 
   Scenario: A verse in English
     Given the verse "Rom.8.28"
@@ -21,7 +21,8 @@ Feature: The text a verse is memorized in
     Then "Οἴδαμεν" and "ἀγαπῶσιν" are Greek and every other word is English
     And the first three words are "And", "Οἴδαμεν" and "that"
 
-  Scenario: An Old Testament verse has no text
+  Scenario: An Old Testament verse is its English
     Given the verse "Ps.62.1-2"
-    When it is memorized in English
-    Then it is said that there is no text for it
+    When it is memorized in Greek
+    Then its words are English
+    And it is headed "Psalm 62:1-2"

@@ -71,7 +71,7 @@ describe('one list', () => {
     expect(links.map((l) => l.textContent)).toEqual(['2 Samuel 22:3-4', 'Psalm 62:1-2', '2 Thessalonians 3:3', 'Hebrews 7:24-25', 'Isaiah 30:21']);
   });
 
-  it('opens the reference card on a tap: the passage for the New Testament, and Not in Lampas yet for the Old', async () => {
+  it('opens the reference card on a tap: the passage for the New Testament, and its English for the Old', async () => {
     const row = await createVerseList('Refuge', ['Heb.7.24-25', 'Isa.30.21'], 1);
     window.history.replaceState(null, '', `/#/lists/${row.id}`);
     render(<VerseListsScreen />);
@@ -83,7 +83,8 @@ describe('one list', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     await userEvent.click(screen.getByRole('link', { name: 'Isaiah 30:21' }));
     const old = await screen.findByRole('dialog', { name: 'Isaiah 30:21' });
-    expect(within(old).getByText(/Not in Lampas yet/)).toBeInTheDocument();
+    await waitFor(() => expect(old.querySelector('[data-reference-text]')?.textContent).toContain('This is the way'));
+    expect(within(old).getByRole('button', { name: 'Open' })).toBeInTheDocument();
   });
 
   it('says so, with a way back, when the list is not there', async () => {

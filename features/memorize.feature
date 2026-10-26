@@ -1,13 +1,11 @@
 Feature: I choose which verses to memorize
-  A verse list is the unit I own, and a single verse can still be picked on its own. A tap memorizes in English; the languages beyond follow my Greek setting. The Old Testament
-  has no text in Lampas yet, so its references are named and left out.
+  A verse list is the unit I own, and a single verse can still be picked on its own. A tap memorizes in English; the languages beyond follow my Greek setting. An Old Testament verse is learned in English too, and only in English.
 
   Scenario: I memorize a whole list
     Given my Greek setting is step 3 and I have a list "Refuge" holding "Rom.8.28, Ps.62.1-2, 2Thess.3.3"
     When I turn on Memorize this list
-    Then Romans 8:28 and 2 Thessalonians 3:3 are memorized in English
-    And the list says "No Old Testament text in Lampas yet: Ps 62:1-2"
-    And each New Testament row reads "Memorizing · English"
+    Then Romans 8:28, Psalm 62:1-2 and 2 Thessalonians 3:3 are memorized in English
+    And each row reads "Memorizing · English"
 
   Scenario: I pick one verse in the Verse view
     Given my Greek setting is step 3 and the Verse view is open on Romans 8:28

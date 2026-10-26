@@ -52,14 +52,11 @@ describeFeature(feature, ({ Scenario }) => {
     When('I turn on Memorize this list', async () => {
       await user.click(screen.getByRole('switch', { name: 'Memorize this list' }));
     });
-    Then('Romans 8:28 and 2 Thessalonians 3:3 are memorized in English', async () => {
-      await waitFor(async () => expect(await memorized()).toEqual(['en:2Thess.3.3', 'en:Rom.8.28']));
+    Then('Romans 8:28, Psalm 62:1-2 and 2 Thessalonians 3:3 are memorized in English', async () => {
+      await waitFor(async () => expect(await memorized()).toEqual(['en:2Thess.3.3', 'en:Ps.62.1-2', 'en:Rom.8.28']));
     });
-    And('the list says {string}', async (_, line: string) => {
-      expect(await screen.findByText(line)).toBeInTheDocument();
-    });
-    And('each New Testament row reads {string}', async (_, label: string) => {
-      for (const name of ['Romans 8:28', '2 Thessalonians 3:3']) {
+    And('each row reads {string}', async (_, label: string) => {
+      for (const name of ['Romans 8:28', 'Psalm 62:1-2', '2 Thessalonians 3:3']) {
         const row = screen.getByRole('link', { name }).closest('li') as HTMLElement;
         expect(await within(row).findByRole('button', { name: label })).toBeInTheDocument();
       }
