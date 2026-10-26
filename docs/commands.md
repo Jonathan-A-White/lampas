@@ -16,7 +16,7 @@ npm run grind:build  # writes the settings the bible-talk grind may change (sett
                      #   run it after adding a setting to the registry; tests/unit/bible-talk-grind.test.ts fails when grinds/ is behind it; the list is in the one part that holds
                      #   its markers (grinds/bible-talk.instructions/330-changing-the-apps-settings.md); a second run changes nothing
 npm run ladder:docs  # scripts/ladder-docs.ts writes the ladder table of docs/grammar.md and the id and title columns of docs/card-audit.md from LADDER (src/data/grammar/ladder.ts), between their
-                     #   <!-- ladder:begin --> / <!-- audit:begin --> markers; the audit's verdict and note columns are by hand, kept by idea id (a new idea gets a default row to judge); adding an idea
+                     #   <!-- ladder:begin --> / <!-- audit:begin --> markers, and the Hebrew ladder's (src/data/grammar/hebrew/ladder.ts) between the <!-- ladder-hbo:begin --> / <!-- audit-hbo:begin --> ones after them; the audit's verdict and note columns are by hand, kept by idea id (a new idea gets a default row to judge); adding an idea
                      #   is its entry, its card, then `npm run ladder:docs && npm run grind:build`; tests/unit/ladder-single-source.test.ts fails, naming the idea and the file, on a missing card,
                      #   a stale table or audit row, a grind built before the ladder changed, an unknown need or a cycle; a second run changes nothing
 npm run logos:catalogue -- <export.csv>  # scripts/logos-catalogue.ts writes src/resources/catalogue/<kind>.json (the seven kinds) from data/logos/catalogue-rules.json and a Logos library export (Library > Save as Spreadsheet);

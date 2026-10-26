@@ -110,6 +110,46 @@ describeFeature(feature, ({ Scenario }) => {
     await sleep(60);
   };
 
+  const tapHeading = async (_: unknown, text: string) => {
+    const heading = await waitFor(() => {
+      const found = [...document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')].find((h) => squash(h.textContent) === text);
+      if (!found) throw new Error(`no heading ${text}`);
+      return found;
+    });
+    await user.click(within(heading).getByRole('button'));
+    await screen.findByRole('region', { name: 'Verse view' });
+  };
+  /** The sheet's h3 headings: the parts of a verse's sheet ('For this verse', 'In this chapter'), or the groups of a chapter's. */
+  const sheetParts = async () => [...(await sheetEl()).querySelectorAll('h3')].map((h) => squash(h.textContent));
+  const partHolds = async (title: string) => {
+    const part = (await sheetEl()).querySelector<HTMLElement>('[data-maps-part="verse"]');
+    expect(squash(part?.querySelector('h3')?.textContent)).toBe(title);
+    return [...(part as HTMLElement).querySelectorAll<HTMLElement>('[data-map-row]')].map((r) =>
+      squash([r.querySelector('[data-map-title]')?.textContent, [r.querySelector('[data-map-period]')?.textContent, r.querySelector('[data-map-matched]')?.textContent].filter(Boolean).join(' · ')].filter(Boolean).join(', ')),
+    );
+  };
+  /** A part of the verse's sheet ('For this verse') or a group ('Events') and the rows it holds, each as title, then period and the matched places. */
+  const holds = async (name: string, rows: string[]) => {
+    const found = name.startsWith('For ') ? await partHolds(name) : rowsOf(await groupEl(name));
+    expect(found).toEqual(rows);
+  };
+  const holdsOne = (_: unknown, name: string, a: string) => holds(name, [a]);
+  const holdsTwo = (_: unknown, name: string, a: string, b: string) => holds(name, [a, b]);
+  const noPart = async () => {
+    const box = await sheetEl();
+    expect(box.querySelector('[data-maps-part]')).toBeNull();
+    expect([...box.querySelectorAll('h3')].map((h) => squash(h.textContent))).toEqual(['Events', 'Regions', 'Videos']);
+  };
+  const groupsRead = async (_: unknown, names: string) => {
+    expect(within(await sheetEl()).getAllByRole('group').map((g) => g.getAttribute('aria-label'))).toEqual(names.split(', '));
+  };
+  const tapFootDoor = async (_: unknown, label: string) => {
+    await waitFor(() => expect(doorsIn(readerEl())).toHaveLength(1));
+    const door = doorsIn(readerEl()).find((b) => squash(b.textContent) === label);
+    if (!door) throw new Error(`no door ${label} at the foot`);
+    await user.click(door);
+  };
+
   Scenario('A verse with maps has the door on the Verse view', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string}', opened);
     When('he taps verse {int}', tapVerse);
@@ -157,6 +197,51 @@ describeFeature(feature, ({ Scenario }) => {
       const link = within(await groupEl('Videos')).getByRole('link', { name: new RegExp(title) });
       expect(link).toHaveAttribute('href', url);
       expect(link).toHaveAttribute('target', '_blank');
+    });
+  });
+
+  Scenario('A verse that names a place leads with the maps that show it', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string}', opened);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the sheet is headed {string}', headed);
+    And('the sheet opens with {string} and then {string}', async (_, first: string, then: string) => {
+      expect(await sheetParts()).toEqual([first, then]);
+    });
+    And('the part {string} holds {string} and {string}', holdsTwo);
+    And('the groups read {string}', groupsRead);
+    And('{string} holds {string}', holdsOne);
+    And('{string} holds {string} and {string}', holdsTwo);
+  });
+
+  Scenario('A passage that names a place says For these verses', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string}', opened);
+    When('he taps the heading {string}', tapHeading);
+    And('he taps {string}', tapDoor);
+    Then('the sheet is headed {string}', headed);
+    And('the sheet opens with {string} and then nothing', async (_, first: string) => {
+      expect(await sheetParts()).toEqual([first]);
+    });
+    And('the part {string} holds {string}', holdsOne);
+  });
+
+  Scenario('A verse that names no place the maps show has the sheet as before', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string}', opened);
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet has no part for the verse', noPart);
+    And('the groups read {string}', groupsRead);
+  });
+
+  Scenario("A whole chapter's sheet has no part for a verse and keeps Bible Mapper's order", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string}', opened);
+    When("he taps the foot's door {string}", tapFootDoor);
+    Then('the sheet is headed {string}', headed);
+    And('the sheet has no part for the verse', noPart);
+    And('the groups read {string}', groupsRead);
+    And('{string} holds {string}, {string} and {string}', async (_, group: string, a: string, b: string, c: string) => {
+      expect(rowsOf(await groupEl(group))).toEqual([a, b, c]);
     });
   });
 

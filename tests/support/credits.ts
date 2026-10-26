@@ -2,7 +2,7 @@
 //  - A credit has a kind, its ATTRIBUTION.md section. The sections in PACKAGE_SECTIONS list npm packages, each in `backticks`; every
 //    such package must still be in package.json (dependencies or devDependencies). The other sections (texts, type, services,
 //    ideas, tools) are not packages: their backticks (a licence file, a subpath) are left alone.
-//  - Every font file and every shipped data file (public/, and the maps' index in src/maps/data) is named by a credit (bundledFiles: which credit each one needs).
+//  - Every font file and every shipped data file (public/, and the maps' index and places in src/maps/data) is named by a credit (bundledFiles: which credit each one needs).
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { OT_BOOKS } from '../../src/data/books';
@@ -66,6 +66,7 @@ function creditFor(path: string): string | null | undefined {
     if (!FONT.test(file)) return null; // a licence text, not a font
     return (FAMILY.exec(file)?.[1] ?? file.replace(FONT, '')).replace(/-/g, ' ');
   }
+  if (path.startsWith('src/maps/data/places/')) return 'TIPNR'; // STEPBible's TIPNR, a file of the places of each book (scripts/places-build.ts), credited in the TBESG bullet
   if (path.startsWith('src/maps/data/')) return 'Bible Mapper'; // the compacted index of Bible Mapper's maps and the chapters they belong to (scripts/maps-build.ts)
   if (path === 'public/data/lexicon.json') return 'TBESG';
   if (path === 'public/data/lexicon-hbo.json') return 'TBESH'; // the Hebrew lemmas, with TBESH's glosses (scripts/data-build-ot.ts)

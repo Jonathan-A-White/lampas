@@ -43,7 +43,7 @@ describe('mapsFor', () => {
     expect(await mapsFor({ book: 'xyz', chapter: 1 })).toEqual([]);
   });
 
-  it('ignores the verses of a reference: the sites map by the chapter', async () => {
+  it('answers the same maps for a verse that names none of their places: the source maps by the chapter', async () => {
     expect((await mapsFor({ book: 'gen', chapter: 10, from: 5, to: 7 })).map((c) => c.id)).toEqual((await mapsFor({ book: 'gen', chapter: 10 })).map((c) => c.id));
   });
 

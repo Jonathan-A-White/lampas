@@ -1,9 +1,11 @@
 // tests/unit/ladder-single-source.test.ts — the ladder is the one source (mw-svw421.9): adding an idea is one entry in src/data/grammar/ladder.ts, and its teach
 // card, its row in docs/card-audit.md, the ladder table of docs/grammar.md and the built grinds follow from it. This fails, naming the idea and the file, on
-// anything stale. The graph functions (pathGraph.ts) take the path as data, so a second, tiny path gets the same answers. `npm run ladder:docs && npm run grind:build`.
+// anything stale, in the Greek ladder and in the Hebrew one beside it (mw-gdcyf98.9: src/data/grammar/hebrew/ladder.ts, its own block in each doc). The graph functions (pathGraph.ts) take the path as data, so a second, tiny path gets the same answers. `npm run ladder:docs && npm run grind:build`.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LADDER } from '../../src/data/grammar/ladder';
+import { HEBREW_LADDER } from '../../src/data/grammar/hebrew/ladder';
+import { HEBREW_TEACH } from '../../src/data/grammar/hebrew/teach';
 import { belowIn, depthIn, frontierIn, ideaIn, makePath, needsIn, pathProblems, type PathIdea } from '../../src/data/grammar/pathGraph';
 import { teachOf } from '../../src/data/grammar/teach';
 import { AUDIT_DOC, GRAMMAR_DOC, ladderProblems, withAuditTable, withGrammarTable, type LadderSources } from '../../scripts/ladder-docs-text';
@@ -22,6 +24,7 @@ const real = (): LadderSources => ({
       }
     }).map((i) => i.id),
   ),
+  hebrew: { ladder: HEBREW_LADDER, cardIds: new Set(Object.keys(HEBREW_TEACH)) },
   grammarDoc: readFileSync(GRAMMAR_DOC, 'utf8'),
   auditDoc: readFileSync(AUDIT_DOC, 'utf8'),
   schemas: Object.fromEntries(SCHEMAS.map((file) => [file, JSON.parse(readFileSync(file, 'utf8')) as object])),
@@ -36,6 +39,35 @@ describe('the ladder is the single source', () => {
     const { grammarDoc, auditDoc } = real();
     expect(withGrammarTable(grammarDoc, LADDER)).toBe(grammarDoc);
     expect(withAuditTable(auditDoc, LADDER)).toBe(auditDoc);
+    expect(withGrammarTable(grammarDoc, HEBREW_LADDER, 'hbo')).toBe(grammarDoc);
+    expect(withAuditTable(auditDoc, HEBREW_LADDER, 'hbo')).toBe(auditDoc);
+  });
+
+  it('names the Hebrew ladder, the idea and the file for a Hebrew idea with no card, a stale row, no row or an id without he-', () => {
+    const src = real();
+    const hbo = src.hebrew!;
+    const noCard = ladderProblems({ ...src, hebrew: { ...hbo, cardIds: new Set() } });
+    expect(noCard).toEqual(['the Hebrew ladder (hbo): he-alphabet: no teach card; add one in src/data/grammar/hebrew/teach/index.ts']);
+
+    const stale = ladderProblems({ ...src, grammarDoc: src.grammarDoc.replace('| `he-alphabet` | The Hebrew alphabet |', '| `he-alphabet` | The Hebrew alphabet (edited) |') });
+    expect(stale).toHaveLength(1);
+    expect(stale[0]).toContain('the Hebrew ladder (hbo): he-alphabet: its row in docs/grammar.md differs from the ladder');
+
+    const noRow = ladderProblems({ ...src, auditDoc: src.auditDoc.split('\n').filter((l) => !l.startsWith('| `he-alphabet` |')).join('\n') });
+    expect(noRow).toEqual(['the Hebrew ladder (hbo): he-alphabet: no row in docs/card-audit.md; run npm run ladder:docs']);
+
+    const renamed = ladderProblems({ ...src, hebrew: { ...hbo, ladder: [{ ...HEBREW_LADDER[0], id: 'alphabet-hbo' }] } });
+    expect(renamed.join('\n')).toContain('the Hebrew ladder (hbo): alphabet-hbo: an idea of the Hebrew ladder whose id does not start he-');
+  });
+
+  it('names the Greek ladder for an idea whose id starts he-, which only the Hebrew ladder may have', () => {
+    const src = real();
+    const problems = ladderProblems({ ...src, ladder: src.ladder.map((i) => (i.id === 'noun' ? { ...i, id: 'he-noun' } : i)) });
+    expect(problems.join('\n')).toContain('he-noun: an idea of the Greek ladder whose id starts he-, the Hebrew ladder\'s');
+  });
+
+  it('leaves the built grinds the Greek ladder\'s: no Hebrew idea in either bridge enum', () => {
+    for (const file of SCHEMAS) expect(readFileSync(file, 'utf8')).not.toContain('"he-');
   });
 
   it('names the idea and the file for an idea with no card', () => {

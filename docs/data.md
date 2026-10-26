@@ -300,3 +300,8 @@ Only `data/index.json`, `data/lexicon.json`, `data/frequency.json` and `data/rom
 globs name those four files, with no wildcard; `lexicon-hbo.json`, `frequency-hbo.json` and the Old Testament's chapters are not). Every other chapter is fetched when first opened and kept by a
 CacheFirst route for `/data/` in `src/sw.ts` (cache `lampas-data-v<N>`, `src/dataCache.ts`: raise the version in a deploy that changes the data's shape, and the old cache is dropped on activate), so a chapter once read stays offline.
 A chapter is kept under its fingerprinted address (`?v=`), so an update that leaves a chapter's data alone never fetches it again, and one that changes it fetches only that chapter and drops its old copy (`serveChapter`, `src/dataCache.ts`); the version is raised only for a change of the cache's own layout (3 is the `?v=` keys). The ladder lists (`/data/ladder/*.json`) are still plain CacheFirst.
+
+## The places of each book (not in `public/data`)
+
+`src/maps/data/places/<book>.json` (62 files, the largest about 67 KB, committed) is STEPBible's TIPNR cut into the places each book names, with their verses, Strong's numbers, positions and regions, by `npm run places:build` (`scripts/places-build.ts`).
+It reads the committed chapter files (`public/data`) only to note where in a verse a place stands. It is not Bible text; the app loads a book's file as its own chunk, on the first ask for a verse's maps. Its shape, refresh and the matching of names are in `docs/maps.md`; `ATTRIBUTION.md` credits TIPNR.

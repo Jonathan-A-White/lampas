@@ -35,10 +35,45 @@ Feature: Maps on the screen (mw-zbjgn3r.2, docs/maps.md)
     And "Regions" holds "Mesopotamia", "Ararat" and "Table of Nations: Ham’s Descendants"
     And the video "Genesis 10" opens "https://biblemapper.com/blog/genesis_10/" in the browser
 
+  Scenario: A verse that names a place leads with the maps that show it
+    Given Lampas is opened on "Genesis 10"
+    When he taps verse 10
+    Then the Verse view has a button "Maps · 6"
+    When he taps "Maps · 6"
+    Then the sheet is headed "Maps for Genesis 10:10"
+    And the sheet opens with "For this verse" and then "In this chapter"
+    And the part "For this verse" holds "The Tower of Babel, c. 2200 BC · Babylon" and "Mesopotamia, Babylon"
+    And the groups read "Events, Regions, Videos"
+    And "Events" holds "Sodom and Gomorrah Are Destroyed, 2100 to 2090 BC"
+    And "Regions" holds "Ararat" and "Table of Nations: Ham’s Descendants"
+
+  Scenario: A passage that names a place says For these verses
+    Given Lampas is opened on "Romans 8"
+    When he taps the heading "Walking by the Spirit"
+    And he taps "Maps · 1"
+    Then the sheet is headed "Maps for Romans 8:1-11"
+    And the sheet opens with "For these verses" and then nothing
+    And the part "For these verses" holds "The Roman Empire, Rome"
+
+  Scenario: A verse that names no place the maps show has the sheet as before
+    Given Lampas is opened on "Genesis 10"
+    When he taps verse 19
+    And he taps "Maps · 6"
+    Then the sheet has no part for the verse
+    And the groups read "Events, Regions, Videos"
+
   Scenario: The chapter foot's door opens the sheet for the chapter
     Given Lampas is opened on "Genesis 10"
     When he taps the foot's door "Maps · 6"
     Then the sheet is headed "Maps for Genesis 10"
+
+  Scenario: A whole chapter's sheet has no part for a verse and keeps Bible Mapper's order
+    Given Lampas is opened on "Genesis 10"
+    When he taps the foot's door "Maps · 6"
+    Then the sheet is headed "Maps for Genesis 10"
+    And the sheet has no part for the verse
+    And the groups read "Events, Regions, Videos"
+    And "Regions" holds "Mesopotamia", "Ararat" and "Table of Nations: Ham’s Descendants"
 
   Scenario: A map opens in the app with its credit and the way back to the site
     Given Lampas is opened on "Genesis 10"

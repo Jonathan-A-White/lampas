@@ -10,20 +10,23 @@ A map is a `MapCard`; where it comes from is a `MapSource`. Reading the maps nee
 | `types.ts` | `MapSource`, `MapCard`, `MapRef` (`{ book, chapter, from?, to? }`, the app's book codes of `src/data/canon.ts`), and the shape of the Bible Mapper file |
 | `period.ts` | `period(start, end?)`: the card's dates as a string, negative years BC. `c. 2070 BC` (one date in BC), `1010 to 970 BC`, `AD 30` (one date in AD), `AD 27 to 30`, `5 BC to AD 30`; empty for a map with no dates |
 | `sources/biblemapper.ts` | Bible Mapper as a `MapSource` |
-| `mapsFor.ts` | `mapsForSources(sources, ref)`: every source's cards, the sources in list order, each source's cards in its own order |
-| `index.ts` | the registry `SOURCES` and `mapsFor(ref)`, the door the screens take |
+| `mapsFor.ts` | `mapsForSources(sources, ref)`: every source's cards, the sources in list order, each source's cards in its own order; `rankByPlaces(cards, places)`, the ranking for a verse (below) |
+| `places.ts`, `placeNames.ts` | `placesIn(ref)`, the places named in a verse, a passage or a chapter; the comparison of place names (below) |
+| `index.ts` | the registry `SOURCES` and `mapsFor(ref)`, the door the screens take: the chapter's cards, ranked by the places of the verses when `ref.from` is set |
+| `data/places/<book>.json` | STEPBible's TIPNR cut per book (below), each loaded by a dynamic import on first use: its own chunk, not in `pwa-precache.ts` |
 | `data/biblemapper.json` | the compacted index (below), loaded by a dynamic import on first use: its own chunk, not in `pwa-precache.ts` |
 
 A `MapSource` is `{ id, name, homepage, credit, mapsFor(ref) → MapCard[], imageUrl(card, 'low' | 'medium' | 'high') → string | null }`. The `credit` is the line shown with
-every map of the source; `imageUrl` answers null where the source has no picture to show at that size. Bible Mapper maps by the chapter, so the verses of a `MapRef` are ignored;
-ranking the cards by verse is a later story's.
+every map of the source; `imageUrl` answers null where the source has no picture to show at that size. Bible Mapper maps by the chapter, so a source ignores the verses of a `MapRef`; `mapsFor` ranks the cards by them (`mw-zbjgn3r.3`, 'Which maps are for this verse').
 
 ## The screens (mw-zbjgn3r.2)
 
 - **The door**, `src/maps/MapsDoor.tsx`: a 44 px button `Maps · N` (`useMaps`, which calls `mapsFor`), drawn only while N is above 0. On the Verse view it sits in the doors line with In Logos and In another book…, for a verse (`from` its number) and for a passage (`from`, `to`);
   at the foot of every chapter, Old and New Testament, `src/reader/ChapterActions.tsx` draws it before the chapter buttons. Nothing is drawn inside `VerseText`, and with Immersive reader On the Reader draws no door (the Verse view keeps it).
 - **The sheet**, `src/maps/MapsSheet.tsx`: a bottom sheet with `useSheetBack`, opened by `openMaps(ref)` (`src/maps/openMaps.ts`; the tutor story will call it too) and drawn by `<MapsHost />`, mounted once in `App.tsx`. Titled `Maps for Genesis 10:19`, `Maps for Genesis 10:1-19` or
-  `Maps for Genesis 10`; the cards grouped as Events, Regions and Videos (a group absent when empty), each row 44 px with the title and its period on a second line. No thumbnails (the low-res picture is about 500 KB): nothing is fetched until a map is opened. A video row is a plain `https` link
+  `Maps for Genesis 10`; the cards grouped as Events, Regions and Videos (a group absent when empty), each row 44 px with the title and its period on a second line. On a verse or a passage whose places some map shows, the sheet leads with
+  those maps under `For this verse` (`For these verses` for a passage), each row's second line holding its period and then the places it shows (`c. 2070 BC · Sodom, Gomorrah, Admah, Zeboiim`), and the rest follow under `In this chapter` with the Events / Regions / Videos groups
+  inside (their headings a level lower); with no map matched, and for a whole chapter, the sheet is as it was. No thumbnails (the low-res picture is about 500 KB): nothing is fetched until a map is opened. A video row is a plain `https` link
   to its article (`target="_blank"`); a map row opens the map.
 - **The map**, `src/maps/MapView.tsx`, a second sheet over the first: the title, the period, the low-res picture at the box's width in a box that scrolls both ways; a tap on the picture toggles that width and twice it (`data-map-zoom` `fit` | `in`; the page locks pinch, so the box
   takes `pinch-zoom` only where the phone allows it). Under it the credit from the source (`Map by David P. Barrett, biblemapper.com`, its host a link to `MapSource.homepage`: the link back the site asks, on every map), `About this map` and `Full size` (the article, where the larger pictures are)
@@ -60,6 +63,38 @@ run `npm run maps:build` and commit the result; a second run on an unchanged dow
 
 The images are not copied. `imageUrl('low')` is `https://biblemapper.com/blog/images/lo-res/<low>`; the medium and high files are not served under `/blog/images`, so those answer null and the article (`MapCard.article`) has them.
 
+## Which maps are for this verse (mw-zbjgn3r.3)
+
+`mapsFor(ref)` with `from` set (a verse, or a passage with `to`) asks `placesIn(ref)` for the places the verses name and ranks the chapter's cards by them (`rankByPlaces` in `mapsFor.ts`): the cards that show a place of the passage come first,
+the most places first and a tie in the source's order, each card carrying `matched`, the passage's place names it shows, in the order the passage names them; the other cards follow in the source's order with `matched: []`. For a whole chapter nothing is asked, the order is
+the source's and every `matched` is `[]`. If the places cannot be read the chapter's maps are answered unranked. The door's count is the chapter's maps either way.
+
+A map's place and a place of the passage are the same place by `src/maps/placeNames.ts`. In the first step the names are compared whole, normalised: lower case, accents stripped, a bracketed or parenthesised suffix dropped
+(`Bethel [al-Bira]` is `bethel`, `Jericho (OT)` is `jericho`), a trailing `?` dropped, a hyphen or a run of spaces one space. A passage place has every form in its `names`, so `Zidon` finds Sidon. Only where a map place finds no passage place that way is it
+compared in its loose form, without a head word (`mount`, `mt`, `sea of`, `lake`, `river`, `brook`, `valley of`, `wilderness of`, `land of`, `city of`, `plain of`, `wadi`) or a trailing `river`, against the loose forms of the passage's names: `Mount Hermon` finds Hermon, `Jordan River` finds Jordan,
+and `Sea of Galilee` finds Galilee only when no place of the passage is itself named Sea of Galilee. The names Bible Mapper writes that this does not find (a modern or an unbiblical name: Scythopolis, Sebaste, Persepolis, Masada) wait for an alias table.
+
+## The places: STEPBible's TIPNR
+
+TIPNR (Translators Individualised Proper Names with all References, Tyndale House Cambridge and STEPBible.org, CC BY 4.0, the coordinates from OpenBible.info) lists every proper name of the Bible with every verse that names it.
+`npm run places:build` (`scripts/places-build.ts`, the parse in `scripts/places/tipnr.ts`) downloads it into the git-ignored `data/raw/tipnr/tipnr.txt` when absent
+(`https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Proper%20Nouns/TIPNR%20-%20Translators%20Individualised%20Proper%20Names%20with%20all%20References%20-%20STEPBible.org%20CC%20BY.txt`; the story's name with `All References` is a 404, the listing of the repository's Proper Nouns folder has `with all References`)
+and writes `src/maps/data/places/<book>.json` for each of the 66 books that has places (62 do), committed (the biggest, Joshua, is about 67 KB; `tests/unit/places-build.test.ts` holds each under 120 KB). To refresh, delete `data/raw/tipnr/`, run it and commit; a second run on an unchanged download writes nothing.
+Tests use the real cut `tests/fixtures/places/tipnr-slice.txt` and never the network.
+
+Only the `PLACE` and `PLACE+PERSON` records are taken (a `PERSON` record of the same name, Sidon the son of Canaan, is not a place). A book's file is a list of places; a place is in the file of every book that names it, with that book's verses:
+
+```json
+{"id":"Gerar@Gen.10.19-2Ch","name":"Gerar","names":["Gerar"],"strongs":["H1642"],"lat":31.39129,"lng":34.56057,"region":"Philistia","verses":[[10,19],[20,1],[20,2],[26,1]],"pos":[5,11,10,16]}
+```
+
+- `id` is TIPNR's UniqueName, `name` its ESV form, `names` every form of the 'All names' field and of the KJV and NIV forms (a lower-case or bracketed form, 'stone' or '[ ]', is left out), once each, `strongs` the disambiguated Strong's numbers (`H1642`; `H6721H` is Sidon the city).
+- `lat` and `lng` are read from the Google Maps address (OpenBible.info's position, five decimals) and are absent where the address has none (`@,14z`, `@0,14z`): 970 of the 1,006 places have them. `region` is the Geographical area field, absent for `>` or empty.
+- `verses` is the Total line's reference list expanded (`Gen.10.19; 20.1,2; 26.1,6` and ranges such as `Gen.1.10-12`) together with the lists of every sub-record (which hold the verses an `ff` stands for), in this book, in order. TIPNR's marks `(?)` and `(d)`, a verse of the Greek Old Testament's own numbering (`LXX.`) and the letters after a verse number are dropped.
+- `pos` is where the place stands in each of those verses: the index of the first word of the committed chapter (`public/data`) whose Strong's number is one of the place's, `-1` where the chapter does not show it. `placesIn` answers a verse's places in this order (the order the verse names them), then by the file's. It is absent when no verse shows it.
+
+`placesIn(ref)` answers the places with a verse in `from..to` (the whole chapter when no verse is given; `from` alone is that verse), each once, loading the book's file on its first use. `setPlaceLoader` is the tests' seam (`tests/support/test-maps.ts` puts a few places of its own in its place, Genesis 10:10 and 10:11 and Romans 8:3).
+
 ## The site's terms, and the credit
 
 The About page of biblemapper.com says: "You are welcome to use these maps for any non-commercial purposes. The only requirement is that you cite biblemapper.com as the source of the map(s), and if you are
@@ -67,7 +102,7 @@ including them in an online resource, provide a hyperlink back to biblemapper.co
 All text and maps copyright (c) 2026 by David P. Barrett. All rights reserved."
 
 So every map Lampas shows carries `MapSource.credit` ('Map by David P. Barrett, biblemapper.com') and a link to `MapSource.homepage`; the screens read both from the source, never write them out. `ATTRIBUTION.md`
-has the entry (the About screen's source), `tests/support/credits.ts` the rule that holds a file in `src/maps/data/` to it, and `src/tutor/credits.ts` the tutor's short form. A source's own terms may differ: a
+has the entry (the About screen's source), `tests/support/credits.ts` the rule that holds a file in `src/maps/data/` to it (the places to STEPBible's TIPNR, credited in the TBESG bullet), and `src/tutor/credits.ts` the tutor's short form. A source's own terms may differ: a
 second source gets its own entry and credit.
 
 Open question for the Governor: Lampas is free to read and a licence unlocks the AI. Maps shown in the free part are non-commercial use; whether the paid part touches them is the Governor's to say before the maps ship.
