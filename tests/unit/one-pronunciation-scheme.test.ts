@@ -1,6 +1,6 @@
 // Every Greek sound comes from one pronunciation scheme (mw-5r3p30.268, his words: "make sure that's true across the board for the application"): no
-// file of src/ or grinds/ outside src/speech/pronunciation.ts and src/speech/schemes/ says, spells or describes a Greek sound by hand, or imports a
-// scheme by name, so another scheme (Erasmian) plugs in without touching the rest. The scan is tests/support/sound-rules-scan.ts.
+// file of src/ or grinds/ outside the registries (src/speech/pronunciation.ts, src/speech/hebrewPronunciation.ts) and src/speech/schemes/ says, spells or describes a Greek
+// sound by hand, or imports a scheme by name, so another scheme (Erasmian) plugs in without touching the rest. The scan is tests/support/sound-rules-scan.ts.
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -36,7 +36,7 @@ describe('every Greek sound comes from the pronunciation scheme', () => {
     expect(files.some((f) => f.startsWith('src/speech/schemes/'))).toBe(true);
   });
 
-  it('finds no sound rule outside src/speech/pronunciation.ts and src/speech/schemes/', () => {
+  it('finds no sound rule outside the registries and src/speech/schemes/', () => {
     expect(found.filter((f) => !allowed(f)).map((f) => `${f.file}: ${f.rule}: ${f.text}`)).toEqual([]);
   });
 
@@ -53,6 +53,13 @@ describe('the scan', () => {
     expect(soundRulesIn('src/speech/pronunciation.ts', planted)).toEqual([]);
   });
 
+  it('lets each registry, the Greek and the Hebrew, import its schemes by name, and no other file', () => {
+    const imported = "import { ISRAELI } from './schemes/hebrew-israeli';\nexport const all = [ISRAELI];\n";
+    expect(soundRulesIn('src/speech/hebrewPronunciation.ts', imported)).toEqual([]);
+    expect(soundRulesIn('src/speech/pronunciation.ts', imported)).toEqual([]);
+    expect(soundRulesIn('src/speech/hebrewSpeech.ts', imported).map((r) => r.rule)).toEqual(['a scheme imported by name, not asked of the registry']);
+  });
+
   it('reads what a screen shows in JSX and in a template, and not the comments', () => {
     expect(soundRulesIn('src/Planted.tsx', 'export const P = () => <p>Say β like v, as in vase.</p>;\n')).not.toEqual([]);
     expect(soundRulesIn('src/planted.ts', 'export const line = (w: string) => `${w}: χ is kh`;\n')).not.toEqual([]);
@@ -63,6 +70,7 @@ describe('the scan', () => {
     expect(soundRulesIn('src/planted.ts', "export const s = 'khree-STO';\n")).toHaveLength(1);
     expect(soundRulesIn('grinds/planted.instructions.md', 'In modern Greek, say it so.')).toHaveLength(1);
     expect(soundRulesIn('src/planted.ts', "import { MODERN } from '../speech/schemes/modern';\nexport const m = MODERN;\n")).toHaveLength(1);
+    expect(soundRulesIn('src/planted.ts', "import { ISRAELI } from './speech/schemes/hebrew-israeli';\nexport const h = ISRAELI;\n")).toHaveLength(1);
     expect(soundRulesIn('src/planted.ts', "export const t = ['el-GR', 'en-US'];\n")).toEqual([]);
     expect(soundRulesIn('src/planted.ts', "export const g = 'λύομεν is “we loose”';\n")).toEqual([]);
   });
