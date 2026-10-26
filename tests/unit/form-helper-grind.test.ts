@@ -34,6 +34,12 @@ describe('the form helper section of the instructions', () => {
     expect(s).toContain('wrong:');
   });
 
+  it('keeps a field hint out of the question, as the book first question flaked on it (mw-5r3p30.771)', () => {
+    const s = section();
+    expect(s).toContain('no field `hint`');
+    expect(s).toContain('wrong: `who made this approach, so we can credit them? give a name');
+  });
+
   it('fills fields from what he said, keeps his meaning, and never sends the form', () => {
     const s = section();
     expect(s).toContain('whole new value');
