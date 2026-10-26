@@ -1,5 +1,10 @@
 # What's new
 
+## 0.2.22
+_2026-10-26_
+- Fixed: when you ask the Bible talk what an English word like "love" really means, the tutor now reliably answers in English and offers the Greek word as a button.
+- New: Old Testament chapters can now be read in the Hebrew, right to left, with every word tappable, and read aloud in Hebrew.
+
 ## 0.2.20
 _2026-10-26_
 - New: Your Old Testament and whole-Bible commentaries from Logos now open at an Old Testament verse, under "In another book…".
