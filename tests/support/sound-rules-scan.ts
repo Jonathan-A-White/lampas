@@ -8,7 +8,7 @@ import ts from 'typescript';
 
 /** The files that own the sounds: anything may be written here. The accent tables (mw-5r3p30.352) own the English hints, which these patterns also
  * find ('the th of “this”'); keyWordsIn below keeps those to the accent tables alone. */
-export const SCHEME_FILES = ['src/speech/pronunciation.ts', 'src/speech/schemes/', 'src/speech/accents/'];
+export const SCHEME_FILES = ['src/speech/pronunciation.ts', 'src/speech/hebrewPronunciation.ts', 'src/speech/schemes/', 'src/speech/accents/'];
 
 export interface SoundRule {
   /** what kind of sound rule it is */
