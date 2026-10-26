@@ -5,6 +5,7 @@
 // unit and the mode (src/VerseView.tsx), so a switch of the Reader's view is a new pane that asks for the new mode; a Redraw keeps the picture beneath it until the new one comes.
 import { useEffect, useMemo, useState } from 'react';
 import type { Chapter, Verse } from '../data/chapter';
+import type { WovenVerse } from '../data/weave';
 import type { Lookup } from '../WordSheet';
 import { TutorError } from '../services/tutor';
 import { useElapsed } from '../ui/useElapsed';
@@ -12,6 +13,7 @@ import { ReedKellogg } from './ReedKellogg';
 import { diagramReference } from './request';
 import { fetchDiagram, type DiagramResult } from './fetchDiagram';
 import type { DiagramMode, DiagramWord } from './types';
+import { weaveDiagramWords } from './weave';
 
 const WORKING_LINE = 'Working it out…';
 const FAILED_LINE = 'The tutor could not diagram this verse';
@@ -22,12 +24,14 @@ type Drawn = Extract<DiagramResult, { ok: true }>;
 /** The verses of the Verse view's unit: the verse, or a passage's verses in order. */
 const unitVerses = (chapter: Chapter, unit: Pick<Verse, 'n' | 'to'>): Verse[] => chapter.verses.filter((v) => v.n >= unit.n && v.n <= (unit.to ?? unit.n));
 
-/** What the Reader's WordSheet opens for a tapped word of the diagram: English, its chunk (the chunk's Greek words, its English); Greek, that Greek word (and the chunk it is in). */
+/** What the Reader's WordSheet opens for a tapped word of the diagram: English, its chunk (the chunk's Greek words, its English); Greek, that Greek word (and the chunk it is in); an English word
+ * the Weave shows in Greek, the Greek word(s) drawn there, as a tap on the woven text gives (VerseText). */
 function lookupOfWord(verses: readonly Verse[], word: DiagramWord): Lookup | undefined {
   const verse = verses.find((v) => v.n === (word.verse ?? verses[0].n));
   if (!verse) return undefined;
   if ('chunk' in word) {
     const chunk = verse.e[word.chunk];
+    if (word.weft && chunk) return { words: word.weft.map((i) => verse.g[i]), english: chunk.t, fromEnglish: false };
     return chunk ? { words: chunk.g.map((i) => verse.g[i]), english: chunk.t, fromEnglish: true } : undefined;
   }
   const greek = verse.g[word.word];
@@ -56,11 +60,13 @@ export interface DiagramPaneProps {
   /** the Verse view's verse, or its passage as one Verse (`to` set) */
   verse: Verse;
   view: DiagramMode;
+  /** the Reader's Weave of each verse of the chapter, in step with `chapter.verses`; an English diagram draws the words it shows in Greek in Greek. null: not woven (off, or the Greek view) */
+  woven?: readonly WovenVerse[] | null;
   /** a tapped word's Lookup: the Reader opens its WordSheet on it */
   onLook: (lookup: Lookup) => void;
 }
 
-export function DiagramPane({ chapter, verse, view, onLook }: DiagramPaneProps) {
+export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPaneProps) {
   // keyed by the unit's numbers, not the object, so a Reader that rebuilds the Verse does not ask again
   const { n, to } = verse;
   const verses = useMemo(() => unitVerses(chapter, { n, to }), [chapter, n, to]);
@@ -92,18 +98,24 @@ export function DiagramPane({ chapter, verse, view, onLook }: DiagramPaneProps) 
     return () => stop.abort();
   }, [chapter, verses, view, run]);
 
+  // the words as the Weave shows them: the tree is the English one, so a change of Weave redraws with no new ask
+  const words = useMemo(
+    () => (drawn && view === 'english' && woven ? weaveDiagramWords(drawn.words, verses, (v) => woven[chapter.verses.indexOf(v)] ?? null) : drawn?.words),
+    [drawn, view, woven, verses, chapter],
+  );
+
   return (
     <section aria-label="Diagram" data-diagram-pane className="flex flex-col gap-2">
       {working ? <Working /> : null}
-      {drawn ? (
+      {drawn && words ? (
         <div className={working ? 'opacity-50' : undefined}>
           <ReedKellogg
             diagram={drawn.diagram}
-            words={drawn.words}
+            words={words}
             mode={view}
             reference={diagramReference(chapter, verses)}
             onWord={(index) => {
-              const look = lookupOfWord(verses, drawn.words[index]);
+              const look = lookupOfWord(verses, words[index]);
               if (look) onLook(look);
             }}
           />

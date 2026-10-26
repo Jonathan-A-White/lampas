@@ -599,6 +599,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           checks={checks}
           read={readOf(viewUnit)}
           weave={viewWeave}
+          wovenChapter={woven}
           onRetryRead={() => checks.retry(viewUnit)}
           ask={asks[unitId(viewUnit)]}
           onAsk={(verse, question) => {

@@ -41,6 +41,7 @@ import { useSendOff } from './plan/useSendOff';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
 import { langOf } from './script/greekLang';
+import type { WovenVerse } from './data/weave';
 import type { WovenReading } from './services/reading';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
@@ -79,6 +80,8 @@ export interface VerseViewProps {
   read: ReadHold;
   /** the verse as the weave shows it to be read, when some of its words are shown in Greek: he reads the Greek in Greek and the English in English (services/reading.ts wovenReading) */
   weave?: WovenReading | null;
+  /** the Reader's Weave of each verse of the chapter (in step with `chapterText.verses`), or null when it is not woven: the English Diagram draws the words it shows in Greek in Greek */
+  wovenChapter?: readonly WovenVerse[] | null;
   onRetryRead: () => void;
   /** the question in flight for this verse (Ask the tutor), and the way to send one (the composer at the foot, by voice or by hand) */
   ask: AskState | undefined;
@@ -103,7 +106,7 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 }
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weave, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
+  const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
   const [checking, setChecking] = useState<string | null>(null);
   // The foot of the view, where the chosen action draws its bar.
@@ -241,7 +244,7 @@ export function VerseView(props: VerseViewProps) {
               The tutor asks you about {name} one question at a time, in order, then helps you map how it is built.
             </p>
           ) : null}
-          {action === 'diagram' && ai ? <DiagramPane key={`${book}.${chapter}.${unitId(verse)}:${view}`} chapter={chapterText} verse={verse} view={view} onLook={onLook} /> : null}
+          {action === 'diagram' && ai ? <DiagramPane key={`${book}.${chapter}.${unitId(verse)}:${view}`} chapter={chapterText} verse={verse} view={view} woven={wovenChapter} onLook={onLook} /> : null}
         </div>
         </div>
       </div>
