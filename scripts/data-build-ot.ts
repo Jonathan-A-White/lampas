@@ -14,7 +14,7 @@ import type { FrequencyEntry } from '../src/data/frequency';
 import type { LemmaLexicon } from '../src/data/lexicon';
 import { COLUMNS, addRow, checkHeader, readLines, splitReference, wordOf, type TableGroup, type TableVerse, type TableWord } from './data/bereanTable';
 import { buildVerse, chapterFingerprint, fetchTo, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
-import { cleanHebrewGloss, parseTbes, type Lexicon } from './data/tbes';
+import { cleanHebrewGloss, hebrewStem, parseTbes, type Lexicon } from './data/tbes';
 
 export const BSB_URL = 'https://bereanbible.com/bsb_tables.tsv';
 export const TBESH_URL =
@@ -139,7 +139,10 @@ export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: B
       if (w.strongs === '') return { t: w.text, tr: w.translit, s: '', l: '', p: w.parse };
       const entry = lexicon.get(w.strongs);
       if (!entry) throw new Error(`${v.book} ${v.chapter}:${v.n}: ${w.text} has Strong number ${w.strongs}, which the lexicon lacks`);
-      return { t: w.text, tr: w.translit, s: w.strongs, l: entry.lemma, p: w.parse };
+      // A verb in a stem its definition gives a sense of its own ('(Piel) to appoint' for מָנָה, whose lemma gloss is 'to count') carries that sense as `gl`.
+      const stem = hebrewStem(w.parse);
+      const gl = stem ? entry.stems?.[stem] : undefined;
+      return { t: w.text, tr: w.translit, s: w.strongs, l: entry.lemma, p: w.parse, ...(gl && gl !== entry.gloss ? { gl } : {}) };
     });
 
   const closeGroup = async (): Promise<void> => {

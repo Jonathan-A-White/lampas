@@ -13,6 +13,7 @@ export type SourceWord = Omit<GreekWord, 'e'>;
 // A fixed key order, so the output bytes never depend on the order the keys were set in.
 const ordered = (w: GreekWord): GreekWord => {
   const out: GreekWord = { t: w.t, tr: w.tr, s: w.s, l: w.l, p: w.p };
+  if (w.gl !== undefined) out.gl = w.gl;
   if (w.e !== undefined) out.e = w.e;
   return out;
 };

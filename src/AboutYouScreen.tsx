@@ -268,7 +268,7 @@ function Form({ profile }: { profile: Profile }) {
           }}
           className={`${FIELD} resize-none`}
         />
-        <p className="pt-1 text-base text-muted">Languages you know, and any Greek or Bible you have had before.</p>
+        <p className="pt-1 text-base text-muted">Languages you know, and any Greek or Hebrew you have had before.</p>
       </div>
       <div className="py-3">
         <label htmlFor="about-why" className="block pb-1 text-lg font-medium">
@@ -285,7 +285,7 @@ function Form({ profile }: { profile: Profile }) {
           }}
           className={`${FIELD} resize-none`}
         />
-        <p className="pt-1 text-base text-muted">Why you are learning Greek.</p>
+        <p className="pt-1 text-base text-muted">Why you are learning the Greek or the Hebrew.</p>
       </div>
       {learned.length > 0 ? (
         <div className="py-3">

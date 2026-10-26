@@ -4,6 +4,10 @@ Scope: the tutor's conversations (Ask the tutor, the Talk sheet) and, since mw-5
 names or types: the depth setting, the font and the splitting are per language (`he` for Hebrew), so a Hebrew reader later, or another
 language, reuses them. A language is one more entry in `SCRIPTS` (`src/script/scripts.ts`).
 
+## The epic's seam (mw-gdcyf98)
+
+Lampas reads the Bible in its Greek and Hebrew, and the epic mw-gdcyf98 brings the Hebrew to the Greek's level one story at a time. Its shape, which a story of it keeps: **a dial per language**, 'How much Greek?' (`greekInterest`) and 'How much Hebrew?' (`hebrewInterest`), each with the same six steps; the **languages row** (English only, Greek, Hebrew, Greek and Hebrew) is derived from the two dials and never stored, so the tutor changing a dial keeps it honest; a chapter's source language picks the dial that governs it; and **one pronunciation** setting sets both languages (Modern Greek with Israeli Hebrew), with a way to set each on its own. Where each lives: `docs/layout/settings.md` (the registry, the rows, the dials) and `docs/pronunciation.md` (the schemes and the one setting). The names, wording and the stories' order are the epic's; this file describes what is in the code.
+
 ## The depth
 
 Settings > **Hebrew in the tutor** (registry key `hebrewDepth`, a choice of three, **Hebrew and transliteration** by default):
@@ -63,7 +67,7 @@ Like the Greek view it shows from the Greek dial's Curious step up (`viewAt`).
 - **Speech**: a long press on a Hebrew word says it (`speakWord(text, 'hebrew')`); Read from the top, a verse's play button and the weave read Hebrew pieces (`runsOf`) in the phone's he-IL voice, the weave in each
   piece's own language. The text is handed to the voice through the Hebrew pronunciation registry's one scheme, **Israeli** (docs/pronunciation.md): as written, pointed, with the cantillation marks taken off. A phone with
   no he-IL voice says nothing for a long press and shows 'No Hebrew voice on this phone' on the reading bar.
-- Not yet: the paradigms, the Help with this word row and the quizzes of a Hebrew word are later stories of the epic.
+- The paradigms, the Help with this word row and the quizzes of a Hebrew word belong to the stories of the epic mw-gdcyf98 (mw-gdcyf98.13, .20 and .21); this file does not keep a list of what is not yet there.
 
 ## The tutor and a Hebrew verse (mw-5vvlay.3)
 

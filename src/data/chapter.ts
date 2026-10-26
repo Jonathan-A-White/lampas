@@ -10,7 +10,7 @@ export type SourceLanguage = 'grc' | 'hbo';
 /**
  * A word of the source text. The name is the Greek one it was born with; the same keys hold a Hebrew word (docs/data.md has each key's meaning for it).
  * For a Hebrew word: `t` is the pointed word as the table's WLC column has it, `tr` the table's transliteration, `s` the Strong's number with
- * no padding ('H7225'; '' where the table gives none), `l` the TBESH headword, `p` the table's short parsing code ('V-Qal-Perf-3ms').
+ * no padding ('H7225'; '' where the table gives none), `l` the TBESH headword, `p` the table's short parsing code ('V-Qal-Perf-3ms'), `gl` the word's own gloss.
  */
 export interface GreekWord {
   /** the word as the Byzantine text has it */
@@ -23,6 +23,8 @@ export interface GreekWord {
   l: string;
   /** RP parsing code: 'V-PAP-DPM' */
   p: string;
+  /** Hebrew only: this word's gloss where it differs from its lemma's (`lex[s].g`): a verb in a stem whose sense has its own gloss ('to appoint' for the Piel of מָנָה, 'to count'); absent otherwise */
+  gl?: string;
   /** position in this verse's `e` array of the English chunk this word is part of; absent: no English */
   e?: number;
 }
@@ -176,7 +178,7 @@ export interface BookIndex {
 }
 
 export const wordLemma = (w: GreekWord): string => w.l;
-export const wordGloss = (chapter: Chapter, w: GreekWord): string => chapter.lex[w.s]?.g ?? '';
+export const wordGloss = (chapter: Chapter, w: GreekWord): string => w.gl ?? chapter.lex[w.s]?.g ?? '';
 export const wordParse = (chapter: Chapter, w: GreekWord): string => chapter.parse[w.p] ?? '';
 
 const chapters = new Map<string, Promise<Chapter>>();

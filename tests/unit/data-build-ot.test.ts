@@ -1,5 +1,5 @@
 // The Old Testament build (scripts/data-build-ot.ts, mw-uqlxea.1) on a slice of the real Berean table: tests/fixtures/data/bsb_tables_slice.tsv is the header row and the rows
-// of the verse groups of Genesis 1:1-5, Jonah 1:1-3 and Daniel 2:4, taken from data/raw/bsb_tables.tsv with
+// of the verse groups of Genesis 1:1-5, Jonah 1:1-3 and 1:17 and Daniel 2:4, taken from data/raw/bsb_tables.tsv with
 //   awk -F'\t' -v refs='Genesis 1:1|...|Daniel 2:4' 'BEGIN{...} FNR==NR{if($13 in want)g[$4]=1;next} FNR==1||($4 in g&&$5!="Greek")' bsb_tables.tsv bsb_tables.tsv
 // (docs/data.md has the line) and tbesh_slice.txt is the TBESH entries of their Strong's numbers.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -11,7 +11,7 @@ import { runBuild } from '../../scripts/data-build';
 import { checkHeader } from '../../scripts/data/bereanTable';
 import { cleanHebrewGloss, parseTbes } from '../../scripts/data/tbes';
 import { BSB_FILE, OT_EXPECTED_HEADER, TBESH_FILE, buildOt, otLexicon, runBuildOt, type BuiltChapter } from '../../scripts/data-build-ot';
-import type { BookIndex, Chapter } from '../../src/data/chapter';
+import { wordGloss, type BookIndex, type Chapter } from '../../src/data/chapter';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import type { LemmaLexicon } from '../../src/data/lexicon';
 
@@ -135,13 +135,37 @@ describe('Daniel 2:4', () => {
 });
 
 describe('Jonah 1', () => {
-  it('is three verses of the slice, named in the index', async () => {
+  it('is four verses of the slice (1:1-3 and 1:17), named in the index', async () => {
     const { chapters, books } = await build();
-    expect(find(chapters, 'jon/1.json').verses.map((v) => v.n)).toEqual([1, 2, 3]);
+    expect(find(chapters, 'jon/1.json').verses.map((v) => v.n)).toEqual([1, 2, 3, 17]);
     const jon = books.find((b) => b.code === 'jon');
     expect(jon?.name).toBe('Jonah');
     expect(jon?.chapters).toBe(1);
-    expect(jon?.verses).toEqual([3]);
+    expect(jon?.verses).toEqual([4]);
+  });
+
+  it('1:17: the fish is "fish" (H1709, not "Fish (Gate)") and the Piel וַיְמַן is "to appoint" (H4487), the lemma saying "to count"', async () => {
+    const { chapters } = await build();
+    const jon = find(chapters, 'jon/1.json');
+    const v17 = jon.verses.find((v) => v.n === 17)!;
+    expect(jon.lex.H1709.g).toBe('fish');
+    expect(jon.lex.H4487.g).toBe('to count');
+    const piel = v17.g.find((w) => w.s === 'H4487')!;
+    expect(piel.gl).toBe('to appoint');
+    expect(wordGloss(jon, piel)).toBe('to appoint');
+    // a word whose stem has no sense of its own, and a noun, carry no gl; wordGloss reads the lemma's
+    const qal = v17.g.find((w) => w.s === 'H1104')!;
+    const fish = v17.g.find((w) => w.s === 'H1709')!;
+    expect(qal).not.toHaveProperty('gl');
+    expect(fish).not.toHaveProperty('gl');
+    expect(wordGloss(jon, fish)).toBe('fish');
+    expect(Object.keys(piel)).toEqual(['t', 'tr', 's', 'l', 'p', 'gl', 'e']);
+  });
+
+  it('wordGloss prefers the word\'s own gl to the lemma\'s gloss', () => {
+    const chapter = { lex: { H1: { g: 'to count', d: '' } } } as unknown as Chapter;
+    expect(wordGloss(chapter, { t: '', tr: '', s: 'H1', l: '', p: '', gl: 'to appoint' })).toBe('to appoint');
+    expect(wordGloss(chapter, { t: '', tr: '', s: 'H1', l: '', p: '' })).toBe('to count');
   });
 });
 
