@@ -1,6 +1,8 @@
 // scripts/ladder-docs-text.ts — what `npm run ladder:docs` (scripts/ladder-docs.ts) writes from the ladder (mw-svw421.9), and ladderProblems, the one check
 // tests/unit/ladder-single-source.test.ts runs: adding an idea is one entry in src/data/grammar/ladder.ts, and the docs/grammar.md ladder table, the
 // docs/card-audit.md rows, the idea's card and the built grinds all follow from it. Pure: text in, text out.
+// Both ladders are held (mw-gdcyf98.9): the Greek one's table sits between the plain markers of each doc, the Hebrew one's (src/data/grammar/hebrew/ladder.ts) between
+// the '-hbo' markers after it, and a problem of the Hebrew ladder says so. The built grinds' bridge enum stays the Greek ladder's.
 import { pathProblems } from '../src/data/grammar/pathGraph.ts';
 
 /** The part of an idea these docs read. */
@@ -16,10 +18,38 @@ export interface DocIdea {
 export const GRAMMAR_DOC = 'docs/grammar.md';
 export const AUDIT_DOC = 'docs/card-audit.md';
 
-const GRAMMAR_BEGIN = '<!-- ladder:begin — written by `npm run ladder:docs` from src/data/grammar/ladder.ts; edit the ladder, not this table -->';
-const AUDIT_BEGIN = '<!-- audit:begin — the id and title columns are written by `npm run ladder:docs` from src/data/grammar/ladder.ts; the verdict and what-a-beginner-lacked columns are by hand -->';
-const GRAMMAR_END = '<!-- ladder:end -->';
-const AUDIT_END = '<!-- audit:end -->';
+/** The ladders these docs hold: Koine Greek and Biblical Hebrew (ladders.ts LADDER_LANGS). */
+export type DocLang = 'grc' | 'hbo';
+
+interface Markers {
+  grammarBegin: string;
+  grammarEnd: string;
+  auditBegin: string;
+  auditEnd: string;
+  /** where the ladder is written, for a problem to name */
+  ladderFile: string;
+  /** where its cards are written */
+  teachFile: (tier: string) => string;
+}
+
+const MARKERS: Record<DocLang, Markers> = {
+  grc: {
+    grammarBegin: '<!-- ladder:begin — written by `npm run ladder:docs` from src/data/grammar/ladder.ts; edit the ladder, not this table -->',
+    grammarEnd: '<!-- ladder:end -->',
+    auditBegin: '<!-- audit:begin — the id and title columns are written by `npm run ladder:docs` from src/data/grammar/ladder.ts; the verdict and what-a-beginner-lacked columns are by hand -->',
+    auditEnd: '<!-- audit:end -->',
+    ladderFile: 'src/data/grammar/ladder.ts',
+    teachFile: (tier) => `src/data/grammar/teach/${tier}.ts`,
+  },
+  hbo: {
+    grammarBegin: '<!-- ladder-hbo:begin — written by `npm run ladder:docs` from src/data/grammar/hebrew/ladder.ts; edit the Hebrew ladder, not this table -->',
+    grammarEnd: '<!-- ladder-hbo:end -->',
+    auditBegin: '<!-- audit-hbo:begin — the id and title columns are written by `npm run ladder:docs` from src/data/grammar/hebrew/ladder.ts; the verdict and what-a-beginner-lacked columns are by hand -->',
+    auditEnd: '<!-- audit-hbo:end -->',
+    ladderFile: 'src/data/grammar/hebrew/ladder.ts',
+    teachFile: () => 'src/data/grammar/hebrew/teach/index.ts',
+  },
+};
 
 /** The verdict and note of a new idea's audit row, until someone judges its card by hand. */
 export const NEW_VERDICT = 'teaches a beginner';
@@ -47,8 +77,8 @@ export function grammarTable(ladder: readonly DocIdea[]): string[] {
 }
 
 /** The hand-written columns of the audit rows now in the doc, by idea id. */
-export function auditJudgements(auditDoc: string): Map<string, { verdict: string; lacked: string }> {
-  const [, lines] = split(auditDoc, AUDIT_BEGIN, AUDIT_END, AUDIT_DOC);
+export function auditJudgements(auditDoc: string, lang: DocLang = 'grc'): Map<string, { verdict: string; lacked: string }> {
+  const [, lines] = split(auditDoc, MARKERS[lang].auditBegin, MARKERS[lang].auditEnd, AUDIT_DOC);
   const out = new Map<string, { verdict: string; lacked: string }>();
   for (const line of lines) {
     const m = /^\| `([^`]+)` \| (.*?) \| ([^|]*?) \| (.*) \|$/.exec(line);
@@ -69,16 +99,16 @@ export function auditTable(ladder: readonly DocIdea[], judged: ReadonlyMap<strin
   ];
 }
 
-/** docs/grammar.md with its ladder table written from `ladder`. */
-export function withGrammarTable(doc: string, ladder: readonly DocIdea[]): string {
-  const [head, , tail] = split(doc, GRAMMAR_BEGIN, GRAMMAR_END, GRAMMAR_DOC);
+/** docs/grammar.md with the ladder table of `lang` (the Greek one by default) written from `ladder`. */
+export function withGrammarTable(doc: string, ladder: readonly DocIdea[], lang: DocLang = 'grc'): string {
+  const [head, , tail] = split(doc, MARKERS[lang].grammarBegin, MARKERS[lang].grammarEnd, GRAMMAR_DOC);
   return [head, ...grammarTable(ladder), tail].join('\n');
 }
 
-/** docs/card-audit.md with its rows written from `ladder`, the hand-written columns kept by idea id. */
-export function withAuditTable(doc: string, ladder: readonly DocIdea[]): string {
-  const [head, , tail] = split(doc, AUDIT_BEGIN, AUDIT_END, AUDIT_DOC);
-  return [head, ...auditTable(ladder, auditJudgements(doc)), tail].join('\n');
+/** docs/card-audit.md with the rows of `lang` (the Greek ladder by default) written from `ladder`, the hand-written columns kept by idea id. */
+export function withAuditTable(doc: string, ladder: readonly DocIdea[], lang: DocLang = 'grc'): string {
+  const [head, , tail] = split(doc, MARKERS[lang].auditBegin, MARKERS[lang].auditEnd, AUDIT_DOC);
+  return [head, ...auditTable(ladder, auditJudgements(doc, lang)), tail].join('\n');
 }
 
 /** Everything the single-source check reads. */
@@ -90,6 +120,8 @@ export interface LadderSources {
   auditDoc: string;
   /** the answer schemas the grind build writes, by file */
   schemas: Readonly<Record<string, object>>;
+  /** the Hebrew ladder and the ids that have a card of its own, held to the same rules (none: not checked) */
+  hebrew?: { ladder: readonly DocIdea[]; cardIds: ReadonlySet<string> };
 }
 
 const sameLines = (file: string, what: string, wanted: readonly string[], found: readonly string[]): string[] => {
@@ -102,26 +134,41 @@ const sameLines = (file: string, what: string, wanted: readonly string[], found:
   return problems;
 };
 
-/** Every way the ladder and what follows from it disagree, each naming the idea and the file; empty when the ladder is the single source. */
-export function ladderProblems(src: LadderSources): string[] {
-  const problems = pathProblems(src.ladder).map((p) => `src/data/grammar/ladder.ts: ${p}`);
-  for (const idea of src.ladder) {
-    if (!src.cardIds.has(idea.id)) problems.push(`${idea.id}: no teach card; add one in src/data/grammar/teach/${idea.tier}.ts`);
+/** The problems of one ladder, apart from the grinds: its path, a card for each idea and none for another, and its rows in both docs. */
+function docProblems(lang: DocLang, ladder: readonly DocIdea[], cardIds: ReadonlySet<string>, grammarDoc: string, auditDoc: string): string[] {
+  const m = MARKERS[lang];
+  const problems = pathProblems(ladder).map((p) => `${m.ladderFile}: ${p}`);
+  for (const idea of ladder) {
+    if (!cardIds.has(idea.id)) problems.push(`${idea.id}: no teach card; add one in ${m.teachFile(idea.tier)}`);
   }
-  for (const id of src.cardIds) if (!src.ladder.some((i) => i.id === id)) problems.push(`${id}: a teach card for an idea the ladder has not`);
+  for (const id of cardIds) if (!ladder.some((i) => i.id === id)) problems.push(`${id}: a teach card for an idea the ladder has not`);
 
   try {
-    const [, grammarLines] = split(src.grammarDoc, GRAMMAR_BEGIN, GRAMMAR_END, GRAMMAR_DOC);
-    const wanted = grammarTable(src.ladder);
-    problems.push(...rowProblems(GRAMMAR_DOC, src.ladder, wanted, grammarLines, (line) => /^\| \d+ \| \w+ \| `([^`]+)`/.exec(line)?.[1]));
-    const [, auditLines] = split(src.auditDoc, AUDIT_BEGIN, AUDIT_END, AUDIT_DOC);
-    const wantedAudit = auditTable(src.ladder, auditJudgements(src.auditDoc));
-    problems.push(...rowProblems(AUDIT_DOC, src.ladder, wantedAudit, auditLines, (line) => /^\| `([^`]+)`/.exec(line)?.[1]));
+    const [, grammarLines] = split(grammarDoc, m.grammarBegin, m.grammarEnd, GRAMMAR_DOC);
+    problems.push(...rowProblems(GRAMMAR_DOC, ladder, grammarTable(ladder), grammarLines, (line) => /^\| \d+ \| \w+ \| `([^`]+)`/.exec(line)?.[1]));
+    const [, auditLines] = split(auditDoc, m.auditBegin, m.auditEnd, AUDIT_DOC);
+    problems.push(...rowProblems(AUDIT_DOC, ladder, auditTable(ladder, auditJudgements(auditDoc, lang)), auditLines, (line) => /^\| `([^`]+)`/.exec(line)?.[1]));
   } catch (e) {
     problems.push((e as Error).message);
   }
+  return problems;
+}
 
-  // the grinds: the ids the bridge may name are exactly the ladder's, in its order (grind-build.ts writes them with withBridgeIdeas)
+/** The prefix every Hebrew idea id has (src/data/grammar/hebrew/ladder.ts HEBREW_ID_PREFIX), so a level, a review row and a drill plan never collide with a Greek one's. */
+const HEBREW_PREFIX = 'he-';
+
+/** Every way the ladder and what follows from it disagree, each naming the idea and the file; empty when the ladder is the single source. A problem of the Hebrew
+ * ladder starts 'the Hebrew ladder (hbo): '; the Greek ladder's are as they were. */
+export function ladderProblems(src: LadderSources): string[] {
+  const problems = docProblems('grc', src.ladder, src.cardIds, src.grammarDoc, src.auditDoc);
+  for (const idea of src.ladder) if (idea.id.startsWith(HEBREW_PREFIX)) problems.push(`${idea.id}: an idea of the Greek ladder whose id starts ${HEBREW_PREFIX}, the Hebrew ladder's`);
+  if (src.hebrew) {
+    const hbo = docProblems('hbo', src.hebrew.ladder, src.hebrew.cardIds, src.grammarDoc, src.auditDoc);
+    for (const idea of src.hebrew.ladder) if (!idea.id.startsWith(HEBREW_PREFIX)) hbo.push(`${idea.id}: an idea of the Hebrew ladder whose id does not start ${HEBREW_PREFIX}`);
+    problems.push(...hbo.map((p) => `the Hebrew ladder (hbo): ${p}`));
+  }
+
+  // the grinds: the ids the bridge may name are exactly the Greek ladder's, in its order (grind-build.ts writes them with withBridgeIdeas)
   const want = src.ladder.map((i) => i.id);
   for (const [file, schema] of Object.entries(src.schemas)) {
     for (const [where, have] of Object.entries(bridgeIds(schema))) {

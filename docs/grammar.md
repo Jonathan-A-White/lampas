@@ -569,6 +569,22 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | 163 | sentences | `condition` | If: the three conditions | – | `conditional`, `mood-indicative`, `mood-subjunctive` |
 <!-- ladder:end -->
 
+## The Hebrew ladder
+
+**PROVISIONAL** (mw-gdcyf98.9; the Governor to confirm). Biblical Hebrew has a ladder of its own beside the Greek one, in `src/data/grammar/hebrew/ladder.ts`, with the same idea shape (`GrammarIdea`) and these tiers, easy first: letters, sounds, marks, nouns, pronouns, prepositions, verbs, joiners, sentences. It holds one idea to start, `he-alphabet` (The Hebrew alphabet, tier letters, its card in `src/data/grammar/hebrew/teach/index.ts`); stories g and h add the ideas of the other tiers.
+
+`src/data/grammar/ladders.ts` is the one door: `ladderFor('grc' | 'hbo')` answers `{ideas, tiers, teach, terms, foundationTiers, foundation, ideaOf, ideasOf, ideasOfWord}`, and `LADDER_LANGS` names the two. The Greek ladder is `ladder.ts`, unchanged (`LADDER`, `TIERS`, `ideasOf` and the rest are as they were, and now also `ladderFor('grc')`). A Hebrew word has no parsing code yet, so `ideasOf` and `ideasOfWord` of the Hebrew ladder answer none until g and h.
+
+**Every Hebrew idea id starts `he-`** (`ladderLangOf(id)`), so a grammar level, a review row and a drill plan of a Hebrew idea never collide with a Greek one. A Hebrew idea marked known (`teachIdea`) is written to the grammar levels and **schedules no review row yet**: the Greek card and `ideaOf` of the review code throw on a `he-` id, so story l, which gives the Hebrew card its drill, owns that. The bridge of the tutor's grinds stays the Greek ladder's: its enum is built from `LADDER` only, and no Hebrew idea is in `grinds/bible-talk.answer.schema.json` or `grinds/verse-ask.answer.schema.json`.
+
+`tests/unit/ladder-single-source.test.ts` holds both ladders: it fails, naming the Hebrew ladder, on a Hebrew idea with no card, a stale row in either doc, or an id that does not start `he-`. `npm run ladder:docs` writes this table and its rows in `docs/card-audit.md`.
+
+<!-- ladder-hbo:begin — written by `npm run ladder:docs` from src/data/grammar/hebrew/ladder.ts; edit the Hebrew ladder, not this table -->
+| Rung | Tier | Id | Title | Terms | Rests on |
+| --- | --- | --- | --- | --- | --- |
+| 1 | letters | `he-alphabet` | The Hebrew alphabet | – | – |
+<!-- ladder-hbo:end -->
+
 ## Approaches
 
 **PROVISIONAL**, the Governor to confirm (mw-foy5mb.1): Lampas has ONE path, the ladder, for every learner. The approaches stay data
