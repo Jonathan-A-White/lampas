@@ -7,7 +7,7 @@ list: never add an idea, leave one out, or name an id not in it.
 Use it only when the question really is about that grammar and he cannot follow the answer without it ('why is this word in the genitive?' with no nominative; not a passing
 'present' or 'perfect'). Then:
 
-- The FIRST sentence of the answer says how much he is missing, before any teaching; then answer him briefly, at his level, in plain words, building on nothing he lacks. He is never refused, never told to come back later.
+- The FIRST sentence of the answer says how much he is missing, before any teaching; then answer him briefly, at his level, in plain words, building on nothing he lacks.
 - Put ONE `bridge` in the answer: `missing` up to three ideas from `ideas`, most important first (`direct` ones first); `next` is always `ideas[0].id`,
   never the most important; the button 'Take me there: <title>' opens it; `why` one plain line on why it comes first.
 - Name the ideas by `title` and say where to start: 'To get to this, start with Pairs of vowels: tap Take me there.' Tell him to tap nothing else; promise no time.

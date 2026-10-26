@@ -911,6 +911,22 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(text).toContain('Only when the talk heads toward New Testament verses held in neither, name them in `fetch`');
   });
 
+  it('says when to give a map link and that no map is promised that `maps` does not list (mw-zbjgn3r.4), and has an example for the map and for none listed', () => {
+    const part = instructionParts(grind.kind as string).find(({ file }) => file.endsWith('200-links-to-his-study-resources.md'));
+    const text = (part?.text ?? '').replace(/\s+/g, ' ');
+    expect(text).toContain('### Links to a map');
+    expect(text).toContain("`kind` `map`, with `map` the `id` of a line of the request's `maps`, exactly as given");
+    expect(text).toContain('name the map by its `title`');
+    expect(text).toContain('Never promise a map `maps` does not list.');
+    const read = (name: string) => readJson(`grinds/examples/bible-talk/${name}.json`) as unknown as { request: Record<string, unknown>; expect: Record<string, Record<string, unknown>> };
+    const map = read('map-of-the-passage');
+    expect((map.request.maps as { id: string }[]).map((m) => m.id)).toContain('SodomAndGomorrah');
+    expect(map.expect['links.0.map']).toEqual({ equals: 'SodomAndGomorrah' });
+    const none = read('no-map-listed');
+    expect(none.request).not.toHaveProperty('maps');
+    expect(none.expect.links).toEqual({ present: false });
+  });
+
   it('keeps the whole of the instructions under the 99,500 bytes the ceiling test holds', () => {
     const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
     expect(bytes).toBeLessThanOrEqual(99_500);

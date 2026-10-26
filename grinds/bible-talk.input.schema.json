@@ -199,6 +199,22 @@
         ]
       }
     },
+    "maps": {
+      "description": "Optional. The maps that exist for the passage the talk holds (its chapter's maps, at most 12), the only ones a `map` link may name. Each is `id` (the value of a `map` link, exactly as given), `title`, `period` (the years it covers, empty for a map with no dates) and `places`: the names on the map that the held verse or range speaks (Sodom, Gomorrah), empty when the passage is a whole chapter or the verse names none. Those whose `places` are not empty come first. Missing when the chapter has no map, when no passage is held (a talk from a screen) and in a talk from About.",
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "period", "places"],
+        "properties": {
+          "id": { "description": "The map's key, the value of a `map` link.", "type": "string" },
+          "title": { "description": "The map's title.", "type": "string" },
+          "period": { "description": "The years the map covers (such as 2100 to 2090 BC), empty when it has none.", "type": "string" },
+          "places": { "description": "The places on the map that the held verse or range names.", "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
     "screen": {
       "description": "Optional. Present when he asked from a full screen of the app (the round Ask the tutor button) and not about a text: the screen's name (Goal, Words, Review, Quick test, Parsing drill, Paradigms, Placement, Settings, My study way, Import, Today, About) and what the screen shows, as labelled facts (on Goal: the goal, the solid, frontier and not yet counts of its words and grammar ideas, Learn next and the Next words). `greek` and `english` are then missing.",
       "type": "object",

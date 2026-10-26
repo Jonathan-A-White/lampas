@@ -125,3 +125,15 @@ export const logosAtlas: MapSource = {
   imageUrl: () => null, // link only: the sheet shows the card as a link, with no picture
 };
 ```
+
+## The tutor brings up maps (mw-zbjgn3r.4)
+
+The Bible talk (not verse-ask) tells the tutor the maps of the passage it holds and may answer with a link to one.
+
+- **The request**: `maps`, built by `mapsForTutor(cards, text?)` (`src/maps/forTutor.ts`) from `mapsFor` of the talk's chapter (read in `src/useTalk.ts`, handed to `buildTalkRequest`): each card as `{ id, title, period, places }`, at most `MAX_TUTOR_MAPS` (12). A video is left out (a map link opens a map in the app, a video is a page in the browser).
+  `places` are the names of the card (Bible Mapper's `Sodom?`, `Jericho (OT)` read as `Sodom`, `Jericho`) that the held verse's or range's English speaks, in the order it speaks them, and the cards that name most come first; for a talk about a whole chapter `places` is empty and the cards keep the source's order.
+  No field is sent in a talk from a screen, in About, or where the chapter has no map. `fitHistory` drops the whole field (`dropMaps`) right after the shelf digest is cut, before a held passage or a verse. `src/tutor/knows.ts` lists it under his progress (`maps`); verse-ask, verse-read and tips give their reason.
+- **The answer**: `links` takes `{ kind: 'map', map: <id> }` (still at most three links in all, `AnswerLink` in `src/data/db.ts`). The id is a line of the request's `maps`; `src/resources/tutorLinks.ts` `mapChip(id, cards)` finds it among the maps of the talk's chapter and `src/TutorLinks.tsx` draws the chip `Map: <title>`;
+  an id the chapter lacks, or a talk with no passage, draws nothing. The chip closes the Talk sheet and calls `openMaps({ book, chapter }, id)`.
+- **openMaps(ref, cardId?)** (`src/maps/openMaps.ts`): with a card id the sheet opens as usual and, once the chapter's maps are read, the map of that card opens over it (`MapsSheet` `openCard`); Back returns to the sheet. A card the place lacks leaves the sheet alone.
+- **The rule** is the `### Links to a map` paragraph of `grinds/bible-talk.instructions/200-links-to-his-study-resources.md`; the examples are `grinds/examples/bible-talk/map-of-the-passage.json` (Genesis 10:19, he asks 'is there a map of this?': the answer names Sodom and Gomorrah Are Destroyed and links `SodomAndGomorrah`) and `no-map-listed.json` (no `maps`, no link).

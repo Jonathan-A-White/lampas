@@ -1,0 +1,85 @@
+{
+  "description": "Genesis 10:19 is held and the request lists the chapter's maps, the one that names the verse's cities first (Sodom, Gomorrah, Admah, Zeboiim) and the Table of Nations maps with no place of the verse; asked 'is there a map of this?', the answer names Sodom and Gomorrah Are Destroyed and carries one map link, to SodomAndGomorrah.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 10:19",
+    "greek": "וַֽיְהִ֞י גְּב֤וּל הַֽכְּנַעֲנִי֙ מִצִּידֹ֔ן בֹּאֲכָ֥ה גְרָ֖רָה עַד־ עַזָּ֑ה בֹּאֲכָ֞ה סְדֹ֧מָה וַעֲמֹרָ֛ה וְאַדְמָ֥ה וּצְבֹיִ֖ם עַד־ לָֽשַׁע׃",
+    "english": "and the borders of Canaan extended from Sidon toward Gerar as far as Gaza, and then toward Sodom, Gomorrah, Admah, and Zeboiim, as far as Lasha.",
+    "verses": "10:19",
+    "question": "is there a map of this?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": [],
+    "maps": [
+      {
+        "id": "SodomAndGomorrah",
+        "title": "Sodom and Gomorrah Are Destroyed",
+        "period": "2100 to 2090 BC",
+        "places": [
+          "Sodom",
+          "Gomorrah",
+          "Admah",
+          "Zeboiim"
+        ]
+      },
+      {
+        "id": "TableOfNationsHam",
+        "title": "Table of Nations: Ham’s Descendants",
+        "period": "",
+        "places": []
+      },
+      {
+        "id": "TableOfNationsShem",
+        "title": "Table of Nations: Shem’s Descendants",
+        "period": "",
+        "places": []
+      },
+      {
+        "id": "Mesopotamia",
+        "title": "Mesopotamia",
+        "period": "",
+        "places": []
+      },
+      {
+        "id": "Ararat",
+        "title": "Ararat",
+        "period": "",
+        "places": []
+      },
+      {
+        "id": "TableOfNationsJapheth",
+        "title": "Table of Nations: Japheth’s Descendants",
+        "period": "",
+        "places": []
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "Sodom and Gomorrah"
+    },
+    "links.0.kind": {
+      "equals": "map"
+    },
+    "links.0.map": {
+      "equals": "SodomAndGomorrah"
+    },
+    "links.1": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

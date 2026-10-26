@@ -612,7 +612,7 @@
       "maxLength": 30
     },
     "links": {
-      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, and a work (a commentary, grammar, Greek text or book on his Logos shelf, listed in the request's `works`) opens in Logos. At most three, and at most one of them a work (two in a quiz). Leave it out when no lexicon, verse or setting would help him.",
+      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, a work (a commentary, grammar, Greek text or book on his Logos shelf, listed in the request's `works`) opens in Logos, and a map (a line of the request's `maps`) opens in the app. At most three, and at most one of them a work (two in a quiz). Leave it out when no lexicon, verse or setting would help him.",
       "type": "array",
       "minItems": 1,
       "maxItems": 3,
@@ -643,6 +643,20 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 40
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "map"],
+            "properties": {
+              "kind": { "const": "map" },
+              "map": {
+                "description": "The `id` of a line of the request's `maps`, exactly as given; never one not listed.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
               }
             }
           },

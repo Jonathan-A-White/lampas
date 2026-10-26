@@ -1,0 +1,33 @@
+{
+  "description": "Romans 8:28 is held and the request lists no maps (the chapter has none); asked 'is there a map of this?', the answer says plainly it has no map to show and carries no link.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:28",
+    "greek": "Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν Θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν",
+    "english": "And we know that all things work together for good to those who love God, to those who are called according to His purpose.",
+    "verses": "8:28",
+    "question": "is there a map of this?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": []
+  },
+  "expect": {
+    "links": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
