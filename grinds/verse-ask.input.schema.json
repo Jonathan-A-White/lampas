@@ -26,6 +26,26 @@
         }
       }
     },
+    "hebrew": {
+      "description": "Optional. Only for a verse of the Old Testament, which has no Greek (`greek` is then an empty string): the verse in Biblical Hebrew (the Westminster Leningrad Codex), pointed, with the cantillation marks left off, written in reading order, the first word first. Aramaic words of the Old Testament are in it too.",
+      "type": "string"
+    },
+    "hebrew_words": {
+      "description": "Optional. With `hebrew`: the words of `hebrew`, in text order, each with its form as it stands, its lemma (the TBESH headword), the table's transliteration, the lexicon's gloss and its parsing in plain words, from the app's own chapter data; a word the text repeats with the same lemma and parsing is listed once. A word has no `lemma`, `translit` or `gloss` when the data gives none. For a long passage the list may stop part-way.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["form", "parse"],
+        "properties": {
+          "form": { "type": "string", "minLength": 1 },
+          "lemma": { "type": "string", "minLength": 1 },
+          "translit": { "type": "string", "minLength": 1 },
+          "gloss": { "type": "string", "minLength": 1 },
+          "parse": { "type": "string" }
+        }
+      }
+    },
     "question": { "description": "What he asked, at most 4000 characters.", "type": "string", "minLength": 1, "maxLength": 4000 },
     "spoken": { "description": "Optional. true only when he spoke the question to the phone's English speech recogniser (Hold to talk, Hold to ask); missing when he typed it. A Greek word in it may have come as English sound-alikes. See the instructions.", "type": "boolean", "const": true },
     "solid_count": { "description": "Optional. How many Greek words he knows well in all. `solid_words` names only the most recent of them.", "type": "number", "minimum": 0 },
