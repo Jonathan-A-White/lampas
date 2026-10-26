@@ -85,6 +85,7 @@ describe('the bible-talk instructions on a verse he memorizes (mw-fu7dqf.14)', (
     const words = read('verse-text-words');
     expect(words.request.question).toMatch(/Greek am I memorizing in John 3:16/);
     expect(words.expect['asks.0']).toEqual({ equals: 'verseText' });
+    expect(words.expect['asks.1']).toEqual({ present: false });
     expect(words.expect['do']).toEqual({ present: false });
   });
 });

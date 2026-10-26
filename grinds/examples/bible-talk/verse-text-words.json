@@ -513,6 +513,9 @@
     "asks.0": {
       "equals": "verseText"
     },
+    "asks.1": {
+      "present": false
+    },
     "do": {
       "present": false
     },

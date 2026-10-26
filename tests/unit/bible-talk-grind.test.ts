@@ -979,6 +979,6 @@ describe('the bible-talk instructions name each fact the tutor can ask for (mw-0
 
   it('says the words of a memorized verse are `verseText`, not `memorizing`', () => {
     const rule = lampas.split('\n').find((l) => l.startsWith('- A memorized verse')) ?? '';
-    expect(rule.replace(/\s+/g, ' ')).toMatch(/asks `verseText`[^.;]*not `memorizing`/);
+    expect(rule.replace(/\s+/g, ' ')).toMatch(/asks `verseText` alone[^.;]*not `memorizing`/);
   });
 });
