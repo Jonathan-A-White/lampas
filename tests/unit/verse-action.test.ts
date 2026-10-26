@@ -20,3 +20,13 @@ describe('the Verse view actions', () => {
     expect(getVerseAction()).toBe('diagram');
   });
 });
+
+describe('the Verse view actions of an Old Testament verse (mw-5vvlay.3)', () => {
+  it('offers Ask the tutor and not Quiz me or Diagram on an hbo verse: the quiz is written for the Greek ladder', () => {
+    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask']);
+  });
+
+  it('offers an unlicensed phone only Listen on an hbo verse, as on a Greek one', () => {
+    expect(actionsFor(false, 'hbo').map((a) => a.id)).toEqual(['listen']);
+  });
+});

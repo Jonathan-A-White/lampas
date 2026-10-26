@@ -10,7 +10,9 @@ import { GRIST_KINDS, type GristKind } from '../../src/services/gristKinds';
 import { setCurrentLicence } from '../../src/services/licenceNow';
 import { readTimedPage, requireLicence, sendTimedGrist, timedDoor } from '../../src/services/mill';
 import { pullStatuses } from '../../src/services/requestStatus';
-import { TutorError, askGrind } from '../../src/services/tutor';
+import { TutorError, askGrind, askTutor, buildRequest } from '../../src/services/tutor';
+import type { Chapter } from '../../src/data/chapter';
+import { actionsFor } from '../../src/verse/action';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 
 const key = Uint8Array.from(Utils.toArray('00'.repeat(31) + '0b', 'hex'));
@@ -191,5 +193,25 @@ describe('every kind of grist the app can send is hidden from a phone with no li
     const text = readFileSync(feature, 'utf8');
     const scenarios = text.split(/^\s*Scenario:/m).slice(1).filter((s) => /no licence|not licensed|Needs a licence/i.test(s.split('\n')[0] + (s.match(/Given[^\n]*/)?.[0] ?? '')));
     for (const name of hidden) expect(scenarios.some((s) => s.includes(name)), `${kind}: "${name}" in ${feature}`).toBe(true);
+  });
+});
+
+describe('the Hebrew entries of the AI are hidden from a phone with no licence too (mw-5vvlay.3)', () => {
+  const jonah = JSON.parse(readFileSync('public/data/jon/1.json', 'utf8')) as Chapter;
+  const verse10 = jonah.verses.find((v) => v.n === 10);
+
+  it('offers an unlicensed phone only Listen on a verse of an hbo chapter, and a licensed one Ask the tutor but not Quiz me', () => {
+    expect(actionsFor(false, 'hbo').map((a) => a.id)).toEqual(['listen']);
+    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask']);
+  });
+
+  it('refuses the ask about Jonah 1:10, Hebrew and all, with no licence, and nothing leaves the phone', async () => {
+    if (!verse10) throw new Error('no verse 10');
+    setCurrentLicence('not-licensed');
+    const request = buildRequest('Jonah 1:10', verse10, 'What does the Hebrew say for fear?', [], undefined, undefined, undefined, [], undefined, false, undefined, undefined, undefined, undefined, jonah);
+    expect(request.hebrew_words?.length).toBeGreaterThan(0);
+    const error = await failure(askTutor(request, { key }));
+    expect((error as TutorError).failure).toBe('no-licence');
+    expect(postern.calls).toEqual([]);
   });
 });
