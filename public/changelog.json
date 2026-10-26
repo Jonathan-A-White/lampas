@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.2.29",
+    "date": "2026-10-26",
+    "story": "mw-zbjgn3r.2",
+    "kind": "new",
+    "text": "Chapters and verses now show a quiet Maps button that opens Bible Mapper's maps for the place, each with its dates, credit and a link back to the site."
+  },
+  {
+    "version": "0.2.29",
+    "date": "2026-10-26",
+    "story": "mw-5r3p30.782",
+    "kind": "fixed",
+    "text": "tapping one word of a phrase in the English text now looks up just that word in the dictionary, while the Greek or Hebrew word on the card stays the same."
+  },
+  {
     "version": "0.2.27",
     "date": "2026-10-26",
     "story": "mw-5r3p30.773",

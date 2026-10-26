@@ -1,5 +1,10 @@
 # What's new
 
+## 0.2.29
+_2026-10-26_
+- New: Chapters and verses now show a quiet Maps button that opens Bible Mapper's maps for the place, each with its dates, credit and a link back to the site.
+- Fixed: tapping one word of a phrase in the English text now looks up just that word in the dictionary, while the Greek or Hebrew word on the card stays the same.
+
 ## 0.2.27
 _2026-10-26_
 - Fixed: In a window a third of the screen tall (split-screen), the Talk bar, the question box under Ask the tutor and a reference card's Play and Open are no longer cut off at the bottom.
