@@ -1,6 +1,6 @@
 # Maps
 
-Lampas shows a chapter's maps beside its text (the door and the sheet are a later story; this note covers the module and the data under them, mw-zbjgn3r.1).
+Lampas shows a chapter's maps beside its text: a quiet door, the Maps sheet and the map opened in the app (mw-zbjgn3r.2, 'The screens' below), over the module and the data under them (mw-zbjgn3r.1).
 A map is a `MapCard`; where it comes from is a `MapSource`. Reading the maps needs no licence.
 
 ## The module: `src/maps/`
@@ -17,6 +17,20 @@ A map is a `MapCard`; where it comes from is a `MapSource`. Reading the maps nee
 A `MapSource` is `{ id, name, homepage, credit, mapsFor(ref) → MapCard[], imageUrl(card, 'low' | 'medium' | 'high') → string | null }`. The `credit` is the line shown with
 every map of the source; `imageUrl` answers null where the source has no picture to show at that size. Bible Mapper maps by the chapter, so the verses of a `MapRef` are ignored;
 ranking the cards by verse is a later story's.
+
+## The screens (mw-zbjgn3r.2)
+
+- **The door**, `src/maps/MapsDoor.tsx`: a 44 px button `Maps · N` (`useMaps`, which calls `mapsFor`), drawn only while N is above 0. On the Verse view it sits in the doors line with In Logos and In another book…, for a verse (`from` its number) and for a passage (`from`, `to`);
+  at the foot of every chapter, Old and New Testament, `src/reader/ChapterActions.tsx` draws it before the chapter buttons. Nothing is drawn inside `VerseText`, and with Immersive reader On the Reader draws no door (the Verse view keeps it).
+- **The sheet**, `src/maps/MapsSheet.tsx`: a bottom sheet with `useSheetBack`, opened by `openMaps(ref)` (`src/maps/openMaps.ts`; the tutor story will call it too) and drawn by `<MapsHost />`, mounted once in `App.tsx`. Titled `Maps for Genesis 10:19`, `Maps for Genesis 10:1-19` or
+  `Maps for Genesis 10`; the cards grouped as Events, Regions and Videos (a group absent when empty), each row 44 px with the title and its period on a second line. No thumbnails (the low-res picture is about 500 KB): nothing is fetched until a map is opened. A video row is a plain `https` link
+  to its article (`target="_blank"`); a map row opens the map.
+- **The map**, `src/maps/MapView.tsx`, a second sheet over the first: the title, the period, the low-res picture at the box's width in a box that scrolls both ways; a tap on the picture toggles that width and twice it (`data-map-zoom` `fit` | `in`; the page locks pinch, so the box
+  takes `pinch-zoom` only where the phone allows it). Under it the credit from the source (`Map by David P. Barrett, biblemapper.com`, its host a link to `MapSource.homepage`: the link back the site asks, on every map), `About this map` and `Full size` (the article, where the larger pictures are)
+  and `All maps for Genesis 10 at Bible Mapper` (`MapSource.allMapsUrl`: `https://biblemapper.com/blog/mapfinder/?ref=Genesis%2010`, the book name and chapter encoded). Back returns to the sheet, then to the verse. While the picture fails to load (offline) its place says `The map needs the internet` and every link stays.
+- **About** lists Bible Mapper from `ATTRIBUTION.md` (the credit of mw-zbjgn3r.1); the Preface (`src/preface.ts`) says what the door does.
+- **Tests**: `features/maps.feature` (`features/steps/maps.steps.tsx`) and `tests/unit/maps-door.test.tsx` run on a source of the tests' own (`tests/support/test-maps.ts`, registered with `setMapSources` in `src/maps/index.ts`: Bible Mapper's identity and links over a few cards, no data file read, no picture fetched);
+  `tests/e2e/maps.spec.ts` shoots the Verse view with the door, the sheet and the map at 390x844, the picture stubbed by Playwright's `route`.
 
 ## Bible Mapper's data
 

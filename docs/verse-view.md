@@ -88,6 +88,12 @@ verse's words in order), so every action works on it as it works on a verse.
 
 Any run of verses of a chapter opens the same passage view: `src/data/passage.ts` `rangeOf(verses, from, to, heading)`, the address `#/?b=1jn&c=1&p=1&pt=4` (`pt` the last verse, read only with `p`; `openVerseRange`; `openPassage`, `movePassage` and `openVerse` drop `pt`). The heading is the lesson's title when the range is a passage lesson of the chosen approach, else the heading of the first verse, else the reference; a heading equal to the range is said once ('1 John 1:1-4', not twice). The arrows step from the section passage the range starts in. When the range is exactly a lesson (`lessonForRange`), a **Lesson strip** sits under the heading and its Check passes the lesson: docs/grammar.md 'Passage lessons: the Lesson strip and Check'. Opening the view marks nothing. A link with a range ('Heb 7:1-3', `#/?ref=1John.1.1-4`) opens the Verse view on it (`links.ts` `Reference.to`, `LinkOpener`).
 
+## Maps (mw-zbjgn3r.2)
+
+The doors line (under Memorize, beside the two Logos doors) has a quiet **Maps · N** (`src/maps/MapsDoor.tsx`, 44 px): N is the number of Bible Mapper maps of the verse's chapter (`mapsFor`, from the module's data alone; docs/maps.md), and the button is not drawn at 0. For a
+passage opened from a heading the door carries the passage's range (`{ book, chapter, from, to }`). It opens the Maps sheet (docs/maps.md 'The screens'). The Reader's chapter foot has the same door; with the Immersive reader On the Reader has none and the Verse view keeps it.
+The door wraps to a line of its own where the Logos doors leave it no room; it is not a seventh cell of the action row.
+
 ## In Logos and In another book… (mw-rfjjzd.9)
 
 With Logos On, a row under the actions has two doors (`src/library/InLogosDoors.tsx`, docs/design/library-at-scale.md 3.6): **In Logos** opens the verse in his Bible in Logos (Settings > Bible in Logos; for a passage, at its first verse) and
