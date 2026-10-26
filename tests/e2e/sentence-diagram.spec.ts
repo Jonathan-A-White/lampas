@@ -137,3 +137,61 @@ test('With the Weave on, the diagram draws the words it shows in Greek in Greek,
   await expect(page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-word')).toHaveText(/χριστῷ/i);
   expect(fake.received.filter((r) => r.grist.kind === 'sentence-diagram')).toHaveLength(1);
 });
+
+test('The invitation and How to read this fit the phone and leave the diagram its sideways box (mw-q6t5tvn.2)', async ({ page }) => {
+  await start(page);
+  const view = await openVerseView(page, 1);
+  await view.getByRole('button', { name: 'Diagram', exact: true }).click();
+  const pane = view.getByRole('region', { name: 'Diagram' });
+  const box = pane.locator('[data-diagram]');
+  await expect(box).toBeVisible();
+
+  // the invitation: its line, Learn and Not now are inside the phone, above the box, a thumb tall
+  const line = pane.getByText('New to diagrams? Learn to read one, about 3 minutes');
+  await expect(line).toBeVisible();
+  const learn = pane.getByRole('button', { name: 'Learn', exact: true });
+  const notNow = pane.getByRole('button', { name: 'Not now', exact: true });
+  const link = pane.getByRole('button', { name: 'How to read this', exact: true });
+  const boxed = async (locator: typeof line) => {
+    const b = await locator.boundingBox();
+    if (!b) throw new Error('no box');
+    expect(b.x).toBeGreaterThanOrEqual(0);
+    expect(b.x + b.width).toBeLessThanOrEqual(VIEWPORT.width);
+    return b;
+  };
+  const lineBox = await boxed(line);
+  const diagramBox = await boxed(box);
+  for (const button of [learn, notNow]) {
+    const b = await boxed(button);
+    expect(b.height).toBeGreaterThanOrEqual(43.5);
+    expect(b.y).toBeGreaterThanOrEqual(lineBox.y);
+    expect(b.y + b.height).toBeLessThanOrEqual(diagramBox.y);
+  }
+  expect(lineBox.y + lineBox.height).toBeLessThanOrEqual(diagramBox.y);
+
+  // the link sits under the diagram, a thumb tall, inside the phone
+  const linkBox = await boxed(link);
+  expect(linkBox.height).toBeGreaterThanOrEqual(43.5);
+  expect(linkBox.y).toBeGreaterThanOrEqual(diagramBox.y + diagramBox.height);
+
+  // the box still scrolls sideways and the page does not
+  const room = await box.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(room.scroll).toBeGreaterThan(room.client);
+  expect(room.client).toBeGreaterThan(VIEWPORT.width * 0.8);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await shot(page, 'sentence-diagram-invitation');
+
+  // Not now: the invitation goes, the link stays and the box is where it was or higher
+  await notNow.click();
+  await expect(line).toHaveCount(0);
+  await expect(link).toBeVisible();
+  const after = await boxed(box);
+  expect(after.width).toBeCloseTo(diagramBox.width, 0);
+  expect(await page.evaluate(() => localStorage.getItem('lampas.diagram-lesson.invite'))).toBe('dismissed');
+
+  // the link opens the lesson and its Leave comes back to the same diagram
+  await link.click();
+  await expect(page.getByTestId('diagram-lesson')).toBeVisible();
+  await page.getByRole('button', { name: '‹ Leave' }).click();
+  await expect(page.getByRole('region', { name: 'Verse view' }).getByRole('img', { name: 'Sentence diagram of Colossians 3:1, English' })).toBeVisible();
+});

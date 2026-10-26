@@ -1,7 +1,7 @@
 // src/diagram/DiagramLesson.tsx — the optional lesson 'How to read a sentence diagram' (mw-q6t5tvn.1, #/diagram-lesson). Nine steps (./lesson.ts), one Reed-Kellogg convention each: its sentences above
 // the diagram ReedKellogg draws from a diagram written by hand (the Verse view's own face and sideways scroll), then a one-tap check, 'Tap the <role>': a right tap says so, a wrong one shows the
 // right word lit. Next and Back walk the steps; the last step's Done keeps the lesson done on the phone (localStorage 'lampas.diagram-lesson', no Dexie) and returns to where he came from.
-// Leaving early keeps the step he reached, and the lesson opens there next time. Optional: no other screen names it, nudges toward it or counts it.
+// Leaving early keeps the step he reached, and the lesson opens there next time. Optional: only the Verse view's Diagram pane points to it ('How to read this', and an invitation until he has finished or dismissed it); no other screen names it, nudges toward it or counts it.
 import { useState } from 'react';
 import { navigate } from '../nav/route';
 import { previousAddress } from '../nav/lastRoute';

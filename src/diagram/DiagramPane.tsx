@@ -1,23 +1,28 @@
 // src/diagram/DiagramPane.tsx — the Verse view's Diagram action (mw-souyao.3): the sentence diagram of the verse or the passage in the Reader's current mode.
 // It asks fetchDiagram (the kept diagram, else the tutor), says 'Working it out…' while the tutor thinks, draws the answer with ReedKellogg (a box that scrolls sideways) and
-// offers Redraw under it with one line saying the tutor drew it. A tap on a word reports the Lookup the Reader's own WordSheet opens (English: the word's chunk, fromEnglish;
+// offers Redraw under it with one line saying the tutor drew it and a quiet link, 'How to read this', to the lesson (#/diagram-lesson; mw-q6t5tvn.2), and above a drawn diagram one line inviting him to the lesson
+// (Learn, Not now) until he has finished it or dismissed it. A tap on a word reports the Lookup the Reader's own WordSheet opens (English: the word's chunk, fromEnglish;
 // Greek: that Greek word). When the tutor could not (no answer, or a tree that broke THE RULE twice) it says so and why and offers Try again. The pane is keyed by the
 // unit and the mode (src/VerseView.tsx), so a switch of the Reader's view is a new pane that asks for the new mode; a Redraw keeps the picture beneath it until the new one comes.
 import { useEffect, useMemo, useState } from 'react';
 import type { Chapter, Verse } from '../data/chapter';
 import type { WovenVerse } from '../data/weave';
 import type { Lookup } from '../WordSheet';
+import { navigate } from '../nav/route';
 import { TutorError } from '../services/tutor';
 import { useElapsed } from '../ui/useElapsed';
 import { ReedKellogg } from './ReedKellogg';
 import { diagramReference } from './request';
 import { fetchDiagram, type DiagramResult } from './fetchDiagram';
+import { keepInviteDismissed, lessonInvited } from './lesson';
 import type { DiagramMode, DiagramWord } from './types';
 import { weaveDiagramWords } from './weave';
 
 const WORKING_LINE = 'Working it out…';
 const FAILED_LINE = 'The tutor could not diagram this verse';
 const DRAWN_BY_LINE = 'Drawn by the tutor; Redraw if a word sits wrong';
+const INVITATION_LINE = 'New to diagrams? Learn to read one, about 3 minutes';
+const INVITE_BUTTON = 'min-h-12 rounded-xl border border-line px-4 text-base font-medium text-accent active:bg-line';
 
 type Drawn = Extract<DiagramResult, { ok: true }>;
 
@@ -75,6 +80,8 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
   const [drawn, setDrawn] = useState<Drawn | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [working, setWorking] = useState(true);
+  // the invitation to the lesson (mw-q6t5tvn.2): shown above a drawn diagram until he has finished the lesson or tapped Not now
+  const [invited, setInvited] = useState(lessonInvited);
   const again = (redraw: boolean): void => {
     setWorking(true);
     setProblem(null);
@@ -107,6 +114,26 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
   return (
     <section aria-label="Diagram" data-diagram-pane className="flex flex-col gap-2">
       {working ? <Working /> : null}
+      {drawn && words && problem === null && invited ? (
+        <div className="flex flex-col gap-2 rounded-xl border border-line p-3" data-testid="diagram-invitation">
+          <p className="text-base">{INVITATION_LINE}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => navigate('diagram-lesson')} className={INVITE_BUTTON}>
+              Learn
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                keepInviteDismissed();
+                setInvited(false);
+              }}
+              className={INVITE_BUTTON}
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      ) : null}
       {drawn && words ? (
         <div className={working ? 'opacity-50' : undefined}>
           <ReedKellogg
@@ -144,7 +171,12 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
           >
             Redraw
           </button>
-          <p className="px-1 text-sm text-muted">{DRAWN_BY_LINE}</p>
+          <div className="flex flex-wrap items-center justify-between gap-x-3">
+            <p className="px-1 text-sm text-muted">{DRAWN_BY_LINE}</p>
+            <button type="button" onClick={() => navigate('diagram-lesson')} className="min-h-12 px-1 text-sm text-accent underline underline-offset-4">
+              How to read this
+            </button>
+          </div>
         </>
       ) : null}
     </section>

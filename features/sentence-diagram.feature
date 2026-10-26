@@ -105,3 +105,49 @@ Feature: Lampas draws a verse as a Reed-Kellogg diagram
     When he taps Diagram
     And he switches the Reader to Greek
     Then the pane draws the Greek diagram of Colossians 3:1
+
+  Scenario: How to read this opens the lesson and Done comes back to the same diagram
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once
+    When he taps Diagram
+    Then the pane draws the English diagram of Colossians 3:1 with Redraw and the line "Drawn by the tutor; Redraw if a word sits wrong"
+    And the pane offers "How to read this"
+    When he taps "How to read this"
+    Then the lesson "How to read a sentence diagram" is open
+    When he goes through the lesson to Done
+    Then the Verse view of Colossians 3:1 is open again on its drawn English diagram with "How to read this"
+    And the tutor was asked once
+
+  Scenario: A first diagram invites him to the lesson, and Not now hides the invitation for good
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once
+    When he taps Diagram
+    Then the pane draws the English diagram of Colossians 3:1 with Redraw and the line "Drawn by the tutor; Redraw if a word sits wrong"
+    And the pane invites him with "New to diagrams? Learn to read one, about 3 minutes" and Learn and Not now
+    When he taps "Not now"
+    Then the pane no longer invites him and still offers "How to read this"
+    When he leaves the Verse view and opens it again on Diagram
+    Then the pane still has no invitation and offers "How to read this"
+    And the tutor was asked once
+
+  Scenario: Learn opens the lesson and a finished lesson hides the invitation
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once
+    When he taps Diagram
+    Then the pane invites him with "New to diagrams? Learn to read one, about 3 minutes" and Learn and Not now
+    When he taps "Learn"
+    Then the lesson "How to read a sentence diagram" is open
+    When he goes through the lesson to Done
+    Then the Verse view of Colossians 3:1 is open again on its drawn English diagram with "How to read this"
+    And the pane no longer invites him and still offers "How to read this"
+
+  Scenario: The invitation and the link wait for a drawn diagram
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor is slow to answer
+    When he taps Diagram
+    Then the pane says "Working it out…"
+    And the pane has neither the invitation nor "How to read this"
+    When the tutor answers with the English diagram
+    Then the pane invites him with "New to diagrams? Learn to read one, about 3 minutes" and Learn and Not now
+
+  Scenario: A diagram the tutor could not make has neither the invitation nor the link
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers a tree that leaves words out
+    When he taps Diagram
+    Then the pane says "The tutor could not diagram this verse" and offers Try again
+    And the pane has neither the invitation nor "How to read this"

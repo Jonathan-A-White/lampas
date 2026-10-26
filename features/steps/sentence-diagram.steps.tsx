@@ -134,6 +134,56 @@ async function reopen(): Promise<void> {
   await screen.findByRole('region', { name: 'Verse view' });
 }
 
+// ---- the lesson advertised from the diagram (mw-q6t5tvn.2) ----
+const INVITATION = 'New to diagrams? Learn to read one, about 3 minutes';
+
+async function tapsDiagram(): Promise<void> {
+  await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+}
+
+async function tapsInPane(_: unknown, label: string): Promise<void> {
+  await user.click(await within(pane()).findByRole('button', { name: label, exact: true }));
+}
+
+async function invites(_: unknown, line: string): Promise<void> {
+  expect(line).toBe(INVITATION);
+  expect(await within(pane()).findByText(line)).toBeInTheDocument();
+  expect(within(pane()).getByRole('button', { name: 'Learn', exact: true })).toBeInTheDocument();
+  expect(within(pane()).getByRole('button', { name: 'Not now', exact: true })).toBeInTheDocument();
+}
+
+async function noInvitation(_: unknown, label: string): Promise<void> {
+  expect(await within(pane()).findByRole('button', { name: label, exact: true })).toBeInTheDocument();
+  expect(within(pane()).queryByText(INVITATION)).toBeNull();
+  expect(within(pane()).queryByRole('button', { name: 'Learn', exact: true })).toBeNull();
+  expect(within(pane()).queryByRole('button', { name: 'Not now', exact: true })).toBeNull();
+}
+
+function neither(_: unknown, label: string): void {
+  expect(within(pane()).queryByText(INVITATION)).toBeNull();
+  expect(within(pane()).queryByRole('button', { name: 'Learn', exact: true })).toBeNull();
+  expect(within(pane()).queryByRole('button', { name: label, exact: true })).toBeNull();
+}
+
+async function lessonIsOpen(_: unknown, title: string): Promise<void> {
+  const lesson = await screen.findByTestId('diagram-lesson');
+  expect(screen.getByRole('heading', { name: title, level: 1 })).toBeInTheDocument();
+  expect(lesson).toBeInTheDocument();
+}
+
+/** Next through the first eight steps and Done on the ninth. */
+async function throughTheLesson(): Promise<void> {
+  for (let step = 1; step < 9; step++) await user.click(await screen.findByRole('button', { name: 'Next', exact: true }));
+  await user.click(await screen.findByRole('button', { name: 'Done', exact: true }));
+}
+
+async function backOnTheDiagram(_: unknown, label: string): Promise<void> {
+  await screen.findByRole('region', { name: 'Verse view' });
+  expect(await within(pane()).findByRole('img', { name: 'Sentence diagram of Colossians 3:1, English' })).toBeInTheDocument();
+  expect(within(pane()).queryByText(WORKING)).toBeNull();
+  expect(within(pane()).getByRole('button', { name: label, exact: true })).toBeInTheDocument();
+}
+
 const feature = await loadFeature('features/sentence-diagram.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -379,5 +429,61 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the pane draws the Greek diagram of Colossians 3:1', async () => {
       await waitFor(() => expect(within(pane()).getByRole('img', { name: 'Sentence diagram of Colossians 3:1, Greek' })).toBeInTheDocument());
     });
+  });
+
+  Scenario('How to read this opens the lesson and Done comes back to the same diagram', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
+    When('he taps Diagram', tapsDiagram);
+    Then('the pane draws the English diagram of Colossians 3:1 with Redraw and the line {string}', drawnWithRedraw);
+    And('the pane offers {string}', (_, label: string) => expect(within(pane()).getByRole('button', { name: label, exact: true })).toBeInTheDocument());
+    When('he taps {string}', tapsInPane);
+    Then('the lesson {string} is open', lessonIsOpen);
+    When('he goes through the lesson to Done', throughTheLesson);
+    Then('the Verse view of Colossians 3:1 is open again on its drawn English diagram with {string}', backOnTheDiagram);
+    And('the tutor was asked once', () => expect(diagramGrists()).toBe(1));
+  });
+
+  Scenario('A first diagram invites him to the lesson, and Not now hides the invitation for good', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
+    When('he taps Diagram', tapsDiagram);
+    Then('the pane draws the English diagram of Colossians 3:1 with Redraw and the line {string}', drawnWithRedraw);
+    And('the pane invites him with {string} and Learn and Not now', invites);
+    When('he taps {string}', tapsInPane);
+    Then('the pane no longer invites him and still offers {string}', noInvitation);
+    When('he leaves the Verse view and opens it again on Diagram', reopen);
+    Then('the pane still has no invitation and offers {string}', noInvitation);
+    And('the tutor was asked once', () => expect(diagramGrists()).toBe(1));
+  });
+
+  Scenario('Learn opens the lesson and a finished lesson hides the invitation', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
+    When('he taps Diagram', tapsDiagram);
+    Then('the pane invites him with {string} and Learn and Not now', invites);
+    When('he taps {string}', tapsInPane);
+    Then('the lesson {string} is open', lessonIsOpen);
+    When('he goes through the lesson to Done', throughTheLesson);
+    Then('the Verse view of Colossians 3:1 is open again on its drawn English diagram with {string}', backOnTheDiagram);
+    And('the pane no longer invites him and still offers {string}', noInvitation);
+  });
+
+  Scenario('The invitation and the link wait for a drawn diagram', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor is slow to answer', () => openVerse('slow'));
+    When('he taps Diagram', tapsDiagram);
+    Then('the pane says {string}', async (_, text: string) => {
+      expect(await within(pane()).findByText(text)).toBeInTheDocument();
+    });
+    And('the pane has neither the invitation nor {string}', neither);
+    When('the tutor answers with the English diagram', () => release());
+    Then('the pane invites him with {string} and Learn and Not now', invites);
+  });
+
+  Scenario('A diagram the tutor could not make has neither the invitation nor the link', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers a tree that leaves words out', () => openVerse('unable'));
+    When('he taps Diagram', tapsDiagram);
+    Then('the pane says {string} and offers Try again', async (_, text: string) => {
+      expect(await within(pane()).findByText(text)).toBeInTheDocument();
+      expect(within(pane()).getByRole('button', { name: 'Try again', exact: true })).toBeInTheDocument();
+    });
+    And('the pane has neither the invitation nor {string}', neither);
   });
 });
