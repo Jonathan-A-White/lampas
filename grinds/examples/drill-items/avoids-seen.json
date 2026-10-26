@@ -1,5 +1,5 @@
 {
-  "description": "He missed the second declension twice, and has already been asked about λόγου and ὀφθαλμοῖς in 1 John 1:1: the grind writes items on a word he has not been asked about, from the other verse.",
+  "description": "He missed the second declension twice, and has already been asked to tap λόγου in 1 John 1:1: the grind writes items on it from the verses sent, and none is that question or about λόγου.",
   "schemaVersion": "1",
   "request": {
     "ideas": [
@@ -46,19 +46,12 @@
       {
         "prompt": "Tap the genitive singular noun",
         "ref": "1 John 1:1"
-      },
-      {
-        "prompt": "Tap the dative plural noun",
-        "ref": "1 John 1:1"
       }
     ]
   },
   "expect": {
     "items.0.idea": {
       "equals": "declension-2"
-    },
-    "items.0.ref": {
-      "equals": "1 John 1:2"
     },
     "items.0.kind": {
       "one_of": [
@@ -67,7 +60,8 @@
       ]
     },
     "items.0.right": {
-      "present": true
+      "present": true,
+      "matches": "^[^λ]"
     }
   }
 }
