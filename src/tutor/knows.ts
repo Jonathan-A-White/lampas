@@ -4,6 +4,7 @@
 // tests/unit/tutor-knows.test.ts fails when a registry setting that bears on speech, language, level, the quiz goal or his study way is in no grind's request
 // without a reason here, when a new setting has no entry in BEARS_ON, and when a builder does not send what a row says. A new setting, or a new part of his
 // progress, is classified here in the same story that makes it.
+import { SOURCES } from '../maps/sources';
 import { currentSettings, SETTINGS } from '../settings/registry';
 
 export const GRINDS = ['bible-talk', 'verse-ask', 'verse-read', 'tips'] as const;
@@ -29,6 +30,8 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   immersiveHint: 'screen',
   tips: 'screen',
   'resource.strongs': 'screen',
+  // which map sources the Maps door and the tutor's map list draw on: what the app offers, not what he knows (one switch per source in src/maps/sources, mw-zbjgn3r.6)
+  ...Object.fromEntries(SOURCES.map((source) => [`maps.${source.id}`, 'screen' as const])),
   'resource.logos': 'screen', // also gives a tapped English word its Look it up in Logos row (Webster's 1828): an offer on a sheet, it changes no answer
   logosBible: 'screen',
   audioBible: 'screen',

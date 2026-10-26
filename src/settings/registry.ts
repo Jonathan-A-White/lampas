@@ -67,6 +67,8 @@ import { LAYOUTS } from '../layout/layouts';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
 import { RESOURCES } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
+import { SOURCES } from '../maps/sources';
+import { mapSourceSetting } from './definitions/maps';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { PLAY_TOS, type PlayTo } from '../speech/readSpan';
 import { chooseAccent } from '../speech/accents';
@@ -315,6 +317,9 @@ const resourceEntries = RESOURCES.map((r) =>
   ),
 );
 
+// One On/Off switch per map source (src/maps/index.ts SOURCES): 'maps.<id>', Settings > Study resources > Maps (src/settings/definitions/maps.ts). A source that needs Logos is drawn only while Logos is On.
+const mapEntries = SOURCES.map((source) => fromDefinition(mapSourceSetting(source)));
+
 /** How much Greek (the dial at the top of the Settings home): writing it moves the dial, which brings in and turns off what the steps change (src/data/repositories/greekInterest.ts). */
 const greekInterestEntry: SettingEntry = {
   ...fromDefinition(greekInterestSetting),
@@ -517,6 +522,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   ),
   englishAccentEntry,
   ...resourceEntries,
+  ...mapEntries,
   fromDefinition(audioBibleSetting),
   fromDefinition(readingPlanSetting),
   logosBibleEntry,
