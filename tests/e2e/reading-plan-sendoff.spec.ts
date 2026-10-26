@@ -139,16 +139,18 @@ test('Go on the send-off sheet records the start time, then opens Audible', asyn
   expect((await storedState(page))?.session).toEqual(opened.session);
 });
 
-test('an Old Testament chapter in the picker goes through the same sheet', async ({ page }) => {
+test('an Old Testament chapter opened from the picker goes through the same sheet', async ({ page }) => {
   await openAt(page, '/', 'on', { code: 'lev', chapter: 3 });
   await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
   const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
   await picker.getByRole('button', { name: /^Leviticus/ }).click();
   await picker.getByRole('button', { name: 'Chapter 3' }).click();
+  // the chapter opens in the Reader and Listen in Audible is an action at its foot (mw-uqlxea.2)
+  await expect(page.getByRole('heading', { name: 'Leviticus 3', level: 1 })).toBeVisible();
+  await listenLink(page).scrollIntoViewIfNeeded();
   await listenLink(page).click();
   const sheet = page.getByRole('dialog', { name: 'Off to Audible: Leviticus 3' });
   await expect(sheet).toBeVisible();
-  await expect(picker).toBeVisible();
   await sheet.getByRole('button', { name: 'Go', exact: true }).click();
   await expect.poll(async () => (await opens(page)).length).toBe(1);
   expect((await opens(page))[0].session).toMatchObject({ code: 'lev', chapter: 3 });

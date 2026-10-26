@@ -37,13 +37,13 @@ test('a finger swipe changes chapter; a mostly vertical drag does not; the first
   await swipe(page, [330, 500], [90, 510], { with: 'touch' });
   await expect(page.getByRole('heading', { name: 'Romans 9', level: 1 })).toBeVisible();
 
-  await page.goto('/#/?b=mat&c=1');
-  await expect(page.getByRole('heading', { name: 'Matthew 1', level: 1 })).toBeVisible();
+  await page.goto('/#/?b=gen&c=1');
+  await expect(page.getByRole('heading', { name: 'Genesis 1', level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="3"]')).toBeVisible();
   await swipe(page, [90, 500], [330, 500], { with: 'touch' });
   const note = page.locator('[data-swipe-note]');
   await expect(note).toContainText('This is the first chapter. Before it: the Preface');
-  await expect(page.getByRole('heading', { name: 'Matthew 1', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Genesis 1', level: 1 })).toBeVisible();
   await shot(page, 'chapter-swipe-first');
   await note.getByRole('button', { name: 'the Preface' }).click();
   await expect(page).toHaveURL(/#\/preface$/);
