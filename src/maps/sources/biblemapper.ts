@@ -45,6 +45,8 @@ export const bibleMapper: MapSource = {
   name: 'Bible Mapper',
   homepage: 'https://biblemapper.com',
   credit: 'Map by David P. Barrett, biblemapper.com',
+  describe: 'The maps of Bible Mapper, shown in the app.',
+  default: 'on',
   async mapsFor(ref: MapRef): Promise<MapCard[]> {
     const data = await loadBibleMapper();
     return mapIdsOf(data, ref.book, ref.chapter).map((id) => cardOf(data, id));

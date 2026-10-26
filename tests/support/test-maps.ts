@@ -51,8 +51,41 @@ export const testSource: MapSource = {
   imageUrl: (_card, size) => (size === 'low' ? TEST_IMAGE : null),
 };
 
-export const registerTestMaps = (): void => {
-  setMapSources([testSource]);
+/**
+ * A link-only source of the tests' own (mw-zbjgn3r.6): no picture, a card that opens elsewhere. Genesis 10 has two (one an app link with its https fallback, one an https address alone),
+ * Genesis 11, where Bible Mapper's test cards have none, has one. `needs` is unset: linkSourceNeedingLogos is the same source riding on Logos.
+ */
+export const LINK_CARDS: Record<string, MapCard[]> = {
+  'gen.10': [
+    { id: 'AtlasAtShinar', source: 'testlinks', title: 'Test Atlas at Shinar', kind: 'link', period: 'Opens in Logos', article: 'https://atlas.test/shinar', places: [], open: { url: 'logos4:Atlas;id=SHINAR', fallback: 'https://atlas.test/shinar' } },
+    { id: 'CommentaryAtGenesis10', source: 'testlinks', title: 'Test Commentary at Genesis 10', kind: 'link', period: 'Opens on the web', article: 'https://atlas.test/commentary', places: [], open: { url: 'https://atlas.test/commentary' } },
+  ],
+  'gen.11': [{ id: 'AtlasAtBabel', source: 'testlinks', title: 'Test Atlas at Babel', kind: 'link', period: 'Opens on the web', article: 'https://atlas.test/babel', places: [], open: { url: 'https://atlas.test/babel' } }],
+};
+
+export const linkSource: MapSource = {
+  id: 'testlinks',
+  name: 'Test Atlas',
+  homepage: 'https://atlas.test',
+  credit: 'Pages open on the web',
+  describe: 'A link-only atlas of the tests’ own.',
+  default: 'on',
+  mapsFor: async (ref: MapRef) => LINK_CARDS[`${ref.book}.${ref.chapter}`] ?? [],
+  imageUrl: () => null,
+};
+
+/** The same link-only source, riding on the Logos study resource: its row is hidden, and it answers nothing, while Logos is Off. */
+export const linkSourceNeedingLogos: MapSource = {
+  ...linkSource,
+  id: 'testlogos',
+  name: 'Test Logos Atlas',
+  needs: 'logos',
+  mapsFor: async (ref: MapRef) => (LINK_CARDS[`${ref.book}.${ref.chapter}`] ?? []).map((c) => ({ ...c, id: `${c.id}-logos`, source: 'testlogos' })),
+};
+
+/** Registers the tests' Bible Mapper source (and, with `links`, the link-only one after it) and their places. */
+export const registerTestMaps = ({ links = false }: { links?: boolean } = {}): void => {
+  setMapSources(links ? [testSource, linkSource] : [testSource]);
   setPlaceLoader(async (book) => TEST_PLACES[book] ?? []);
 };
 export const forgetTestMaps = (): void => {
