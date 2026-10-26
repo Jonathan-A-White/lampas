@@ -37,7 +37,7 @@ export interface MapsBuildResult {
   bytes: number;
   maps: number;
   byKind: Record<string, number>;
-  /** chapters of the 66 books with a map, and the chapters of the 66 with none */
+  /** the chapters of the 66 books that have a map */
   chaptersWithMaps: number;
   /** the basenames a chapter named and the map list lacks */
   dropped: string[];
