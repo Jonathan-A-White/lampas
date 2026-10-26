@@ -78,8 +78,7 @@ A table opened from a word's sheet carries the word's lemma (`l=` in the address
 forms of that lemma that land in the table, a switch **This word | The pattern** (the chips group 'Forms') appears beside Learn | Drill; the table opens to The pattern, as
 before, and `own=1` in the address is This word. `ParadigmWord` (`src/ParadigmsScreen.tsx`) fetches the lemma's forms (`useLemmaForms`) and lays the table with them (`ownTable`, `src/data/paradigms/ownForms.ts`):
 
-- **The forms** come from `public/lemma-forms/<lemma>.json` (`scripts/build-lemma-forms.mjs`, made from the chapters Lampas loads, so never ahead of or apart from them; one file a lemma, all of
-  them under 4 KB, about 1 MB in all). `{"l": lemma, "f": [[form, RP code, how many times, book, chapter, verse of the first use] ...]}`. They are generated, not committed (`public/lemma-forms` is
+- **The forms** come from `public/lemma-forms/<lemma>.json` (`scripts/build-lemma-forms.mjs`, made from the chapters Lampas loads, so never ahead of or apart from them; one file a lemma, the Greek ones under 4 KB, about 1 MB in all; the Hebrew lemmas of the Old Testament have files too, docs/data.md). `{"l": lemma, "f": [[form, RP code, how many times, book, chapter, verse of the first use] ...]}`. They are generated, not committed (`public/lemma-forms` is
   git-ignored): `npm run build` makes them first, `npm run forms:build` makes them alone (a dev server needs it once); `it is outside `public/data`, whose every file is a chapter. A form is the text's own with its first letter lower-cased
   (a name keeps its capital) and a grave accent turned acute: nothing is ever generated, and tests/unit/own-forms.test.ts checks every form shown against the index and the index against the text. The app asks for a file as
   `/lemma-forms/<lemma>.json?v=<version>`, the version folded from the chapters' fingerprints, so the worker keeps it until some chapter changes. A lemma with no file has no forms.

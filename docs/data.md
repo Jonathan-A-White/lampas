@@ -54,11 +54,14 @@ canonical order; keys are NFC, in alphabetical order. `src/data/lexicon.ts` (`lo
 
 ## `lemma-forms/<lemma>.json` (outside `public/data`)
 
-Generated into `public/lemma-forms/` by `scripts/build-lemma-forms.mjs` (`npm run build`, or `npm run forms:build`) from the chapters above; git-ignored. One file for each of the 5,374 lemmas (about 1 MB in all, the largest, ποιέω, 4 KB), every form of the lemma the text uses:
+Generated into `public/lemma-forms/` by `scripts/build-lemma-forms.mjs` (`npm run build`, or `npm run forms:build`) from the chapters above; git-ignored. One file for each of the 13,202 lemmas of the 66 books, 5,374 Greek (about 1 MB, the largest, ποιέω, 4 KB) and 7,828 Hebrew (about 6.5 MB, the largest, בּוֹא, 70 KB), every form of the lemma the text uses:
 
 ```json
 {"l":"ἀγαπάω","f":[["ἀγαπήσεις","V-FAI-2S",10,"mat",5,43],["ἀγαπῶ","V-PAI-1S",5,"jhn",14,31]]}
 ```
+
+A Hebrew lemma is the TBESH headword the chapter files give each word (`l`), pointed as it stands, so the entries are `["בָּרָ֣א","V-Qal-Perf-3ms",...,"gen",1,1]`: the form is the word's `t` byte for byte (the Greek `ownFormOf`'s lower-casing, acute and NFC would re-order the points and are not applied), the code is the table's own, and a word with no headword (a preposition with its suffix, `l` empty) has no file. The file name is the headword in NFC and `.json` (`lemmaFileName`, pointed Hebrew, a comma, a space or a maqaf in it as they are; a path separator would be an error and no headword has one); the app asks for it with `encodeURIComponent`. A second `npm run forms:build` on an unchanged checkout writes the same bytes (`tests/unit/lemma-forms-hbo.test.ts`). `lexicon-hbo.json` and `frequency-hbo.json` are not in the precache (see Offline): they are fetched on first use.
+
 
 `[form, RP code, count, book, chapter, verse of the first use]`, in the order the text first uses them; the same form with another code is another entry. The form is the text's own, the first letter lower-cased unless the lemma is a name, a grave accent turned acute.
 `src/data/paradigms/ownForms.ts` (`loadLemmaForms`) fetches one on demand for a word's own paradigm (docs/paradigms.md 'This word').
