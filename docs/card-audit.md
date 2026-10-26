@@ -180,3 +180,13 @@ What every card lacked, whatever its verdict, and what this story gave each one 
 | `ou-me` | οὐ μή: a strong no | teaches a beginner | Gave οὐ μὴ παρέλθωσιν; lacked a future verb after it. |
 | `condition` | If: the three conditions | teaches a beginner | Gave ἐάν with the subjunctive; the other two kinds are in the sheet's text, not worked. |
 <!-- audit:end -->
+
+## The Hebrew ladder
+
+The cards of `src/data/grammar/hebrew/ladder.ts` (mw-gdcyf98.9), judged the same way and kept apart from the Greek ones above: every id starts `he-`.
+
+<!-- audit-hbo:begin — the id and title columns are written by `npm run ladder:docs` from src/data/grammar/hebrew/ladder.ts; the verdict and what-a-beginner-lacked columns are by hand -->
+| id | title | verdict | what a beginner lacked |
+| --- | --- | --- | --- |
+| `he-alphabet` | The Hebrew alphabet | teaches a beginner | New with the Hebrew ladder, so no card before it. Teaches the 22 consonants, the right-to-left reading, the end-of-word shapes and two words read letter by letter (אב, שלום); lacks each letter's name and sound (a tile, with the Hebrew pronunciation of a later story) and the vowel marks. |
+<!-- audit-hbo:end -->

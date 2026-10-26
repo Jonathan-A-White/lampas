@@ -17,13 +17,14 @@ import { VERBS } from './verbs';
 export type { Teach, TeachTable, WorkedExample } from './types';
 export { bare, cellOptions, tableHas } from './table';
 
-const TEACH: Readonly<Record<string, Teach>> = { ...LETTERS, ...SOUNDS, ...MARKS, ...NOUNS, ...PRONOUNS, ...PREPOSITIONS_TEACH, ...VERBS, ...JOINERS, ...SENTENCES };
+/** Every Greek card by idea id (ladders.ts reads it through ladderFor('grc').teach). */
+export const GREEK_TEACH: Readonly<Record<string, Teach>> = { ...LETTERS, ...SOUNDS, ...MARKS, ...NOUNS, ...PRONOUNS, ...PREPOSITIONS_TEACH, ...VERBS, ...JOINERS, ...SENTENCES };
 
-for (const id of Object.keys(TEACH)) if (!LADDER.some((i) => i.id === id)) throw new Error(`Teaching for ${JSON.stringify(id)}, which the ladder has not`);
+for (const id of Object.keys(GREEK_TEACH)) if (!LADDER.some((i) => i.id === id)) throw new Error(`Teaching for ${JSON.stringify(id)}, which the ladder has not`);
 
 /** The card's teaching of the idea with this id. Throws on one the cards do not have. */
 export function teachOf(id: string): Teach {
-  const teach = TEACH[id];
+  const teach = GREEK_TEACH[id];
   if (!teach) throw new Error(`No teaching for the grammar idea ${JSON.stringify(id)}`);
   return teach;
 }
