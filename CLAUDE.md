@@ -27,7 +27,7 @@ on a phone, one-handed; Greek type must be large and clear.
 
 ```bash
 npm run dev          # dev server
-npm run build        # tsc -b + vite build -> dist/ (self-contained, root-absolute /assets/...)
+npm run build        # tsc -b + vite build -> dist/ (self-contained)
 npm run preview      # serve dist/ locally
 npm run typecheck    # tsc -b --noEmit, strict
 npm run lint         # eslint (no explicit any)
@@ -42,8 +42,8 @@ npx playwright test  # (npm run test:e2e) all e2e (use --workers=2; `npm run bui
 npm run e2e:live     # the live tests against the DEPLOYED app; not in the gate (docs/commands.md)
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
 npm run ladder:docs  # writes the docs/grammar.md ladder table and the docs/card-audit.md rows from src/data/grammar/ladder.ts (docs/commands.md)
-npm run logos:catalogue -- <csv>  # writes src/resources/catalogue/ from data/logos/catalogue-rules.json and a Logos export; logos:fit prints what the rules leave (docs/commands.md)
-npm run data:build   # also check:step, greek:edition, ladder: data tools, network or slow, not in the gate (docs/commands.md)
+npm run logos:catalogue -- <csv>  # writes src/resources/catalogue/ from a Logos export; logos:fit prints what is left (docs/commands.md)
+npm run data:build   # also check:step, greek:edition, ladder, fixture:chapter: data tools, not in the gate (docs/commands.md)
 ```
 
 ## Adding a grammar idea
@@ -108,7 +108,8 @@ One line per file under `docs/`: open the ones your story touches. `tests/unit/c
 
 ```
 docs/layout/app.md # Layout: the shell, build, manifest, worker, updates and What's new, the bus, appearance, src/ui/, public/
-docs/layout/reader.md # Layout: the Reader: chapter picker and nav, swipe, src/nav/ and links in, chips, Immersive, word sheet, weave
+docs/layout/reader.md # Layout: the Reader: nav, swipe, src/nav/ and links in, chips, Immersive, word sheet, weave, Old Testament
+docs/layout/chapter-picker.md # Layout: the chapter picker, the 66 books
 docs/layout/verse-and-reading.md # Layout: the Verse view (Listen, Quiz me, passages) and Read it aloud, the Reading ladder and drill
 docs/layout/tutor.md # Layout: asking the tutor: the round button, Ask, services/tutor.ts, grinds/, tips, links, Markdown, Hebrew
 docs/layout/talk.md # Layout: the Bible talk: Talk bar and sheet, services/talk.ts, Add to my words, pictures, the bridge, study way
