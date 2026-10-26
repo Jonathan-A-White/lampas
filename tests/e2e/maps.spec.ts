@@ -35,12 +35,16 @@ test('Genesis 10:19 has Maps · 6; the sheet groups the maps; a map opens with i
   await door.click();
   const sheet = page.getByRole('dialog', { name: 'Maps for Genesis 10:19' });
   await expect(sheet).toBeVisible();
-  await expect(sheet.getByRole('group').evaluateAll((groups) => groups.map((g) => g.getAttribute('aria-label')))).resolves.toEqual(['Events', 'Regions']);
+  // the places the verse names rank the maps (mw-zbjgn3r.3): the maps that show them first, the rest under In this chapter
+  await expect(sheet.locator('h3')).toHaveText(['For this verse', 'In this chapter']);
+  await expect(sheet.locator('[data-maps-part="verse"] [data-map-row]').first().locator('[data-map-matched]')).toHaveText('Sodom, Gomorrah, Admah, Zeboiim');
+  await expect(sheet.getByRole('group').evaluateAll((groups) => groups.map((g) => g.getAttribute('aria-label')))).resolves.toEqual(['Regions']);
   const rows = sheet.locator('[data-map-row]');
   expect(await rows.count()).toBe(6);
   for (let i = 0; i < 6; i++) expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
   const sodom = sheet.getByRole('button', { name: /Sodom and Gomorrah Are Destroyed/ });
   await expect(sodom.locator('[data-map-period]')).toHaveText('2100 to 2090 BC');
+  await expect(sodom).toContainText('2100 to 2090 BC · Sodom, Gomorrah, Admah, Zeboiim');
   await shot(page, 'maps-sheet');
   expect(asked, 'nothing is fetched until a map is opened').toEqual([]);
 
