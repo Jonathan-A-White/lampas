@@ -18,8 +18,9 @@ export type VerseAction = (typeof VERSE_ACTIONS)[number]['id'];
  * sent to the mill (the verse-read grist). */
 const AI_ACTIONS: readonly VerseAction[] = ['read', 'ask', 'quiz', 'diagram'];
 
-/** The actions that need the verse's source language taught (mw-uqlxea.3): Quiz me asks about the Greek and Diagram draws its words. Until the Hebrew epic an Old Testament ('hbo')
- * verse, which is read in English, is not offered them. The others (Listen, Read it aloud, Ask the tutor) work on the English. */
+/** The actions that need the verse's source language taught (mw-uqlxea.3): Quiz me asks about the Greek and Diagram draws its words. An Old Testament ('hbo') verse is not offered them
+ * (mw-5vvlay.3): Quiz me is the Talk sheet's quiz, written in the Greek ladder's terms, and the drill-items grind it would use takes Greek grammar ideas and Greek words (docs/hebrew.md says what a
+ * Hebrew quiz would need). The others (Listen, Read it aloud, Ask the tutor) work on the English, and Ask the tutor also sends the Hebrew (src/services/hebrewWords.ts). */
 const SOURCE_ACTIONS: readonly VerseAction[] = ['quiz', 'diagram'];
 
 /** The actions the Verse view offers: all of them with a licence, only Listen without; the source language's own (Quiz me, Diagram) only for a chapter read in Greek, chosen by `lang`, not by the view. */

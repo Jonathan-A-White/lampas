@@ -1,6 +1,6 @@
 // src/speech/hebrewPronunciation.ts — how Hebrew is spoken, as a registry like the Greek's (src/speech/pronunciation.ts): another way to say it is one more file in ./schemes/
 // plus one line in HEBREW_PRONUNCIATIONS below. Israeli is the only scheme for now and nothing outside this registry names it. docs/pronunciation.md says how to add one.
-import { ISRAELI } from './schemes/hebrew-israeli';
+import { ISRAELI, stripCantillation } from './schemes/hebrew-israeli';
 
 /** The id of a scheme in the registry. */
 export type HebrewPronunciationId = string;
@@ -28,3 +28,6 @@ export function hebrewPronunciationOf(id?: HebrewPronunciationId): HebrewPronunc
 
 /** What the voice is handed for Hebrew `text`, in the chosen scheme (there is no setting to choose another yet: the default's). */
 export const hebrewVoiceForm = (text: string): string => hebrewPronunciationOf(DEFAULT_HEBREW_PRONUNCIATION).voiceForm(text);
+
+/** Hebrew `text` as the tutor is handed it: pointed, with the cantillation marks (which a voice cannot say and a question about a word does not need) taken off, so a word list weighs less. */
+export const hebrewPointedForm = (text: string): string => stripCantillation(text);

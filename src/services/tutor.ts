@@ -13,9 +13,11 @@ import type { MemoryField } from '../data/learnerMemory';
 import type { TutorRequest } from '../data/requestsForTutor';
 import type { RustyItem } from '../data/rusty';
 import { trimWorks, type TutorWork } from '../resources/tutorLinks';
+import { hebrewPointedForm } from '../speech/hebrewPronunciation';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
+import { hebrewWordsFitting, type HebrewWordEntry } from './hebrewWords';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { TALK_KINDS, type GristKind } from './gristKinds';
@@ -166,6 +168,10 @@ export interface VerseAskRequest {
   english: string;
   /** each distinct Greek word of `greek` with its lemma, gloss, parsing and the app's respelling, syllables and stress, as the Bible talk is sent it (src/services/greekWords.ts, mw-5r3p30.643): a typed "how do I say it?" reads the syllables from here, never counts */
   greek_words?: GreekWordEntry[];
+  /** an Old Testament ('hbo') verse only (mw-5vvlay.3): the verse in Hebrew, pointed, cantillation off, in Hebrew word order (`greek` is then empty) */
+  hebrew?: string;
+  /** with `hebrew`: each distinct Hebrew word with its lemma, transliteration, gloss and parsing in plain words (src/services/hebrewWords.ts), the Hebrew counterpart of `greek_words` */
+  hebrew_words?: HebrewWordEntry[];
   question: string;
   /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
   spoken?: true;
@@ -240,7 +246,7 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
 }
 
 export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[], chapter: Chapter = NO_CHAPTER, works: TutorWork[] = []): VerseAskRequest {
-  // An Old Testament verse (mw-uqlxea.3) is asked about in English: its Hebrew words are not sent as the Greek of the verse, and no Greek word entries go with it.
+  // An Old Testament verse (mw-uqlxea.3) has no Greek: `greek` stays empty and its Hebrew goes in `hebrew` and `hebrew_words` (mw-5vvlay.3), the English as ever.
   const hebrew = sourceLanguage(chapter) !== 'grc';
   const request: VerseAskRequest = {
     reference,
@@ -262,7 +268,10 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(works.length > 0 ? { works } : {}),
   };
   // the words of the verse weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule, src/services/talk.ts)
-  if (hebrew) return request;
+  if (hebrew) {
+    const withText = { ...request, hebrew: verse.g.map((w) => hebrewPointedForm(w.t)).join(' ') };
+    return { ...withText, hebrew_words: hebrewWordsFitting(chapter, [verse], request.question, new TextEncoder().encode(JSON.stringify(withText)).length) };
+  }
   return { ...request, greek_words: greekWordsFitting(chapter, [verse], request.question, pronunciation, new TextEncoder().encode(JSON.stringify(request)).length) };
 }
 
@@ -493,18 +502,22 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   let requests = request.requests;
   let notes = request.memory?.notes;
   let words = request.greek_words;
+  let hebrewWords = request.hebrew_words;
   let works = request.works;
-  let text = { greek: request.greek, english: request.english };
+  // an Old Testament verse's Hebrew is clipped like a Greek verse's, in the Greek slot of the pair
+  const isHebrew = request.hebrew !== undefined;
+  let text = { greek: request.hebrew ?? request.greek, english: request.english };
   let catalogue = request.catalogue;
   let facts = request.facts;
   const fitted = (): VerseAskRequest => ({
     ...request,
     ...(catalogue ? { catalogue } : {}),
     ...(facts ? { facts } : {}),
-    ...text,
+    ...(isHebrew ? { hebrew: text.greek, english: text.english } : text),
     pronunciation_guide: guide,
     solid_words: solid,
     ...(words ? { greek_words: words } : {}),
+    ...(hebrewWords ? { hebrew_words: hebrewWords } : {}),
     ...(works && works.length > 0 ? { works } : { works: undefined }),
     ...(requests ? { requests } : {}),
     ...(request.memory && notes ? { memory: { ...request.memory, notes } } : {}),
@@ -519,6 +532,7 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   guide = undefined;
   while (solid.length > 0 && tooBig()) solid = solid.slice(1);
   while (words && words.length > 0 && tooBig()) words = words.slice(0, -1);
+  while (hebrewWords && hebrewWords.length > 0 && tooBig()) hebrewWords = hebrewWords.slice(0, -1);
   while (works && works.length > 0 && tooBig()) works = trimWorks(works);
   while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
   while (notes && notes.length > 0 && tooBig()) notes = notes.slice(0, -1);

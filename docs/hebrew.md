@@ -63,4 +63,22 @@ Like the Greek view it shows from the Greek dial's Curious step up (`viewAt`).
 - **Speech**: a long press on a Hebrew word says it (`speakWord(text, 'hebrew')`); Read from the top, a verse's play button and the weave read Hebrew pieces (`runsOf`) in the phone's he-IL voice, the weave in each
   piece's own language. The text is handed to the voice through the Hebrew pronunciation registry's one scheme, **Israeli** (docs/pronunciation.md): as written, pointed, with the cantillation marks taken off. A phone with
   no he-IL voice says nothing for a long press and shows 'No Hebrew voice on this phone' on the reading bar.
-- Not yet: the Verse view of an Old Testament verse stays English, and the paradigms, the Help with this word row and the quizzes of a Hebrew word are later stories of the epic.
+- Not yet: the paradigms, the Help with this word row and the quizzes of a Hebrew word are later stories of the epic.
+
+## The tutor and a Hebrew verse (mw-5vvlay.3)
+
+**Ask the tutor** on a verse of an 'hbo' chapter (the Verse view's action, the `verse-ask` grind) sends the Hebrew as it sends a Greek verse's Greek. `buildRequest` (`src/services/tutor.ts`) chooses by `sourceLanguage(chapter)`:
+
+| field | Greek verse | Hebrew verse |
+| --- | --- | --- |
+| `greek` | the verse's Greek | `''` |
+| `greek_words` | `{form, lemma, gloss, parse, respelling, syllables, stress}` (`greekWords.ts`) | missing |
+| `hebrew` | missing | the verse pointed, cantillation off (`hebrewPointedForm`, the Hebrew registry), reading order |
+| `hebrew_words` | missing | `{form, lemma?, translit?, gloss?, parse}` (`src/services/hebrewWords.ts`): `l` the TBESH headword, `tr` the table's transliteration, the gloss from `lex`, the parsing in plain words from `parse` (its code when the file has none); a repeat with the same form, lemma and parsing once |
+| `english` | the MSB, supplied words in asterisks | the same (the BSB) |
+
+The word list is cut like the Greek one (`HEBREW_WORDS_BYTES` 5,600 and what the record leaves under `MAX_REQUEST_BYTES`; a word the question names, up to five, is always kept; `fitAsk` drops words from the end, then clips a passage's `hebrew` from its end like `greek`). Jonah 1:10 weighs about 4.5 KB. The word entries carry no respelling or syllables: the one Hebrew scheme (Israeli) is spoken by the phone's he-IL voice and the tutor writes a word's syllables itself (`tests/unit/hebrew-tutor-context.test.ts`).
+
+The instructions: `grinds/verse-ask.instructions/055-a-verse-of-the-old-testament.md` (the contract in `010`) says what the tutor knows (the WLC pointed text, TBESH glosses, the parsing in plain words, modern Israeli speech when asked to say a word, that the Reader's Hebrew view and weave show the words), that `words` stays empty (its schema is Greek) and that no Greek is quoted. The example is `grinds/examples/verse-ask/hebrew-verse.json` (Jonah 1:17, "What does the Hebrew say for fish?"). **The Bible talk (`bible-talk` grind) is not given a Hebrew verse yet**: the Verse view's "Talk about verse N" button stays Greek-only, so its instructions (99,463 of 99,500 bytes at this story) gain no Hebrew part; the day the Talk sheet opens on an Old Testament verse it needs its own part, or the Hebrew rules moved into a file both grinds load.
+
+**Quiz me is not offered** for an 'hbo' verse (`actionsFor`, `src/verse/action.ts`): it opens the Talk sheet's quiz (the `bible-talk` grind's quiz mode), and the `drill-items` grind (`grinds/drill-items.instructions.md`) is a background writer of Greek questions for grammar *ideas* of the ladder from `verses` of Greek words. A Hebrew quiz would need: a Hebrew idea ladder (the idea ids, `what` paragraphs and `uses` are Greek-grammar), instructions and input schema that name the Hebrew words (`greek` → `hebrew`, `tap-form` on pointed forms with the maqaf and prefixes as one word) and a Hebrew parsing glossary, and the Talk sheet quiz opened on an Old Testament place. Diagram stays out for the same reason. With no licence an Old Testament verse offers only Listen, like a New Testament one (`features/ai-needs-licence.feature`, `tests/unit/mill-gate.test.ts`).
