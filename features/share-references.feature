@@ -1,6 +1,6 @@
 Feature: Share to Lampas lists the Bible references in the shared words
   Words shared to Lampas (a page of a book, a message) are searched for Bible references: 'Gen. 1:28 ESV', 'Rom 8:28-30', '1 John 1:1', 'Ps 23'. The sheet
-  'Share to Lampas' shows them under 'Bible references (N)', each as it was printed and each a link that opens the verse's card over the list (the verses in the view he reads in, English, Weave or Greek; the Old Testament's card says 'Not in Lampas yet')
+  'Share to Lampas' shows them under 'Bible references (N)', each as it was printed and each a link that opens the verse's card over the list (the verses in the view he reads in, English, Weave or Greek; an Old Testament one in English; mw-uqlxea.3)
   and the card's Open goes to the Reader, the chapter with the verse at the top (a range at its first verse), never the Verse view. They are in the order of the page by default, a reference named twice at its first place with '×2'; a switch 'Page order' | 'Bible order' puts them
   in Bible order under each book, and his choice is kept for the next share. Words with none say 'No Bible references found'. The finder is
   tests/unit/refs-in-text.test.ts.
@@ -23,20 +23,19 @@ Feature: Share to Lampas lists the Bible references in the shared words
     Then the Reader is open at Romans 8 with verse 28 brought to the top
     And no verse is selected
 
-  Scenario: An Old Testament reference opens the not-in-Lampas card, not another chapter
+  Scenario: An Old Testament reference opens a card with its English, not another chapter
     Given the Share screen is opened with a share of the words "God said (Gen. 1:28 ESV) be fruitful."
     When he taps the link "Gen. 1:28"
-    Then a card headed "Genesis 1:28" says "Not in Lampas yet"
+    Then a card headed "Genesis 1:28" says "God blessed them and said to them"
     And the Reader is not opened
     When he closes the card
     Then the sheet shows the link "Gen. 1:28" again
 
-  Scenario: With Logos on, the card for an Old Testament reference offers Open in Logos
+  Scenario: The card for an Old Testament reference has Open, which goes to the Reader, as a New Testament one does
     Given the Share screen is opened with a share of the words "God said (Gen. 1:28 ESV) be fruitful."
-    And Logos is linked and his Bible is the LSB
     When he taps the link "Gen. 1:28"
-    Then a card headed "Genesis 1:28" says "Not in Lampas yet"
-    And the card has an Open in Logos link
+    Then a card headed "Genesis 1:28" says "God blessed them and said to them"
+    And the card has an Open button and no Open in Logos link
 
   Scenario: The references keep the order of the page, a repeat at its first place
     Given the Share screen is opened with a share of the words "Rom 8:28 ... Gen 1:28 ... Rom 8:28 ... Rom 1:16"
@@ -104,7 +103,7 @@ Feature: Share to Lampas lists the Bible references in the shared words
   Scenario: Going back from the card of an Old Testament reference sends no second grist
     Given the Share screen is opened with a shared picture, read at once with the reference "Gen. 1:28" at "Gen.1.28"
     When he taps the link "Gen. 1:28"
-    Then a card headed "Genesis 1:28" says "Not in Lampas yet"
+    Then a card headed "Genesis 1:28" says "God blessed them and said to them"
     When he goes Back
     Then the sheet "Genesis 1:28" is not there
     And the sheet shows the link "Gen. 1:28" again

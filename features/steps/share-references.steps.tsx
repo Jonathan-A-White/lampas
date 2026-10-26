@@ -10,8 +10,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { listVerseLists, parkShare, setLogosBible, setResourceOn } from '../../src/data/repositories';
-import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
+import { listVerseLists, parkShare } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { imageSeam } from '../../src/images/shrink';
 import { tutorTimings } from '../../src/services/tutor';
@@ -151,14 +150,15 @@ describeFeature(feature, ({ Scenario }) => {
 
   const card = () => screen.getByRole('dialog', { name: 'Genesis 1:28' });
 
-  Scenario('An Old Testament reference opens the not-in-Lampas card, not another chapter', ({ Given, When, Then, And }) => {
+  Scenario('An Old Testament reference opens a card with its English, not another chapter', ({ Given, When, Then, And }) => {
     Given('the Share screen is opened with a share of the words {string}', sharedWords);
     When('he taps the link {string}', async (_, name: string) => {
       await user.click(linkNamed(name));
     });
     Then('a card headed {string} says {string}', async (_, heading: string, line: string) => {
       const dialog = await screen.findByRole('dialog', { name: heading });
-      expect(await within(dialog).findByText(new RegExp(line))).toBeInTheDocument();
+      // an English verse is drawn in chunks, so the text is read from the passage whole
+      await waitFor(() => expect((dialog.textContent ?? '').replace(/\s+/g, ' ')).toMatch(new RegExp(line)));
     });
     And('the Reader is not opened', () => {
       expect(window.location.hash).toContain('/share');
@@ -174,21 +174,19 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('With Logos on, the card for an Old Testament reference offers Open in Logos', ({ Given, When, Then, And }) => {
+  Scenario('The card for an Old Testament reference has Open, which goes to the Reader, as a New Testament one does', ({ Given, When, Then, And }) => {
     Given('the Share screen is opened with a share of the words {string}', sharedWords);
-    And('Logos is linked and his Bible is the LSB', async () => {
-      await setResourceOn('logos', true);
-      await setLogosBible(DEFAULT_LOGOS_BIBLE);
-    });
     When('he taps the link {string}', async (_, name: string) => {
       await user.click(linkNamed(name));
     });
     Then('a card headed {string} says {string}', async (_, heading: string, line: string) => {
       const dialog = await screen.findByRole('dialog', { name: heading });
-      expect(await within(dialog).findByText(new RegExp(line))).toBeInTheDocument();
+      // an English verse is drawn in chunks, so the text is read from the passage whole
+      await waitFor(() => expect((dialog.textContent ?? '').replace(/\s+/g, ' ')).toMatch(new RegExp(line)));
     });
-    And('the card has an Open in Logos link', async () => {
-      expect(await within(card()).findByRole('link', { name: 'Open in Logos' })).toBeInTheDocument();
+    And('the card has an Open button and no Open in Logos link', async () => {
+      expect(await within(card()).findByRole('button', { name: 'Open' })).toBeInTheDocument();
+      expect(within(card()).queryByRole('link', { name: 'Open in Logos' })).toBeNull();
     });
   });
 
@@ -349,7 +347,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('a card headed {string} says {string}', async (_, heading: string, line: string) => {
       const dialog = await screen.findByRole('dialog', { name: heading });
-      expect(await within(dialog).findByText(new RegExp(line))).toBeInTheDocument();
+      // an English verse is drawn in chunks, so the text is read from the passage whole
+      await waitFor(() => expect((dialog.textContent ?? '').replace(/\s+/g, ' ')).toMatch(new RegExp(line)));
     });
     When('he goes Back', async () => {
       window.history.back();

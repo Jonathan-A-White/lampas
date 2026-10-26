@@ -1,5 +1,5 @@
 // tests/e2e/share-refs-popup.spec.ts — a reference on the Share to Lampas list opens the usual pop-up over the list (mw-5r3p30.697), at 390x844: the
-// verses in the mode he reads in (English, Weave or Greek), the Old Testament's 'Not in Lampas yet' card, and Open, which lands on the Reader at the
+// verses in the mode he reads in (English, Weave or Greek), an Old Testament verse's English card, and Open, which lands on the Reader at the
 // verse's chapter with the verse at the top (not the one-verse screen); Back returns to the list.
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -43,7 +43,7 @@ async function openShare(page: Page): Promise<void> {
   await expect(page.getByRole('dialog', { name: 'Share to Lampas' })).toBeVisible();
 }
 
-test('each reference opens its pop-up over the list, the Old Testament one says Not in Lampas yet, and Open lands on the Reader at the verse', async ({ page }) => {
+test('each reference opens its pop-up over the list, the Old Testament one shows its English, and Open lands on the Reader at the verse', async ({ page }) => {
   await openShare(page);
   const sheet = page.getByRole('dialog', { name: 'Share to Lampas' });
   const rom = sheet.getByRole('link', { name: 'Rom. 8:28', exact: true });
@@ -76,8 +76,8 @@ test('each reference opens its pop-up over the list, the Old Testament one says 
   // the Old Testament one
   await gen.tap();
   const old = page.getByRole('dialog', { name: 'Genesis 1:28', exact: true });
-  await expect(old.getByText('Not in Lampas yet')).toBeVisible();
-  await expect(old.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0);
+  await expect(old.locator('[data-reference-text]')).toContainText('God blessed them and said to them');
+  await expect(old.getByRole('button', { name: 'Open', exact: true })).toHaveCount(1);
   await old.getByRole('button', { name: 'Close', exact: true }).tap();
   await expect(old).toBeHidden();
 

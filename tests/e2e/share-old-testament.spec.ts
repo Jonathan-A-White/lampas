@@ -1,6 +1,6 @@
 // tests/e2e/share-old-testament.spec.ts — an Old Testament reference on the Share to Lampas list (mw-s1dc0n.7), at 390x844: a tap on 'Gen. 1:28' opens the
-// 'Not in Lampas yet' card the tutor's references open, headed 'Genesis 1:28', not Romans 8 with a notice; Back returns to the list; with Logos on the card
-// has Open in Logos (features/share-references.feature).
+// card the New Testament's references open, headed 'Genesis 1:28' and holding its English (mw-uqlxea.3), not Romans 8 with a notice; Back returns to the list; with Logos on the card
+// still has Open, which goes to the Reader, and no Open in Logos (features/share-references.feature).
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -36,7 +36,7 @@ async function openShare(page: Page): Promise<void> {
   await expect(page.getByRole('dialog', { name: 'Share to Lampas' })).toBeVisible();
 }
 
-test('Gen. 1:28 opens the Not in Lampas yet card, not Romans 8, and Back returns to the list', async ({ page }) => {
+test('Gen. 1:28 opens the card with its English, not Romans 8, and Back returns to the list', async ({ page }) => {
   await openShare(page);
   const link = page.getByRole('link', { name: 'Gen. 1:28', exact: true });
   const before = new URL(page.url()).hash;
@@ -44,7 +44,7 @@ test('Gen. 1:28 opens the Not in Lampas yet card, not Romans 8, and Back returns
 
   const card = page.getByRole('dialog', { name: 'Genesis 1:28', exact: true });
   await expect(card).toBeVisible();
-  await expect(card.getByText('Not in Lampas yet')).toBeVisible();
+  await expect(card.locator('[data-reference-text]')).toContainText('God blessed them and said to them');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toHaveCount(0);
   await expect(page.locator('[data-link-notice]')).toHaveCount(0);
   expect(new URL(page.url()).hash).toBe(before);
@@ -59,7 +59,7 @@ test('Gen. 1:28 opens the Not in Lampas yet card, not Romans 8, and Back returns
   await expect(link).toBeVisible();
 });
 
-test('with Logos on the card offers Open in Logos', async ({ page }) => {
+test('with Logos on the card has Open, which goes to the Reader, and no Open in Logos', async ({ page }) => {
   await openShare(page);
   await page.evaluate(
     () =>
@@ -81,5 +81,6 @@ test('with Logos on the card offers Open in Logos', async ({ page }) => {
   await page.reload();
   await page.getByRole('link', { name: 'Gen. 1:28', exact: true }).tap();
   const card = page.getByRole('dialog', { name: 'Genesis 1:28', exact: true });
-  await expect(card.getByRole('link', { name: 'Open in Logos' })).toBeVisible();
+  await expect(card.getByRole('button', { name: 'Open', exact: true })).toBeVisible();
+  await expect(card.getByRole('link', { name: 'Open in Logos' })).toHaveCount(0);
 });
