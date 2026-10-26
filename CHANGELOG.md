@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.16
+_2026-10-26_
+- New: Your Logos library now opens several hundred more of your New Testament commentaries (every series in your list) from Lampas, searchable, at the verse you are reading.
+
 ## 0.2.14
 _2026-10-25_
 - Fixed: The Library now lists all your Lenski, Baker, Pillar and NIGTC commentaries (and your interlinears and more Bibles), and its search says "commentaries" properly.
