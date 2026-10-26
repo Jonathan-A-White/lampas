@@ -1,0 +1,486 @@
+{
+  "Title": "Bible Mapper Atlas Maps",
+  "LastUpdated": "2022-10-22",
+  "Maps": [
+    {
+      "start": "60",
+      "end": "60",
+      "title": "Audio-Visual Reading of Acts 27",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2025/08/25/audio-visual-reading-of-acts-27/",
+      "type": "video",
+      "basename": "Acts_27",
+      "fileVideo": "Acts_27.mp4"
+    },
+    {
+      "title": "Ararat",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2021/08/23/ararat/",
+      "type": "region",
+      "basename": "Ararat",
+      "images": [
+        {
+          "fileLowRes": "Ararat_low.jpg",
+          "fileMediumRes": "Ararat.jpg",
+          "fileHighRes": "Ararat_high.jpg",
+          "width": "6.63541666666667",
+          "locationIDs": {
+            "294": "Calah",
+            "305": "Carchemish",
+            "479": "Gozan",
+            "668": "Melidu",
+            "727": "Nineveh",
+            "951": "Trapezus",
+            "959": "Tushpa",
+            "1018": "Euphrates River",
+            "1019": "Tigris River",
+            "1020": "Araxes River",
+            "1038": "Black Sea"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Tribe of Benjamin",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2021/10/11/the-tribe-of-benjamin/",
+      "type": "region",
+      "basename": "Benjamin",
+      "images": [
+        {
+          "fileLowRes": "Benjamin_low.jpg",
+          "fileMediumRes": "Benjamin.jpg",
+          "fileHighRes": "Benjamin_high.jpg",
+          "width": "7",
+          "locationIDs": {
+            "114": "Ai? [Kh. al-Maqatir]",
+            "138": "Anathoth",
+            "197": "Ataroth-addar?",
+            "210": "Baal-hazor",
+            "236": "Beth-arabah?",
+            "238": "Beth-aven?",
+            "248": "Beth-hoglah",
+            "249": "Beth-horon (Lower)",
+            "250": "Beth-horon (Upper)",
+            "264": "Bethlehem",
+            "349": "Debir? (Josh 15:7; 18:17)",
+            "404": "En-rogel",
+            "405": "En-shemesh",
+            "444": "Geba",
+            "460": "Gibeah",
+            "462": "Gibeon",
+            "464": "Gilgal? (Josh 15:7; 18:17)",
+            "465": "Gilgal?",
+            "549": "Jebus",
+            "551": "Jericho (OT)",
+            "580": "Kephirah",
+            "592": "Kiriath-jearim",
+            "681": "Michmash",
+            "691": "Mizpah",
+            "695": "Mozah?",
+            "699": "Naarah?",
+            "718": "Nephtoah",
+            "721": "Netophah",
+            "744": "Ophrah",
+            "805": "Ramah",
+            "1003": "Jordan River",
+            "1033": "Dead Sea",
+            "1069": "Zelzah?",
+            "1071": "Stone of Bohan?",
+            "1080": "Bethel [al-Bira]",
+            "1081": "Beeroth?",
+            "1119": "Jeshanah"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Hebrew Calendar, Festivals, and Seasonal Activities",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/calendar",
+      "type": "region",
+      "basename": "Calendar",
+      "images": [
+        {
+          "fileLowRes": "Calendar_low.jpg",
+          "fileMediumRes": "Calendar.jpg",
+          "fileHighRes": "Calendar_high.jpg",
+          "width": "7",
+          "locationIDs": {}
+        }
+      ]
+    },
+    {
+      "title": "Carthage, Italy, and Nearby Islands",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2020/04/17/carthage-italy-and-nearby-islands/",
+      "type": "region",
+      "basename": "CarthageMaltaSicily",
+      "images": [
+        {
+          "fileLowRes": "CarthageMaltaSicily_low.jpg",
+          "fileMediumRes": "CarthageMaltaSicily.jpg",
+          "fileHighRes": "CarthageMaltaSicily_high.jpg",
+          "width": "6.875",
+          "locationIDs": {
+            "307": "Carthage",
+            "482": "Hadrumetum",
+            "553": "Jerusalem",
+            "620": "Leptis Magna",
+            "677": "Messana",
+            "737": "Oea",
+            "796": "Puteoli",
+            "819": "Rhegium",
+            "827": "Rome",
+            "894": "Syracuse",
+            "967": "Utica"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Crete, Cyrene, and Syrtis",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2020/03/19/crete-cyrene-and-syrtis/",
+      "type": "region",
+      "basename": "CreteCyreneSyrtis",
+      "images": [
+        {
+          "fileLowRes": "CreteCyreneSyrtis_low.jpg",
+          "fileMediumRes": "CreteCyreneSyrtis.jpg",
+          "fileHighRes": "CreteCyreneSyrtis_high.jpg",
+          "width": "6.60416666666667",
+          "locationIDs": {
+            "340": "Cyrene",
+            "425": "Fair Havens",
+            "478": "Gortyna",
+            "553": "Jerusalem",
+            "598": "Knossos",
+            "611": "Lasea",
+            "779": "Phoenix",
+            "1047": "Syrtis Minor"
+          }
+        }
+      ]
+    },
+    {
+      "start": "-0586",
+      "end": "-0586",
+      "title": "Judah Is Exiled to Babylon",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2023/09/02/judah-is-exiled-to-babylon/",
+      "type": "event",
+      "basename": "ExileToBabylon",
+      "images": [
+        {
+          "fileLowRes": "ExileToBabylon_low.jpg",
+          "fileMediumRes": "ExileToBabylon.jpg",
+          "fileHighRes": "ExileToBabylon_high.jpg",
+          "width": "7.5",
+          "locationIDs": {
+            "123": "Aleppo",
+            "211": "Babylon",
+            "305": "Carchemish",
+            "343": "Damascus",
+            "350": "Dedan",
+            "368": "Dumah",
+            "376": "Ecbatana",
+            "446": "Gebal",
+            "479": "Gozan",
+            "491": "Haran",
+            "553": "Jerusalem",
+            "668": "Melidu",
+            "671": "Memphis",
+            "727": "Nineveh",
+            "728": "Nippur",
+            "746": "Opis",
+            "793": "Pteria",
+            "823": "Riblah",
+            "890": "Susa",
+            "898": "Tadmor",
+            "909": "Tarsus",
+            "916": "Tema",
+            "917": "Teman?",
+            "927": "Thebes",
+            "959": "Tushpa",
+            "961": "Tyre",
+            "965": "Ur",
+            "980": "Yathrib",
+            "1007": "Nile River",
+            "1018": "Euphrates River",
+            "1019": "Tigris River"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lycia and Pamphylia",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2021/07/12/lycia-and-pamphylia/",
+      "type": "region",
+      "basename": "LyciaPamphylia",
+      "images": [
+        {
+          "fileLowRes": "LyciaPamphylia_low.jpg",
+          "fileMediumRes": "LyciaPamphylia.jpg",
+          "fileHighRes": "LyciaPamphylia_high.jpg",
+          "width": "8.09375",
+          "locationIDs": {
+            "145": "Antioch (Pisidia)",
+            "148": "Apamea",
+            "152": "Aphrodisias",
+            "192": "Aspendus",
+            "202": "Attalia",
+            "328": "Colosse",
+            "514": "Hierapolis",
+            "606": "Laodicea",
+            "698": "Myra",
+            "756": "Patara",
+            "764": "Perga",
+            "775": "Philadelphia",
+            "822": "Rhodes",
+            "869": "Side",
+            "915": "Telmessos",
+            "919": "Termessos",
+            "978": "Xanthus"
+          }
+        }
+      ]
+    },
+    {
+      "start": "0060",
+      "end": "0060",
+      "title": "Paul Travels from Malta to Rome",
+      "durationEvent": true,
+      "bloglink": "https://biblemapper.com/blog/index.php/2021/10/18/paul-travels-from-malta-to-rome/",
+      "type": "event",
+      "basename": "MaltaSicilyItaly",
+      "images": [
+        {
+          "fileLowRes": "MaltaSicilyItaly_low.jpg",
+          "fileMediumRes": "MaltaSicilyItaly.jpg",
+          "fileHighRes": "MaltaSicilyItaly_high.jpg",
+          "width": "6",
+          "locationIDs": {
+            "217": "Barium",
+            "303": "Capuae",
+            "430": "Forum of Appius",
+            "450": "Gela",
+            "516": "Himera",
+            "625": "Locris",
+            "677": "Messana",
+            "787": "Pompeii",
+            "796": "Puteoli",
+            "819": "Rhegium",
+            "827": "Rome",
+            "845": "Segesta",
+            "894": "Syracuse",
+            "905": "Tarentum",
+            "933": "Three Taverns",
+            "971": "Venusia",
+            "1048": "Mount Aetna",
+            "1065": "Mount Vesuvius"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Mesopotamia",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2020/03/14/mesopotamia/",
+      "type": "region",
+      "basename": "Mesopotamia",
+      "images": [
+        {
+          "fileLowRes": "Mesopotamia_low.jpg",
+          "fileMediumRes": "Mesopotamia.jpg",
+          "fileHighRes": "Mesopotamia_high.jpg",
+          "width": "6.57291666666667",
+          "locationIDs": {
+            "193": "Asshur",
+            "211": "Babylon",
+            "305": "Carchemish",
+            "343": "Damascus",
+            "376": "Ecbatana",
+            "491": "Haran",
+            "553": "Jerusalem",
+            "727": "Nineveh",
+            "890": "Susa",
+            "965": "Ur",
+            "1018": "Euphrates River",
+            "1019": "Tigris River"
+          }
+        }
+      ]
+    },
+    {
+      "start": "0060",
+      "end": "0060",
+      "title": "Paul’s Voyage to Rome",
+      "durationEvent": true,
+      "bloglink": "https://biblemapper.com/blog/index.php/2021/05/24/pauls-voyage-to-rome/",
+      "type": "event",
+      "basename": "PaulsVoyageToRome",
+      "images": [
+        {
+          "fileLowRes": "PaulsVoyageToRome_low.jpg",
+          "fileMediumRes": "PaulsVoyageToRome.jpg",
+          "fileHighRes": "PaulsVoyageToRome_high.jpg",
+          "width": "7.875",
+          "locationIDs": {
+            "109": "Adramyttium",
+            "125": "Alexandria",
+            "144": "Antioch (Syria)",
+            "200": "Athens",
+            "291": "Caesarea",
+            "326": "Cnidus",
+            "332": "Corinth",
+            "340": "Cyrene",
+            "408": "Ephesus",
+            "425": "Fair Havens",
+            "430": "Forum of Appius",
+            "525": "Iconium",
+            "553": "Jerusalem",
+            "611": "Lasea",
+            "698": "Myra",
+            "726": "Nicopolis",
+            "777": "Philippi",
+            "779": "Phoenix",
+            "796": "Puteoli",
+            "819": "Rhegium",
+            "827": "Rome",
+            "870": "Sidon",
+            "894": "Syracuse",
+            "931": "Thessalonica",
+            "1047": "Syrtis Minor"
+          }
+        }
+      ]
+    },
+    {
+      "start": "-2100",
+      "end": "-2090",
+      "title": "Sodom and Gomorrah Are Destroyed",
+      "durationEvent": true,
+      "bloglink": "https://biblemapper.com/blog/index.php/2024/05/11/sodom-and-gomorrah-are-destroyed/",
+      "type": "event",
+      "basename": "SodomAndGomorrah",
+      "images": [
+        {
+          "fileLowRes": "SodomAndGomorrah_low.jpg",
+          "fileMediumRes": "SodomAndGomorrah.jpg",
+          "fileHighRes": "SodomAndGomorrah_high.jpg",
+          "width": "6",
+          "locationIDs": {
+            "106": "Admah?",
+            "162": "Arad",
+            "402": "Hazazon-tamar? (En-gedi)",
+            "475": "Gomorrah?",
+            "497": "Hebron",
+            "551": "Jericho (OT)",
+            "553": "Jerusalem",
+            "649": "Mamre",
+            "861": "Shechem",
+            "880": "Sodom?",
+            "990": "Zeboiim?",
+            "1001": "Zoar",
+            "1033": "Dead Sea",
+            "1080": "Bethel [al-Bira]"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Table of Nations: Ham’s Descendants",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2022/08/08/table-of-nations-hams-descendants/",
+      "type": "region",
+      "basename": "TableOfNationsHam",
+      "images": [
+        {
+          "fileLowRes": "TableOfNationsHam_low.jpg",
+          "fileMediumRes": "TableOfNationsHam.jpg",
+          "fileHighRes": "TableOfNationsHam_high.jpg",
+          "width": "7.01041666666667",
+          "locationIDs": {
+            "168": "Arka",
+            "182": "Arvad",
+            "193": "Asshur",
+            "211": "Babylon",
+            "294": "Calah",
+            "413": "Erech",
+            "453": "Gerar?",
+            "497": "Hebron",
+            "551": "Jericho (OT)",
+            "671": "Memphis",
+            "674": "Meroë",
+            "727": "Nineveh",
+            "861": "Shechem",
+            "870": "Sidon",
+            "880": "Sodom?",
+            "927": "Thebes",
+            "980": "Yathrib",
+            "992": "Zemar",
+            "1007": "Nile River",
+            "1018": "Euphrates River",
+            "1019": "Tigris River"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Table of Nations: Japheth’s Descendants",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2022/08/22/table-of-nations-japheths-descendants/",
+      "type": "region",
+      "basename": "TableOfNationsJapheth",
+      "images": [
+        {
+          "fileLowRes": "TableOfNationsJapheth_low.jpg",
+          "fileMediumRes": "TableOfNationsJapheth.jpg",
+          "fileHighRes": "TableOfNationsJapheth_high.jpg",
+          "width": "7.92708333333333",
+          "locationIDs": {
+            "211": "Babylon",
+            "492": "Hattusha",
+            "551": "Jericho (OT)",
+            "661": "Mazaka",
+            "671": "Memphis",
+            "1007": "Nile River",
+            "1018": "Euphrates River",
+            "1019": "Tigris River"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Table of Nations: Shem’s Descendants",
+      "durationEvent": false,
+      "bloglink": "https://biblemapper.com/blog/index.php/2022/08/15/table-of-nations-shems-descendants/",
+      "type": "region",
+      "basename": "TableOfNationsShem",
+      "images": [
+        {
+          "fileLowRes": "TableOfNationsShem_low.jpg",
+          "fileMediumRes": "TableOfNationsShem.jpg",
+          "fileHighRes": "TableOfNationsShem_high.jpg",
+          "width": "7",
+          "locationIDs": {
+            "193": "Asshur",
+            "211": "Babylon",
+            "491": "Haran",
+            "551": "Jericho (OT)",
+            "671": "Memphis",
+            "870": "Sidon",
+            "890": "Susa",
+            "927": "Thebes",
+            "980": "Yathrib",
+            "1007": "Nile River",
+            "1018": "Euphrates River",
+            "1019": "Tigris River"
+          }
+        }
+      ]
+    }
+  ]
+}

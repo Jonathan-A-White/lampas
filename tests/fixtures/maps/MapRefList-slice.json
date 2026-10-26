@@ -1,0 +1,89 @@
+{
+  "Books": [
+    {
+      "BookDisplayName": "Genesis",
+      "BookCode": "genesis",
+      "BookOrder": "1",
+      "ChaptersTotal": "50",
+      "MapReferences": [
+        {
+          "ChapterNumber": "10",
+          "MapBasenames": [
+            "Mesopotamia",
+            "Ararat",
+            "SodomAndGomorrah",
+            "TableOfNationsHam",
+            "TableOfNationsShem",
+            "TableOfNationsJapheth"
+          ]
+        }
+      ]
+    },
+    {
+      "BookDisplayName": "Jeremiah",
+      "BookCode": "jeremiah",
+      "BookOrder": "24",
+      "ChaptersTotal": "52",
+      "MapReferences": [
+        {
+          "ChapterNumber": "1",
+          "MapBasenames": [
+            "JudahAlone",
+            "Benjamin",
+            "ExileToBabylon"
+          ]
+        }
+      ]
+    },
+    {
+      "BookDisplayName": "Tobit",
+      "BookCode": "tobit",
+      "BookOrder": "67",
+      "ChaptersTotal": "14",
+      "MapReferences": [
+        {
+          "ChapterNumber": "1",
+          "MapBasenames": [
+            "Mesopotamia"
+          ]
+        }
+      ]
+    },
+    {
+      "BookDisplayName": "Nahum",
+      "BookCode": "nahum",
+      "BookOrder": "34",
+      "ChaptersTotal": "3",
+      "MapReferences": [
+        {
+          "ChapterNumber": "2",
+          "MapBasenames": [
+            "Mesoptamia"
+          ]
+        }
+      ]
+    },
+    {
+      "BookDisplayName": "Acts",
+      "BookCode": "acts",
+      "BookOrder": "44",
+      "ChaptersTotal": "28",
+      "MapReferences": [
+        {
+          "ChapterNumber": "27",
+          "AudioVisualReadings": [
+            "Acts_27"
+          ],
+          "MapBasenames": [
+            "PaulsVoyageToRome",
+            "Calendar",
+            "LyciaPamphylia",
+            "CreteCyreneSyrtis",
+            "MaltaSicilyItaly",
+            "CarthageMaltaSicily"
+          ]
+        }
+      ]
+    }
+  ]
+}

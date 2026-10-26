@@ -179,6 +179,11 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
   (`features/data.feature` walks all of them). An unknown code or a Strong's number the lexicon lacks fails the
   build instead of shipping a guess.
 
+## The maps' index (not in `public/data`)
+
+`src/maps/data/biblemapper.json` (about 140 KB, committed) is Bible Mapper's list of maps and the maps of each chapter, compacted by `npm run maps:build` (`scripts/maps-build.ts`). It is not Bible text and
+is not under `public/data`: the app loads it as its own chunk, on the first ask for a chapter's maps. Its shape, refresh and terms are in `docs/maps.md`; `ATTRIBUTION.md` credits Bible Mapper.
+
 ## The Old Testament data
 
 `scripts/data-build-ot.ts` (`npm run data:build:ot`) writes `public/data/<code>/<n>.json` for the 39 books and their 929 chapters, `lexicon-hbo.json` and `frequency-hbo.json`, and adds the 39 to `index.json`. **Nothing on a screen opens them yet** (mw-uqlxea.2 does): the picker still sends an Old Testament chapter to Logos or Audible, and `pwa-precache.ts` is not widened, so the install stays the same size.
