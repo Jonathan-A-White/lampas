@@ -85,7 +85,10 @@ describe('the places', () => {
     expect(window.location.hash).toBe('#/?b=col&c=1');
     expect(window.history.state).toEqual({ tutorGo: true });
     expect(await registry.open('chapter', { book: 'col', chapter: 9 })).toMatchObject({ ok: false });
-    expect(await registry.open('chapter', { book: 'psa', chapter: 1 })).toMatchObject({ ok: false });
+    expect(await registry.open('chapter', { book: 'psa', chapter: 151 })).toMatchObject({ ok: false });
+    expect(await registry.open('chapter', { book: 'Enoch', chapter: 1 })).toMatchObject({ ok: false });
+    expect(await registry.open('chapter', { book: 'psa', chapter: 23 })).toEqual({ ok: true });
+    expect(window.location.hash).toBe('#/?b=psa&c=23');
   });
 
   it('tells each screen by the name the app gives it', () => {
