@@ -18,6 +18,7 @@ import { Reader } from './Reader';
 import { GoalScreen } from './GoalScreen';
 import { HardSoundLesson } from './hardSounds/HardSoundLesson';
 import { IpaCourse } from './ipa/IpaCourse';
+import { MapsHost } from './maps/MapsSheet';
 import { LadderGraph } from './LadderGraph';
 import { LibraryScreen } from './library/LibraryScreen';
 import { VerseListsScreen } from './lists/VerseListsScreen';
@@ -167,6 +168,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       <WhereDidYouGetTo hidden={route === 'unlock'} />
       {/* the idea sheet he left for a table comes back on Back (mw-svw421.5) */}
       <IdeaReturn />
+      {/* the Maps sheet, opened by a Maps door or the tutor (src/maps/openMaps.ts) */}
+      <MapsHost />
       {/* the word sheet he left for the word's table comes back on Back (mw-irpgqi.1) */}
       <WordReturn />
       {/* the round Ask the tutor control of every screen but the Reader and the Share screen (its sheets are talks), which draws its own beside its Talk bar */}

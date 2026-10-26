@@ -41,6 +41,8 @@ export interface MapSource {
   mapsFor(ref: MapRef): Promise<MapCard[]>;
   /** the address of the card's image at that size, or null where the source has none to show (a link-only source answers null for all) */
   imageUrl(card: MapCard, size: MapImageSize): string | null;
+  /** the source's own page of every map of the chapter (the link 'All maps for Genesis 10 at Bible Mapper'), or null where it has none */
+  allMapsUrl?(ref: MapRef): string | null;
 }
 
 /** src/maps/data/biblemapper.json, written by `npm run maps:build` (scripts/maps/biblemapper.ts). */

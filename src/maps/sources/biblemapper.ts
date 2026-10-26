@@ -1,6 +1,7 @@
 // src/maps/sources/biblemapper.ts — Bible Mapper (https://biblemapper.com, David P. Barrett) as a MapSource. The maps and the chapters they belong to are
 // src/maps/data/biblemapper.json (npm run maps:build, docs/maps.md), read on first use through a dynamic import: its own chunk, never in the precache.
 // The pictures are not copied: the card's low-res image is shown from biblemapper.com. The medium and high files are not served under /blog/images; the article has them.
+import { bookOf } from '../../data/books';
 import type { BibleMapperData, MapCard, MapImageSize, MapRef, MapSource } from '../types';
 import { period } from '../period';
 
@@ -52,5 +53,9 @@ export const bibleMapper: MapSource = {
     if (size !== 'low') return null;
     const image = loaded?.maps[card.id]?.image;
     return image ? `${IMAGES}${image.low}` : null;
+  },
+  allMapsUrl(ref: MapRef): string | null {
+    const book = bookOf(ref.book);
+    return book ? `https://biblemapper.com/blog/mapfinder/?ref=${encodeURIComponent(`${book.name} ${ref.chapter}`)}` : null;
   },
 };

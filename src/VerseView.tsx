@@ -18,6 +18,7 @@ import { AnswerCards, AskComposer, AskStatus } from './Ask';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
 import { InLogosDoors } from './library/InLogosDoors';
+import { MapsDoor } from './maps/MapsDoor';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import { sourceLanguage, type Chapter, type Verse } from './data/chapter';
 import { DiagramPane } from './diagram/DiagramPane';
@@ -204,7 +205,11 @@ export function VerseView(props: VerseViewProps) {
           <MemorizeControl canonical={memorizeRef} className="mt-1 w-full" />
           <ProgressMarks canonical={memorizeRef} className="mt-1 px-1" />
           {/* His Bible in Logos at the verse (a passage: at its first verse), and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6) */}
-          <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} className="mt-1" />
+          {/* with the quiet Maps door (mw-zbjgn3r.2): the maps of the verse, or of the passage's range; it wraps to a line of its own where the two Logos doors leave it no room */}
+          <div className="mt-1 flex flex-wrap items-start gap-1">
+            <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} className="min-w-[14rem] flex-1" />
+            <MapsDoor mapRef={{ book, chapter, from: verse.n, ...(verse.to === undefined ? {} : { to: verse.to }) }} />
+          </div>
         </div>
         <div className="mt-3">
           {action === 'listen' ? (
