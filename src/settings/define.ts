@@ -32,6 +32,7 @@ export type SectionId =
   | 'pronunciation'
   | 'resources'
   | 'logos'
+  | 'maps'
   | 'daily'
   | 'tips'
   | 'developer'

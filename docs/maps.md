@@ -12,11 +12,13 @@ A map is a `MapCard`; where it comes from is a `MapSource`. Reading the maps nee
 | `sources/biblemapper.ts` | Bible Mapper as a `MapSource` |
 | `mapsFor.ts` | `mapsForSources(sources, ref)`: every source's cards, the sources in list order, each source's cards in its own order; `rankByPlaces(cards, places)`, the ranking for a verse (below) |
 | `places.ts`, `placeNames.ts` | `placesIn(ref)`, the places named in a verse, a passage or a chapter; the comparison of place names (below) |
-| `index.ts` | the registry `SOURCES` and `mapsFor(ref)`, the door the screens take: the chapter's cards, ranked by the places of the verses when `ref.from` is set |
+| `sources/index.ts` | the registry `SOURCES` (re-exported by `index.ts`; apart from it so the settings registry loads under plain Node) |
+| `enabled.ts` | `enabledSources(sources, read)`, pure: the sources whose switch is On (below) |
+| `index.ts` | `SOURCES`, `enabledSources()` over the settings store and `mapsFor(ref)`, the door the screens take: the cards of the sources that are On, ranked within each source by the places of the verses when `ref.from` is set |
 | `data/places/<book>.json` | STEPBible's TIPNR cut per book (below), each loaded by a dynamic import on first use: its own chunk, not in `pwa-precache.ts` |
 | `data/biblemapper.json` | the compacted index (below), loaded by a dynamic import on first use: its own chunk, not in `pwa-precache.ts` |
 
-A `MapSource` is `{ id, name, homepage, credit, mapsFor(ref) → MapCard[], imageUrl(card, 'low' | 'medium' | 'high') → string | null }`. The `credit` is the line shown with
+A `MapSource` is `{ id, name, homepage, credit, describe, default, needs?, mapsFor(ref) → MapCard[], imageUrl(card, 'low' | 'medium' | 'high') → string | null }`. The `credit` is the line shown with
 every map of the source; `imageUrl` answers null where the source has no picture to show at that size. Bible Mapper maps by the chapter, so a source ignores the verses of a `MapRef`; `mapsFor` ranks the cards by them (`mw-zbjgn3r.3`, 'Which maps are for this verse').
 
 ## The screens (mw-zbjgn3r.2)
@@ -107,9 +109,19 @@ second source gets its own entry and credit.
 
 Open question for the Governor: Lampas is free to read and a licence unlocks the AI. Maps shown in the free part are non-commercial use; whether the paid part touches them is the Governor's to say before the maps ship.
 
+## Choosing the sources, and several at once (mw-zbjgn3r.6)
+
+- **The switches.** Settings > Study resources > Maps (section `maps`, after Bible in Logos; `docs/layout/settings.md`) has one On | Off row for each member of `SOURCES`, key `maps.<source.id>`, made by `mapSourceSetting(source)` (`src/settings/definitions/maps.ts`) the way the study-resource switches are made from `RESOURCES`: label `source.name`, hint `source.describe`, On or Off to start as `source.default` (Bible Mapper On). The tutor may flip them by talk like any setting.
+  A source with `needs: 'logos'` rides on the Logos study resource: its row is drawn only while Logos is On (`dependsOn resource.logos`), and the source answers nothing while Logos is Off, whatever its own switch says.
+- **Which sources answer.** `enabledSources(sources, read)` (`src/maps/enabled.ts`, pure; `read(key)` gives a setting's value as text) keeps the sources whose switch is On and whose `needs` are met; `enabledSources()` in `src/maps/index.ts` reads the store; `mapsFor(ref)` asks only those, `useMaps` asks again when a `maps.*` setting or `resource.logos` changes.
+- **The merge.** `mapsFor` answers the sources' cards in the registry's order (Bible Mapper's first). The ranking by the verse's places is applied within each source (`rankPerSource`): a link-only source's card names places too, and must not outrank a map. The door counts every card of every source that is On, so it shows where only the second source has cover, and `Maps · N` is the sum.
+- **A link-only source.** Its cards have `kind: 'link'` and `open: { url, fallback? }`, and its `imageUrl` answers null. The sheet draws one block per source that answered, in `mapsFor`'s order: Bible Mapper's as ever (unheaded), a source whose cards have `open` under its name (a group named by the source), each row 44 px with the title, the card's `period` as the second line (the source writes "Opens in Logos" or "Opens on the web" there), and `↗`.
+  A row is a plain `<a href={open.url}>`: with a `fallback` it has `data-fallback` and a tap arms it (`armFallback`, `src/resources/openApp.ts`: the https address opens if the app did not), an https address alone opens in a new tab. It never opens `MapView`, and the tutor's `openCard` skips it.
+  The tests' own sources are in `tests/support/test-maps.ts` (`linkSource`, `linkSourceNeedingLogos`; `registerTestMaps({ links: true })`), proved in `features/maps.feature` (two sources, one with no cover, each switched off) and `features/maps-settings.feature` (the Settings rows, with a second source mocked into `SOURCES`).
+
 ## Adding a second source
 
-One file in `src/maps/sources/` and one line in `SOURCES` (`src/maps/index.ts`); `mapsFor` then answers the cards of both, the first source's first. Nothing else changes: the sheet reads `MapCard`s and asks the
+One file in `src/maps/sources/` and one line in `SOURCES` (`src/maps/sources/index.ts`); it gets its Settings switch (above) and `mapsFor` then answers the cards of both, the first source's first. Nothing else changes: the sheet reads `MapCard`s and asks the
 source of each (`card.source`) for its `credit` and `imageUrl`. Add the source's credit to `ATTRIBUTION.md` and `src/tutor/credits.ts` in the same story.
 
 The worked example is the Logos Atlas, a link-only source: it holds no pictures and copies nothing.
@@ -120,8 +132,11 @@ export const logosAtlas: MapSource = {
   name: 'Logos Atlas',
   homepage: 'https://www.logos.com',
   credit: 'Atlas pages open in your own Logos',
+  describe: 'Atlas pages that open in your own Logos.', // the hint of its Settings row
+  default: 'on',
+  needs: 'logos', // its row shows, and it answers, only while Logos is On
   // a card per atlas page that covers the chapter, its `article` a Logos link (docs/resources.md)
-  mapsFor: async (ref) => pagesFor(ref).map((page) => ({ id: page.id, source: 'logosatlas', title: page.title, kind: 'region', period: '', article: logosLink(page), places: [] })),
+  mapsFor: async (ref) => pagesFor(ref).map((page) => ({ id: page.id, source: 'logosatlas', title: page.title, kind: 'link', period: 'Opens in Logos', article: logosLink(page).url, places: [], open: logosLink(page) })),
   imageUrl: () => null, // link only: the sheet shows the card as a link, with no picture
 };
 ```

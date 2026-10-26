@@ -5,9 +5,10 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MapsDoor } from '../../src/maps/MapsDoor';
 import { ChapterActions } from '../../src/reader/ChapterActions';
+import { db } from '../../src/data/db';
 import { forgetTestMaps, registerTestMaps } from '../support/test-maps';
 
-beforeEach(registerTestMaps);
+beforeEach(() => registerTestMaps());
 afterEach(() => {
   cleanup();
   forgetTestMaps();
@@ -24,6 +25,31 @@ describe('the Maps door', () => {
     render(<MapsDoor mapRef={{ book: 'gen', chapter: 11 }} />);
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(screen.queryByRole('button', { name: /^Maps/ })).toBeNull();
+  });
+});
+
+describe('the door with two sources (mw-zbjgn3r.6)', () => {
+  beforeEach(async () => {
+    await db.open();
+    await db.settings.clear();
+    registerTestMaps({ links: true });
+  });
+  afterEach(() => db.settings.clear());
+
+  it('counts every source\'s cards: Bible Mapper\'s six and the link-only source\'s two', async () => {
+    render(<MapsDoor mapRef={{ book: 'gen', chapter: 10, from: 19, to: 19 }} />);
+    expect(await screen.findByRole('button', { name: 'Maps · 8' })).toBeInTheDocument();
+  });
+
+  it('is drawn where only the second source has coverage', async () => {
+    render(<MapsDoor mapRef={{ book: 'gen', chapter: 11 }} />);
+    expect(await screen.findByRole('button', { name: 'Maps · 1' })).toBeInTheDocument();
+  });
+
+  it('counts the cards of the sources that are on', async () => {
+    await db.settings.put({ key: 'maps.biblemapper', value: 'off' });
+    render(<MapsDoor mapRef={{ book: 'gen', chapter: 10 }} />);
+    expect(await screen.findByRole('button', { name: 'Maps · 2' })).toBeInTheDocument();
   });
 });
 

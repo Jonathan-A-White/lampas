@@ -28,14 +28,14 @@ const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 /** Opens the app on a chapter (the address names it), with the test maps registered. */
-async function openOn(title: string, immersive = false): Promise<void> {
+async function openOn(title: string, immersive = false, atlas?: { on: boolean; bibleMapper?: boolean }): Promise<void> {
   cleanup();
   closeMaps();
   clearBus();
   forgetTrail();
   localStorage.clear();
   vi.unstubAllGlobals();
-  registerTestMaps();
+  registerTestMaps({ links: atlas !== undefined });
   stubChapterFetch();
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
@@ -44,6 +44,7 @@ async function openOn(title: string, immersive = false): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   if (immersive) await db.settings.put({ key: 'immersiveReader', value: 'on' });
+  if (atlas) await db.settings.bulkPut([{ key: 'maps.testlinks', value: atlas.on ? 'on' : 'off' }, { key: 'maps.biblemapper', value: atlas.bibleMapper === false ? 'off' : 'on' }]);
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -64,6 +65,9 @@ const feature = await loadFeature('features/maps.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const opened = (_: unknown, title: string) => openOn(title);
+  const openedWithAtlas = (_: unknown, title: string) => openOn(title, false, { on: true });
+  const openedWithoutAtlas = (_: unknown, title: string) => openOn(title, false, { on: false });
+  const openedWithAtlasAlone = (_: unknown, title: string) => openOn(title, false, { on: true, bibleMapper: false });
   const openedImmersive = (_: unknown, title: string) => openOn(title, true);
   const tapVerse = async (_: unknown, n: number) => {
     await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
@@ -148,6 +152,37 @@ describeFeature(feature, ({ Scenario }) => {
     const door = doorsIn(readerEl()).find((b) => squash(b.textContent) === label);
     if (!door) throw new Error(`no door ${label} at the foot`);
     await user.click(door);
+  };
+
+  const blockEl = async (name: string) => within(await sheetEl()).findByRole('group', { name });
+  const linkRow = async (title: string): Promise<HTMLAnchorElement> => {
+    const row = [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-map-row]')].find((r) => r.querySelector('[data-map-title]')?.textContent === title);
+    if (!row) throw new Error(`no link row ${title} in the sheet`);
+    return row;
+  };
+  const blockHolds = async (_: unknown, name: string, a: string, b?: string) => {
+    expect(rowsOf(await blockEl(name))).toEqual(b === undefined ? [a] : [a, b]);
+  };
+  const linkOpensWithFallback = async (_: unknown, title: string, url: string, fallback: string) => {
+    const row = await linkRow(title);
+    expect(row).toHaveAttribute('href', url);
+    expect(row).toHaveAttribute('data-fallback', fallback);
+    expect(row.className).toContain('min-h-11');
+    expect(row.textContent).toContain('↗');
+  };
+  const linkOpensInBrowser = async (_: unknown, title: string, url: string) => {
+    const row = await linkRow(title);
+    expect(row).toHaveAttribute('href', url);
+    expect(row).toHaveAttribute('target', '_blank');
+    expect(row).not.toHaveAttribute('data-fallback');
+  };
+  const tapLinkRow = async (_: unknown, title: string) => {
+    const row = await linkRow(title);
+    // jsdom cannot navigate: the tap is let through to the app's own handler and then stopped
+    const stop = (event: Event) => event.preventDefault();
+    document.addEventListener('click', stop);
+    await user.click(row);
+    document.removeEventListener('click', stop);
   };
 
   Scenario('A verse with maps has the door on the Verse view', ({ Given, When, Then, And }) => {
@@ -328,5 +363,56 @@ describeFeature(feature, ({ Scenario }) => {
     Then('About names {string}', (_, name: string) => {
       expect(screen.getAllByText(new RegExp(name.replace('.', '\\.'))).length).toBeGreaterThan(0);
     });
+  });
+
+  Scenario('Both sources answer: Bible Mapper\'s block, then the link-only source\'s under its name', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the test atlas On', openedWithAtlas);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the sheet is headed {string}', headed);
+    And('the groups read {string}', groupsRead);
+    And('{string} holds {string} and {string}', holdsTwo);
+    And('the {string} block holds {string} and {string}', blockHolds);
+    And('the row {string} opens {string} and falls back to {string}', linkOpensWithFallback);
+    And('the row {string} opens {string} in the browser', linkOpensInBrowser);
+  });
+
+  Scenario("A link-only source's row opens its link and never the map view", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the test atlas On', openedWithAtlas);
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    And('he taps the link row {string}', tapLinkRow);
+    Then('only the sheet is open', async () => {
+      await sleep(60);
+      expect(sheetCount()).toBe(1);
+      expect(document.querySelector('[data-map-zoom]')).toBeNull();
+    });
+  });
+
+  Scenario("Where Bible Mapper has no map for the chapter the other source's block is the sheet", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the test atlas On', openedWithAtlas);
+    Then('the chapter foot has a button {string}', footHas);
+    When("he taps the foot's door {string}", tapFootDoor);
+    Then('the sheet is headed {string}', headed);
+    And('the groups read {string}', groupsRead);
+    And('the {string} block holds {string}', (_, name: string, a: string) => blockHolds(_, name, a));
+  });
+
+  Scenario('With the link-only source off the sheet is as before', ({ Given, When, Then }) => {
+    Given('Lampas is opened on {string} with the test atlas Off', openedWithoutAtlas);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the groups read {string}', groupsRead);
+  });
+
+  Scenario('With Bible Mapper off and the link-only source on, only its block', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the test atlas On and Bible Mapper Off', openedWithAtlasAlone);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the groups read {string}', groupsRead);
+    And('the {string} block holds {string} and {string}', blockHolds);
   });
 });

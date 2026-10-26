@@ -10,6 +10,7 @@ import { GrammarExtentControl } from './grammarExtent';
 import { GreekInterestControl } from './greekInterest';
 import { HandwritingControl } from './handwriting';
 import { LinkControl } from './links';
+import { MapsControl } from './maps';
 import { NewWordsControl } from './newWords';
 import { QuizGoalControl } from './quizGoal';
 import { AudioBibleControl, LibraryControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
@@ -76,5 +77,6 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   quizGoal: QuizGoalControl,
   ...Object.fromEntries(SCRIPTS.map((s) => [s.settingKey, ScriptDepthControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('resource.')).map((r) => [r.key, ResourceControl])),
+  ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('maps.')).map((r) => [r.key, MapsControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('link.')).map((r) => [r.key, LinkControl])),
 };

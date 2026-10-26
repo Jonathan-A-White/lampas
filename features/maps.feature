@@ -115,3 +115,48 @@ Feature: Maps on the screen (mw-zbjgn3r.2, docs/maps.md)
     Given Lampas is opened on "Genesis 10"
     When he opens About
     Then About names "biblemapper.com"
+
+  # Two sources at once (mw-zbjgn3r.6): a link-only test source ("Test Atlas") beside Bible Mapper's test cards. Its rows open elsewhere, never the map view; the door counts both;
+  # where one source has no map for the chapter the other's block is the whole sheet; a switch in Settings turns a source off.
+
+  Scenario: Both sources answer: Bible Mapper's block, then the link-only source's under its name
+    Given Lampas is opened on "Genesis 10" with the test atlas On
+    When he taps verse 19
+    Then the Verse view has a button "Maps · 8"
+    When he taps "Maps · 8"
+    Then the sheet is headed "Maps for Genesis 10:19"
+    And the groups read "Events, Regions, Videos, Test Atlas"
+    And "Events" holds "The Tower of Babel, c. 2200 BC" and "Sodom and Gomorrah Are Destroyed, 2100 to 2090 BC"
+    And the "Test Atlas" block holds "Test Atlas at Shinar, Opens in Logos" and "Test Commentary at Genesis 10, Opens on the web"
+    And the row "Test Atlas at Shinar" opens "logos4:Atlas;id=SHINAR" and falls back to "https://atlas.test/shinar"
+    And the row "Test Commentary at Genesis 10" opens "https://atlas.test/commentary" in the browser
+
+  Scenario: A link-only source's row opens its link and never the map view
+    Given Lampas is opened on "Genesis 10" with the test atlas On
+    When he taps verse 19
+    And he taps "Maps · 8"
+    And he taps the link row "Test Commentary at Genesis 10"
+    Then only the sheet is open
+
+  Scenario: Where Bible Mapper has no map for the chapter the other source's block is the sheet
+    Given Lampas is opened on "Genesis 11" with the test atlas On
+    Then the chapter foot has a button "Maps · 1"
+    When he taps the foot's door "Maps · 1"
+    Then the sheet is headed "Maps for Genesis 11"
+    And the groups read "Test Atlas"
+    And the "Test Atlas" block holds "Test Atlas at Babel, Opens on the web"
+
+  Scenario: With the link-only source off the sheet is as before
+    Given Lampas is opened on "Genesis 10" with the test atlas Off
+    When he taps verse 19
+    Then the Verse view has a button "Maps · 6"
+    When he taps "Maps · 6"
+    Then the groups read "Events, Regions, Videos"
+
+  Scenario: With Bible Mapper off and the link-only source on, only its block
+    Given Lampas is opened on "Genesis 10" with the test atlas On and Bible Mapper Off
+    When he taps verse 19
+    Then the Verse view has a button "Maps · 2"
+    When he taps "Maps · 2"
+    Then the groups read "Test Atlas"
+    And the "Test Atlas" block holds "Test Atlas at Shinar, Opens in Logos" and "Test Commentary at Genesis 10, Opens on the web"

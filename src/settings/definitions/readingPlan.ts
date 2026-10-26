@@ -18,5 +18,5 @@ export const readingPlanSetting = defineSetting<ReadingPlanSwitch>({
   section: 'resources',
   label: 'Reading plan',
   hint: 'Read through the Bible a chapter at a time, with the audio Bible.',
-  help: 'Whether Lampas keeps a reading plan: the whole Bible, Genesis to Revelation, a chapter at a time, in your audio Bible. On: it remembers where you started, the chapters done and the next one. Starting a plan turns this On, and the Audio Bible too if it was Off. Off by default.',
+  help: 'Whether Lampas keeps a reading plan: the whole Bible, Genesis to Revelation, a chapter at a time, in your audio Bible. On: it remembers where you started, the chapters done and the next one. Starting a plan turns this On, and the Audio Bible too if it was Off.',
 });

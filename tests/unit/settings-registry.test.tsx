@@ -64,7 +64,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['askBy', 'audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'copyText', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
+      ['askBy', 'audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'copyText', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'maps.biblemapper', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -95,6 +95,16 @@ describe('the allow-list is the Settings screen\'s own list (mw-5r3p30.100)', ()
     expect(applied).toEqual([]);
     expect(refused).toHaveLength(4);
     expect(await db.settings.get('developerMode')).toBeUndefined();
+  });
+
+  it('lets the tutor turn a map source on and off by its switch (maps.<id>, mw-zbjgn3r.6), kept in the store, and Undo puts it back', async () => {
+    const { applied, refused } = await applyChanges([{ key: 'maps.biblemapper', value: 'off' }]);
+    expect(refused).toEqual([]);
+    expect(applied).toEqual([{ key: 'maps.biblemapper', label: 'Bible Mapper', from: 'on', to: 'off', shown: 'Bible Mapper: Off' }]);
+    expect((await db.settings.get('maps.biblemapper'))?.value).toBe('off');
+    await undoChange(applied[0]);
+    expect((await currentSettings())['maps.biblemapper']).toBe('on');
+    expect((await applyChanges([{ key: 'maps.nothing', value: 'on' }])).refused).toHaveLength(1);
   });
 
   it('turns a study resource on and off by its switch, kept in the store, and Undo puts it back', async () => {
@@ -305,6 +315,7 @@ describe('currentSettings', () => {
       grammarMove: 'ask',
       newWordsADay: '3',
       logosBible: 'LLS:LGCYSTNDRDBBLSB',
+      'maps.biblemapper': 'on',
       quizGoal: '',
       'resource.strongs': 'off',
       'resource.logos': 'off',

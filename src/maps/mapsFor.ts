@@ -15,3 +15,9 @@ export function rankByPlaces(cards: readonly MapCard[], passage: readonly Place[
   const ranked = cards.map((card, index) => ({ card: { ...card, matched: passage ? matchedPlaceNames(card.places, passage) : [] }, index }));
   return ranked.sort((a, b) => b.card.matched.length - a.card.matched.length || a.index - b.index).map((r) => r.card);
 }
+
+/** `rankByPlaces` within each source, the sources in the order they first appear: a link-only source's cards are views, not maps that depict the places, and must not outrank a map's. */
+export function rankPerSource(cards: readonly MapCard[], passage: readonly Place[] | undefined): MapCard[] {
+  const order = [...new Set(cards.map((card) => card.source))];
+  return order.flatMap((source) => rankByPlaces(cards.filter((card) => card.source === source), passage));
+}

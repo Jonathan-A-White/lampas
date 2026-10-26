@@ -9,7 +9,8 @@ export interface MapRef {
   to?: number;
 }
 
-export type MapKind = 'event' | 'region' | 'video';
+/** 'link' is a card of a link-only source: it opens elsewhere (MapCard.open), never in the app's map view. */
+export type MapKind = 'event' | 'region' | 'video' | 'link';
 
 export type MapImageSize = 'low' | 'medium' | 'high';
 
@@ -30,6 +31,8 @@ export interface MapCard {
   /** the places the map names */
   places: string[];
   video?: boolean;
+  /** where the row opens instead of the app's map view (a link-only source): an app link with its https `fallback` (armFallback), or an https address alone */
+  open?: { url: string; fallback?: string };
   /** the names of the passage's places (src/maps/places.ts) that this map shows; set by mapsFor, empty for a whole chapter (src/maps/mapsFor.ts rankByPlaces) */
   matched?: string[];
 }
@@ -40,6 +43,12 @@ export interface MapSource {
   homepage: string;
   /** the credit line shown with every map of this source */
   credit: string;
+  /** one line for the source's row in Settings > Study resources > Maps */
+  describe: string;
+  /** the study resource the source rides on: it is left out, and its row hidden, while that resource is Off */
+  needs?: 'logos';
+  /** whether its switch starts On or Off */
+  default: 'on' | 'off';
   mapsFor(ref: MapRef): Promise<MapCard[]>;
   /** the address of the card's image at that size, or null where the source has none to show (a link-only source answers null for all) */
   imageUrl(card: MapCard, size: MapImageSize): string | null;

@@ -1,10 +1,14 @@
 // src/maps/useMaps.ts — the maps of a place for a door (mw-zbjgn3r.2): `undefined` while mapsFor answers, then the cards (none where the place has no maps, or a source failed).
 // It reads the module's data alone (src/maps/index.ts mapsFor): no picture is asked for here, nothing leaves the app until the sheet shows one.
 import { useEffect, useState } from 'react';
+import { subscribe } from '../events/bus';
 import { mapsFor, type MapCard, type MapRef } from './index';
 
 export function useMaps(ref: MapRef | null): MapCard[] | undefined {
-  const key = ref ? `${ref.book}.${ref.chapter}.${ref.from ?? ''}.${ref.to ?? ''}` : '';
+  // a source switched On or Off (or Logos, which one rides on) asks the place again
+  const [switches, setSwitches] = useState(0);
+  useEffect(() => subscribe('setting-changed', (event) => (event.key.startsWith('maps.') || event.key === 'resource.logos') && setSwitches((n) => n + 1)), []);
+  const key = ref ? `${ref.book}.${ref.chapter}.${ref.from ?? ''}.${ref.to ?? ''}.${switches}` : '';
   const [found, setFound] = useState<{ key: string; cards: MapCard[] } | undefined>();
   useEffect(() => {
     if (!ref) return;

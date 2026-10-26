@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { statSync } from 'node:fs';
 import { mapsFor, SOURCES } from '../../src/maps';
-import { mapsForSources } from '../../src/maps/mapsFor';
+import { mapsForSources, rankPerSource } from '../../src/maps/mapsFor';
 import type { MapCard, MapSource } from '../../src/maps/types';
 import { bibleMapper } from '../../src/maps/sources/biblemapper';
 
@@ -50,7 +50,7 @@ describe('mapsFor', () => {
   it('puts a second source\'s cards after the first\'s', async () => {
     const extra: MapCard = { id: 'atlas-1', source: 'fake', title: 'A fake atlas page', kind: 'region', period: '', article: 'https://example.org/atlas', places: [] };
     const fake: MapSource = {
-      id: 'fake', name: 'Fake Atlas', homepage: 'https://example.org', credit: 'Fake atlas',
+      id: 'fake', name: 'Fake Atlas', homepage: 'https://example.org', credit: 'Fake atlas', describe: 'A fake atlas.', default: 'on',
       mapsFor: async () => [extra],
       imageUrl: () => null,
     };
@@ -58,6 +58,22 @@ describe('mapsFor', () => {
     expect(cards.length).toBe(7);
     expect(cards[0].id).toBe('Mesopotamia');
     expect(cards[6]).toBe(extra);
+  });
+});
+
+describe('the sources\' fields', () => {
+  it('fills Bible Mapper\'s: a line for its Settings row, On by default, needing no study resource', () => {
+    expect(bibleMapper.describe).not.toBe('');
+    expect(bibleMapper.default).toBe('on');
+    expect(bibleMapper.needs).toBeUndefined();
+  });
+
+  it('ranks the cards within a source: a link-only source\'s cards, which name places, do not outrank a map\'s', () => {
+    const place = { id: 'p', name: 'Babylon', names: ['Babylon'], strongs: [], verses: [[10, 10]] as [number, number][] };
+    const map: MapCard = { id: 'a', source: 'one', title: 'A', kind: 'region', period: '', article: '', places: ['Babylon'] };
+    const quiet: MapCard = { id: 'b', source: 'one', title: 'B', kind: 'region', period: '', article: '', places: [] };
+    const link: MapCard = { id: 'c', source: 'two', title: 'C', kind: 'link', period: '', article: '', places: ['Babylon', 'Babel'], open: { url: 'https://example.org/c' } };
+    expect(rankPerSource([quiet, map, link], [place]).map((c) => c.id)).toEqual(['a', 'b', 'c']);
   });
 });
 
