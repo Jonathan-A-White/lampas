@@ -34,7 +34,7 @@ describe('teachWord', () => {
   });
 
   it('a word already listed keeps its place and takes the state; a review row already there is kept', async () => {
-    await db.words.add({ lemma: 'εἰς', lemmas: ['εἰς'], gloss: 'toward', lesson: 4, state: 'learning', since: 1 });
+    await db.words.add({ lemma: 'εἰς', lang: 'grc', lemmas: ['εἰς'], gloss: 'toward', lesson: 4, state: 'learning', since: 1 });
     await db.reviews.add({ kind: 'word', id: 'εἰς', step: 2, due: 5, lastWhen: 1, lapses: 1, rights: 1 });
     await teachWord('εἰς', 'toward', 'known', 1000);
     expect(await listWords()).toEqual([{ lemma: 'εἰς', lemmas: ['εἰς'], gloss: 'toward', lesson: 4, state: 'solid', since: 1000 }]);
@@ -43,8 +43,8 @@ describe('teachWord', () => {
 
   it('lists the lemmas of the words he dropped', async () => {
     await db.words.bulkAdd([
-      { lemma: 'α', lemmas: ['α'], gloss: '', lesson: 1, state: 'dropped', since: 1 },
-      { lemma: 'β', lemmas: ['β'], gloss: '', lesson: 1, state: 'solid', since: 1 },
+      { lemma: 'α', lang: 'grc', lemmas: ['α'], gloss: '', lesson: 1, state: 'dropped', since: 1 },
+      { lemma: 'β', lang: 'grc', lemmas: ['β'], gloss: '', lesson: 1, state: 'solid', since: 1 },
     ]);
     expect([...(await listDroppedLemmas())]).toEqual(['α']);
   });

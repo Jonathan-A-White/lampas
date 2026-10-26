@@ -19,7 +19,7 @@ export async function seedExampleWords(now = Date.now()): Promise<boolean> {
     await db.words.bulkPut(
       SEED_WORDS.map((s): Word => {
         const { headword, lemmas } = normaliseLemma(s.lemma);
-        return { lemma: headword, lemmas, gloss: s.gloss, lesson: s.lesson, state: s.lesson <= HIS_LAST_SOLID_LESSON ? 'solid' : 'learning', since: now };
+        return { lemma: headword, lang: 'grc', lemmas, gloss: s.gloss, lesson: s.lesson, state: s.lesson <= HIS_LAST_SOLID_LESSON ? 'solid' : 'learning', since: now };
       }),
     );
     await db.meta.put({ key: 'wordsSeeded', value: String(now) });

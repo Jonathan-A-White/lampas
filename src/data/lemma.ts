@@ -12,8 +12,18 @@ export interface NormalisedLemma {
 /** Where a BMA lemma stops being the headword: the first comma, the first '(' or a '+' (as in '+ gen'). */
 const HEADWORD_END = /[,(+]/;
 
-/** NFC, then the headword before the first comma, parenthesised hint or '+ case' hint; accents and breathings stay. */
+/** Whether the text holds a Hebrew letter or point (the Hebrew block, U+0590 to U+05FF): a pointed Hebrew headword, which is the language of the word. */
+export const isHebrewText = (text: string): boolean => /[\u0590-\u05FF]/.test(text);
+
+/** The language a headword is in: 'hbo' when it holds Hebrew, else 'grc'. */
+export const languageOfLemma = (lemma: string): 'grc' | 'hbo' => (isHebrewText(lemma) ? 'hbo' : 'grc');
+
+/**
+ * NFC, then the headword before the first comma, parenthesised hint or '+ case' hint; accents and breathings stay. A pointed Hebrew headword is
+ * kept whole (white space made one space): TBESH's own headword can hold a comma, 'יְרוּשָׁלִַ֫ם, יְרוּשְׁלֵם', or a maqaf, 'מִן־', and is the key of the word.
+ */
 export function normaliseHeadword(raw: string): string {
+  if (isHebrewText(raw)) return raw.normalize('NFC').replace(/\s+/g, ' ').trim();
   const head = raw.normalize('NFC').split(HEADWORD_END, 1)[0] ?? '';
   return head.replace(/\s+/g, ' ').trim();
 }

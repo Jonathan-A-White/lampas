@@ -1,7 +1,7 @@
 // src/data/answerWord.ts — a Greek word of an answer, found again in the chapter's text, so a tap can open its word sheet.
 import { type GreekWord, type Verse, wordGloss, wordLemma } from './chapter';
 import type { AnswerWord } from './db';
-import { normaliseHeadword } from './lemma';
+import { languageOfLemma, normaliseHeadword } from './lemma';
 import { lookupLemma } from './lexicon';
 import { addWordToLearn, wordIsListed } from './repositories';
 import type { TalkScope } from '../services/talk';
@@ -34,20 +34,21 @@ export interface AddedLemma {
 
 /**
  * Puts a lemma on his words-to-learn list with the gloss and part of speech the lexicon (the whole text's, the word sheet's
- * source) gives it, wherever in the New Testament it is. A lemma the lexicon does not know is not added, unless it is on his
+ * source) gives it, wherever in the text it is; a pointed Hebrew lemma is looked up in the Hebrew lexicon and listed as a Hebrew word (languageOfLemma). A lemma the lexicon does not know is not added, unless it is on his
  * list already; when the lexicon cannot be loaded the chapter's own gloss is used so a word in the open chapter still goes in.
  */
 export async function addLemmaToLearn(scope: TalkScope, lemma: string, now = Date.now()): Promise<AddedLemma> {
   const headword = normaliseHeadword(lemma);
   if (!headword) return { headword, result: 'ignored' };
-  if (await wordIsListed(headword)) return { headword, result: await addWordToLearn(headword, '', now) };
+  const lang = languageOfLemma(headword);
+  if (await wordIsListed(headword)) return { headword, result: await addWordToLearn(headword, '', now, '', lang) };
   let entry;
   try {
-    entry = await lookupLemma(headword);
+    entry = await lookupLemma(headword, lang);
   } catch {
     const gloss = glossOf(scope, { greek: headword, lemma: headword, note: '' });
-    return gloss ? { headword, result: await addWordToLearn(headword, gloss, now) } : { headword, result: 'unknown' };
+    return gloss ? { headword, result: await addWordToLearn(headword, gloss, now, '', lang) } : { headword, result: 'unknown' };
   }
   if (!entry) return { headword, result: 'unknown' };
-  return { headword, result: await addWordToLearn(headword, entry.g, now, entry.c) };
+  return { headword, result: await addWordToLearn(headword, entry.g, now, entry.c, lang) };
 }

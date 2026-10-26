@@ -10,7 +10,7 @@ import { recordAnswer } from '../../src/data/repositories/results';
 const NOW = Date.UTC(2026, 9, 8, 9, 0, 0);
 
 /** Lists these lemmas as words he is learning: only a listed word, not dropped, is due. */
-const listWords = (...lemmas: string[]) => db.words.bulkPut(lemmas.map((lemma) => ({ lemma, lemmas: [], gloss: 'g', lesson: 1, state: 'learning' as const, since: 0 })));
+const listWords = (...lemmas: string[]) => db.words.bulkPut(lemmas.map((lemma) => ({ lemma, lang: 'grc' as const, lemmas: [], gloss: 'g', lesson: 1, state: 'learning' as const, since: 0 })));
 
 beforeEach(async () => {
   await db.open();
@@ -79,7 +79,7 @@ describe('the reviews repository', () => {
   });
 
   it('a Quick test answer writes a review row for the word, and none for a word that is not listed', async () => {
-    await db.words.put({ lemma: 'λέγω', lemmas: [], gloss: 'say', lesson: 1, state: 'learning', since: 0 });
+    await db.words.put({ lemma: 'λέγω', lang: 'grc', lemmas: [], gloss: 'say', lesson: 1, state: 'learning', since: 0 });
     await recordAnswer('λέγω', false, NOW);
     await recordAnswer('ἄγνωστος', true, NOW);
     expect(await db.reviews.toArray()).toEqual([{ kind: 'word', id: 'λέγω', step: 0, due: NOW + DAY, lastWhen: NOW, lapses: 1, rights: 0, recent: [{ when: NOW, right: false }] }]);
@@ -113,7 +113,7 @@ describe('the upgrade from version 9', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(31);
+    expect(db.verno).toBe(32);
     expect(await db.reviews.count()).toBe(0);
     expect(await seedScheduleIfFirstOpen(NOW)).toBe(true);
 
@@ -142,7 +142,7 @@ describe('the upgrade from version 9', () => {
     await db.meta.clear();
     expect(await seedScheduleIfFirstOpen(NOW)).toBe(false);
     await db.meta.put({ key: 'wordsSeeded', value: '1' });
-    await db.words.put({ lemma: 'λέγω', lemmas: [], gloss: 'say', lesson: 10, state: 'learning', since: 0 });
+    await db.words.put({ lemma: 'λέγω', lang: 'grc', lemmas: [], gloss: 'say', lesson: 10, state: 'learning', since: 0 });
     expect(await seedScheduleIfFirstOpen(NOW)).toBe(true);
     expect(await db.reviews.count()).toBe(1);
   });

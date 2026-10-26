@@ -37,7 +37,7 @@ afterAll(() => db.close());
 
 describe('the diagrams table', () => {
   it('is keyed by [ref+lang+version] and is version 31 of the store', () => {
-    expect(db.verno).toBe(31);
+    expect(db.verno).toBe(32);
     expect(db.diagrams.schema.primKey.keyPath).toEqual(['ref', 'lang', 'version']);
   });
 

@@ -53,7 +53,7 @@ describe('the reference pop-up follows the view he reads in', () => {
 
   it('draws the Weave with his solid words in Greek, as the Reader does', async () => {
     await setWeave('solid');
-    await db.words.put({ lemma: 'δεκάτη', lemmas: ['δεκάτη'], gloss: 'a tenth', lesson: 1, state: 'solid', since: 0 });
+    await db.words.put({ lemma: 'δεκάτη', lang: 'grc', lemmas: ['δεκάτη'], gloss: 'a tenth', lesson: 1, state: 'solid', since: 0 });
     const card = await openCard();
     const text = card.querySelector('[data-reference-text]') as HTMLElement;
     expect(text).toHaveAttribute('data-view', 'english');
@@ -64,7 +64,7 @@ describe('the reference pop-up follows the view he reads in', () => {
 
   it('is plain English again when the Weave is off', async () => {
     await setWeave('off');
-    await db.words.put({ lemma: 'δεκάτη', lemmas: ['δεκάτη'], gloss: 'a tenth', lesson: 1, state: 'solid', since: 0 });
+    await db.words.put({ lemma: 'δεκάτη', lang: 'grc', lemmas: ['δεκάτη'], gloss: 'a tenth', lesson: 1, state: 'solid', since: 0 });
     const card = await openCard();
     expect(card.querySelector('[data-woven]')).toBeNull();
   });

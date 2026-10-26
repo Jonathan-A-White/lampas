@@ -120,8 +120,8 @@ describe('learnerGrammar', () => {
     await setLevel('case-genitive', 'frontier', 'sheet');
     await setLevel('case-nominative', 'solid', 'sheet');
     await db.words.bulkPut([
-      { lemma: 'θεός', lemmas: [], gloss: 'God', lesson: 0, state: 'solid', since: 0 },
-      { lemma: 'λόγος', lemmas: [], gloss: 'word', lesson: 0, state: 'learning', since: 0 },
+      { lemma: 'θεός', lang: 'grc', lemmas: [], gloss: 'God', lesson: 0, state: 'solid', since: 0 },
+      { lemma: 'λόγος', lang: 'grc', lemmas: [], gloss: 'word', lesson: 0, state: 'learning', since: 0 },
     ]);
     const out = await learnerGrammar();
     expect(out.ideas.frontier).toContain('The genitive case');

@@ -37,7 +37,7 @@ describe('the chapter the Reader has open', () => {
     const NOW = Date.UTC(2026, 9, 8, 9, 0, 0);
     await db.open();
     await Promise.all([db.reviews.clear(), db.words.clear()]);
-    await db.words.put({ lemma: 'ἀγάπη', lemmas: [], gloss: 'love', lesson: 1, state: 'learning', since: 0 });
+    await db.words.put({ lemma: 'ἀγάπη', lang: 'grc', lemmas: [], gloss: 'love', lesson: 1, state: 'learning', since: 0 });
     setOpenChapter('rom', 8);
     await ensureScheduled('word', ['ἀγάπη'], NOW);
     const before = await db.reviews.get(['word', 'ἀγάπη']);

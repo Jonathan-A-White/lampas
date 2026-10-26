@@ -12,7 +12,7 @@ import { isGreekBook } from '../support/data-books';
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const codes = [...new Set(rom8.verses.flatMap((v) => v.g.map((g) => g.p)))];
 
-const word = (lemma: string, state: WordState): Word => ({ lemma, lemmas: [lemma], gloss: `gloss of ${lemma}`, lesson: 1, state, since: 0 });
+const word = (lemma: string, state: WordState): Word => ({ lemma, lang: 'grc', lemmas: [lemma], gloss: `gloss of ${lemma}`, lesson: 1, state, since: 0 });
 /** Every lemma Romans 8 uses, each as a word he knows: solid, except every third which he is learning. */
 const everyLemma = (): Word[] => [...new Set(rom8.verses.flatMap((v) => v.g.map((g) => g.l)))].map((l, i) => word(l, i % 3 === 0 ? 'learning' : 'solid'));
 

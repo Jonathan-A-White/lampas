@@ -10,7 +10,7 @@ const NOW = Date.UTC(2026, 9, 8, 15, 0, 0);
 const TODAY = Date.UTC(2026, 9, 8, 0, 0, 0);
 const HOUR = 3_600_000;
 
-const word = (lemma: string, state: Word['state'], since: number): Word => ({ lemma, lemmas: [], gloss: 'g', lesson: 0, state, since });
+const word = (lemma: string, state: Word['state'], since: number): Word => ({ lemma, lang: 'grc', lemmas: [], gloss: 'g', lesson: 0, state, since });
 
 beforeEach(async () => {
   await db.open();

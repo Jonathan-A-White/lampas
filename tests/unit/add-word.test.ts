@@ -16,7 +16,7 @@ beforeEach(async () => {
 describe('addWordToLearn', () => {
   it('adds the headword as a learning word with no lesson, and says it added it', async () => {
     expect(await addWordToLearn('σάρξ, σαρκός, ἡ', 'flesh', 5)).toBe('added');
-    expect(await listWords()).toEqual([{ lemma: 'σάρξ', lemmas: ['σάρξ'], gloss: 'flesh', lesson: 0, state: 'learning', since: 5 }]);
+    expect(await listWords()).toEqual([{ lemma: 'σάρξ', lang: 'grc', lemmas: ['σάρξ'], gloss: 'flesh', lesson: 0, state: 'learning', since: 5 }]);
   });
 
   it('adds a word once: the second time it says it was already there and changes nothing', async () => {
@@ -27,7 +27,7 @@ describe('addWordToLearn', () => {
   });
 
   it('finds a word by a lexicon lemma too, and a solid word counts as listed', async () => {
-    await db.words.add({ lemma: 'εἶπεν', lemmas: ['λέγω', 'εἶπον'], gloss: 'said', lesson: 3, state: 'solid', since: 1 });
+    await db.words.add({ lemma: 'εἶπεν', lang: 'grc', lemmas: ['λέγω', 'εἶπον'], gloss: 'said', lesson: 3, state: 'solid', since: 1 });
     expect(await addWordToLearn('λέγω')).toBe('already');
     expect(await wordIsListed('εἶπον')).toBe(true);
     expect(await db.words.count()).toBe(1);
@@ -69,7 +69,7 @@ describe('addLemmaToLearn', () => {
   it('stores the lexicon gloss and part of speech of a lemma that is not in the open chapter', async () => {
     expect(chapter.verses.flatMap((v) => v.g).some((w) => w.l === 'προσκυνέω')).toBe(false);
     expect(await addLemmaToLearn(scope, 'προσκυνέω', 5)).toEqual({ headword: 'προσκυνέω', result: 'added' });
-    expect(await listWords()).toEqual([{ lemma: 'προσκυνέω', lemmas: ['προσκυνέω'], gloss: 'to worship', pos: 'verb', lesson: 0, state: 'learning', since: 5 }]);
+    expect(await listWords()).toEqual([{ lemma: 'προσκυνέω', lang: 'grc', lemmas: ['προσκυνέω'], gloss: 'to worship', pos: 'verb', lesson: 0, state: 'learning', since: 5 }]);
   });
 
   it('takes a lemma of the open chapter from the lexicon too, with its part of speech', async () => {
@@ -83,7 +83,7 @@ describe('addLemmaToLearn', () => {
   });
 
   it('says a listed word is already there, even one the lexicon does not know', async () => {
-    await db.words.add({ lemma: 'ζζζ', lemmas: ['ζζζ'], gloss: 'mine', lesson: 1, state: 'solid', since: 1 });
+    await db.words.add({ lemma: 'ζζζ', lang: 'grc', lemmas: ['ζζζ'], gloss: 'mine', lesson: 1, state: 'solid', since: 1 });
     expect(await addLemmaToLearn(scope, 'ζζζ')).toEqual({ headword: 'ζζζ', result: 'already' });
   });
 
