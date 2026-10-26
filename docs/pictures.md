@@ -80,7 +80,7 @@ drawn is the relation, and the family is the point: `LINK_WORDS` in `src/data/pi
 The shared frame: two thought-blocks, rounded bars, the first white and above, the second amber and below, as two lines of
 text read; the link between them is blue. Only the link changes from word to word, so the eye learns the difference, not a
 new scene. A broken line (dots or dashes) is ἄν's "maybe, -ever" wherever it appears (ἄν, ἐάν, ὅταν); red is still only "not"
-(οὐδέ, οὔτε). A compound draws as its parts: οὐδέ is δέ struck, ἐάν is εἰ with ἄν's dots, ὅταν is ὅτε with them.
+(οὐδέ, οὔτε). A compound draws as its parts: οὐδέ is δέ struck, ἐάν is εἰ with ἄν's broken line, ὅταν is ὅτε with it.
 
 - **γάρ** — "for, since": a hook from the second back up into the first (the reason explains what came before). Unlike οὖν's arrow it goes back, and it is a hook on the side, not ἵνα's arrow at a target.
 - **οὖν** — "therefore": a double arrow (⇒) down from the first into the second (what follows from it). Unlike ἵνα's single arrow it lands on a thought already said, not an aim.
@@ -99,7 +99,7 @@ new scene. A broken line (dots or dashes) is ἄν's "maybe, -ever" wherever it 
 - **ἄν** — "would, -ever": the second thought dashed, a would-be, joined by dots. It marks a thought as possible; it is not a "not".
 - **ὅτε** — "when": both thoughts on one blue line that drops to a point on a grey time line. Not ὡς: the line is time, not likeness.
 - **ὅταν** — "whenever": ὅτε's picture with the blue line in ἄν's dots and more ticks on the time line (at any such time).
-- **ἕως** — "until": the first runs along the time line into a blue wall, the second just after it. Not εἰ or ἵνα: a stop, not a choice or an aim.
+- **ἕως** — "until": the first runs on, above the time line, into a blue wall, the second just after it. Not εἰ or ἵνα: a stop, not a choice or an aim.
 
 ## Nothing honest to draw
 
