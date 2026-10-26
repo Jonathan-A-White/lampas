@@ -75,3 +75,33 @@ Feature: Lampas draws a verse as a Reed-Kellogg diagram
     Then the tutor was asked 2 times
     When he switches the Reader to Greek
     Then the pane draws the Greek diagram of Colossians 3:1
+
+  Scenario: With the Weave on, a word it shows in Greek is drawn in Greek and opens its word sheet
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once
+    When he taps Diagram
+    Then the diagram draws the Greek "χριστῷ" and "χριστός" in Greek and not the English "Christ"
+    And the English "strive" of the diagram is drawn in English
+    When he taps the Greek "χριστῷ" of the diagram
+    Then the word sheet opens with the Greek "χριστῷ"
+    And the tutor was asked once
+
+  Scenario: With the Weave off the diagram is all English as before
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave off and his words kept, and the tutor answers at once
+    When he taps Diagram
+    Then every word of the diagram is English
+
+  Scenario: Switching the Weave redraws the diagram from the same tree
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once
+    When he taps Diagram
+    And the diagram draws the Greek "χριστῷ"
+    When he switches the Weave off
+    Then the diagram draws the English "Christ" twice and no Greek
+    When he switches the Weave on again
+    Then the diagram draws the Greek "χριστῷ" again
+    And the tutor was asked once
+
+  Scenario: In the Greek view the Greek tree is drawn whatever the Weave
+    Given a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once
+    When he taps Diagram
+    And he switches the Reader to Greek
+    Then the pane draws the Greek diagram of Colossians 3:1

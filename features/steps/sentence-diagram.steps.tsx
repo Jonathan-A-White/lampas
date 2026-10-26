@@ -8,7 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { getDiagram, setGreekInterest, setReaderView, setWeave } from '../../src/data/repositories';
+import { getDiagram, setGreekInterest, setReaderView, setWeave, type Weave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { setVerseAction } from '../../src/verse/action';
@@ -17,6 +17,7 @@ import { ReedKellogg } from '../../src/diagram/ReedKellogg';
 import type { DiagramMode } from '../../src/diagram/types';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { loadFixture, type DiagramFixture } from '../../tests/support/diagram-fixtures';
+import { seedHisWords } from '../../tests/support/his-words';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 
 afterAll(() => {
@@ -85,7 +86,7 @@ const verseView = (): HTMLElement => screen.getByRole('region', { name: 'Verse v
 const pane = (): HTMLElement => within(verseView()).getByRole('region', { name: 'Diagram' });
 
 /** Opens the app on Colossians 3:1's Verse view (the address names the verse), the tutor slow, at once, or unable. */
-async function openVerse(how: 'slow' | 'at once' | 'unable'): Promise<void> {
+async function openVerse(how: 'slow' | 'at once' | 'unable', weave: Weave | null = null): Promise<void> {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
@@ -110,7 +111,9 @@ async function openVerse(how: 'slow' | 'at once' | 'unable'): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.diagrams.clear()]);
   await setGreekInterest(5);
   await setReaderView('english');
-  await setWeave('off');
+  // a weave is shown for the words he knows: with one, his progress (the 63 BMA words, Christ among the solid ones) is on the phone
+  if (weave) await seedHisWords();
+  await setWeave(weave ?? 'off');
   setVerseAction('listen');
   window.history.replaceState(null, '', '/#/?ref=Col.3.1');
   render(<App />);
@@ -292,6 +295,88 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the pane draws the Greek diagram of Colossians 3:1', async () => {
       // the switch of view is a new pane (keyed by the mode), so the pane is found again on each try rather than held
+      await waitFor(() => expect(within(pane()).getByRole('img', { name: 'Sentence diagram of Colossians 3:1, Greek' })).toBeInTheDocument());
+    });
+  });
+
+  Scenario('With the Weave on, a word it shows in Greek is drawn in Greek and opens its word sheet', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once', () => openVerse('at once', 'solid'));
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    Then('the diagram draws the Greek {string} and {string} in Greek and not the English "Christ"', async (_, first: string, second: string) => {
+      for (const greek of [first, second]) {
+        const word = await within(pane()).findByRole('button', { name: greek });
+        expect(word).toHaveAttribute('lang', 'el');
+      }
+      expect(within(pane()).queryByRole('button', { name: 'Christ' })).toBeNull();
+    });
+    And('the English {string} of the diagram is drawn in English', (_, english: string) => {
+      const word = within(pane()).getByRole('button', { name: english });
+      expect(word).toHaveAttribute('lang', 'en');
+    });
+    When('he taps the Greek {string} of the diagram', async (_, greek: string) => {
+      await user.click(within(pane()).getByRole('button', { name: greek }));
+    });
+    Then('the word sheet opens with the Greek {string}', async (_, greek: string) => {
+      const sheet = await screen.findByRole('dialog', { name: 'Word' });
+      expect(within(sheet).getByTestId('sheet-word').textContent?.normalize('NFC')).toBe(greek.normalize('NFC'));
+    });
+    And('the tutor was asked once', () => expect(diagramGrists()).toBe(1));
+  });
+
+  Scenario('With the Weave off the diagram is all English as before', ({ Given, When, Then }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave off and his words kept, and the tutor answers at once', async () => {
+      await openVerse('at once', 'off');
+    });
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    Then('every word of the diagram is English', async () => {
+      expect(await within(pane()).findAllByRole('button', { name: 'Christ' })).toHaveLength(2);
+      for (const button of within(pane()).getAllByRole('button')) expect(button).not.toHaveAttribute('data-lang');
+    });
+  });
+
+  Scenario('Switching the Weave redraws the diagram from the same tree', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once', () => openVerse('at once', 'solid'));
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    And('the diagram draws the Greek {string}', async (_, greek: string) => {
+      expect(await within(pane()).findByRole('button', { name: greek })).toBeInTheDocument();
+    });
+    When('he switches the Weave off', async () => {
+      await act(async () => {
+        await setWeave('off');
+      });
+    });
+    Then('the diagram draws the English "Christ" twice and no Greek', async () => {
+      await waitFor(() => expect(within(pane()).getAllByRole('button', { name: 'Christ' })).toHaveLength(2));
+      expect(within(pane()).queryByRole('button', { name: 'χριστῷ' })).toBeNull();
+    });
+    When('he switches the Weave on again', async () => {
+      await act(async () => {
+        await setWeave('solid');
+      });
+    });
+    Then('the diagram draws the Greek {string} again', async (_, greek: string) => {
+      expect(await within(pane()).findByRole('button', { name: greek })).toBeInTheDocument();
+    });
+    And('the tutor was asked once', () => expect(diagramGrists()).toBe(1));
+  });
+
+  Scenario('In the Greek view the Greek tree is drawn whatever the Weave', ({ Given, When, Then, And }) => {
+    Given('a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once', () => openVerse('at once', 'solid'));
+    When('he taps Diagram', async () => {
+      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    And('he switches the Reader to Greek', async () => {
+      await act(async () => {
+        await setReaderView('greek');
+      });
+    });
+    Then('the pane draws the Greek diagram of Colossians 3:1', async () => {
       await waitFor(() => expect(within(pane()).getByRole('img', { name: 'Sentence diagram of Colossians 3:1, Greek' })).toBeInTheDocument());
     });
   });

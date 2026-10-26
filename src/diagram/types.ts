@@ -65,6 +65,8 @@ export type DiagramMode = 'english' | 'greek';
 export type DiagramWord = ({ text: string; chunk: number } | { text: string; word: number }) & {
   /** the verse's number, only on the words of a passage of several verses: `chunk` and `word` count within that verse */
   verse?: number;
+  /** only on an English word the Weave shows in Greek (src/diagram/weave.ts): the verse's Greek word indexes drawn in its place (none: the chunk's other words, which the Greek has taken the place of) */
+  weft?: number[];
 };
 
 /** The words of a request, in order: TokenRef {i} is a position in this list. */

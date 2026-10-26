@@ -18,7 +18,12 @@ const ESTIMATE_PX = 20;
 type Measure = (text: string) => number;
 const estimate: Measure = (text) => text.length * ESTIMATE_EM * ESTIMATE_PX;
 
+const ENGLISH_FACE = 'font-sans text-[length:var(--lp-english-size)]';
+const GREEK_FACE = 'font-greek text-[length:var(--lp-greek-size)]';
 const MODE_NAME: Record<DiagramMode, string> = { english: 'English', greek: 'Greek' };
+
+/** Text with a Greek letter in it: set in the Greek face (a word of the Weave in an English diagram is Greek, the rest of that diagram is not). */
+const GREEK_LETTER = /[\u0370-\u03FF\u1F00-\u1FFF]/;
 
 /** The width of text in the face of `probe` (a hidden span carrying the classes of the labels), by canvas; null where there is no canvas (jsdom). */
 function measureIn(probe: HTMLElement): Measure | null {
@@ -46,14 +51,18 @@ export interface ReedKelloggProps {
 
 export function ReedKellogg({ diagram, words, mode, reference, onWord, measure }: ReedKelloggProps) {
   const greek = mode === 'greek';
-  const face = greek ? 'font-greek text-[length:var(--lp-greek-size)]' : 'font-sans text-[length:var(--lp-english-size)]';
+  const face = greek ? GREEK_FACE : ENGLISH_FACE;
   const probe = useRef<HTMLSpanElement>(null);
-  const [measured, setMeasured] = useState<Measure | null>(null);
+  const greekProbe = useRef<HTMLSpanElement>(null);
+  const [measured, setMeasured] = useState<{ english: Measure; greek: Measure } | null>(null);
   // The face is read once the probe is on the page, before it is painted, and again when the web font has loaded (the labels' widths follow it).
   useLayoutEffect(() => {
-    if (measure || !probe.current) return;
-    const node = probe.current;
-    const read = () => setMeasured(() => measureIn(node));
+    if (measure || !probe.current || !greekProbe.current) return;
+    const [english, greekNode] = [probe.current, greekProbe.current];
+    const read = () => {
+      const [en, el] = [measureIn(english), measureIn(greekNode)];
+      setMeasured(en && el ? { english: en, greek: el } : null);
+    };
     read();
     let live = true;
     void document.fonts?.ready.then(() => live && read());
@@ -61,12 +70,17 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure }
       live = false;
     };
   }, [measure, mode]);
-  const width = measure ?? measured ?? estimate;
+  const width = useMemo<Measure>(() => {
+    if (measure) return measure;
+    if (!measured) return estimate;
+    return (text) => (GREEK_LETTER.test(text) ? measured.greek(text) : measured.english(text));
+  }, [measure, measured]);
   const layout = useMemo(() => layoutDiagram(diagram, words, width), [diagram, words, width]);
 
   const label = (l: LayoutLabel) => {
     const place = { left: l.x - HIT_PAD, top: l.y - LABEL_H - 2, width: l.width + 2 * HIT_PAD, height: LABEL_H };
     const text = 'absolute flex items-center justify-center whitespace-nowrap leading-none text-fg';
+    if (l.index !== undefined && l.text === '') return null; // a word the Weave's Greek has taken the place of
     if (l.index === undefined) {
       return (
         <span key={l.id} data-implied="" {...langOf(greek)} style={place} className={`${text} ${face} text-muted`}>
@@ -75,8 +89,9 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure }
       );
     }
     const index = l.index;
+    const woven = words[index]?.weft !== undefined;
     return (
-      <button key={l.id} type="button" data-word={String(index)} {...langOf(greek)} style={place} onClick={() => onWord(index)} className={`${text} ${face} ${NO_SELECT} cursor-pointer rounded active:bg-line`}>
+      <button key={l.id} type="button" data-word={String(index)} data-woven={woven ? '' : undefined} {...langOf(greek || woven)} style={place} onClick={() => onWord(index)} className={`${text} ${woven ? GREEK_FACE : face} ${NO_SELECT} cursor-pointer rounded active:bg-line`}>
         {l.text}
       </button>
     );
@@ -102,7 +117,10 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure }
           ))}
         </svg>
         {inReadingOrder(layout.labels).map(label)}
-        <span ref={probe} aria-hidden="true" className={`pointer-events-none invisible absolute left-0 top-0 ${face}`}>
+        <span ref={probe} aria-hidden="true" className={`pointer-events-none invisible absolute left-0 top-0 ${ENGLISH_FACE}`}>
+          Hg
+        </span>
+        <span ref={greekProbe} aria-hidden="true" className={`pointer-events-none invisible absolute left-0 top-0 ${GREEK_FACE}`}>
           Hg
         </span>
       </div>
