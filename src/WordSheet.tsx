@@ -288,7 +288,7 @@ function HebrewCard({ chapter, word, english, study, level, offerLogos, onMissin
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-2">
         <SpeakButton text={word.t} id={`word:${word.t}`} label="Listen" kind="speaker" language="hebrew" className="shrink-0" />
-        <h2 data-testid="sheet-word" {...HEBREW_LANG_ATTRS} dir="rtl" className="script-he min-w-0 flex-1 break-words text-4xl font-bold">
+        <h2 data-testid="sheet-word" {...HEBREW_LANG_ATTRS} dir="rtl" className="script-he min-w-0 flex-1 break-words text-4xl! font-bold">
           {word.t}
         </h2>
       </div>
