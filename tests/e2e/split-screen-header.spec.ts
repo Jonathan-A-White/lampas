@@ -109,9 +109,11 @@ for (const size of SIZES) {
       for (let j = i + 1; j < boxes.length; j++) expect(apart(boxes[i], boxes[j]), `${boxes[i].name} and ${boxes[j].name} do not overlap`).toBe(true);
     }
 
-    // the verse text gets at least 40% of the window's height
+    // the verse text gets at least 40% of the window's height; in a window under 300 px tall the Talk bar and its 48 px bottom inset are whole at the foot (mw-5r3p30.773:
+    // before, the box kept 136 px by its end padding and pushed the bar out of the window), so the 91 px header and the 121 px bar leave the text a 48 px box
     const text = await page.locator('main[data-reader]').boundingBox();
-    expect(text!.height / size.height, 'the verse text box as a share of the window').toBeGreaterThanOrEqual(0.4);
+    if (size.height < 300) expect(text!.height, 'the verse text box in a window under 300 px tall').toBeGreaterThanOrEqual(48);
+    else expect(text!.height / size.height, 'the verse text box as a share of the window').toBeGreaterThanOrEqual(0.4);
 
     // no empty band: the first section heading's box starts under 24 px below the lowest control of the header
     const lowest = Math.max(...boxes.map((box) => box.y + box.height));
