@@ -50,28 +50,30 @@ export function DiagramLesson() {
   return (
     <>
       <ScreenHeader title={LESSON_TITLE} subtitle={`Step ${at + 1} of ${STEPS}`} back={<HeaderButton onClick={leave}>‹ Leave</HeaderButton>} />
-      <main className="screen min-h-0 flex-1 px-4 pt-4" data-testid="diagram-lesson">
+      <main className="screen min-h-0 flex-1 px-4 pt-4 pb-[var(--lp-end-inset)]" data-testid="diagram-lesson">
         <h2 className="text-2xl font-semibold">{step.title}</h2>
         <p className="mt-2 text-lg">{step.text}</p>
         <p className="mt-1 text-base text-muted">{step.reference}</p>
-        <div className="mt-3" data-testid="diagram-lesson-diagram">
-          <ReedKellogg key={at} diagram={step.diagram} words={step.words} mode={step.mode} reference={step.reference} onWord={setTapped} lit={tapped === null ? undefined : step.check.answer} />
-        </div>
+        {/* the check is above the diagram: a tall diagram never pushes the question, or the answer, out of sight */}
         <p className="mt-3 text-lg font-medium" data-testid="diagram-lesson-check">
           {checkPrompt(step)}
         </p>
-        <p role="status" data-testid="diagram-lesson-told" className={`mt-1 min-h-7 text-lg ${right ? 'text-good' : 'text-muted'}`}>
+        <p role="status" data-testid="diagram-lesson-told" className={`min-h-7 text-lg ${right ? 'text-good' : 'text-muted'}`}>
           {tapped === null ? '' : right ? 'Right.' : `Not quite: the ${step.check.role} is the one lit.`}
         </p>
-        <div className="mt-4 grid grid-cols-2 gap-3 pb-[var(--lp-end-inset)]">
-          <button type="button" disabled={at === 0} onClick={() => go(at - 1)} className={BUTTON}>
-            Back
-          </button>
-          <button type="button" onClick={next} className={BUTTON}>
-            {last ? 'Done' : 'Next'}
-          </button>
+        <div className="mt-2" data-testid="diagram-lesson-diagram">
+          <ReedKellogg key={at} diagram={step.diagram} words={step.words} mode={step.mode} reference={step.reference} onWord={setTapped} lit={tapped === null ? undefined : step.check.answer} />
         </div>
       </main>
+      {/* Back and Next stay where a thumb finds them, however tall the diagram is */}
+      <footer className="grid shrink-0 grid-cols-2 gap-3 border-t border-line px-4 pt-2 pb-[var(--lp-bar-inset)]">
+        <button type="button" disabled={at === 0} onClick={() => go(at - 1)} className={BUTTON}>
+          Back
+        </button>
+        <button type="button" onClick={next} className={BUTTON}>
+          {last ? 'Done' : 'Next'}
+        </button>
+      </footer>
     </>
   );
 }

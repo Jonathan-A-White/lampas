@@ -59,8 +59,8 @@ export function AskTutorButton({ onClick, lift = '0px', away, inDialog }: { onCl
   );
 }
 
-/** How far a screen's pinned bottom bar raises the button: Import's Add bar (a summary line over a 48 px button, padded). */
-const LIFT: Partial<Record<Route, string>> = { import: 'var(--spacing) * 20 + 3rem' };
+/** How far a screen's pinned bottom bar raises the button: Import's Add bar (a summary line over a 48 px button, padded) and the diagram lesson's Back and Next (a 48 px row, 8 px above it and a 1 px border). */
+const LIFT: Partial<Record<Route, string>> = { import: 'var(--spacing) * 20 + 3rem', 'diagram-lesson': 'var(--spacing) * 14 + 1px' };
 
 /** Import your library (#/library?import, src/library/ImportLibrary.tsx) pins one 48 px button at its foot, padded: the button rises above it. */
 const IMPORT_LIBRARY_LIFT = 'var(--spacing) * 18';

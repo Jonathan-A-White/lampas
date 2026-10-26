@@ -41,7 +41,7 @@ const stepLine = (at: number): string => `Step ${at} of ${LESSON_STEPS.length}`;
 const diagram = async (): Promise<HTMLElement> => (await lesson()).querySelector<HTMLElement>('[data-diagram]')!;
 const wordButton = async (text: string): Promise<HTMLElement> => within(await diagram()).getByRole('button', { name: text, exact: true });
 const told = (): HTMLElement => screen.getByTestId('diagram-lesson-told');
-const buttonNamed = (name: string): HTMLElement => within(screen.getByTestId('diagram-lesson')).getByRole('button', { name, exact: true });
+const buttonNamed = (name: string): HTMLElement => screen.getByRole('button', { name, exact: true });
 
 async function opensOnLesson(): Promise<void> {
   await open('#/diagram-lesson');
