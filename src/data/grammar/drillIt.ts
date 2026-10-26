@@ -132,6 +132,24 @@ function needLevels(ideaId: string, levels: ReadonlyMap<string, Level>): Map<str
 /** The lowest prerequisite of the idea that is not solid, or null: lowest by rung (the kit reads it as the idea's level), and a missing level is not solid. */
 export const unmetNeed = (ideaId: string, levels: ReadonlyMap<string, Level>): string | null => kitUnmetNeed(LADDER_PATH, ideaId, needLevels(ideaId, levels));
 
+// ---- Items the mill wrote ----
+
+/**
+ * A question the mill wrote (src/data/repositories/fetchedItems.ts) as a question of this walk, in place of `place`: it takes the place's key and step, so the walk counts the place as asked,
+ * and its own facet when the walk has one by that id (the walk's other questions are of it), else the place's. Graded as any is: by its right option, its facet, its `say`.
+ */
+export function asDrillQuestion(kept: GrammarQuestion, place: DrillQuestion, steps: readonly DrillStep[]): DrillQuestion {
+  const known = new Set(steps.flatMap((s) => s.questions.map((q) => q.facet.id)));
+  const facet = kept.facet && known.has(kept.facet.id) ? kept.facet : place.facet;
+  return { ...kept, facet, step: place.step, key: place.key };
+}
+
+/** The walk with the question being asked swapped for a question the mill wrote (a walk that is over, or an item of another idea, does not change). Served once: the caller took it from the kept list. */
+export function serveFetched(walk: DrillWalk, kept: GrammarQuestion): DrillWalk {
+  if (walk.result || !walk.current || kept.ideaId !== walk.ideaId) return walk;
+  return { ...walk, current: asDrillQuestion(kept, walk.current, walk.steps) };
+}
+
 // ---- The walk ----
 
 export interface DrillAnswer {

@@ -19,7 +19,8 @@ import {
   type GapPlan,
   type PlanItem,
 } from 'learn-kit/drill';
-import { drillSteps, type DrillOptions, type DrillQuestion, type DrillResult, type DrillStep } from './drillIt';
+import type { GrammarQuestion } from './questions';
+import { asDrillQuestion, drillSteps, type DrillOptions, type DrillQuestion, type DrillResult, type DrillStep } from './drillIt';
 
 /** The review kind of a plan's items: src/review/kinds.ts DRILL_PLAN. */
 export const PLAN_KIND = 'drill-plan';
@@ -68,3 +69,13 @@ export function facetQuestions(steps: readonly DrillStep[], item: PlanItem): Dri
 
 /** The short drill of a facet item of an idea's plan, drawn from the idea's steps for `options` (the passage and seed). */
 export const shortDrill = (ideaId: string, item: PlanItem, options: DrillOptions = {}): DrillQuestion[] => facetQuestions(drillSteps(ideaId, options), item);
+
+/**
+ * The questions of a short drill with one the mill wrote (src/data/repositories/fetchedItems.ts) in place of the one at `at`; the questions when `at` is not one of them or the item is of
+ * another idea. The drill's end is unchanged: how many are right of how many.
+ */
+export function withFetched(questions: readonly DrillQuestion[], kept: GrammarQuestion, at: number): DrillQuestion[] {
+  const place = questions[at];
+  if (!place || kept.ideaId !== place.ideaId) return [...questions];
+  return questions.map((q, i) => (i === at ? asDrillQuestion(kept, place, [{ step: place.step, title: '', questions: [place] }]) : q));
+}

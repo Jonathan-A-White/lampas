@@ -31,6 +31,7 @@ import {
   pushGrammarAnswer,
   recordAnswer,
   noteAnswer,
+  noteAsked,
   recordDrillStep,
   recordGrammarAnswer,
   recordReview,
@@ -224,6 +225,8 @@ export const GRAMMAR: ReviewKind = {
   record: async (item, right) => {
     if (item.kind !== 'grammar') return;
     await recordGrammarAnswer(item.id, right);
+    // the question is remembered as asked, so the mill is not asked for it again and a kept copy is not served (mw-indx1x6.1)
+    await noteAsked(item.question);
     // a form read right shows its letters, sounds and marks; a miss on a letter or sound counts against it (mw-hqd5bz.17)
     await noteAnswer(item.question, right);
     // the ring of the last 20 grammar answers that decides whether New words at moves (src/review/pickerMove.ts)
