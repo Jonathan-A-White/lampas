@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.26
+_2026-10-26_
+- New: Ask the tutor on an Old Testament verse now sees the Hebrew words of the verse, with their dictionary form, meaning and grammar, and can answer about them.
+
 ## 0.2.25
 _2026-10-26_
 - New: Tap a Hebrew word in an Old Testament chapter and see its sheet, with its meaning, grammar, Strong's number, sound and links to your Hebrew lexicons in Logos.

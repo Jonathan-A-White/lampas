@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.2.26",
+    "date": "2026-10-26",
+    "story": "mw-5vvlay.3",
+    "kind": "new",
+    "text": "Ask the tutor on an Old Testament verse now sees the Hebrew words of the verse, with their dictionary form, meaning and grammar, and can answer about them."
+  },
+  {
     "version": "0.2.25",
     "date": "2026-10-26",
     "story": "mw-5vvlay.2",
