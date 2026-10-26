@@ -13,13 +13,14 @@
 // as the voice reaches it.
 import { useSyncExternalStore } from 'react';
 import { getSpeech, isSpeaking, pause as enginePause, resume as engineResume, stop as engineStop, subscribe as subscribeEngine } from 'voice-kit/speech';
-import { loadChapter, type Verse } from '../data/chapter';
+import { loadChapter, type SourceLanguage, type Verse } from '../data/chapter';
 import { neighbours } from '../data/neighbours';
 import type { ReaderView } from '../data/repositories';
 import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
-import { besideNow, greekVoiceForm, hasGreekVoice, loneLetterCuts, playInTurn, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside, type Piece } from './greek';
+import { hebrewVoiceForm } from './hebrewPronunciation';
+import { besideNow, greekVoiceForm, hasGreekVoice, hasVoice, loneLetterCuts, playInTurn, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside, type Piece } from './greek';
 import type { SpeechLanguage } from './languages';
 import type { ReadSpan } from './readSpan';
 import { dropWaiting } from './tutorWaiting';
@@ -48,16 +49,21 @@ export interface ChapterRef {
 /** The line shown when a phone has no Greek voice and Greek is read anyway. */
 export const NO_GREEK_VOICE_NOTICE = 'This phone has no Greek voice: Greek is read with the default voice';
 
+/** The line shown when a phone has no Hebrew voice and Hebrew is read anyway (the same line a Hebrew word's tap shows, src/speech/greek.ts noVoiceHelp). */
+export const NO_HEBREW_VOICE_NOTICE = 'No Hebrew voice on this phone';
+
 const speakable = (text: string): boolean => /[\p{L}\p{N}]/u.test(text);
 
-/** What is shown of `verse`, as runs of one language each, in the order it is shown. */
-export function runsOf(verse: Verse, view: ReaderView, woven: WovenVerse | null): Run[] {
+/** What is shown of `verse`, as runs of one language each, in the order it is shown. `source` is the language of the chapter's own words: the Greek view and the words
+ * the weave shows are read in it ('hbo' is Hebrew, in the he-IL voice). */
+export function runsOf(verse: Verse, view: ReaderView, woven: WovenVerse | null, source: SourceLanguage = 'grc'): Run[] {
+  const language = source === 'hbo' ? ('hebrew' as const) : ('greek' as const);
   const parts: Run[] =
     view === 'greek'
-      ? verse.g.map((w) => ({ text: w.t, language: 'greek' as const }))
+      ? verse.g.map((w) => ({ text: w.t, language }))
       : drawnOrder(verse, woven).map((i) => {
           const words = woven?.[i]?.words;
-          return words ? { text: words.map((w) => w.t).join(' '), language: 'greek' as const } : { text: chunkText(verse, woven, i), language: 'english' as const };
+          return words ? { text: words.map((w) => w.t).join(' '), language } : { text: chunkText(verse, woven, i), language: 'english' as const };
         });
   const runs: Run[] = [];
   for (const part of parts) {
@@ -69,8 +75,8 @@ export function runsOf(verse: Verse, view: ReaderView, woven: WovenVerse | null)
 }
 
 /** The whole chapter as it is shown now. `woven` is per verse, as the Reader weaves it (null: no weave). */
-export function planOf(verses: Verse[], view: ReaderView, woven: (WovenVerse | null)[] | null): PlanVerse[] {
-  return verses.map((v, i) => ({ n: v.n, runs: runsOf(v, view, woven?.[i] ?? null), heading: Boolean(v.h) }));
+export function planOf(verses: Verse[], view: ReaderView, woven: (WovenVerse | null)[] | null, source: SourceLanguage = 'grc'): PlanVerse[] {
+  return verses.map((v, i) => ({ n: v.n, runs: runsOf(v, view, woven?.[i] ?? null, source), heading: Boolean(v.h) }));
 }
 
 export type ReadingStatus = 'idle' | 'reading' | 'paused';
@@ -236,7 +242,7 @@ function afterVerse(at: number, my: number): void {
 
 /** The runs of a verse as the one text handed to the package: a run to a line, so the package cuts a sentence at the end of every run too. A Greek run
  * goes in its pronunciation's voice form, so the voice says what the respelling writes (mw-5r3p30.264). */
-const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' ? greekVoiceForm(r.text) : r.text)).join('\n');
+const textOf = (runs: Run[]): string => runs.map((r) => (r.language === 'greek' ? greekVoiceForm(r.text) : r.language === 'hebrew' ? hebrewVoiceForm(r.text) : r.text)).join('\n');
 
 /** A verse's runs as what is played in turn. A Greek word of one letter (a lone ὁ, a one-letter syllable, the Ὃ and ὃ inside 1 John 1:1) is never handed to
  * the voice as it is, which would name the letter ('omicron'): the run is cut at it (loneLetterCuts, mw-5r3p30.448) and it is handed its pronunciation's
@@ -303,9 +309,16 @@ function readVerse(verse: number, my: number): void {
   playPieces(piecesOf(entry.runs), my, () => afterVerse(at, my), entry.runs.every((r) => r.slow));
 }
 
-function greekAhead(from: number, all: boolean): boolean {
+function languageAhead(language: SpeechLanguage, from: number, all: boolean): boolean {
   const ahead = plan.filter((v) => (all ? v.n >= from : v.n === from));
-  return ahead.some((v) => v.runs.some((r) => r.language === 'greek'));
+  return ahead.some((v) => v.runs.some((r) => r.language === language));
+}
+
+/** The one line about a missing voice for the Greek or Hebrew the reading is about to read (from verse `from`, to the end when `all`), or null. */
+function noVoiceNotice(from: number, all: boolean): string | null {
+  if (hasGreekVoice() === false && languageAhead('greek', from, all)) return NO_GREEK_VOICE_NOTICE;
+  if (hasVoice('hebrew') === false && languageAhead('hebrew', from, all)) return NO_HEBREW_VOICE_NOTICE;
+  return null;
 }
 
 /** Starts reading at verse `from`: that verse only, or on as far as `span` says when `continuous` (the chapter's end when no
@@ -341,7 +354,7 @@ export function startReading(options: StartOptions): void {
   planBook = options.inBook ?? options.book ?? null;
   reach = options.continuous ? options.span ?? 'chapter' : 'verse';
   queued = null;
-  const notice = hasGreekVoice() === false && greekAhead(options.from, reach !== 'verse') ? NO_GREEK_VOICE_NOTICE : null;
+  const notice = noVoiceNotice(options.from, reach !== 'verse');
   set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false, listen: options.listen ?? null });
   keepAwake();
   readVerse(options.from, epoch);
@@ -359,7 +372,7 @@ export function continueReading(options: { book: string; chapter: number; plan: 
   planBook = options.book;
   queued = null;
   if (!first) return finish(epoch);
-  const notice = hasGreekVoice() === false && greekAhead(first.n, true) ? NO_GREEK_VOICE_NOTICE : state.notice;
+  const notice = noVoiceNotice(first.n, true) ?? state.notice;
   set({ ...state, verse: first.n, notice, crossing: null });
   readVerse(first.n, epoch);
 }
