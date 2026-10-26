@@ -1,0 +1,132 @@
+{
+  "description": "A question about the Hebrew behind an English word of Jonah 1:17: the answer is plain English that gives the Hebrew word for fish, pointed, with its transliteration, and leaves the Greek words list empty.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Jonah 1:17",
+    "greek": "",
+    "english": "Now the LORD had appointed a great fish to swallow Jonah, and Jonah spent three days and three nights in the belly of the fish.",
+    "question": "What does the Hebrew say for fish?",
+    "solid_count": 0,
+    "solid_words": [],
+    "settings": {
+      "hebrewDepth": "both"
+    },
+    "hebrew": "וַיְמַן יְהוָה דָּג גָּדוֹל לִבְלֹעַ אֶת־ יוֹנָה וַיְהִי יוֹנָה בִּמְעֵי הַדָּג שְׁלֹשָׁה יָמִים וּשְׁלֹשָׁה לֵילוֹת",
+    "hebrew_words": [
+      {
+        "form": "וַיְמַן",
+        "lemma": "מָנָה",
+        "translit": "way·man",
+        "gloss": "to count",
+        "parse": "Conjunctive waw | Verb - Piel - Consecutive imperfect - third person masculine singular"
+      },
+      {
+        "form": "יְהוָה",
+        "lemma": "יְהֹוָה",
+        "translit": "Yah·weh",
+        "gloss": "LORD",
+        "parse": "Noun - proper - masculine singular"
+      },
+      {
+        "form": "דָּג",
+        "lemma": "דָּג",
+        "translit": "dāḡ",
+        "gloss": "Fish (Gate)",
+        "parse": "Noun - masculine singular"
+      },
+      {
+        "form": "גָּדוֹל",
+        "lemma": "גָּדוֹל",
+        "translit": "gā·ḏō·wl",
+        "gloss": "great, large",
+        "parse": "Adjective - masculine singular"
+      },
+      {
+        "form": "לִבְלֹעַ",
+        "lemma": "בָּלַע",
+        "translit": "liḇ·lō·a‘",
+        "gloss": "to swallow up",
+        "parse": "Preposition-l | Verb - Qal - Infinitive construct"
+      },
+      {
+        "form": "אֶת־",
+        "lemma": "אֵת",
+        "translit": "’eṯ-",
+        "gloss": "[Obj.]",
+        "parse": "Direct object marker"
+      },
+      {
+        "form": "יוֹנָה",
+        "lemma": "יוֹנָה",
+        "translit": "yō·w·nāh",
+        "gloss": "Jonah",
+        "parse": "Noun - proper - masculine singular"
+      },
+      {
+        "form": "וַיְהִי",
+        "lemma": "הָיָה",
+        "translit": "way·hî",
+        "gloss": "to be",
+        "parse": "Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular"
+      },
+      {
+        "form": "בִּמְעֵי",
+        "lemma": "מֵעֶה",
+        "translit": "bim·‘ê",
+        "gloss": "belly",
+        "parse": "Preposition-b | Noun - masculine plural construct"
+      },
+      {
+        "form": "הַדָּג",
+        "lemma": "דָּג",
+        "translit": "had·dāḡ",
+        "gloss": "Fish (Gate)",
+        "parse": "Article | Noun - masculine singular"
+      },
+      {
+        "form": "שְׁלֹשָׁה",
+        "lemma": "שָׁלֹשׁ",
+        "translit": "šə·lō·šāh",
+        "gloss": "three",
+        "parse": "Number - masculine singular"
+      },
+      {
+        "form": "יָמִים",
+        "lemma": "יוֹם",
+        "translit": "yā·mîm",
+        "gloss": "day",
+        "parse": "Noun - masculine plural"
+      },
+      {
+        "form": "וּשְׁלֹשָׁה",
+        "lemma": "שָׁלֹשׁ",
+        "translit": "ū·šə·lō·šāh",
+        "gloss": "three",
+        "parse": "Conjunctive waw | Number - masculine singular"
+      },
+      {
+        "form": "לֵילוֹת",
+        "lemma": "לַ֫יְלָה",
+        "translit": "lê·lō·wṯ",
+        "gloss": "night",
+        "parse": "Noun - masculine plural"
+      }
+    ],
+    "pronunciation": "modern"
+  },
+  "expect": {
+    "answer": {
+      "all": [
+        {
+          "matches": "dag|דָּג"
+        },
+        {
+          "matches": "[Ff]ish"
+        }
+      ]
+    },
+    "words.0": {
+      "present": false
+    }
+  }
+}
