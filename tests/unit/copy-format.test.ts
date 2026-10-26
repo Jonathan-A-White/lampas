@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { copyUnitOf, copyText, COPY_DEFAULTS, type CopyFormat, type CopyUnit } from '../../src/copy/format';
-import type { Chapter, Verse } from '../../src/data/chapter';
+import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
+import { weaveVerse, wovenInOrder } from '../../src/data/weave';
 
 const verse = (n: number, english: string, original: string, h?: string): Verse => ({
   n,
@@ -131,5 +132,71 @@ describe("copyUnitOf: what the Verse view shows, as a unit", () => {
   });
   it('a Hebrew chapter is read in Hebrew', () => {
     expect(copyUnitOf({ ...chapterText, lang: 'hbo' }, chapterText.verses[0]).language).toBe('hbo');
+  });
+});
+
+describe('copyText: As you read it', () => {
+  const word = (t: string, l: string): GreekWord => ({ t, tr: '', s: 'G1', l, p: '' });
+  // Colossians 3:1 and 3:2: 'Since, then, you have been raised with Christ,' / 'Set your minds on things above.'
+  const col1: Verse = {
+    n: 1,
+    g: [word('Εἰ', 'εἰ'), word('οὖν', 'οὖν'), word('συνηγέρθητε', 'συνεγείρω'), word('τῷ', 'ὁ'), word('Χριστῷ', 'Χριστός')],
+    e: [
+      { t: 'Since, then,', g: [0, 1] },
+      { t: 'you have been raised', g: [2] },
+      { t: 'with', g: [3] },
+      { t: 'Christ,', g: [4] },
+    ],
+  };
+  const col2: Verse = { n: 2, g: [word('τὰ', 'ὁ'), word('ἄνω', 'ἄνω')], e: [{ t: 'Set your minds', g: [] }, { t: 'on things above.', g: [0, 1] }] };
+  const col: Chapter = { book: 'Colossians', code: 'col', chapter: 3, lang: 'grc', lex: {}, parse: {}, verses: [col1, col2] } as Chapter;
+  const solid = new Set(['Χριστός', 'εἰ', 'οὖν']);
+  const wovenAll = (order: 'english' | 'greek' = 'english') => col.verses.map((v) => wovenInOrder(v, weaveVerse(v, { solid }), order));
+  const noLink = fmt({ text: 'asread', link: 'off' });
+
+  it('is the default, and the verse he reads in English is the English', () => {
+    expect(D.text).toBe('asread');
+    const unit = copyUnitOf(col, col1, { view: 'english', woven: null });
+    expect(copyText(unit, D)).toBe('Since, then, you have been raised with Christ,\n— Colossians 3:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Col.3.1');
+  });
+  it('in the Greek view is the Greek', () => {
+    const unit = copyUnitOf(col, col1, { view: 'greek', woven: null });
+    expect(copyText(unit, noLink)).toBe('Εἰ οὖν συνηγέρθητε τῷ Χριστῷ\n— Colossians 3:1 (MSB)');
+  });
+  it('in the Weave is the woven verse: the Greek of his words in their places in the English', () => {
+    const unit = copyUnitOf(col, col1, { view: 'english', woven: wovenAll() });
+    expect(copyText(unit, noLink)).toBe('Εἰ οὖν you have been raised with Χριστῷ\n— Colossians 3:1 (MSB)');
+  });
+  it('in the Weave drops the English a learning word stands over, and keeps the chunks of a Greek-order weave in the order the Reader lays them out', () => {
+    const learning = col.verses.map((v) => wovenInOrder(v, weaveVerse(v, { solid: new Set(['ὁ']), learning: new Set(['Χριστός']) }), 'english'));
+    expect(copyText(copyUnitOf(col, col1, { view: 'english', woven: learning }), noLink)).toBe('Since, then, you have been raised τῷ Χριστῷ\n— Colossians 3:1 (MSB)');
+    const reordered: Verse = { ...col1, e: [col1.e[3], col1.e[0], col1.e[1], col1.e[2]] };
+    const greekOrder = wovenInOrder(reordered, weaveVerse(reordered, { solid }), 'greek');
+    expect(greekOrder.order).toEqual([1, 2, 3, 0]);
+    const unit = copyUnitOf({ ...col, verses: [reordered] }, reordered, { view: 'english', woven: [greekOrder] });
+    expect(copyText(unit, noLink)).toBe('Εἰ οὖν you have been raised with Χριστῷ\n— Colossians 3:1 (MSB)');
+  });
+  it('a passage in the Weave numbers its verses, a verse with nothing woven stays English', () => {
+    const unit = copyUnitOf(col, { ...col1, to: 2 }, { view: 'english', woven: wovenAll() });
+    expect(copyText(unit, fmt({ text: 'asread', link: 'off', reference: 'off' }))).toBe('1 Εἰ οὖν you have been raised with Χριστῷ 2 Set your minds on things above.');
+  });
+  it('a chapter in the Greek view is the Greek of every verse', () => {
+    const unit = copyUnitOf(col, { ...col1, to: 2 }, { view: 'greek', woven: null });
+    expect(unit.kind).toBe('chapter');
+    expect(copyText(unit, fmt({ text: 'asread', link: 'off', reference: 'off' }))).toBe('1 Εἰ οὖν συνηγέρθητε τῷ Χριστῷ 2 τὰ ἄνω');
+  });
+  it('a view that cannot be known (no chapter open) falls back to English', () => {
+    expect(copyText(copyUnitOf(col, col1), noLink)).toBe('Since, then, you have been raised with Christ,\n— Colossians 3:1 (MSB)');
+  });
+  it('a Hebrew verse in its own view is the Hebrew, its words in reading order (right to left on paste), and in the Weave the Hebrew stands in the English', () => {
+    const gen: Verse = {
+      n: 1,
+      g: [word('בְּרֵאשִׁ֖ית', 'רֵאשִׁית'), word('בָּרָ֣א', 'בָּרָא'), word('אֱלֹהִ֑ים', 'אֱלֹהִים')],
+      e: [{ t: 'In the beginning', g: [0] }, { t: 'created', g: [1] }, { t: 'God', g: [2] }],
+    };
+    const chapter = { book: 'Genesis', code: 'gen', chapter: 1, lang: 'hbo', lex: {}, parse: {}, verses: [gen] } as Chapter;
+    expect(copyText(copyUnitOf(chapter, gen, { view: 'greek', woven: null }), fmt({ text: 'asread', link: 'off', reference: 'off' }))).toBe('בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים');
+    const woven = [wovenInOrder(gen, weaveVerse(gen, { solid: new Set(['בָּרָא']) }), 'english')];
+    expect(copyText(copyUnitOf(chapter, gen, { view: 'english', woven }), fmt({ text: 'asread', link: 'off', reference: 'off' }))).toBe('In the beginning בָּרָ֣א God');
   });
 });

@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useState } from 'react';
-import { copyText, copyUnitOf, type CopyFormat } from '../../copy/format';
+import { useEffect, useMemo, useState } from 'react';
+import { copyText, copyUnitOf, type CopyFormat, type ReadView } from '../../copy/format';
 import { useCopyFormat } from '../../copy/useCopyFormat';
 import { loadChapter, type Chapter } from '../../data/chapter';
 import { TEXT_SIZES } from '../../appearance/textSizes';
@@ -8,6 +8,8 @@ import { FONTS, type FontId } from '../../appearance/fonts';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
 import { chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
+import { settingsFor, useViewSettings } from '../../reader/useViewSettings';
+import { wovenOf } from '../../reader/useWoven';
 import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
@@ -175,15 +177,21 @@ export const HeadingsControl: Control = ({ row }) => {
 };
 
 const COPY_ROWS = {
-  copyText: { setting: copyTextSetting, options: [['english', 'English'], ['original', 'The original'], ['both', 'Both']] },
+  copyText: { setting: copyTextSetting, options: [['asread', 'As you read it'], ['english', 'English'], ['original', 'The original'], ['both', 'Both']] },
   copyReference: { setting: copyReferenceSetting, options: [['after', 'After'], ['before', 'Before'], ['off', 'Off']] },
   copyNumbers: { setting: copyNumbersSetting, options: [['on', 'On'], ['off', 'Off']] },
   copyLink: { setting: copyLinkSetting, options: [['on', 'On'], ['off', 'Off']] },
 } as const;
 
-/** One line under the last row of When you copy: Colossians 3:1 as it will be copied (the chapter is the app's own file, kept by the worker). */
+/** One line under the last row of When you copy: Colossians 3:1 as it will be copied, in the view he reads in (the chapter is the app's own file, kept by the worker). */
 function CopyPreview({ format }: { format: CopyFormat }) {
   const [chapter, setChapter] = useState<Chapter | null>(null);
+  const saved = useViewSettings();
+  const read = useMemo((): ReadView | undefined => {
+    if (!chapter || !saved) return undefined;
+    const shown = settingsFor(saved, chapter);
+    return { view: shown.view, woven: wovenOf(chapter, shown) };
+  }, [chapter, saved]);
   useEffect(() => {
     let alive = true;
     loadChapter('col', 3).then(
@@ -195,10 +203,10 @@ function CopyPreview({ format }: { format: CopyFormat }) {
     };
   }, []);
   const verse = chapter?.verses.find((v) => v.n === 1);
-  if (!chapter || !verse) return null;
+  if (!chapter || !verse || !read) return null;
   return (
     <p data-copy-preview className="mt-2 whitespace-pre-wrap break-words rounded-lg border border-line bg-surface p-2 text-base text-muted">
-      {copyText(copyUnitOf(chapter, verse), format)}
+      {copyText(copyUnitOf(chapter, verse, read), format)}
     </p>
   );
 }

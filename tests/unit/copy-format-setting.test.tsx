@@ -5,6 +5,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LinkActions } from '../../src/ui/LinkActions';
 import { db } from '../../src/data/db';
+import { setGreekInterest, setReaderView } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting } from '../../src/settings/definitions';
 import { CopyFormatControl } from '../../src/settings/controls/appearance';
@@ -25,20 +26,20 @@ afterEach(() => {
 });
 
 describe('the four settings of When you copy', () => {
-  it('are in Settings > Reading with the defaults English, after, on and on', () => {
+  it('are in Settings > Reading with the defaults As you read it, after, on and on', () => {
     for (const setting of [copyTextSetting, copyReferenceSetting, copyNumbersSetting, copyLinkSetting]) {
       expect(setting.section).toBe('reading');
       expect(setting.hint).toBeTruthy();
       expect(setting.help).toBeTruthy();
     }
-    expect([copyTextSetting.default, copyReferenceSetting.default, copyNumbersSetting.default, copyLinkSetting.default]).toEqual(['english', 'after', 'on', 'on']);
-    expect(copyTextSetting.allowed).toMatchObject({ kind: 'choice', values: [{ value: 'english' }, { value: 'original' }, { value: 'both' }] });
+    expect([copyTextSetting.default, copyReferenceSetting.default, copyNumbersSetting.default, copyLinkSetting.default]).toEqual(['asread', 'after', 'on', 'on']);
+    expect(copyTextSetting.allowed).toMatchObject({ kind: 'choice', values: [{ value: 'asread' }, { value: 'english' }, { value: 'original' }, { value: 'both' }] });
     expect(copyReferenceSetting.allowed).toMatchObject({ kind: 'choice', values: [{ value: 'after' }, { value: 'before' }, { value: 'off' }] });
   });
 
   it('read back a saved choice, else the default', () => {
     expect(copyTextSetting.parse('both')).toBe('both');
-    expect(copyTextSetting.parse('nonsense')).toBe('english');
+    expect(copyTextSetting.parse('nonsense')).toBe('asread');
     expect(copyLinkSetting.parse('off')).toBe('off');
     expect(copyLinkSetting.parse(undefined)).toBe('on');
   });
@@ -68,6 +69,15 @@ describe('the rows of When you copy', () => {
     });
     await waitFor(async () => expect((await preview()).textContent?.startsWith('Colossians 3:1 (MSB)\n')).toBe(true));
     expect((await preview()).textContent).not.toContain('https://');
+  });
+
+  it('the preview shows the verse in the view he reads in, with As you read it', async () => {
+    await setGreekInterest(5);
+    await setReaderView('greek');
+    const row = rowOf('copyLink');
+    if (!row) throw new Error('no copyLink row');
+    const { container } = render(<CopyFormatControl row={row} />);
+    await waitFor(() => expect(container.querySelector('[data-copy-preview]')?.textContent).toContain('Εἰ οὖν συνηγέρθητε τῷ χριστῷ τὰ ἄνω ζητεῖτε'));
   });
 
   it('only the last row has the preview', async () => {
