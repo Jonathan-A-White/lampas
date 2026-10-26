@@ -4,7 +4,12 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { DEFAULT_HEBREW_PRONUNCIATION, HEBREW_PRONUNCIATIONS, hebrewPronunciationOf, hebrewVoiceForm } from '../../src/speech/hebrewPronunciation';
+import { ACCENTS as ENGLISH_ACCENTS, accentOf, missingHints } from '../../src/speech/accents';
+import { DEFAULT_PRONUNCIATION, PRONUNCIATIONS, lessonsOf, pronunciationOf, pronunciationsOf, registerPronunciation, tutorGuideOf } from '../../src/speech/pronunciation';
+import { hebrewRespelling } from '../../src/script/hebrewSpeech';
+import { HEBREW_LETTER_IDS, HEBREW_VOWEL_IDS } from '../../src/speech/schemes/hebrew-israeli-lessons';
 import { stripCantillation } from '../../src/speech/schemes/hebrew-israeli';
+import { SOUND_IDS } from '../../src/speech/sounds';
 
 const genesis1 = JSON.parse(readFileSync('tests/fixtures/data/gen/1.json', 'utf8')) as Chapter;
 
@@ -75,5 +80,77 @@ describe('stripCantillation', () => {
 
   it('leaves English and Greek alone', () => {
     expect(stripCantillation('In the beginning λόγος')).toBe('In the beginning λόγος');
+  });
+});
+
+describe('the Hebrew scheme implements the whole Pronunciation interface (mw-gdcyf98.5)', () => {
+  const israeli = pronunciationOf('israeli');
+
+  it('is in the one registry, tagged he, and found by pronunciationOf', () => {
+    expect(israeli.language).toBe('he');
+    expect(pronunciationsOf('he').map((p) => p.id)).toEqual(['israeli']);
+    expect(pronunciationsOf('he')[0]).toBe(israeli);
+    expect(pronunciationsOf('grc')).toEqual(PRONUNCIATIONS);
+    expect(PRONUNCIATIONS.every((p) => p.language === 'grc')).toBe(true);
+    expect(PRONUNCIATIONS.map((p) => p.id)).not.toContain('israeli');
+    expect(pronunciationOf('modern').id).toBe('modern');
+    expect(pronunciationOf('nowhere').id).toBe(DEFAULT_PRONUNCIATION);
+    expect(DEFAULT_HEBREW_PRONUNCIATION).toBe('israeli');
+  });
+
+  it('answers every member of the interface', () => {
+    expect(israeli.label).toBe('Israeli');
+    expect(israeli.lang).toBe('he-IL');
+    expect(israeli.scoringLang).toBe('he');
+    expect(israeli.note.length).toBeGreaterThan(0);
+    expect(israeli.respell('בְּרֵאשִׁית')).toBe('be-reh-SHEET');
+    expect(israeli.voiceForm('בְּרֵאשִׁ֖ית')).toBe('בְּרֵאשִׁית');
+    expect(israeli.letterForm('ב')).toBe('ב');
+    expect(israeli.loneLetterForm('ו')).toBeNull();
+    expect(israeli.loneLetterClip('ו')).toBeNull();
+    expect(Object.keys(israeli.sounds).length).toBeGreaterThan(10);
+    for (const id of Object.values(israeli.sounds)) expect(SOUND_IDS).toContain(id);
+    for (const accent of ENGLISH_ACCENTS) expect(missingHints(israeli, accent), accent.id).toEqual([]);
+    expect(Object.keys(israeli.letterNames ?? {}).sort()).toEqual([...HEBREW_LETTER_IDS].sort());
+    for (const symbol of Object.keys(israeli.heardAs ?? {})) expect(israeli.sounds[symbol], symbol).toBeDefined();
+    expect(tutorGuideOf(israeli)).toContain('be-reh-SHEET');
+    expect(israeli.soundRules).toBeUndefined();
+  });
+
+  it('teaches a sound lesson for each of the 22 letters and the 9 vowels', () => {
+    const lessons = lessonsOf(israeli);
+    expect(HEBREW_LETTER_IDS).toHaveLength(22);
+    expect(HEBREW_LETTER_IDS[0]).toBe('he-letter-alef');
+    expect(HEBREW_LETTER_IDS[21]).toBe('he-letter-tav');
+    expect(HEBREW_VOWEL_IDS).toEqual(
+      ['patach', 'qamats', 'segol', 'tsere', 'hiriq', 'holam', 'qubuts', 'shuruq', 'shewa'].map((v) => `he-vowel-${v}`),
+    );
+    for (const id of [...HEBREW_LETTER_IDS, ...HEBREW_VOWEL_IDS]) {
+      expect(lessons[id], id).toBeDefined();
+      expect(lessons[id].sound?.length, id).toBeGreaterThan(0);
+    }
+  });
+
+  it('names a sound through the sound words, in the reader\'s accent', () => {
+    expect(lessonsOf(israeli, accentOf('american'))['he-letter-bet'].sound).toContain('b, as in “bed”');
+    expect(lessonsOf(israeli, accentOf('american'))['he-letter-bet'].sound).toContain('v, as in “vase”');
+    expect(lessonsOf(israeli, accentOf('american'))['he-vowel-hiriq'].sound).toContain('ee, as in “see”');
+  });
+
+  it('is handed to the registry as a Greek scheme\'s is: registerPronunciation files a Hebrew scheme under he', () => {
+    const extra = { ...israeli, id: 'academic-test', label: 'Academic' };
+    const undo = registerPronunciation(extra);
+    expect(pronunciationsOf('he').map((p) => p.id)).toEqual(['israeli', 'academic-test']);
+    expect(PRONUNCIATIONS.map((p) => p.id)).toEqual(['modern']);
+    expect(pronunciationOf('academic-test')).toBe(extra);
+    undo();
+    expect(pronunciationsOf('he').map((p) => p.id)).toEqual(['israeli']);
+  });
+});
+
+describe('hebrewRespelling', () => {
+  it('is the default Hebrew scheme\'s respelling, with the data\'s transliteration as its guide', () => {
+    expect(hebrewRespelling('בְּרֵאשִׁ֖ית')).toBe('be-reh-SHEET');
+    expect(hebrewRespelling('לְאָכְלָֽה׃', 'lə·’āḵ·lāh')).toBe('le-okh-LA');
   });
 });
