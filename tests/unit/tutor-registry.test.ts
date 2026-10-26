@@ -99,8 +99,8 @@ describe('the catalogue and the screen key', () => {
     expect(catalogue.map((c) => c.name)).toEqual([...catalogue.map((c) => c.name)].sort());
     expect(catalogue.every((c) => c.tell && c.tell.length > 0)).toBe(true);
     // 4200 before memorizing (mw-fu7dqf.12) added three facts, four commands and the session args of a place, 1,712 bytes; every request carries it
-    // then 5,900 on main; the fact verse-lists and the id of the place lists (mw-t3xu9a.10) add about 240 bytes
-    expect(JSON.stringify(catalogue).length).toBeLessThan(6200);
+    // then 5,900 on main; the fact verse-lists and the id of the place lists (mw-t3xu9a.10) add about 240 bytes; then the place diagram-lesson (mw-q6t5tvn.1), about 75
+    expect(JSON.stringify(catalogue).length).toBeLessThan(6300);
   });
 
   it('keys the up-front list by the screen name, the Reader for the plain address', () => {

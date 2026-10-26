@@ -150,6 +150,7 @@ export const SEND_A_SCREENSHOT = 'Send a screenshot';
 const SUGGESTIONS: Record<string, string[]> = {
   Goal: [SIMPLEST_VERSE, 'What should I learn next toward my goal, and why?', 'How close am I to being able to read my goal?'],
   'Learn the IPA sounds': ['What is IPA, and is it worth learning?', 'How do I tell /x/ and /ç/ apart?'],
+  'How to read a sentence diagram': ['What does the bar between subject and verb mean?', 'Why is the understood “you” in parentheses?'],
   'Hard sounds': ['How can I tell if I am saying this sound right?', 'What is a good way to practise this sound each day?'],
   'The whole path': ['What should I learn next on this path?', 'Why does this idea come before that one?'],
   Words: ['Which of my words should I work on first?', 'How can I remember the words I keep missing?'],
