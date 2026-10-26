@@ -1,7 +1,7 @@
 // src/services/talk.ts — the Bible talk: one thing he says, sent as a grist through Postern (bsv-kit/grist) and answered by
 // the mill's bible-talk grind (grinds/bible-talk.json). The wire work is the tutor's (src/services/tutor.ts askGrind); this
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
-import type { Chapter, Verse } from '../data/chapter';
+import { sourceLanguage, type Chapter, type Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { wordHeart } from '../data/wordHeart';
 import { QUIZ_GOAL_MAX, type ReaderView } from '../data/repositories/settings';
@@ -503,7 +503,6 @@ export interface TalkScope {
 /** The first thing he says in a quiz (the Start the quiz button sends it): the sheet shows it as his turn. */
 export const quizMeQuestion = (reference: string): string => `Quiz me on ${reference}.`;
 
-const greekOf = verseGreek;
 const englishOf = verseEnglish;
 
 /** The title of the sheet and the reference in the request: 'Romans 8', 'Romans 8:28' or, for a passage, 'Romans 8:1-11'. */
@@ -599,7 +598,9 @@ export function buildTalkRequest(
   const folding = turns.slice(from, Math.min(past, from + FOLD_MAX_TURNS)).map(foldedTurn);
   const waiting = past - from - folding.length;
   // the verses the talk holds follow the talk (mw-5r3p30.733): those he names, those the last answer linked, the selected verse, else the chapter's first; a quiz holds its passage
-  const hold = scope.screen ? undefined : talkWindow(scope.chapter, scope.verse, question, turns[turns.length - 1], !scope.quiz && !scope.welcome, greekOf, englishOf);
+  // an Old Testament chapter's Hebrew goes under `greek` pointed, cantillation off, and no Greek word list is made of it (until story j1 names the key `hebrew`)
+  const source = sourceLanguage(scope.chapter);
+  const hold = scope.screen ? undefined : talkWindow(scope.chapter, scope.verse, question, turns[turns.length - 1], !scope.quiz && !scope.welcome, (v) => verseGreek(v, source), englishOf);
   const verses = hold ? hold.parts.map((p) => p.verse) : [];
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
   const aboutCredits = scope.screen?.credits !== undefined;
@@ -646,6 +647,7 @@ export function buildTalkRequest(
   };
   if (scope.screen || !hold) return request;
   // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES
+  if (source !== 'grc') return holdText(request, hold);
   return holdText({ ...request, greek_words: greekWordsFitting(scope.chapter, verses, request.question, pronunciation, jsonBytes({ ...request, history: [] })) }, hold);
 }
 

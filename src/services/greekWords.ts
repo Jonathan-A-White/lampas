@@ -1,7 +1,7 @@
 // src/services/greekWords.ts — the words of a text as the tutor is handed them (greek_words): the Bible talk's request (src/services/talk.ts) and the Verse view's
 // Ask the tutor (src/services/tutor.ts) both build the list here, so a typed "how do I say σβέννυτε?" reaches either grind with the app's syllables and stress (mw-5r3p30.643).
 import { fold } from 'learn-kit/recall';
-import { wordGloss, wordLemma, wordParse, type Chapter, type Verse } from '../data/chapter';
+import { sourceLanguage, wordGloss, wordLemma, wordParse, type Chapter, type Verse } from '../data/chapter';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { pronunciationOf, type GreekPronunciation } from '../speech/pronunciation';
 import { MAX_REQUEST_BYTES } from './requestBudget';
@@ -34,8 +34,9 @@ const wordsOfQuestion = (question: string): Set<string> => new Set(question.spli
 /** The words of `verses` with lemma, gloss and parse from `chapter`, in text order; a word that repeats with the same lemma and parsing is listed once.
  * Each carries the app's respelling, syllables and stress (mw-5r3p30.568). The list stops before the word that would take it over `maxBytes`,
  * except that a word `question` names (up to MAX_NAMED_WORDS) is always kept, so "how do I say σβέννυτε?" never reaches a tutor with no syllables.
- * A word with no lemma is left out: there is nothing to say of it. */
+ * A word with no lemma is left out: there is nothing to say of it. A chapter that is not Greek has none: no Greek syllable or respelling is ever made of a Hebrew word. */
 export function greekWordsOf(chapter: Chapter, verses: Verse[], question: string, pronunciation: GreekPronunciation, maxBytes: number): GreekWordEntry[] {
+  if (sourceLanguage(chapter) !== 'grc') return [];
   const data: Chapter = { ...chapter, lex: chapter.lex ?? {}, parse: chapter.parse ?? {} };
   const scheme = pronunciationOf(pronunciation);
   const named = wordsOfQuestion(question);

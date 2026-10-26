@@ -2,9 +2,10 @@
 // them from its own chapter data after the answer is shown (the Greek, and the English the Reader shows), keeps them on the turn (TalkTurn.fetched), and every later request of
 // the talk carries them as `held_passages`, newest first, as many as HELD_PASSAGES_BYTES holds. Under the answer one quiet line says what was read: 'Tutor fetched Rev 2:8-11'.
 import { bookOf } from '../data/books';
-import { loadChapter, markSupplied, type Chapter, type Verse } from '../data/chapter';
+import { loadChapter, markSupplied, sourceLanguage, type Chapter, type SourceLanguage, type Verse } from '../data/chapter';
 import type { HeldPassage } from '../data/db';
 import { OSIS, parseReference } from '../nav/links';
+import { hebrewPointedForm } from '../speech/hebrewPronunciation';
 
 export type { HeldPassage };
 
@@ -17,8 +18,9 @@ export const HELD_PASSAGES_BYTES = 3000;
 /** The most passages a request holds (the input schema's maxItems). */
 export const MAX_HELD_PASSAGES = 8;
 
-/** A verse's Greek and English as a request carries them: the words of the text, and the English with the supplied words marked. */
-export const verseGreek = (v: Verse): string => v.g.map((w) => w.t).join(' ');
+/** A verse's source text as a request carries it under `greek`: the Greek words as they stand, or for a chapter of `lang` 'hbo' its Hebrew pointed, the cantillation off
+ * (the form the Verse view's `hebrew` is, src/services/tutor.ts); until story j1 names the key `hebrew`. The English is the verse's with the supplied words marked. */
+export const verseGreek = (v: Verse, lang: SourceLanguage = 'grc'): string => v.g.map((w) => (lang === 'grc' ? w.t : hebrewPointedForm(w.t))).join(' ');
 export const verseEnglish = (v: Verse): string => v.e.map(markSupplied).join(' ');
 
 const bytesOf = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).length;
@@ -56,11 +58,11 @@ const referenceOf = (book: string, chapter: number, verses: readonly Verse[]): s
   return `${bookOf(book)?.name ?? book} ${chapter}:${first}${last > first ? `-${last}` : ''}`;
 };
 
-/** The passage of `verses`, cut to its first verses that fit HELD_PASSAGES_BYTES (always one at least). */
-function passageOf(book: string, chapter: number, verses: readonly Verse[]): HeldPassage {
+/** The passage of `verses` (of a chapter in `lang`), cut to its first verses that fit HELD_PASSAGES_BYTES (always one at least). */
+export function passageOf(book: string, chapter: number, verses: readonly Verse[], lang: SourceLanguage = 'grc'): HeldPassage {
   let kept = verses;
   for (;;) {
-    const passage = { reference: referenceOf(book, chapter, kept), greek: kept.map(verseGreek).join(' '), english: kept.map(verseEnglish).join(' ') };
+    const passage = { reference: referenceOf(book, chapter, kept), greek: kept.map((v) => verseGreek(v, lang)).join(' '), english: kept.map(verseEnglish).join(' ') };
     if (kept.length <= 1 || bytesOf(passage) <= HELD_PASSAGES_BYTES) return passage;
     kept = kept.slice(0, -1);
   }
@@ -73,7 +75,7 @@ export async function fetchPassages(refs: readonly string[], load: (book: string
     const chapter = await load(want.book, want.chapter).catch(() => undefined);
     const verses = chapter?.verses.filter((v) => v.n >= want.from && v.n <= want.to) ?? [];
     if (verses.length === 0) continue;
-    const passage = passageOf(want.book, want.chapter, verses);
+    const passage = passageOf(want.book, want.chapter, verses, sourceLanguage({ lang: chapter?.lang }));
     if (!read.some((p) => p.reference === passage.reference)) read.push(passage);
   }
   return read;
