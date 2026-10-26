@@ -1,5 +1,5 @@
 // src/diagram/lesson.ts — the optional lesson 'How to read a sentence diagram' (mw-q6t5tvn.1, #/diagram-lesson): nine steps, one Reed-Kellogg convention each, drawn by ReedKellogg from a diagram
-// written by hand here (never asked of the tutor) on a real verse or part of one, each with a one-tap check, and what he has done kept on the phone (localStorage, no Dexie). The conventions are
+// written by hand here (never asked of the tutor) on a real verse or part of one, each with a one-tap check, and what he has done kept on the phone (localStorage, no Dexie), with whether the Diagram pane still invites him to it (mw-q6t5tvn.2). The conventions are
 // the ones docs/layout/diagram.md 'The Reed-Kellogg conventions, as drawn' sets out, so the lesson teaches what the app draws. Pure data and the little keeping; the screen is DiagramLesson.tsx.
 import type { Diagram, DiagramMode, DiagramWords, Modifier, Slot, TokenRef } from './types';
 
@@ -178,8 +178,11 @@ export const checkPrompt = (step: LessonStep): string => `Tap the ${step.check.r
 
 const DONE_KEY = 'lampas.diagram-lesson';
 const STEP_KEY = 'lampas.diagram-lesson.step';
+const INVITE_KEY = 'lampas.diagram-lesson.invite';
 /** What DONE_KEY holds once he has tapped Done. */
 export const DONE_VALUE = 'done';
+/** What INVITE_KEY holds once he has tapped Not now. */
+export const DISMISSED_VALUE = 'dismissed';
 
 function store(): Storage | undefined {
   try {
@@ -214,5 +217,17 @@ export function keepLessonDone(): void {
     store()?.removeItem(STEP_KEY);
   } catch {
     // Storage full or refused: nothing is kept.
+  }
+}
+
+/** Whether the Diagram pane still invites him to the lesson (mw-q6t5tvn.2): until he has finished it or tapped Not now. */
+export const lessonInvited = (): boolean => !lessonDone() && store()?.getItem(INVITE_KEY) !== DISMISSED_VALUE;
+
+/** Keeps the invitation dismissed for good. */
+export function keepInviteDismissed(): void {
+  try {
+    store()?.setItem(INVITE_KEY, DISMISSED_VALUE);
+  } catch {
+    // Storage full or refused: the invitation shows again next time.
   }
 }
