@@ -1,5 +1,5 @@
 // tests/e2e/verse-lists.spec.ts — the Verse lists screen (#/lists, mw-9q8wp1.1) at 390x844: from the Library a Verse lists row with the count opens the lists, a list opens to its
-// references in the order saved (a tap opens the pop-up, Old Testament or New), Rename keeps the new name, Delete goes back to the lists and Undo brings the list back.
+// references in the order saved (a tap opens the pop-up with the verse, Old Testament or New), Rename keeps the new name, Delete goes back to the lists and Undo brings the list back.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -52,7 +52,7 @@ test('open a list from the Library, rename it, delete it and bring it back with 
   const links = page.getByRole('link');
   await expect(links).toHaveText(['2 Samuel 22:3-4', 'Psalm 62:1-2', '2 Thessalonians 3:3', 'Hebrews 7:24-25', 'Isaiah 30:21']);
 
-  // a tap opens the pop-up: the verse for the New Testament, 'Not in Lampas yet' for the Old
+  // a tap opens the pop-up with the verse's text, of the New Testament or the Old (the Old in English, mw-uqlxea.3)
   await page.getByRole('link', { name: 'Hebrews 7:24-25' }).click();
   const card = page.getByRole('dialog', { name: 'Hebrews 7:24-25' });
   await expect(card).toBeVisible();
@@ -61,8 +61,10 @@ test('open a list from the Library, rename it, delete it and bring it back with 
   await card.getByRole('button', { name: 'Close' }).click();
   await expect(card).toBeHidden();
   await page.getByRole('link', { name: 'Isaiah 30:21' }).click();
-  await expect(page.getByRole('dialog', { name: 'Isaiah 30:21' })).toContainText('Not in Lampas yet');
-  await page.getByRole('dialog', { name: 'Isaiah 30:21' }).getByRole('button', { name: 'Close' }).click();
+  const isaiah = page.getByRole('dialog', { name: 'Isaiah 30:21' });
+  await expect(isaiah.locator('[data-reference-text]')).toContainText('This is the way. Walk in it.');
+  await expect(isaiah).not.toContainText('Not in Lampas yet');
+  await isaiah.getByRole('button', { name: 'Close' }).click();
 
   // rename
   await page.getByRole('button', { name: 'Rename' }).click();

@@ -1,5 +1,5 @@
-// tests/e2e/memorize-enter.spec.ts — how a verse enters memorizing (mw-fu7dqf.5) at 390x844: the 'Memorize this list' switch on a verse list memorizes its New Testament references in English and
-// names the Old Testament one as skipped, each row reads 'Memorizing · English', and the Verse view opened from a row shows the same.
+// tests/e2e/memorize-enter.spec.ts — how a verse enters memorizing (mw-fu7dqf.5) at 390x844: the 'Memorize this list' switch on a verse list memorizes its references, of either testament, in English
+// (the Old Testament is carried, mw-uqlxea), each row reads 'Memorizing · English', and the Verse view opened from a row shows the same.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -45,11 +45,12 @@ test('turn Memorize this list on, then see the verse as memorized in the Verse v
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByText('No Old Testament text in Lampas yet: Ps 62:1-2', { exact: true })).toBeVisible();
-  const rom = page.getByRole('listitem').filter({ has: page.getByRole('link', { name: 'Romans 8:28' }) });
-  await expect(rom.getByRole('button', { name: 'Memorizing · English' })).toBeVisible();
-  // the Old Testament row has no control
-  await expect(page.getByRole('listitem').filter({ has: page.getByRole('link', { name: 'Psalm 62:1-2' }) }).getByRole('button')).toHaveCount(0);
+  // nothing is skipped: every row, the Old Testament's too, is memorized in English
+  await expect(page.getByText(/No Old Testament text/)).toHaveCount(0);
+  for (const name of ['Romans 8:28', 'Psalm 62:1-2', '2 Thessalonians 3:3']) {
+    const row = page.getByRole('listitem').filter({ has: page.getByRole('link', { name }) });
+    await expect(row.getByRole('button', { name: 'Memorizing · English' })).toBeVisible();
+  }
 
   await shot(page, 'memorize-list');
 

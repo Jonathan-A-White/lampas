@@ -66,7 +66,8 @@ test('a reference in the tutor\'s answer opens a card that fits a 360 px phone, 
   await expect(card).toBeHidden();
   await expect(sheet).toBeVisible();
 
-  // A book Lampas has no text for.
+  // The 'Not in Lampas yet' card. Psalm 110 is held by the Reader now, but a reference in a tutor's answer still takes this card for any Old Testament book (src/resources/tutorLinks.ts
+  // placeOf: `reader` is true for the New Testament only), and no reference outside the Bible is a link at all, so this is the one way the card is reached today.
   await sheet.getByRole('link', { name: 'Ps. 110', exact: true }).click();
   const psalm = page.getByRole('dialog', { name: 'Psalm 110' });
   await expect(psalm.getByText('Not in Lampas yet')).toBeVisible();
