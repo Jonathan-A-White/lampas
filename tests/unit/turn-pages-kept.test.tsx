@@ -28,6 +28,7 @@ const AWAY: Record<Exclude<Route, 'home'>, string> = {
   goal: '#/goal',
   path: '#/path',
   ipa: '#/ipa',
+  'diagram-lesson': '#/diagram-lesson',
   sounds: '#/sounds',
   studyway: '#/studyway',
   aboutyou: '#/aboutyou',

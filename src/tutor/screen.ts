@@ -75,6 +75,7 @@ export const SCREEN_NAMES: Record<Exclude<Route, 'home' | 'share' | 'unlock'>, s
   goal: 'Goal',
   path: 'The whole path',
   ipa: 'Learn the IPA sounds',
+  'diagram-lesson': 'How to read a sentence diagram',
   sounds: 'Hard sounds',
   words: 'Words',
   review: 'Review',

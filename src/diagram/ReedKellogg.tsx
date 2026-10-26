@@ -47,9 +47,11 @@ export interface ReedKelloggProps {
   onWord: (index: number) => void;
   /** a label's width; the screen's own face by default (a test passes a fixed one, jsdom has no layout) */
   measure?: Measure;
+  /** a word to light (the lesson, src/diagram/DiagramLesson.tsx, shows the right word of its check): its index in `words` */
+  lit?: number;
 }
 
-export function ReedKellogg({ diagram, words, mode, reference, onWord, measure }: ReedKelloggProps) {
+export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, lit }: ReedKelloggProps) {
   const greek = mode === 'greek';
   const face = greek ? GREEK_FACE : ENGLISH_FACE;
   const probe = useRef<HTMLSpanElement>(null);
@@ -90,8 +92,9 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure }
     }
     const index = l.index;
     const woven = words[index]?.weft !== undefined;
+    const shown = lit === index;
     return (
-      <button key={l.id} type="button" data-word={String(index)} data-woven={woven ? '' : undefined} {...langOf(greek || woven)} style={place} onClick={() => onWord(index)} className={`${text} ${woven ? GREEK_FACE : face} ${NO_SELECT} cursor-pointer rounded active:bg-line`}>
+      <button key={l.id} type="button" data-word={String(index)} data-woven={woven ? '' : undefined} data-lit={shown ? '' : undefined} {...langOf(greek || woven)} style={place} onClick={() => onWord(index)} className={`${text} ${woven ? GREEK_FACE : face} ${NO_SELECT} cursor-pointer rounded active:bg-line ${shown ? 'bg-line ring-2 ring-accent' : ''}`}>
         {l.text}
       </button>
     );
