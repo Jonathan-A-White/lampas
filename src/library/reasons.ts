@@ -1,5 +1,6 @@
 // src/library/reasons.ts — why Lampas cannot use a book of his Logos list yet (docs/library-at-scale.md 5.4): a table from a row's Logos type (and, for a few, what its ReferenceSupersets say) to one
 // plain sentence. matchExport gives each row it leaves the key of the first reason that fits; the page 'What they are' groups the rows by key, at most 12 lines, and never lists the titles.
+import { ntBookOf } from '../data/books';
 import type { ExportRow } from './parseExport';
 
 export interface Reason {
@@ -8,7 +9,7 @@ export interface Reason {
   label: string;
   /** the sentence after it: why, and what would change it */
   why: string;
-  /** whether a row (with the New Testament books its ReferenceSupersets cover) is one of these */
+  /** whether a row (with the books of the Bible its ReferenceSupersets cover) is one of these */
   fits(row: ExportRow, covers: readonly string[]): boolean;
 }
 
@@ -26,14 +27,8 @@ export const REASONS: readonly Reason[] = [
   {
     key: 'old-testament',
     label: 'Books on the Old Testament',
-    why: 'Lampas holds the New Testament.',
-    fits: (row, covers) => covers.length === 0 && hasVerses(row),
-  },
-  {
-    key: 'new-testament-commentaries',
-    label: 'Commentaries that reach beyond the New Testament',
-    why: 'Lampas opens a commentary on the New Testament alone; one on the whole Bible waits for the Old Testament reader.',
-    fits: (row, covers) => isType(row, 'text.monograph.commentary') && covers.length > 0,
+    why: 'Lampas opens a commentary on the Old Testament, but not yet any other kind of book on it.',
+    fits: (row, covers) => !covers.some((code) => ntBookOf(code)) && hasVerses(row),
   },
   {
     key: 'lexicons',

@@ -6,7 +6,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { NT_BOOKS as BOOKS } from '../../src/data/books';
+import { BOOKS, NT_BOOKS, OT_BOOKS } from '../../src/data/books';
 import { DEVOTIONALS } from '../../src/data/daily/devotionals';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { CATALOGUE, CATALOGUE_VERSION, KINDS, WORK_GROUPS, entriesOf, type CatalogueEntry, type Kind, type KindFile } from '../../src/resources/catalogue';
@@ -15,7 +15,6 @@ import { LEXICONS } from '../../src/resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { WORKS } from '../../src/resources/works';
 import { buildCatalogue, coversOfSupersets, parseCsv, readExport, versionOf, type Rules } from '../../scripts/logos-catalogue';
-import { coversOldTestament } from '../../src/library/parseExport';
 
 const root = join(__dirname, '../..');
 const RULES = JSON.parse(readFileSync(join(root, 'data/logos/catalogue-rules.json'), 'utf8')) as Rules;
@@ -138,7 +137,7 @@ describe('the generated kinds', () => {
   it('fails each kind of fault the test is for', () => {
     expect(problemsOf([entry({}), entry({})])).toEqual(['duplicate Resource ID LLS:X']);
     expect(problemsOf([entry({ value: ' ' })])).toEqual(['LLS:X has no value']);
-    expect(problemsOf([entry({ covers: ['mat', 'gen'] })])).toEqual(['LLS:X covers gen, which is no book']);
+    expect(problemsOf([entry({ covers: ['mat', 'xyz'] })])).toEqual(['LLS:X covers xyz, which is no book']);
     expect(problemsOf([entry({ sections: [{ title: 'L1', ref: 'Page.p_1', ideas: ['alphabet', 'no-such-idea'] }] })])).toEqual(['LLS:X section L1 names no-such-idea, which is not on the ladder']);
   });
 });
@@ -161,9 +160,9 @@ describe('the committed catalogue is written from his whole library, not from th
     for (const e of kindEntries('commentary').filter((x) => x.via === 'series')) expect(e.covers?.length, e.resource).toBeGreaterThan(0);
   });
 
-  it('holds every commentary of the New Testament alone by type, each with the books it covers (mw-vb8krt)', () => {
+  it('holds every commentary of his export on a book of the Bible by type, each with the books it covers (mw-vb8krt, mw-eup64h)', () => {
     const byType = kindEntries('commentary').filter((e) => e.via === 'type');
-    expect(byType.length).toBeGreaterThan(300);
+    expect(byType.length).toBeGreaterThan(600);
     for (const e of byType) {
       expect(e.covers?.length, e.resource).toBeGreaterThan(0);
       expect(e.opens, e.resource).toBe('verse');
@@ -176,6 +175,24 @@ describe('the committed catalogue is written from his whole library, not from th
     for (const series of ['David Guzik’s Commentaries on the Bible', 'Barnes’ Notes on the Old and New Testaments', 'The Bible Speaks Today']) {
       expect(byType.filter((e) => e.series === series && e.covers?.includes('rom')).length, series).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('the commentaries on the Old Testament and the whole Bible (mw-eup64h)', () => {
+  const ot = new Set(OT_BOOKS.map((b) => b.code));
+  const nt = new Set(NT_BOOKS.map((b) => b.code));
+  const commentaries = entriesOf('commentary').filter((e) => e.via === 'type');
+
+  it('holds the 261 commentaries on the Old Testament alone and the 23 on both Testaments (three more cover the Apocrypha only, which Lampas does not hold)', () => {
+    expect(commentaries.filter((e) => e.covers?.every((c) => ot.has(c)))).toHaveLength(261);
+    expect(commentaries.filter((e) => e.covers?.some((c) => ot.has(c)) && e.covers.some((c) => nt.has(c)))).toHaveLength(23);
+  });
+
+  it('holds commentaries on Jonah, Guzik’s among them, each opening at a verse', () => {
+    const jonah = commentaries.filter((e) => e.covers?.includes('jon'));
+    expect(jonah.length).toBeGreaterThan(5);
+    expect(jonah.map((e) => e.resource)).toContain('LLS:GUZIKCOMM32JON');
+    for (const e of jonah) expect(e.opens, e.resource).toBe('verse');
   });
 });
 
@@ -279,13 +296,13 @@ describe('the export parser', () => {
     expect(rows.find((r) => r.resource === 'LLS:SPURGINTERP')?.supersets.split('\t')).toHaveLength(3);
   });
 
-  it('reads the books a row covers from its ReferenceSupersets, the New Testament only', () => {
-    expect(coversOfSupersets('bible.61.1.1-87.22.21')).toEqual(BOOKS.map((b) => b.code));
+  it('reads the books a row covers from its ReferenceSupersets, Old Testament too (mw-eup64h)', () => {
+    expect(coversOfSupersets('bible.61.1.1-87.22.21')).toEqual(NT_BOOKS.map((b) => b.code));
     expect(coversOfSupersets('bible.75.1.1-77.3.15')).toEqual(['1ti', '2ti', 'tit']);
     expect(coversOfSupersets('bible.72.1.1-72.4.18\tbible.78.1.1-78.1.25')).toEqual(['col', 'phm']);
     expect(coversOfSupersets('bible+esv.61-87')).toHaveLength(27);
-    expect(coversOfSupersets('bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21')).toHaveLength(27);
-    expect(coversOfSupersets('bible.1.1.1-39.4.6')).toEqual([]);
+    expect(coversOfSupersets('bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21')).toHaveLength(66);
+    expect(coversOfSupersets('bible.1.1.1-39.4.6')).toHaveLength(39);
     expect(coversOfSupersets('dayofyear.1.1-12.31')).toEqual([]);
     expect(coversOfSupersets('')).toEqual([]);
   });
@@ -318,37 +335,33 @@ describe('the rules at work on rows the fixture does not hold', () => {
     expect(kindOf('bible', rows).filter((e) => e.via === 'type').map((e) => e.resource)).toEqual(['LLS:XBIBLE']);
   });
 
-  it('takes by type a commentary on the New Testament alone, and leaves one on the whole Bible or on the Old Testament (mw-vb8krt)', () => {
+  it('takes by type a commentary on any book of the Bible, the Old Testament and the whole Bible too, each with the books it covers (mw-eup64h)', () => {
     const rows = [
       row({ resource: 'LLS:COMNT', title: 'On Romans', series: 'Some Other Series', supersets: 'bible.66.1.1-66.16.27' }),
       row({ resource: 'LLS:COMNTNOSERIES', title: 'On Mark', supersets: 'bible+esv.62-62' }),
       row({ resource: 'LLS:COMWHOLE', title: 'On the Whole Bible', supersets: 'bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21' }),
-      row({ resource: 'LLS:COMOT', title: 'On Genesis', supersets: 'bible.1.1.1-1.50.26' }),
+      row({ resource: 'LLS:COMOT', title: 'On Jonah', supersets: 'bible.32.1-32.4.11' }),
+      row({ resource: 'LLS:COMAPOC', title: 'On the Apocrypha', supersets: 'bible.40.1.1-45.9.9' }),
       row({ resource: 'LLS:COMNONE', title: 'On nothing', supersets: '' }),
     ];
     const got = kindOf('commentary', rows).filter((e) => e.via === 'type');
-    expect(got.map((e) => [e.resource, e.covers, e.opens, e.starts])).toEqual([
-      ['LLS:COMNT', ['rom'], 'verse', 'on'],
-      ['LLS:COMNTNOSERIES', ['mrk'], 'verse', 'on'],
+    expect(got.map((e) => [e.resource, e.covers?.length, e.opens, e.starts])).toEqual([
+      ['LLS:COMNT', 1, 'verse', 'on'],
+      ['LLS:COMNTNOSERIES', 1, 'verse', 'on'],
+      ['LLS:COMOT', 1, 'verse', 'on'],
+      ['LLS:COMWHOLE', 66, 'verse', 'on'],
     ]);
+    expect(got.find((e) => e.resource === 'LLS:COMOT')?.covers).toEqual(['jon']);
     expect(got[0].value).toBeTruthy();
   });
 
   it('keeps the covers of a commentary on all 27 books, because a commentary with none opens at no place (mw-vb8krt)', () => {
     const [e] = kindOf('commentary', [row({ resource: 'LLS:COMALL', title: 'The whole New Testament', supersets: 'bible+esv.61-87' })]).filter((x) => x.via === 'type');
     expect(e.covers).toHaveLength(27);
+    const [whole] = kindOf('commentary', [row({ resource: 'LLS:COMBIBLE', title: 'The whole Bible', supersets: 'bible+esv.1-87' })]).filter((x) => x.via === 'type');
+    expect(whole.covers).toHaveLength(66);
     expect(kindOf('commentary', []).filter((x) => x.via === 'type')).toEqual([]);
     expect(CATALOGUE.filter((c) => c.kind === 'commentary' && !c.covers && !c.work)).toEqual([]);
-  });
-
-  it('reads whether a ReferenceSupersets cell reaches into the Old Testament (mw-vb8krt)', () => {
-    expect(coversOldTestament('bible.66.1.1-66.16.27')).toBe(false);
-    expect(coversOldTestament('bible+esv.61-87')).toBe(false);
-    expect(coversOldTestament('bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21')).toBe(true);
-    expect(coversOldTestament('bible.61.1.1-87.22.21\tbible.23.2.12-24.26.5')).toBe(true);
-    expect(coversOldTestament('bible.1-87')).toBe(true);
-    expect(coversOldTestament('dayofyear.1.1-12.31')).toBe(false);
-    expect(coversOldTestament('')).toBe(false);
   });
 
   it('takes a calendar devotional it does not name, flagged for a day of the year when Logos says so', () => {

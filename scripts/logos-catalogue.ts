@@ -7,11 +7,11 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { NT_BOOKS as BOOKS } from '../src/data/books.ts';
+import { BOOKS, NT_BOOKS } from '../src/data/books.ts';
 import type { CatalogueEntry, Kind, KindFile, Opens, Via, WorkGroup } from '../src/resources/catalogue.ts';
 import type { BookSection, ResourceLang } from '../src/resources/types.ts';
 import { ruleOf } from '../src/library/exportRules.ts';
-import { coversOfSupersets, parseCsv, readExport, type ExportRow } from '../src/library/parseExport.ts';
+import { coversNewTestament, coversOfSupersets, parseCsv, readExport, type ExportRow } from '../src/library/parseExport.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const RULES_FILE = join(ROOT, 'data/logos/catalogue-rules.json');
@@ -44,11 +44,11 @@ export interface IdRule {
   dayOfYear?: boolean;
 }
 
-/** Every row of the export of this Logos type joins (`needs: 'nt'`: only if it covers some book of the New Testament; `'nt-only'`: only if it covers some and none of the Old Testament; `languages`: only if its Languages cell is this). */
+/** Every row of the export of this Logos type joins (`needs: 'nt'`: only if it covers some book of the New Testament; `'bible'`: only if it covers some book of the Bible; `languages`: only if its Languages cell is this). */
 export interface TypeRule {
   type: string;
   kind: Kind;
-  needs?: 'nt' | 'nt-only';
+  needs?: 'nt' | 'bible';
   languages?: string;
   lang?: ResourceLang;
   value?: string;
@@ -76,7 +76,7 @@ export interface Rules {
 // ---- The export ----
 
 // Read by the phone too (src/library/parseExport.ts): the same parser reads an export in both places.
-export { coversOfSupersets, parseCsv, readExport, type ExportRow };
+export { coversNewTestament, coversOfSupersets, parseCsv, readExport, type ExportRow };
 
 // ---- The catalogue ----
 
@@ -148,11 +148,12 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
   }
 
   const add = (row: ExportRow, kind: Kind, via: Via, rule: { value?: string; lang?: ResourceLang; starts?: 'on' | 'pinned' }, what: string): void => {
-    const covers = coversOfSupersets(row.supersets);
+    // a commentary keeps every book of the Bible it covers (Old Testament too); a Greek book needs only the New Testament's, and none of them when it covers all 27
+    const covers = kind === 'commentary' ? coversOfSupersets(row.supersets) : coversNewTestament(row.supersets);
     byKind[kind].push({
       resource: row.resource, kind, title: row.title, short: row.abbreviated || row.title, series: row.series || undefined,
       lang: rule.lang ?? DEFAULT_LANG[kind], opens: DEFAULT_OPENS[kind], value: valueOf({ value: rule.value, kind }, what),
-      covers: covers.length > 0 && (covers.length < BOOKS.length || kind === 'commentary') ? covers : undefined, starts: rule.starts ?? 'on', via,
+      covers: covers.length > 0 && (covers.length < NT_BOOKS.length || kind === 'commentary') ? covers : undefined, starts: rule.starts ?? 'on', via,
       dayOfYear: kind === 'devotional' ? row.supersets.split('\t').some((t) => t.startsWith('dayofyear')) : undefined,
     });
     taken.add(row.resource);

@@ -19,19 +19,24 @@ const holdAppLinks = async (page: Page): Promise<void> => {
   });
 };
 
-/** Logos On (Settings > Study resources), then every book of four kinds On from the Library's own pages, then back to the Reader. */
-async function shelfHolds(page: Page): Promise<void> {
+/** Logos On (Settings > Study resources), then every book of the kinds On from the Library's own pages. */
+async function shelfOn(page: Page, kinds: readonly (readonly [string, string])[]): Promise<void> {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await openGroup(page, 'Study resources');
   const logos = page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true });
   if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();
   await expect(logos).toHaveAttribute('aria-checked', 'true');
-  for (const [kind, heading] of [['greek-text', 'Greek texts'], ['commentary', 'Commentaries'], ['lexicon', 'Lexicons'], ['grammar', 'Grammars']] as const) {
+  for (const [kind, heading] of kinds) {
     await page.goto(`/#/library?kind=${kind}`);
     await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible();
     await page.getByRole('button', { name: 'All on', exact: true }).click();
     await expect(page.getByTestId('kind-status')).not.toHaveText('none on');
   }
+}
+
+/** The shelf of the first test: every Greek text, commentary, lexicon and grammar On, then back to the Reader at Romans 8. */
+async function shelfHolds(page: Page): Promise<void> {
+  await shelfOn(page, [['greek-text', 'Greek texts'], ['commentary', 'Commentaries'], ['lexicon', 'Lexicons'], ['grammar', 'Grammars']]);
   await page.goto('/#/?b=rom&c=8');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
@@ -62,8 +67,8 @@ test('the Verse view has In Logos and In another book…, and the chooser opens 
   expect(box.y + box.height).toBeLessThanOrEqual(844.5);
   expect(box.x + box.width).toBeLessThanOrEqual(390.5);
 
-  // the groups follow the shelf and the place: the one commentary on Romans, and the eight Greek texts folded to three
-  await expect(sheet.getByRole('group', { name: 'Commentaries on Romans (1)' }).getByRole('link')).toHaveCount(1);
+  // the groups follow the shelf and the place: the 83 commentaries on Romans (mw-vb8krt) and the eight Greek texts, each folded to three
+  await expect(sheet.getByRole('group', { name: 'Commentaries on Romans (83)' }).getByRole('link')).toHaveCount(3);
   const greek = sheet.getByRole('group', { name: 'Greek texts (8)' });
   await expect(greek.getByRole('link')).toHaveCount(3);
   await expect(sheet.getByRole('group', { name: /John/ })).toHaveCount(0);
@@ -115,4 +120,41 @@ test('with no Greek text, interlinear or commentary On the second door is not dr
   const view = await openVerseView(page, 31);
   await expect(view.getByRole('link', { name: 'In Logos' })).toBeVisible();
   await expect(view.getByRole('button', { name: 'In another book…', exact: true })).toHaveCount(0);
+});
+
+test('Jonah 1:10 > In another book… lists the commentaries on Jonah from his library, Old Testament ones included, each a 44 px link to the verse (mw-eup64h)', async ({ page }) => {
+  await openUnlocked(page);
+  await holdAppLinks(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await shelfOn(page, [['commentary', 'Commentaries']]);
+  await page.goto('/#/?ref=Jonah.1.10');
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(view).toBeVisible();
+
+  const doors = view.getByRole('group', { name: 'Jonah 1:10 in Logos' });
+  const another = doors.getByRole('button', { name: 'In another book…', exact: true });
+  await expect(another).toBeVisible();
+  await another.click();
+  const sheet = page.getByRole('dialog', { name: 'Jonah 1:10 in Logos' });
+  await expect(sheet).toBeVisible();
+
+  // 42 commentaries of his cover Jonah (the Old Testament and the whole-Bible ones among them), folded to three
+  const group = sheet.getByRole('group', { name: 'Commentaries on Jonah (42)' });
+  await expect(group.getByRole('link')).toHaveCount(3);
+  await group.getByRole('button', { name: '39 more', exact: true }).click();
+  await expect(group.getByRole('link')).toHaveCount(42);
+  await expect(sheet.getByRole('group', { name: /Greek texts|Interlinears/ })).toHaveCount(0);
+  for (const link of await group.getByRole('link').all()) {
+    expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+    await expect(link).toHaveAttribute('href', /^logosres:LLS:[A-Za-z0-9._-]+;ref=Bible\.Jon1\.10$/);
+  }
+  const box = (await sheet.boundingBox())!;
+  expect(box.y + box.height).toBeLessThanOrEqual(844.5);
+  expect(box.x + box.width).toBeLessThanOrEqual(390.5);
+
+  // search narrows to his Guzik
+  await sheet.getByRole('searchbox').fill('guzik');
+  await expect(sheet.getByRole('group', { name: 'Commentaries on Jonah (1)' }).getByRole('link')).toHaveCount(1);
+  await shot(page, 'in-logos-jonah');
 });

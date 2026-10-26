@@ -47,19 +47,21 @@ describe('logos:fit', () => {
     const extra = [
       'LLS:NEWGRAM,text.monograph.grammar,,A Greek Grammar We Do Not Name,,en,newg.1-200',
       'LLS:NEWBIBLE,text.monograph.bible,,"A Bible, Plain",,en,bible+nb.1-87',
-      'LLS:OTCOMM,text.monograph.commentary.bible,,Genesis,Some Series,en,bible.1.1.1-1.50.26',
+      'LLS:OTRI,lbx.reverse-interlinear,,Genesis Reverse Interlinear,,en,bible+x.1-1',
     ].join('\r\n');
     const report = fitReport(RULES, readExport(`${FIXTURE}${extra}\r\n`));
     const kinds = Object.fromEntries(report.byKind.map((k) => [k.kind, k.rows.map((r) => r.resource)]));
     expect(kinds.grammar).toEqual(['LLS:NEWGRAM']);
-    expect(kinds.commentary).toEqual(['LLS:OTCOMM']);
+    expect(kinds.interlinear).toEqual(['LLS:OTRI']);
+    // a commentary on Genesis is a type rule's too (mw-eup64h)
+    expect(kinds.commentary).toEqual([]);
     // an English Bible of the whole Bible is a type rule's: taken, not unmatched
     expect(kinds.bible).toEqual([]);
     expect(report.matched).toBe(23);
     const text = formatFit(report);
     expect(text).toContain('grammar (1)');
     expect(text).toContain('LLS:NEWGRAM  text.monograph.grammar  A Greek Grammar We Do Not Name  [newg]');
-    expect(text).toContain('LLS:OTCOMM  text.monograph.commentary.bible  Genesis  [bible]  (Old Testament)');
+    expect(text).toContain('LLS:OTRI  lbx.reverse-interlinear  Genesis Reverse Interlinear  [bible+x]  (Old Testament)');
     expect(text).toContain('other (38): lbx.interactive 22');
   });
 

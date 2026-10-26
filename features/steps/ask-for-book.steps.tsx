@@ -43,11 +43,11 @@ const DAY = 24 * 60 * 60 * 1000;
 let fake: FakePostern;
 let onLine: MockInstance<() => boolean> | undefined;
 
-/** The book Lampas cannot use that a kept list holds, and what the sheet must send of it. Its passages reach before the New Testament too (mw-vb8krt: a type rule takes a commentary on the
- *  New Testament alone, so one that reaches beyond it is what is left to ask for). */
+/** The book Lampas cannot use that a kept list holds, and what the sheet must send of it. Its Logos type is the plain commentary one, which no type rule takes (mw-eup64h: a type rule takes every
+ *  'commentary.bible' on a book of the Bible, so one of the plain type is what is left to ask for). */
 const HENDRIKSEN = {
   resource: 'LLS:HENDRIKSENROM',
-  type: 'text.monograph.commentary.bible',
+  type: 'text.monograph.commentary',
   title: "Exposition of Paul's Epistle to the Romans",
   series: 'New Testament Commentary',
   languages: 'en',
@@ -360,7 +360,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
         kind: 'library',
         books: 5,
         usable: 2,
-        counts: { 'text.monograph.lexicon': 2, 'text.monograph.ancient-manuscript': 1, 'text.monograph.commentary.bible': 1 },
+        counts: { 'text.monograph.lexicon': 2, 'text.monograph.ancient-manuscript': 1, 'text.monograph.commentary': 1 },
         catalogue_version: CATALOGUE_VERSION,
         app_version: __APP_VERSION__,
       });
