@@ -10,8 +10,15 @@ src/diagram/validate.ts   # validateDiagram(tree, wordCount) -> {ok: true} | {ok
 #   empty-subject, empty-verb) with where in the tree. An implied-only subject (a Greek verb's ending, an English imperative) is allowed; so is an implied-only verb
 src/diagram/layout.ts     # layoutDiagram(tree, words, measure) -> {width, height, segments, labels}, pure: positions only, from a measure(text) width, nothing scaled (jsdom tests pass a fixed measure). Segments are kinds
 #   (base, bar-full, bar-half, bar-predicate, modifier, foot, prep-slant, object-line, indirect-slant, join, step); labels carry their word's index (none when implied), their role and clause
-src/diagram/ReedKellogg.tsx # <ReedKellogg diagram words mode reference onWord measure?>: the layout as one SVG (role img, 'Sentence diagram of Colossians 3:1, English') with a button over each word, in a box that
+src/diagram/ReedKellogg.tsx # <ReedKellogg diagram words mode reference onWord measure? lit?> (lit: a word index to light, data-lit, the lesson's right word): the layout as one SVG (role img, 'Sentence diagram of Colossians 3:1, English') with a button over each word, in a box that
 #   scrolls sideways (overflow-x-auto, which useChapterSwipe skips); implied words are text in parentheses, no button; Greek labels carry GREEK_LANG; the face is measured from a probe span by canvas
+src/diagram/lesson.ts     # the optional lesson 'How to read a sentence diagram' (mw-q6t5tvn.1): LESSON_STEPS, nine {title, text, reference, verse, mode, words, diagram, check: {role, answer}} (one Reed-Kellogg convention a step, each on a real verse
+#   or part of one, the diagram written by hand here and never asked of the tutor; the last is the Weave's Colossians 3:1, Greek words in the lines), checkPrompt(step) = 'Tap the <role>', and what the phone keeps in localStorage with no Dexie bump:
+#   'lampas.diagram-lesson' = 'done' (lessonDone, keepLessonDone) and 'lampas.diagram-lesson.step' (lessonStep, keepLessonStep; Done forgets it). Order: base line, a describing word, direct object, understood subject, predicate nominative,
+#   indirect object (the tree has one complement a clause, so its example has no direct object), preposition, two clauses joined, Greek
+src/diagram/DiagramLesson.tsx # <DiagramLesson/> at #/diagram-lesson (Route 'diagram-lesson', SCREEN_NAMES, a tutor place): the title, 'Step N of M', the step's sentences above its diagram drawn by ReedKellogg (same face, same sideways scroll), the check
+#   ('Tap the <role>': a right tap 'Right.', a wrong one lights the right word through ReedKellogg's `lit`), Back and Next; the last step's Done keeps the lesson done and leaves for where he came from (history.back when the trail has an entry behind,
+#   else the Reader), and so does ‹ Leave, which keeps the step reached (every Next/Back keeps it). Optional: nothing in the Goal, the ladder, Review or Today names it (tests/unit/diagram-lesson.test.ts greps src/); it is reached by its address or the tutor
 src/diagram/request.ts    # buildDiagramRequest(chapter, verses, view) -> {request, words}: the sentence-diagram grind's input ({ref, lang, words: [{i, text, chunk | lemma, parse}], greek (English only: the verse's Greek with parse),
 #   faults (a second ask only)}) and the DiagramWords the renderer indexes; English words are each chunk's words split on spaces with the marks stripped, Greek words verse.g with the marks stripped (an elision's apostrophe stays); a passage
 #   counts on through its verses, `chunk`/`word` stay within the verse and each word carries its `verse`; diagramReference names the unit ('Colossians 3:1-2')
@@ -33,6 +40,8 @@ src/diagram/weave.ts      # weaveDiagramWords(words, verses, wovenOf) -> Diagram
 #   a word the tree puts in another slot than the Greek's own role (the 'you' of 'you have been raised with' carries the verb): the tap opens the same Greek word whichever
 tests/fixtures/diagrams/col-3-1-english.json, col-3-1-greek.json  # Colossians 3:1 in each mode: {reference, mode, words, diagram}; the words are read from public/data/col/3.json (tests/unit/diagram-validate.test.ts
 #   checks it), the diagram is hand-written; they are the sentence-diagram grind's two example answers
+tests/fixtures/diagrams/lesson-steps.ts  # EXPECTED_STEPS: the lesson's nine steps as the story sets them out (convention, verse, mode, the word of the right tap, the line kinds drawn), apart from lesson.ts so tests/unit/diagram-lesson.test.ts fails on a dropped one
+features/diagram-lesson.feature  # the lesson through the whole app (features/steps/diagram-lesson.steps.tsx): opens at step 1, a right and a wrong tap, Next to Done kept and back where he came from, Back, leaving at step 3 and opening at step 3, nothing else names it
 tests/support/diagram-fixtures.ts  # loadFixture(mode) and the little slots the layout tests build
 features/sentence-diagram.feature  # the renderer on both fixtures and the Verse view's Diagram through the whole app with a fake mill (features/steps/sentence-diagram.steps.tsx); tests/e2e/sentence-diagram.spec.ts at 390x844 (the row, the sideways box, the word sheet, no second ask)
 ```
