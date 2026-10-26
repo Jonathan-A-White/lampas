@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.2.27",
+    "date": "2026-10-26",
+    "story": "mw-5r3p30.773",
+    "kind": "fixed",
+    "text": "In a window a third of the screen tall (split-screen), the Talk bar, the question box under Ask the tutor and a reference card's Play and Open are no longer cut off at the bottom."
+  },
+  {
     "version": "0.2.26",
     "date": "2026-10-26",
     "story": "mw-5vvlay.3",

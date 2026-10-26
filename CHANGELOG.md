@@ -1,5 +1,9 @@
 # What's new
 
+## 0.2.27
+_2026-10-26_
+- Fixed: In a window a third of the screen tall (split-screen), the Talk bar, the question box under Ask the tutor and a reference card's Play and Open are no longer cut off at the bottom.
+
 ## 0.2.26
 _2026-10-26_
 - New: Ask the tutor on an Old Testament verse now sees the Hebrew words of the verse, with their dictionary form, meaning and grammar, and can answer about them.
