@@ -19,7 +19,7 @@ export const copyTextSetting = defineSetting<CopyText>({
   section: 'reading',
   label: 'Copy: text',
   hint: 'When you copy: the words as you read them, in English, the Greek or Hebrew, or both.',
-  help: 'What Copy and Share give for a verse, a passage or a chapter: **As you read it**, the default, the text in the view on now (English, Greek, Hebrew or the Weave); **English**; **The original**, Greek or Hebrew; or **Both**, English then the original.',
+  help: 'What Copy and Share give for a verse, a passage or a chapter: **As you read it**, the default, the view on now (English, Greek, Hebrew or the Weave); **English**; **The original**; or **Both**, English then the original.',
 });
 
 export const copyReferenceSetting = defineSetting<CopyReference>({
