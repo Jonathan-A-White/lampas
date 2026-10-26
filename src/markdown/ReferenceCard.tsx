@@ -7,7 +7,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { loadChapter, type Chapter, type Verse } from '../data/chapter';
+import { loadChapter, sourceLanguage, type Chapter, type Verse } from '../data/chapter';
 import { otBookOf } from '../data/books';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { getLogosBible, getStudyResources } from '../data/repositories';
@@ -18,7 +18,7 @@ import { armFallback } from '../resources/openApp';
 import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage } from '../speech/passagePlayer';
 import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
 import { VerseText } from '../reader/VerseText';
-import { useViewSettings } from '../reader/useViewSettings';
+import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
 import { textClass } from '../reader/textClass';
 import { langOf } from '../script/greekLang';
@@ -43,7 +43,9 @@ const markedIn = (verse: Verse, form: string): ReadonlySet<number> => {
 
 /** The passage as the Reader would draw it, in his view and Weave, with the Greek word `mark` marked when there is one (mw-5r3p30.652). The words are plain text: a tap on a card opens nothing. */
 function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPlace; mark?: string }) {
-  const settings = useViewSettings();
+  const saved = useViewSettings();
+  // an Old Testament chapter is read in English only, whatever view he saved
+  const settings = saved && settingsFor(saved, chapter);
   const woven = useWoven(chapter, settings ?? {});
   if (!settings) return <p role="status" className="py-1 text-base text-muted">Loading…</p>;
   const inRange = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => v.n >= held.first && v.n <= held.last);
@@ -170,7 +172,8 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   useSheetBack(onClose);
   const { held } = card;
   const [passage, setPassage] = useState<Passage>(null);
-  const view = useViewSettings()?.view;
+  const saved = useViewSettings()?.view;
+  const view = passage !== null && passage !== 'failed' && sourceLanguage(passage) !== 'grc' ? 'english' : saved;
   const box = useRef<HTMLDivElement>(null);
   const layer = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState<Spot | null>(null);

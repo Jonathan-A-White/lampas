@@ -39,7 +39,7 @@ async function open(ref: string, lang: MemorizeLang, solid: string[] = [], withM
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith('/data/') ? chapters(input) : postern.fetch(input, init)));
   }
   const found = await versesOf(ref);
-  if (!found || found.ot) throw new Error(`no text for ${ref}`);
+  if (!found) throw new Error(`no text for ${ref}`);
   const woven = lang === 'weave' ? wovenOf(found.source, { view: 'english', weave: 'solid', weaveShown: true, weaveGrammar: 'any', weaveOrder: 'english', levels: new Map(), solid: new Set(solid) }) : null;
   const target = found.verses.flatMap((v) => tokensOf(v, lang, woven?.[found.source.verses.indexOf(v)] ?? null));
   setup = { ref, lang, found, target, woven };

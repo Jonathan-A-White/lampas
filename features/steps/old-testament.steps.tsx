@@ -8,8 +8,11 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOKS, bookOf } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { getStudyChapter } from '../../src/data/readerChapter';
+import { createVerseList } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { audibleStartOf } from '../../src/resources/audioBible';
@@ -18,7 +21,10 @@ import { chapterLink } from '../../src/resources/logosBible';
 import { browserEnv } from '../../src/resources/openApp';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
+import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 
@@ -28,6 +34,15 @@ let timers: (() => void)[] = [];
 let opened: string[] = [];
 let asked: string[] = [];
 let synth: FakeSynth | undefined;
+let fake: FakePostern | undefined;
+const PHONE_KEY = '00'.repeat(31) + '02';
+
+/** What a phone can be given besides settings: a licence (a tutor behind a fake Postern, a recogniser), navigator.share, the action the Verse view kept. */
+interface Phone {
+  licensed?: boolean;
+  share?: boolean;
+  kept?: string;
+}
 
 // The scenario's steps are tests of their own, so the stubs live until the file ends rather than until each step does.
 const real = { ...browserEnv };
@@ -44,16 +59,30 @@ afterAll(() => {
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 /** Opens the app on a chapter (the address names it), with these settings saved and, when asked, a phone that speaks. */
-async function openOn(title: string, settings: Record<string, string> = {}, speaks = false): Promise<void> {
+async function openOn(title: string, settings: Record<string, string> = {}, speaks = false, phone: Phone = {}): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
   forgetTrail();
   localStorage.clear();
   vi.unstubAllGlobals();
+  Reflect.deleteProperty(window.navigator, 'share');
   document.documentElement.removeAttribute('data-theme');
   document.documentElement.style.removeProperty('--lp-scale');
   stubChapterFetch();
+  fake = undefined;
+  if (phone.licensed) {
+    localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
+    tutorTimings.pollMs = 20;
+    const postern = makeFakePostern();
+    postern.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
+    fake = postern;
+    stubRecognizer();
+    const chapterFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? postern.fetch(input, init) : chapterFetch(input, init)));
+  }
+  if (phone.share) Object.defineProperty(window.navigator, 'share', { configurable: true, value: () => Promise.resolve() });
+  if (phone.kept) localStorage.setItem('lampas.verseAction', phone.kept);
   synth = speaks ? stubSpeech([ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE]) : undefined;
   timers = [];
   opened = [];
@@ -543,6 +572,150 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Bibles page says {string}', pageSays);
     And('the Resource ID field holds {string}', async (_, id: string) => {
       await waitFor(() => expect(resourceId().value).toBe(id));
+    });
+  });
+
+  const viewEl = (): HTMLElement => screen.getByRole('region', { name: 'Verse view' });
+  const tapVerseNumber = async (_: unknown, n: number): Promise<void> => {
+    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+    await screen.findByRole('region', { name: 'Verse view' });
+  };
+  const actionNames = (): string[] =>
+    [...within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button')].map((b) => b.textContent?.trim() ?? '');
+  const phoneLicensed = 'Lampas is opened on Jonah 1 with a licence';
+
+  Scenario('The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor and Share', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Jonah 1 with a licence and a phone that can share', () => openOn('Jonah 1', {}, false, { licensed: true, share: true }));
+    When('he taps the number of verse {int}', tapVerseNumber);
+    Then('the Verse view is headed {string}', async (_, reference: string) => {
+      await waitFor(() => expect(within(viewEl()).getByRole('heading', { name: reference })).toBeInTheDocument());
+    });
+    And('the Verse view shows the verse in English', () => {
+      const verse = viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
+      expect(squash(verse.textContent)).toContain('The men knew that he was fleeing from the presence of the LORD');
+    });
+    And('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
+      expect(actionNames()).toEqual([a, b, c, d, e]);
+    });
+    And('the Verse view has no {string} and no {string}', (_, a: string, b: string) => {
+      for (const name of [a, b]) expect(within(viewEl()).queryByRole('button', { name, exact: true }), name).toBeNull();
+    });
+  });
+
+  Scenario('Quiz me kept from a New Testament verse opens an Old Testament verse on Listen and is kept', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Jonah 1 with a licence and the kept action {string}', (_, kept: string) => openOn('Jonah 1', {}, false, { licensed: true, kept }));
+    When('he taps the number of verse {int}', tapVerseNumber);
+    Then('the chosen action of the Verse view is {string}', (_, name: string) => {
+      const pressed = within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button', { pressed: true });
+      expect(pressed.map((b) => b.textContent?.trim())).toEqual([name]);
+    });
+    And('the kept action is still {string}', (_, kept: string) => {
+      expect(localStorage.getItem('lampas.verseAction')).toBe(kept);
+    });
+  });
+
+  Scenario('Ask the tutor about Jonah 1:10 sends the English verse and its reference', ({ Given, When, Then, And }) => {
+    Given(phoneLicensed, () => openOn('Jonah 1', {}, false, { licensed: true }));
+    When('he taps the number of verse {int}', tapVerseNumber);
+    And('he chooses the action {string}', async (_, name: string) => {
+      await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+    });
+    And('he types the question {string} and sends it', async (_, question: string) => {
+      await user.click(await within(viewEl()).findByRole('button', { name: 'Type a question' }));
+      await user.type(await within(viewEl()).findByRole('textbox', { name: 'Your question' }), question);
+      await user.click(within(viewEl()).getByRole('button', { name: 'Send' }));
+    });
+    Then('the mill received one verse-ask grist about {string} with the English {string} and no Greek', async (_, reference: string, english: string) => {
+      await waitFor(() => expect(fake?.received).toHaveLength(1));
+      const received = fake?.received[0];
+      expect(received?.grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+      expect(received?.input.reference).toBe(reference);
+      expect(String(received?.input.english)).toContain(english);
+      expect(received?.input.greek).toBe('');
+      expect(received?.input.greek_words).toBeUndefined();
+    });
+  });
+
+  Scenario('The Verse view of Jonah 1:10 opens the verse in his Bible in Logos', ({ Given, When, Then }) => {
+    Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
+    When('he taps the number of verse {int}', tapVerseNumber);
+    Then('{string} links to {string}', async (_, name: string, href: string) => {
+      const door = await within(viewEl()).findByRole('link', { name: new RegExp(name) });
+      expect(door.getAttribute('href')).toBe(href);
+    });
+  });
+
+  Scenario('Copy link on an Old Testament verse writes its OSIS reference', ({ Given, When, Then }) => {
+    Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
+    When('he taps the number of verse {int}', tapVerseNumber);
+    Then("the Verse view's link is {string}", async (_, url: string) => {
+      const written: string[] = [];
+      Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText: (text: string) => (written.push(text), Promise.resolve()) } });
+      await user.click(within(viewEl()).getByRole('button', { name: 'Copy link' }));
+      await waitFor(() => expect(written).toEqual([url]));
+    });
+  });
+
+  Scenario('A verse list holding Jonah 1:10 shows its English text on the card', ({ Given, When, Then, And }) => {
+    Given('a verse list {string} holding {string} and {string} is opened', async (_, name: string, a: string, b: string) => {
+      await openOn('Romans 8', withLogos(true));
+      const list = await createVerseList(name, [a, b], 1);
+      cleanup();
+      window.history.replaceState(null, '', `/#/lists/${list.id}`);
+      render(<App />);
+      await screen.findByRole('heading', { name, level: 1 });
+    });
+    When('he taps the reference {string} on the list', async (_, name: string) => {
+      await user.click(await screen.findByRole('link', { name }));
+    });
+    Then('the card {string} shows {string}', async (_, heading: string, text: string) => {
+      const card = await screen.findByRole('dialog', { name: heading });
+      await waitFor(() => expect(squash(card.querySelector('[data-reference-text]')?.textContent)).toContain(text));
+      expect(card.querySelector('[data-reference-text]')?.getAttribute('data-view')).toBe('english');
+    });
+    And('the list offers Memorize on the row of {string}', async (_, name: string) => {
+      await user.keyboard('{Escape}');
+      const row = screen.getByRole('link', { name }).closest('li') as HTMLElement;
+      expect(await within(row).findByRole('button', { name: 'Memorize' })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('Jonah 1:10 is memorized in English', ({ Given, When, Then, And }) => {
+    Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
+    When('he taps the number of verse {int}', tapVerseNumber);
+    And('he taps Memorize on the Verse view', async () => {
+      await user.click(await within(viewEl()).findByRole('button', { name: 'Memorize' }));
+    });
+    Then('the Verse view says {string}', async (_, text: string) => {
+      await waitFor(() => expect(within(viewEl()).getByRole('button', { name: text })).toBeInTheDocument());
+    });
+    When('he opens the Memorize session of {string} in English', async (_, ref: string) => {
+      cleanup();
+      window.history.replaceState(null, '', `/#/memorize/${ref}/en`);
+      render(<App />);
+    });
+    Then('the session says {string}', async (_, text: string) => {
+      await waitFor(() => expect(document.body).toHaveTextContent(text));
+    });
+    And('the session shows {string}', async (_, text: string) => {
+      await waitFor(() => expect(squash(document.body.textContent)).toContain(text));
+    });
+  });
+
+  Scenario('Review, the Quick test and the Parsing drill say nothing about an open Old Testament chapter', ({ Given, When, Then }) => {
+    Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
+    Then('the ladders, the quizzes and Review draw their forms from {string}, not from {string}', (_, studied: string, open: string) => {
+      expect(getStudyChapter().title).toBe(studied);
+      expect(JSON.parse(localStorage.getItem('lampas.chapter') ?? 'null')).toMatchObject({ book: 'jon', chapter: 1 });
+      expect(studied).not.toBe(open);
+    });
+    When('he opens Review, the Quick test and the Parsing drill in turn', () => undefined);
+    Then('each opens with its own heading and no error', async () => {
+      for (const [name, hash] of [['Review', '#/review'], ['Quick test', '#/test'], ['Parsing drill', '#/drill']]) {
+        window.location.hash = hash;
+        await screen.findByRole('heading', { name, level: 1 });
+        expect(screen.queryByText(/something went wrong|Reload/i), name).toBeNull();
+      }
     });
   });
 });

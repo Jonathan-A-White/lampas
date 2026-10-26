@@ -179,3 +179,55 @@ Feature: Lampas reads the Old Testament in English
     And the app is closed and opened again
     Then the Bibles page says "Old Testament chapters open in LLS:1.0.9991."
     And the Resource ID field holds "LLS:1.0.9991"
+
+  Scenario: The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor and Share
+    Given Lampas is opened on Jonah 1 with a licence and a phone that can share
+    When he taps the number of verse 10
+    Then the Verse view is headed "Jonah 1:10"
+    And the Verse view shows the verse in English
+    And the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Copy link" and "Share"
+    And the Verse view has no "Quiz me" and no "Diagram"
+
+  Scenario: Quiz me kept from a New Testament verse opens an Old Testament verse on Listen and is kept
+    Given Lampas is opened on Jonah 1 with a licence and the kept action "quiz"
+    When he taps the number of verse 10
+    Then the chosen action of the Verse view is "Listen"
+    And the kept action is still "quiz"
+
+  Scenario: Ask the tutor about Jonah 1:10 sends the English verse and its reference
+    Given Lampas is opened on Jonah 1 with a licence
+    When he taps the number of verse 10
+    And he chooses the action "Ask the tutor"
+    And he types the question "Why did he flee?" and sends it
+    Then the mill received one verse-ask grist about "Jonah 1:10" with the English "The men knew that he was fleeing from the presence of the LORD" and no Greek
+
+  Scenario: The Verse view of Jonah 1:10 opens the verse in his Bible in Logos
+    Given Lampas is opened on Jonah 1 with Logos on
+    When he taps the number of verse 10
+    Then "In Logos" links to "logosres:lgcystndrdbblsb;ref=Bible.Jon1.10"
+
+  Scenario: Copy link on an Old Testament verse writes its OSIS reference
+    Given Lampas is opened on Jonah 1 with Logos on
+    When he taps the number of verse 10
+    Then the Verse view's link is "https://lampas.allmymind.org/#/?ref=Jonah.1.10"
+
+  Scenario: A verse list holding Jonah 1:10 shows its English text on the card
+    Given a verse list "Flight" holding "Jonah.1.10" and "Rom.8.28" is opened
+    When he taps the reference "Jonah 1:10" on the list
+    Then the card "Jonah 1:10" shows "The men knew that he was fleeing from the presence of the LORD"
+    And the list offers Memorize on the row of "Jonah 1:10"
+
+  Scenario: Jonah 1:10 is memorized in English
+    Given Lampas is opened on Jonah 1 with Logos on
+    When he taps the number of verse 10
+    And he taps Memorize on the Verse view
+    Then the Verse view says "Memorizing · English"
+    When he opens the Memorize session of "Jonah.1.10" in English
+    Then the session says "Read and say"
+    And the session shows "The men knew that he was fleeing from the presence of the LORD"
+
+  Scenario: Review, the Quick test and the Parsing drill say nothing about an open Old Testament chapter
+    Given Lampas is opened on Jonah 1 with Logos on
+    Then the ladders, the quizzes and Review draw their forms from "Romans 8", not from "Jonah 1"
+    When he opens Review, the Quick test and the Parsing drill in turn
+    Then each opens with its own heading and no error

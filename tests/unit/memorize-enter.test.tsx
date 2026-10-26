@@ -25,7 +25,6 @@ vi.mock('../../src/memorize/commands', async (original) => {
 });
 
 const REFUGE = ['Rom.8.28', 'Ps.62.1-2', '2Thess.3.3'];
-const OT_LINE = 'No Old Testament text in Lampas yet: Ps 62:1-2';
 
 beforeEach(async () => {
   clearBus();
@@ -51,21 +50,20 @@ async function openRefuge(dial: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
   render(<VerseListsScreen />);
   await screen.findByRole('switch', { name: 'Memorize this list' });
   // a row's control draws nothing until it has read what is memorized and his Greek dial
-  await waitFor(() => expect(document.querySelectorAll('[data-memorize]')).toHaveLength(2));
+  await waitFor(() => expect(document.querySelectorAll('[data-memorize]')).toHaveLength(3));
 }
 
 const memorized = async (): Promise<string[]> => (await listMemorized()).map((r) => `${r.lang}:${r.ref}`).sort();
 const rowOf = (name: string): HTMLElement => screen.getByRole('link', { name }).closest('li') as HTMLElement;
 
 describe('Memorize this list', () => {
-  it('is Off to start, and On memorizes the New Testament references in English and names the Old Testament one as skipped', async () => {
+  it('is Off to start, and On memorizes the references of both testaments in English', async () => {
     await openRefuge(3);
     const toggle = screen.getByRole('switch', { name: 'Memorize this list' });
     expect(toggle).toHaveAttribute('aria-checked', 'false');
     await userEvent.click(toggle);
     await waitFor(() => expect(toggle).toHaveAttribute('aria-checked', 'true'));
-    expect(await memorized()).toEqual(['en:2Thess.3.3', 'en:Rom.8.28']);
-    expect(screen.getByText(OT_LINE)).toBeInTheDocument();
+    expect(await memorized()).toEqual(['en:2Thess.3.3', 'en:Ps.62.1-2', 'en:Rom.8.28']);
     expect(commands.memorizeList).toHaveBeenCalledWith({ listId: expect.any(Number) });
   });
 
@@ -80,19 +78,22 @@ describe('Memorize this list', () => {
     expect(commands.unmemorizeList).toHaveBeenCalledTimes(1);
   });
 
-  it('is On only when every New Testament reference is memorized in English', async () => {
+  it('is On only when every reference is memorized in English', async () => {
     await openRefuge(3);
     await userEvent.click(within(rowOf('Romans 8:28')).getByRole('button', { name: 'Memorize' }));
     const toggle = screen.getByRole('switch', { name: 'Memorize this list' });
     await waitFor(() => expect(within(rowOf('Romans 8:28')).getByRole('button', { name: /^Memorizing/ })).toBeInTheDocument());
     expect(toggle).toHaveAttribute('aria-checked', 'false');
     await userEvent.click(await within(rowOf('2 Thessalonians 3:3')).findByRole('button', { name: 'Memorize' }));
+    await waitFor(() => expect(within(rowOf('2 Thessalonians 3:3')).getByRole('button', { name: /^Memorizing/ })).toBeInTheDocument());
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
+    await userEvent.click(await within(rowOf('Psalm 62:1-2')).findByRole('button', { name: 'Memorize' }));
     await waitFor(() => expect(toggle).toHaveAttribute('aria-checked', 'true'));
   });
 });
 
 describe('the progress mark on a row', () => {
-  it('shows under a memorized reference, and not under one that is not memorized or an Old Testament one', async () => {
+  it('shows under a memorized reference, an Old Testament one too, and not under one that is not memorized', async () => {
     await openRefuge(3);
     expect(screen.queryAllByRole('img')).toHaveLength(0);
     await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
@@ -100,7 +101,7 @@ describe('the progress mark on a row', () => {
     expect(mark.querySelectorAll('[data-cell="filled"]')).toHaveLength(1);
     expect(mark.querySelectorAll('[data-cell]')).toHaveLength(7);
     expect(within(rowOf('2 Thessalonians 3:3')).getByRole('img', { name: 'Step 1 of 7 · due today' })).toBeInTheDocument();
-    expect(within(rowOf('Psalm 62:1-2')).queryByRole('img')).toBeNull();
+    expect(within(rowOf('Psalm 62:1-2')).getByRole('img', { name: 'Step 1 of 7 · due today' })).toBeInTheDocument();
   });
 
   it('names the language when the verse is memorized in more than one', async () => {
@@ -124,11 +125,21 @@ describe('the progress mark on a row', () => {
 });
 
 describe('the control on a row', () => {
-  it('reads Memorizing · English once the list is on, and is not drawn on an Old Testament row', async () => {
+  it('reads Memorizing · English once the list is on, on an Old Testament row too', async () => {
     await openRefuge(3);
-    expect(within(rowOf('Psalm 62:1-2')).queryByRole('button')).toBeNull();
+    expect(within(rowOf('Psalm 62:1-2')).getByRole('button', { name: 'Memorize' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('switch', { name: 'Memorize this list' }));
     expect(await within(rowOf('Romans 8:28')).findByRole('button', { name: 'Memorizing · English' })).toBeInTheDocument();
+    expect(await within(rowOf('Psalm 62:1-2')).findByRole('button', { name: 'Memorizing · English' })).toBeInTheDocument();
+  });
+
+  it('on an Old Testament row has no sheet of languages: English is the only one, so a tap on it stops it', async () => {
+    await openRefuge(5);
+    await userEvent.click(within(rowOf('Psalm 62:1-2')).getByRole('button', { name: 'Memorize' }));
+    await userEvent.click(await within(rowOf('Psalm 62:1-2')).findByRole('button', { name: 'Memorizing · English' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(within(rowOf('Psalm 62:1-2')).getByRole('button', { name: 'Memorize' })).toBeInTheDocument());
+    expect(await memorized()).toEqual([]);
   });
 
   it('a tap on Memorize memorizes the verse in English, through the command', async () => {
@@ -190,18 +201,20 @@ describe('the control on a row', () => {
 });
 
 describe('the commands', () => {
-  it('skip an Old Testament reference and say so', async () => {
-    expect(await commands.memorizeVerse({ ref: 'Ps.62.1-2', langs: ['en'] })).toEqual({ said: OT_LINE, skipped: ['Ps 62:1-2'] });
-    expect(await memorized()).toEqual([]);
+  it('memorize an Old Testament reference in English only, whatever languages are asked for', async () => {
+    await setGreekInterest(5);
+    const done = await commands.memorizeVerse({ ref: 'Ps.62.1-2', langs: ['en', 'el', 'weave'] });
+    expect(done.said).toBe('Memorizing Psalm 62:1-2 in English');
+    expect(await memorized()).toEqual(['en:Ps.62.1-2']);
   });
 
   it('memorizeList acts on the references the list holds now: one added later is not memorized by itself', async () => {
     await setGreekInterest(3);
     const row = await createVerseList('Refuge', REFUGE, 1);
     const done = await commands.memorizeList({ listId: row.id });
-    expect(done).toEqual({ said: `Memorizing 2 references in English. ${OT_LINE}`, skipped: ['Ps 62:1-2'] });
+    expect(done).toEqual({ said: 'Memorizing 3 references in English' });
     await db.verseLists.update(row.id, { refs: [...REFUGE, 'John.14.27'] });
-    expect(await memorized()).toEqual(['en:2Thess.3.3', 'en:Rom.8.28']);
+    expect(await memorized()).toEqual(['en:2Thess.3.3', 'en:Ps.62.1-2', 'en:Rom.8.28']);
   });
 });
 

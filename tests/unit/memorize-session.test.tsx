@@ -338,7 +338,7 @@ describe('Next verse', () => {
     expect(window.history.length).toBe(before);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Romans 8:28'));
     const rom = await versesOf('Rom.8.28');
-    if (!rom || rom.ot) throw new Error('no text');
+    if (!rom) throw new Error('no text');
     await sayIt(tokensOf(rom.verses[0], 'en').map((t) => t.text).join(' '));
     await screen.findByTestId('judgement');
     expect(screen.queryByRole('button', { name: 'Next verse' })).toBeNull();
@@ -348,10 +348,10 @@ describe('Next verse', () => {
 });
 
 describe('a verse that cannot be learned', () => {
-  it('an Old Testament reference says there is no text', async () => {
-    window.history.replaceState(null, '', '/#/memorize/Ps.62.1-2/en');
+  it('a verse that is not in Lampas says so', async () => {
+    window.history.replaceState(null, '', '/#/memorize/Ps.62.99/en');
     render(<MemorizeScreen />);
-    expect(await screen.findByText('No Old Testament text in Lampas yet')).toBeTruthy();
+    expect(await screen.findByText('This verse is not in Lampas.')).toBeTruthy();
   });
 
   it('with nothing memorized, the home of Memorize says how to pick verses', async () => {

@@ -8,11 +8,11 @@
 // rather than being stopped: the reading's end by itself goes to the next reference, a Stop or another speech taking the voice ends the player.
 import type { HeldPlace } from '../markdown/verseLinks';
 import { loadChapter } from '../data/chapter';
-import { readViewSettings } from '../reader/useViewSettings';
+import { readViewSettings, settingsFor } from '../reader/useViewSettings';
 import { wovenOf } from '../reader/useWoven';
 import { getReading, listenCompletedNow, pauseReading, planOf, resumeReading, startReading, stopReading, subscribeReading, type PlanVerse } from './readAloud';
 
-/** A reference to read: its heading ('Hebrews 7:1-3') and its place when Lampas holds the text (null for the Old Testament): what src/markdown/verseLinks.ts gives. */
+/** A reference to read: its heading ('Hebrews 7:1-3') and its place when Lampas holds the text: what src/markdown/verseLinks.ts gives (null for an Old Testament reference the tutor named, until its card holds it too). */
 export interface PassageRef {
   heading: string;
   held: HeldPlace | null;
@@ -62,7 +62,8 @@ function set(next: PassagePlayer): void {
 
 /** The verses `held` names, as read aloud reads them in the Reader's view and weave now. */
 async function planOfReference(held: HeldPlace): Promise<PlanVerse[]> {
-  const [chapter, settings] = await Promise.all([loadChapter(held.book, held.chapter), readViewSettings()]);
+  const [chapter, saved] = await Promise.all([loadChapter(held.book, held.chapter), readViewSettings()]);
+  const settings = settingsFor(saved, chapter);
   const woven = wovenOf(chapter, settings);
   const wanted = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => v.n >= held.first && v.n <= held.last);
   return planOf(

@@ -8,7 +8,7 @@ import { loadChapter } from './data/chapter';
 import { drawDrill, type DrillQuestion } from './data/drill';
 import { clearDrill, readDrill, saveDrill, type SavedDrill } from './data/drillKeep';
 import type { Random } from './data/quiz';
-import { getOpenChapter } from './data/readerChapter';
+import { getStudyChapter } from './data/readerChapter';
 import { listWords, recordDrillStep } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { askInReader, talkInReader } from './nav/readerRequest';
@@ -60,7 +60,7 @@ const keep = (s: Session, away: number | null = null): void =>
   saveDrill({ questions: s.questions, question: s.question, step: s.step, picked: s.picked, missed: s.missed, asked: s.asked, right: s.right, away });
 
 async function drawRound(random: Random): Promise<DrillQuestion[]> {
-  const open = getOpenChapter();
+  const open = getStudyChapter();
   const [words, chapter] = await Promise.all([listWords(), loadChapter(open.book, open.chapter)]);
   return drawDrill(chapter, words, random);
 }
@@ -143,7 +143,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   const finished = s.status === 'ready' && total > 0 && s.question >= total;
   const question = s.questions[s.question];
   const step = question?.steps[s.step];
-  const reader = getOpenChapter();
+  const reader = getStudyChapter();
   // Ask the tutor and Talk about it move up into the place Next stood when the next step is drawn: a second tap of a double tap on Next lands on
   // one of them, so they wait for the step to settle (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(`${s.question}:${s.step}`);

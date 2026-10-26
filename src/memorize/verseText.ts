@@ -20,8 +20,8 @@ export async function verseTextOf({ ref }: { ref: string }): Promise<VerseTexts>
   const texts: VerseTexts = {};
   for (const lang of langs) {
     const target = await memorizeTarget(ref, lang as TargetLang, weave);
-    if (!target || 'ot' in target && target.ot) return {};
-    texts[lang] = (target as { tokens: Array<{ text: string }> }).tokens.map((t) => t.text).join(' ');
+    if (!target) return {};
+    texts[lang] = target.tokens.map((t) => t.text).join(' ');
   }
   return texts;
 }

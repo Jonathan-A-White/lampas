@@ -86,14 +86,14 @@ const OT_BY_NAME: ReadonlyMap<string, string> = new Map(
   OT_BOOKS.flatMap(({ code, name, logos }) => [code, name, logos, ...(EXTRA_OT_NAMES[code] ?? [])].map((n): [string, string] => [squash(n), code])),
 );
 
-/** A reference to any book of the Bible: `testament` says which list names the book (data/books.ts for the New, data/otBooks.ts for the Old). Lampas holds only
- *  the New Testament's text, so only a 'nt' reference can open the Reader. */
+/** A reference to any book of the Bible: `testament` says which list names the book (data/books.ts for the New, data/otBooks.ts for the Old). Lampas holds the text of
+ *  both (the Old in English), so a reference of either opens the Reader. */
 export interface CanonReference extends Reference {
   testament: 'nt' | 'ot';
 }
 
 /** `parseReference`, and the 39 books of the Old Testament as well ('Isaiah 53:5', 'Gen 15:6', 'Psalm 23', '1 Samuel 3:4', 'Song of Solomon 2:1'); null for a
- *  book of neither. Used for the references the tutor names; the links Lampas takes in (resolveReference) still know only the New Testament. */
+ *  book of neither. Used for the references the tutor names and the links Lampas takes in (resolveReference). */
 export function parseCanonReference(text: string): CanonReference | null {
   const nt = parseReference(text);
   if (nt) return { testament: 'nt', ...nt };
@@ -135,8 +135,6 @@ export interface Opened {
   /** the last verse of a range the link named ('Heb 7:1-3'): the Verse view opens on verses `verse` to `to` */
   to?: number;
   notice: string | null;
-  /** set for a place in the Old Testament, which Lampas does not hold yet: where a Bible app can open it (the notice then offers that) */
-  elsewhere?: { book: string; chapter: number; verse?: number };
 }
 
 /** A reference named in words, never as the code it was written in ('Gen.1.28' -> 'Genesis 1:28', 'Rom.8.99' -> 'Romans 8:99'); text that names no book of the
@@ -155,23 +153,12 @@ const namedAs = (asked: string, printed?: string): string => printed?.trim() || 
 /** The sentence that says what was asked for and what is shown instead. A reference asked for is named as it was printed, when known, else in words (`inWords`). */
 export const notHeld = (asked: string, shown: string, printed?: string): string => `“${namedAs(asked, printed)}” is not in Lampas; showing ${shown}.`;
 
-/** Where `text` opens the reader. A book or number Lampas does not hold opens the nearest it does (the last chapter or verse; chapter 0 and verse 0 the
+/** Where `text` opens the reader, in either testament. A book or number Lampas does not hold opens the nearest it does (the last chapter or verse; chapter 0 and verse 0 the
  * first), a book it does not hold the chapter in `fallback`; either way with a notice. `index` null (the index could not be loaded) leaves the numbers
  * as written. `printed` is the words the reference was printed in where it was found (Link.printed); the notice names it so. */
 export function resolveReference(text: string, index: BookIndex | null, fallback: OpenChapter, printed?: string): Opened {
   const asked = text.trim().replace(SCHEME, '');
-  const parsed = parseReference(asked);
-  const old = parsed ? null : parseCanonReference(asked);
-  if (old && old.testament === 'ot' && old.chapter !== undefined) {
-    const { book, chapter, verse } = old;
-    return {
-      book: fallback.book,
-      chapter: fallback.chapter,
-      verse: null,
-      notice: `“${namedAs(asked, printed)}” is not in Lampas yet; showing ${fallback.title}.`,
-      elsewhere: { book, chapter, ...(verse === undefined ? {} : { verse }) },
-    };
-  }
+  const parsed = parseCanonReference(asked);
   const info = parsed && (index === null ? { chapters: Infinity, verses: [] as number[] } : index.books.find((b) => b.code === parsed.book));
   if (!parsed || !info) return { book: fallback.book, chapter: fallback.chapter, verse: null, notice: notHeld(asked, fallback.title, printed) };
   const { book } = parsed;
@@ -257,7 +244,7 @@ export function referenceUrl(book: string, chapter: number, verse?: number, prin
 
 /** The https link of a passage, a verse range as Logos writes it: '#/?ref=Rom.8.1-11' (parseReference keeps the first verse, so it opens the reader there). */
 export function passageUrl(book: string, chapter: number, first: number, last: number): string {
-  return `${LINK_ORIGIN}/#/?ref=${OSIS[book] ?? book}.${chapter}.${first}-${last}`;
+  return `${LINK_ORIGIN}/#/?ref=${osisOf(book)}.${chapter}.${first}-${last}`;
 }
 
 /** The https link of a word, by its Strong's number. */

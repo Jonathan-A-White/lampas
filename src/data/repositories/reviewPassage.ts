@@ -7,7 +7,7 @@ import { drillSteps, type DrillQuestion } from '../grammar/drillIt';
 import { facetQuestions, type PlanItem } from '../grammar/drillPlan';
 import { goalChapterNumbers } from '../grammar/needs';
 import { mulberry32, shuffle, type Random } from '../quiz';
-import { getOpenChapter } from '../readerChapter';
+import { getStudyChapter } from '../readerChapter';
 import { getGoal } from './settings';
 
 /** The most chapters of a whole-book goal that a round reads questions from (one request each). */
@@ -22,7 +22,7 @@ const COUNT_SEED = 1;
  */
 export async function loadPassage(chooser: Random): Promise<Chapter[]> {
   const goal = parseGoal(await getGoal(), BOOK_INDEX);
-  const open = getOpenChapter();
+  const open = getStudyChapter();
   const wanted = goal
     ? shuffle(goalChapterNumbers(goal, BOOK_INDEX), chooser).slice(0, MAX_CHAPTERS).sort((a, b) => a - b).map((n) => [goal.book, n] as const)
     : [[open.book, open.chapter] as const];

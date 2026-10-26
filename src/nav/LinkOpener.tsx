@@ -2,7 +2,7 @@
 // book index or the lexicon (both precached, so this is a moment). It then announces the result (src/nav/linkRequest.ts) and replaces the address with the
 // plain reader address, and the Reader opens there. It never leaves a blank screen: whatever the link says, the reader opens somewhere.
 import { useEffect } from 'react';
-import { loadIndex } from '../data/chapter';
+import { loadCanonIndex } from '../data/chapter';
 import { loadLexicon } from '../data/lexicon';
 import { getOpenChapter } from '../data/readerChapter';
 import { announceLink } from './linkRequest';
@@ -18,10 +18,10 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
   const kept = readerOf(hash);
   const there = getOpenChapter();
   if (link.kind === 'reference') {
-    const index = await loadIndex().catch(() => null);
+    const index = await loadCanonIndex().catch(() => null);
     if (!current()) return;
     const opened = resolveReference(link.text, index, there, link.printed);
-    announceLink({ book: opened.book, chapter: opened.chapter, verse: opened.verse, notice: opened.notice, word: null, ...(opened.elsewhere ? { elsewhere: opened.elsewhere } : {}) });
+    announceLink({ book: opened.book, chapter: opened.chapter, verse: opened.verse, notice: opened.notice, word: null });
     // a verse or a range ('Heb 7:1-3') opens the Verse view (src/nav/route.ts openVerseAt, openVerseRange) as its own Back step over the chapter's Reader, so Back closes the view
     // and shows the Reader, not what the link was tapped on (the Share to Lampas sheet)
     if (opened.verse !== null) {

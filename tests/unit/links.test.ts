@@ -129,22 +129,14 @@ describe('resolveReference', () => {
     expect(opened).toEqual({ book: 'rom', chapter: 8, verse: null, notice: '“Tobit 3:1” is not in Lampas; showing Romans 8.' });
   });
 
-  it('says an Old Testament reference is not in Lampas yet, in words, with where a Bible app opens it', () => {
-    const opened = resolve('Gen.1.28');
-    expect(opened).toEqual({
-      book: 'rom',
-      chapter: 8,
-      verse: null,
-      notice: '“Genesis 1:28” is not in Lampas yet; showing Romans 8.',
-      elsewhere: { book: 'gen', chapter: 1, verse: 28 },
-    });
-    expect(resolve('Psalm 23').elsewhere).toEqual({ book: 'psa', chapter: 23 });
+  it('opens an Old Testament reference in the Reader, now that the chapters exist', () => {
+    expect(resolve('Gen.1.28')).toEqual({ book: 'gen', chapter: 1, verse: 28, notice: null });
+    expect(resolve('Psalm 23')).toEqual({ book: 'psa', chapter: 23, verse: null, notice: null });
   });
 
   it('names an asked reference as it was printed, Gen. 1:28, when the link carries the words the sheet showed', () => {
-    const opened = resolveReference('Gen.1.28', index, DEFAULT_CHAPTER, 'Gen. 1:28');
-    expect(opened.notice).toBe('“Gen. 1:28” is not in Lampas yet; showing Romans 8.');
-    expect(opened.elsewhere).toEqual({ book: 'gen', chapter: 1, verse: 28 });
+    const opened = resolveReference('Gen.1.99', index, DEFAULT_CHAPTER, 'Gen. 1:99');
+    expect(opened.notice).toMatch(/^“Gen. 1:99” is not in Lampas; showing Genesis 1:\d+\.$/);
     const last = index.books.find((b) => b.code === 'rom')!.verses[7];
     expect(resolveReference('Rom.8.99', index, DEFAULT_CHAPTER, 'Rom. 8:99').notice).toBe(`“Rom. 8:99” is not in Lampas; showing Romans 8:${last}.`);
     expect(resolveReference('Tobit 3:1', index, DEFAULT_CHAPTER, '  ').notice).toBe('“Tobit 3:1” is not in Lampas; showing Romans 8.');

@@ -7,7 +7,7 @@
 //   keeping  recordRecall writes the recall and moves the verse on the schedule; the row is read again for its due day
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { foldWords, hideWords } from 'learn-kit/recall';
-import type { NtVerses } from './refs';
+import type { Verses } from './refs';
 import { versesOf } from './refs';
 import { memorizedRowOf, nextDueVerse, recordRecall, type RecallHow } from '../data/repositories/memorize';
 import { wovenOf } from '../reader/useWoven';
@@ -45,7 +45,6 @@ export interface Kept {
 
 export type SessionState =
   | { status: 'loading' }
-  | { status: 'ot'; heading: string }
   | { status: 'unknown' }
   | {
       status: 'ready';
@@ -69,7 +68,7 @@ export type SessionState =
     };
 
 interface Loaded {
-  found: NtVerses;
+  found: Verses;
   woven: (WovenVerse | null)[];
   tokens: VerseToken[];
   step: number;
@@ -78,7 +77,7 @@ interface Loaded {
 
 /** The state of the session of one verse in one language. The screen keys it by both, so a new verse is a new session and starts from nothing. */
 export function useSession(ref: string, lang: MemorizeLang): SessionState {
-  const [loaded, setLoaded] = useState<Loaded | 'ot' | 'unknown' | null>(null);
+  const [loaded, setLoaded] = useState<Loaded | 'unknown' | null>(null);
   const [heading, setHeading] = useState('');
   const [phase, setPhase] = useState<SessionPhase>('shown');
   const [note, setNote] = useState<string | null>(null);
@@ -92,15 +91,11 @@ export function useSession(ref: string, lang: MemorizeLang): SessionState {
       const found = await versesOf(ref).catch(() => null);
       if (!live) return;
       if (!found) return setLoaded('unknown');
-      if (found.ot) {
-        setHeading(found.heading);
-        return setLoaded('ot');
-      }
       const settings = lang === 'weave' ? await weaveSettingsNow() : undefined;
       const target = await memorizeTarget(ref, lang, settings);
       const row = await memorizedRowOf(ref, lang);
       if (!live) return;
-      if (!target || target.ot) return setLoaded('unknown');
+      if (!target) return setLoaded('unknown');
       const chapterWoven = settings ? wovenOf(found.source, settings) : null;
       const woven = found.verses.map((v) => chapterWoven?.[found.source.verses.indexOf(v)] ?? null);
       setHeading(found.heading);
@@ -195,7 +190,6 @@ export function useSession(ref: string, lang: MemorizeLang): SessionState {
   );
 
   if (loaded === null) return { status: 'loading' };
-  if (loaded === 'ot') return { status: 'ot', heading };
   if (loaded === 'unknown') return { status: 'unknown' };
   const rung = rungFor(loaded.step);
   const hidden = rung.kind === 'gaps' ? hideWords(loaded.tokens.length, rung.share, loaded.seed) : new Set<number>();

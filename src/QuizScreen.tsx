@@ -12,7 +12,7 @@ import { backTo, navigate } from './nav/route';
 import { askAboutWord } from './nav/readerRequest';
 import { MAX_QUIZ_ANSWERS, quizQuestion, type QuizAnswer, type QuizFocus } from './services/talk';
 import { speakWord } from './speech/greek';
-import { getOpenChapter } from './data/readerChapter';
+import { getStudyChapter } from './data/readerChapter';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { WordQuestion } from './WordQuestion';
 import { focusOnMount } from './ui/focus';
@@ -24,7 +24,7 @@ type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; qu
 
 /** The chapter whose forms show beneath a word after the answer: the one the Reader has open. A phone that cannot load it shows no form; the lemma is asked either way. */
 const loadForms = (): Promise<Chapter | null> => {
-  const open = getOpenChapter();
+  const open = getStudyChapter();
   return loadChapter(open.book, open.chapter).catch(() => null);
 };
 
@@ -46,7 +46,7 @@ function DrillLink({ card = 0 }: { card?: number }) {
       onClick={() => settled() && navigate('drill')}
       className="mt-3 min-h-12 w-full rounded-xl border border-line text-base font-medium"
     >
-      Parsing drill: {getOpenChapter().title}
+      Parsing drill: {getStudyChapter().title}
     </button>
   );
 }
@@ -114,7 +114,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
   // Ask the tutor: the Talk sheet on the word's verse, the first question sent with the word, its parsing, the question and his answers.
   const askTutor = async () => {
     if (!question || picked === null) return;
-    const open = getOpenChapter();
+    const open = getStudyChapter();
     const about = askAbout(question, { book: open.book, chapter: open.chapter, verse: 1 });
     const [forms, entry] = await Promise.all([loadForms(), lookupLemma(question.lemma)]);
     const verse = forms?.verses.find((v) => v.n === question.verse);

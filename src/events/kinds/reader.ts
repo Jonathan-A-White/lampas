@@ -33,6 +33,4 @@ export type ReaderEvent =
       verse: number | null;
       notice: string | null;
       word: { lemma: string; strongs: string; gloss: string } | null;
-      /** an Old Testament place the link named, which Lampas does not hold: the notice then also offers it in Logos */
-      elsewhere?: { book: string; chapter: number; verse?: number };
     };

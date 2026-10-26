@@ -1,5 +1,5 @@
 // tests/unit/memorize-target.test.ts — the text a verse is memorized in (mw-fu7dqf.1): a per-token {text, lang} sequence for English, Greek and the
-// weave of the moment, for a verse or a range from a canonical reference; an Old Testament reference has no text.
+// weave of the moment, for a verse or a range from a canonical reference; an Old Testament reference is its English (mw-uqlxea.3).
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
@@ -49,7 +49,7 @@ describe('tokensOf', () => {
 describe('the weave of the moment', () => {
   it('with οἴδαμεν solid, its Greek stands between English tokens in the drawn order', async () => {
     const target = await memorizeTarget('Rom.8.28', 'weave', weaving({ weave: 'solid', weaveOrder: 'english', solid: new Set(['εἴδω']) }));
-    if (!target || target.ot) throw new Error('no target');
+    if (!target) throw new Error('no target');
     expect(texts(target.tokens)).toBe(ENGLISH.replace('we know', 'Οἴδαμεν'));
     expect(target.tokens.map((t) => t.lang).join(' ')).toBe(
       ['en', 'el', ...Array(ENGLISH.split(' ').length - 3).fill('en')].join(' '),
@@ -60,7 +60,7 @@ describe('the weave of the moment', () => {
   it('with the Greek order the tokens follow chunkOrder and a moved closing mark sits where chunkText puts it', async () => {
     const solid = new Set(['εἴδω']);
     const target = await memorizeTarget('Rom.8.28', 'weave', weaving({ weave: 'solid', weaveOrder: 'greek', solid }));
-    if (!target || target.ot) throw new Error('no target');
+    if (!target) throw new Error('no target');
     // Greek order: we know (Οἴδαμεν), And, that, of those who, love, Him, ...; the closing full stop moves from 'His purpose.' to the last drawn chunk, 'are.'
     expect(texts(target.tokens)).toBe(
       'Οἴδαμεν And that of those who love Him, all things work together for the good who according to His purpose called are.',
@@ -68,7 +68,7 @@ describe('the weave of the moment', () => {
 
     // 1 Timothy 4:2: the verse's full stop moves to the last drawn chunk, as the Reader draws it
     const moved = await memorizeTarget('1Tim.4.2', 'weave', weaving({ weave: 'solid', weaveOrder: 'greek', solid: new Set() }));
-    if (!moved || moved.ot) throw new Error('no target');
+    if (!moved) throw new Error('no target');
     expect(texts(moved.tokens)).toBe('influenced by the hypocrisy of liars, are seared with a hot iron whose consciences.');
   });
 
@@ -76,7 +76,7 @@ describe('the weave of the moment', () => {
     const settings = { weaveOrder: 'english' as const, solid: new Set<string>(), learning: new Set(['εἴδω']) };
     const learning = await memorizeTarget('Rom.8.28', 'weave', weaving({ ...settings, weave: 'solid+learning' }));
     const solidOnly = await memorizeTarget('Rom.8.28', 'weave', weaving({ ...settings, weave: 'solid' }));
-    if (!learning || learning.ot || !solidOnly || solidOnly.ot) throw new Error('no target');
+    if (!learning || !solidOnly) throw new Error('no target');
     expect(learning.tokens[1]).toMatchObject({ text: 'Οἴδαμεν', lang: 'el' });
     expect(solidOnly.tokens[1]).toMatchObject({ text: 'we', lang: 'en' });
     expect(texts(solidOnly.tokens)).toBe(ENGLISH);
@@ -85,7 +85,7 @@ describe('the weave of the moment', () => {
   it('follows him: the same verse woven again with a word more solid has that word in Greek (nothing is pinned)', async () => {
     const before = await memorizeTarget('Rom.8.28', 'weave', weaving({ weave: 'solid', solid: new Set(['εἴδω']) }));
     const after = await memorizeTarget('Rom.8.28', 'weave', weaving({ weave: 'solid', solid: new Set(['εἴδω', 'ἀγαπάω']) }));
-    if (!before || before.ot || !after || after.ot) throw new Error('no target');
+    if (!before || !after) throw new Error('no target');
     expect(before.tokens.filter((t) => t.lang === 'el').map((t) => t.text)).toEqual(['Οἴδαμεν']);
     expect(after.tokens.filter((t) => t.lang === 'el').map((t) => t.text)).toEqual(['Οἴδαμεν', 'ἀγαπῶσιν']);
   });
@@ -94,7 +94,7 @@ describe('the weave of the moment', () => {
     const off = await memorizeTarget('Rom.8.28', 'weave', weaving({ weave: 'off', solid: new Set(['εἴδω']) }));
     const none = await memorizeTarget('Rom.8.28', 'weave');
     for (const target of [off, none]) {
-      if (!target || target.ot) throw new Error('no target');
+      if (!target) throw new Error('no target');
       expect(texts(target.tokens)).toBe(ENGLISH);
       expect(target.tokens.every((t) => t.lang === 'en')).toBe(true);
     }
@@ -104,7 +104,7 @@ describe('the weave of the moment', () => {
 describe('references', () => {
   it('Rom.8.28-29 gives both verses in order, each token with its verse number', async () => {
     const target = await memorizeTarget('Rom.8.28-29', 'en');
-    if (!target || target.ot) throw new Error('no target');
+    if (!target) throw new Error('no target');
     expect(target.heading).toBe('Romans 8:28-29');
     const verses = [...new Set(target.tokens.map((t) => t.verse))];
     expect(verses).toEqual([28, 29]);
@@ -114,7 +114,7 @@ describe('references', () => {
 
   it('a single verse carries its number', async () => {
     const target = await memorizeTarget('Rom.8.28', 'el');
-    if (!target || target.ot) throw new Error('no target');
+    if (!target) throw new Error('no target');
     expect(target.heading).toBe('Romans 8:28');
     expect(target.tokens.every((t) => t.verse === 28)).toBe(true);
     expect(texts(target.tokens)).toBe(GREEK);
@@ -122,22 +122,30 @@ describe('references', () => {
 
   it('a range is each verse its own Verse, never a passage', async () => {
     const found = await versesOf('Rom.8.28-29');
-    if (!found || found.ot) throw new Error('no verses');
+    if (!found) throw new Error('no verses');
     expect(found.verses.map((v) => v.n)).toEqual([28, 29]);
     expect(found.verses.every((v) => v.to === undefined)).toBe(true);
     expect(found.book).toBe('rom');
     expect(found.chapter).toBe(8);
   });
 
-  it('Ps.62.1-2 is Old Testament: no verses, ot: true, and no text', async () => {
-    expect(await versesOf('Ps.62.1-2')).toEqual({ ot: true, heading: 'Psalm 62:1-2' });
-    expect(await memorizeTarget('Ps.62.1-2', 'en')).toEqual({ ot: true, heading: 'Psalm 62:1-2' });
-    expect(await memorizeTarget('Gen.1.1', 'weave')).toMatchObject({ ot: true });
+  it('Ps.62.1-2 is Old Testament: its verses, and its English whatever language is asked for', async () => {
+    const found = await versesOf('Ps.62.1-2');
+    if (!found) throw new Error('no verses');
+    expect(found).toMatchObject({ book: 'psa', chapter: 62, heading: 'Psalm 62:1-2' });
+    expect(found.verses.map((v) => v.n)).toEqual([1, 2]);
+    const english = await memorizeTarget('Ps.62.1-2', 'en');
+    expect(english).toMatchObject({ heading: 'Psalm 62:1-2', lang: 'en' });
+    const asked = await memorizeTarget('Gen.1.1', 'el');
+    if (!asked) throw new Error('no target');
+    expect(asked.lang).toBe('en');
+    expect(new Set(asked.tokens.map((t) => t.lang))).toEqual(new Set(['en']));
+    expect((await memorizeTarget('Gen.1.1', 'weave'))?.lang).toBe('en');
   });
 
   it('Rom.8 (a chapter alone) gives verse 1 only, as the passage player does', async () => {
     const found = await versesOf('Rom.8');
-    if (!found || found.ot) throw new Error('no verses');
+    if (!found) throw new Error('no verses');
     expect(found.verses.map((v) => v.n)).toEqual([1]);
     expect(found.heading).toBe('Romans 8:1');
   });
@@ -151,7 +159,7 @@ describe('references', () => {
 
   it('a range that runs past the chapter keeps the verses that are there', async () => {
     const found = await versesOf('Jude.1.24-30');
-    if (!found || found.ot) throw new Error('no verses');
+    if (!found) throw new Error('no verses');
     expect(found.verses.map((v) => v.n)).toEqual([24, 25]);
   });
 });

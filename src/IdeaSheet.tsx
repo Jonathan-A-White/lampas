@@ -25,7 +25,7 @@ import { soundLesson } from './data/grammar/lessons';
 import { stepsOf, teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
-import { getOpenChapter } from './data/readerChapter';
+import { getStudyChapter } from './data/readerChapter';
 import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, shelfOf, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { AskForBook } from './library/AskForBook';
@@ -157,7 +157,7 @@ function usePassage(): Loaded {
       try {
         const text = await getSavedGoalText();
         const index = text ? await loadIndex().catch(() => undefined) : undefined;
-        const passage = await ideaPassage(text, getOpenChapter(), loadChapter, index);
+        const passage = await ideaPassage(text, getStudyChapter(), loadChapter, index);
         if (alive) setLoaded({ passage });
       } catch {
         if (alive) setLoaded('failed');

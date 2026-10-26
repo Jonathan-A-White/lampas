@@ -4,7 +4,7 @@ Which file holds what for Memorize, the app's help to learn Bible verses by hear
 
 ```
 src/memorize/refs.ts    # versesOf(canonical) -> the verses 'Rom.8.28' / 'Rom.8.28-29' names, each its own Verse of the chapter (never a passage Verse), with the heading and the chapter;
-#   {ot: true, heading} for an Old Testament reference (Lampas has no Old Testament text); null for a string that names no verse (verse 0, a verse the chapter lacks); a chapter alone is its first verse
+#   any book's verses, the Old Testament's too (mw-uqlxea.3: an 'hbo' chapter's English verses; memorizeTarget gives their English whatever language is asked, and MemorizeControl offers English alone); null for a string that names no verse (verse 0, a verse the chapter lacks); a chapter alone is its first verse
 src/memorize/target.ts  # tokensOf(verse, 'en' | 'el' | 'weave', woven?) -> Token[] {text, lang, chunk, word?}: English words in English order, Greek words in Greek order, or the weave's drawn order
 #   (a woven chunk's Greek as 'el', every other chunk's English as 'en', a moved closing mark kept); memorizeTarget(canonical, lang, readerSettings?) joins a reference's verses, each token with its verse number.
 #   The weave is wovenOf's of the moment over his words and the Reader's Weave settings, never stored: a verse that has moved toward Greek is judged against the Greek
@@ -22,8 +22,8 @@ src/data/repositories/memorize.ts # verses on the schedule: kind 'verse' rows, i
 #   and the schedule row (a score of 0.9 or more is right) in one transaction and publishes 'memorize-due-changed'. The ONLY file that names db.recalls; unmemorize keeps the recalls (evidence)
 src/memorize/commands.ts # how a verse enters and leaves memorizing, and the tutor's verse commands (mw-fu7dqf.12): memorizeVerse({ref, langs?}), unmemorizeVerse({ref, lang?}), moveVerse({ref, from, to}), startSession({ref, lang}),
 #   memorizeList({listId}), unmemorizeList({listId}) -> {said, skipped?, undo?}, plain async functions over the memorize repository and verseLists that the buttons call and src/tutor/registry.ts registers as the same
-#   function objects (a screen never writes the repository itself; tests/unit/tutor-memorize.test.ts greps for it). A language the Greek dial does not allow is dropped, English when none is left; an Old Testament
-#   reference is skipped and named ('No Old Testament text in Lampas yet: Ps 62:1-2', printedRef/skippedLine); the said lines name the verse ('Memorizing Romans 8:28 in English', nameOf); the undo of memorize takes off what it added,
+#   function objects (a screen never writes the repository itself; tests/unit/tutor-memorize.test.ts greps for it). A language the Greek dial does not allow is dropped, English when none is left (an Old Testament verse: English alone); an Old Testament reference is memorized like any other (it was once skipped and named, 'No Old Testament text in Lampas yet'); an Old Testament
+#   (commands.ts memorizable / isEnglishOnly); the said lines name the verse ('Memorizing Romans 8:28 in English', nameOf); the undo of memorize takes off what it added,
 #   of unmemorize puts the schedule rows back, of moveVerse puts both lists back; startSession closes an open Talk sheet and opens the session as a tutor go; a list's commands act on the New Testament references it holds then
 #   (splitRefs), On in English, Off in every language
 src/memorize/memorizing.ts # (mw-fu7dqf.12) memorizingNow(now) -> {summary, verses: [{ref, heading, lists [{id, name}], langs [{lang, step, of, due, dueNow, last}]}]}: the tutor's fact `memorizing`, under MEMORIZING_BYTES (5,000)

@@ -103,7 +103,7 @@ describe('Greek', () => {
     const typeIt = await screen.findByRole('button', { name: 'Type it' });
     expect(screen.queryByText(/Turn on Greek keyboard/)).toBeNull();
     const target = await memorizeTarget('Rom.8.28', 'el');
-    const plain = (target && !target.ot ? target.tokens : []).map((t) => t.text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/ς/g, 'σ')).join(' ');
+    const plain = (target ? target.tokens : []).map((t) => t.text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/ς/g, 'σ')).join(' ');
     expect(plain.startsWith('οιδαμεν δε οτι')).toBe(true);
     fireEvent.click(typeIt);
     expect(screen.getByRole('textbox').getAttribute('lang')).toBe('el');

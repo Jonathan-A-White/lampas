@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { recordRecall } from '../../src/data/repositories/memorize';
 import { asked, judgeReading, judgeSaid, type Judgement } from '../../src/memorize/judge';
 import type { MemorizeLang } from '../../src/memorize/languages';
-import type { NtVerses } from '../../src/memorize/refs';
+import type { Verses } from '../../src/memorize/refs';
 import { sendWeaveRecall } from '../../src/memorize/sendWeave';
 import type { Token } from '../../src/memorize/target';
 import { useRecallHold, type RecallUnavailable } from '../../src/memorize/useRecallHold';
@@ -21,7 +21,7 @@ const NOTES: Record<RecallUnavailable, string> = {
 export interface Setup {
   ref: string;
   lang: MemorizeLang;
-  found: NtVerses;
+  found: Verses;
   target: Token[];
   woven: ReturnType<typeof wovenOf>;
 }

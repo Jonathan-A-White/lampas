@@ -8,7 +8,7 @@ import { useGreekInterest } from '../settings/useGreekInterest';
 import { announce } from '../ui/live';
 import { useEscapeToClose } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
-import { memorizeVerse, printedRef, unmemorizeVerse, type CommandResult } from './commands';
+import { isEnglishOnly, memorizeVerse, printedRef, unmemorizeVerse, type CommandResult } from './commands';
 import { languagesFor, langName, MEMORIZE_LANGS, type MemorizeLang } from './languages';
 
 const BUTTON = 'min-h-12 shrink-0 rounded-xl border px-3 font-medium leading-tight';
@@ -75,7 +75,8 @@ export function MemorizeControl({ canonical, compact = false, className = '' }: 
   const [sheet, setSheet] = useState(false);
   if (found === undefined || level === undefined) return null;
   const memorized = found.get(canonical) ?? [];
-  const offered = languagesFor(level);
+  // an Old Testament verse is learned in English only: no sheet of languages, a tap on it stops it
+  const offered: MemorizeLang[] = isEnglishOnly(canonical) ? ['en'] : languagesFor(level);
   const on = memorized.length > 0;
   const tap = () => {
     if (!on) {

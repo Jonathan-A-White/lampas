@@ -164,6 +164,10 @@ The other `ref=` links Lampas builds (swept in mw-5r3p30.618) name no space, so 
 
 Add its row to the table above with its source.
 
+## An Old Testament verse's actions and resources in this epic (mw-uqlxea.3)
+
+The Verse view of an Old Testament verse (an 'hbo' chapter, read in English) has Listen, Read it aloud, Ask the tutor, Copy link, Share and Memorize, and its Logos doors: **In Logos** is `verseLink` (`logosBible.ts`: his Bible, the book's Logos abbreviation and the verse appended, `Bible.Jon1.10`), and **In another book…** lists his Bibles, his commentaries whose catalogue `covers` name the book's code (`OT_KINDS` in `src/library/inLogos.ts`; a commentary covering 'jon' opens on Jonah 1:10 and one covering 'rom' does not) and his interlinears that cover it. The catalogue as built holds no commentary of an Old Testament book, so today only the Bible shows; the Hebrew epic adds the Hebrew lexicons. **Quiz me and Diagram are not offered** until that epic: they work on the Greek of the verse (the quiz asks about it, the diagram draws its words), and an Old Testament verse has no source language taught yet (`actionsFor(ai, lang)` in `src/verse/action.ts`).
+
 ## Old Testament chapters in Logos (mw-5r3p30.71)
 
 Lampas holds no Old Testament text, so the Reader's chapter picker (`src/ChapterPicker.tsx`) lists the 39 Old Testament books in canon order before
@@ -363,7 +367,7 @@ the canon does not hold (an unknown book, a chapter or verse out of range) is dr
 **An Old Testament verse** (`Isaiah 53:5`, `Genesis 15:6`; mw-5r3p30.99) is a verse link like any other: `placeOf` in `tutorLinks.ts` reads the reference against the one canon
 list (`data/books.ts` and `data/otBooks.ts`, `parseCanonReference` in `nav/links.ts`), and the chips are those of the resources that are on and can show a Bible, in the Bible
 he chose in Settings (`Open Genesis 15:6 in Logos`, `logosres:<bible>;ref=Bible.Ge15.6`), never a fixed one. There is no `in Lampas` chip, because Lampas holds no Old
-Testament text: `TutorPlace.reader` is the one flag, and an Old Testament reader later only turns it on. A chapter's last verse is not checked for the Old Testament (no counts). Accordance gives no verse chip: its field names a lexicon module, not a Bible.
+Testament text yet in the tutor's chips: `TutorPlace.reader` is the one flag, and the tutor's doors to an Old Testament chapter (a later story of mw-uqlxea) only turn it on; Lampas now reads the Old Testament in English (mw-uqlxea.3 gives its verses their Verse view, the commentaries whose `covers` name the book, links and lists). A chapter's last verse is not checked for the Old Testament (no counts). Accordance gives no verse chip: its field names a lexicon module, not a Bible.
 More than three links in an answer: the app keeps the first three (the schema's limit is for the mill). A resource that can show a Bible gives `versesFor(place, bible)`;
 one that cannot has none.
 

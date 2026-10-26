@@ -34,9 +34,9 @@ A reference Lampas does not hold never gives a blank screen. It opens the neares
 | a chapter past the end of the book (`Romans 99:1`) | the book's last chapter, no verse |
 | chapter 0 | the book's first chapter |
 | a book not in the index (`Tobit 3:1`) | the chapter he last had open |
-| a book of the Old Testament (`Gen.1.28`, `Genesis 1:1`) | the chapter he last had open, and the notice says `“Genesis 1:28” is not in Lampas yet`, with Open in Logos when Logos is on in Settings (else Link Logos in Settings), as the tutor's reference card does |
+| a book of the Old Testament (`Jon.1.10`, `Jonah.1.10`, `2Kgs.14.25`, `Genesis 1:1`) | the chapter in the Reader, in English, with the verse's Verse view open (mw-uqlxea.3); a chapter or verse past the end opens the nearest, with the notice `“Genesis 1:99” is not in Lampas; showing Genesis 1:31.` Copy link and Share write the OSIS code of the book (`#/?ref=Jonah.1.10`) |
 
-A notice names what was asked for in words (`“Romans 8:99”`, never the code `Rom.8.99`); on Share to Lampas a tap on an Old Testament reference opens that same card over the list (src/share/ShareReferences.tsx), not the Reader.
+A notice names what was asked for in words (`“Romans 8:99”`, never the code `Rom.8.99`); on Share to Lampas a tap on a reference, of either testament, opens a card over the list with the verse in English (src/share/ShareReferences.tsx), not the Reader; the card of an Old Testament reference the tutor names still says `Not in Lampas yet` until the tutor's own doors to the Old Testament are opened.
 
 ### `word=` — a word
 

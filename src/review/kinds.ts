@@ -12,7 +12,7 @@ import { buildIdeaQuestion, type GrammarQuestion } from '../data/grammar/questio
 import { paradigmById } from '../data/paradigms';
 import { PARADIGM_KIND, drawCellQuestions, spokenForm } from '../data/paradigms/cells';
 import { parseReviewId } from '../data/readingDrill';
-import { getOpenChapter } from '../data/readerChapter';
+import { getStudyChapter } from '../data/readerChapter';
 import { modeFor, type QuestionMode } from '../data/schedule';
 import { buildQuestion, drawWords, mulberry32, seedDistractors, type Question, type Random } from '../data/quiz';
 import { loadPassage, planFacetQuestions } from '../data/repositories/reviewPassage';
@@ -132,9 +132,9 @@ export interface ReviewKind {
   record: (item: ReviewItem, right: boolean, row?: boolean | null) => Promise<void>;
 }
 
-/** The chapter whose forms show beneath a word after the answer: the one the Reader has open. A phone that cannot load it shows no form; the lemma is asked either way. */
+/** The chapter whose forms show beneath a word after the answer: the one the Reader has open (the last New Testament one while an Old Testament chapter is open). A phone that cannot load it shows no form; the lemma is asked either way. */
 const loadForms = (): Promise<Chapter | null> => {
-  const open = getOpenChapter();
+  const open = getStudyChapter();
   return loadChapter(open.book, open.chapter).catch(() => null);
 };
 

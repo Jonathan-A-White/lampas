@@ -4,7 +4,7 @@
 // from the grist's own place in the backend's sequence.
 import { door } from 'bsv-kit/bsv';
 import { POSTERN_DOOR } from '../config';
-import { markSupplied, NO_CHAPTER, type Chapter, type Verse } from '../data/chapter';
+import { markSupplied, NO_CHAPTER, sourceLanguage, type Chapter, type Verse } from '../data/chapter';
 import type { AnswerWord } from '../data/db';
 import { isAnswerBridge, type AnswerBridge, type MissingFoundations } from '../data/grammar/bridge';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
@@ -240,9 +240,11 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
 }
 
 export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[], chapter: Chapter = NO_CHAPTER, works: TutorWork[] = []): VerseAskRequest {
+  // An Old Testament verse (mw-uqlxea.3) is asked about in English: its Hebrew words are not sent as the Greek of the verse, and no Greek word entries go with it.
+  const hebrew = sourceLanguage(chapter) !== 'grc';
   const request: VerseAskRequest = {
     reference,
-    greek: verse.g.map((w) => w.t).join(' '),
+    greek: hebrew ? '' : verse.g.map((w) => w.t).join(' '),
     english: verse.e.map(markSupplied).join(' '),
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
@@ -260,6 +262,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(works.length > 0 ? { works } : {}),
   };
   // the words of the verse weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule, src/services/talk.ts)
+  if (hebrew) return request;
   return { ...request, greek_words: greekWordsFitting(chapter, [verse], request.question, pronunciation, new TextEncoder().encode(JSON.stringify(request)).length) };
 }
 

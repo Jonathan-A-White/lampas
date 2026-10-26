@@ -111,9 +111,9 @@ describe('verseText', () => {
     expect(Object.keys(await verseTextOf({ ref: 'Rom.8.28' }))).toEqual(['en', 'el', 'weave']);
   });
 
-  it('is the text of a verse that is not memorized in English alone, and nothing for an Old Testament reference or a string that is no verse', async () => {
+  it('is the text of a verse that is not memorized in English alone, its English for an Old Testament reference, and nothing for a string that is no verse', async () => {
     expect(Object.keys(await verseTextOf({ ref: 'Rom.8.28' }))).toEqual(['en']);
-    expect(await verseTextOf({ ref: 'Ps.62.1-2' })).toEqual({});
+    expect(Object.keys(await verseTextOf({ ref: 'Ps.62.1-2' }))).toEqual(['en']);
     expect(await verseTextOf({ ref: 'nonsense' })).toEqual({});
   });
 
@@ -153,12 +153,13 @@ describe('memorize', () => {
     expect(await rows()).toEqual(['en:Rom.8.28']);
   });
 
-  it('refuses a language that is no language before anything runs, and skips an Old Testament reference with no undo', async () => {
+  it('refuses a language that is no language before anything runs, and memorizes an Old Testament reference in English, with an undo', async () => {
     expect((await registry.run('memorize', { ref: 'Rom.8.28', langs: ['fr'] })).ok).toBe(false);
-    const ot = await registry.run('memorize', { ref: 'Ps.62.1-2' });
-    expect(ot).toMatchObject({ ok: true, said: 'No Old Testament text in Lampas yet: Ps 62:1-2' });
-    expect(ot.ok && ot.undo).toBeUndefined();
     expect(await rows()).toEqual([]);
+    const ot = await registry.run('memorize', { ref: 'Ps.62.1-2' });
+    expect(ot).toMatchObject({ ok: true, said: 'Memorizing Psalm 62:1-2 in English' });
+    expect(ot.ok && ot.undo).toBeDefined();
+    expect((await rows()).length).toBe(1);
   });
 });
 
@@ -237,7 +238,7 @@ describe('startSession and the place', () => {
     await vi.waitFor(() => expect(window.location.hash).toBe('#/words'), { timeout });
   });
 
-  it('refuses a verse that is not memorized in that language, an Old Testament reference and a language that is no language', async () => {
+  it('refuses a verse that is not memorized in that language (an Old Testament one too) and a language that is no language', async () => {
     await memorize('Rom.8.28', ['en'], NOW);
     window.location.hash = '#/words';
     expect((await registry.run('startSession', { ref: 'Rom.8.28', lang: 'el' })).ok).toBe(false);

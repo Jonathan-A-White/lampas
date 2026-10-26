@@ -1,5 +1,5 @@
 // src/library/inLogos.ts — what the chooser behind "In another book…" holds for one place (docs/library-at-scale.md 3.6, mw-rfjjzd.9): the books of his shelf that open at a verse, as rows
-// with their Logos links, and the rows as groups (Pinned, Commentaries on <book>, Greek texts, Interlinears; for an Old Testament place, Bibles and Interlinears). Pure: the sheet reads
+// with their Logos links, and the rows as groups (Pinned, Commentaries on <book>, Greek texts, Interlinears; for an Old Testament place, Bibles, the commentaries that cover the book and Interlinears). Pure: the sheet reads
 // the shelf and hands the states here, and a test hands its own entries.
 import { bookOf, otBookOf } from '../data/books';
 import type { ShelfState } from '../data/repositories';
@@ -29,9 +29,10 @@ export interface InLogosGroup {
 /** How many rows a group draws before the rest wait under 'N more'. */
 export const SHOWN_ROWS = 3;
 
-/** The kinds a New Testament verse is opened in, and an Old Testament one (Lampas holds no Old Testament and no commentary of it is in the catalogue), in the order the groups are drawn. */
+/** The kinds a New Testament verse is opened in, and an Old Testament one (a commentary opens there when its `covers` name the book: none of the catalogue does yet; the Hebrew epic adds
+ *  Hebrew lexicons), in the order the groups are drawn. */
 const NT_KINDS: readonly Kind[] = ['commentary', 'greek-text', 'interlinear'];
-const OT_KINDS: readonly Kind[] = ['bible', 'interlinear'];
+const OT_KINDS: readonly Kind[] = ['bible', 'commentary', 'interlinear'];
 
 export const isOldTestament = (place: StudyPlace): boolean => otBookOf(place.book) !== undefined;
 

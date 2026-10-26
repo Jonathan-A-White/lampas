@@ -6,7 +6,8 @@ import { useMemo, useState } from 'react';
 import { ReferenceLink } from '../markdown/ReferenceCard';
 import { referenceUrl } from '../nav/links';
 import { canonicalOf } from '../lists/canonical';
-import { findReferences, groupedByBook, headingOf, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
+import { passageOf } from '../lists/passageOf';
+import { findReferences, groupedByBook, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
 import type { PictureRefs } from './findRefs';
 import { PlayAll } from '../lists/PlayAllBar';
 import { SaveAsList } from './SaveAsList';
@@ -51,23 +52,14 @@ function Printed({ r }: { r: ListedReference }) {
 }
 
 /** The link to the verse, a tap on which opens the card the tutor's references open (src/markdown/ReferenceCard.tsx, mw-5r3p30.697) over the list, which stays where it is: the
- *  verses in the view he reads in (English, the Weave or Greek) and, for the New Testament, Open, which opens the Reader on the chapter with the verse at the top (not the
+ *  verses in the view he reads in (English, the Weave or Greek; an Old Testament one in English) and Open, which opens the Reader on the chapter with the verse at the top (not the
  *  Verse view; Back returns to the list). The card is opened by a change of the app's own history entries, not of `location.hash`, whose popstate the open sheet would take for
- *  Back and cancel the share. A reference to the Old Testament, which Lampas does not hold, opens the card that says 'Not in Lampas yet' (with Open in Logos when Logos is
- *  on). A long press or a new tab has the https link. `replacing` is false where the list is a screen of its own (the Verse lists, src/lists/): Open then adds an entry after it, and Back returns to the list. */
+ *  Back and cancel the share. An Old Testament reference opens the same card with its English (mw-uqlxea.3). A long press or a new tab has the https link. `replacing` is false where the list is a screen of its own (the Verse lists, src/lists/): Open then adds an entry after it, and Back returns to the list. */
 export function RefLink({ r, replacing = true }: { r: ListedReference; replacing?: boolean }) {
   const href = referenceUrl(r.book, r.chapter, r.verse);
   const common = { written: r.printed, replacing, href, className: LINK_CLASS, data: { 'data-share-ref': r.ref } };
-  if (r.testament === 'ot') {
-    return (
-      <ReferenceLink {...common} old={{ heading: headingOf(r), place: { book: r.book, chapter: r.chapter, ...(r.verse === undefined ? {} : { verse: r.verse }) } }}>
-        <Printed r={r} />
-      </ReferenceLink>
-    );
-  }
   // a chapter alone is headed, as the tutor's cards head it, by the first verse it shows
-  const first = r.verse ?? 1;
-  const found = { heading: r.verse === undefined ? `${headingOf(r)}:1` : headingOf(r), held: { book: r.book, chapter: r.chapter, first, last: r.verse === undefined ? first : (r.lastVerse ?? first) } };
+  const found = passageOf(r);
   return (
     <ReferenceLink {...common} found={found}>
       <Printed r={r} />

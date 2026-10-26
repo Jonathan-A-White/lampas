@@ -1,11 +1,11 @@
 // src/memorize/target.ts — the text a verse is memorized in (docs/layout/memorize.md): a per-token {text, lang} sequence, in English, in Greek or in the weave
 // of the moment. tokensOf is pure; memorizeTarget reads a canonical reference through refs.ts. The weave is never stored: it is wovenOf's, over his
 // words and the Reader's Weave settings as they are when it is asked, so a verse that has moved toward Greek is judged against the Greek.
-import type { Verse } from '../data/chapter';
+import { sourceLanguage, type Verse } from '../data/chapter';
 import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { wovenOf } from '../reader/useWoven';
 import type { ReaderSettings } from '../reader/useReaderSettings';
-import { versesOf, type OtVerses } from './refs';
+import { versesOf } from './refs';
 
 /** The text a verse is learned in: English, Greek, or the Reader's weave of the moment. */
 export type TargetLang = 'en' | 'el' | 'weave';
@@ -40,27 +40,28 @@ export function tokensOf(verse: Verse, lang: TargetLang, woven?: WovenVerse | nu
 
 /** What a canonical reference is learned as: its heading and its words, verse after verse. */
 export interface MemorizeTokens {
-  ot?: false;
   heading: string;
   lang: TargetLang;
   tokens: VerseToken[];
 }
 
-export type MemorizeTarget = MemorizeTokens | OtVerses;
+export type MemorizeTarget = MemorizeTokens;
 
 /**
  * The words of the verse or range a canonical reference names ('Rom.8.28', 'Rom.8.28-29'), each carrying its verse number. `weave` is the Reader's settings the weave
  * is made from (as wovenOf takes them: the view, the Weave, its grammar dial and order, his solid and learning lemmas); the caller reads them now, so the weave is the
- * weave of the moment. With the weave off, or no settings, the weave target is English. An Old Testament reference gives `{ ot: true, heading }` (no text), a string
- * that names no verse gives null.
+ * weave of the moment. With the weave off, or no settings, the weave target is English. An Old Testament verse is learned in English only: the Greek and the weave of one are its English
+ * (its words are Hebrew, which Lampas does not teach). A string that names no verse gives null.
  */
 export async function memorizeTarget(canonical: string, lang: TargetLang, weave?: Partial<ReaderSettings>): Promise<MemorizeTarget | null> {
   const found = await versesOf(canonical);
-  if (!found || found.ot) return found;
-  const chapterWoven = lang === 'weave' && weave ? wovenOf(found.source, weave) : null;
+  if (!found) return null;
+  // a chapter of the Old Testament is English only: whatever language was asked for, its words are the English ones
+  const as: TargetLang = sourceLanguage(found.source) === 'grc' ? lang : 'en';
+  const chapterWoven = as === 'weave' && weave ? wovenOf(found.source, weave) : null;
   const tokens = found.verses.flatMap((verse) => {
     const woven = chapterWoven?.[found.source.verses.indexOf(verse)] ?? null;
-    return tokensOf(verse, lang, woven).map((t): VerseToken => ({ ...t, verse: verse.n }));
+    return tokensOf(verse, as, woven).map((t): VerseToken => ({ ...t, verse: verse.n }));
   });
-  return { heading: found.heading, lang, tokens };
+  return { heading: found.heading, lang: as, tokens };
 }

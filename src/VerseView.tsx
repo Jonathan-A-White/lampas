@@ -1,7 +1,7 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable); under it one row of actions (Listen, Read it aloud,
-// Ask the tutor, Quiz me, Diagram and Copy link); then what the chosen action shows; and at the foot ONE control
+// Ask the tutor, Quiz me, Diagram and Copy link; an Old Testament verse, read in English, has no Quiz me or Diagram until the Hebrew epic, mw-uqlxea.3); then what the chosen action shows; and at the foot ONE control
 // that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar), or for Ask the tutor voice-kit's Composer
 // (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar with his words above it, and Type a question beneath). Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
@@ -19,13 +19,13 @@ import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
 import { InLogosDoors } from './library/InLogosDoors';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
-import type { Chapter, Verse } from './data/chapter';
+import { sourceLanguage, type Chapter, type Verse } from './data/chapter';
 import { DiagramPane } from './diagram/DiagramPane';
 import type { Lookup } from './WordSheet';
 import { unitId, unitName, unitReference } from './data/passage';
 import { MemorizeControl } from './memorize/MemorizeControl';
 import { ProgressMarks } from './memorize/ProgressMark';
-import { OSIS, passageUrl, referenceUrl } from './nav/links';
+import { osisOf, passageUrl, referenceUrl } from './nav/links';
 import { SHORT_BAR } from './ui/barClass';
 import { focusOnMount } from './ui/focus';
 import { Icon as PlayIcon } from './speech/ReadControls';
@@ -121,7 +121,7 @@ export function VerseView(props: VerseViewProps) {
   const sendOff = useSendOff();
   const passage = verse.to !== undefined;
   const name = unitName(verse);
-  const memorizeRef = `${OSIS[book] ?? book}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`;
+  const memorizeRef = `${osisOf(book)}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`;
   const noun = passage ? 'passage' : 'verse';
   const canShare = typeof navigator.share === 'function';
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
@@ -176,7 +176,7 @@ export function VerseView(props: VerseViewProps) {
             aria-label="Actions"
             className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 @max-[15rem]:grid-cols-2 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
           >
-            {actionsFor(ai).map((a) => (
+            {actionsFor(ai, sourceLanguage(chapterText)).map((a) => (
               <button
                 key={a.id}
                 type="button"
@@ -197,7 +197,7 @@ export function VerseView(props: VerseViewProps) {
         </div>
         {/* Sideways on Listen with the Audio Bible row, the row has no room under Memorize and the Logos doors, so they go under it (mw-5r3p30.746). */}
         <div className={audioListen ? 'short:order-last' : undefined}>
-          {/* Memorize (mw-fu7dqf.5): the verse, or the passage's range as one reference; the New Testament only (there is no Old Testament view), no licence */}
+          {/* Memorize (mw-fu7dqf.5): the verse, or the passage's range as one reference; an Old Testament verse is learned in English only, no licence */}
           <MemorizeControl canonical={memorizeRef} className="mt-1 w-full" />
           <ProgressMarks canonical={memorizeRef} className="mt-1 px-1" />
           {/* His Bible in Logos at the verse (a passage: at its first verse), and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6) */}
@@ -232,7 +232,7 @@ export function VerseView(props: VerseViewProps) {
             <>
               <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
               <AskStatus verse={verse} state={ask} onAsk={onAsk} />
-              {passage ? null : (
+              {passage || sourceLanguage(chapterText) !== 'grc' ? null : (
                 <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
                   Talk about verse {verse.n}
                 </button>

@@ -69,12 +69,12 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
 
   const back = <HeaderButton onClick={closeMemorize}>‹ Back</HeaderButton>;
   if (session.status === 'loading') return <ScreenHeader title="" back={back} />;
-  if (session.status === 'ot' || session.status === 'unknown') {
+  if (session.status === 'unknown') {
     return (
       <>
-        <ScreenHeader title={session.status === 'ot' ? session.heading : SCREEN_NAMES.memorize} back={back} />
+        <ScreenHeader title={SCREEN_NAMES.memorize} back={back} />
         <main className="screen min-h-0 flex-1 px-4">
-          <p className="mt-3 text-base">{session.status === 'ot' ? 'No Old Testament text in Lampas yet' : 'This verse is not in Lampas.'}</p>
+          <p className="mt-3 text-base">This verse is not in Lampas.</p>
           <button type="button" onClick={closeMemorize} className={`${ACTION} mt-3`}>
             Done
           </button>

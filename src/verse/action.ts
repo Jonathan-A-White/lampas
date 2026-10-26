@@ -1,6 +1,7 @@
 // src/verse/action.ts — which action the Verse view (src/VerseView.tsx) has chosen, kept on the phone so the next verse opens on it too
 // (mw-5r3p30.79). Listen is the first and the gentlest, so it is where a new phone starts. Quiz me (mw-5r3p30.74) opens the Talk sheet in quiz mode. Diagram (mw-souyao.3) draws the verse's sentence diagram (src/diagram/DiagramPane.tsx).
 import { useCallback, useState } from 'react';
+import type { SourceLanguage } from '../data/chapter';
 import { useAiAllowed } from '../gate/licenceContext';
 
 export const VERSE_ACTIONS = [
@@ -17,8 +18,13 @@ export type VerseAction = (typeof VERSE_ACTIONS)[number]['id'];
  * sent to the mill (the verse-read grist). */
 const AI_ACTIONS: readonly VerseAction[] = ['read', 'ask', 'quiz', 'diagram'];
 
-/** The actions the Verse view offers: all of them with a licence, only Listen without. */
-export const actionsFor = (ai: boolean): typeof VERSE_ACTIONS[number][] => VERSE_ACTIONS.filter((a) => ai || !AI_ACTIONS.includes(a.id));
+/** The actions that need the verse's source language taught (mw-uqlxea.3): Quiz me asks about the Greek and Diagram draws its words. Until the Hebrew epic an Old Testament ('hbo')
+ * verse, which is read in English, is not offered them. The others (Listen, Read it aloud, Ask the tutor) work on the English. */
+const SOURCE_ACTIONS: readonly VerseAction[] = ['quiz', 'diagram'];
+
+/** The actions the Verse view offers: all of them with a licence, only Listen without; the source language's own (Quiz me, Diagram) only for a chapter read in Greek, chosen by `lang`, not by the view. */
+export const actionsFor = (ai: boolean, lang: SourceLanguage = 'grc'): typeof VERSE_ACTIONS[number][] =>
+  VERSE_ACTIONS.filter((a) => (ai || !AI_ACTIONS.includes(a.id)) && (lang === 'grc' || !SOURCE_ACTIONS.includes(a.id)));
 
 const KEY = 'lampas.verseAction';
 
@@ -41,13 +47,14 @@ export function setVerseAction(action: VerseAction): void {
 }
 
 /** The chosen action and the way to choose another (kept on the phone). */
-export function useVerseAction(): [VerseAction, (action: VerseAction) => void] {
+export function useVerseAction(lang: SourceLanguage = 'grc'): [VerseAction, (action: VerseAction) => void] {
   const [action, set] = useState<VerseAction>(getVerseAction);
   const ai = useAiAllowed();
   const choose = useCallback((next: VerseAction) => {
     setVerseAction(next);
     set(next);
   }, []);
-  // Left on Read it aloud, Ask the tutor, Quiz me or Diagram by a licensed phone, an unlicensed one opens on Listen (what is kept stays, for when the licence is back).
-  return [!ai && AI_ACTIONS.includes(action) ? 'listen' : action, choose];
+  // Left on Read it aloud, Ask the tutor, Quiz me or Diagram by a licensed phone, an unlicensed one opens on Listen (what is kept stays, for when the licence is back);
+  // left on Quiz me or Diagram, an Old Testament verse opens on Listen too (the kept action is not changed, so the next New Testament verse opens on it).
+  return [(!ai && AI_ACTIONS.includes(action)) || (lang !== 'grc' && SOURCE_ACTIONS.includes(action)) ? 'listen' : action, choose];
 }

@@ -11,7 +11,7 @@ let solid = new Set<string>();
 let target: MemorizeTarget | null = null;
 
 const tokens = () => {
-  if (!target || target.ot) throw new Error('there is no text');
+  if (!target) throw new Error('there is no text');
   return target.tokens;
 };
 const memorize = async (lang: TargetLang): Promise<void> => {

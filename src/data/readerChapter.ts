@@ -2,7 +2,7 @@
 // (mw-5r3p30.60). A fresh install opens Romans 8. The Reader sets it whenever it shows a chapter; it is kept in localStorage
 // (lampas.chapter), not Dexie, because the screens read it synchronously before they render. Words, their review rows and
 // results are not per chapter, so moving to another chapter takes none of them away.
-import { bookOf, titleOf } from './books';
+import { bookOf, isHebrewBook, titleOf } from './books';
 
 export interface OpenChapter {
   /** the book's code as public/data/index.json has it: 'rom', '1jn' */
@@ -13,6 +13,8 @@ export interface OpenChapter {
 }
 
 const KEY = 'lampas.chapter';
+/** The last chapter the Reader had open that is read in Greek (mw-uqlxea.3): where the ladders, the quizzes and Review draw their forms from. */
+const STUDY_KEY = 'lampas.studyChapter';
 
 /** What a fresh install opens, and what a stored value that cannot be read falls back to. */
 export const DEFAULT_CHAPTER: OpenChapter = { book: 'rom', chapter: 8, title: 'Romans 8' };
@@ -31,6 +33,16 @@ function store(): Storage | undefined {
   }
 }
 
+function read(key: string): OpenChapter | undefined {
+  try {
+    const saved = JSON.parse(store()?.getItem(key) ?? 'null') as { book?: unknown; chapter?: unknown } | null;
+    if (saved && typeof saved.book === 'string' && typeof saved.chapter === 'number') return chapterOf(saved.book, saved.chapter);
+  } catch {
+    // unreadable
+  }
+  return undefined;
+}
+
 /** The chapter he last had open, or Romans 8. */
 export function getOpenChapter(): OpenChapter {
   try {
@@ -44,10 +56,18 @@ export function getOpenChapter(): OpenChapter {
   return DEFAULT_CHAPTER;
 }
 
+/** The chapter the ladders, the quizzes and Review draw their forms from: the one the Reader has open, or, while that is an Old Testament chapter (read in English, with no Greek forms to
+ *  draw), the last chapter of the New Testament it had open, or Romans 8. */
+export function getStudyChapter(): OpenChapter {
+  const open = getOpenChapter();
+  return isHebrewBook(open.book) ? (read(STUDY_KEY) ?? DEFAULT_CHAPTER) : open;
+}
+
 /** Keeps this as the chapter he has open. */
 export function setOpenChapter(book: string, chapter: number): void {
   try {
     store()?.setItem(KEY, JSON.stringify({ book, chapter }));
+    if (!isHebrewBook(book)) store()?.setItem(STUDY_KEY, JSON.stringify({ book, chapter }));
   } catch {
     // Storage full or refused: the next open is Romans 8, or the chapter in the address.
   }

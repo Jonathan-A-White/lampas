@@ -110,7 +110,7 @@ describeFeature(feature, ({ Scenario }) => {
     taps(And);
     And('I type the Greek of the verse without accents', async () => {
       const target = await memorizeTarget(ref, 'el');
-      const plain = (target && !target.ot ? target.tokens : []).map((t) => t.text.normalize('NFD').replace(/[̀-ͯ]/g, '')).join(' ');
+      const plain = (target ? target.tokens : []).map((t) => t.text.normalize('NFD').replace(/[̀-ͯ]/g, '')).join(' ');
       fireEvent.change(screen.getByRole('textbox'), { target: { value: plain } });
     });
     checks(And);

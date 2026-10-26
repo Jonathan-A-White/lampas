@@ -3,6 +3,7 @@
 // on a card elsewhere (the Review question's reference, mw-5r3p30.652) reads these, so it is drawn as the Reader draws it and a change made at once reaches it.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
+import { sourceLanguage, type Chapter } from '../data/chapter';
 import { getGreekInterest, getPlainEnglishUnder, getReaderView, getWeave, getWeaveGrammar, listLearningLemmas, listLevels, listSolidLemmas } from '../data/repositories';
 import { weaveOrderSetting } from '../settings/definitions';
 import { viewAt, weaveAt } from '../settings/definitions/greekInterest';
@@ -10,8 +11,16 @@ import { getSetting, useSetting } from '../settings/store';
 import { useGreekInterest } from '../settings/useGreekInterest';
 import type { ReaderSettings } from './useReaderSettings';
 
+type ViewSettings = Pick<ReaderSettings, 'view' | 'weave' | 'weaveShown' | 'weaveGrammar' | 'weaveOrder' | 'solid' | 'learning' | 'levels'>;
+
+/** An Old Testament chapter ('hbo') is read in English only (mw-uqlxea.2): the settings as they apply to a verse of `chapter`, its view English and its weave off whatever he saved (a
+ *  Greek chapter's are as they were). For a card, a list's player or any screen that draws a verse outside the Reader, which does the same for its own chapter. */
+export function settingsFor<T extends Pick<ViewSettings, 'view' | 'weave' | 'weaveShown'>>(settings: T, chapter: Pick<Chapter, 'lang'>): T {
+  return sourceLanguage(chapter) === 'grc' ? settings : { ...settings, view: 'english', weave: 'off', weaveShown: false };
+}
+
 /** The view and weave settings, or undefined until every one has loaded. */
-export function useViewSettings(): Pick<ReaderSettings, 'view' | 'weave' | 'weaveShown' | 'weaveGrammar' | 'weaveOrder' | 'solid' | 'learning' | 'levels'> | undefined {
+export function useViewSettings(): ViewSettings | undefined {
   // the Greek dial (mw-3ased2.2): what it hides is not drawn
   const level = useGreekInterest();
   const savedView = useLiveQuery(getReaderView, []);
@@ -31,7 +40,7 @@ export function useViewSettings(): Pick<ReaderSettings, 'view' | 'weave' | 'weav
 }
 
 /** The same settings as useViewSettings, read once and outside React: what the passage player (src/speech/passagePlayer.ts) reads aloud in, so it follows the language and weave he reads in. */
-export async function readViewSettings(): Promise<NonNullable<ReturnType<typeof useViewSettings>>> {
+export async function readViewSettings(): Promise<ViewSettings> {
   const [level, savedView, savedWeave, weaveGrammar, weaveOrder, plainUnder, levels, solid, learning] = await Promise.all([
     getGreekInterest(),
     getReaderView(),

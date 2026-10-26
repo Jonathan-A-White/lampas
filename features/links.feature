@@ -42,11 +42,25 @@ Feature: Lampas takes links in
     Then the reader is headed "Romans 8"
     And the notice reads "“Tobit.3.1” is not in Lampas; showing Romans 8."
 
-  Scenario: An Old Testament reference says it is not in Lampas yet, in words, and says where to read it
-    Given a link "#/?ref=Gen.1.28" is opened
-    Then the reader is headed "Romans 8"
-    And the notice reads "“Genesis 1:28” is not in Lampas yet; showing Romans 8."
-    And the notice says to link Logos in Settings
+  Scenario: An Old Testament reference opens the chapter in English with the verse selected
+    Given a link "#/?ref=Jon.1.10" is opened
+    Then the reader is headed "Jonah 1"
+    And verse 10 is selected
+    And there is no notice
+    And the address names book "jon", chapter 1 and verse 10
+
+  Scenario: A numbered Old Testament book opens by its OSIS code
+    Given a link "#/?ref=2Kgs.14.25" is opened
+    Then the reader is headed "2 Kings 14"
+    And verse 25 is selected
+    And there is no notice
+    And the address names book "2ki", chapter 14 and verse 25
+
+  Scenario: An Old Testament verse past the end of its chapter opens the last verse and says what was asked for
+    Given a link "#/?ref=Gen.1.99" is opened
+    Then the reader is headed "Genesis 1"
+    And verse 31 is selected
+    And the notice reads "“Genesis 1:99” is not in Lampas; showing Genesis 1:31."
 
   Scenario: The notice can be dismissed
     Given a link "#/?ref=Tobit.3.1" is opened
@@ -72,6 +86,11 @@ Feature: Lampas takes links in
     Then the reader is headed "Romans 8"
     And the notice reads "“G99999” is not in Lampas; showing Romans 8."
     And no word sheet is open
+
+  Scenario: The Verse view of an Old Testament verse copies the https link of its verse
+    Given a link "#/?ref=Jon.1.10" is opened
+    When he taps Copy link on the Verse view
+    Then the clipboard holds "https://lampas.allmymind.org/#/?ref=Jonah.1.10"
 
   Scenario: The Verse view copies the https link of its verse
     Given a link "#/?ref=Rom.8.28" is opened

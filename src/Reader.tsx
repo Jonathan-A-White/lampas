@@ -249,7 +249,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const { view: v, weave: w } = readerOf(window.location.hash);
     openVerseRange({ book: BOOK, chapter: CHAPTER, from: verses[0].n, to: verses[verses.length - 1].n, view: v, weave: w });
   }, [chapter, BOOK, CHAPTER]);
-  const [action, chooseAction] = useVerseAction();
+  const [action, chooseAction] = useVerseAction(hbo ? 'hbo' : 'grc');
   // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
   useEffect(() => {
     if (request?.action === 'ask') chooseAction('ask');
@@ -465,7 +465,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           inert={sheetOpen || viewUnit !== undefined}
         />
       ) : null}
-      {notice ? <LinkNotice text={notice} elsewhere={link?.elsewhere} onDismiss={() => setNotice(null)} /> : null}
+      {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
       {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} mode={paging ? 'pages' : 'scroll'} /> : null}

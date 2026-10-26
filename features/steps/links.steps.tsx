@@ -141,14 +141,42 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('An Old Testament reference says it is not in Lampas yet, in words, and says where to read it', ({ Given, Then, And }) => {
+  Scenario('An Old Testament reference opens the chapter in English with the verse selected', ({ Given, Then, And }) => {
     Given('a link {string} is opened', (_, hash: string) => openLink(hash));
     Then('the reader is headed {string}', (_, title: string) => headed(title));
+    And('verse {int} is selected', async (_, n: number) => {
+      await waitFor(() => expect(verseEl(n)).toHaveAttribute('data-selected', 'true'));
+    });
+    And('there is no notice', () => {
+      expect(notice()).toBeNull();
+    });
+    And('the address names book {string}, chapter {int} and verse {int}', async (_, book: string, chapter: number, verse: number) => {
+      await waitFor(() => expect(readerOf(window.location.hash)).toMatchObject({ book, chapter, verse }));
+    });
+  });
+
+  Scenario('A numbered Old Testament book opens by its OSIS code', ({ Given, Then, And }) => {
+    Given('a link {string} is opened', (_, hash: string) => openLink(hash));
+    Then('the reader is headed {string}', (_, title: string) => headed(title));
+    And('verse {int} is selected', async (_, n: number) => {
+      await waitFor(() => expect(verseEl(n)).toHaveAttribute('data-selected', 'true'));
+    });
+    And('there is no notice', () => {
+      expect(notice()).toBeNull();
+    });
+    And('the address names book {string}, chapter {int} and verse {int}', async (_, book: string, chapter: number, verse: number) => {
+      await waitFor(() => expect(readerOf(window.location.hash)).toMatchObject({ book, chapter, verse }));
+    });
+  });
+
+  Scenario('An Old Testament verse past the end of its chapter opens the last verse and says what was asked for', ({ Given, Then, And }) => {
+    Given('a link {string} is opened', (_, hash: string) => openLink(hash));
+    Then('the reader is headed {string}', (_, title: string) => headed(title));
+    And('verse {int} is selected', async (_, n: number) => {
+      await waitFor(() => expect(verseEl(n)).toHaveAttribute('data-selected', 'true'));
+    });
     And('the notice reads {string}', async (_, text: string) => {
       await waitFor(() => expect(notice()).toHaveTextContent(text));
-    });
-    And('the notice says to link Logos in Settings', async () => {
-      await waitFor(() => expect(notice()).toHaveTextContent('Link Logos in Settings'));
     });
   });
 
@@ -203,10 +231,19 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('The Verse view of an Old Testament verse copies the https link of its verse', ({ Given, When, Then }) => {
+    Given('a link {string} is opened', (_, hash: string) => openLink(hash));
+    When('he taps Copy link on the Verse view', async () => {
+      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy link' }));
+    });
+    Then('the clipboard holds {string}', async (_, url: string) => {
+      await waitFor(() => expect(copied).toEqual([url]));
+    });
+  });
+
   Scenario('The Verse view copies the https link of its verse', ({ Given, When, Then, And }) => {
     Given('a link {string} is opened', (_, hash: string) => openLink(hash));
     When('he taps Copy link on the Verse view', async () => {
-      await headed('Romans 8');
       await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy link' }));
     });
     Then('the clipboard holds {string}', async (_, url: string) => {
@@ -270,7 +307,6 @@ describeFeature(feature, ({ Scenario }) => {
       stubClipboard(true);
     });
     When('he taps Copy link on the Verse view', async () => {
-      await headed('Romans 8');
       await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Copy link' }));
     });
     Then('the Verse view shows the link {string} to copy by hand', async (_, url: string) => {
