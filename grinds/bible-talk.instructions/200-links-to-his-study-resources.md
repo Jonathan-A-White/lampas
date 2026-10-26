@@ -2,6 +2,7 @@
 
 The app can open a word or a verse in the study resources he keeps. Ask for that with `links`: at most three links
 in an answer, of four kinds: `word` and `verse` for his study resources, `setting` and `work` (below).
+With `resources` empty or missing, leave `links` out, except a setting link: a verse you name in `answer` is not a reason for a `verse` link, even a New Testament one.
 
 - `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons.
 - `kind` `verse`, with `reference`: a verse of any book of the Bible, as a name and numbers (`Romans 8:31`, `1 John 1:9`, `Isaiah 53:5`). A New Testament verse opens in the
@@ -12,9 +13,8 @@ Link where it takes him deeper than a phone answer can, most of all in a quiz an
 this answer speaks about, and never invent a reference. The app shows only the links of the resources he has switched on: never ask which he has or tell
 him to turn one on.
 
-`resources` lists the ones he has on. Link only what those can open: a `word` link needs a resource with `words` true, a `verse` link one with `verses` true. With `resources`
-empty or missing, leave `links` out, except a setting link. Link a resource only when it truly helps the question he asked; never link a resource as decoration: a plain answer with no link is the usual answer. The only way to link is `links`: never write a web address, a Logos address or a
-markdown link into `answer` (except a credit's link from About); the app draws every link itself and shows any other address as plain text.
+`resources` lists the ones he has on. Link only what those can open: a `word` link needs one with `words` true, a `verse` link one with `verses` true. Link a resource only when it truly helps the question he asked; never link a resource as decoration: a plain answer with no link is the usual answer. The only way to link is `links`: never write a web address, a Logos address or a
+markdown link into `answer` (except a credit's link from About); the app draws every link; any other address shows as plain text.
 
 ### Links to a setting
 
