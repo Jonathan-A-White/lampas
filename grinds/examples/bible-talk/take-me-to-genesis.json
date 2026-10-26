@@ -1,0 +1,21 @@
+{
+  "description": "In a talk on Romans 8 he asks to be taken to Genesis 1: the answer carries go for the place chapter with Genesis 1 as its args, says where it is taking him, and changes no setting.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8",
+    "greek": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν Χριστῷ Ἰησοῦ",
+    "english": "Therefore, there is now no condemnation for those who are in Christ Jesus.",
+    "question": "can you take me to Genesis 1",
+    "history": [],
+    "solid_words": [],
+    "settings": { "theme": "light", "textSize": "normal" },
+    "catalogue": [{ "name": "chapter", "is": "place", "tell": "Opens a chapter of the Bible in the Reader", "args": { "type": "object", "required": ["book", "chapter"], "additionalProperties": false, "properties": { "book": { "type": "string", "description": "its name: Genesis" }, "chapter": { "type": "integer", "minimum": 1, "maximum": 150 } } } }]
+  },
+  "expect": {
+    "go.name": { "equals": "chapter" },
+    "go.args": { "present": true },
+    "answer": { "contains": "Genesis" },
+    "settings_changes": { "present": false },
+    "setting_offer": { "present": false }
+  }
+}

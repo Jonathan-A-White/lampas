@@ -78,7 +78,7 @@ async function send(question: string): Promise<void> {
 }
 
 const readerIsOn = (book: string, chapter: number) => waitFor(() => expect(here()).toMatchObject({ book, chapter }));
-const PLACES: Record<string, { book: string; chapter: number }> = { 'Colossians 1': { book: 'col', chapter: 1 }, 'Romans 8': { book: 'rom', chapter: 8 } };
+const PLACES: Record<string, { book: string; chapter: number }> = { 'Colossians 1': { book: 'col', chapter: 1 }, 'Romans 8': { book: 'rom', chapter: 8 }, 'Psalms 23': { book: 'psa', chapter: 23 } };
 
 const feature = await loadFeature('features/tutor-go.feature');
 
@@ -139,6 +139,14 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the answer shows in the sheet', shows);
     And('the sheet says {string} and nothing was opened', saysNothingOpened);
     And('the Reader is open on {string}', onThe);
+  });
+
+  Scenario('Taking him to an Old Testament chapter opens the Reader there', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with go {string} {int}', goTo as never);
+    And('he opens Talk', openTalk);
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the Reader is open on {string}', onThe);
+    And('the Talk sheet is closed', sheetGone);
   });
 
   Scenario('A go in a shape the app refuses is ignored and the answer is still shown', ({ Given, And, When, Then }) => {
