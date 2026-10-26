@@ -149,7 +149,7 @@ for (const size of SIZES.filter((one) => !one.hide)) {
     let seen = 0;
     for (const route of SCREENS) {
       await page.goto(`/#/${route}`);
-      await page.locator('#root header').first().waitFor({ timeout: 5000 }).catch(() => undefined);
+      await page.locator('#root header').first().waitFor().catch(() => undefined);
       const boxes = await headerControls(page);
       if (!boxes) continue;
       seen += 1;
