@@ -24,6 +24,7 @@
     "data:build": "tsx scripts/data-build.ts",
     "data:build:ot": "tsx scripts/data-build-ot.ts",
     "maps:build": "tsx scripts/maps-build.ts",
+    "places:build": "tsx scripts/places-build.ts",
     "fixture:chapter": "node scripts/fixture-chapter.mjs",
     "ladder": "tsx scripts/ladder-el.ts && tsx scripts/ladder-en.ts",
     "check:step": "tsx scripts/step-check.ts",

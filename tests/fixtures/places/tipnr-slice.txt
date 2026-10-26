@@ -1,0 +1,84 @@
+TIPNR - Translators Individualised Proper Names with all References = STEPBible.org CC BY 						>																															
+===========================================================																																					
+
+$========== PERSON(s)																																					
+Sidon@Gen.10.15-1Ch=H6721G	Man living at the time of the Patriarchs	Canaan@Gen.9.18-1Ch + 	Heth@Gen.10.15-Ezk, Jebusites@Gen.10.16-Zec, Amorites@Gen.10.16-Amo, Girgashite@Gen.10.16-Neh, Hivites@Gen.10.17-2Ch, Arkites@Gen.10.17-1Ch, Sinites@Gen.10.17-1Ch, Arvadites@Gen.10.18-1Ch, Zemarites@Gen.10.18-1Ch, Hamathites@Gen.10.18-1Ch			Early Patriarch	#A man of the Canaanites living at the time of the Patriarchs, first mentioned at <ref="Gen.10.15">Gen.10.15</ref>) <br>only referred to as <strong="H6721G">Sidon</strong> (צִידוֹן); <br> son of <strong="H3667G">Canaan</strong>; <br>a brother of <strong="H2845">Heth</strong>, <strong="H2983G">Jebusites</strong>, <strong="H0567">Amorites</strong>, <strong="H1622">Girgashites</strong>, <strong="H2340">Hivites</strong>, <strong="H6208">Arkites</strong>, <strong="H5513">Sinites</strong>, <strong="H0721">Arvadites</strong>, <strong="H6786">Zemarites</strong> and <strong="H2577">Hamathites</strong>.	Male																													
+– Named	Sidon@Gen.10.15-1Ch	H6721G«H6721=צִידוֹן	Sidon =ESV,NIV,KJV; Zidon =KJV	Gen.10.15; 1Ch.1.13																																
+– Total	Sidon or Zidon	Sidon, Zidon	H6721G	Gen.10.15; 1Ch.1.13	2
+@Briefest= Son of Canaan
+@Brief= Firstborn son of Canaan, ancestor of the Sidonians.
+@Short= Sidon was the firstborn son of Canaan and the ancestor of the Sidonian people.
+@Article= Sidon is mentioned in <ref="Gen.10.15">Gen.10.15</ref> and <ref="1Ch.1.13">1Ch.1.13</ref> as the firstborn son of Canaan, who was the son of Ham and the grandson of Noah. Sidon is listed among the descendants of Canaan, along with his brothers Heth, the Jebusite, the Amorite, and others. The descen																															
+@Ambiguity=																																					
+$========== PLACE																																					
+Abel@1Sa.6.18=H0059G		Word sometimes translated as a place		https://www.google.com/maps/@,14z	https://palopenmaps.org/view/9999/@	>	#A location only mentioned at <ref="1Sa.6.18">1Sa.6.18</ref>) <br>only referred to as <strong="H0059G">Abel</strong> (אָבֵל). 	Place																													
+– Named	stone|Abel@1Sa.6.18	H0059G«H0059=אָבֵל	stone =ESV; rock =NIV; Abel =KJV	1Sa.6.18																																
+– Total	Abel	Abel	H0059G	1Sa.6.18; 	1
+@Briefest= 
+@Brief= A large stone in the field of Joshua of Beth-shemesh.
+@Short= Abel, a large stone in Joshua's field at Beth-shemesh, where the Ark stopped.
+@Article= Psa.6.18 mentions a large stone called Abel in the field of Joshua of Beth-shemesh. The Ark of the Covenant was returned by the Philistines on a cart pulled by two cows. The cows stopped beside this large stone in Joshua's field. The Levites then took down the Ark and placed the Philistines' guilt 																															
+@Ambiguity=																																					
+$========== PLACE																																					
+Admah@Gen.10.19-Hos=H0126	Admah			https://www.google.com/maps/@31.11942270162137,35.41253049195169,14z	https://palopenmaps.org/view/9999/@31.11942270162137,35.41253049195169	>	#A location first mentioned at <ref="Gen.10.19">Gen.10.19</ref>) <br>only referred to as <strong="H0126">Admah</strong> (אַדְמָה). 	Place																													
+– Named	Admah@Gen.10.19-Hos	H0126«H0126=אַדְמָה	Admah	Gen.10.19; Gen.14.2; Gen.14.8; Deu.29.23; Hos.11.8																																
+– Total	Admah	Admah	H0126	Gen.10.19; 14.2,8; Deu.29.23; Hos.11.8	5
+@Briefest= 
+@Brief= One of the cities destroyed with Sodom and Gomorrah.
+@Short= Admah, one of the "cities of the plain" destroyed along with Sodom and Gomorrah.
+@Article= Admah was one of the five "cities of the plain" mentioned in the Bible, along with Sodom, Gomorrah, Zeboiim, and Bela (Zoar). It was located in the Jordan Valley near the Dead Sea (Genesis 10:19). Admah, along with Zeboiim, allied with the kings of Sodom and Gomorrah in a rebellion against Chedorla																															
+@Ambiguity=																																					
+$========== PLACE																																					
+Eden@Gen.2.8-Jol=H5731B				https://www.google.com/maps/@0,14z	https://palopenmaps.org/view/9999/@0	Mesopotamia(?)	#A location in Mesopotamia(?) first mentioned at <ref="Gen.2.8">Gen.2.8</ref>) <br>referred to as <strong="H5731B">Eden</strong> (עֵ֫דֶן), or <strong="H5731B">Edem</strong> (εδεμ). 	Place																													
+– Named	Eden@Gen.2.8-Jol	H5731B«H5731b=עֵ֫דֶן	Eden	Gen.2.8; Gen.2.10; Gen.2.15; Gen.3.23; Gen.3.24; Gen.4.16; Isa.51.3; Ezk.28.13; Ezk.31.9; Ezk.31.16; Ezk.31.18a; Ezk.31.18b; Ezk.36.35; Jol.2.3																																
+– Total	Eden	Eden	H5731B	Gen.2.8; Gen.2.10,15; 3.23,24; 4.16; Isa.51.3; Ezk.28.13; 31.9ff; 36.35; Jol.2.3; 	17
+@Briefest= In Mesopotamia
+@Brief= The perfect garden where God placed Adam and Eve.
+@Short= Eden, the perfect garden created by God, where He placed Adam and Eve (<ref="Genesis 2:8, 10, 15; 3:23-24; 4:16; Isaiah 51:3; Ezk.28.13; 31:9, 16, 18; 36:35; Jol.2.3">Genesis 2:8, 10, 15; 3:23-24; 4:16; Isaiah 51:3; Ezk.28.13; 31:9, 16, 18; 36:35; Jol.2.3</ref>).
+@Article= Eden, also known as the Garden of Eden, was the perfect paradise created by God as a dwelling place for the first man and woman, Adam and Eve. It was planted by God in the east (Genesis 2:8) and was watered by a river that divided into four headwaters (Genesis 2:10). God placed Adam in the Garden o																															
+@Ambiguity=																																					
+$========== PLACE																																					
+Gaza@Gen.10.19-Act=H5804	Gaza			https://www.google.com/maps/@31.52481769532773,34.4333647185274,14z	https://palopenmaps.org/view/9999/@31.52481769532773,34.4333647185274	>	#A location first mentioned at <ref="Gen.10.19">Gen.10.19</ref>) <br>referred to as <strong="H5804">Gaza or Ayyah</strong> (עַזָּה), or <strong="H5841">Gaza or Gazite</strong> (עַזָּתִי), or <strong="G1048">Gaza</strong> (Γάζα). 	Place																													
+– Named	Gaza@Gen.10.19-Act	H5804«H5804=עַזָּה	Gaza =ESV,NIV,KJV; Azzah =KJV	Gen.10.19; Deu.2.23; Jos.10.41; Jos.11.22; Jos.15.47; Jdg.1.18; Jdg.6.4; Jdg.16.1; Jdg.16.21; 1Sa.6.17; 1Ki.4.24; 2Ki.18.8; Jer.25.20; Jer.47.1; Jer.47.5; Amo.1.6; Amo.1.7; Zep.2.4; Zec.9.5a; Zec.9.5b																																
+– Spelled	Ayyah|Gaza@Gen.10.19-Act	H5804«H5804=עַיָּה	Ayyah =ESV,NIV; Gaza =KJV	1Ch.7.28																																
+– Named	Gaza@Gen.10.19-Act	H5841«H5841=עַזָּתִי	Gazite =ESV,KJV; Gazathite =KJV; Gaza =ESV,NIV; 	Jos.13.3; Jdg.16.2																																
+– Greek	Gaza@Gen.10.19-Act	G1048«G1048=Γάζα	Gaza	Act.8.26																																
+– Total	Gaza or Ayyah or Azzah or Gazite or Gazathites	Gaza, Ayyah	H5804, H5841, G1048	Gen.10.19; Deu.2.23; Jos.10.41; 11.22; 15.47; Jdg.1.18; 6.4; 16.1,21; 1Sa.6.17; 1Ki.4.24; 2Ki.18.8; Jer.25.20; 47.1,5; Amo.1.6,7; Zep.2.4; Zec.9.5; 1Ch.7.28; Jos.13.3; Jdg.16.2; Act.8.26	24
+@Briefest= 
+@Brief= Philistine city; Samson's exploits; Philip's ministry
+@Short= Gaza, one of the five major Philistine cities, was the site of Samson's exploits and a place visited by Philip the evangelist in the early church.
+@Article= Gaza, also known as Ayyah, was one of the five principal cities of the Philistines, along with Ashdod, Ashkelon, Gath, and Ekron (Joshua 13:3). Located in the southwestern coastal plain of Canaan, Gaza was situated near the border with Egypt and served as an important trade center. <BR>The city is 																															
+@Ambiguity=																																					
+$========== PLACE																																					
+Gerar@Gen.10.19-2Ch=H1642	Gerar			https://www.google.com/maps/@31.39129109635703,34.56057015639144,14z	https://palopenmaps.org/view/9999/@31.39129109635703,34.56057015639144	Philistia	#A location in Philistia first mentioned at <ref="Gen.10.19">Gen.10.19</ref>) <br>only referred to as <strong="H1642">Gerar</strong> (גְּרָר). 	Place																													
+– Named	Gerar@Gen.10.19-2Ch	H1642«H1642=גְּרָר	Gerar	Gen.10.19; Gen.20.1; Gen.20.2; Gen.26.1; Gen.26.6; Gen.26.17; Gen.26.20; Gen.26.26; 2Ch.14.13; 2Ch.14.14																																
+– Total	Gerar	Gerar	H1642	Gen.10.19; 20.1,2; 26.1,6,17,20,26; 2Ch.14.13,14	1
+@Briefest= In Philistia
+@Brief= Philistine city; Abraham and Isaac's encounters with Abimelech
+@Short= Gerar, a Philistine city, was the location of Abraham and Isaac's encounters with Abimelech and the site of a battle during King Asa's reign.
+@Article= Gerar was an ancient city mentioned in the Bible's earliest geographical descriptions, marking the border of Canaanite territory (Genesis 10:19). It was located in the region between Kadesh and Shur, in what would become the southern part of Philistine territory. <BR> The city features prominently 																															
+@Ambiguity=																																					
+$========== PLACE																																					
+Lasha@Gen.10.19-Num=H3962	Lasha			https://www.google.com/maps/@31.718148,35.584826,14z	https://palopenmaps.org/view/9999/@31.718148,35.584826	>	#A location first mentioned at <ref="Gen.10.19">Gen.10.19</ref>) <br>referred to as <strong="H3962">Lasha</strong> (לֶ֫שַׁע), or <strong="H5160">Nahaliel</strong> (נַחֲלִיאֵל). 	Place																													
+– Named	Lasha@Gen.10.19-Num	H3962«H3962=לֶ֫שַׁע	Lasha	Gen.10.19																																
+– Named	Nahaliel|Lasha@Gen.10.19-Num	H5160«H5160=נַחֲלִיאֵל	Nahaliel	Num.21.19a; Num.21.19b																																
+– Total	Lasha or Nahaliel	Lasha, Nahaliel	H3962, H5160	Gen.10.19; Num.21.19	3
+@Briefest= 
+@Brief= A place marking Canaanite territory; a stop in Israel's journey
+@Short= Lasha (Nahaliel), a place marking the extent of Canaanite territory (<ref="Genesis 10:19">Genesis 10:19</ref>) and a stop in Israel's wilderness journey (<ref="Numbers 21:19">Numbers 21:19</ref>).
+@Article= Lasha, also referred to as Nahaliel, is mentioned in two different contexts in the Bible. In Genesis 10:19, Lasha is described as one of the boundaries of the Canaanite territory, along with Sidon, Gomorrah, and Sodom. In Numbers 21:19, Nahaliel is listed as one of the places the Israelites passed 																															
+@Ambiguity=																																					
+$========== PLACE																																					
+Sidon@Gen.10.19-Act=H6721H	Sidon	Sidon@Gen.10.15-1Ch		https://www.google.com/maps/@33.56316734135746,35.36634649354799,14z	https://palopenmaps.org/view/9999/@33.56316734135746,35.36634649354799	>	#A location first mentioned at <ref="Gen.10.19">Gen.10.19</ref>) <br>referred to as <strong="H6721H">Sidon</strong> (צִידוֹן), or Sidon/ the Great  or <strong="H6721I">Great/ Sidon</strong> (צִידוֹן רַב), or <strong="H6722">Sidonian</strong> (צִידֹנִי), or <strong="G4605">Sidon</strong> (Σιδών), or <strong="G4606">Sidonian</strong> (Σιδώνιος). 	Place																													
+– Named	Sidon@Gen.10.19-Act	H6721H«H6721=צִידוֹן	Sidon =ESV,NIV,KJV; Zidon =KJV	Gen.10.19; Gen.49.13; Jdg.1.31; Jdg.10.6; Jdg.18.28; 2Sa.24.6; 1Ki.17.9; Isa.23.2; Isa.23.4; Isa.23.12; Jer.25.22; Jer.27.3; Jer.47.4; Ezk.27.8; Ezk.28.21; Ezk.28.22; Jol.3.4; Zec.9.2																																
+– Name combined	Great_Sidon|Sidon@Gen.10.19-Act	H6721I«H6721=צִידוֹן+H7227G«H7227a=רַב	Sidon/ the Great,Great/ Sidon =ESV; Greater/ Sidon =NIV; great/ Zidon =KJV	Jos.11.8; Jos.19.28																																
+– Group	Sidon@Gen.10.19-Act	H6722«H6722=צִידֹנִי	Sidonian,Sidon =ESV,NIV,KJV; Zidonian,Zidon =KJV	Deu.3.9; Jos.13.4; Jos.13.6; Jdg.3.3; Jdg.10.12; Jdg.18.7a; Jdg.18.7b; 1Ki.5.6; 1Ki.11.1; 1Ki.11.5; 1Ki.11.33; 1Ki.16.31; 2Ki.23.13; 1Ch.22.4; Ezr.3.7; Ezk.32.30																																
+– Greek	Sidon@Gen.10.19-Act	G4605«G4605=Σιδών	Sidon	Mat.11.21; Mat.11.22; Mat.15.21; Mrk.3.8; Mrk.7.31; Luk.4.26; Luk.6.17; Luk.10.13; Luk.10.14; Act.27.3																																
+– (same form with Variant)	Sidon@Gen.10.19-Act	G4605«G4605=Σιδών	Sidon =ESVKJV,TR; [ ] =NIV,NA	Mrk.7.24																																
+– Group	Sidon@Gen.10.19-Act	G4606«G4606=Σιδώνιος	Sidon	Act.12.20																																
+– Total	Sidon or Great Sidon or Zidon or Sidonian or Zidonian	Sidon	H6721H, H6721I, H6722, G4605, G4606	Gen.10.19; 49.13; Jdg.1.31; 10.6; 18.28; 2Sa.24.6; 1Ki.17.9; Isa.23.2ff; Jer.25.22; 27.3; 47.4; Ezk.27.8; 28.21,22; Jol.3.4; Zec.9.2; Jos.19.28; 11.8; Deu.3.9; Jos.13.4,6; Jdg.3.3; 10.12; 18.7; 1Ki.5.6; 11.1ff; 16.31; 2Ki.23.13; 1Ch.22.4; Ezr.3.7; Ezk.32.30; Mat.11.21,22; 15.21; Mrk.3.8; 7.24,31; Luk.4.26; 6.17; 10.13,14; Act.27.3; 12.20	48
+@Briefest= 
+@Brief= Phoenician city; home of Jezebel
+@Short= Sidon, also called Great Sidon, was a prominent Phoenician city known for its trade and culture, and was the hometown of Jezebel, wife of King Ahab (<ref="1Ki. 16:31">1Ki. 16:31</ref>). It is mentioned in various contexts throughout the Bible, including the Old Testament (<ref="Gen. 10:19; Josh. 11:8; Judg. 10:6; Isa. 23:2-4; Jer. 27:3; Ezek. 28:21-22">Gen. 10:19; Josh. 11:8; Judg. 10:6; Isa. 23:2-4; Jer. 27:3; Ezek. 28:21-22</ref>) and the New Testament (<ref="Matt. 11:21-22; Luke 4:26; Act.27.3">Matt. 11:21-22; Luke 4:26; Act.27.3</ref>).
+@Article= Sidon was an ancient Phoenician city located on the Mediterranean coast. First mentioned in Genesis as a border marker of Canaan (Genesis 10:19), it was named among the territories that Israel failed to conquer (Judges 1:31). <BR> The city was known for its maritime expertise. Sidonians were skille																															
+@Ambiguity=																																					

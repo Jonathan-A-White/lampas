@@ -30,6 +30,8 @@ export interface MapCard {
   /** the places the map names */
   places: string[];
   video?: boolean;
+  /** the names of the passage's places (src/maps/places.ts) that this map shows; set by mapsFor, empty for a whole chapter (src/maps/mapsFor.ts rankByPlaces) */
+  matched?: string[];
 }
 
 export interface MapSource {
@@ -69,4 +71,25 @@ export interface BibleMapperData {
   maps: Record<string, BibleMapperMap>;
   /** by the app's book code, then the chapter number: the numbers (in `ids`) of its maps in the site's order, audio-visual readings last */
   chapters: Record<string, Record<string, number[]>>;
+}
+
+/** A place of the Bible from STEPBible's TIPNR, in one book's file (src/maps/data/places/<book>.json, written by `npm run places:build`, docs/maps.md). */
+export interface Place {
+  /** TIPNR's UniqueName ('Gerar@Gen.10.19-2Ch') */
+  id: string;
+  /** the ESV form of the name */
+  name: string;
+  /** every form of the name: the 'All names' of TIPNR and its KJV and NIV forms, once each */
+  names: string[];
+  /** the disambiguated Strong's numbers of the place ('H1642') */
+  strongs: string[];
+  /** where it lies, from OpenBible.info; absent where TIPNR has no position */
+  lat?: number;
+  lng?: number;
+  /** the geographical area TIPNR gives ('Philistia'); absent where it gives none */
+  region?: string;
+  /** the verses of THIS book that name it, [chapter, verse] in order */
+  verses: [number, number][];
+  /** where it stands in each of those verses: the index of the word in the verse (the same order as `verses`), -1 where the text does not show it; absent when no verse shows it */
+  pos?: number[];
 }
