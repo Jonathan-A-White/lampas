@@ -1,9 +1,10 @@
 // src/data/repositories/fetchedItems.ts — the drill items the mill wrote, kept until a round uses them (mw-hqd5bz.36, docs/grammar.md 'More items from the mill'). One JSON list of questions
 // per idea in the settings store under 'fetchedItems.<idea id>' (no table, outside the settings registry so only a finished fetch writes it). A repository owns its transactions.
 import { db } from '../db';
-import { MAX_KEPT, isKeptQuestion } from '../grammar/fetchedItems';
+import { MAX_KEPT, isKeptQuestion, seenKey } from '../grammar/fetchedItems';
 import { ideaOf } from '../grammar/ladder';
 import type { GrammarQuestion } from '../grammar/questions';
+import { SEEN_PREFIX, parseSeen } from './seenItems';
 
 const PREFIX = 'fetchedItems.';
 
@@ -37,6 +38,7 @@ export async function countFetchedItems(ideaId: string): Promise<number> {
 
 /**
  * Takes the oldest kept item of each of these ideas, so it is served once: the ideas that have none are left out of the map. One read and write, never a wait on the network.
+ * A kept item he has been asked already (seenItems.ts: the same prompt on the same verse) is not served; it is dropped.
  */
 export async function takeFetchedItems(ideaIds: readonly string[]): Promise<Map<string, GrammarQuestion>> {
   const taken = new Map<string, GrammarQuestion>();
@@ -44,8 +46,12 @@ export async function takeFetchedItems(ideaIds: readonly string[]): Promise<Map<
   await db.transaction('rw', db.settings, async () => {
     for (const id of new Set(ideaIds)) {
       const kept = parse((await db.settings.get(PREFIX + id))?.value);
-      const [first, ...rest] = kept;
-      if (!first) continue;
+      const seen = new Set(parseSeen((await db.settings.get(SEEN_PREFIX + id))?.value).map(seenKey));
+      const [first, ...rest] = kept.filter((q) => !seen.has(seenKey({ prompt: q.prompt, ref: q.ref ?? '' })));
+      if (!first) {
+        if (kept.length > 0) await db.settings.delete(PREFIX + id);
+        continue;
+      }
       taken.set(id, first);
       if (rest.length > 0) await db.settings.put({ key: PREFIX + id, value: JSON.stringify(rest) });
       else await db.settings.delete(PREFIX + id);

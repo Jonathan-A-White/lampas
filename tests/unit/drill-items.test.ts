@@ -14,14 +14,16 @@ import {
   isFetchable,
   ITEMS_PER_IDEA,
   MAX_KEPT,
+  MAX_SEEN,
   weakestMissed,
+  type SeenQuestion,
   type DrillItemsAnswer,
   type DrillItemsRequest,
   type AnsweredItem,
 } from '../../src/data/grammar/fetchedItems';
 import { ideaOf } from '../../src/data/grammar/ladder';
 import { mulberry32 } from '../../src/data/quiz';
-import { countFetchedItems, saveFetchedItems, takeFetchedItems } from '../../src/data/repositories';
+import { countFetchedItems, noteSeen, saveFetchedItems, takeFetchedItems } from '../../src/data/repositories';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { MAX_REQUEST_BYTES } from '../../src/services/requestBudget';
 import { setCurrentLicence } from '../../src/services/licenceNow';
@@ -115,6 +117,49 @@ describe('the drill-items grind and the app agree', () => {
   });
 });
 
+describe('the questions he has seen go with the request', () => {
+  const seenOf = (n: number, idea = 'declension-2'): [string, SeenQuestion[]] => [idea, Array.from({ length: n }, (_, i) => ({ prompt: `Tap the form that is number ${i} of the ${idea} noun`, ref: '1 John 1:1' }))];
+
+  it('carries the idea\'s seen questions as `seen`, the oldest first, in a request the schema takes', () => {
+    const request = buildDrillItemsRequest([DECLENSION_2], misses(), passage, undefined, new Map([seenOf(3)])) as DrillItemsRequest;
+    expect(request.seen).toEqual(seenOf(3)[1]);
+    expect(validate(request, inputSchema)).toEqual([]);
+    // no seen question: no `seen` at all, and the request is the one it was
+    expect(buildDrillItemsRequest([DECLENSION_2], misses(), passage)).not.toHaveProperty('seen');
+    expect(buildDrillItemsRequest([DECLENSION_2], misses(), passage, undefined, new Map([['case-genitive', seenOf(3)[1]]]))).not.toHaveProperty('seen');
+  });
+
+  it('fits MAX_REQUEST_BYTES with the most seen questions an idea keeps, three ideas at once, trimmed from the oldest', () => {
+    const ideas = ['declension-2', 'case-genitive', 'declension-1'].map(ideaOf);
+    const seen = new Map(ideas.map((i) => seenOf(MAX_SEEN, i.id)));
+    const request = buildDrillItemsRequest(ideas, new Map(ideas.map((i) => [i.id, 2])), passage, undefined, seen) as DrillItemsRequest;
+    expect(validate(request, inputSchema)).toEqual([]);
+    expect(new TextEncoder().encode(JSON.stringify(request)).length).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    const carried = request.seen ?? [];
+    expect(carried.length).toBeGreaterThan(0);
+    // the verses are the ones the request would have had without any seen question
+    expect(request.verses).toEqual((buildDrillItemsRequest(ideas, new Map(ideas.map((i) => [i.id, 2])), passage) as DrillItemsRequest).verses);
+    // what is left out is the oldest: the newest of each idea is carried
+    for (const [id, list] of seen) {
+      const newest = list[list.length - 1];
+      if (carried.length < ideas.length * MAX_SEEN) expect(carried, id).toContainEqual(newest);
+    }
+  });
+
+  it('tells the model to write none of the seen questions', () => {
+    const instructions = instructionsOf('drill-items');
+    expect(instructions).toContain('`seen`');
+    expect(instructions).toMatch(/none of the `seen` questions/i);
+  });
+
+  it('keeps an example whose request carries a seen question for the second declension', () => {
+    const example = readJson('grinds/examples/drill-items/avoids-seen.json') as unknown as { request: DrillItemsRequest };
+    const seen = example.request.seen ?? [];
+    expect(seen.length).toBeGreaterThan(0);
+    expect(example.request).toEqual(buildDrillItemsRequest([DECLENSION_2], misses(), passage, undefined, new Map([[DECLENSION_2.id, seen]])));
+  });
+});
+
 describe('the weakest ideas of a round', () => {
   it('takes the most missed first, then the lower rung, at most three', () => {
     const ids = ['declension-2', 'case-genitive', 'case-genitive', 'declension-1', 'tense-aorist', 'tense-aorist', 'tense-aorist'];
@@ -167,6 +212,21 @@ describe('the answer is checked before it is kept', () => {
   it('keeps the good ones beside the bad ones, and at most per_idea for an idea', () => {
     const kept = check({ ...TAP, right: 'nope' }, TAP, MEANING, { ...TAP, prompt: 'Tap the second declension noun' });
     expect(kept.map((q) => q.kind)).toEqual(['tap-form', 'meaning']);
+  });
+
+  it('drops an item whose prompt and verse are a seen question, and one that repeats another of the answer', () => {
+    const seenRequest = buildDrillItemsRequest([DECLENSION_2], misses(), passage, undefined, new Map([[DECLENSION_2.id, [{ prompt: TAP.prompt, ref: TAP.ref }]]])) as DrillItemsRequest;
+    expect(checkedItems({ items: [TAP, MEANING] } as DrillItemsAnswer, seenRequest, passage).map((q) => q.kind)).toEqual(['meaning']);
+    // case and spacing do not make it another question
+    expect(checkedItems({ items: [{ ...TAP, prompt: '  tap the GENITIVE singular  noun' }] } as DrillItemsAnswer, seenRequest, passage)).toEqual([]);
+    // the phone's whole list counts too, not only what the request had room for
+    expect(check(TAP)).toHaveLength(1);
+    expect(checkedItems({ items: [TAP] } as DrillItemsAnswer, request, passage, [{ prompt: TAP.prompt, ref: TAP.ref }])).toEqual([]);
+    // the same prompt on another verse is another question
+    expect(checkedItems({ items: [MEANING] } as DrillItemsAnswer, request, passage, [{ prompt: MEANING.prompt, ref: '1 John 1:2' }])).toHaveLength(1);
+    // a repeat in one answer, and the dropped one does not use up the idea's places
+    const repeated = check(TAP, { ...TAP }, MEANING);
+    expect(repeated.map((q) => q.kind)).toEqual(['tap-form', 'meaning']);
   });
 
   it('is tolerant of an answer item that is not an object', () => {
@@ -243,6 +303,15 @@ describe('asking the mill for more after a round', () => {
     expect(validate(input, inputSchema)).toEqual([]);
     expect(input.ideas.map((i) => [i.id, i.misses])).toEqual([['declension-2', 2]]);
     expect(await countFetchedItems('declension-2')).toBe(2);
+  });
+
+  it('sends the questions he has been asked as `seen`, and keeps no item that repeats one', async () => {
+    await noteSeen({ kind: 'tap-form', ideaId: 'declension-2', prompt: TAP.prompt, options: TAP.options, right: TAP.right, ref: TAP.ref });
+    expect(await askForMoreItems(MISSED, { key: KEY, passage })).toEqual({ kept: 1 });
+    const input = postern.received[0].input as unknown as DrillItemsRequest;
+    expect(input.seen).toEqual([{ prompt: TAP.prompt, ref: TAP.ref }]);
+    expect(validate(input, inputSchema)).toEqual([]);
+    expect((await takeFetchedItems(['declension-2'])).get('declension-2')?.kind).toBe('meaning');
   });
 
   it('has at most one in flight: a second ask while one is out sends nothing', async () => {

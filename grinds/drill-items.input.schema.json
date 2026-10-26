@@ -52,6 +52,20 @@
         }
       }
     },
-    "per_idea": { "description": "How many items to make for each idea.", "type": "number", "minimum": 1, "maximum": 4 }
+    "per_idea": { "description": "How many items to make for each idea.", "type": "number", "minimum": 1, "maximum": 4 },
+    "seen": {
+      "description": "Questions he has already been asked on these ideas, the oldest first. Write none of them and none that tests the same word.",
+      "type": "array",
+      "maxItems": 90,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["prompt", "ref"],
+        "properties": {
+          "prompt": { "description": "The question as he was asked it.", "type": "string", "minLength": 1, "maxLength": 120 },
+          "ref": { "description": "The verse it was about, such as 'Romans 8:1'.", "type": "string", "minLength": 1, "maxLength": 40 }
+        }
+      }
+    }
   }
 }
