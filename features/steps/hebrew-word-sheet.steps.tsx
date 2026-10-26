@@ -98,7 +98,7 @@ describeFeature(feature, ({ Scenario }) => {
     expect(h).toHaveTextContent(form);
     expect(h).toHaveAttribute('lang', 'he');
     expect(h).toHaveAttribute('dir', 'rtl');
-    expect(h.classList.contains('text-4xl')).toBe(true);
+    expect(h.classList.contains('text-4xl!')).toBe(true);
     expect(h.classList.contains('script-he')).toBe(true);
   };
   const showsLemma = async (_: unknown, lemma: string): Promise<void> => {
