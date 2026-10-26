@@ -1,6 +1,6 @@
 {
   "kind": "interlinear",
-  "version": "b3b18635f6c5",
+  "version": "97883a54e3ee",
   "entries": [
     {"resource":"RVI:ASVNT","kind":"interlinear","title":"The English-Greek Reverse Interlinear American Standard Version: New Testament","short":"ASV NT RI","lang":"both","opens":"verse","value":"The Greek behind his own translation's wording at this verse, which the Weave over the MSB cannot show.","starts":"on","via":"type"},
     {"resource":"RVI:AV1873NT","kind":"interlinear","title":"English-Greek Reverse Interlinear The Cambridge Paragraph Bible of the Authorized English Version: New Testament","short":"AV1873 NT RI","lang":"both","opens":"verse","value":"The Greek behind his own translation's wording at this verse, which the Weave over the MSB cannot show.","starts":"on","via":"type"},

@@ -31,8 +31,8 @@ export const REASONS: readonly Reason[] = [
   },
   {
     key: 'new-testament-commentaries',
-    label: 'Commentaries on the New Testament that are not on the Greek text',
-    why: 'the makers add a series when a reader asks and it fits (Ask for a book).',
+    label: 'Commentaries that reach beyond the New Testament',
+    why: 'Lampas opens a commentary on the New Testament alone; one on the whole Bible waits for the Old Testament reader.',
     fits: (row, covers) => isType(row, 'text.monograph.commentary') && covers.length > 0,
   },
   {

@@ -113,7 +113,8 @@
   "types": [
     {"type":"lbx.reverse-interlinear","kind":"interlinear","needs":"nt"},
     {"type":"text.monograph.bible","kind":"bible","needs":"nt","languages":"en"},
-    {"type":"lbx.calendar-devotional","kind":"devotional"}
+    {"type":"lbx.calendar-devotional","kind":"devotional"},
+    {"type":"text.monograph.commentary.bible","kind":"commentary","needs":"nt-only"}
   ],
   "series": [
     {"series":"Baker Exegetical Commentary on the New Testament","kind":"commentary"},

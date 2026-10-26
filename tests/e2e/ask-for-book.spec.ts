@@ -95,7 +95,7 @@ test('Ask the makers about these on the import result: one tap sends the list on
   const header = 'ResourceId,Type,AbbreviatedTitle,Title,Series,Languages,ReferenceSupersets';
   const list = [
     header,
-    'LLS:HENDRIKSENROM,text.monograph.commentary.bible,,Exposition of Paul\'s Epistle to the Romans,New Testament Commentary,en,bible.66.1.1-66.16.27',
+    'LLS:HENDRIKSENROM,text.monograph.commentary.bible,,Exposition of Paul\'s Epistle to the Romans,New Testament Commentary,en,"bible.1.1.1-39.4.6\tbible.66.1.1-66.16.27"',
     'LLS:GREEKLEXICON,text.monograph.lexicon,,A Greek Lexicon of the New Testament,,"el,en",',
     'LLS:MANUSCRIPT1,text.monograph.ancient-manuscript,,Codex Sinaiticus,,el,bible.61.1.1-87.22.21',
   ].join('\r\n');
