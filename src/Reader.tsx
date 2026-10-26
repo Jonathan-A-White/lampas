@@ -516,7 +516,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 </Fragment>
               );
             })}
-            {hbo ? <ChapterActions name={bookOf(BOOK)?.name ?? BOOK} code={BOOK} chapter={CHAPTER} /> : null}
+            <ChapterActions name={bookOf(BOOK)?.name ?? BOOK} code={BOOK} chapter={CHAPTER} immersive={immersive} />
             <ChapterNav book={BOOK} chapter={CHAPTER} />
           </>
         ) : (
