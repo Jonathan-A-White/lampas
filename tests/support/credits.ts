@@ -5,7 +5,7 @@
 //  - Every font file and every shipped data file is named by a credit (bundledFiles: which credit each one needs).
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { OT_BOOKS } from '../../src/data/otBooks';
+import { OT_BOOKS } from '../../src/data/books';
 
 export interface CreditSection {
   title: string | null;

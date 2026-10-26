@@ -1,6 +1,6 @@
 Feature: Next and previous chapter at the foot of a chapter
   After the last verse the Reader offers two buttons: the next chapter ('1 John 2 ›') and the previous
-  one ('‹ 1 John 1'), across books (Romans 16 goes on to 1 Corinthians 1). Matthew 1 has no previous
+  one ('‹ 1 John 1'), across books (Romans 16 goes on to 1 Corinthians 1). Genesis 1 has no previous
   button and Revelation 22 no next. A tap opens the chapter from the top as a new Back step, and it is
   remembered like any open chapter. A chapter that cannot be fetched says so as the picker's does.
 
@@ -27,9 +27,9 @@ Feature: Next and previous chapter at the foot of a chapter
     When he taps "1 Corinthians 1 ›"
     Then the reader is headed "1 Corinthians 1"
 
-  Scenario: Matthew 1 has no previous button
-    Given Lampas is opened on "Matthew" chapter 1
-    Then the foot of the chapter has a button "Matthew 2 ›"
+  Scenario: Genesis 1 has no previous button
+    Given Lampas is opened on "Genesis" chapter 1
+    Then the foot of the chapter has a button "Genesis 2 ›"
     And the foot of the chapter has no previous button
 
   Scenario: Revelation 22 has no next button

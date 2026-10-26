@@ -119,8 +119,8 @@ describe('what counts as a swipe', () => {
     expect(chapterSwiped()).toBe(true);
   });
 
-  it('a swipe that opens no chapter (Matthew 1 going back) does not', () => {
-    expect(crossChapter('mat', 1, -1, true)).toBe(false);
+  it('a swipe that opens no chapter (Genesis 1 going back) does not', () => {
+    expect(crossChapter('gen', 1, -1, true)).toBe(false);
     expect(chapterSwiped()).toBe(false);
   });
 

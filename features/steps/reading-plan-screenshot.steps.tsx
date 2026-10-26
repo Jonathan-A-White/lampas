@@ -11,7 +11,6 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
-import { OT_BOOKS } from '../../src/data/otBooks';
 import { planOf, type PlanChapter } from '../../src/data/plans';
 import { beginSession, nextChapter, openSession, progress, startPlan } from '../../src/data/repositories/readingPlan';
 import { clearBus } from '../../src/events/bus';
@@ -51,7 +50,7 @@ let onLine: MockInstance<() => boolean> | undefined;
 /** 'Leviticus 1' -> its book code and chapter number */
 function chapterNamed(name: string): PlanChapter {
   const at = name.lastIndexOf(' ');
-  const book = [...OT_BOOKS, ...BOOKS].find((b) => b.name === name.slice(0, at));
+  const book = BOOKS.find((b) => b.name === name.slice(0, at));
   if (!book) throw new Error(`no book named in ${name}`);
   return { code: book.code, chapter: Number(name.slice(at + 1)) };
 }

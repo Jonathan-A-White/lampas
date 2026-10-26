@@ -39,7 +39,7 @@ for (const size of SIZES) {
     await title.getByRole('button').click();
     const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
     await expect(picker).toBeVisible();
-    await expect(picker.locator('[data-book]')).toHaveCount(27);
+    await expect(picker.locator('[data-book]')).toHaveCount(66);
     await expectTall(page, '[data-book]');
     await expectFitsPhone(page, size.width);
     await shot(page, `chapter-picker-books-${size.name}`);
@@ -249,11 +249,15 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     const search = picker.getByRole('searchbox', { name: 'Search books' });
     await search.fill('Ps 23');
     await search.press('Enter');
-    await expect(picker.getByRole('heading', { name: 'Psalms', exact: true })).toBeVisible();
+    // an Old Testament chapter opens in the Reader like any other (mw-uqlxea.2)
+    await expect(page.getByRole('heading', { name: 'Psalms 23', level: 1 })).toBeVisible();
+    await expect(picker).toHaveCount(0);
 
-    await picker.getByRole('button', { name: '‹ Books' }).click();
-    await picker.getByRole('searchbox', { name: 'Search books' }).fill('1 Jn 2:1');
-    await picker.getByRole('searchbox', { name: 'Search books' }).press('Enter');
+    await page.getByRole('heading', { name: 'Psalms 23', level: 1 }).getByRole('button').click();
+    const again = page.getByRole('dialog', { name: 'Choose a chapter' });
+    await expect(again).toBeVisible();
+    await again.getByRole('searchbox', { name: 'Search books' }).fill('1 Jn 2:1');
+    await again.getByRole('searchbox', { name: 'Search books' }).press('Enter');
     await expect(page.getByRole('heading', { name: '1 John 2', level: 1 })).toBeVisible();
     await expect(picker).toHaveCount(0);
   });

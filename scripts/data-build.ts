@@ -9,7 +9,7 @@ import { pathToFileURL } from 'node:url';
 import { withAoristNote } from '../src/data/irregular-aorists';
 import { decodeParse, splitParse } from '../src/data/parseCode';
 import { CANON } from '../src/data/canon';
-import { OT_BOOKS } from '../src/data/otBooks';
+import { OT_BOOKS } from '../src/data/books';
 import type { BookIndex, Chapter, LexEntry } from '../src/data/chapter';
 import type { LemmaLexicon } from '../src/data/lexicon';
 import type { FrequencyEntry } from '../src/data/frequency';

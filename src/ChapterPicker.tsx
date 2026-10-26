@@ -1,44 +1,30 @@
-// src/ChapterPicker.tsx — the bottom sheet the Reader's title opens (mw-5r3p30.60): the 39 Old Testament books and the 27 New Testament
-// books in canonical order in a box of their own with a search field (a long list is a widget, docs/pwa-best-practices.md section 8),
-// then, for the book he taps, a grid of its chapters (the counts of the New Testament come from data/index.json). A tap on a New Testament
-// chapter opens it in the Reader as a new Back step; the phone's Back, Done, Escape, a swipe down or a tap outside closes the picker
-// (src/ui/sheetBack.ts). Lampas has no Old Testament text (mw-5r3p30.71): an Old Testament book is marked 'Logos' and a tap on its chapter opens no
-// app (mw-5r3p30.496): a panel under the grid offers Read in Logos (in the Bible he chose in Settings, src/resources/logosBible.ts) and Listen in
-// Audible (The Word of Promise, src/resources/audioBible.ts), each only while its setting is on; the open Lampas chapter does not change. With
-// Logos off in Settings the books still show; picking one says so and turns Logos on in one tap, and with the Audio Bible off too it names that setting.
+// src/ChapterPicker.tsx — the bottom sheet the Reader's title opens (mw-5r3p30.60): the 66 books of the Bible in canonical order (Genesis to Revelation) in a box of their own with a
+// search field (a long list is a widget, docs/pwa-best-practices.md section 8), then, for the book he taps, a grid of its chapters (the counts of the New Testament come from
+// data/index.json, those of the Old from src/data/books.ts). A tap on a chapter, of either testament, opens it in the Reader as a new Back step; the phone's Back, Done, Escape, a swipe down
+// or a tap outside closes the picker (src/ui/sheetBack.ts). An Old Testament chapter is read in English (mw-uqlxea.2, docs/layout/reader.md 'An Old Testament chapter (English only)'); its
+// two ways out, Read in Logos and Listen in Audible, are actions on the opened chapter (src/reader/ChapterActions.tsx), not here.
 // In choose mode (mw-umv8sp.3: the return sheet's Pick it myself, src/plan/WhereDidYouGetTo.tsx) a tap on any chapter, of either testament, hands it to `onChoose` and
-// opens nothing: no Logos panel, no Preface row, no 'Opens in Logos' tag. `heading` names the sheet in that mode ('Where are you starting?', src/plan/StartPlan.tsx).
+// opens nothing. `heading` names the sheet in that mode ('Where are you starting?', src/plan/StartPlan.tsx).
 // With the Reading plan on and a plan started (mw-umv8sp.5) every grid outlines the next chapter (an accent outline, data-next); a chapter done looks like any other, with no ✓ and
 // no dimming (his feedback, mw-5r3p30.679: 'They are confusing.'): `marks` is the plan as src/plan/usePlan.ts reads it; `showPlan` false (StartPlan) draws none, as the plan being started has no next yet.
 // The search takes a reference as well as a name (mw-5r3p30.622, src/nav/parseReference.ts readPlace, the one reader of a typed place): 'John 18:36' (Enter, or the Go to row)
-// opens John 18 in the Reader with verse 36 brought to the top of the reading area (mw-5r3p30.678, not its Verse view), 'Ps 23' opens Psalms with chapter 23 chosen, 'John 99' says 'John has 21 chapters'; a book's name alone still filters the list.
-import { useLiveQuery } from 'dexie-react-hooks';
+// opens John 18 in the Reader with verse 36 brought to the top of the reading area (mw-5r3p30.678, not its Verse view), 'Ps 23' opens Psalms 23, 'John 99' says 'John has 21 chapters'; a book's name alone still filters the list.
 import { useEffect, useRef, useState } from 'react';
-import { BOOKS, bookOf } from './data/books';
+import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import type { PlanChapter } from './data/plans';
 import { type BookIndex, loadIndex } from './data/chapter';
 import type { OpenChapter } from './data/readerChapter';
-import { getLogosBible } from './data/repositories';
 import { keyOf } from './data/repositories/readingPlan';
-import { OT_BOOKS, otBookOf } from './data/otBooks';
-import { getStudyResources, setResourceOn } from './data/repositories/resources';
 import { bookPart, readPlace, type PlaceRead } from './nav/parseReference';
 import { bringVerse, openAtVerse } from './nav/readerRequest';
 import { navigate, openReader } from './nav/route';
-import { SendOff } from './plan/SendOff';
 import { usePlan, type PlanView } from './plan/usePlan';
-import { useSendOff } from './plan/useSendOff';
-import { type AudioBible, audioBibleOf } from './resources/audioBible';
-import { oldTestamentChoices } from './resources/oldTestamentChoices';
-import { armFallback } from './resources/openApp';
-import { audioBibleSetting } from './settings/definitions';
-import { useSetting } from './settings/store';
 import { focusQuietly } from './ui/focus';
 import { matching, matchingInOrder } from './ui/listFilter';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
-const ITEMS = [...OT_BOOKS, ...BOOKS].map((b) => ({ id: b.code, name: b.name }));
+const ITEMS = BOOKS.map((b) => ({ id: b.code, name: b.name }));
 
 /** How a chapter of the plan is marked: only the next one, outlined and said to a screen reader as the button's description. A chapter done is not marked. */
 function markOf(marks: PlanView | undefined, code: string, chapter: number): { attrs: Record<string, string>; ring: string; description?: string } {
@@ -47,9 +33,8 @@ function markOf(marks: PlanView | undefined, code: string, chapter: number): { a
 }
 
 /** One chapter number in a grid: 48 px, the chapter he is in filled, the next chapter of the plan outlined. */
-function ChapterButton({ code, n, here, pressed, marks, onPick }: { code: string; n: number; here?: boolean; pressed?: boolean; marks: PlanView | undefined; onPick: () => void }) {
+function ChapterButton({ code, n, here, marks, onPick }: { code: string; n: number; here?: boolean; marks: PlanView | undefined; onPick: () => void }) {
   const mark = markOf(marks, code, n);
-  const filled = here || pressed;
   return (
     <button
       type="button"
@@ -58,9 +43,8 @@ function ChapterButton({ code, n, here, pressed, marks, onPick }: { code: string
       aria-label={`Chapter ${n}`}
       aria-description={mark.description}
       aria-current={here ? 'true' : undefined}
-      aria-pressed={pressed === undefined ? undefined : pressed}
       onClick={onPick}
-      className={`min-h-12 rounded-xl border text-lg font-medium ${filled ? 'border-accent bg-accent text-accent-fg' : `border-line bg-surface ${mark.ring}`}`}
+      className={`min-h-12 rounded-xl border text-lg font-medium ${here ? 'border-accent bg-accent text-accent-fg' : `border-line bg-surface ${mark.ring}`}`}
     >
       {n}
     </button>
@@ -73,6 +57,7 @@ function Chapters({ code, current, marks, onPick }: { code: string; current: Ope
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    if (isHebrewBook(code)) return;
     let live = true;
     loadIndex().then(
       (i) => live && (setFailed(false), setIndex(i)),
@@ -81,9 +66,10 @@ function Chapters({ code, current, marks, onPick }: { code: string; current: Ope
     return () => {
       live = false;
     };
-  }, [attempt]);
-  const count = index?.books.find((b) => b.code === code)?.chapters;
-  if (failed) {
+  }, [attempt, code]);
+  // the Old Testament's counts are in the bundle (src/data/books.ts); the New Testament's come from the index
+  const count = isHebrewBook(code) ? bookOf(code)?.chapters : index?.books.find((b) => b.code === code)?.chapters;
+  if (failed && count === undefined) {
     return (
       <div role="alert" className="px-1 pt-2">
         <p className="text-base">Could not load the list of chapters.</p>
@@ -109,98 +95,6 @@ function Chapters({ code, current, marks, onPick }: { code: string; current: Ope
   );
 }
 
-/** The chapter numbers of an Old Testament book in choose mode: the same grid, and a tap hands the chapter over. */
-function ChooseChapters({ code, marks, onPick }: { code: string; marks: PlanView | undefined; onPick: (chapter: number) => void }) {
-  const book = otBookOf(code);
-  if (!book) return null;
-  return (
-    <div role="group" aria-label={`${book.name} chapters`} className="grid grid-cols-4 gap-2 px-1 pt-1">
-      {Array.from({ length: book.chapters }, (_, i) => i + 1).map((n) => (
-        <ChapterButton key={n} code={code} n={n} marks={marks} onPick={() => onPick(n)} />
-      ))}
-    </div>
-  );
-}
-
-/** The prompt for Logos being off: one tap turns it on. With the Audio Bible off too, a line names where to turn that on. */
-function LogosOff({ name, audioOff }: { name: string; audioOff: boolean }) {
-  return (
-    <div role="status" className="px-1 pt-2">
-      <p className="text-base font-medium">Logos is off</p>
-      <p className="pt-1 text-base text-muted">{`${name} opens in Logos. Turn Logos on to read it there.`}</p>
-      {audioOff ? <p className="pt-1 text-base text-muted">Or choose an Audio Bible in Settings to listen to it in Audible.</p> : null}
-      <button
-        type="button"
-        onClick={() => void setResourceOn('logos', true)}
-        className="mt-3 min-h-12 rounded-xl bg-accent px-6 text-base font-medium text-accent-fg"
-      >
-        Turn on Logos
-      </button>
-    </div>
-  );
-}
-
-/** What one Old Testament chapter offers, under the grid: Read in Logos and Listen in Audible, each only while it is on. Nothing leaves the app until he taps one. */
-function ChapterChoice({ name, code, chapter, logosOn, bible, audio }: { name: string; code: string; chapter: number; logosOn: boolean; bible: string; audio: AudioBible | undefined }) {
-  const { logos, audible } = oldTestamentChoices(code, chapter, { logosOn, logosBible: bible, audio });
-  const sendOff = useSendOff();
-  const rowClass = 'flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line';
-  return (
-    <div
-      role="group"
-      data-ot-choice
-      aria-label={`${name} ${chapter}: read or listen`}
-      className="sticky bottom-0 z-10 mt-3 flex flex-col gap-2 rounded-xl border border-line bg-surface p-3 shadow-lg"
-    >
-      <p className="px-1 text-lg font-semibold">{`${name} ${chapter}`}</p>
-      {logos ? (
-        <a href={logos.href} data-fallback={logos.fallback} onClick={() => armFallback(logos.fallback)} className={rowClass}>
-          Read in Logos
-        </a>
-      ) : null}
-      {audio && audible ? (
-        <div>
-          <a
-            href={audible.href}
-            aria-label={`Listen in Audible: ${audio.name}, ${audible.label}`}
-            onClick={(e) => sendOff.tap(e, { audio, code, chapter })}
-            className={rowClass}
-          >
-            Listen in Audible
-          </a>
-          <p className="px-1 pt-2 text-base">{`In Audible: Chapters > ${audible.label}`}</p>
-          <p className="px-1 pt-1 text-sm text-muted">{audio.credit}</p>
-          <SendOff send={sendOff} />
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-/** The chapters of an Old Testament book. A tap on one opens no app: it shows what the chapter offers (Read in Logos, Listen in Audible) under the grid. */
-function OtChapters({ code, marks, first = null }: { code: string; marks: PlanView | undefined; first?: number | null }) {
-  const resources = useLiveQuery(getStudyResources, []);
-  const bible = useLiveQuery(getLogosBible, []);
-  const audioId = useSetting(audioBibleSetting);
-  const [chosen, setChosen] = useState<number | null>(first);
-  const book = otBookOf(code);
-  if (!book || !resources || bible === undefined || audioId === undefined) return null;
-  const logosOn = resources.on.includes('logos');
-  const audio = audioBibleOf(audioId);
-  if (!logosOn && !audio) return <LogosOff name={book.name} audioOff />;
-  return (
-    <>
-      {logosOn ? null : <LogosOff name={book.name} audioOff={false} />}
-      <div role="group" aria-label={`${book.name} chapters`} className="grid grid-cols-4 gap-2 px-1 pt-1">
-        {Array.from({ length: book.chapters }, (_, i) => i + 1).map((n) => (
-          <ChapterButton key={n} code={code} n={n} pressed={chosen === n} marks={marks} onPick={() => setChosen(n)} />
-        ))}
-      </div>
-      {chosen === null ? null : <ChapterChoice name={book.name} code={code} chapter={chosen} logosOn={logosOn} bible={bible} audio={audio} />}
-    </>
-  );
-}
-
 export function ChapterPicker({
   current,
   onClose,
@@ -217,8 +111,6 @@ export function ChapterPicker({
   const plan = usePlan();
   const marks = showPlan ? plan?.started : undefined;
   const [book, setBook] = useState<string | null>(null);
-  // the Old Testament chapter a typed reference chose ('Ps 23'), shown chosen when its book opens
-  const [typedChapter, setTypedChapter] = useState<number | null>(null);
   const [query, setQuery] = useState('');
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
@@ -241,7 +133,7 @@ export function ChapterPicker({
   // a name filters by its letters in order, names that start with it first; a start that fits more than one book ('J 3') is no place and lists the books it fits
   const shown = matchingInOrder(ITEMS, typed.kind === 'none' ? bookPart(query) : query);
   const preface = !onChoose && matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
-  const name = book ? (otBookOf(book) ?? bookOf(book))?.name : undefined;
+  const name = book ? bookOf(book)?.name : undefined;
   const pick = (chapter: number) => {
     if (!book) return;
     if (onChoose) return onChoose({ code: book, chapter });
@@ -253,10 +145,6 @@ export function ChapterPicker({
   // opens its book with the chapter chosen; in choose mode the chapter is handed over.
   const goTo = (place: Extract<PlaceRead, { kind: 'place' }>) => {
     if (onChoose) return onChoose({ code: place.book, chapter: place.chapter });
-    if (place.testament === 'ot') {
-      setTypedChapter(place.chapter);
-      return setBook(place.book);
-    }
     const { book: code, chapter, verse } = place;
     const here = code === current.book && chapter === current.chapter;
     if (verse === undefined) return here ? onClose() : openReader({ book: code, chapter });
@@ -268,7 +156,7 @@ export function ChapterPicker({
     } else openAtVerse(code, chapter, verse);
   };
   const placeName = (place: Extract<PlaceRead, { kind: 'place' }>): string => {
-    const named = (place.testament === 'ot' ? otBookOf(place.book) : bookOf(place.book))?.name ?? place.book;
+    const named = bookOf(place.book)?.name ?? place.book;
     return `${named} ${place.chapter}${place.verse === undefined ? '' : `:${place.verse}`}`;
   };
 
@@ -286,7 +174,7 @@ export function ChapterPicker({
           <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
           <div className="flex min-h-12 w-full items-center gap-2">
             {book ? (
-              <button type="button" onClick={() => (setTypedChapter(null), setBook(null))} className="min-h-11 shrink-0 rounded-lg pr-2 text-base font-medium text-accent">
+              <button type="button" onClick={() => setBook(null)} className="min-h-11 shrink-0 rounded-lg pr-2 text-base font-medium text-accent">
                 ‹ Books
               </button>
             ) : null}
@@ -325,15 +213,7 @@ export function ChapterPicker({
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+var(--lp-end-inset))] pt-2"
         >
           {book ? (
-            otBookOf(book) ? (
-              onChoose ? (
-                <ChooseChapters code={book} marks={marks} onPick={pick} />
-              ) : (
-                <OtChapters code={book} marks={marks} first={typedChapter} />
-              )
-            ) : (
-              <Chapters code={book} current={current} marks={marks} onPick={pick} />
-            )
+            <Chapters code={book} current={current} marks={marks} onPick={pick} />
           ) : (
             <>
               {preface ? (
@@ -367,26 +247,18 @@ export function ChapterPicker({
                 preface || typed.kind !== 'none' ? null : <p className="px-1 py-3 text-base text-muted">No book matches</p>
               ) : (
                 <div role="group" aria-label="Books" className="rounded-lg border border-line">
-                  {shown.map((b) => {
-                    const ot = otBookOf(b.id) !== undefined;
-                    return (
-                      <button
-                        key={b.id}
-                        type="button"
-                        {...(ot ? { 'data-ot-book': b.id } : { 'data-book': b.id })}
-                        aria-current={b.id === current.book ? 'true' : undefined}
-                        onClick={() => (setTypedChapter(null), setBook(b.id))}
-                        className={`flex min-h-12 w-full flex-wrap items-center justify-between gap-x-2 py-1 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
-                      >
-                        <span data-book-name>{b.name}</span>
-                        {ot && !onChoose ? (
-                          <span data-in-logos className="shrink-0 rounded-md border border-line px-2 text-sm font-medium text-muted">
-                            Opens in Logos ↗
-                          </span>
-                        ) : null}
-                      </button>
-                    );
-                  })}
+                  {shown.map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      data-book={b.id}
+                      aria-current={b.id === current.book ? 'true' : undefined}
+                      onClick={() => setBook(b.id)}
+                      className={`flex min-h-12 w-full flex-wrap items-center justify-between gap-x-2 py-1 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
+                    >
+                      <span data-book-name>{b.name}</span>
+                    </button>
+                  ))}
                 </div>
               )}
             </>

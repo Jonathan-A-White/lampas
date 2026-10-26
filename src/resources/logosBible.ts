@@ -2,7 +2,7 @@
 // text, so the chapter picker opens the chapter in his own Logos library: the Logos app's own scheme first (`logosres:<Bible>;ref=Bible.<book><chapter>`),
 // with the https ref.ly address as the fallback, opened only when the phone cannot open the scheme (openApp.ts armFallback). docs/resources.md has the sources.
 import { CANON } from '../data/canon';
-import { otBookOf } from '../data/otBooks';
+import { otBookOf } from '../data/books';
 import { entriesOf } from './catalogue';
 import { resourceLink } from './logosRes';
 

@@ -1,7 +1,7 @@
 // src/data/neighbours.ts — the chapter before and the chapter after one, across books (Romans 16 is followed by 1 Corinthians 1),
-// from the book order and chapter counts in books.ts. Matthew 1 has no previous and Revelation 22 no next (mw-5r3p30.63).
+// from the book order and chapter counts in books.ts, the whole canon: Malachi 4 is followed by Matthew 1, Genesis 1 has no previous and Revelation 22 no next (mw-5r3p30.63, mw-uqlxea.2).
 import { BOOKS } from './books';
-import { BOOK_INDEX } from './bookIndex';
+import { CANON_INDEX } from './bookIndex';
 import { chapterOf, type OpenChapter } from './readerChapter';
 
 export interface Neighbours {
@@ -35,10 +35,10 @@ export interface VerseNeighbours {
   next: VersePlace | null;
 }
 
-const versesIn = (book: string, chapter: number): number => BOOK_INDEX.books.find((b) => b.code === book)?.verses[chapter - 1] ?? 0;
+const versesIn = (book: string, chapter: number): number => CANON_INDEX.books.find((b) => b.code === book)?.verses[chapter - 1] ?? 0;
 
 /** The verse before and the verse after one, across chapters and books (Romans 8:39 is followed by Romans 9:1), from the verse counts in
- * public/data/index.json held in the bundle (no fetch). Matthew 1:1 has no previous and Revelation 22:21 no next (mw-5r3p30.79). */
+ * public/data/index.json held in the bundle (no fetch). Genesis 1:1 has no previous and Revelation 22:21 no next (mw-5r3p30.79). */
 export function verseNeighbours(book: string, chapter: number, verse: number): VerseNeighbours {
   const count = versesIn(book, chapter);
   if (!Number.isInteger(verse) || verse < 1 || verse > count) return { previous: null, next: null };

@@ -1,6 +1,6 @@
 Feature: Swipe the Reader to the next or previous chapter
   In the Reader a horizontal swipe on the text goes to the next chapter (swipe left) or the previous one
-  (swipe right), across books, from the top, as a new Back step. At Matthew 1 and Revelation 22 a short
+  (swipe right), across books, from the top, as a new Back step. At Genesis 1 and Revelation 22 a short
   note says there is no more. A vertical drag scrolls, a swipe that starts at a screen edge is Android's
   Back gesture, and a tap or a long press on a word is not a swipe.
 
@@ -26,12 +26,12 @@ Feature: Swipe the Reader to the next or previous chapter
     When he drags from 150,400 to 300,400 over 150 ms
     Then the reader is headed "Acts 28"
 
-  Scenario: A right swipe on Matthew 1 says it is the first chapter
-    Given Lampas is opened on "Matthew" chapter 1
+  Scenario: A right swipe on Genesis 1 says it is the first chapter
+    Given Lampas is opened on "Genesis" chapter 1
     When he drags from 150,400 to 300,400 over 150 ms
     Then the note says "This is the first chapter. Before it: the Preface"
     And the note has a link "the Preface"
-    And the reader is headed "Matthew 1"
+    And the reader is headed "Genesis 1"
 
   Scenario: A left swipe on Revelation 22 says he has reached the end
     Given Lampas is opened on "Revelation" chapter 22

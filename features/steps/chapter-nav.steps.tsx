@@ -114,7 +114,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Matthew 1 has no previous button', ({ Given, Then, And }) => {
+  Scenario('Genesis 1 has no previous button', ({ Given, Then, And }) => {
     Given('Lampas is opened on {string} chapter {int}', (_, book: string, n: number) => openOn(book, n));
     Then('the foot of the chapter has a button {string}', async (_, name: string) => {
       expect(await within(await foot()).findByRole('button', { name })).toBeInTheDocument();

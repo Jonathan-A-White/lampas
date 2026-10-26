@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { BookIndex } from '../../src/data/chapter';
-import { BOOKS } from '../../src/data/books';
-import { OT_BOOKS } from '../../src/data/otBooks';
+import { NT_BOOKS as BOOKS, OT_BOOKS } from '../../src/data/books';
 import type { LemmaLexicon } from '../../src/data/lexicon';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
 import { findWord, inWords, linkOf, OSIS, parseCanonReference, parseReference, referenceUrl, resolveReference, wordUrl } from '../../src/nav/links';

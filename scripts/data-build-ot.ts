@@ -8,7 +8,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { OT_BOOKS } from '../src/data/otBooks';
+import { OT_BOOKS } from '../src/data/books';
 import type { BookInfo, Chapter, LexEntry } from '../src/data/chapter';
 import type { FrequencyEntry } from '../src/data/frequency';
 import type { LemmaLexicon } from '../src/data/lexicon';

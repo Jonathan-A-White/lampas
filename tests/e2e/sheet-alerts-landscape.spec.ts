@@ -4,7 +4,7 @@
 // keepInView (src/ui/keepInView.ts) are what bring them there; a sheet has no scroll code of its own.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { OT_BOOKS } from '../../src/data/otBooks';
+import { OT_BOOKS } from '../../src/data/books';
 import { honestMic } from '../support/honest-fakes';
 import { makeFakePostern, TALK_ANSWER, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';

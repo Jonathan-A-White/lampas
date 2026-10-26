@@ -1,7 +1,7 @@
 // The Bible talk answer's `go` (mw-5r3p30.172): src/talk/go.ts reads it, the schema and the instructions agree with the app's book list.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { BOOKS } from '../../src/data/books';
+import { NT_BOOKS as BOOKS } from '../../src/data/books';
 import { isTalkAnswer } from '../../src/services/talk';
 import { readGo, readTarget } from '../../src/talk/go';
 import { bibleTalkRegistry } from '../../src/tutor/registry';

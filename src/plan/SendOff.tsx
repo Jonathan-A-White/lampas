@@ -2,7 +2,6 @@
 // on (useSendOff.ts go: the start time is recorded, then Audible opens); Back, Escape, a swipe down or a tap outside close it and begin nothing.
 import { createPortal } from 'react-dom';
 import { bookOf } from '../data/books';
-import { otBookOf } from '../data/otBooks';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -39,6 +38,6 @@ function Sheet({ title, onGo, onClose }: { title: string; onGo: () => void; onCl
 export function SendOff({ send }: { send: SendOffState }) {
   const { offered } = send;
   if (!offered) return null;
-  const name = (otBookOf(offered.code) ?? bookOf(offered.code))?.name ?? offered.code;
+  const name = bookOf(offered.code)?.name ?? offered.code;
   return createPortal(<Sheet title={`Off to Audible: ${name} ${offered.chapter}`} onGo={() => void send.go()} onClose={send.close} />, document.body);
 }

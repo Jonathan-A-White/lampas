@@ -1,7 +1,7 @@
 // src/library/parseExport.ts — reads a Logos library export (Library > Save as Spreadsheet; docs/design/library-at-scale.md 5.1 and 5.2), pure and on the phone: `parseCsv` is RFC 4180
 // (CRLF or LF line ends, quoted cells with commas, doubled quotes and newlines inside, a BOM dropped) and takes a raw tab as cell text, because the export's last cell,
 // ReferenceSupersets, holds tabs unquoted; `readExport` turns the rows into `ExportRow`s by the header. scripts/logos-catalogue.ts reads exports with these same functions.
-import { BOOKS } from '../data/books.ts';
+import { NT_BOOKS as BOOKS } from '../data/books.ts';
 
 /** RFC 4180: CRLF or LF line ends, quoted cells with commas, doubled quotes and newlines inside. A raw tab is cell text (the export's last cell holds them, unquoted), and a BOM is dropped. */
 export function parseCsv(text: string): string[][] {

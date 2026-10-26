@@ -1,7 +1,7 @@
 // src/data/daily/psalmsProverbs.ts — the Psalms-and-Proverbs month: on day N of the month read Psalms N, N+30, N+60, N+90 and N+120 (those up to 150) and then
 // Proverbs N. Day 31 has no Psalm 151, so it reads Psalms 31, 61, 91, 121 and Proverbs 31. The chapters are PlanChapters with the book codes of data/otBooks.ts,
 // so chapterLink (resources/logosBible.ts) opens each in Logos. The day is the day of the month on the date's local clock (the phone's), never the UTC one.
-import { otBookOf } from '../otBooks';
+import { otBookOf } from '../books';
 import type { PlanChapter } from '../plans/plan';
 
 const PSALMS = 'psa';

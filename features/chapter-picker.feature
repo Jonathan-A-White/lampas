@@ -1,7 +1,7 @@
-Feature: Open any chapter of the New Testament
-  The Reader opens Romans 8 on a fresh install. Tapping the title opens a picker: the 27 books in
+Feature: Open any chapter of the Bible
+  The Reader opens Romans 8 on a fresh install. Tapping the title opens a picker: the 66 books in
   canonical order, then a grid of the chapters of the book he chose (the counts are in
-  public/data/index.json). A tap on a chapter opens it, at the top. The open chapter is remembered
+  public/data/index.json; the Old Testament's chapters are read in English, features/old-testament.feature). A tap on a chapter opens it, at the top. The open chapter is remembered
   across a close; the word sheets, Ask and Talk, Quick test and the Parsing drill follow it. A
   chapter that cannot be fetched says so plainly and gives a way back.
 
@@ -9,10 +9,10 @@ Feature: Open any chapter of the New Testament
     Given Lampas is opened with nothing saved
     Then the reader is headed "Romans 8"
 
-  Scenario: The title opens a picker of the 27 books, then the chapters of the book he chooses
+  Scenario: The title opens a picker of the 66 books, then the chapters of the book he chooses
     Given Lampas is opened with nothing saved
     When he taps the title
-    Then the picker lists the 27 books from "Matthew" to "Revelation" in order
+    Then the picker lists the 66 books from "Genesis" to "Revelation" in order
     When he chooses the book "1 John"
     Then the picker lists chapters 1 to 5
 
@@ -76,59 +76,3 @@ Feature: Open any chapter of the New Testament
     When the phone is back online and he taps "Try again"
     Then the reader is headed "Jude 1"
     And verses are listed
-
-  Scenario: An Old Testament chapter offers a choice before it leaves the app
-    Given Lampas is opened with Logos on and the Audio Bible on
-    When he taps the title
-    And he chooses the book "Judges"
-    And he taps chapter 3
-    Then no app was opened
-    And the choice for "Judges 3" offers "Read in Logos" and "Listen in Audible"
-    And the choice says "In Audible: Chapters > Judges 3"
-    And "Read in Logos" is the chapter's Logos link
-    And "Listen in Audible" is Audible's link at the start of Judges 3
-    And the reader is headed "Romans 8"
-
-  Scenario: A second chapter moves the choice
-    Given Lampas is opened with Logos on and the Audio Bible on
-    When he taps the title
-    And he chooses the book "Leviticus"
-    And he taps chapter 10
-    Then the choice for "Leviticus 10" offers "Read in Logos" and "Listen in Audible"
-    When he then taps chapter 11
-    Then the choice has moved to "Leviticus 11" offering "Read in Logos" and "Listen in Audible"
-    And there is one choice on screen
-
-  Scenario: Read in Logos arms the fallback like the chapter link did
-    Given Lampas is opened with Logos on and the Audio Bible on
-    When he taps the title
-    And he chooses the book "Judges"
-    And he taps chapter 3
-    And he taps "Read in Logos"
-    And the page stays in front for the wait
-    Then the address "https://ref.ly/logosres/lgcystndrdbblsb?ref=Bible.Jdg3" was opened
-
-  Scenario: With only Logos on the choice is the one row
-    Given Lampas is opened with Logos on and the Audio Bible off
-    When he taps the title
-    And he chooses the book "Judges"
-    And he taps chapter 3
-    Then the choice for "Judges 3" offers only "Read in Logos"
-
-  Scenario: With only the Audio Bible on the choice is the one row and Logos can be turned on
-    Given Lampas is opened with Logos off and the Audio Bible on
-    When he taps the title
-    And he chooses the book "Judges"
-    And he taps chapter 3
-    Then the choice for "Judges 3" offers only "Listen in Audible"
-    And the picker says "Logos is off"
-    When he taps "Turn on Logos"
-    Then the choice for "Judges 3" offers "Read in Logos" and "Listen in Audible"
-
-  Scenario: With both off the picker says Logos is off and names Audio Bible in Settings
-    Given Lampas is opened with Logos off and the Audio Bible off
-    When he taps the title
-    And he chooses the book "Judges"
-    Then the picker says "Logos is off"
-    And the picker names "Audio Bible"
-    And no chapter is offered

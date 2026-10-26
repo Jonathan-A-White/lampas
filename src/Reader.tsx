@@ -50,7 +50,7 @@ import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { readingModeSetting } from './settings/definitions';
 import { useSheetOpen } from './ui/sheetBack';
-import { BOOKS } from './data/books';
+import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
 import { useChapter } from './reader/useChapter';
 import { useReadFrom } from './reader/useReadFrom';
@@ -78,6 +78,8 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { useBarShown } from './speech/barShown';
 import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
+import { EnglishWordSheet } from './EnglishWordSheet';
+import { ChapterActions } from './reader/ChapterActions';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
 import { VerseText, type VerseTalk } from './reader/VerseText';
 import { isHolding } from './talk/holding';
@@ -126,7 +128,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const { book: BOOK, chapter: CHAPTER, title: TITLE } = open;
   const [picking, setPicking] = useState(false);
   const closePicker = useCallback(() => setPicking(false), []);
-  const settings = useReaderSettings() ?? NO_SETTINGS;
+  // An Old Testament chapter ('hbo') is read in English only (mw-uqlxea.2): its view is English and its weave is off whatever is saved; the saved view is not changed,
+  // so the next New Testament chapter keeps his view. The English | Greek switch and the weave's controls are not drawn for it.
+  const hbo = isHebrewBook(BOOK);
+  const saved = useReaderSettings() ?? NO_SETTINGS;
+  const settings = useMemo<Partial<ReaderSettings>>(() => (hbo && saved.view ? { ...saved, view: 'english', weave: 'off', weaveShown: false } : saved), [hbo, saved]);
   const { greek, view, weave, weaveShown, weaveOrder, solid, learning, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
   const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
@@ -153,16 +159,19 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const address = useAddress();
   const current = useRef({ view });
   useEffect(() => {
-    current.current = { view };
+    // the view an address names is put back in the settings (below); an Old Testament chapter shows English whatever the address says, so it has none to put back
+    current.current = { view: hbo ? undefined : view };
   });
   const selectedEvent = useLatest('verse-selected');
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
+  // A tap on an English word of an Old Testament chapter opens the English word sheet for its chunk: no source words go with it, so the Greek word sheet is never opened for one.
+  const look = useCallback((l: Lookup) => setLookup(hbo ? { words: [], english: l.english, fromEnglish: true } : l), [hbo]);
   // The teach sheet (src/TeachSheet.tsx), opened by the 'New N' chip.
   const [teaching, setTeaching] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
   const pace = usePace();
-  const newWords = useNewWords(chapter, solid, learning, pace?.count);
+  const newWords = useNewWords(hbo ? null : chapter, solid, learning, pace?.count);
   const { asks, ask, resume: resumeAsk } = useAsks(BOOK, CHAPTER, TITLE, chapter);
   // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
   // or the Ask box on it holding the question.
@@ -180,7 +189,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (link) takeLink(link);
   }, [link]);
   const [notice, setNotice] = useState(link?.notice ?? (request?.action === 'opened' ? `Opened ${TITLE}` : null));
-  // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Matthew 1 or Revelation 22 a short note says so.
+  // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Genesis 1 or Revelation 22 a short note says so.
   const sheetOpen = useSheetOpen();
   const inner = useRef<HTMLDivElement | null>(null);
   const [swipeEnd, setSwipeEnd] = useState<SwipeEnd | null>(null);
@@ -423,7 +432,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       <div data-reader-top className="reader-top">
       <ReaderHeader
         title={TITLE}
-        view={view && greek !== undefined && greek >= GREEK_VIEW_FROM ? view : undefined}
+        view={!hbo && view && greek !== undefined && greek >= GREEK_VIEW_FROM ? view : undefined}
         weave={weave ?? 'off'}
         weaveShown={weaveShown ?? false}
         weaveOrder={weaveOrder ?? 'english'}
@@ -481,7 +490,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       reading={readingVerse}
                       onSelect={selectVerse}
                       onPlay={(n) => readFrom(n, false)}
-                      onLook={setLookup}
+                      onLook={look}
                       talk={verseTalk}
                     />
                   ) : (
@@ -493,13 +502,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       reading={readingVerse === first.n}
                       onSelect={() => selectVerse(first.n)}
                       onPlay={() => readFrom(first.n, false)}
-                      onLook={setLookup}
+                      onLook={look}
                       talk={verseTalk}
                     />
                   )}
                 </Fragment>
               );
             })}
+            {hbo ? <ChapterActions name={bookOf(BOOK)?.name ?? BOOK} code={BOOK} chapter={CHAPTER} /> : null}
             <ChapterNav book={BOOK} chapter={CHAPTER} />
           </>
         ) : (
@@ -568,7 +578,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           book={BOOK}
           chapter={CHAPTER}
           chapterText={chapter}
-          onLook={setLookup}
+          onLook={look}
           verse={viewUnit}
           view={view}
           immersive={immersive}
@@ -580,10 +590,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 layout={layout ?? DEFAULT_LAYOUT}
                 wovenOf={(v) => woven?.[chapter.verses.indexOf(v)] ?? null}
                 reading={readingVerse}
-                onLook={setLookup}
+                onLook={look}
               />
             ) : (
-              <VerseText verse={viewUnit} view={view} woven={woven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} />
+              <VerseText verse={viewUnit} view={view} woven={woven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={look} />
             )
           }
           previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
@@ -614,7 +624,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
       {linked ? <WordSheet chapter={linked.chapter} lookup={linked.lookup} onClose={() => setLinked(null)} /> : null}
-      {chapter && lookup ? <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={tutor.helpWithWord} onAskTerm={tutor.askAboutTerm} /> : null}
+      {chapter && lookup ? (
+        hbo ? (
+          lookup.english ? <EnglishWordSheet english={lookup.english} listWords onClose={closeSheet} /> : null
+        ) : (
+          <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={tutor.helpWithWord} onAskTerm={tutor.askAboutTerm} />
+        )
+      ) : null}
     </>
   );
 }

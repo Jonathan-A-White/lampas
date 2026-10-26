@@ -1,7 +1,7 @@
 // The Old Testament books and the Logos chapter link (mw-5r3p30.71): 39 books in canon order, Logos's own abbreviation for each,
 // and the link that opens a chapter in the Bible he chose (logosres: first, ref.ly as the fallback).
 import { describe, expect, it } from 'vitest';
-import { OT_BOOKS, otBookOf } from '../../src/data/otBooks';
+import { OT_BOOKS, otBookOf } from '../../src/data/books';
 import { AUDIO_BIBLES, audibleListen, audibleStartOf } from '../../src/resources/audioBible';
 import { DEFAULT_LOGOS_BIBLE, COMMON_BIBLES, isResourceId, chapterLink } from '../../src/resources/logosBible';
 import { oldTestamentChoices } from '../../src/resources/oldTestamentChoices';
@@ -13,7 +13,7 @@ describe('the Old Testament books', () => {
     expect(OT_BOOKS[38].name).toBe('Malachi');
     expect(OT_BOOKS.map((b) => b.name).slice(8, 12)).toEqual(['1 Samuel', '2 Samuel', '1 Kings', '2 Kings']);
     expect(new Set(OT_BOOKS.map((b) => b.code)).size).toBe(39);
-    const nt = (await import('../../src/data/books')).BOOKS.map((b) => b.code);
+    const nt = (await import('../../src/data/books')).NT_BOOKS.map((b) => b.code);
     expect(OT_BOOKS.filter((b) => nt.includes(b.code))).toEqual([]);
   });
 

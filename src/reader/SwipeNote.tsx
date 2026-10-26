@@ -1,4 +1,4 @@
-// src/reader/SwipeNote.tsx — the short note a swipe past Matthew 1 or Revelation 22 leaves under the header (mw-5r3p30.126), with Dismiss.
+// src/reader/SwipeNote.tsx — the short note a swipe past Genesis 1 or Revelation 22 leaves under the header (mw-5r3p30.126), with Dismiss.
 // It goes by itself after a few seconds.
 import { useEffect } from 'react';
 import { navigate } from '../nav/route';

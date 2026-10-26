@@ -1,7 +1,6 @@
 // tests/unit/audio-bible.test.ts — src/resources/audioBible.ts: the audio Bibles a reader can turn on and the chapter Audible is told to pick.
 import { describe, expect, it } from 'vitest';
-import { BOOKS } from '../../src/data/books';
-import { OT_BOOKS } from '../../src/data/otBooks';
+import { BOOKS, NT_BOOKS } from '../../src/data/books';
 import { wordOfPromiseStart } from 'audible-kit';
 import { AUDIO_BIBLES, audibleChapterLabel, audibleListen, audibleStartOf, audioBibleOf } from '../../src/resources/audioBible';
 
@@ -10,7 +9,7 @@ const AUDIBLES_OWN = new Set(['psa', 'rev', 'oba', 'phm', '2jn', '3jn', 'jud']);
 
 describe('audibleChapterLabel', () => {
   it('is the NKJV book name and the chapter, for every book of the Bible that Audible names that way', () => {
-    const all = [...BOOKS, ...OT_BOOKS];
+    const all = BOOKS;
     expect(all).toHaveLength(66);
     for (const book of all.filter((b) => !AUDIBLES_OWN.has(b.code))) {
       expect(audibleChapterLabel(book.code, 1)).toBe(`${book.name} 1`);
@@ -54,9 +53,9 @@ describe('audibleStartOf', () => {
     expect(audibleStartOf('jhn', 3)).toBe(305111142);
   });
 
-  it("has a start for every one of Lampas's 260 New Testament chapters, and for the Old Testament's Psalm 23 too", () => {
+  it("has a start for every one of the 260 chapters of the New Testament, and for the Old Testament's Psalm 23 too", () => {
     let count = 0;
-    for (const book of BOOKS) {
+    for (const book of NT_BOOKS) {
       for (let chapter = 1; chapter <= book.chapters; chapter++) {
         count++;
         const start = audibleStartOf(book.code, chapter);
@@ -72,7 +71,7 @@ describe('audibleStartOf', () => {
   });
 
   it("agrees with audible-kit's Word of Promise data for every chapter of the Bible", () => {
-    for (const book of [...BOOKS, ...OT_BOOKS]) {
+    for (const book of BOOKS) {
       for (let chapter = 1; chapter <= book.chapters; chapter++) {
         expect(audibleStartOf(book.code, chapter), `${book.name} ${chapter}`).toBe(wordOfPromiseStart(book.name, chapter));
       }
@@ -86,7 +85,7 @@ describe('audibleStartOf', () => {
   });
 
   it("is in order: each chapter starts after the one before it, across the books", () => {
-    const all = [...OT_BOOKS, ...BOOKS];
+    const all = BOOKS;
     let last = -1;
     for (const book of all) {
       for (let chapter = 1; chapter <= book.chapters; chapter++) {

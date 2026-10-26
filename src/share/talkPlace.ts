@@ -1,6 +1,6 @@
 // src/share/talkPlace.ts — what a conversation's key (src/data/repositories/talks.ts talkRef, screenRef) says it is about, so the Share screen can name it
 // ('Romans 8:28', 'Quiz on Romans 8:1-11', 'Ask the tutor: Goal') and open it. Pure: no store, no fetch.
-import { bookOf, titleOf } from '../data/books';
+import { ntBookOf, titleOf } from '../data/books';
 import { DRILL_SCREEN, SCREEN_NAMES, slugOf } from '../tutor/screen';
 
 /** The key of a talk of its own, started from the Share screen's New talk: 'talk.<ms>'. It is about no text and no screen. */
@@ -28,7 +28,7 @@ export function placeOf(ref: string): TalkPlace | null {
   }
   const quiz = ref.endsWith(':quiz');
   const [book, chapter, unit, ...more] = (quiz ? ref.slice(0, -':quiz'.length) : ref).split('.');
-  if (more.length > 0 || !bookOf(book) || !/^[1-9]\d{0,2}$/.test(chapter ?? '')) return null;
+  if (more.length > 0 || !ntBookOf(book) || !/^[1-9]\d{0,2}$/.test(chapter ?? '')) return null;
   if (unit !== undefined && !/^[1-9]\d{0,2}(-[1-9]\d{0,2})?$/.test(unit)) return null;
   return { kind: 'bible', book, chapter: Number(chapter), unit: unit ?? null, quiz };
 }

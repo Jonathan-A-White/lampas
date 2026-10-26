@@ -433,15 +433,15 @@ test('past the last page, Next page opens the next chapter, and Previous page on
   await expectOn(page, 'Mark 12', 'last');
 });
 
-// The first chapter of the New Testament has nothing before it and the last nothing after: there the edge of the pages is the end, and no page is blank.
-test('on Matthew 1 page 1 turns no further back, and on Revelation 22 the last page turns no further on', async ({ page }) => {
+// The first chapter of the Bible has nothing before it and the last nothing after: there the edge of the pages is the end, and no page is blank.
+test('on Genesis 1 page 1 turns no further back, and on Revelation 22 the last page turns no further on', async ({ page }) => {
   await openMark12(page, 'pages');
-  await openChapter(page, '/#/?b=mat&c=1', 'Matthew 1');
-  expect(await placeOf(page)).toMatchObject({ title: 'Matthew 1', at: 1 });
+  await openChapter(page, '/#/?b=gen&c=1', 'Genesis 1');
+  expect(await placeOf(page)).toMatchObject({ title: 'Genesis 1', at: 1 });
   await tapAt(page, 0.15);
   await swipeText(page, 'right');
   await page.waitForTimeout(400);
-  await expectOn(page, 'Matthew 1', 1);
+  await expectOn(page, 'Genesis 1', 1);
   await expect(page.locator('[data-swipe-note]')).toHaveCount(0);
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   const controls = page.getByRole('group', { name: 'Reading controls' });

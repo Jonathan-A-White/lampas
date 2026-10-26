@@ -6,7 +6,6 @@
 // (src/MemoryScreen.tsx) reads, edits, deletes, exports and imports. The notes the tutor wished it had are only counted here (keepWishedNotes).
 import { db } from '../db';
 import { BOOKS } from '../books';
-import { OT_BOOKS } from '../otBooks';
 import { parseCanonReference } from '../../nav/links';
 import { dayOf } from './usage';
 
@@ -53,7 +52,7 @@ export type IndexResult = 'saved' | 'empty' | 'too-long';
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const isBy = (value: unknown): value is MemoryBy => value === 'me' || value === 'tutor';
 
-const BOOK_NAMES: ReadonlySet<string> = new Set([...BOOKS.map((b) => b.name), ...OT_BOOKS.map((b) => b.name)]);
+const BOOK_NAMES: ReadonlySet<string> = new Set(BOOKS.map((b) => b.name));
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** The name as it is kept (NFC, trimmed), or null when it is not book:<a book of the Bible>, word:<one word> or topic:<a-slug>. */
@@ -268,7 +267,7 @@ export interface MemorySelection {
 export async function selectNotes(reference: string | undefined, focusLemma: string | undefined, screen: string | undefined): Promise<MemorySelection> {
   const wanted = new Set<string>();
   const place = reference ? parseCanonReference(reference) : null;
-  const book = place && [...BOOKS, ...OT_BOOKS].find((b) => b.code === place.book);
+  const book = place && BOOKS.find((b) => b.code === place.book);
   if (book) wanted.add(`book:${book.name}`);
   if (focusLemma && focusLemma.trim() !== '') wanted.add(`word:${focusLemma.normalize('NFC').trim()}`);
   const topic = screen?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

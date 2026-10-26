@@ -4,7 +4,6 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { BOOKS } from '../../src/data/books';
-import { OT_BOOKS } from '../../src/data/otBooks';
 import { parseCanonReference } from '../../src/nav/links';
 import { findReferences } from '../../src/nav/refsInText';
 import { bookPart, readPlace } from '../../src/nav/parseReference';
@@ -124,7 +123,7 @@ describe('the looser book match reaches only what he types', () => {
 });
 
 describe('the list filter', () => {
-  const items = [...OT_BOOKS, ...BOOKS].map((b) => ({ id: b.code, name: b.name }));
+  const items = BOOKS.map((b) => ({ id: b.code, name: b.name }));
   const names = (query: string) => matchingInOrder(items, query).map((i) => i.name);
 
   it('finds a book by its letters in order', () => {

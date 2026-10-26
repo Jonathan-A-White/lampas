@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { neighbours } from '../../src/data/neighbours';
+import { neighbours, verseNeighbours } from '../../src/data/neighbours';
 
 describe('neighbours', () => {
   it('steps inside a book', () => {
@@ -18,11 +18,25 @@ describe('neighbours', () => {
     expect(neighbours('1co', 1).previous).toEqual({ book: 'rom', chapter: 16, title: 'Romans 16' });
   });
 
-  it('has no previous before Matthew 1 and no next after Revelation 22', () => {
-    expect(neighbours('mat', 1).previous).toBeNull();
+  it('has no previous before Genesis 1 and no next after Revelation 22', () => {
+    expect(neighbours('gen', 1).previous).toBeNull();
+    expect(neighbours('gen', 1).next?.title).toBe('Genesis 2');
     expect(neighbours('mat', 1).next?.title).toBe('Matthew 2');
     expect(neighbours('rev', 22).next).toBeNull();
     expect(neighbours('rev', 22).previous?.title).toBe('Revelation 21');
+  });
+
+  it('runs across the testaments: Malachi 4 is followed by Matthew 1 and Matthew 1 is preceded by Malachi 4', () => {
+    expect(neighbours('mal', 4).next).toEqual({ book: 'mat', chapter: 1, title: 'Matthew 1' });
+    expect(neighbours('mat', 1).previous).toEqual({ book: 'mal', chapter: 4, title: 'Malachi 4' });
+    expect(neighbours('gen', 50).next).toEqual({ book: 'exo', chapter: 1, title: 'Exodus 1' });
+    expect(neighbours('jon', 4).previous?.title).toBe('Jonah 3');
+  });
+
+  it('gives its verses neighbours across the testaments too', () => {
+    expect(verseNeighbours('mal', 4, 6).next).toEqual({ book: 'mat', chapter: 1, verse: 1 });
+    expect(verseNeighbours('mat', 1, 1).previous).toEqual({ book: 'mal', chapter: 4, verse: 6 });
+    expect(verseNeighbours('gen', 1, 1).previous).toBeNull();
   });
 
   it('gives a single-chapter book its neighbours in the next and previous books', () => {

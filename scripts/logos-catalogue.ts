@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { BOOKS } from '../src/data/books.ts';
+import { NT_BOOKS as BOOKS } from '../src/data/books.ts';
 import type { CatalogueEntry, Kind, KindFile, Opens, Via, WorkGroup } from '../src/resources/catalogue.ts';
 import type { BookSection, ResourceLang } from '../src/resources/types.ts';
 import { ruleOf } from '../src/library/exportRules.ts';

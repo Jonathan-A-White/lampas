@@ -3,7 +3,7 @@
 // real shrinking, signing and sealing to a fake Postern (tests/support/playwright-postern.ts) whose mill answers as the test says.
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { OT_BOOKS } from '../../src/data/otBooks';
+import { OT_BOOKS } from '../../src/data/books';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';

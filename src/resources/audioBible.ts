@@ -4,8 +4,7 @@
 // `npm run audible:build`, keyed by Lampas's book code and chapter). A chapter with no start known falls back to opening the book and naming the Audible
 // chapter to pick ('Chapters > Luke 15'). The list is a list so a second audio Bible (one Lampas plays itself) slots in later.
 import { audibleLink } from 'audible-kit';
-import { BOOKS } from '../data/books';
-import { otBookOf } from '../data/otBooks';
+import { bookOf } from '../data/books';
 import starts from './audibleStarts.json' with { type: 'json' };
 
 export interface AudioBible {
@@ -63,7 +62,7 @@ const AUDIBLE_ONE_CHAPTER_TITLES: Readonly<Record<string, string>> = {
 /** The Audible chapter to pick: Audible's own title for the chapter ('Luke 15', 'Song of Solomon 2', 'Psalm 23', 'Revelations 22', 'The Book of Obadiah');
  *  undefined for a book in neither list. */
 export function audibleChapterLabel(code: string, chapter: number): string | undefined {
-  const name = BOOKS.find((b) => b.code === code)?.name ?? otBookOf(code)?.name;
+  const name = bookOf(code)?.name;
   if (name === undefined) return undefined;
   return AUDIBLE_ONE_CHAPTER_TITLES[code] ?? `${AUDIBLE_BOOK_NAMES[code] ?? name} ${chapter}`;
 }

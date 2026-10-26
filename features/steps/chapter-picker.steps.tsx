@@ -13,20 +13,13 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
-import { audibleStartOf } from '../../src/resources/audioBible';
-import { chapterLink } from '../../src/resources/logosBible';
-import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { GREEK_BOOKS } from '../../tests/support/data-books';
+import { BOOKS } from '../../src/data/books';
 
-const realEnv = { ...browserEnv };
-let timers: (() => void)[] = [];
-let opened: string[] = [];
 
 afterAll(() => {
-  Object.assign(browserEnv, realEnv);
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
@@ -53,16 +46,6 @@ async function openFresh(settings: Record<string, string> = {}): Promise<void> {
   window.localStorage.clear();
   offline = false;
   setOnLine(true);
-  timers = [];
-  opened = [];
-  browserEnv.after = (fn) => {
-    timers.push(fn);
-    return () => {
-      timers = timers.filter((t) => t !== fn);
-    };
-  };
-  browserEnv.onAway = () => () => {};
-  browserEnv.open = (url) => void opened.push(url);
   stubChapterFetch();
   // The network can be cut under the stub: a chapter not fetched yet then fails as on a phone with no signal. The index and the
   // lexicon are in the worker's precache, so they still answer.
@@ -97,7 +80,7 @@ async function openPicker(): Promise<void> {
 
 async function chooseBook(name: string): Promise<void> {
   const dialog = await screen.findByRole('dialog', { name: 'Choose a chapter' });
-  // an Old Testament row also says 'Opens in Logos', so its name is matched from its start
+  // a book's name is matched from its start (1 John, not 2 John)
   await user.click(within(dialog).getByRole('button', { name: new RegExp(`^${name}`) }));
 }
 
@@ -107,23 +90,6 @@ async function openFromPicker(book: string, n: number): Promise<void> {
   const dialog = screen.getByRole('dialog', { name: 'Choose a chapter' });
   await user.click(await within(dialog).findByRole('button', { name: `Chapter ${n}` }));
 }
-
-const withLogos = (on: boolean): Record<string, string> => (on ? { 'resource.logos': 'on' } : {});
-const withAudio = (on: boolean): Record<string, string> => (on ? { audioBible: 'word-of-promise' } : {});
-
-/** the panel an Old Testament chapter opens under the grid */
-const choice = (): HTMLElement => {
-  const panels = picker()?.querySelectorAll<HTMLElement>('[data-ot-choice]') ?? [];
-  if (panels.length !== 1) throw new Error(`${panels.length} choices on screen`);
-  return panels[0];
-};
-const tapChapter = async (_: unknown, n: number): Promise<void> => {
-  await user.click(await within(picker()!).findByRole('button', { name: `Chapter ${n}` }));
-};
-const offersOnly = async (_: unknown, title: string, only: string): Promise<void> => {
-  await waitFor(() => expect(choice()).toHaveAccessibleName(`${title}: read or listen`));
-  expect([...choice().querySelectorAll('a')].map((l) => l.textContent)).toEqual([only]);
-};
 
 const verseEl = (n: number): HTMLElement => {
   const el = document.querySelector<HTMLElement>(`[data-verse="${n}"]`);
@@ -141,15 +107,15 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The title opens a picker of the 27 books, then the chapters of the book he chooses', ({ Given, When, Then }) => {
+  Scenario('The title opens a picker of the 66 books, then the chapters of the book he chooses', ({ Given, When, Then }) => {
     Given('Lampas is opened with nothing saved', () => openFresh());
     When('he taps the title', openPicker);
-    Then('the picker lists the 27 books from {string} to {string} in order', (_, first: string, last: string) => {
+    Then('the picker lists the 66 books from {string} to {string} in order', (_, first: string, last: string) => {
       const shown = books();
-      expect(shown).toHaveLength(27);
+      expect(shown).toHaveLength(66);
       expect(shown[0]).toBe(first);
-      expect(shown[26]).toBe(last);
-      expect(shown).toEqual(GREEK_BOOKS.map((b) => b.name));
+      expect(shown[65]).toBe(last);
+      expect(shown).toEqual(BOOKS.map((b) => b.name));
     });
     When('he chooses the book {string}', (_, name: string) => chooseBook(name));
     Then('the picker lists chapters {int} to {int}', async (_, from: number, to: number) => {
@@ -315,112 +281,6 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('verses are listed', async () => {
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-    });
-  });
-
-  Scenario('An Old Testament chapter offers a choice before it leaves the app', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened with Logos on and the Audio Bible on', () => openFresh({ ...withLogos(true), ...withAudio(true) }));
-    When('he taps the title', openPicker);
-    And('he chooses the book {string}', (_, name: string) => chooseBook(name));
-    And('he taps chapter {int}', tapChapter);
-    Then('no app was opened', () => {
-      expect(opened).toEqual([]);
-      expect(timers).toEqual([]);
-    });
-    And('the choice for {string} offers {string} and {string}', async (_, title: string, a: string, b: string) => {
-      await waitFor(() => expect(choice()).toHaveAccessibleName(`${title}: read or listen`));
-      expect([...choice().querySelectorAll('a')].map((l) => l.textContent)).toEqual([a, b]);
-    });
-    And('the choice says {string}', (_, text: string) => {
-      expect(choice()).toHaveTextContent(text);
-    });
-    And("{string} is the chapter's Logos link", (_, name: string) => {
-      const link = within(choice()).getByRole('link', { name });
-      expect(link.getAttribute('href')).toBe(chapterLink('jdg', 3, 'LLS:LGCYSTNDRDBBLSB')?.url);
-    });
-    And("{string} is Audible's link at the start of Judges 3", (_, name: string) => {
-      const link = within(choice()).getByRole('link', { name: new RegExp(name) });
-      expect(new URL(link.getAttribute('href') ?? '').searchParams.get('position_from_start')).toBe(String(audibleStartOf('jdg', 3)));
-    });
-    And('the reader is headed {string}', (_, title: string) => {
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(title);
-    });
-  });
-
-  Scenario('A second chapter moves the choice', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened with Logos on and the Audio Bible on', () => openFresh({ ...withLogos(true), ...withAudio(true) }));
-    When('he taps the title', openPicker);
-    And('he chooses the book {string}', (_, name: string) => chooseBook(name));
-    And('he taps chapter {int}', tapChapter);
-    Then('the choice for {string} offers {string} and {string}', async (_, title: string) => {
-      await waitFor(() => expect(choice()).toHaveAccessibleName(`${title}: read or listen`));
-    });
-    When('he then taps chapter {int}', async (_, n: number) => {
-      await user.click(within(picker()!).getByRole('button', { name: `Chapter ${n}` }));
-    });
-    Then('the choice has moved to {string} offering {string} and {string}', async (_, title: string, a: string, b: string) => {
-      await waitFor(() => expect(choice()).toHaveAccessibleName(`${title}: read or listen`));
-      expect([...choice().querySelectorAll('a')].map((l) => l.textContent)).toEqual([a, b]);
-    });
-    And('there is one choice on screen', () => {
-      expect(picker()?.querySelectorAll('[data-ot-choice]')).toHaveLength(1);
-    });
-  });
-
-  Scenario('Read in Logos arms the fallback like the chapter link did', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened with Logos on and the Audio Bible on', () => openFresh({ ...withLogos(true), ...withAudio(true) }));
-    When('he taps the title', openPicker);
-    And('he chooses the book {string}', (_, name: string) => chooseBook(name));
-    And('he taps chapter {int}', tapChapter);
-    And('he taps {string}', async (_, name: string) => {
-      await user.click(await within(choice()).findByRole('link', { name }));
-    });
-    And('the page stays in front for the wait', () => {
-      for (const t of [...timers]) t();
-    });
-    Then('the address {string} was opened', (_, url: string) => {
-      expect(opened).toEqual([url]);
-    });
-  });
-
-  Scenario('With only Logos on the choice is the one row', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened with Logos on and the Audio Bible off', () => openFresh({ ...withLogos(true), ...withAudio(false) }));
-    When('he taps the title', openPicker);
-    And('he chooses the book {string}', (_, name: string) => chooseBook(name));
-    And('he taps chapter {int}', tapChapter);
-    Then('the choice for {string} offers only {string}', offersOnly);
-  });
-
-  Scenario('With only the Audio Bible on the choice is the one row and Logos can be turned on', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened with Logos off and the Audio Bible on', () => openFresh({ ...withLogos(false), ...withAudio(true) }));
-    When('he taps the title', openPicker);
-    And('he chooses the book {string}', (_, name: string) => chooseBook(name));
-    And('he taps chapter {int}', tapChapter);
-    Then('the choice for {string} offers only {string}', offersOnly);
-    And('the picker says {string}', async (_, text: string) => {
-      expect(await within(picker()!).findByRole('status')).toHaveTextContent(text);
-    });
-    When('he taps {string}', async (_, name: string) => {
-      await user.click(within(picker()!).getByRole('button', { name }));
-    });
-    Then('the choice for {string} offers {string} and {string}', async (_, title: string, a: string, b: string) => {
-      await waitFor(() => expect([...choice().querySelectorAll('a')].map((l) => l.textContent)).toEqual([a, b]));
-      expect(choice()).toHaveAccessibleName(`${title}: read or listen`);
-    });
-  });
-
-  Scenario('With both off the picker says Logos is off and names Audio Bible in Settings', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened with Logos off and the Audio Bible off', () => openFresh({ ...withLogos(false), ...withAudio(false) }));
-    When('he taps the title', openPicker);
-    And('he chooses the book {string}', (_, name: string) => chooseBook(name));
-    Then('the picker says {string}', async (_, text: string) => {
-      expect(await within(picker()!).findByRole('status')).toHaveTextContent(text);
-    });
-    And('the picker names {string}', (_, text: string) => {
-      expect(within(picker()!).getByRole('status')).toHaveTextContent(text);
-    });
-    And('no chapter is offered', () => {
-      expect(chapters()).toEqual([]);
     });
   });
 });
