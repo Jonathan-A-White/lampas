@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.3.2",
+    "date": "2026-10-26",
+    "story": "mw-9txn0x1.4",
+    "kind": "new",
+    "text": "Copy now gives the verse the way you are reading it, English, Greek, Hebrew or the Weave, and Settings > Reading > Copy: text has a new choice, As you read it, which is the default."
+  },
+  {
+    "version": "0.3.2",
+    "date": "2026-10-26",
+    "story": "mw-q6t5tvn.1",
+    "kind": "new",
+    "text": "An optional lesson, How to read a sentence diagram, teaches the lines of a sentence diagram one at a time on real verses, with a tap to check each."
+  },
+  {
+    "version": "0.3.2",
+    "date": "2026-10-26",
+    "story": "mw-zbjgn3r.4",
+    "kind": "new",
+    "text": "Ask the tutor for a map of the verse you are reading and it answers with a Map button that opens the right map."
+  },
+  {
     "version": "0.3.1",
     "date": "2026-10-26",
     "story": "mw-9txn0x1.1",

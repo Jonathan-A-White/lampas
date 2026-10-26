@@ -1,5 +1,11 @@
 # What's new
 
+## 0.3.2
+_2026-10-26_
+- New: Copy now gives the verse the way you are reading it, English, Greek, Hebrew or the Weave, and Settings > Reading > Copy: text has a new choice, As you read it, which is the default.
+- New: An optional lesson, How to read a sentence diagram, teaches the lines of a sentence diagram one at a time on real verses, with a tap to check each.
+- New: Ask the tutor for a map of the verse you are reading and it answers with a Map button that opens the right map.
+
 ## 0.3.1
 _2026-10-26_
 - New: Copy in the verse view now copies the verse, passage or chapter with its reference, and you choose in Settings what it includes: English, the Greek or Hebrew, or both, the reference, verse numbers and the link.
