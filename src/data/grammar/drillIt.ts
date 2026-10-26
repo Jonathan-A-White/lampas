@@ -135,7 +135,7 @@ export const unmetNeed = (ideaId: string, levels: ReadonlyMap<string, Level>): s
 // ---- Items the mill wrote ----
 
 /**
- * A question the mill wrote (src/data/repositories/fetchedItems.ts) as a question of this walk, in place of `place`: it takes the place's key and step, so the walk counts the place as asked,
+ * A question the mill wrote (kept on the phone, see docs/grammar.md 'More items from the mill') as a question of this walk, in place of `place`: it takes the place's key and step, so the walk counts the place as asked,
  * and its own facet when the walk has one by that id (the walk's other questions are of it), else the place's. Graded as any is: by its right option, its facet, its `say`.
  */
 export function asDrillQuestion(kept: GrammarQuestion, place: DrillQuestion, steps: readonly DrillStep[]): DrillQuestion {

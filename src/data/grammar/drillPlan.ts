@@ -71,7 +71,7 @@ export function facetQuestions(steps: readonly DrillStep[], item: PlanItem): Dri
 export const shortDrill = (ideaId: string, item: PlanItem, options: DrillOptions = {}): DrillQuestion[] => facetQuestions(drillSteps(ideaId, options), item);
 
 /**
- * The questions of a short drill with one the mill wrote (src/data/repositories/fetchedItems.ts) in place of the one at `at`; the questions when `at` is not one of them or the item is of
+ * The questions of a short drill with one the mill wrote (kept on the phone, docs/grammar.md 'More items from the mill') in place of the one at `at`; the questions when `at` is not one of them or the item is of
  * another idea. The drill's end is unchanged: how many are right of how many.
  */
 export function withFetched(questions: readonly DrillQuestion[], kept: GrammarQuestion, at: number): DrillQuestion[] {
