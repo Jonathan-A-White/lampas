@@ -1,7 +1,8 @@
-// src/speech/pronunciation.ts — how the Greek is spoken and respelled, as a registry so another way (such as Erasmian)
-// is one more file in ./schemes/ plus one line in SCHEMES below; nothing else names 'modern'. Modern Greek is the only
-// scheme for now. docs/pronunciation.md says how to add one.
+// src/speech/pronunciation.ts — how Greek and Hebrew are spoken and respelled, as the one registry (mw-gdcyf98.5): another way to say either (Erasmian, a
+// Tiberian Hebrew) is one more file in ./schemes/ plus one line in GREEK_SCHEMES or HEBREW_SCHEMES below, and each scheme says which language it is in. Modern
+// Greek and Israeli Hebrew are the only schemes for now; nothing else names either. docs/pronunciation.md says how to add one.
 import { chosenAccent, soundWords, type EnglishAccent, type SoundWords } from './accents';
+import { ISRAELI, stripCantillation } from './schemes/hebrew-israeli';
 import { MODERN } from './schemes/modern';
 import type { SoundId } from './sounds';
 
@@ -70,8 +71,13 @@ export interface SoundGuide {
   at: 'start' | 'inside';
 }
 
+/** The language a scheme speaks: Koine Greek ('grc') or Biblical Hebrew ('he'). */
+export type PronunciationLanguage = 'grc' | 'he';
+
 export interface Pronunciation {
   id: GreekPronunciation;
+  /** the language it speaks, which list of the registry it stands in (pronunciationsOf): the Greek schemes say 'grc'; one that leaves it out is Greek's */
+  language?: PronunciationLanguage;
   /** what Settings shows */
   label: string;
   /** the language tag put on every utterance, and the language of the voices offered for it */
@@ -80,8 +86,9 @@ export interface Pronunciation {
   scoringLang: string;
   /** a line under the label in Settings */
   note: string;
-  /** the Greek word as syllables an English reader can say, the stressed one in capitals: 'χριστῷ' is 'khree-STO' */
-  respell(greekWord: string): string;
+  /** the Greek word as syllables an English reader can say, the stressed one in capitals: 'χριστῷ' is 'khree-STO'. A Hebrew scheme is given the pointed word and,
+   * where the data has one, its transliteration (`tr`) as `guide`, which settles a shewa the pointing leaves open. */
+  respell(greekWord: string, guide?: string): string;
   /** How this scheme reads the Greek word, unit by unit, in order: where a pair of letters is one sound, and what each unit sounds like (mw-5r3p30.351: the
    * idea sheet shows a letter's examples only where the letter is read alone). A scheme that leaves it out cannot say, and no word is held back. */
   spellings?(greekWord: string): readonly Spelling[];
@@ -164,28 +171,54 @@ export const tutorGuideOf = (scheme: Pronunciation, accent: EnglishAccent = chos
 export const soundRuleOf = (scheme: Pronunciation, ideaId: string, accent: EnglishAccent = chosenAccent()): SoundRule | undefined =>
   soundRulesOf(scheme, accent).find((r) => r.ideaId === ideaId);
 
-const SCHEMES: Pronunciation[] = [MODERN];
+const GREEK_SCHEMES: Pronunciation[] = [MODERN];
+const HEBREW_SCHEMES: Pronunciation[] = [ISRAELI];
 
-/** Every scheme, in the order Settings lists them. Read it at use, not at load: registerPronunciation adds to it. */
-export const PRONUNCIATIONS: readonly Pronunciation[] = SCHEMES;
+/** Every Greek scheme, in the order Settings lists them. Read it at use, not at load: registerPronunciation adds to it. */
+export const PRONUNCIATIONS: readonly Pronunciation[] = GREEK_SCHEMES;
+
+/** Every Hebrew scheme, in the order a list of them shows. */
+export const HEBREW_PRONUNCIATIONS: readonly Pronunciation[] = HEBREW_SCHEMES;
+
+/** Every scheme of `language`: the Greek list (PRONUNCIATIONS) or the Hebrew one. */
+export const pronunciationsOf = (language: PronunciationLanguage): readonly Pronunciation[] => (language === 'he' ? HEBREW_SCHEMES : GREEK_SCHEMES);
 
 export const DEFAULT_PRONUNCIATION: GreekPronunciation = MODERN.id;
 
-/** Adds a scheme at the end of the list (tests do, to prove the list drives Settings and the word sheet); returns the
+export const DEFAULT_HEBREW_PRONUNCIATION: GreekPronunciation = ISRAELI.id;
+
+/** Adds a scheme at the end of the list of its language (tests do, to prove the list drives Settings and the word sheet); returns the
  * function that takes it out again. */
 export function registerPronunciation(scheme: Pronunciation): () => void {
-  SCHEMES.push(scheme);
+  const list = pronunciationsOf(scheme.language ?? 'grc') as Pronunciation[];
+  list.push(scheme);
   return () => {
-    const at = SCHEMES.indexOf(scheme);
-    if (at >= 0) SCHEMES.splice(at, 1);
+    const at = list.indexOf(scheme);
+    if (at >= 0) list.splice(at, 1);
   };
 }
 
+/** Whether `value` is the id of a Greek scheme (the saved choice of how Greek is said). */
 export function isPronunciation(value: unknown): value is GreekPronunciation {
   return PRONUNCIATIONS.some((p) => p.id === value);
 }
 
-/** The entry for `id`; the default's when it is not one (a saved value from a later version). */
+/** The entry for `id`, of either language; the default Greek one when it is not one (a saved value from a later version). */
 export function pronunciationOf(id: unknown): Pronunciation {
-  return PRONUNCIATIONS.find((p) => p.id === id) ?? PRONUNCIATIONS.find((p) => p.id === DEFAULT_PRONUNCIATION)!;
+  return PRONUNCIATIONS.find((p) => p.id === id) ?? HEBREW_SCHEMES.find((p) => p.id === id) ?? PRONUNCIATIONS.find((p) => p.id === DEFAULT_PRONUNCIATION)!;
 }
+
+/** The type the old Hebrew registry (src/speech/hebrewPronunciation.ts) named: a scheme, and its id. */
+export type HebrewPronunciation = Pronunciation;
+export type HebrewPronunciationId = GreekPronunciation;
+
+/** The Hebrew scheme with this id; the default's when there is none or the registry does not hold it. */
+export function hebrewPronunciationOf(id?: HebrewPronunciationId): Pronunciation {
+  return HEBREW_SCHEMES.find((p) => p.id === id) ?? ISRAELI;
+}
+
+/** What the voice is handed for Hebrew `text`, in the chosen scheme (there is no setting to choose another yet: the default's). */
+export const hebrewVoiceForm = (text: string): string => hebrewPronunciationOf(DEFAULT_HEBREW_PRONUNCIATION).voiceForm(text);
+
+/** Hebrew `text` as the tutor is handed it: pointed, with the cantillation marks (which a voice cannot say and a question about a word does not need) taken off, so a word list weighs less. */
+export const hebrewPointedForm = (text: string): string => stripCantillation(text);
