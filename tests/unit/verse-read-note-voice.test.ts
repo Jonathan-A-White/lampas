@@ -68,6 +68,8 @@ describe('the Thessalonians scenario (his screenshot of 1 Thessalonians 5:16)', 
 
 describe('no scenario note, and no instructions, use the past tense of read', () => {
   const PAST_READ = /\byou(?:'ve| have)? read\b/i;
+  // The one place the instructions may write the phrase is a line that begins "Wrong:", where it is named as what the note must not say.
+  const withoutWrongLines = (text: string) => text.split('\n').filter((line) => !/^\s*Wrong:/.test(line)).join('\n');
 
   it('has no "You read" or "you\'ve read" anywhere in a verse-read scenario file', () => {
     for (const f of exampleFiles) expect(readFileSync(`${DIR}/${f}`, 'utf8'), f).not.toMatch(PAST_READ);
@@ -76,7 +78,7 @@ describe('no scenario note, and no instructions, use the past tense of read', ()
   // bible-talk's own text has present-tense lines ("the texts you read") and a settings list written from the registry, so there the
   // section is checked; verse-read's whole file is.
   it('verse-read\'s instructions write none anywhere', () => {
-    expect(instructionsOf('verse-read')).not.toMatch(PAST_READ);
+    expect(withoutWrongLines(instructionsOf('verse-read'))).not.toMatch(PAST_READ);
   });
 
   it.each(['verse-read', 'verse-ask', 'bible-talk'])('the %s instructions have a section on words the voice can misread', (kind) => {
@@ -84,9 +86,29 @@ describe('no scenario note, and no instructions, use the past tense of read', ()
     const start = text.indexOf('## Words the voice can misread');
     expect(start, 'the section').toBeGreaterThanOrEqual(0);
     const section = text.slice(start, text.indexOf('\n## ', start + 1));
-    expect(section).not.toMatch(PAST_READ);
+    expect(withoutWrongLines(section)).not.toMatch(PAST_READ);
     expect(section).toMatch(/past tense of read/);
     for (const word of ['lead', 'live', 'wind', 'tear', 'close', 'present']) expect(section, word).toContain(`\`${word}\``);
+  });
+});
+
+describe('the verse-read instructions forbid "you read" in any tense (mw-5r3p30.774)', () => {
+  const text = instructionsOf('verse-read');
+  const start = text.indexOf('## Words the voice can misread');
+  const section = text.slice(start, text.indexOf('\n## ', start + 1)).replace(/\s+/g, ' ');
+
+  it('says never "read" right after "you", present tense too, and the voice cannot tell the tense', () => {
+    expect(section).toMatch(/Never "read" right after "you", in any tense/);
+    expect(section).toMatch(/cannot tell/);
+  });
+
+  it('shows the wrong sentence the mill produced and the ways to say it right', () => {
+    expect(section).toMatch(/Wrong: .*when you read again/);
+    for (const right of ['read it again', 'when you try again', 'hold Read']) expect(section, right).toContain(right);
+  });
+
+  it('no longer calls the present tense fine', () => {
+    expect(section).not.toMatch(/present tense is fine/i);
   });
 });
 

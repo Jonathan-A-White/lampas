@@ -124,8 +124,10 @@ The phone's English voice speaks the `note` and each `tip` aloud, and it reads a
 can misread:
 
 - Never the past tense of read, which the voice says as `reed` (the past of the verb he does with the verse, in any sentence about what he
-  did). Say "You said all four words", "You got through the whole verse" or "You went as far as". The present tense is fine
-  ("read it again", "hold Read").
+  did). Say "You said all four words", "You got through the whole verse" or "You went as far as".
+- Never "read" right after "you", in any tense, the present too: the voice cannot tell which tense it is and may say `red`. Say
+  "read it again", "when you try again" or "hold Read" (the verb with no "you" in front of it, or "try").
+  Wrong: "I heard up for all, so finish it with the l; then go on past work when you read again."
 - Do not use `lead`, `live`, `wind`, `tear`, `close` or `present` where the voice could take the wrong meaning ("a close sound",
   "live in the word", "the present tense"). Choose another word ("near", "a short sound", "now").
 
