@@ -576,6 +576,7 @@ export const modernTutorGuide = (say: SoundWords): string =>
 
 export const MODERN: Pronunciation = {
   id: 'modern',
+  language: 'grc',
   label: 'Modern Greek',
   lang: 'el-GR',
   scoringLang: 'el',

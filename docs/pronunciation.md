@@ -4,14 +4,14 @@ The word sheet says how to pronounce the word: under the Greek, a respelling in 
 Settings > Greek pronunciation. The data's beta-code transliteration (`tr`, "cristw") is still in
 `public/data` but no screen shows it.
 
-Modern Greek is the only scheme so far; Erasmian is next. 'χριστῷ' is `khree-STO`, 'ἐντολή' is `en-do-LEE`:
+Modern Greek is the only Greek scheme so far; Erasmian is next. Hebrew (Israeli) is in the same registry, below. 'χριστῷ' is `khree-STO`, 'ἐντολή' is `en-do-LEE`:
 syllables joined by hyphens, the stressed syllable in capitals (a one-syllable word has no capitals), English
 sound-alikes for the letters.
 
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries
-`{ id, label, lang, scoringLang, note, respell(greekWord), sounds, loneLetterClip(word), voiceForm(text), wordForm?(word), letterForm(letter), tutorGuide(say), lessons?(say), soundRules?(say) }`. `sounds` maps each sound the respelling writes to its standard id (`o` is `/o/`, `kh` is `/x/`; see 'A standard in the middle' below); the scheme names no English word, and its lessons, rules and guide say each sound through `say`. Settings lists the entries, the word sheet calls
+`{ id, language?, label, lang, scoringLang, note, respell(greekWord), sounds, loneLetterClip(word), voiceForm(text), wordForm?(word), letterForm(letter), tutorGuide(say), lessons?(say), soundRules?(say) }`. `sounds` maps each sound the respelling writes to its standard id (`o` is `/o/`, `kh` is `/x/`; see 'A standard in the middle' below); the scheme names no English word, and its lessons, rules and guide say each sound through `say`. Settings lists the entries, the word sheet calls
 `pronunciationOf(chosen).respell(word.t)`, and `lang` is the language tag of the voice that speaks (Settings keeps
 the chosen id under `greekPronunciation`). Each scheme is one file in `src/speech/schemes/`.
 
@@ -213,7 +213,7 @@ moving to the next syllable the longest group of consonants that can open a Gree
 1. Write `src/speech/schemes/<id>.ts` exporting a `Pronunciation` (see `modern.ts`): its `respell` takes the Greek
    word and returns the respelling; its `sounds` give the standard id (`src/speech/sounds.ts`) of each sound it writes, a new id with a hint in every accent table; its `loneLetter` gives the form
    its voice is handed for a word of one letter (Erasmian on a Greek voice: find what that voice says as the sound, not the name); its `voiceForm` gives what the voice is handed for any other Greek, so it says the respelling's sounds (the text as it is when it already does; Erasmian's `nt` on a Modern Greek voice would need a form of its own). Erasmian's table (the story's note): μπ `mp`, ντ `nt`, γκ `nk`, γχ `nk`.
-2. Put it in `SCHEMES` in `src/speech/pronunciation.ts`, after Modern Greek. Settings, the saved choice and the word
+2. Put it in `GREEK_SCHEMES` in `src/speech/pronunciation.ts`, after Modern Greek. Settings, the saved choice and the word
    sheet pick it up; nothing else names an id.
 3. Add the id's voice language: `lang` is what the utterance uses. If the phone has no voice for it, say so in `note`.
 4. Set `scoringLang`: the language the Greek reading check asks the mill to score a reading in (modern Greek is `el`).
@@ -227,16 +227,68 @@ moving to the next syllable the longest group of consonants that can open a Gree
 A test adds a scheme for one scenario with `registerPronunciation(scheme)`, which returns the function that takes
 it out again (features/pronunciation.feature).
 
-## Hebrew (mw-5vvlay.1)
+## Hebrew (mw-5vvlay.1, mw-gdcyf98.5)
 
-Hebrew has a registry of its own, `src/speech/hebrewPronunciation.ts`, shaped like the Greek one but smaller: a list `HEBREW_PRONUNCIATIONS` of
-`{ id, label, lang, note, voiceForm(text) }`, `hebrewPronunciationOf(id?)` (the default for an id it does not hold) and `hebrewVoiceForm(text)`, which the
-speech code (`src/speech/greek.ts` `wordSpeech` for a held word or a speaker, `readAloud.ts` `textOf` for a verse read aloud) hands every Hebrew text through.
-There is no setting to choose a scheme yet, so the default is the one in use. Each scheme is one file in `src/speech/schemes/`.
+Hebrew is in the same registry as the Greek (`src/speech/pronunciation.ts`, mw-gdcyf98.5). Each `Pronunciation` says which language it speaks, `language: 'grc' | 'he'`
+(the Greek schemes say `'grc'`; one that leaves it out is Greek's), and the registry keeps one list for each: `PRONUNCIATIONS` is the Greek list (so Settings, the
+saved choice and the hard-sounds schema iterate Greek only), `pronunciationsOf('he')` the Hebrew one, `pronunciationOf(id)` finds a scheme of either, and
+`registerPronunciation(scheme)` files a scheme under its language. `src/speech/hebrewPronunciation.ts` is only re-exports of the Hebrew names (`HEBREW_PRONUNCIATIONS`,
+`DEFAULT_HEBREW_PRONUNCIATION`, `hebrewPronunciationOf(id?)`, `hebrewVoiceForm(text)`, `hebrewPointedForm(text)`), so what imported them still does. The speech code
+(`src/speech/greek.ts` `wordSpeech` for a held word or a speaker, `readAloud.ts` `textOf` for a verse read aloud) hands every Hebrew text through the default scheme's `voiceForm`;
+`src/script/hebrewSpeech.ts` `hebrewRespelling(word, tr?)` gives a Hebrew word's respelling. There is no setting to choose a scheme yet (story c2's), so the default is the one in use.
 
-The one scheme is **Israeli** (`schemes/hebrew-israeli.ts`, `israeli`, language `he-IL`): the text is spoken as written, pointed, to the phone's he-IL voice,
+The one scheme is **Israeli** (`schemes/hebrew-israeli.ts`, `israeli`, language `he-IL`, `scoringLang` `he`): the text is spoken as written, pointed, to the phone's he-IL voice,
 which says the points as modern Hebrew does. Its `voiceForm` is `stripCantillation`, which takes off the cantillation marks (the Masoretic accents) so a voice
 does not stumble on them: U+0591 to U+05AF, the meteg U+05BD, the rafe U+05BF, the paseq U+05C0, the sof pasuq U+05C3, the upper and lower dots U+05C4 and U+05C5 and the nun hafukha U+05C6.
 It keeps every vowel point (U+05B0 to U+05BB), the dagesh U+05BC, the maqaf U+05BE, the shin and sin dots U+05C1 and U+05C2 and the qamats qatan U+05C7 (a vowel, so it
-is not in the accents' range U+05C3 to U+05C7 that the story first named). `tests/unit/hebrew-pronunciation.test.ts` lists both sets and holds the whole of Genesis 1 to them.
-A new scheme gives its own `voiceForm` (and, as the Greek ones do, whatever else the language needs) and one line in the list.
+is not in the accents' range U+05C3 to U+05C7 that the story first named). `tests/unit/hebrew-pronunciation.test.ts` lists both sets and holds the whole of Genesis 1 to them,
+and holds the scheme to the whole interface.
+
+### The Hebrew respelling
+
+`respell(pointedWord, tr?)` is the sound-alike respelling in the Greek's style: syllables joined by hyphens, the stressed one in capitals (a word of one syllable has no
+capitals): `בְּרֵאשִׁית` is `be-reh-SHEET`, `נִינְוֵה` is `nee-neh-VEH`, `הָאָרֶץ` is `ha-A-rets`. `tr` is the data's transliteration of the word (`public/data` and the fixtures have one on
+every Hebrew word); it is the guide that settles a shewa the pointing leaves open (below). `tests/unit/hebrew-respell.test.ts` pins twenty words of Genesis 1 and Jonah 1, one row each, and holds every word of both chapters
+to the shape of a respelling. The rules (the code is `respellHebrew`):
+
+| Part | Respelt |
+| --- | --- |
+| patach, qamats | `a` (a qamats in a closed syllable with no stress and no meteg is the qamats qatan, `o`: `כָּל` is `kol`) |
+| segol, tsere | `eh` at the end of a syllable, `e` before a consonant (`reh`, `rets`) |
+| hiriq | `ee`, a yod after it only lengthens it |
+| holam, vav with a holam | `o` |
+| qubuts, shuruq (vav with a dot inside) | `oo` |
+| hataf segol, hataf patach, hataf qamats | `e`, `a`, `o` |
+| shewa | `e` when it is said (at the start of a word, after a long vowel, the second of two, under a dagesh-doubled letter), written `eh` inside a word so it is not read `ee`; nothing when it only closes a syllable |
+| patach or qamats with a yod, tsere with a yod | `ai`, `ay` (`ָיו` is `av`: `אֵלָיו` is `eh-LAV`) |
+| a patach before a final ח, ע or ה with a mappiq | said before the letter, as its own syllable (`רוּחַ` is `ROO-akh`) |
+| alef, ayin | not said, only the vowel on them; a bare alef and a final he are silent |
+| bet, kaf, pe | `b`, `k`, `p` with a dagesh; `v`, `kh`, `f` without (a final kaf `ך` is `kh`, a final pe `ף` is `f`) |
+| vav (a consonant), gimel, dalet, zayin, tet, lamed, mem, nun, samekh, qof, resh, tav, yod, he, chet | `v`, `g`, `d`, `z`, `t`, `l`, `m`, `n`, `s`, `k`, `r`, `t`, `y`, `h`, `kh` |
+| tsade, shin with its dot at the right, sin | `ts`, `sh`, `s` |
+| a dagesh in any other letter | a doubling, which is not said |
+
+Syllables are cut after each vowel (a silent shewa and a bare consonant close the syllable before them). The stress is the syllable the cantillation marks: a word with one accent
+mark takes it; the same mark twice (the pashta, on the stress and again on the last letter) is the first; two different marks (a munach for a secondary stress, then a zaqef) are the last;
+the silluq (a meteg in the last word of a verse, before the sof pasuq) marks it; the accents written on the first letter whatever the stress (yetiv, geresh muqdam, telisha gedola, dehi) say nothing.
+A word with no sign has its last syllable stressed, and the first if it ends as a segolate does (`סֵפֶר` is `SEH-fer`). A word with a maqaf (`אֶל־`, `עַל־`) joins the next and has no capitals.
+Whatever follows a sof pasuq (the פ and ס that close a section) is not read. The Tetragrammaton is respelt as it is written, `יְהוָה` is `yeh-VA`; the voice, not the respelling, may say it another way.
+
+The guide settles the shewa this way: the rule above counts the shewas it says; the guide's `ə` marks count the ones the data says; where the two differ, the shewas the rule left silent are said
+(earliest first), or the ones it said are made silent (latest first), until they agree. In Genesis 1 and Jonah 1 this changes `לְאָכְלָה` only (`le-okh-LA` for the guide, `le-a-kheh-LA` for the rule),
+the qamats qatan the pointing cannot tell from a qamats.
+
+### The Hebrew sounds and lessons
+
+`sounds` maps the symbols the respelling writes to the standard ids of `src/speech/sounds.ts` (`kh` is `/x/`, `y` is `/ʝ/`, `eh` and `e` are `/e/`), so the English accent tables name them (`ee, as in “see”`) and
+`missingHints` holds. The ids the standard has none for yet (`h`, `r`, `sh`, `ts`) are named in the lessons without an English key word; the standard is the Greek's list and was left as it is. `lessons(say)` gives a
+`SoundLesson` for each letter, ids `he-letter-alef`, `he-letter-bet`, `he-letter-gimel`, `he-letter-dalet`, `he-letter-he`, `he-letter-vav`, `he-letter-zayin`, `he-letter-chet`, `he-letter-tet`, `he-letter-yod`,
+`he-letter-kaf`, `he-letter-lamed`, `he-letter-mem`, `he-letter-nun`, `he-letter-samekh`, `he-letter-ayin`, `he-letter-pe`, `he-letter-tsade`, `he-letter-qof`, `he-letter-resh`, `he-letter-shin`, `he-letter-tav`
+(`HEBREW_LETTER_IDS`), and for each vowel, `he-vowel-patach`, `-qamats`, `-segol`, `-tsere`, `-hiriq`, `-holam`, `-qubuts`, `-shuruq`, `-shewa` (`HEBREW_VOWEL_IDS`), in `schemes/hebrew-israeli-lessons.ts`,
+which also holds `letterNames` (by the letter ids), `heardAs` and the `tutorGuide`. A Hebrew word of one letter (a prefix) has no sound of its own: `loneLetterForm` and `loneLetterClip` are `null`.
+
+### Adding the Academic family (Erasmian and Tiberian)
+
+One scheme each, the way a Greek one is added: write `src/speech/schemes/hebrew-<id>.ts` exporting a `Pronunciation` with `language: 'he'` (copy `hebrew-israeli.ts`: its `respell` takes the pointed word and the data's `tr`; its
+`sounds` map to the standard ids, a new id with a hint in every accent table; its lessons keep the ids above, so the idea sheets and drills need nothing new); put it in `HEBREW_SCHEMES` in `pronunciation.ts`
+after Israeli; give it a `lang` and `scoringLang` and say in its `note` if the phone may have no voice for it. Neither is built.
