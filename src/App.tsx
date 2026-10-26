@@ -17,6 +17,7 @@ import { routeOf, useAddress } from './nav/route';
 import { Reader } from './Reader';
 import { GoalScreen } from './GoalScreen';
 import { HardSoundLesson } from './hardSounds/HardSoundLesson';
+import { DiagramLesson } from './diagram/DiagramLesson';
 import { IpaCourse } from './ipa/IpaCourse';
 import { MapsHost } from './maps/MapsSheet';
 import { LadderGraph } from './LadderGraph';
@@ -129,6 +130,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <LadderGraph />
       ) : route === 'ipa' ? (
         <IpaCourse />
+      ) : route === 'diagram-lesson' ? (
+        <DiagramLesson />
       ) : route === 'sounds' ? (
         <HardSoundLesson />
       ) : route === 'studyway' ? (

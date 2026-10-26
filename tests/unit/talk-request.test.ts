@@ -358,7 +358,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     expect(Object.keys(built).filter((k) => !(k in before)).sort()).toEqual(['catalogue', 'facts']);
   });
 
-  // The first `over` went from 800 to 900 with When you copy: its four settings ride in settings and in the settings fact, ~170 bytes the request already carried. The three `over` sizes below are hand-sized to the catalogue (the cut of tells, then the catalogue, then the facts): memorizing's seven entries (mw-fu7dqf.12) moved them by 1,712 bytes (the first from 500 to 800: the request is already over the cap before its padding)
+  // The first `over` went from 800 to 900 with When you copy: its four settings ride in settings and in the settings fact, ~170 bytes the request already carried. The three `over` sizes below are hand-sized to the catalogue (the cut of tells, then the catalogue, then the facts): memorizing's seven entries (mw-fu7dqf.12) moved them by 1,712 bytes (the first from 500 to 800: the request is already over the cap before its padding; then 900, the place diagram-lesson of mw-q6t5tvn.1 adding about 75)
   // a request of the size the tutor's part leaves `over` bytes beyond the cap: its learner line (which no cut touches) pads it
   const padded = async (over: number) => {
     const base = (pad: number) => ({ ...fields(screenScope), history: Array.from({ length: 6 }, (_, i) => turn(i)), learner: 'y'.repeat(pad) });

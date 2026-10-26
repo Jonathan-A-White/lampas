@@ -1,4 +1,4 @@
-// src/nav/route.ts — twenty-eight screens (ROUTES), told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — twenty-nine screens (ROUTES), told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -12,10 +12,10 @@ import type { ReaderView, Weave } from '../data/repositories';
 import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
 
 const ROUTE_TABLE: Record<Route, true> = {
-  home: true, words: true, import: true, test: true, drill: true, review: true, today: true, paradigms: true, placement: true, goal: true, path: true, ipa: true, sounds: true, studyway: true,
+  home: true, words: true, import: true, test: true, drill: true, review: true, today: true, paradigms: true, placement: true, goal: true, path: true, ipa: true, 'diagram-lesson': true, sounds: true, studyway: true,
   aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, about: true, preface: true, essay: true, library: true, lists: true, memorize: true, settings: true, share: true, unlock: true,
 };
 
@@ -76,6 +76,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/goal') return 'goal';
   if (path === '#/path') return 'path';
   if (path === '#/ipa') return 'ipa';
+  if (path === '#/diagram-lesson') return 'diagram-lesson';
   if (path === '#/sounds') return 'sounds';
   if (path === '#/studyway') return 'studyway';
   if (path === '#/aboutyou') return 'aboutyou';
