@@ -232,4 +232,30 @@ The cards of `src/data/grammar/hebrew/ladder.ts` (mw-gdcyf98.9), judged the same
 | `he-maqaf` | The maqaf | teaches a beginner | New with this story. Shows the raised line and two worked words that carry it (עַל־, כָּל־) with what it does; it lacked the effect on how the joined words are said, which the Israeli scheme's respelling shows. |
 | `he-cantillation` | The cantillation marks | teaches a beginner | New with this story. Says the marks are part of the text and not the vowels, and shows two words (בְּרֵאשִׁ֖ית, אֱלֹהִ֑ים) with the mark found on each; the Israeli scheme leaves them unsaid, so the card names no sound. It lacked what any mark is called or what it does; that is a later tier. |
 | `he-ketiv-qere` | Ketiv and qere | teaches a beginner | New with this story. Explains the written word and the word read, with the one case the beginner meets at once, the name of God (יְהוָה, Jonah 1:17); Genesis 1 and Jonah 1 have no marginal qere. It lacked a second example from another book. |
+| `he-gender` | Gender: masculine and feminine | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-number` | Number: singular, plural and dual | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-article` | The article: ‘the’ | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-construct` | The construct state | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-suffix-pronominal` | Pronominal suffixes | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-pronoun-personal` | The personal pronouns | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-pronoun-demonstrative` | This and that | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-pronoun-relative` | The relative pronoun אֲשֶׁר | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-prep-inseparable` | The prefixed prepositions: in, like, to | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-prep-min` | From: the preposition מִן | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-object-marker` | The object marker אֵת | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-vav` | The vav: ‘and’ | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-root` | The root | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-qal` | The Qal stem | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-perfect` | The perfect | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-imperfect` | The imperfect | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-imperative` | The imperative | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-participle` | The participle | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-infinitive` | The infinitive | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-vav-consecutive` | The vav-consecutive | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-stems` | The other stems | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-person-gender-number` | Person, gender and number on a verb | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-conjunctions` | Conjunctions and small words | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-interrogative` | Asking a question | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-verbless-clause` | The verbless clause | teaches a beginner | New, so no card before it; judge the card by hand. |
+| `he-word-order` | Word order | teaches a beginner | New, so no card before it; judge the card by hand. |
 <!-- audit-hbo:end -->
