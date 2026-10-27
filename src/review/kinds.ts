@@ -13,7 +13,7 @@ import { paradigmById } from '../data/paradigms';
 import { PARADIGM_KIND, drawCellQuestions, spokenForm } from '../data/paradigms/cells';
 import { parseReviewId } from '../data/readingDrill';
 import { getStudyChapter } from '../data/readerChapter';
-import { modeFor, type QuestionMode } from '../data/schedule';
+import { modeFor, type Grade, type QuestionMode } from '../data/schedule';
 import { buildQuestion, drawWords, mulberry32, seedDistractors, type Question, type Random } from '../data/quiz';
 import { loadPassage, planFacetQuestions } from '../data/repositories/reviewPassage';
 import { chosenPronunciation, speakWord } from '../speech/greek';
@@ -58,6 +58,25 @@ export interface WordItem {
 /** What he taps on a flashcard to grade himself; isRight reads them. */
 export const KNEW_IT = 'I knew it';
 export const NOT_YET = 'Not yet';
+
+/**
+ * What he taps to grade a word (mw-5r3p30.787): on a word's flashcard, and under 'Right.' after a right pick on a word's multiple choice. Each is one of learn-kit's grades, which
+ * the schedule counts differently ('well' moves the word up a step at once, 'some' is a right, 'not' a wrong).
+ */
+export const WORD_GRADES: ReadonlyArray<{ label: string; grade: Grade }> = [
+  { label: 'Know it well', grade: 'well' },
+  { label: 'Kind of', grade: 'some' },
+  { label: "Don't know", grade: 'not' },
+];
+
+/** The grade a word button's label means; undefined for any other text. */
+export const gradeOfLabel = (label: string): Grade | undefined => WORD_GRADES.find((g) => g.label === label)?.grade;
+
+/** Whether the item is a word asked as multiple choice: a right pick on one asks how well he knew it (the grade buttons under 'Right.'). */
+export const isGradedChoice = (item: ReviewItem): boolean => item.kind === 'word' && item.mode === 'choice';
+
+/** The grade a flashcard word's tap gave, or undefined for any other item (a choice question's grade comes from the buttons after the pick). */
+export const flashGrade = (item: ReviewItem, picked: string): Grade | undefined => (item.kind === 'word' && item.mode === 'flashcard' ? gradeOfLabel(picked) : undefined);
 /** What a full parsing (GrammarCard) hands over when a step was wrong; the right answer is the parsing in plain words. */
 export const NOT_PARSED = 'A step was wrong';
 
@@ -131,9 +150,10 @@ export interface ReviewKind {
   hear?: (item: ReviewItem) => void;
   /**
    * Puts one answer on the schedule. `row` is the answer to put on the item's schedule row: `right` as a rule, a different one when an earlier answer of the round on the same id
-   * decided the row (src/review/rowOutcome.ts), or null to leave the row alone. Only a kind whose draw can give several items with one id is ever given anything but `right`.
+   * decided the row (src/review/rowOutcome.ts), or null to leave the row alone. Only a kind whose draw can give several items with one id is ever given anything but `right`
+   * (a word, which is graded, is given its Grade).
    */
-  record: (item: ReviewItem, right: boolean, row?: boolean | null) => Promise<void>;
+  record: (item: ReviewItem, right: boolean, row?: boolean | Grade | null) => Promise<void>;
 }
 
 /** The chapter whose forms show beneath a word after the answer: the one the Reader has open (the last New Testament one while an Old Testament chapter is open). A phone that cannot load it shows no form; the lemma is asked either way. */
@@ -157,12 +177,13 @@ export const WORDS: ReviewKind = {
         : [];
     });
   },
-  isRight: (item, picked) => item.kind === 'word' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.gloss),
+  // a flashcard is graded by its three buttons: every grade but 'Don't know' is a right
+  isRight: (item, picked) => item.kind === 'word' && (item.mode === 'flashcard' ? (gradeOfLabel(picked) ?? 'not') !== 'not' : picked === item.question.gloss),
   hear: (item) => {
     if (item.kind === 'word') speakWord(item.question.prompt, 'greek');
   },
-  record: async (item, right) => {
-    if (item.kind === 'word') await recordAnswer(item.id, right);
+  record: async (item, right, row = right) => {
+    if (item.kind === 'word' && row !== null) await recordAnswer(item.id, row);
   },
 };
 

@@ -9,7 +9,7 @@ async function answer(page: Page): Promise<void> {
   const show = page.getByRole('button', { name: 'Show', exact: true });
   if (await show.isVisible()) {
     await show.click();
-    await page.getByRole('button', { name: 'I knew it' }).click();
+    await page.getByRole('button', { name: /^(I knew it|Kind of)$/ }).click();
   } else {
     await page.locator('[data-option]').first().click();
   }

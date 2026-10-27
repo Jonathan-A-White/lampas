@@ -9,7 +9,7 @@ import { availableCount, paradigmById } from '../paradigms';
 import { PARADIGM_KIND } from '../paradigms/cells';
 import { parseReviewId } from '../readingDrill';
 import { RECENT_ANSWERS } from '../rusty';
-import { DAY, KNOWN_STEP, isDue, nextReview, startSchedule } from '../schedule';
+import { DAY, KNOWN_STEP, isDue, nextReview, startSchedule, type Grade } from '../schedule';
 import { getDrillPlan } from './drillPlans';
 import { listLevels } from './grammarLevels';
 import { planFacetQuestions } from './reviewPassage';
@@ -56,12 +56,18 @@ export async function announceDue(now = Date.now()): Promise<void> {
   }
 }
 
-/** Writes one answer for an item inside the caller's transaction (which must include db.reviews); recordReview is the whole of it. */
-export async function writeReview(kind: string, id: string, right: boolean, now: number): Promise<Review> {
+/** Whether an answer, a boolean or a grade, counts as a right: every grade but 'not'. */
+export const isRightAnswer = (answer: boolean | Grade): boolean => answer !== false && answer !== 'not';
+
+/**
+ * Writes one answer for an item inside the caller's transaction (which must include db.reviews); recordReview is the whole of it. The answer is a boolean or, for a word
+ * he graded himself, a Grade (Review's 'Know it well', 'Kind of', 'Don't know'): learn-kit's nextReview counts each differently.
+ */
+export async function writeReview(kind: string, id: string, answer: boolean | Grade, now: number): Promise<Review> {
   const before = await db.reviews.get([kind, id]);
   // the last few answers are kept beside the schedule, so the tutor can tell a solid item he now slips on from one he never missed (src/data/rusty.ts)
-  const recent = [...(before?.recent ?? []), { when: now, right }].slice(-RECENT_ANSWERS);
-  const next: Review = { kind, id, ...nextReview(before, right, now), recent };
+  const recent = [...(before?.recent ?? []), { when: now, right: isRightAnswer(answer) }].slice(-RECENT_ANSWERS);
+  const next: Review = { kind, id, ...nextReview(before, answer, now), recent };
   await db.reviews.put(next);
   return next;
 }
@@ -76,8 +82,8 @@ export async function writeRestart(kind: string, id: string, now: number): Promi
 }
 
 /** Records one answer for an item: a new item starts at step 0, then the rule of schedule.ts moves it. */
-export async function recordReview(kind: string, id: string, right: boolean, now = Date.now()): Promise<Review> {
-  const review = await db.transaction('rw', db.reviews, () => writeReview(kind, id, right, now));
+export async function recordReview(kind: string, id: string, answer: boolean | Grade, now = Date.now()): Promise<Review> {
+  const review = await db.transaction('rw', db.reviews, () => writeReview(kind, id, answer, now));
   await announceDue(now);
   return review;
 }

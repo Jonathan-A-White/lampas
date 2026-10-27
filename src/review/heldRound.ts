@@ -1,5 +1,6 @@
 // src/review/heldRound.ts — the Review round he left to see a table (mw-svw421.5): 'See the table' after an ending opens the Paradigms screen, a page of its own, and
 // Back returns to Review where he was. Module state, like practise.ts: a reload drops it, and a round held for more than HELD_MS is not his any more.
+import type { Grade } from '../data/schedule';
 import type { ReviewItem } from './kinds';
 
 export interface RunningRound {
@@ -12,6 +13,10 @@ export interface RunningRound {
   missed: string[];
   /** the outcome each schedule row has had in this round (src/review/rowOutcome.ts); a round kept before it existed has none */
   outcomes?: Record<string, boolean>;
+  /** a right pick on a word's multiple choice waits for its grade: nothing is written for it until he taps one, goes on (then it is 'some') or leaves (mw-5r3p30.787) */
+  pending?: boolean;
+  /** the grade he tapped after that right pick */
+  grade?: Grade;
 }
 
 export const HELD_MS = 30 * 60 * 1000;

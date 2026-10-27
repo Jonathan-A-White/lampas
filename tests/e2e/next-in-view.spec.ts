@@ -108,7 +108,7 @@ for (const phone of PHONES) {
           const show = page.getByRole('button', { name: 'Show', exact: true });
           if (await show.isVisible()) {
             await show.click();
-            await page.getByRole('button', { name: 'Not yet' }).click();
+            await page.getByRole('button', { name: /^(Not yet|Don't know)$/ }).click();
           } else {
             await page.locator('[data-option]').last().click();
           }

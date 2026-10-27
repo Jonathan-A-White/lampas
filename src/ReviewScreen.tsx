@@ -5,16 +5,17 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { countDue, LESSON_KIND, listDue, recordRound, reviewsOf } from './data/repositories';
 import { parsePassageKey, passageLabel } from './approaches';
-import { DAY } from './data/schedule';
+import { DAY, type Grade } from './data/schedule';
 import { type Random } from './data/quiz';
 import { backTo, navigate, openParadigm, openVerseRange } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { askForMoreItems } from './review/moreItems';
-import { KINDS, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
+import { KINDS, flashGrade, isGradedChoice, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
 import { makeMove, moveQuestion, moveSaid, pendingMove, type PendingMove } from './review/pickerMove';
 import { heldRound, holdRound, releaseRound } from './review/heldRound';
 import { dropRound, keepRound, keptRound } from './review/keptRound';
 import { rowOutcome } from './review/rowOutcome';
+import type { RunningRound } from './review/heldRound';
 import { hasPractise, takePractise } from './review/practise';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -29,8 +30,20 @@ type MoveCard = { status: 'none' } | { status: 'offer'; move: PendingMove } | { 
 type Round =
   | { status: 'start'; nothing?: boolean }
   | { status: 'loading' }
-  | { status: 'running'; items: ReviewItem[]; index: number; picked: string | null; right: number; missed: string[]; outcomes?: Record<string, boolean> }
+  | RunningRound
   | { status: 'done'; total: number; right: number; tomorrow: number; later: number; move: MoveCard };
+
+/**
+ * A right pick on a word's multiple choice that he has not graded is written as 'some' (kind of: today's right) when he goes on or leaves. Takes the round from `roundRef` and
+ * marks it not pending there at once, so a second call writes nothing.
+ */
+function settlePending(roundRef: { current: Round }, writing: { current: Promise<unknown> }): void {
+  const round = roundRef.current;
+  if (round.status !== 'running' || !round.pending) return;
+  roundRef.current = { ...round, pending: false };
+  const item = round.items[round.index];
+  writing.current = writing.current.then(() => kindOf(item.kind).record(item, true, 'some')).catch((error: unknown) => console.error('could not record the answer', error));
+}
 
 /** 'N come back tomorrow, M later', from the schedule rows the round's items now have. */
 async function whatComesBack(items: ReviewItem[]): Promise<{ tomorrow: number; later: number }> {
@@ -124,6 +137,12 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   }, [round]);
   // The answers are written one after the other; the end card waits for the last of them.
   const writing = useRef<Promise<unknown>>(Promise.resolve());
+  // the round as the handlers see it, for the write of a right pick left ungraded when he leaves the screen
+  const roundRef = useRef<Round>(round);
+  useEffect(() => {
+    roundRef.current = round;
+  }, [round]);
+  useEffect(() => () => settlePending(roundRef, writing), []);
   const due = useLiveQuery(() => Promise.all(KINDS.map((k) => countDue(Date.now(), k.kind))), []);
   // a due passage lesson is opened from the start screen, never asked in a round: it is not counted among the items still to ask
   const stillDue = due?.reduce((a, b, i) => a + (KINDS[i].kind === LESSON_KIND ? 0 : b), 0);
@@ -235,15 +254,26 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     if (picked !== null) return;
     const kind = kindOf(item.kind);
     const wasRight = kind.isRight(item, option);
+    // a word's flashcard is graded by the button (Know it well, Kind of, Don't know); a right pick on a word's multiple choice waits for its grade (below)
+    const answer = flashGrade(item, option) ?? wasRight;
+    const waits = wasRight && isGradedChoice(item);
     // a table asked several cells in the round has one outcome on its row (src/review/rowOutcome.ts)
-    const { write, outcomes } = rowOutcome(round.outcomes, item, wasRight);
-    writing.current = writing.current.then(() => kind.record(item, wasRight, write)).catch((error: unknown) => console.error('could not record the answer', error));
+    const { write, outcomes } = rowOutcome(round.outcomes, item, answer);
+    if (!waits) writing.current = writing.current.then(() => kind.record(item, wasRight, write)).catch((error: unknown) => console.error('could not record the answer', error));
     // a miss on a grammar idea is remembered: when the round ends the mill is asked, in the background, for more on the weakest of them
-    setRound({ ...round, outcomes, picked: option, right: right + (wasRight ? 1 : 0), missed: !wasRight && item.kind === 'grammar' ? [...round.missed, item.id] : round.missed });
+    setRound({ ...round, outcomes, picked: option, pending: waits, grade: undefined, right: right + (wasRight ? 1 : 0), missed: !wasRight && item.kind === 'grammar' ? [...round.missed, item.id] : round.missed });
     kind.hear?.(item);
   };
+  // the grade tapped after a right pick on a word's multiple choice: it is the word's one answer for the round ('Don't know' is a wrong, so the score loses the right)
+  const grade = (given: Grade) => {
+    if (!round.pending) return;
+    roundRef.current = { ...round, pending: false };
+    writing.current = writing.current.then(() => kindOf(item.kind).record(item, given !== 'not', given)).catch((error: unknown) => console.error('could not record the answer', error));
+    setRound({ ...round, pending: false, grade: given, right: given === 'not' ? right - 1 : right });
+  };
   const next = async () => {
-    if (!last) return setRound({ ...round, index: index + 1, picked: null });
+    settlePending(roundRef, writing);
+    if (!last) return setRound({ ...round, index: index + 1, picked: null, pending: false, grade: undefined });
     await writing.current;
     const back = await whatComesBack(items);
     // the round's score is what the pace dial reads (src/data/pace.ts)
@@ -263,6 +293,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           index={index}
           picked={picked}
           onPick={pick}
+          grade={round.grade ?? null}
+          onGrade={grade}
           onStep={(step, wasRight) => {
             writing.current = writing.current.then(() => recordParseStep(item, step, wasRight)).catch((error: unknown) => console.error('could not record the step', error));
           }}

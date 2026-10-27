@@ -42,7 +42,7 @@ test('the Reader shows the Today chip, Today shows Review with N due and opens i
     const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
-      await page.getByRole('button', { name: 'I knew it' }).click();
+      await page.getByRole('button', { name: /^(I knew it|Kind of)$/ }).click();
     } else {
       await page.locator('[data-option]').first().click();
     }
@@ -115,7 +115,7 @@ async function makeAllDueStrong(page: Page) {
   );
 }
 
-test('a strong word is a flashcard: the lemma large, Show reveals the meaning, then I knew it / Not yet', async ({ page }) => {
+test('a strong word is a flashcard: the lemma large, Show reveals the meaning, then Know it well / Kind of / Don\'t know', async ({ page }) => {
   await openUnlocked(page);
   await makeAllDueStrong(page);
   await page.goto('/#/review');
@@ -137,7 +137,7 @@ test('a strong word is a flashcard: the lemma large, Show reveals the meaning, t
 
   await show.click();
   await expect(page.getByTestId('flash-gloss')).not.toHaveText('');
-  for (const name of ['I knew it', 'Not yet']) {
+  for (const name of ['Know it well', 'Kind of', "Don't know"]) {
     const box = await page.getByRole('button', { name }).boundingBox();
     expect(box?.height).toBeGreaterThanOrEqual(48);
     expect(box && box.y + box.height).toBeLessThanOrEqual(844);
@@ -145,7 +145,7 @@ test('a strong word is a flashcard: the lemma large, Show reveals the meaning, t
   await expectFitsPhone(page);
   await shot(page, 'flashcard-shown');
 
-  await page.getByRole('button', { name: 'I knew it' }).click();
+  await page.getByRole('button', { name: 'Kind of' }).click();
   await expect(page.getByTestId('next')).toBeVisible();
   await expectFitsPhone(page);
 });
@@ -167,7 +167,7 @@ test('the end card labels its score, so it is not read as the question counter',
     const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
-      await page.getByRole('button', { name: 'I knew it' }).click();
+      await page.getByRole('button', { name: /^(I knew it|Kind of)$/ }).click();
     } else {
       await page.locator('[data-option]').first().click();
     }
@@ -197,7 +197,7 @@ test('sideways (844x390) the round Ask button keeps clear of every answer option
     const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
-      await page.getByRole('button', { name: 'I knew it' }).click();
+      await page.getByRole('button', { name: /^(I knew it|Kind of)$/ }).click();
     } else {
       // the options scroll: bring each into view, then measure it against the (fixed) button
       const options = page.locator('[data-option]');

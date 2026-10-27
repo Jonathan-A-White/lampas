@@ -106,15 +106,27 @@ async function answerCurrent(right: boolean): Promise<string> {
   const lemma = promptLemma();
   if (screen.queryByRole('button', { name: 'Show' })) {
     await user.click(screen.getByRole('button', { name: 'Show' }));
-    await user.click(await screen.findByRole('button', { name: right ? 'I knew it' : 'Not yet' }));
+    await user.click(await screen.findByRole('button', { name: right ? 'Kind of' : "Don't know" }));
     return lemma;
   }
   const gloss = (await db.words.get(lemma))?.gloss;
   const target = options().find((o) => (o.textContent === gloss) === right);
   if (!target) throw new Error('no such option');
   await user.click(target);
+  // a right pick asks how well he knew it: Kind of is the plain right
+  if (right) await user.click(await screen.findByRole('button', { name: 'Kind of' }));
   return lemma;
 }
+
+/** Picks the gloss of the word on screen (or another one), without grading it. */
+async function pick(right: boolean): Promise<void> {
+  const gloss = (await db.words.get(promptLemma()))?.gloss;
+  const target = options().find((o) => (o.textContent === gloss) === right);
+  if (!target) throw new Error('no such option');
+  await user.click(target);
+}
+
+const gradeButtons = () => document.querySelector('[data-testid="word-grades"]');
 
 async function goOn(): Promise<void> {
   await user.click(await screen.findByTestId('next'));
@@ -398,7 +410,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Show reveals the meaning and I knew it records a right review', ({ Given, When, And, Then }) => {
+  Scenario('Show reveals the meaning and Kind of records a right review', ({ Given, When, And, Then }) => {
     Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
       await freshStore();
       await makeDue([lemma], () => ({ step, rights: 0 }));
@@ -407,11 +419,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('he opens Review from Settings', openReviewFromSettings);
     And('he starts the review', start);
     And('he taps Show', async () => user.click(await screen.findByRole('button', { name: 'Show' })));
-    Then('the flashcard shows the gloss of {string} with {string} and {string}', async (_, lemma: string, a: string, b: string) => {
+    Then('the flashcard shows the gloss of {string} with {string}, {string} and {string}', async (_, lemma: string, a: string, b: string, c: string) => {
       const gloss = (await db.words.get(lemma))?.gloss ?? '';
       expect(await screen.findByTestId('flash-gloss')).toHaveTextContent(gloss);
-      expect(screen.getByRole('button', { name: a })).toBeVisible();
-      expect(screen.getByRole('button', { name: b })).toBeVisible();
+      for (const name of [a, b, c]) expect(screen.getByRole('button', { name })).toBeVisible();
       expect(showButton()).toBeNull();
     });
     When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
@@ -422,7 +433,23 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Not yet records a wrong review', ({ Given, When, And, Then }) => {
+  Scenario('Know it well on a flashcard moves the word up a step at once', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
+      await freshStore();
+      await makeDue([lemma], () => ({ step, rights: 0 }));
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he taps Show', async () => user.click(await screen.findByRole('button', { name: 'Show' })));
+    And('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('{string} is on step {int} with no right in a row', async (_, lemma: string, step: number) => {
+      await waitFor(async () => expect((await review(lemma)).step).toBe(step));
+      expect((await review(lemma)).rights).toBe(0);
+    });
+  });
+
+  Scenario('Don\'t know records a wrong review', ({ Given, When, And, Then }) => {
     Given('the word {string} is due on step {int}', async (_, lemma: string, step: number) => {
       await freshStore();
       await makeDue([lemma], () => ({ step, rights: 0 }));
@@ -469,6 +496,101 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the counter reads {string}', (_, text: string) => {
       expect(screen.getByText(/^1 of \d+$/)).toHaveTextContent(text);
+    });
+  });
+
+  /** a graded multiple-choice scenario's first step: one word due on a step */
+  const dueOnStep = async (_: unknown, lemma: string, step: number) => {
+    await freshStore();
+    await makeDue([lemma], () => ({ step, rights: 0 }));
+  };
+
+  Scenario('Know it well after a right pick on multiple choice puts the word up a step', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', dueOnStep);
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he picks the right meaning of {string}', async (_, lemma: string) => {
+      expect(promptLemma()).toBe(lemma);
+      await pick(true);
+    });
+    Then('{string}, {string} and {string} are offered under {string}', async (_, a: string, b: string, c: string, said: string) => {
+      expect(screen.getByTestId('feedback')).toHaveTextContent(said);
+      for (const name of [a, b, c]) expect(await screen.findByRole('button', { name })).toBeVisible();
+    });
+    When('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('{string} is on step {int} with no right in a row', async (_, lemma: string, step: number) => {
+      await waitFor(async () => expect((await review(lemma)).step).toBe(step));
+      expect((await review(lemma)).rights).toBe(0);
+    });
+  });
+
+  Scenario('Kind of after a right pick leaves the word on its step with one right', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', dueOnStep);
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he picks the right meaning of {string}', async (_, lemma: string) => {
+      expect(promptLemma()).toBe(lemma);
+      await pick(true);
+    });
+    And('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('{string} is on step {int} with one right in a row', async (_, lemma: string, step: number) => {
+      await waitFor(async () => expect((await review(lemma)).rights).toBe(1));
+      expect((await review(lemma)).step).toBe(step);
+    });
+  });
+
+  Scenario('Going on without a grade counts as Kind of', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', dueOnStep);
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he picks the right meaning of {string}', async (_, lemma: string) => {
+      expect(promptLemma()).toBe(lemma);
+      await pick(true);
+    });
+    And('he goes on without grading it', goOn);
+    Then('{string} is on step {int} with one right in a row', async (_, lemma: string, step: number) => {
+      await waitFor(async () => expect((await review(lemma)).rights).toBe(1));
+      expect((await review(lemma)).step).toBe(step);
+    });
+  });
+
+  Scenario('Don\'t know after a right pick drops the word as a wrong does and shows its heart', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', dueOnStep);
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he picks the right meaning of {string}', async (_, lemma: string) => {
+      expect(promptLemma()).toBe(lemma);
+      await pick(true);
+    });
+    And('he taps {string}', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    Then('{string} is on step {int} and has lapsed once', async (_, lemma: string, step: number) => {
+      await waitFor(async () => expect((await review(lemma)).step).toBe(step));
+      expect((await review(lemma)).lapses).toBe(1);
+    });
+    And('the question shows the heart of the word', () => {
+      expect(screen.getByTestId('word-heart')).toBeVisible();
+    });
+  });
+
+  Scenario('A wrong pick is a wrong with no grade to give', ({ Given, When, And, Then }) => {
+    Given('the word {string} is due on step {int}', dueOnStep);
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he picks a wrong meaning of {string}', async (_, lemma: string) => {
+      expect(promptLemma()).toBe(lemma);
+      await pick(false);
+    });
+    Then('no grade buttons are offered', () => {
+      expect(gradeButtons()).toBeNull();
+    });
+    And('{string} is on step {int} and has lapsed once', async (_, lemma: string, step: number) => {
+      await waitFor(async () => expect((await review(lemma)).step).toBe(step));
+      expect((await review(lemma)).lapses).toBe(1);
     });
   });
 

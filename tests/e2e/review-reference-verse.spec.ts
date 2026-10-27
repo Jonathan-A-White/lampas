@@ -27,7 +27,7 @@ async function answeredWithLine(page: Page, view: 'greek' | 'english'): Promise<
     const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
-      await page.getByRole('button', { name: 'I knew it' }).click();
+      await page.getByRole('button', { name: /^(I knew it|Kind of)$/ }).click();
     } else {
       await page.locator('[data-option]').first().click();
       if (await page.getByTestId('chapter-form').isVisible()) return;
