@@ -163,7 +163,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
-  Scenario('Drill blanks the qal perfect and a tap shows a form', ({ When, Then, And }) => {
+  Scenario('Drill blanks the qal perfect and a tap shows a form', ({ When, Then }) => {
     When('he opens the table {string} to Drill', opensTo('drill'));
     Then('the cell {string} is blank', async (_, place: string) => {
       await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'hidden'));
