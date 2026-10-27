@@ -1,6 +1,8 @@
 // src/share/talkPlace.ts — what a conversation's key (src/data/repositories/talks.ts talkRef, screenRef) says it is about, so the Share screen can name it
 // ('Romans 8:28', 'Quiz on Romans 8:1-11', 'Ask the tutor: Goal') and open it. Pure: no store, no fetch.
 import { ntBookOf, titleOf } from '../data/books';
+import { ideaOfAny } from '../data/grammar/ladders';
+import { LESSON_SCREEN } from '../tutor/lessonTalk';
 import { DRILL_SCREEN, SCREEN_NAMES, slugOf } from '../tutor/screen';
 
 /** The key of a talk of its own, started from the Share screen's New talk: 'talk.<ms>'. It is about no text and no screen. */
@@ -8,7 +10,7 @@ export const FREE_TALK_PREFIX = 'talk.';
 
 export type TalkPlace =
   | { kind: 'bible'; book: string; chapter: number; /** '28' or '1-11'; null for the chapter */ unit: string | null; quiz: boolean }
-  | { kind: 'screen'; name: string }
+  | { kind: 'screen'; name: string; /** a lesson's talk (the idea sheet's Ask the tutor, 'screen.lesson.<idea id>'): the idea it is about */ lesson?: { id: string; title: string } }
   | { kind: 'free'; at: number };
 
 /** A new talk's key. */
@@ -21,6 +23,15 @@ export function placeOf(ref: string): TalkPlace | null {
     return Number.isFinite(at) ? { kind: 'free', at } : null;
   }
   if (ref.startsWith('screen.')) {
+    // a lesson's talk is kept for each idea: 'screen.lesson.<idea id>' (mw-5r3p30.818)
+    const lessonId = /^screen\.lesson\.(.+)$/.exec(ref)?.[1];
+    if (lessonId !== undefined) {
+      try {
+        return { kind: 'screen', name: LESSON_SCREEN, lesson: { id: lessonId, title: ideaOfAny(lessonId).title } };
+      } catch {
+        return null;
+      }
+    }
     // the results of a drill are a talk of their own each time: 'screen.drill-it.<ms>' (mw-5r3p30.649)
     const slug = ref.slice('screen.'.length).replace(/^(drill-it)\.\d+$/, '$1');
     const name = [...Object.values(SCREEN_NAMES), DRILL_SCREEN].find((n) => slugOf(n) === slug);
@@ -46,7 +57,7 @@ export function talkLabel(ref: string): string {
   const place = placeOf(ref);
   if (!place) return ref;
   if (place.kind === 'free') return `Talk of ${dateText(place.at)}`;
-  if (place.kind === 'screen') return `Ask the tutor: ${place.name}`;
+  if (place.kind === 'screen') return `Ask the tutor: ${place.name}${place.lesson ? `: ${place.lesson.title}` : ''}`;
   const where = place.unit ? `${titleOf(place.book, place.chapter)}:${place.unit}` : titleOf(place.book, place.chapter);
   return place.quiz ? `Quiz on ${where}` : where;
 }
