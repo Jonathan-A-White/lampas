@@ -200,7 +200,7 @@
       }
     },
     "maps": {
-      "description": "Optional. The maps that exist for the passage the talk holds (its chapter's maps, at most 12), the only ones a `map` link may name. Each is `id` (the value of a `map` link, exactly as given), `title`, `period` (the years it covers, empty for a map with no dates) and `places`: the names on the map that the held verse or range speaks (Sodom, Gomorrah), empty when the passage is a whole chapter or the verse names none. Those whose `places` are not empty come first, and a line whose `source` is not `biblemapper` (a Logos Atlas view, its title ending \"(opens in Logos)\") comes last with `places` empty. Missing when the chapter has no map, when no passage is held (a talk from a screen) and in a talk from About.",
+      "description": "Optional. The maps that exist for the passage the talk holds (its chapter's maps, at most 12), the only ones a `map` link may name. Each is `id` (the value of a `map` link, exactly as given), `title`, `period` (the years it covers, empty for a map with no dates) and `places`: the names on the map that the held verse or range speaks (Sodom, Gomorrah), empty when the passage is a whole chapter or the verse names none. Those whose `places` are not empty come first. Missing when the chapter has no map, when no passage is held (a talk from a screen) and in a talk from About.",
       "type": "array",
       "maxItems": 12,
       "items": {
