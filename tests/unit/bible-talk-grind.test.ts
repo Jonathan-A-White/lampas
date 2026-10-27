@@ -423,7 +423,7 @@ describe('the screen settings (mw-5r3p30.107)', () => {
   it('the request schema takes a screen with settings, each a name, a value and its help, and refuses a bad one', () => {
     expect(validate({ ...base, screen: { name: 'Settings', facts: [], settings } }, input)).toEqual([]);
     expect(validate({ ...base, screen: { name: 'Settings', facts: [] } }, input)).toEqual([]);
-    const many = Array.from({ length: 56 }, (_, i) => ({ name: `S${i}`, value: 'On', help: 'h' }));
+    const many = Array.from({ length: 57 }, (_, i) => ({ name: `S${i}`, value: 'On', help: 'h' }));
     for (const bad of [
       [{ name: 'Weave', value: 'Off' }],
       [{ name: '', value: 'Off', help: 'h' }],
