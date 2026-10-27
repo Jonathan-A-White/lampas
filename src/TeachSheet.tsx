@@ -4,13 +4,13 @@
 // easiestVerse) woven (src/data/weave.ts) with the new word in Greek as well and its English in small grey beneath it. At the foot Got it,
 // I know this, Not now (skipped for today only) and Ask the tutor. Each answer moves on to the next new word; the sheet closes when none is left.
 import { useEffect, useMemo, useState } from 'react';
-import { type Chapter, wordParse } from './data/chapter';
+import { type Chapter, sourceLanguage, wordParse } from './data/chapter';
 import { type Candidate, easiestVerse } from './data/frontier';
 import { teachWord, type WordOutcome } from './data/repositories';
 import { skipForToday } from './data/skipped';
 import { weaveForTeaching } from './data/weave';
 import { publish, useLatest } from './events/bus';
-import { pronunciationOf } from './speech/pronunciation';
+import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciation';
 import { proseOf } from './speech/proseOf';
 import { LessonReadAloud } from './speech/ReadAloud';
 import { SpeakButton } from './speech/SpeakButton';
@@ -19,7 +19,7 @@ import { focusOnMount } from './ui/focus';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { WordPicture } from './WordPicture';
-import { GREEK_LANG } from './script/greekLang';
+import { faceOf } from './script/greekLang';
 import { HeartOfWord } from './HeartOfWord';
 
 const BUTTON = 'min-h-12 min-w-0 rounded-xl border px-3 text-base font-medium disabled:opacity-50';
@@ -48,6 +48,9 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
+  // the chapter's own language: a Hebrew word is drawn large, right to left, respelt by the Hebrew scheme he chose and heard in the Hebrew voice (mw-gdcyf98.19)
+  const lang = sourceLanguage(chapter);
+  const hebrew = lang === 'hbo';
   const current = candidates[0];
   // The lemma whose answer is being written: its buttons wait until the next word replaces it.
   const [pending, setPending] = useState<string | null>(null);
@@ -76,7 +79,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
   const teach = (outcome: WordOutcome): void => {
     if (busy) return;
     setPending(current.lemma);
-    teachWord(current.lemma, current.gloss, outcome).catch((error: unknown) => {
+    teachWord(current.lemma, current.gloss, outcome, undefined, lang).catch((error: unknown) => {
       console.error('could not keep the new word', error);
       setPending(null);
     });
@@ -106,14 +109,21 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <p data-testid="teach-lemma" {...GREEK_LANG} className="min-w-0 break-words font-greek text-5xl font-bold">
+                <p data-testid="teach-lemma" {...faceOf(lang, { greek: 'text-5xl', hebrew: 'hebrew-form' }, 'min-w-0 break-words font-bold')}>
                   {current.lemma}
                 </p>
-                <SpeakButton text={current.lemma} id={`teach:${current.lemma}`} label="Hear it" kind="speaker" className="min-h-12 min-w-12 shrink-0" />
+                <SpeakButton
+                  text={current.lemma}
+                  id={`teach:${current.lemma}`}
+                  label="Hear it"
+                  kind="speaker"
+                  language={hebrew ? 'hebrew' : undefined}
+                  className="min-h-12 min-w-12 shrink-0"
+                />
                 <LessonReadAloud id={`teach-word:${current.lemma}`} text={proseOf([current.lemma, current.gloss, parse ? `As it first stands in the chapter: ${parse}` : null])} className="ml-auto" />
               </div>
               <p data-testid="teach-translit" className="mt-1 break-words text-xl text-muted">
-                {pronunciationOf(pronunciation).respell(current.lemma)}
+                {hebrew ? chosenHebrewPronunciation().respell(current.lemma) : pronunciationOf(pronunciation).respell(current.lemma)}
               </p>
               <p data-testid="teach-gloss" className="mt-1 break-words text-2xl">
                 {current.gloss}
@@ -147,14 +157,14 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
                 if (!weft) return <span key={i} data-plain>{chunk.t}{' '}</span>;
                 const greek = weft.words.map((w) => w.t).join(' ');
                 return weft.learning ? (
-                  <span key={i} data-new {...GREEK_LANG} className="mr-1 inline-flex flex-col items-center align-top font-greek text-[length:var(--lp-greek-size)] leading-tight text-accent">
+                  <span key={i} data-new {...faceOf(lang, { greek: '', hebrew: 'reader-hebrew' }, 'mr-1 inline-flex flex-col items-center align-top text-[length:var(--lp-greek-size)] leading-tight text-accent')}>
                     <span data-greek className="font-bold">{greek}</span>
                     <span data-hint lang="en" className="whitespace-nowrap font-sans text-sm font-normal text-muted">
                       {chunk.t}
                     </span>
                   </span>
                 ) : (
-                  <span key={i} {...GREEK_LANG} className="mr-1 font-greek text-[length:var(--lp-greek-size)] text-accent">
+                  <span key={i} {...faceOf(lang, { greek: '', hebrew: 'reader-hebrew' }, 'mr-1 text-[length:var(--lp-greek-size)] text-accent')}>
                     {greek}
                   </span>
                 );
@@ -162,7 +172,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
             </p>
             {marked ? null : (
               <p className="mt-2 text-base text-muted">
-                In this verse: <span {...GREEK_LANG} className="font-greek text-xl">{forms.join(', ')}</span>
+                In this verse: <span {...faceOf(lang, { greek: 'text-xl', hebrew: 'hebrew-choice' })}>{forms.join(', ')}</span>
               </p>
             )}
           </div>

@@ -3,12 +3,14 @@
 // once whether it was right; a miss shows the right choice and the full parsing, and so does the last step of a word.
 // Every question has Ask the tutor and Talk about it, which send him to the Reader on that verse (src/nav/readerRequest.ts).
 // The words come from src/data/drill.ts; each answer is kept per word and step (src/data/repositories/drills.ts).
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { loadChapter } from './data/chapter';
 import { drawDrill, type DrillQuestion } from './data/drill';
 import { clearDrill, readDrill, saveDrill, type SavedDrill } from './data/drillKeep';
 import type { Random } from './data/quiz';
 import { getStudyChapter } from './data/readerChapter';
+import { studyLanguage } from './data/studyLanguage';
 import { listWords, recordDrillStep } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { askInReader, talkInReader } from './nav/readerRequest';
@@ -17,7 +19,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
-import { GREEK_LANG } from './script/greekLang';
+import { faceOf } from './script/greekLang';
 import { ReferenceLink } from './markdown/ReferenceCard';
 
 interface Session {
@@ -60,7 +62,8 @@ const keep = (s: Session, away: number | null = null): void =>
   saveDrill({ questions: s.questions, question: s.question, step: s.step, picked: s.picked, missed: s.missed, asked: s.asked, right: s.right, away });
 
 async function drawRound(random: Random): Promise<DrillQuestion[]> {
-  const open = getStudyChapter();
+  // the chapter of the language he is studying: the open chapter's when he chose it, else the one he chose, else the segment's (src/data/studyLanguage.ts)
+  const open = getStudyChapter(await studyLanguage());
   const [words, chapter] = await Promise.all([listWords(), loadChapter(open.book, open.chapter)]);
   return drawDrill(chapter, words, random);
 }
@@ -85,8 +88,7 @@ function VerseWithWord({ q }: { q: DrillQuestion }) {
     <p
       ref={box}
       data-testid="drill-verse"
-      {...GREEK_LANG}
-      className="relative max-h-[20dvh] overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface px-3 py-2 font-greek text-2xl leading-snug"
+      {...faceOf(q.lang, { greek: 'text-2xl', hebrew: 'hebrew-choice' }, 'relative max-h-[20dvh] overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface px-3 py-2 leading-snug')}
     >
       {q.words.map((w, i) => (
         <span key={i}>
@@ -143,7 +145,9 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   const finished = s.status === 'ready' && total > 0 && s.question >= total;
   const question = s.questions[s.question];
   const step = question?.steps[s.step];
-  const reader = getStudyChapter();
+  // the chapter named in the header: the language of the word being drilled, else the language he studies now
+  const studying = useLiveQuery(studyLanguage, []);
+  const reader = getStudyChapter(question ? (question.lang ?? 'grc') : (studying ?? 'grc'));
   // Ask the tutor and Talk about it move up into the place Next stood when the next step is drawn: a second tap of a double tap on Next lands on
   // one of them, so they wait for the step to settle (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(`${s.question}:${s.step}`);
@@ -223,7 +227,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
               <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
                 {s.missed.map((i) => (
                   <li key={i} data-missed={s.questions[i].lemma} className="px-3 py-2">
-                    <span {...GREEK_LANG} className="block break-words font-greek text-2xl">{s.questions[i].form}</span>
+                    <span {...faceOf(s.questions[i].lang, { greek: 'text-2xl', hebrew: 'hebrew-choice' }, 'block break-words')}>{s.questions[i].form}</span>
                     <span className="block break-words text-sm text-muted">
                       <ReferenceLink written={s.questions[i].reference} mark={s.questions[i].form} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">
                         {s.questions[i].reference}
@@ -303,7 +307,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
         </p>
         <p data-testid="drill-step" data-step-id={step.id} className="mt-3 text-center text-xl font-semibold">
           What is the {step.label.toLowerCase()} of{' '}
-          <span {...GREEK_LANG} className="font-greek text-2xl">
+          <span {...faceOf(question.lang, { greek: 'text-2xl', hebrew: 'hebrew-choice' })}>
             {question.form}
           </span>
           ?

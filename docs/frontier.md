@@ -94,3 +94,20 @@ a week) are PROVISIONAL.
 the start of the clean run are kept by `recordRound` (Review's end card) in the settings store under `paceRounds` as JSON, no table:
 a round under 60 percent, or one more than a week after the last, starts the clean run again, and a week with no round is no clean week.
 It is a pace of how many are offered at a time, not a count of the words taught today.
+
+## Hebrew words (mw-gdcyf98.19)
+
+An Old Testament chapter teaches Hebrew words the way a New Testament chapter teaches Greek ones. The language rule: a chapter's new words are of the chapter's own language, and a language is
+never mixed into another's.
+
+- `useNewWords(chapter, pace)` reads the language from the chapter (`sourceLanguage`), loads that language's word counts (`loadFrequency('hbo')`: `frequency-hbo.json`) and counts only his words of
+  that language (`listSolidLemmas`, `listLearningLemmas` and `listDroppedLemmas` take the language). `pickFrontier` is the same function with the same rule for both; nothing in it knows a language.
+  Genesis 1's first three for a fresh reader are אֵת, עַל and אֶל (`tests/unit/hebrew-frontier.test.ts`), a Greek chapter's are as they were.
+- The pace is the dial of the chapter's language (`usePace(source)`): none below Learning, so Hebrew at Learning or above, 3 new words a day (the setting is one for both languages, PROVISIONAL). At
+  English only, or with the Hebrew dial under Learning, an Old Testament chapter has no New chip.
+- The teach sheet draws a Hebrew word large (`hebrew-form`), right to left, with its respelling by the Hebrew scheme he chose (`chosenHebrewPronunciation().respell`), the gloss, how it first stands
+  in the chapter and an easy verse woven in Hebrew with the English of the new word beneath; Hear it says it in the Hebrew voice; Got it keeps it with `lang: 'hbo'` (`teachWord(..., lang)`).
+- Words lists the words of one language: the one chosen, or with both chosen the side of the Greek | Hebrew segment (`SourceSegment`, kept in `lampas.sourceSegment`), sorted with a Hebrew collator.
+  Review has the same segment on its start screen, asks that side's words and counts all that are due.
+- The Quick test asks the words of every language he chose; a Hebrew word is asked among the glosses of the Hebrew seed and his Hebrew words (`distractorsFor`), shows its form from the Hebrew
+  chapter he last read, and is spoken with 'hebrew'. The Parsing drill reads the chapter of the language in hand (`studyLanguage`) and, on a Hebrew word, asks its terms (`data/hebrewDrill.ts`).

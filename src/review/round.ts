@@ -3,7 +3,8 @@ import { ROUND_SIZE, type Random } from '../data/quiz';
 import { gapsOf } from '../data/grammar/inference';
 import { IDEA_KIND } from '../data/grammar/ladder';
 import { levelsOf } from '../data/grammar/goalProgress';
-import { LESSON_KIND, listDue, listFetchedIdeas, listLevels, reviewsOf, type ItemRef, type Review } from '../data/repositories';
+import { LESSON_KIND, listDue, listFetchedIdeas, listLevels, listWords, reviewsOf, type ItemRef, type Review } from '../data/repositories';
+import { languageOfWord, reviewLanguages } from '../data/studyLanguage';
 import { KINDS, fillWords, kindRank, type ReviewItem } from './kinds';
 
 export interface ReviewRound {
@@ -52,7 +53,11 @@ export async function drawReviewRound(random: Random, now = Date.now(), size = R
   }
   // listDue has them longest overdue first and the sort is stable, so ranking by kind keeps that order within a kind
   // a due passage lesson is not asked in a round (Review's start screen opens it, src/review/kinds.ts LESSON)
-  const owed = (await listDue(undefined, now)).filter((r) => kindRank(r.kind) >= 0 && r.kind !== LESSON_KIND).sort((a, b) => kindRank(a.kind) - kindRank(b.kind));
+  const asked = (await listDue(undefined, now)).filter((r) => kindRank(r.kind) >= 0 && r.kind !== LESSON_KIND);
+  // a word is asked in a language he chose (the segment's alone where both are); the others stay due for the other segment
+  const play = new Set(await reviewLanguages());
+  const lang = new Map((await listWords()).map((w) => [w.lemma, languageOfWord(w)]));
+  const owed = asked.filter((r) => r.kind !== 'word' || play.has(lang.get(r.id) ?? 'grc')).sort((a, b) => kindRank(a.kind) - kindRank(b.kind));
   // the exact gaps of the letters, sounds and marks come first, due or not
   const gaps = await gapRows(now);
   // then the ideas the mill wrote more items for, which he missed in the round before

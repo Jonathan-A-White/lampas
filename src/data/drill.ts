@@ -2,9 +2,10 @@
 // to ten words drawn from a chapter and the words he knows. Nothing here touches the store or the screen; the random
 // source is passed in (mulberry32 in tests), as in quiz.ts. A step's wrong choices are near misses first (choices.ts, mw-i7xe0n.7): the value a reader
 // mistakes the right one for (aorist for imperfect, middle for passive), or the same answer with one of its features changed ('plural masculine' for 'singular masculine').
-import { wordParse, type Chapter } from './chapter';
+import { sourceLanguage, wordParse, type Chapter } from './chapter';
 import { OPTION_COUNT, choicesOf } from './choices';
 import type { Word } from './db';
+import { hebrewSteps, termsOf } from './hebrewDrill';
 import { PARTS_OF_SPEECH, splitParse, type ParseFeature, type ParseFeatureId } from './parseCode';
 import { isFormOf, lemmasOf, shuffle, type Random } from './quiz';
 
@@ -39,10 +40,12 @@ export interface DrillQuestion {
   book?: string;
   chapter: number;
   verse: number;
-  /** the Greek words of the verse, in order; `at` is the one asked */
+  /** 'hbo' for a Hebrew word (its verse is drawn right to left in Hebrew); absent means Greek */
+  lang?: 'hbo';
+  /** the words of the verse in the language of the chapter, in order; `at` is the one asked */
   words: string[];
   at: number;
-  /** the RP code, 'V-PAP-DPM' */
+  /** the RP code, 'V-PAP-DPM'; for a Hebrew word the table's code, 'V-Qal-Perf-3ms' */
   code: string;
   /** the code in words, for after the answer */
   parsing: string;
@@ -147,8 +150,9 @@ interface Candidate {
   parsable: boolean;
 }
 
-/** The places in the chapter where a word he knows stands, each place claimed by one word. */
+/** The places in the chapter where a word he knows stands, each place claimed by one word. A Hebrew chapter's places are those of his Hebrew words with a parsing, a Greek chapter's those of his Greek ones. */
 function candidatesOf(chapter: Chapter, words: readonly Word[]): Candidate[] {
+  const hebrew = sourceLanguage(chapter) === 'hbo';
   const headwords = new Set(words.map((w) => nfc(w.lemma)));
   const claimed = new Set<string>();
   const found: Candidate[] = [];
@@ -160,8 +164,10 @@ function candidatesOf(chapter: Chapter, words: readonly Word[]): Candidate[] {
       v.g.forEach((g, at) => {
         const key = `${v.n}:${at}`;
         if (claimed.has(key) || !isFormOf(g, lemmas, others)) return;
+        // a Hebrew word is parsed from the chapter's plain words for its code; one the chapter gives none cannot be drilled
+        if (hebrew && termsOf(wordParse(chapter, g)).length === 0) return;
         claimed.add(key);
-        found.push({ word, verse: v.n, at, code: g.p, parsable: splitParse(g.p).features.length > 0 });
+        found.push({ word, verse: v.n, at, code: g.p, parsable: hebrew ? termsOf(wordParse(chapter, g)).length > 1 : splitParse(g.p).features.length > 0 });
       });
     }
   }
@@ -181,7 +187,10 @@ function onePerWord(order: readonly Word[], byWord: ReadonlyMap<string, Candidat
  * when he has them, five learning ones first. Words that are only their part of speech (a particle, a preposition)
  * come after every word with more to parse, and only when the round would be short without them.
  */
-export function drawDrill(chapter: Chapter, words: readonly Word[], random: Random, size = DRILL_SIZE): DrillQuestion[] {
+export function drawDrill(chapter: Chapter, allWords: readonly Word[], random: Random, size = DRILL_SIZE): DrillQuestion[] {
+  const hebrew = sourceLanguage(chapter) === 'hbo';
+  // a chapter is drilled on the words of its own language (a word stored with no language is Greek)
+  const words = allWords.filter((w) => (w.lang ?? 'grc') === (hebrew ? 'hbo' : 'grc'));
   const all = candidatesOf(chapter, words);
   const group = (list: Candidate[]) => {
     const byWord = new Map<string, Candidate[]>();
@@ -206,6 +215,7 @@ export function drawDrill(chapter: Chapter, words: readonly Word[], random: Rand
     const g = verse.g[c.at];
     return {
       lemma: c.word.lemma,
+      ...(hebrew ? { lang: 'hbo' as const } : {}),
       form: g.t,
       reference: `${chapter.book} ${chapter.chapter}:${verse.n}`,
       book: chapter.code,
@@ -215,7 +225,7 @@ export function drawDrill(chapter: Chapter, words: readonly Word[], random: Rand
       at: c.at,
       code: c.code,
       parsing: wordParse(chapter, g),
-      steps: buildSteps(c.code, random),
+      steps: hebrew ? hebrewSteps(wordParse(chapter, g), random) : buildSteps(c.code, random),
     };
   });
 }

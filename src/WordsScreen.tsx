@@ -2,6 +2,7 @@
 // solid -> learning -> dropped (after a confirm) -> learning again.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
+import type { SourceLanguage } from './data/chapter';
 import { listWords, setWordState, type Word, type WordState } from './data/repositories';
 import { backTo, navigate, openPlacement } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
@@ -12,7 +13,11 @@ import { SpeakButton } from './speech/SpeakButton';
 import { NO_SELECT, useLongPress } from './ui/longPress';
 import { focusOnMount } from './ui/focus';
 import { WordPicture } from './WordPicture';
-import { GREEK_LANG } from './script/greekLang';
+import { faceOf } from './script/greekLang';
+import { languageOfLemma } from './data/lemma';
+import { languageOfWord } from './data/studyLanguage';
+import { SourceSegment } from './ui/SourceSegment';
+import { useLanguageInHand } from './useLanguageInHand';
 
 const NEXT: Record<WordState, WordState> = { solid: 'learning', learning: 'dropped', dropped: 'learning' };
 
@@ -22,14 +27,15 @@ const PILL: Record<WordState, string> = {
   dropped: 'border-line text-muted line-through',
 };
 
-const greek = new Intl.Collator('el');
+const collators = { grc: new Intl.Collator('el'), hbo: new Intl.Collator('he') };
 
 /** One word of the list: a tap changes what he knows of it, a long press says it (src/ui/longPress.ts). */
 function WordRow({ word: w, onTap }: { word: Word; onTap: (w: Word) => void }) {
-  const press = useLongPress(() => onTap(w), () => void speakWord(w.lemma, 'greek'));
+  const lang = languageOfWord(w);
+  const press = useLongPress(() => onTap(w), () => void speakWord(w.lemma, lang === 'hbo' ? 'hebrew' : 'greek'));
   return (
     <li className="flex items-stretch">
-      <SpeakButton text={w.lemma} id={`word:${w.lemma}`} label="Hear it" kind="speaker" className="w-12 shrink-0 rounded-l-xl" />
+      <SpeakButton text={w.lemma} id={`word:${w.lemma}`} label="Hear it" kind="speaker" language={lang === 'hbo' ? 'hebrew' : undefined} className="w-12 shrink-0 rounded-l-xl" />
       <button
         type="button"
         data-lemma={w.lemma}
@@ -39,7 +45,7 @@ function WordRow({ word: w, onTap }: { word: Word; onTap: (w: Word) => void }) {
       >
         <WordPicture lemma={w.lemma} size={56} className={w.state === 'dropped' ? 'opacity-50' : ''} />
         <span className="min-w-0 flex-1">
-          <span {...GREEK_LANG} className={`block break-words font-greek text-2xl ${w.state === 'dropped' ? 'text-muted' : ''}`}>
+          <span {...faceOf(lang, { greek: 'text-2xl', hebrew: 'hebrew-choice' }, `block break-words ${w.state === 'dropped' ? 'text-muted' : ''}`)}>
             {w.lemma}
           </span>
           <span className="block break-words text-sm text-muted">{w.gloss}</span>
@@ -54,7 +60,7 @@ function WordRow({ word: w, onTap }: { word: Word; onTap: (w: Word) => void }) {
 const FROM_READING = 0.5;
 
 /** Imported words with no lesson come first so he sees what he just added, then the words from his reading; then lessons in order. */
-function byLesson(words: Word[]): { lesson: number; words: Word[] }[] {
+function byLesson(words: Word[], lang: SourceLanguage): { lesson: number; words: Word[] }[] {
   const groups = new Map<number, Word[]>();
   for (const w of words) {
     const key = w.lesson === 0 && w.source === 'frontier' ? FROM_READING : w.lesson;
@@ -62,7 +68,7 @@ function byLesson(words: Word[]): { lesson: number; words: Word[] }[] {
   }
   return [...groups.entries()]
     .sort(([a], [b]) => a - b)
-    .map(([lesson, ws]) => ({ lesson, words: ws.sort((a, b) => greek.compare(a.lemma, b.lemma)) }));
+    .map(([lesson, ws]) => ({ lesson, words: ws.sort((a, b) => collators[lang].compare(a.lemma, b.lemma)) }));
 }
 
 function countLine(words: Word[]): string {
@@ -73,7 +79,11 @@ function countLine(words: Word[]): string {
 }
 
 export function WordsScreen() {
-  const words = useLiveQuery(listWords, []);
+  const everyWord = useLiveQuery(listWords, []);
+  // the words of the one language he chose, or of the Greek | Hebrew segment's where both are (mw-gdcyf98.19); at English only, the Greek ones
+  const { lang: inHand, both } = useLanguageInHand();
+  const lang: SourceLanguage = inHand ?? 'grc';
+  const words = everyWord && inHand !== undefined ? everyWord.filter((w) => languageOfWord(w) === lang) : undefined;
   const [confirming, setConfirming] = useState<string | null>(null);
   const scrollRef = useScrollMemory('words');
   useReportScreen({ name: 'Words', facts: words ? [{ label: 'His words', value: countLine(words) }] : [] });
@@ -84,7 +94,7 @@ export function WordsScreen() {
     else void setWordState(w.lemma, next);
   };
 
-  const groups = byLesson(words ?? []);
+  const groups = byLesson(words ?? [], lang);
   return (
     <>
       <ScreenHeader
@@ -100,6 +110,7 @@ export function WordsScreen() {
       />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-3">
         <div>
+        {both ? <SourceSegment label="Words language" /> : null}
         {words?.length === 0 ? (
           <section data-testid="words-empty" aria-label="No words yet" className="px-3 pt-8 text-center">
             <p className="text-lg font-medium">No words yet.</p>
@@ -139,7 +150,7 @@ export function WordsScreen() {
             className="w-full rounded-t-2xl border-t border-line bg-surface p-4 pb-[calc(1rem+var(--lp-bar-inset))]"
           >
             <h2 id="drop-title" className="text-lg font-semibold">
-              Drop <span {...GREEK_LANG} className="font-greek text-2xl">{confirming}</span>?
+              Drop <span {...faceOf(languageOfLemma(confirming), { greek: 'text-2xl', hebrew: 'hebrew-choice' })}>{confirming}</span>?
             </h2>
             <p className="mt-1 text-muted">A dropped word is no longer tested. Tap it again to bring it back.</p>
             <div className="mt-4 grid grid-cols-2 gap-3">

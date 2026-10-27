@@ -125,9 +125,9 @@ export async function listSolidHeadwords(): Promise<string[]> {
   return solid.sort((a, b) => a.since - b.since || a.lesson - b.lesson || a.lemma.localeCompare(b.lemma)).map((w) => w.lemma);
 }
 
-/** Every lemma a dropped word goes by (NFC), like listSolidLemmas: the new words the teach sheet must never offer. */
-export async function listDroppedLemmas(): Promise<Set<string>> {
-  const dropped = await db.words.where('state').equals('dropped').toArray();
+/** Every lemma a dropped word goes by (NFC), like listSolidLemmas: the new words the teach sheet must never offer. With a language, the dropped words of that language alone. */
+export async function listDroppedLemmas(lang?: SourceLanguage): Promise<Set<string>> {
+  const dropped = await wordsIn('dropped', lang);
   return new Set(dropped.flatMap((w) => [w.lemma, ...w.lemmas]).map((l) => l.normalize('NFC')));
 }
 

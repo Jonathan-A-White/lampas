@@ -227,8 +227,8 @@ Feature: Lampas reads the Old Testament in English
     Then the session says "Read and say"
     And the session shows "The men knew that he was fleeing from the presence of the LORD"
 
-  Scenario: Review, the Quick test and the Parsing drill say nothing about an open Old Testament chapter
+  Scenario: Review, the Quick test and the Parsing drill speak of an open Old Testament chapter when Hebrew is chosen
     Given Lampas is opened on Jonah 1 with Logos on
-    Then the ladders, the quizzes and Review draw their forms from "Romans 8", not from "Jonah 1"
+    Then the Greek words draw their forms from "Romans 8" and the Hebrew words from "Jonah 1", the chapter open
     When he opens Review, the Quick test and the Parsing drill in turn
     Then each opens with its own heading and no error

@@ -6,7 +6,7 @@ import { TapToHear } from './TapToHear';
 import { announce } from './ui/live';
 import { useSettled } from './ui/settle';
 import { WordPicture } from './WordPicture';
-import { GREEK_LANG } from './script/greekLang';
+import { faceOf, GREEK_LANG } from './script/greekLang';
 import { ReferenceLink } from './markdown/ReferenceCard';
 import { HeartOfWord } from './HeartOfWord';
 import type { Grade } from './data/schedule';
@@ -54,7 +54,7 @@ export function WordQuestion({ question, index, picked, onPick, onGrade, grade =
       <div className="text-center">
         <div className="flex flex-wrap items-center justify-center gap-4">
           <WordPicture lemma={question.lemma} size={80} testId="picture" />
-          <p data-testid="prompt" data-lemma={question.lemma} {...GREEK_LANG} className="min-w-0 break-words font-greek text-5xl">
+          <p data-testid="prompt" data-lemma={question.lemma} {...faceOf(question.lang, { greek: 'text-5xl', hebrew: 'hebrew-form' }, 'min-w-0 break-words')}>
             {question.prompt}
           </p>
         </div>
@@ -69,7 +69,7 @@ export function WordQuestion({ question, index, picked, onPick, onGrade, grade =
               <ReferenceLink written={question.reference ?? ''} mark={question.form} className="inline-flex min-h-11 items-center px-1 text-accent underline underline-offset-4">
                 {question.reference}
               </ReferenceLink>{' '}
-              as <span {...GREEK_LANG}>{question.form}</span>
+              as <span {...(question.lang === 'hbo' ? faceOf('hbo', { greek: '', hebrew: '' }) : GREEK_LANG)}>{question.form}</span>
             </>
           ) : (
             ''

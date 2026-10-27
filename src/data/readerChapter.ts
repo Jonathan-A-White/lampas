@@ -3,6 +3,7 @@
 // (lampas.chapter), not Dexie, because the screens read it synchronously before they render. Words, their review rows and
 // results are not per chapter, so moving to another chapter takes none of them away.
 import { bookOf, isHebrewBook, titleOf } from './books';
+import type { SourceLanguage } from './chapter';
 
 export interface OpenChapter {
   /** the book's code as public/data/index.json has it: 'rom', '1jn' */
@@ -15,6 +16,11 @@ export interface OpenChapter {
 const KEY = 'lampas.chapter';
 /** The last chapter the Reader had open that is read in Greek (mw-uqlxea.3): where the ladders, the quizzes and Review draw their forms from. */
 const STUDY_KEY = 'lampas.studyChapter';
+/** The last chapter the Reader had open that is read in Hebrew (mw-gdcyf98.19): where the Hebrew words of the quizzes and Review draw their forms from. */
+const HEBREW_STUDY_KEY = 'lampas.studyChapterHebrew';
+
+/** Where the Hebrew words' forms come from before he has opened any Old Testament chapter. */
+export const DEFAULT_HEBREW_CHAPTER: OpenChapter = { book: 'gen', chapter: 1, title: 'Genesis 1' };
 
 /** What a fresh install opens, and what a stored value that cannot be read falls back to. */
 export const DEFAULT_CHAPTER: OpenChapter = { book: 'rom', chapter: 8, title: 'Romans 8' };
@@ -57,9 +63,11 @@ export function getOpenChapter(): OpenChapter {
 }
 
 /** The chapter the ladders, the quizzes and Review draw their forms from: the one the Reader has open, or, while that is an Old Testament chapter (read in English, with no Greek forms to
- *  draw), the last chapter of the New Testament it had open, or Romans 8. */
-export function getStudyChapter(): OpenChapter {
+ *  draw), the last chapter of the New Testament it had open, or Romans 8. For 'hbo' (the Hebrew words), the open chapter while it is an Old Testament one, else the last Old Testament chapter it
+ *  had open, or Genesis 1. */
+export function getStudyChapter(lang: SourceLanguage = 'grc'): OpenChapter {
   const open = getOpenChapter();
+  if (lang === 'hbo') return isHebrewBook(open.book) ? open : (read(HEBREW_STUDY_KEY) ?? DEFAULT_HEBREW_CHAPTER);
   return isHebrewBook(open.book) ? (read(STUDY_KEY) ?? DEFAULT_CHAPTER) : open;
 }
 
@@ -67,7 +75,7 @@ export function getStudyChapter(): OpenChapter {
 export function setOpenChapter(book: string, chapter: number): void {
   try {
     store()?.setItem(KEY, JSON.stringify({ book, chapter }));
-    if (!isHebrewBook(book)) store()?.setItem(STUDY_KEY, JSON.stringify({ book, chapter }));
+    store()?.setItem(isHebrewBook(book) ? HEBREW_STUDY_KEY : STUDY_KEY, JSON.stringify({ book, chapter }));
   } catch {
     // Storage full or refused: the next open is Romans 8, or the chapter in the address.
   }

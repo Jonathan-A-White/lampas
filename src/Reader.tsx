@@ -132,7 +132,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // chapter and the Greek of a New Testament one, so the saved view opens either), and the weave lays the English against the Hebrew.
   const hbo = isHebrewBook(BOOK);
   const settings = useReaderSettings(hbo ? 'hbo' : 'grc') ?? NO_SETTINGS;
-  const { level, view, weave, weaveShown, weaveOrder, solid, learning, layout, headings, readSpan } = settings;
+  const { level, view, weave, weaveShown, weaveOrder, solid, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
   const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
   // the language of the chapter's own words (the switch's last choice, the Hebrew or the Greek view); the book says it before the chapter has loaded
@@ -171,7 +171,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [teaching, setTeaching] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
   const pace = usePace(source);
-  const newWords = useNewWords(hbo ? null : chapter, solid, learning, pace?.count);
+  const newWords = useNewWords(chapter, pace?.count);
   const { asks, ask, resume: resumeAsk } = useAsks(BOOK, CHAPTER, TITLE, chapter);
   // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
   // or the Ask box on it holding the question.
