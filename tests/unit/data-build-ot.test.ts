@@ -281,7 +281,7 @@ describe('the files', () => {
     const before = dump(out);
     writeFileSync(join(raw, 'msb_nt_tables.tsv'), readFileSync('tests/fixtures/data/msb-slice.tsv'));
     writeFileSync(join(raw, 'tbesg.txt'), readFileSync('tests/fixtures/data/tbesg-slice.txt'));
-    await runBuild({ rawDir: raw, outDir: out, download });
+    await runBuild({ rawDir: raw, outDir: out, download, variants: false });
     for (const path of ['gen/1.json', 'jon/1.json', 'dan/2.json', 'lexicon-hbo.json', 'frequency-hbo.json']) {
       expect(existsSync(join(out, path)), path).toBe(true);
       expect(readFileSync(join(out, path), 'utf8')).toBe(before.split(`${path}\n`)[1].split('\n')[0]);
