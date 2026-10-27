@@ -124,8 +124,10 @@ so the Verse view and the Talk sheet he asked from do not cover it and it does n
 
 ## Hebrew in the tutor's text (mw-5r3p30.97)
 
-A Hebrew word in a response is for his eyes: `answerRuns` (and so `startAnswer`) leaves Hebrew letters out of what the English voice is given
-(`withoutScripts`, `src/script/scripts.ts`); the transliteration beside it is read as English. A Hebrew voice (he-IL) and tap-to-speak are a later story.
+A Hebrew word in a response is said in the Hebrew voice (mw-gdcyf98.27), the word itself at the Hebrew speed, as a Greek word is said in the Greek voice: `answerRuns`
+cuts the response with `src/speech/languageRuns.ts` (the cut a page of prose, `pageRuns`, makes too), a run of `hebrew` for each Hebrew stretch, so the English voice is never given
+Hebrew letters and the Hebrew is never skipped. The transliteration beside it ('רוּחַ ruach') is read as English; a capitalised respelling of the Hebrew word ('roo-AKH') is replaced by the Hebrew word, as a Greek respelling is.
+Each script of `src/script/scripts.ts` names the speech language it is `speaks`; a new language there is spoken by the same cut with no new branch. A tap on a Hebrew word still says it by itself (`script/HebrewWord.tsx`).
 
 ## A respelling of a Greek sound (mw-5r3p30.272)
 
