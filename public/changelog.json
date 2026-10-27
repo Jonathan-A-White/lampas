@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.5.2",
+    "date": "2026-10-27",
+    "story": "mw-5r3p30.787",
+    "kind": "new",
+    "text": "Review now asks how well you knew a word, Know it well, Kind of or Don't know, and brings it back sooner or later to match."
+  },
+  {
+    "version": "0.5.2",
+    "date": "2026-10-27",
+    "story": "mw-5r3p30.795",
+    "kind": "new",
+    "text": "Your requests can be filtered by Waiting, Adopted or Declined, with a count on each."
+  },
+  {
     "version": "0.5.1",
     "date": "2026-10-27",
     "story": "mw-zbjgn3r.8",

@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.2
+_2026-10-27_
+- New: Review now asks how well you knew a word, Know it well, Kind of or Don't know, and brings it back sooner or later to match.
+- New: Your requests can be filtered by Waiting, Adopted or Declined, with a count on each.
+
 ## 0.5.1
 _2026-10-27_
 - New: when you ask the tutor about a map, it can now also link you to the Logos Atlas, which opens in your own Logos.
