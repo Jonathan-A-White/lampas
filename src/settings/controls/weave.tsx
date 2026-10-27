@@ -13,7 +13,7 @@ const WEAVE_ROWS: Record<WeaveKey, { label: string; read: () => Promise<string>;
   weave: { label: 'Words', read: getWeave, options: [['off', 'Off'], ['solid', 'Solid'], ['solid+learning', '+ Learning']] },
   // a grammar extent (src/settings/definitions/grammarExtent.ts, mw-irpgqi.2): its options are the one table's
   weaveGrammar: { label: 'Grammar', read: getWeaveGrammar },
-  weaveOrder: { label: 'Order', read: () => getSetting(weaveOrderSetting), options: [['english', 'English'], ['greek', 'Greek']] },
+  weaveOrder: { label: 'Order', read: () => getSetting(weaveOrderSetting), options: [['english', 'English'], ['greek', 'Original']] },
 };
 
 /** The Weave's rows: a small label at the left and its chips on one line. */

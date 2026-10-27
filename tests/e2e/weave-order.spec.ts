@@ -29,13 +29,13 @@ test('Order Greek puts the Reader\'s first words in the Greek order, one line of
   const box = await order.boundingBox();
   expect(box?.height).toBeLessThan(64);
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
-  for (const chip of ['English', 'Greek']) {
+  for (const chip of ['English', 'Original']) {
     const b = await order.getByRole('button', { name: chip, exact: true }).boundingBox();
     expect(b?.height).toBeGreaterThanOrEqual(47.5);
     expect(b?.width).toBeGreaterThanOrEqual(47.5);
   }
-  await order.getByRole('button', { name: 'Greek', exact: true }).click();
-  await expect(order.getByRole('button', { name: 'Greek', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await order.getByRole('button', { name: 'Original', exact: true }).click();
+  await expect(order.getByRole('button', { name: 'Original', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await shot(page, 'weave-order-settings');
 
   await leaveSettings(page);
