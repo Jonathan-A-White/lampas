@@ -59,7 +59,7 @@ Like the Greek view it shows from the Hebrew dial's Curious step up (`viewAt` of
 
 - **The Hebrew view** draws each verse right to left (`lang="he" dir="rtl"`, the `.script-he` face at the Greek size, `.reader-hebrew`), the words in the chapter's own order, pointed and accented as the data has
   them (the WLC's cantillation is drawn: it is the text; it is only taken off when the phone speaks it). The verse number stands at the right edge, a section heading is right-aligned, the play button is at the left.
-  Every word is a tap (44 px high, `data-word` its index in the verse). A tap opens the Hebrew word sheet (mw-5vvlay.2, docs/layout/word-sheet.md): the pointed form, its transliteration, the lemma, gloss, definition and parsing, Strong's number and Listen (a word the English has no chunk for,
+  Every word is a tap (44 px high, `data-word` its index in the verse). A tap opens the Hebrew word sheet (mw-5vvlay.2, docs/layout/word-sheet.md): the pointed form, its respelling in the chosen Hebrew pronunciation (mw-gdcyf98.6), the lemma, gloss, definition and parsing, Strong's number and Listen (a word the English has no chunk for,
   such as the sign of the direct object אֵת, has its sheet too).
 - **The weave** lays the English chunks against the Hebrew words of his solid (and learning) Hebrew lemmas, exactly as the Greek weave does: a chunk whose every Hebrew word is a lemma of his stands in Hebrew,
   the others stay English. A long press on **Weave** flips the Order: **Hebrew word order** lays the chunks out in the Hebrew order, right to left (each English chunk an isolated left-to-right piece); **English word order** puts it back.

@@ -69,3 +69,27 @@ test('with no Hebrew voice the tap says so and speaks nothing', async ({ page })
   expect((await spoken(page)).slice(before)).toEqual([]);
   await shot(page, 'hebrew-no-voice');
 });
+
+// Listening with Hebrew chosen (mw-gdcyf98.6): the Hebrew voice and speed rows beside the Greek, the one Pronunciation row for both, and a Hebrew word said at the Hebrew speed.
+test('Listening with Hebrew chosen has a Hebrew speed and voice, one Pronunciation row for both, and the switch swaps it for two', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await fakeSpeech(page, ['en-US', 'el-GR', 'he-IL']);
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  await page.getByRole('group', { name: 'Which languages?', exact: true }).getByRole('button', { name: 'Greek and Hebrew', exact: true }).click();
+  await page.getByRole('list', { name: 'Settings groups' }).getByRole('button', { name: /^Listening/ }).click();
+  await expect(page.getByRole('heading', { name: 'Listening', exact: true, level: 1 })).toBeVisible();
+  const speed = page.getByRole('slider', { name: 'Hebrew speed' });
+  await expect(speed).toBeVisible();
+  expect((await speed.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  await expect(page.getByRole('slider', { name: 'Greek speed' })).toBeVisible();
+  await expect(page.getByRole('radiogroup', { name: 'Pronunciation', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Hebrew pronunciation', exact: true, level: 3 })).toHaveCount(0);
+  await speed.fill('0.7');
+  await expect(speed).toHaveValue('0.7');
+  await page.getByRole('group', { name: 'Set each language on its own', exact: true }).getByRole('button', { name: 'On', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Hebrew pronunciation', exact: true, level: 3 })).toBeVisible();
+  await expect(page.getByRole('radiogroup', { name: 'Pronunciation', exact: true })).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await shot(page, 'listening-hebrew');
+});

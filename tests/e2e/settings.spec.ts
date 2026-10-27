@@ -68,8 +68,8 @@ test('Settings at phone width: the weave, the voices, the Greek pronunciation, W
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
   await openGroup(page, 'Listening');
   const picker = page.getByRole('combobox', { name: 'Greek voice' });
-  await expect(page.getByRole('radio', { name: 'Modern Greek' })).toBeChecked();
-  await tappable([page.getByRole('combobox', { name: 'English voice' }), picker, page.getByRole('radio', { name: 'Modern Greek' })]);
+  await expect(page.getByRole('radio', { name: 'Modern', exact: true })).toBeChecked();
+  await tappable([page.getByRole('combobox', { name: 'English voice' }), picker, page.getByRole('radio', { name: 'Modern', exact: true })]);
   expect(await picker.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
   await fitsPhone();
   await shot(page, 'settings');

@@ -3,7 +3,7 @@ import type { Immersive, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, 
 import type { Depth, TutorScript } from '../../script/scripts';
 import type { PlayTo } from '../../speech/readSpan';
 import type { Theme } from '../../appearance/themes';
-import type { SpeechRates } from '../../speech/languages';
+import type { SettableLanguage, SpeechRates } from '../../speech/languages';
 import type { GreekPronunciation } from '../../speech/pronunciation';
 import type { SettingValue } from '../../settings/define';
 import type { Goal } from '../../data/goal';
@@ -29,8 +29,8 @@ export type SettingsEvent =
   | { kind: 'script-depth-changed'; script: TutorScript['id']; depth: Depth }
   /** the Tips choice: whether the phone may send for a tip and show its card (kept for the pilot, as weave-changed) */
   | { kind: 'tips-changed'; tips: Tips }
-  /** the voices he chose in Settings, as the phone's voiceURI; null is the phone's default */
-  | { kind: 'voices-changed'; english: string | null; greek: string | null }
+  /** the voices he chose in Settings, one per language of src/speech/languages.ts, as the phone's voiceURI; null is the phone's default */
+  | { kind: 'voices-changed'; voices: Record<SettableLanguage, string | null> }
   | { kind: 'pronunciation-changed'; pronunciation: GreekPronunciation }
   /** the Theme he chose in Settings (kept for the pilot, as weave-changed) */
   | { kind: 'theme-changed'; theme: Theme }

@@ -27,7 +27,7 @@ import { storeUrl } from './resources/appStore';
 import { logos, logosStudy, type LogosStudy } from './resources/logos';
 import { armFallback } from './resources/openApp';
 import { topicOf } from './resources/topic';
-import { pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
+import { hebrewPronunciationOf, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
 import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { pushSheetStep, sheetsAbove, useSheetBack } from './ui/sheetBack';
@@ -35,6 +35,8 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { wordUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
 import { AllLexiconsSheet } from './library/AllLexiconsSheet';
+import { hebrewPronunciationSetting } from './settings/definitions/pronunciation';
+import { useSetting } from './settings/store';
 import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
 import { levelOf, type InterestLevels } from './settings/definitions/interest';
 import { useInterestLevels } from './settings/useInterestLevels';
@@ -270,7 +272,7 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
   );
 }
 
-/** A Hebrew word's card (an Old Testament chapter, mw-5vvlay.2): the pointed form large, right to left, with Listen in the phone's he-IL voice; its transliteration where the Greek has the respelling;
+/** A Hebrew word's card (an Old Testament chapter, mw-5vvlay.2): the pointed form large, right to left, with Listen in the phone's he-IL voice; its respelling in the chosen Hebrew scheme where the Greek has its own (mw-gdcyf98.6: the scholarly transliteration is no longer drawn);
  * the lemma, the Parsing as the chapter's parse map decodes it (plain words: the Grammar sheet explains Greek terms only), the Meaning and the Definition of the chapter's lex, Strong's and the English
  * of its chunk. No Paradigm row, Heart note or Help with this word row yet: they are Greek-only for now (docs/layout/word-sheet.md lists them as LATER). With Logos off the first card offers to turn it on. */
 function HebrewCard({ chapter, word, english, study, levels, offerLogos, onMissing, onAll }: {
@@ -285,6 +287,8 @@ function HebrewCard({ chapter, word, english, study, levels, offerLogos, onMissi
 }) {
   const strongsOn = study?.on.includes('strongs') ?? false;
   const logosOn = useLogosOn();
+  // the sound-alike respelling in the Hebrew scheme chosen in Settings, where the Greek sheet has its own; the data's scholarly transliteration is no longer drawn
+  const scheme = useSetting(hebrewPronunciationSetting);
   const parse = wordParse(chapter, word);
   const definition = chapter.lex[word.s]?.d ?? '';
   return (
@@ -296,8 +300,8 @@ function HebrewCard({ chapter, word, english, study, levels, offerLogos, onMissi
         </h2>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-2">
-        <p data-testid="sheet-transliteration" lang="en" className="min-w-0 break-words text-xl text-muted">
-          {word.tr}
+        <p data-testid="sheet-respelling" className="min-w-0 break-words text-xl text-muted">
+          {hebrewPronunciationOf(scheme).respell(word.t, word.tr)}
         </p>
         <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" />
       </div>

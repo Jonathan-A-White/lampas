@@ -32,13 +32,15 @@ describe('the names Settings draws', () => {
       { key: 'resource.logos', value: 'on' },
       { key: 'devotional', value: 'random' },
       { key: 'developerMode', value: 'on' },
+      { key: 'pronunciationSeparate', value: 'on' },
     ]);
     render(<SettingsScreen />);
     // a row is named by its own text, or by the heading of its section when it carries the section's name or stands alone in it
     const nameless: string[] = [];
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);
-      const mine = ROWS.filter((row) => !isHomeRow(row) && groupOf(row.section).id === group.id);
+      // Set each language on its own is On, so the two languages' rows are drawn and the Pronunciation family is not
+      const mine = ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation' && groupOf(row.section).id === group.id);
       await waitFor(() => expect([...document.querySelectorAll('[data-setting]')].map((el) => el.getAttribute('data-setting'))).toEqual(mine.map((r) => r.key)));
       for (const row of mine) {
         const section = SECTIONS.find((s) => s.id === row.section);

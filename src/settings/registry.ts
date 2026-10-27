@@ -68,7 +68,7 @@ import { RANDOM, devotionalForDay, devotionalOf, tickedDevotionals } from '../da
 import { normaliseNewWordsADay } from '../data/pace';
 import { publish, type AppEvent } from '../events/bus';
 import { LAYOUTS } from '../layout/layouts';
-import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP } from '../speech/languages';
+import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP, type SettableLanguage } from '../speech/languages';
 import { RESOURCES } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
 import { SOURCES } from '../maps/sources';
@@ -80,12 +80,13 @@ import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
 import { extentChoices, paradigmExtentSetting } from './definitions/grammarExtent';
-import { ANOTHER, askBySetting, audioBibleSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handwritingSetting, immersiveHintSetting, immersiveSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { ANOTHER, askBySetting, audioBibleSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
 import { greekFrom, greekInterestSetting, greekLevelOf } from './definitions/greekInterest';
 import { hebrewFrom, hebrewInterestSetting, hebrewLevelOf } from './definitions/hebrewInterest';
+import { familyOf, separateFrom } from './definitions/pronunciation';
 import { LANGUAGES_CHOICES, depthFrom, languagesOf, type Languages } from './definitions/interest';
 import { getSetting, setSetting, settingsStore } from './store';
 
@@ -208,6 +209,13 @@ const todaysDevotionalEntry: SettingEntry = {
 
 const textSizeId = (percent: number): SettingValue => TEXT_SIZES.find((t) => t.percent === percent)?.id ?? percent;
 
+/** The dependency of a language's voice and speed rows: English always, Greek and Hebrew from Curious on their own dial. */
+const languageFrom = (language: SettableLanguage): Dependency | undefined => (language === 'greek' ? greekFrom(1) : language === 'hebrew' ? hebrewFrom(1) : undefined);
+
+/** The voice he chose for each language (null: the phone's own pick), as voices-changed carries them. */
+const getVoices = async (): Promise<Record<SettableLanguage, string | null>> =>
+  Object.fromEntries(await Promise.all(LANGUAGES.map(async (l) => [l.id, await getVoice(l.id)] as const))) as Record<SettableLanguage, string | null>;
+
 const voiceEntries = LANGUAGES.map((l): SettingEntry => {
   const entry = choice(
     `${l.id}Voice`,
@@ -218,12 +226,11 @@ const voiceEntries = LANGUAGES.map((l): SettingEntry => {
     async (value) => {
       const voice = value === PHONE_VOICE || value === '' ? null : value;
       await setVoice(l.id, voice);
-      const other = await getVoice(l.id === 'english' ? 'greek' : 'english');
-      publish({ kind: 'voices-changed', english: l.id === 'english' ? voice : other, greek: l.id === 'greek' ? voice : other });
+      publish({ kind: 'voices-changed', voices: await getVoices() });
     },
     {
       section: 'voices',
-      dependsOn: l.id === 'greek' ? greekFrom(1) : undefined,
+      dependsOn: languageFrom(l.id),
       help: "Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's.",
     },
   );
@@ -234,7 +241,7 @@ const voiceEntries = LANGUAGES.map((l): SettingEntry => {
 const rateEntries = LANGUAGES.map(
   (l): SettingEntry => ({
     section: 'speed',
-    dependsOn: l.id === 'greek' ? greekFrom(1) : undefined,
+    dependsOn: languageFrom(l.id),
     key: `${l.id}Rate`,
     label: `${l.label} speed`,
     hint: `How fast ${l.label} is read aloud; ${DEFAULT_RATE} is normal, smaller is slower.`,
@@ -354,6 +361,45 @@ const languagesEntry: SettingEntry = {
   write: (value) => setLanguages(String(value) as Languages),
   show: (value) => `Which languages?: ${LANGUAGES_CHOICES.find((c) => c.value === value)?.label ?? String(value)}`,
 };
+
+/** Chooses the Greek pronunciation and tells the bus. */
+async function writeGreekPronunciation(value: string): Promise<void> {
+  await setGreekPronunciation(value);
+  publish({ kind: 'pronunciation-changed', pronunciation: value });
+}
+
+const hebrewPronunciationEntry = fromDefinition(hebrewPronunciationSetting);
+
+/** Puts both languages on the family's schemes: what writing the family does, and what turning 'Set each language on its own' off does. */
+async function applyFamily(id: unknown): Promise<void> {
+  const family = familyOf(id);
+  await writeGreekPronunciation(family.greek);
+  await hebrewPronunciationEntry.write(family.hebrew);
+}
+
+/** Pronunciation (the family, mw-gdcyf98.6): saved, then it writes both languages' own pronunciation. */
+const pronunciationEntry: SettingEntry = (() => {
+  const entry = fromDefinition(pronunciationSetting);
+  return {
+    ...entry,
+    write: async (value) => {
+      await entry.write(value);
+      await applyFamily(value);
+    },
+  };
+})();
+
+/** Set each language on its own: turning it off puts both languages back on the family (the two rows go, and what they held with them). */
+const pronunciationSeparateEntry: SettingEntry = (() => {
+  const entry = fromDefinition(pronunciationSeparateSetting);
+  return {
+    ...entry,
+    write: async (value) => {
+      await entry.write(value);
+      if (pronunciationSeparateSetting.parse(value) === 'off') await applyFamily(await getSetting(pronunciationSetting));
+    },
+  };
+})();
 
 /** Every talkable Settings item. (The screen draws them in src/settings/rows.ts's order, section by section.) */
 export const SETTINGS: readonly SettingEntry[] = [
@@ -539,18 +585,13 @@ export const SETTINGS: readonly SettingEntry[] = [
   fromDefinition(handwritingSetting),
   ...voiceEntries,
   ...rateEntries,
-  choice(
-    'greekPronunciation',
-    'Greek pronunciation',
-    'How Greek is pronounced when it is read aloud.',
-    PRONUNCIATIONS.map((p) => ({ value: p.id, label: p.label })),
-    getGreekPronunciation,
-    async (value) => {
-      await setGreekPronunciation(value);
-      publish({ kind: 'pronunciation-changed', pronunciation: value });
-    },
-    { section: 'pronunciation', dependsOn: greekFrom(1) },
-  ),
+  pronunciationEntry,
+  pronunciationSeparateEntry,
+  choice('greekPronunciation', 'Greek pronunciation', 'How Greek is pronounced when it is read aloud.', PRONUNCIATIONS.map((p) => ({ value: p.id, label: p.label })), getGreekPronunciation, writeGreekPronunciation, {
+    section: 'pronunciation',
+    dependsOn: separateFrom('grc'),
+  }),
+  hebrewPronunciationEntry,
   englishAccentEntry,
   ...resourceEntries,
   ...mapEntries,
@@ -567,6 +608,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   todaysDevotionalEntry,
   fromDefinition(dailyTicksSetting),
   fromDefinition(greekKeyboardSetting),
+  fromDefinition(hebrewKeyboardSetting),
   quizGoalEntry,
 ];
 

@@ -1,7 +1,7 @@
 # Pronunciation
 
 The word sheet says how to pronounce the word: under the Greek, a respelling in the pronunciation chosen in
-Settings > Greek pronunciation. The data's beta-code transliteration (`tr`, "cristw") is still in
+Settings > Listening > Pronunciation (the family, below). The data's beta-code transliteration (`tr`, "cristw") is still in
 `public/data` but no screen shows it.
 
 Modern Greek is the only Greek scheme so far; Erasmian is next. Hebrew (Israeli) is in the same registry, below. 'χριστῷ' is `khree-STO`, 'ἐντολή' is `en-do-LEE`:
@@ -234,8 +234,20 @@ Hebrew is in the same registry as the Greek (`src/speech/pronunciation.ts`, mw-g
 saved choice and the hard-sounds schema iterate Greek only), `pronunciationsOf('he')` the Hebrew one, `pronunciationOf(id)` finds a scheme of either, and
 `registerPronunciation(scheme)` files a scheme under its language. `src/speech/hebrewPronunciation.ts` is only re-exports of the Hebrew names (`HEBREW_PRONUNCIATIONS`,
 `DEFAULT_HEBREW_PRONUNCIATION`, `hebrewPronunciationOf(id?)`, `hebrewVoiceForm(text)`, `hebrewPointedForm(text)`), so what imported them still does. The speech code
-(`src/speech/greek.ts` `wordSpeech` for a held word or a speaker, `readAloud.ts` `textOf` for a verse read aloud) hands every Hebrew text through the default scheme's `voiceForm`;
-`src/script/hebrewSpeech.ts` `hebrewRespelling(word, tr?)` gives a Hebrew word's respelling. There is no setting to choose a scheme yet (story c2's), so the default is the one in use.
+(`src/speech/greek.ts` `wordSpeech` for a held word or a speaker, `readAloud.ts` `textOf` for a verse read aloud) hands every Hebrew text through the chosen scheme's `voiceForm`
+(`hebrewVoiceForm`, which reads the scheme `src/speech/settingsSync.ts` told `setHebrewPronunciation`; the default's until a saved choice is read);
+`src/script/hebrewSpeech.ts` `hebrewRespelling(word, tr?)` gives a Hebrew word's respelling.
+
+### One setting for both languages (mw-gdcyf98.6)
+
+Settings > Listening > Pronunciation is a **family** (`pronunciation`, src/settings/definitions/pronunciation.ts `PRONUNCIATION_FAMILIES`): one choice that sets both languages, **Modern** being
+Modern Greek and Israeli Hebrew. Writing the family writes `greekPronunciation` and `hebrewPronunciation` (a choice of `pronunciationsOf('he')`, saved under that key and told as `setting-changed`).
+**Set each language on its own** (`pronunciationSeparate`, Off to start) swaps the family row for the two rows, Greek pronunciation and Hebrew pronunciation; turning it Off puts the family back and
+writes both languages from it again. Each row sits behind its language's dial too: the family and the switch show from Curious on either dial, the Greek row from Greek Curious and the Hebrew row from
+Hebrew Curious (a row has one `dependsOn`, so `readValues` answers the keys `pronunciationSeparate.grc` and `.he`, On while the switch is On and that dial is at 1 or above; they are no settings).
+A second family (Erasmian Greek with a Tiberian Hebrew) is one more line in `PRONUNCIATION_FAMILIES`. The Hebrew word sheet shows the chosen Hebrew scheme's respelling (`sheet-respelling`) where it
+first showed the data's scholarly transliteration, which is no longer drawn. The tutor is sent the Hebrew scheme's guide as `hebrew_pronunciation_guide`, beside the Greek's `pronunciation_guide`,
+from Hebrew Curious up and for every Old Testament verse (src/services/interestField.ts `hebrewGuideField`).
 
 The one scheme is **Israeli** (`schemes/hebrew-israeli.ts`, `israeli`, language `he-IL`, `scoringLang` `he`): the text is spoken as written, pointed, to the phone's he-IL voice,
 which says the points as modern Hebrew does. Its `voiceForm` is `stripCantillation`, which takes off the cantillation marks (the Masoretic accents) so a voice

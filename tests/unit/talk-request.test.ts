@@ -291,7 +291,7 @@ describe('fitHistory', () => {
 
   it('drops the whole history when even one clipped turn cannot fit', () => {
     // the weight is a field that is never cut: the text of a passage is clipped before a turn is dropped (tests/unit/long-passage-fits.test.ts)
-    const r = { ...base([turn(1, 'z'.repeat(1500))]), learner: 'l'.repeat(8800) };
+    const r = { ...base([turn(1, 'z'.repeat(1500))]), learner: 'l'.repeat(9000) };
     expect(fitHistory(r).history).toEqual([]);
   });
 });

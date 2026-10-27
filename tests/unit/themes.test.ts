@@ -162,7 +162,7 @@ describe('the text sizes', () => {
 
 describe('the speech rates', () => {
   it('belong to each language of the registry, 0.5 to 1.5, normal 1', () => {
-    expect(LANGUAGES.map((l) => l.id)).toEqual(['english', 'greek']);
+    expect(LANGUAGES.map((l) => l.id)).toEqual(['english', 'greek', 'hebrew']);
     expect([RATE_MIN, RATE_MAX, DEFAULT_RATE]).toEqual([0.5, 1.5, 1]);
   });
 

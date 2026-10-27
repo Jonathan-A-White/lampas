@@ -29,6 +29,7 @@ import { resourcesForLevel } from '../resources/resourcesForLevel';
 import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
 import { hebrewLevelOf } from './definitions/hebrewInterest';
 import { DEPTH_KEY, depthFrom } from './definitions/interest';
+import { SEPARATE_KEYS } from './definitions/pronunciation';
 import { helpPlain } from './helpText';
 import { SETTINGS, settingOf, type SectionId } from './registry';
 
@@ -199,6 +200,13 @@ export async function readValues(): Promise<Values> {
         const [greek, hebrew] = await Promise.all([settingOf('greekInterest')?.read(), settingOf('hebrewInterest')?.read()]);
         return [key, String(Math.max(greekLevelOf(greek), hebrewLevelOf(hebrew)))] as const;
       }
+      // the key of a language's own pronunciation row: On while Set each language on its own is On and that language's dial is at Curious or above (no setting of its own)
+      const separate = (Object.keys(SEPARATE_KEYS) as (keyof typeof SEPARATE_KEYS)[]).find((lang) => SEPARATE_KEYS[lang] === key);
+      if (separate) {
+        const [on, dial] = await Promise.all([settingOf('pronunciationSeparate')?.read(), settingOf(separate === 'grc' ? 'greekInterest' : 'hebrewInterest')?.read()]);
+        const level = separate === 'grc' ? greekLevelOf(dial) : hebrewLevelOf(dial);
+        return [key, on === 'on' && level >= 1 ? 'on' : 'off'] as const;
+      }
       return [key, String(await settingOf(key)?.read())] as const;
     }),
   );
@@ -211,8 +219,11 @@ const SEARCH: SearchOptions<SettingsRow> = { plainHelp: helpPlain };
 /** The dial a row follows, through the rows it is a detail of: 'greekInterest', 'hebrewInterest' or 'depth' (the higher of the two); undefined for a row no dial decides. */
 export function dialOf(row: SettingsRow): 'greekInterest' | 'hebrewInterest' | 'depth' | undefined {
   let at: SettingsRow | undefined = row;
-  while (at?.dependsOn && at.dependsOn.key !== 'greekInterest' && at.dependsOn.key !== 'hebrewInterest' && at.dependsOn.key !== DEPTH_KEY) at = rowOf(at.dependsOn.key);
+  const ends: readonly string[] = ['greekInterest', 'hebrewInterest', DEPTH_KEY, SEPARATE_KEYS.grc, SEPARATE_KEYS.he];
+  while (at?.dependsOn && !ends.includes(at.dependsOn.key)) at = rowOf(at.dependsOn.key);
   const key = at?.dependsOn?.key;
+  if (key === SEPARATE_KEYS.grc) return 'greekInterest';
+  if (key === SEPARATE_KEYS.he) return 'hebrewInterest';
   return key === 'greekInterest' || key === 'hebrewInterest' || key === DEPTH_KEY ? key : undefined;
 }
 

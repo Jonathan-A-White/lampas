@@ -46,6 +46,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   todaysDevotional: 'screen',
   dailyTicks: 'screen',
   greekKeyboard: 'screen',
+  hebrewKeyboard: 'screen',
   readSpan: 'speech',
   readTutor: 'speech',
   readLessons: 'speech',
@@ -56,7 +57,13 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   greekVoice: 'speech',
   englishRate: 'speech',
   greekRate: 'speech',
+  hebrewVoice: 'speech',
+  hebrewRate: 'speech',
   greekPronunciation: 'speech',
+  hebrewPronunciation: 'speech',
+  pronunciation: 'speech',
+  // only which of the pronunciation rows is drawn: the schemes it leaves are sent as greekPronunciation and hebrewPronunciation
+  pronunciationSeparate: 'screen',
   englishAccent: 'speech',
   hebrewDepth: 'language',
   languages: 'level',
@@ -109,6 +116,7 @@ const byName = Object.fromEntries(bearingKeys.map((key) => [key, 'summary.settin
 
 const READ_LESSONS = 'Whether a lesson reads itself aloud when it opens is a reading control; it changes nothing the answer says.';
 const SPOKEN_LATER = 'It changes how loud or fast the answer is heard, never what it says.';
+const FAMILY_SET_BOTH = 'Pronunciation sets greekPronunciation and hebrewPronunciation together; what it left them at is what the request carries, so it is not sent a second time.';
 const NO_QUIZ = 'The quiz is the Bible talk\'s Quiz me mode alone; this grind never quizzes him.';
 
 export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
@@ -131,6 +139,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       // the Hebrew dial is also its own field, hebrew_interest (mw-gdcyf98.3), the Bible talk's shape
       hebrewInterest: 'settings.hebrewInterest',
       greekPronunciation: 'pronunciation',
+      hebrewPronunciation: 'settings.hebrewPronunciation',
       englishAccent: 'settings.englishAccent',
       goal: 'learner_grammar.goal',
       pickerGrammar: 'learner_grammar.picker_level',
@@ -144,8 +153,11 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       readLessons: READ_LESSONS,
       englishVoice: SPOKEN_LATER,
       greekVoice: SPOKEN_LATER,
+      hebrewVoice: SPOKEN_LATER,
       englishRate: SPOKEN_LATER,
       greekRate: SPOKEN_LATER,
+      hebrewRate: SPOKEN_LATER,
+      pronunciation: FAMILY_SET_BOTH,
       quizGoal: NO_QUIZ,
       studyWay: NO_QUIZ,
       today: 'An ask is about one verse he is reading; what is on his Today list is for the Bible talk, where he can ask what is on his drill and be offered Today.',
@@ -169,8 +181,12 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       askBy: 'How he asks the tutor has no part in the verdict on a reading.',
       englishVoice: SPOKEN_LATER,
       greekVoice: SPOKEN_LATER,
+      hebrewVoice: SPOKEN_LATER,
       englishRate: SPOKEN_LATER,
       greekRate: SPOKEN_LATER,
+      hebrewRate: SPOKEN_LATER,
+      pronunciation: FAMILY_SET_BOTH,
+      hebrewPronunciation: 'A reading verdict is about English or Greek and never respells a Hebrew word.',
       hebrewDepth: 'A reading verdict is about English or Greek and never writes a Hebrew word.',
       weave: 'What the Reader weaves into the English has no part in the verdict on a reading of the verse as it is.',
       weaveGrammar: 'What the Reader weaves into the English has no part in the verdict on a reading of the verse as it is.',

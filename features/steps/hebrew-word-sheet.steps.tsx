@@ -131,12 +131,14 @@ describeFeature(feature, ({ Scenario }) => {
     expect(link.getAttribute('href')).toBe(href);
   };
 
-  Scenario('A tap on בְּרֵאשִׁ֖ית opens its sheet: the form, the transliteration, the lemma, the meaning, the parsing, H7225 and Listen', ({ Given, When, Then, And }) => {
+  Scenario('A tap on בְּרֵאשִׁ֖ית opens its sheet: the form, the respelling, the lemma, the meaning, the parsing, H7225 and Listen', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with the saved view {string} and Strong\'s on', (_, view: string) => openOn('Genesis 1', { settings: { readerView: view, ...STRONGS } }));
     When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
     Then('the Hebrew word sheet shows the form {string} large, in Hebrew, right to left', showsForm);
-    And('it shows the transliteration {string}', async (_, tr: string) => {
-      expect(await fact('sheet-transliteration')).toHaveTextContent(tr);
+    And('it shows the respelling {string} and no transliteration', async (_, respelling: string) => {
+      expect(await fact('sheet-respelling')).toHaveTextContent(respelling);
+      expect(within(await sheet()).queryByTestId('sheet-transliteration')).toBeNull();
+      expect(within(await sheet()).queryByText('bə·rê·šîṯ')).toBeNull();
     });
     And('it shows the lemma {string} in Hebrew, right to left', showsLemma);
     And('it shows the meaning {string}', showsMeaning);

@@ -2,14 +2,15 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type PlayTo, type VoiceLanguage } from '../../data/repositories';
 import { hasVoice, noVoiceHelp, speaksLanguage, testGreekVoice, useSpeakingKey, useVoices, voiceInUse, voiceKey, VOICE_TEST_KEY, warmVoices } from '../../speech/greek';
-import { DEFAULT_RATE, RATE_MAX, RATE_MIN, RATE_STEP } from '../../speech/languages';
+import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP, type SettableLanguage } from '../../speech/languages';
 import { ACCENTS } from '../../speech/accents';
-import { PRONUNCIATIONS, pronunciationOf, type GreekPronunciation } from '../../speech/pronunciation';
+import { pronunciationOf, pronunciationsOf, type GreekPronunciation, type PronunciationLanguage } from '../../speech/pronunciation';
 import { PLAY_TOS } from '../../speech/readSpan';
-import { englishAccentSetting } from '../definitions';
+import { englishAccentSetting, hebrewPronunciationSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
+import { PRONUNCIATION_FAMILIES } from '../definitions/pronunciation';
 import { PHONE_VOICE, writeSetting } from '../registry';
-import { useSetting } from '../store';
-import { RowName, SettingRow } from './SettingRow';
+import { getSetting, useSetting } from '../store';
+import { OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 function ReadSpanChoice({ span }: { span: PlayTo }) {
@@ -158,30 +159,35 @@ function SpeedSlider({ language, label, saved }: { language: VoiceLanguage; labe
   );
 }
 
-function PronunciationList({ chosen }: { chosen: GreekPronunciation }) {
+/** A list of radio buttons, a label and a note each: the schemes of a language, or the families. */
+function ChoiceList({ name, settingKey, chosen, items }: { name: string; settingKey: string; chosen: string; items: readonly { id: string; label: string; note: string }[] }) {
   return (
-    <div role="radiogroup" aria-label="Greek pronunciation" className="space-y-2">
-      {PRONUNCIATIONS.map((p) => (
+    <div role="radiogroup" aria-label={name} className="space-y-2">
+      {items.map((p) => (
         <button
           key={p.id}
           type="button"
           role="radio"
           aria-checked={chosen === p.id}
-          aria-labelledby={`pron-${p.id}`}
-          aria-describedby={`pron-${p.id}-note`}
-          onClick={() => void writeSetting('greekPronunciation', p.id)}
+          aria-labelledby={`${settingKey}-${p.id}`}
+          aria-describedby={`${settingKey}-${p.id}-note`}
+          onClick={() => void writeSetting(settingKey, p.id)}
           className={`block min-h-12 w-full rounded-xl border px-4 py-2 text-left ${chosen === p.id ? 'border-accent bg-accent/15' : 'border-line'}`}
         >
-          <span id={`pron-${p.id}`} className="block text-base font-medium">
+          <span id={`${settingKey}-${p.id}`} className="block text-base font-medium">
             {p.label}
           </span>
-          <span id={`pron-${p.id}-note`} className="block text-sm text-muted">
+          <span id={`${settingKey}-${p.id}-note`} className="block text-sm text-muted">
             {p.note}
           </span>
         </button>
       ))}
     </div>
   );
+}
+
+function PronunciationList({ language, name, chosen }: { language: PronunciationLanguage; name: string; chosen: GreekPronunciation }) {
+  return <ChoiceList name={name} settingKey={language === 'he' ? 'hebrewPronunciation' : 'greekPronunciation'} chosen={chosen} items={pronunciationsOf(language)} />;
 }
 
 export const ReadSpanControl: Control = ({ row }) => {
@@ -194,30 +200,59 @@ export const ReadSpanControl: Control = ({ row }) => {
   );
 };
 
+/** The language a voice or speed row is for, from its key ('hebrewVoice', 'greekRate'): the entry of LANGUAGES whose id starts it. */
+const languageOfRow = (key: string): SettableLanguage => (LANGUAGES.find((l) => key.startsWith(l.id)) ?? LANGUAGES[0]).id;
+
 export const VoiceControl: Control = ({ row }) => {
-  const language = row.key === 'englishVoice' ? 'english' : 'greek';
+  const language = languageOfRow(row.key);
   const saved = useLiveQuery(() => getVoice(language), [language]);
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
+  // Greek's voices are those of the chosen scheme's language tag; the others' are their language's own
+  const lang = language === 'greek' ? pronunciationOf(pronunciation).lang : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en');
   return (
     <SettingRow row={row}>
-      {saved !== undefined ? <VoicePicker language={language} label={row.label} lang={language === 'english' ? 'en' : pronunciationOf(pronunciation).lang} saved={saved} /> : null}
+      {saved !== undefined ? <VoicePicker language={language} label={row.label} lang={lang} saved={saved} /> : null}
       {saved !== undefined && language === 'greek' ? <GreekVoiceInUse saved={saved} /> : null}
     </SettingRow>
   );
 };
 
 export const SpeedControl: Control = ({ row }) => {
-  const language = row.key === 'englishRate' ? 'english' : 'greek';
+  const language = languageOfRow(row.key);
   const rates = useLiveQuery(getSpeechRates, []);
   return <SettingRow row={row}>{rates ? <SpeedSlider language={language} label={row.label} saved={rates[language]} /> : null}</SettingRow>;
 };
 
+/** The Greek and the Hebrew pronunciation rows: a list of the schemes of the row's language. */
 export const PronunciationControl: Control = ({ row }) => {
-  const pronunciation = useLiveQuery(getGreekPronunciation, []);
+  const language: PronunciationLanguage = row.key === 'hebrewPronunciation' ? 'he' : 'grc';
+  const chosen = useLiveQuery(() => (language === 'he' ? getSetting(hebrewPronunciationSetting) : getGreekPronunciation()), [language]);
   return (
     <SettingRow row={row}>
       <RowName row={row} />
-      {pronunciation ? <PronunciationList chosen={pronunciation} /> : null}
+      {chosen ? <PronunciationList language={language} name={row.label} chosen={chosen} /> : null}
+    </SettingRow>
+  );
+};
+
+/** Pronunciation, the family that sets Greek and Hebrew together (mw-gdcyf98.6). */
+export const FamilyControl: Control = ({ row }) => {
+  const chosen = useSetting(pronunciationSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {chosen ? <ChoiceList name={row.label} settingKey="pronunciation" chosen={chosen} items={PRONUNCIATION_FAMILIES} /> : null}
+    </SettingRow>
+  );
+};
+
+/** Set each language on its own: On shows the Greek and the Hebrew row, Off the family. */
+export const PronunciationSeparateControl: Control = ({ row }) => {
+  const current = useSetting(pronunciationSeparateSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {current ? <OnOff name={row.label} current={current} settingKey="pronunciationSeparate" /> : null}
     </SettingRow>
   );
 };

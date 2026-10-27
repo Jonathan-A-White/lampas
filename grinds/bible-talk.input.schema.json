@@ -258,7 +258,7 @@
         "settings": {
           "description": "Only on Settings: every setting and study-resource switch the screen has, each with the value it holds now (On, Off, Dark, 0.8x) and the line shown under it. A setting that is Off is listed too.",
           "type": "array",
-          "maxItems": 58,
+          "maxItems": 64,
           "items": {
             "type": "object",
             "additionalProperties": false,
@@ -516,7 +516,8 @@
     "pictures": { "description": "Optional. How many pictures he sent with this message (1 to 4): they are attached to the request as image files, in the order he added them, and belong to this message only. Missing when he sent none. The `question` may then be only 'Read the picture and tell me about it.'", "type": "number", "minimum": 1, "maximum": 4 },
     "settings": { "description": "What each of the app's settings holds now, by key.", "type": "object" },
     "pronunciation": { "description": "Optional. The Greek pronunciation the app speaks and respells in, by its id. Its rules are in pronunciation_guide.", "type": "string", "minLength": 1, "maxLength": 40 },
-    "pronunciation_guide": { "description": "Optional. The name of that pronunciation and the sound rules the app speaks and respells by, from its pronunciation scheme. Describe every Greek sound by these rules.", "type": "string", "minLength": 1, "maxLength": 2000 },
+    "pronunciation_guide": { "description": "Optional. The name of that pronunciation and the sound rules the app speaks and respells by, from its pronunciation scheme. Describe a Greek sound by these rules.", "type": "string", "minLength": 1, "maxLength": 2000 },
+    "hebrew_pronunciation_guide": { "description": "Optional. The same for Hebrew: the name of the Hebrew pronunciation (settings.hebrewPronunciation) and the sound rules the app speaks and respells by. Describe a Hebrew sound by these rules. Missing for a reader who has no Hebrew.", "type": "string", "minLength": 1, "maxLength": 2000 },
     "focus": {
       "description": "Optional. What he asked for help with: a word (from the word sheet's Help with this word row, or its Ask the tutor: the form as it stands, its lemma, its parsing in plain words, and what he wants help with), a grammar term (from a Grammar sheet's Ask the tutor), a paradigm table (from a table's Ask the tutor on the Paradigms screen: the table, the mode, the forms he has revealed, the cell he is on and the word he came from), or a Quick test question (from the question's Ask the tutor: the word, the question, his answer and his earlier answers of the round).",
       "anyOf": [

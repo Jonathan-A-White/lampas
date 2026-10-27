@@ -1471,9 +1471,14 @@
                   "handwritingDrills",
                   "englishVoice",
                   "greekVoice",
+                  "hebrewVoice",
                   "englishRate",
                   "greekRate",
+                  "hebrewRate",
+                  "pronunciation",
+                  "pronunciationSeparate",
                   "greekPronunciation",
+                  "hebrewPronunciation",
                   "englishAccent",
                   "resource.strongs",
                   "resource.logos",
@@ -1492,6 +1497,7 @@
                   "todaysDevotional",
                   "dailyTicks",
                   "greekKeyboard",
+                  "hebrewKeyboard",
                   "quizGoal"
                 ]
               }
@@ -1744,6 +1750,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "hebrewVoice" }, "value": { "type": "string", "enum": ["default"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "englishRate" }, "value": { "type": "number", "minimum": 0.5, "maximum": 1.5 } }
           },
           {
@@ -1756,7 +1768,31 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "hebrewRate" }, "value": { "type": "number", "minimum": 0.5, "maximum": 1.5 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "pronunciation" }, "value": { "type": "string", "enum": ["modern"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "pronunciationSeparate" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "greekPronunciation" }, "value": { "type": "string", "enum": ["modern"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "hebrewPronunciation" }, "value": { "type": "string", "enum": ["israeli"] } }
           },
           {
             "type": "object",
@@ -1955,6 +1991,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "greekKeyboard" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "hebrewKeyboard" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

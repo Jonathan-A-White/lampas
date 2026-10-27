@@ -26,7 +26,7 @@ export const clipLongAnswer: Cut<TalkRequest> = (request) => {
 
 /** The pronunciation's guide goes before the words and the turns (mw-5r3p30.268: a quiz on a long passage needs them more than the sound rules), except on a sound question; null when it is gone or kept. */
 export const dropPronunciationGuide: Cut<TalkRequest> = (request) =>
-  request.pronunciation_guide === undefined || request.focus?.kind === 'sound' ? null : { ...request, pronunciation_guide: undefined };
+  request.pronunciation_guide === undefined || request.focus?.kind === 'sound' ? null : { ...request, pronunciation_guide: undefined, hebrew_pronunciation_guide: undefined };
 
 /** One word of the text's word list from its end, while a turn of the history remains to be cut after it; null when none is left or no turn remains. */
 export const trimGreekWordsWhileHistory: Cut<TalkRequest> = (request) =>

@@ -36,7 +36,8 @@ test('a tap on the first Hebrew word of Genesis 1 opens its sheet: large, right 
   expect(listen.width).toBeGreaterThanOrEqual(43.5);
   expect(listen.height).toBeGreaterThanOrEqual(43.5);
 
-  await expect(sheet.getByTestId('sheet-transliteration')).toHaveText('bə·rê·šîṯ');
+  await expect(sheet.getByTestId('sheet-respelling')).toHaveText('be-reh-SHEET');
+  await expect(sheet.getByTestId('sheet-transliteration')).toHaveCount(0);
   await expect(sheet.getByTestId('sheet-lemma')).toHaveText('רֵאשִׁית');
   await expect(sheet.getByTestId('sheet-gloss')).toHaveText('first, beginning');
   await expect(sheet.getByTestId('sheet-parse')).toHaveText('Preposition-b | Noun - feminine singular');

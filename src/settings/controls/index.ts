@@ -3,7 +3,7 @@ import { ROWS } from '../rows';
 import { AppearanceControl, ChapterButtonsControl, CopyFormatControl, FontControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
 import { ApproachControl } from './approach';
 import { AskDevotionalControl } from './askDevotional';
-import { DailyDevotionalControl, DailyMemorizeControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, GreekKeyboardControl, DevotionalDrawControl, TodaysDevotionalControl } from './daily';
+import { DailyDevotionalControl, DailyMemorizeControl, DailyPlanControl, DailyPsalmsControl, DailyReviewControl, DailyTicksControl, DevotionalControl, GreekKeyboardControl, HebrewKeyboardControl, DevotionalDrawControl, TodaysDevotionalControl } from './daily';
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
 import { GrammarExtentControl } from './grammarExtent';
@@ -17,7 +17,7 @@ import { QuizGoalControl } from './quizGoal';
 import { AudioBibleControl, LibraryControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
 import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
 import type { Control } from './types';
-import { EnglishAccentControl, PronunciationControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
+import { EnglishAccentControl, FamilyControl, PronunciationControl, PronunciationSeparateControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
 import { WeaveControl } from './weave';
 
 /** The control of each row, by the row's key (src/settings/rows.ts): a row with no control here is a test failure. */
@@ -52,8 +52,13 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   englishVoice: VoiceControl,
   greekVoice: VoiceControl,
   englishRate: SpeedControl,
+  hebrewVoice: VoiceControl,
   greekRate: SpeedControl,
+  hebrewRate: SpeedControl,
+  pronunciation: FamilyControl,
+  pronunciationSeparate: PronunciationSeparateControl,
   greekPronunciation: PronunciationControl,
+  hebrewPronunciation: PronunciationControl,
   englishAccent: EnglishAccentControl,
   logosBible: LogosBibleControl,
   audioBible: AudioBibleControl,
@@ -68,6 +73,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   todaysDevotional: TodaysDevotionalControl,
   dailyTicks: DailyTicksControl,
   greekKeyboard: GreekKeyboardControl,
+  hebrewKeyboard: HebrewKeyboardControl,
   'request.devotional': AskDevotionalControl,
   library: LibraryControl,
   tips: TipsControl,

@@ -10,7 +10,9 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
+import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
+import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
@@ -40,7 +42,10 @@ const SOUND_ANSWER = {
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 
-async function open(voices: FakeVoice[]): Promise<void> {
+/** A second Hebrew voice of the phone, which Settings > Listening > Hebrew voice can choose (voice-kit's picker offers the voices of the language by their voiceURI). */
+const CARMIT: FakeVoice = { lang: 'he-IL', name: 'Carmit', voiceURI: 'carmit' };
+
+async function open(voices: FakeVoice[], saved: Record<string, string> = {}): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -59,6 +64,7 @@ async function open(voices: FakeVoice[]): Promise<void> {
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
+  await db.settings.bulkPut(Object.entries(saved).map(([key, value]) => ({ key, value })));
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await user.click(await screen.findByRole('button', { name: 'Talk' }));
@@ -66,6 +72,31 @@ async function open(voices: FakeVoice[]): Promise<void> {
   await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), 'Where does righteousness come from?');
   await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
   await waitFor(() => expect(sheet().querySelector('[data-turn] [lang="he"]')).not.toBeNull());
+}
+
+/** Opens Genesis 1 in its Hebrew (the Hebrew dial All in, the saved view Hebrew) on a phone with these voices and these settings saved, for a long press in the Reader. */
+async function openReader(voices: FakeVoice[], saved: Record<string, string>): Promise<void> {
+  cleanup();
+  stopReading();
+  clearBus();
+  forgetTrail();
+  vi.unstubAllGlobals();
+  synth = stubSpeech(voices);
+  window.localStorage.clear();
+  stubChapterFetch();
+  window.history.replaceState(null, '', '/#/?b=gen&c=1');
+  await db.open();
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
+  await db.settings.bulkPut(Object.entries({ hebrewInterest: '5', readerView: 'greek', ...saved }).map(([key, value]) => ({ key, value })));
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Genesis 1', level: 1 });
+  await waitFor(() => expect(document.querySelectorAll('[data-verse] [data-word]').length).toBeGreaterThan(0));
+}
+
+async function longPress(target: HTMLElement): Promise<void> {
+  await user.pointer({ keys: '[MouseLeft>]', target });
+  await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150));
+  await user.pointer({ keys: '[/MouseLeft]', target });
 }
 
 const hebrewWord = (word: string): HTMLElement => {
@@ -139,5 +170,36 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(card).getByRole('button', { name: `Hear ${syllable}` }));
       expect(synth.spoken.at(-1)).toMatchObject({ text: syllable, lang });
     });
+  });
+
+  /** The utterance asked of the phone last: said at his Hebrew speed, in his Hebrew voice */
+  const spokeAs = (_: unknown, text: string, lang: string, speed: string, voice: string): void => {
+    const last = synth.spoken.at(-1);
+    expect(last).toMatchObject({ text, lang, rate: Number(speed) });
+    expect(last?.voice?.name).toBe(voice);
+  };
+
+  Scenario("A Hebrew word in the tutor's answer is said at the Hebrew speed in the Hebrew voice he chose", ({ Given, When, Then }) => {
+    Given(
+      'Lampas is opened on a phone with two Hebrew voices, {string} chosen as the Hebrew voice and {string} as the Hebrew speed, and the tutor\'s answer has the Hebrew word {string} in it',
+      (_, voice: string, speed: string) => open([GREEK_VOICE, ENGLISH_VOICE, HEBREW_VOICE, CARMIT], { 'voice.hebrew': CARMIT.voiceURI ?? voice, 'rate.hebrew': speed }),
+    );
+    When('he taps the Hebrew word {string}', async (_, word: string) => {
+      await user.click(hebrewWord(word));
+    });
+    Then('the phone speaks {string} in {string} at the speed {string} with the voice {string}', spokeAs);
+  });
+
+  Scenario('A long press on a Hebrew word in the Reader is said at the Hebrew speed in the Hebrew voice he chose', ({ Given, When, Then }) => {
+    Given('Genesis 1 is opened in its Hebrew on a phone with two Hebrew voices, {string} chosen as the Hebrew voice and {string} as the Hebrew speed', (_, voice: string, speed: string) =>
+      openReader([GREEK_VOICE, ENGLISH_VOICE, HEBREW_VOICE, CARMIT], { 'voice.hebrew': CARMIT.voiceURI ?? voice, 'rate.hebrew': speed }),
+    );
+    When('he long presses the Hebrew word {string} of verse {int}', async (_, word: string, n: number) => {
+      const verse = document.querySelector<HTMLElement>(`[data-verse="${n}"]`);
+      const target = [...(verse?.querySelectorAll<HTMLElement>('[data-word]') ?? [])].find((el) => (el.textContent ?? '').replace(/\s+/g, ' ').trim() === word);
+      if (!target) throw new Error(`no Hebrew word ${word} in verse ${n}`);
+      await longPress(target);
+    });
+    Then('the phone speaks {string} in {string} at the speed {string} with the voice {string}', spokeAs);
   });
 });

@@ -50,9 +50,14 @@ Never claim a change the list does not have. For a setting the app does not have
 - `handwritingDrills` — Handwriting drills. Write letters with a pen or finger, as a memory aid. Automatic: on once a pen is seen. Value: "auto", "on", "off".
 - `englishVoice` — English voice. Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
 - `greekVoice` — Greek voice. Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
+- `hebrewVoice` — Hebrew voice. Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default" (Phone default).
 - `englishRate` — English speed. How fast English is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `greekRate` — Greek speed. How fast Greek is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
+- `hebrewRate` — Hebrew speed. How fast Hebrew is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
+- `pronunciation` — Pronunciation. How Greek and Hebrew are said and respelled, one choice for both. Modern says both the modern way. It shows while Set each language on its own is Off. Value: "modern".
+- `pronunciationSeparate` — Set each language on its own. On shows a Greek pronunciation and a Hebrew pronunciation to choose on their own. Off puts both back on Pronunciation.
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced when it is read aloud. Value: "modern" (Modern Greek).
+- `hebrewPronunciation` — Hebrew pronunciation. How Hebrew is pronounced when it is read aloud. Value: "israeli".
 - `englishAccent` — English accent. Which English the hints for Greek sounds are said in, everywhere at once, the tutor's examples too: American: the default. British. IPA (the standard): for readers who know it. Each sound is shown by its own symbol, such as /o/, in place of an English word. Value: "american", "british", "ipa".
 - `resource.strongs` — Strong's. Shows the word's Strong's number, a link to its entry on STEPBible.
 - `resource.logos` — Logos. Adds Open in Logos for each lexicon in Your Logos library, and Bible Word Study.
@@ -71,5 +76,6 @@ Never claim a change the list does not have. For a setting the app does not have
 - `todaysDevotional` — Today's devotional. The devotional Today shows for the rest of today, while Which devotional is Random: "another" draws a different one for today (the Another button on Today does the same), and a devotional's Logos resource id shows that one today. It shows only while Which devotional is Random. Value: "another", or any value of `devotional` but "random".
 - `dailyTicks` — Tick boxes. Whether each piece on Today has a box you tick yourself when you have done it. Off makes Today a plain list of links. On by default.
 - `greekKeyboard` — Greek keyboard. On once you have added a Greek keyboard to your phone, so Memorize offers Type it for a verse in Greek. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Greek.
+- `hebrewKeyboard` — Hebrew keyboard. On once you have added a Hebrew keyboard to your phone. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Hebrew.
 - `quizGoal` — Quiz goal. What you want from a quiz, in your own words, such as understanding the passage, learning Greek, learning English or just reading the Bible. A kept goal is sent with every quiz and the tutor quizzes to match; with none kept, Quiz me opens by asking you. Value: text, for example "understanding the passage" (a short phrase in his words, at most 80 characters; "" for none).
 <!-- settings:end -->

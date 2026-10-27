@@ -145,7 +145,7 @@ const speedsAre = async (english: number, greek: number) => {
     expect(Number((slider('English speed') as HTMLInputElement).value)).toBe(english);
     expect(Number((slider('Greek speed') as HTMLInputElement).value)).toBe(greek);
     // and the speaker has been told: a button tapped next speaks at these
-    expect(latest('rates-changed')?.rates).toEqual({ english, greek });
+    expect(latest('rates-changed')?.rates).toEqual({ english, greek, hebrew: 1 });
   });
 };
 
@@ -261,7 +261,7 @@ describeFeature(feature, ({ Scenario }) => {
       Then('the English speed in Settings is {number} and the Greek speed is {number}', (_, english: number, greek: number) => speedsAre(english, greek));
       When('he sets the Greek speed to {number} in Settings', (_, value: number) => setSpeed('Greek speed', String(value)));
       Then('the bus has heard the speeds are English {number} and Greek {number}', (_, english: number, greek: number) =>
-        waitFor(() => expect(latest('rates-changed')?.rates).toEqual({ english, greek })),
+        waitFor(() => expect(latest('rates-changed')?.rates).toEqual({ english, greek, hebrew: 1 })),
       );
       And('a Greek speaker button speaks at {number}', async (_, rate: number) => expect(await greekRateOfAButton()).toBe(rate));
       And('English is spoken at {number}', (_, rate: number) => waitFor(() => expect(englishRate()).toBe(rate)));

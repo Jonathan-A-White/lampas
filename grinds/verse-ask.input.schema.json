@@ -202,7 +202,8 @@
       }
     },
     "pronunciation": { "description": "Optional. The Greek pronunciation the app speaks and respells in, by its id. Its rules are in pronunciation_guide.", "type": "string", "minLength": 1, "maxLength": 40 },
-    "pronunciation_guide": { "description": "Optional. The name of that pronunciation and the sound rules the app speaks and respells by, from its pronunciation scheme. Describe every Greek sound by these rules.", "type": "string", "minLength": 1, "maxLength": 2000 },
+    "pronunciation_guide": { "description": "Optional. The name of that pronunciation and the sound rules the app speaks and respells by, from its pronunciation scheme. Describe a Greek sound by these rules.", "type": "string", "minLength": 1, "maxLength": 2000 },
+    "hebrew_pronunciation_guide": { "description": "Optional. The same for Hebrew: the name of the Hebrew pronunciation (settings.hebrewPronunciation) and the sound rules the app speaks and respells by. Describe a Hebrew sound by these rules. Missing for a reader who has no Hebrew.", "type": "string", "minLength": 1, "maxLength": 2000 },
     "facts": { "description": "Optional. What the app read for you before this turn, by name (the app's tutor client, mw-t3xu9a.4): `where-he-is` (the screen he is on, `route`, in the Reader its book, chapter, view and verse, the sheets open), `today-drill` (his drill for today) and `settings` (the same as the field `settings`). Read-only copies of what the app holds now; use them as you use the fields they repeat. A fact the app dropped for room is still in `catalogue`.", "type": "object", "additionalProperties": true },
     "catalogue": {
       "description": "Optional. Every fact and place the app has, sorted by `name`: `is` (fact or place), `core` (true for a fact always sent) and `tell`, what it is (cut when the request is too big). Today it only names what the app has; nothing here is asked for or opened by your answer yet.",

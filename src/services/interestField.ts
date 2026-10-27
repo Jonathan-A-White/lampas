@@ -1,5 +1,6 @@
 // src/services/interestField.ts — a language dial as a request carries it (mw-3ased2.3, mw-gdcyf98.3): `greek_interest` and `hebrew_interest`, each the step, its name and the one step above it
 // (the only step the tutor may offer to raise the dial to). The Bible talk sends both; so does an ask on a verse. The language of the chapter he is in picks which one an offer may name.
+import { hebrewGuideOf } from '../speech/pronunciation';
 import { GREEK_LEVELS, greekLevelOf, nextGreekStep } from '../settings/definitions/greekInterest';
 import { HEBREW_LEVELS, hebrewLevelOf } from '../settings/definitions/hebrewInterest';
 import { higherOf, type InterestLevel } from '../settings/definitions/interest';
@@ -28,3 +29,8 @@ export function hebrewInterestField(settings: Record<string, SettingValue>): Int
 
 /** The higher of the two dials, from the settings a request carries: what his Logos works and the tutor's resources are shown at (the Greek ones need Greek, the Hebrew ones Hebrew; a shelf both languages share follows the higher). */
 export const higherInterest = (settings: Record<string, SettingValue>): InterestLevel => higherOf({ grc: greekLevelOf(settings.greekInterest), he: hebrewLevelOf(settings.hebrewInterest) });
+
+/** The Hebrew pronunciation's guide, sent beside the Greek one's (`pronunciation_guide`) to a request that may speak of a Hebrew sound: from the Hebrew dial's Curious up, or always for `hebrewText` (an Old Testament verse). Nothing for a reader with no Hebrew. */
+export function hebrewGuideField(settings: Record<string, SettingValue> | undefined, hebrewText = false): { hebrew_pronunciation_guide?: string } {
+  return hebrewText || hebrewLevelOf(settings?.hebrewInterest) >= 1 ? { hebrew_pronunciation_guide: hebrewGuideOf(settings?.hebrewPronunciation) } : {};
+}

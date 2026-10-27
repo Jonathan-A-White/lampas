@@ -1,16 +1,16 @@
 Feature: The Hebrew word sheet
-  A tap on a Hebrew word of an Old Testament chapter opens the word sheet at parity with the Greek one (mw-5vvlay.2): the pointed form large and right to left, its transliteration, the
+  A tap on a Hebrew word of an Old Testament chapter opens the word sheet at parity with the Greek one (mw-5vvlay.2): the pointed form large and right to left, its respelling in the Hebrew pronunciation chosen in Settings (mw-gdcyf98.6: where it first showed the scholarly transliteration), the
   lemma, the gloss and definition from the chapter's lex, the parsing in plain words from the chapter's parse map, Strong's number H7225, and Listen in the phone's he-IL voice. An English
   tap in an Old Testament chapter opens the same sheet with the Hebrew words the chunk renders, and under them the English sheet of its words. #/?word=H7225, the pointed lemma or the
   lemma with its points off opens the sheet of a word by itself. With Logos on the Study row has Strong's Hebrew, Bible Word Study at lbs/he and his Hebrew lexicons; with Logos off it offers to
   turn it on. Genesis 1 is the copy of the built chapter in tests/fixtures/data/gen/1.json (scripts/fixture-chapter.mjs). The Greek sheet is as it was (features/word-sheet-study.feature and the others
   run on it too). Not yet, and not drawn for a Hebrew word: the Paradigm row, the Heart note, Help with this word and the Grammar sheet of a parsing term (docs/layout/word-sheet.md lists them as LATER).
 
-  Scenario: A tap on בְּרֵאשִׁ֖ית opens its sheet: the form, the transliteration, the lemma, the meaning, the parsing, H7225 and Listen
+  Scenario: A tap on בְּרֵאשִׁ֖ית opens its sheet: the form, the respelling, the lemma, the meaning, the parsing, H7225 and Listen
     Given Lampas is opened on Genesis 1 with the saved view "greek" and Strong's on
     When he taps the Hebrew word "בְּרֵאשִׁ֖ית" of verse 1
     Then the Hebrew word sheet shows the form "בְּרֵאשִׁ֖ית" large, in Hebrew, right to left
-    And it shows the transliteration "bə·rê·šîṯ"
+    And it shows the respelling "be-reh-SHEET" and no transliteration
     And it shows the lemma "רֵאשִׁית" in Hebrew, right to left
     And it shows the meaning "first, beginning"
     And it shows the definition "beginning 1) first, beginning, best, chief"

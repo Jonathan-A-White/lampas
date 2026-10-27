@@ -23,10 +23,12 @@ beforeEach(async () => {
 });
 
 const keys = (rows: readonly { key: string }[]) => rows.map((r) => r.key);
-const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', weave: 'solid', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', devotional: 'random', developerMode: 'on' };
-/** Values a row may read that are not rows of their own: Developer mode is found on About, and `depth` is the higher of the two dials (readValues); neither is a setting of the list. */
-const NOT_ROWS = ['developerMode', 'depth'];
-const BOTH = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5' };
+const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', weave: 'solid', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', devotional: 'random', developerMode: 'on', pronunciationSeparate: 'on', 'pronunciationSeparate.grc': 'on', 'pronunciationSeparate.he': 'on' };
+/** Every row ALL_ON shows: all but the Pronunciation family, which gives way to the Greek and the Hebrew row while Set each language on its own is On (the one pair of rows that exclude each other). */
+const ALL_SHOWN = (): string[] => keys(ROWS).filter((k) => k !== 'pronunciation');
+/** Values a row may read that are not rows of their own: Developer mode is found on About, and `depth` is the higher of the two dials (readValues); neither is a setting of the list; the last two say Set each language on its own is On and that language's dial is at Curious or above (readValues). */
+const NOT_ROWS = ['developerMode', 'depth', 'pronunciationSeparate.grc', 'pronunciationSeparate.he'];
+const BOTH = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', pronunciationSeparate: 'off' };
 
 describe('the rows', () => {
   it('gives every row a distinct key, a name, a one-line hint and a section', () => {
@@ -82,14 +84,14 @@ describe('visibleRows', () => {
   it('hides a row whose setting is off and shows it when that is on', () => {
     expect(keys(visibleRows({}, ''))).not.toContain('weaveGrammar');
     expect(keys(visibleRows({ ...BOTH, weave: 'off', newWordsADay: '0' }, ''))).not.toEqual(expect.arrayContaining(['weaveGrammar', 'pickerGrammar', 'grammarMove', 'logosBible']));
-    expect(keys(visibleRows(ALL_ON, ''))).toEqual(keys(ROWS));
+    expect(keys(visibleRows(ALL_ON, ''))).toEqual(ALL_SHOWN());
   });
 
   it('matches the name or the hint, ignoring capitals and accents; clearing shows every row', () => {
     expect(keys(visibleRows(ALL_ON, 'THEME'))).toContain('theme');
     expect(keys(visibleRows(ALL_ON, 'wéave'))).toContain('weave');
-    expect(keys(visibleRows(ALL_ON, ''))).toEqual(keys(ROWS));
-    expect(keys(visibleRows(ALL_ON, '   '))).toEqual(keys(ROWS));
+    expect(keys(visibleRows(ALL_ON, ''))).toEqual(ALL_SHOWN());
+    expect(keys(visibleRows(ALL_ON, '   '))).toEqual(ALL_SHOWN());
     const byHint = rowOf('theme')?.hint.split(' ').find((w) => w.length > 4 && !rowOf('theme')?.label.includes(w)) ?? '';
     expect(keys(visibleRows(ALL_ON, byHint.toUpperCase()))).toContain('theme');
   });
@@ -125,13 +127,14 @@ describe('the Settings screen', () => {
       { key: 'resource.logos', value: 'on' },
       { key: 'devotional', value: 'random' },
       { key: 'developerMode', value: 'on' },
+      { key: 'pronunciationSeparate', value: 'on' },
     ]);
     render(<SettingsScreen />);
-    // each group's page draws exactly its rows, in the order of the list
+    // each group's page draws exactly its rows, in the order of the list (the Pronunciation family gives way to the two languages' rows while Set each language on its own is On)
     const seen: string[] = [];
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);
-      const mine = ROWS.filter((row) => !isHomeRow(row) && groupOf(row.section).id === group.id);
+      const mine = ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation' && groupOf(row.section).id === group.id);
       await waitFor(() => expect(drawn()).toEqual(keys(mine)));
       for (const row of mine) {
         expect(document.querySelector(`[data-setting="${row.key}"]`)?.textContent, row.key).toContain(row.hint);
@@ -139,7 +142,7 @@ describe('the Settings screen', () => {
       }
     }
     // 'Which languages?' and the dials are drawn on the home above the groups, not on a page
-    expect(seen.sort()).toEqual(keys(ROWS.filter((row) => !isHomeRow(row))).sort());
+    expect(seen.sort()).toEqual(keys(ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation')).sort());
     cleanup();
   });
 
