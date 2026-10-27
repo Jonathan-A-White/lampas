@@ -157,6 +157,8 @@ export interface RequestRow {
   kind: string;
   /** the tutor's one-line summary of the ask (tutor-ask) */
   summary?: string;
+  /** tutor-ask: his own words, as he sent them (mw-5r3p30.794; no index, no version bump); a row kept before has none and shows the summary */
+  words?: string;
   /** his words (grammar-approach: the approach he described; book: its title; library: a line that counts the books) */
   text?: string;
   /** a book: the Logos Resource ID he picked, which finds the same ask again (no index, no version bump) */

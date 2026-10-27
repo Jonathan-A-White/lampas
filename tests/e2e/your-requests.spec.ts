@@ -51,15 +51,38 @@ async function seed(page: Page, summaries: string[] = REQUESTS.map((r) => r.summ
 }
 
 // Puts rows of any kind in the store, newest last (a day apart); a tutor-ask keeps its words as the summary, the rest as the text.
-async function seedKinds(page: Page, rows: { kind: string; words: string }[]): Promise<void> {
-  const list = rows.map(({ kind, words }, i) => ({
+async function seedKinds(page: Page, rows: { kind: string; words: string; said?: string }[]): Promise<void> {
+  const list = rows.map(({ kind, words, said }, i) => ({
     txid: txidOf(i),
     kind,
-    ...(kind === 'tutor-ask' ? { summary: words } : { text: words }),
+    ...(kind === 'tutor-ask' ? { summary: words, ...(said ? { words: said } : {}) } : { text: words }),
     app_version: '0.1.80',
     sentAt: Date.now() - (rows.length - i) * 86_400_000,
     status: 'sent',
   }));
+  await page.evaluate(
+    (put) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const idb = open.result;
+          const tx = idb.transaction('requests', 'readwrite');
+          for (const row of put) tx.objectStore('requests').put(row);
+          tx.oncomplete = () => {
+            idb.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    list,
+  );
+}
+
+// Puts rows in the store as the app writes them: newest last, a day apart; `words` is his own words of a tutor-ask.
+async function seedRows(page: Page, rows: { kind: string; summary?: string; words?: string; text?: string }[]): Promise<void> {
+  const list = rows.map((row, i) => ({ txid: txidOf(i), ...row, app_version: '0.1.80', sentAt: Date.now() - (rows.length - i) * 86_400_000, status: 'sent' }));
   await page.evaluate(
     (put) =>
       new Promise<void>((resolve, reject) => {
@@ -119,10 +142,12 @@ for (const { name, width, height } of VIEWPORTS) {
   });
 }
 
-// A request of 400 characters is cut at three lines; a tap on it shows the rest and a second tap folds it; a short one is plain text; a 400-character
-// string with no break in it never scrolls the screen sideways, folded or open.
+// Every request is a button (mw-5r3p30.794): folded it shows three lines of his words (the tutor's summary for an ask kept before the phone kept his words),
+// a tap opens the whole of it in place (his words, the tutor's summary, the kind, the sent date, the status with the date it was set, the bead) and a
+// second tap folds it; a 400-character string with no break in it never scrolls the screen sideways, folded or open; the Adopted link inside a row
+// opens the commit and does not open the row.
 for (const { name, width, height } of VIEWPORTS) {
-  test(`a long request opens and folds on a tap at ${width}x${height}`, async ({ page }) => {
+  test(`a tap on any request opens it in full and a second tap folds it at ${width}x${height}`, async ({ page, context }) => {
     await page.setViewportSize({ width, height });
     const fake = makeFakePostern();
     await routePostern(page, fake);
@@ -132,33 +157,93 @@ for (const { name, width, height } of VIEWPORTS) {
     const long = 'Let me hear the Greek at half speed and then at full speed, '.repeat(7).slice(0, 400).trim();
     const unbroken = 'W'.repeat(400);
     const short = 'Add a sepia theme';
-    await seed(page, [unbroken, long, short]);
+    const summary = 'He wants the Greek at half speed, then full speed.';
+    await seedRows(page, [
+      { kind: 'tutor-ask', summary, words: long }, // 0: asked after this version, filed
+      { kind: 'tutor-ask', summary: long }, // 1: asked before it: the summary only
+      { kind: 'tutor-ask', summary: short, words: short }, // 2: short, sent
+      { kind: 'tutor-ask', summary: unbroken }, // 3
+      { kind: 'book', text: 'Guzik on Romans' }, // 4
+      { kind: 'tutor-ask', summary: 'Show the verse number big', words: 'Make the verse numbers bigger please' }, // 5: landed
+    ]);
+    fake.sendStatus(SEED_PUBLIC_KEY, status(0, { status: 'filed' }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(5, { status: 'landed', version: '0.1.86', commit: '0123456789abcdef0123456789abcdef01234567', url: COMMIT_URL }));
     await page.reload();
 
-    const text = page.getByRole('button', { name: long });
-    const heightOf = async (): Promise<number> => (await text.boundingBox())?.height ?? 0;
+    const rows = page.locator('[data-request]');
+    await expect(rows).toHaveCount(6);
+    const toggles = page.locator('[data-request-toggle]');
+    await expect(toggles).toHaveCount(6);
+    for (let i = 0; i < 6; i++) await expect(toggles.nth(i)).toHaveAttribute('aria-expanded', 'false');
+    for (const button of await page.getByRole('button', { name: /./ }).all()) expect(await button.evaluate((el) => el.querySelector('a') === null)).toBe(true); // no link inside a button
     const sideways = (): Promise<boolean> => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
-    await expect(text).toHaveAttribute('aria-expanded', 'false');
-    const folded = await heightOf();
-    await text.click();
-    await expect(text).toHaveAttribute('aria-expanded', 'true');
-    expect(await heightOf()).toBeGreaterThan(folded + 20);
-    expect(await text.evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true); // all of it shows
-    await shot(page, `your-requests-long-open-${name}`);
-    await text.click();
-    await expect(text).toHaveAttribute('aria-expanded', 'false');
-    expect(await heightOf()).toBeCloseTo(folded, 0);
+    const dateOf = (ms: number): Promise<string> => page.evaluate((t) => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }), ms);
 
-    await expect(page.getByRole('button', { name: short })).toHaveCount(0); // a short one is plain text
-    await expect(page.getByText(short)).toBeVisible();
+    // his words, folded at three lines, open in full with the summary, the kind, the date sent, the status with its date and the bead
+    const withWords = page.locator('[data-request]', { has: page.locator('[data-request-toggle]', { hasText: 'Let me hear the Greek at half speed' }) }).filter({ hasText: 'Filed' });
+    await expect(withWords).toHaveCount(1);
+    const wordsBox = withWords.locator('[data-request-words]');
+    const toggle = withWords.locator('[data-request-toggle]');
+    const folded = (await wordsBox.boundingBox())?.height ?? 0;
+    expect(await wordsBox.evaluate((el) => el.scrollHeight > el.clientHeight + 1)).toBe(true); // the cut hides some
+    await expect(withWords.locator('[data-request-detail]')).toHaveCount(0);
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect((await wordsBox.boundingBox())?.height ?? 0).toBeGreaterThan(folded + 20);
+    expect(await wordsBox.evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true); // all of it shows
+    await expect(wordsBox).toHaveText(long);
+    const detail = withWords.locator('[data-request-detail]');
+    await expect(detail).toContainText(summary);
+    await expect(withWords).toContainText('Asked the tutor');
+    await expect(withWords).toContainText(await dateOf(Date.now() - 6 * 86_400_000)); // sent
+    await expect(detail).toContainText(await dateOf(1_790_000_000_000)); // the status set
+    await expect(withWords.locator('[data-request-status]')).toHaveText('Filed');
+    await expect(detail).toContainText('mw-x.0');
+    expect(await sideways()).toBe(false);
+    await shot(page, `your-requests-open-${name}`);
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(detail).toHaveCount(0);
+    expect((await wordsBox.boundingBox())?.height ?? 0).toBeCloseTo(folded, 0);
 
-    const wide = page.getByRole('button', { name: unbroken });
-    await expect(wide).toHaveAttribute('aria-expanded', 'false');
+    // a request kept before the phone kept his words: the summary, in full when opened, with no summary line of its own
+    const old = page.locator('[data-request]', { has: page.locator('[data-request-words]', { hasText: long }) }).filter({ hasNotText: summary }).first();
+    await old.locator('[data-request-toggle]').click();
+    await expect(old.locator('[data-request-words]')).toHaveText(long);
+    expect(await old.locator('[data-request-words]').evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
+    await expect(old.locator('[data-request-detail]')).not.toContainText('The tutor');
+    await old.locator('[data-request-toggle]').click();
+    await expect(old.locator('[data-request-toggle]')).toHaveAttribute('aria-expanded', 'false');
+
+    // a short one opens too, and a book shows its text
+    const small = page.locator('[data-request]', { hasText: short });
+    await small.locator('[data-request-toggle]').click();
+    await expect(small.locator('[data-request-toggle]')).toHaveAttribute('aria-expanded', 'true');
+    await small.locator('[data-request-toggle]').click();
+    const book = page.locator('[data-request]', { hasText: 'Guzik on Romans' });
+    await book.locator('[data-request-toggle]').click();
+    await expect(book.locator('[data-request-words]')).toHaveText('Guzik on Romans');
+    await expect(book).toContainText('Book');
+
+    // 400 characters with no break never scroll the screen sideways
+    const wide = page.locator('[data-request]', { hasText: unbroken }).locator('[data-request-toggle]');
     expect(await sideways()).toBe(false);
     await wide.click();
     await expect(wide).toHaveAttribute('aria-expanded', 'true');
     expect(await sideways()).toBe(false);
     expect((await wide.boundingBox())?.width ?? 0).toBeLessThanOrEqual(width);
+
+    // the link of a landed request opens the commit in a tab and leaves the row folded
+    const landed = page.locator('[data-request]', { hasText: 'Make the verse numbers bigger' });
+    await context.route('https://github.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '' }));
+    const link = landed.getByRole('link', { name: 'Adopted in 0.1.86' });
+    await link.scrollIntoViewIfNeeded();
+    const opened = context.waitForEvent('page');
+    await link.click();
+    await opened;
+    await expect(landed.locator('[data-request-toggle]')).toHaveAttribute('aria-expanded', 'false');
+    await landed.locator('[data-request-toggle]').click();
+    await expect(landed.locator('[data-request-detail]')).toContainText('0.1.86');
   });
 }
 
@@ -174,7 +259,7 @@ test('thirty requests are grouped by kind, counted and searchable at 390x844', a
   const rows = [
     ...Array.from({ length: 14 }, (_, i) => ({ kind: 'book', words: i === 3 ? 'Guzik on Romans' : `Commentary number ${i + 1}` })),
     { kind: 'library', words: 'My Logos library: 198 of 4597 books' },
-    ...Array.from({ length: 10 }, (_, i) => ({ kind: 'tutor-ask', words: `Idea number ${i + 1} for the Greek` })),
+    ...Array.from({ length: 10 }, (_, i) => ({ kind: 'tutor-ask', words: `Idea number ${i + 1} for the Greek`, ...(i === 6 ? { said: 'Could the Greek have a sepia evening theme?' } : {}) })),
     ...Array.from({ length: 5 }, (_, i) => ({ kind: 'approach', words: `Approach number ${i + 1}` })),
   ];
   await seedKinds(page, rows);
@@ -188,6 +273,15 @@ test('thirty requests are grouped by kind, counted and searchable at 390x844', a
   await expect(books.last()).toContainText('Commentary number 1');
   await expect(page.locator('[data-request-group="library"] [data-request]')).toHaveCount(1);
   await expect(page.locator('[data-request-group="library"] [data-request]')).toContainText('198 of 4597 books');
+
+  // a row of each kind opens in full: the book's title, the library line, an approach's text
+  for (const [kind, words] of [['book', 'Guzik on Romans'], ['library', 'My Logos library: 198 of 4597 books'], ['approach', 'Approach number 2']] as const) {
+    const opened = page.locator(`[data-request-group="${kind}"] [data-request]`, { hasText: words });
+    await opened.locator('[data-request-toggle]').click();
+    await expect(opened.locator('[data-request-words]')).toHaveText(words);
+    expect(await opened.locator('[data-request-words]').evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
+    await opened.locator('[data-request-toggle]').click();
+  }
 
   const field = page.getByRole('searchbox', { name: 'Search your requests' });
   await expect(field).toHaveAttribute('placeholder', 'Search 30 requests');
@@ -205,6 +299,9 @@ test('thirty requests are grouped by kind, counted and searchable at 390x844', a
 
   await field.fill('number 1');
   await expect(headers).toHaveText(['Approaches or programmes (1)', 'Asked the tutor (2)', 'Books (6)']); // 1; 1 and 10; 1 and 10 to 14
+  await field.fill('sepia evening'); // only in his own words, not in the summary
+  await expect(page.locator('[data-request]')).toHaveCount(1);
+  await expect(page.locator('[data-request]')).toContainText('Could the Greek have a sepia evening theme?');
   await field.fill('zzzz');
   await expect(page.getByText('No request matches')).toBeVisible();
   await expect(page.locator('[data-request]')).toHaveCount(0);
