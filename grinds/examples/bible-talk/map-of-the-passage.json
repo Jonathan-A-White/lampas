@@ -21,6 +21,7 @@
     "maps": [
       {
         "id": "SodomAndGomorrah",
+        "source": "biblemapper",
         "title": "Sodom and Gomorrah Are Destroyed",
         "period": "2100 to 2090 BC",
         "places": [
@@ -32,30 +33,35 @@
       },
       {
         "id": "TableOfNationsHam",
+        "source": "biblemapper",
         "title": "Table of Nations: Ham’s Descendants",
         "period": "",
         "places": []
       },
       {
         "id": "TableOfNationsShem",
+        "source": "biblemapper",
         "title": "Table of Nations: Shem’s Descendants",
         "period": "",
         "places": []
       },
       {
         "id": "Mesopotamia",
+        "source": "biblemapper",
         "title": "Mesopotamia",
         "period": "",
         "places": []
       },
       {
         "id": "Ararat",
+        "source": "biblemapper",
         "title": "Ararat",
         "period": "",
         "places": []
       },
       {
         "id": "TableOfNationsJapheth",
+        "source": "biblemapper",
         "title": "Table of Nations: Japheth’s Descendants",
         "period": "",
         "places": []

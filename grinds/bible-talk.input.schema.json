@@ -209,6 +209,7 @@
         "required": ["id", "title", "period", "places"],
         "properties": {
           "id": { "description": "The map's key, the value of a `map` link.", "type": "string" },
+          "source": { "description": "Where the map is from: `biblemapper` (a map the app shows) or `logosatlas` (a link that opens in his own Logos, not in the app).", "type": "string" },
           "title": { "description": "The map's title.", "type": "string" },
           "period": { "description": "The years the map covers (such as 2100 to 2090 BC), empty when it has none.", "type": "string" },
           "places": { "description": "The places on the map that the held verse or range names.", "type": "array", "items": { "type": "string" } }

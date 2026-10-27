@@ -9,7 +9,7 @@ let card: string | null = null;
 const listeners = new Set<() => void>();
 const tell = (): void => listeners.forEach((l) => l());
 
-/** Opens the Maps sheet for a place (a verse, a passage or a chapter); with `cardId`, the map of that card is opened over it (once the place's maps are read), and a card the place lacks leaves the sheet alone. */
+/** Opens the Maps sheet for a place (a verse, a passage or a chapter); with `cardId`, the map of that card is opened over it (once the place's maps are read), and a card the place lacks leaves the sheet alone, and so does a card that opens elsewhere (`open`, a link-only source's row: MapView is never opened for it, the tutor's chip for it is a link, src/TutorLinks.tsx, and the sheet draws it as its own link row). */
 export function openMaps(ref: MapRef, cardId?: string): void {
   current = ref;
   card = cardId ?? null;

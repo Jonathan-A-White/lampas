@@ -12,13 +12,14 @@ import { TEST_CARDS } from '../support/test-maps';
 
 const card = (id: string, title: string, places: string[] = [], kind: MapCard['kind'] = 'event'): MapCard => ({ id, source: 'biblemapper', title, kind, period: period(-2100, -2090), article: `https://biblemapper.com/blog/${id}/`, places });
 const sodom = card('SodomAndGomorrah', 'Sodom and Gomorrah Are Destroyed', ['Admah?', 'Arad', 'Hazazon-tamar? (En-gedi)', 'Gomorrah?', 'Hebron', 'Jericho (OT)', 'Sodom?', 'Zeboiim?', 'Zoar', 'Dead Sea']);
+const logosRow = (id: string, title: string): MapCard => ({ ...card(id, title, [], 'link'), source: 'logosatlas', period: '', article: 'https://app.logos.com/tools/atlas/X', open: { url: 'https://app.logos.com/tools/atlas/X' } });
 const verse19 = 'and the border of the Canaanites was from Sidon, as thou comest to Gerar, unto Gaza; as thou goest, unto Sodom, and Gomorrah, and Admah, and Zeboiim, even unto Lasha.';
 
 describe('mapsForTutor', () => {
   it('gives id, title, period and places for each card', () => {
     const [one] = mapsForTutor([sodom], verse19);
-    expect(one).toEqual({ id: 'SodomAndGomorrah', title: 'Sodom and Gomorrah Are Destroyed', period: '2100 to 2090 BC', places: ['Sodom', 'Gomorrah', 'Admah', 'Zeboiim'] });
-    expect(Object.keys(one)).toEqual(['id', 'title', 'period', 'places']);
+    expect(one).toEqual({ id: 'SodomAndGomorrah', source: 'biblemapper', title: 'Sodom and Gomorrah Are Destroyed', period: '2100 to 2090 BC', places: ['Sodom', 'Gomorrah', 'Admah', 'Zeboiim'] });
+    expect(Object.keys(one)).toEqual(['id', 'source', 'title', 'period', 'places']);
   });
 
   it('names no place when the passage is a chapter (no text to match)', () => {
@@ -35,9 +36,22 @@ describe('mapsForTutor', () => {
     expect(mapsForTutor([card('Genesis_10', 'Genesis 10', [], 'video'), sodom]).map((m) => m.id)).toEqual(['SodomAndGomorrah']);
   });
 
-  it('leaves out a link-only source\'s row, which opens in Logos and not in the map view', () => {
-    const logos: MapCard = { ...card('JONAHSTRAVELS-EN', 'Logos Atlas: Jonah’s Travels', [], 'link'), source: 'logosatlas', open: { url: 'https://app.logos.com/tools/atlas/JONAHSTRAVELS-EN' } };
-    expect(mapsForTutor([logos, sodom]).map((m) => m.id)).toEqual(['SodomAndGomorrah']);
+  it('lists a link-only source\'s row with its source and a title that says it opens in Logos', () => {
+    const [map, row] = mapsForTutor([logosRow('places', 'Logos Atlas at Gerar, Admah, Lasha'), sodom], verse19);
+    expect(map.id).toBe('SodomAndGomorrah');
+    expect(row).toEqual({ id: 'places', source: 'logosatlas', title: 'Logos Atlas at Gerar, Admah, Lasha (opens in Logos)', period: '', places: [] });
+  });
+
+  it('puts Bible Mapper\'s ranked cards first and the Logos rows after, within 12, at most two of them', () => {
+    const bm = Array.from({ length: 11 }, (_, i) => card(`M${i}`, `Map ${i}`));
+    const rows = [logosRow('places', 'Logos Atlas at Gerar'), logosRow('LLS:LXGEOCOMMPENT', 'Lexham Geographic Commentary at Genesis 10:19'), logosRow('third', 'A third row')];
+    // the Logos rows come last though listed first, Bible Mapper's cards that name the verse's places lead its own, and the two rows keep their place when the cap is reached
+    const told = mapsForTutor([...rows, ...bm, sodom], verse19);
+    expect(told).toHaveLength(MAX_TUTOR_MAPS);
+    expect(told.map((m) => m.source)).toEqual([...Array(10).fill('biblemapper'), 'logosatlas', 'logosatlas']);
+    expect(told[0].id).toBe('SodomAndGomorrah');
+    expect(told.slice(-2).map((m) => m.id)).toEqual(['places', 'LLS:LXGEOCOMMPENT']);
+    expect(told.every((m) => m.id !== 'third')).toBe(true);
   });
 
   it('holds at most 12', () => {
