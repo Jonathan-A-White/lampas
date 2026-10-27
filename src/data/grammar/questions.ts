@@ -43,6 +43,8 @@ export interface GrammarQuestion {
   code?: string;
   /** the Greek that Tap to hear says (a letter, or the word) */
   say?: string;
+  /** 'hbo' for a question about Hebrew (mw-gdcyf98.11): the card draws its Hebrew right to left in the Hebrew face and Tap to hear says it in the Hebrew voice; Greek when left out */
+  lang?: 'hbo';
   /** what the question is about, for Drill it (drillIt.ts, mw-i7xe0n.1): the letter, the ending, the case; a miss on it names the gap */
   facet?: Facet;
   /** the part of `form` the question is about, as [from, to) indexes into it: the pair of a word whose sound depends on its place (ruleWord.ts); the card draws it marked */

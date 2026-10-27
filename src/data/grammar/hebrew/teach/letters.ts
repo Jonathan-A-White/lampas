@@ -66,7 +66,7 @@ const letterCard = (letter: HebrewLetter): Teach => ({
 const alphabetCard: Teach = {
   whatItIs:
     'Hebrew has 22 letters, and all of them are consonants: the vowels are small marks added to them, which you meet later. Hebrew is read from right to left, the other way round from English. Each letter has a name, and five have a second shape for the end of a word.',
-  howToSpot: 'Start at the right-hand end of a word and read toward the left, naming each letter by its shape. The table gives the 22 in their order.',
+  howToSpot: 'Start at the right-hand end of a word and read toward the left, naming each letter by its shape: א is alef, ב is bet, ל is lamed. The table gives all 22 in their order.',
   table: {
     caption: 'The 22 letters, in order',
     columns: ['Letter'],

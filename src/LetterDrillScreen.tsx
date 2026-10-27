@@ -7,9 +7,12 @@
 // On a phone that can hear him (src/useCanHear.ts) the third question of a round is Say it (mw-86e9r1.12): the letter shown large, he holds the bar and says its name or its sound,
 // the phone's speech recognition writes what it heard and src/data/grammar/sayIt.ts checks it; a miss says the right sound and shows the answer. A phone with no recognition, or with
 // the microphone refused, is never asked; a refusal found at the bar leaves every Say it question out of the drill, and a Say it that is skipped costs him nothing.
+// The drill is of the ladder in hand (mw-gdcyf98.11, `lang`): Got it on The Hebrew alphabet drills the Hebrew 27 glyphs (the 22 letters and the 5 final forms, one target each), drawn right to left in the
+// Hebrew face and heard in the Hebrew voice, their sounds the Israeli scheme's lessons. Hebrew has no Say it, no Write it and keeps no evidence of its answers yet.
 import { useEffect, useState } from 'react';
-import { answerTarget, drawRound, isComplete, newDrillRandom, rightCount, startLetterDrill, withWriting, TARGETS, type DrillStep, type LetterDrillState, type RoundItem } from './data/grammar/letterDrill';
+import { answerTarget, drawRound, isComplete, letterSetOf, newDrillRandom, rightCount, startLetterDrill, withWriting, type DrillStep, type LetterDrillState, type RoundItem } from './data/grammar/letterDrill';
 import { ideaOf } from './data/grammar/ladder';
+import { ideaOfAny, type LadderLang } from './data/grammar/ladders';
 import { ideaSound } from './data/grammar/lessons';
 import { letterHeard } from './data/grammar/sayIt';
 import { noteDrillAnswer } from './data/repositories';
@@ -45,20 +48,24 @@ interface Sitting {
   rights: number;
 }
 
-export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
+export function LetterDrillScreen({ onClose, lang = 'grc' }: { onClose: () => void; lang?: LadderLang }) {
   useSheetBack(onClose);
-  const idea = ideaOf('alphabet');
+  const set = letterSetOf(lang);
+  const hebrew = lang === 'hbo';
+  const idea = ideaOfAny(set.alphabetId);
   const [random] = useState(newDrillRandom);
   // Write it is mixed in from the round drawn after it is known to be on (mw-86e9r1.51); the first round waits for it, which takes a moment
-  const writing = useHandwritingOn();
+  const handwriting = useHandwritingOn();
+  const writing = hebrew ? false : handwriting;
   // Say it is in the rounds drawn once the phone is known to be able to hear him, and until a refusal is found at the bar (mw-86e9r1.12)
-  const canHear = useCanHear();
+  const heard = useCanHear();
+  const canHear = hebrew ? false : heard;
   const [micGone, setMicGone] = useState(false);
   const saying = canHear === true && !micGone;
   const [sitting, setSitting] = useState<Sitting | null>(null);
   if (sitting === null && writing !== undefined && canHear !== undefined) {
     const drill = startLetterDrill();
-    setSitting({ drill, number: 1, round: withWriting(drawRound(drill, random, undefined, saying), writing), at: 0, rights: 0 });
+    setSitting({ drill, number: 1, round: withWriting(drawRound(drill, random, undefined, saying, set), writing), at: 0, rights: 0 });
   }
   // what he tapped on the question, held until he taps Next so he can read whether he was right
   const [picked, setPicked] = useState<string | null>(null);
@@ -88,7 +95,8 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
     if (!item || picked !== null) return;
     setPicked(option);
     setSitting({ ...sitting, drill: answerTarget(drill, item.target, right), rights: sitting.rights + (right ? 1 : 0) });
-    void noteDrillAnswer(item.question, right).catch((error: unknown) => console.error('could not keep the letter drill answer', error));
+    // the Hebrew letters keep no evidence yet (their reviews are story l's)
+    if (!hebrew) void noteDrillAnswer(item.question, right).catch((error: unknown) => console.error('could not keep the letter drill answer', error));
   };
   const pick = (option: string): void => keep(option, option === item?.question.right);
   /** What the phone heard him say: right when it is the letter's name or sound; a miss says the right sound. */
@@ -108,9 +116,9 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
     setSitting({ ...sitting, at: at + 1 });
   };
   const another = (): void => {
-    setSitting({ drill, number: sitting.number + 1, round: withWriting(drawRound(drill, random, undefined, saying), writing ?? false), at: 0, rights: 0 });
+    setSitting({ drill, number: sitting.number + 1, round: withWriting(drawRound(drill, random, undefined, saying, set), writing ?? false), at: 0, rights: 0 });
   };
-  const done = isComplete(drill);
+  const done = isComplete(drill, set);
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Letter drill" className="fixed inset-0 z-40 flex flex-col bg-surface">
@@ -152,12 +160,16 @@ export function LetterDrillScreen({ onClose }: { onClose: () => void }) {
               {sitting.rights} of {questions} right
             </h3>
             <p data-testid="letter-progress" className="mt-1 text-lg">
-              {rightCount(drill)} of {TARGETS.length} right so far
+              {rightCount(drill, set)} of {set.targets.length} right so far
             </p>
             <p className="mt-1 text-base text-muted">
               {done
-                ? 'Every letter is right, small and capital.'
-                : 'The 24 letters each count twice: once small, once as a capital. A letter you miss comes back in the next round.'}
+                ? hebrew
+                  ? 'Every letter is right, and every final form.'
+                  : 'Every letter is right, small and capital.'
+                : hebrew
+                  ? 'The 22 letters and their 5 final forms each count once. A letter you miss comes back in the next round.'
+                  : 'The 24 letters each count twice: once small, once as a capital. A letter you miss comes back in the next round.'}
             </p>
           </div>
         )}

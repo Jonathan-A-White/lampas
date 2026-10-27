@@ -119,9 +119,9 @@ export const hebrewLookAlikesOf = (id: string): string[] => HEBREW_LOOK_ALIKES.f
  * that is not in the Hebrew yet), so a letter is always asked in a word. tests/unit/hebrew-letters.test.ts reads each against public/data and checks the 22 letters are held.
  */
 export const HEBREW_DRILL_WORDS: readonly string[] = [
-  'אוֹר', 'בָּרָא', 'גָּדוֹל', 'דָּג', 'הָיְתָה', 'וָבֹהוּ', 'זֶרַע', 'חַיָּה', 'טוֹב', 'יוֹם', 'כָּל', 'לַיְלָה', 'מַיִם', 'נֶפֶשׁ', 'סַעַר', 'עֵץ', 'פְּרִי', 'בְּצַלְמֵנוּ', 'קָרָא',
+  'אוֹר', 'בָּרָא', 'גָּדוֹל', 'דָּג', 'הָיְתָה', 'וָבֹהוּ', 'זֶרַע', 'חַיָּה', 'טוֹב', 'יוֹם', 'כָּל', 'לָיְלָה', 'מַיִם', 'נֶפֶשׁ', 'סַעַר', 'עֵץ', 'פְּרִי', 'בְּצַלְמֵנוּ', 'קָרָא',
   'רָקִיעַ', 'שָׁמָיִם', 'תְהוֹם',
 ];
 
-/** Whether Drill it can walk the Hebrew idea: the alphabet and each of the 22 letters (the other Hebrew ideas have no drill yet; story l owns it). */
-export const isHebrewDrillable = (ideaId: string): boolean => ideaId === 'he-alphabet' || hebrewLetterOf(ideaId) !== undefined;
+/** Whether Drill it can walk the Hebrew idea: each of the 22 letters (the alphabet has the letter drill, and the other Hebrew ideas have no drill yet; story l owns it). */
+export const isHebrewDrillable = (ideaId: string): boolean => hebrewLetterOf(ideaId) !== undefined;

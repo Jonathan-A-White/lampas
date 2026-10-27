@@ -12,7 +12,7 @@ import { planFrom, shortDrill, type PlanItem } from './data/grammar/drillPlan';
 import { drillSeed } from './data/grammar/drillSeed';
 import { hintTakes } from './data/grammar/hint';
 import type { Facet } from './data/grammar/ladder';
-import { ideaOfAny as ideaOf } from './data/grammar/ladders';
+import { ideaOfAny as ideaOf, ladderLangOf } from './data/grammar/ladders';
 import type { Level } from './data/grammar/needs';
 import { DialogAskTutor } from './AskTutor';
 import { answerPlanItem, getDrillPlan, listSeen, listUnseenFetched, noteAsked, takeAllFetched, takeFetchedItems, type DrillMode } from './data/repositories';
@@ -63,7 +63,7 @@ function DrillPlan({ result, passage }: { result: DrillResult; passage: readonly
   const mine = planFrom(result, 0);
   const kept = useLiveQuery(() => getDrillPlan(result.ideaId), [result.ideaId]);
   const [running, setRunning] = useState<PlanItem | null>(null);
-  const [questions] = useState(() => (mine?.items[0]?.kind === 'facet' ? shortDrill(result.ideaId, mine.items[0], { passage, seed: drillSeed.next() }) : []));
+  const [questions] = useState(() => (mine?.items[0]?.kind === 'facet' ? shortDrill(result.ideaId, mine.items[0], { passage, seed: drillSeed.next(ladderLangOf(result.ideaId)) }) : []));
   if (!mine || !kept || kept.items.map((i) => i.id).join() !== mine.items.map((i) => i.id).join()) return null;
   const first = kept.items[0];
   const untouched = kept.items.every((i) => !i.done);
@@ -135,7 +135,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
   const idea = ideaOf(ideaId);
   // the walk is drawn at once, then made again from the questions he has not been asked once the phone's list of them is read (a seen question never counts toward proving, docs/grammar.md
   // 'Confirming a missed idea'; the same seed, so nothing is asked that the first walk did not hold); an answer given before that waits for it. Never the network.
-  const [seed] = useState(() => drillSeed.next());
+  const [seed] = useState(() => drillSeed.next(ladderLangOf(ideaId)));
   const [walk, setWalk] = useState<DrillWalk | null>(() => begin(ideaId, passage, seed));
   const [ready, setReady] = useState(false);
   const [onTheirWay, setOnTheirWay] = useState(false);

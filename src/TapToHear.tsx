@@ -3,7 +3,8 @@
 // look of the Talk bar), the same engine as a long press on a word of the reader (speakWord in speech/greek.ts). The bar follows its word, whoever said it: the
 // Quick test's answer says it by itself, and the bar still shows the stop square and stops it on a tap (useWordSaid; mw-5r3p30.324).
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { hasGreekVoice, noVoiceHelp, speakSound, speakWord, stopSpeaking, useWordSaid, warmVoices } from './speech/greek';
+import { hasGreekVoice, hasVoice, noVoiceHelp, speakSound, speakWord, stopSpeaking, useWordSaid, warmVoices } from './speech/greek';
+import type { SpeechLanguage } from './speech/languages';
 import { Icon } from './speech/SpeakButton';
 import { TapBar } from './ui/TapBar';
 
@@ -11,7 +12,7 @@ const HELP_MS = 7000;
 
 /** `text` is the Greek said on a tap; `letter` says it is a letter or pair asked about by ear (a sound question), whose sound is said (speakSound: a vowel
  * doubled to the Greek voice, a consonant still named; mw-5r3p30.421). */
-export function TapToHear({ text, letter = false }: { text: string; letter?: boolean }) {
+export function TapToHear({ text, letter = false, language = 'greek' }: { text: string; letter?: boolean; language?: SpeechLanguage }) {
   const [help, setHelp] = useState<string | null>(null);
   const playing = useWordSaid(text);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -22,14 +23,16 @@ export function TapToHear({ text, letter = false }: { text: string; letter?: boo
       return;
     }
     // with no Greek voice the phone would say it in another one: nothing is spoken, the help says where to get one (as a speaker button does)
-    if (hasGreekVoice() === false || !(letter ? speakSound(text) : speakWord(text, 'greek'))) {
-      setHelp(noVoiceHelp());
+    // (a Hebrew letter or word is said in the phone's Hebrew voice, mw-gdcyf98.11)
+    const spoken = language === 'hebrew' ? hasVoice('hebrew') !== false && speakWord(text, 'hebrew') : hasGreekVoice() !== false && (letter ? speakSound(text) : speakWord(text, 'greek'));
+    if (!spoken) {
+      setHelp(noVoiceHelp(language));
       clearTimeout(timer.current);
       timer.current = setTimeout(() => setHelp(null), HELP_MS);
       return;
     }
     setHelp(null);
-  }, [text, letter, playing]);
+  }, [text, letter, language, playing]);
 
   useEffect(() => {
     void warmVoices();
