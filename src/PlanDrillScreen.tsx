@@ -8,6 +8,8 @@ import type { DrillQuestion } from './data/grammar/drillIt';
 import { ideaOf } from './data/grammar/ladder';
 import { noteAsked, takeFetchedItems } from './data/repositories';
 import { GrammarCard } from './GrammarCard';
+import { confirmAnswer } from './review/confirm';
+import { keepStocked } from './review/moreItems';
 import { FacetLabel } from './FacetLabel';
 import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
 import { useSheetBack } from './ui/sheetBack';
@@ -44,6 +46,8 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
       .then((kept) => {
         const item = kept.get(ideaId);
         if (item) setQuestions((all) => withFetched(all, item, live.current.index + (live.current.picked === null ? 0 : 1)));
+        // the stock of questions he has not been asked is topped up, in the background (docs/grammar.md 'Confirming a missed idea')
+        void keepStocked([ideaId]);
       })
       .catch((error: unknown) => console.warn('could not take a kept drill item', error));
   }, [ideaId]);
@@ -62,7 +66,8 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
     if (!question || picked !== null) return;
     setPicked(option);
     setTries((all) => [...all, { question, picked: option, hinted: false }]);
-    void noteAsked(question);
+    // noted as asked first: the ask the confirm may start carries the questions he has seen
+    void noteAsked(question).then(() => confirmAnswer(question, option === question.right));
     if (option === question.right) setRight((n) => n + 1);
   };
   const talkScreen = over

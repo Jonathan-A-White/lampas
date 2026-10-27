@@ -8,6 +8,14 @@ import { SEEN_PREFIX, parseSeen } from './seenItems';
 
 const PREFIX = 'fetchedItems.';
 
+/** The questions the mill wrote that were taken to be asked this session (seenKey of each): a fresh question is one of these, whatever screen asks it (mw-indx1x6.2). */
+const served = new Set<string>();
+
+const keyOf = (q: GrammarQuestion): string => `${q.ideaId}|${seenKey({ prompt: q.prompt, ref: q.ref ?? '' })}`;
+
+/** Whether this question is one the mill wrote and a take handed out (not a built one). */
+export const isFreshQuestion = (q: GrammarQuestion): boolean => served.has(keyOf(q));
+
 /** The questions a settings value holds; a value that is not a list, or an item that is not a drawable question, is left out. */
 function parse(value: unknown): GrammarQuestion[] {
   if (typeof value !== 'string') return [];
@@ -53,11 +61,30 @@ export async function takeFetchedItems(ideaIds: readonly string[]): Promise<Map<
         continue;
       }
       taken.set(id, first);
+      served.add(keyOf(first));
       if (rest.length > 0) await db.settings.put({ key: PREFIX + id, value: JSON.stringify(rest) });
       else await db.settings.delete(PREFIX + id);
     }
   });
   return taken;
+}
+
+/** The kept items of an idea that he has not been asked, the oldest first; nothing is taken. */
+export async function listUnseenFetched(ideaId: string): Promise<GrammarQuestion[]> {
+  const kept = parse((await db.settings.get(PREFIX + ideaId))?.value);
+  const seen = new Set(parseSeen((await db.settings.get(SEEN_PREFIX + ideaId))?.value).map(seenKey));
+  return kept.filter((q) => !seen.has(seenKey({ prompt: q.prompt, ref: q.ref ?? '' })));
+}
+
+/** Takes every kept item of an idea that he has not been asked (Prove it, when the built questions he has not seen are too few to prove an idea on); they are used up. */
+export async function takeAllFetched(ideaId: string): Promise<GrammarQuestion[]> {
+  const items = await db.transaction('rw', db.settings, async () => {
+    const unseen = await listUnseenFetched(ideaId);
+    await db.settings.delete(PREFIX + ideaId);
+    return unseen;
+  });
+  for (const q of items) served.add(keyOf(q));
+  return items;
 }
 
 /** The ids of the ideas that have kept items, the lower rung first (a stored id the ladder no longer has is left out). */

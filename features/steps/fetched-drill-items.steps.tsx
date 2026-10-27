@@ -12,15 +12,17 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { drillSteps } from '../../src/data/grammar/drillIt';
+import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { shortDrill } from '../../src/data/grammar/drillPlan';
 import { buildDrillItemsRequest, checkedItems, type DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
 import { ideaOf } from '../../src/data/grammar/ladder';
 import { mulberry32 } from '../../src/data/quiz';
-import { countFetchedItems, listSeen, saveFetchedItems } from '../../src/data/repositories';
+import { countFetchedItems, isToConfirm, listSeen, missedBefore, reviewsOf, saveFetchedItems } from '../../src/data/repositories';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { DrillItScreen } from '../../src/DrillItScreen';
 import { PlanDrillScreen } from '../../src/PlanDrillScreen';
 import { whenIdle } from '../../src/review/moreItems';
 import { setCurrentLicence } from '../../src/services/licenceNow';
@@ -34,8 +36,9 @@ afterAll(async () => {
   cleanup();
   clearBus();
   setCurrentLicence('licensed');
-  await whenIdle();
+  // a scenario may end with an ask held (the confirm and Prove it ask ahead): the mill ends it first, then nothing is out
   fake?.endAll({ status: 'failed', reason: 'the scenario is over' });
+  await whenIdle();
   await usageWritesSettled();
   db.close();
   vi.unstubAllGlobals();
@@ -57,6 +60,8 @@ beforeAll(() => {
 
 /** What the questions of a round on the second declension were, in the order asked. */
 let asked: { prompt: string; kind: string | null; mode: string | null }[] = [];
+/** The idea whose questions `asked` records: the second declension, except where a scenario names another. */
+let focus = IDEA;
 
 /** A fresh phone: words seeded, nothing scheduled, a key, a licence, a fake mill that holds every grist until a step answers it. */
 async function freshPhone(): Promise<void> {
@@ -77,6 +82,7 @@ async function freshPhone(): Promise<void> {
   fake = makeFakePostern();
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
   asked = [];
+  focus = IDEA;
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear()]);
   await seedHisWords();
@@ -85,9 +91,9 @@ async function freshPhone(): Promise<void> {
 }
 
 /** The second declension is due, on a step that asks it as a flashcard (so a step can miss it for sure). */
-async function makeDue(): Promise<void> {
+async function makeDue(lapses = 0, id = IDEA): Promise<void> {
   const now = Date.now();
-  await db.reviews.put({ kind: 'grammar', id: IDEA, step: 3, rights: 0, due: now - 60_000, lastWhen: now - 3 * DAY, lapses: 0 });
+  await db.reviews.put({ kind: 'grammar', id, step: 3, rights: 0, due: now - 60_000, lastWhen: now - 3 * DAY, lapses });
 }
 
 async function openReview(): Promise<void> {
@@ -107,7 +113,7 @@ async function playRound(miss?: string): Promise<void> {
     await waitFor(() => expect(document.querySelector('[data-testid="grammar-prompt"], [data-testid="prompt"]')).not.toBeNull());
     const prompt = document.querySelector('[data-testid="grammar-prompt"]');
     const idea = prompt?.getAttribute('data-idea');
-    if (idea === IDEA && prompt) asked.push({ prompt: prompt.textContent ?? '', kind: prompt.getAttribute('data-kind'), mode: prompt.getAttribute('data-mode') });
+    if (idea === focus && prompt) asked.push({ prompt: prompt.textContent ?? '', kind: prompt.getAttribute('data-kind'), mode: prompt.getAttribute('data-mode') });
     const show = screen.queryByRole('button', { name: 'Show' });
     if (show) {
       await user.click(show);
@@ -126,15 +132,15 @@ async function playRound(miss?: string): Promise<void> {
 }
 
 /** An item the mill could write from the first verse it was sent that has a word of the idea: a tap-form on that word among words of other parsings. */
-function itemFrom(request: DrillItemsRequest, over: Record<string, unknown> = {}): Record<string, unknown> {
+function itemFrom(request: DrillItemsRequest, over: Record<string, unknown> = {}, idea = IDEA): Record<string, unknown> {
   for (const sent of request.verses) {
-    const use = sent.uses.find((u) => u.idea === IDEA);
+    const use = sent.uses.find((u) => u.idea === idea);
     const verse = romans8.verses.find((v) => `${romans8.book} ${romans8.chapter}:${v.n}` === sent.ref);
     const right = verse?.g.find((w) => w.t === use?.form);
     if (!use || !verse || !right) continue;
     const others = [...new Map(verse.g.filter((w) => w.p !== right.p && w.t !== right.t).map((w) => [w.t, w])).keys()];
     if (others.length < 3) continue;
-    return { idea: IDEA, kind: 'tap-form', ref: sent.ref, prompt: MILL_PROMPT, options: [right.t, ...others.slice(0, 3)], right: right.t, ...over };
+    return { idea, kind: 'tap-form', ref: sent.ref, prompt: MILL_PROMPT, options: [right.t, ...others.slice(0, 3)], right: right.t, ...over };
   }
   throw new Error('the verses sent hold no word of the second declension to ask about');
 }
@@ -163,6 +169,47 @@ function openShortDrill(): void {
 }
 
 const promptShown = (): string | null => document.querySelector('[data-testid="grammar-prompt"]')?.textContent ?? null;
+
+// ---- Prove it ----
+const GENITIVE = 'case-genitive';
+const PROVE_SEED = 5;
+/** What is asked: its prompt and options, which tell one question from another (a prompt alone is shared by questions on different verses). */
+const signature = (q: { prompt: string; options: readonly string[] }): string => `${q.prompt}|${q.options.join('|')}`;
+const topQuestions = () => {
+  const steps = drillSteps(GENITIVE, { passage: [romans8], seed: PROVE_SEED });
+  return steps[steps.length - 1].questions;
+};
+let proveResult: unknown;
+/** The mill's items on the genitive case, by signature, so a step knows the right option of one on screen. */
+const fresh = new Map<string, string>();
+/** What Prove it put on screen, by signature. */
+let shown: string[] = [];
+let seenBefore = new Set<string>();
+
+function openProveIt(): void {
+  cleanup();
+  drillSeed.next = () => PROVE_SEED;
+  proveResult = undefined;
+  render(<DrillItScreen ideaId={GENITIVE} mode="prove" passage={[romans8]} onResult={(r) => (proveResult = r)} onClose={() => undefined} />);
+}
+
+/** Answers every question on the Drill it screen right until its result shows. */
+async function answerProveItRight(): Promise<void> {
+  const all = drillSteps(GENITIVE, { passage: [romans8], seed: PROVE_SEED }).flatMap((st) => st.questions);
+  for (let guard = 0; guard < 30; guard += 1) {
+    if (screen.queryByTestId('drill-result')) return;
+    await screen.findByTestId('grammar-prompt');
+    const prompt = document.querySelector('[data-testid="grammar-prompt"]')?.textContent ?? '';
+    const options = [...document.querySelectorAll<HTMLElement>('[data-option]')].map((o) => o.textContent ?? '');
+    const sig = signature({ prompt, options });
+    shown.push(sig);
+    const right = fresh.get(sig) ?? all.find((q) => signature(q) === sig)?.right;
+    expect(right, `the right option of what Prove it asked: ${sig}`).toBeDefined();
+    await user.click([...document.querySelectorAll<HTMLElement>('[data-option]')].find((o) => o.textContent === right) as HTMLElement);
+    await user.click(await screen.findByTestId('drill-next'));
+  }
+  throw new Error('Prove it did not end');
+}
 
 const feature = await loadFeature('features/fetched-drill-items.feature');
 
@@ -311,6 +358,105 @@ describeFeature(feature, ({ Scenario }) => {
       await whenIdle();
       expect(fake.received).toEqual([]);
       expect(fake.calls.filter((c) => c.startsWith('POST'))).toEqual([]);
+    });
+  });
+
+  Scenario('A right answer on an idea he missed before is confirmed on a question he has not been asked', ({ Given, When, Then, And }) => {
+    let builtPrompt = '';
+    Given('the genitive case is due in Review, he missed it before, and the mill will answer a drill-items grist', async () => {
+      await freshPhone();
+      focus = GENITIVE;
+      await makeDue(1, GENITIVE);
+    });
+    When('he answers the genitive case right in a Review round', async () => {
+      await openReview();
+      await playRound();
+      builtPrompt = asked[0].prompt;
+    });
+    Then('the genitive case is marked to confirm', async () => {
+      expect(await isToConfirm(GENITIVE)).toBe(true);
+    });
+    And('the mill is sent one drill-items grist naming {string} with the question he saw', async (_, id: string) => {
+      const { input, kind } = await grist();
+      expect(kind).toBe('drill-items');
+      expect(input.ideas.map((i) => i.id)).toEqual([id]);
+      expect(input.seen?.map((q) => q.prompt)).toContain(builtPrompt);
+    });
+    When('the mill answers it with items made from the verses it was sent', async () => {
+      const { input } = await grist();
+      await fake.answer({ status: 'answered', answer: { items: [itemFrom(input, {}, GENITIVE)] } });
+    });
+    Then('the items are kept for {string}', async (_, id: string) => {
+      await waitFor(async () => expect(await countFetchedItems(id)).toBe(1));
+    });
+    When('he starts the next Review round', async () => {
+      await whenIdle();
+      asked = [];
+      await openReview();
+      await playRound();
+    });
+    Then('the round asks the genitive case with an item the mill wrote', () => {
+      // not the question he saw: the one the mill wrote, as a flashcard (the row is still on its step)
+      expect(asked).toEqual([{ prompt: MILL_PROMPT, kind: 'tap-form', mode: 'flashcard' }]);
+      expect(MILL_PROMPT).not.toBe(builtPrompt);
+    });
+    And('the genitive case is known: it is no longer to confirm and its row has moved up', async () => {
+      await waitFor(async () => expect(await isToConfirm(GENITIVE)).toBe(false));
+      expect(await missedBefore(GENITIVE)).toBe(false);
+      expect((await reviewsOf([{ kind: 'grammar', id: GENITIVE }]))[0].step).toBe(4);
+    });
+  });
+
+  Scenario('Prove it does not prove an idea whose questions he has all seen, and proves it on fresh ones', ({ Given, When, Then, And }) => {
+    Given('he has been asked every question of the top step of Drill it on the genitive case but one', async () => {
+      await freshPhone();
+      fresh.clear();
+      shown = [];
+      const top = topQuestions();
+      expect(top.length).toBeGreaterThanOrEqual(3);
+      const seen = top.slice(1);
+      seenBefore = new Set(seen.map(signature));
+      await db.settings.put({ key: `seenItems.${GENITIVE}`, value: JSON.stringify(seen.map((q) => ({ prompt: q.prompt, ref: q.ref }))) });
+    });
+    When('he starts Prove it on the genitive case', () => {
+      openProveIt();
+    });
+    Then('Prove it says more questions are on their way', async () => {
+      expect(await screen.findByTestId('drill-more-on-the-way')).toHaveTextContent('More questions are on their way');
+      expect(screen.queryByTestId('drill-result')).toBeNull();
+    });
+    And('the mill is sent one drill-items grist naming {string}', async (_, id: string) => {
+      const { input, kind } = await grist();
+      expect(kind).toBe('drill-items');
+      expect(input.ideas.map((i) => i.id)).toEqual([id]);
+    });
+    And('the genitive case is not proved', async () => {
+      expect(proveResult).toBeUndefined();
+      expect(await db.grammarLevels.get(GENITIVE)).toBeUndefined();
+    });
+    When('the mill answers it with two items made from the verses it was sent', async () => {
+      const { input } = await grist();
+      const items = [itemFrom(input, { prompt: 'Which of these is in the genitive case?' }, GENITIVE), itemFrom(input, { prompt: 'Tap the word in the genitive case' }, GENITIVE)];
+      await fake.answer({ status: 'answered', answer: { items } });
+      await waitFor(async () => expect(await countFetchedItems(GENITIVE)).toBe(2));
+      for (const item of items) fresh.set(signature({ prompt: item.prompt as string, options: item.options as string[] }), item.right as string);
+      await whenIdle();
+    });
+    And('he starts Prove it on the genitive case again', async () => {
+      openProveIt();
+      await screen.findByTestId('grammar-prompt');
+      expect(screen.queryByTestId('drill-more-on-the-way')).toBeNull();
+    });
+    And('he answers every question of Prove it right', async () => {
+      await answerProveItRight();
+    });
+    Then('Drill it says it is proved', async () => {
+      expect(await screen.findByTestId('drill-result')).toHaveTextContent('Proved');
+      expect(proveResult).toMatchObject({ ideaId: GENITIVE, proved: true });
+    });
+    And('Prove it asked no question he had been asked before', () => {
+      expect(shown.length).toBeGreaterThan(0);
+      expect(shown.filter((sig) => seenBefore.has(sig))).toEqual([]);
     });
   });
 });
