@@ -1,7 +1,7 @@
 // src/data/grammar/hebrew/letters.ts — the 22 letters of Hebrew and their five final forms (mw-gdcyf98.11, docs/grammar.md 'The Hebrew ladder'): the letter drill's 27 glyphs and the
 // ideas 'he-letter-alef' to 'he-letter-tav' of the Hebrew ladder (hebrew/ladder.ts). How a letter SOUNDS is never written here: it is the Israeli scheme's lesson
 // (src/speech/schemes/hebrew-israeli-lessons.ts), found by `lesson`, the id the scheme keys it by. Pure data.
-import { stripCantillation } from '../../../speech/schemes/hebrew-israeli';
+import { hebrewPointedForm } from '../../../speech/pronunciation';
 
 export interface HebrewLetter {
   /** the ending of the idea's id: 'alef' */
@@ -68,7 +68,7 @@ export const hebrewLetterOfGlyph = (glyph: string): HebrewLetter | undefined => 
  * A card's worked word is a word of its verse in this form (tests/unit/hebrew-ladder.test.ts reads it against public/data).
  */
 export function hebrewBare(text: string): string {
-  return stripCantillation(text.normalize('NFC').replace(/\u05C3[\u05E4\u05E1]?$/u, '')).replace(/\u05BE/gu, '').normalize('NFC');
+  return hebrewPointedForm(text.normalize('NFC').replace(/\u05C3[\u05E4\u05E1]?$/u, '')).replace(/\u05BE/gu, '').normalize('NFC');
 }
 
 /** The consonants of a word: no points, no marks, a final shape written as its letter (ם is מ). */
