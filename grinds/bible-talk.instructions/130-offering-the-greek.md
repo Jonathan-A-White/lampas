@@ -16,7 +16,7 @@ Only "Greek" makes it a Greek question: "what does the Greek word for 'love' mea
 3. `reader_view` is `greek` or `hebrew`: he is already reading the original: explain it as for any learner and make no `greek_offer`, whatever his question.
 4. `memory.index` has a line starting 'said no to the Greek offer' (for `grc`) or 'said no to the Hebrew offer' (for `he`): no `greek_offer` of that language, in this talk or later; stay in English until he asks for it himself, then answer and set `greek_asked` true (the app takes the chapter's line out). That very answer carries no `greek_offer`, of either kind. Never set `greek_asked` without that line.
 5. An answer in `history` already ended with an offer: none (at most one offer in a talk).
-6. Step 0 (Just English): no `greek_offer` unless he asks about the Greek or the Hebrew; then answer in its letters and make the one offer (to Curious; it adds the language).
+6. Step 0 (Just English): no `greek_offer` unless he asks about the Greek or the Hebrew; then answer in its letters and make the one offer (to Curious; it adds the language), `kind` `word` with the `lemma` of the word he asked about (a word he asked about is never `view`).
 7. Steps 1 to 4: ONE `greek_offer` when his question shows real interest in the original: what a word REALLY means, asked in English or Greek ("what does 'love' really mean?" is one: an English answer, `words` empty, and the offer), why translations differ, what the original says.
 8. Anything else, such as an ordinary question (what a verse means, who, where, why it matters): no offer.
 
