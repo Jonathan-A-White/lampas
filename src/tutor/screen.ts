@@ -52,7 +52,7 @@ export const MAX_FACTS = 12;
 export const FACT_LABEL_MAX = 40;
 export const FACT_VALUE_MAX = 400;
 /** The most settings a screen sends and the longest name, value and help of one (the input schema's limits). */
-export const MAX_SETTINGS = 64;
+export const MAX_SETTINGS = 66;
 export const SETTING_NAME_MAX = 40;
 export const SETTING_VALUE_MAX = 80;
 export const SETTING_HELP_MAX = 100;

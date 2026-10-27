@@ -59,6 +59,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced when it is read aloud. Value: "modern" (Modern Greek).
 - `hebrewPronunciation` — Hebrew pronunciation. How Hebrew is pronounced when it is read aloud. Value: "israeli".
 - `englishAccent` — English accent. Which English the hints for Greek sounds are said in, everywhere at once, the tutor's examples too: American: the default. British. IPA (the standard): for readers who know it. Each sound is shown by its own symbol, such as /o/, in place of an English word. Value: "american", "british", "ipa".
+- `ipaLesson` — IPA lesson. Whether the Goal screen offers the optional lesson on IPA, the standard symbols for sounds, for Greek and, while you read Hebrew, for Hebrew too. It is never needed for Lampas. On by default; Off takes it off the Goal screen and keeps what you have done.
 - `resource.strongs` — Strong's. Shows the word's Strong's number, a link to its entry on STEPBible.
 - `resource.logos` — Logos. Adds Open in Logos for each lexicon in Your Logos library, and Bible Word Study.
 - `maps.biblemapper` — Bible Mapper. The maps of Bible Mapper, shown in the app.

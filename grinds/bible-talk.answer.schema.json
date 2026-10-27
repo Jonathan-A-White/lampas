@@ -1480,6 +1480,7 @@
                   "greekPronunciation",
                   "hebrewPronunciation",
                   "englishAccent",
+                  "ipaLesson",
                   "resource.strongs",
                   "resource.logos",
                   "maps.biblemapper",
@@ -1799,6 +1800,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "englishAccent" }, "value": { "type": "string", "enum": ["american", "british", "ipa"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "ipaLesson" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

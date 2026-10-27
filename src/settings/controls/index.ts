@@ -17,7 +17,7 @@ import { QuizGoalControl } from './quizGoal';
 import { AudioBibleControl, LibraryControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
 import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
 import type { Control } from './types';
-import { EnglishAccentControl, FamilyControl, PronunciationControl, PronunciationSeparateControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
+import { EnglishAccentControl, FamilyControl, IpaLessonControl, PronunciationControl, PronunciationSeparateControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
 import { WeaveControl } from './weave';
 
 /** The control of each row, by the row's key (src/settings/rows.ts): a row with no control here is a test failure. */
@@ -60,6 +60,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   greekPronunciation: PronunciationControl,
   hebrewPronunciation: PronunciationControl,
   englishAccent: EnglishAccentControl,
+  ipaLesson: IpaLessonControl,
   logosBible: LogosBibleControl,
   audioBible: AudioBibleControl,
   readingPlan: ReadingPlanControl,
