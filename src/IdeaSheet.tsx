@@ -20,9 +20,10 @@ import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/cha
 import { unmetNeed } from './data/grammar/drillIt';
 import { loadFrequency } from './data/frequency';
 import { exampleGloss, exampleNote, hasFormOf, ideaExamples, ideaExamplesFor, ideaPassage, isSentenceIdea, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
-import { IDEA_KIND, ideaOf, type GrammarIdea } from './data/grammar/ladder';
+import { IDEA_KIND, type GrammarIdea } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf, ladderFor, ladderLangOf, type LadderLang } from './data/grammar/ladders';
 import { soundLesson } from './data/grammar/lessons';
-import { stepsOf, teachOf, workedFor, type CardDiagram, type Teach, type TeachTable } from './data/grammar/teach';
+import { stepsOf, workedFor, type CardDiagram, type Teach, type TeachTable } from './data/grammar/teach';
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getStudyChapter } from './data/readerChapter';
@@ -51,11 +52,12 @@ import { TryItSheet } from './TryItSheet';
 import { focusOnMount } from './ui/focus';
 import { justTapped, oneTap } from './ui/settle';
 import { useShort } from './ui/useShort';
-import { greekMarked } from './ui/GreekMarked';
+import { greekMarked, markedFor } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { GREEK_LANG } from './script/greekLang';
 import { useGreekInterest } from './settings/useGreekInterest';
+import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 
 // Each button is as wide as its label and shares the rest, so neither wraps at 390 px.
 const BUTTON = 'min-h-12 flex-auto whitespace-nowrap rounded-xl border px-2 text-base font-medium';
@@ -63,6 +65,13 @@ const LEVEL_NAMES: Record<GrammarLevelName, string> = { solid: 'Solid', frontier
 /** How far (px) a press on the level slider must travel to be a drag: a finger's tap shakes a few px. */
 const DRAG_PX = 8;
 /** The slider's three stops, left to right: the level each is and what it is called (PROVISIONAL names). */
+/** The card of an idea, from the teaching of its own ladder. */
+function cardOf(id: string): Teach {
+  const teach = ladderFor(ladderLangOf(id)).teach[id];
+  if (!teach) throw new Error(`No teaching for the grammar idea ${JSON.stringify(id)}`);
+  return teach;
+}
+
 const STOPS: { level: GrammarLevelName; label: string }[] = [
   { level: 'notYet', label: 'Not yet' },
   { level: 'frontier', label: 'Learning' },
@@ -218,27 +227,37 @@ function TableView({ table }: { table: TeachTable }) {
 /** A heading of the card's teaching: What it is, How to spot it, How it sounds, Worked example. */
 const Part = ({ children, className = 'mt-4' }: { children: string; className?: string }) => <h3 className={`${className} text-lg font-semibold`}>{children}</h3>;
 
-function Worked({ teach, passage, scheme }: { teach: Teach; passage: IdeaPassage | undefined; scheme: Pronunciation }) {
+function Worked({ teach, passage, scheme, lang }: { teach: Teach; passage: IdeaPassage | undefined; scheme: Pronunciation; lang: LadderLang }) {
   const { worked, inPassage } = workedFor(teach, passage ? passageForms(passage) : new Set());
   const said = worked.say ?? worked.word;
   return (
     <section data-testid="idea-worked">
       <Part>Worked example</Part>
       <div className="mt-1 flex items-center gap-2">
-        <span data-testid="worked-word" {...GREEK_LANG} className="font-greek text-3xl">
-          {worked.word}
-        </span>
-        <SpeakButton text={said} id={`worked:${said}`} label={`Hear ${worked.word}`} kind="speaker" className="shrink-0" />
+        {lang === 'hbo' ? (
+          <span data-testid="worked-word" {...HEBREW_LANG_ATTRS} dir="rtl" className="script-he text-3xl">
+            {worked.word}
+          </span>
+        ) : (
+          <>
+            <span data-testid="worked-word" {...GREEK_LANG} className="font-greek text-3xl">
+              {worked.word}
+            </span>
+            <SpeakButton text={said} id={`worked:${said}`} label={`Hear ${worked.word}`} kind="speaker" className="shrink-0" />
+          </>
+        )}
       </div>
       <p className="text-base">
         “{worked.gloss}”{worked.ref ? <span className="text-muted"> · {worked.ref}{inPassage ? ', the verse you are reading' : ''}</span> : null}
       </p>
-      <p data-testid="worked-respelling" className="text-base text-muted">
-        Say it: {scheme.respell(said)}
-      </p>
+      {lang === 'hbo' ? null : (
+        <p data-testid="worked-respelling" className="text-base text-muted">
+          Say it: {scheme.respell(said)}
+        </p>
+      )}
       <ol className="mt-2 list-decimal space-y-1 pl-6 text-lg">
         {stepsOf(worked, scheme).map((step) => (
-          <li key={step}>{greekMarked(step)}</li>
+          <li key={step}>{markedFor(lang, step)}</li>
         ))}
       </ol>
     </section>
@@ -483,7 +502,10 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const accent = useAccent(); // the hints below are said in the chosen English accent: draw again when it is chosen
   const tiles = teachTiles(idea, scheme);
-  const card = teachOf(idea.id);
+  // the ladder of the idea's own language: its card, its script and what it can do (mw-gdcyf98.10)
+  const lang = ladderLangOf(idea.id);
+  const hebrew = lang === 'hbo';
+  const card = cardOf(idea.id);
   const sounds = soundLesson(idea, scheme);
   const passage = loaded && loaded !== 'failed' ? loaded.passage : undefined;
   // what the speaker reads: the lesson as it is drawn, part by part (the tiles, the table and the examples are for the eye and the tap)
@@ -498,8 +520,9 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
   const levels = useLiveQuery(listLevels, []);
   const ranking = useRanking();
-  const own = passage && !isSoundIdea(idea.id) ? ideaExamples(idea.id, passage.chapters, passage.verse, undefined, scheme) : [];
-  const wider = useWiderExamples(idea.id, own.length ? undefined : passage, scheme, ranking);
+  // a Hebrew idea has no examples yet: a Hebrew word carries no parsing until stories g and h, and the passage is Greek
+  const own = passage && !hebrew && !isSoundIdea(idea.id) ? ideaExamples(idea.id, passage.chapters, passage.verse, undefined, scheme) : [];
+  const wider = useWiderExamples(idea.id, own.length || hebrew ? undefined : passage, scheme, ranking);
   const examples = own.length ? own : wider?.examples ?? [];
   const exampleTitle = own.length || !wider ? passage?.title : wider.title;
 
@@ -536,6 +559,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     setAsking(null);
     const outcome = OUTCOME_OF_STOP[to];
     if (outcome) teach(outcome);
+    // I know it proves itself with a drill; a Hebrew idea has none yet, so it is marked known (the level written, no review row)
+    else if (hebrew) teach('known');
     else setDrill('prove');
   };
   const slideTo = (to: number): void => {
@@ -608,7 +633,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
         <div ref={textBox} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{titled(idea.title)}</h2>
-            <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />
+            {hebrew ? null : <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />}
           </div>
           {level ? (
             <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted">
@@ -620,7 +645,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
               {keptText(kept)}
             </p>
           ) : null}
-          {loaded === null || (!own.length && !wider && passage) ? (
+          {hebrew ? null : loaded === null || (!own.length && !wider && passage) ? (
             <p data-testid="idea-loading" className="mt-3 text-base text-muted">
               Finding examples…
             </p>
@@ -656,11 +681,11 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           {tiles.length ? <TeachTiles tiles={tiles} onOpen={(id) => setOpened(ideaOf(id))} /> : null}
           <Part>What it is</Part>
           <p data-testid="idea-what" className="mt-1 text-lg">
-            {greekMarked(card.whatItIs)}
+            {markedFor(lang, card.whatItIs)}
           </p>
           <Part>How to spot it</Part>
           <p data-testid="idea-spot" className="mt-1 text-lg">
-            {greekMarked(card.howToSpot)}
+            {markedFor(lang, card.howToSpot)}
           </p>
           {card.table ? <TableView table={card.table} /> : null}
           {short ? null : soundBlock}
@@ -677,7 +702,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           ))}
           {idea.glyphs ? <LessonWriteIt idea={idea} /> : null}
           {card.diagram ? <InADiagram card={card.diagram} onWord={onWord} /> : null}
-          <Worked teach={card} passage={passage} scheme={scheme} />
+          <Worked teach={card} passage={passage} scheme={scheme} lang={lang} />
           {tables.length ? (
             <div data-testid="idea-tables" className="mt-4 flex flex-col gap-2">
               {tables.map((table) => (
@@ -712,7 +737,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
               max={STOPS.length - 1}
               step={1}
               value={shown}
-              disabled={loaded === null}
+              disabled={loaded === null && !hebrew}
               onChange={(e) => {
                 // the browser jumps the thumb to a tap on the track; until the pointer has moved that is not chosen, and the controlled value puts the thumb back
                 if (justTapped(MARK_KNOWN)) return;
@@ -745,9 +770,11 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
             </button>
           )}
           <div className="mt-1 flex flex-wrap gap-2">
-            <button type="button" disabled={loaded === null} onClick={() => setDrill('practice')} className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}>
-              Drill it
-            </button>
+            {hebrew ? null : (
+              <button type="button" disabled={loaded === null} onClick={() => setDrill('practice')} className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}>
+                Drill it
+              </button>
+            )}
             {passage && hasFormOf(idea.id, passage.chapters, passage.verse) ? (
               <button type="button" onClick={() => setTrying(true)} className={`${BUTTON} border-line text-accent active:bg-line`}>
                 Try it on a verse

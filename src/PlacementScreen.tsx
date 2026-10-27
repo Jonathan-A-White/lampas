@@ -4,14 +4,15 @@
 // questions it pauses and keeps its place (src/data/placementKeep.ts), so he can go on another day. The end card is kept too, and its entry's address
 // names it, so a reload or Back to it shows the card again; a new Place me opens the intro (mw-86e9r1.23).
 import { useAlive } from 'pwa-kit/alive';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { approachOf, DEFAULT_APPROACH, levelNumberOf, orderOf, type GrammarApproach } from './approaches';
 import { BOOK_INDEX } from './data/bookIndex';
 import { loadChapter, type Chapter } from './data/chapter';
 import { goalTitle, parseGoal } from './data/goal';
 import { gapsOf, lettersText } from './data/grammar/inference';
 import { learnNext, levelsOf } from './data/grammar/goalProgress';
-import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
+import type { GrammarIdea } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { passageNeeds, type Level } from './data/grammar/needs';
 import {
   answer,
@@ -30,6 +31,9 @@ import { mulberry32, type Random } from './data/quiz';
 import { getEvidence, getGoal, getGrammarApproach, listLevels, listPassageLessons } from './data/repositories';
 import { publish } from './events/bus';
 import { backTo, navigate, placementCardOf, placementOriginOf, showPlacementCard, useAddress } from './nav/route';
+import { HebrewPlacement } from './HebrewPlacement';
+import { SourceSegment } from './ui/SourceSegment';
+import { useLanguageInHand } from './useLanguageInHand';
 import { useSettled } from './ui/settle';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
@@ -83,7 +87,16 @@ const itemOf = (question: GrammarQuestion): GrammarItem => ({ kind: 'grammar', i
 
 const BUTTON = 'min-h-12 w-full rounded-xl text-lg font-medium';
 
+/** The ladder in hand (src/useLanguageInHand.ts, mw-gdcyf98.10) decides the placement: Greek's is the walk below, Hebrew's is HebrewPlacement (its ladder has one idea, so nothing to ask);
+ * with both languages chosen the Greek | Hebrew segment sits at the top of either; at English only there is no placement to take. */
 export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
+  const { lang, both } = useLanguageInHand();
+  const segment = both ? <SourceSegment label="Placement language" /> : null;
+  if (lang === 'grc') return <GreekPlacement newRandom={newRandom} segment={segment} />;
+  return <HebrewPlacement lang={lang} segment={segment} />;
+}
+
+function GreekPlacement({ newRandom, segment }: { newRandom: () => Random; segment: ReactNode }) {
   const [run, setRun] = useState<Run>({ status: 'loading' });
   // an answer that comes after he has left the screen (a level read, a passage loaded) asks nothing, draws nothing and keeps nothing
   const alive = useAlive();
@@ -127,7 +140,10 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   }, []);
 
   const header = (
-    <ScreenHeader title="Placement" back={<HeaderButton onClick={() => backTo(origin)}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
+    <>
+      <ScreenHeader title="Placement" back={<HeaderButton onClick={() => backTo(origin)}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
+      {segment}
+    </>
   );
 
   /** Shows the question the state asks, or the end when it asks none. */
