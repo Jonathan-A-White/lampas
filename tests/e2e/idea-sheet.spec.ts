@@ -159,3 +159,39 @@ test('Back from an idea\'s table brings its sheet back scrolled to where he tapp
   }).toBe(true);
   await shot(page, 'idea-sheet-back-from-table');
 });
+
+test('the genitive card draws a verse as a sentence diagram under "In a diagram", the genitive lit, inside the phone\'s width; a card with none has no such part (mw-5r3p30.791)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await put(page, [{ key: 'goal', value: '1 John 1:1' }]);
+  await page.reload();
+  await page.getByTestId('goal-strip').click();
+  await page.getByTestId('ideas-bar').click();
+  await page.getByTestId('ideas-list').getByRole('button', { name: 'The genitive case', exact: true }).click();
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
+  await expect(idea.getByRole('heading', { name: 'The genitive case' })).toBeVisible();
+
+  await expect(idea.getByRole('heading', { name: 'In a diagram', exact: true })).toBeVisible();
+  const drawn = idea.getByTestId('idea-diagram');
+  await drawn.scrollIntoViewIfNeeded();
+  await expect(drawn.getByRole('img', { name: 'Sentence diagram of John 1:4, Greek' })).toBeVisible();
+  for (const word of ['ζωὴ', 'φῶς', 'ἀνθρώπων']) await expect(drawn.getByRole('button', { name: word, exact: true })).toBeVisible();
+  const lit = drawn.locator('button[data-lit]');
+  await expect(lit).toHaveCount(1);
+  await expect(lit).toHaveText('ἀνθρώπων');
+  // the diagram scrolls sideways in its own box, if ever it must; the page never does
+  const box = await drawn.boundingBox();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
+  expect(fits.w).toBeLessThanOrEqual(fits.c);
+  await shot(page, 'idea-sheet-diagram');
+
+  await idea.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(idea).toHaveCount(0);
+  await page.getByTestId('ideas-list').getByRole('button', { name: 'The aorist tense', exact: true }).click();
+  await expect(idea.getByRole('heading', { name: 'What it is', exact: true })).toBeVisible();
+  await expect(idea.getByRole('heading', { name: 'In a diagram' })).toHaveCount(0);
+  await expect(idea.getByTestId('idea-diagram')).toHaveCount(0);
+});
