@@ -175,16 +175,18 @@ function DrillPlans({ onOpen }: { onOpen: (ideaId: string) => void }) {
   );
 }
 
-/** The reading ladder (src/ReadingLadder.tsx): one entry per language he reads in, each starting at the easiest verse to say and keeping its own place. */
+/** The reading ladder (src/ReadingLadder.tsx): one entry per language he reads in, each starting at the easiest verse to say and keeping its own place. The source language is the one in
+ * hand (src/useLanguageInHand.ts): Hebrew's list when Hebrew is the language chosen, or the Hebrew side of the Greek | Hebrew segment when both are; Greek's otherwise (mw-gdcyf98.14). */
 function ReadingLadderSection() {
   // Each reading goes to the mill (the verse-read grist): not offered without a licence (mw-8m9dyu.5).
   const ai = useAiAllowed();
+  const { lang } = useLanguageInHand();
   if (!ai) return null;
   return (
     <section aria-label="Reading ladder" className="mt-5 space-y-2">
       <h2 className="text-base font-medium">Reading ladder</h2>
       <p className="text-base text-muted">Read verses aloud, easiest to say first. Each language keeps its own place.</p>
-      <LadderStart lang="el" how="push" label="Reading ladder: Greek" />
+      {lang === 'hbo' ? <LadderStart lang="he" how="push" label="Reading ladder: Hebrew" /> : <LadderStart lang="el" how="push" label="Reading ladder: Greek" />}
       <LadderStart lang="en" how="push" label="Reading ladder: English" />
     </section>
   );
@@ -324,6 +326,7 @@ function HebrewGoalBody() {
             </p>
           ) : null}
         </section>
+        <ReadingLadderSection />
         <div className="pb-[var(--lp-end-inset)]" />
       </main>
       {ideaId ? <IdeaSheet idea={ideaOf(ideaId)} onClose={() => setIdeaId(null)} onWord={() => {}} /> : null}

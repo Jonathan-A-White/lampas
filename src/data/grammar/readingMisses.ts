@@ -2,6 +2,7 @@
 // diphthongs and consonant pairs (the sounds tier of ladder.ts, ideas with a `pair`) found in the word's chunks, in an English
 // one the word itself. Pure; the repository (repositories/readings.ts) keeps the counts.
 import type { FixWord } from '../db';
+import { hebrewPointedForm } from '../../speech/pronunciation';
 import { WOVEN_LANG } from '../wovenLang';
 import { LADDER } from './ladder';
 
@@ -40,8 +41,11 @@ export function soundsOf(chunks: string[]): string[] {
 /** An English word as the tally names it: lower case, no punctuation round it. */
 export const englishUnit = (word: string): string => word.normalize('NFC').toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
 
+/** A Hebrew word as the tally names it (mw-gdcyf98.14): pointed, without cantillation, maqaf or stop round it. A diphthong is a Greek idea: a Hebrew reading is tallied by the word itself, as an English one is. */
+export const hebrewUnit = (word: string): string => hebrewPointedForm(word).normalize('NFC').replace(/^[^\p{L}\p{M}]+|[^\p{L}\p{M}]+$/gu, '');
+
 /**
- * The units a reading's focus words stand for, one for each word that holds the unit. `lang` 'en' is English, anything else a
+ * The units a reading's focus words stand for, one for each word that holds the unit. `lang` 'en' is English, 'he' Hebrew (the word itself in either), anything else a
  * Greek pronunciation (readingLang: 'el').
  */
 export function missUnits(lang: string, words: FixWord[]): string[] {
@@ -49,8 +53,8 @@ export function missUnits(lang: string, words: FixWord[]): string[] {
   if (lang === WOVEN_LANG) return [];
   const units: string[] = [];
   for (const word of words) {
-    if (lang === 'en') {
-      const unit = englishUnit(word.word);
+    if (lang === 'en' || lang === 'he') {
+      const unit = lang === 'he' ? hebrewUnit(word.word) : englishUnit(word.word);
       if (unit) units.push(unit);
     } else units.push(...soundsOf(word.chunks));
   }

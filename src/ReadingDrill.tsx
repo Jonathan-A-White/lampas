@@ -1,6 +1,6 @@
 // src/ReadingDrill.tsx — the reading drill (mw-neuq78.5, docs/reading-ladder.md 'Drills'): a sheet over the Verse view for a sound (Greek) or the words (English) he keeps missing.
 // A card with the one thing to remember (the sounds tier's rule, with a speaker; or the words), then five short New Testament words (Greek: heavy in that sound, easiest first;
-// English: his misread words), each read aloud with the same verse-read grist at word size, then back to the ladder. Nothing read here goes into his reading history or
+// English or Hebrew, mw-gdcyf98.14: his misread words), each read aloud with the same verse-read grist at word size, then back to the ladder. Nothing read here goes into his reading history or
 // the miss tally; finishing the drill puts the unit on the schedule as a review of kind `sound` (src/review/kinds.ts SOUND). The offer is DrillOffer, the button 'Drill this sound' / 'Drill these words'.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Verse } from './data/chapter';
@@ -20,7 +20,15 @@ import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { useElapsed } from './ui/useElapsed';
 import { useReadChecks, type ReadState } from './useReadChecks';
-import { GREEK_LANG, langOf } from './script/greekLang';
+import { GREEK_LANG, langOfSource } from './script/greekLang';
+
+/** How a practice word and a word to fix are tagged and set, and the voice that says them: English, Greek, or (mw-gdcyf98.14) the Hebrew of a word he missed. */
+const lookOf = (view: ReadingView) =>
+  view === 'greek'
+    ? { attrs: langOfSource('grc'), face: 'font-greek', speaks: 'greek' as const }
+    : view === 'hebrew'
+      ? { attrs: langOfSource('hbo'), face: 'script-he', speaks: 'hebrew' as const }
+      : { attrs: langOfSource('en'), face: 'font-semibold', speaks: 'english' as const };
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
 const PRIMARY = 'min-h-12 w-full rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg';
@@ -88,18 +96,18 @@ function Waiting({ state }: { state: Extract<ReadState, { phase: 'sending' | 'wa
 
 /** How the word went: the verdict's heading and note, and each word to fix in pieces with its tip and a speaker. */
 function WordResult({ answer, view }: { answer: VerseReadAnswer; view: ReadingView }) {
-  const greek = view === 'greek';
+  const look = lookOf(view);
   return (
     <div data-drill-result={answer.verdict} className="space-y-2">
       <h3 className="text-lg font-semibold">{RESULT_HEADINGS[answer.verdict]}</h3>
       <p className="break-words text-base">{plainQuotes(answer.note)}</p>
       {answer.focus_words.map((fix, i) => (
         <div key={i} className="space-y-1">
-          <p {...langOf(greek)} className={`break-words text-2xl font-semibold tracking-wide ${greek ? 'font-greek' : ''}`}>
+          <p {...look.attrs} className={`break-words text-2xl font-semibold tracking-wide ${view === 'english' ? '' : look.face}`}>
             {fix.chunks.join(' · ')}
           </p>
           <p className="break-words text-base text-muted">{plainQuotes(fix.tip)}</p>
-          <SpeakButton text={sayOf(fix, view)} id={`drill-fix-${i}`} label={`Hear ${fix.word}`} kind="speaker" language={greek ? 'greek' : 'english'} />
+          <SpeakButton text={sayOf(fix, view)} id={`drill-fix-${i}`} label={`Hear ${fix.word}`} kind="speaker" language={look.speaks} />
         </div>
       ))}
     </div>
@@ -111,7 +119,7 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  const view: ReadingView = offer.kind === 'sound' ? 'greek' : 'english';
+  const view: ReadingView = offer.kind === 'sound' ? 'greek' : offer.lang === 'he' ? 'hebrew' : 'english';
   const found = usePracticeWords(offer);
   const words = found.status === 'ready' ? found.words : NO_WORDS;
   const verses = useMemo(() => words.map(wordVerse), [words]);
@@ -140,7 +148,7 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
   // the next word's Skip this word is the button Next word was, in the same place: a second tap of a double tap on Next word waits for the new word to
   // settle (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(at);
-  const lang = langOf(view === 'greek');
+  const look = lookOf(view);
   const idea = offer.kind === 'sound' ? ideaOfSound(offer.unit) : undefined;
   const title = offer.kind === 'sound' ? `Drill: ${offer.glyphs}` : 'Drill: words you keep missing';
 
@@ -196,10 +204,10 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
               <p className="text-sm text-muted">
                 Word {at + 1} of {words.length}
               </p>
-              <p data-drill-word {...lang} className={`break-words text-5xl ${view === 'greek' ? 'font-greek' : 'font-semibold'}`}>
+              <p data-drill-word {...look.attrs} className={`break-words text-5xl ${look.face}`}>
                 {word}
               </p>
-              <SpeakButton text={word} id={`drill-word-${word}`} label={`Hear ${word}`} kind="speaker" language={view === 'greek' ? 'greek' : 'english'} />
+              <SpeakButton text={word} id={`drill-word-${word}`} label={`Hear ${word}`} kind="speaker" language={look.speaks} />
               <p className="text-sm text-muted">Hold the bar below and say the word. Let go to send.</p>
               <WordStatus state={state} onRetry={() => checks.retry(verse)} />
               {answer && !sent && state?.phase !== 'failed' ? <WordResult answer={answer} view={view} /> : null}

@@ -1,6 +1,6 @@
 // src/data/readingDrill.ts — the reading drill (mw-neuq78.5, docs/reading-ladder.md 'Drills'), pure: when the miss tally (mw-neuq78.3) shows a sound (Greek) or a word (English)
 // missed in DRILL_MISSES of his last readings, the reading panel offers a drill of it. A Greek drill is the sounds tier's rule (src/data/grammar/ladder.ts) and DRILL_WORDS short
-// New Testament words heavy in that sound, easiest first by the ladder's own score (src/data/ladderScore.ts); an English drill is the words he misread. Each word is read aloud
+// New Testament words heavy in that sound, easiest first by the ladder's own score (src/data/ladderScore.ts); an English or a Hebrew (mw-gdcyf98.14) drill is the words he misread. Each word is read aloud
 // with the verse-read grist at word size. A drilled unit goes on the schedule as a review of kind `sound` (src/data/repositories/reviews.ts scheduleSounds).
 import type { MissCount } from './db';
 import type { FrequencyEntry } from './frequency';
@@ -44,7 +44,7 @@ export const ruleOf = (idea: GrammarIdea, scheme: Pronunciation = chosenPronunci
 export function drillOffer(lang: string, tally: readonly MissCount[], scheme: Pronunciation = chosenPronunciation()): DrillOffer | null {
   const rows = tally.filter((row) => row.lang === lang).sort((a, b) => b.count - a.count || a.unit.localeCompare(b.unit));
   if (!rows.length || rows[0].count < DRILL_MISSES) return null;
-  if (lang === 'en') return { kind: 'words', lang, words: rows.slice(0, DRILL_WORDS).map((row) => row.unit) };
+  if (lang === 'en' || lang === 'he') return { kind: 'words', lang, words: rows.slice(0, DRILL_WORDS).map((row) => row.unit) };
   for (const row of rows) {
     if (row.count < DRILL_MISSES) break;
     const idea = soundIdea(row.unit, scheme);
@@ -63,7 +63,7 @@ export function drillWhy(offer: DrillOffer): string {
     : `You missed these in ${DRILL_MISSES} of your last 5 readings: ${offer.words.join(', ')}.`;
 }
 
-/** The id of a drilled unit on the schedule: 'el:diphthong-ou', 'en:blessed'. */
+/** The id of a drilled unit on the schedule: 'el:diphthong-ou', 'en:blessed', 'he:יוֹנָה'. */
 export const soundReviewId = (lang: string, unit: string): string => `${lang}:${unit}`;
 
 /** The ids the offer puts on the schedule when its drill is finished. */

@@ -23,13 +23,10 @@ const AI_ACTIONS: readonly VerseAction[] = ['read', 'ask', 'quiz', 'diagram'];
  * Hebrew quiz would need). The others (Listen, Read it aloud, Ask the tutor) work on the English, and Ask the tutor also sends the Hebrew (src/services/hebrewWords.ts). */
 const SOURCE_ACTIONS: readonly VerseAction[] = ['quiz', 'diagram'];
 
-/** Whether Read it aloud is withheld: in the Hebrew view of an Old Testament verse, whose reading check is not scored in Hebrew yet (mw-gdcyf98.4; it is offered on the English). */
-const readWithheld = (lang: SourceLanguage, view: 'english' | 'greek'): boolean => lang === 'hbo' && view === 'greek';
-
-/** The actions the Verse view offers: all of them with a licence, only Listen without; the source language's own (Quiz me, Diagram) only for a chapter read in Greek, chosen by `lang`, not by the view;
- * Read it aloud not in the Hebrew view (`view` 'greek' in a Hebrew chapter). */
-export const actionsFor = (ai: boolean, lang: SourceLanguage = 'grc', view: 'english' | 'greek' = 'english'): typeof VERSE_ACTIONS[number][] =>
-  VERSE_ACTIONS.filter((a) => (ai || !AI_ACTIONS.includes(a.id)) && (lang === 'grc' || !SOURCE_ACTIONS.includes(a.id)) && !(a.id === 'read' && readWithheld(lang, view)));
+/** The actions the Verse view offers: all of them with a licence, only Listen without; the source language's own (Quiz me, Diagram) only for a chapter read in Greek, chosen by `lang`, not by the view.
+ * Read it aloud is offered in the Hebrew view of an Old Testament verse as in the English one (mw-gdcyf98.14: its reading check is scored in Hebrew). */
+export const actionsFor = (ai: boolean, lang: SourceLanguage = 'grc'): typeof VERSE_ACTIONS[number][] =>
+  VERSE_ACTIONS.filter((a) => (ai || !AI_ACTIONS.includes(a.id)) && (lang === 'grc' || !SOURCE_ACTIONS.includes(a.id)));
 
 const KEY = 'lampas.verseAction';
 
@@ -52,7 +49,7 @@ export function setVerseAction(action: VerseAction): void {
 }
 
 /** The chosen action and the way to choose another (kept on the phone). */
-export function useVerseAction(lang: SourceLanguage = 'grc', view: 'english' | 'greek' = 'english'): [VerseAction, (action: VerseAction) => void] {
+export function useVerseAction(lang: SourceLanguage = 'grc'): [VerseAction, (action: VerseAction) => void] {
   const [action, set] = useState<VerseAction>(getVerseAction);
   const ai = useAiAllowed();
   const choose = useCallback((next: VerseAction) => {
@@ -60,6 +57,6 @@ export function useVerseAction(lang: SourceLanguage = 'grc', view: 'english' | '
     set(next);
   }, []);
   // Left on Read it aloud, Ask the tutor, Quiz me or Diagram by a licensed phone, an unlicensed one opens on Listen (what is kept stays, for when the licence is back);
-  // left on Quiz me or Diagram, an Old Testament verse opens on Listen too, and so does one in the Hebrew view left on Read it aloud (the kept action is not changed, so the next verse opens on it).
-  return [(!ai && AI_ACTIONS.includes(action)) || (lang !== 'grc' && SOURCE_ACTIONS.includes(action)) || (action === 'read' && readWithheld(lang, view)) ? 'listen' : action, choose];
+  // left on Quiz me or Diagram, an Old Testament verse opens on Listen too (the kept action is not changed, so the next verse opens on it).
+  return [(!ai && AI_ACTIONS.includes(action)) || (lang !== 'grc' && SOURCE_ACTIONS.includes(action)) ? 'listen' : action, choose];
 }

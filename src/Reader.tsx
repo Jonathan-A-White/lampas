@@ -57,7 +57,7 @@ import { useChapter } from './reader/useChapter';
 import { useReadFrom } from './reader/useReadFrom';
 import { useWoven } from './reader/useWoven';
 import { wovenReading } from './services/reading';
-import { pronunciationOf } from './speech/pronunciation';
+import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciation';
 import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
 import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
@@ -215,7 +215,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
-  // the reading check follows the view; an Old Testament verse is offered it in English only (its Hebrew scoring is a later story's, src/verse/action.ts), so no Hebrew reading is ever pressed
+  // the reading check follows the view; in an Old Testament chapter the Hebrew view is read in Hebrew (useReadChecks turns the source view into 'hebrew' by the book, mw-gdcyf98.14)
   const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation, undefined, chapter);
   // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
   const openTalkRef = useRef<string | null>(null);
@@ -250,7 +250,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const { view: v, weave: w } = readerOf(window.location.hash);
     openVerseRange({ book: BOOK, chapter: CHAPTER, from: verses[0].n, to: verses[verses.length - 1].n, view: v, weave: w });
   }, [chapter, BOOK, CHAPTER]);
-  const [action, chooseAction] = useVerseAction(hbo ? 'hbo' : 'grc', view ?? 'english');
+  const [action, chooseAction] = useVerseAction(hbo ? 'hbo' : 'grc');
   const woven = useWoven(chapter, settings);
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
   const copyHold = useCopyHold(chapter, view ? { view, woven } : undefined, openChapter);
@@ -347,10 +347,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The Verse view's verse or passage as the weave shows it to be read (mw-5r3p30.411): the words shown in Greek in Greek and the others in English, in the order drawn, each verse
   // of a passage after the one before. The reading check sends them as segments, so the mill scores each word in its own language. null when nothing is shown in Greek.
   const viewWeave = useMemo(() => {
-    // an Old Testament verse is read in English (its Hebrew reading check is not offered yet): the mill is not given Hebrew as Greek
-    if (!viewUnit || !chapter || !sheetWoven || sheetView === 'greek' || hbo) return null;
+    if (!viewUnit || !chapter || !sheetWoven || sheetView === 'greek') return null;
     const verses = viewPassage ? viewPassage.verses : [viewUnit];
-    return wovenReading(verses, verses.map((v) => sheetWoven[chapter.verses.indexOf(v)] ?? null), pronunciationOf(pronunciation).scoringLang);
+    // an Old Testament chapter's woven words are Hebrew: the mill scores them in the Hebrew scheme's language, the English pieces in English (mw-gdcyf98.14)
+    return wovenReading(verses, verses.map((v) => sheetWoven[chapter.verses.indexOf(v)] ?? null), hbo ? chosenHebrewPronunciation().scoringLang : pronunciationOf(pronunciation).scoringLang);
   }, [viewUnit, viewPassage, chapter, sheetWoven, sheetView, pronunciation, hbo]);
   // The Verse view's Read bar: the hold of the reading check for the verse the view shows.
   const readOf = (verse: Verse): ReadHold => {

@@ -16,6 +16,6 @@
   "scoring": {
     "audio": true,
     "target_field": "target_text",
-    "langs": ["en", "el"]
+    "langs": ["en", "el", "he"]
   }
 }

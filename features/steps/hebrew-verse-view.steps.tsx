@@ -240,7 +240,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Verse view shows the English of Jonah 1:1, left to right', english);
   });
 
-  Scenario('Read it aloud is offered on the English verse and not on the Hebrew one', ({ Given, When, Then, And }) => {
+  Scenario('Read it aloud is offered on the English verse and on the Hebrew one', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with the saved view {string} and a licence', (_, view: string) => openOn('Jonah 1', { readerView: view }, [], { licensed: true }));
     When('he taps the number of verse {int}', tapVerseNumber);
     Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
@@ -252,8 +252,8 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(screen.getByRole('group', { name: 'Language' })).getByRole('button', { name }));
     });
     And('he taps the number of verse {int}', tapVerseNumber);
-    Then('the Verse view offers the actions {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
-      expect(actionNames()).toEqual([a, b, c]);
+    Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+      expect(actionNames()).toEqual([a, b, c, d]);
     });
   });
 
