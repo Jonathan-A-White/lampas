@@ -10,7 +10,7 @@ import { startAppUpdates } from 'pwa-kit/app-update';
 import { fetchChangelog } from 'pwa-kit/whats-new';
 import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';
-import { placeGreekInterest } from './data/repositories';
+import { placeInterest } from './data/repositories';
 import { APP_SEMVER } from './config';
 import { ErrorBoundary } from './ErrorBoundary';
 import { LicenceProvider } from './gate/LicenceProvider';
@@ -37,7 +37,7 @@ noteVisit();
 // A request for a book that waited offline goes when the phone is back online (Ask for a book).
 startBookRequests();
 
-// The phone is placed on the Greek dial (a new reader at 0, a reader from before by what he has, once) before the first render, so nothing Greek flashes up first.
+// The phone is placed on the Greek and Hebrew dials (a new reader at both 0, a reader from before by what he has, once) before the first render, so nothing Greek or Hebrew flashes up first.
 const render = (): void =>
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -50,7 +50,7 @@ const render = (): void =>
       </ErrorBoundary>
     </StrictMode>,
   );
-placeGreekInterest().then(render, render);
+placeInterest().then(render, render);
 
 // vite.config.ts: registerType 'prompt', so a new build waits for his tap on the banner. The registration
 // goes to the update logic, which shows the banner, sends SKIP_WAITING on the tap, reloads once, and

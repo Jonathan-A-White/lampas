@@ -26,7 +26,9 @@ import { getDeveloper } from '../data/repositories';
 import { SCRIPTS } from '../script/scripts';
 import { resourceOf } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
-import { greekFrom, type GreekLevel } from './definitions/greekInterest';
+import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
+import { hebrewLevelOf } from './definitions/hebrewInterest';
+import { DEPTH_KEY, depthFrom } from './definitions/interest';
 import { helpPlain } from './helpText';
 import { SETTINGS, settingOf, type SectionId } from './registry';
 
@@ -38,7 +40,7 @@ export type { Values };
 /** The sections, in the order the screen draws them (a group's page draws its own, in this order). */
 export const SECTIONS: readonly SettingsSection[] = [
   { id: 'library', title: 'Your Logos library' },
-  { id: 'dial', title: 'How much Greek?' },
+  { id: 'dial', title: 'Your languages' },
   { id: 'appearance', title: 'Appearance' },
   { id: 'layout', title: 'Layout' },
   { id: 'reading', title: 'Reading' },
@@ -70,7 +72,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'more', title: 'More' },
 ];
 
-/** The sections drawn on the Settings home itself, above the groups, not on a group's page, in the order the home draws them: the door to Your Logos library (mw-5r3p30.752) and the Greek dial (mw-3ased2.2). They are in no group. */
+/** The sections drawn on the Settings home itself, above the groups, not on a group's page, in the order the home draws them: the door to Your Logos library (mw-5r3p30.752) and the languages he reads with a dial for each (mw-3ased2.2, mw-gdcyf98.2). They are in no group. */
 export const HOME_SECTIONS: readonly SectionId[] = ['library', 'dial'];
 
 /** Whether a row is drawn on the home (the library door, the dial), not on a group's page. */
@@ -85,8 +87,8 @@ export type SettingsGroup = KitGroup<SectionId, GroupId>;
  *  PROVISIONAL: the grouping is the Builder's, to be amended by the Governor. */
 export const GROUPS: readonly SettingsGroup[] = [
   { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave'] },
-  { id: 'greek', title: 'Greek', hint: 'New words, how much of a paradigm table, your goal, the grammar approach and handwriting.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting'] },
-  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'hebrew', 'tips', 'studyWay'] },
+  { id: 'greek', title: 'Learning', hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting and Hebrew in the tutor.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'hebrew'] },
+  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
   { id: 'study', title: 'Study resources', hint: 'Links to the tools you own.', sections: ['resources', 'logos', 'maps'] },
@@ -112,9 +114,9 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.aboutyou', label: 'About you', hint: 'Your age, pace and how you learn, so the tutor meets you where you are.', section: 'aboutYou' },
   { key: 'link.memory', label: 'Memory', hint: 'The notes Lampas keeps about you on this phone: read, edit, export and import them.', section: 'memory' },
   { key: 'link.studyway', label: 'My study way', hint: 'The lines you kept about how the tutor quizzes you.', section: 'studyWay' },
-  { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'more', dependsOn: greekFrom(1) },
-  { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'more', dependsOn: greekFrom(1) },
-  { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'more', dependsOn: greekFrom(5) },
+  { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'more', dependsOn: depthFrom(1) },
+  { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'more', dependsOn: depthFrom(1) },
+  { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'more', dependsOn: depthFrom(5) },
   { key: 'link.askmore', label: 'Ask for more', hint: 'Ask for an approach, a study resource, a text or a translation Lampas lacks.', section: 'more' },
   { key: 'link.conversations', label: 'Conversations', hint: 'Every talk you have kept with the tutor: search them and carry one on.', section: 'more' },
   { key: 'link.requests', label: 'Your requests', hint: 'What became of the things you asked the factory for.', section: 'more' },
@@ -191,6 +193,11 @@ export async function readValues(): Promise<Values> {
   const entries = await Promise.all(
     DEPENDED_ON.map(async (key) => {
       if (key === 'developerMode') return [key, await getDeveloper()] as const;
+      // the key of a row both languages share: the higher of the two dials (no setting of its own)
+      if (key === DEPTH_KEY) {
+        const [greek, hebrew] = await Promise.all([settingOf('greekInterest')?.read(), settingOf('hebrewInterest')?.read()]);
+        return [key, String(Math.max(greekLevelOf(greek), hebrewLevelOf(hebrew)))] as const;
+      }
       return [key, String(await settingOf(key)?.read())] as const;
     }),
   );
@@ -200,9 +207,26 @@ export async function readValues(): Promise<Values> {
 /** How the kit's search reads a row's help: as plain words, its Markdown marks not searched (helpText.ts). */
 const SEARCH: SearchOptions<SettingsRow> = { plainHelp: helpPlain };
 
+/** The dial a row follows, through the rows it is a detail of: 'greekInterest', 'hebrewInterest' or 'depth' (the higher of the two); undefined for a row no dial decides. */
+export function dialOf(row: SettingsRow): 'greekInterest' | 'hebrewInterest' | 'depth' | undefined {
+  let at: SettingsRow | undefined = row;
+  while (at?.dependsOn && at.dependsOn.key !== 'greekInterest' && at.dependsOn.key !== 'hebrewInterest' && at.dependsOn.key !== DEPTH_KEY) at = rowOf(at.dependsOn.key);
+  const key = at?.dependsOn?.key;
+  return key === 'greekInterest' || key === 'hebrewInterest' || key === DEPTH_KEY ? key : undefined;
+}
+
 /** The rows to draw: those whose dependency is on and, when `query` is not empty, whose name, hint or help holds it (ignoring capitals and accents).
- *  A row that matches but is hidden by what it depends on is reached through the row that turns it on, which is shown in its place. */
-export const visibleRows = (values: Values, query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] => visibleRowsIn(rows, values, query, SEARCH);
+ *  A row that matches but is hidden by what it depends on is reached through the row that turns it on, which is shown in its place. A row both languages share is hidden by
+ *  `depth`, which is read and not drawn, so there is no row to reach it through: the dial that is drawn stands in for it, or 'Which languages?' while none is. */
+export const visibleRows = (values: Values, query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] => {
+  const found = visibleRowsIn(rows, values, query, SEARCH);
+  if (query.trim() === '') return found;
+  const drawn = new Set(visibleRowsIn(rows, values, '', SEARCH).map((r) => r.key));
+  if (!searchIn(rows, query, SEARCH).some((r) => dialOf(r) === DEPTH_KEY && !drawn.has(r.key))) return found;
+  const dials = rows.filter((r) => (r.key === 'greekInterest' || r.key === 'hebrewInterest') && drawn.has(r.key));
+  const standIn = new Set([...found.map((r) => r.key), ...(dials.length > 0 ? dials : rows.filter((r) => r.key === 'languages')).map((r) => r.key)]);
+  return rows.filter((r) => standIn.has(r.key));
+};
 
 /** The setting to turn on first for the row `key` to be drawn, when it is a detail of one that is off: the nearest row it depends on that is drawn, whose
  *  value hides it. Undefined when the row is drawn as it is (or is no row of the list). */

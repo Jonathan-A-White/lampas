@@ -5,7 +5,7 @@
 // The flag is the phone's own, in localStorage 'lampas.welcome' (the way the tips' day is), so a test can mark a phone welcomed before the app opens.
 import { deleteTurns, screenRef } from './talks';
 import { appendToIndex } from './memory';
-import { holdsAReader, setGreekInterest } from './greekInterest';
+import { holdsAReader, setGreekInterest, setHebrewInterest } from './greekInterest';
 
 export type WelcomeStatus = 'pending' | 'done' | 'skipped';
 
@@ -56,9 +56,13 @@ export function welcomeStartFor(kept: WelcomeStatus | null, existingReader: bool
 /** True when the phone holds anything of a reader: a profile, any setting (the Greek dial's own aside) or any talk. */
 export const isExistingReader = holdsAReader;
 
-/** The English defaults of a new reader: step 0 of the Greek dial, Just English (the English view, no Weave, no new words offered, and the rest of what the dial hides
- * turned off). Written once, when the welcome begins (and again by showWelcomeAgain). The one function: the dial's step 0 is this preset (mw-3ased2.2). */
-const putEnglishDefaults = (): Promise<void> => setGreekInterest(0);
+/** The English defaults of a new reader: step 0 of both dials, Just English (the English view, no Weave, no new words offered, and the rest of what the dial hides
+ * turned off). Written once, when the welcome begins (and again by showWelcomeAgain). The one function: the dials' step 0 is this preset (mw-3ased2.2). Hebrew first: the Greek move
+ * is the one that turns the shared settings off once both dials stand at 0. */
+const putEnglishDefaults = async (): Promise<void> => {
+  await setHebrewInterest(0);
+  await setGreekInterest(0);
+};
 
 let starting: Promise<WelcomeStatus> | undefined;
 

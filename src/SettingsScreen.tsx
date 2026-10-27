@@ -20,7 +20,8 @@ import { backToSettingsHome, groupIdOf, settingKeyOf } from './settings/link';
 import { searchLibrary } from './settings/librarySearch';
 import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { GREEK_LEVELS, greekLevelOf } from './settings/definitions/greekInterest';
-import { HOME_SECTIONS, SECTIONS, groupById, groupOf, isHomeRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
+import { HEBREW_LEVELS } from './settings/definitions/hebrewInterest';
+import { HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, isHomeRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
 import { settingsForTutor } from './settings/tutorSettings';
 import { useReportScreen } from './tutor/screenContext';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -28,11 +29,22 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 /** How long a row that a link opened Settings at is kept in view while the controls above it arrive. */
 const KEEP_IN_VIEW_MS = 2500;
 
-/** What a linked row that something else hides says: a Greek row names the dial's step that shows it, any other says to turn on the setting it depends on. */
-function neededText(values: Values, row: SettingsRow | undefined, needed: SettingsRow): string {
-  if (needed.key !== 'greekInterest' || !row) return `“${row?.label}” is shown once “${needed.label}” is on. Turn “${needed.label}” on first.`;
-  const step = GREEK_LEVELS.find((l) => visibleRows({ ...values, greekInterest: String(l.level) }, '').some((r) => r.key === row.key));
-  return `“${row.label}” is Greek. It is shown from “${step?.name ?? 'All in'}” up: raise “${needed.label}” at the top of Settings.`;
+/** What a linked row that something else hides says: a Greek or Hebrew row names the dial's step that shows it, a row both share says to raise either dial, any other says to turn on the setting it depends on. */
+function neededText(values: Values, row: SettingsRow | undefined, needed: SettingsRow | undefined): string {
+  const dial = row && dialOf(row);
+  if (!row || (dial !== 'greekInterest' && dial !== 'hebrewInterest' && dial !== 'depth')) return `“${row?.label}” is shown once “${needed?.label}” is on. Turn “${needed?.label}” on first.`;
+  // the step is found with both languages chosen, so only the dial's level decides
+  const level = (n: number) => String(n);
+  const both = { ...values, languages: 'both' };
+  if (dial === 'depth') {
+    const step = GREEK_LEVELS.find((l) => visibleRows({ ...both, depth: level(l.level) }, '').some((r) => r.key === row.key));
+    return `“${row.label}” is shown from “${step?.name ?? 'All in'}” up: choose a language at the top of Settings, then raise “How much Greek?” or “How much Hebrew?”.`;
+  }
+  const key = dial;
+  const lang = key === 'greekInterest' ? 'Greek' : 'Hebrew';
+  const steps = key === 'greekInterest' ? GREEK_LEVELS : HEBREW_LEVELS;
+  const step = steps.find((l) => visibleRows({ ...both, [key]: level(l.level) }, '').some((r) => r.key === row.key));
+  return `“${row.label}” is ${lang}. It is shown from “${step?.name ?? 'All in'}” up: choose ${lang} at the top of Settings, then raise “How much ${lang}?”.`;
 }
 
 /** The section id an address asks for ('#/settings?section=resources'), or null. */
@@ -85,6 +97,8 @@ export function SettingsScreen() {
   const values = useLiveQuery(readValues, []);
   const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest));
   const needed = values && linked ? neededFor(values, linked) : undefined;
+  // a row both languages share depends on no row (the key 'depth' is read, not drawn): it says to raise either dial though there is nothing to turn on first
+  const sharedHidden = values && linked && linkedRow && dialOf(linkedRow) === 'depth' && !visibleRows(values, '').some((r) => r.key === linked);
   // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3)
   const aiAllowed = useAiAllowed();
   // the tutor is told every setting, shown or not (mw-5r3p30.107): he can say what a setting that is off would give
@@ -99,9 +113,9 @@ export function SettingsScreen() {
   if (!page) {
     const searching = query.trim() !== '';
     const found = searching && values ? visibleRows(values, query) : [];
-    // the Greek dial is the first thing on the home (mw-3ased2.2); a search lists matching rows instead
-    const dialRow = rowOf('greekInterest');
-    const Dial = CONTROLS.greekInterest;
+    // 'Which languages?' is the first thing on the home, and under it the dial of each language chosen (mw-3ased2.2, mw-gdcyf98.2); a search lists matching rows instead
+    // (a link to a dial whose language is not chosen draws it all the same, marked, as a link does for any row: rowsAt)
+    const dialRows = values ? rows.filter((r) => r.section === 'dial') : [];
     // the door to Your Logos library is the first thing under the search field (mw-5r3p30.752)
     const libraryRow = rowOf('library');
     const Library = CONTROLS.library;
@@ -119,7 +133,10 @@ export function SettingsScreen() {
                 <>
                   <HighlightedSetting.Provider value={highlighted}>
                     {libraryRow && Library ? <Library row={libraryRow} /> : null}
-                    {dialRow ? <Dial row={dialRow} /> : null}
+                    {dialRows.map((row) => {
+                      const Dial = CONTROLS[row.key];
+                      return Dial ? <Dial key={row.key} row={row} /> : null;
+                    })}
                   </HighlightedSetting.Provider>
                   <ul aria-label="Settings groups">
                     {visibleGroups(values).map((g) => (
@@ -140,7 +157,7 @@ export function SettingsScreen() {
       <ScreenHeader title={page.title} back={<HeaderButton onClick={backToSettingsHome}>‹ Settings</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4">
         <div ref={contentRef} data-settings-group={page.id}>
-          {needed && linked ? (
+          {(needed || sharedHidden) && linked ? (
             <p role="status" data-setting-needs className="mt-3 rounded-lg border border-line px-3 py-2 text-base">
               {neededText(values ?? {}, rowOf(linked), needed)}
             </p>

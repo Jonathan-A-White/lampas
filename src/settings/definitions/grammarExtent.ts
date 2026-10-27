@@ -5,7 +5,7 @@
 import { DEFAULT_EXTENT, EXTENTS, EXTENT_LABELS, type GrammarExtent } from '../../data/grammar/extent';
 import { PICKER_GRAMMARS, pickerDial } from '../../data/grammar/formLevel';
 import { defineSetting } from '../define';
-import { greekFrom } from './greekInterest';
+import { depthFrom } from './interest';
 
 export interface ExtentOption {
   /** the value saved in the settings store */
@@ -61,7 +61,7 @@ export const paradigmExtentSetting = defineSetting<GrammarExtent>({
   default: DEFAULT_EXTENT,
   allowed: { kind: 'choice', values: extentChoices('paradigmExtent') },
   section: 'paradigms',
-  dependsOn: greekFrom(5),
+  dependsOn: depthFrom(5),
   label: 'How much of a table',
   hint: 'Which forms a paradigm table shows: all of them, yours, or only the solid ones.',
   help: 'A form is yours once every grammar idea it needs is solid or at the frontier:\n\n- **Solid and frontier**: shows your forms and locks the rest.\n- **Any**: shows every form, the ones you do not have yet marked not yet, with what each needs.\n- **Solid only**: hides the forms whose grammar is still at the frontier.\n\nIn Learn the shown forms are filled in; in Drill they are blank until you tap them. The same switch sits in the header of every table.',

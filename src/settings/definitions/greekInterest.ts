@@ -1,43 +1,26 @@
-// How much Greek (Settings home, the dial at the top, mw-3ased2.2): 0 to 5, each step a real change. The level decides which Greek settings and views are
+// How much Greek (Settings home, the dial under 'Which languages?', mw-3ased2.2): 0 to 5, each step a real change; the dial itself is src/settings/definitions/interest.ts. The level decides which Greek settings and views are
 // shown, by the ordinary dependsOn rule (a row says `dependsOn: greekFrom(n)`: shown from step n up), and the Reader reads it too (viewAt, weaveAt,
 // newWordsAt: what is hidden does not act). Moving the dial is src/data/repositories/greekInterest.ts. The names and lines are the Mayor's, PROVISIONAL until the
 // Governor confirms them (the epic mw-3ased2). A phone that has not been placed yet reads 5, All in: nothing is hidden until placeGreekInterest has chosen a level.
-import { defineSetting, type Dependency } from '../define';
 import type { Weave } from './weave';
+import { INTEREST_TOP, interestFrom, interestLevelOf, interestSetting, levelsOf, type InterestLevel, type InterestStep } from './interest';
 
-export type GreekLevel = 0 | 1 | 2 | 3 | 4 | 5;
-
-export interface GreekStep {
-  level: GreekLevel;
-  /** the step's name, in the dial and on the tutor's offer */
-  name: string;
-  /** one line of what the step means (at most 120 characters) */
-  line: string;
-}
+export type GreekLevel = InterestLevel;
+export type GreekStep = InterestStep;
 
 /** The six steps of the dial, lowest first. */
-export const GREEK_LEVELS: readonly GreekStep[] = [
-  { level: 0, name: 'Just English', line: 'A plain English Bible. No Greek anywhere, until you ask for it.' },
-  { level: 1, name: 'Curious', line: 'Peek underneath: tap a word for its Greek and Strong\'s number, or flip a chapter to the Greek.' },
-  { level: 2, name: 'Dipping a toe', line: 'A few Greek words woven into the English, as you come to know them.' },
-  { level: 3, name: 'Learning', line: 'Your daily path: new words each day, the grammar behind them, lessons read aloud.' },
-  { level: 4, name: 'Reading in Greek', line: 'The Reader opens in the Greek, the Weave in Greek word order, and a goal to read toward.' },
-  { level: 5, name: 'All in', line: 'Everything: every Greek setting, the paradigms, Hebrew in the tutor, taught to your goal.' },
-];
+export const GREEK_LEVELS: readonly GreekStep[] = levelsOf('grc');
 
 /** The step one above `level`, or undefined at the top: what the tutor offers to raise the dial to. */
 export const nextGreekStep = (level: GreekLevel): GreekStep | undefined => GREEK_LEVELS[level + 1];
 
 /** The highest step: All in. A phone not yet placed reads it, so nothing is hidden. */
-export const GREEK_TOP: GreekLevel = 5;
+export const GREEK_TOP: GreekLevel = INTEREST_TOP;
 
-export const greekLevelOf = (raw: unknown): GreekLevel => {
-  const n = typeof raw === 'string' ? Number(raw) : raw;
-  return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= GREEK_TOP ? (n as GreekLevel) : GREEK_TOP;
-};
+export const greekLevelOf = (raw: unknown): GreekLevel => interestLevelOf('grc', raw);
 
 /** The dependency of a row that the dial shows from step `level` up (as text, like every dependency: the setting's value). */
-export const greekFrom = (level: GreekLevel): Dependency => ({ key: 'greekInterest', shown: (value) => Number(value) >= level });
+export const greekFrom = (level: GreekLevel) => interestFrom('grc', level);
 
 /** The least step that shows the Reader's English | Greek view and a word's sheet (Curious). */
 export const GREEK_VIEW_FROM: GreekLevel = 1;
@@ -61,13 +44,4 @@ export function placementOf(has: { view: 'english' | 'greek'; newWords: number; 
   return 0;
 }
 
-export const greekInterestSetting = defineSetting<string>({
-  key: 'greekInterest',
-  default: String(GREEK_TOP),
-  allowed: { kind: 'choice', values: GREEK_LEVELS.map((l) => ({ value: String(l.level), label: l.name })) },
-  section: 'dial',
-  label: 'How much Greek?',
-  hint: 'From none to all in: each step shows more Greek, and nothing more.',
-  // Markdown (the row's More help draws it with src/markdown/Markdown.tsx): a list, one line a step, the step's number and name in bold
-  help: `How much Greek you want in Lampas, from 0 to 5:\n\n${GREEK_LEVELS.map((l) => `- **${l.level} · ${l.name}**: ${l.line}`).join('\n')}\n\nMoving it up sets what the new step brings in to its starting values; moving it down turns off what the lower step hides and keeps your own values, so going back up restores them.`,
-});
+export const greekInterestSetting = interestSetting('grc');
