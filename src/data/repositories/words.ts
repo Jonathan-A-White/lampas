@@ -101,7 +101,7 @@ export async function restoreWord(headword: string, before: Word | undefined): P
 /** The words of a state in the language `lang`; with no language, in every language (a word stored before v32 says 'grc'). */
 async function wordsIn(state: WordState, lang?: SourceLanguage): Promise<Word[]> {
   const words = await db.words.where('state').equals(state).toArray();
-  return lang ? words.filter((w) => w.lang === lang) : words;
+  return lang ? words.filter((w) => (w.lang ?? 'grc') === lang) : words;
 }
 
 /** Every lemma a solid word goes by (its headword and its lexicon lemmas, NFC): what the weave matches words against. With no language, every language's: the Greek weave and the Hebrew one each match against their own text. */
