@@ -25,6 +25,14 @@ export const VERSE_MAX_CHARS = 400;
 const USES_PER_VERSE = 6;
 /** The most items kept for an idea: the oldest go first. */
 export const MAX_KEPT = 6;
+/** The most questions the phone remembers having asked him for an idea (the newest), so the mill is not asked for one he has seen again (mw-indx1x6.1). */
+export const MAX_SEEN = 30;
+
+/** A question he has been asked: its prompt and the verse it is about. */
+export interface SeenQuestion {
+  prompt: string;
+  ref: string;
+}
 
 /** The kinds of question the mill may write (grinds/drill-items.answer.schema.json): the shapes src/GrammarCard.tsx draws from a verse. */
 export const FETCHED_KINDS = ['tap-form', 'meaning'] as const;
@@ -80,6 +88,8 @@ export interface DrillItemsRequest {
   ideas: AskedIdea[];
   verses: AskedVerse[];
   per_idea: number;
+  /** the questions on these ideas he has been asked, the oldest first: the mill writes none of them (as many as the request has room for) */
+  seen?: SeenQuestion[];
 }
 
 /** The ids of the ideas a word needs, patterns included; none for a code the ladder cannot read. */
@@ -117,15 +127,41 @@ function candidatesFor(ids: ReadonlySet<string>, passage: readonly Chapter[]): C
   );
 }
 
+const nfc = (s: string): string => s.normalize('NFC');
+const lower = (s: string): string => s.toLowerCase().replace(/\s+/g, ' ').trim();
+
+/** What makes two questions the same one: the prompt and the verse, case and spacing aside. */
+export const seenKey = (q: { prompt: string; ref: string }): string => `${lower(nfc(q.prompt))}|${lower(nfc(q.ref))}`;
+
+/** Whether a value read back from the store is a seen question. */
+export function isSeenQuestion(value: unknown): value is SeenQuestion {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Partial<SeenQuestion>;
+  return isText(v.prompt, 120) && isText(v.ref, 40);
+}
+
+/** The seen questions of the asked ideas as one list, the oldest first: the oldest of each idea before the newer of any (so trimming from the front takes evenly from the ideas). */
+function seenList(asked: readonly GrammarIdea[], seen: ReadonlyMap<string, readonly SeenQuestion[]>): SeenQuestion[] {
+  const entries = asked.flatMap((idea, order) => {
+    const list = seen.get(idea.id) ?? [];
+    return list.map((q, i) => ({ q, age: list.length - 1 - i, order }));
+  });
+  entries.sort((a, b) => b.age - a.age || a.order - b.order);
+  const keys = new Set<string>();
+  return entries.flatMap(({ q }) => (keys.has(seenKey(q)) ? [] : (keys.add(seenKey(q)), [{ prompt: q.prompt, ref: q.ref }])));
+}
+
 /**
  * The request for these ideas (one to MAX_IDEAS, the first the most missed): for each idea, up to VERSES_PER_IDEA verses of the passage that use it, the easiest for him first
  * (`graded` is gradedVerses' order, its at-level verses before the rest; without it the passage's order), MAX_VERSES in all. Null when the passage has no verse that uses any of them.
+ * `seen` is the questions he has been asked, by idea (oldest first): the request carries them as `seen`, the oldest left out until the request fits MAX_REQUEST_BYTES with its verses.
  */
 export function buildDrillItemsRequest(
   ideas: readonly GrammarIdea[],
   misses: ReadonlyMap<string, number>,
   passage: readonly Chapter[],
   graded?: readonly GradedVerse[],
+  seen: ReadonlyMap<string, readonly SeenQuestion[]> = new Map(),
 ): DrillItemsRequest | null {
   const asked = ideas.slice(0, MAX_IDEAS);
   if (asked.length === 0) return null;
@@ -156,8 +192,13 @@ export function buildDrillItemsRequest(
     per_idea: ITEMS_PER_IDEA,
   };
   // the grist's record is small (MAX_REQUEST_BYTES): the last verses go first
-  while (request.verses.length > 0 && new TextEncoder().encode(JSON.stringify(request)).length > MAX_REQUEST_BYTES) request.verses.pop();
-  return request.verses.length > 0 ? request : null;
+  const bytes = (r: DrillItemsRequest): number => new TextEncoder().encode(JSON.stringify(r)).length;
+  while (request.verses.length > 0 && bytes(request) > MAX_REQUEST_BYTES) request.verses.pop();
+  if (request.verses.length === 0) return null;
+  // the verses come first: what room is left carries the questions he has seen, the oldest dropped first
+  const carried = seenList(asked, seen);
+  while (carried.length > 0 && bytes({ ...request, seen: carried }) > MAX_REQUEST_BYTES) carried.shift();
+  return carried.length > 0 ? { ...request, seen: carried } : request;
 }
 
 /** One item as the grind answers it (grinds/drill-items.answer.schema.json). */
@@ -202,9 +243,6 @@ export function isDrillItemsAnswer(value: unknown): value is DrillItemsAnswer {
   const { items } = value as { items?: unknown };
   return Array.isArray(items) && items.length <= 12;
 }
-
-const nfc = (s: string): string => s.normalize('NFC');
-const lower = (s: string): string => s.toLowerCase().replace(/\s+/g, ' ').trim();
 
 /** A verse as the request named it: its words and its English, for checking an item against. */
 interface SentVerse {
@@ -254,18 +292,21 @@ const sentRef = (sent: SentVerse): string => refOf(sent.chapter, sent.verse);
 /**
  * The questions the answer's items make, checked against the verses the request sent: an item that names an idea the request did not ask about or a verse it did not send, that is
  * not of a shape the app draws, whose choices are not four different ones with the right one among them, whose words are not the verse's or whose right word is not what the idea is
- * about, is dropped. At most ITEMS_PER_IDEA for each idea.
+ * about, is dropped. At most ITEMS_PER_IDEA for each idea. So is an item whose prompt and verse are those of a question he has been asked (the request's `seen`, and `seen` here: the
+ * phone's whole list, which the request may have had no room for) or of another item of the same answer.
  */
-export function checkedItems(answer: DrillItemsAnswer, request: DrillItemsRequest, passage: readonly Chapter[]): GrammarQuestion[] {
+export function checkedItems(answer: DrillItemsAnswer, request: DrillItemsRequest, passage: readonly Chapter[], seen: readonly SeenQuestion[] = []): GrammarQuestion[] {
   const sent = sentVerses(request, passage);
   const asked = new Set(request.ideas.map((i) => i.id));
   const made = new Map<string, number>();
+  const known = new Set([...(request.seen ?? []), ...seen].map(seenKey));
   const kept: GrammarQuestion[] = [];
   for (const item of answer.items) {
     if (!isAnsweredItem(item) || !asked.has(item.idea) || (made.get(item.idea) ?? 0) >= request.per_idea) continue;
     const verse = sent.get(item.ref);
     const question = verse ? questionFrom(item, verse, item.idea) : null;
-    if (!question) continue;
+    if (!question || known.has(seenKey({ prompt: question.prompt, ref: item.ref }))) continue;
+    known.add(seenKey({ prompt: question.prompt, ref: item.ref }));
     made.set(item.idea, (made.get(item.idea) ?? 0) + 1);
     kept.push(question);
   }

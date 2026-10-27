@@ -1,11 +1,12 @@
 // src/PlanDrillScreen.tsx — one short drill of Your drill plan (mw-i7xe0n.4, docs/grammar.md 'Your drill plan'): a full screen that asks 4 to 6 questions of one weak facet of an idea
 // (data/grammar/drillPlan.ts shortDrill), one at a time as Drill it draws them (GrammarCard, multiple choice), then says how many were right and whether this step of the plan is done
 // (facetPassed: one miss is allowed), with the round Ask the tutor button at the foot's right end on that result (mw-5r3p30.649, as on Drill it). It writes nothing: Done hands the verdict to onFinish (the Result of Drill it and the Review card put it on the plan, drillPlans.ts answerPlanItem).
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DialogAskTutor } from './AskTutor';
-import { facetPassed } from './data/grammar/drillPlan';
+import { facetPassed, withFetched } from './data/grammar/drillPlan';
 import type { DrillQuestion } from './data/grammar/drillIt';
 import { ideaOf } from './data/grammar/ladder';
+import { noteAsked, takeFetchedItems } from './data/repositories';
 import { GrammarCard } from './GrammarCard';
 import { FacetLabel } from './FacetLabel';
 import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
@@ -16,7 +17,7 @@ import { useSettled } from './ui/settle';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
-export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClose }: {
+export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish, onClose }: {
   ideaId: string;
   facetLabel: string;
   questions: readonly DrillQuestion[];
@@ -28,6 +29,24 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
   const [index, setIndex] = useState(0);
   const [right, setRight] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
+  // a question the mill wrote for this idea is asked in place of the first built one not yet answered (docs/grammar.md 'More items from the mill'): taken from the phone as the drill opens, never waited for
+  const [questions, setQuestions] = useState<readonly DrillQuestion[]>(built);
+  const live = useRef({ index, picked });
+  useEffect(() => {
+    live.current = { index, picked };
+  });
+  const taking = useRef(false);
+  useEffect(() => {
+    // once for this screen: a second run of the effect must not take a second item
+    if (taking.current) return;
+    taking.current = true;
+    takeFetchedItems([ideaId])
+      .then((kept) => {
+        const item = kept.get(ideaId);
+        if (item) setQuestions((all) => withFetched(all, item, live.current.index + (live.current.picked === null ? 0 : 1)));
+      })
+      .catch((error: unknown) => console.warn('could not take a kept drill item', error));
+  }, [ideaId]);
   // every question as he answered it, for the tutor on the result, and the key this drill's talk is kept under
   const [tries, setTries] = useState<DrillTry[]>([]);
   const [talkKey] = useState(() => `screen.drill-it.${Date.now()}`);
@@ -43,6 +62,7 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions, onFinish, onClo
     if (!question || picked !== null) return;
     setPicked(option);
     setTries((all) => [...all, { question, picked: option, hinted: false }]);
+    void noteAsked(question);
     if (option === question.right) setRight((n) => n + 1);
   };
   const talkScreen = over

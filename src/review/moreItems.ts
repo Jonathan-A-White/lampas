@@ -1,12 +1,13 @@
 // src/review/moreItems.ts — after a Review round, more items on the ideas he missed, from the mill (mw-hqd5bz.36, docs/grammar.md 'More items from the mill'). The Governor's words: "after each
 // drill round, a grist asks for more items on your weakest ideas, saved so the next round starts at once." So nothing here is waited on: the round's end card is drawn first, this runs after it,
 // asks for nothing when the phone is offline, holds no key or no licence, or another ask is still out, and a round draws its questions from what is kept (kinds.ts GRAMMAR.draw), never from the mill.
+// The Drill it screens serve the same kept items (src/DrillItScreen.tsx, src/PlanDrillScreen.tsx); the request carries the questions he has been asked (src/data/repositories/seenItems.ts).
 import { DEVICE_KEY_STORAGE_KEY } from '../config';
 import type { Chapter } from '../data/chapter';
 import { buildDrillItemsRequest, checkedItems, DRILL_ITEMS_KIND, isDrillItemsAnswer, weakestMissed } from '../data/grammar/fetchedItems';
 import type { GrammarIdea } from '../data/grammar/ladder';
 import { mulberry32 } from '../data/quiz';
-import { saveFetchedItems } from '../data/repositories';
+import { listSeenOf, saveFetchedItems } from '../data/repositories';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { currentLicence } from '../services/licenceNow';
 import { askGrind } from '../services/tutor';
@@ -80,10 +81,13 @@ async function ask(ideas: GrammarIdea[], missed: readonly string[], options: Mor
     const graded = await gradedVersesOf(passage).catch(() => undefined);
     const counts = new Map<string, number>();
     for (const id of missed) counts.set(id, (counts.get(id) ?? 0) + 1);
-    const request = buildDrillItemsRequest(ideas, counts, passage, graded);
+    // the questions he has been asked on these ideas go with the request, so the mill writes none of them (mw-indx1x6.1)
+    const seen = await listSeenOf(ideas.map((idea) => idea.id)).catch(() => new Map());
+    const request = buildDrillItemsRequest(ideas, counts, passage, graded, seen);
     if (!request) return 'no-verses';
     const answer = await askGrind(DRILL_ITEMS_KIND, request, isDrillItemsAnswer, { key, untimed: true });
-    const kept = checkedItems(answer, request, passage);
+    // the request may have had no room for all he has seen: the answer is checked against the whole list
+    const kept = checkedItems(answer, request, passage, [...seen.values()].flat());
     if (kept.length > 0) await saveFetchedItems(kept);
     return { kept: kept.length };
   } catch (error) {

@@ -11,13 +11,17 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import type { DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
+import { drillSteps } from '../../src/data/grammar/drillIt';
+import { shortDrill } from '../../src/data/grammar/drillPlan';
+import { buildDrillItemsRequest, checkedItems, type DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
+import { ideaOf } from '../../src/data/grammar/ladder';
 import { mulberry32 } from '../../src/data/quiz';
-import { countFetchedItems } from '../../src/data/repositories';
+import { countFetchedItems, listSeen, saveFetchedItems } from '../../src/data/repositories';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { PlanDrillScreen } from '../../src/PlanDrillScreen';
 import { whenIdle } from '../../src/review/moreItems';
 import { setCurrentLicence } from '../../src/services/licenceNow';
 import { tutorTimings } from '../../src/services/tutor';
@@ -140,6 +144,26 @@ const grist = async (): Promise<{ input: DrillItemsRequest; kind: string }> => {
   return { input: fake.received[0].input as unknown as DrillItemsRequest, kind: fake.received[0].grist.kind };
 };
 
+/** Writes the item the mill could write from the second declension's verses of Romans 8 into the kept list, as a finished fetch would. */
+async function keepAnItem(): Promise<void> {
+  const request = buildDrillItemsRequest([ideaOf(IDEA)], new Map([[IDEA, 2]]), [romans8]) as DrillItemsRequest;
+  const kept = checkedItems({ items: [itemFrom(request)] } as never, request, [romans8]);
+  expect(kept, 'the item the mill could write passes the check').toHaveLength(1);
+  await saveFetchedItems(kept);
+}
+
+/** Opens the short drill of the second declension on screen, as Your drill plan opens one: the questions of its first facet. */
+function openShortDrill(): void {
+  cleanup();
+  const first = drillSteps(IDEA, { passage: [romans8], seed: 5 })[0].questions[0];
+  const item = { id: `facet:${first.facet.id}`, kind: 'facet' as const, facet: first.facet, step: 1, done: false };
+  const questions = shortDrill(IDEA, item, { passage: [romans8], seed: 5 });
+  expect(questions.length).toBeGreaterThanOrEqual(4);
+  render(<PlanDrillScreen ideaId={IDEA} facetLabel={first.facet.label} questions={questions} onFinish={() => undefined} onClose={() => undefined} />);
+}
+
+const promptShown = (): string | null => document.querySelector('[data-testid="grammar-prompt"]')?.textContent ?? null;
+
 const feature = await loadFeature('features/fetched-drill-items.feature');
 
 const MILL_WILL_ANSWER = 'the second declension is due in Review and the mill will answer a drill-items grist';
@@ -243,6 +267,49 @@ describeFeature(feature, ({ Scenario }) => {
       await whenIdle();
       expect(fake.received).toEqual([]);
       // the phone sent no grist of any kind (a POST to the backend)
+      expect(fake.calls.filter((c) => c.startsWith('POST'))).toEqual([]);
+    });
+  });
+
+  Scenario('A kept item is asked in a short drill and then used up', ({ Given, When, Then, And }) => {
+    Given('the mill wrote an item for the second declension and it is kept', async () => {
+      await freshPhone();
+      await keepAnItem();
+    });
+    When('he starts a short drill on the second declension', () => {
+      openShortDrill();
+    });
+    Then('the short drill asks the item the mill wrote', async () => {
+      await waitFor(() => expect(promptShown()).toBe(MILL_PROMPT));
+    });
+    And('the kept items for {string} are used up', async (_, id: string) => {
+      expect(await countFetchedItems(id)).toBe(0);
+    });
+    And('the mill\'s item is noted as asked on {string}', async (_, id: string) => {
+      const option = document.querySelector<HTMLElement>('[data-option]');
+      expect(option).not.toBeNull();
+      await user.click(option as HTMLElement);
+      await waitFor(async () => expect((await listSeen(id)).map((q) => q.prompt)).toContain(MILL_PROMPT));
+    });
+  });
+
+  Scenario('A drill with nothing kept asks built questions without waiting for the mill', ({ Given, When, Then, And }) => {
+    Given('nothing is kept for the second declension', async () => {
+      await freshPhone();
+      expect(await countFetchedItems(IDEA)).toBe(0);
+    });
+    When('he starts a short drill on the second declension', () => {
+      openShortDrill();
+    });
+    Then('the short drill asks a built question at once', async () => {
+      expect(await screen.findByTestId('grammar-prompt')).toBeVisible();
+      // the mill never answered anything: what is asked is the phone's own
+      expect(promptShown()).not.toBe(MILL_PROMPT);
+      expect(await countFetchedItems(IDEA)).toBe(0);
+    });
+    And('the mill is sent no drill-items grist', async () => {
+      await whenIdle();
+      expect(fake.received).toEqual([]);
       expect(fake.calls.filter((c) => c.startsWith('POST'))).toEqual([]);
     });
   });

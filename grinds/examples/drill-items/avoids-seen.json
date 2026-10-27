@@ -1,0 +1,67 @@
+{
+  "description": "He missed the second declension twice, and has already been asked to tap λόγου in 1 John 1:1: the grind writes items on it from the verses sent, and none is that question or about λόγου.",
+  "schemaVersion": "1",
+  "request": {
+    "ideas": [
+      {
+        "id": "declension-2",
+        "title": "The second declension",
+        "what": "Nouns whose stem ends in ο make up the second declension: λόγος “word” (1 John 1:1) and ἄνθρωπος “man” are masculine, and τέκνον “child” is neuter. The nominative ends in -ος or -ον and the genitive in -ου: λόγος, λόγου; τέκνον, τέκνου.",
+        "misses": 2
+      }
+    ],
+    "verses": [
+      {
+        "ref": "1 John 1:1",
+        "greek": "Ὃ ἦν ἀπ' ἀρχῆς ὃ ἀκηκόαμεν ὃ ἑωράκαμεν τοῖς ὀφθαλμοῖς ἡμῶν ὃ ἐθεασάμεθα καὶ αἱ χεῖρες ἡμῶν ἐψηλάφησαν περὶ τοῦ λόγου τῆς ζωῆς",
+        "english": "That which was from the beginning, which we have heard, which we have seen with our own eyes, which we have gazed upon and touched with our own hands — this is the Word of life.",
+        "uses": [
+          {
+            "idea": "declension-2",
+            "form": "ὀφθαλμοῖς",
+            "parse": "noun, dative plural masculine"
+          },
+          {
+            "idea": "declension-2",
+            "form": "λόγου",
+            "parse": "noun, genitive singular masculine"
+          }
+        ]
+      },
+      {
+        "ref": "1 John 1:2",
+        "greek": "Καὶ ἡ ζωὴ ἐφανερώθη καὶ ἑωράκαμεν καὶ μαρτυροῦμεν καὶ ἀπαγγέλλομεν ὑμῖν τὴν ζωὴν τὴν αἰώνιον ἥτις ἦν πρὸς τὸν πατέρα καὶ ἐφανερώθη ἡμῖν",
+        "english": "And this is the life that was revealed; we have seen it and testified to it, and we proclaim to you the eternal life that was with the Father and was revealed to us.",
+        "uses": [
+          {
+            "idea": "declension-2",
+            "form": "αἰώνιον",
+            "parse": "adjective, accusative singular feminine"
+          }
+        ]
+      }
+    ],
+    "per_idea": 2,
+    "seen": [
+      {
+        "prompt": "Tap the genitive singular noun",
+        "ref": "1 John 1:1"
+      }
+    ]
+  },
+  "expect": {
+    "items.0.idea": {
+      "equals": "declension-2"
+    },
+    "items.0.kind": {
+      "one_of": [
+        "tap-form",
+        "meaning"
+      ]
+    },
+    "items.0.right": {
+      "present": true,
+      "matches": "^[^λ]"
+    }
+  }
+}

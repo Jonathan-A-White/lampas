@@ -6,14 +6,15 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import type { Chapter } from './data/chapter';
-import { answer as answerWalk, start, type DrillResult, type DrillWalk } from './data/grammar/drillIt';
+import { answer as answerWalk, serveFetched, start, type DrillResult, type DrillWalk } from './data/grammar/drillIt';
 import { planFrom, shortDrill, type PlanItem } from './data/grammar/drillPlan';
 import { drillSeed } from './data/grammar/drillSeed';
 import { hintTakes } from './data/grammar/hint';
 import { ideaOf, type Facet } from './data/grammar/ladder';
 import type { Level } from './data/grammar/needs';
 import { DialogAskTutor } from './AskTutor';
-import { answerPlanItem, getDrillPlan, type DrillMode } from './data/repositories';
+import type { GrammarQuestion } from './data/grammar/questions';
+import { answerPlanItem, getDrillPlan, noteAsked, takeFetchedItems, type DrillMode } from './data/repositories';
 import { FacetLabel } from './FacetLabel';
 import { GrammarCard } from './GrammarCard';
 import { PlanDrillScreen } from './PlanDrillScreen';
@@ -138,6 +139,28 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
   const [talkKey] = useState(() => `screen.drill-it.${Date.now()}`);
   const reported = useRef(false);
   const result = walk?.result ?? null;
+  // a question the mill wrote for this idea is asked in place of one built question (docs/grammar.md 'More items from the mill'): taken from the phone as the screen opens, never waited for;
+  // it goes in at once if no answer has been given yet, else at the next question
+  const live = useRef({ walk, after });
+  useEffect(() => {
+    live.current = { walk, after };
+  });
+  const waiting = useRef<GrammarQuestion | null>(null);
+  const taking = useRef(false);
+  useEffect(() => {
+    // once for this screen: a second run of the effect must not take a second item
+    if (taking.current) return;
+    taking.current = true;
+    takeFetchedItems([ideaId])
+      .then((kept) => {
+        const item = kept.get(ideaId);
+        if (!item) return;
+        const now = live.current;
+        if (now.walk && now.walk.asked.length === 0 && !now.after) setWalk(serveFetched(now.walk, item));
+        else waiting.current = item;
+      })
+      .catch((error: unknown) => console.warn('could not take a kept drill item', error));
+  }, [ideaId]);
   // Hint (and Done, after Finish) stands where Next was: a second tap of a double tap on Next lands on it, so it waits for the new card to settle
   // as the card's options do (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(walk?.asked.length ?? 0);
@@ -156,10 +179,13 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
     if (!walk || !question || after) return;
     setAfter({ walk: answerWalk(walk, option === question.right, taken !== null), picked: option });
     setTries((all) => [...all, { question, picked: option, hinted: taken !== null }]);
+    void noteAsked(question);
   };
   const next = () => {
     if (!after) return;
-    setWalk(after.walk);
+    const item = waiting.current;
+    waiting.current = null;
+    setWalk(item ? serveFetched(after.walk, item) : after.walk);
     setAfter(null);
     setTaken(null);
   };
