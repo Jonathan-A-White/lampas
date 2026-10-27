@@ -9,7 +9,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 const THELO = 'θέλω';
 const NAMES = ['Know it well', 'Kind of', "Don't know"];
 
-/** A Review round of one θέλω card, kept as a reload would keep it, so the card is the one asked. */
+/** A Review round of one θέλω card, kept as a reload would keep it, so the card is the one asked (a later reload keeps the round it made). */
 async function reviewOf(page: Page, mode: 'choice' | 'flashcard') {
   await openUnlocked(page);
   const item = {
@@ -19,7 +19,7 @@ async function reviewOf(page: Page, mode: 'choice' | 'flashcard') {
     question: { lemma: THELO, prompt: THELO, gloss: 'to will, wish, desire', options: ['to will, wish, desire', 'to see, perceive', 'to say, speak', 'to go, depart'] },
   };
   await page.addInitScript(
-    (kept) => window.sessionStorage.setItem('lampas.reviewRound', JSON.stringify({ round: { status: 'running', items: [kept], index: 0, picked: null, right: 0, missed: [] }, at: Date.now() })),
+    (kept) => !window.sessionStorage.getItem('lampas.reviewRound') && window.sessionStorage.setItem('lampas.reviewRound', JSON.stringify({ round: { status: 'running', items: [kept], index: 0, picked: null, right: 0, missed: [] }, at: Date.now() })),
     item,
   );
   await page.goto('/#/review');
@@ -59,6 +59,17 @@ test('a right pick on a word shows Know it well, Kind of and Don\'t know under R
   await page.getByRole('button', { name: "Don't know", exact: true }).click();
   await expect(page.getByTestId('word-heart')).toBeVisible();
   await expect(page.getByTestId('feedback')).toHaveText('It comes back tomorrow.');
+});
+
+test('a reload after a right pick, before a grade, keeps him on the word with its three buttons', async ({ page }) => {
+  await reviewOf(page, 'choice');
+  await page.getByRole('button', { name: 'to will, wish, desire', exact: true }).click();
+  await expect(page.getByTestId('word-grades')).toBeVisible();
+  await page.reload();
+  await expect(page.getByTestId('prompt')).toHaveText(THELO);
+  await expect(page.getByTestId('word-grades')).toBeVisible();
+  await page.getByRole('button', { name: 'Know it well', exact: true }).click();
+  await expect(page.getByTestId('feedback')).toHaveText('Right.');
 });
 
 test('a wrong pick on a word shows no grades', async ({ page }) => {
