@@ -33,6 +33,10 @@ Feature: The Hebrew paradigm tables
     Then the cell "Perfect 3rd masculine Singular" shows "קָטַל" in Hebrew type
     When he says "Had it"
     Then the cell "Perfect 3rd masculine Singular" is graded "had"
+    When he taps another cell, "Perfect 3rd feminine Singular"
+    And he grades it "Missed"
+    Then that cell is graded "missed"
+    And the table is not put in Review
 
   Scenario: How much of a table at its smallest shows the first persons only, at its largest the whole table
     When he opens the table "he-qal-strong" to Learn

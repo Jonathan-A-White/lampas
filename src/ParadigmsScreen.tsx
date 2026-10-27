@@ -760,7 +760,8 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
     // the run's first miss puts the table in Review, due now, as a missed Review cell would (one write a run, as a round's row takes one outcome)
     if (!right && !next.missWritten) {
       next = markMissWritten(drillKey);
-      void recordDrillMiss(PARADIGM_KIND, table.id).catch((error: unknown) => console.error('could not record the miss', error));
+      // Review asks Greek cells only: a Hebrew table's miss stays in its Drill
+      if (!hebrewTable) void recordDrillMiss(PARADIGM_KIND, table.id).catch((error: unknown) => console.error('could not record the miss', error));
     }
     setDrill(next);
   };

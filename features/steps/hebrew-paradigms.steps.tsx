@@ -163,7 +163,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
-  Scenario('Drill blanks the qal perfect and a tap shows a form', ({ When, Then }) => {
+  Scenario('Drill blanks the qal perfect and a tap shows a form', ({ When, Then, And }) => {
     When('he opens the table {string} to Drill', opensTo('drill'));
     Then('the cell {string} is blank', async (_, place: string) => {
       await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'hidden'));
@@ -176,6 +176,20 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     Then('the cell {string} is graded {string}', async (_, place: string, grade: string) => {
       await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-grade', grade));
+    });
+    let other = '';
+    When('he taps another cell, {string}', async (_, place: string) => {
+      other = place;
+      await tapsCell(undefined, place);
+    });
+    And('he grades it {string}', async (_, grade: string) => {
+      await user.click(await screen.findByRole('button', { name: grade }));
+    });
+    Then('that cell is graded {string}', async (_, grade: string) => {
+      await waitFor(() => expect(cellAt(other)).toHaveAttribute('data-grade', grade));
+    });
+    And('the table is not put in Review', async () => {
+      expect(await db.reviews.toArray()).toEqual([]);
     });
   });
 
