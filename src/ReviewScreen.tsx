@@ -23,6 +23,8 @@ import { useReportScreen } from './tutor/screenContext';
 import { reviewFacts } from './review/reviewFacts';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
+import { SourceSegment } from './ui/SourceSegment';
+import { useLanguageInHand } from './useLanguageInHand';
 
 /** What the end card says of New words at (mw-hqd5bz.11): nothing, an offer to move it, or that it was moved. */
 type MoveCard = { status: 'none' } | { status: 'offer'; move: PendingMove } | { status: 'said'; move: PendingMove };
@@ -147,6 +149,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   // a due passage lesson is opened from the start screen, never asked in a round: it is not counted among the items still to ask
   const stillDue = due?.reduce((a, b, i) => a + (KINDS[i].kind === LESSON_KIND ? 0 : b), 0);
   const lessons = useLiveQuery(async () => (await listDue(LESSON_KIND, Date.now())).flatMap((r) => passageLessonOf(r.id)), []);
+  // with both languages chosen the start screen has the Greek | Hebrew segment: a round asks the words of the language it is on (mw-gdcyf98.19)
+  const { both } = useLanguageInHand();
   useReportScreen({ name: 'Review', facts: reviewFacts(round, due ? dueText(due) : undefined) });
 
   const draw = () =>
@@ -195,6 +199,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           <p className="mt-2 text-muted">
             {stillDue === 0 ? `${lessons && lessons.length > 0 ? 'No idea or word is due' : 'Nothing is due'}. Start still asks ten of your words.` : 'The due ones come first, then other words, up to ten.'}
           </p>
+          {both ? <SourceSegment label="Review language" /> : null}
           {round.nothing ? (
             <p role="status" data-testid="nothing-to-ask" className="mt-4 text-lg">
               Nothing is due and there is no word to ask.

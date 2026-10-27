@@ -1,37 +1,37 @@
 // src/QuizScreen.tsx — the Quick test: ten questions on his solid and learning words. Tap one of four
 // glosses, see at once whether it was right, go on; the end screen gives the score and the misses.
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useState } from 'react';
-import { loadChapter, wordLemma, wordParse, type Chapter } from './data/chapter';
+import { wordLemma, wordParse } from './data/chapter';
 import { lookupLemma } from './data/lexicon';
-import { listWords, recordAnswer } from './data/repositories';
+import { getLanguages, listWords, recordAnswer } from './data/repositories';
 import { clearRound, readRound, saveRound } from './data/roundKeep';
-import { askAbout, buildQuestion, drawWords, seedDistractors, type Question, type Random } from './data/quiz';
+import { askAbout, drawWords, type Question, type Random } from './data/quiz';
+import { loadForms, questionsOf } from './data/quizWords';
+import { wordsInPlay } from './data/studyLanguage';
 import { useAiAllowed } from './gate/licenceContext';
 import { backTo, navigate } from './nav/route';
 import { askAboutWord } from './nav/readerRequest';
 import { MAX_QUIZ_ANSWERS, quizQuestion, type QuizAnswer, type QuizFocus } from './services/talk';
 import { speakWord } from './speech/greek';
 import { getStudyChapter } from './data/readerChapter';
+import { studyLanguage } from './data/studyLanguage';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { WordQuestion } from './WordQuestion';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
-import { GREEK_LANG } from './script/greekLang';
+import { faceOf } from './script/greekLang';
 
 type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
 
-/** The chapter whose forms show beneath a word after the answer: the one the Reader has open. A phone that cannot load it shows no form; the lemma is asked either way. */
-const loadForms = (): Promise<Chapter | null> => {
-  const open = getStudyChapter();
-  return loadChapter(open.book, open.chapter).catch(() => null);
-};
-
+/** A round: words of the languages he chose, each asked among the glosses of words of its own language and showing its form from the chapter of its own (src/data/quizWords.ts). */
 async function drawRound(random: Random): Promise<Question[]> {
-  const [words, chapter] = await Promise.all([listWords(), loadForms()]);
-  const pool = seedDistractors();
-  return drawWords(words, random).map((w) => buildQuestion(w, pool, chapter, random));
+  // the Greek chapter loads beside the words, as it always did
+  const greek = loadForms('grc');
+  const [words, languages] = await Promise.all([listWords(), getLanguages()]);
+  return questionsOf(drawWords(wordsInPlay(words, languages), random), words, random, { grc: greek });
 }
 
 /**
@@ -40,13 +40,14 @@ async function drawRound(random: Random): Promise<Question[]> {
  */
 function DrillLink({ card = 0 }: { card?: number }) {
   const settled = useSettled(card);
+  const language = useLiveQuery(studyLanguage, []);
   return (
     <button
       type="button"
       onClick={() => settled() && navigate('drill')}
       className="mt-3 min-h-12 w-full rounded-xl border border-line text-base font-medium"
     >
-      Parsing drill: {getStudyChapter().title}
+      Parsing drill: {getStudyChapter(language ?? 'grc').title}
     </button>
   );
 }
@@ -108,15 +109,16 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     saveRound({ questions, index, picked: option, missed: nextMissed, answers });
     void recordAnswer(question.lemma, right);
     // The word says itself once, by the long press's engine; the Tap to hear bar says it again. No help line here: that bar carries it.
-    speakWord(question.prompt, 'greek');
+    speakWord(question.prompt, question.lang === 'hbo' ? 'hebrew' : 'greek');
   };
 
   // Ask the tutor: the Talk sheet on the word's verse, the first question sent with the word, its parsing, the question and his answers.
   const askTutor = async () => {
     if (!question || picked === null) return;
-    const open = getStudyChapter();
+    const hebrew = question.lang === 'hbo';
+    const open = getStudyChapter(hebrew ? 'hbo' : 'grc');
     const about = askAbout(question, { book: open.book, chapter: open.chapter, verse: 1 });
-    const [forms, entry] = await Promise.all([loadForms(), lookupLemma(question.lemma)]);
+    const [forms, entry] = await Promise.all([loadForms(hebrew ? 'hbo' : 'grc'), lookupLemma(question.lemma, hebrew ? 'hbo' : 'grc')]);
     const verse = forms?.verses.find((v) => v.n === question.verse);
     const word = question.form === undefined ? undefined : verse?.g.find((w) => w.t === question.form && wordLemma(w) === question.lemma);
     const focus: QuizFocus = {
@@ -197,7 +199,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
               <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
                 {missed.map((q) => (
                   <li key={q.lemma} data-missed={q.lemma} className="px-3 py-2">
-                    <span {...GREEK_LANG} className="block break-words font-greek text-2xl">{q.lemma}</span>
+                    <span {...faceOf(q.lang, { greek: 'text-2xl', hebrew: 'hebrew-choice' }, 'block break-words')}>{q.lemma}</span>
                     <span className="block break-words text-sm text-muted">{q.gloss}</span>
                   </li>
                 ))}

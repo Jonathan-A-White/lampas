@@ -706,12 +706,13 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Review, the Quick test and the Parsing drill say nothing about an open Old Testament chapter', ({ Given, When, Then }) => {
+  Scenario('Review, the Quick test and the Parsing drill speak of an open Old Testament chapter when Hebrew is chosen', ({ Given, When, Then }) => {
     Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
-    Then('the ladders, the quizzes and Review draw their forms from {string}, not from {string}', (_, studied: string, open: string) => {
-      expect(getStudyChapter().title).toBe(studied);
+    Then('the Greek words draw their forms from {string} and the Hebrew words from {string}, the chapter open', (_, greek: string, hebrew: string) => {
+      // the phone has both languages chosen (openOn gives Hebrew All in beside the Greek default): the Greek words stay in Romans 8, the Hebrew ones come from the chapter he has open
+      expect(getStudyChapter().title).toBe(greek);
+      expect(getStudyChapter('hbo').title).toBe(hebrew);
       expect(JSON.parse(localStorage.getItem('lampas.chapter') ?? 'null')).toMatchObject({ book: 'jon', chapter: 1 });
-      expect(studied).not.toBe(open);
     });
     When('he opens Review, the Quick test and the Parsing drill in turn', () => undefined);
     Then('each opens with its own heading and no error', async () => {

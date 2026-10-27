@@ -1,9 +1,10 @@
 // src/data/quiz.ts — the pure parts of the Quick test: the state rule, the drawing of a round, the option
 // builder and the question. Nothing here touches the store or the screen; the random source is passed in.
-import { wordLemma, type Chapter, type GreekWord } from './chapter';
+import { sourceLanguage, wordLemma, type Chapter, type GreekWord, type SourceLanguage } from './chapter';
 import type { Word, WordState } from './db';
 import { normaliseLemma } from './lemma';
 import { SEED_WORDS } from './seed-words';
+import { SEED_WORDS_HBO } from './seed-words-hbo';
 import { choicesOf } from './choices';
 import { shuffle, type Random } from './random';
 
@@ -44,11 +45,24 @@ export interface Distractor {
   pos: string;
 }
 
-let seedPool: Distractor[] | undefined;
-/** The seed words as distractors, keyed by the headword the store uses. */
-export function seedDistractors(): Distractor[] {
-  seedPool ??= SEED_WORDS.map((s) => ({ lemma: normaliseLemma(s.lemma).headword, gloss: s.gloss, pos: s.pos }));
-  return seedPool;
+const seedPools: Partial<Record<SourceLanguage, Distractor[]>> = {};
+/** The seed words of a language (Greek unless said) as distractors, keyed by the headword the store uses. */
+export function seedDistractors(lang: SourceLanguage = 'grc'): Distractor[] {
+  seedPools[lang] ??= (lang === 'hbo' ? SEED_WORDS_HBO : SEED_WORDS).map((s) => ({ lemma: normaliseLemma(s.lemma).headword, gloss: s.gloss, pos: s.pos }));
+  return seedPools[lang];
+}
+
+/**
+ * The wrong glosses a word of `lang` can be asked among (mw-gdcyf98.19): the Greek seed for Greek, as it was; for Hebrew the Hebrew seed and his Hebrew words (the ones he has not dropped and that
+ * have a gloss), never a Greek word, so a choice is always another word of the language asked.
+ */
+export function distractorsFor(lang: SourceLanguage, words: readonly Word[]): Distractor[] {
+  if (lang !== 'hbo') return seedDistractors();
+  const own = words
+    .filter((w) => w.lang === 'hbo' && w.state !== 'dropped' && w.gloss.trim() !== '')
+    .map((w): Distractor => ({ lemma: nfc(w.lemma), gloss: w.gloss, pos: w.pos ?? '' }));
+  const seeded = new Set(own.map((d) => d.lemma));
+  return [...own, ...seedDistractors('hbo').filter((d) => !seeded.has(nfc(d.lemma)))];
 }
 
 /** The right gloss and three others, shuffled (choices.ts): the glosses of seed words of the same part of speech first, its near misses, then any. */
@@ -106,6 +120,8 @@ export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string
 export interface Question {
   /** The store's key for the word. */
   lemma: string;
+  /** The language the word is in: 'hbo' for a Hebrew word; absent means Greek (a round kept before the Hebrew words has none). */
+  lang?: SourceLanguage;
   /** What is shown in Greek: always the dictionary form (the NFC lemma), never an inflected form. */
   prompt: string;
   /** The word as the open chapter has it, shown small only after the answer (PROVISIONAL); absent when the chapter lacks the word or did not load. */
@@ -122,11 +138,14 @@ export interface Question {
 
 export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: Chapter | null, random: Random): Question {
   const others = new Set(pool.filter((p) => p.lemma !== word.lemma).map((p) => nfc(p.lemma)));
-  const forms = chapter ? formsOf(chapter, word, others) : [];
+  const hebrew = word.lang === 'hbo';
+  // a form is shown only from a chapter in the word's own language
+  const forms = chapter && sourceLanguage(chapter) === (hebrew ? 'hbo' : 'grc') ? formsOf(chapter, word, others) : [];
   const occurrence = forms.length > 0 ? forms[Math.floor(random() * forms.length)] : undefined;
-  const pos = pool.find((p) => p.lemma === word.lemma)?.pos;
+  const pos = pool.find((p) => p.lemma === word.lemma)?.pos ?? (hebrew ? word.pos : undefined);
   return {
     lemma: word.lemma,
+    ...(hebrew ? { lang: 'hbo' as const } : {}),
     prompt: nfc(word.lemma),
     form: occurrence?.form,
     reference: occurrence?.reference,
@@ -150,5 +169,5 @@ export function askAbout(
   if (q.chapter !== undefined && q.verse !== undefined && q.reference) {
     return { book: q.book ?? 'rom', chapter: q.chapter, verse: q.verse, text: `What does ${q.form ?? q.prompt} mean in ${q.reference}, and why does the verse use that form?` };
   }
-  return { ...fallback, text: `What does the Greek word ${q.prompt} mean ("${q.gloss}"), and how is it used in the New Testament?` };
+  return { ...fallback, text: `What does the ${q.lang === 'hbo' ? 'Hebrew' : 'Greek'} word ${q.prompt} mean ("${q.gloss}"), and how is it used in the ${q.lang === 'hbo' ? 'Old' : 'New'} Testament?` };
 }

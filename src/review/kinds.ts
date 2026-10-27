@@ -1,7 +1,7 @@
 // src/review/kinds.ts — what Review asks, as items of a kind. A kind knows how to turn its due reviews into questions,
 // how to count itself in words ('3 words'), and where an answer goes. Grammar ideas (mw-hqd5bz.6) and words are the kinds today, in the
 // order Review counts and asks them; paradigm tables (mw-svw421.6) are the third; the course epic adds the rest as more entries of KINDS, each with a renderer in src/review/ItemCard.tsx.
-import { loadChapter, type Chapter } from '../data/chapter';
+import type { Chapter } from '../data/chapter';
 import type { ParseStep } from '../data/drill';
 import { drillSteps, type DrillQuestion } from '../data/grammar/drillIt';
 import { facetQuestions, PLAN_KIND, parseRowId, type PlanItem } from '../data/grammar/drillPlan';
@@ -12,9 +12,11 @@ import { buildIdeaQuestion, type GrammarQuestion } from '../data/grammar/questio
 import { paradigmById } from '../data/paradigms';
 import { PARADIGM_KIND, drawCellQuestions, spokenForm } from '../data/paradigms/cells';
 import { parseReviewId } from '../data/readingDrill';
-import { getStudyChapter } from '../data/readerChapter';
 import { modeFor, type Grade, type QuestionMode } from '../data/schedule';
-import { buildQuestion, drawWords, mulberry32, seedDistractors, type Question, type Random } from '../data/quiz';
+import { drawWords, mulberry32, type Question, type Random } from '../data/quiz';
+import { loadForms, questionsOf } from '../data/quizWords';
+import { wordsInPlay } from '../data/studyLanguage';
+import { readSourceSegment } from '../ui/sourceSegmentStore';
 import { loadPassage, planFacetQuestions } from '../data/repositories/reviewPassage';
 import { chosenPronunciation, speakWord } from '../speech/greek';
 import { speakQuestion } from '../speech/speakQuestion';
@@ -23,6 +25,7 @@ import { keepStocked } from './moreItems';
 import {
   getDrillPlan,
   answerPlanItem,
+  getLanguages,
   getPickerGrammar,
   listLearningLemmas,
   listLevels,
@@ -158,31 +161,25 @@ export interface ReviewKind {
   record: (item: ReviewItem, right: boolean, row?: boolean | Grade | null) => Promise<void>;
 }
 
-/** The chapter whose forms show beneath a word after the answer: the one the Reader has open (the last New Testament one while an Old Testament chapter is open). A phone that cannot load it shows no form; the lemma is asked either way. */
-const loadForms = (): Promise<Chapter | null> => {
-  const open = getStudyChapter();
-  return loadChapter(open.book, open.chapter).catch(() => null);
-};
-
 export const WORDS: ReviewKind = {
   kind: 'word',
   count: (n) => `${n} ${n === 1 ? 'word' : 'words'}`,
   async draw(due, random) {
     if (due.length === 0) return [];
-    const [words, chapter] = await Promise.all([listWords(), loadForms()]);
+    const greek = loadForms('grc');
+    const words = await listWords();
     const byLemma = new Map(words.filter((w) => w.state !== 'dropped').map((w) => [w.lemma, w]));
-    const pool = seedDistractors();
-    return due.flatMap((r): WordItem[] => {
+    const rows = due.flatMap((r) => {
       const word = byLemma.get(r.id);
-      return word
-        ? [{ kind: 'word', id: word.lemma, question: buildQuestion(word, pool, chapter, random), mode: modeFor(r.step) }]
-        : [];
+      return word ? [{ word, step: r.step }] : [];
     });
+    const questions = await questionsOf(rows.map((r) => r.word), words, random, { grc: greek });
+    return rows.map(({ word, step }, i): WordItem => ({ kind: 'word', id: word.lemma, question: questions[i], mode: modeFor(step) }));
   },
   // a flashcard is graded by its three buttons: every grade but 'Don't know' is a right
   isRight: (item, picked) => item.kind === 'word' && (item.mode === 'flashcard' ? (gradeOfLabel(picked) ?? 'not') !== 'not' : picked === item.question.gloss),
   hear: (item) => {
-    if (item.kind === 'word') speakWord(item.question.prompt, 'greek');
+    if (item.kind === 'word') speakWord(item.question.prompt, item.question.lang === 'hbo' ? 'hebrew' : 'greek');
   },
   record: async (item, right, row = right) => {
     if (item.kind === 'word' && row !== null) await recordAnswer(item.id, row);
@@ -384,12 +381,13 @@ export const kindRank = (kind: string): number => KINDS.findIndex((k) => k.kind 
 /** Words that are not due, to fill a round up, drawn as the Quick test draws (the learning ones favoured). */
 export async function fillWords(exclude: ReadonlySet<string>, size: number, random: Random): Promise<WordItem[]> {
   if (size <= 0) return [];
-  const [words, chapter] = await Promise.all([listWords(), loadForms()]);
-  const pool = seedDistractors();
-  const drawn = drawWords(words.filter((w) => !exclude.has(w.lemma)), random, size);
+  const greek = loadForms('grc');
+  const [words, languages] = await Promise.all([listWords(), getLanguages()]);
+  // the words in play are of the languages he chose; with both chosen the Greek | Hebrew segment of Review's start screen decides
+  const inPlay = wordsInPlay(words, languages, readSourceSegment()).filter((w) => !exclude.has(w.lemma));
+  const drawn = drawWords(inPlay, random, size);
+  const questions = await questionsOf(drawn, words, random, { grc: greek });
   // a word that is on the schedule but not due is asked in the mode its step gives; one not scheduled yet is at step 0
   const steps = new Map((await reviewsOf(drawn.map((w) => ({ kind: 'word', id: w.lemma })))).map((r) => [r.id, r.step]));
-  return drawn.map(
-    (w): WordItem => ({ kind: 'word', id: w.lemma, question: buildQuestion(w, pool, chapter, random), mode: modeFor(steps.get(w.lemma) ?? 0) }),
-  );
+  return drawn.map((w, i): WordItem => ({ kind: 'word', id: w.lemma, question: questions[i], mode: modeFor(steps.get(w.lemma) ?? 0) }));
 }
