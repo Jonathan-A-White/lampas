@@ -3,7 +3,7 @@
 // 'Try again' and 'Skip for now' after one with words to fix or only part of the verse. The place is worked out from his readings (src/data/readingLadder.ts); this
 // file keeps which verse the ladder has on screen and moves the Verse view to the next one. Greek, English and Hebrew each have a list and a place.
 import { useRef, useState } from 'react';
-import { currentLadderPlace, refParts, type LadderLang } from './data/readingLadder';
+import { currentLadderPlace, LADDER_NAMES, refParts, type LadderLang } from './data/readingLadder';
 import { setLadderShowing, setReaderView, skipLadderVerse, type ReaderView, type VerseReading } from './data/repositories';
 import { moveVerse, openVerseAt } from './nav/route';
 import { NextBar } from './ui/NextBar';
@@ -11,8 +11,6 @@ import { useSettled } from './ui/settle';
 import type { LadderHere } from './useLadder';
 import { setVerseAction } from './verse/action';
 
-/** What each list is called on screen. */
-export const LADDER_NAMES: Record<LadderLang, string> = { el: 'Greek', en: 'English', he: 'Hebrew' };
 const NAMES = LADDER_NAMES;
 /** The Reader's view a list is read in: the source text (Greek, or the Hebrew of an Old Testament chapter) or English. */
 const VIEWS: Record<LadderLang, ReaderView> = { el: 'greek', en: 'english', he: 'greek' };

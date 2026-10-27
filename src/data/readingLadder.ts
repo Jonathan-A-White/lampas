@@ -8,6 +8,9 @@ import { getLadderRow, listWellRead } from './repositories/ladder';
 export const LADDER_LANGS = ['el', 'en', 'he'] as const;
 export type LadderLang = (typeof LADDER_LANGS)[number];
 
+/** What each list is called on screen. */
+export const LADDER_NAMES: Record<LadderLang, string> = { el: 'Greek', en: 'English', he: 'Hebrew' };
+
 export const isLadderLang = (lang: string): lang is LadderLang => (LADDER_LANGS as readonly string[]).includes(lang);
 
 /** One verse of a list, as scripts/ladder-shared.ts writes it. */
