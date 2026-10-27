@@ -1,5 +1,11 @@
 # What's new
 
+## 0.5.1
+_2026-10-27_
+- New: when you ask the tutor about a map, it can now also link you to the Logos Atlas, which opens in your own Logos.
+- New: the lessons on the conjunction, the article, the adjective, the pronoun, the preposition, the verb, the infinitive, the participle and the adverb each draw a short verse as a sentence diagram, with the word they teach lit.
+- Fixed: the sentence diagram of Colossians 3:2 hangs "not" (μὴ) on "the things on earth", not on "Set your minds", and the wrong diagram kept on your phone is not shown again: it is worked out afresh once.
+
 ## 0.5.0
 _2026-10-27_
 - New: Lampas now checks that you really know an idea you once missed by asking you a new question on it, and Drill it only proves an idea on questions you have not been asked before.
