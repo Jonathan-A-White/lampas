@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.8
+_2026-10-27_
+- New: You can now learn the Hebrew letters in Lampas, with a card, a sound lesson and a drill for each one, and the other reading marks have cards too.
+
 ## 0.5.7
 _2026-10-27_
 - New: The Verse view now shows an Old Testament verse in Hebrew, right to left, and Listen reads it in a Hebrew voice, when you open it from the Hebrew view.
