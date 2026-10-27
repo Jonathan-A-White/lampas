@@ -43,7 +43,7 @@ function statusFor(txid: string, status: string, more: Record<string, unknown> =
   return { kind: 'request-status', request: txid, bead: 'mw-x.1', status, ts: 1_790_000_000_000 + clock, ...more };
 }
 
-type Seed = { kind: string; text: string; sentAt: number };
+type Seed = { kind: string; text: string; sentAt: number; words?: string };
 
 async function openWith(summaries: string[], pollMs = 20): Promise<void> {
   let sentAt = 1_780_000_000_000;
@@ -69,9 +69,9 @@ async function openWithRows(seeds: Seed[], pollMs = 20): Promise<void> {
   await db.open();
   await Promise.all([db.settings.clear(), db.requests.clear()]);
   txids = new Map();
-  for (const { kind, text, sentAt } of seeds) {
+  for (const { kind, text, sentAt, words } of seeds) {
     txids.set(text, txidOf(text));
-    await keepRequest({ txid: txidOf(text), kind, ...(kind === 'tutor-ask' ? { summary: text } : { text }), app_version: '0.1.80', sentAt });
+    await keepRequest({ txid: txidOf(text), kind, ...(kind === 'tutor-ask' ? { summary: text, ...(words ? { words } : {}) } : { text }), app_version: '0.1.80', sentAt });
   }
   render(<RequestsScreen />);
   await screen.findByRole('heading', { name: 'Your requests', level: 1 });
@@ -107,23 +107,9 @@ function forgetVisibility(): void {
   Reflect.deleteProperty(document, 'visibilityState');
 }
 
-const LONG_REQUEST = 'Let me hear the Greek at half speed, and also the English, and then the next verse after it, and keep going to the end of the chapter, one tap, every time I open the app';
-const SHORT_REQUEST = 'Add a sepia theme';
-
-/** jsdom has no layout: a box that is cut short (line-clamp-3 on a text over 100 characters) reports a scrollHeight taller than its clientHeight,
- * as a phone's would; tests/e2e/your-requests.spec.ts proves the real thing. Returns the undo. */
-function stubClampedLayout(): () => void {
-  const clamped = (el: HTMLElement): boolean => el.classList.contains('line-clamp-3') && (el.textContent ?? '').length > 100;
-  const box = HTMLElement.prototype;
-  Object.defineProperty(box, 'scrollHeight', { configurable: true, get(this: HTMLElement) { return clamped(this) ? 200 : 72; } });
-  Object.defineProperty(box, 'clientHeight', { configurable: true, get() { return 72; } });
-  return () => {
-    Reflect.deleteProperty(box, 'scrollHeight');
-    Reflect.deleteProperty(box, 'clientHeight');
-  };
-}
-let undoLayout: (() => void) | undefined;
-
+const HIS_WORDS = 'Can the Greek be read to me at half speed, one tap, every time I open the app?';
+const SUMMARY = 'He wants the Greek at half speed in one tap.';
+const OLD_ASK = 'Add a sepia evening theme';
 const feature = await loadFeature('features/your-requests.feature');
 
 describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
@@ -131,8 +117,6 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
 
   AfterEachScenario(() => {
     forgetVisibility();
-    undoLayout?.();
-    undoLayout = undefined;
   });
 
   Scenario('A request nobody has answered yet reads Sent', ({ Given, Then }) => {
@@ -140,30 +124,47 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Then('the request {string} reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
   });
 
-  Scenario('A tap on a long request shows the whole of it, and a second tap folds it again', ({ Given, When, Then, And }) => {
-    const longRequest = (): HTMLElement => screen.getByRole('button', { name: LONG_REQUEST });
-    Given('Your requests is open with one long request and one short one', async () => {
-      undoLayout = stubClampedLayout();
-      await openWith([LONG_REQUEST, SHORT_REQUEST]);
+  Scenario('A tap on any request opens it, and a second tap folds it again', ({ Given, When, Then }) => {
+    // a folded row shows his words, not the summary, so the first ask is found by them
+    const rowOf = (summary: string): HTMLElement => row(summary === SUMMARY ? HIS_WORDS : summary);
+    const toggleOf = (summary: string): HTMLElement => rowOf(summary).querySelector('[data-request-toggle]') as HTMLElement;
+    const wordsOf = (summary: string): HTMLElement => rowOf(summary).querySelector('[data-request-words]') as HTMLElement;
+    const detailOf = (summary: string): HTMLElement | null => rowOf(summary).querySelector('[data-request-detail]');
+    Given('Your requests is open with one ask that keeps his words and one kept before the phone kept them', async () => {
+      await openWithRows([
+        { kind: 'tutor-ask', text: SUMMARY, words: HIS_WORDS, sentAt: 1_780_000_060_000 },
+        { kind: 'tutor-ask', text: OLD_ASK, sentAt: 1_780_000_000_000 },
+      ]);
+      await screen.findByText(HIS_WORDS);
     });
-    Then('the short request is plain text, not a button', async () => {
-      expect(await screen.findByText(SHORT_REQUEST)).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: SHORT_REQUEST })).toBeNull();
+    Then('both requests are buttons, folded to three lines', () => {
+      for (const summary of [SUMMARY, OLD_ASK]) {
+        expect(toggleOf(summary)).toHaveAttribute('aria-expanded', 'false');
+        expect(wordsOf(summary).className).toContain('line-clamp-3');
+        expect(detailOf(summary)).toBeNull();
+      }
+      expect(wordsOf(SUMMARY)).toHaveTextContent(HIS_WORDS); // his words are the line, not the summary
     });
-    And('the long request is cut short and can be opened', async () => {
-      await waitFor(() => expect(longRequest()).toHaveAttribute('aria-expanded', 'false'));
-      expect(longRequest().className).toContain('line-clamp-3');
+    When('he taps the ask that keeps his words', () => user.click(toggleOf(SUMMARY)));
+    Then("it shows his words, the tutor's summary and the kind, and is open", () => {
+      expect(toggleOf(SUMMARY)).toHaveAttribute('aria-expanded', 'true');
+      expect(wordsOf(SUMMARY).className).not.toContain('line-clamp-3');
+      expect(wordsOf(SUMMARY)).toHaveTextContent(HIS_WORDS);
+      expect(detailOf(SUMMARY)).toHaveTextContent(SUMMARY);
+      expect(rowOf(SUMMARY)).toHaveTextContent('Asked the tutor');
     });
-    When('he taps the long request', () => user.click(longRequest()));
-    Then('the long request shows all of its text', () => {
-      expect(longRequest()).toHaveAttribute('aria-expanded', 'true');
-      expect(longRequest().className).not.toContain('line-clamp-3');
-      expect(longRequest()).toHaveTextContent(LONG_REQUEST);
+    When('he taps it again', () => user.click(toggleOf(SUMMARY)));
+    Then('it is folded to three lines and shows no summary of its own', () => {
+      expect(toggleOf(SUMMARY)).toHaveAttribute('aria-expanded', 'false');
+      expect(wordsOf(SUMMARY).className).toContain('line-clamp-3');
+      expect(detailOf(SUMMARY)).toBeNull();
     });
-    When('he taps the long request again', () => user.click(longRequest()));
-    Then('the long request is cut short and can be opened', () => {
-      expect(longRequest()).toHaveAttribute('aria-expanded', 'false');
-      expect(longRequest().className).toContain('line-clamp-3');
+    When('he taps the ask kept before', () => user.click(toggleOf(OLD_ASK)));
+    Then("it shows its summary in full and no tutor's summary of its own", () => {
+      expect(toggleOf(OLD_ASK)).toHaveAttribute('aria-expanded', 'true');
+      expect(wordsOf(OLD_ASK)).toHaveTextContent(OLD_ASK);
+      expect(wordsOf(OLD_ASK).className).not.toContain('line-clamp-3');
+      expect(detailOf(OLD_ASK)?.textContent ?? '').not.toContain("The tutor's summary");
     });
   });
 
@@ -403,7 +404,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     if (!found) throw new Error(`no group ${title}`);
     return found as HTMLElement;
   };
-  const texts = (parent: ParentNode): string[] => Array.from(parent.querySelectorAll('[data-request]')).map((r) => r.querySelector('p')?.textContent ?? '');
+  const texts = (parent: ParentNode): string[] => Array.from(parent.querySelectorAll('[data-request]')).map((r) => r.querySelector('[data-request-words]')?.textContent ?? '');
   const many = (count: number, books: number, bookName = (i: number) => `Book number ${i}`): Promise<void> =>
     openWithRows(
       Array.from({ length: count }, (_, i) =>

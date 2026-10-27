@@ -10,14 +10,15 @@ Feature: Your requests
     Given Your requests is open behind a fake Postern with the request "Add a sepia theme"
     Then the request "Add a sepia theme" reads "Sent"
 
-  Scenario: A tap on a long request shows the whole of it, and a second tap folds it again
-    Given Your requests is open with one long request and one short one
-    Then the short request is plain text, not a button
-    And the long request is cut short and can be opened
-    When he taps the long request
-    Then the long request shows all of its text
-    When he taps the long request again
-    Then the long request is cut short and can be opened
+  Scenario: A tap on any request opens it, and a second tap folds it again
+    Given Your requests is open with one ask that keeps his words and one kept before the phone kept them
+    Then both requests are buttons, folded to three lines
+    When he taps the ask that keeps his words
+    Then it shows his words, the tutor's summary and the kind, and is open
+    When he taps it again
+    Then it is folded to three lines and shows no summary of its own
+    When he taps the ask kept before
+    Then it shows its summary in full and no tutor's summary of its own
 
   Scenario: A filed request reads Filed
     Given Your requests is open behind a fake Postern with the request "Add a sepia theme"

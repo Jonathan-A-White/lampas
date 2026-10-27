@@ -158,7 +158,7 @@ The pictures he attached to that turn go with it as the grist's files (`sendMake
 title and Retry. The bus hears `feedback-sent` with `feedback: 'tutor-ask'`.
 Every send, of either kind, also keeps a row in Dexie `requests` (v16: `{txid, kind, summary?, text?, app_version, sentAt, status}`, key `txid` = the
 grist's id, status `'sent'`; `src/data/repositories/requests.ts` `keepRequest`, `listRequests`), written as soon as the grist is out (askGrind's `onSent(txid)`),
-so a status that comes back can be matched to it. A tutor-ask keeps the tutor's `summary`, a grammar approach his `text`; a Retry is a new grist and a new row.
+so a status that comes back can be matched to it. A tutor-ask keeps the tutor's `summary` and his `words`, a grammar approach his `text`; a Retry is a new grist and a new row.
 Settings > Ask for more (mw-hqd5bz.37, `src/settings/AskMoreScreen.tsx`, #/askmore) leads him here for asks that would grow the app (an approach or programme, a study
 resource, a text, a translation): its first button, **Ask the tutor**, opens the talk of the screen 'Ask for more' with "I'd like Lampas to have " in the composer
 (TalkHost's `shared`, not sent), and the instructions' part 270 has the tutor offer `feedback_offer` for such an ask. Under it, **Or fill in a form**: one short
@@ -208,6 +208,8 @@ to this key, signed (when the backend says who) and sealed by the mill, whose pl
 (`applyRequestStatus`); anything else is skipped and the cursor passes it. A row takes a record only when its `ts` is newer than the one it already took
 (`statusAt`), so the newest by `ts` shows whatever order they arrive in. The row keeps `bead`, and `version`/`commit`/`url`, `reason` or `setting` for the status that carries them
 (optional fields, no Dexie version). A failed pull shows 'Could not check for news just now' and leaves the list as it was.
+
+What a request keeps on the phone (mw-5r3p30.794): a tutor-ask keeps the tutor's one-line `summary` and, since that story, his own `words` (the text he sent; optional, no Dexie version; a row kept before has none and shows its summary; `requestStore.all()` still hands the pwa-kit/requests twin check no words, so the same ask can be sent again), the number of `pictures` that went with it, `app_version` and `sentAt`; every other kind keeps its full text in `text` (a book its title and Resource ID, a library request a line that counts the books, an approach, text or translation the name with why after it). Every row is a button: folded it shows three lines of his words (the summary or text for a row without `words`), the kind and the date sent, and the status line; a tap opens it in place: his words and the tutor's summary when they differ, the date the status was last set (`statusAt`), the bead the factory filed and, when landed, the version (the link stays on the status line); a second tap folds it. The search over twenty rows also looks in his words and in the summary.
 
 #### The tutor knows his requests (mw-vy3ghg.6)
 

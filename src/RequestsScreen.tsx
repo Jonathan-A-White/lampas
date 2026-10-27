@@ -3,12 +3,12 @@
 // or Now a setting: <name>. The backend pushes nothing for a grist, so while the screen is up it pulls the mill's request-status records
 // (src/services/requestStatus.ts) when it opens, every requestTimings.pollMs and at once when the phone shows the app again (never while it is
 // hidden: pwa-kit/requests' watchStatuses, whose statusLine and webLink word each row too); the list is a live query, so a record shows as it is applied.
-// The list is drawn here, not by the kit's RequestsList: a long request opens and folds on a tap.
+// The list is drawn here, not by the kit's RequestsList: every request is a button that opens it in full and folds it again (mw-5r3p30.794).
 // At scale (mw-rfjjzd.15): the rows are grouped by kind, each group headed by its plural name and its count ('Books (14)', the header WordsScreen's lesson groups
 // use), the newest first within a group and the group holding the newest request first; a library request is one row (its text counts the books); over 20 rows a
 // search field filters them by the words he types (listFilter's matching, one word at a time, all of them needed), and the headers count what is shown.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { statusLine, watchStatuses, webLink } from 'pwa-kit/requests';
 import { listRequests, recordOf, type RequestRow } from './data/repositories/requests';
 import { backTo, requestsOf, useAddress } from './nav/route';
@@ -53,9 +53,12 @@ export const SEARCH_OVER = 20;
 
 const wordsOf = (row: RequestRow): string => row.summary ?? row.text ?? 'A request';
 
-/** The rows that hold every word typed, in the words, the kind's name or the status line; all of them for an empty search. */
+/** The line a request shows: his own words when the phone kept them (a tutor-ask since mw-5r3p30.794), else the summary or the text kept. */
+const lineOf = (row: RequestRow): string => row.words ?? wordsOf(row);
+
+/** The rows that hold every word typed, in his words, the summary, the kind's name or the status line; all of them for an empty search. */
 function found(rows: readonly RequestRow[], query: string): RequestRow[] {
-  const items = rows.map((row) => ({ id: row.txid, name: wordsOf(row), also: `${KIND_NAMES[row.kind] ?? ''} ${statusLine(recordOf(row))}` }));
+  const items = rows.map((row) => ({ id: row.txid, name: lineOf(row), also: `${row.summary ?? ''} ${KIND_NAMES[row.kind] ?? ''} ${statusLine(recordOf(row))}` }));
   let kept: ListItem[] = items;
   for (const word of query.trim().split(/\s+/)) kept = matching(kept, word);
   const ids = new Set(kept.map((i) => i.id));
@@ -97,61 +100,63 @@ function useStatusPulling(): boolean {
   return failed;
 }
 
-/** A request's words, cut at three lines; when the cut hides some, the words are a button that opens them all and folds them again. Whether the
- * cut hides anything is measured (a phone's width and type size decide), at first and whenever the box changes size while it is folded. */
-function RequestText({ text }: { text: string }) {
-  const box = useRef<HTMLParagraphElement>(null);
-  const [cut, setCut] = useState(false);
+/** A request, folded to three lines of its words; the row is a button, a tap opens it in place (his words, the tutor's summary when it is another thing,
+ * the date the status was set, the bead, the version it shipped in) and a second tap folds it. The landed link sits beside the button, not in it. */
+function Request({ row }: { row: RequestRow }) {
   const [open, setOpen] = useState(false);
-  useLayoutEffect(() => {
-    const el = box.current;
-    if (!el || open) return;
-    const measure = (): void => setCut(el.scrollHeight > el.clientHeight + 1);
-    measure();
-    if (typeof ResizeObserver === 'undefined') return;
-    const watch = new ResizeObserver(measure);
-    watch.observe(el);
-    return () => watch.disconnect();
-  }, [text, open]);
-  const toggle = (): void => setOpen((was) => !was);
-  const onKeyDown = (e: KeyboardEvent): void => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    e.preventDefault();
-    toggle();
-  };
-  const openable = cut || open;
+  const status = statusLine(recordOf(row));
+  const link = row.status === 'landed' ? webLink(row.url) : undefined;
+  const shown = lineOf(row);
+  const summary = row.summary !== undefined && row.summary !== shown ? row.summary : undefined;
+  const detailId = `request-detail-${row.txid}`;
   return (
-    <p
-      ref={box}
-      className={`break-words text-lg ${open ? '' : 'line-clamp-3'} ${openable ? 'cursor-pointer' : ''}`}
-      {...(openable ? { role: 'button', tabIndex: 0, 'aria-expanded': open, onClick: toggle, onKeyDown } : {})}
-    >
-      {text}
-    </p>
+    <li data-request className="border-b border-line py-3">
+      <button
+        type="button"
+        data-request-toggle
+        aria-expanded={open}
+        aria-controls={open ? detailId : undefined}
+        onClick={() => setOpen((was) => !was)}
+        className="block min-h-11 w-full text-left"
+      >
+        <span data-request-words className={`break-words text-lg ${open ? 'block' : 'line-clamp-3'}`}>
+          {shown}
+        </span>
+        <span data-request-sent className="block pt-1 text-sm text-muted">
+          {KIND_NAMES[row.kind] ?? 'Request'} · {sentOn(row.sentAt)}
+          {row.pictures ? ` · ${row.pictures === 1 ? '1 picture' : `${row.pictures} pictures`}` : ''}
+        </span>
+        {link ? null : (
+          <span data-request-status className="block pt-1 text-lg font-semibold">
+            {status}
+          </span>
+        )}
+      </button>
+      {link ? (
+        <p data-request-status className="pt-1 text-lg font-semibold">
+          <a href={link} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-accent underline">
+            {status}
+          </a>
+        </p>
+      ) : null}
+      {open ? (
+        <dl id={detailId} data-request-detail className="pt-2 text-base">
+          {summary !== undefined ? <Detail label="The tutor's summary">{summary}</Detail> : null}
+          {row.statusAt !== undefined ? <Detail label="Status set">{sentOn(row.statusAt)}</Detail> : null}
+          {row.bead ? <Detail label="Bead">{row.bead}</Detail> : null}
+          {row.version ? <Detail label="Shipped in">{row.version}</Detail> : null}
+        </dl>
+      ) : null}
+    </li>
   );
 }
 
-function Request({ row }: { row: RequestRow }) {
-  const record = recordOf(row);
-  const line = statusLine(record);
-  const link = row.status === 'landed' ? webLink(row.url) : undefined;
+function Detail({ label, children }: { label: string; children: string }) {
   return (
-    <li data-request className="border-b border-line py-3">
-      <RequestText text={wordsOf(row)} />
-      <p data-request-sent className="pt-1 text-sm text-muted">
-        {KIND_NAMES[row.kind] ?? 'Request'} · {sentOn(row.sentAt)}
-        {row.pictures ? ` · ${row.pictures === 1 ? '1 picture' : `${row.pictures} pictures`}` : ''}
-      </p>
-      <p data-request-status className="pt-1 text-lg font-semibold">
-        {link ? (
-          <a href={link} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-accent underline">
-            {line}
-          </a>
-        ) : (
-          line
-        )}
-      </p>
-    </li>
+    <div className="pt-1">
+      <dt className="text-sm text-muted">{label}</dt>
+      <dd className="break-words">{children}</dd>
+    </div>
   );
 }
 
