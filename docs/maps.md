@@ -10,6 +10,8 @@ A map is a `MapCard`; where it comes from is a `MapSource`. Reading the maps nee
 | `types.ts` | `MapSource`, `MapCard`, `MapRef` (`{ book, chapter, from?, to? }`, the app's book codes of `src/data/canon.ts`), and the shape of the Bible Mapper file |
 | `period.ts` | `period(start, end?)`: the card's dates as a string, negative years BC. `c. 2070 BC` (one date in BC), `1010 to 970 BC`, `AD 30` (one date in AD), `AD 27 to 30`, `5 BC to AD 30`; empty for a map with no dates |
 | `sources/biblemapper.ts` | Bible Mapper as a `MapSource` |
+| `sources/logosatlas.ts` | the Logos Atlas and the Lexham Geographic Commentary as a link-only `MapSource` (below) |
+| `logosRef.ts` | the atlas's references: `toLogosBook`, `spanHolds`, `mapsCovering`, `BASE_MAP` (below) |
 | `mapsFor.ts` | `mapsForSources(sources, ref)`: every source's cards, the sources in list order, each source's cards in its own order; `rankByPlaces(cards, places)`, the ranking for a verse (below) |
 | `places.ts`, `placeNames.ts` | `placesIn(ref)`, the places named in a verse, a passage or a chapter; the comparison of place names (below) |
 | `sources/index.ts` | the registry `SOURCES` (re-exported by `index.ts`; apart from it so the settings registry loads under plain Node) |
@@ -17,9 +19,10 @@ A map is a `MapCard`; where it comes from is a `MapSource`. Reading the maps nee
 | `index.ts` | `SOURCES`, `enabledSources()` over the settings store and `mapsFor(ref)`, the door the screens take: the cards of the sources that are On, ranked within each source by the places of the verses when `ref.from` is set |
 | `data/places/<book>.json` | STEPBible's TIPNR cut per book (below), each loaded by a dynamic import on first use: its own chunk, not in `pwa-precache.ts` |
 | `data/biblemapper.json` | the compacted index (below), loaded by a dynamic import on first use: its own chunk, not in `pwa-precache.ts` |
+| `data/logosatlas.json` | the Logos Atlas's list of 261 maps (below), loaded by a dynamic import on first use: its own chunk, not in `pwa-precache.ts` |
 
-A `MapSource` is `{ id, name, homepage, credit, describe, default, needs?, mapsFor(ref) → MapCard[], imageUrl(card, 'low' | 'medium' | 'high') → string | null }`. The `credit` is the line shown with
-every map of the source; `imageUrl` answers null where the source has no picture to show at that size. Bible Mapper maps by the chapter, so a source ignores the verses of a `MapRef`; `mapsFor` ranks the cards by them (`mw-zbjgn3r.3`, 'Which maps are for this verse').
+A `MapSource` is `{ id, name, homepage, credit, describe, default, needs?, mapsFor(ref, places?) → MapCard[], imageUrl(card, 'low' | 'medium' | 'high') → string | null }`. The `credit` is the line shown with
+every map of the source; `imageUrl` answers null where the source has no picture to show at that size. `places` is `mapsFor`'s one shared, lazy read of the places the verses of `ref` name (`placesIn`): a source that centres a view on them calls it, and one that does not never loads them. Bible Mapper maps by the chapter, so a source ignores the verses of a `MapRef`; `mapsFor` ranks the cards by them (`mw-zbjgn3r.3`, 'Which maps are for this verse').
 
 ## The screens (mw-zbjgn3r.2)
 
@@ -124,22 +127,38 @@ Open question for the Governor: Lampas is free to read and a licence unlocks the
 One file in `src/maps/sources/` and one line in `SOURCES` (`src/maps/sources/index.ts`); it gets its Settings switch (above) and `mapsFor` then answers the cards of both, the first source's first. Nothing else changes: the sheet reads `MapCard`s and asks the
 source of each (`card.source`) for its `credit` and `imageUrl`. Add the source's credit to `ATTRIBUTION.md` and `src/tutor/credits.ts` in the same story.
 
-The worked example is the Logos Atlas, a link-only source: it holds no pictures and copies nothing.
+The worked example is the Logos Atlas, a link-only source: it holds no pictures and copies nothing. It is one file, `src/maps/sources/logosatlas.ts`, and one line in `SOURCES`.
 
-```ts
-export const logosAtlas: MapSource = {
-  id: 'logosatlas',
-  name: 'Logos Atlas',
-  homepage: 'https://www.logos.com',
-  credit: 'Atlas pages open in your own Logos',
-  describe: 'Atlas pages that open in your own Logos.', // the hint of its Settings row
-  default: 'on',
-  needs: 'logos', // its row shows, and it answers, only while Logos is On
-  // a card per atlas page that covers the chapter, its `article` a Logos link (docs/resources.md)
-  mapsFor: async (ref) => pagesFor(ref).map((page) => ({ id: page.id, source: 'logosatlas', title: page.title, kind: 'link', period: 'Opens in Logos', article: logosLink(page).url, places: [], open: logosLink(page) })),
-  imageUrl: () => null, // link only: the sheet shows the card as a link, with no picture
-};
-```
+## The Logos Atlas (mw-zbjgn3r.7, PROVISIONAL, Governor to confirm; every link UNVERIFIED on a device until he taps it)
+
+`logosAtlas` is `{ id: 'logosatlas', name: 'Logos Atlas', needs: 'logos', default: 'on', imageUrl: () => null }`: it answers only while Logos is On, and draws nothing itself. `mapsFor` reads the places (the shared `places()`), the shelf (`shelfOf()`)
+and the list (`data/logosatlas.json`) and hands them to the pure `logosAtlasCards(ref, places, shelf, index)`, which answers two kinds of row, all `kind: 'link'` and all opening in Logos or the Logos web app, never in `MapView`:
+
+- **Row A, the web atlas** (`https://app.logos.com/tools/atlas/<id>`, behind his Faithlife sign-in). One card per map of the list that covers the reference (`mapsCovering`, at most three), titled `Logos Atlas: <title>` with the period under it. The address carries the view when
+  the verse has places with a position (TIPNR's): `?zoom=<z>&style=terrain&lat=<mean lat, 4 places>&lng=<mean lng>&layout=one`, the centre the mean of the places' positions and the zoom from `viewOf(places)`: the larger of the latitude and longitude spreads is over 3 degrees `6.36` (the zoom
+  the atlas itself used in the one address checked), under 1 degree `8`, else `7` (PROVISIONAL). With no position the address is the bare map. Where no map covers the reference but its places have a position, one card on the base map (`BASE_MAP`, `BIBLICALWORLDPREPATRIARCHALPERIOD-EN`, the one id verified by
+  hand), `Logos Atlas at Gerar, Admah, Lasha` (the first three places with a position in the order the verse names them, then `and N more`; a whole chapter `Logos Atlas at the places of Genesis 10`). It has no period: the base map is the Pre-patriarchal overview and does not claim the verse. No place and no map: no row.
+- **Row B, the Lexham Geographic Commentary at the passage.** The first catalogue entry of the series `Lexham Geographic Commentary` (`CATALOGUE`) whose `covers` holds the book and that is On or Pinned on his shelf: `Lexham Geographic Commentary on the Pentateuch at Genesis 10:19`, `Opens in Logos`, linking
+  `logosres:lxgeocommpent;ref=Bible.Ge10.19` with the fallback `https://ref.ly/logosres/lxgeocommpent?ref=Bible.Ge10.19` (`resourceLink` and `bibleRef`, the form `src/library/inLogos.ts` builds for any commentary; a range opens at its first verse; a whole chapter at `Bible.Ge10`). One row at most (Galatians is in two volumes' `covers`: the first, in the catalogue's order).
+  The catalogue gives the Pentateuch volume the Psalms whole; `CHAPTERS` holds it to Psalms 78 to 105, which is what the volume covers (the Mayor's reading, PROVISIONAL).
+
+**The list.** `src/maps/data/logosatlas.json` is the map list of the signed-in web atlas, read once by the Mayor on 2026-10-26 and copied as it was: `{ source, count, periods, maps: [{ id, title, period, order, passages }] }`, 261 maps in 13 periods, 258 with passages
+(the three first-century overview maps have none). Nothing in it is written by hand: `tests/unit/logos-atlas-data.test.ts` fails on an id that is not `NAME-EN`, on a duplicate, on a missing map the code names and on a count other than 261. A map's `passages` are the verses the atlas tags it to, as Logos writes them.
+
+**Book numbers.** The passages use Logos's bible datatype numbers, not the app's order: Genesis 1 to Malachi 39 (the 39 books in canon order), then Matthew 61, Mark 62, Luke 63, John 64, Acts 65, Romans 66, ... Hebrews 79, ... Revelation 87 (40 to 60, the deuterocanon, are unused). `toLogosBook(code)` is that table (checked: Jonah is 32, Paul's travels sit under 65).
+The passage forms are `bible.B.C.V`, `bible.B.C.V-B.C.V`, `bible.B.C.V-C.V`, `bible.B.C.V-V`, `bible.B.C` (a whole chapter) and `bible.19.N.title` (a Psalm's title, counted as verse 1): `spanHolds(passage, ref)` reads them all.
+
+**Which maps cover a reference.** `mapsCovering(ref, index)`: the maps with a passage that holds any verse of the reference, the map whose narrowest covering passage is narrowest first; a tie goes to the map tagged to fewer passages (a story map has a handful, a period's overview many) and then to the list's `order`.
+That gives Jonah 1:1 `JONAHSTRAVELS-EN` before `BIBLICALWORLDDIVIDEDKINGDOM-EN`, and Genesis 11:4 `THETOWEROFBABEL-EN` before the Pre-patriarchal overview. For a whole chapter the map that covers most of the chapter leads, so a map tagged to one verse in passing does not.
+
+**The periods** (the list's slugs, as the sheet names them under a row; `PERIOD_NAMES`): `prepatriarchalperiodera` Pre-patriarchal period, `patriarchalperiodera` Patriarchal period, `exodusfromegyptera` Exodus from Egypt, `conquestera` Conquest, `judgesera` Judges, `unitedkingdomera` United Kingdom,
+`dividedkingdomera` Divided Kingdom, `assyrianexileera` Assyrian exile, `babyloniancaptivityera` Babylonian captivity, `returnfromexileera` Return from exile, `hellenisticera` Hellenistic period, `lifejesusera` Life of Jesus, `earlychurchera` Early church. Each period has one overview map,
+`Biblical World — <Period>`, that leads it.
+
+**Refreshing the list, or adding a map's id.** An id is never typed in. Sign in at `https://app.logos.com/tools/atlas`, read the map list embedded in the page (id, title, period, order and the passages each map is tagged to), write it in the same shape and update the count in
+`tests/unit/logos-atlas-data.test.ts`; a map opens at `https://app.logos.com/tools/atlas/<id>`, so a new id can be opened in the browser before it is committed. Nothing else changes: the code reads the list.
+
+**Not done, on purpose.** No "Logos maps for this chapter" list (the tags live inside Logos); no atlas-book rows (they index no passage); no Factbook place rows (the place sheet, later); no `logos4:Atlas;ref=` row until a phone has opened one. The tutor is not told these rows (`mapsForTutor` leaves out a card that has `open`).
 
 ## The tutor brings up maps (mw-zbjgn3r.4)
 

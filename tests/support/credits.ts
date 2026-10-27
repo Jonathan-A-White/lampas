@@ -67,6 +67,7 @@ function creditFor(path: string): string | null | undefined {
     return (FAMILY.exec(file)?.[1] ?? file.replace(FONT, '')).replace(/-/g, ' ');
   }
   if (path.startsWith('src/maps/data/places/')) return 'TIPNR'; // STEPBible's TIPNR, a file of the places of each book (scripts/places-build.ts), credited in the TBESG bullet
+  if (path === 'src/maps/data/logosatlas.json') return 'Logos Atlas'; // the ids, titles and passages of the Logos Atlas's maps, so a link can name one (docs/maps.md), credited in the Logos bullet
   if (path.startsWith('src/maps/data/')) return 'Bible Mapper'; // the compacted index of Bible Mapper's maps and the chapters they belong to (scripts/maps-build.ts)
   if (path === 'public/data/lexicon.json') return 'TBESG';
   if (path === 'public/data/lexicon-hbo.json') return 'TBESH'; // the Hebrew lemmas, with TBESH's glosses (scripts/data-build-ot.ts)

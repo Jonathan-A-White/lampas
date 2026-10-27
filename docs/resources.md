@@ -360,6 +360,17 @@ so Windows' `application/vnd.ms-excel` label still lands in the import. **UNVERI
 `accept` is the design's; Android may offer Lampas by extension only, or not for a type it does not know), and what type the shared file arrives with. A phone that installed Lampas before this version may need it removed and
 installed again from Chrome before Lampas is offered for a CSV (the share sheet reads the manifest at install). The tests POST a form to the built worker; they do not prove what Android's share sheet offers.
 
+## The Logos Atlas and the Lexham Geographic Commentary on the Maps sheet (mw-zbjgn3r.7, PROVISIONAL, UNVERIFIED on a device)
+
+The Maps sheet (`docs/maps.md`) has a Logos Atlas block while Logos is On. Its rows are not `StudyResource`s: the maps module builds them (`src/maps/sources/logosatlas.ts`). Two link forms, both **UNVERIFIED on a device** until he taps them:
+
+| Row | Form | Source |
+| --- | --- | --- |
+| the web atlas on a map | `https://app.logos.com/tools/atlas/<id>?zoom=<z>&style=terrain&lat=<lat>&lng=<lng>&layout=one` (the bare `.../atlas/<id>` where the verse has no place with a position), opened in the browser tab, behind his Faithlife sign-in | plan 0138: `curl -I` on `/tools/atlas/BIBLICALWORLDPREPATRIARCHALPERIOD-EN` answers 302 to `auth.faithlife.com/.../autosignin` with the path and query kept, and the form with `zoom=6.36&style=terrain&layout=one` is the one the atlas itself writes; the map ids are the list read from the signed-in atlas (`src/maps/data/logosatlas.json`). That the atlas centres on `lat` and `lng` and takes any map id of the list is NOT verified |
+| the Lexham Geographic Commentary at a passage | `logosres:lxgeocommpent;ref=Bible.Ge10.19`, fallback `https://ref.ly/logosres/lxgeocommpent?ref=Bible.Ge10.19` | the form `src/library/inLogos.ts` builds for any commentary of his shelf (`resourceLink`, `bibleRef`); the volume ids are the catalogue's (`LLS:LXGEOCOMMPENT`, `LXGEOCOMMGOSP`, `LXGEOCOMMACT7`). A range opens at its first verse: `Bible.Lk2.1-7` is verified at ref.ly but is not in the scheme |
+
+No `logos4:Atlas;ref=` form is built: none is known to open the atlas. The Lexham Geographic Commentary rows need the volume On or Pinned on his shelf (Your Logos library > Commentaries).
+
 ## How to add a resource
 
 1. Add `src/resources/<name>.ts` exporting a `StudyResource` (`src/resources/types.ts`): an `id` (kept in the store, so never
