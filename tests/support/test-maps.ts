@@ -4,6 +4,7 @@ import { setMapSources } from '../../src/maps';
 import { period } from '../../src/maps/period';
 import { setPlaceLoader } from '../../src/maps/places';
 import { bibleMapper } from '../../src/maps/sources/biblemapper';
+import { logosAtlas } from '../../src/maps/sources/logosatlas';
 import type { MapCard, MapKind, MapRef, MapSource, Place } from '../../src/maps/types';
 
 const card = (id: string, title: string, kind: MapKind, start?: number, end?: number, places: string[] = []): MapCard => ({
@@ -33,14 +34,18 @@ export const TEST_CARDS: Record<string, MapCard[]> = {
 };
 
 const place = (name: string, verses: [number, number][], ...more: string[]): Place => ({ id: `${name}@test`, name, names: [name, ...more], strongs: [], verses });
+/** a place with its position (TIPNR's, from OpenBible.info), as the Logos Atlas centres its map on it */
+const at = (name: string, lat: number, lng: number, verses: [number, number][]): Place => ({ ...place(name, verses), lat, lng });
 
 /**
- * The places of the tests' own, by book: Genesis 10:10 names Babylon (also Babel and Shinar) and 10:11 Nineveh; Romans 8:3 names Rome. Genesis 10:19 names none, so the scenarios that
- * tap it see the sheet as it was before the places (the maps are not ranked), and the verse 10 and the Romans 8 heading scenarios see the maps that show these places first.
+ * The places of the tests' own, by book: Genesis 10:10 names Babylon (also Babel and Shinar) and 10:11 Nineveh; Romans 8:3 names Rome. Genesis 10:19 names Gerar, Admah and Lasha, none of which a test
+ * map of Bible Mapper shows, so the sheet of that verse is not ranked (the maps are as Bible Mapper gives them) and the verse 10 and the Romans 8 heading scenarios see the maps that show their places
+ * first. Genesis 10:19's and Psalm 147:2's places have a position (the Logos Atlas centres on them): Gerar, Admah and Lasha as TIPNR gives them, Jerusalem and Zion as OpenBible.info does.
  */
 export const TEST_PLACES: Record<string, Place[]> = {
-  gen: [place('Babylon', [[10, 10]], 'Babel', 'Shinar'), place('Nineveh', [[10, 11]])],
+  gen: [place('Babylon', [[10, 10]], 'Babel', 'Shinar'), place('Nineveh', [[10, 11]]), at('Gerar', 31.39129, 34.56057, [[10, 19]]), at('Admah', 31.11942, 35.41253, [[10, 19]]), at('Lasha', 31.71815, 35.58483, [[10, 19]])],
   rom: [place('Rome', [[8, 3]])],
+  psa: [at('Jerusalem', 31.77765, 35.23548, [[147, 2]]), at('Zion', 31.77, 35.23, [[147, 2]])],
 };
 
 export const TEST_IMAGE = 'https://biblemapper.com/blog/images/lo-res/test-map.jpg';
@@ -83,9 +88,9 @@ export const linkSourceNeedingLogos: MapSource = {
   mapsFor: async (ref: MapRef) => (LINK_CARDS[`${ref.book}.${ref.chapter}`] ?? []).map((c) => ({ ...c, id: `${c.id}-logos`, source: 'testlogos' })),
 };
 
-/** Registers the tests' Bible Mapper source (and, with `links`, the link-only one after it) and their places. */
-export const registerTestMaps = ({ links = false }: { links?: boolean } = {}): void => {
-  setMapSources(links ? [testSource, linkSource] : [testSource]);
+/** Registers the tests' Bible Mapper source (and, with `links`, the link-only one after it; with `logos`, the real Logos Atlas) and their places. */
+export const registerTestMaps = ({ links = false, logos = false }: { links?: boolean; logos?: boolean } = {}): void => {
+  setMapSources([testSource, ...(links ? [linkSource] : []), ...(logos ? [logosAtlas] : [])]);
   setPlaceLoader(async (book) => TEST_PLACES[book] ?? []);
 };
 export const forgetTestMaps = (): void => {

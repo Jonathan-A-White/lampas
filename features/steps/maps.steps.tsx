@@ -11,6 +11,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { closeMaps } from '../../src/maps/openMaps';
+import { setResourceOn, setState } from '../../src/data/repositories';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
@@ -28,14 +29,14 @@ const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 /** Opens the app on a chapter (the address names it), with the test maps registered. */
-async function openOn(title: string, immersive = false, atlas?: { on: boolean; bibleMapper?: boolean }): Promise<void> {
+async function openOn(title: string, immersive = false, atlas?: { on: boolean; bibleMapper?: boolean }, logos?: 'on' | 'off'): Promise<void> {
   cleanup();
   closeMaps();
   clearBus();
   forgetTrail();
   localStorage.clear();
   vi.unstubAllGlobals();
-  registerTestMaps({ links: atlas !== undefined });
+  registerTestMaps({ links: atlas !== undefined, logos: logos !== undefined });
   stubChapterFetch();
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
@@ -44,6 +45,10 @@ async function openOn(title: string, immersive = false, atlas?: { on: boolean; b
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   if (immersive) await db.settings.put({ key: 'immersiveReader', value: 'on' });
+  // the real Logos Atlas rides on Logos; with Logos On the shelf holds the Lexham Geographic Commentary on the Pentateuch
+  await db.library.clear();
+  if (logos) await setResourceOn('logos', logos === 'on');
+  if (logos === 'on') await setState('LLS:LXGEOCOMMPENT', 'on');
   if (atlas) await db.settings.bulkPut([{ key: 'maps.testlinks', value: atlas.on ? 'on' : 'off' }, { key: 'maps.biblemapper', value: atlas.bibleMapper === false ? 'off' : 'on' }]);
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });
@@ -69,6 +74,8 @@ describeFeature(feature, ({ Scenario }) => {
   const openedWithoutAtlas = (_: unknown, title: string) => openOn(title, false, { on: false });
   const openedWithAtlasAlone = (_: unknown, title: string) => openOn(title, false, { on: true, bibleMapper: false });
   const openedImmersive = (_: unknown, title: string) => openOn(title, true);
+  const openedWithLogos = (_: unknown, title: string) => openOn(title, false, undefined, 'on');
+  const openedWithoutLogos = (_: unknown, title: string) => openOn(title, false, undefined, 'off');
   const tapVerse = async (_: unknown, n: number) => {
     await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
     await screen.findByRole('region', { name: 'Verse view' });
@@ -183,6 +190,17 @@ describeFeature(feature, ({ Scenario }) => {
     document.addEventListener('click', stop);
     await user.click(row);
     document.removeEventListener('click', stop);
+  };
+
+  const openAbout = async () => {
+    await user.click(screen.getByRole('button', { name: 'Settings', exact: true }));
+    await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    await openSettingsGroup(user, 'account');
+    await user.click(screen.getByRole('button', { name: 'About', exact: true }));
+    await screen.findByRole('heading', { name: 'About', level: 1 });
+  };
+  const aboutNames = (_: unknown, name: string) => {
+    expect(screen.getAllByText(new RegExp(name.replace('.', '\\.'))).length).toBeGreaterThan(0);
   };
 
   Scenario('A verse with maps has the door on the Verse view', ({ Given, When, Then, And }) => {
@@ -353,16 +371,8 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('About lists Bible Mapper', ({ Given, When, Then }) => {
     Given('Lampas is opened on {string}', opened);
-    When('he opens About', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings', exact: true }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
-      await openSettingsGroup(user, 'account');
-      await user.click(screen.getByRole('button', { name: 'About', exact: true }));
-      await screen.findByRole('heading', { name: 'About', level: 1 });
-    });
-    Then('About names {string}', (_, name: string) => {
-      expect(screen.getAllByText(new RegExp(name.replace('.', '\\.'))).length).toBeGreaterThan(0);
-    });
+    When('he opens About', openAbout);
+    Then('About names {string}', aboutNames);
   });
 
   Scenario('Both sources answer: Bible Mapper\'s block, then the link-only source\'s under its name', ({ Given, When, Then, And }) => {
@@ -414,5 +424,51 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', tapDoor);
     Then('the groups read {string}', groupsRead);
     And('the {string} block holds {string} and {string}', blockHolds);
+  });
+
+  Scenario("With Logos On, a verse's sheet ends with the Logos Atlas block: the atlas at the places and the commentary at the verse", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos On', openedWithLogos);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the groups read {string}', groupsRead);
+    And('the {string} block holds {string} and {string}', blockHolds);
+    And('the row {string} opens {string} in the browser', linkOpensInBrowser);
+    And('the row {string} opens {string} and falls back to {string}', linkOpensWithFallback);
+  });
+
+  Scenario('Where Bible Mapper has no map and the commentary does not cover the book, the Logos Atlas block alone is the sheet', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos On', openedWithLogos);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the groups read {string}', groupsRead);
+    And('the {string} block holds {string}', (_, name: string, a: string) => blockHolds(_, name, a));
+    And('the row {string} opens {string} in the browser', linkOpensInBrowser);
+  });
+
+  Scenario("A verse the atlas has a map for lists that map, not the base map", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos On', openedWithLogos);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the groups read {string}', groupsRead);
+    And('the {string} block holds {string}, {string} and {string}', async (_, name: string, a: string, b: string, c: string) => {
+      expect(rowsOf(await blockEl(name))).toEqual([a, b, c]);
+    });
+  });
+
+  Scenario('With Logos Off the Logos Atlas has no block', ({ Given, When, Then }) => {
+    Given('Lampas is opened on {string} with Logos Off', openedWithoutLogos);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the groups read {string}', groupsRead);
+  });
+
+  Scenario('About lists the Logos Atlas', ({ Given, When, Then }) => {
+    Given('Lampas is opened on {string}', opened);
+    When('he opens About', openAbout);
+    Then('About names {string}', aboutNames);
   });
 });

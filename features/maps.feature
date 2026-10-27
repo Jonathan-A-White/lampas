@@ -160,3 +160,45 @@ Feature: Maps on the screen (mw-zbjgn3r.2, docs/maps.md)
     When he taps "Maps · 2"
     Then the groups read "Test Atlas"
     And the "Test Atlas" block holds "Test Atlas at Shinar, Opens in Logos" and "Test Commentary at Genesis 10, Opens on the web"
+
+  # The Logos Atlas (mw-zbjgn3r.7): the real source (src/maps/sources/logosatlas.ts) beside the test Bible Mapper, with the test places (Genesis 10:19 names Gerar, Admah and Lasha, Psalms 147:2 Jerusalem and Zion)
+  # and a shelf that holds the Lexham Geographic Commentary on the Pentateuch On. It rides on Logos and its rows open in Logos.
+
+  Scenario: With Logos On, a verse's sheet ends with the Logos Atlas block: the atlas at the places and the commentary at the verse
+    Given Lampas is opened on "Genesis 10" with Logos On
+    When he taps verse 19
+    Then the Verse view has a button "Maps · 8"
+    When he taps "Maps · 8"
+    Then the groups read "Events, Regions, Videos, Logos Atlas"
+    And the "Logos Atlas" block holds "Logos Atlas at Gerar, Admah, Lasha" and "Lexham Geographic Commentary on the Pentateuch at Genesis 10:19, Opens in Logos"
+    And the row "Logos Atlas at Gerar, Admah, Lasha" opens "https://app.logos.com/tools/atlas/BIBLICALWORLDPREPATRIARCHALPERIOD-EN?zoom=7&style=terrain&lat=31.4096&lng=35.1860&layout=one" in the browser
+    And the row "Lexham Geographic Commentary on the Pentateuch at Genesis 10:19" opens "logosres:lxgeocommpent;ref=Bible.Ge10.19" and falls back to "https://ref.ly/logosres/lxgeocommpent?ref=Bible.Ge10.19"
+
+  Scenario: Where Bible Mapper has no map and the commentary does not cover the book, the Logos Atlas block alone is the sheet
+    Given Lampas is opened on "Psalms 147" with Logos On
+    When he taps verse 2
+    Then the Verse view has a button "Maps · 1"
+    When he taps "Maps · 1"
+    Then the groups read "Logos Atlas"
+    And the "Logos Atlas" block holds "Logos Atlas at Jerusalem, Zion"
+    And the row "Logos Atlas at Jerusalem, Zion" opens "https://app.logos.com/tools/atlas/BIBLICALWORLDPREPATRIARCHALPERIOD-EN?zoom=8&style=terrain&lat=31.7738&lng=35.2327&layout=one" in the browser
+
+  Scenario: A verse the atlas has a map for lists that map, not the base map
+    Given Lampas is opened on "Genesis 11" with Logos On
+    When he taps verse 4
+    Then the Verse view has a button "Maps · 3"
+    When he taps "Maps · 3"
+    Then the groups read "Logos Atlas"
+    And the "Logos Atlas" block holds "Logos Atlas: The Tower of Babel, Pre-patriarchal period", "Logos Atlas: Biblical World — Pre-patriarchal period, Pre-patriarchal period" and "Lexham Geographic Commentary on the Pentateuch at Genesis 11:4, Opens in Logos"
+
+  Scenario: With Logos Off the Logos Atlas has no block
+    Given Lampas is opened on "Genesis 10" with Logos Off
+    When he taps verse 19
+    Then the Verse view has a button "Maps · 6"
+    When he taps "Maps · 6"
+    Then the groups read "Events, Regions, Videos"
+
+  Scenario: About lists the Logos Atlas
+    Given Lampas is opened on "Genesis 10"
+    When he opens About
+    Then About names "Logos Atlas"

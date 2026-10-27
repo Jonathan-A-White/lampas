@@ -111,3 +111,55 @@ test('the foot of a chapter has the door, the New Testament too', async ({ page 
   await expect(nt).toBeVisible();
   await expect(page.locator('[data-verse] button', { hasText: /^Maps/ })).toHaveCount(0);
 });
+
+/** Puts a row in one of the app's own stores through raw IndexedDB, as the app wrote it. */
+async function putRow(page: Page, store: 'settings' | 'library', row: object): Promise<void> {
+  await page.evaluate(
+    ([name, value]) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const idb = open.result;
+          const tx = idb.transaction(name as string, 'readwrite');
+          tx.objectStore(name as string).put(value);
+          tx.oncomplete = () => {
+            idb.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    [store, row] as const,
+  );
+}
+
+test('with Logos on, the sheet of Genesis 10:19 ends with the Logos Atlas block: two rows that open in Logos (mw-zbjgn3r.7)', async ({ page }) => {
+  await openUnlocked(page);
+  const asked = await stubPictures(page);
+  await page.goto('/#/?b=gen&c=10');
+  await expect(page.locator('[data-verse="19"]')).toBeVisible();
+  await putRow(page, 'settings', { key: 'resource.logos', value: 'on' });
+  // the shelf has the Lexham Geographic Commentary on the Pentateuch On
+  await putRow(page, 'library', { id: 'LLS:LXGEOCOMMPENT', kind: 'commentary', state: 'on', since: Date.now() });
+  await page.reload();
+
+  const view = await openVerseView(page, 19);
+  await view.getByRole('button', { name: 'Maps · 8', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Maps for Genesis 10:19' });
+  await expect(sheet).toBeVisible();
+  const block = sheet.getByRole('group', { name: 'Logos Atlas' });
+  await expect(block).toBeVisible();
+  const rows = block.locator('a[data-map-row]');
+  await expect(rows).toHaveCount(2);
+  for (let i = 0; i < 2; i++) expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  // the atlas at the verse's places (Canaan, Sidon, Gerar and six more, as TIPNR lists them), on the base map; the commentary at the verse
+  await expect(rows.nth(0).locator('[data-map-title]')).toHaveText(/^Logos Atlas at Canaan, Sidon, Gerar and \d+ more$/);
+  await expect(rows.nth(0)).toHaveAttribute('href', /^https:\/\/app\.logos\.com\/tools\/atlas\/BIBLICALWORLDPREPATRIARCHALPERIOD-EN\?zoom=[\d.]+&style=terrain&lat=3\d\.\d{4}&lng=3\d\.\d{4}&layout=one$/);
+  await expect(rows.nth(1).locator('[data-map-title]')).toHaveText('Lexham Geographic Commentary on the Pentateuch at Genesis 10:19');
+  await expect(rows.nth(1)).toHaveAttribute('href', 'logosres:lxgeocommpent;ref=Bible.Ge10.19');
+  await expect(rows.nth(1)).toHaveAttribute('data-fallback', 'https://ref.ly/logosres/lxgeocommpent?ref=Bible.Ge10.19');
+  await block.scrollIntoViewIfNeeded();
+  await shot(page, 'maps-sheet-logos');
+  expect(asked, 'nothing is fetched for a link').toEqual([]);
+});
