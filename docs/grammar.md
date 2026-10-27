@@ -638,7 +638,7 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | 44 | marks | `he-ketiv-qere` | Ketiv and qere | – | `he-cantillation` |
 | 45 | nouns | `he-gender` | Gender: masculine and feminine | Noun, Adjective, masculine, feminine, common | `he-syllable` |
 | 46 | nouns | `he-number` | Number: singular, plural and dual | Number, ordinal, singular, plural, dual | `he-gender` |
-| 47 | nouns | `he-article` | The article: ‘the’ | Article, determinate, proper | `he-gender`, `he-dagesh` |
+| 47 | nouns | `he-article` | The Hebrew article | Article, determinate, proper | `he-gender`, `he-dagesh` |
 | 48 | nouns | `he-construct` | The construct state | construct | `he-number` |
 | 49 | nouns | `he-suffix-pronominal` | Pronominal suffixes | Pr | `he-construct` |
 | 50 | pronouns | `he-pronoun-personal` | The personal pronouns | Pronoun, first person, second person, third person | `he-number` |
