@@ -93,22 +93,24 @@ describe('the Greek screens\' data is what it was', () => {
 describe('the Hebrew ladder on the screens', () => {
   const hebrew = ladderFor('hbo');
 
-  it('holds the 44 ideas of its first three tiers, the alphabet first, found by ideaOfAny', () => {
-    expect(hebrew.ideas).toHaveLength(44);
+  it('holds the 70 ideas of its nine tiers, the alphabet first, found by ideaOfAny', () => {
+    expect(hebrew.ideas).toHaveLength(70);
     expect(hebrew.ideas[0].id).toBe('he-alphabet');
     expect(ideaOfAny('he-letter-alef').title).toBe('Alef');
     expect(ideaOfAny('he-alphabet').title).toBe('The Hebrew alphabet');
   });
 
-  it('places at its foundation: every idea is of the letters, sounds and marks, nothing to ask, and the Greek ladder\'s ideas nowhere in it', () => {
-    const state = startPlacement(null, new Map(), hebrew.ideas.map((i) => i.id), 0, new Map(), 'hbo');
-    expect(state.lang).toBe('hbo');
-    expect(state.ideas).toEqual(hebrew.ideas.map((i) => i.id));
-    expect(state.done).toBe('finished');
+  it('places at its foundation: the screen finishes the walk at once (no Hebrew question exists yet), every idea untested, and the Greek ladder\'s ideas nowhere in it', () => {
+    const walk = startPlacement(null, new Map(), hebrew.ideas.map((i) => i.id), 0, new Map(), 'hbo');
+    expect(walk.lang).toBe('hbo');
+    expect(walk.ideas).toEqual(hebrew.ideas.map((i) => i.id));
+    // the walk would begin at the first idea past the foundation, he-gender: src/HebrewPlacement.tsx ends it there, as the Hebrew ladder has no question to ask (story l)
+    expect(walk.ideas[walk.at]).toBe('he-gender');
+    const state = { ...walk, done: 'finished' as const };
     const summary = summarize(state);
-    expect(summary.tiers.map((t) => t.tier)).toEqual(['letters', 'sounds', 'marks']);
-    expect(summary.total).toBe(44);
-    expect(summary.untested).toBe(44);
+    expect(summary.tiers.map((t) => t.tier)).toEqual(['letters', 'sounds', 'marks', 'nouns', 'pronouns', 'prepositions', 'verbs', 'joiners', 'sentences']);
+    expect(summary.total).toBe(70);
+    expect(summary.untested).toBe(70);
     expect(answer(state, true)).toBe(state);
   });
 
@@ -123,7 +125,7 @@ describe('the Hebrew ladder on the screens', () => {
 
   it('is told to the tutor in its own titles when the learner\'s grammar is of Hebrew', () => {
     const ideas = orderedIdeas(undefined, new Map([['he-alphabet', 'solid' as const]]), 'hbo');
-    expect(ideas).toHaveLength(44);
+    expect(ideas).toHaveLength(70);
     expect(ideas[0]).toEqual({ id: 'he-alphabet', title: 'The Hebrew alphabet', level: 'solid' });
     expect(ideas.slice(1).every((i) => i.level === 'notYet')).toBe(true);
     const field = learnerGrammarOf({ goal: null, words: { solid: 0, frontier: 0, notYet: 0 }, ideas, placed: false, move: 'none' as never, pickerLevel: 'any' as never, approach: { name: 'x', credit: null, nextLesson: null } });

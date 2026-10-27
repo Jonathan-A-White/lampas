@@ -86,7 +86,7 @@ export function currentIdea(state: PlacementState): string | null {
 /**
  * Sets up a placement. `needs` is what the goal needs (null: the whole ladder), `known` the levels he already has, `order` the approach's
  * sequence. It starts at the first idea past the letters, marks and sounds that is not solid yet, and skips nothing below it. `lang` is the ladder walked: the Hebrew
- * ladder has only its foundation (the alphabet), so its walk is over at once and asks nothing (mw-gdcyf98.10).
+ * ladder has questions for none of its ideas yet, so src/HebrewPlacement.tsx ends its walk at the foundation and asks nothing (mw-gdcyf98.10, .12).
  */
 export function startPlacement(
   needs: Pick<PassageNeeds, 'ideas'> | null,
