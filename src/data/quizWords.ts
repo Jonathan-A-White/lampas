@@ -12,10 +12,18 @@ export const loadForms = (lang: SourceLanguage): Promise<Chapter | null> => {
   return loadChapter(open.book, open.chapter).catch(() => null);
 };
 
-/** The question of each of `drawn`, in order; `all` is every word he has, which Hebrew questions take their wrong glosses from too. */
-export async function questionsOf(drawn: readonly Word[], all: readonly Word[], random: Random): Promise<Question[]> {
+/**
+ * The question of each of `drawn`, in order; `all` is every word he has, which Hebrew questions take their wrong glosses from too. A caller that has already asked for a language's chapter
+ * (so it loads beside the words, not after them) hands the promise in `asked`; any other language drawn is loaded here.
+ */
+export async function questionsOf(
+  drawn: readonly Word[],
+  all: readonly Word[],
+  random: Random,
+  asked: Partial<Record<SourceLanguage, Promise<Chapter | null>>> = {},
+): Promise<Question[]> {
   const languages = [...new Set(drawn.map((w): SourceLanguage => w.lang ?? 'grc'))];
-  const chapters = new Map(await Promise.all(languages.map(async (lang) => [lang, await loadForms(lang)] as const)));
+  const chapters = new Map(await Promise.all(languages.map(async (lang) => [lang, await (asked[lang] ?? loadForms(lang))] as const)));
   const pools = new Map(languages.map((lang) => [lang, distractorsFor(lang, all)]));
   return drawn.map((w) => buildQuestion(w, pools.get(w.lang ?? 'grc') ?? [], chapters.get(w.lang ?? 'grc') ?? null, random));
 }

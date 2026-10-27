@@ -14,7 +14,7 @@ import { PARADIGM_KIND, drawCellQuestions, spokenForm } from '../data/paradigms/
 import { parseReviewId } from '../data/readingDrill';
 import { modeFor, type Grade, type QuestionMode } from '../data/schedule';
 import { drawWords, mulberry32, type Question, type Random } from '../data/quiz';
-import { questionsOf } from '../data/quizWords';
+import { loadForms, questionsOf } from '../data/quizWords';
 import { wordsInPlay } from '../data/studyLanguage';
 import { readSourceSegment } from '../ui/sourceSegmentStore';
 import { loadPassage, planFacetQuestions } from '../data/repositories/reviewPassage';
@@ -166,13 +166,14 @@ export const WORDS: ReviewKind = {
   count: (n) => `${n} ${n === 1 ? 'word' : 'words'}`,
   async draw(due, random) {
     if (due.length === 0) return [];
+    const greek = loadForms('grc');
     const words = await listWords();
     const byLemma = new Map(words.filter((w) => w.state !== 'dropped').map((w) => [w.lemma, w]));
     const rows = due.flatMap((r) => {
       const word = byLemma.get(r.id);
       return word ? [{ word, step: r.step }] : [];
     });
-    const questions = await questionsOf(rows.map((r) => r.word), words, random);
+    const questions = await questionsOf(rows.map((r) => r.word), words, random, { grc: greek });
     return rows.map(({ word, step }, i): WordItem => ({ kind: 'word', id: word.lemma, question: questions[i], mode: modeFor(step) }));
   },
   // a flashcard is graded by its three buttons: every grade but 'Don't know' is a right
@@ -380,11 +381,12 @@ export const kindRank = (kind: string): number => KINDS.findIndex((k) => k.kind 
 /** Words that are not due, to fill a round up, drawn as the Quick test draws (the learning ones favoured). */
 export async function fillWords(exclude: ReadonlySet<string>, size: number, random: Random): Promise<WordItem[]> {
   if (size <= 0) return [];
+  const greek = loadForms('grc');
   const [words, languages] = await Promise.all([listWords(), getLanguages()]);
   // the words in play are of the languages he chose; with both chosen the Greek | Hebrew segment of Review's start screen decides
   const inPlay = wordsInPlay(words, languages, readSourceSegment()).filter((w) => !exclude.has(w.lemma));
   const drawn = drawWords(inPlay, random, size);
-  const questions = await questionsOf(drawn, words, random);
+  const questions = await questionsOf(drawn, words, random, { grc: greek });
   // a word that is on the schedule but not due is asked in the mode its step gives; one not scheduled yet is at step 0
   const steps = new Map((await reviewsOf(drawn.map((w) => ({ kind: 'word', id: w.lemma })))).map((r) => [r.id, r.step]));
   return drawn.map((w, i): WordItem => ({ kind: 'word', id: w.lemma, question: questions[i], mode: modeFor(steps.get(w.lemma) ?? 0) }));

@@ -28,8 +28,10 @@ type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; qu
 
 /** A round: words of the languages he chose, each asked among the glosses of words of its own language and showing its form from the chapter of its own (src/data/quizWords.ts). */
 async function drawRound(random: Random): Promise<Question[]> {
+  // the Greek chapter loads beside the words, as it always did
+  const greek = loadForms('grc');
   const [words, languages] = await Promise.all([listWords(), getLanguages()]);
-  return questionsOf(drawWords(wordsInPlay(words, languages), random), words, random);
+  return questionsOf(drawWords(wordsInPlay(words, languages), random), words, random, { grc: greek });
 }
 
 /**
