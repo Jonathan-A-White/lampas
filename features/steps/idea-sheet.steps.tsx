@@ -3,6 +3,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
@@ -29,6 +30,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { validate, type Schema } from '../../tests/support/schema-validate';
 import { asSpoken, isOneLetter } from '../../tests/support/lone-word';
 
 let unregisterTestish: (() => void) | undefined;
@@ -339,6 +341,57 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('the grist carries the focus term {string} and kind grammar-term', async (_, term: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
       expect(fake.received[0].input.focus).toEqual({ term, kind: 'grammar-term' });
+    });
+  });
+
+  Scenario('Ask the tutor on a lesson opened from the Goal screen talks about that lesson', ({ Given, When, Then, And }) => {
+    const lessonSheet = () => screen.getByRole('dialog', { name: 'Ask the tutor: Lesson' });
+    const screenOf = () => fake.received[0].input.screen as { name: string; facts: { label: string; value: string }[] };
+    const factOf = (label: string): string => {
+      const fact = screenOf().facts.find((f) => f.label === label);
+      if (!fact) throw new Error(`the screen facts have no "${label}": ${JSON.stringify(screenOf().facts)}`);
+      return fact.value;
+    };
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', (_, id: string) => opensIdeaFromGoal(id));
+    And('he taps Ask the tutor on the idea sheet', async () => {
+      await user.click(within(ideaSheet()).getByRole('button', { name: 'Ask the tutor' }));
+    });
+    Then('the Talk sheet is titled {string} and the idea sheet is still under it', async (_, title: string) => {
+      expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();
+      expect(ideaSheet()).toBeInTheDocument();
+    });
+    When('he sends {string} in the Talk sheet', async (_, question: string) => {
+      await user.type(await within(lessonSheet()).findByRole('textbox', { name: 'Your message' }), question);
+      await user.click(within(lessonSheet()).getByRole('button', { name: 'Send' }));
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+    });
+    Then('the grist is for the screen {string} and has no verse text', (_, name: string) => {
+      expect(screenOf().name).toBe(name);
+      expect(fake.received[0].input.reference).toBe(name);
+      expect(fake.received[0].input.greek).toBeUndefined();
+      expect(fake.received[0].input.english).toBeUndefined();
+    });
+    And("the grist's lesson facts name the lesson {string} titled {string}, its worked word {string} in {string} and its three steps", (_, id: string, title: string, word: string, ref: string) => {
+      expect(factOf('Lesson id')).toBe(id);
+      expect(factOf('Lesson')).toBe(title);
+      expect(factOf('Worked example')).toContain(word);
+      expect(factOf('Worked example')).toContain(ref);
+      expect(factOf('Steps shown')).toMatch(/^1\. .* 2\. .* 3\. /);
+    });
+    And('the grist carries the question {string}', (_, question: string) => {
+      expect(fake.received[0].input.question).toBe(question);
+    });
+    And('the grist carries only fields the input schema allows', () => {
+      const schema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
+      expect(validate(JSON.parse(JSON.stringify(fake.received[0].input)), schema)).toEqual([]);
+    });
+    When('he closes the Talk sheet', async () => {
+      await user.click(within(lessonSheet()).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Ask the tutor: Lesson' })).toBeNull());
+    });
+    Then('the idea sheet {string} is open again', (_, title: string) => {
+      expect(within(ideaSheet()).getByRole('heading', { name: title })).toBeInTheDocument();
     });
   });
 

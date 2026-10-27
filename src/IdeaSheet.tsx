@@ -31,6 +31,7 @@ import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, get
 import { useAiAllowed } from './gate/licenceContext';
 import { AskForBook } from './library/AskForBook';
 import { ReedKellogg } from './diagram/ReedKellogg';
+import { useLessonTalk } from './AskTutor';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
@@ -58,6 +59,7 @@ import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { GREEK_LANG } from './script/greekLang';
 import { useGreekInterest } from './settings/useGreekInterest';
+import { lessonKept, lessonScreen, lessonSuggestions } from './tutor/lessonTalk';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 
 // Each button is as wide as its label and shares the rest, so neither wraps at 390 px.
@@ -515,7 +517,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   const sounds = soundLesson(idea, scheme);
   const passage = loaded && loaded !== 'failed' ? loaded.passage : undefined;
   // what the speaker reads: the lesson as it is drawn, part by part (the tiles, the table and the examples are for the eye and the tap)
-  const { worked } = workedFor(card, passage ? passageForms(passage) : new Set());
+  const { worked, inPassage } = workedFor(card, passage ? passageForms(passage) : new Set());
   const lesson = proseOf([
     idea.title,
     'What it is', card.whatItIs,
@@ -523,6 +525,12 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     sounds ? 'How it sounds' : null, sounds,
     'Worked example', worked.word, worked.gloss, ...stepsOf(worked, scheme),
   ]);
+  // Ask the tutor, when no word asks it (onAsk): the talk is about this lesson, its card and worked example (mw-5r3p30.818)
+  const lessonTalk = useLessonTalk(
+    lessonScreen({ idea, card, worked, inPassage, steps: stepsOf(worked, scheme), respelling: hebrew ? undefined : scheme.respell(worked.say ?? worked.word), level: level?.level }),
+    lessonKept(idea.id),
+    lessonSuggestions(idea.title),
+  );
   // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
   const levels = useLiveQuery(listLevels, []);
   const ranking = useRanking();
@@ -792,8 +800,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
                 Try it on a verse
               </button>
             ) : null}
-            {onAsk ? (
-              <button type="button" onClick={() => onAsk(idea.terms[0] ?? idea.title)} className={`${BUTTON} border-line text-accent active:bg-line`}>
+            {onAsk || lessonTalk.ask ? (
+              <button type="button" onClick={onAsk ? () => onAsk(idea.terms[0] ?? idea.title) : lessonTalk.ask} className={`${BUTTON} border-line text-accent active:bg-line`}>
                 Ask the tutor
               </button>
             ) : null}
@@ -869,6 +877,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           onClose={closeDrill}
         />
       ) : null}
+      {lessonTalk.sheet}
       {trying && passage ? <TryItSheet idea={idea} passage={passage} onClose={() => setTrying(false)} /> : null}
       {letterDrill ? <LetterDrillScreen lang={lang} onClose={() => setLetterDrill(false)} /> : null}
       {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onDismiss={onDismiss} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
