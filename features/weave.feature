@@ -123,7 +123,7 @@ Feature: The diglot weave
     When he opens Settings
     Then there is no Order row
     When he turns the Weave on in Settings
-    Then the Order row comes after the Grammar row and offers "English" and "Greek"
+    Then the Order row comes after the Grammar row and offers "English" and "Original"
     And the Order row is set to "English"
     And the Order setting allows the values "english" and "greek"
 

@@ -106,10 +106,11 @@ async function setGrammar(chip: string): Promise<void> {
 }
 
 /** The Weave's Order (mw-5r3p30.250) is in Settings too: set it there and come back to the reader. */
-async function setOrder(chip: 'English' | 'Greek'): Promise<void> {
+async function setOrder(order: 'English' | 'Greek'): Promise<void> {
+  const chip = order === 'Greek' ? 'Original' : order;
   await openSettings();
   await user.click(within(await screen.findByRole('group', { name: 'Order' })).getByRole('button', { name: chip }));
-  await waitFor(async () => expect((await db.settings.get('weaveOrder'))?.value).toBe(chip.toLowerCase()));
+  await waitFor(async () => expect((await db.settings.get('weaveOrder'))?.value).toBe(order.toLowerCase()));
   await leaveSettings(user);
   await waitForReader();
 }

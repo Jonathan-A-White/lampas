@@ -286,7 +286,7 @@ const quizGoalEntry: SettingEntry = {
   key: 'quizGoal',
   label: 'Quiz goal',
   hint: 'Why you want Quiz me; the tutor quizzes to match. Empty: it asks.',
-  help: 'What you want from a quiz, in your own words, such as understanding the passage, learning Greek, learning English or just reading the Bible. A kept goal is sent with every quiz and the tutor quizzes to match; with none kept, Quiz me opens by asking you.',
+  help: 'What you want from a quiz, in your own words, such as understanding the passage, learning Greek or Hebrew, learning English or just reading the Bible. A kept goal is sent with every quiz and the tutor quizzes to match; with none kept, Quiz me opens by asking you.',
   allowed: { kind: 'text', valid: (value) => value.trim().length <= QUIZ_GOAL_MAX, example: 'understanding the passage', note: `a short phrase in his words, at most ${QUIZ_GOAL_MAX} characters; "" for none` },
   read: getQuizGoal,
   write: async (value) => {
@@ -509,7 +509,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     {
       section: 'weave',
       dependsOn: { key: 'weave', shown: (value) => value !== 'off' },
-      help: 'Of the words that stand in Greek, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off.',
+      help: 'Of the words that stand in the Greek or Hebrew, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off.',
     },
   ),
   fromDefinition(weaveOrderSetting),
