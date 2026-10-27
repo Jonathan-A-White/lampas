@@ -292,3 +292,17 @@ Feature: The idea sheet
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     When he opens the idea sheet of "alphabet" from the Goal screen
     Then the idea sheet shows the button "Drill it" and no button "Try it on a verse"
+
+  # mw-5r3p30.791: a card that teaches a part of speech or a case draws a short verse as a sentence diagram (src/diagram/ReedKellogg.tsx), the words it teaches lit.
+  Scenario: The genitive sheet draws a verse as a sentence diagram with the genitive lit, and a tap opens the word
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "case-genitive" from the Goal screen
+    Then the idea sheet has the parts "How to spot it", "In a diagram" and "Worked example", in that order
+    And the diagram of "John 1:4" draws its Greek words with "ἀνθρώπων" lit and no other
+    When he taps "ἀνθρώπων" in the diagram
+    Then the word sheet is of "ἀνθρώπων" and its Parsing names a genitive
+
+  Scenario: A card with no diagram has no part "In a diagram"
+    Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
+    When he opens the idea sheet of "number-plural" from the Goal screen
+    Then the idea sheet has the part "How to spot it" and no part "In a diagram" and no diagram

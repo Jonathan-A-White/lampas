@@ -71,3 +71,15 @@ export type DiagramWord = ({ text: string; chunk: number } | { text: string; wor
 
 /** The words of a request, in order: TokenRef {i} is a position in this list. */
 export type DiagramWords = DiagramWord[];
+
+/** A diagram written by hand (never asked of the tutor) of a real verse or part of one: a step of the diagram lesson (lesson.ts) and a grammar card's
+ * 'In a diagram' (src/data/grammar/teach/types.ts) are each one. */
+export interface WrittenDiagram {
+  /** the verse (or the part of it) the diagram is of, as the screen names it: 'John 11:35' */
+  reference: string;
+  /** where the words are in the data: the book's code, the chapter, the verse */
+  verse: { book: string; chapter: number; verse: number };
+  mode: DiagramMode;
+  words: DiagramWords;
+  diagram: Diagram;
+}

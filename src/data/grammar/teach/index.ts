@@ -14,7 +14,7 @@ import { SOUNDS } from './sounds';
 import type { Teach, WorkedExample } from './types';
 import { VERBS } from './verbs';
 
-export type { Teach, TeachTable, WorkedExample } from './types';
+export type { CardDiagram, Teach, TeachTable, WorkedExample } from './types';
 export { bare, cellOptions, tableHas } from './table';
 
 /** Every Greek card by idea id (ladders.ts reads it through ladderFor('grc').teach). */
@@ -29,10 +29,11 @@ export function teachOf(id: string): Teach {
   return teach;
 }
 
-/** Every line of text a card shows: what it is, how to spot it, the table's words, and each worked example's meaning and steps. */
+/** Every line of text a card shows: what it is, how to spot it, the table's words, the diagram's verse and words, and each worked example's meaning and steps. */
 export function cardTexts(teach: Teach): string[] {
   const table = teach.table ? [teach.table.caption, ...teach.table.columns, ...teach.table.rows.flatMap((r) => [r.label, ...r.cells]), teach.table.note ?? ''] : [];
-  return [teach.whatItIs, teach.howToSpot, ...table, ...teach.worked.flatMap((w) => [w.gloss, ...stepsOf(w, null)])].filter((t) => t !== '');
+  const diagram = teach.diagram ? [teach.diagram.reference, ...teach.diagram.words.map((w) => w.text)] : [];
+  return [teach.whatItIs, teach.howToSpot, ...table, ...diagram, ...teach.worked.flatMap((w) => [w.gloss, ...stepsOf(w, null)])].filter((t) => t !== '');
 }
 
 /** The worked example to show: the first whose word is in the passage he reads (`words`, its forms), else the card's first. */

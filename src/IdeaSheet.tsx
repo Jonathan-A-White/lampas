@@ -1,7 +1,7 @@
 // src/IdeaSheet.tsx — the sheet that teaches one grammar idea (mw-hqd5bz.7), opened by Learn this idea on a Grammar sheet. It teaches a total
 // beginner from the card alone (mw-5r3p30.234, data in src/data/grammar/teach/): What it is, in plain English; How to spot it, in Greek, with a
-// table where the idea is a set of endings or forms; How it sounds, for an idea of a sound, in the chosen pronunciation; a Worked example, one
-// New Testament word taken apart step by step, from the verse he reads when it has one, with its respelling. Above all of it, under the title,
+// table where the idea is a set of endings or forms; How it sounds, for an idea of a sound, in the chosen pronunciation; In a diagram, for a part
+// of speech or a case, a short verse drawn as a sentence diagram with the words the card teaches lit (mw-5r3p30.791); a Worked example, one New Testament word taken apart step by step, from the verse he reads when it has one, with its respelling. Above all of it, under the title,
 // up to three examples from the goal passage (or, with no goal, the open chapter) that the card can explain, each with its verse, its one sense
 // here and its parsing in the card's own terms (an idea of spelling, such as the alphabet, a pair of vowels or a breathing, shows more words with
 // the letters it is about marked), a speaker on each, and a tap opens the word: the first three are in view when the sheet opens, held upright or
@@ -22,13 +22,14 @@ import { loadFrequency } from './data/frequency';
 import { exampleGloss, exampleNote, hasFormOf, ideaExamples, ideaExamplesFor, ideaPassage, isSentenceIdea, isSoundIdea, isSpellingIdea, passageForms, type ExampleRanking, type IdeaExample, type IdeaExamples, type IdeaPassage, type PairCase } from './data/grammar/ideaSheet';
 import { IDEA_KIND, ideaOf, type GrammarIdea } from './data/grammar/ladder';
 import { soundLesson } from './data/grammar/lessons';
-import { stepsOf, teachOf, workedFor, type Teach, type TeachTable } from './data/grammar/teach';
+import { stepsOf, teachOf, workedFor, type CardDiagram, type Teach, type TeachTable } from './data/grammar/teach';
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getStudyChapter } from './data/readerChapter';
 import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, shelfOf, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { AskForBook } from './library/AskForBook';
+import { ReedKellogg } from './diagram/ReedKellogg';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
@@ -240,6 +241,31 @@ function Worked({ teach, passage, scheme }: { teach: Teach; passage: IdeaPassage
           <li key={step}>{greekMarked(step)}</li>
         ))}
       </ol>
+    </section>
+  );
+}
+
+/** The card's verse as a sentence diagram, the words it teaches lit (mw-5r3p30.791), in the box that scrolls sideways; a tap on a word opens its word sheet, as an example's does. */
+function InADiagram({ card, onWord }: { card: CardDiagram; onWord: (chapter: Chapter, word: GreekWord) => void }) {
+  const open = (index: number): void => {
+    const word = card.words[index];
+    if (!word || !('word' in word)) return;
+    const { book, chapter, verse } = card.verse;
+    loadChapter(book, chapter).then(
+      (loaded) => {
+        const tapped = loaded.verses.find((v) => v.n === verse)?.g[word.word];
+        if (tapped) onWord(loaded, tapped);
+      },
+      () => undefined, // offline with the chapter not kept: the tap opens nothing
+    );
+  };
+  return (
+    <section data-testid="idea-diagram">
+      <Part>In a diagram</Part>
+      <p className="text-sm text-muted">{card.reference}</p>
+      <div className="mt-1">
+        <ReedKellogg diagram={card.diagram} words={card.words} mode={card.mode} reference={card.reference} onWord={open} lit={card.lit} />
+      </div>
     </section>
   );
 }
@@ -650,6 +676,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
             </button>
           ))}
           {idea.glyphs ? <LessonWriteIt idea={idea} /> : null}
+          {card.diagram ? <InADiagram card={card.diagram} onWord={onWord} /> : null}
           <Worked teach={card} passage={passage} scheme={scheme} />
           {tables.length ? (
             <div data-testid="idea-tables" className="mt-4 flex flex-col gap-2">

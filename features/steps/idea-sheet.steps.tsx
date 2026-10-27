@@ -907,4 +907,43 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(within(ideaSheet()).queryByRole('button', { name: lacks })).toBeNull();
     });
   });
+  Scenario('The genitive sheet draws a verse as a sentence diagram with the genitive lit, and a tap opens the word', ({ Given, When, Then, And }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the idea sheet has the parts {string}, {string} and {string}, in that order', async (_, a: string, b: string, c: string) => {
+      await within(ideaSheet()).findByRole('heading', { name: b, level: 3 });
+      const headings = within(ideaSheet()).getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+      const at = [a, b, c].map((part) => headings.indexOf(part));
+      expect(at.every((i) => i >= 0), headings.join(', ')).toBe(true);
+      expect([...at].sort((x, y) => x - y)).toEqual(at);
+    });
+    And('the diagram of {string} draws its Greek words with {string} lit and no other', (_, reference: string, word: string) => {
+      const drawn = within(ideaSheet()).getByTestId('idea-diagram');
+      expect(within(drawn).getByRole('img', { name: `Sentence diagram of ${reference}, Greek` })).toBeInTheDocument();
+      const card = teachOf('case-genitive').diagram!;
+      const buttons = within(drawn).getAllByRole('button');
+      expect(buttons.map((b) => b.textContent)).toEqual(expect.arrayContaining(card.words.map((w) => w.text)));
+      expect(buttons.filter((b) => b.hasAttribute('data-lit')).map((b) => b.textContent)).toEqual([word]);
+      expect(drawn).toHaveTextContent(reference);
+    });
+    When('he taps {string} in the diagram', async (_, word: string) => {
+      await user.click(within(within(ideaSheet()).getByTestId('idea-diagram')).getByRole('button', { name: word }));
+    });
+    Then('the word sheet is of {string} and its Parsing names a genitive', async (_, form: string) => {
+      // on the Goal screen the word sheet opens over the idea sheet, which stays (mw-5r3p30.378)
+      const sheet = await screen.findByRole('dialog', { name: 'Word' });
+      expect(within(sheet).getByTestId('sheet-word')).toHaveTextContent(form);
+      expect(within(sheet).getByTestId('sheet-parse')).toHaveTextContent('genitive');
+    });
+  });
+
+  Scenario('A card with no diagram has no part "In a diagram"', ({ Given, When, Then }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    Then('the idea sheet has the part {string} and no part {string} and no diagram', async (_, has: string, lacks: string) => {
+      await within(ideaSheet()).findByRole('heading', { name: has, level: 3 });
+      expect(within(ideaSheet()).queryByRole('heading', { name: lacks })).toBeNull();
+      expect(within(ideaSheet()).queryByTestId('idea-diagram')).toBeNull();
+    });
+  });
 });

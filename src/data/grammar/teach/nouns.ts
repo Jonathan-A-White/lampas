@@ -1,6 +1,8 @@
 // src/data/grammar/teach/nouns.ts — the cards of the nouns tier (mw-5r3p30.234): the noun (its stem, its endings, its cases), number, the two joiners
 // of every verse, the five cases, the three genders, the article, the adjective and the rest. A case's table is its endings in four model nouns,
-// labelled by the noun, not by a gender, since gender comes after the cases; the article's is its 24 forms.
+// labelled by the noun, not by a gender, since gender comes after the cases; the article's is its 24 forms. The noun and the four cases each draw a
+// short verse as a sentence diagram, the words they teach lit (mw-5r3p30.791).
+import { greek, hang, slot, understood } from '../../../diagram/handwritten';
 import type { Teach, TeachTable } from './types';
 
 /** The four model nouns every case table is laid out by, and what they mean (in the caption, so a column stays narrow). */
@@ -18,6 +20,9 @@ const caseTable = (name: string, singular: string[], plural: string[]): TeachTab
 });
 
 const GENDERS = ['masculine', 'feminine', 'neuter'];
+
+/** 'we', the subject a first person plural verb's ending carries. */
+const WE = understood('ἡμεῖς');
 
 export const NOUNS: Record<string, Teach> = {
   noun: {
@@ -38,6 +43,15 @@ export const NOUNS: Record<string, Teach> = {
         { label: 'more: acted on', cells: ['-ους', '-ας', '-α', '-ας'] },
       ],
       note: 'Each row is one case; the cards that follow name them.',
+    },
+    // ὅτι ὁ θεὸς ἀγάπη ἐστίν, “because God is love”: θεὸς the subject, ἀγάπη what he is
+    diagram: {
+      reference: '1 John 4:8',
+      verse: { book: '1jn', chapter: 4, verse: 8 },
+      mode: 'greek',
+      words: greek([8, 'ὁ'], [9, 'θεὸς'], [10, 'ἀγάπη'], [11, 'ἐστίν']),
+      diagram: { clauses: [{ clause: { subject: slot([1], [hang(0)]), verb: slot([3]), complement: { kind: 'predicate-nominative', slot: slot([2]) } } }] },
+      lit: [1, 2],
     },
     worked: [
       {
@@ -169,6 +183,15 @@ export const NOUNS: Record<string, Teach> = {
     howToSpot:
       'It is the first row of the noun table, and the dictionary form of a noun. Singular: -ος, -η, -ον; plural: -οι, -αι, -α, -ες. Since the ending marks the subject, it may stand anywhere: in καὶ θεὸς ἦν ὁ λόγος, “and the Word was God”, ὁ λόγος is the subject though it comes last.',
     table: caseTable('nominative', ['-ος', '-η', '-ον', 'χείρ'], ['-οι', '-αι', '-α', '-ες']),
+    // αἱ χεῖρες ἡμῶν ἐψηλάφησαν, “our hands touched”: χεῖρες the subject, αἱ and ἡμῶν hanging under it
+    diagram: {
+      reference: '1 John 1:1',
+      verse: { book: '1jn', chapter: 1, verse: 1 },
+      mode: 'greek',
+      words: greek([14, 'αἱ'], [15, 'χεῖρες'], [16, 'ἡμῶν'], [17, 'ἐψηλάφησαν']),
+      diagram: { clauses: [{ clause: { subject: slot([1], [hang(0), hang(2)]), verb: slot([3]) } }] },
+      lit: [1],
+    },
     worked: [
       {
         word: 'χεῖρες',
@@ -190,6 +213,15 @@ export const NOUNS: Record<string, Teach> = {
     howToSpot:
       'Singular: -ον, -ην (or -αν), -ον, -α; plural: -ους, -ας, -α, -ας. After εἰς “into” and πρός “toward” it shows where something goes.',
     table: caseTable('accusative', ['-ον', '-ην or -αν', '-ον', '-α'], ['-ους', '-ας', '-α', '-ας']),
+    // ἐθεασάμεθα τὴν δόξαν αὐτοῦ, “we beheld his glory”: the subject is the verb's ending, δόξαν the direct object
+    diagram: {
+      reference: 'John 1:14',
+      verse: { book: 'jhn', chapter: 1, verse: 14 },
+      mode: 'greek',
+      words: greek([10, 'ἐθεασάμεθα'], [11, 'τὴν'], [12, 'δόξαν'], [13, 'αὐτοῦ']),
+      diagram: { clauses: [{ clause: { subject: WE, verb: slot([0]), complement: { kind: 'direct-object', slot: slot([2], [hang(1), hang(3)]) } } }] },
+      lit: [2],
+    },
     worked: [
       {
         word: 'ζωὴν',
@@ -210,6 +242,17 @@ export const NOUNS: Record<string, Teach> = {
     howToSpot:
       'Singular: -ου, -ης (or -ας), -ου, -ος; plural: -ων in every noun. When you meet one, try “of” before it. After ἀπό “from” and ἐκ “out of” it is always the genitive.',
     table: caseTable('genitive', ['-ου', '-ης or -ας', '-ου', '-ος'], ['-ων', '-ων', '-ων', '-ων']),
+    // ἡ ζωὴ ἦν τὸ φῶς τῶν ἀνθρώπων, “the life was the light of men”: ἀνθρώπων hangs under φῶς and says whose light
+    diagram: {
+      reference: 'John 1:4',
+      verse: { book: 'jhn', chapter: 1, verse: 4 },
+      mode: 'greek',
+      words: greek([5, 'ἡ'], [6, 'ζωὴ'], [7, 'ἦν'], [8, 'τὸ'], [9, 'φῶς'], [10, 'τῶν'], [11, 'ἀνθρώπων']),
+      diagram: {
+        clauses: [{ clause: { subject: slot([1], [hang(0)]), verb: slot([2]), complement: { kind: 'predicate-nominative', slot: slot([4], [hang(3), hang(6, [hang(5)])]) } } }],
+      },
+      lit: [6],
+    },
     worked: [
       {
         word: 'ζωῆς',
@@ -225,6 +268,15 @@ export const NOUNS: Record<string, Teach> = {
     howToSpot:
       'Singular: -ῳ, -ῃ (or -ᾳ), -ῳ, -ι, mostly with the iota under the letter; plural: -οις, -αις, -οις, -σι(ν). Try “to”, “for”, “with” or “in” before it and keep the one that makes sense.',
     table: caseTable('dative', ['-ῳ', '-ῃ or -ᾳ', '-ῳ', '-ι'], ['-οις', '-αις', '-οις', '-σι(ν)']),
+    // ἑωράκαμεν τοῖς ὀφθαλμοῖς ἡμῶν, “we have seen with our eyes”: ὀφθαλμοῖς hangs under the verb and says what they saw with
+    diagram: {
+      reference: '1 John 1:1',
+      verse: { book: '1jn', chapter: 1, verse: 1 },
+      mode: 'greek',
+      words: greek([7, 'ἑωράκαμεν'], [8, 'τοῖς'], [9, 'ὀφθαλμοῖς'], [10, 'ἡμῶν']),
+      diagram: { clauses: [{ clause: { subject: WE, verb: slot([0], [hang(2, [hang(1), hang(3)])]) } }] },
+      lit: [2],
+    },
     worked: [
       {
         word: 'ὀφθαλμοῖς',
