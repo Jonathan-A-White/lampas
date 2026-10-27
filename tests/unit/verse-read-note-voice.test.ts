@@ -139,3 +139,22 @@ describe('the woven-reading rules keep Greek letters out of the note (mw-5r3p30.
     expect(section).toMatch(/`focus_words` keep the Greek/);
   });
 });
+
+describe('the note\'s own bullet carries the voice rule with a right and a wrong sentence (mw-5r3p30.816)', () => {
+  const text = instructionsOf('verse-read');
+  const at = text.indexOf('- `note` is one or two short sentences');
+  const bullet = text.slice(at, text.indexOf('\n- ', at + 1)).replace(/\s+/g, ' ');
+
+  it('is there', () => expect(at).toBeGreaterThanOrEqual(0));
+
+  it('says the note is spoken, has no Greek letter, and never "read" right after "you"', () => {
+    expect(bullet).toMatch(/spoken/);
+    expect(bullet).toMatch(/never "read" right after "you", in any tense/);
+    expect(bullet).toMatch(/no Greek or Hebrew letter/);
+  });
+
+  it('shows the sentence the mill produced as wrong, and a right one', () => {
+    expect(bullet).toMatch(/Wrong: .*you read both words/);
+    expect(bullet).toMatch(/Right: .*You said both words/);
+  });
+});

@@ -95,7 +95,11 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
   index of that one and no other. If he misread both, give two entries, one for each index. Never guess an index: count
   to it in the word list.
 - `note` is one or two short sentences to him about the reading: what was good first, then what to try. No sermons,
-  no comparisons with other readers, no flattery, and nothing about the meaning of the verse.
+  no comparisons with other readers, no flattery, and nothing about the meaning of the verse. It is spoken aloud by the phone's English voice, so
+  it has no Greek or Hebrew letter in it (name a word by the plain letters you heard or by its place) and never "read" right after "you",
+  in any tense: say "You said both words", never the verb read with "you" before it.
+  Wrong: "Good start: you read both words with a steady pace. For the first word I heard "pavabe"."
+  Right: "Good start: You said both words with a steady pace. For the first word I heard "pavabe"."
 - In `note` and `tip` write plain quote marks, such as `I heard "and if the Spirit"`: never put a backslash before a quote.
   The answer is JSON, and the JSON already escapes a quote inside a string; a backslash you add shows on his screen.
 - If `reading_result` is missing, carries only errors, or the recording was too quiet to judge, do not guess: answer
