@@ -1,8 +1,8 @@
 // src/data/grammar/teach/nouns.ts — the cards of the nouns tier (mw-5r3p30.234): the noun (its stem, its endings, its cases), number, the two joiners
 // of every verse, the five cases, the three genders, the article, the adjective and the rest. A case's table is its endings in four model nouns,
-// labelled by the noun, not by a gender, since gender comes after the cases; the article's is its 24 forms. The noun and the four cases each draw a
-// short verse as a sentence diagram, the words they teach lit (mw-5r3p30.791).
-import { greek, hang, slot, understood } from '../../../diagram/handwritten';
+// labelled by the noun, not by a gender, since gender comes after the cases; the article's is its 24 forms. The noun, the four cases, the conjunction,
+// the article and the adjective each draw a short verse as a sentence diagram, the words they teach lit (mw-5r3p30.791, mw-5r3p30.792).
+import { greek, hang, prep, slot, understood, w } from '../../../diagram/handwritten';
 import type { Teach, TeachTable } from './types';
 
 /** The four model nouns every case table is laid out by, and what they mean (in the caption, so a column stays narrow). */
@@ -136,6 +136,20 @@ export const NOUNS: Record<string, Teach> = {
         { label: 'ἵνα', cells: ['so that'] },
         { label: 'ἤ', cells: ['or'] },
       ],
+    },
+    // Ἐν αὐτῷ ζωὴ ἦν, καὶ ἡ ζωὴ ἦν τὸ φῶς τῶν ἀνθρώπων, “in him was life, and the life was the light of men”: καὶ joins the two sentences
+    diagram: {
+      reference: 'John 1:4',
+      verse: { book: 'jhn', chapter: 1, verse: 4 },
+      mode: 'greek',
+      words: greek([0, 'Ἐν'], [1, 'αὐτῷ'], [2, 'ζωὴ'], [3, 'ἦν'], [4, 'καὶ'], [5, 'ἡ'], [6, 'ζωὴ'], [7, 'ἦν'], [8, 'τὸ'], [9, 'φῶς'], [10, 'τῶν'], [11, 'ἀνθρώπων']),
+      diagram: {
+        clauses: [
+          { clause: { subject: slot([2]), verb: slot([3], [prep(0, slot([1]))]) } },
+          { joinedBy: w(4), clause: { subject: slot([6], [hang(5)]), verb: slot([7]), complement: { kind: 'predicate-nominative', slot: slot([9], [hang(8), hang(11, [hang(10)])]) } } },
+        ],
+      },
+      lit: [4],
     },
     worked: [
       {
@@ -382,6 +396,15 @@ export const NOUNS: Record<string, Teach> = {
         { label: 'accusative plural', cells: ['τούς', 'τάς', 'τά'] },
       ],
     },
+    // θεὸς ἦν ὁ λόγος, “the Word was God”: ὁ marks λόγος as the subject, though it comes last; θεὸς, with no article, is what the Word was
+    diagram: {
+      reference: 'John 1:1',
+      verse: { book: 'jhn', chapter: 1, verse: 1 },
+      mode: 'greek',
+      words: greek([13, 'θεὸς'], [14, 'ἦν'], [15, 'ὁ'], [16, 'λόγος']),
+      diagram: { clauses: [{ clause: { subject: slot([3], [hang(2)]), verb: slot([1]), complement: { kind: 'predicate-nominative', slot: slot([0]) } } }] },
+      lit: [2],
+    },
     worked: [
       {
         word: 'τοῖς',
@@ -418,6 +441,15 @@ export const NOUNS: Record<string, Teach> = {
         { label: 'dative plural', cells: ['-οις', '-αις', '-οις'] },
         { label: 'accusative plural', cells: ['-ους', '-ας', '-α'] },
       ],
+    },
+    // τὸ φῶς τὸ ἀληθινὸν ἤδη φαίνει, “the true light is already shining”: ἀληθινὸν hangs under φῶς, with its own τὸ under it
+    diagram: {
+      reference: '1 John 2:8',
+      verse: { book: '1jn', chapter: 2, verse: 8 },
+      mode: 'greek',
+      words: greek([18, 'τὸ'], [19, 'φῶς'], [20, 'τὸ'], [21, 'ἀληθινὸν'], [22, 'ἤδη'], [23, 'φαίνει']),
+      diagram: { clauses: [{ clause: { subject: slot([1], [hang(0), hang(3, [hang(2)])]), verb: slot([5], [hang(4)]) } }] },
+      lit: [3],
     },
     worked: [
       {

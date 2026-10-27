@@ -1,5 +1,7 @@
 // src/data/grammar/teach/pronouns.ts — the cards of the pronouns tier (mw-5r3p30.234): the three persons (met first as I, you, he and as the end of an
-// action word, before the verb has its own card), the pronoun, and each kind of pronoun with its forms.
+// action word, before the verb has its own card), the pronoun, and each kind of pronoun with its forms. The pronoun draws a verse as a sentence
+// diagram, its pronouns lit (mw-5r3p30.792).
+import { greek, hang, slot, w } from '../../../diagram/handwritten';
 import type { Teach } from './types';
 
 const GENDERS = ['masculine', 'feminine', 'neuter'];
@@ -82,6 +84,32 @@ export const PRONOUNS: Record<string, Teach> = {
     whatItIs: 'A pronoun stands in for a noun so the noun need not be said again: I, you, he, this, who. Example: in “Paul wrote, and he sent it”, he and it are pronouns.',
     howToSpot:
       'A Greek pronoun changes its ending for case, number and gender, as a noun does. Each kind has forms of its own, met on the cards that follow: ἐγώ “I” and αὐτός “he” (personal), οὗτος “this” (pointing), ὅς “who, which” (relative), τίς “who?” (asking).',
+    // Ἡμεῖς ἀγαπῶμεν αὐτόν, ὅτι αὐτὸς πρῶτος ἠγάπησεν ἡμᾶς, “we love him, because he first loved us”: a pronoun as the subject and as the object of
+    // each verb; the ὅτι sentence hangs under ἀγαπῶμεν, and πρῶτος, “first”, under ἠγάπησεν
+    diagram: {
+      reference: '1 John 4:19',
+      verse: { book: '1jn', chapter: 4, verse: 19 },
+      mode: 'greek',
+      words: greek([0, 'Ἡμεῖς'], [1, 'ἀγαπῶμεν'], [2, 'αὐτόν'], [3, 'ὅτι'], [4, 'αὐτὸς'], [5, 'πρῶτος'], [6, 'ἠγάπησεν'], [7, 'ἡμᾶς']),
+      diagram: {
+        clauses: [
+          {
+            clause: {
+              subject: slot([0]),
+              verb: slot([1], [
+                {
+                  kind: 'clause',
+                  connector: w(3),
+                  clause: { subject: slot([4]), verb: slot([6], [hang(5)]), complement: { kind: 'direct-object', slot: slot([7]) } },
+                },
+              ]),
+              complement: { kind: 'direct-object', slot: slot([2]) },
+            },
+          },
+        ],
+      },
+      lit: [0, 2, 4, 7],
+    },
     worked: [
       {
         word: 'ἡμῶν',
