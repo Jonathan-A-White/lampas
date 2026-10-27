@@ -52,7 +52,7 @@ Feature: The Verse view of an Old Testament verse reads in the Hebrew
     Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor" and "Copy"
     When he closes the Verse view and chooses "Hebrew" in the language switch
     And he taps the number of verse 1
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor" and "Copy"
+    Then the Verse view still offers the actions "Listen", "Read it aloud", "Ask the tutor" and "Copy"
 
   Scenario: The Hebrew view does not carry Listen in Audible
     Given Lampas is opened on Jonah 1 with the saved view "greek" and the Audible Bible on

@@ -252,7 +252,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(screen.getByRole('group', { name: 'Language' })).getByRole('button', { name }));
     });
     And('he taps the number of verse {int}', tapVerseNumber);
-    Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+    Then('the Verse view still offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
       expect(actionNames()).toEqual([a, b, c, d]);
     });
   });
