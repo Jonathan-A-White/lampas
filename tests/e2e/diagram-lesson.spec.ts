@@ -19,7 +19,7 @@ test('the lesson fits the phone, scrolls its diagram sideways, lights the right 
   await openUnlocked(page);
   await page.goto('/#/diagram-lesson');
   await expect(page.getByRole('heading', { name: 'How to read a sentence diagram', level: 1 })).toBeVisible();
-  await expect(page.getByText('Step 1 of 9')).toBeVisible();
+  await expect(page.getByText('Step 1 of 10')).toBeVisible();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(0);
@@ -44,13 +44,35 @@ test('the lesson fits the phone, scrolls its diagram sideways, lights the right 
   expect(ask.y + ask.height).toBeLessThanOrEqual(next.y);
   await shot(page, 'diagram-lesson');
 
-  // the last step is the widest: Colossians 3:1 scrolls sideways in its box, the page does not
+  // step 9 is Colossians 3:1 with Greek woven in: it scrolls sideways in its box, the page does not
   for (let k = 0; k < 8; k++) await page.getByRole('button', { name: 'Next', exact: true }).click();
-  await expect(page.getByText('Step 9 of 9')).toBeVisible();
+  await expect(page.getByText('Step 9 of 10')).toBeVisible();
   const diagram = page.locator('[data-diagram]');
   const sizes = await diagram.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
   expect(sizes.scroll).toBeGreaterThan(sizes.client);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+
+  // step 10 names each line by its Greek term: the Greek diagram and the term list, each term a link to its lesson
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(page.getByText('Step 10 of 10')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Which line is which, in Greek' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Sentence diagram of Colossians 3:1, Greek' })).toBeVisible();
+  const terms = page.getByTestId('diagram-lesson-terms');
+  await terms.scrollIntoViewIfNeeded();
+  await expect(terms.getByRole('button')).toHaveCount(11);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+  const termsBox = await terms.boundingBox();
+  if (!termsBox) throw new Error('no box for the terms');
+  expect(termsBox.x).toBeGreaterThanOrEqual(0);
+  expect(termsBox.x + termsBox.width).toBeLessThanOrEqual(VIEWPORT.width);
+  await shot(page, 'diagram-lesson-terms');
+
+  await terms.getByRole('button', { name: 'genitive', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'The genitive case' })).toBeVisible();
+  await page.getByRole('dialog', { name: 'Idea' }).getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'The genitive case' })).toHaveCount(0);
+  await expect(page.getByText('Step 10 of 10')).toBeVisible();
+
   const done = await box(page, 'Done');
   expect(done.y + done.height).toBeLessThanOrEqual(VIEWPORT.height);
 

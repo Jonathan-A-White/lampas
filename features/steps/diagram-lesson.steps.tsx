@@ -8,6 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { LESSON_STEPS, LESSON_TITLE } from '../../src/diagram/lesson';
+import { EXPECTED_TERMS } from '../../tests/fixtures/diagrams/lesson-steps';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { navigate, readerOf } from '../../src/nav/route';
@@ -102,7 +103,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('he is then told {string} and the word {string} is lit', toldAndLit);
   });
 
-  Scenario('Next through the nine steps to Done, which is kept', ({ Given, When, Then, And }) => {
+  Scenario('Next through the ten steps to Done, which is kept', ({ Given, When, Then, And }) => {
     Given('the lesson is opened from a Reader on Colossians 3:1', async () => {
       await open('#/?b=col&c=3&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
@@ -124,10 +125,10 @@ describeFeature(feature, ({ Scenario }) => {
       expect(buttonNamed(label)).toBeEnabled();
       expect(screen.queryByRole('button', { name: 'Next', exact: true })).toBeNull();
     });
-    And('step 9 draws Colossians 3:1 with Greek words in it', async () => {
-      expect(await within(await lesson()).findByRole('img', { name: 'Sentence diagram of Colossians 3:1, English' })).toBeInTheDocument();
+    And('step 10 draws Colossians 3:1 with Greek words in it', async () => {
+      expect(await within(await lesson()).findByRole('img', { name: 'Sentence diagram of Colossians 3:1, Greek' })).toBeInTheDocument();
       expect(within(await diagram()).getByRole('button', { name: 'ζητεῖτε' })).toBeInTheDocument();
-      await tapsTheRightWord(8);
+      await tapsTheRightWord(9);
     });
     When('he taps {string}', async (_, name: string) => {
       await user.click(buttonNamed(name));
@@ -138,6 +139,36 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('diagram-lesson is kept done on the phone', () => {
       expect(localStorage.getItem('lampas.diagram-lesson')).toBe('done');
+    });
+  });
+
+  Scenario('Step 10 names each line by its Greek term and each term opens its lesson', ({ Given, When, Then, And }) => {
+    Given('the lesson is opened at step 10', async () => {
+      await open('#/diagram-lesson');
+      localStorage.setItem('lampas.diagram-lesson.step', '9');
+      cleanup();
+      render(<App />);
+      expect(await screen.findByText(stepLine(10))).toBeInTheDocument();
+    });
+    Then('step 10 lists the terms nominative, accusative, dative, genitive, article, adjective, verb, adverb, preposition, participle and infinitive as buttons', async () => {
+      const terms = screen.getByTestId('diagram-lesson-terms');
+      expect(within(terms).getAllByRole('button').map((b) => b.textContent)).toEqual(EXPECTED_TERMS.map(([term]) => term));
+    });
+    When('he taps the term {string}', async (_, term: string) => {
+      await user.click(within(screen.getByTestId('diagram-lesson-terms')).getByRole('button', { name: term, exact: true }));
+    });
+    Then('the idea sheet {string} is open', async (_, title: string) => {
+      expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument();
+    });
+    When('he closes the idea sheet', async () => {
+      await user.click(within(screen.getByRole('dialog', { name: 'Idea' })).getByRole('button', { name: 'Done', exact: true }));
+      await waitFor(() => expect(screen.queryByRole('heading', { name: 'The dative case' })).toBeNull());
+    });
+    Then('the screen says {string}', async (_, line: string) => {
+      expect(await screen.findByText(line)).toBeInTheDocument();
+    });
+    And('the step reached is kept as step 10', () => {
+      expect(localStorage.getItem('lampas.diagram-lesson.step')).toBe('9');
     });
   });
 
