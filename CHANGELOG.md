@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.14
+_2026-10-27_
+- Fixed: the verse popup in Review and the quizzes now shows the word you were asked about, marked, even when the English translation has no separate word for it.
+
 ## 0.5.13
 _2026-10-27_
 - New: You can now read Old Testament verses aloud in Hebrew, starting from the easiest verse to say, and get them checked.
