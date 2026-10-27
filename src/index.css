@@ -618,6 +618,14 @@ textarea,
   break-before: avoid;
   break-inside: avoid;
 }
+/* The Maps door sits between the last verse and the chapter buttons: it holds to both, so the pair is not cut off alone onto a page with no verse on it
+ * (the nav's break-before: avoid was spent on the door, which then went to the next page with it, mw-5r3p30.812). */
+[data-reader][data-paging='pages'] > [data-pages] > [data-maps-door] {
+  /* a block box: an inline one (its button) takes no break property, and sits in an anonymous box between the verse and the nav */
+  display: flex;
+  break-before: avoid;
+  break-after: avoid;
+}
 /* The box can scroll only as far as the last page's text reaches, which stops short of a whole page by the box's right padding: this empty line,
  * a little wider than a page, reaches past it, so the last page sits where every other page does. */
 [data-reader][data-paging='pages'] > [data-pages]::after {
