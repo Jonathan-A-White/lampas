@@ -12,7 +12,7 @@ import { mulberry32 } from '../../src/data/random';
 import { getIpaProgress } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { passCheckQuestions, courseSounds, type CourseSound } from '../../src/ipa/course';
-import { answerDrill, currentQuestion, drawRound, isRoundOver, questionFor, startRound, type DrillItem, type DrillState, type IpaQuestion } from '../../src/ipa/drill';
+import { answerDrill, currentQuestion, drawRound, questionFor, startRound, type DrillItem, type DrillState, type IpaQuestion } from '../../src/ipa/drill';
 import { ipaSeed } from '../../src/ipa/seed';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { chooseAccent, chosenAccent, accentOf } from '../../src/speech/accents';
