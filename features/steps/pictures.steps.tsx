@@ -90,12 +90,12 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A word with no picture shows none on its Words card', ({ Given, When, Then, And }) => {
     Given('Lampas is opened for the first time', openLampasFresh);
     When('he opens Words', openWords);
-    Then('the card for "γάρ" shows no picture', () => {
-      expect(card('γάρ').querySelector('img')).toBeNull();
+    Then('the card for "ἀμήν" shows no picture', () => {
+      expect(card('ἀμήν').querySelector('img')).toBeNull();
     });
-    And('the card for "γάρ" still shows its gloss and state', () => {
-      expect(card('γάρ')).toHaveTextContent('for, since');
-      expect(card('γάρ').getAttribute('data-state')).toBe('solid');
+    And('the card for "ἀμήν" still shows its gloss and state', () => {
+      expect(card('ἀμήν')).toHaveTextContent('amen, truly');
+      expect(card('ἀμήν').getAttribute('data-state')).toBe('solid');
     });
   });
 

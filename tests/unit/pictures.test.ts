@@ -2,6 +2,8 @@
 // small flat SVG on the 96 x 96 grid with no text and no raster, and most of the 63 seed words have one.
 // The picture queue (scripts/pictures-queue.ts, `npm run pictures:queue`, mw-5r3p30.383): the New Testament's
 // dictionary forms with no picture, commonest first, less the skip list in docs/pictures.md; a slice draws its top.
+// The link pictures (LINK_WORDS, mw-5r3p30.785): one family for the small link words, drawn out of the queue's order, and their
+// contact sheet (scripts/pictures-sheet.ts, `npm run pictures:sheet`, docs/pictures/link-words.svg).
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { injectManifestOptions } from '../../pwa-precache';
@@ -13,7 +15,8 @@ import {
   type FrequencyRow,
 } from '../../scripts/pictures-queue';
 import { normaliseHeadword } from '../../src/data/lemma';
-import { pictureFile, pictureUrl, PICTURES } from '../../src/data/pictures';
+import { LINK_GLOSSES, linkSheet, SHEET_PATH } from '../../scripts/pictures-sheet';
+import { LINK_WORDS, pictureFile, pictureUrl, PICTURES } from '../../src/data/pictures';
 import { SEED_WORDS } from '../../src/data/seed-words';
 
 const headwords = SEED_WORDS.map((w) => normaliseHeadword(w.lemma));
@@ -131,10 +134,84 @@ describe('the picture queue', () => {
   });
 
   it('has drawn the slices from the top: no word above the last one drawn is left without a picture or a skip', () => {
-    const drawn = entries.map(([lemma]) => lemma).filter((lemma) => !headwords.includes(lemma));
+    // the link pictures are a family drawn together, out of the queue's order (docs/pictures.md 'Link pictures')
+    const drawn = entries.map(([lemma]) => lemma).filter((lemma) => !headwords.includes(lemma) && !LINK_WORDS.includes(lemma));
     // slice 1 (mw-5r3p30.383) drew 50 beside the 52 seed pictures
     expect(drawn.length).toBeGreaterThanOrEqual(50);
     const lowest = Math.max(...drawn.map((lemma) => frequency.indexOf(entryOf(lemma, frequency)!) + 1));
     expect(queue[0].rank, `${queue[0].headword} was passed over`).toBeGreaterThan(lowest);
+  });
+});
+
+const linkSection = (() => {
+  const at = picturesDoc.indexOf('## Link pictures');
+  const end = picturesDoc.indexOf('\n## ', at + 1);
+  return at < 0 ? '' : picturesDoc.slice(at, end < 0 ? undefined : end);
+})();
+
+describe('the link pictures', () => {
+  // the link words he asked for by name (mw-5r3p30.785); a slice may add more, never drop one
+  const asked = ['ὅτι', 'γάρ', 'οὖν', 'δέ', 'ἀλλά', 'μέν', 'ὡς', 'καθώς', 'ἤ', 'ἐάν', 'οὐδέ', 'οὔτε', 'οὕτως'];
+
+  it('holds every link word he asked for, each a headword once', () => {
+    for (const lemma of asked) expect(LINK_WORDS, `${lemma} is not a link word`).toContain(lemma);
+    expect(new Set(LINK_WORDS).size).toBe(LINK_WORDS.length);
+    for (const lemma of LINK_WORDS) expect(lemma).toBe(normaliseHeadword(lemma));
+  });
+
+  it('gives every link word a picture, none of them byte for byte the same as any other picture', () => {
+    for (const lemma of LINK_WORDS) expect(pictureFile(lemma), `${lemma} has no picture`).toBeDefined();
+    const sources = new Map(entries.map(([lemma, file]) => [lemma, readFileSync(`public/pictures/${file}`, 'utf8')]));
+    for (const lemma of LINK_WORDS) {
+      for (const [other, source] of sources) {
+        if (other !== lemma) expect(source, `${lemma} draws the same as ${other}`).not.toBe(sources.get(lemma));
+      }
+    }
+  });
+
+  it('keeps no link word in the skip list', () => {
+    for (const lemma of LINK_WORDS) expect(skips.map((s) => s.lemma), `${lemma} is still skipped`).not.toContain(lemma);
+  });
+
+  it("has a 'Link pictures' section in docs/pictures.md: the frame, and a line for each word against its neighbours", () => {
+    expect(linkSection).not.toBe('');
+    expect(linkSection).toMatch(/frame/i);
+    for (const lemma of LINK_WORDS) expect(linkSection, `no line for ${lemma}`).toMatch(new RegExp(`^- \\*\\*${lemma}\\*\\*`, 'm'));
+    for (const neighbour of ['καί', 'εἰ', 'οὐ', 'ἵνα']) expect(linkSection, `${neighbour} is never named`).toContain(neighbour);
+  });
+});
+
+describe('the contact sheet of the link pictures', () => {
+  const sheet = linkSheet();
+
+  it('runs as npm run pictures:sheet, which docs/pictures.md names', () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as { scripts: Record<string, string> };
+    expect(pkg.scripts['pictures:sheet']).toContain('scripts/pictures-sheet.ts');
+    expect(picturesDoc).toContain('npm run pictures:sheet');
+    expect(SHEET_PATH).toBe('docs/pictures/link-words.svg');
+  });
+
+  it('is committed as the script writes it', () => {
+    expect(existsSync(SHEET_PATH), `${SHEET_PATH} is missing: npm run pictures:sheet`).toBe(true);
+    expect(readFileSync(SHEET_PATH, 'utf8'), 'stale: npm run pictures:sheet').toBe(sheet);
+  });
+
+  it('shows every link picture at 80 px, with its Greek and English gloss under it', () => {
+    const doc = new DOMParser().parseFromString(sheet, 'image/svg+xml');
+    expect(doc.querySelector('parsererror'), 'does not parse as XML').toBeNull();
+    const tiles = [...doc.documentElement.children].filter((el) => el.localName === 'svg');
+    expect(tiles).toHaveLength(LINK_WORDS.length);
+    for (const tile of tiles) {
+      expect(tile.getAttribute('width')).toBe('80');
+      expect(tile.getAttribute('height')).toBe('80');
+      expect(tile.getAttribute('viewBox')).toBe('0 0 96 96');
+    }
+    const texts = [...doc.getElementsByTagName('text')].map((t) => t.textContent ?? '');
+    for (const lemma of LINK_WORDS) {
+      expect(LINK_GLOSSES[lemma], `${lemma} has no gloss for the sheet`).toBeTruthy();
+      expect(texts, `${lemma} is not on the sheet`).toContain(lemma);
+      expect(texts).toContain(LINK_GLOSSES[lemma]);
+    }
+    expect(sheet).not.toMatch(/<script|<image|href=/);
   });
 });

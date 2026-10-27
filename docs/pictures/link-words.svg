@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="472" viewBox="0 0 800 472">
+<style>text{text-anchor:middle;fill:#16203a}.greek{font:22px serif}.gloss{font:13px sans-serif;fill:#4a5568}.title{font:bold 16px sans-serif;text-anchor:start}</style>
+<rect width="800" height="472" fill="#ffffff"/>
+<text x="16" y="30" class="title">Link pictures: the first thought white, the second amber, the link blue (npm run pictures:sheet)</text>
+<svg x="40" y="48" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='12' y='16' width='58' height='16' rx='8' fill='#e7ebf3'/><rect x='12' y='64' width='58' height='16' rx='8' fill='#f2b544'/><path d='M72 72H76Q86 72 86 62V34Q86 24 76 24H74M81 17 74 24 81 31' fill='none' stroke='#7fb2e5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="80" y="152" class="greek">γάρ</text>
+<text x="80" y="170" class="gloss">for, since</text>
+<svg x="168" y="48" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='16' y='12' width='64' height='16' rx='8' fill='#e7ebf3'/><rect x='16' y='68' width='64' height='16' rx='8' fill='#f2b544'/><path d='M40 34V54M56 34V54M34 50 48 62 62 50' fill='none' stroke='#7fb2e5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="208" y="152" class="greek">οὖν</text>
+<text x="208" y="170" class="gloss">therefore</text>
+<svg x="296" y="48" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='24' y='10' width='48' height='16' rx='8' fill='#e7ebf3'/><path d='M40 30 28 50M56 30 68 50' fill='none' stroke='#7fb2e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><path d='M20 52H12V88H20M76 52H84V88H76' fill='none' stroke='#7fb2e5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/><rect x='22' y='62' width='52' height='16' rx='8' fill='#f2b544'/></svg>
+<text x="336" y="152" class="greek">ὅτι</text>
+<text x="336" y="170" class="gloss">that, because</text>
+<svg x="424" y="48" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='8' y='18' width='52' height='16' rx='8' fill='#e7ebf3'/><rect x='36' y='62' width='52' height='16' rx='8' fill='#f2b544'/><path d='M30 38V48H62V58' fill='none' stroke='#7fb2e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="464" y="152" class="greek">δέ</text>
+<text x="464" y="170" class="gloss">and, but</text>
+<svg x="552" y="48" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='8' y='18' width='52' height='16' rx='8' fill='#e7ebf3'/><rect x='36' y='62' width='52' height='16' rx='8' fill='#f2b544'/><path d='M30 38V48H62V58' fill='none' stroke='#7fb2e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><path d='M40 88 84 52' fill='none' stroke='#ef6a6a' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="592" y="152" class="greek">οὐδέ</text>
+<text x="592" y="170" class="gloss">and not, nor</text>
+<svg x="680" y="48" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='16' y='16' width='64' height='16' rx='8' fill='#e7ebf3'/><rect x='16' y='64' width='64' height='16' rx='8' fill='#f2b544'/><path d='M26 40 70 8M26 88 70 56' fill='none' stroke='#ef6a6a' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="720" y="152" class="greek">οὔτε</text>
+<text x="720" y="170" class="gloss">neither, nor</text>
+<svg x="40" y="184" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='26' y='14' width='60' height='16' rx='8' fill='#9aa5ba'/><path d='M22 30 90 14' fill='none' stroke='#e7ebf3' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><path d='M24 22H20Q8 22 8 34V60Q8 72 20 72H26M19 64 27 72 19 80' fill='none' stroke='#7fb2e5' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/><rect x='32' y='64' width='56' height='16' rx='8' fill='#f2b544'/></svg>
+<text x="80" y="288" class="greek">ἀλλά</text>
+<text x="80" y="306" class="gloss">but (not this, that)</text>
+<svg x="168" y="184" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><path d='M48 22V82M34 84H62M14 22H82' fill='none' stroke='#7fb2e5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/><path d='M22 22V44M74 22V44' fill='none' stroke='#7fb2e5' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/><rect x='4' y='44' width='38' height='18' rx='9' fill='#e7ebf3'/><rect x='56' y='46' width='34' height='14' rx='7' fill='none' stroke='#9aa5ba' stroke-width='3' stroke-dasharray='4 4'/></svg>
+<text x="208" y="288" class="greek">μέν</text>
+<text x="208" y="306" class="gloss">on the one hand</text>
+<svg x="296" y="184" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='16' y='18' width='64' height='16' rx='8' fill='#e7ebf3'/><rect x='16' y='62' width='64' height='16' rx='8' fill='#f2b544'/><path d='M30 44Q39 38 48 44T66 44M30 54Q39 48 48 54T66 54' fill='none' stroke='#7fb2e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="336" y="288" class="greek">ὡς</text>
+<text x="336" y="306" class="gloss">as, like</text>
+<svg x="424" y="184" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='16' y='18' width='64' height='16' rx='8' fill='#e7ebf3'/><rect x='16' y='62' width='64' height='16' rx='8' fill='#f2b544'/><path d='M30 42H66M30 54H66' fill='none' stroke='#7fb2e5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="464" y="288" class="greek">καθώς</text>
+<text x="464" y="306" class="gloss">just as</text>
+<svg x="552" y="184" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><path d='M10 24 22 12 34 24 46 12 58 24' fill='none' stroke='#e7ebf3' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/><path d='M10 82 22 70 34 82 46 70 58 82' fill='none' stroke='#f2b544' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/><path d='M78 72V24M70 32 78 24 86 32' fill='none' stroke='#7fb2e5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="592" y="288" class="greek">οὕτως</text>
+<text x="592" y="306" class="gloss">thus, so</text>
+<svg x="680" y="184" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><circle cx='12' cy='48' r='6' fill='#7fb2e5'/><path d='M18 48H26Q34 48 34 40V32Q34 24 42 24H44M38 17 45 24 38 31M26 48Q34 48 34 56V64Q34 72 42 72H44M38 65 45 72 38 79' fill='none' stroke='#7fb2e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><rect x='50' y='16' width='38' height='16' rx='8' fill='#e7ebf3'/><rect x='50' y='64' width='38' height='16' rx='8' fill='#f2b544'/></svg>
+<text x="720" y="288" class="greek">ἤ</text>
+<text x="720" y="306" class="gloss">or; than</text>
+<svg x="40" y="320" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><circle cx='10' cy='48' r='5' fill='#7fb2e5'/><path d='M14 48Q22 48 22 40V32Q22 24 30 24M14 48Q22 48 22 56V64Q22 72 30 72M66 24Q74 24 74 32V40Q74 48 82 48H86M66 72Q74 72 74 64V56Q74 48 82 48M81 41 88 48 81 55' fill='none' stroke='#7fb2e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><rect x='28' y='16' width='40' height='16' rx='8' fill='#e7ebf3'/><rect x='28' y='64' width='40' height='16' rx='8' fill='#f2b544'/></svg>
+<text x="80" y="424" class="greek">εἴτε</text>
+<text x="80" y="442" class="gloss">whether … or</text>
+<svg x="168" y="320" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><path d='M48 86V56M48 56 26 28M26 42V28H40' fill='none' stroke='#e7ebf3' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/><path d='M48 56 66 33' fill='none' stroke='#f2b544' stroke-width='5' stroke-linecap='round' stroke-linejoin='round' stroke-dasharray='4 7'/><path d='M70 42V28H56' fill='none' stroke='#f2b544' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<text x="208" y="424" class="greek">ἐάν</text>
+<text x="208" y="442" class="gloss">if (maybe)</text>
+<svg x="296" y="320" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><rect x='16' y='16' width='64' height='16' rx='8' fill='#e7ebf3'/><path d='M48 40V56' fill='none' stroke='#7fb2e5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round' stroke-dasharray='1 8'/><rect x='18' y='64' width='60' height='14' rx='7' fill='none' stroke='#f2b544' stroke-width='4' stroke-dasharray='6 5'/></svg>
+<text x="336" y="424" class="greek">ἄν</text>
+<text x="336" y="442" class="gloss">would, -ever</text>
+<svg x="424" y="320" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><path d='M48 10V78' fill='none' stroke='#7fb2e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><rect x='24' y='14' width='48' height='14' rx='7' fill='#e7ebf3'/><rect x='24' y='40' width='48' height='14' rx='7' fill='#f2b544'/><path d='M10 82H82M76 76 83 82 76 88' fill='none' stroke='#9aa5ba' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><circle cx='48' cy='82' r='5' fill='#7fb2e5'/></svg>
+<text x="464" y="424" class="greek">ὅτε</text>
+<text x="464" y="442" class="gloss">when</text>
+<svg x="552" y="320" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><path d='M48 10V76' fill='none' stroke='#7fb2e5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' stroke-dasharray='1 8'/><rect x='24' y='14' width='48' height='14' rx='7' fill='#e7ebf3'/><rect x='24' y='40' width='48' height='14' rx='7' fill='#f2b544'/><path d='M10 82H82M76 76 83 82 76 88' fill='none' stroke='#9aa5ba' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><path d='M26 76V88M66 76V88' fill='none' stroke='#9aa5ba' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><circle cx='48' cy='82' r='5' fill='#7fb2e5'/></svg>
+<text x="592" y="424" class="greek">ὅταν</text>
+<text x="592" y="442" class="gloss">whenever</text>
+<svg x="680" y="320" width="80" height="80" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="#16203a"/><path d='M10 82H82M76 76 83 82 76 88' fill='none' stroke='#9aa5ba' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><rect x='6' y='30' width='46' height='16' rx='8' fill='#e7ebf3'/><path d='M60 18V82' fill='none' stroke='#7fb2e5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/><rect x='68' y='30' width='22' height='16' rx='8' fill='#f2b544'/></svg>
+<text x="720" y="424" class="greek">ἕως</text>
+<text x="720" y="442" class="gloss">until</text>
+</svg>

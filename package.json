@@ -21,6 +21,7 @@
     "icons": "node scripts/make-icons.mjs",
     "seed:build": "node scripts/seed-build.ts",
     "pictures:queue": "tsx scripts/pictures-queue.ts",
+    "pictures:sheet": "tsx scripts/pictures-sheet.ts",
     "data:build": "tsx scripts/data-build.ts",
     "data:build:ot": "tsx scripts/data-build-ot.ts",
     "maps:build": "tsx scripts/maps-build.ts",

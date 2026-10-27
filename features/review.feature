@@ -150,3 +150,10 @@ Feature: Review brings back the words that are due
     Then the flashcard shows only the lemma "λέγω"
     When he taps the Tap to hear bar
     Then the Greek voice says "λέγω"
+
+  Scenario: A word question on a link word shows its picture
+    Given the word "ὅτι" is due on step 0
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the question for "ὅτι" shows its picture beside the word

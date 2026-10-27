@@ -60,7 +60,7 @@ test('a Quick test question shows the picture beside a word that has one, and fi
   await expect(prompt).toBeVisible();
   const lemma = await prompt.getAttribute('data-lemma');
   const picture = page.getByTestId('picture');
-  // Every word of the seed list asked here but eleven has one; the picture is there or the word has none.
+  // Every word of the seed list asked here but four has one; the picture is there or the word has none.
   if (await picture.count()) {
     await expect.poll(() => picture.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
     expect((await picture.boundingBox())?.width).toBeGreaterThanOrEqual(64);

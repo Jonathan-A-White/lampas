@@ -107,7 +107,35 @@ export const PICTURES: Readonly<Record<string, string>> = {
   "ἁμαρτία": "hamartia.svg",
   "ἔργον": "ergon.svg",
   "ὄχλος": "ochlos.svg",
+  // The link pictures (mw-5r3p30.785): one family for the small link words, drawn out of the queue's order (LINK_WORDS below).
+  "γάρ": "gar.svg",
+  "οὖν": "oun.svg",
+  "ὅτι": "hoti.svg",
+  "δέ": "de.svg",
+  "οὐδέ": "oude.svg",
+  "οὔτε": "oute.svg",
+  "ἀλλά": "alla.svg",
+  "μέν": "men.svg",
+  "ὡς": "hos.svg",
+  "καθώς": "kathos.svg",
+  "οὕτως": "houtosadv.svg",
+  "ἤ": "e.svg",
+  "εἴτε": "eite.svg",
+  "ἐάν": "ean.svg",
+  "ἄν": "an.svg",
+  "ὅτε": "hote.svg",
+  "ὅταν": "hotan.svg",
+  "ἕως": "heos.svg",
 };
+
+/**
+ * The link pictures: one family for the small link words, two thought-blocks (the first white, above; the second amber, below)
+ * and the link between them, drawn differently for each so they can be told apart (docs/pictures.md 'Link pictures').
+ * `npm run pictures:sheet` draws them side by side in docs/pictures/link-words.svg.
+ */
+export const LINK_WORDS: readonly string[] = [
+  'γάρ', 'οὖν', 'ὅτι', 'δέ', 'οὐδέ', 'οὔτε', 'ἀλλά', 'μέν', 'ὡς', 'καθώς', 'οὕτως', 'ἤ', 'εἴτε', 'ἐάν', 'ἄν', 'ὅτε', 'ὅταν', 'ἕως',
+];
 
 /** The picture file for a headword (or a BMA lemma line), or undefined when the word has none. */
 export function pictureFile(lemma: string): string | undefined {
