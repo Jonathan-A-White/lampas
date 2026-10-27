@@ -177,7 +177,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the second bible-talk grist carries the pending offer of kind greek with the text {string}', async (_, text: string) => {
       await waitFor(() => expect(talkGrists()).toHaveLength(2));
-      expect((talkGrists()[1].input as { pending_offer?: unknown }).pending_offer).toEqual({ kind: 'greek', text });
+      expect((talkGrists()[1].input as { pending_offer?: unknown }).pending_offer).toEqual({ kind: 'greek', text, lang: 'grc' });
     });
     And('the memory index says he said no to the Greek offer', async () => {
       await waitFor(async () => expect((await getIndex()).text).toMatch(/said no to the Greek offer \d{4}-\d{2}-\d{2}/));

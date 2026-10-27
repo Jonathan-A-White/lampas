@@ -443,7 +443,7 @@ describe('the Hebrew instructions and examples', () => {
   });
 
   it('let verse-ask make no offer on an Old Testament verse', () => {
-    const ask = readFileSync('grinds/verse-ask.instructions/055-a-verse-of-the-old-testament.md', 'utf8');
+    const ask = instructionsOf('verse-ask');
     expect(ask).toContain('make no offer: the Bible talk makes them');
     expect(ask).not.toContain('offer no Greek');
   });
