@@ -6,6 +6,7 @@ import { loadChapter, loadIndex } from '../../src/data/chapter';
 import { foundationOf } from '../../src/data/grammar/inference';
 import { LADDER, ideaOf, ideasBelow, type GrammarIdea } from '../../src/data/grammar/ladder';
 import { cardTexts, stepsOf, teachOf } from '../../src/data/grammar/teach';
+import { validateDiagram } from '../../src/diagram/validate';
 import { ideaChoice } from '../../src/data/grammar/lessons';
 import { DEFAULT_PRONUNCIATION, pronunciationOf } from '../../src/speech/pronunciation';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -121,6 +122,68 @@ describe('a worked example that names its verse', () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+});
+
+describe('a card that draws its idea in a sentence diagram (mw-5r3p30.791)', () => {
+  /** the cards that carry one; the other parts of speech are the next story's */
+  const DRAWN = ['noun', 'case-nominative', 'case-accusative', 'case-genitive', 'case-dative'];
+  const drawn = LADDER.filter((i) => teachOf(i.id).diagram);
+  /** a verse's word as the diagram's request strips it (src/diagram/request.ts): no marks at its edges, an elision's apostrophe kept */
+  const bare = (t: string) => t.replace(/^[^\p{L}\p{M}\p{N}']+|[^\p{L}\p{M}\p{N}']+$/gu, '').normalize('NFC');
+
+  it('is drawn on the noun and the four cases', () => {
+    expect(drawn.map((i) => i.id)).toEqual(expect.arrayContaining(DRAWN));
+  });
+
+  it('keeps every word once in its tree, and lights only its own words, at least one', () => {
+    for (const idea of drawn) {
+      const { diagram, words, lit } = teachOf(idea.id).diagram!;
+      expect(validateDiagram(diagram, words.length), idea.id).toEqual({ ok: true });
+      expect(lit.length, idea.id).toBeGreaterThan(0);
+      for (const i of lit) expect(Number.isInteger(i) && i >= 0 && i < words.length, `${idea.id}: lit ${i}`).toBe(true);
+    }
+  });
+
+  it('draws in Greek the words of the verse it names, as the text spells them', async () => {
+    stubChapterFetch();
+    const index = await loadIndex();
+    const wrong: string[] = [];
+    for (const idea of drawn) {
+      const card = teachOf(idea.id).diagram!;
+      expect(card.mode, idea.id).toBe('greek');
+      const book = index.books.find((b) => b.code === card.verse.book);
+      expect(`${book?.name} ${card.verse.chapter}:${card.verse.verse}`, idea.id).toBe(card.reference);
+      const verse = (await loadChapter(card.verse.book, card.verse.chapter)).verses.find((v) => v.n === card.verse.verse);
+      for (const word of card.words) {
+        if (!('word' in word)) {
+          wrong.push(`${idea.id}: ${word.text} is not a Greek word`);
+          continue;
+        }
+        const text = verse?.g[word.word]?.t;
+        if (text === undefined || bare(text) !== word.text.normalize('NFC')) wrong.push(`${idea.id}: word ${word.word} of ${card.reference} is ${text}, not ${word.text}`);
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+
+  it('lights the word of its idea: the nominative the subject, the accusative the direct object, the genitive a word that hangs, the dative a word under the verb', () => {
+    const litWords = (id: string) => {
+      const card = teachOf(id).diagram!;
+      return card.lit.map((i) => card.words[i].text);
+    };
+    const clause = (id: string) => teachOf(id).diagram!.diagram.clauses[0].clause;
+    const indexes = (refs: { words: ({ i: number } | { implied: string })[] }) => refs.words.flatMap((r) => ('i' in r ? [r.i] : []));
+    expect(teachOf('case-nominative').diagram!.lit).toEqual(indexes(clause('case-nominative').subject));
+    const accusative = clause('case-accusative').complement!;
+    expect(accusative.kind).toBe('direct-object');
+    expect(teachOf('case-accusative').diagram!.lit).toEqual(indexes(accusative.slot));
+    expect(litWords('noun').length).toBeGreaterThanOrEqual(2);
+    for (const id of ['case-genitive', 'case-dative']) expect(litWords(id), id).toHaveLength(1);
+  });
+
+  it('gives its reference among the card\'s texts', () => {
+    for (const idea of drawn) expect(cardTexts(teachOf(idea.id))).toContain(teachOf(idea.id).diagram!.reference);
   });
 });
 
