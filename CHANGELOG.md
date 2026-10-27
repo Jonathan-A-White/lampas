@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.12
+_2026-10-27_
+- New: You can now learn Old Testament verses by heart in Hebrew, read right to left, saying or typing them and being checked on the letters.
+- New: The Weave's Order setting now says "Original" instead of "Greek", and the Weave, Read lessons and Quiz goal descriptions say Greek or Hebrew.
+
 ## 0.5.11
 _2026-10-27_
 - New: You can now learn the IPA sounds of Hebrew too, as an optional lesson on the Goal screen, and a new IPA lesson setting turns the optional lessons off.
