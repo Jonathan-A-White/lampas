@@ -16,6 +16,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { registerPronunciation } from '../../src/speech/pronunciation';
 import { MODERN } from '../../src/speech/schemes/modern';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { setEachOnItsOwn } from '../../tests/support/settings-pages';
 
 const user = userEvent.setup();
 let unregister: (() => void) | undefined;
@@ -47,6 +48,8 @@ async function solidIdeas(): Promise<string[]> {
 /** Opens Settings and taps the pronunciation with this label; waits until it is the saved one. */
 async function chooseInSettings(label: string): Promise<void> {
   await openAt('#/settings?group=listening');
+  // the Greek row shows while each language is set on its own (mw-gdcyf98.6)
+  await setEachOnItsOwn(user, true);
   await user.click(await screen.findByRole('radio', { name: label }));
   const id = label === 'Modern Greek' ? 'modern' : 'erasmian';
   await waitFor(async () => expect((await db.settings.get('greekPronunciation'))?.value).toBe(id));
