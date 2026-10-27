@@ -15,7 +15,7 @@
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
 // A letter or pair with a Hard sounds lesson for his accent (src/hardSounds/, mw-5r3p30.361) has 'Learn to say it (optional)' (or the label the lesson gives, 'Learn to roll your r (optional)' on Rho) under How it sounds; Back from it brings the sheet back.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
 import { unmetNeed } from './data/grammar/drillIt';
 import { loadFrequency } from './data/frequency';
@@ -31,7 +31,7 @@ import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, get
 import { useAiAllowed } from './gate/licenceContext';
 import { AskForBook } from './library/AskForBook';
 import { ReedKellogg } from './diagram/ReedKellogg';
-import { useLessonTalk } from './AskTutor';
+import { LessonTalk } from './AskTutor';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
@@ -46,6 +46,7 @@ import { chosenPronunciation } from './speech/greek';
 import { hebrewPronunciationOf, pronunciationOf, type Pronunciation } from './speech/pronunciation';
 import { hebrewLetterOf, isHebrewDrillable } from './data/grammar/hebrew/letters';
 import { proseOf } from './speech/proseOf';
+import { stopReading } from './speech/readAloud';
 import { LessonReadAloud } from './speech/ReadAloud';
 import { SpeakButton } from './speech/SpeakButton';
 import { BarSlot } from './speech/SpeakingBarSlot';
@@ -526,11 +527,9 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     'Worked example', worked.word, worked.gloss, ...stepsOf(worked, scheme),
   ]);
   // Ask the tutor, when no word asks it (onAsk): the talk is about this lesson, its card and worked example (mw-5r3p30.818)
-  const lessonTalk = useLessonTalk(
-    lessonScreen({ idea, card, worked, inPassage, steps: stepsOf(worked, scheme), respelling: hebrew ? undefined : scheme.respell(worked.say ?? worked.word), level: level?.level }),
-    lessonKept(idea.id),
-    lessonSuggestions(idea.title),
-  );
+  const ai = useAiAllowed();
+  const [talking, setTalking] = useState(false);
+  const closeTalk = useCallback(() => setTalking(false), []);
   // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
   const levels = useLiveQuery(listLevels, []);
   const ranking = useRanking();
@@ -800,8 +799,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
                 Try it on a verse
               </button>
             ) : null}
-            {onAsk || lessonTalk.ask ? (
-              <button type="button" onClick={onAsk ? () => onAsk(idea.terms[0] ?? idea.title) : lessonTalk.ask} className={`${BUTTON} border-line text-accent active:bg-line`}>
+            {onAsk || ai ? (
+              <button type="button" onClick={onAsk ? () => onAsk(idea.terms[0] ?? idea.title) : () => { stopReading(); setTalking(true); }} className={`${BUTTON} border-line text-accent active:bg-line`}>
                 Ask the tutor
               </button>
             ) : null}
@@ -877,7 +876,13 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           onClose={closeDrill}
         />
       ) : null}
-      {lessonTalk.sheet}
+      <LessonTalk
+        screen={lessonScreen({ idea, card, worked, inPassage, steps: stepsOf(worked, scheme), respelling: hebrew ? undefined : scheme.respell(worked.say ?? worked.word), level: level?.level })}
+        kept={lessonKept(idea.id)}
+        suggestions={lessonSuggestions(idea.title)}
+        open={talking}
+        onClose={closeTalk}
+      />
       {trying && passage ? <TryItSheet idea={idea} passage={passage} onClose={() => setTrying(false)} /> : null}
       {letterDrill ? <LetterDrillScreen lang={lang} onClose={() => setLetterDrill(false)} /> : null}
       {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onDismiss={onDismiss} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
