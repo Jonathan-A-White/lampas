@@ -1,5 +1,5 @@
-// tests/unit/hebrew-ladder.test.ts — the Hebrew ladder's first three tiers (mw-gdcyf98.11): the letters, the sounds and the marks, each idea with its card, its Israeli sound lesson where it has a sound,
-// and worked words that are words of Genesis 1 and Jonah 1. A card whose worked word is not in the chapter data is refused here, not patched by hand.
+// tests/unit/hebrew-ladder.test.ts — the Hebrew ladder's tiers (mw-gdcyf98.11, .12): the letters, the sounds and the marks, then the grammar tiers (nouns, pronouns, prepositions, verbs, joiners,
+// sentences), each idea with its card, its Israeli sound lesson where it has a sound, and worked words that are words of Genesis 1 and Jonah 1. A card whose worked word is not in the chapter data is refused here, not patched by hand.
 import { describe, expect, it } from 'vitest';
 import { BOOKS } from '../../src/data/books';
 import { loadChapter } from '../../src/data/chapter';
@@ -17,16 +17,18 @@ const words = (text: string): number => text.trim().split(/\s+/).length;
 const byTier = (tier: string) => HEBREW_LADDER.filter((i) => i.tier === tier);
 
 describe('the Hebrew ladder', () => {
-  it('has 28 ideas in the letters tier, 13 in the sounds tier and 3 in the marks tier, and none above', () => {
+  it('has 28 ideas in the letters tier, 13 in the sounds tier, 3 in the marks tier and 26 in the grammar tiers', () => {
     expect(byTier('letters')).toHaveLength(28);
     expect(byTier('sounds')).toHaveLength(13);
     expect(byTier('marks')).toHaveLength(3);
-    expect(HEBREW_LADDER).toHaveLength(44);
-    for (const tier of ['nouns', 'pronouns', 'prepositions', 'verbs', 'joiners', 'sentences']) expect(byTier(tier), tier).toHaveLength(0);
+    expect(Object.fromEntries(['nouns', 'pronouns', 'prepositions', 'verbs', 'joiners', 'sentences'].map((tier) => [tier, byTier(tier).length]))).toEqual({
+      nouns: 5, pronouns: 3, prepositions: 4, verbs: 10, joiners: 2, sentences: 2,
+    });
+    expect(HEBREW_LADDER).toHaveLength(70);
   });
 
   it('is in tier order, with rungs from 1 in the order of the list', () => {
-    const order = ['letters', 'sounds', 'marks'];
+    const order = ['letters', 'sounds', 'marks', 'nouns', 'pronouns', 'prepositions', 'verbs', 'joiners', 'sentences'];
     expect(HEBREW_LADDER.map((i) => order.indexOf(i.tier))).toEqual([...HEBREW_LADDER.map((i) => order.indexOf(i.tier))].sort((a, b) => a - b));
     HEBREW_LADDER.forEach((idea, i) => expect([idea.id, idea.rung, idea.level]).toEqual([idea.id, i + 1, i + 1]));
   });
@@ -40,9 +42,21 @@ describe('the Hebrew ladder', () => {
     expect(byTier('marks').map((i) => i.id)).toEqual(['he-maqaf', 'he-cantillation', 'he-ketiv-qere']);
   });
 
+  it('has the grammar ideas the story names, tier by tier', () => {
+    const ids = (tier: string) => byTier(tier).map((i) => i.id);
+    expect(ids('nouns')).toEqual(['he-gender', 'he-number', 'he-article', 'he-construct', 'he-suffix-pronominal']);
+    expect(ids('pronouns')).toEqual(['he-pronoun-personal', 'he-pronoun-demonstrative', 'he-pronoun-relative']);
+    expect(ids('prepositions')).toEqual(['he-prep-inseparable', 'he-prep-min', 'he-object-marker', 'he-vav']);
+    expect(ids('verbs')).toEqual([
+      'he-root', 'he-qal', 'he-perfect', 'he-imperfect', 'he-imperative', 'he-participle', 'he-infinitive', 'he-vav-consecutive', 'he-stems', 'he-person-gender-number',
+    ]);
+    expect(ids('joiners')).toEqual(['he-conjunctions', 'he-interrogative']);
+    expect(ids('sentences')).toEqual(['he-verbless-clause', 'he-word-order']);
+  });
+
   it('is a DAG: every need is an idea of a lower rung, and the letters rest on the alphabet', () => {
     expect(pathProblems(HEBREW_LADDER)).toEqual([]);
-    expect(HEBREW_PATH.byId.size).toBe(44);
+    expect(HEBREW_PATH.byId.size).toBe(70);
     for (const idea of HEBREW_LADDER) for (const need of idea.needs) expect(HEBREW_PATH.byId.get(need)!.rung, `${idea.id} needs ${need}`).toBeLessThan(idea.rung);
     for (const id of HEBREW_LETTER_IDEAS) expect(HEBREW_PATH.byId.get(id)!.needs).toEqual(['he-alphabet']);
     expect(HEBREW_PATH.byId.get('he-final-forms')!.needs).toEqual(['he-letter-kaf', 'he-letter-mem', 'he-letter-nun', 'he-letter-pe', 'he-letter-tsade']);

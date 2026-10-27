@@ -6,6 +6,7 @@ import { db } from '../../src/data/db';
 import { ALWAYS_NEEDED, LADDER, TIERS, ideasOf, ideasOfWord } from '../../src/data/grammar/ladder';
 import { LADDER_LANGS, ladderFor, ladderLangOf } from '../../src/data/grammar/ladders';
 import { HEBREW_LADDER, HEBREW_TIERS } from '../../src/data/grammar/hebrew/ladder';
+import { HEBREW_TERMS } from '../../src/data/grammar/hebrew/terms';
 import { teachOf } from '../../src/data/grammar/teach';
 import { getLevel, teachIdea } from '../../src/data/repositories/grammarLevels';
 import { GRAMMAR_TERMS } from '../../src/data/parseCode';
@@ -40,19 +41,23 @@ describe('ladderFor', () => {
     expect(grc.ideaOf('alphabet')).toBe(LADDER[0]);
   });
 
-  it('answers for Hebrew with its own ladder: the provisional tiers and the 44 ideas of the first three, the alphabet first', () => {
+  it('answers for Hebrew with its own ladder: the provisional tiers and the 70 ideas of its nine, the alphabet first', () => {
     const hbo = ladderFor('hbo');
     expect(hbo.lang).toBe('hbo');
     expect(hbo.ideas).toBe(HEBREW_LADDER);
     expect(hbo.tiers).toBe(HEBREW_TIERS);
     expect([...hbo.tiers]).toEqual(['letters', 'sounds', 'marks', 'nouns', 'pronouns', 'prepositions', 'verbs', 'joiners', 'sentences']);
-    expect(hbo.ideas).toHaveLength(44);
+    expect(hbo.ideas).toHaveLength(70);
     expect(hbo.ideas[0]).toMatchObject({ id: 'he-alphabet', title: 'The Hebrew alphabet', tier: 'letters', rung: 1, needs: [] });
     expect(hbo.ideas[1]).toMatchObject({ id: 'he-letter-alef', title: 'Alef', tier: 'letters', rung: 2, needs: ['he-alphabet'] });
     expect(Object.keys(hbo.teach).sort()).toEqual(hbo.ideas.map((i) => i.id).sort());
     expect(hbo.teach['he-alphabet'].worked.length).toBeGreaterThan(0);
     expect(hbo.foundation).toEqual(['he-alphabet']);
-    expect(hbo.terms).toEqual([]);
+    expect(hbo.terms).toEqual(HEBREW_TERMS);
+    expect(hbo.terms).toContain('Qal');
+    expect(hbo.ideaOfTerm('Qal')).toBe('he-qal');
+    expect(hbo.ideaOfTerm('qal')).toBeUndefined();
+    expect(ladderFor('grc').ideaOfTerm('aorist')).toBe('tense-aorist');
     expect(hbo.ideaOf('he-alphabet')).toBe(HEBREW_LADDER[0]);
     expect(() => hbo.ideaOf('alphabet')).toThrow(/Unknown grammar idea/);
     expect(hbo.ideasOf('anything')).toEqual([]);

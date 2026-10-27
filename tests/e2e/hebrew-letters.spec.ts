@@ -24,7 +24,7 @@ test.beforeEach(async ({ page }) => {
 
 test('Alef\'s sheet shows the letter in Hebrew type, with Hear it a thumb tall', async ({ page }) => {
   await chooseHebrew(page);
-  await expect(page.getByTestId('hebrew-ideas').locator('[data-idea]')).toHaveCount(44);
+  await expect(page.getByTestId('hebrew-ideas').locator('[data-idea]')).toHaveCount(70);
   await row(page, 'he-letter-alef').click();
   const sheet = page.getByRole('dialog', { name: 'Idea' });
   await expect(sheet.getByRole('heading', { name: 'Alef' })).toBeVisible();

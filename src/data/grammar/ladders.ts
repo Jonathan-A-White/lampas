@@ -4,9 +4,10 @@
 // with a Greek one. The bridge enum of the built grinds stays the Greek ladder's (grind-build.ts, bridge.ts). The Goal, Placement, Drill it and the idea sheet read the
 // ladder of the language in hand (languageInHand.ts, mw-gdcyf98.10; an idea's own language is ladderLangOf): a consumer that reads LADDER directly is Greek by name.
 import { GRAMMAR_TERMS } from '../parseCode';
-import { ALWAYS_NEEDED, LADDER, LADDER_PATH, TIERS, ideaOf as greekIdeaOf, ideasOf as greekIdeasOf, ideasOfWord as greekIdeasOfWord, type GrammarIdea, type Tier } from './ladder';
+import { ALWAYS_NEEDED, LADDER, LADDER_PATH, TIERS, ideaOf as greekIdeaOf, ideaOfTerm as greekIdeaOfTerm, ideasOf as greekIdeasOf, ideasOfWord as greekIdeasOfWord, type GrammarIdea, type Tier } from './ladder';
 import { HEBREW_ALWAYS_NEEDED, HEBREW_FOUNDATION_TIERS, isHebrewIdeaId, HEBREW_LADDER, HEBREW_PATH, HEBREW_TIERS } from './hebrew/ladder';
 import { HEBREW_TEACH } from './hebrew/teach';
+import { HEBREW_TERMS, hebrewIdeaOfTerm } from './hebrew/terms';
 import { GREEK_TEACH } from './teach';
 import type { Teach } from './teach/types';
 import type { Path } from './pathGraph';
@@ -25,8 +26,10 @@ export interface LadderOf {
   path: Path<GrammarIdea>;
   /** every card's teaching, by idea id */
   teach: Readonly<Record<string, Teach>>;
-  /** the grammar terms the ladder's ideas cover (a Hebrew term is none yet) */
+  /** the grammar terms the ladder's ideas cover: GRAMMAR_TERMS for Greek, the Hebrew parsing terms (hebrew/terms.ts) for Hebrew */
   terms: readonly string[];
+  /** the id of the idea that covers a term, or undefined for a word that is no term of this ladder */
+  ideaOfTerm(term: string): string | undefined;
   /** the tiers a placement walks first */
   foundationTiers: readonly Tier[];
   /** the ideas every word needs and every goal needs, in ladder order (Greek ALWAYS_NEEDED) */
@@ -46,6 +49,7 @@ const GREEK: LadderOf = {
   tiers: TIERS,
   teach: GREEK_TEACH,
   terms: GRAMMAR_TERMS,
+  ideaOfTerm: greekIdeaOfTerm,
   foundationTiers: ['letters', 'sounds', 'marks'],
   foundation: ALWAYS_NEEDED,
   ideaOf: greekIdeaOf,
@@ -59,7 +63,8 @@ const HEBREW: LadderOf = {
   path: HEBREW_PATH,
   tiers: HEBREW_TIERS,
   teach: HEBREW_TEACH,
-  terms: HEBREW_LADDER.flatMap((i) => i.terms),
+  terms: HEBREW_TERMS,
+  ideaOfTerm: hebrewIdeaOfTerm,
   foundationTiers: HEBREW_FOUNDATION_TIERS,
   foundation: HEBREW_ALWAYS_NEEDED,
   ideaOf(id) {
@@ -67,7 +72,7 @@ const HEBREW: LadderOf = {
     if (!idea) throw new Error(`Unknown grammar idea: ${JSON.stringify(id)}`);
     return idea;
   },
-  // stories g and h give a Hebrew word its parsing and its ideas; until then no word needs one
+  // stories g and h give a Hebrew word its ideas; until then no word needs one (its parsing's terms are tied to ideas already: terms.ts)
   ideasOf: () => [],
   ideasOfWord: () => [],
 };

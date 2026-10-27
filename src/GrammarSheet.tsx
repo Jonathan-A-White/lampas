@@ -1,20 +1,22 @@
 // src/GrammarSheet.tsx — the sheet a grammar word of a word's Parsing opens (mw-5r3p30.35), over the word sheet: the term, a plain
 // explanation, up to three examples from the chapter (each opens its own word sheet; straight under the explanation, so all three are
 // in view when the sheet opens, mw-5r3p30.369), how it shows in Koine Greek, related terms, and at the bottom I know this (kept on the
-// phone; the word sheet then shows the term plain) and Ask the tutor.
-import { type Chapter, type GreekWord } from './data/chapter';
+// phone; the word sheet then shows the term plain) and Ask the tutor. A Hebrew chapter's sheet (mw-gdcyf98.12) is the same sheet in the other language: the concept is the Hebrew table's
+// (HEBREW_CONCEPTS), the examples are Hebrew words of the chapter drawn right to left in the Hebrew face, and the note is headed In Hebrew.
+import { sourceLanguage, type Chapter, type GreekWord } from './data/chapter';
 import { exampleMeaning } from './data/grammar/ideaSheet';
-import { conceptOf } from './data/grammar-concepts';
+import { conceptOf, hebrewConceptOf } from './data/grammar-concepts';
 import { grammarExamples } from './data/grammarExamples';
 import { proseOf } from './speech/proseOf';
 import { LessonReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
-import { greekMarked } from './ui/GreekMarked';
+import { greekMarked, hebrewMarked } from './ui/GreekMarked';
 import { useSheetBack } from './ui/sheetBack';
 import { oneTap } from './ui/settle';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { markTermKnown } from './useKnownTerms';
 import { GREEK_LANG } from './script/greekLang';
+import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 
 const BUTTON = 'min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-base font-medium short:flex-none';
 
@@ -43,7 +45,10 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onD
   const { drag, handle } = useSheetDrag(dismiss);
   useEscapeToClose(dismiss, !covered);
   useSheetBack(onClose);
-  const concept = conceptOf(term);
+  const hebrew = sourceLanguage(chapter) === 'hbo';
+  const greekConcept = hebrew ? undefined : conceptOf(term);
+  const hebrewConcept = hebrew ? hebrewConceptOf(term) : undefined;
+  const concept = greekConcept ?? hebrewConcept;
   const examples = grammarExamples(chapter, term, word);
   const title = `${chapter.book} ${chapter.chapter}`;
 
@@ -66,7 +71,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onD
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{term}</h2>
-            <LessonReadAloud id={`grammar:${term}`} text={proseOf([term, concept?.explanation, concept ? 'In Greek' : null, concept?.greek])} />
+            <LessonReadAloud id={`grammar:${term}`} text={proseOf(hebrew ? [term, concept?.explanation] : [term, concept?.explanation, concept ? 'In Greek' : null, greekConcept?.greek])} />
           </div>
           {concept ? (
             <p data-testid="grammar-explanation" className="mt-2 text-lg">
@@ -88,9 +93,15 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onD
                       onClick={() => onWord(example)}
                       className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
                     >
-                      <span {...GREEK_LANG} className="font-greek text-2xl">
-                        {example.t}
-                      </span>
+                      {hebrew ? (
+                        <span {...HEBREW_LANG_ATTRS} dir="rtl" className="script-he text-2xl">
+                          {example.t}
+                        </span>
+                      ) : (
+                        <span {...GREEK_LANG} className="font-greek text-2xl">
+                          {example.t}
+                        </span>
+                      )}
                       <span data-testid="grammar-gloss" className="min-w-0 flex-1 break-words text-base text-muted">{exampleMeaning(chapter, verse, example)}</span>
                       <span className="shrink-0 text-sm text-muted">
                         {chapter.chapter}:{verse}
@@ -105,10 +116,16 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onD
           </div>
           {concept ? (
             <>
-              <p className="mt-3 text-sm text-muted">In Greek</p>
-              <p data-testid="grammar-greek" className="text-lg">
-                {greekMarked(concept.greek, 'font-greek')}
-              </p>
+              <p className="mt-3 text-sm text-muted">{hebrew ? 'In Hebrew' : 'In Greek'}</p>
+              {hebrewConcept ? (
+                <p data-testid="grammar-hebrew" className="text-lg">
+                  {hebrewMarked(hebrewConcept.hebrew)}
+                </p>
+              ) : greekConcept ? (
+                <p data-testid="grammar-greek" className="text-lg">
+                  {greekMarked(greekConcept.greek, 'font-greek')}
+                </p>
+              ) : null}
               {concept.related.length ? (
                 <div role="group" aria-label="Related terms" className="mt-3">
                   <p className="text-sm text-muted">Related</p>
