@@ -4,7 +4,7 @@ import { copyText, copyUnitOf, type CopyFormat, type ReadView } from '../../copy
 import { useCopyFormat } from '../../copy/useCopyFormat';
 import { loadChapter, type Chapter } from '../../data/chapter';
 import { TEXT_SIZES } from '../../appearance/textSizes';
-import { FONTS, type FontId } from '../../appearance/fonts';
+import { FONTS, PHONE_STACK, type FontId } from '../../appearance/fonts';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
 import { chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
@@ -52,7 +52,7 @@ function TextSizeChoice({ percent }: { percent: number }) {
   );
 }
 
-/** The fonts, one per line: its name drawn in its own face, then the plain line of who it suits. */
+/** The fonts, one per line: its name and the plain line of who it suits, both drawn in its own face whatever font is chosen (the chooser is a preview). */
 function FontChoice({ font }: { font: FontId }) {
   return (
     <div role="group" aria-label="Font" className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
@@ -62,9 +62,10 @@ function FontChoice({ font }: { font: FontId }) {
           type="button"
           aria-pressed={font === f.id}
           onClick={() => void writeSetting('font', f.id)}
+          style={{ fontFamily: f.stack ?? PHONE_STACK }}
           className={`min-h-12 rounded-lg px-4 py-2 text-left ${font === f.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
         >
-          <span className="block text-base font-medium" style={f.stack ? { fontFamily: f.stack } : undefined}>{f.label}</span>
+          <span className="block text-base font-medium">{f.label}</span>
           <span className="block text-base">{f.line}</span>
         </button>
       ))}

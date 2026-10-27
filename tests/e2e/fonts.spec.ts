@@ -87,6 +87,36 @@ test('the Font row names each face with who it suits, at a thumb’s height', as
   await shot(page, 'settings-font');
 });
 
+test('the Font chooser previews each face whatever is chosen, and the rest of the page follows the choice', async ({ page }) => {
+  await openReader(page);
+  const group = () => page.getByRole('group', { name: 'Font', exact: true });
+  const familyOfButton = (name: RegExp) => group().getByRole('button', { name }).evaluate((el) => getComputedStyle(el).fontFamily);
+  const familyOfLines = (name: RegExp) => group().getByRole('button', { name }).locator('span').evaluateAll((els) => els.map((el) => getComputedStyle(el).fontFamily));
+
+  await chooseFont(page, /^Literata/);
+  expect(await familyOfButton(/^The phone's own/)).not.toContain('Literata');
+  for (const family of await familyOfLines(/^The phone's own/)) expect(family).not.toContain('Literata');
+  expect(await familyOfButton(/^Lexend/)).toContain('Lexend');
+  for (const family of await familyOfLines(/^Lexend/)) expect(family).toContain('Lexend');
+  expect(await familyOfButton(/^Atkinson Hyperlegible/)).toContain('Atkinson Hyperlegible');
+  for (const family of await familyOfLines(/^Literata/)) expect(family).toContain('Literata');
+
+  // choosing changes nothing inside the group, and the rest of the page follows the choice
+  await group().getByRole('button', { name: /^The phone's own/ }).click();
+  await expect(group().getByRole('button', { name: /^The phone's own/ })).toHaveAttribute('aria-pressed', 'true');
+  expect(await familyOfButton(/^Literata/)).toContain('Literata');
+  for (const family of await familyOfLines(/^Literata/)) expect(family).toContain('Literata');
+  expect(await familyOfButton(/^The phone's own/)).not.toContain('Literata');
+
+  await group().getByRole('button', { name: /^Literata/ }).click();
+  await expect(group().getByRole('button', { name: /^Literata/ })).toHaveAttribute('aria-pressed', 'true');
+  const hint = page.getByText('The face of the English text; the Greek and the Hebrew keep theirs.');
+  expect(await hint.evaluate((el) => getComputedStyle(el).fontFamily)).toContain('Literata');
+  expect(await page.getByRole('group', { name: 'Text size', exact: true }).getByRole('button').first().evaluate((el) => getComputedStyle(el).fontFamily)).toContain('Literata');
+  expect(await page.evaluate(() => getComputedStyle(document.body).fontFamily)).toContain('Literata');
+  await shot(page, 'settings-font-preview');
+});
+
 test('every bundled woff2 of the English fonts is in the built worker’s precache list', async () => {
   const worker = readFileSync('dist/sw.js', 'utf8');
   const built = readdirSync('dist/assets').filter((f) => /^(literata|atkinson-hyperlegible|lexend)-latin-(400|700)-normal-.*\.woff2$/.test(f));
