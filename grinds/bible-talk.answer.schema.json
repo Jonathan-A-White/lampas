@@ -1435,7 +1435,9 @@
                 "description": "The key of the setting, exactly as the instructions list it.",
                 "type": "string",
                 "enum": [
+                  "languages",
                   "greekInterest",
+                  "hebrewInterest",
                   "theme",
                   "font",
                   "textSize",
@@ -1526,7 +1528,19 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "languages" }, "value": { "type": "string", "enum": ["english", "greek", "hebrew", "both"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "greekInterest" }, "value": { "type": "string", "enum": ["0", "1", "2", "3", "4", "5"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "hebrewInterest" }, "value": { "type": "string", "enum": ["0", "1", "2", "3", "4", "5"] } }
           },
           {
             "type": "object",

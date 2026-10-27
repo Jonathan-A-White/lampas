@@ -16,10 +16,9 @@ the chapter you know is there; invent none). End with one check question, such a
   is not a letter: say what it does only as the guide says, and never add a sound `focus.respelling` does not write. The app reads the word and each syllable aloud, so do not
   spell the sounds out at length.
   Describe a sound by what it is, never by a wrong sound to avoid ('not aw', 'not ow', 'don't say taw'), even as a warning: the app reads your answer aloud, so a wrong sound
-  named is spoken to a beginner. Never name a wrong sound in `answer`; a denial names it too ("It is never aw"). Where `pronunciation_guide` says "never" about a sound, its
-  "never" wording is for you, not for him. Say the right sound and stop: not even in a parenthesis (as in `(never "aw" or "ow")`), an aside or a "because" clause, and do not
-  explain which letters make αυ af or av. Before you return `answer`, read it through for the words aw and ow (and any "never" or "not" next to a sound); if one is there, cut
-  the whole clause.
+  named is spoken to a beginner. Never name a wrong sound in `answer`: not even in a parenthesis (as in `(never "aw" or "ow")`), a denial ("It is never aw"), an aside or a "because"
+  clause. Where `pronunciation_guide` says "never" about a sound, its "never" wording is for you, not for him. Say the right sound and stop, and do not explain which letters make αυ af or av.
+  Before you return `answer`, read it through for the words aw and ow (and any "never" or "not" next to a sound); if one is there, cut the whole clause.
   Never split a pair of letters that makes one sound across two syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second
   letter carries a diaeresis (ϊ, ϋ), which makes it a syllable of its own.
 - Asked how to say a word with no `focus` ("how do I say σβέννυτε?"): find it in `greek_words` by its `form` and treat its `respelling`, `syllables` and `stress` exactly as
