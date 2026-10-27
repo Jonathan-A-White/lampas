@@ -102,7 +102,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
           <GreekRuns text={question.prompt} size="text-3xl" />
         </p>
         {question.form && question.lang === 'hbo' ? (
-          <p data-testid="grammar-form" {...HEBREW_LANG_ATTRS} dir="rtl" className="mt-3 min-w-0 break-words script-he text-5xl">
+          <p data-testid="grammar-form" {...HEBREW_LANG_ATTRS} dir="rtl" className="mt-3 min-w-0 break-words script-he hebrew-form">
             {question.form}
           </p>
         ) : question.form ? (
@@ -191,7 +191,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
         className={`${LOOK[look]} rounded-xl border ${look === 'taken' ? 'disabled:opacity-40' : 'disabled:opacity-100'} ${
           tapForm
             ? 'min-h-12 min-w-12 px-3 font-greek text-2xl'
-            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : hebrew ? `script-he ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : 'text-left text-lg'}`
+            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : hebrew ? 'script-he hebrew-choice' : 'text-left text-lg'}`
         }`}
       >
         {option}
