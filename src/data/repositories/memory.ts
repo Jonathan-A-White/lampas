@@ -180,29 +180,38 @@ export function appendToIndex(line: string, by: MemoryBy = 'tutor', when: number
 
 /** The line the index keeps when he said no to the tutor's offer of the Greek (mw-yrmkdf.4): the tutor offers no more until he asks for Greek himself. */
 export const GREEK_NO_PREFIX = 'said no to the Greek offer';
+/** The same for the Hebrew offer (mw-gdcyf98.17), beside the Greek line; each is honoured for its own language. */
+export const HEBREW_NO_PREFIX = 'said no to the Hebrew offer';
+/** The language of an offer of the original that a no is kept for. */
+export type NoLang = 'grc' | 'he';
+const noPrefixOf = (lang: NoLang): string => (lang === 'he' ? HEBREW_NO_PREFIX : GREEK_NO_PREFIX);
 /** The whole line for a no said at `when`: 'said no to the Greek offer 2026-10-13', the phone's own day (as the page's 'Changed' line shows it), never the UTC one (mw-yrmkdf.9). */
-export const greekNoLine = (when: number): string => `${GREEK_NO_PREFIX} ${dayOf(when)}`;
-/** True when the index text holds the no, on a line of its own. */
-export const hasGreekNo = (indexText: string): boolean => new RegExp(`^${GREEK_NO_PREFIX}`, 'm').test(indexText);
+export const offerNoLine = (when: number, lang: NoLang = 'grc'): string => `${noPrefixOf(lang)} ${dayOf(when)}`;
+export const greekNoLine = (when: number): string => offerNoLine(when, 'grc');
+/** True when the index text holds the no for `lang`, on a line of its own. */
+export const hasOfferNo = (indexText: string, lang: NoLang = 'grc'): boolean => new RegExp(`^${noPrefixOf(lang)}`, 'm').test(indexText);
+export const hasGreekNo = (indexText: string): boolean => hasOfferNo(indexText, 'grc');
 
-/** Writes his no to the Greek offer to the end of the index, once: a second no changes nothing. */
-export function noteGreekNo(when: number = Date.now()): Promise<IndexResult> {
+/** Writes his no to the offer of `lang` to the end of the index, once: a second no changes nothing. */
+export function noteOfferNo(when: number = Date.now(), lang: NoLang = 'grc'): Promise<IndexResult> {
   return db.transaction('rw', db.settings, async (): Promise<IndexResult> => {
     const kept = await readStoredIndex();
-    if (kept && hasGreekNo(kept.body)) return 'saved';
-    return appendToIndex(greekNoLine(when), 'tutor', when);
+    if (kept && hasOfferNo(kept.body, lang)) return 'saved';
+    return appendToIndex(offerNoLine(when, lang), 'tutor', when);
   });
 }
+export const noteGreekNo = (when: number = Date.now()): Promise<IndexResult> => noteOfferNo(when, 'grc');
 
-/** Takes his no to the Greek offer out of the index (he asked for Greek himself); the rest of the index stays as it was. */
-export function clearGreekNo(when: number = Date.now()): Promise<void> {
+/** Takes his no to the offer of `lang` out of the index (he asked for that language himself); the rest of the index stays as it was. */
+export function clearOfferNo(when: number = Date.now(), lang: NoLang = 'grc'): Promise<void> {
   return db.transaction('rw', db.settings, async (): Promise<void> => {
     const kept = await readStoredIndex();
-    if (!kept || !hasGreekNo(kept.body)) return;
-    const body = kept.body.split('\n').filter((line) => !line.startsWith(GREEK_NO_PREFIX)).join('\n').trim();
+    if (!kept || !hasOfferNo(kept.body, lang)) return;
+    const body = kept.body.split('\n').filter((line) => !line.startsWith(noPrefixOf(lang))).join('\n').trim();
     await writeStoredIndex({ body, when, by: kept.by });
   });
 }
+export const clearGreekNo = (when: number = Date.now()): Promise<void> => clearOfferNo(when, 'grc');
 
 /** Every note, by name. */
 export const listNotes = (): Promise<MemoryNote[]> => readNotes();

@@ -1,8 +1,7 @@
 // src/talk/offers.ts — the offers a tutor answer holds for his tap (Send this to the makers, a setting change, the quiz goal) and what his
 // spoken or typed yes, no or 'read it back' does to the newest one (mw-5r3p30.186). The decision is the grind's (`offer_reply` in the answer);
 // the app only carries the offer to it (`pending_offer`) and does exactly what the tap does when the reply is confirm. The bridge (mw-1vuvq6.5) is one more: its
-// button is Take me there, and what it does is open the idea's sheet over the talk. The Greek offer (mw-yrmkdf.4, greekOffer.ts) is the last: its tap opens the Greek word or
-// the Greek view, and a no is written to the memory index.
+// button is Take me there, and what it does is open the idea's sheet over the talk. The offer of the original (mw-yrmkdf.4, greekOffer.ts; Greek or Hebrew by its `lang`) is the last: its tap raises the dial and opens the word, and a no is written to the memory index.
 import { useSyncExternalStore } from 'react';
 import { liveBridge } from '../data/grammar/bridge';
 import { levelsOf } from '../data/grammar/goalProgress';
@@ -10,9 +9,9 @@ import { ideaOf } from '../data/grammar/ladder';
 import type { Level } from '../data/grammar/needs';
 import { getTurn, listLevels, listTurnPictures, markBridgeChoice, markFeedbackSent, markGreekChoice, markFeedbackWithdrawn, markQuizGoalChoice, markRustyChoice, markSettingChoice, markTodayChoice, setQuizGoal, type TalkTurn } from '../data/repositories';
 import type { Bridge } from '../data/db';
-import { noteGreekNo } from '../data/repositories/memory';
+import { noteOfferNo } from '../data/repositories/memory';
 import { RUSTY_BUTTON } from '../data/rusty';
-import { takeGreekOffer } from './greekOffer';
+import { noLangsOf, offerLangOf, takeGreekOffer } from './greekOffer';
 import { takeRustyOffer } from './rustyOffer';
 import { TODAY_BUTTON, takeTodayOffer } from './todayOffer';
 import { sendToMakers } from './makers';
@@ -38,7 +37,7 @@ export function offerOfTurn(turn: TalkTurn, levels?: ReadonlyMap<string, Level>)
   if (turn.quizGoalOffer && !turn.quizGoalChoice) return { kind: 'quiz-goal', text: turn.quizGoalOffer };
   const bridge = bridgeOf(turn, levels);
   if (bridge && !turn.bridgeChoice) return { kind: 'bridge', text: bridgeButtonText(bridge) };
-  if (turn.greekOffer && !turn.greekChoice) return { kind: 'greek', text: turn.greekOffer.text };
+  if (turn.greekOffer && !turn.greekChoice) return { kind: 'greek', text: turn.greekOffer.text, lang: offerLangOf(turn.greekOffer) };
   if (turn.rustyOffer && !turn.rustyChoice) return { kind: 'rusty', text: RUSTY_BUTTON };
   if (turn.todayOffer && !turn.todayChoice) return { kind: 'today', text: TODAY_BUTTON };
   return undefined;
@@ -48,7 +47,7 @@ export function offerOfTurn(turn: TalkTurn, levels?: ReadonlyMap<string, Level>)
 function takenOfferOf(turn: TalkTurn, levels?: ReadonlyMap<string, Level>): PendingOffer | undefined {
   const bridge = bridgeOf(turn, levels);
   if (bridge && turn.bridgeChoice === 'taken') return { kind: 'bridge', text: bridgeButtonText(bridge) };
-  if (turn.greekOffer && turn.greekChoice === 'taken') return { kind: 'greek', text: turn.greekOffer.text };
+  if (turn.greekOffer && turn.greekChoice === 'taken') return { kind: 'greek', text: turn.greekOffer.text, lang: offerLangOf(turn.greekOffer) };
   if (turn.rustyOffer && turn.rustyChoice === 'taken') return { kind: 'rusty', text: RUSTY_BUTTON };
   if (turn.todayOffer && turn.todayChoice === 'taken') return { kind: 'today', text: TODAY_BUTTON };
   return undefined;
@@ -197,9 +196,9 @@ export async function settleOffer(reply: OfferReply | undefined, waiting: { turn
     else if (offer.kind === 'rusty') await markRustyChoice(id, 'declined');
     else if (offer.kind === 'today') await markTodayChoice(id, 'declined');
     else if (offer.kind === 'greek') {
-      // his no is kept in the index so the tutor offers the Greek no more until he asks for it himself
+      // his no is kept in the index so the tutor offers the original no more, in the offer's language, until he asks for it himself
       await markGreekChoice(id, 'declined');
-      await noteGreekNo(when);
+      for (const lang of noLangsOf(offerLangOf(turn.greekOffer ?? { lang: offer.lang }))) await noteOfferNo(when, lang);
     }
     else await markQuizGoalChoice(id, 'declined');
     return outcome;

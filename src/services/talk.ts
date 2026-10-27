@@ -8,7 +8,7 @@ import { QUIZ_GOAL_MAX, type ReaderView } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { MEMORY_NAME_MAX, MEMORY_NOTE_MAX } from '../data/repositories/memory';
 import { screenRef, talkRef } from '../data/repositories/talks';
-import type { AnswerLink, AnswerWord, GreekOffer } from '../data/db';
+import type { AnswerLink, AnswerWord, GreekOffer, OfferLang } from '../data/db';
 import { isAnswerBridge, type AnswerBridge, type MissingFoundations } from '../data/grammar/bridge';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
@@ -270,7 +270,7 @@ export interface TalkRequest {
    * ideas, the lowest on the ladder first. The tutor picks its `bridge` from it and never guesses an idea. */
   missing_foundations?: MissingFoundations;
   /** which language the Reader shows now (mw-yrmkdf.4); missing in a talk from a screen */
-  reader_view?: ReaderView;
+  reader_view?: ReaderView | 'hebrew';
   /** the Greek dial as he set it (mw-3ased2.3): its step, the step's name and the one step above, which is all the tutor may offer to raise it to; `next` is missing at All in. A phone not
    * placed yet reads All in. Missing in a quiz and a talk from a screen. */
   greek_interest?: InterestField;
@@ -328,6 +328,8 @@ export interface FeedbackOffer {
 export interface PendingOffer {
   kind: 'feedback' | 'setting' | 'quiz-goal' | 'bridge' | 'greek' | 'rusty' | 'today';
   text: string;
+  /** of a `greek` offer only (mw-gdcyf98.17): the language of the dial it raises */
+  lang?: OfferLang;
 }
 
 /** What the tutor decided his words were, when an offer was waiting: yes, no or 'read it back'. Left out for an ordinary question, and the offer stays. */
@@ -436,10 +438,13 @@ const isMemoryUpdate = (value: unknown): value is MemoryUpdate =>
 
 /** The longest line of a Greek offer: the answer schema's. */
 export const GREEK_OFFER_TEXT_MAX = 120;
-const isGreekOffer = (value: unknown): value is GreekOffer =>
-  isObject(value) &&
-  isText(value.text, GREEK_OFFER_TEXT_MAX) &&
-  ((value.kind === 'view' && Object.keys(value).length === 2) || (value.kind === 'word' && Object.keys(value).length === 3 && isText(value.lemma, 80)));
+const isGreekOffer = (value: unknown): value is GreekOffer => {
+  if (!isObject(value) || !isText(value.text, GREEK_OFFER_TEXT_MAX)) return false;
+  // `lang` is optional (absent reads as Greek) and one of three
+  const extra = 'lang' in value ? 1 : 0;
+  if ('lang' in value && value.lang !== 'grc' && value.lang !== 'he' && value.lang !== 'both') return false;
+  return (value.kind === 'view' && Object.keys(value).length === 2 + extra) || (value.kind === 'word' && Object.keys(value).length === 3 + extra && isText(value.lemma, 80));
+};
 
 const isRustyOffer = (value: unknown): value is RustyOfferAnswer =>
   isObject(value) &&
@@ -630,7 +635,7 @@ export function buildTalkRequest(
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),
     ...(missingFoundations && !aboutCredits ? { missing_foundations: missingFoundations } : {}),
-    ...(readerView && !scope.screen && !scope.quiz ? { reader_view: readerView } : {}),
+    ...(readerView && !scope.screen && !scope.quiz ? { reader_view: readerView === 'greek' && sourceLanguage(scope.chapter) === 'hbo' ? ('hebrew' as const) : readerView } : {}),
     ...(!scope.screen && !scope.quiz ? { greek_interest: greekInterestField(settings), hebrew_interest: hebrewInterestField(settings) } : {}),
     ...(requests.length > 0 && !aboutCredits ? { requests } : {}),
     ...(rusty && rusty.length > 0 && !aboutCredits && !scope.quiz && !scope.welcome ? { rusty } : {}),

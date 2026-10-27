@@ -5,7 +5,7 @@
 // That rule, the four lines and the never-throws loop are voice-kit/talks' applyNoteUpdates (mw-o480n1.7); this file gives it Lampas's NoteStore.
 // `wished_notes` are names of notes the tutor would have used had they existed: they are counted and the last names kept (Settings > About), nothing else.
 import { applyNoteUpdates, type NoteStore, type NotesChange, type NoteUpdate } from 'voice-kit/talks';
-import { appendToIndex, appendToNote, clearGreekNo, keepWishedNotes, memoryName, putNote, removeNote, setIndex } from '../data/repositories/memory';
+import { appendToIndex, appendToNote, clearOfferNo, keepWishedNotes, memoryName, putNote, removeNote, setIndex, type NoLang } from '../data/repositories/memory';
 
 /** One entry of `memory_update`: exactly one of append, replace or remove (the answer guard checks); the grind's flag for his own words only with the last two. The kit's NoteUpdate. */
 export type MemoryUpdate = NoteUpdate;
@@ -35,10 +35,10 @@ const notes: NoteStore = {
   },
 };
 
-/** Applies the answer's memory_update and counts its wished_notes. It never throws: a note it cannot write is refused and logged. */
-export async function applyMemoryFromAnswer(answer: MemoryAnswer, when: number = Date.now()): Promise<MemoryResult> {
+/** Applies the answer's memory_update and counts its wished_notes; `greek_asked` clears the no of the offer's language, the chapter's (`lang`, Greek by default). It never throws: a note it cannot write is refused and logged. */
+export async function applyMemoryFromAnswer(answer: MemoryAnswer, when: number = Date.now(), lang: NoLang = 'grc'): Promise<MemoryResult> {
   const result = await applyNoteUpdates(answer.memory_update ?? [], notes, { when, warn: (line) => console.warn(`Lampas memory: ${line}`) });
-  if (answer.greek_asked) await clearGreekNo(when).catch(() => undefined);
+  if (answer.greek_asked) await clearOfferNo(when, lang).catch(() => undefined);
   if (answer.wished_notes?.length) await keepWishedNotes(answer.wished_notes).catch(() => 0);
   return result;
 }
