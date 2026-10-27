@@ -1,7 +1,8 @@
 // src/diagram/lesson.ts — the optional lesson 'How to read a sentence diagram' (mw-q6t5tvn.1, #/diagram-lesson): nine steps, one Reed-Kellogg convention each, drawn by ReedKellogg from a diagram
 // written by hand here (never asked of the tutor) on a real verse or part of one, each with a one-tap check, and what he has done kept on the phone (localStorage, no Dexie), with whether the Diagram pane still invites him to it (mw-q6t5tvn.2). The conventions are
 // the ones docs/layout/diagram.md 'The Reed-Kellogg conventions, as drawn' sets out, so the lesson teaches what the app draws. Pure data and the little keeping; the screen is DiagramLesson.tsx.
-import type { Diagram, DiagramMode, DiagramWords, Modifier, Slot, TokenRef } from './types';
+import { english, hang, prep, slot, understood, w } from './handwritten';
+import type { Diagram, DiagramWords, Modifier, Slot, WrittenDiagram } from './types';
 
 /** The check of a step: the screen says 'Tap the <role>', and `answer` is the index in the step's words of the word that is right. */
 export interface LessonCheck {
@@ -9,28 +10,17 @@ export interface LessonCheck {
   answer: number;
 }
 
-export interface LessonStep {
+/** A step: the diagram it draws (WrittenDiagram), with its title and text above it and its check. */
+export interface LessonStep extends WrittenDiagram {
   /** a step's short name, its heading */
   title: string;
   /** one or two plain sentences, above the diagram */
   text: string;
-  /** the verse (or the part of it) the diagram is of, as the screen names it: 'John 11:35' */
-  reference: string;
-  /** where the words are in the data: the book's code, the chapter, the verse */
-  verse: { book: string; chapter: number; verse: number };
-  mode: DiagramMode;
-  words: DiagramWords;
-  diagram: Diagram;
   check: LessonCheck;
 }
 
-const w = (i: number): TokenRef => ({ i });
-const slot = (words: number[], modifiers: Modifier[] = []): Slot => ({ words: words.map(w), modifiers });
-const hang = (i: number, modifiers: Modifier[] = []): Modifier => ({ kind: 'word', word: w(i), modifiers });
-const prep = (preposition: number, object: Slot): Modifier => ({ kind: 'prepositional', preposition: w(preposition), object });
 /** The understood 'you' of a command. */
-const YOU: Slot = { words: [{ implied: 'you' }], modifiers: [] };
-const english = (...texts: string[]): DiagramWords => texts.map((text, chunk) => ({ text, chunk }));
+const YOU: Slot = understood('you');
 
 /** Colossians 3:1 as the Weave can show it: the chunks the Weave shows in Greek (src/diagram/weave.ts) carry their Greek words (`weft`: the verse's Greek word indexes), the English left over is emptied. */
 const COLOSSIANS_WOVEN: DiagramWords = [
