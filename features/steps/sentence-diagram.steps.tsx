@@ -171,9 +171,9 @@ async function lessonIsOpen(_: unknown, title: string): Promise<void> {
   expect(lesson).toBeInTheDocument();
 }
 
-/** Next through the first eight steps and Done on the ninth. */
+/** Next through the first nine steps and Done on the tenth. */
 async function throughTheLesson(): Promise<void> {
-  for (let step = 1; step < 9; step++) await user.click(await screen.findByRole('button', { name: 'Next', exact: true }));
+  for (let step = 1; step < 10; step++) await user.click(await screen.findByRole('button', { name: 'Next', exact: true }));
   await user.click(await screen.findByRole('button', { name: 'Done', exact: true }));
 }
 
