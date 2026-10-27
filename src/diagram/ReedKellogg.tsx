@@ -47,8 +47,9 @@ export interface ReedKelloggProps {
   onWord: (index: number) => void;
   /** a label's width; the screen's own face by default (a test passes a fixed one, jsdom has no layout) */
   measure?: Measure;
-  /** a word to light (the lesson, src/diagram/DiagramLesson.tsx, shows the right word of its check): its index in `words` */
-  lit?: number;
+  /** the words to light, their indexes in `words`: one (the lesson, src/diagram/DiagramLesson.tsx, shows the right word of its check) or a set (an idea sheet's
+   * 'In a diagram' lights the words its card teaches) */
+  lit?: number | readonly number[];
 }
 
 export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, lit }: ReedKelloggProps) {
@@ -78,6 +79,7 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
     return (text) => (GREEK_LETTER.test(text) ? measured.greek(text) : measured.english(text));
   }, [measure, measured]);
   const layout = useMemo(() => layoutDiagram(diagram, words, width), [diagram, words, width]);
+  const isLit = (index: number): boolean => (typeof lit === 'number' ? lit === index : (lit?.includes(index) ?? false));
 
   const label = (l: LayoutLabel) => {
     const place = { left: l.x - HIT_PAD, top: l.y - LABEL_H - 2, width: l.width + 2 * HIT_PAD, height: LABEL_H };
@@ -92,7 +94,7 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
     }
     const index = l.index;
     const woven = words[index]?.weft !== undefined;
-    const shown = lit === index;
+    const shown = isLit(index);
     return (
       <button key={l.id} type="button" data-word={String(index)} data-woven={woven ? '' : undefined} data-lit={shown ? '' : undefined} {...langOf(greek || woven)} style={place} onClick={() => onWord(index)} className={`${text} ${woven ? GREEK_FACE : face} ${NO_SELECT} cursor-pointer rounded active:bg-line ${shown ? 'bg-line ring-2 ring-accent' : ''}`}>
         {l.text}
