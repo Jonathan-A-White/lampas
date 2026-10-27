@@ -88,6 +88,7 @@ describe('no scenario note, and no instructions, use the past tense of read', ()
     const section = text.slice(start, text.indexOf('\n## ', start + 1));
     expect(withoutWrongLines(section)).not.toMatch(PAST_READ);
     expect(section).toMatch(/past tense of read/);
+    expect(section).toMatch(/Never "read" right after "you"|never "read" right after "you"/);
     for (const word of ['lead', 'live', 'wind', 'tear', 'close', 'present']) expect(section, word).toContain(`\`${word}\``);
   });
 });
