@@ -1,16 +1,13 @@
-// src/speech/answerRuns.ts — an answer of the Bible talk is English with Greek words in it. Read aloud, each stretch of Greek
-// goes to the Greek voice and the rest to the English one (the runs src/speech/readAloud.ts speaks).
+// src/speech/answerRuns.ts — an answer of the Bible talk is English with Greek and Hebrew words in it. Read aloud, each stretch of Greek goes to the Greek voice,
+// each of Hebrew to the Hebrew one and the rest to the English one (the runs src/speech/readAloud.ts speaks; the cut is src/speech/languageRuns.ts, which a page of
+// prose shares, mw-gdcyf98.27).
 import { markdownToSpeech } from '../markdown/plain';
-import { withoutScripts } from '../script/scripts';
+import { SCRIPTS } from '../script/scripts';
 import { chosenPronunciation } from './greek';
 import { greekSyllables } from './greekSyllables';
+import { GREEK_WORD, languageRuns, speakable } from './languageRuns';
+import { chosenHebrewPronunciation } from './pronunciation';
 import type { Run } from './readAloud';
-
-const GREEK_WORD = '[\\p{Script=Greek}\\p{M}]+';
-// Greek words with only spaces between them are one stretch, so a phrase is read in one breath.
-const GREEK_STRETCH = new RegExp(`${GREEK_WORD}(?:[ \\u00a0]+${GREEK_WORD})*`, 'gu');
-
-const speakable = (text: string): boolean => /[\p{L}\p{N}]/u.test(text);
 
 // A respelling of a Greek sound ('PNEV-ma', 'khree-STO'): hyphened syllables with one stressed in capitals, or a capitalised word. The English voice would
 // spell it letter by letter, so answerRuns hands the Greek it respells to the Greek voice instead (mw-5r3p30.272).
@@ -37,6 +34,11 @@ function respellings(text: string): Map<string, string> {
       for (let to = from + 1; to <= syllables.length; to++) add(spelled.slice(from, to).join('-'), syllables.slice(from, to).join(''));
     }
   }
+  // a Hebrew word's respelling ('RU-akh') is likewise the Hebrew word, said in the Hebrew voice, never the English voice's guess at the Latin letters
+  const hebrew = SCRIPTS.find((script) => script.speaks === 'hebrew');
+  if (hebrew) {
+    for (const [word] of text.matchAll(new RegExp(`[${hebrew.letters}]+`, 'gu'))) add(chosenHebrewPronunciation().respell(word), word);
+  }
   return found;
 }
 
@@ -58,21 +60,8 @@ function withoutRespellings(text: string): string {
 
 /** The answer cut into runs of one language each, in the order they come; a run with nothing to say is left out. Its Markdown marks are never spoken. */
 export function answerRuns(answer: string): Run[] {
-  // Hebrew in the answer is for his eyes and his tap (src/script/HebrewWord.tsx says it in the Hebrew voice): the English voice would only garble it.
-  const text = withoutRespellings(withoutScripts(markdownToSpeech(answer)));
-  const runs: Run[] = [];
-  let at = 0;
-  const english = (to: number): void => {
-    const piece = text.slice(at, to).replace(/\s+/g, ' ').trim();
-    if (speakable(piece)) runs.push({ text: piece, language: 'english' });
-  };
-  for (const match of text.matchAll(GREEK_STRETCH)) {
-    english(match.index);
-    runs.push({ text: match[0].replace(/\s+/g, ' ').trim(), language: 'greek' });
-    at = match.index + match[0].length;
-  }
-  english(text.length);
-  return runs;
+  // Greek and Hebrew words are each said in their own voice, as the word itself (a Hebrew word was once left out here, mw-gdcyf98.27); the English voice only garbles either.
+  return languageRuns(withoutRespellings(markdownToSpeech(answer)));
 }
 
 /** The syllables of a word he asked to have sounded out, as runs to read one after another: Greek, said slowly. A syllable of one letter stays one letter here: readAloud.ts piecesOf plays its pronunciation's clip there, never handing it to a voice (mw-5r3p30.347). */

@@ -2,6 +2,7 @@
 // Everything here is per language, so Hebrew is one entry and a Hebrew Old Testament reader, or another language, reuses the setting, the font
 // class and the splitting unchanged: a language is one more entry in SCRIPTS (and one in the registry's list of settings, which is built from it).
 // Greek is not an entry: its words are set in Gentium Plus wherever they are drawn (its depth is simply 'full', the way the app already writes it).
+import type { SpeechLanguage } from '../speech/languages';
 
 /** How deep into a language the tutor goes: only its sounds in Latin letters, the letters with the sounds, or the letters as the language writes them. */
 export type Depth = 'transliteration' | 'both' | 'full';
@@ -31,6 +32,8 @@ export interface TutorScript {
   settingKey: string;
   /** what the setting's control is called: 'Hebrew in the tutor' */
   settingLabel: string;
+  /** the speech language its words are said in (src/speech/languages.ts): the voice and speed of that language, by src/speech/languageRuns.ts */
+  speaks: SpeechLanguage;
   /** the direction its text runs */
   dir: 'rtl' | 'ltr';
   /** the class that sets it in its bundled font (src/index.css) */
@@ -44,6 +47,7 @@ export interface TutorScript {
 export const HEBREW: TutorScript = {
   id: 'he',
   label: 'Hebrew',
+  speaks: 'hebrew',
   settingKey: 'hebrewDepth',
   settingLabel: 'Hebrew in the tutor',
   dir: 'rtl',
@@ -91,11 +95,4 @@ export function splitScripts(text: string): ScriptPart[] {
     }
   }
   return parts;
-}
-
-/** `text` with every stretch of the scripts here taken out (a space in its place): what a voice that does not speak them should be given. */
-export function withoutScripts(text: string): string {
-  return splitScripts(text)
-    .map((p) => (p.script ? ' ' : p.text))
-    .join('');
 }
