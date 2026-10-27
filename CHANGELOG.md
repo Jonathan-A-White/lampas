@@ -1,5 +1,11 @@
 # What's new
 
+## 0.5.0
+_2026-10-27_
+- New: Lampas now checks that you really know an idea you once missed by asking you a new question on it, and Drill it only proves an idea on questions you have not been asked before.
+- New: the lessons on the noun and on the nominative, accusative, genitive and dative cases now draw a short verse as a sentence diagram, with the word the lesson teaches lit.
+- New: Tap any request on Your requests to read it in full, with the date of its latest news and its tracking number; asks you send from now on keep your own words.
+
 ## 0.4.2
 _2026-10-27_
 - New: The small link words (ὅτι, γάρ, οὖν, δέ, ἀλλά and the rest) now have memory pictures, one family of two bars and a link drawn differently for each, so you can tell them apart.
