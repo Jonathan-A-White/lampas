@@ -530,7 +530,8 @@ test('the last page of a chapter in Turn pages ends with the chapter links: no A
     await expect.poll(() => at(page)).toBe(n);
   }
   await expect(page.getByRole('navigation', { name: 'Chapters', exact: true })).toBeInViewport();
-  expect(await afterLastVerse(page)).toEqual(['nav:Chapters']);
+  // the Maps door (mw-zbjgn3r.2) stands before the chapter buttons at the foot of a chapter that has maps (Mark 12 has some)
+  expect(await afterLastVerse(page)).toEqual([expect.stringMatching(/^button:Maps · \d+$/), 'nav:Chapters']);
   await expect(page.locator('[data-reader]').getByRole('button', { name: 'About', exact: true })).toHaveCount(0);
   await expect(page.getByTestId('build-version')).toHaveCount(0);
 });
