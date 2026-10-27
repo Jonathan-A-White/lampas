@@ -68,7 +68,7 @@ export const PREFACE_LINKS: PrefaceLink[] = [
   },
   {
     name: 'The 2018 edition and both texts, on GitHub',
-    about: 'Robinson’s files as the byztxt project keeps them (public domain): the 2018 text, and the release closest to the 2005 text that we compared the Greek with.',
+    about: 'Robinson’s files as the byztxt project keeps them (public domain): the 2018 text and its apparatus of variant readings, which Lampas’s chapter files carry, and the release closest to the 2005 text that we compared the Greek with.',
     url: 'https://github.com/byztxt/byzantine-majority-text',
   },
   {

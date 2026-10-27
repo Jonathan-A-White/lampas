@@ -356,10 +356,10 @@ describeFeature(feature, ({ Scenario }) => {
           .map((p) => `${p}\n${readFileSync(join(dir, p), 'utf8')}`)
           .join('\n');
       const a = join(outDir, 'out-a');
-      await runBuild({ rawDir: outDir, outDir: a, download });
+      await runBuild({ rawDir: outDir, outDir: a, download, variants: false });
       first = dump(a);
       // The second run writes over the first run's own output directory.
-      await runBuild({ rawDir: outDir, outDir: a, download });
+      await runBuild({ rawDir: outDir, outDir: a, download, variants: false });
       second = dump(a);
     });
     Then('the second run writes the same bytes as the first', () => {
@@ -394,8 +394,8 @@ describeFeature(feature, ({ Scenario }) => {
       };
       const a = join(raw, 'out-a');
       const b = join(raw, 'out-b');
-      await runBuild({ rawDir: raw, outDir: a, download });
-      await runBuild({ rawDir: raw, outDir: b, download });
+      await runBuild({ rawDir: raw, outDir: a, download, variants: false });
+      await runBuild({ rawDir: raw, outDir: b, download, variants: false });
       const text = readFileSync(join(a, 'frequency.json'), 'utf8');
       expect(text.length).toBeGreaterThan(50);
       expect(readFileSync(join(b, 'frequency.json'), 'utf8')).toBe(text);

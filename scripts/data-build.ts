@@ -1,7 +1,7 @@
 // scripts/data-build.ts — npm run data:build
 // Turns the Majority Standard Bible NT tables (public domain; Byzantine Greek word-aligned to the MSB English,
 // with Strong's and RP parsing codes) and STEPBible's TBESG lexicon (CC BY 4.0) into public/data/index.json
-// and one public/data/<book>/<chapter>.json per chapter, public/data/lexicon.json (every lemma of the text with its gloss) and public/data/frequency.json (every Strong's number with its count). The raw downloads go to data/raw (git-ignored,
+// and one public/data/<book>/<chapter>.json per chapter (with the Robinson-Pierpont 2018 apparatus laid on its words, scripts/data/variants.ts), public/data/lexicon.json (every lemma of the text with its gloss) and public/data/frequency.json (every Strong's number with its count). The raw downloads go to data/raw (git-ignored,
 // skipped when present); the JSON is committed. The shape is in docs/data.md and src/data/chapter.ts.
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -16,6 +16,7 @@ import type { FrequencyEntry } from '../src/data/frequency';
 import { COLUMNS, addRow, checkHeader, splitReference, wordOf, type TableGroup, type TableVerse, type TableWord } from './data/bereanTable';
 import { buildVerse, chapterFingerprint, fetchTo, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { parseTbes, type Lexicon } from './data/tbes';
+import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
 
 export { suppliedWords } from './data/bereanTable';
 export { chapterFingerprint } from './data/chapterWriter';
@@ -178,6 +179,8 @@ export interface BuiltData {
   lexicon: LemmaLexicon;
   /** every Strong's number of the text with its count: public/data/frequency.json */
   frequency: FrequencyEntry[];
+  /** the apparatus's units by code, how many were aligned, and those that were not; absent when the build was given no apparatus */
+  variants?: VariantStats;
 }
 
 /** A name: any use of the word is coded N-PRI (an indeclinable proper noun, 'Ἀβραάμ'), or a use is coded as a noun (N-...) and the
@@ -217,7 +220,8 @@ export function countWords(chapters: BuiltChapter[], lex: Lexicon): FrequencyEnt
     .sort((a, b) => b.count - a.count || numeric(a.strongs, b.strongs));
 }
 
-export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
+/** `apparatus`: the Robinson-Pierpont 2018 apparatus of each book by its code, 'chapter:verse' -> text (loadApparatus); without it no chapter has `variants`. */
+export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, Map<string, string>>): BuiltData {
   const byBook = new Map<string, Map<number, TableVerse[]>>();
   for (const v of parseMsb(msbTsv)) {
     const chapters = byBook.get(v.book) ?? new Map<number, TableVerse[]>();
@@ -231,9 +235,11 @@ export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
   const index: BookIndex = { books: [] };
   const chapters: BuiltChapter[] = [];
   const lexicon: LemmaLexicon = {};
+  const variants: VariantStats = { counts: {}, aligned: {}, unaligned: [], books: [] };
   for (const [code, name] of BOOKS) {
     const book = byBook.get(name);
     if (!book) continue;
+    const bookCounts: CodeCounts = {};
     const count = Math.max(...book.keys());
     const counts: number[] = [];
     const fingerprints: string[] = [];
@@ -263,6 +269,15 @@ export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
         parse: Object.fromEntries(codes.map((c) => [c, decodeParse(c)])),
         verses: built,
       };
+      const rp = apparatus?.get(code);
+      if (rp) {
+        const found = alignChapter(name, n, built.map((v) => ({ n: v.n, words: v.g.map((w) => w.t) })), rp);
+        if (found.units.length) chapter.variants = found.units;
+        addCounts(bookCounts, found.counts);
+        addCounts(variants.counts, found.counts);
+        addCounts(variants.aligned, found.aligned);
+        variants.unaligned.push(...found.unaligned);
+      }
       // The first use of a lemma, in canonical order, names its Strong's number and part of speech.
       for (const w of built.flatMap((v) => v.g)) {
         if (!(w.l in lexicon)) lexicon[w.l] = { g: chapter.lex[w.s].g, s: w.s, c: splitParse(w.p).pos };
@@ -272,8 +287,9 @@ export function buildData(msbTsv: string, lex: Lexicon): BuiltData {
       chapters.push({ path: `${code}/${n}.json`, chapter });
     }
     index.books.push({ code, name, chapters: count, verses: counts, fingerprints, lang: 'grc' });
+    if (apparatus?.has(code)) variants.books.push({ name, counts: bookCounts });
   }
-  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex) };
+  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), ...(apparatus ? { variants } : {}) };
 }
 
 // ---------------------------------------------------------------- files
@@ -284,10 +300,14 @@ export interface BuildOptions {
   /** fetches url into dest; the default uses fetch */
   download?: (url: string, dest: string) => Promise<void>;
   log?: (line: string) => void;
+  /** lay the Robinson-Pierpont 2018 apparatus on the chapters (fetched into rawDir/byztxt-v3.3.2); default true. Tests of the rest of the build pass false. */
+  variants?: boolean;
+  /** the sha256 the apparatus files must have; default VARIANTS_SHA256 (a test's own files have their own) */
+  variantsSha256?: string;
 }
 
 export async function runBuild(options: BuildOptions): Promise<{ chapters: number; written: number; bytes: number }> {
-  const { rawDir, outDir, download = fetchTo, log = () => undefined } = options;
+  const { rawDir, outDir, download = fetchTo, log = () => undefined, variants = true } = options;
   const msbPath = join(rawDir, MSB_FILE);
   const tbesgPath = join(rawDir, TBESG_FILE);
   for (const [url, path] of [[MSB_URL, msbPath], [TBESG_URL, tbesgPath]] as const) {
@@ -295,7 +315,9 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
     log(`downloading ${url}`);
     await download(url, path);
   }
-  const built = buildData(readFileSync(msbPath, 'utf8'), parseLexicon(readFileSync(tbesgPath, 'utf8')));
+  const apparatus = variants ? await loadApparatus(rawDir, download, log, options.variantsSha256) : undefined;
+  const built = buildData(readFileSync(msbPath, 'utf8'), parseLexicon(readFileSync(tbesgPath, 'utf8')), apparatus);
+  if (built.variants) for (const line of variantsReport(built.variants)) log(line);
 
   // index.json lists the 66 books: this build writes the 27 read in Greek and keeps the Old Testament's from the index on disk (scripts/data-build-ot.ts writes those)
   const index = mergeIndex(readIndex(outDir), built.index.books, 'grc');
