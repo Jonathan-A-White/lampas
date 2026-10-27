@@ -11,7 +11,8 @@
 // and Declined, each with its count; the chip is kept while the screen is open, the search works within it, and a chip with no rows says so.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
-import { statusLine, watchStatuses, webLink, type RequestStatus } from 'pwa-kit/requests';
+import { statusLine, watchStatuses, webLink } from 'pwa-kit/requests';
+import { FILTERS, filterOf, type StatusFilter } from './data/requestFilter';
 import { listRequests, recordOf, type RequestRow } from './data/repositories/requests';
 import { backTo, requestsOf, useAddress } from './nav/route';
 import { matching, type ListItem } from './ui/listFilter';
@@ -53,29 +54,6 @@ const OTHER_GROUP = 'Other requests';
 
 /** More rows than this show the search field. */
 export const SEARCH_OVER = 20;
-
-export type StatusFilter = 'all' | 'waiting' | 'adopted' | 'declined';
-
-/** The chips, in order: the value and what it reads. */
-export const FILTERS: readonly (readonly [StatusFilter, string])[] = [
-  ['all', 'All'],
-  ['waiting', 'Waiting'],
-  ['adopted', 'Adopted'],
-  ['declined', 'Declined'],
-];
-
-/** The chip each status of the kit sits under; a Record over the kit's own type, so a status added to the kit is a type error here until it has a chip. */
-export const STATUS_FILTER: Record<RequestStatus, Exclude<StatusFilter, 'all'>> = {
-  sent: 'waiting',
-  filed: 'waiting',
-  building: 'waiting',
-  landed: 'adopted',
-  'adopted-as-setting': 'adopted',
-  declined: 'declined',
-};
-
-/** The chip a status sits under; none for a status nobody mapped (it shows under All only). */
-export const filterOf = (status: string): Exclude<StatusFilter, 'all'> | undefined => (STATUS_FILTER as Record<string, Exclude<StatusFilter, 'all'>>)[status];
 
 const NOTHING: Record<StatusFilter, string> = { all: 'Nothing sent yet', waiting: 'Nothing waiting', adopted: 'Nothing adopted', declined: 'Nothing declined' };
 

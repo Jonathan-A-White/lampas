@@ -1,7 +1,7 @@
 // Your requests' status filter (mw-5r3p30.795): every status the kit knows lands under a chip by a named rule, and one it does not know shows under All only.
 import { describe, expect, it } from 'vitest';
 import { REQUEST_STATUSES } from 'pwa-kit/requests';
-import { FILTERS, filterOf, STATUS_FILTER } from '../../src/RequestsScreen';
+import { FILTERS, filterOf, STATUS_FILTER } from '../../src/data/requestFilter';
 
 describe('the status filter of Your requests', () => {
   it('maps every status of the kit to a chip', () => {
