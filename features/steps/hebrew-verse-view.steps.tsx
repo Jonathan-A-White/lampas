@@ -157,6 +157,31 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('A section heading opens its passage in the Hebrew, each block right to left with the verse number first', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Jonah 1 with the saved view {string}', (_, view: string) => openOn('Jonah 1', { readerView: view }));
+    When('he taps the section heading {string}', async (_, name: string) => {
+      await user.click(await screen.findByRole('button', { name: new RegExp(name) }));
+      await screen.findByRole('region', { name: 'Verse view' });
+    });
+    Then('the Verse view shows the passage of verses {int} to {int} in Hebrew, each block right to left', async (_, from: number, to: number) => {
+      const verses = await waitFor(() => {
+        const found = [...viewEl().querySelectorAll<HTMLElement>('[data-passage-verse]')];
+        expect(found.length).toBeGreaterThan(0);
+        return found;
+      });
+      expect(verses.map((v) => v.getAttribute('data-passage-verse'))).toEqual(Array.from({ length: to - from + 1 }, (_, i) => String(from + i)));
+      const blocks = [...viewEl().querySelectorAll<HTMLElement>('[data-passage-text]')];
+      expect(blocks.length).toBeGreaterThan(0);
+      for (const block of blocks) {
+        expect(block).toHaveAttribute('lang', 'he');
+        expect(block).toHaveAttribute('dir', 'rtl');
+        expect(block.classList.contains('script-he')).toBe(true);
+      }
+      expect(verses[0].querySelectorAll('[data-word]').length).toBeGreaterThan(0);
+      expect(verses[0].firstElementChild).toHaveAttribute('data-passage-number');
+    });
+  });
+
   Scenario('Listen in the Verse view says the Hebrew in the Hebrew voice', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with the saved view {string} on a phone with an English, a Greek and a Hebrew voice', (_, view: string) =>
       openOn('Jonah 1', { readerView: view }, [], { voices: ALL_VOICES }),

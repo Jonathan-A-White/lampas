@@ -12,6 +12,11 @@ Feature: The Verse view of an Old Testament verse reads in the Hebrew
     And the Verse view shows the Hebrew of Jonah 1:1 in the Hebrew face, right to left
     And the Verse view's words are Hebrew words
 
+  Scenario: A section heading opens its passage in the Hebrew, each block right to left with the verse number first
+    Given Lampas is opened on Jonah 1 with the saved view "greek"
+    When he taps the section heading "The Great Storm"
+    Then the Verse view shows the passage of verses 4 to 10 in Hebrew, each block right to left
+
   Scenario: Listen in the Verse view says the Hebrew in the Hebrew voice
     Given Lampas is opened on Jonah 1 with the saved view "greek" on a phone with an English, a Greek and a Hebrew voice
     When he taps the number of verse 1
