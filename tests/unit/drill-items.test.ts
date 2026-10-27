@@ -36,6 +36,7 @@ import { drawReviewRound } from '../../src/review/round';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { validate, type Schema } from '../support/schema-validate';
+import { ASYNC_WAIT_MS as timeout } from '../support/timeouts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const inputSchema = readJson('grinds/drill-items.input.schema.json') as Schema;
@@ -437,7 +438,7 @@ describe('one ask in flight across a Review round and a drill (mw-indx1x6.2)', (
     const question = { kind: 'tap-form' as const, ideaId: 'declension-2', prompt: 'Tap the second declension noun', options: TAP.options, right: TAP.right, ref: TAP.ref };
     // a right answer in a drill starts the confirm's ask; the round ends while it is out
     await confirmAnswer(question, true);
-    await vi.waitFor(() => expect(postern.calls.length).toBeGreaterThan(0), { timeout: 10_000 });
+    await vi.waitFor(() => expect(postern.calls.length).toBeGreaterThan(0), { timeout });
     expect(await askForMoreItems(['declension-2'], { passage })).toBe('busy');
     release.resolve();
     await whenIdle();

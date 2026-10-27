@@ -105,6 +105,14 @@ async function ask(ideas: GrammarIdea[], missed: readonly string[], options: Mor
   }
 }
 
+const fetchable = (id: string): boolean => {
+  try {
+    return isFetchable(ideaOf(id));
+  } catch {
+    return false;
+  }
+};
+
 /**
  * Asks the mill ahead of need (mw-indx1x6.2): for the ideas of `ideaIds` that he may be proved on or asked to confirm (he has been asked questions on it, it is marked to confirm or the mill wrote items for it) and whose kept items he has not been asked are fewer than LOW_KEPT, in the background, so Prove it and the confirm rarely wait. Called when a drill, a Review round or Prove it
  * opens on an idea and when a kept item is served. Never throws, never waits for the mill: it resolves once the stock is counted. An idea he has never been asked is left alone (every built question is
@@ -122,7 +130,8 @@ async function count(ideaIds: readonly string[], options: MoreItemsOptions): Pro
     const marked = new Set(await listToConfirm());
     const low: string[] = [];
     for (const id of new Set(ideaIds)) {
-      if (!isFetchable(ideaOf(id))) continue;
+      // an id the ladder no longer has asks nothing
+      if (!fetchable(id)) continue;
       if ((await listUnseenFetched(id)).length >= LOW_KEPT) continue;
       if (marked.has(id) || (await countFetchedItems(id)) > 0 || (await listSeen(id)).length > 0) low.push(id);
     }
