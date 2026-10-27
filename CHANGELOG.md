@@ -1,5 +1,11 @@
 # What's new
 
+## 0.5.16
+_2026-10-27_
+- Fixed: the Font you pick in Settings is now the face of the Bible text, also with the Immersive reader on, where "The phone's own" used to leave a serif.
+- Fixed: When the tutor reads an answer aloud, a Hebrew word in it is now said in the Hebrew voice instead of being skipped.
+- New: the tutor now asks if you want to learn the Hebrew too, and can offer to turn up the Hebrew on an Old Testament chapter.
+
 ## 0.5.15
 _2026-10-27_
 - New: Hebrew paradigm tables (the qal verb, the personal pronouns, the pronoun endings on a noun and the article), drawn right to left, with a Paradigm line on a Hebrew word's sheet.

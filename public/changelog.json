@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.5.16",
+    "date": "2026-10-27",
+    "story": "mw-5r3p30.820",
+    "kind": "fixed",
+    "text": "the Font you pick in Settings is now the face of the Bible text, also with the Immersive reader on, where \"The phone's own\" used to leave a serif."
+  },
+  {
+    "version": "0.5.16",
+    "date": "2026-10-27",
+    "story": "mw-gdcyf98.27",
+    "kind": "fixed",
+    "text": "When the tutor reads an answer aloud, a Hebrew word in it is now said in the Hebrew voice instead of being skipped."
+  },
+  {
+    "version": "0.5.16",
+    "date": "2026-10-27",
+    "story": "mw-gdcyf98.17",
+    "kind": "new",
+    "text": "the tutor now asks if you want to learn the Hebrew too, and can offer to turn up the Hebrew on an Old Testament chapter."
+  },
+  {
     "version": "0.5.15",
     "date": "2026-10-27",
     "story": "mw-gdcyf98.13",
