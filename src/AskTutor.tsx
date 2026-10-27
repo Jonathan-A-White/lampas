@@ -222,3 +222,29 @@ export function DialogAskTutor({ screen, kept, suggestions }: { screen: ScreenCo
     </>
   );
 }
+
+/**
+ * The talk of a lesson (mw-5r3p30.818, the idea sheet's Ask the tutor): the sheet that calls this keeps it mounted and says when `open`; the Talk sheet it draws stands over the sheet's
+ * own root. `screen` is the lesson (src/tutor/lessonTalk.ts), `kept` the key its talk is kept under, one for each lesson. The talk's state lives here, not in the Talk sheet, so closing
+ * the sheet while an answer is on its way loses nothing. Drawn only where a licence allows the tutor.
+ */
+export function LessonTalk({ screen, kept, suggestions, open, onClose }: { screen: ScreenContext; kept: string; suggestions: string[]; open: boolean; onClose: () => void }) {
+  const ai = useAiAllowed();
+  const fitted = fitScreen(screen);
+  const scope: TalkScope = { title: fitted.name, chapter: NO_CHAPTER, verse: null, screen: fitted, kept };
+  const talk = useScreenTalk(scope, open, onClose);
+  if (!ai || !open || !talk.ref) return null;
+  return (
+    <TalkSheet
+      scope={scope}
+      talkRef={talk.ref}
+      state={talk.state}
+      suggestions={suggestions}
+      onSay={(message, focus, pictures) => talk.say(scope, message, focus, pictures)}
+      onResume={() => talk.resume(scope)}
+      onHelp={() => {}}
+      onAskTerm={() => {}}
+      onClose={talk.close}
+    />
+  );
+}

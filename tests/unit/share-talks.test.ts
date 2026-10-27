@@ -16,11 +16,12 @@ describe('placeOf', () => {
     expect(placeOf('rom.8.1-11:quiz')).toEqual({ kind: 'bible', book: 'rom', chapter: 8, unit: '1-11', quiz: true });
     expect(placeOf('screen.my-study-way')).toEqual({ kind: 'screen', name: 'My study way' });
     expect(placeOf('screen.drill-it.1760000000000')).toEqual({ kind: 'screen', name: 'Drill it' });
+    expect(placeOf('screen.lesson.enclitics')).toEqual({ kind: 'screen', name: 'Lesson', lesson: { id: 'enclitics', title: 'Enclitics' } });
     expect(placeOf(newTalkRef(1760000000000))).toEqual({ kind: 'free', at: 1760000000000 });
   });
 
   it('refuses a key this app does not make', () => {
-    for (const ref of ['', 'xyz.8', 'rom', 'rom.0', 'rom.8.x', 'rom.8.1.2', 'screen.nope', 'talk.soon']) expect(placeOf(ref)).toBeNull();
+    for (const ref of ['', 'xyz.8', 'rom', 'rom.0', 'rom.8.x', 'rom.8.1.2', 'screen.nope', 'screen.lesson.nope', 'talk.soon']) expect(placeOf(ref)).toBeNull();
   });
 });
 
@@ -31,6 +32,7 @@ describe('talkLabel and timeAgo', () => {
     expect(talkLabel('rom.8.1-11:quiz')).toBe('Quiz on Romans 8:1-11');
     expect(talkLabel('screen.goal')).toBe('Ask the tutor: Goal');
     expect(talkLabel('screen.drill-it.1760000000000')).toBe('Ask the tutor: Drill it');
+    expect(talkLabel('screen.lesson.enclitics')).toBe('Ask the tutor: Lesson: Enclitics');
     expect(talkLabel(newTalkRef(Date.UTC(2026, 9, 10, 12)))).toBe('Talk of 10 Oct');
   });
 
