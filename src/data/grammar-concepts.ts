@@ -471,3 +471,357 @@ export function conceptOf(term: string): GrammarConcept | undefined {
   return GRAMMAR_CONCEPTS[term];
 }
 
+
+// ---- Hebrew (mw-gdcyf98.12) ----
+// The words of a Hebrew parsing (src/data/grammar/hebrew/terms.ts), each explained the same way and shown on the Grammar sheet of a Hebrew chapter: what it is with an English example, then how it shows in
+// Biblical Hebrew, with a Hebrew form (the Greek note's twin). The two tables are apart because the languages share words ('singular', 'masculine') that mean the same thing differently written.
+// tests/unit/hebrew-parse-terms.test.ts fails on a term without an entry, on an explanation over 60 words, a Hebrew note over 40 or with no Hebrew in it, and on a related term that has no entry.
+
+export interface HebrewConcept {
+  term: string;
+  /** what it is and what it does in a sentence, with an English example: at most 60 words */
+  explanation: string;
+  /** how it shows in Biblical Hebrew, with a Hebrew form: at most 40 words */
+  hebrew: string;
+  /** terms worth reading next (each has an entry) */
+  related: string[];
+}
+
+const h = (term: string, explanation: string, hebrew: string, related: string[]): [string, HebrewConcept] => [term, { term, explanation, hebrew, related }];
+
+export const HEBREW_CONCEPTS: Record<string, HebrewConcept> = Object.fromEntries([
+  // nouns
+  h(
+    'Noun',
+    'A noun names a person, place, thing or idea: Paul, city, love. Example: in “The servant loves the master”, servant and master are nouns.',
+    'A Hebrew noun is masculine or feminine, and singular, plural or dual: בַּיִת “house” is masculine singular. The table calls a name a proper noun.',
+    ['masculine', 'feminine', 'singular'],
+  ),
+  h(
+    'Adjective',
+    'An adjective describes a noun: good, large, holy. Example: in “a good shepherd”, good is the adjective.',
+    'A Hebrew adjective follows its noun and matches it in gender and number: יוֹם טוֹב is “a good day”, where טוֹב is masculine like יוֹם.',
+    ['Noun', 'masculine', 'singular'],
+  ),
+  h(
+    'masculine',
+    'Masculine is one of the two genders of a noun. Example: French “le livre” is masculine. English has gender only in words like he, boy and father.',
+    'Every Hebrew noun is masculine or feminine. A masculine noun has no ה or ת ending: יוֹם “day”. The words that go with it are masculine too.',
+    ['feminine', 'common', 'Noun'],
+  ),
+  h(
+    'feminine',
+    'Feminine is one of the two genders of a noun. Example: French “la table” is feminine. English has gender only in words like she, girl and mother.',
+    'A feminine Hebrew noun often ends in ה with a qamats before it, or in ת: בְּהֵמָה “livestock”. The words that go with it are feminine too.',
+    ['masculine', 'common', 'Noun'],
+  ),
+  h(
+    'common',
+    'Common gender means one form serves for both masculine and feminine. Example: English “teacher” and “friend” fit a man or a woman.',
+    'In the first person a Hebrew verb or pronoun has one form for a man or a woman: אֲנִי “I”. The table also calls a noun common when it takes either gender, such as אוֹר “light”.',
+    ['masculine', 'feminine', 'first person'],
+  ),
+  h(
+    'Number',
+    'A number word counts: one, two, third. Example: “three days”.',
+    'A Hebrew number word has a gender: אֶחָד “one” is masculine and אַחַת feminine. The table writes Number for a count, and ordinal for “first”, “second” and so on.',
+    ['ordinal', 'singular', 'masculine'],
+  ),
+  h(
+    'ordinal',
+    'An ordinal number gives a place in a list: first, second, third. Example: “the third day”.',
+    'A Hebrew ordinal from “second” on describes its noun: שֵׁנִי “second”, שְׁלִישִׁי “third”. It follows the noun and matches its gender: יוֹם שֵׁנִי “a second day”.',
+    ['Number', 'Adjective'],
+  ),
+  h(
+    'singular',
+    'Singular means one. Example: “book” is singular and “books” is plural.',
+    'A singular Hebrew noun has no plural ending: יוֹם “day”. A verb or an adjective that goes with it is singular too.',
+    ['plural', 'dual', 'masculine'],
+  ),
+  h(
+    'plural',
+    'Plural means more than one. Example: “books” is the plural of “book”.',
+    'A masculine Hebrew plural usually ends in ים: יָמִים “days”. A feminine plural usually ends in ות. A few plurals, such as אֱלֹהִים “God”, can mean one.',
+    ['singular', 'dual', 'masculine'],
+  ),
+  h(
+    'dual',
+    'A dual means exactly two. Example: English keeps a trace of it in “both” and “a pair of scissors”.',
+    'A Hebrew dual ends in ַיִם and names a pair: יָדַיִם “two hands”. שָׁמַיִם “heavens” has the ending, and so has מַיִם “water”, which is plural.',
+    ['singular', 'plural'],
+  ),
+  h(
+    'Article',
+    'The article is the little word “the”. It points to something particular. Example: “the book” means a book you have in mind, while “a book” does not.',
+    'Hebrew has only “the”, and it is the letter ה on the front of a noun: הָאָרֶץ “the earth”. There is no word for “a”, so אֶרֶץ alone is “earth” or “a land”.',
+    ['determinate', 'Noun', 'proper'],
+  ),
+  h(
+    'determinate',
+    'A determinate noun is one that points to something particular. Example: “the book” is determinate; “a book” is not.',
+    'The table marks a noun that has the article as determinate. מֶלֶךְ is “a king”; הַמֶּלֶךְ is “the king”, and determinate.',
+    ['Article', 'proper'],
+  ),
+  h(
+    'proper',
+    'A proper name is the name of one particular person or place: Paul, Rome. Example: in “Paul went to Rome”, both are proper names.',
+    'A Hebrew name needs no article: יוֹנָה “Jonah”. The table writes Noun - proper for it. A place such as נִינְוֵה “Nineveh” is a name too.',
+    ['Noun', 'Article'],
+  ),
+  h(
+    'construct',
+    'A construct links two nouns where English would write “of”. Example: “the house of the king”. Hebrew changes the first noun instead of adding a word.',
+    'Hebrew shortens the first noun and puts the second after it: פְּנֵי הַמָּיִם “the face of the waters”. The table writes construct after the noun’s number.',
+    ['Noun', 'singular', 'plural'],
+  ),
+  h(
+    'Pr',
+    'Pr is the table’s short mark for a pronoun joined to the word before it. English joins a pronoun to a word only in speech: “gimme”, “lemme”.',
+    'Hebrew writes a pronoun on the end of a word: אֵלָיו “to him”, אַרְצֶךָ “your country”. The table gives that pronoun as a second group, such as third person masculine singular.',
+    ['Pronoun', 'third person', 'construct'],
+  ),
+  // pronouns
+  h(
+    'Pronoun',
+    'A pronoun takes the place of a noun: I, you, he, she, it, we, they. Example: in “Mary said she was tired”, she stands for Mary.',
+    'A Hebrew pronoun has person, gender and number: אֲנִי “I”, הוּא “he”, הֵם “they”. The table also calls זֶה “this” and אֲשֶׁר “which” pronouns.',
+    ['first person', 'relative', 'Noun'],
+  ),
+  h(
+    'first person',
+    'First person is the one speaking: I, we. Example: “We went home” is in the first person.',
+    'First person in Hebrew is the same for a man or a woman: אֲנִי “I”, נָתַתִּי “I have given”. The table writes it first person common.',
+    ['second person', 'third person', 'common'],
+  ),
+  h(
+    'second person',
+    'Second person is the one spoken to: you. Example: “You are late” is in the second person.',
+    'Second person in Hebrew shows gender: אַתָּה “you” to a man, אַתְּ “you” to a woman. A command is always second person: לֵךְ “go”.',
+    ['first person', 'third person', 'Imperative'],
+  ),
+  h(
+    'third person',
+    'Third person is the one spoken about: he, she, it, they. Example: “They left” is in the third person.',
+    'Third person in Hebrew shows gender and number: הוּא “he”, הִיא “she”, הֵם “they”. A story is told mostly in it: וַיִּקְרָא “and he called”.',
+    ['first person', 'second person', 'masculine'],
+  ),
+  h(
+    'relative',
+    'A relative pronoun joins a clause to a noun: who, which, that. Example: in “the man who came”, who is the relative pronoun.',
+    'Hebrew has one relative, אֲשֶׁר, for every gender and number. It stands right after the noun: הַמַּיִם אֲשֶׁר “the waters which”.',
+    ['Pronoun', 'Noun'],
+  ),
+  // prepositions
+  h(
+    'Preposition',
+    'A preposition links a noun to the rest of the sentence and tells where, when or how: in, to, with, from. Example: in “She sat by the river”, by is the preposition.',
+    'A Hebrew preposition can be a word of its own, such as עַל “upon”, or one letter on the front of a noun. It can take a suffix: עָלָיו “upon him”.',
+    ['Preposition-b', 'Preposition-l', 'Noun'],
+  ),
+  h(
+    'Preposition-b',
+    'This is a preposition written as the letter ב joined to the next word. Example: English “in” or “with”, but written as part of the noun.',
+    'ב with a shewa is “in”, “with” or “by”: בְּרֵאשִׁית “in the beginning”. Before the article it is בַּ: בַּיּוֹם “in the day”.',
+    ['Preposition', 'Preposition-k', 'Preposition-l'],
+  ),
+  h(
+    'Preposition-k',
+    'This is a preposition written as the letter כ joined to the next word, meaning “like” or “as”. Example: “like a lion”, with “like” joined to the noun.',
+    'כ with a shewa is “like” or “as”: כִּדְמוּתֵנוּ “after our likeness”. Before the article it is כַּ.',
+    ['Preposition', 'Preposition-b', 'Preposition-l'],
+  ),
+  h(
+    'Preposition-l',
+    'This is a preposition written as the letter ל joined to the next word, meaning “to” or “for”. Example: “to the city”, with “to” joined to the noun.',
+    'ל with a shewa is “to” or “for”: לְמִינוֹ “according to its kind”. Before an infinitive it is “to”: לִבְרֹחַ “to flee”.',
+    ['Preposition', 'Preposition-b', 'Preposition-k'],
+  ),
+  h(
+    'Preposition-m',
+    'This is a preposition written as the letter מ joined to the next word, meaning “from” or “out of”. Example: “from the city”.',
+    'מִ or מֵ on the front of a noun is the short form of מִן “from”: מִתַּחַת “from under”, מֵעַל “from above”. It also means “than”.',
+    ['Preposition', 'Preposition-l'],
+  ),
+  h(
+    'Direct object marker',
+    'The object of a verb is what it acts on. Example: in “She reads the book”, the book is the object. Some languages put a small word before it.',
+    'Hebrew marks a definite object with אֵת or אֶת־: אֵת הַשָּׁמַיִם “the heavens”. It is not translated. With a suffix it is a pronoun: אֹתוֹ “him”.',
+    ['Article', 'Pronoun', 'Verb'],
+  ),
+  h(
+    'Conjunctive waw',
+    'A conjunction is a small joining word: and, but. Example: in “I came, and he left”, and is the conjunction.',
+    'The letter ו on the front of a word is “and”: וְרוּחַ “and spirit”. Waw is the name of the letter ו; the table calls it conjunctive when it joins.',
+    ['Conjunction', 'Consecutive imperfect'],
+  ),
+  // verbs
+  h(
+    'Verb',
+    'A verb says what someone does or what happens: run, think, is. Every sentence needs one. Example: in “She reads the letter”, reads is the verb.',
+    'A Hebrew verb grows from a root of three consonants and shows its person, gender and number: בָּרָא “he created”. The table gives its stem first, then its form.',
+    ['Qal', 'Perfect', 'Imperfect'],
+  ),
+  h(
+    'Qal',
+    'A stem is a pattern a verb is built on. English shows it a little: “rise” is the plain verb, and “raise” is to cause to rise.',
+    'Qal means “light”. It is the simple stem, with no sense added: בָּרָא “he created”, קָרָא “he called”. Most Hebrew verbs are Qal.',
+    ['Verb', 'Piel', 'Hifil'],
+  ),
+  h(
+    'Perfect',
+    'The perfect is a tense for an action seen as complete. Example: “I have finished” looks at the action as done.',
+    'The Hebrew perfect shows the person in an ending: בָּרָא “he created”, שָׁרְצוּ “they teemed”. It is the usual form for the past.',
+    ['Imperfect', 'Verb', 'Qal'],
+  ),
+  h(
+    'Imperfect',
+    'The imperfect is a tense for an action not seen as complete: going on, still to come, or possible. Example: “he will go”, “he may go”.',
+    'The Hebrew imperfect shows the person in a prefix: יִהְיֶה “he will be”, נַעֲשֶׂה “we will make”. The same form can wish: יְהִי “let there be”.',
+    ['Perfect', 'Jussive', 'Cohortative'],
+  ),
+  h(
+    'Jussive',
+    'A jussive is a wish or a command for someone else, in the third person. Example: “Let there be light.”',
+    'The Hebrew jussive is a short imperfect: יְהִי “let there be”, shortened from יִהְיֶה “he will be”.',
+    ['Imperfect', 'Cohortative', 'third person'],
+  ),
+  h(
+    'Cohortative',
+    'A cohortative urges oneself or one’s group on: let us. Example: “Let us go.”',
+    'The Hebrew cohortative is a first person imperfect, often with ה on the end: נֹאבְדָה “let us perish”.',
+    ['Imperfect', 'Jussive', 'first person'],
+  ),
+  h(
+    'if contextual',
+    'The table writes “if contextual” where a word can be read two ways and only the sentence settles which. Example: “we go” and “let us go” could be spelt alike.',
+    'In Genesis 1:26 נַעֲשֶׂה can be “we will make” or “let us make”. The table calls it a cohortative if contextual: the sentence tells which.',
+    ['Cohortative', 'Imperfect'],
+  ),
+  h(
+    'Imperative',
+    'The imperative gives a command. Example: “Go!” and “Sit down.”',
+    'The Hebrew imperative is always second person, with gender and number: קוּם “get up!”, פְּרוּ “be fruitful!”. It has no prefix.',
+    ['second person', 'Verb', 'Qal'],
+  ),
+  h(
+    'Participle',
+    'A participle is a verb used as a describing word, or as a noun. Example: “a running child”, “the one running”.',
+    'A Hebrew participle has gender and number but no tense: הוֹלֵךְ “going”. With the article it is a noun: הָרֹמֵשׂ “the one that creeps”.',
+    ['Verb', 'Adjective', 'Article'],
+  ),
+  h(
+    'Infinitive',
+    'The infinitive names an action with no one doing it. Example: “to run” in “I like to run”.',
+    'Hebrew has two infinitives, the table’s Infinitive construct and Infinitive absolute. Neither shows a person: לִבְרֹחַ “to flee”.',
+    ['Infinitive construct', 'Infinitive absolute', 'Verb'],
+  ),
+  h(
+    'Infinitive construct',
+    'The construct infinitive is the ordinary infinitive, the one that follows a preposition: “to run”, “in running”.',
+    'The Hebrew construct infinitive follows a preposition, most often לְ: לִבְרֹחַ “to flee”, לִבְלֹעַ “to swallow”.',
+    ['Infinitive', 'Infinitive absolute', 'Preposition-l'],
+  ),
+  h(
+    'Infinitive absolute',
+    'The absolute infinitive stands alone and strengthens a verb. English does it with a helper: “you surely will go”.',
+    'The Hebrew absolute infinitive stands apart, often beside the same verb, to strengthen it: שָׁמוֹר תִּשְׁמְרוּ “you must keep”.',
+    ['Infinitive', 'Infinitive construct', 'Verb'],
+  ),
+  h(
+    'Consecutive imperfect',
+    'A narrative tense joins one past action to the next: “and then … and then …”. Example: “He rose, and went, and saw.”',
+    'In Hebrew, וַ on an imperfect, with a dagesh after it, tells a story in order: וַיִּקְרָא “and he called”, וַיַּרְא “and he saw”.',
+    ['Conjunctive waw', 'Imperfect', 'Perfect'],
+  ),
+  h(
+    'Conjunctive imperfect',
+    'An imperfect joined to “and” as a wish, an aim or a result. Example: “Come, and let us go.”',
+    'A וְ before an imperfect keeps the plain vowel: וְיִרְדּוּ “and let them rule”, וְנֵדְעָה “and let us know”. It is not the story form.',
+    ['Consecutive imperfect', 'Imperfect', 'Conjunctive waw'],
+  ),
+  h(
+    'Conjunctive perfect',
+    'A perfect joined to “and” that carries on a future or repeated action. Example: “He will come, and he will tell.”',
+    'A וְ before a perfect carries on what went before: וְהָיוּ “and let them be” in Genesis 1:14. It is often a future or a command.',
+    ['Perfect', 'Consecutive imperfect', 'Conjunctive waw'],
+  ),
+  h(
+    'Nifal',
+    'The Niphal is the stem for what happens to the subject, or what it does to itself. Example: “the door opened”, beside “he opened the door”.',
+    'The table spells the Niphal Nifal. Its perfect has נִ on the front: נִרְדָּם “fast asleep”. Its imperfect doubles the first root letter: יִקָּווּ “be gathered”.',
+    ['Qal', 'Piel', 'Hifil'],
+  ),
+  h(
+    'Piel',
+    'The Piel is the stem for doing something strongly or often. Example: English “shatter” beside “break”, or “slash” beside “cut”.',
+    'The Piel doubles the middle root letter: מְרַחֶפֶת “hovering”, חִשְּׁבָה “she thought”. Genesis 1:22 has וַיְבָרֶךְ “and he blessed”.',
+    ['Qal', 'Pual', 'Hifil'],
+  ),
+  h(
+    'Pual',
+    'The Pual is the stem for what is done to someone by a Piel action: it is the passive of the Piel. Example: “broken”, beside “he broke it”.',
+    'The Pual doubles the middle root letter like the Piel, with a qubuts under the first: קֻטַּל “he was killed”. Neither Genesis 1 nor Jonah 1 has one.',
+    ['Piel', 'Qal'],
+  ),
+  h(
+    'Hifil',
+    'The Hiphil is the stem for causing something to happen. Example: “he made him fall”, where the plain verb is “he fell”.',
+    'The table spells it Hifil. It has הִ or הֵ on the front: הֵטִיל “he hurled”, הִגִּיד “he told”. Its participle begins with מַ: מַבְדִּיל “separating”.',
+    ['Qal', 'Hofal', 'Piel'],
+  ),
+  h(
+    'Hofal',
+    'The Hophal is the stem for what a Hiphil action does to someone: its passive. Example: “he was made to fall”.',
+    'The table spells it Hofal. It has הָ or הֻ on the front: הֻשְׁלַךְ “he was thrown”. Neither Genesis 1 nor Jonah 1 has one.',
+    ['Hifil', 'Qal'],
+  ),
+  h(
+    'Hitpael',
+    'The Hithpael is the stem for doing something to oneself, or to each other. Example: “he washed himself”.',
+    'The table spells it Hitpael. It has הִתְ on the front and a doubled middle letter: יִתְעַשֵּׁת “he will take thought”.',
+    ['Qal', 'Piel', 'Nifal'],
+  ),
+  h(
+    'Nithpael',
+    'The Nithpael is a rare stem that joins the marks of two others. Example: no English verb does the same.',
+    'Its mark is נִתְ on the front, a rare join of the Niphal’s נִ and the Hithpael’s הִתְ. Only a few words of the Old Testament are parsed so.',
+    ['Nifal', 'Hitpael'],
+  ),
+  // joiners
+  h(
+    'Conjunction',
+    'A conjunction is a small joining word: and, but, because. Example: in “I came, but he left”, but is the conjunction.',
+    'Besides ו “and”, Hebrew has small joiners such as כִּי “because” or “that” and אִם “if”. They stand at the start of a clause.',
+    ['Conjunctive waw', 'Adverb'],
+  ),
+  h(
+    'Adverb',
+    'An adverb tells how, when or where something happens: quickly, now, here. Example: in “She ran quickly”, quickly is the adverb.',
+    'Hebrew adverbs are often small words, such as כֵּן “so”, מְאֹד “very” and אוּלַי “perhaps”: וְהִנֵּה־טוֹב מְאֹד “and behold, very good”.',
+    ['Conjunction', 'Interjection', 'Negative particle'],
+  ),
+  h(
+    'Interjection',
+    'An interjection is a word thrown in to call attention or show feeling: oh, look, alas. Example: “Look, a bird!”',
+    'Hebrew הִנֵּה “behold” calls attention to what follows: הִנֵּה נָתַתִּי “behold, I have given”. נָא “please” softens a request.',
+    ['Adverb', 'Conjunction'],
+  ),
+  h(
+    'Negative particle',
+    'A negative particle says no: not, never. Example: in “I do not know”, not is the negative particle.',
+    'Hebrew לֹא “not” denies a statement, and אַל “do not” denies a wish: אַל־נֹאבְדָה “let us not perish”. Both stand right before the verb.',
+    ['Adverb', 'Imperfect'],
+  ),
+  h(
+    'Interrogative',
+    'An interrogative word asks a question: who, what, where, why. Example: “Where are you going?”',
+    'Hebrew has מִי “who”, מָה “what” and אַיִן “where”, and each can take a prefix: לְמִי “to whom”. מַה־זֹּאת עָשִׂיתָ is “what is this you have done?”',
+    ['Pronoun', 'Preposition-l'],
+  ),
+]);
+
+/** The Hebrew entry for `term` (a Hebrew parsing term, hebrew/terms.ts), or undefined for a word that is no such term. */
+export function hebrewConceptOf(term: string): HebrewConcept | undefined {
+  return Object.hasOwn(HEBREW_CONCEPTS, term) ? HEBREW_CONCEPTS[term] : undefined;
+}
