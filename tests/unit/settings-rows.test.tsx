@@ -51,7 +51,7 @@ describe('the rows', () => {
 
   it('lists the study resources and the links as rows too, so nothing on the screen is outside the list', () => {
     expect(keys(ROWS)).toEqual(
-      expect.arrayContaining(['resource.strongs', 'resource.logos', 'link.aboutyou', 'link.memory', 'link.studyway', 'link.words', 'link.review', 'link.paradigms', 'link.askmore', 'link.conversations', 'link.about']),
+      expect.arrayContaining(['resource.strongs', 'resource.logos', 'link.aboutyou', 'link.memory', 'link.studyway', 'link.goal', 'link.words', 'link.review', 'link.paradigms', 'link.askmore', 'link.conversations', 'link.about']),
     );
   });
 

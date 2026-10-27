@@ -11,7 +11,7 @@ import { getGoal, getGrammarAnswers, getGrammarApproach, getPickerGrammar, holds
 import type { PickerGrammar } from './formLevel';
 import { levelOf, levelsOf, nextLessonTitle, placedAt, wordStatesOf } from './goalProgress';
 import { needsOf } from './goalNeeds';
-import { LADDER } from './ladder';
+import { ideaOfAny, ladderFor, type LadderLang } from './ladders';
 import { moveFor, type Move } from './move';
 import { progressToward, type Level, type PassageNeeds } from './needs';
 
@@ -94,13 +94,23 @@ export function learnerGrammarOf(snapshot: GrammarSnapshot): LearnerGrammar {
   return out;
 }
 
-/** The ideas in the order they are named: the goal's needs first (as the passage lists them), then the rest of the ladder by rung. */
-export function orderedIdeas(needs: PassageNeeds | undefined, levels: ReadonlyMap<string, Level>): GrammarSnapshot['ideas'] {
+/** The ideas of the ladder of `lang` (Greek by default) in the order they are named: the goal's needs first (as the passage lists them), then the rest of the ladder by rung. */
+export function orderedIdeas(needs: PassageNeeds | undefined, levels: ReadonlyMap<string, Level>, lang: LadderLang = 'grc'): GrammarSnapshot['ideas'] {
+  const ladder = ladderFor(lang).ideas;
   const first = (needs?.ideas ?? []).map((i) => i.id);
-  const rest = LADDER.map((i) => i.id).filter((id) => !first.includes(id));
-  const title = new Map(LADDER.map((i) => [i.id, i.title]));
+  const rest = ladder.map((i) => i.id).filter((id) => !first.includes(id));
+  const title = new Map(ladder.map((i) => [i.id, i.title]));
   return [...first, ...rest].map((id) => ({ id, title: title.get(id) ?? id, level: levelOf(levels, id) }));
 }
+
+/** The title of an idea Drill it left weak; the id itself for one the ladders lack. */
+const weakTitleOf = (id: string): string => {
+  try {
+    return ideaOfAny(id).title;
+  } catch {
+    return id;
+  }
+};
 
 const countStates = (words: readonly { state: WordState }[]) => ({
   solid: words.filter((w) => w.state === 'solid').length,
@@ -109,8 +119,8 @@ const countStates = (words: readonly { state: WordState }[]) => ({
 });
 
 /** The field as it stands now, from his goal, words, levels, answers and settings. A goal whose chapters cannot be fetched is still
- * named, with the whole ladder's ideas and the counts of his own words. */
-export async function learnerGrammar(): Promise<LearnerGrammar> {
+ * named, with the whole ladder's ideas (of `lang`'s ladder: the Greek one by default) and the counts of his own words. */
+export async function learnerGrammar(lang: LadderLang = 'grc'): Promise<LearnerGrammar> {
   const [text, listed, examplesOnly, rows, answers, pickerLevel, approachId, weakByIdea] = await Promise.all([
     getGoal(),
     listWords(),
@@ -126,7 +136,7 @@ export async function learnerGrammar(): Promise<LearnerGrammar> {
   const goal = text ? parseGoal(text, BOOK_INDEX) : undefined;
   const levels = levelsOf(rows);
   let needs: PassageNeeds | undefined;
-  if (goal) needs = await needsOf(text, goal).catch(() => undefined);
+  if (goal) needs = await needsOf(text, goal, lang).catch(() => undefined);
   const counts = needs ? progressToward(needs, wordStatesOf(words), levels).words : undefined;
   const approach = approachOf(approachId) ?? approachOf(DEFAULT_APPROACH);
   if (!approach) throw new Error(`no grammar approach ${DEFAULT_APPROACH}`);
@@ -134,11 +144,11 @@ export async function learnerGrammar(): Promise<LearnerGrammar> {
   return learnerGrammarOf({
     goal: goal ? goalTitle(goal, BOOK_INDEX) : null,
     words: counts ?? countStates(words),
-    ideas: orderedIdeas(needs, levels),
+    ideas: orderedIdeas(needs, levels, lang),
     placed: placedAt(rows) !== undefined,
     move: moveFor(pickerLevel, answers),
     pickerLevel,
     approach: { name: approach.name, credit: approach.credit?.name ?? null, nextLesson: nextLessonName },
-    weak: [...weakByIdea].map(([id, w]) => ({ title: LADDER.find((i) => i.id === id)?.title ?? id, at: w.at, labels: w.labels })),
+    weak: [...weakByIdea].map(([id, w]) => ({ title: weakTitleOf(id), at: w.at, labels: w.labels })),
   });
 }

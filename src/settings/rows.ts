@@ -114,6 +114,7 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.aboutyou', label: 'About you', hint: 'Your age, pace and how you learn, so the tutor meets you where you are.', section: 'aboutYou' },
   { key: 'link.memory', label: 'Memory', hint: 'The notes Lampas keeps about you on this phone: read, edit, export and import them.', section: 'memory' },
   { key: 'link.studyway', label: 'My study way', hint: 'The lines you kept about how the tutor quizzes you.', section: 'studyWay' },
+  { key: 'link.goal', label: 'Goal', hint: 'Where you are on the grammar of the language you are learning, and what to learn next.', section: 'goal', dependsOn: depthFrom(3) },
   { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'more', dependsOn: depthFrom(1) },
   { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'more', dependsOn: depthFrom(1) },
   { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'more', dependsOn: depthFrom(5) },

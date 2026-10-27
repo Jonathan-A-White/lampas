@@ -11,7 +11,8 @@ import { loadChapter, type Chapter } from './data/chapter';
 import { goalTitle, parseGoal } from './data/goal';
 import { gapsOf, lettersText } from './data/grammar/inference';
 import { learnNext, levelsOf } from './data/grammar/goalProgress';
-import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
+import type { GrammarIdea } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { passageNeeds, type Level } from './data/grammar/needs';
 import {
   answer,
@@ -30,6 +31,9 @@ import { mulberry32, type Random } from './data/quiz';
 import { getEvidence, getGoal, getGrammarApproach, listLevels, listPassageLessons } from './data/repositories';
 import { publish } from './events/bus';
 import { backTo, navigate, placementCardOf, placementOriginOf, showPlacementCard, useAddress } from './nav/route';
+import { HebrewPlacement } from './HebrewPlacement';
+import { SourceSegment } from './ui/SourceSegment';
+import { useLanguageInHand } from './useLanguageInHand';
 import { useSettled } from './ui/settle';
 import { ItemCard } from './review/ItemCard';
 import { GRAMMAR, loadPassage, type GrammarItem } from './review/kinds';
@@ -83,7 +87,27 @@ const itemOf = (question: GrammarQuestion): GrammarItem => ({ kind: 'grammar', i
 
 const BUTTON = 'min-h-12 w-full rounded-xl text-lg font-medium';
 
+/** The ladder in hand (src/useLanguageInHand.ts, mw-gdcyf98.10) decides the placement: Greek's is the walk below, Hebrew's is HebrewPlacement (its ladder has one idea, so nothing to ask);
+ * with both languages chosen the Greek | Hebrew segment sits at the top of either; at English only there is no placement to take. */
 export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
+  const { lang, both } = useLanguageInHand();
+  const origin = placementOriginOf(useAddress());
+  // the header and the segment belong to this screen, not to either body, so the one body that replaces another (the languages read, a segment switched) never redraws them
+  const header = (
+    <>
+      <ScreenHeader title="Placement" back={<HeaderButton onClick={() => backTo(origin)}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
+      {both ? <SourceSegment label="Placement language" /> : null}
+    </>
+  );
+  return (
+    <>
+      {header}
+      {lang === undefined ? <main className="screen min-h-0 flex-1" aria-busy="true" /> : lang === 'grc' ? <GreekPlacement newRandom={newRandom} /> : <HebrewPlacement lang={lang} />}
+    </>
+  );
+}
+
+function GreekPlacement({ newRandom }: { newRandom: () => Random }) {
   const [run, setRun] = useState<Run>({ status: 'loading' });
   // an answer that comes after he has left the screen (a level read, a passage loaded) asks nothing, draws nothing and keeps nothing
   const alive = useAlive();
@@ -125,10 +149,6 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
       cancelled = true;
     };
   }, []);
-
-  const header = (
-    <ScreenHeader title="Placement" back={<HeaderButton onClick={() => backTo(origin)}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
-  );
 
   /** Shows the question the state asks, or the end when it asks none. */
   const ask = async (state: PlacementState): Promise<void> => {
@@ -226,13 +246,12 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     return ask(state);
   };
 
-  if (run.status === 'loading' || run.status === 'starting') return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
+  if (run.status === 'loading' || run.status === 'starting') return <main className="screen min-h-0 flex-1" aria-busy="true" />;
 
   if (run.status === 'intro') {
     const { kept } = run;
     return (
       <>
-        {header}
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
           <p data-testid="placement-goal" className="text-2xl font-semibold">
             Placement: {session.title}
@@ -318,7 +337,6 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     };
     return (
       <>
-        {header}
         <main className="screen min-h-0 flex-1 px-4 pt-4">
           <p data-testid="placement-goal" className="text-center text-base text-muted">
             Placement: {session.title}
@@ -355,7 +373,6 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
     const paused = run.state.done === 'paused';
     return (
       <>
-        {header}
         <main className="screen min-h-0 flex-1 px-4 pt-6">
           <h2 data-testid="placement-title" className="text-center text-2xl font-semibold">
             {paused ? `Paused after ${run.state.asked.length} questions` : 'Where you are'}
@@ -442,7 +459,6 @@ export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?:
   };
   return (
     <>
-      {header}
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <p data-testid="placement-goal" className="text-center text-base text-muted">
           Placement: {session.title}

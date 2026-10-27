@@ -11,10 +11,11 @@ import { NO_CHAPTER, type Chapter, type GreekWord } from './data/chapter';
 import { goalTitle } from './data/goal';
 import { BOOK_INDEX } from './data/bookIndex';
 import { lettersText } from './data/grammar/inference';
-import { groupIdeas, groupWords, learnNext, learningNow, LEVELS, nextWords, placedAt } from './data/grammar/goalProgress';
-import { ideaOf, type GrammarIdea } from './data/grammar/ladder';
+import { groupIdeas, groupWords, learnNext, learningNow, LEVELS, levelsOf, nextWords, placedAt } from './data/grammar/goalProgress';
+import type { GrammarIdea } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf, ladderFor } from './data/grammar/ladders';
 import type { Counts, Level } from './data/grammar/needs';
-import { addWordToLearn, drillPlanCounts, getGrammarApproach, takePronunciationSwitch } from './data/repositories';
+import { addWordToLearn, drillPlanCounts, getGrammarApproach, listLevels, takePronunciationSwitch } from './data/repositories';
 import type { PronunciationSwitch } from './data/repositories/settings';
 import { IdeaSheet } from './IdeaSheet';
 import { HardSoundsSection } from './hardSounds/HardSoundsSection';
@@ -23,8 +24,10 @@ import { useAiAllowed } from './gate/licenceContext';
 import { LadderStart } from './ReadingLadder';
 import { pronunciationOf } from './speech/pronunciation';
 import { backTo, navigate, openPlacement, openReader, openVerseRange } from './nav/route';
-import { openSettingsSection } from './settings/link';
+import { openSetting, openSettingsSection } from './settings/link';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { SourceSegment } from './ui/SourceSegment';
+import { useLanguageInHand } from './useLanguageInHand';
 import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
 import { WordSheet, type Lookup } from './WordSheet';
@@ -260,14 +263,101 @@ function SwitchNote() {
   );
 }
 
+/** The Hebrew ladder's Goal (mw-gdcyf98.10, PROVISIONAL): there is no Hebrew passage to count yet (a Hebrew word carries no parsing until stories g and h), so the screen is the ladder
+ * itself: how many of its ideas are solid, on the frontier and not yet, each idea a card that opens its sheet (taught there, or marked known), Learning now, Learn next and Place me. */
+function HebrewGoalBody() {
+  const ladder = ladderFor('hbo');
+  const levels = useLiveQuery(async () => levelsOf(await listLevels()), []);
+  const [ideaId, setIdeaId] = useState<string | null>(null);
+  const approachId = useLiveQuery(getGrammarApproach, []);
+  const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
+  const known = levels ?? new Map<string, Level>();
+  const needs = { ideas: ladder.ideas.map((i) => ({ id: i.id, count: 0, example: { form: '', code: '', ref: '' } })) };
+  const next = learnNext(needs, approach, known, undefined, 'hbo');
+  const learning = learningNow(known, 'hbo');
+  const counts: Counts = {
+    solid: ladder.ideas.filter((i) => known.get(i.id) === 'solid').length,
+    frontier: ladder.ideas.filter((i) => known.get(i.id) === 'frontier').length,
+    notYet: ladder.ideas.filter((i) => (known.get(i.id) ?? 'notYet') === 'notYet').length,
+    total: ladder.ideas.length,
+  };
+  useReportScreen({
+    name: 'Goal',
+    facts: [
+      { label: 'Goal', value: 'Read the Old Testament in Hebrew' },
+      { label: 'Grammar ideas', value: legendText(counts) },
+      { label: 'Learning now', value: learning ? learning.title : 'Nothing yet' },
+      { label: 'Learn next', value: next ? learnNextText(next) : 'Every Hebrew idea is on the frontier or solid.' },
+    ],
+  });
+  if (!levels) return <main className="screen min-h-0 flex-1" aria-busy="true" />;
+  return (
+    <>
+      <main className="screen min-h-0 flex-1 px-4 pt-4">
+        <h2 data-testid="goal-title" lang="en" className="title-wrap text-2xl font-semibold">
+          Read the Old Testament in Hebrew
+        </h2>
+        <Bar which="ideas" label="Hebrew grammar ideas" counts={counts} open={false} onToggle={() => {}} />
+        <section aria-label="Hebrew ideas" data-testid="hebrew-ideas" className="mt-3">
+          <ul className="divide-y divide-line rounded-xl border border-line">
+            {ladder.ideas.map((idea) => (
+              <li key={idea.id} data-idea={idea.id} data-level={known.get(idea.id) ?? 'notYet'}>
+                <button type="button" onClick={() => setIdeaId(idea.id)} className="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-left text-base active:bg-line">
+                  <span className="flex-1 title-wrap">{idea.title}</span>
+                  <span className="shrink-0 text-muted">{LEVEL_TITLES[known.get(idea.id) ?? 'notYet']}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section className="mt-5">
+          <button type="button" onClick={() => openPlacement('goal')} className={`${BUTTON} w-full border border-line text-accent`}>
+            Place me
+          </button>
+        </section>
+        <section className="mt-5 space-y-2">
+          {learning ? <LearningNowButton idea={learning} onOpen={() => setIdeaId(learning.id)} /> : null}
+          {next && !learning ? <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} /> : null}
+          {!next && !learning ? (
+            <p data-testid="learn-next-none" className="text-base text-muted">
+              Every Hebrew idea is on the frontier or solid.
+            </p>
+          ) : null}
+        </section>
+        <div className="pb-[var(--lp-end-inset)]" />
+      </main>
+      {ideaId ? <IdeaSheet idea={ideaOf(ideaId)} onClose={() => setIdeaId(null)} onWord={() => {}} /> : null}
+    </>
+  );
+}
+
+/** At English only no ladder is in hand: the screen says so and points at the row that chooses a language. It is not reachable from Settings or the Reader then; this is for an address typed or kept. */
+function NoLanguageBody() {
+  return (
+    <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
+      <p className="text-2xl font-semibold">No language chosen</p>
+      <p className="mt-2 text-muted">The Goal is for Greek or Hebrew. Choose one, and this screen shows how close you are.</p>
+      <button type="button" onClick={() => openSetting('languages')} className={`${BUTTON} mt-6 w-full bg-accent text-accent-fg`}>
+        Choose a language
+      </button>
+      <div className="pb-[var(--lp-end-inset)]" />
+    </main>
+  );
+}
+
 export function GoalScreen() {
+  const { lang, both } = useLanguageInHand();
   const progress = useGoalProgress();
   const header = (
     <>
       <ScreenHeader title="Goal" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
+      {both ? <SourceSegment label="Goal language" /> : null}
       <SwitchNote />
     </>
   );
+  if (lang === undefined) return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
+  if (lang === null) return <>{header}<NoLanguageBody /></>;
+  if (lang === 'hbo') return <>{header}<HebrewGoalBody /></>;
   if (progress.status === 'loading') return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
   if (progress.status === 'none') return <>{header}<NoGoalBody levels={progress.levels} /></>;
   if (progress.status === 'failed') {

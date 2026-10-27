@@ -45,6 +45,7 @@ const GREEK_ROWS: Readonly<Record<string, readonly [Follows, GreekLevel]>> = {
   weave: ['depth', 2],
   weaveOrder: ['depth', 2],
   weaveGrammar: ['depth', 2],
+  'link.goal': ['depth', 3],
   newWordsADay: ['depth', 3],
   pickerGrammar: ['depth', 3],
   grammarMove: ['depth', 3],

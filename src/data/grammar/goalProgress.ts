@@ -6,7 +6,8 @@ import type { GrammarLevel, PassageLessonRow, WordState } from '../db';
 import type { Goal } from '../goal';
 import { unmetNeed } from './drillIt';
 import { gapsOf, groupIsSolid, isSolid } from './inference';
-import { groupOfItem, ideaOf, ITEM_GROUPS, LADDER, type GrammarIdea } from './ladder';
+import { groupOfItem, ITEM_GROUPS, type GrammarIdea } from './ladder';
+import { ideaOfAny as ideaOf, ladderFor, type LadderLang } from './ladders';
 import type { Level, NeededIdea, NeededWord, PassageNeeds } from './needs';
 
 /** How many words Next words offers. */
@@ -76,7 +77,13 @@ export interface PassageContext {
  * goal needs that is not yet or untested, or (given `passages`) a passage not yet passed whose lesson's ideas are all frontier or solid and that is in the goal's
  * book and chapter; undefined when none is left. A group of the foundation is solid when every one of its items is.
  */
-export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarApproach, levels: ReadonlyMap<string, Level>, passages?: PassageContext): LearnNext | undefined {
+export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarApproach, levels: ReadonlyMap<string, Level>, passages?: PassageContext, lang: LadderLang = 'grc'): LearnNext | undefined {
+  // the Hebrew ladder has no approach, no letters in groups and no passage lessons yet: its next is its lowest needed idea that is not yet (the ladder's order)
+  if (lang === 'hbo') {
+    const needed = new Set(needs.ideas.map((i) => i.id));
+    const idea = ladderFor(lang).ideas.find((i) => needed.has(i.id) && levelOf(levels, i.id) === 'notYet');
+    return idea && { idea, lesson: undefined };
+  }
   const gaps = gapsOf(levels);
   if (gaps.length > 0) return { idea: gaps[0], lesson: lessonOf(approach, gaps[0].id), gaps };
   const needed = new Set(needs.ideas.map((i) => i.id));
@@ -109,7 +116,8 @@ export function nextLessonTitle(needs: Pick<PassageNeeds, 'ideas'> | undefined, 
 }
 
 /** The one idea he is learning now (mw-i7xe0n.6): the lowest idea at the frontier, the letters, pairs and breathings (items of a group) left out; undefined when none. */
-export const learningNow = (levels: ReadonlyMap<string, Level>): GrammarIdea | undefined => LADDER.find((idea) => !groupOfItem(idea) && levels.get(idea.id) === 'frontier');
+export const learningNow = (levels: ReadonlyMap<string, Level>, lang: LadderLang = 'grc'): GrammarIdea | undefined =>
+  ladderFor(lang).ideas.find((idea) => !groupOfItem(idea) && levels.get(idea.id) === 'frontier');
 
 /** The most frequent needed words he has no state for (not on his list and not dropped), in dictionary form. */
 export function nextWords(needs: Pick<PassageNeeds, 'words'>, states: ReadonlyMap<string, WordState>, count = NEXT_WORDS): NeededWord[] {
