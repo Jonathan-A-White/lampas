@@ -100,7 +100,7 @@ describe('the chapter fingerprints (mw-5r3p30.276)', () => {
       mkdirSync(join(base, 'raw'), { recursive: true });
       writeFileSync(join(base, 'raw', 'msb_nt_tables.tsv'), msb);
       writeFileSync(join(base, 'raw', 'tbesg.txt'), tbesg);
-      await runBuild({ rawDir: join(base, 'raw'), outDir: join(base, 'out'), download: async () => undefined });
+      await runBuild({ rawDir: join(base, 'raw'), outDir: join(base, 'out'), download: async () => undefined, variants: false });
       const index = JSON.parse(readFileSync(join(base, 'out', 'index.json'), 'utf8')) as typeof built.index;
       for (const book of index.books) {
         book.fingerprints.forEach((f, i) => {
@@ -258,6 +258,7 @@ describe('writing the files', () => {
     return runBuild({
       rawDir: raw,
       outDir: out,
+      variants: false, // the apparatus has its own build tests (tests/unit/variants-build.test.ts)
       download: async (url, dest) => {
         downloads.push(url);
         mkdirSync(join(dest, '..'), { recursive: true });

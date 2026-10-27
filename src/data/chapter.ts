@@ -149,6 +149,24 @@ export interface Chapter {
   /** every parsing code used in this file -> plain words, once */
   parse: Record<string, string>;
   verses: Verse[];
+  /** the New Testament's variant readings, the Robinson-Pierpont 2018 apparatus laid on the words of `verses` (docs/data.md 'Variants'); absent in the Old Testament */
+  variants?: VariantUnit[];
+}
+
+/** Whose reading an apparatus reading is: B the other reading where the Byzantine manuscripts divide, N the Nestle-Aland text (27th and 28th editions),
+ *  C NA27 and NA28 together, S NA27 only, E NA28 only, M the Editio Critica Maior (docs/data.md 'Variants'). */
+export type VariantCode = 'B' | 'N' | 'C' | 'S' | 'E' | 'M';
+export interface VariantReading {
+  code: VariantCode;
+  /** the reading's words as the apparatus writes them; '' when it leaves the base out */
+  text: string;
+}
+/** One place of the apparatus: the words of verse `v` it is about (indexes into the verse's `g`), the text's own words there, and the other readings. */
+export interface VariantUnit {
+  v: number;
+  w: number[];
+  base: string;
+  alts: VariantReading[];
 }
 
 /** A chapter with no text: the stand-in where a talk is about a screen, not a text (src/tutor/screen.ts), or a word is added with no chapter open. */
