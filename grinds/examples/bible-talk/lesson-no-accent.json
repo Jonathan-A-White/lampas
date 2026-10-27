@@ -1,0 +1,58 @@
+{
+  "description": "He asks from the idea sheet of Enclitics, the lesson whose worked example is μου in 1 John 2:1, why μου has no accent: the answer is from the lesson (μου is an enclitic, it leans on the word before it, τεκνία) and does not treat the screen as a verse.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Lesson",
+    "question": "Why has μου no accent?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {},
+    "screen": {
+      "name": "Lesson",
+      "facts": [
+        {
+          "label": "Lesson",
+          "value": "Enclitics"
+        },
+        {
+          "label": "Lesson id",
+          "value": "enclitics"
+        },
+        {
+          "label": "Your level",
+          "value": "Learning"
+        },
+        {
+          "label": "What it is",
+          "value": "An enclitic is a small word with no stress of its own: it leans on the word before it and is said with it, almost as one word, as English “him” leans on “saw” in “I saw him”."
+        },
+        {
+          "label": "Worked example",
+          "value": "μου “my” · 1 John 2:1"
+        },
+        {
+          "label": "Say it",
+          "value": "moo"
+        },
+        {
+          "label": "Steps shown",
+          "value": "1. μου has no accent: it is an enclitic. 2. It leans on the word before it, τεκνία, and is said with it: τεκνία μου. 3. τεκνία μου: “my little children”."
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "matches": "enclitic"
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
