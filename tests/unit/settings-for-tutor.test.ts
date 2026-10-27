@@ -103,11 +103,14 @@ describe('a Settings talk across turns (mw-5r3p30.615)', () => {
   });
 
   it('drops the oldest turns first and keeps the newest', async () => {
-    const turns = [{ q: 'First question', a: 'First answer' }, { q: 'Second question', a: 'Second answer' }, turn1];
+    // the last three turns outlast every lesser field (mw-5r3p30.825), so the turns that go first are those before them
+    const turns = [{ q: 'First question', a: 'First answer' }, { q: 'Second question', a: 'Second answer' }, { q: 'Third question', a: 'Third answer' }, { q: 'Fourth question', a: 'Fourth answer' }, turn1];
     const fitted = fitHistory(await settingsRequest(turns, 'n'.repeat(1400)));
     expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(fitted.history.at(-1)?.q).toBe(turn1.q);
     expect(fitted.history.some((t) => t.q === 'First question')).toBe(false);
+    expect(fitted.history.some((t) => t.q === 'Second question')).toBe(false);
+    expect(fitted.history.map((t) => t.q)).toEqual(['Third question', 'Fourth question', turn1.q]);
   });
 
   it('drops his requests and memory notes before the newest turn when even that cannot fit', async () => {
