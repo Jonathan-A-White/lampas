@@ -116,6 +116,33 @@ saw the light': 0 the, 1 man, 2 who, 3 came, 4 saw, 5 the, 6 light.
 subject is the implied word 'who'.) Two coordinate clauses, 'he came and she went' (0 he, 1 came, 2 and, 3 she, 4 went): two entries
 of `clauses`, the second with `"joinedBy": {"i": 2}`.
 
+## A negative with one member
+
+A negative (μή, οὐ, 'not') before one member of a contrast ('A, not B'; 'not A but B') denies that member only: it hangs in that
+member's clause, **never on the stated verb** of the other. A member whose verb is understood from the other is a clause of its own,
+the next entry of `clauses`, its verb the understood verb as an implied word, the negative hung on it. Colossians 3:2, τὰ ἄνω
+φρονεῖτε, μὴ τὰ ἐπὶ τῆς γῆς: 0 Τὰ, 1 ἄνω, 2 φρονεῖτε, 3 μὴ, 4 τὰ, 5 ἐπὶ, 6 τῆς, 7 γῆς (on φρονεῖτε, μὴ would deny the command).
+
+```json
+{"clauses": [
+  {"clause": {"subject": {"words": [{"implied": "ὑμεῖς"}], "modifiers": []}, "verb": {"words": [{"i": 2}], "modifiers": []},
+    "complement": {"kind": "direct-object", "slot": {"words": [{"i": 1}], "modifiers": [{"kind": "word", "word": {"i": 0}, "modifiers": []}]}}}},
+  {"clause": {"subject": {"words": [{"implied": "ὑμεῖς"}], "modifiers": []},
+    "verb": {"words": [{"implied": "φρονεῖτε"}], "modifiers": [{"kind": "word", "word": {"i": 3}, "modifiers": []}]},
+    "complement": {"kind": "direct-object", "slot": {"words": [{"i": 4}], "modifiers": [
+      {"kind": "prepositional", "preposition": {"i": 5}, "object": {"words": [{"i": 7}], "modifiers": [{"kind": "word", "word": {"i": 6}, "modifiers": []}]}}]}}}}]}
+```
+
+No word joins the second clause: no `joinedBy`. In English too, 'not' hangs on the implied 'set'.
+
+- **οὐ/μή ... ἀλλά** ('not A but B'): the negative hangs on the verb of A's clause; B with no verb is the next clause, `joinedBy`
+  ἀλλά, its verb implied, no negative.
+- **οὐ μόνον ... ἀλλὰ καί** ('not only ... but also'): μόνον hangs on the first verb, οὐ on μόνον; ἀλλά joins the next clause, καί on its verb.
+- **Comparative ἤ** ('than'): what follows ἤ is a `clause` modifier of the comparative word (μᾶλλον, μείζων), `connector` ἤ,
+  its verb implied; a word after ἤ hangs in that clause, never on the main verb.
+- **Ellipsis after δέ** (μέν ... δέ): a δέ member with no verb is the next clause, `joinedBy` δέ, its verb implied, and its words
+  (a negative too) hang in it, never on the first verb; μέν hangs on the first verb.
+
 ## The rules
 
 - Answer with a Sentence Diagram Answer (grinds/sentence-diagram.answer.schema.json): `{"clauses": [...]}`, and nothing else.

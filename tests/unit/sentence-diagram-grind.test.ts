@@ -1,12 +1,12 @@
 // tests/unit/sentence-diagram-grind.test.ts — the sentence-diagram grind (grinds/sentence-diagram.json, mw-souyao.2): its answer schema mirrors src/diagram/types.ts, the two hand-written
 // diagrams of Colossians 3:1 (tests/fixtures/diagrams) are answers it takes and the validator passes, the instructions are one file under their size and say THE RULE, and the examples'
-// requests are what the builder makes.
+// requests are what the builder makes. Colossians 3:2 (mw-5r3p30.800): the instructions' worked tree hangs μὴ with the second member, τὰ ἐπὶ τῆς γῆς, never on the first clause's φρονεῖτε.
 import { readFileSync, readdirSync } from 'node:fs';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { buildDiagramRequest } from '../../src/diagram/request';
-import type { Diagram, DiagramMode } from '../../src/diagram/types';
+import type { Diagram, DiagramMode, Modifier, Slot, TokenRef } from '../../src/diagram/types';
 import { validateDiagram } from '../../src/diagram/validate';
 import { checkExpect, type GrindExample } from '../support/grind-examples';
 import { loadFixture } from '../support/diagram-fixtures';
@@ -146,5 +146,63 @@ describe.each(MODES)('the Colossians 3:1 example in %s', (mode) => {
 
   it('is met by the hand-written diagram', () => {
     expect(checkExpect(example.expect, fixture.diagram)).toEqual([]);
+  });
+});
+
+/** Every word index under a slot: its words and all that hangs beneath it, clauses and all. */
+function indicesOf(s: Slot): number[] {
+  const ref = (t: TokenRef): number[] => ('i' in t ? [t.i] : []);
+  const under = (m: Modifier): number[] => {
+    if (m.kind === 'word') return [...ref(m.word), ...m.modifiers.flatMap(under)];
+    if (m.kind === 'prepositional') return [...ref(m.preposition), ...indicesOf(m.object)];
+    const c = m.clause;
+    return [...(m.connector ? ref(m.connector) : []), ...indicesOf(c.subject), ...indicesOf(c.verb), ...(c.complement ? indicesOf(c.complement.slot) : [])];
+  };
+  return [...s.words.flatMap(ref), ...s.modifiers.flatMap(under)];
+}
+
+/** The Colossians 3:2 tree the instructions work: the first json block after the heading of the rule on a negative in a contrast. */
+function workedColossians32(text: string): Diagram {
+  const at = text.indexOf('## A negative with one member');
+  expect(at, 'the instructions have a section headed "A negative with one member"').toBeGreaterThan(-1);
+  const block = /```json\n([\s\S]*?)```/.exec(text.slice(at));
+  expect(block, 'that section works Colossians 3:2 as a json tree').not.toBeNull();
+  return JSON.parse(block![1]) as Diagram;
+}
+
+describe('a negative before one member of a contrast (Colossians 3:2, mw-5r3p30.800)', () => {
+  const text = instructionsOf('sentence-diagram');
+  const col3 = read<Chapter>('public/data/col/3.json');
+  const { words } = buildDiagramRequest(col3, [col3.verses.find((v) => v.n === 2)!], 'greek');
+  const at = (text: string): number => words.findIndex((w) => w.text === text);
+  const [phroneite, me, article] = [at('φρονεῖτε'), at('μὴ'), words.findIndex((w, k) => w.text === 'τὰ' && k > at('μὴ'))];
+
+  it('state the rule: the negative hangs with its own member, never on the stated verb of the first', () => {
+    expect(text).toMatch(/Colossians 3:2/);
+    expect(text).toMatch(/never on the stated verb/i);
+  });
+
+  it('work Colossians 3:2 as a tree the schema takes and validateDiagram passes: every word placed once', () => {
+    const tree = workedColossians32(text);
+    expect(validate(tree, answerSchema)).toEqual([]);
+    expect(validateDiagram(tree, words.length)).toEqual({ ok: true });
+  });
+
+  it('hang μὴ with τὰ ἐπὶ τῆς γῆς, on its understood verb, and nothing of the first clause\'s verb is μὴ', () => {
+    const tree = workedColossians32(text);
+    const first = tree.clauses[0].clause;
+    expect(first.verb.words).toEqual([{ i: phroneite }]);
+    expect(indicesOf(first.verb)).not.toContain(me);
+    const second = tree.clauses.find((e) => indicesOf(e.clause.verb).includes(me))?.clause;
+    expect(second, 'μὴ hangs on the verb of a clause of its own').toBeDefined();
+    expect(second!.verb.words.every((t) => 'implied' in t)).toBe(true);
+    expect(second!.complement && indicesOf(second!.complement.slot)).toEqual(expect.arrayContaining([article, article + 1, article + 2, article + 3]));
+  });
+
+  it('is the answer the Colossians 3:2 example expects, and the example asks what buildDiagramRequest makes', () => {
+    const example = read<GrindExample>('grinds/examples/sentence-diagram/col-3-2-contrast.json');
+    expect(example.request).toEqual(buildDiagramRequest(col3, [col3.verses.find((v) => v.n === 2)!], 'greek').request);
+    expect(example.expect['clauses.0.clause.verb.modifiers.0']).toEqual({ present: false });
+    expect(checkExpect(example.expect, workedColossians32(text))).toEqual([]);
   });
 });

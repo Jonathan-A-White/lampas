@@ -1,0 +1,72 @@
+{
+  "description": "Colossians 3:2 in Greek: μὴ negates only the second member, τὰ ἐπὶ τῆς γῆς, whose verb is understood; it hangs on that member's implied φρονεῖτε in a second clause, never on the stated φρονεῖτε of the first.",
+  "schemaVersion": "1",
+  "request": {
+    "ref": "Colossians 3:2",
+    "lang": "greek",
+    "words": [
+      {
+        "i": 0,
+        "text": "Τὰ",
+        "lemma": "ὁ",
+        "parse": "T-APN"
+      },
+      {
+        "i": 1,
+        "text": "ἄνω",
+        "lemma": "ἄνω",
+        "parse": "ADV"
+      },
+      {
+        "i": 2,
+        "text": "φρονεῖτε",
+        "lemma": "φρονέω",
+        "parse": "V-PAM-2P"
+      },
+      {
+        "i": 3,
+        "text": "μὴ",
+        "lemma": "μή",
+        "parse": "PRT-N"
+      },
+      {
+        "i": 4,
+        "text": "τὰ",
+        "lemma": "ὁ",
+        "parse": "T-APN"
+      },
+      {
+        "i": 5,
+        "text": "ἐπὶ",
+        "lemma": "ἐπί",
+        "parse": "PREP"
+      },
+      {
+        "i": 6,
+        "text": "τῆς",
+        "lemma": "ὁ",
+        "parse": "T-GSF"
+      },
+      {
+        "i": 7,
+        "text": "γῆς",
+        "lemma": "γῆ",
+        "parse": "N-GSF"
+      }
+    ]
+  },
+  "expect": {
+    "clauses.0.clause.verb.words.0.i": {
+      "equals": 2
+    },
+    "clauses.0.clause.verb.modifiers.0": {
+      "present": false
+    },
+    "clauses.1.clause.verb.words.0.implied": {
+      "matches": "φρον"
+    },
+    "clauses.1.clause.verb.modifiers.0.word.i": {
+      "equals": 3
+    }
+  }
+}
