@@ -1,5 +1,9 @@
 # What's new
 
+## 0.4.1
+_2026-10-27_
+- New: Drill it and the short drill now use the extra questions the tutor writes for the ideas you miss, and never ask you the same one twice.
+
 ## 0.4.0
 _2026-10-26_
 - New: Under every sentence diagram a quiet "How to read this" opens the diagram lesson, and until you have finished or dismissed it, the first diagrams you open invite you to learn to read one.
