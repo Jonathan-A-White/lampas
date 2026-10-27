@@ -53,8 +53,8 @@ interface Group {
   place?: { book: string; chapter: number; verse?: number };
   /** the key of a setting link: its chip opens Settings at that row */
   setting?: string;
-  /** a map link: its chip opens that map in the app (openMaps) */
-  map?: { id: string; label: string };
+  /** a map link: its chip opens that map in the app (openMaps), or, for a card of a link-only source (`open`), is a link to it */
+  map?: { id: string; label: string; open?: { url: string; fallback?: string } };
   chips: LinkChip[];
 }
 
@@ -83,7 +83,7 @@ export function TutorLinks({ links, onLeave, place }: { links: AnswerLink[]; onL
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
     } else if (link.kind === 'map') {
       const found = place && mapCards ? mapChip(link.map, mapCards) : null;
-      if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label }, chips: [] });
+      if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
     } else if (link.kind === 'work') {
       const found = workChip(link.work, link.reference, works, link.place, level, shelf.map((row) => row.id));
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
@@ -130,7 +130,18 @@ export function TutorLinks({ links, onLeave, place }: { links: AnswerLink[]; onL
                 Settings
               </button>
             ) : null}
-            {group.map && place ? (
+            {group.map?.open ? (
+              <a
+                href={group.map.open.url}
+                aria-label={group.map.label}
+                data-fallback={group.map.open.fallback}
+                onClick={group.map.open.fallback ? () => armFallback((group.map as NonNullable<Group['map']>).open?.fallback) : undefined}
+                {...(group.map.open.url.startsWith('https:') ? { target: '_blank', rel: 'noreferrer' } : {})}
+                className={CHIP}
+              >
+                Map ↗
+              </a>
+            ) : group.map && place ? (
               <button
                 type="button"
                 aria-label={group.map.label}

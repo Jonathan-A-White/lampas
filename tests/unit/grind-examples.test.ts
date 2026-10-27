@@ -278,3 +278,30 @@ describe('a verse-read recording is a reading of the verse its example names (mw
     expect(existsSync(`${dir}/read-1-thess-5-19-el.webm`)).toBe(true);
   });
 });
+
+// mw-zbjgn3r.8: the maps of a request come in the order mapsForTutor gives them, Bible Mapper's first and the Logos rows last, each titled as opening in Logos, and the answer links one of them.
+describe.each(['map-of-the-passage', 'map-in-logos'])('bible-talk/%s lists its maps as the app sends them (mw-zbjgn3r.8)', (name) => {
+  const example = readJson(`grinds/examples/bible-talk/${name}.json`) as unknown as { request: { maps: { id: string; source: string; title: string; places: string[] }[] }; expect: Record<string, { equals?: string }> };
+  const maps = example.request.maps;
+
+  it('names a source for each map, at most 12 and at most 2 of them Logos rows, which come last, with no places and a title that says they open in Logos', () => {
+    expect(maps.length).toBeLessThanOrEqual(12);
+    expect(maps.every((m) => m.source === 'biblemapper' || m.source === 'logosatlas')).toBe(true);
+    const rows = maps.filter((m) => m.source === 'logosatlas');
+    expect(rows.length).toBeLessThanOrEqual(2);
+    expect(maps.slice(maps.length - rows.length)).toEqual(rows);
+    expect(rows.every((m) => m.places.length === 0 && m.title.endsWith(' (opens in Logos)'))).toBe(true);
+  });
+
+  it('links a map the request lists', () => {
+    expect(maps.map((m) => m.id)).toContain(example.expect['links.0.map'].equals);
+  });
+});
+
+describe('bible-talk/map-in-logos (mw-zbjgn3r.8)', () => {
+  it('links the Logos Atlas row, with Bible Mapper\'s map listed before it', () => {
+    const example = readJson('grinds/examples/bible-talk/map-in-logos.json') as unknown as { request: { maps: { id: string; source: string }[] }; expect: Record<string, { equals?: string }> };
+    expect(example.request.maps[0]).toMatchObject({ id: 'SodomAndGomorrah', source: 'biblemapper' });
+    expect(example.request.maps.find((m) => m.id === example.expect['links.0.map'].equals)?.source).toBe('logosatlas');
+  });
+});

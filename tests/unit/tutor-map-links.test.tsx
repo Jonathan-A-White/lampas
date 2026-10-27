@@ -45,6 +45,29 @@ describe('the map chip', () => {
     await waitFor(() => expect(screen.getByText(/Map by David P\. Barrett/)).toBeInTheDocument());
   });
 
+  it('is a link to the card\'s address, with its fallback armed, for a card of a link-only source; it does not open the map view', async () => {
+    registerTestMaps({ links: true });
+    const onLeave = vi.fn();
+    render(
+      <>
+        <TutorLinks links={[{ kind: 'map', map: 'AtlasAtShinar' }, { kind: 'map', map: 'CommentaryAtGenesis10' }]} place={place} onLeave={onLeave} />
+        <MapsHost />
+      </>,
+    );
+    const app = await screen.findByRole('link', { name: 'Map: Test Atlas at Shinar ↗' });
+    expect(app).toHaveAttribute('href', 'logos4:Atlas;id=SHINAR');
+    expect(app).toHaveAttribute('data-fallback', 'https://atlas.test/shinar');
+    const web = screen.getByRole('link', { name: 'Map: Test Commentary at Genesis 10 ↗' });
+    expect(web).toHaveAttribute('href', 'https://atlas.test/commentary');
+    expect(web).toHaveAttribute('target', '_blank');
+    expect(screen.queryByRole('button', { name: /^Map:/ })).toBeNull();
+    // a click on a link neither leaves the Talk sheet nor opens the Maps sheet
+    web.addEventListener('click', (event) => event.preventDefault());
+    await userEvent.click(web);
+    expect(onLeave).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
   it('is not drawn for an id the chapter lacks, and nothing at all is drawn when it is the only link', async () => {
     render(<TutorLinks links={[{ kind: 'map', map: 'NoSuchMap' }]} place={place} onLeave={() => undefined} />);
     await new Promise((resolve) => setTimeout(resolve, 100));

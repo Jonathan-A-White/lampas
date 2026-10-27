@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_LINKS, isTalkAnswer } from '../../src/services/talk';
 import { verseLink } from '../../src/resources/logosBible';
 import { mapChip, placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
+import type { MapCard } from '../../src/maps/types';
 import { TEST_CARDS } from '../support/test-maps';
 import type { StudyResources } from '../../src/data/repositories';
 import { validate, type Schema } from '../support/schema-validate';
@@ -179,6 +180,12 @@ describe('a map link (mw-zbjgn3r.4)', () => {
 
   it('is a chip \'Map: <title>\' for an id among the maps of the chapter', () => {
     expect(mapChip('SodomAndGomorrah', TEST_CARDS['gen.10'])).toMatchObject({ label: 'Map: Sodom and Gomorrah Are Destroyed', card: { id: 'SodomAndGomorrah' } });
+  });
+
+  it('is a chip \'Map: <title> ↗\' that carries the link for a card that opens elsewhere, and a Bible Mapper card\'s has none', () => {
+    const logos: MapCard = { id: 'places', source: 'logosatlas', title: 'Logos Atlas at Gerar, Admah, Lasha', kind: 'link', period: '', article: 'https://app.logos.com/tools/atlas/X', places: [], open: { url: 'https://app.logos.com/tools/atlas/X?zoom=8', fallback: 'https://app.logos.com/tools/atlas/X' } };
+    expect(mapChip('places', [...TEST_CARDS['gen.10'], logos])).toMatchObject({ label: 'Map: Logos Atlas at Gerar, Admah, Lasha ↗', card: { id: 'places', open: { url: 'https://app.logos.com/tools/atlas/X?zoom=8' } } });
+    expect(mapChip('SodomAndGomorrah', TEST_CARDS['gen.10'])?.card.open).toBeUndefined();
   });
 
   it('is no chip for an id the chapter lacks, for a video, or for no maps at all', () => {

@@ -254,9 +254,9 @@ function bookChip(id: string, place: TutorPlace | null, shelf: readonly string[]
   return { name, chip: { resource: logos, label: `Open in Logos: ${name}`, tile: 'Open in Logos', ...link } };
 }
 
-/** The chip of a `map` link (mw-zbjgn3r.4): 'Map: <title>' for the card among `cards` (the maps of the talk's chapter) with that id. Null when the chapter has no such map, or the card is a video (a page in the browser, not a map the app opens):
+/** The chip of a `map` link (mw-zbjgn3r.4): 'Map: <title>' for the card among `cards` (the maps of the talk's chapter) with that id, 'Map: <title> ↗' for a card that opens elsewhere (`open`, mw-zbjgn3r.8: the chip is a link). Null when the chapter has no such map, or the card is a video (a page in the browser, not a map the app opens):
  *  an id the tutor was not told of draws nothing. */
 export function mapChip(id: string, cards: readonly MapCard[]): { label: string; card: MapCard } | null {
   const card = cards.find((c) => c.id === id && c.kind !== 'video');
-  return card ? { label: `Map: ${card.title}`, card } : null;
+  return card ? { label: `Map: ${card.title}${card.open ? ' ↗' : ''}`, card } : null;
 }
