@@ -4,7 +4,7 @@
 // questions it pauses and keeps its place (src/data/placementKeep.ts), so he can go on another day. The end card is kept too, and its entry's address
 // names it, so a reload or Back to it shows the card again; a new Place me opens the intro (mw-86e9r1.23).
 import { useAlive } from 'pwa-kit/alive';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { approachOf, DEFAULT_APPROACH, levelNumberOf, orderOf, type GrammarApproach } from './approaches';
 import { BOOK_INDEX } from './data/bookIndex';
 import { loadChapter, type Chapter } from './data/chapter';
@@ -91,12 +91,23 @@ const BUTTON = 'min-h-12 w-full rounded-xl text-lg font-medium';
  * with both languages chosen the Greek | Hebrew segment sits at the top of either; at English only there is no placement to take. */
 export function PlacementScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const { lang, both } = useLanguageInHand();
-  const segment = both ? <SourceSegment label="Placement language" /> : null;
-  if (lang === 'grc') return <GreekPlacement newRandom={newRandom} segment={segment} />;
-  return <HebrewPlacement lang={lang} segment={segment} />;
+  const origin = placementOriginOf(useAddress());
+  // the header and the segment belong to this screen, not to either body, so the one body that replaces another (the languages read, a segment switched) never redraws them
+  const header = (
+    <>
+      <ScreenHeader title="Placement" back={<HeaderButton onClick={() => backTo(origin)}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
+      {both ? <SourceSegment label="Placement language" /> : null}
+    </>
+  );
+  return (
+    <>
+      {header}
+      {lang === undefined ? <main className="screen min-h-0 flex-1" aria-busy="true" /> : lang === 'grc' ? <GreekPlacement newRandom={newRandom} /> : <HebrewPlacement lang={lang} />}
+    </>
+  );
 }
 
-function GreekPlacement({ newRandom, segment }: { newRandom: () => Random; segment: ReactNode }) {
+function GreekPlacement({ newRandom }: { newRandom: () => Random }) {
   const [run, setRun] = useState<Run>({ status: 'loading' });
   // an answer that comes after he has left the screen (a level read, a passage loaded) asks nothing, draws nothing and keeps nothing
   const alive = useAlive();
@@ -138,13 +149,6 @@ function GreekPlacement({ newRandom, segment }: { newRandom: () => Random; segme
       cancelled = true;
     };
   }, []);
-
-  const header = (
-    <>
-      <ScreenHeader title="Placement" back={<HeaderButton onClick={() => backTo(origin)}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
-      {segment}
-    </>
-  );
 
   /** Shows the question the state asks, or the end when it asks none. */
   const ask = async (state: PlacementState): Promise<void> => {
@@ -242,13 +246,12 @@ function GreekPlacement({ newRandom, segment }: { newRandom: () => Random; segme
     return ask(state);
   };
 
-  if (run.status === 'loading' || run.status === 'starting') return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
+  if (run.status === 'loading' || run.status === 'starting') return <main className="screen min-h-0 flex-1" aria-busy="true" />;
 
   if (run.status === 'intro') {
     const { kept } = run;
     return (
       <>
-        {header}
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
           <p data-testid="placement-goal" className="text-2xl font-semibold">
             Placement: {session.title}
@@ -334,7 +337,6 @@ function GreekPlacement({ newRandom, segment }: { newRandom: () => Random; segme
     };
     return (
       <>
-        {header}
         <main className="screen min-h-0 flex-1 px-4 pt-4">
           <p data-testid="placement-goal" className="text-center text-base text-muted">
             Placement: {session.title}
@@ -371,7 +373,6 @@ function GreekPlacement({ newRandom, segment }: { newRandom: () => Random; segme
     const paused = run.state.done === 'paused';
     return (
       <>
-        {header}
         <main className="screen min-h-0 flex-1 px-4 pt-6">
           <h2 data-testid="placement-title" className="text-center text-2xl font-semibold">
             {paused ? `Paused after ${run.state.asked.length} questions` : 'Where you are'}
@@ -458,7 +459,6 @@ function GreekPlacement({ newRandom, segment }: { newRandom: () => Random; segme
   };
   return (
     <>
-      {header}
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <p data-testid="placement-goal" className="text-center text-base text-muted">
           Placement: {session.title}

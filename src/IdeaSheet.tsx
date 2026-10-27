@@ -64,7 +64,6 @@ const BUTTON = 'min-h-12 flex-auto whitespace-nowrap rounded-xl border px-2 text
 const LEVEL_NAMES: Record<GrammarLevelName, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
 /** How far (px) a press on the level slider must travel to be a drag: a finger's tap shakes a few px. */
 const DRAG_PX = 8;
-/** The slider's three stops, left to right: the level each is and what it is called (PROVISIONAL names). */
 /** The card of an idea, from the teaching of its own ladder. */
 function cardOf(id: string): Teach {
   const teach = ladderFor(ladderLangOf(id)).teach[id];
@@ -72,6 +71,7 @@ function cardOf(id: string): Teach {
   return teach;
 }
 
+/** The slider's three stops, left to right: the level each is and what it is called (PROVISIONAL names). */
 const STOPS: { level: GrammarLevelName; label: string }[] = [
   { level: 'notYet', label: 'Not yet' },
   { level: 'frontier', label: 'Learning' },

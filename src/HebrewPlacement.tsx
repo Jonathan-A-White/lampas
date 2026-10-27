@@ -1,9 +1,9 @@
 // src/HebrewPlacement.tsx — Placement on the Hebrew ladder (mw-gdcyf98.10, PROVISIONAL, #/placement with Hebrew in hand). The Hebrew ladder has one idea so far, the alphabet,
 // and it is the foundation a placement starts from, so the walk is over before it begins and there is nothing to ask: Start from the letters shows 'Where you are' (the same card
 // as the Greek placement's end, from the same summarize) and Learn next on the Goal screen opens The Hebrew alphabet. Stories g and h add the ideas and so the questions.
-// Also the screen at English only (no ladder is in hand: it says so and writes nothing) and while the languages are read.
+// Also the screen at English only (no ladder is in hand: it says so and writes nothing).
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { learnNext, levelsOf } from './data/grammar/goalProgress';
 import { ladderFor } from './data/grammar/ladders';
 import type { Level } from './data/grammar/needs';
@@ -11,29 +11,21 @@ import { startPlacement, summarize } from './data/grammar/placement';
 import { listLevels } from './data/repositories';
 import { approachOf, DEFAULT_APPROACH } from './approaches';
 import { publish } from './events/bus';
-import { backTo, navigate, placementOriginOf, useAddress } from './nav/route';
-import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { navigate, placementOriginOf, useAddress } from './nav/route';
 import { openSetting } from './settings/link';
 
 const BUTTON = 'min-h-12 w-full rounded-xl text-lg font-medium';
 const LEVEL_WORDS: Record<Level, string> = { solid: 'Solid', frontier: 'Frontier', notYet: 'Not yet' };
 
-export function HebrewPlacement({ lang, segment }: { lang: 'hbo' | null | undefined; segment: ReactNode }) {
+export function HebrewPlacement({ lang }: { lang: 'hbo' | null }) {
   const origin = placementOriginOf(useAddress());
   const ladder = ladderFor('hbo');
   const levels = useLiveQuery(async () => levelsOf(await listLevels()), []);
   const [over, setOver] = useState(false);
-  const header = (
-    <>
-      <ScreenHeader title="Placement" back={<HeaderButton onClick={() => backTo(origin)}>{origin === 'goal' ? '‹ Goal' : '‹ Settings'}</HeaderButton>} />
-      {segment}
-    </>
-  );
-  if (lang === undefined || !levels) return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;
+  if (!levels) return <main className="screen min-h-0 flex-1" aria-busy="true" />;
   if (lang === null) {
     return (
       <>
-        {header}
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
           <p className="text-2xl font-semibold">No language chosen</p>
           <p className="mt-2 text-muted">The placement is for Greek or Hebrew. Choose one, and it asks what you know.</p>
@@ -58,7 +50,6 @@ export function HebrewPlacement({ lang, segment }: { lang: 'hbo' | null | undefi
   if (!over) {
     return (
       <>
-        {header}
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
           <p data-testid="placement-goal" className="text-2xl font-semibold">
             Placement: Hebrew
@@ -79,7 +70,6 @@ export function HebrewPlacement({ lang, segment }: { lang: 'hbo' | null | undefi
   const have3 = have.length > 0 ? `Already solid: ${have.join(', ')}. ` : '';
   return (
     <>
-      {header}
       <main className="screen min-h-0 flex-1 px-4 pt-6">
         <h2 data-testid="placement-title" className="text-center text-2xl font-semibold">
           Where you are
