@@ -5,7 +5,7 @@ import type { Level } from 'learn-kit/graph';
 import type { WordState } from '../db';
 import { wordGloss, type BookIndex, type Chapter } from '../chapter';
 import type { Goal } from '../goal';
-import { ALWAYS_NEEDED, ideaOf, ideasOfWord } from './ladder';
+import { ladderFor, type LadderLang } from './ladders';
 import { usesOf, type Use } from './uses';
 
 /** How far he is on one thing: solid, frontier or not yet (learn-kit's Level; db.ts GrammarLevelName is the same literal type). */
@@ -35,7 +35,7 @@ export interface NeededIdea {
 export interface PassageNeeds {
   /** commonest first, then in order of first use */
   words: NeededWord[];
-  /** ALWAYS_NEEDED first, then up the ladder */
+  /** the ladder's foundation (Greek ALWAYS_NEEDED) first, then up the ladder */
   ideas: NeededIdea[];
   /** the words of the passage, repeats counted */
   tokens: number;
@@ -69,8 +69,10 @@ type ChapterLoader = (book: string, n: number) => Promise<Chapter>;
 /** The word a use is shown by: its head, when the head is one of its words, else its first word. */
 export const exampleIndexOf = (use: Pick<Use, 'words' | 'head'>): number => (use.head !== undefined && use.words.includes(use.head) ? use.head : use.words[0]);
 
-/** The words and grammar ideas the goal passage requires; the index says how many chapters a whole book has. */
-export async function passageNeeds(goal: Goal, load: ChapterLoader, index: BookIndex): Promise<PassageNeeds> {
+/** The words and grammar ideas the goal passage requires; the index says how many chapters a whole book has. `lang` is the ladder whose ideas are counted (the Greek one by
+ * default; a Hebrew word carries no parsing yet, so the Hebrew ladder's foundation is all a passage needs of it, and no sentence idea is counted). */
+export async function passageNeeds(goal: Goal, load: ChapterLoader, index: BookIndex, lang: LadderLang = 'grc'): Promise<PassageNeeds> {
+  const ladder = ladderFor(lang);
   const words = new Map<string, NeededWord>();
   const ideas = new Map<string, NeededIdea>();
   let tokens = 0;
@@ -84,14 +86,14 @@ export async function passageNeeds(goal: Goal, load: ChapterLoader, index: BookI
         const known = words.get(lemma);
         if (known) known.count++;
         else words.set(lemma, { lemma, gloss: wordGloss(chapter, w), count: 1, firstRef: ref });
-        for (const id of [...ALWAYS_NEEDED, ...ideasOfWord(w)]) {
+        for (const id of [...ladder.foundation, ...ladder.ideasOfWord(w)]) {
           const idea = ideas.get(id);
           if (idea) idea.count++;
           else ideas.set(id, { id, count: 1, example: { form: w.t, code: w.p, ref } });
         }
       }
       // a sentence idea is counted once for each use of it the verse holds (uses.ts), shown by the use's head word
-      for (const use of usesOf(verse)) {
+      for (const use of lang === 'grc' ? usesOf(verse) : []) {
         const idea = ideas.get(use.id);
         if (idea) idea.count++;
         else {
@@ -101,14 +103,14 @@ export async function passageNeeds(goal: Goal, load: ChapterLoader, index: BookI
       }
     }
   }
-  const always = (id: string): number => ALWAYS_NEEDED.indexOf(id);
+  const always = (id: string): number => ladder.foundation.indexOf(id);
   return {
     // Array sort is stable, so equal counts stay in the order of first use.
     words: [...words.values()].sort((a, b) => b.count - a.count),
     ideas: [...ideas.values()].sort((a, b) => {
       const [x, y] = [always(a.id), always(b.id)];
       if (x >= 0 || y >= 0) return (x < 0 ? Infinity : x) - (y < 0 ? Infinity : y);
-      return ideaOf(a.id).rung - ideaOf(b.id).rung;
+      return ladder.ideaOf(a.id).rung - ladder.ideaOf(b.id).rung;
     }),
     tokens,
   };

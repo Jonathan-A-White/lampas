@@ -13,7 +13,8 @@
 // on (its `focus`), not to the whole alphabet; one of them already solid is passed over.
 import { ANSWERS_PER_NODE, QUESTION_LIMIT, levelOfAnswers } from 'learn-kit/drill';
 import { formOfQuestion, foundationOf, inferFromAnswer, isInferredSolid, type Evidence } from './inference';
-import { TIERS, ideaOf, type Tier } from './ladder';
+import type { Tier } from './ladder';
+import { ideaOfAny, ladderFor, ladderLangOf, type LadderLang } from './ladders';
 import type { Level, PassageNeeds } from './needs';
 import type { QuickRound } from './quickRound';
 import type { GrammarQuestion } from './questions';
@@ -22,8 +23,9 @@ import type { GrammarQuestion } from './questions';
 export { QUESTION_LIMIT, levelOfAnswers };
 export const ANSWERS_PER_IDEA = ANSWERS_PER_NODE;
 
-/** The tiers below the sentence: where the walk starts above, and always on the walk. */
-const FOUNDATION: readonly Tier[] = ['letters', 'sounds', 'marks'];
+/** Whether an idea is of the tiers below the sentence, where the walk starts above and which are always on the walk: its own ladder's foundation tiers (the same three for both). */
+const inFoundation = (id: string): boolean => ladderFor(ladderLangOf(id)).foundationTiers.includes(ideaOfAny(id).tier);
+const ideaOf = ideaOfAny;
 
 export interface Asked {
   ideaId: string;
@@ -63,6 +65,8 @@ export interface PlacementState {
   evidence: Map<string, Evidence>;
   /** the ideas this sitting made solid without asking them */
   inferred: string[];
+  /** the ladder the walk is on; absent for the Greek one (so a Greek state is what it was) */
+  lang?: LadderLang;
   /** the letters, sounds and marks of the forms of the idea last missed: a walk down asks only these of the foundation; null asks them all */
   focus: string[] | null;
   /** the quick round over the letters, pairs and breathings not yet solid (quickRound.ts), once the walk has reached them; null before it starts */
@@ -81,7 +85,8 @@ export function currentIdea(state: PlacementState): string | null {
 
 /**
  * Sets up a placement. `needs` is what the goal needs (null: the whole ladder), `known` the levels he already has, `order` the approach's
- * sequence. It starts at the first idea past the letters, marks and sounds that is not solid yet, and skips nothing below it.
+ * sequence. It starts at the first idea past the letters, marks and sounds that is not solid yet, and skips nothing below it. `lang` is the ladder walked: the Hebrew
+ * ladder has only its foundation (the alphabet), so its walk is over at once and asks nothing (mw-gdcyf98.10).
  */
 export function startPlacement(
   needs: Pick<PassageNeeds, 'ideas'> | null,
@@ -89,12 +94,13 @@ export function startPlacement(
   order: readonly string[],
   seed: number,
   evidence: ReadonlyMap<string, Evidence> = new Map(),
+  lang: LadderLang = 'grc',
 ): PlacementState {
   const wanted = needs ? new Set(needs.ideas.map((i) => i.id)) : null;
   // a diphthong, a consonant pair or a breathing is an item of the quick round, not an idea of the walk
-  const ideas = order.filter((id) => !ideaOf(id).parent && (wanted === null || wanted.has(id) || FOUNDATION.includes(ideaOf(id).tier)));
+  const ideas = order.filter((id) => !ideaOf(id).parent && (wanted === null || wanted.has(id) || inFoundation(id)));
   const levels = new Map(ideas.flatMap((id): [string, Level][] => (known.has(id) ? [[id, known.get(id)!]] : [])));
-  const past = ideas.findIndex((id) => !FOUNDATION.includes(ideaOf(id).tier));
+  const past = ideas.findIndex((id) => !inFoundation(id));
   const first = past < 0 ? -1 : ideas.findIndex((id, i) => i >= past && levels.get(id) !== 'solid');
   return {
     ideas,
@@ -112,6 +118,7 @@ export function startPlacement(
     inferred: [],
     focus: null,
     quick: null,
+    ...(lang === 'grc' ? {} : { lang }),
   };
 }
 
@@ -120,7 +127,7 @@ export function startPlacement(
  * had nothing to ask (everything the goal needs was solid already, as when he places himself again) has not probed them either, so it counts.
  */
 export const reachedFoundation = (state: PlacementState): boolean =>
-  state.asked.length === 0 || state.focus !== null || state.asked.some((a) => FOUNDATION.includes(ideaOf(a.ideaId).tier));
+  state.asked.length === 0 || state.focus !== null || state.asked.some((a) => inFoundation(a.ideaId));
 
 /** The next idea up that was not asked in this placement, or -1. */
 function above(state: PlacementState, from: number): number {
@@ -136,7 +143,7 @@ function below(state: PlacementState, from: number): number {
   const asked = new Set(state.asked.map((a) => a.ideaId));
   for (let i = from - 1; i >= 0; i -= 1) {
     const id = state.ideas[i];
-    if (state.focus !== null && FOUNDATION.includes(ideaOf(id).tier)) {
+    if (state.focus !== null && inFoundation(id)) {
       if (state.focus.includes(id) && !asked.has(id) && state.levels.get(id) !== 'solid') return i;
       continue;
     }
@@ -186,13 +193,13 @@ export function answer(state: PlacementState, right: boolean, question?: Answere
   next = infer({ ...next, levels, onlyDown, last: level, inferred: next.inferred.filter((i) => i !== id) }, shown);
   // a miss on a needed idea: the walk steps down to the letters, sounds and marks its forms use, together with those of the idea missed before
   const forms = asked.filter((a) => a.ideaId === id).flatMap((a) => (a.form ? [a.form] : []));
-  if (level === 'notYet' && !FOUNDATION.includes(ideaOf(id).tier) && forms.length > 0) {
+  if (level === 'notYet' && !inFoundation(id) && forms.length > 0) {
     const used = forms.flatMap(foundationOf);
     next = { ...next, focus: [...new Set([...(state.down ? (state.focus ?? []) : []), ...used])] };
   }
   // down: a miss steps back, and so does every idea after the walk turned down; up: the next idea later in the sequence
   const goDown = level === 'notYet' || onlyDown;
-  const inFocus = next.focus !== null && FOUNDATION.includes(ideaOf(id).tier);
+  const inFocus = next.focus !== null && inFoundation(id);
   const ceiling = state.down && level === 'solid' && !inFocus;
   const to = ceiling ? -1 : goDown ? below(next, state.at) : above(next, state.at);
   if (to < 0) return { ...next, done: 'finished' };
@@ -232,7 +239,7 @@ export function summarize(state: PlacementState, neededOnly = false): PlacementS
     notYet: count('notYet'),
     untested: count(null),
     total: counted.length,
-    tiers: TIERS.flatMap((tier) => {
+    tiers: ladderFor(state.lang ?? 'grc').tiers.flatMap((tier) => {
       const ideas = counted.map(ideaOf).filter((idea) => idea.tier === tier).map((idea) => ({ id: idea.id, title: idea.title, level: levelOf(idea.id), inferred: state.inferred.includes(idea.id) }));
       return ideas.length > 0 ? [{ tier, ideas }] : [];
     }),

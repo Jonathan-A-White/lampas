@@ -28,7 +28,8 @@ import { mulberry32, shuffle } from '../quiz';
 import { isSolid } from './inference';
 import { seenKey } from './fetchedItems';
 import { collect, itemSteps, perFacet, questionKey, rng, sideFacet, type DrillContext, type RawStep } from './drillItems';
-import { LADDER_PATH, groupOfItem, ideaOf, type Facet } from './ladder';
+import { groupOfItem, type Facet } from './ladder';
+import { ideaOfAny as ideaOf, ladderFor, ladderLangOf } from './ladders';
 import type { Level } from './needs';
 import { COMPOUND_VERBS, PREPOSITIONS } from './prepositions';
 import { MEANING, buildCompound, buildConcept, buildEnding, buildPreposition, buildTapForm, type GrammarQuestion } from './questions';
@@ -144,7 +145,7 @@ function needLevels(ideaId: string, levels: ReadonlyMap<string, Level>): Map<str
 }
 
 /** The lowest prerequisite of the idea that is not solid, or null: lowest by rung (the kit reads it as the idea's level), and a missing level is not solid. */
-export const unmetNeed = (ideaId: string, levels: ReadonlyMap<string, Level>): string | null => kitUnmetNeed(LADDER_PATH, ideaId, needLevels(ideaId, levels));
+export const unmetNeed = (ideaId: string, levels: ReadonlyMap<string, Level>): string | null => kitUnmetNeed(ladderFor(ladderLangOf(ideaId)).path, ideaId, needLevels(ideaId, levels));
 
 // ---- Items the mill wrote ----
 
@@ -266,7 +267,7 @@ export function start(ideaId: string, levels: ReadonlyMap<string, Level>, option
   const steps = drillSteps(ideaId, options);
   const rule = soundRuleOf(options.scheme ?? chosenPronunciation(), ideaId);
   const required = rule ? rule.sides.map((side) => sideFacet(rule, side).id) : [];
-  const walk = startWalk(LADDER_PATH, ideaId, needLevels(ideaId, levels), kitSteps(steps), { required });
+  const walk = startWalk(ladderFor(ladderLangOf(ideaId)).path, ideaId, needLevels(ideaId, levels), kitSteps(steps), { required });
   if ('needs' in walk) return walk;
   return { ideaId, steps, step: 1, asked: [], current: walk.current?.payload ?? null, streak: 0, result: null, sides: walk.required };
 }

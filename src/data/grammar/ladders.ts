@@ -1,14 +1,15 @@
 // src/data/grammar/ladders.ts — the one door to a grammar ladder (mw-gdcyf98.9): ladderFor('grc') is the Greek ladder (ladder.ts, unchanged behind it),
 // ladderFor('hbo') the Hebrew one (hebrew/ladder.ts). A ladder answers with its ideas, tiers, teach cards, grammar terms, the foundation a placement
 // walks first and the ideas a word needs. Every Hebrew idea id starts 'he-' (ladderLangOf), so a level, a review row and a drill plan never collide
-// with a Greek one. The bridge enum of the built grinds stays the Greek ladder's (grind-build.ts, bridge.ts), and the screens still draw the Greek ladder
-// until story f2 wires them to ladderFor: a consumer that reads LADDER directly is Greek by name.
+// with a Greek one. The bridge enum of the built grinds stays the Greek ladder's (grind-build.ts, bridge.ts). The Goal, Placement, Drill it and the idea sheet read the
+// ladder of the language in hand (languageInHand.ts, mw-gdcyf98.10; an idea's own language is ladderLangOf): a consumer that reads LADDER directly is Greek by name.
 import { GRAMMAR_TERMS } from '../parseCode';
-import { ALWAYS_NEEDED, LADDER, TIERS, ideaOf as greekIdeaOf, ideasOf as greekIdeasOf, ideasOfWord as greekIdeasOfWord, type GrammarIdea, type Tier } from './ladder';
+import { ALWAYS_NEEDED, LADDER, LADDER_PATH, TIERS, ideaOf as greekIdeaOf, ideasOf as greekIdeasOf, ideasOfWord as greekIdeasOfWord, type GrammarIdea, type Tier } from './ladder';
 import { HEBREW_ALWAYS_NEEDED, HEBREW_FOUNDATION_TIERS, isHebrewIdeaId, HEBREW_LADDER, HEBREW_PATH, HEBREW_TIERS } from './hebrew/ladder';
 import { HEBREW_TEACH } from './hebrew/teach';
 import { GREEK_TEACH } from './teach';
 import type { Teach } from './teach/types';
+import type { Path } from './pathGraph';
 
 /** The languages that have a ladder: Koine Greek and Biblical Hebrew (ISO 639-3). */
 export const LADDER_LANGS = ['grc', 'hbo'] as const;
@@ -20,6 +21,8 @@ export interface LadderOf {
   /** every idea, easy first */
   ideas: readonly GrammarIdea[];
   tiers: readonly Tier[];
+  /** the ideas as a path (pathGraph.ts): what each needs, the frontier, the depth */
+  path: Path<GrammarIdea>;
   /** every card's teaching, by idea id */
   teach: Readonly<Record<string, Teach>>;
   /** the grammar terms the ladder's ideas cover (a Hebrew term is none yet) */
@@ -39,6 +42,7 @@ export interface LadderOf {
 const GREEK: LadderOf = {
   lang: 'grc',
   ideas: LADDER,
+  path: LADDER_PATH,
   tiers: TIERS,
   teach: GREEK_TEACH,
   terms: GRAMMAR_TERMS,
@@ -52,6 +56,7 @@ const GREEK: LadderOf = {
 const HEBREW: LadderOf = {
   lang: 'hbo',
   ideas: HEBREW_LADDER,
+  path: HEBREW_PATH,
   tiers: HEBREW_TIERS,
   teach: HEBREW_TEACH,
   terms: HEBREW_LADDER.flatMap((i) => i.terms),
@@ -74,3 +79,6 @@ export const ladderFor = (lang: LadderLang): LadderOf => LADDERS[lang];
 
 /** The language whose ladder an idea id belongs to: a Hebrew idea's id starts 'he-'. */
 export const ladderLangOf = (ideaId: string): LadderLang => (isHebrewIdeaId(ideaId) ? 'hbo' : 'grc');
+
+/** The idea with this id, from the ladder of its own language: a Greek id from the Greek ladder, a 'he-' id from the Hebrew one; throws on one that ladder lacks. */
+export const ideaOfAny = (id: string): GrammarIdea => ladderFor(ladderLangOf(id)).ideaOf(id);

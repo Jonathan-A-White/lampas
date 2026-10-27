@@ -12,6 +12,7 @@ import type { DrillResult } from '../grammar/drillIt';
 import { planFrom } from '../grammar/drillPlan';
 import { groupIsSolid, isSolid } from '../grammar/inference';
 import { IDEA_KIND, ITEM_GROUPS, LADDER, LADDER_PATH, itemsOf } from '../grammar/ladder';
+import { ladderLangOf, type LadderLang } from '../grammar/ladders';
 import { isHebrewIdeaId } from '../grammar/hebrew/ladder';
 import { ideaOfStored, isItemId, storedId } from '../grammar/soundScope';
 import { knownSchedule, startSchedule } from '../schedule';
@@ -71,19 +72,20 @@ const RUNG = new Map(LADDER.map((idea) => [idea.id, idea.rung]));
 /** Lower on the ladder first; an id the ladder does not have comes last, by name. */
 const byLadder = (a: string, b: string): number => (RUNG.get(a) ?? Infinity) - (RUNG.get(b) ?? Infinity) || a.localeCompare(b);
 
-/** The ideas he is learning now (at the frontier) in `scheme`, lowest first, the items of a group left out. Reads the table: inside the caller's transaction when it has one. */
-export async function learningIdeas(scheme: string): Promise<string[]> {
+/** The ideas he is learning now (at the frontier) in `scheme` on the ladder of `lang` (Greek by default: each ladder has its own one idea at a time, mw-gdcyf98.10), lowest first,
+ * the items of a group left out. Reads the table: inside the caller's transaction when it has one. */
+export async function learningIdeas(scheme: string, lang: LadderLang = 'grc'): Promise<string[]> {
   const rows = await db.grammarLevels.where('level').equals('frontier').toArray();
   return rows.flatMap((row) => {
     const id = ideaOfStored(row.id, scheme);
-    return id === undefined || isItemId(id) ? [] : [id];
+    return id === undefined || isItemId(id) || ladderLangOf(id) !== lang ? [] : [id];
   }).sort(byLadder);
 }
 
-/** The idea he is learning now other than `id`, the one a second frontier would have to replace; none for an item of a group. */
+/** The idea he is learning now other than `id` on its own ladder, the one a second frontier would have to replace; none for an item of a group. */
 export async function otherFrontier(id: string): Promise<string | undefined> {
   if (isItemId(id)) return undefined;
-  return (await learningIdeas(await schemeNow())).find((other) => other !== id);
+  return (await learningIdeas(await schemeNow(), ladderLangOf(id))).find((other) => other !== id);
 }
 
 /** Starts an idea's schedule at the first gap (step 0, due after it) unless it has a row already, which keeps its steps, lapses and rights. */
@@ -261,7 +263,7 @@ export async function teachIdea(id: string, outcome: IdeaOutcome, now = Date.now
   const scheme = await schemeNow();
   const key = storedId(id, scheme);
   const done = await db.transaction('rw', db.reviews, db.grammarLevels, async () => {
-    const learning = await learningIdeas(scheme);
+    const learning = await learningIdeas(scheme, ladderLangOf(id));
     const other = outcome === 'got-it' && !isItemId(id) ? learning.find((idea) => idea !== id) : undefined;
     if (other !== undefined && choice !== 'switch') return { status: choice === 'keep' ? ('kept' as const) : ('busy' as const), other };
     const moved: GroupMoved[] = [];
@@ -277,7 +279,8 @@ export async function teachIdea(id: string, outcome: IdeaOutcome, now = Date.now
       await db.reviews.put({ kind: IDEA_KIND, id: key, ...schedule });
     }
     await putRow({ id, level, since: now, how }, scheme);
-    moved.push(...(await syncAlphabet(now, scheme)), ...(await advanceFrontier(learning, now, scheme)));
+    // the Greek ladder moves its frontier on and keeps its alphabet in step with its letters; the Hebrew ladder has one idea to start (mw-gdcyf98.10)
+    if (!isHebrewIdeaId(id)) moved.push(...(await syncAlphabet(now, scheme)), ...(await advanceFrontier(learning, now, scheme)));
     return { status: 'taught' as const, moved };
   });
   if (done.status !== 'taught') return done;
