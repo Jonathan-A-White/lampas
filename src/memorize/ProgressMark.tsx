@@ -2,15 +2,17 @@
 // ('Step 3 of 7 · last 9 of 10 · due Tue'), which is also its accessible name. Drawn by the Memorize screen, a verse list's row and the Verse view.
 import { langName, type MemorizeLang } from './languages';
 import { progressLine, type Progress } from './progress';
+import { sourceOf } from './source';
 import { useProgress } from './useProgress';
 
-/** One mark. `lang` names the language before the line, for a verse memorized in more than one. */
-export function ProgressMark({ progress, lang, className = '' }: { progress: Progress; lang?: MemorizeLang; className?: string }) {
+/** One mark. `lang` names the language before the line, for a verse memorized in more than one; `rtl` fills the ladder from the right, for a verse of Hebrew words. */
+export function ProgressMark({ progress, lang, rtl = false, className = '' }: { progress: Progress; lang?: MemorizeLang; rtl?: boolean; className?: string }) {
   const line = progressLine(progress);
   const text = lang ? `${langName(lang)} · ${line}` : line;
   return (
     <div role="img" aria-label={text} data-progress className={`flex flex-col gap-1 text-sm text-muted ${className}`}>
-      <span aria-hidden="true" className="flex gap-1">
+      {/* a Hebrew verse's ladder fills from the right, as its line is read */}
+      <span aria-hidden="true" dir={rtl ? 'rtl' : undefined} className="flex gap-1">
         {Array.from({ length: progress.of }, (_, i) => (
           <span key={i} data-cell={i < progress.step ? 'filled' : 'empty'} className={`h-2 w-5 rounded-sm ${i < progress.step ? 'bg-accent' : 'bg-line'}`} />
         ))}
@@ -27,7 +29,7 @@ export function ProgressMarks({ canonical, className = '' }: { canonical: string
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       {found.map(({ lang, progress }) => (
-        <ProgressMark key={lang} progress={progress} lang={found.length > 1 ? lang : undefined} />
+        <ProgressMark key={lang} progress={progress} lang={found.length > 1 ? lang : undefined} rtl={sourceOf(canonical) === 'hbo'} />
       ))}
     </div>
   );

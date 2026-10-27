@@ -2,7 +2,7 @@
 //   loading  the row (the step; a verse not on the schedule is at step 0), the target of the moment (memorizeTarget over the Reader's own Weave settings), the rung (rungFor), the words it hides
 //            (learn-kit/recall hideWords over the target, seeded by the row's lastWhen so the same words are gone each time he opens it)
 //   phases   'shown' (the verse at its rung, the hold below it) -> 'sending' (a Weave recording is with the mill) -> 'judged' (misses marked, the recall kept, 'Due <day>')
-//   hearing  useRecallHold(lang): dictation judged by judgeSaid ('said'), a Weave recording sent by sendWeaveRecall and judged by judgeReading ('mill'); typed(text) is judged by judgeTyped ('typed', never for the Weave); a phone that cannot hear that language, is
+//   hearing  useRecallHold(lang): dictation (en-US, el-GR, he-IL) judged by judgeSaid ('said'), a Weave recording sent by sendWeaveRecall and judged by judgeReading ('mill'); typed(text) is judged by judgeTyped ('typed', never for the Weave); a phone that cannot hear that language, is
 //            offline or has no microphone says so (`note`) and lets him grade himself (I had it / Not yet, 'self')
 //   keeping  recordRecall writes the recall and moves the verse on the schedule; the row is read again for its due day
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -12,6 +12,7 @@ import { versesOf } from './refs';
 import { memorizedRowOf, nextDueVerse, recordRecall, type RecallHow } from '../data/repositories/memorize';
 import { wovenOf } from '../reader/useWoven';
 import type { WovenVerse } from '../data/weave';
+import { sourceLanguage, type SourceLanguage } from '../data/chapter';
 import { asked, judgeReading, judgeSaid, judgeTyped, type Judgement } from './judge';
 import type { MemorizeLang } from './languages';
 import { rungFor, type Rung } from './rung';
@@ -23,12 +24,15 @@ import { STEPS } from './progress';
 import { weaveSettingsNow } from './weaveSettings';
 
 /** What the session says when a recall cannot be heard, ahead of the two buttons that let him grade himself. */
-export const UNAVAILABLE_NOTES: Record<RecallUnavailable | 'mill', string> = {
+export const UNAVAILABLE_NOTES: Record<RecallUnavailable | 'mill' | 'hebrew-weave', string> = {
   'no-greek-dictation': 'This phone cannot hear Greek. Say it, then grade yourself.',
+  'no-hebrew-dictation': 'This phone cannot hear Hebrew. Say it, then grade yourself.',
   'no-dictation': 'This phone cannot take dictation. Say it, then grade yourself.',
   offline: 'The speech service cannot be reached. Say it, then grade yourself.',
   'no-microphone': 'The microphone is turned off. Say it, then grade yourself.',
   mill: 'The tutor cannot be reached. Say it, then grade yourself.',
+  // the mill's verse-read scores English and Greek only (PROVISIONAL, mw-gdcyf98.15): a Weave of Hebrew is graded by him
+  'hebrew-weave': 'The tutor cannot hear a Hebrew Weave yet. Say it, then grade yourself.',
 };
 
 export { STEPS };
@@ -60,6 +64,8 @@ export type SessionState =
       note: string | null;
       kept: Kept | null;
       hold: RecallHold;
+      /** nothing hears this recall (a Weave of Hebrew words): he says it and grades himself, so no hold is drawn */
+      selfGraded: boolean;
       /** the next verse that is due, once this one is kept; null when none is */
       next: { ref: string; lang: MemorizeLang } | null;
       gradeSelf(passed: boolean): void;
@@ -69,6 +75,8 @@ export type SessionState =
 
 interface Loaded {
   found: Verses;
+  /** the language of the verse's own words */
+  source: SourceLanguage;
   woven: (WovenVerse | null)[];
   tokens: VerseToken[];
   step: number;
@@ -91,7 +99,8 @@ export function useSession(ref: string, lang: MemorizeLang): SessionState {
       const found = await versesOf(ref).catch(() => null);
       if (!live) return;
       if (!found) return setLoaded('unknown');
-      const settings = lang === 'weave' ? await weaveSettingsNow() : undefined;
+      const source = sourceLanguage(found.source);
+      const settings = lang === 'weave' ? await weaveSettingsNow(source) : undefined;
       const target = await memorizeTarget(ref, lang, settings);
       const row = await memorizedRowOf(ref, lang);
       if (!live) return;
@@ -99,7 +108,7 @@ export function useSession(ref: string, lang: MemorizeLang): SessionState {
       const chapterWoven = settings ? wovenOf(found.source, settings) : null;
       const woven = found.verses.map((v) => chapterWoven?.[found.source.verses.indexOf(v)] ?? null);
       setHeading(found.heading);
-      setLoaded({ found, woven, tokens: target.tokens, step: row?.step ?? 0, seed: row?.lastWhen ?? 0 });
+      setLoaded({ found, source, woven, tokens: target.tokens, step: row?.step ?? 0, seed: row?.lastWhen ?? 0 });
     })();
     return () => {
       live = false;
@@ -193,5 +202,6 @@ export function useSession(ref: string, lang: MemorizeLang): SessionState {
   if (loaded === 'unknown') return { status: 'unknown' };
   const rung = rungFor(loaded.step);
   const hidden = rung.kind === 'gaps' ? hideWords(loaded.tokens.length, rung.share, loaded.seed) : new Set<number>();
-  return { status: 'ready', heading, lang, step: loaded.step, rung, tokens: loaded.tokens, hidden, phase, note, kept, hold, next, gradeSelf, typed };
+  const selfGraded = lang === 'weave' && loaded.source === 'hbo';
+  return { status: 'ready', heading, lang, step: loaded.step, rung, tokens: loaded.tokens, hidden, phase, note: note ?? (selfGraded && phase === 'shown' ? UNAVAILABLE_NOTES['hebrew-weave'] : null), kept, hold, selfGraded, next, gradeSelf, typed };
 }

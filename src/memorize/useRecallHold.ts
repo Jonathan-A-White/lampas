@@ -2,6 +2,7 @@
 //   'en'     voice-kit's dictation in en-US, through useTalkHold (the bar every other screen draws, talk/Bars.tsx HeldTalkBar): the words reach `onHeard` once, on release.
 //   'el'     the same in el-GR with strictLang: Greek is heard as Greek or not at all, never walked on to English (which would turn his Greek into English words). A phone that cannot
 //            hear Greek says so (`onUnavailable('no-greek-dictation')`), the speech service out of reach says 'offline': the session then lets him grade himself.
+//   'he'     the same in he-IL with strictLang (mw-gdcyf98.15): Hebrew is heard as Hebrew or not at all ('no-hebrew-dictation' when the phone cannot).
 //   'weave'  no dictation: one recogniser hears one language and a Weave verse has two. The hold records him (audio/recorder.ts, through recorderSeam as the reading check and the Try it step do)
 //            and the Recording goes to `onRecording`, for sendWeave.ts to send to the mill's verse-read.
 // Both are always made (hooks cannot be conditional); the screen draws `talk` for 'en' and 'el' and `record` (a RecordBar's props) for 'weave'.
@@ -13,13 +14,14 @@ import { useTalkHold, type TalkHold } from '../talk/useTalkHold';
 import { SHORT_READING_MS } from '../useReadChecks';
 import type { MemorizeLang } from './languages';
 
-/** Why a recall cannot be heard on this phone, so the session grades itself: Greek is not available to dictate, English is not either, the speech service cannot be reached, or the microphone is refused. */
-export type RecallUnavailable = 'no-greek-dictation' | 'no-dictation' | 'offline' | 'no-microphone';
+/** Why a recall cannot be heard on this phone, so the session grades itself: Greek (or Hebrew) is not available to dictate, English is not either, the speech service cannot be reached, or the microphone is refused. */
+export type RecallUnavailable = 'no-greek-dictation' | 'no-hebrew-dictation' | 'no-dictation' | 'offline' | 'no-microphone';
 
 /** The language the phone is asked to hear for a recall, and whether it hears that or nothing. */
-export const DICTATION: Record<'en' | 'el', { lang: string; strictLang: boolean }> = {
+export const DICTATION: Record<'en' | 'el' | 'he', { lang: string; strictLang: boolean }> = {
   en: { lang: 'en-US', strictLang: false },
   el: { lang: 'el-GR', strictLang: true },
+  he: { lang: 'he-IL', strictLang: true },
 };
 
 /** What the recording is doing: nothing, being made, too short to score (under a second), dropped by a slide off. */
@@ -60,7 +62,7 @@ interface Hold {
 }
 
 export function useRecallHold({ lang, onHeard, onRecording, onUnavailable }: RecallHoldOptions): RecallHold {
-  const dictation = DICTATION[lang === 'el' ? 'el' : 'en'];
+  const dictation = DICTATION[lang === 'el' || lang === 'he' ? lang : 'en'];
   const latest = useRef({ onHeard, onRecording, onUnavailable });
   useEffect(() => {
     latest.current = { onHeard, onRecording, onUnavailable };
@@ -75,7 +77,9 @@ export function useRecallHold({ lang, onHeard, onRecording, onUnavailable }: Rec
       failed === 'language-not-supported' || failed === 'not-supported'
         ? lang === 'el'
           ? 'no-greek-dictation'
-          : 'no-dictation'
+          : lang === 'he'
+            ? 'no-hebrew-dictation'
+            : 'no-dictation'
         : failed === 'network'
           ? 'offline'
           : failed === 'permission-denied' || failed === 'no-microphone'

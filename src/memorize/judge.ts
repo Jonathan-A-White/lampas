@@ -30,11 +30,18 @@ export interface Judgement {
 /** The target as it was asked: each token's text and language, no more. */
 export const asked = (target: readonly Token[]): Asked[] => target.map(({ text, lang }) => ({ text, lang }));
 
-/** A said or typed recall against the target. A token that folds to nothing (a lone dash) is not a word to say, so it is neither asked nor missed. */
+/** A Hebrew final letter (ך ם ן ף ץ) and its medial form (כ מ נ פ צ) are the one letter: a phone's dictation or a keyboard may give either. */
+const FINALS: Record<string, string> = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
+/** A maqaf joins two Hebrew words: typed with no space round it, it still ends a word. */
+const MAQAF = /\u05BE/gu;
+const unfinal = (text: string): string => text.replace(/[ךםןףץ]/gu, (c) => FINALS[c]);
+
+/** A said or typed recall against the target. A token that folds to nothing (a lone dash) is not a word to say, so it is neither asked nor missed. A Hebrew word is compared by its
+ *  consonants alone (learn-kit's fold takes off every mark: the points, the cantillation, the dots of shin and sin; PROVISIONAL), a final letter as its medial form. */
 function judgeWords(target: readonly Token[], heard: string): Judgement {
-  const heardWords = foldWords(heard);
+  const heardWords = foldWords(heard.replace(MAQAF, ' ')).map(unfinal);
   const places = target.flatMap((t, i) => (foldWords(t.text).length > 0 ? [i] : []));
-  const match = matchSequence(places.map((i) => target[i].text), heardWords);
+  const match = matchSequence(places.map((i) => unfinal(target[i].text)), heardWords);
   return { score: match.score, passed: match.passed, misses: match.misses.map((m) => places[m]), heardWords, asked: asked(target) };
 }
 

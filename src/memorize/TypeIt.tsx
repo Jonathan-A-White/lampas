@@ -1,6 +1,6 @@
 // src/memorize/TypeIt.tsx — the field a Memorize recall is typed in (mw-fu7dqf.9, docs/layout/memorize.md): one text box and Check. For Greek the box says lang="el" so the phone offers the Greek keyboard
-// he added (Settings > Daily > Greek keyboard); Lampas draws no keyboard of its own. The words go to the session's onTyped, which judges them the way a said recall is judged (accents, breathings, case,
-// punctuation and a final sigma do not count).
+// he added (Settings > Daily > Greek keyboard); for Hebrew lang="he", right to left, in the Hebrew face (Settings > Daily > Hebrew keyboard); Lampas draws no keyboard of its own. The words go to the session's onTyped, which judges them the way a said recall is judged (accents, breathings, case,
+// punctuation and a final sigma do not count; a Hebrew word's points and cantillation do not count, its consonants do).
 import { useEffect, useId, useRef, useState } from 'react';
 import { focusQuietly } from '../ui/focus';
 import type { MemorizeLang } from './languages';
@@ -19,13 +19,14 @@ export function TypeIt({ lang, disabled, onTyped }: { lang: Typed; disabled?: bo
   return (
     <div className="space-y-2">
       <label htmlFor={id} className="block text-base font-medium">
-        {lang === 'el' ? 'Type the verse in Greek' : 'Type the verse'}
+        {lang === 'el' ? 'Type the verse in Greek' : lang === 'he' ? 'Type the verse in Hebrew' : 'Type the verse'}
       </label>
       <textarea
         ref={field}
         id={id}
         rows={4}
         lang={lang}
+        dir={lang === 'he' ? 'rtl' : undefined}
         value={text}
         disabled={disabled}
         autoCapitalize="off"
@@ -39,7 +40,7 @@ export function TypeIt({ lang, disabled, onTyped }: { lang: Typed; disabled?: bo
             check();
           }
         }}
-        className={`block w-full resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-fg disabled:opacity-60 ${lang === 'el' ? 'font-greek text-[length:var(--lp-greek-size)]' : 'text-lg'}`}
+        className={`block w-full resize-none rounded-lg border border-line bg-canvas px-3 py-2 text-fg disabled:opacity-60 ${lang === 'el' ? 'font-greek text-[length:var(--lp-greek-size)]' : lang === 'he' ? 'script-he reader-hebrew' : 'text-lg'}`}
       />
       <button type="button" disabled={empty || disabled} onClick={check} className="min-h-12 w-full rounded-lg bg-accent px-4 text-base font-medium text-accent-fg disabled:opacity-40">
         Check

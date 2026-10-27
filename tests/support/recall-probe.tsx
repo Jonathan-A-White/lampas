@@ -13,6 +13,7 @@ import { HeldTalkBar, RecordBar } from '../../src/talk/Bars';
 
 const NOTES: Record<RecallUnavailable, string> = {
   'no-greek-dictation': 'This phone cannot hear Greek. Say it, then grade yourself.',
+  'no-hebrew-dictation': 'This phone cannot hear Hebrew. Say it, then grade yourself.',
   'no-dictation': 'This phone cannot take dictation. Say it, then grade yourself.',
   offline: 'The speech service cannot be reached. Say it, then grade yourself.',
   'no-microphone': 'The microphone is turned off. Say it, then grade yourself.',

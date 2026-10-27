@@ -14,6 +14,7 @@ import { langName, MEMORIZE_LANGS } from './languages';
 import { MemorizeSession } from './MemorizeSession';
 import { groupVerses } from './progress';
 import { ProgressMark } from './ProgressMark';
+import { sourceOf } from './source';
 import { useProgress, type VerseProgress } from './useProgress';
 
 const BUTTON = 'min-h-12 shrink-0 rounded-xl border border-line px-4 text-base font-medium';
@@ -34,7 +35,7 @@ function DueRow({ row }: { row: VerseProgress }) {
         <p className="text-base font-medium">
           {name} <span className="font-normal text-muted">· {langName(row.lang)}</span>
         </p>
-        <ProgressMark progress={row.progress} className="mt-1" />
+        <ProgressMark progress={row.progress} rtl={sourceOf(row.ref) === 'hbo'} className="mt-1" />
       </div>
       <button type="button" onClick={() => openMemorizeSession(row.ref, row.lang)} aria-label={`Start ${name} in ${langName(row.lang)}`} className={`${BUTTON} bg-accent text-accent-fg`}>
         Start
@@ -52,7 +53,7 @@ function VerseRow({ canonical, rows }: { canonical: string; rows: VerseProgress[
         <p className="text-base font-medium">{name}</p>
         <div className="mt-1 flex flex-col gap-1">
           {rows.map((row) => (
-            <ProgressMark key={row.lang} progress={row.progress} lang={row.lang} />
+            <ProgressMark key={row.lang} progress={row.progress} lang={row.lang} rtl={sourceOf(canonical) === 'hbo'} />
           ))}
         </div>
       </div>
