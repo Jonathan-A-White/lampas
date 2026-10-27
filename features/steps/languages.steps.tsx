@@ -173,6 +173,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given(GIVEN, openOnNewPhone);
     When('he chooses {string} under Which languages?', chooses);
     And('the tutor changes {string} to {string}', async (_: unknown, key: string, value: string) => {
+      // the tap does not await its writes: the tutor's change comes after both dials have been raised
+      await waitFor(() => expect([dial('How much Greek?'), dial('How much Hebrew?')]).not.toContain(null));
       const { applied } = await applyChanges([{ key, value }]);
       expect(applied).toHaveLength(1);
     });
