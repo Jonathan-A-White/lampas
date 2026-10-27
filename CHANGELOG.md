@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.5
+_2026-10-27_
+- New: The Goal and Placement screens now work for Hebrew, with a Greek | Hebrew switch when you read both, and The Hebrew alphabet can be learned or marked known there.
+- New: Old Testament chapters now follow the "How much Hebrew?" setting and New Testament chapters follow "How much Greek?", including the word sheet, the study resources and what the tutor is told.
+
 ## 0.5.4
 _2026-10-27_
 - New: Settings now ask which languages you read (English only, Greek, Hebrew or both) and give Hebrew its own "How much Hebrew?" dial beside the Greek one.

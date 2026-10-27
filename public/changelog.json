@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.5.5",
+    "date": "2026-10-27",
+    "story": "mw-gdcyf98.10",
+    "kind": "new",
+    "text": "The Goal and Placement screens now work for Hebrew, with a Greek | Hebrew switch when you read both, and The Hebrew alphabet can be learned or marked known there."
+  },
+  {
+    "version": "0.5.5",
+    "date": "2026-10-27",
+    "story": "mw-gdcyf98.3",
+    "kind": "new",
+    "text": "Old Testament chapters now follow the \"How much Hebrew?\" setting and New Testament chapters follow \"How much Greek?\", including the word sheet, the study resources and what the tutor is told."
+  },
+  {
     "version": "0.5.4",
     "date": "2026-10-27",
     "story": "mw-gdcyf98.2",
