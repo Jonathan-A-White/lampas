@@ -37,7 +37,6 @@ import {
   pushGrammarAnswer,
   recordAnswer,
   noteAnswer,
-  noteAsked,
   recordDrillStep,
   recordGrammarAnswer,
   recordReview,
@@ -252,8 +251,7 @@ export const GRAMMAR: ReviewKind = {
     // read before the answer is written: whether he missed the idea before decides whether this right answer marks it to confirm (src/review/confirm.ts)
     const wasMissed = await missedBefore(item.id).catch(() => false);
     await recordGrammarAnswer(item.id, right);
-    // the question is remembered as asked, so the mill is not asked for it again and a kept copy is not served (mw-indx1x6.1); before the confirm, whose ask carries the seen list
-    await noteAsked(item.question);
+    // the question is remembered as asked too (confirmAnswer notes it first), so the mill is not asked for it again and a kept copy is not served (mw-indx1x6.1); the ask the confirm may start carries the seen list
     await confirmAnswer(item.question, right, { rowWritten: true, wasMissed });
     // a form read right shows its letters, sounds and marks; a miss on a letter or sound counts against it (mw-hqd5bz.17)
     await noteAnswer(item.question, right);
