@@ -1,15 +1,16 @@
 // src/memorize/MemorizeControl.tsx — the one control that puts a verse into memorizing (mw-fu7dqf.5, the epic mw-fu7dqf), drawn on a verse list's row and in the Verse view. 'Memorize' while the verse
-// is not memorized: a tap memorizes it in English. 'Memorizing · English' once it is: a tap opens a small sheet with a switch for each language his Greek dial allows (English, Greek, the Weave)
+// is not memorized: a tap memorizes it in English. 'Memorizing · English' once it is: a tap opens a small sheet with a switch for each language the dial of the verse's own language allows (English, Greek or Hebrew, the Weave)
 // and 'Stop memorizing'; at 'Just English' there is no sheet, the tap stops it. It never writes anything itself: every tap goes through src/memorize/commands.ts, which the tutor calls too.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { memorizedOf } from '../data/repositories/memorize';
-import { useGreekInterest } from '../settings/useGreekInterest';
+import { useInterestLevels } from '../settings/useInterestLevels';
 import { announce } from '../ui/live';
 import { useEscapeToClose } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
-import { isEnglishOnly, memorizeVerse, printedRef, unmemorizeVerse, type CommandResult } from './commands';
+import { memorizeVerse, printedRef, unmemorizeVerse, type CommandResult } from './commands';
 import { languagesFor, langName, MEMORIZE_LANGS, type MemorizeLang } from './languages';
+import { sourceOf } from './source';
 
 const BUTTON = 'min-h-12 shrink-0 rounded-xl border px-3 font-medium leading-tight';
 
@@ -71,12 +72,12 @@ function LanguageSheet({ canonical, offered, memorized, onClose }: { canonical: 
  *  button whose label wraps. Draws nothing until it has read what is memorized and where his Greek dial is. */
 export function MemorizeControl({ canonical, compact = false, className = '' }: { canonical: string; compact?: boolean; className?: string }) {
   const found = useLiveQuery(() => memorizedOf([canonical]), [canonical]);
-  const level = useGreekInterest();
+  const levels = useInterestLevels();
   const [sheet, setSheet] = useState(false);
-  if (found === undefined || level === undefined) return null;
+  if (found === undefined || levels === undefined) return null;
   const memorized = found.get(canonical) ?? [];
-  // an Old Testament verse is learned in English only: no sheet of languages, a tap on it stops it
-  const offered: MemorizeLang[] = isEnglishOnly(canonical) ? ['en'] : languagesFor(level);
+  // the languages of the verse's own dial (Hebrew for an Old Testament verse, Greek for a New Testament one); at 'Just English' no sheet, a tap on it stops it
+  const offered: MemorizeLang[] = languagesFor(levels, sourceOf(canonical));
   const on = memorized.length > 0;
   const tap = () => {
     if (!on) {

@@ -35,10 +35,10 @@ describe('rungFor', () => {
 
 describe('languagesFor', () => {
   it('offers only English at "Just English", adds Greek at Curious and the Weave from Dipping a toe', () => {
-    expect(languagesFor(0)).toEqual(['en']);
-    expect(languagesFor(1)).toEqual(['en', 'el']);
-    expect(languagesFor(2)).toEqual(['en', 'el', 'weave']);
-    expect(languagesFor(5)).toEqual(['en', 'el', 'weave']);
+    expect(languagesFor({ grc: 0, he: 0 })).toEqual(['en']);
+    expect(languagesFor({ grc: 1, he: 0 })).toEqual(['en', 'el']);
+    expect(languagesFor({ grc: 2, he: 0 })).toEqual(['en', 'el', 'weave']);
+    expect(languagesFor({ grc: 5, he: 5 })).toEqual(['en', 'el', 'weave']);
   });
 
   it('names each language for the screen', () => {

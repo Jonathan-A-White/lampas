@@ -159,14 +159,14 @@ const FACTS: readonly Fact[] = [
   },
 ];
 
-const LANG = { enum: ['en', 'el', 'weave'] } as const;
+const LANG = { enum: ['en', 'el', 'he', 'weave'] } as const;
 const REF = { type: 'string' } as const;
 
 /** The verse commands of src/memorize/commands.ts: the same functions the buttons call (memorize and unmemorize are the Memorize control's and the Stop memorizing buttons'). */
 const memorizeCommands: readonly Command[] = [
   {
     name: 'memorize',
-    tell: 'Memorizes a verse (ref Rom.8.28; langs en, el, weave, en by default); undoable',
+    tell: 'Memorizes a verse (ref Rom.8.28; langs en, el, he, weave, en by default); undoable',
     args: { type: 'object', required: ['ref'], additionalProperties: false, properties: { ref: REF, langs: { type: 'array', items: LANG } } },
     kind: 'undoable',
     run: memorizeVerse,

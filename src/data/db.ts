@@ -537,7 +537,7 @@ export interface RecallRow {
   id?: number;
   /** canonical reference: 'Rom.8.28' */
   ref: string;
-  /** 'en' | 'el' | 'weave' (src/memorize/languages.ts) */
+  /** 'en' | 'el' | 'he' | 'weave' (src/memorize/languages.ts) */
   lang: string;
   when: number;
   /** the rung asked (src/memorize/rung.ts): the step's, 0..6 */
