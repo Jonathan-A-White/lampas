@@ -2,8 +2,8 @@
 import { matchedPlaceNames } from './placeNames';
 import type { MapCard, MapRef, MapSource, Place } from './types';
 
-export async function mapsForSources(sources: readonly MapSource[], ref: MapRef): Promise<MapCard[]> {
-  const answers = await Promise.all(sources.map((source) => source.mapsFor(ref)));
+export async function mapsForSources(sources: readonly MapSource[], ref: MapRef, places?: () => Promise<Place[]>): Promise<MapCard[]> {
+  const answers = await Promise.all(sources.map((source) => source.mapsFor(ref, places)));
   return answers.flat();
 }
 

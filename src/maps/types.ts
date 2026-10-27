@@ -49,7 +49,8 @@ export interface MapSource {
   needs?: 'logos';
   /** whether its switch starts On or Off */
   default: 'on' | 'off';
-  mapsFor(ref: MapRef): Promise<MapCard[]>;
+  /** `places` reads the places the verses of `ref` name (src/maps/places.ts, asked once and shared by every source): a source that centres a view on them calls it, and one that does not never loads them */
+  mapsFor(ref: MapRef, places?: () => Promise<Place[]>): Promise<MapCard[]>;
   /** the address of the card's image at that size, or null where the source has none to show (a link-only source answers null for all) */
   imageUrl(card: MapCard, size: MapImageSize): string | null;
   /** the source's own page of every map of the chapter (the link 'All maps for Genesis 10 at Bible Mapper'), or null where it has none */

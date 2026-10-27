@@ -35,6 +35,11 @@ describe('mapsForTutor', () => {
     expect(mapsForTutor([card('Genesis_10', 'Genesis 10', [], 'video'), sodom]).map((m) => m.id)).toEqual(['SodomAndGomorrah']);
   });
 
+  it('leaves out a link-only source\'s row, which opens in Logos and not in the map view', () => {
+    const logos: MapCard = { ...card('JONAHSTRAVELS-EN', 'Logos Atlas: Jonah’s Travels', [], 'link'), source: 'logosatlas', open: { url: 'https://app.logos.com/tools/atlas/JONAHSTRAVELS-EN' } };
+    expect(mapsForTutor([logos, sodom]).map((m) => m.id)).toEqual(['SodomAndGomorrah']);
+  });
+
   it('holds at most 12', () => {
     const many = Array.from({ length: 20 }, (_, i) => card(`M${i}`, `Map ${i}`));
     expect(MAX_TUTOR_MAPS).toBe(12);

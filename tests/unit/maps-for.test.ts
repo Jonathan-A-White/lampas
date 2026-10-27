@@ -5,10 +5,11 @@ import { mapsFor, SOURCES } from '../../src/maps';
 import { mapsForSources, rankPerSource } from '../../src/maps/mapsFor';
 import type { MapCard, MapSource } from '../../src/maps/types';
 import { bibleMapper } from '../../src/maps/sources/biblemapper';
+import { logosAtlas } from '../../src/maps/sources/logosatlas';
 
 describe('Bible Mapper, the first source', () => {
-  it('is the only registered source, with the credit and the homepage the site asks for', () => {
-    expect(SOURCES).toEqual([bibleMapper]);
+  it('is the first registered source (the Logos Atlas, which rides on Logos, the second), with the credit and the homepage the site asks for', () => {
+    expect(SOURCES).toEqual([bibleMapper, logosAtlas]);
     expect(bibleMapper.id).toBe('biblemapper');
     expect(bibleMapper.name).toBe('Bible Mapper');
     expect(bibleMapper.credit).toBe('Map by David P. Barrett, biblemapper.com');

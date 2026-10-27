@@ -22,7 +22,7 @@ export const DEFAULT_LOGOS_BIBLE: string = (() => {
 export const isResourceId = (text: string): boolean => /^LLS:[A-Za-z0-9._-]+$/.test(text.trim());
 
 /** The Bible's name in the scheme: the Resource ID without `LLS:`, in lower case (`LLS:LGCYSTNDRDBBLSB` is `lgcystndrdbblsb`). */
-const schemeName = (resourceId: string): string => resourceId.trim().replace(/^LLS:/i, '').toLowerCase();
+export const schemeName = (resourceId: string): string => resourceId.trim().replace(/^LLS:/i, '').toLowerCase();
 
 /** The link that opens chapter `chapter` of the Old Testament book `code` in the Bible `resourceId`; undefined for a book or chapter that does not exist. */
 export function chapterLink(code: string, chapter: number, resourceId: string): { url: string; fallback: string } | undefined {

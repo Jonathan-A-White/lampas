@@ -2,5 +2,6 @@
 // which makes one On/Off switch per source, loads under plain Node too (npm run grind:build).
 import type { MapSource } from '../types';
 import { bibleMapper } from './biblemapper';
+import { logosAtlas } from './logosatlas';
 
-export const SOURCES: readonly MapSource[] = [bibleMapper];
+export const SOURCES: readonly MapSource[] = [bibleMapper, logosAtlas];

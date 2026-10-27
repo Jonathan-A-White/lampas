@@ -2,7 +2,7 @@
 // The pure function takes the sources and a reader of setting values; mapsFor (src/maps/index.ts) answers the cards of the enabled sources only.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
-import { enabledSources, mapsFor, setMapSources } from '../../src/maps';
+import { enabledSources, mapsFor, setMapSources, SOURCES } from '../../src/maps';
 import { enabledSources as enabledOf } from '../../src/maps/enabled';
 import { bibleMapper } from '../../src/maps/sources/biblemapper';
 import type { MapSource } from '../../src/maps/types';
@@ -70,5 +70,15 @@ describe('mapsFor honours the switches', () => {
       { key: 'maps.testlinks', value: 'off' },
     ]);
     expect(await mapsFor(ref)).toEqual([]);
+  });
+});
+
+describe('the registry of sources (mw-zbjgn3r.7)', () => {
+  it('has Bible Mapper, then the Logos Atlas, which is used only while Logos is on', () => {
+    expect(ids(SOURCES)).toEqual(['biblemapper', 'logosatlas']);
+    expect(ids(enabledOf(SOURCES, reader({})))).toEqual(['biblemapper']);
+    expect(ids(enabledOf(SOURCES, reader({ 'resource.logos': 'off' })))).toEqual(['biblemapper']);
+    expect(ids(enabledOf(SOURCES, reader({ 'resource.logos': 'on' })))).toEqual(['biblemapper', 'logosatlas']);
+    expect(ids(enabledOf(SOURCES, reader({ 'resource.logos': 'on', 'maps.logosatlas': 'off' })))).toEqual(['biblemapper']);
   });
 });

@@ -7,7 +7,7 @@ import { enabledSources as enabledOf, NEEDED_KEY } from './enabled';
 import { SOURCES } from './sources';
 import { mapsForSources, rankPerSource } from './mapsFor';
 import { placesIn } from './places';
-import type { MapCard, MapRef, MapSource } from './types';
+import type { MapCard, MapRef, MapSource, Place } from './types';
 
 export type { MapCard, MapRef, MapSource, Place } from './types';
 
@@ -44,10 +44,13 @@ export async function enabledSources(sources: readonly MapSource[] = active): Pr
  * verses name come first within their source, each with `matched` (src/maps/mapsFor.ts rankPerSource); a chapter's order is the source's.
  */
 export async function mapsFor(ref: MapRef): Promise<MapCard[]> {
-  const cards = await mapsForSources(await enabledSources(), ref);
+  // the places are read once, when a source or the ranking asks for them
+  let places: Promise<Place[]> | undefined;
+  const placesOfRef = (): Promise<Place[]> => (places ??= placesIn(ref));
+  const cards = await mapsForSources(await enabledSources(), ref, placesOfRef);
   if (ref.from === undefined || cards.length === 0) return rankPerSource(cards, undefined);
   try {
-    return rankPerSource(cards, await placesIn(ref));
+    return rankPerSource(cards, await placesOfRef());
   } catch (error) {
     // the places are an aid: without them the chapter's maps are all there are
     console.error('could not read the places of the verses', error);
