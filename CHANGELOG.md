@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.10
+_2026-10-27_
+- New: The Hebrew lessons now go past the letters to nouns, pronouns, prepositions, verbs and sentences, twenty-six new cards with words from Genesis 1 and Jonah 1.
+
 ## 0.5.9
 _2026-10-27_
 - New: One Pronunciation setting now covers both Greek and Hebrew, with a switch to set each on its own, Hebrew gets its own voice, speed and keyboard settings, and a Hebrew word's sheet shows how it sounds in English letters.
