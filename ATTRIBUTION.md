@@ -166,8 +166,8 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
 - **[IPA](https://www.internationalphoneticassociation.org)**, the International Phonetic Alphabet of the International Phonetic Association. The symbols
   of the optional course Learn the IPA sounds (under Optional on the Goal screen, and, if you choose IPA in Settings > English accent, in every sound hint and at the
   head of each Hard sounds lesson (and, on a stretch step, its own sound, the trill of Rolling your r), the optional lessons on the Goal screen on the Greek sounds an English speaker finds hard): each
-  sound the Greek says is shown by its IPA symbol, drilled both ways with a pass check. Only the symbols, a standard alphabet, are used: the chart itself is not copied. Licence:
-  none needed; a standard (the [chart](https://www.internationalphoneticassociation.org/content/full-ipa-chart) is [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)). Changes: the key words, the Greek letters and the Greek words that go
+  sound the Greek says, and, while you read Hebrew, the sounds of Israeli Hebrew, is shown by its IPA symbol, drilled both ways with a pass check (Settings > IPA lesson turns the course Off). Only the symbols, a standard alphabet, are used: the chart itself is not copied. Licence:
+  none needed; a standard (the [chart](https://www.internationalphoneticassociation.org/content/full-ipa-chart) is [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)). Changes: the key words, the Greek and Hebrew letters and the Greek and Hebrew words that go
   with each sound are our own.
 - **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of Lampas's code and the files of its lamp icon and
   memory pictures, under Jonathan's direction. Licence: none needed, it is a tool; Anthropic's [terms](https://www.anthropic.com/legal/commercial-terms) apply.
