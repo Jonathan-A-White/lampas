@@ -139,7 +139,7 @@ describe('the Greek keyboard setting', () => {
     expect(settingOf('greekKeyboard')).toMatchObject({ label: 'Greek keyboard', section: 'daily' });
     expect(ROWS.find((r) => r.key === 'greekKeyboard')?.section).toBe('daily');
     expect(greekKeyboardSetting.default).toBe('off');
-    expect(visibleRows({ greekInterest: '0' }, '').some((r) => r.key === 'greekKeyboard')).toBe(false);
-    expect(visibleRows({ greekInterest: '1' }, '').some((r) => r.key === 'greekKeyboard')).toBe(true);
+    expect(visibleRows({ languages: 'english', greekInterest: '0' }, '').some((r) => r.key === 'greekKeyboard')).toBe(false);
+    expect(visibleRows({ languages: 'greek', greekInterest: '1' }, '').some((r) => r.key === 'greekKeyboard')).toBe(true);
   });
 });

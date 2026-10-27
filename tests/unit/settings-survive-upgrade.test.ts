@@ -19,6 +19,9 @@ afterAll(() => db.close());
 const byKey = (a: { key: string }, b: { key: string }) => a.key.localeCompare(b.key);
 const rows = async () => (await db.settings.toArray()).sort(byKey);
 
+/** Which languages? has no store of its own (mw-gdcyf98.2): it reads what the two dials hold, so it is the dials that are saved and kept. */
+const isStored = (entry: SettingEntry): boolean => entry.key !== 'languages';
+
 /** A value the setting allows that is not the one it holds now. */
 async function otherValue(entry: SettingEntry): Promise<SettingValue> {
   const now = await entry.read();
@@ -40,7 +43,7 @@ describe('no upgrade, start or speech rewrites a saved setting', () => {
     await db.open();
     await db.settings.clear();
     saved = {};
-    for (const entry of SETTINGS) {
+    for (const entry of SETTINGS.filter(isStored)) {
       const value = await otherValue(entry);
       await entry.write(value);
       saved[entry.key] = await entry.read();
@@ -61,7 +64,7 @@ describe('no upgrade, start or speech rewrites a saved setting', () => {
   it('keeps every setting, saved away from its default, through every Dexie upgrade', async () => {
     expect(db.verno).toBe(32);
     expect(await rows()).toEqual(before);
-    for (const entry of SETTINGS) expect(await entry.read(), entry.key).toEqual(saved[entry.key]);
+    for (const entry of SETTINGS.filter(isStored)) expect(await entry.read(), entry.key).toEqual(saved[entry.key]);
   });
 
   it('saves a Greek speed of 0.5 and an English speed of 1 and reads 0.5 and 1 back after the upgrades and the start', async () => {

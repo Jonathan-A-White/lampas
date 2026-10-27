@@ -387,7 +387,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens the Goal screen', opensGoal);
     And('he taps Change', taps('Change'));
     Then('the Settings screen is open', async () => {
-      expect(await screen.findByRole('heading', { name: 'Greek', level: 1 })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: 'Learning', level: 1 })).toBeInTheDocument();
       // a row waits for the saved values that decide whether the Greek dial shows it
       expect(await screen.findByRole('group', { name: 'Goal' })).toBeInTheDocument();
     });

@@ -12,7 +12,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { LicenceProvider } from '../../src/gate/LicenceProvider';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
-import { ROWS } from '../../src/settings/rows';
+import { ROWS, groupOf } from '../../src/settings/rows';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';
@@ -66,7 +66,8 @@ async function openSettings(licensed: boolean): Promise<void> {
   await screen.findByRole('group', { name: 'Tips' });
 }
 
-const aiRows = () => ROWS.filter((r) => r.ai);
+// the AI rows of The tutor's page (Hebrew in the tutor is the Hebrew dial's, on the Learning page: mw-gdcyf98.2)
+const aiRows = () => ROWS.filter((r) => r.ai && groupOf(r.section).id === 'tutor');
 const rowEl = (label: string): HTMLElement => {
   const row = ROWS.find((r) => r.label === label);
   return document.querySelector<HTMLElement>(`[data-setting="${row?.key}"]`)!;

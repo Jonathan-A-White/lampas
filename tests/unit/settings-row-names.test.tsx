@@ -26,6 +26,7 @@ describe('the names Settings draws', () => {
     cleanup();
     window.location.hash = '#/settings';
     await db.settings.bulkPut([
+      { key: 'hebrewInterest', value: '5' },
       { key: 'weave', value: 'solid' },
       { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },

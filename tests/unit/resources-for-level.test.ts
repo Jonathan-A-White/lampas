@@ -121,7 +121,7 @@ describe('the lists the app draws go through the selector', () => {
 
 describe('the Study resources rows follow the dial', () => {
   const switches = (rows: readonly { key: string }[]): string[] => rows.filter((r) => r.key.startsWith('resource.')).map((r) => r.key);
-  const at = (level: GreekLevel): Values => ({ greekInterest: String(level), 'resource.logos': 'on' });
+  const at = (level: GreekLevel): Values => ({ languages: level === 0 ? 'english' : 'greek', greekInterest: String(level), 'resource.logos': 'on' });
 
   it("hides Strong's at Just English and draws it from Curious up, through the selector", () => {
     expect(switches(visibleRows(at(0), ''))).toEqual(['resource.logos']);

@@ -395,7 +395,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     const fitted = fitHistory(built, 0, 'rom.8@1');
     expect(fitted.history).toEqual(plain.history);
     expect(fitted.catalogue).toBeUndefined();
-    const { plain: tight, built: tightest } = await padded(8000);
+    const { plain: tight, built: tightest } = await padded(8700);
     const none = fitHistory(tightest, 0, 'rom.8@1');
     expect(none.facts).toBeUndefined();
     expect(none.history).toEqual(tight.history);

@@ -6,7 +6,7 @@ import { groupIdOf, groupLink } from '../../src/settings/link';
 import { GROUP_PAGES } from '../support/settings-groups';
 
 describe('the groups', () => {
-  it('puts every section of SECTIONS in exactly one group, but the home\'s own (the Greek dial)', () => {
+  it('puts every section of SECTIONS in exactly one group, but the home\'s own (the languages and their dials)', () => {
     for (const section of SECTIONS.filter((s) => !HOME_SECTIONS.includes(s.id))) {
       const holding = GROUPS.filter((g) => g.sections.includes(section.id));
       expect(holding.map((g) => g.id), `${section.id} is in ${holding.length} groups`).toHaveLength(1);
@@ -27,12 +27,12 @@ describe('the groups', () => {
   });
 
   it('lists the eight groups the Governor asked for, in order', () => {
-    expect(GROUPS.map((g) => g.title)).toEqual(['Reading', 'Greek', 'The tutor', 'Listening', 'Daily', 'Study resources', 'Account', 'Developer']);
+    expect(GROUPS.map((g) => g.title)).toEqual(['Reading', 'Learning', 'The tutor', 'Listening', 'Daily', 'Study resources', 'Account', 'Developer']);
   });
 
   it('gives every row a group through its section', () => {
     for (const row of ROWS.filter((r) => !isHomeRow(r))) expect(groupOf(row.section), row.key).toBeDefined();
-    expect(ROWS.filter(isHomeRow).map((r) => r.key)).toEqual(['library', 'greekInterest']);
+    expect(ROWS.filter(isHomeRow).map((r) => r.key)).toEqual(['library', 'languages', 'greekInterest', 'hebrewInterest']);
   });
 });
 
@@ -57,14 +57,15 @@ describe('the group links', () => {
 
 describe('visibleGroups', () => {
   it('leaves out the Developer group until Developer mode is found, and keeps every other', () => {
-    const hidden: Values = { developerMode: 'hidden', greekInterest: '5' };
-    expect(visibleGroups(hidden).map((g) => g.title)).toEqual(['Reading', 'Greek', 'The tutor', 'Listening', 'Daily', 'Study resources', 'Account']);
-    expect(visibleGroups({ developerMode: 'off', greekInterest: '5' }).map((g) => g.title)).toContain('Developer');
+    const hidden: Values = { developerMode: 'hidden', greekInterest: '5', depth: '5' };
+    expect(visibleGroups(hidden).map((g) => g.title)).toEqual(['Reading', 'Learning', 'The tutor', 'Listening', 'Daily', 'Study resources', 'Account']);
+    expect(visibleGroups({ developerMode: 'off', greekInterest: '5', depth: '5' }).map((g) => g.title)).toContain('Developer');
   });
 
-  it('leaves out the Greek group while the Greek dial is below Learning (its page is hidden at Just English)', () => {
-    expect(visibleGroups({ developerMode: 'hidden', greekInterest: '0' }).map((g) => g.title)).not.toContain('Greek');
-    expect(visibleGroups({ developerMode: 'hidden', greekInterest: '2', weave: 'solid' }).map((g) => g.title)).not.toContain('Greek');
-    expect(visibleGroups({ developerMode: 'hidden', greekInterest: '3', newWordsADay: '3' }).map((g) => g.title)).toContain('Greek');
+  it('leaves out the Learning group while both dials are below Learning (its page is hidden at Just English)', () => {
+    expect(visibleGroups({ developerMode: 'hidden', greekInterest: '0', hebrewInterest: '0', depth: '0' }).map((g) => g.title)).not.toContain('Learning');
+    expect(visibleGroups({ developerMode: 'hidden', greekInterest: '2', hebrewInterest: '0', depth: '2', weave: 'solid' }).map((g) => g.title)).not.toContain('Learning');
+    expect(visibleGroups({ developerMode: 'hidden', greekInterest: '3', depth: '3', newWordsADay: '3' }).map((g) => g.title)).toContain('Learning');
+    expect(visibleGroups({ developerMode: 'hidden', greekInterest: '0', hebrewInterest: '3', depth: '3', newWordsADay: '3' }).map((g) => g.title)).toContain('Learning');
   });
 });

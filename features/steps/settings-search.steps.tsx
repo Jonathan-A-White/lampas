@@ -45,7 +45,7 @@ async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   await groupButton('Account');
 }
 
-// inside the list of groups: the Greek dial above it has buttons of its own ('Reading in Greek')
+// inside the list of groups: the dials above it have buttons of their own ('Reading in Greek')
 const groupButton = async (title: string): Promise<HTMLElement> => within(await screen.findByRole('list', { name: 'Settings groups' })).findByRole('button', { name: new RegExp(`^${title}`) });
 
 const searchField = (): Promise<HTMLElement> => screen.findByRole('searchbox', { name: 'Search settings' });

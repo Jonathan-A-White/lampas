@@ -20,7 +20,7 @@ export async function showSettingsGroup(id: GroupId): Promise<void> {
 /** On the Settings home, opens the page of the group `id` and waits for its title. */
 export async function openSettingsGroup(user: UserEvent, id: GroupId): Promise<void> {
   const title = groupById(id)?.title ?? id;
-  // inside the list of groups: the Greek dial above it has buttons of its own ('Reading in Greek')
+  // inside the list of groups: the dials above it have buttons of their own ('Reading in Greek')
   const groups = await screen.findByRole('list', { name: 'Settings groups' });
   const button = within(groups).getByRole('button', { name: new RegExp(`^${title}`) });
   await user.click(button);

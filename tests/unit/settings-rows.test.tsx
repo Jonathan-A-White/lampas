@@ -23,9 +23,10 @@ beforeEach(async () => {
 });
 
 const keys = (rows: readonly { key: string }[]) => rows.map((r) => r.key);
-const ALL_ON: Values = { greekInterest: '5', weave: 'solid', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', devotional: 'random', developerMode: 'on' };
-/** Values a row may read that are not rows of their own: Developer mode is found on About, it is not a setting of the list. */
-const NOT_ROWS = ['developerMode'];
+const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', weave: 'solid', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', devotional: 'random', developerMode: 'on' };
+/** Values a row may read that are not rows of their own: Developer mode is found on About, and `depth` is the higher of the two dials (readValues); neither is a setting of the list. */
+const NOT_ROWS = ['developerMode', 'depth'];
+const BOTH = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5' };
 
 describe('the rows', () => {
   it('gives every row a distinct key, a name, a one-line hint and a section', () => {
@@ -59,8 +60,11 @@ describe('the rows', () => {
   });
 
   it('hides every Greek row by the dial: the settings that depend on it, or on a setting that does', () => {
-    expect(rowOf('weave')?.dependsOn?.key).toBe('greekInterest');
-    expect(rowOf('newWordsADay')?.dependsOn?.key).toBe('greekInterest');
+    expect(rowOf('greekVoice')?.dependsOn?.key).toBe('greekInterest');
+    expect(rowOf('hebrewDepth')?.dependsOn?.key).toBe('hebrewInterest');
+    // a row both languages share follows the higher of the two dials
+    expect(rowOf('weave')?.dependsOn?.key).toBe('depth');
+    expect(rowOf('newWordsADay')?.dependsOn?.key).toBe('depth');
   });
 
   it('takes its details from the setting they depend on', () => {
@@ -77,7 +81,7 @@ describe('the rows', () => {
 describe('visibleRows', () => {
   it('hides a row whose setting is off and shows it when that is on', () => {
     expect(keys(visibleRows({}, ''))).not.toContain('weaveGrammar');
-    expect(keys(visibleRows({ greekInterest: '5', weave: 'off', newWordsADay: '0' }, ''))).not.toEqual(expect.arrayContaining(['weaveGrammar', 'pickerGrammar', 'grammarMove', 'logosBible']));
+    expect(keys(visibleRows({ ...BOTH, weave: 'off', newWordsADay: '0' }, ''))).not.toEqual(expect.arrayContaining(['weaveGrammar', 'pickerGrammar', 'grammarMove', 'logosBible']));
     expect(keys(visibleRows(ALL_ON, ''))).toEqual(keys(ROWS));
   });
 
@@ -115,6 +119,7 @@ describe('the Settings screen', () => {
     cleanup();
     window.location.hash = '#/settings';
     await db.settings.bulkPut([
+      { key: 'hebrewInterest', value: '5' },
       { key: 'weave', value: 'solid' },
       { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },
@@ -133,7 +138,7 @@ describe('the Settings screen', () => {
         seen.push(row.key);
       }
     }
-    // the Greek dial is drawn on the home above the groups, not on a page
+    // 'Which languages?' and the dials are drawn on the home above the groups, not on a page
     expect(seen.sort()).toEqual(keys(ROWS.filter((row) => !isHomeRow(row))).sort());
     cleanup();
   });
@@ -142,11 +147,12 @@ describe('the Settings screen', () => {
     cleanup();
     window.location.hash = '#/settings';
     await db.settings.bulkPut([
+      { key: 'hebrewInterest', value: '5' },
       { key: 'weave', value: 'off' },
       { key: 'newWordsADay', value: '0' },
     ]);
     render(<SettingsScreen />);
-    const visible = visibleRows({ greekInterest: '5', weave: 'off', newWordsADay: '0' }, '').filter((row) => !isHomeRow(row));
+    const visible = visibleRows({ ...BOTH, weave: 'off', newWordsADay: '0' }, '').filter((row) => !isHomeRow(row));
     const shown: string[] = [];
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);

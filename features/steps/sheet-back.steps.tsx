@@ -351,7 +351,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Ask for another approach' })).toBeNull());
     });
     And('the Settings screen is open', async () => {
-      await screen.findByRole('heading', { name: 'Greek', level: 1 });
+      await screen.findByRole('heading', { name: 'Learning', level: 1 });
       expect(window.location.hash).toBe('#/settings?group=greek');
     });
   });
