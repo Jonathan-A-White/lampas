@@ -3,7 +3,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 // With Immersive reader On the Reader's text reads like a book (mw-5r3p30.297): tight lines (line-height about 1.4) wherever no line sits under a
-// word, a book serif, justified and hyphenated in the text's language, pure black behind it in the dark theme, and small dim verse numbers.
+// word, the Font he chose, justified and hyphenated in the text's language, pure black behind it in the dark theme, and small dim verse numbers.
 // Off keeps today's look. Type size never shrinks. A phone-width layout claim: it runs under --project=shots (390x844).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -89,7 +89,7 @@ test('Off keeps today\'s look: roomy lines, sans, ragged right, no hyphenation',
   expect(l.hyphens).not.toBe('auto');
 });
 
-test('On sets the English as a book: lines near 1.4, a serif, justified and hyphenated in English', async ({ page }) => {
+test('On sets the English as a book: lines near 1.4, in his Font, justified and hyphenated in English', async ({ page }) => {
   await openReader(page, 'off');
   const off = await look(verse(page, 1));
   await keep(page, { immersiveReader: 'on' });
@@ -99,8 +99,8 @@ test('On sets the English as a book: lines near 1.4, a serif, justified and hyph
   const on = await look(verse(page, 1));
   expect(ratio(on)).toBeGreaterThanOrEqual(1.35);
   expect(ratio(on)).toBeLessThanOrEqual(1.45);
-  expect(on.fontFamily).toMatch(/Georgia|Noto Serif|serif/);
-  expect(on.fontFamily).not.toMatch(/system-ui|sans-serif/);
+  // the face is the Font he chose, here the default "The phone's own" (tests/e2e/immersive-font.spec.ts), not a book serif of its own (mw-5r3p30.820)
+  expect(on.fontFamily).toBe(off.fontFamily);
   expect(on.textAlign).toBe('justify');
   expect(on.hyphens).toBe('auto');
   expect(on.lang).toBe('en');
