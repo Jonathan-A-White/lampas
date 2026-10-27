@@ -14,6 +14,8 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 const COMMIT = '0123456789abcdef0123456789abcdef01234567';
 const COMMIT_URL = `https://github.com/Jonathan-A-White/lampas/commit/${COMMIT}`;
+// a tutor-ask's row shows his own words (mw-5r3p30.794), the tutor's summary below is only in the open row
+const OLIVE_ASKED = 'Can this work with Olive Tree?';
 const OLIVE = 'He wants Lampas to work with the Olive Tree app, as it does with Logos.';
 const COLOURS = 'Teach the cases with colours, one at a time.';
 const SEPIA = 'A sepia reading theme for the evening.';
@@ -70,6 +72,8 @@ async function openRequests(page: Page): Promise<void> {
 }
 
 /** The line a request reads, found by its words. */
+// `<date>` stands for the date the status was set (the locale writes it: it ends in a year)
+const lineMatching = (line: string): RegExp => new RegExp(`^${line.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('<date>', '.+?\\d{4}')}$`);
 const lineOf = (page: Page, words: string) => page.locator('[data-request]', { hasText: words }).locator('[data-request-status]');
 
 async function fitsThePhone(page: Page): Promise<void> {
@@ -96,7 +100,7 @@ test('the feedback loop end to end: sent, filed, building, adopted with its link
 
   await openRequests(page);
   await expect(page.locator('[data-request]')).toHaveCount(3);
-  for (const words of [OLIVE, COLOURS, SEPIA]) await expect(lineOf(page, words)).toHaveText('Sent');
+  for (const words of [OLIVE_ASKED, COLOURS, SEPIA]) await expect(lineOf(page, words)).toHaveText(lineMatching('Sent to the factory · <date>'));
   await expect(page.locator('[data-request]').first()).toContainText(SEPIA); // the newest first
   await fitsThePhone(page);
   await shot(page, 'your-requests-demo-1-sent');
@@ -104,22 +108,22 @@ test('the feedback loop end to end: sent, filed, building, adopted with its link
   // 2. The Mayor files them: every request reads Filed.
   for (const index of [olive, colours, sepia]) mill(fake, index, { status: 'filed' });
   await page.reload();
-  for (const words of [OLIVE, COLOURS, SEPIA]) await expect(lineOf(page, words)).toHaveText('Filed');
+  for (const words of [OLIVE_ASKED, COLOURS, SEPIA]) await expect(lineOf(page, words)).toHaveText(lineMatching('Filed as a story · <date>, waiting its turn'));
   await fitsThePhone(page);
   await shot(page, 'your-requests-demo-2-filed');
 
   // 3. The factory starts on one: Being built.
   mill(fake, colours, { status: 'building' });
   await page.reload();
-  await expect(lineOf(page, COLOURS)).toHaveText('Being built');
-  await expect(lineOf(page, OLIVE)).toHaveText('Filed');
+  await expect(lineOf(page, COLOURS)).toHaveText(lineMatching('Being built · since <date>'));
+  await expect(lineOf(page, OLIVE_ASKED)).toHaveText(lineMatching('Filed as a story · <date>, waiting its turn'));
   await fitsThePhone(page);
   await shot(page, 'your-requests-demo-3-building');
 
   // 4. It lands: Adopted in 0.1.109, a link to the commit that is a thumb tall.
   mill(fake, colours, { status: 'landed', version: '0.1.109', commit: COMMIT, url: COMMIT_URL });
   await page.reload();
-  await expect(lineOf(page, COLOURS)).toHaveText('Adopted in 0.1.109');
+  await expect(lineOf(page, COLOURS)).toHaveText(lineMatching('Adopted in 0.1.109 · <date>'));
   const link = page.getByRole('link', { name: 'Adopted in 0.1.109' });
   await expect(link).toHaveAttribute('href', COMMIT_URL);
   await expect(link).toHaveAttribute('target', '_blank');
@@ -131,9 +135,9 @@ test('the feedback loop end to end: sent, filed, building, adopted with its link
   mill(fake, olive, { status: 'declined', reason: 'outside what this app is for' });
   mill(fake, sepia, { status: 'adopted-as-setting', setting: 'Settings > Appearance > Theme' });
   await page.reload();
-  await expect(lineOf(page, OLIVE)).toHaveText('Declined: outside what this app is for');
-  await expect(lineOf(page, SEPIA)).toHaveText('Now a setting: Settings > Appearance > Theme');
-  await expect(lineOf(page, COLOURS)).toHaveText('Adopted in 0.1.109');
+  await expect(lineOf(page, OLIVE_ASKED)).toHaveText(lineMatching('Declined · <date>: outside what this app is for'));
+  await expect(lineOf(page, SEPIA)).toHaveText(lineMatching('Now a setting: Settings > Appearance > Theme · <date>'));
+  await expect(lineOf(page, COLOURS)).toHaveText(lineMatching('Adopted in 0.1.109 · <date>'));
   await fitsThePhone(page);
   await shot(page, 'your-requests-demo-5-answered');
 

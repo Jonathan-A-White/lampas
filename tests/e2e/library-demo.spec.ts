@@ -152,11 +152,11 @@ test('the library at scale end to end: import, counts, reasons, turn on, the wor
   await page.goto('/#/requests');
   await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
   const line = page.locator('[data-request]', { hasText: ASKED }).locator('[data-request-status]');
-  await expect(line).toHaveText('Sent');
+  await expect(line).toHaveText(/^Sent to the factory · .+\d{4}$/);
   fake.sendStatus(SEED_PUBLIC_KEY, { kind: 'request-status', request: fake.txids[0], bead: 'mw-demo.1', status: 'filed', ts: Date.now() });
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
-  await expect(line).toHaveText('Filed');
+  await expect(line).toHaveText(/^Filed as a story · .+\d{4}, waiting its turn$/);
   await fitsThePhone(page);
   await shot(page, 'library-demo-7-requests');
 });
