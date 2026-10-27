@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.3
+_2026-10-27_
+- New: The sentence-diagram lesson has a tenth step that names each line of a diagram by its Greek grammar term, and each term opens its own lesson.
+
 ## 0.5.2
 _2026-10-27_
 - New: Review now asks how well you knew a word, Know it well, Kind of or Don't know, and brings it back sooner or later to match.
