@@ -6,7 +6,7 @@ import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP, type SettableLa
 import { ACCENTS } from '../../speech/accents';
 import { pronunciationOf, pronunciationsOf, type GreekPronunciation, type PronunciationLanguage } from '../../speech/pronunciation';
 import { PLAY_TOS } from '../../speech/readSpan';
-import { englishAccentSetting, hebrewPronunciationSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
+import { englishAccentSetting, hebrewPronunciationSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
 import { PRONUNCIATION_FAMILIES } from '../definitions/pronunciation';
 import { PHONE_VOICE, writeSetting } from '../registry';
 import { getSetting, useSetting } from '../store';
@@ -253,6 +253,17 @@ export const PronunciationSeparateControl: Control = ({ row }) => {
     <SettingRow row={row}>
       <RowName row={row} />
       {current ? <OnOff name={row.label} current={current} settingKey="pronunciationSeparate" /> : null}
+    </SettingRow>
+  );
+};
+
+/** IPA lesson: whether the Goal screen offers the optional lesson on the IPA sounds, for Greek and for Hebrew (mw-gdcyf98.24). */
+export const IpaLessonControl: Control = ({ row }) => {
+  const current = useSetting(ipaCourseSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {current ? <OnOff name={row.label} current={current} settingKey="ipaLesson" /> : null}
     </SettingRow>
   );
 };

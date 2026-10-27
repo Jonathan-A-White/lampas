@@ -133,16 +133,31 @@ The tutor is told it: every grist (`bible-talk`, `verse-ask`, `verse-read` and t
 `pronunciation_guide` is already said in it, and the three grinds' instructions say to give sound examples and respellings for that accent
 (`tests/unit/english-accent-setting.test.ts`; examples `grinds/examples/bible-talk/sound-it-out-british.json`, `verse-ask/sound-of-a-word-ipa.json`).
 
-## Learn the IPA sounds, the optional course (mw-5r3p30.356, PROVISIONAL)
+## Learn the IPA sounds, the optional course (mw-5r3p30.356, mw-gdcyf98.24, PROVISIONAL)
 
 His words: "if the user does choose the option of trying to learn the standard make sure that it's rigorous ... explain the benefits ... but I don't want to put that
 burden on people unless they want to ... make it clear to them that they won't need it for the app unless they want it". `src/ipa/` teaches the standard sounds
-of the chosen scheme (one lesson per id its `sounds` write, from its `soundGuide`): the symbol, the English accent's key word (American's when the chosen accent is
-IPA, which has none), the Greek letters, the voice saying a Greek word that has it; a drill both ways with the confusable pairs of `speech/sounds.ts` CONFUSABLE together
+of a scheme (one lesson per id its `sounds` write, from its `soundGuide`): the symbol, the English accent's key word (American's when the chosen accent is
+IPA, which has none), the letters (Greek, or Hebrew drawn right to left, `.script-he`), the voice saying a word that has it; a drill both ways with the confusable pairs of `speech/sounds.ts` CONFUSABLE together
 (a miss comes back until it is right twice running); a pass check of every sound both ways with no hint (90% to pass, `PASS_FRACTION`), which on a pass offers 'Show IPA in
-hints' (the English accent set to IPA) and on any result names the symbols to practise. It is reached only from the 'Optional' entry on the Goal screen, which opens on
-'Why learn it?' (first line: not needed for Lampas or for reading Greek; Start and Not now the same size); nothing else prompts for it (`tests/unit/ipa-course.test.ts`
+hints' (the English accent set to IPA) and on any result names the symbols to practise. It is reached only from the 'Optional' entries on the Goal screen, which open on
+'Why learn it?' (first line: not needed for Lampas or for reading Greek, or Hebrew; Start and Not now the same size); nothing else prompts for it (`tests/unit/ipa-course.test.ts`
 reads `src/` and `grinds/`). Layout notes: `docs/layout/grammar.md` (src/ipa/).
+
+**A language, Greek or Hebrew (mw-gdcyf98.24, his words: "just like there's an optional lesson for IPA for Greek maybe there's an optional lesson whatever the equivalent is and that can be a
+setting").** The course takes a `CourseLanguage` (`'grc'`, the default, or `'he'`): `courseScheme(language)` is the chosen Greek pronunciation or the chosen Hebrew one, and `courseSounds`, the drill, the pass
+check and the progress all take the scheme or the language. Greek is `#/ipa`; Hebrew is `#/ipa?lang=he` (one route with a language on it, `ipaHash`, `ipaLanguageOf`, `openIpaCourse` in `nav/route.ts`, so no screen
+gains a place). Progress is kept apart: Greek under the settings key `ipaCourse` (as it always was), Hebrew under `ipaCourse.he` (`progressKeyOf`). The Goal's Optional section draws 'Learn the IPA sounds' for
+Greek, as it always has, and 'Learn the IPA sounds of Hebrew' while the Hebrew dial is above 0.
+
+**The setting IPA lesson** (`ipaLesson`, `settings/definitions/ipaCourse.ts`, Settings > Listening > Pronunciation beside the English accent, On | Off, On to start, a row both languages share: shown from either
+dial at Curious or above, `depthFrom(1)`) takes the whole Optional section off the Goal screen while it is Off, and keeps what he has done. Its key is not `ipaCourse`: that row of the settings store is where the course keeps his
+Greek progress (a setting there would read it as garbage and overwrite it). The tutor may set it (`settings_changes`); it is `screen` in `BEARS_ON`, since the answer is the same either way.
+
+**How a scheme gains a course.** Give the `Pronunciation` a `soundGuide` for each standard id its `sounds` write: `{letters, word, at}`, the letters (or marks) that make the sound, and a word of the language the voice says that
+has it at its `start` or `inside` it, holding none of the sound's confusable partners. A scheme with no `spellings` (the Hebrew one reads its own respelling) gives `soundsIn(word)`, the standard sounds a word is said with, in order: the
+unit test (`tests/unit/hebrew-ipa-course.test.ts`, as `ipa-course.test.ts` for Modern Greek) holds each word to it, and the drill keeps a heard sound out of a question's wrong choices by it. A sound the standard lacks is one line in
+`speech/sounds.ts` plus a hint in `accents/american.ts` and `british.ts` (IPA is made from the inventory). `courseSounds` throws, naming the sound, when the scheme has no guide for one it writes.
 
 ## One scheme for every sound (mw-5r3p30.268)
 
@@ -292,8 +307,9 @@ the qamats qatan the pointing cannot tell from a qamats.
 
 ### The Hebrew sounds and lessons
 
-`sounds` maps the symbols the respelling writes to the standard ids of `src/speech/sounds.ts` (`kh` is `/x/`, `y` is `/ʝ/`, `eh` and `e` are `/e/`), so the English accent tables name them (`ee, as in “see”`) and
-`missingHints` holds. The ids the standard has none for yet (`h`, `r`, `sh`, `ts`) are named in the lessons without an English key word; the standard is the Greek's list and was left as it is. `lessons(say)` gives a
+`sounds` maps the symbols the respelling writes to the standard ids of `src/speech/sounds.ts` (`kh` is `/x/`, `y` is `/j/`, `eh` and `e` are `/e/`, `h` is `/h/`, `r` is `/ʁ/`, `sh` is `/ʃ/`, `ts` is `/ts/`), so the English accent tables name them (`ee, as in “see”`) and
+`missingHints` holds. The five ids Greek has no use for (`/h/`, `/ʁ/`, `/ʃ/`, `/ts/`, `/j/`, mw-gdcyf98.24) were added to the standard, with a hint in every accent; the Greek scheme writes none of them, so the Greek course is as it was. The
+lessons keep their own wording for `h`, `r`, `sh` and `ts` ('the English r'). The course's guide is `ISRAELI_SOUND_GUIDE` (the Hebrew letters, or a vowel point on a bet, that make each sound and a Hebrew word with it) and `soundsInHebrew` reads the respelling back into the standard's ids. `lessons(say)` gives a
 `SoundLesson` for each letter, ids `he-letter-alef`, `he-letter-bet`, `he-letter-gimel`, `he-letter-dalet`, `he-letter-he`, `he-letter-vav`, `he-letter-zayin`, `he-letter-chet`, `he-letter-tet`, `he-letter-yod`,
 `he-letter-kaf`, `he-letter-lamed`, `he-letter-mem`, `he-letter-nun`, `he-letter-samekh`, `he-letter-ayin`, `he-letter-pe`, `he-letter-tsade`, `he-letter-qof`, `he-letter-resh`, `he-letter-shin`, `he-letter-tav`
 (`HEBREW_LETTER_IDS`), and for each vowel, `he-vowel-patach`, `-qamats`, `-segol`, `-tsere`, `-hiriq`, `-holam`, `-qubuts`, `-shuruq`, `-shewa` (`HEBREW_VOWEL_IDS`), in `schemes/hebrew-israeli-lessons.ts`,

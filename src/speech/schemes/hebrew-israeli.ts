@@ -3,7 +3,7 @@
 // pointed, to the phone's he-IL voice, which says the points as modern Hebrew does; the cantillation marks (the accents of the Masoretic text, which a voice has no sound for) are
 // taken off first so it does not stumble on them. The cantillation also tells the respelling where the stress falls.
 import { HEBREW_LANG } from '../languages';
-import type { Pronunciation } from '../pronunciation';
+import type { Pronunciation, SoundGuide } from '../pronunciation';
 import type { SoundId } from '../sounds';
 import { HEBREW_HEARD_AS, HEBREW_LETTER_NAMES, hebrewLessons, hebrewTutorGuide } from './hebrew-israeli-lessons';
 
@@ -281,12 +281,52 @@ export function respellHebrew(word: string, guide?: string): string {
     .join('-');
 }
 
-/** The standard sounds the Israeli respelling writes (./hebrew-israeli-lessons.ts teaches them): the ones the standard has an id for. The h, r, sh and ts have none yet (sounds.ts is
- * the Greek's list); their lessons say them without an English key word. */
+/** The standard sounds the Israeli respelling writes (./hebrew-israeli-lessons.ts teaches them; the optional course 'Learn the IPA sounds' teaches them as IPA, mw-gdcyf98.24). The h, r, sh, ts and
+ * y are ones Greek has no use for: sounds.ts gained '/h/', '/ʁ/', '/ʃ/', '/ts/' and '/j/' for them (the Israeli resh is the back r; the lessons call it 'the English r', which the key word 'red' keeps). */
 const ISRAELI_SOUNDS: Readonly<Record<string, SoundId>> = {
   a: '/a/', eh: '/e/', e: '/e/', ee: '/i/', o: '/o/', oo: '/u/',
-  v: '/v/', f: '/f/', z: '/z/', s: '/s/', b: '/b/', p: '/p/', d: '/d/', t: '/t/', g: '/ɡ/', k: '/k/', m: '/m/', n: '/n/', l: '/l/', kh: '/x/', y: '/ʝ/',
+  v: '/v/', f: '/f/', z: '/z/', s: '/s/', b: '/b/', p: '/p/', d: '/d/', t: '/t/', g: '/ɡ/', k: '/k/', m: '/m/', n: '/n/', l: '/l/', kh: '/x/', y: '/j/',
+  h: '/h/', r: '/ʁ/', sh: '/ʃ/', ts: '/ts/',
 };
+
+/** What the course 'Learn the IPA sounds' teaches of each sound the Israeli scheme says (mw-gdcyf98.24): the Hebrew letters (or a vowel point on the letter bet, as a carrier) that make it, and a
+ * Hebrew word the voice says that has it, at its start or inside it. Each word is held to the respelling by tests/unit/hebrew-ipa-course.test.ts (it has the sound, starts with it where `at`
+ * says so, and none of the sound's confusable partners). The alef and the ayin are not said (the Israeli voice does not), so they have no sound to teach. */
+export const ISRAELI_SOUND_GUIDE: Readonly<Partial<Record<SoundId, SoundGuide>>> = {
+  '/a/': { letters: ['בַ (patach)', 'בָ (qamats)'], word: 'אָב', at: 'start' },
+  '/e/': { letters: ['בֶ (segol)', 'בֵ (tsere)', 'בְ (a shewa that is said)'], word: 'אֵל', at: 'start' },
+  '/i/': { letters: ['בִ (hiriq)', 'בִי (hiriq with a yod)'], word: 'אִישׁ', at: 'start' },
+  '/o/': { letters: ['בֹ (holam)', 'וֹ (vav with a dot above)'], word: 'אוֹר', at: 'start' },
+  '/u/': { letters: ['בֻ (qubuts)', 'וּ (vav with a dot inside)'], word: 'אוּר', at: 'start' },
+  '/v/': { letters: ['ו (vav)', 'ב (bet, without a dot inside)'], word: 'דָּוִד', at: 'inside' },
+  '/f/': { letters: ['פ (pe, without a dot inside)', 'ף (final pe)'], word: 'סֵפֶר', at: 'inside' },
+  '/z/': { letters: ['ז (zayin)'], word: 'זָהָב', at: 'start' },
+  '/s/': { letters: ['ס (samekh)', 'שׂ (sin: shin with its dot at the left)'], word: 'סוּס', at: 'start' },
+  '/b/': { letters: ['בּ (bet, with a dot inside)'], word: 'בֵּן', at: 'start' },
+  '/p/': { letters: ['פּ (pe, with a dot inside)'], word: 'פֶּתַח', at: 'start' },
+  '/d/': { letters: ['ד (dalet)'], word: 'דָּג', at: 'start' },
+  '/t/': { letters: ['ט (tet)', 'ת (tav)'], word: 'תּוֹרָה', at: 'start' },
+  '/ɡ/': { letters: ['ג (gimel)'], word: 'גָּדוֹל', at: 'start' },
+  '/k/': { letters: ['כּ (kaf, with a dot inside)', 'ק (qof)'], word: 'כָּתַב', at: 'start' },
+  '/m/': { letters: ['מ (mem)', 'ם (final mem)'], word: 'מֶלֶךְ', at: 'start' },
+  '/n/': { letters: ['נ (nun)', 'ן (final nun)'], word: 'נֵר', at: 'start' },
+  '/l/': { letters: ['ל (lamed)'], word: 'לֶחֶם', at: 'start' },
+  '/x/': { letters: ['ח (chet)', 'כ (kaf, without a dot inside)', 'ך (final kaf)'], word: 'חָכָם', at: 'start' },
+  '/h/': { letters: ['ה (he; silent at the end of a word)'], word: 'הַר', at: 'start' },
+  '/ʁ/': { letters: ['ר (resh)'], word: 'רֶגֶל', at: 'start' },
+  '/ʃ/': { letters: ['שׁ (shin, with its dot at the right)'], word: 'שֵׁם', at: 'start' },
+  '/ts/': { letters: ['צ (tsade)', 'ץ (final tsade)'], word: 'צֵל', at: 'start' },
+  '/j/': { letters: ['י (yod)'], word: 'יָד', at: 'start' },
+};
+
+/** The symbols of the respelling, longest first: a pair of letters is one symbol ('sh') before it is two ('s', 'h'). 'ai' and 'ay' are the vowel with the yod it joins. */
+const RESPELT_SYMBOLS = /sh|kh|ts|ee|oo|eh|ai|ay|[abdefghklmnoprstvyz]/g;
+
+/** The standard sounds `word` is said with, in order, as the respelling writes them (`ai` is a and the glide j, `ay` is e and j). The course 'Learn the IPA sounds' holds each lesson's word to it. */
+export function soundsInHebrew(word: string): SoundId[] {
+  const symbols = respellHebrew(word).toLowerCase().match(RESPELT_SYMBOLS) ?? [];
+  return symbols.flatMap((symbol): SoundId[] => (symbol === 'ai' ? ['/a/', '/j/'] : symbol === 'ay' ? ['/e/', '/j/'] : [ISRAELI_SOUNDS[symbol]]));
+}
 
 export const ISRAELI: Pronunciation = {
   id: 'israeli',
@@ -297,6 +337,8 @@ export const ISRAELI: Pronunciation = {
   note: "Modern Israeli Hebrew, as the phone's Hebrew voice says the pointed text.",
   respell: respellHebrew,
   sounds: ISRAELI_SOUNDS,
+  soundGuide: ISRAELI_SOUND_GUIDE,
+  soundsIn: soundsInHebrew,
   // a Hebrew word of one letter (a prefix: ו, ב, ל ...) is not said as a sound of its own: the voice names it or says it with its vowel
   loneLetterForm: () => null,
   loneLetterClip: () => null,

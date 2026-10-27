@@ -1,4 +1,4 @@
-// src/ipa/drill.ts — the questions of the course 'Learn the IPA sounds' and its drill (mw-5r3p30.356). Two kinds, both ways round: HEAR (the voice says a Greek word that
+// src/ipa/drill.ts — the questions of the course 'Learn the IPA sounds' and its drill (mw-5r3p30.356). Two kinds, both ways round: HEAR (the voice says a word that
 // starts with, or has, the sound; he picks its symbol) and SEE (the symbol is shown; he picks the key word that has the sound). A sound's confusable partners
 // (src/speech/sounds.ts CONFUSABLE) are drilled together and offered among its choices. A wrong answer comes back soon and has to be right twice running. Pure: no screen, no store.
 import { mulberry32, shuffle, type Random } from '../data/random';
@@ -18,7 +18,7 @@ export interface IpaQuestion {
   sound: SoundId;
   direction: Direction;
   prompt: string;
-  /** HEAR: the Greek word the voice says */
+  /** HEAR: the word the voice says */
   say?: string;
   /** SEE: the symbol shown */
   symbol?: string;
@@ -31,6 +31,7 @@ export const CHOICES = 4;
 
 /** The standard sounds `scheme` hears in `word`, which a HEAR question must not offer as wrong choices (they are in the word the voice says). */
 function soundsHeard(word: string, scheme: Pronunciation): Set<SoundId> {
+  if (scheme.soundsIn) return new Set(scheme.soundsIn(word));
   return new Set((scheme.spellings?.(word) ?? []).map((u) => scheme.sounds[u.sound]).filter((id): id is SoundId => id !== undefined));
 }
 

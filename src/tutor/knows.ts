@@ -65,6 +65,8 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   // only which of the pronunciation rows is drawn: the schemes it leaves are sent as greekPronunciation and hebrewPronunciation
   pronunciationSeparate: 'screen',
   englishAccent: 'speech',
+  // only whether the Goal screen offers the optional IPA lesson: the tutor answers the same either way
+  ipaLesson: 'screen',
   hebrewDepth: 'language',
   languages: 'level',
   greekInterest: 'level',

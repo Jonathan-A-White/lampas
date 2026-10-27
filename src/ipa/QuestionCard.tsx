@@ -1,5 +1,5 @@
 // src/ipa/QuestionCard.tsx — one question of the course 'Learn the IPA sounds', drawn for the drill and the pass check (mw-5r3p30.356). HEAR: the prompt and the Tap to
-// hear bar (the voice says the Greek word), the choices are symbols. SEE: the symbol large, the choices are key words. `tell` says whether the answer is told at
+// hear bar (the voice says the word), the choices are symbols. SEE: the symbol large, the choices are key words. `tell` says whether the answer is told at
 // once (the drill) or the choice is only marked as his, with no hint of which was right (the pass check).
 import { TapToHear } from '../TapToHear';
 import type { SoundId } from '../speech/sounds';
