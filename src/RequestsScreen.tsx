@@ -7,12 +7,15 @@
 // At scale (mw-rfjjzd.15): the rows are grouped by kind, each group headed by its plural name and its count ('Books (14)', the header WordsScreen's lesson groups
 // use), the newest first within a group and the group holding the newest request first; a library request is one row (its text counts the books); over 20 rows a
 // search field filters them by the words he types (listFilter's matching, one word at a time, all of them needed), and the headers count what is shown.
+// A status filter (mw-5r3p30.795), chips above the groups whenever there is a row: All, Waiting (sent, filed, building), Adopted (landed, adopted as a setting)
+// and Declined, each with its count; the chip is kept while the screen is open, the search works within it, and a chip with no rows says so.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
-import { statusLine, watchStatuses, webLink } from 'pwa-kit/requests';
+import { statusLine, watchStatuses, webLink, type RequestStatus } from 'pwa-kit/requests';
 import { listRequests, recordOf, type RequestRow } from './data/repositories/requests';
 import { backTo, requestsOf, useAddress } from './nav/route';
 import { matching, type ListItem } from './ui/listFilter';
+import { Chips } from './ui/Chips';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import { pullStatuses, requestTimings } from './services/requestStatus';
@@ -50,6 +53,33 @@ const OTHER_GROUP = 'Other requests';
 
 /** More rows than this show the search field. */
 export const SEARCH_OVER = 20;
+
+export type StatusFilter = 'all' | 'waiting' | 'adopted' | 'declined';
+
+/** The chips, in order: the value and what it reads. */
+export const FILTERS: readonly (readonly [StatusFilter, string])[] = [
+  ['all', 'All'],
+  ['waiting', 'Waiting'],
+  ['adopted', 'Adopted'],
+  ['declined', 'Declined'],
+];
+
+/** The chip each status of the kit sits under; a Record over the kit's own type, so a status added to the kit is a type error here until it has a chip. */
+export const STATUS_FILTER: Record<RequestStatus, Exclude<StatusFilter, 'all'>> = {
+  sent: 'waiting',
+  filed: 'waiting',
+  building: 'waiting',
+  landed: 'adopted',
+  'adopted-as-setting': 'adopted',
+  declined: 'declined',
+};
+
+/** The chip a status sits under; none for a status nobody mapped (it shows under All only). */
+export const filterOf = (status: string): Exclude<StatusFilter, 'all'> | undefined => (STATUS_FILTER as Record<string, Exclude<StatusFilter, 'all'>>)[status];
+
+const NOTHING: Record<StatusFilter, string> = { all: 'Nothing sent yet', waiting: 'Nothing waiting', adopted: 'Nothing adopted', declined: 'Nothing declined' };
+
+const inFilter = (rows: readonly RequestRow[], filter: StatusFilter): RequestRow[] => (filter === 'all' ? [...rows] : rows.filter((row) => filterOf(row.status) === filter));
 
 const wordsOf = (row: RequestRow): string => row.summary ?? row.text ?? 'A request';
 
@@ -160,19 +190,25 @@ function Detail({ label, children }: { label: string; children: string }) {
   );
 }
 
-/** The search field (over SEARCH_OVER rows) and the groups of the rows that match it. */
+/** The status chips, the search field (over SEARCH_OVER rows in the chip) and the groups of the rows that match it. */
 function RequestGroups({ rows, query, onQuery }: { rows: readonly RequestRow[]; query: string; onQuery: (q: string) => void }) {
+  const [filter, setFilter] = useState<StatusFilter>('all');
+  const counts = Object.fromEntries(FILTERS.map(([value]) => [value, inFilter(rows, value).length])) as Record<StatusFilter, number>;
+  const inChip = inFilter(rows, filter);
   const searching = rows.length > SEARCH_OVER;
-  const shown = searching ? found(rows, query) : rows;
+  const shown = searching ? found(inChip, query) : inChip;
   const asking = searching && query.trim() !== '';
   return (
     <>
+      <div className="pb-2">
+        <Chips name="Status" current={filter} options={FILTERS.map(([value, label]) => [value, `${label} (${counts[value]})`] as const)} onChoose={(next) => setFilter(next as StatusFilter)} />
+      </div>
       {searching ? (
         <div className="pb-2">
           <input
             type="search"
             value={query}
-            placeholder={`Search ${rows.length} requests`}
+            placeholder={`Search ${inChip.length} requests`}
             aria-label="Search your requests"
             autoCapitalize="none"
             autoCorrect="off"
@@ -182,11 +218,11 @@ function RequestGroups({ rows, query, onQuery }: { rows: readonly RequestRow[]; 
             className="min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
           />
           <p className="pt-1 text-sm text-muted" aria-live="polite">
-            {asking ? `${shown.length} of ${rows.length} shown` : `${rows.length} requests`}
+            {asking ? `${shown.length} of ${inChip.length} shown` : `${inChip.length} requests`}
           </p>
         </div>
       ) : null}
-      {shown.length === 0 ? <p className="py-3 text-base text-muted">No request matches</p> : null}
+      {inChip.length === 0 ? <p className="py-3 text-base text-muted">{NOTHING[filter]}</p> : shown.length === 0 ? <p className="py-3 text-base text-muted">No request matches</p> : null}
       {grouped(shown).map((group) => (
         <section key={group.kind} data-request-group={group.kind} aria-labelledby={`requests-${group.kind}`} className="pt-3">
           <h2 id={`requests-${group.kind}`} className="px-1 pb-1 text-sm font-semibold uppercase tracking-wide text-muted">

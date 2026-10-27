@@ -309,6 +309,99 @@ test('thirty requests are grouped by kind, counted and searchable at 390x844', a
   await expect(page.locator('[data-request]')).toHaveCount(30);
 });
 
+// A status filter (mw-5r3p30.795): chips All, Waiting (sent, filed, building), Adopted (landed, adopted as a setting) and Declined, each with its count, always shown;
+// a chip with no rows says so; the search narrows within the chip; the chips wrap and never scroll the screen sideways.
+for (const { width, height } of VIEWPORTS) {
+  test(`the status chips filter Your requests and count them at ${width}x${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    const fake = makeFakePostern();
+    await routePostern(page, fake);
+    await openUnlocked(page);
+    await page.goto('/#/requests');
+    await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
+    const rows = Array.from({ length: 8 }, (_, i) => ({ kind: 'tutor-ask', summary: `Idea number ${i + 1} for the Greek` }));
+    await seedRows(page, rows);
+    // 0 sent, 1 filed, 2 building, 3 landed, 4 declined, 5 adopted as a setting, 6 and 7 sent
+    fake.sendStatus(SEED_PUBLIC_KEY, status(1, { status: 'filed' }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(2, { status: 'building' }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(3, { status: 'landed', version: '0.1.86', commit: '0123456789abcdef0123456789abcdef01234567', url: COMMIT_URL }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(4, { status: 'declined', reason: 'outside what this app is for' }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(5, { status: 'adopted-as-setting', setting: 'Settings > Appearance > Text size' }));
+    await page.reload();
+
+    const chips = page.getByRole('group', { name: 'Status' });
+    await expect(chips).toBeVisible();
+    const chip = (label: string) => chips.getByRole('button', { name: label });
+    await expect(chips.getByRole('button')).toHaveText(['All (8)', 'Waiting (5)', 'Adopted (2)', 'Declined (1)']);
+    await expect(chip('All (8)')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-request]')).toHaveCount(8);
+    const sideways = (): Promise<boolean> => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    expect(await sideways()).toBe(false);
+    const box = await chips.boundingBox();
+    expect((box?.x ?? -1) + (box?.width ?? 0)).toBeLessThanOrEqual(width);
+    for (const button of await chips.getByRole('button').all()) expect((await button.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(47.5);
+
+    await chip('Declined (1)').click();
+    await expect(chip('Declined (1)')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-request]')).toHaveCount(1);
+    await expect(page.locator('[data-request-status]')).toHaveText('Declined: outside what this app is for');
+    await expect(page.locator('[data-request-group] > h2')).toHaveText(['Asked the tutor (1)']);
+    await shot(page, `your-requests-declined-${width}`);
+
+    await chip('Waiting (5)').click();
+    await expect(page.locator('[data-request]')).toHaveCount(5);
+    await expect(page.locator('[data-request-status]')).toHaveText(['Sent', 'Sent', 'Being built', 'Filed', 'Sent']);
+    await expect(page.locator('[data-request-group] > h2')).toHaveText(['Asked the tutor (5)']);
+
+    await chip('Adopted (2)').click();
+    await expect(page.locator('[data-request]')).toHaveCount(2);
+    await expect(page.locator('[data-request-status]')).toHaveText(['Now a setting: Settings > Appearance > Text size', 'Adopted in 0.1.86']);
+
+    await chip('All (8)').click();
+    await expect(page.locator('[data-request]')).toHaveCount(8);
+    expect(await sideways()).toBe(false);
+  });
+}
+
+test('a chip with no rows says so, and the search narrows only the chip at 390x844', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/#/requests');
+  await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
+  const rows = Array.from({ length: 24 }, (_, i) => ({ kind: 'tutor-ask', summary: i < 3 ? `Sepia theme number ${i + 1}` : `Idea number ${i + 1} for the Greek` }));
+  await seedRows(page, rows);
+  // 0 and 1 landed, 2 filed; the rest sent; none declined
+  fake.sendStatus(SEED_PUBLIC_KEY, status(0, { status: 'landed', version: '0.1.86', commit: '0123456789abcdef0123456789abcdef01234567', url: COMMIT_URL }));
+  fake.sendStatus(SEED_PUBLIC_KEY, status(1, { status: 'landed', version: '0.1.87', commit: '0123456789abcdef0123456789abcdef01234567', url: COMMIT_URL }));
+  fake.sendStatus(SEED_PUBLIC_KEY, status(2, { status: 'filed' }));
+  await page.reload();
+
+  const chips = page.getByRole('group', { name: 'Status' });
+  await expect(chips.getByRole('button')).toHaveText(['All (24)', 'Waiting (22)', 'Adopted (2)', 'Declined (0)']);
+  const field = page.getByRole('searchbox', { name: 'Search your requests' });
+  await chips.getByRole('button', { name: 'Waiting (22)' }).click();
+  await expect(field).toHaveAttribute('placeholder', 'Search 22 requests');
+  await field.fill('sepia');
+  await expect(page.locator('[data-request]')).toHaveCount(1); // only the filed one: the landed ones are Adopted
+  await expect(page.getByText('1 of 22 shown')).toBeVisible();
+  await chips.getByRole('button', { name: 'Adopted (2)' }).click();
+  await expect(field).toHaveValue('sepia'); // the search is kept across chips
+  await expect(page.locator('[data-request]')).toHaveCount(2);
+  await expect(page.getByText('2 of 2 shown')).toBeVisible();
+  await chips.getByRole('button', { name: 'All (24)' }).click();
+  await expect(page.locator('[data-request]')).toHaveCount(3);
+  await field.fill('');
+
+  // no row declined: the chip stays, with its count 0, and says so
+  await chips.getByRole('button', { name: 'Declined (0)' }).click();
+  await expect(page.getByText('Nothing declined')).toBeVisible();
+  await expect(page.locator('[data-request]')).toHaveCount(0);
+  await expect(page.getByText('No request matches')).toHaveCount(0);
+  await shot(page, 'your-requests-nothing-declined');
+});
+
 test('Settings has a Your requests row that opens the screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const fake = makeFakePostern();
