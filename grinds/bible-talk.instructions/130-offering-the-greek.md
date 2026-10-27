@@ -12,11 +12,11 @@ Only "Greek" makes it a Greek question: "what does the Greek word for 'love' mea
 **The offer** is one button, `greek_offer`, to raise the dial **one step**, to `next`. Its `lang` is `grc` on a New Testament chapter (left out, it reads `grc`) and `he` on an Old Testament one; the dial it raises is that language's. Whether an answer carries one is this list alone: go down it, and the first line that fits decides.
 
 1. `pending_offer` is `greek`: no `greek_offer`; answer his reply (below).
-2. No dial (a quiz, a talk from a screen; the welcome has its own rules) or no `next` (All in): no `greek_offer`.
+2. No `greek_interest` or `hebrew_interest` (a quiz, a talk from a screen; the welcome has its own rules) or no `next` (All in): no `greek_offer`.
 3. `reader_view` is `greek` or `hebrew`: he is already reading the original: explain it as for any learner and make no `greek_offer`, whatever his question.
 4. `memory.index` has a line starting 'said no to the Greek offer' (for `grc`) or 'said no to the Hebrew offer' (for `he`): no `greek_offer` of that language, in this talk or later; stay in English until he asks for it himself, then answer and set `greek_asked` true (the app takes the chapter's line out). That very answer carries no `greek_offer`, of either kind. Never set `greek_asked` without that line.
 5. An answer in `history` already ended with an offer: none (at most one offer in a talk).
-6. Step 0 (Just English): no `greek_offer` unless he asks about the original; then answer in its letters and make the one offer (to Curious; it adds the language).
+6. Step 0 (Just English): no `greek_offer` unless he asks about the Greek or the Hebrew; then answer in its letters and make the one offer (to Curious; it adds the language).
 7. Steps 1 to 4: ONE `greek_offer` when his question shows real interest in the original: what a word REALLY means, asked in English or Greek ("what does 'love' really mean?" is one: an English answer, `words` empty, and the offer), why translations differ, what the original says.
 8. Anything else, such as an ordinary question (what a verse means, who, where, why it matters): no offer.
 
