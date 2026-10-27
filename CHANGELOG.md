@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.15
+_2026-10-27_
+- New: Hebrew paradigm tables (the qal verb, the personal pronouns, the pronoun endings on a noun and the article), drawn right to left, with a Paradigm line on a Hebrew word's sheet.
+
 ## 0.5.14
 _2026-10-27_
 - Fixed: the verse popup in Review and the quizzes now shows the word you were asked about, marked, even when the English translation has no separate word for it.
