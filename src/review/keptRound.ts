@@ -18,10 +18,10 @@ function store(): Storage | undefined {
 
 /**
  * Keeps the round. An answer is already on the schedule, so a question answered is not asked again: the kept round stands at the next question, unless it was
- * the last (then it stays on that answer, and Finish still ends the round).
+ * the last (then it stays on that answer, and Finish still ends the round). A right pick still waiting for its grade is not on the schedule: the round stays on it.
  */
 export function keepRound(round: RunningRound, now = Date.now()): void {
-  const answeredNotLast = round.picked !== null && round.index < round.items.length - 1;
+  const answeredNotLast = round.picked !== null && !round.pending && round.index < round.items.length - 1;
   const kept: RunningRound = answeredNotLast ? { ...round, index: round.index + 1, picked: null } : round;
   try {
     store()?.setItem(KEY, JSON.stringify({ round: kept, at: now }));

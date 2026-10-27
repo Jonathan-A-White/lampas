@@ -9,9 +9,11 @@ async function answer(page: Page): Promise<void> {
   const show = page.getByRole('button', { name: 'Show', exact: true });
   if (await show.isVisible()) {
     await show.click();
-    await page.getByRole('button', { name: 'I knew it' }).click();
+    await page.getByRole('button', { name: /^(I knew it|Kind of)$/ }).click();
   } else {
     await page.locator('[data-option]').first().click();
+    // a right pick asks how well he knew it: until he taps one it is not on the schedule, and a reload keeps him on it (tests/e2e/review-word-grades.spec.ts)
+    if (await page.getByTestId('word-grades').isVisible()) await page.getByRole('button', { name: 'Kind of', exact: true }).click();
   }
 }
 

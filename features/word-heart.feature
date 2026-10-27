@@ -21,14 +21,19 @@ Feature: The heart of the word is shown where he learns a word and where he can 
     When he answers it rightly
     Then the card shows no heart of the word
 
-  Scenario: A flashcard answered Not yet shows the note and I knew it does not
+  Scenario: A flashcard answered Don't know shows the note and Know it well does not
     Given a Review card asks θέλω as a flashcard
-    When he shows the meaning and taps "Not yet"
+    When he shows the meaning and taps "Don't know"
     Then the card shows the heart of the word "One thread ties them together"
 
-  Scenario: A flashcard answered I knew it shows no note
+  Scenario: A flashcard answered Know it well shows no note
     Given a Review card asks θέλω as a flashcard
-    When he shows the meaning and taps "I knew it"
+    When he shows the meaning and taps "Know it well"
+    Then the card shows no heart of the word
+
+  Scenario: A flashcard answered Kind of shows no note
+    Given a Review card asks θέλω as a flashcard
+    When he shows the meaning and taps "Kind of"
     Then the card shows no heart of the word
 
   Scenario: A word without a note shows none after a miss

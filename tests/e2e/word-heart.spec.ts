@@ -84,11 +84,11 @@ test('a Review card answered right shows no note', async ({ page }) => {
   await expect(page.getByTestId('word-heart')).toHaveCount(0);
 });
 
-test('a flashcard answered Not yet shows the note under the answer', async ({ page }) => {
+test("a flashcard answered Don't know shows the note under the answer", async ({ page }) => {
   await reviewOf(page, 'flashcard');
   await page.getByRole('button', { name: 'Show', exact: true }).click();
   await expect(page.getByTestId('word-heart')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Not yet', exact: true }).click();
+  await page.getByRole('button', { name: "Don't know", exact: true }).click();
   await expect(page.getByTestId('word-heart')).toContainText(THREAD);
 });
 

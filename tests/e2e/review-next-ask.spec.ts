@@ -61,7 +61,7 @@ test('on every answered Review card, Next (Finish at the end) and the round Ask 
     const show = page.getByRole('button', { name: 'Show', exact: true });
     if (await show.isVisible()) {
       await show.click();
-      await page.getByRole('button', { name: 'Not yet' }).click();
+      await page.getByRole('button', { name: /^(Not yet|Don't know)$/ }).click();
     } else {
       await page.locator('[data-option]').first().click();
     }

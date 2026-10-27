@@ -16,8 +16,10 @@ export type { Review };
  *   a single right keeps its step and it comes back after that step's gap.
  * - One wrong drops it two steps (never below step 0), counts a lapse, and it is due tomorrow.
  * - Past the last step (step === STEP_DAYS.length) it is a rare check, due again every RARE_CHECK_DAYS days.
+ * - An answer may be graded (learn-kit's Grade): 'well' (knows it well) moves the item up a step at once, 'some' (kind of) is a right, 'not' is a wrong; a boolean is 'some' or 'not'.
  * - startSchedule(now) puts an item at step 0, due after the first gap; knownSchedule(now) one he knows already at KNOWN_STEP (the 30-day step), due in 30 days.
  */
+export type { Grade } from 'learn-kit/graph';
 export { DAY, KNOWN_STEP, RARE_CHECK_DAYS, RARE_STEP, STEP_DAYS, gapOf, isDue, knownSchedule, nextReview, startSchedule } from 'learn-kit/graph';
 
 /**

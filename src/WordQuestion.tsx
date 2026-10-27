@@ -9,6 +9,9 @@ import { WordPicture } from './WordPicture';
 import { GREEK_LANG } from './script/greekLang';
 import { ReferenceLink } from './markdown/ReferenceCard';
 import { HeartOfWord } from './HeartOfWord';
+import type { Grade } from './data/schedule';
+import { WORD_GRADES } from './review/kinds';
+import { WordGrades } from './ui/SelfGrade';
 
 const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
 const OPTION_LOOK = {
@@ -25,10 +28,17 @@ interface Props {
   /** the gloss he tapped, or null while he has not answered */
   picked: string | null;
   onPick: (gloss: string) => void;
+  /** Review only: a right pick shows 'Know it well', 'Kind of' and 'Don't know' under 'Right.', and a tap on one comes here; the Quick test leaves it out and has no such buttons */
+  onGrade?: (grade: Grade) => void;
+  /** the grade he tapped after a right pick, or null/absent while he has not */
+  grade?: Grade | null;
 }
 
-export function WordQuestion({ question, index, picked, onPick }: Props) {
+export function WordQuestion({ question, index, picked, onPick, onGrade, grade = null }: Props) {
   const answered = picked !== null;
+  const right = answered && picked === question.gloss;
+  // 'Don't know' after a right pick is a miss: it reads and shows the heart of the word as a wrong pick does
+  const missed = answered && (!right || grade === 'not');
   // a tap in the moment after the card appears is the second tap of a double tap on Next (src/ui/settle.ts)
   const settled = useSettled(index);
   const lookOf = (option: string): keyof typeof OPTION_LOOK => {
@@ -37,7 +47,7 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
     return option === picked ? 'wrong' : 'other';
   };
   // the line under the options is not a live region: the result is said once, when he answers, through the app's one (src/ui/live.ts)
-  const feedback = !answered ? '' : picked === question.gloss ? 'Right.' : `Not quite. It means: ${question.gloss}`;
+  const feedback = !answered ? '' : !right ? `Not quite. It means: ${question.gloss}` : grade === 'not' ? 'It comes back tomorrow.' : 'Right.';
   useEffect(() => announce(feedback), [feedback]);
   return (
     <>
@@ -91,8 +101,16 @@ export function WordQuestion({ question, index, picked, onPick }: Props) {
       <p data-testid="feedback" className="mt-4 min-h-12 text-center text-lg">
         {feedback}
       </p>
+      {right && onGrade ? (
+        <WordGrades
+          picked={grade === null ? null : (WORD_GRADES.find((g) => g.grade === grade)?.label ?? null)}
+          onPick={(label) => onGrade(WORD_GRADES.find((g) => g.label === label)?.grade ?? 'some')}
+          settleKey={index}
+          className="mt-2"
+        />
+      ) : null}
       {/* a miss shows the heart of the word under the answer: the thread that would have held it (mw-bsf54t.14) */}
-      {answered && picked !== question.gloss ? <HeartOfWord lemma={question.lemma} className="mt-2" /> : null}
+      {missed ? <HeartOfWord lemma={question.lemma} className="mt-2" /> : null}
     </>
   );
 }

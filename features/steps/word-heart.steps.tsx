@@ -156,13 +156,19 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(screen.getByRole('button', { name }));
   };
 
-  Scenario('A flashcard answered Not yet shows the note and I knew it does not', ({ Given, When, Then }) => {
+  Scenario('A flashcard answered Don\'t know shows the note and Know it well does not', ({ Given, When, Then }) => {
     Given('a Review card asks θέλω as a flashcard', flashcard);
     When('he shows the meaning and taps {string}', async (_, name: string) => grades(name)());
     Then('the card shows the heart of the word {string}', heart);
   });
 
-  Scenario('A flashcard answered I knew it shows no note', ({ Given, When, Then }) => {
+  Scenario('A flashcard answered Know it well shows no note', ({ Given, When, Then }) => {
+    Given('a Review card asks θέλω as a flashcard', flashcard);
+    When('he shows the meaning and taps {string}', async (_, name: string) => grades(name)());
+    Then('the card shows no heart of the word', noHeart);
+  });
+
+  Scenario('A flashcard answered Kind of shows no note', ({ Given, When, Then }) => {
     Given('a Review card asks θέλω as a flashcard', flashcard);
     When('he shows the meaning and taps {string}', async (_, name: string) => grades(name)());
     Then('the card shows no heart of the word', noHeart);

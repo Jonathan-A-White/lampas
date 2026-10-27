@@ -2,16 +2,18 @@
 import { db, type TestResult, type WordState } from '../db';
 import { nextState } from '../quiz';
 import { announceCredited, creditWordRead, type Credited } from './inference';
-import { announceDue, writeReview } from './reviews';
+import type { Grade } from '../schedule';
+import { announceDue, isRightAnswer, writeReview } from './reviews';
 
 export type { TestResult };
 
 /**
  * Stores one answer {lemma, when, right} and moves the word if the answer completes two in a row. Only the
  * answers since the word last got its state count, so a change on the Words screen starts the count again.
- * Also records the answer on the back-off schedule. Returns the word's state afterwards, or null for a lemma that is not in the list.
+ * Also records the answer on the back-off schedule, as a Grade where Review's buttons gave one (a boolean is 'some' or 'not'). Returns the word's state afterwards, or null for a lemma that is not in the list.
  */
-export async function recordAnswer(lemma: string, right: boolean, now = Date.now()): Promise<WordState | null> {
+export async function recordAnswer(lemma: string, answer: boolean | Grade, now = Date.now()): Promise<WordState | null> {
+  const right = isRightAnswer(answer);
   let credited: Credited | undefined;
   const state = await db.transaction('rw', db.words, db.results, db.reviews, db.settings, db.grammarLevels, async () => {
     const word = await db.words.get(lemma);
@@ -24,7 +26,7 @@ export async function recordAnswer(lemma: string, right: boolean, now = Date.now
     const state = nextState(word.state, [...earlier.map((r) => r.right), right]);
     if (state !== word.state) await db.words.update(lemma, { state, since: when });
     // The answer also moves the word on the back-off schedule (src/data/schedule.ts), in the same transaction.
-    await writeReview('word', lemma, right, now);
+    await writeReview('word', lemma, answer, now);
     // A word read right shows its letters, sounds and marks (src/data/grammar/inference.ts), written in the same transaction.
     if (right) credited = await creditWordRead(lemma, now);
     return state;

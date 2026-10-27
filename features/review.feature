@@ -101,24 +101,80 @@ Feature: Review brings back the words that are due
     Then the question for "εἰμί" is a flashcard with the lemma "εἰμί", no options and a Show control
     And the flashcard does not show the gloss yet
 
-  Scenario: Show reveals the meaning and I knew it records a right review
+  Scenario: Show reveals the meaning and Kind of records a right review
     Given the word "λέγω" is due on step 3
     When Lampas is opened on the Reader
     And he opens Review from Settings
     And he starts the review
     And he taps Show
-    Then the flashcard shows the gloss of "λέγω" with "I knew it" and "Not yet"
-    When he taps "I knew it"
+    Then the flashcard shows the gloss of "λέγω" with "Know it well", "Kind of" and "Don't know"
+    When he taps "Kind of"
     Then "λέγω" has one right review and no lapse
 
-  Scenario: Not yet records a wrong review
+  Scenario: Know it well on a flashcard moves the word up a step at once
     Given the word "λέγω" is due on step 3
     When Lampas is opened on the Reader
     And he opens Review from Settings
     And he starts the review
     And he taps Show
-    And he taps "Not yet"
+    And he taps "Know it well"
+    Then "λέγω" is on step 4 with no right in a row
+
+  Scenario: Don't know records a wrong review
+    Given the word "λέγω" is due on step 3
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he taps Show
+    And he taps "Don't know"
     Then "λέγω" is on step 1 and has lapsed once
+
+  Scenario: Know it well after a right pick on multiple choice puts the word up a step
+    Given the word "λέγω" is due on step 1
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he picks the right meaning of "λέγω"
+    Then "Know it well", "Kind of" and "Don't know" are offered under "Right."
+    When he taps "Know it well"
+    Then "λέγω" is on step 2 with no right in a row
+
+  Scenario: Kind of after a right pick leaves the word on its step with one right
+    Given the word "λέγω" is due on step 1
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he picks the right meaning of "λέγω"
+    And he taps "Kind of"
+    Then "λέγω" is on step 1 with one right in a row
+
+  Scenario: Going on without a grade counts as Kind of
+    Given the word "λέγω" is due on step 1
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he picks the right meaning of "λέγω"
+    And he goes on without grading it
+    Then "λέγω" is on step 1 with one right in a row
+
+  Scenario: Don't know after a right pick drops the word as a wrong does and shows its heart
+    Given the word "θέλω" is due on step 2
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he picks the right meaning of "θέλω"
+    And he taps "Don't know"
+    Then "θέλω" is on step 0 and has lapsed once
+    And the question shows the heart of the word
+
+  Scenario: A wrong pick is a wrong with no grade to give
+    Given the word "λέγω" is due on step 1
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he picks a wrong meaning of "λέγω"
+    Then no grade buttons are offered
+    And "λέγω" is on step 0 and has lapsed once
 
   Scenario: A word that slips is asked as multiple choice again
     Given the word "λέγω" is due on step 3
@@ -126,7 +182,7 @@ Feature: Review brings back the words that are due
     And he opens Review from Settings
     And he starts the review
     And he taps Show
-    And he taps "Not yet"
+    And he taps "Don't know"
     And he goes on to the end of the round
     And "λέγω" is due again
     And he starts another round
