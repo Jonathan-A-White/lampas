@@ -1,6 +1,6 @@
 // src/data/repositories/memorize.ts — verses on the schedule (mw-fu7dqf.4, the epic mw-fu7dqf): the ONLY file that reads or writes the Dexie `recalls` table and the
 // schedule's 'verse' rows. A verse is memorized per language: one row of kind 'verse' per verse per language, its id '<lang>:<canonical ref>' ('en:Rom.8.28', 'el:Rom.8.28',
-// 'weave:Rom.8.28'). The rows are on the same back-off schedule as the words (src/data/schedule.ts) but reviews.ts leaves them out of listDue()/countDue() with no kind, so Review's
+// 'he:Jonah.1.1', 'weave:Rom.8.28'). The rows are on the same back-off schedule as the words (src/data/schedule.ts) but reviews.ts leaves them out of listDue()/countDue() with no kind, so Review's
 // round, Today's 'Review: N due', the pace and the learner summary do not count them: Memorize asks for its own kind. Every recall is kept in `recalls` (the schedule row keeps
 // only the step), and stays when a verse is unmemorized: it is evidence.
 import { db, type RecallHow, type RecallRow, type Review } from '../db';
@@ -84,7 +84,7 @@ export async function restoreVerseRows(rows: readonly Review[], now = Date.now()
   await announceDueVerses(now);
 }
 
-/** For each of these references that is memorized, the languages it is in (English, Greek, Weave order). A reference that is not memorized is not in the map. */
+/** For each of these references that is memorized, the languages it is in (English, Greek, Hebrew, Weave order). A reference that is not memorized is not in the map. */
 export async function memorizedOf(refs: readonly string[]): Promise<Map<string, MemorizeLang[]>> {
   const rows = await Promise.all(refs.flatMap((ref) => MEMORIZE_LANGS.map((lang) => db.reviews.get([VERSE_KIND, verseId(ref, lang)]))));
   const found = new Map<string, MemorizeLang[]>();

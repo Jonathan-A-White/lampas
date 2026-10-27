@@ -4,6 +4,7 @@
 import { localDate } from '../data/daily/dailyStore';
 import type { RecallHow, RecallRow } from '../data/db';
 import { listRecalls, PASS_SCORE } from '../data/repositories/memorize';
+import { hebrewPointedForm } from '../speech/hebrewPronunciation';
 
 /** The most recalls one verse in one language keeps in the evidence. */
 export const EVIDENCE_RECALLS = 30;
@@ -24,7 +25,7 @@ export interface EvidenceRecall {
   how: RecallHow;
 }
 
-/** One verse in one language with its last recalls, oldest first. */
+/** One verse in one language ('en', 'el', 'he' or 'weave') with its last recalls, oldest first. */
 export interface EvidenceVerse {
   ref: string;
   lang: string;
@@ -37,7 +38,8 @@ const recallOf = (row: RecallRow): EvidenceRecall => ({
   on: localDate(new Date(row.when)),
   rung: row.rung,
   score: Math.round(row.score * 100) / 100,
-  ...(row.missed.length > 0 ? { missed: row.missed.slice(0, EVIDENCE_MISSED) } : {}),
+  // a Hebrew word missed (in a Hebrew or a Weave recall) is told pointed, its cantillation off, as the verse's text is (verseText.ts); the language of the recall is the row's `lang`
+  ...(row.missed.length > 0 ? { missed: row.missed.slice(0, EVIDENCE_MISSED).map(hebrewPointedForm) } : {}),
   gap: row.gap,
   how: row.how,
 });

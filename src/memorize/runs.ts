@@ -6,7 +6,7 @@ import type { Token } from './target';
 export function runsOfTokens(tokens: readonly Token[]): Run[] {
   const runs: Run[] = [];
   for (const t of tokens) {
-    const language = t.lang === 'el' ? 'greek' : 'english';
+    const language = t.lang === 'el' ? 'greek' : t.lang === 'he' ? 'hebrew' : 'english';
     const last = runs[runs.length - 1];
     if (last && last.language === language) last.text = `${last.text} ${t.text}`;
     else runs.push({ text: t.text, language });

@@ -1,14 +1,15 @@
 // src/memorize/commands.ts — how a verse enters and leaves memorizing (mw-fu7dqf.5, his Q3 C): the named commands the buttons call and the tutor calls too (mw-fu7dqf.12: src/tutor/registry.ts
 // registers these same functions, memorize, unmemorize, moveVerse and startSession, so a tap and a tutor `do` run the one function). Plain async functions over the memorize repository and
 // his verse lists; each answers {said} in the words the screen shows and the tutor reads back, {skipped} for the references it could not memorize, and {undo} when it changed something the
-// tutor's talk can put back. A command that cannot do what it was asked throws, and the registry says why. An Old Testament verse is memorized like a New Testament one, but in English only (its words are Hebrew; docs/layout/memorize.md).
-import { getGreekInterest } from '../data/repositories/greekInterest';
+// tutor's talk can put back. A command that cannot do what it was asked throws, and the registry says why. An Old Testament verse is memorized like a New Testament one, in the languages its own dial allows: English, Hebrew, the Weave (mw-gdcyf98.15, docs/layout/memorize.md).
+import { getInterestLevels } from '../data/repositories/greekInterest';
 import { memorize, memorizedRowOf, restoreVerseRows, unmemorize, verseRowsOf } from '../data/repositories/memorize';
 import { getVerseList, sendVerseListRef, setVerseListRefs } from '../data/repositories/verseLists';
 import { listedOf } from '../lists/canonical';
 import { openMemorizeSession } from '../nav/route';
 import { leaveTalk } from '../talk/leave';
 import { languagesFor, langName, type MemorizeLang } from './languages';
+import { sourceOf } from './source';
 
 /** What a command did, in words, the references it left alone (printed as 'Ps 62:1-2') and, when it changed something, the way back. */
 export interface CommandResult {
@@ -30,22 +31,19 @@ export function memorizable(refs: readonly string[]): string[] {
   return refs.filter((ref) => listedOf(ref));
 }
 
-/** Whether a reference is of the Old Testament: its verses are learned in English only. */
-export const isEnglishOnly = (canonical: string): boolean => listedOf(canonical)?.testament === 'ot';
-
-/** The languages of `ref` that his Greek dial allows; English alone for an Old Testament verse. */
+/** The languages of `ref` that the dial of its own language allows (the Hebrew dial for an Old Testament verse, the Greek for a New Testament one). */
 export async function offeredFor(ref: string): Promise<MemorizeLang[]> {
-  return isEnglishOnly(ref) ? ['en'] : languagesFor(await getGreekInterest());
+  return languagesFor(await getInterestLevels(), sourceOf(ref));
 }
 
-/** The languages asked for that his Greek dial allows (English alone for an Old Testament verse); English when none of them is. */
+/** The languages asked for that the verse's own dial allows; English when none of them is. */
 async function allowed(ref: string, langs: readonly MemorizeLang[]): Promise<MemorizeLang[]> {
   const offered = await offeredFor(ref);
   const kept = langs.filter((lang) => offered.includes(lang));
   return kept.length > 0 ? kept : ['en'];
 }
 
-/** Puts a verse (or a range, 'Rom.8.28-30') on the schedule in these languages (English when none are named): only the ones his Greek dial allows, English when none (an Old Testament verse: English only).
+/** Puts a verse (or a range, 'Rom.8.28-30') on the schedule in these languages (English when none are named): only the ones its dial allows, English when none.
  *  The undo takes off the languages this added, and leaves the ones he already had. */
 export async function memorizeVerse({ ref, langs = ['en'] }: { ref: string; langs?: readonly MemorizeLang[] }): Promise<CommandResult> {
   if (memorizable([ref]).length === 0) return { said: `${ref} is not a reference Lampas can memorize` };

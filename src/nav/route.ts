@@ -100,7 +100,7 @@ export function routeOf(hash: string): Route {
 /** The Verse lists screen (src/lists/); one list is `#/lists/<id>`. */
 export const LISTS_PATH = '#/lists';
 
-/** The Memorize screen (src/memorize/); one session is `#/memorize/<canonical reference>/<en|el|weave>`, and the bare address opens the next verse that is due. */
+/** The Memorize screen (src/memorize/); one session is `#/memorize/<canonical reference>/<en|el|he|weave>`, and the bare address opens the next verse that is due. */
 export const MEMORIZE_PATH = '#/memorize';
 
 /** The in-app copy of Robinson's essay (src/Essay.tsx), a page under the Preface. */
@@ -320,7 +320,7 @@ export function memorizeSessionOf(hash: string): { ref: string; lang: MemorizeLa
   if (!m) return undefined;
   const lang = m[2];
   const ref = decodeURIComponent(m[1]);
-  return (lang === 'en' || lang === 'el' || lang === 'weave') && /^[0-9A-Za-z]+\.\d+(?:\.\d+(?:-\d+)?)?$/.test(ref) ? { ref, lang } : undefined;
+  return (lang === 'en' || lang === 'el' || lang === 'he' || lang === 'weave') && /^[0-9A-Za-z]+\.\d+(?:\.\d+(?:-\d+)?)?$/.test(ref) ? { ref, lang } : undefined;
 }
 
 export const memorizeSessionHash = (ref: string, lang: MemorizeLang): string => `${MEMORIZE_PATH}/${encodeURIComponent(ref)}/${lang}`;

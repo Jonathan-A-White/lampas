@@ -1,5 +1,5 @@
 // src/memorize/MemorizeSession.tsx — one Memorize session (#/memorize/<ref>/<lang>, mw-fu7dqf.8, docs/layout/memorize.md): the verse at the rung its schedule step gives (HiddenVerse), Hear it, the hold
-// to say it from memory (HeldTalkBar for English and Greek, RecordBar for the Weave: useRecallHold) or Type it (TypeIt.tsx: English always, Greek while Settings > Greek keyboard is On, never the Weave), the judgement with the missed words marked, the recall kept and 'Due <day>', I had it / Not yet when the phone
+// to say it from memory (HeldTalkBar for English and Greek, RecordBar for the Weave: useRecallHold) or Type it (TypeIt.tsx: English always, Greek while Settings > Greek keyboard is On, Hebrew while Hebrew keyboard is On, never the Weave), the judgement with the missed words marked, the recall kept and 'Due <day>', I had it / Not yet when the phone
 // cannot hear him, and Next verse (or Done). The screen reports the verse, its language, its rung and the last score to the tutor.
 import { useEffect, useState } from 'react';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
@@ -9,7 +9,7 @@ import { HeldTalkBar, RecordBar } from '../talk/Bars';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { closeMemorize, openMemorizeSession } from '../nav/route';
-import { greekKeyboardSetting } from '../settings/definitions';
+import { greekKeyboardSetting, hebrewKeyboardSetting } from '../settings/definitions';
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { foldWords } from 'learn-kit/recall';
@@ -41,6 +41,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
   const session = useSession(refName, lang);
   const reading = useReading();
   const greekKeyboard = useSetting(greekKeyboardSetting);
+  const hebrewKeyboard = useSetting(hebrewKeyboardSetting);
   const [typing, setTyping] = useState(false);
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
     );
   }
 
-  const { rung, tokens, hidden, phase, note, kept, hold, next } = session;
+  const { rung, tokens, hidden, phase, note, kept, hold, next, selfGraded } = session;
   const judged = phase === 'judged' && kept !== null;
   const hearing = reading.answer === HEAR_ID && reading.status !== 'idle';
   const hear = () => (hearing ? stopAnswerSpeech() : startAnswer(HEAR_ID, runsOfTokens(tokens)));
@@ -91,8 +92,8 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
   // 'nothing' shows no word until the recall is judged; a judged verse shows every word, with the missed ones marked
   const shown = rung.kind === 'nothing' && !judged ? [] : tokens;
   const subtitle = `${langName(lang)} · ${rungName(rung)} · step ${session.step + 1} of ${STEPS}`;
-  // Type it: English always, Greek only once he says his phone has a Greek keyboard (the switch reads undefined until it is read: neither Type it nor the line to turn it on), the Weave never
-  const canType = lang === 'en' || (lang === 'el' && greekKeyboard === 'on');
+  // Type it: English always, Greek or Hebrew only once he says his phone has that keyboard (the switch reads undefined until it is read: neither Type it nor the line to turn it on), the Weave never
+  const canType = lang === 'en' || (lang === 'el' && greekKeyboard === 'on') || (lang === 'he' && hebrewKeyboard === 'on');
   const hearIt = (
     <button type="button" onClick={hear} className={ACTION}>
       {hearing ? 'Stop hearing it' : 'Hear it'}
@@ -162,11 +163,16 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
                 Turn on Greek keyboard in Settings to type Greek
               </button>
             ) : null}
+            {lang === 'he' && hebrewKeyboard === 'off' ? (
+              <button type="button" onClick={() => openSetting('hebrewKeyboard')} className="min-h-12 text-left text-base text-accent underline">
+                Turn on Hebrew keyboard in Settings to type Hebrew
+              </button>
+            ) : null}
             {lang !== 'weave' && canType && typing ? <TypeIt lang={lang} disabled={phase === 'sending'} onTyped={session.typed} /> : null}
           </div>
         )}
       </main>
-      {judged ? null : (
+      {judged || selfGraded ? null : (
         <footer className="shrink-0 px-4 pb-[calc(0.5rem+var(--lp-bar-inset))] pr-[calc(var(--spacing)*18)] pt-2">
           {lang === 'weave' ? (
             <RecordBar label="Hold to say it" listening={hold.record.listening} disabled={phase === 'sending'} onPress={hold.record.press} onRelease={hold.record.release} onAbort={hold.record.drop} />

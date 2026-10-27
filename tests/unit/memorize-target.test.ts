@@ -129,7 +129,7 @@ describe('references', () => {
     expect(found.chapter).toBe(8);
   });
 
-  it('Ps.62.1-2 is Old Testament: its verses, and its English whatever language is asked for', async () => {
+  it('Ps.62.1-2 is Old Testament: its verses, its English when Greek is asked for, its Hebrew when Hebrew is', async () => {
     const found = await versesOf('Ps.62.1-2');
     if (!found) throw new Error('no verses');
     expect(found).toMatchObject({ book: 'psa', chapter: 62, heading: 'Psalm 62:1-2' });
@@ -140,7 +140,20 @@ describe('references', () => {
     if (!asked) throw new Error('no target');
     expect(asked.lang).toBe('en');
     expect(new Set(asked.tokens.map((t) => t.lang))).toEqual(new Set(['en']));
-    expect((await memorizeTarget('Gen.1.1', 'weave'))?.lang).toBe('en');
+    // the weave of an Old Testament verse is the Hebrew one (mw-gdcyf98.15): English while no settings weave anything
+    const weave = await memorizeTarget('Gen.1.1', 'weave');
+    expect(weave?.lang).toBe('weave');
+    expect(new Set(weave?.tokens.map((t) => t.lang))).toEqual(new Set(['en']));
+    const hebrew = await memorizeTarget('Gen.1.1', 'he');
+    expect(hebrew?.lang).toBe('he');
+    expect(new Set(hebrew?.tokens.map((t) => t.lang))).toEqual(new Set(['he']));
+    expect(hebrew?.tokens[0].text).toBe('בְּרֵאשִׁ֖ית');
+  });
+
+  it('Rom.8.28 is learned in Hebrew as English: a New Testament verse has no Hebrew', async () => {
+    const asked = await memorizeTarget('Rom.8.28', 'he');
+    expect(asked?.lang).toBe('en');
+    expect(new Set(asked?.tokens.map((t) => t.lang))).toEqual(new Set(['en']));
   });
 
   it('Rom.8 (a chapter alone) gives verse 1 only, as the passage player does', async () => {
