@@ -4,11 +4,13 @@
 import type { Tier } from '../grammar/ladder';
 
 export interface ParadigmCell {
-  /** The text shown: Greek in NFC with its accents, or English (lang 'en'). A noun or verb ending starts with a hyphen: '-ος'. */
+  /** The text shown: Greek in NFC with its accents, or English (lang 'en'), or pointed Hebrew (lang 'he', mw-gdcyf98.13). A noun or verb ending starts with a hyphen: '-ος'. */
   form: string;
-  lang: 'el' | 'en';
+  lang: 'el' | 'en' | 'he';
   /** Ids of the ideas in LADDER the form needs; the form is available once every one is at the frontier or solid. */
   ideas: string[];
+  /** Only in a Hebrew table (hebrew/ideas.ts): what the cell is in the fine grain the ladder's ideas lack ('tense:perfect', 'person:3', 'gender:m', 'number:s'), how a Hebrew parsing finds its own cell. */
+  tags?: string[];
   /** Only in a table made by ownTable (ownForms.ts, mw-irpgqi.4): the text has no form of the word for this cell. `form` is then ''. */
   absent?: true;
   /** Only in a table made by ownTable: the form is the word's own, the one the text has, with its parsing and first use, and the pattern's form it stands in for. */

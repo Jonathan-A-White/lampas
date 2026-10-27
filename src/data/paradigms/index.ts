@@ -2,6 +2,7 @@
 // grammar levels make of them, as far as How much of a table takes in (the extent, src/data/grammar/extent.ts, mw-irpgqi.2). Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
 import { DEFAULT_EXTENT, withinExtent, type GrammarExtent } from '../grammar/extent';
 import { ideasOf, ideasOfWord } from '../grammar/ladder';
+import type { LadderLang } from '../grammar/ladders';
 import { patternsOf } from '../grammar/patterns';
 import type { Level } from '../grammar/needs';
 import { ADJECTIVE_ENDINGS } from './adjectiveEndings';
@@ -10,6 +11,8 @@ import { ARTICLE } from './article';
 import { CONTRACT_VERBS } from './contractVerbs';
 import { EIMI } from './eimi';
 import { FUTURE_AND_AORIST } from './futureAndAorist';
+import { HEBREW_PARADIGMS } from './hebrew';
+import { bareForm, ideasOf as hebrewIdeasOf, landsOn as hebrewLandsOn, tagsOf as hebrewTagsOf } from './hebrew/ideas';
 import { IMPERATIVE } from './imperative';
 import { INFINITIVE } from './infinitive';
 import { MI_VERBS } from './miVerbs';
@@ -28,7 +31,7 @@ import { VERB_ENDINGS } from './verbEndings';
 
 export type { Paradigm, ParadigmCell, ParadigmColumn, ParadigmRow };
 
-/** One line per table: a new table is one file here plus one line in this list. */
+/** One line per table: a new table is one file here plus one line in this list. The Hebrew tables (hebrew/index.ts) follow the Greek ones. */
 export const PARADIGMS: readonly Paradigm[] = [
   ARTICLE,
   NOUN_ENDINGS,
@@ -50,7 +53,14 @@ export const PARADIGMS: readonly Paradigm[] = [
   IMPERATIVE,
   INFINITIVE,
   PARTICIPLE,
+  ...HEBREW_PARADIGMS,
 ];
+
+/** The language a table is in: Hebrew ('hbo') when its forms are, else Greek ('grc'; εἰμί's English forms are a Greek table's). */
+export const languageOf = (table: Paradigm): LadderLang => (table.rows[0]?.cells.some((cell) => cell.lang === 'he') ? 'hbo' : 'grc');
+
+/** The tables of one language, in the list's order. */
+export const paradigmsIn = (lang: LadderLang): Paradigm[] => PARADIGMS.filter((table) => languageOf(table) === lang);
 
 export const paradigmById = (id: string | undefined): Paradigm | undefined => PARADIGMS.find((p) => p.id === id);
 
@@ -107,13 +117,14 @@ export const paradigmsOf = (ideaId: string): Paradigm[] => PARADIGMS.filter((p) 
  * (ladder.ts ideasOf); the earlier table in the list when two share as many; undefined when none shares any (a preposition, a conjunction). A code the ladder does
  * not know has none. A code names no declension and no contract or -μι verb, so a word given as `word` (its lemma, and its form for an adjective) also wants the
  * declension its lemma has (patterns.ts patternsOf), against the cell's ideas and the table's: a form of πατήρ is in The third declension, not Noun endings
- * (mw-svw421.37). Without the word only the code is weighed.
+ * (mw-svw421.37). Without the word only the code is weighed. In Hebrew (`lang` 'hbo', mw-gdcyf98.13) `code` is the parsing as the chapter decodes it, and only the Hebrew tables
+ * with a cell the parsing lands on are weighed (hebrew/ideas.ts landsOn): the Hebrew ladder's ideas, the earlier table on a tie.
  */
-export function tableFor(code: string, word?: { l: string; t?: string }): Paradigm | undefined {
+export function tableFor(code: string, word?: { l: string; t?: string }, lang: LadderLang = 'grc'): Paradigm | undefined {
   // kept per code and lemma (mw-5r3p30.422): a drill asks it of every word of the passage on each of its tries
-  const key = word ? `${code}|${word.l}|${word.t ?? ''}` : code;
+  const key = `${lang === 'hbo' ? 'hbo|' : ''}${word ? `${code}|${word.l}|${word.t ?? ''}` : code}`;
   if (tableCache.has(key)) return tableCache.get(key);
-  const table = findTable(code, word);
+  const table = lang === 'hbo' ? findHebrewTable(code, word?.t) : findTable(code, word);
   tableCache.set(key, table);
   return table;
 }
@@ -135,6 +146,39 @@ const wantedCache = new Map<string, string[] | undefined>();
 const DECLENSIONS = ['declension-1', 'declension-2', 'declension-3'];
 const tableCache = new Map<string, Paradigm | undefined>();
 
+/** The Hebrew table whose cells a decoded parsing (and, for the article, its pointed form) lands on in the most ideas; the earlier on a tie; none for a word no Hebrew table is for. */
+function findHebrewTable(parse: string, form?: string): Paradigm | undefined {
+  const wanted = hebrewIdeasOf(parse);
+  const tags = hebrewTagsOf(parse, form);
+  let best: Paradigm | undefined;
+  let bestShared = 0;
+  for (const table of paradigmsIn('hbo')) {
+    const shared = Math.max(0, ...cellsOf(table).filter((cell) => hebrewLandsOn(cell, wanted, tags)).map((cell) => cell.ideas.filter((id) => wanted.includes(id)).length));
+    if (shared > bestShared) [best, bestShared] = [table, shared];
+  }
+  return best;
+}
+
+/**
+ * A Hebrew word's table and the cell that is the word's own (mw-gdcyf98.13): the table tableFor(parse, word, 'hbo') names, with the cell its parsing lands on (most ideas shared, the earlier cell on a tie). The cell
+ * is lit by the parsing, not by the form: a form the table does not hold (וַיְהִי in the imperfect) is lit all the same, and `holds` says whether the cell's form is the word's own (hebrewFormIn).
+ */
+export function paradigmOfHebrewWord(word: { t: string }, parse: string): (WordParadigm & { holds: boolean }) | undefined {
+  const table = tableFor(parse, { l: '', t: word.t }, 'hbo');
+  if (!table) return undefined;
+  const wanted = hebrewIdeasOf(parse);
+  const tags = hebrewTagsOf(parse, word.t);
+  let found: { place: string; form: string; shared: number } | undefined;
+  table.rows.forEach((row) =>
+    row.cells.forEach((cell, c) => {
+      if (!hebrewLandsOn(cell, wanted, tags)) return;
+      const shared = cell.ideas.filter((id) => wanted.includes(id)).length;
+      if (!found || shared > found.shared) found = { place: cellName(table, row, c), form: cell.form, shared };
+    }),
+  );
+  return { table, ...(found ? { cell: found.place } : {}), holds: found !== undefined && bareForm(found.form) === bareForm(word.t) };
+}
+
 function findTable(code: string, word?: { l: string; t?: string }): Paradigm | undefined {
   const wanted = ideasOfCode(code);
   if (!wanted) return undefined;
@@ -143,7 +187,7 @@ function findTable(code: string, word?: { l: string; t?: string }): Paradigm | u
   const sharedWith = (ideas: readonly string[]): number => ideas.filter((id) => wanted.includes(id) || patterns.includes(id)).length;
   let best: Paradigm | undefined;
   let bestShared = 0;
-  for (const table of PARADIGMS) {
+  for (const table of paradigmsIn('grc')) {
     const own = table.ideas.filter((id) => patterns.includes(id));
     const shared = Math.max(0, ...cellsOf(table).map((cell) => sharedWith([...new Set([...cell.ideas, ...own])])));
     if (shared > bestShared) [best, bestShared] = [table, shared];
@@ -271,14 +315,14 @@ function findWordParadigm(word: { t: string; l: string; p: string }): WordParadi
   }
   const form = bare(word.t);
   const hitsOf = (table: Paradigm): Hit[] => hitsIn(table, wanted, form);
-  const own = best(PARADIGMS.flatMap(hitsOf).filter((hit) => hit.whole));
+  const own = best(paradigmsIn('grc').flatMap(hitsOf).filter((hit) => hit.whole));
   if (own) return { table: own.table, cell: own.place };
   const table = tableFor(word.p, word);
   if (!table) return undefined;
   const here = best(hitsOf(table));
   if (here) return { table, cell: here.place };
   // tableFor weighs the ideas a parsing names and not the voice (a middle verb's table is εἰμί's): another table that holds the word's parse is its table
-  const elsewhere = best(PARADIGMS.filter((other) => other !== table).flatMap(hitsOf));
+  const elsewhere = best(paradigmsIn('grc').filter((other) => other !== table).flatMap(hitsOf));
   if (elsewhere) return { table: elsewhere.table, cell: elsewhere.place };
   // εἰμί's table for a participle of another verb is no table of the word's: the table of the general kind with the most of its ideas
   const mine = asTablesSay(wanted);
@@ -286,6 +330,6 @@ function findWordParadigm(word: { t: string; l: string; p: string }): WordParadi
   if (bound.length === 0 || bound.some((id) => mine.includes(id))) return { table };
   const near = (other: Paradigm): number =>
     Math.max(0, ...cellsOf(other).filter((cell) => !cell.ideas.some((id) => OF_ITS_OWN_VERBS.includes(id))).map((cell) => cell.ideas.filter((id) => mine.includes(id)).length));
-  const closest = PARADIGMS.reduce<Paradigm | undefined>((top, other) => (near(other) > (top ? near(top) : 0) ? other : top), undefined);
+  const closest = paradigmsIn('grc').reduce<Paradigm | undefined>((top, other) => (near(other) > (top ? near(top) : 0) ? other : top), undefined);
   return { table: closest ?? table };
 }

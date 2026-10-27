@@ -1,5 +1,5 @@
 // src/ParadigmsScreen.tsx — Paradigms (mw-5r3p30.82, #/paradigms, reached from Settings > More beside Review; docs/paradigms.md): the list of
-// tables (twenty, listed in data/paradigms/index.ts) with 'Available forms: N of M' and a bar, and a table (#/paradigms?t=article&mode=drill).
+// tables (twenty Greek and four Hebrew, listed in data/paradigms/index.ts; the language in hand chooses, with the Greek | Hebrew segment where both are chosen, mw-gdcyf98.13) with 'Available forms: N of M' and a bar, and a table (#/paradigms?t=article&mode=drill).
 // The list groups the tables by the ladder's tier, under the tier's title. A form is his once every grammar idea it needs is at the frontier or solid
 // (grammarLevels); How much of a table (the setting 'paradigmExtent', src/settings/definitions/grammarExtent.ts, mw-irpgqi.2, with a switch in this
 // screen's header) says which cells are shown: Any (every cell, the ones not his marked not yet), Solid and frontier (his cells; a locked form shows as
@@ -14,13 +14,15 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type R
 import { TIER_TITLES } from './approaches/ladder';
 import type { Chapter, GreekWord } from './data/chapter';
 import type { GrammarExtent } from './data/grammar/extent';
-import { ideaOf, TIERS } from './data/grammar/ladder';
+import { TIERS } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import {
   availableCount,
   availableText,
   cellName,
+  languageOf,
   paradigmById,
-  PARADIGMS,
+  paradigmsIn,
   standingOf,
   type CellStanding,
   type Levels,
@@ -29,7 +31,7 @@ import {
   type ParadigmColumn,
 } from './data/paradigms';
 import { needsOf, needsText } from './data/paradigms/needs';
-import { blocksOf, columnsThatFit, greekRemOf } from './data/paradigms/layout';
+import { blocksOf, columnsThatFit, greekRemOf, tableDirection } from './data/paradigms/layout';
 import { loadLemmaForms, ownFormOf, ownTable, referenceText, type OwnForm } from './data/paradigms/ownForms';
 import { drillMissed, drillOf, forgetDrill, gradeCell, markMissWritten, revealCell, scoreOf, startRun, type Drill } from './data/paradigms/drill';
 import { cellPrompt, PARADIGM_KIND } from './data/paradigms/cells';
@@ -51,6 +53,9 @@ import { useReportScreen } from './tutor/screenContext';
 import type { ScreenFact } from './tutor/screen';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { GREEK_LANG, greekLang } from './script/greekLang';
+import { HEBREW_LANG_ATTRS } from './reader/sourceText';
+import { SourceSegment } from './ui/SourceSegment';
+import { useLanguageInHand } from './useLanguageInHand';
 import { IdeaSheet } from './IdeaSheet';
 import { WordSheet, type Lookup } from './WordSheet';
 
@@ -100,9 +105,13 @@ const LIST_FACTS: ScreenFact[] = [{ label: 'Showing', value: 'The list of the pa
 function ParadigmList({ levels, extent }: { levels: Levels | undefined; extent: GrammarExtent | undefined }) {
   const ai = useAiAllowed();
   useReportScreen({ name: 'Paradigms', facts: LIST_FACTS });
+  // the tables of the language in hand: Hebrew only when Hebrew is chosen (the segment says which where both are); none until the choice is read, so the other language's never flash; Greek at English only
+  const { lang, both } = useLanguageInHand();
+  const tablesOfLang = lang === undefined ? [] : paradigmsIn(lang ?? 'grc');
   return (
     <>
       <ScreenHeader title="Paradigms" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
+      {both ? <SourceSegment label="Language of the tables" /> : null}
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <p className="text-base text-muted">Tables to learn by heart. A form unlocks when you have the grammar it needs.</p>
         {ai ? (
@@ -111,7 +120,7 @@ function ParadigmList({ levels, extent }: { levels: Levels | undefined; extent: 
           </button>
         ) : null}
         {TIERS.map((tier) => {
-          const tables = PARADIGMS.filter((table) => table.tier === tier);
+          const tables = tablesOfLang.filter((table) => table.tier === tier);
           if (tables.length === 0) return null;
           return (
             <section key={tier} data-tier={tier} aria-labelledby={`tier-${tier}`} className="mt-5">
@@ -216,6 +225,8 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
     if (lit) bringIntoScrollBox(box.current?.querySelector<HTMLElement>('[data-lit]') ?? null);
   }, [lit, fit, table]);
   const size = greekRemOf(table) > 1.25 ? 'text-2xl' : 'text-xl';
+  // a Hebrew table is drawn right to left: its row labels at the right, its first column beside them (layout.ts tableDirection); its Hebrew is script-he, 1.25em of the table's text-xl
+  const rtl = tableDirection(table) === 'rtl';
   const label = 'text-xs';
   const toggleAsked = (place: string) =>
     oneTap(`paradigms:${place}`, () => {
@@ -244,7 +255,7 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
         const groups = groupsOf(columns);
         return (
           <div key={block} className="overflow-x-auto rounded-xl border border-line">
-            <table data-testid="paradigm-table" className="w-full table-fixed border-collapse text-center">
+            <table data-testid="paradigm-table" dir={rtl ? 'rtl' : undefined} className={`w-full table-fixed border-collapse text-center${rtl ? ' text-xl' : ''}`}>
               <caption className="sr-only">{table.name}</caption>
               <thead>
                 {groups ? (
@@ -279,21 +290,21 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                     <Fragment key={r}>
                       {row.group && row.group !== table.rows[r - 1]?.group ? (
                         <tr>
-                          <th colSpan={cols.length + 1} scope="rowgroup" className="border-b border-line bg-surface px-2 py-1 text-left text-base font-semibold">
+                          <th colSpan={cols.length + 1} scope="rowgroup" className={`border-b border-line bg-surface px-2 py-1 ${rtl ? 'text-right' : 'text-left'} text-base font-semibold`}>
                             {row.group}
                           </th>
                         </tr>
                       ) : null}
                       <tr>
-                        <th scope="row" className={`w-[5.5rem] border-b border-line px-1 py-1 text-left font-medium text-muted ${label}`}>
+                        <th scope="row" className={`w-[5.5rem] border-b border-line px-1 py-1 ${rtl ? 'text-right' : 'text-left'} font-medium text-muted ${label}`}>
                           {row.label}
                         </th>
                         {cols.map((c, i) => {
                           const cell = row.cells[c];
                           const place = cellName(table, row, c);
                           const standing = standings[i];
-                          const lang = greekLang(cell.lang === 'el');
-                          const font = cell.lang === 'el' ? `font-greek ${size}` : 'text-sm';
+                          const lang = cell.lang === 'he' ? HEBREW_LANG_ATTRS : greekLang(cell.lang === 'el');
+                          const font = cell.lang === 'el' ? `font-greek ${size}` : cell.lang === 'he' ? 'script-he' : 'text-sm';
                           const frame = 'flex min-h-14 w-full min-w-0 items-center justify-center px-0.5';
                           const cellBox = `${frame} ${font}`;
                           const ring = place === lit ? LIT : '';
@@ -553,14 +564,20 @@ function plainParse(code: string): string {
 }
 
 /** The word a tap on it sent him here from, with its parsing in plain words ('ἀγαπῶ: present active indicative, 1st person singular'), and what is lit in the table. */
-function WordLine({ word, parse, lit }: { word: string; parse: string; lit: boolean }) {
+function WordLine({ word, parse, lit, hebrew }: { word: string; parse: string; lit: boolean; hebrew: boolean }) {
   return (
     <div data-testid="word-line" className="mb-2 rounded-xl border border-line px-3 py-2">
       <p className="text-lg">
-        <span {...GREEK_LANG} className="font-greek text-xl font-bold">
-          {word}
-        </span>
-        : {plainParse(parse)}
+        {hebrew ? (
+          <span {...HEBREW_LANG_ATTRS} dir="rtl" className="script-he font-bold">
+            {word}
+          </span>
+        ) : (
+          <span {...GREEK_LANG} className="font-greek text-xl font-bold">
+            {word}
+          </span>
+        )}
+        : {hebrew ? parse : plainParse(parse)}
       </p>
       <p data-testid="word-lit" className="text-base text-muted">
         {lit ? 'Its form is outlined in the table.' : 'The table has no cell for this form yet.'}
@@ -693,6 +710,7 @@ function ParadigmWord({ table, address, levels, extent }: { table: Paradigm; add
 
 function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, word, parse, lemma, canChoose }: { table: Paradigm; pattern: Paradigm; address: ParadigmAddress; mode: ParadigmMode; levels: Levels | undefined; extent: GrammarExtent | undefined; cell?: string; word?: string; parse?: string; lemma?: string; canChoose: boolean }) {
   const drillKey = drillKeyOf(table, lemma);
+  const hebrewTable = languageOf(table) === 'hbo';
   const [drill, setDrill] = useState<Drill | undefined>(() => drillOf(drillKey));
   // the last cell he tapped (Learn: a locked or not-yet one; Drill: a blank one he showed): the tutor is told he is on it, else on the word's own
   const [tapped, setTapped] = useState<string | null>(null);
@@ -754,7 +772,7 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
     <>
       <ScreenHeader title={table.name} back={back} action={<ExtentChips settingKey="paradigmExtent" name={EXTENT_SWITCH_NAME} current={extent} size="header" />} />
       <main className="screen min-h-0 flex-1 px-4 pt-3">
-        {word && parse ? <WordLine word={word} parse={parse} lit={lit !== undefined} /> : null}
+        {word && parse ? <WordLine word={word} parse={parse} lit={lit !== undefined} hebrew={hebrewTable} /> : null}
         <p data-testid="table-available" className="text-lg font-semibold">
           {levels && extent ? availableText(availableCount(table, levels, extent), extent) : '…'}
         </p>
@@ -784,21 +802,24 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
         {levels && extent ? <Table table={table} levels={levels} extent={extent} mode={mode} drill={run} lit={lit} onReveal={reveal} onGrade={grade} onFocus={setTapped} /> : null}
         {score?.done && run ? <DrillEnd drill={run} onMissedAgain={() => oneTap('paradigms:end', () => setDrill(drillMissed(drillKey)))} /> : null}
         <div className="mt-4 flex gap-2">
-          <button
-            type="button"
-            disabled={inReview !== false || !canDrill}
-            onClick={() => void ensureScheduled(PARADIGM_KIND, [table.id])}
-            className={`${BUTTON} text-accent disabled:text-muted`}
-          >
-            {inReview ? 'In Review' : 'Drill this table'}
-          </button>
+          {/* Review asks a Greek table's cells; a Hebrew table is drilled here, in its own Drill, until Review draws Hebrew cells */}
+          {hebrewTable ? null : (
+            <button
+              type="button"
+              disabled={inReview !== false || !canDrill}
+              onClick={() => void ensureScheduled(PARADIGM_KIND, [table.id])}
+              className={`${BUTTON} text-accent disabled:text-muted`}
+            >
+              {inReview ? 'In Review' : 'Drill this table'}
+            </button>
+          )}
           {ai ? (
             <button type="button" onClick={ask} className={`${BUTTON} text-accent`}>
               Ask the tutor
             </button>
           ) : null}
         </div>
-        {levels && !canDrill && inReview === false ? (
+        {levels && !canDrill && inReview === false && !hebrewTable ? (
           <p data-testid="drill-locked" className="mt-2 text-base text-muted">
             Unlock a form first: Review has nothing to ask of this table yet.
           </p>

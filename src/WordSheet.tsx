@@ -17,7 +17,7 @@ import { useLogosOn } from './useLogosOn';
 import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
-import { paradigmOfWord } from './data/paradigms';
+import { paradigmOfHebrewWord, paradigmOfWord } from './data/paradigms';
 import { openLibrary, openParadigm } from './nav/route';
 import { holdWord } from './wordReturn';
 import { oneTap } from './ui/settle';
@@ -273,15 +273,17 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
 }
 
 /** A Hebrew word's card (an Old Testament chapter, mw-5vvlay.2): the pointed form large, right to left, with Listen in the phone's he-IL voice; its respelling in the chosen Hebrew scheme where the Greek has its own (mw-gdcyf98.6: the scholarly transliteration is no longer drawn);
- * the lemma, the Parsing as the chapter's parse map decodes it (plain words: the Grammar sheet explains Greek terms only), the Meaning and the Definition of the chapter's lex, Strong's and the English
- * of its chunk. No Paradigm row, Heart note or Help with this word row yet: they are Greek-only for now (docs/layout/word-sheet.md lists them as LATER). With Logos off the first card offers to turn it on. */
-function HebrewCard({ chapter, word, english, study, levels, offerLogos, onMissing, onAll }: {
+ * the lemma, the Parsing as the chapter's parse map decodes it (plain words: the Grammar sheet explains Greek terms only), the Paradigm row where a Hebrew table holds the word's parsing (mw-gdcyf98.13), the Meaning and the Definition of the chapter's lex, Strong's and the English
+ * of its chunk. No Heart note or Help with this word row yet: they are Greek-only for now (docs/layout/word-sheet.md lists them as LATER). With Logos off the first card offers to turn it on. */
+function HebrewCard({ chapter, word, english, study, levels, offerLogos, onParadigm, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
   study: StudyResources | undefined;
   levels: InterestLevels | undefined;
   offerLogos: boolean;
+  /** the Paradigm row was tapped: the word, to open its table */
+  onParadigm: (word: GreekWord) => void;
   onMissing: (resource: StudyResource) => void;
   onAll: (word: GreekWord, door: NonNullable<StudyGroup['door']>) => void;
 }) {
@@ -290,6 +292,8 @@ function HebrewCard({ chapter, word, english, study, levels, offerLogos, onMissi
   // the sound-alike respelling in the Hebrew scheme chosen in Settings, where the Greek sheet has its own; the data's scholarly transliteration is no longer drawn
   const scheme = useSetting(hebrewPronunciationSetting);
   const parse = wordParse(chapter, word);
+  // the Hebrew table that holds the word's parsing (mw-gdcyf98.13), if one does: the row names it and a tap opens it with the word's own cell lit
+  const table = parse ? paradigmOfHebrewWord(word, parse)?.table : undefined;
   const definition = chapter.lex[word.s]?.d ?? '';
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
@@ -312,6 +316,18 @@ function HebrewCard({ chapter, word, english, study, levels, offerLogos, onMissi
         {parse ? (
           <Fact label="Parsing" testId="sheet-parse">
             <ParseTerms parse={parse} known={new Set()} open={() => undefined} language="hbo" />
+          </Fact>
+        ) : null}
+        {table ? (
+          <Fact label="Paradigm" testId="sheet-paradigm">
+            <button
+              type="button"
+              data-table={table.id}
+              onClick={() => oneTap('word:paradigm', () => onParadigm(word))}
+              className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4"
+            >
+              {table.name}
+            </button>
           </Fact>
         ) : null}
         <Fact label="Meaning" testId="sheet-gloss">
@@ -510,6 +526,14 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
     holdWord(sheetChapter, lookup);
     openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse: word.p, lemma: word.l });
   };
+  // a Hebrew word's table: the parsing in plain words rides in the address as the Greek word's code does (no lemma: This word is the Greek tables' only)
+  const openHebrewTable = (word: GreekWord): void => {
+    const parse = wordParse(sheetChapter, word);
+    const found = parse ? paradigmOfHebrewWord(word, parse) : undefined;
+    if (!found) return;
+    holdWord(sheetChapter, lookup);
+    openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse });
+  };
   const askVerse = grammar?.verse;
   const ask =
     ai && onAskTerm && askVerse !== undefined && !elsewhere
@@ -560,7 +584,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
           <div
             ref={scroll}
             data-testid="sheet-scroll"
-            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${scrollHeight(many, heading, lookup.words.some((w) => !hebrew && paradigmOfWord(w) !== undefined))}`}
+            className={`overflow-y-auto overscroll-contain px-4 pt-3 ${scrollHeight(many, heading, lookup.words.some((w) => (hebrew ? paradigmOfHebrewWord(w, wordParse(sheetChapter, w)) : paradigmOfWord(w)) !== undefined))}`}
           >
             {lookup.words.map((w, i) => hebrew ? (
               <HebrewCard
@@ -571,6 +595,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 study={study}
                 levels={levels}
                 offerLogos={i === 0}
+                onParadigm={openHebrewTable}
                 onMissing={setMissing}
                 onAll={(word, door) => setAllLexicons({ word, door })}
               />
