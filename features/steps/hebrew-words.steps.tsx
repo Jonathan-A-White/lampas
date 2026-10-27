@@ -269,10 +269,13 @@ describeFeature(feature, ({ Scenario }) => {
       openOn('Genesis 1', { ...HEBREW_LEARNING, newWords: 0, words: [{ lemma: 'בָּרָא', lang: 'hbo', gloss: 'to create' }] }),
     );
     When('he opens the Parsing drill', () => goTo('#/drill', 'Parsing drill'));
-    Then('the Parsing drill shows the verse in Hebrew, right to left, with {string} marked', async (_, form: string) => {
+    Then('the Parsing drill shows the verse in Hebrew, right to left, with a form of {string} marked', async (_, lemma: string) => {
       const verse = await screen.findByTestId('drill-verse');
       hebrewFace(verse);
-      expect(nfc(within(verse).getByTestId('drill-word').textContent ?? '')).toBe(nfc(form));
+      // the word stands in the chapter in many forms (בָּרָא, וַיִּבְרָא ...): the one marked is a form of the lemma asked
+      const marked = within(verse).getByTestId('drill-word');
+      expect(marked).toHaveAttribute('data-lemma', nfc(lemma));
+      expect(squash(marked.textContent)).not.toBe('');
     });
     And('its first step is {string} and the next is {string}', async (_, first: string, second: string) => {
       const label = (text: string | null) => squash(text);

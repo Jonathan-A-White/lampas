@@ -60,7 +60,7 @@ Feature: Hebrew words taught while he reads
   Scenario: The Parsing drill on a Hebrew word asks its terms with the verse in Hebrew
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and a Hebrew verb he is learning
     When he opens the Parsing drill
-    Then the Parsing drill shows the verse in Hebrew, right to left, with "בָּרָ֣א" marked
+    Then the Parsing drill shows the verse in Hebrew, right to left, with a form of "בָּרָא" marked
     And its first step is "Part of speech" and the next is "Stem"
 
   Scenario: Greek only offers no Hebrew new words on Genesis 1
