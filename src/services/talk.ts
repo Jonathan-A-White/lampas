@@ -278,12 +278,12 @@ export interface TalkRequest {
   hebrew_interest?: InterestField;
   /** present only when he has sent requests to the factory (mw-vy3ghg.6, src/data/requestsForTutor.ts): up to 10, newest first, each with where it stands; none in About, whose request is the credits */
   requests?: TutorRequest[];
-  /** the solid words and ideas he now slips on or has not met for a long while, worst first, at most 8 (mw-1vuvq6.6, src/data/rusty.ts); missing when none; fitHistory never cuts it */
+  /** the solid words and ideas he now slips on or has not met for a long while, worst first, at most 8 (mw-1vuvq6.6, src/data/rusty.ts); missing when none; fitHistory cuts it whole before the newest held passage and the last three turns */
   rusty?: RustyItem[];
-  /** the items behind the Reader's chip 'Today · N of M', in the order Today draws them, each with its title and whether he ticked it (mw-5r3p30.731, src/data/learnerToday.ts); missing when Today holds nothing; fitHistory never cuts it */
+  /** the items behind the Reader's chip 'Today · N of M', in the order Today draws them, each with its title and whether he ticked it (mw-5r3p30.731, src/data/learnerToday.ts); missing when Today holds nothing; fitHistory cuts it whole before the newest held passage and the last three turns */
   today?: TodayItem[];
-  /** the passages the tutor asked for in `fetch` on earlier turns of this talk (mw-5r3p30.734, src/services/talkFetch.ts), newest first, under HELD_PASSAGES_BYTES; missing when none, and in About. fitHistory drops the oldest
-   * before a verse of the talk's own text or a turn */
+  /** the passages the tutor asked for in `fetch` on earlier turns of this talk (mw-5r3p30.734, src/services/talkFetch.ts), newest first, under HELD_PASSAGES_BYTES; missing when none, and in About. fitHistory drops all but the newest
+   * first, and clips and drops the newest last (src/services/talkFit.ts: the last three turns and the newest passage outlast every lesser field, mw-5r3p30.825) */
   held_passages?: HeldPassage[];
   /** the facts the tutor client read up front, by name (mw-t3xu9a.4, src/tutor/registry.ts): where-he-is, today-drill and settings always, then the screen's up-front list; added to the fields above, which they leave as they are. fitHistory drops one that repeats a field above before it cuts a turn */
   facts?: Record<string, unknown>;

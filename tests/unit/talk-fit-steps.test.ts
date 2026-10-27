@@ -21,15 +21,22 @@ describe('the steps of the Bible talk\'s fit', () => {
       'trimGreekWordsWhileHistory',
       'trimShelfDigest',
       'dropMaps',
-      'dropOldestHeldPassage',
+      'dropOlderHeldPassage',
+      'dropRusty',
+      'dropToday',
+      'dropSolidWords',
       'dropFarthestVerse',
       'clipPassageText',
-      'foldOldestTurn',
+      'foldToLastThreeTurns',
       'dropFoldTail',
       'trimGreekWords',
       'dropOldestRequest',
       'dropLastNote',
       'dropDrillAnswer',
+      'clipNewestHeldPassage',
+      'foldOldestTurn',
+      'dropFoldTail',
+      'dropNewestHeldPassage',
       'dropNewestTurn',
       'dropSummary',
     ]);
@@ -61,5 +68,56 @@ describe('the steps of the Bible talk\'s fit', () => {
     expect(fitHistory(request, 2, 'rom.8@1')).toEqual(viaSteps);
     expect(talkBytes(undefined)).toBe(0);
     expect(talkBytes('rom.8@1')).toBe(new TextEncoder().encode(',"talk":"rom.8@1"').length);
+  });
+
+  // mw-5r3p30.825: the newest fetched passage and the last three turns are what the fit gives up last, ahead of every lesser field
+  describe('the newest fetched passage and the last three turns outlast the lesser fields', () => {
+    const passage = (reference: string, fill: number) => ({ reference, greek: 'λόγος '.repeat(fill).trim(), english: 'word '.repeat(fill).trim() });
+    const newest = passage('Revelation 6:2-8', 250);
+    const older = passage('Hebrews 7:1-3', 250);
+    const heavy = (): TalkRequest => ({
+      // a short verse: the talk's own text has nothing to give before the turns do
+      ...buildTalkRequest({ title: 'Revelation 2:25', chapter: rev2, verse: rev2.verses.find((v) => v.n === 25)! }, 'Go on', turns(6, 200), []),
+      // the guide and the word list go first, whatever else is held
+      pronunciation_guide: undefined,
+      greek_words: [],
+      held_passages: [newest, older],
+      rusty: Array.from({ length: 8 }, (_, i) => ({ kind: 'word' as const, id: `w${i}`, title: `λέγω${i}`, why: 'slipped twice this week and not seen for a long while' })),
+      today: Array.from({ length: 6 }, (_, i) => ({ kind: 'review' as const, title: `Review: ${i + 17} due`, done: false })),
+      solid_words: Array.from({ length: 50 }, (_, i) => `λόγος${i}`),
+    });
+    /** What is left when only the lesser fields, the older passage and the three oldest turns are gone. */
+    const lean = (r: TalkRequest): TalkRequest => {
+      const rest = { ...r, held_passages: [newest], history: r.history.slice(-3), solid_words: [] as string[] };
+      delete rest.rusty;
+      delete rest.today;
+      return rest;
+    };
+
+    it('a request over the cap loses the older passage, rusty, Today, the solid words and the three oldest turns, and keeps the rest whole', () => {
+      const request = heavy();
+      const budget = size(lean(request));
+      expect(size(request)).toBeGreaterThan(budget + 1500);
+      const fitted = fitRequest(request, bibleTalkSteps(0), { maxBytes: budget });
+      expect(size(fitted)).toBeLessThanOrEqual(budget);
+      expect(fitted.held_passages).toEqual([newest]);
+      expect(fitted.history).toEqual(request.history.slice(-3));
+      expect(fitted.rusty).toBeUndefined();
+      expect(fitted.today).toBeUndefined();
+      expect(fitted.solid_words).toEqual([]);
+      expect(fitted.solid_count).toBe(request.solid_count);
+    });
+
+    it('a little less room clips the newest passage (its reference stays, its text ends in the clip mark) before the third turn goes', () => {
+      const request = heavy();
+      const budget = size(lean(request)) - 400;
+      const fitted = fitRequest(request, bibleTalkSteps(0), { maxBytes: budget });
+      expect(size(fitted)).toBeLessThanOrEqual(budget);
+      expect(fitted.history).toEqual(request.history.slice(-3));
+      expect(fitted.held_passages).toHaveLength(1);
+      expect(fitted.held_passages?.[0].reference).toBe('Revelation 6:2-8');
+      expect(fitted.held_passages?.[0].greek.length).toBeLessThan(newest.greek.length);
+      expect(fitted.held_passages?.[0].greek.endsWith(' …')).toBe(true);
+    });
   });
 });
