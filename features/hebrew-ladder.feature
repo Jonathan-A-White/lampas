@@ -43,7 +43,7 @@ Feature: The Hebrew ladder on the Goal and Placement screens
     When he opens the Grammar ideas list
     Then the list has "The Greek alphabet" and no Hebrew idea
 
-  Scenario: The Goal link is in the Learning group of either language and of neither at English only
+  Scenario: The Goal link is in the Learning group of either language at Learning and of neither at English only
     Given Hebrew is the only language chosen
     Then the Learning group of Settings has a Goal link
     When Greek is the only language chosen

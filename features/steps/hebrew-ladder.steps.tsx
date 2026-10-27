@@ -8,7 +8,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
-import { setLanguages } from '../../src/data/repositories';
+import { setGreekInterest, setHebrewInterest, setLanguages } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
 import type { Languages } from '../../src/settings/definitions/interest';
 import { clearBus } from '../../src/events/bus';
@@ -30,7 +30,7 @@ const user = userEvent.setup();
 Element.prototype.scrollIntoView = () => {};
 
 /** Empties every store and chooses the languages, as Settings' row 'Which languages?' does. */
-async function fresh(languages: Languages, goal?: string): Promise<void> {
+async function fresh(languages: Languages, goal?: string, learning = false): Promise<void> {
   cleanup();
   clearBus();
   forgetTrail();
@@ -41,6 +41,9 @@ async function fresh(languages: Languages, goal?: string): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.passageLessons.clear()]);
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }, { key: 'grammarLevelsSeeded', value: '1' }]);
   await setLanguages(languages);
+  // the Learning group of Settings is drawn from step 3 (Learning) of a dial
+  if (learning && (languages === 'greek' || languages === 'both')) await setGreekInterest(3);
+  if (learning && (languages === 'hebrew' || languages === 'both')) await setHebrewInterest(3);
   if (goal !== undefined) await setGoal(goal);
 }
 
@@ -196,16 +199,16 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The Goal link is in the Learning group of either language and of neither at English only', ({ Given, When, Then }) => {
+  Scenario('The Goal link is in the Learning group of either language at Learning and of neither at English only', ({ Given, When, Then }) => {
     Given('Hebrew is the only language chosen', async () => {
-      await fresh('hebrew');
+      await fresh('hebrew', undefined, true);
     });
     Then('the Learning group of Settings has a Goal link', async () => {
       await openSettingsLearning();
       expect(await screen.findByRole('button', { name: 'Goal' })).toBeInTheDocument();
     });
     When('Greek is the only language chosen', async () => {
-      await fresh('greek');
+      await fresh('greek', undefined, true);
     });
     Then('the Learning group of Settings still has a Goal link', async () => {
       await openSettingsLearning();
