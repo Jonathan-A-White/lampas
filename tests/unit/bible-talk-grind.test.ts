@@ -593,7 +593,7 @@ describe('the screen credits (mw-vtjxh4.2)', () => {
 
 describe('his requests (mw-vy3ghg.6)', () => {
   const text = instructionsOf('bible-talk').replace(/\s+/g, ' ');
-  const statuses = ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting'];
+  const statuses = ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting', 'built-differently', 'moved'];
 
   it('tells the tutor to answer questions about his requests from `requests`, status by status, and not to refuse them', () => {
     expect(text).toContain('- `requests`:');
@@ -621,7 +621,7 @@ describe('his requests (mw-vy3ghg.6)', () => {
   });
 
   it('has a scenario for each status', () => {
-    for (const name of ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting']) {
+    for (const name of ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting', 'built-differently']) {
       const example = readJson(`grinds/examples/bible-talk/request-${name}.json`) as { request: { requests: { status: string }[] } };
       expect(example.request.requests[0].status).toBe(name);
     }
@@ -765,7 +765,7 @@ describe('a setting is offered only when the turn asks for one', () => {
 
   it('says a request offers a setting only at status adopted-as-setting, and never at any other', () => {
     expect(requests).toContain('Offer a setting only for an idea whose `status` is `adopted-as-setting`');
-    for (const status of ['sent', 'filed', 'building', 'landed', 'declined']) expect(requests).toContain(`\`${status}\``);
+    for (const status of ['sent', 'filed', 'building', 'landed', 'declined', 'built-differently', 'moved']) expect(requests).toContain(`\`${status}\``);
     expect(requests).toMatch(/a setting that has the same name as the idea[^.]*is not an offer/);
   });
 

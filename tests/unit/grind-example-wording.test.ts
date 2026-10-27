@@ -174,6 +174,17 @@ describe.each(['bible-talk', 'verse-ask'])('%s request scenarios test the status
     expect(checkExpect(checks, { answer: 'Thank you for your idea.' })).not.toEqual([]);
   });
 
+  it('request-built-differently takes any answer that says it was done another way, and not one that says it was built as asked', () => {
+    const checks = answerChecks(`${kind}/request-built-differently`);
+    for (const said of [
+      'Your idea was built another way: Theme has a Sepia choice now.',
+      'The makers did it differently; Theme now has Sepia.',
+      'It was done in a different way: you can pick Sepia in Theme.',
+    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
+    expect(checkExpect(checks, { answer: 'Your sepia theme was built and shipped as you asked.' })).not.toEqual([]);
+    expect(checkExpect(checks, { answer: 'The makers declined your idea.' })).not.toEqual([]);
+  });
+
   it('request-adopted-as-setting takes the setting named in any case', () => {
     const checks = answerChecks(`${kind}/request-adopted-as-setting`);
     for (const said of [

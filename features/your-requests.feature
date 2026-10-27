@@ -1,7 +1,8 @@
 Feature: Your requests
   Settings and About each have a Your requests row. It opens a screen that lists every request he sent to the factory (an approach he
   asked for, an ask the tutor could not meet), the newest first, each with where it stands and since when: Sent to the factory, Filed as a story, Being built, Adopted in a version
-  (a link to the commit), Declined with the reason, or Now a setting with the setting's name. The backend pushes nothing, so the screen
+  (a link to the commit), Declined with the reason, Now a setting with the setting's name, Built another way with the reason,
+  or Now part of another story. The backend pushes nothing, so the screen
   pulls GET /api/messages?since= from a cursor it keeps, when it opens, every 20 seconds while it is up and at once when the phone shows
   the app again after hiding it, never while it is hidden, and believes only a
   request-status record the mill key sealed to this phone, for a request this phone sent. Postern's protocol section 19 says what a record holds.
@@ -45,6 +46,16 @@ Feature: Your requests
     Given Your requests is open behind a fake Postern with the request "Add a sepia theme"
     When the mill sends the status "adopted-as-setting" for "Add a sepia theme" naming the setting "Settings > Appearance > Sepia"
     Then the request "Add a sepia theme" reads "Now a setting: Settings > Appearance > Sepia · <date>"
+
+  Scenario: A request built another way reads Built another way with the reason
+    Given Your requests is open behind a fake Postern with the request "Add a sepia theme"
+    When the mill sends the status "built-differently" for "Add a sepia theme" because "Theme now has a Sepia choice"
+    Then the request "Add a sepia theme" reads "Built another way · <date>: Theme now has a Sepia choice"
+
+  Scenario: A request moved into another story reads Now part of another story
+    Given Your requests is open behind a fake Postern with the request "Add a sepia theme"
+    When the mill sends the status "moved" for "Add a sepia theme"
+    Then the request "Add a sepia theme" reads "Now part of another story · <date>"
 
   Scenario: The newest status by its time wins, whatever order the records arrive in
     Given Your requests is open behind a fake Postern with the request "Add a sepia theme"

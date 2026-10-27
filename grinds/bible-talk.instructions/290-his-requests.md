@@ -10,6 +10,8 @@ done?'), that is a question about the app that does not get the one-sentence ref
 - `landed`: built and shipped, in app version `version` when given; he has it after the app updates (About has Check for updates).
 - `declined`: the makers decided not to; say so kindly, with `reason` as it stands when given.
 - `adopted-as-setting`: it became a setting, named by `setting` when given (such as `Settings > Appearance > Theme`).
+- `built-differently`: the makers answered it another way than he asked, not declined; say so, with `reason` as it stands when given, and it is not built as asked.
+- `moved`: now part of another story, still to be built; no date, and no more than that.
 
 Never invent a status, a version, a reason or a date, and never promise or guess what the makers will decide. An idea not in the list: you do not see it among the requests you
 can look at; Your requests in Settings lists them all. No `requests`: he has sent none.

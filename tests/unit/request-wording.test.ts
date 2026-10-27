@@ -16,6 +16,8 @@ describe('the wording of a status line', () => {
     expect(statusWording(at({ status: 'landed', statusAt: 4000, version: '0.1.86' }), date)).toBe('Adopted in 0.1.86 · d4000');
     expect(statusWording(at({ status: 'declined', statusAt: 5000, reason: 'outside what this app is for' }), date)).toBe('Declined · d5000: outside what this app is for');
     expect(statusWording(at({ status: 'adopted-as-setting', statusAt: 6000, setting: 'Settings > Appearance > Text size' }), date)).toBe('Now a setting: Settings > Appearance > Text size · d6000');
+    expect(statusWording(at({ status: 'built-differently', statusAt: 7000, reason: 'Theme has Sepia now' }), date)).toBe('Built another way · d7000: Theme has Sepia now');
+    expect(statusWording(at({ status: 'moved', statusAt: 8000, bead: 'mw-y.2', reason: 'Sepia and Night theme' }), date)).toBe('Now part of another story · d8000');
   });
 
   it('words every status of the kit without a date', () => {
@@ -24,6 +26,8 @@ describe('the wording of a status line', () => {
     expect(statusWording(at({ status: 'landed', version: '0.1.86' }), date)).toBe('Adopted in 0.1.86');
     expect(statusWording(at({ status: 'declined', reason: 'no' }), date)).toBe('Declined: no');
     expect(statusWording(at({ status: 'adopted-as-setting', setting: 'Sepia' }), date)).toBe('Now a setting: Sepia');
+    expect(statusWording(at({ status: 'built-differently', reason: 'Theme has Sepia now' }), date)).toBe('Built another way: Theme has Sepia now');
+    expect(statusWording(at({ status: 'moved' }), date)).toBe('Now part of another story');
   });
 
   it('words landed, declined and adopted-as-setting without their version, reason and setting', () => {
@@ -33,6 +37,8 @@ describe('the wording of a status line', () => {
     expect(statusWording(at({ status: 'declined' }), date)).toBe('Declined');
     expect(statusWording(at({ status: 'adopted-as-setting', statusAt: 6000 }), date)).toBe('Now a setting · d6000');
     expect(statusWording(at({ status: 'adopted-as-setting' }), date)).toBe('Now a setting');
+    expect(statusWording(at({ status: 'built-differently', statusAt: 7000 }), date)).toBe('Built another way · d7000');
+    expect(statusWording(at({ status: 'built-differently' }), date)).toBe('Built another way');
   });
 
   it('has a line for every status the kit names', () => {

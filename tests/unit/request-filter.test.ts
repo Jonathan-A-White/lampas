@@ -14,9 +14,9 @@ describe('the status filter of Your requests', () => {
     expect(Object.keys(STATUS_FILTER).sort()).toEqual([...REQUEST_STATUSES].sort());
   });
 
-  it('puts sent, filed and building under Waiting, landed and adopted-as-setting under Adopted, declined under Declined', () => {
-    expect(['sent', 'filed', 'building'].map(filterOf)).toEqual(['waiting', 'waiting', 'waiting']);
-    expect(['landed', 'adopted-as-setting'].map(filterOf)).toEqual(['adopted', 'adopted']);
+  it('puts sent, filed, building and moved under Waiting, landed, adopted-as-setting and built-differently under Adopted, declined under Declined', () => {
+    expect(['sent', 'filed', 'building', 'moved'].map(filterOf)).toEqual(['waiting', 'waiting', 'waiting', 'waiting']);
+    expect(['landed', 'adopted-as-setting', 'built-differently'].map(filterOf)).toEqual(['adopted', 'adopted', 'adopted']);
     expect(filterOf('declined')).toBe('declined');
   });
 

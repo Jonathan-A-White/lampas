@@ -212,6 +212,20 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Then('the request {string} reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
   });
 
+  Scenario('A request built another way reads Built another way with the reason', ({ Given, When, Then }) => {
+    Given(open, (_, summary: string) => openWith([summary]));
+    When('the mill sends the status {string} for {string} because {string}', (_, status: string, summary: string, reason: string) =>
+      sendStatus(summary, status, { reason }),
+    );
+    Then('the request {string} reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
+  });
+
+  Scenario('A request moved into another story reads Now part of another story', ({ Given, When, Then }) => {
+    Given(open, (_, summary: string) => openWith([summary]));
+    When('the mill sends the status {string} for {string}', (_, status: string, summary: string) => sendStatus(summary, status));
+    Then('the request {string} reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
+  });
+
   Scenario('The newest status by its time wins, whatever order the records arrive in', ({ Given, When, Then }) => {
     Given(open, (_, summary: string) => openWith([summary]));
     When(

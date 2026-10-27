@@ -1,0 +1,44 @@
+{
+  "description": "A request the makers answered another way: the tutor says it was built differently, gives the reason, and does not call it declined or offer a setting.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Goal",
+    "question": "What happened to my idea?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί"
+    ],
+    "settings": {
+      "theme": "light"
+    },
+    "screen": {
+      "name": "Goal",
+      "facts": [
+        {
+          "label": "Goal",
+          "value": "Read 1 John 1:1"
+        }
+      ]
+    },
+    "requests": [
+      {
+        "summary": "Add a sepia theme",
+        "status": "built-differently",
+        "reason": "Theme now has a Sepia choice"
+      }
+    ]
+  },
+  "expect": {
+    "words": { "equals": [] },
+    "answer": {
+      "matches": "[Aa]nother way|[Dd]ifferent(ly| way| approach)|[Ii]nstead"
+    },
+    "setting_offer": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

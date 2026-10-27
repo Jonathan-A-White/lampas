@@ -1,6 +1,6 @@
 // src/data/requestWording.ts — the status line of a request on Your requests (mw-5r3p30.796, docs/ask-tutor.md 'Your requests'): what became of the ask and when,
 // in Lampas's own words. The kit's statusLine is the bare word and stays the tutor's (requestsForTutor.ts); this is the phone's. The date is the day the status was
-// set (the sent day for Sent), formatted as the sent date is; a record with no date reads without one.
+// set (the sent day for Sent), formatted as the sent date is; a record with no date reads without one. A moved request names no reason here: the new story's bead is in the opened row.
 import { type RequestRecord } from 'pwa-kit/requests';
 
 /** A filed request that has waited longer than this many days reads 'Still in the queue' under its status. */
@@ -25,6 +25,10 @@ export function statusWording(record: RequestRecord, formatDate: (ms: number) =>
       return `Declined${on ? ` · ${on}` : ''}${record.reason ? `: ${record.reason}` : ''}`;
     case 'adopted-as-setting':
       return `${record.setting ? `Now a setting: ${record.setting}` : 'Now a setting'}${on ? ` · ${on}` : ''}`;
+    case 'built-differently':
+      return `Built another way${on ? ` · ${on}` : ''}${record.reason ? `: ${record.reason}` : ''}`;
+    case 'moved':
+      return `Now part of another story${on ? ` · ${on}` : ''}`;
     default:
       throw new Error(`No wording for the request status ${String(record.status)}`);
   }
