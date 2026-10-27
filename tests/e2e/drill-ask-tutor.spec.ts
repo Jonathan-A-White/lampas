@@ -11,8 +11,9 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 const CONTROL = 'Ask the tutor about this screen';
 
-// A walk's questions follow from its seed (src/data/grammar/drillSeed.ts) and its answers, so a fixed Math.random gives the same questions each time he opens Drill it:
-// the spec learns what is right by answering, then walks the same path with the answers it wants.
+// A walk's questions follow from its seed (src/data/grammar/drillSeed.ts), its answers and the questions the idea has already asked him, so a fixed Math.random gives the same
+// questions each time he opens Drill it with that list empty: the spec learns what is right by answering, forgets what was asked before each walk, then walks the same path with the
+// answers it wants.
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     Math.random = () => 0.37;
@@ -41,6 +42,32 @@ async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object
   );
 }
 
+/** He has not been asked anything yet: the list of questions the idea has been asked ('seenItems.<idea id>', src/data/repositories/seenItems.ts) is emptied, because
+ * a question he was asked is not drawn again (mw-5r3p30.803), and the walk would not be the one the spec learned from. */
+async function forgetQuestions(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const idb = open.result;
+          const tx = idb.transaction('settings', 'readwrite');
+          const store = tx.objectStore('settings');
+          const keys = store.getAllKeys();
+          keys.onsuccess = () => {
+            for (const key of keys.result) if (String(key).startsWith('seenItems.')) store.delete(key);
+          };
+          tx.oncomplete = () => {
+            idb.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );
+}
+
 /** The idea sheet of The noun, from the Goal screen. */
 async function openIdea(page: Page) {
   await openUnlocked(page);
@@ -60,6 +87,7 @@ async function openIdea(page: Page) {
 const drillOf = (page: Page): Locator => page.getByRole('dialog', { name: 'Drill it', exact: true });
 
 async function startDrill(page: Page, idea: Locator): Promise<Locator> {
+  await forgetQuestions(page);
   await idea.getByRole('button', { name: 'Drill it', exact: true }).click();
   const drill = drillOf(page);
   await expect(drill.getByTestId('grammar-prompt')).toBeVisible();
