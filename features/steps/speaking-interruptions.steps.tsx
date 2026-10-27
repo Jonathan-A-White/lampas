@@ -33,8 +33,8 @@ let fake: FakePostern;
 let synth: FakeSynth;
 
 const SENTENCES = ['The first sentence of the answer.', 'The Hebrew word צֶדֶק (tsedeq) means right.', 'The last sentence of the answer.'];
-/** what the English voice is given of the second sentence: the Hebrew letters are for his eyes */
-const SECOND = 'The Hebrew word (tsedeq) means right.';
+// the Hebrew word is said in the Hebrew voice (mw-gdcyf98.27): the sentence is three utterances, a run to a line
+const SECOND = ['The Hebrew word', 'צֶדֶק', '(tsedeq) means right.'];
 const ANSWER = { answer: SENTENCES.join(' '), words: [] };
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
@@ -118,7 +118,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     await onBar(name);
   };
   const onFromSecond = () => {
-    expect(spokenFrom(mark)).toEqual([SECOND, SENTENCES[2]]);
+    expect(spokenFrom(mark)).toEqual([...SECOND, SENTENCES[2]]);
   };
   const stoppedAll = async () => {
     await waitFor(() => expect(getReading().status).toBe('idle'));
@@ -146,7 +146,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     When('he taps Restart on the speaking bar', tapOnBar('Restart'));
     Then('the phone speaks the answer again from its first sentence', () => {
       expect(spokenFrom(mark)[0]).toBe(SENTENCES[0]);
-      expect(spokenFrom(mark)).toEqual([SENTENCES[0], SECOND, SENTENCES[2]]);
+      expect(spokenFrom(mark)).toEqual([SENTENCES[0], ...SECOND, SENTENCES[2]]);
     });
   });
 

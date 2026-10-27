@@ -40,8 +40,12 @@ describe('Markdown with Hebrew in it', () => {
 });
 
 describe('reading an answer aloud', () => {
-  it('leaves Hebrew letters out of the English voice (the Hebrew voice is a later story)', () => {
+  it('gives Hebrew letters to the Hebrew voice, never the English one (mw-gdcyf98.27)', () => {
     const runs = answerRuns('The word צֶדֶק tsedeq means right.');
-    expect(runs).toEqual([{ text: 'The word tsedeq means right.', language: 'english' }]);
+    expect(runs).toEqual([
+      { text: 'The word', language: 'english' },
+      { text: 'צֶדֶק', language: 'hebrew' },
+      { text: 'tsedeq means right.', language: 'english' },
+    ]);
   });
 });
