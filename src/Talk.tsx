@@ -20,7 +20,7 @@ import { offeredChange, settingOf, undoChange, type AppliedChange } from './sett
 import { BridgeIdeaHost, BridgeOffer } from './talk/BridgeOffer';
 import { DoneLine, LookingLine } from './talk/DoneLine';
 import { KeyPointsLine } from './talk/KeyPointsLine';
-import { fetchedLine } from './services/talkFetch';
+import { fetchedLine, unreadLine } from './services/talkFetch';
 import { revealFoot, revealLines } from './ui/keepInView';
 import { GreekOfferButton } from './talk/GreekOfferButton';
 import { RustyOffer } from './talk/RustyOffer';
@@ -532,6 +532,11 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
       {turn.fetched?.length ? (
         <p data-talk-fetched className="px-1 text-base text-muted">
           {fetchedLine(turn.fetched)}
+        </p>
+      ) : null}
+      {turn.unread?.length ? (
+        <p data-talk-unread className="px-1 text-base text-muted">
+          {unreadLine(turn.unread)}
         </p>
       ) : null}
       {turn.keyPoints ? <KeyPointsLine keyPoints={turn.keyPoints} /> : null}

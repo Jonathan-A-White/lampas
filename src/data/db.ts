@@ -265,6 +265,8 @@ export interface TalkTurn {
   /** the passages the answer asked for in `fetch` (mw-5r3p30.734), read from the app's chapter data after the answer was kept: shown as 'Tutor fetched Rev 2:8-11', and every later
    * request of the talk holds them (src/services/talkFetch.ts heldPassagesOf) */
   fetched?: HeldPassage[];
+  /** the references of the answer's `fetch` the app could not read (mw-5r3p30.825): shown as 'Could not read Isaiah 53:5' */
+  unread?: string[];
   /** what the commands the answer ran (`do`) did, in order (mw-t3xu9a.7, src/talk/DoneLine.tsx): the app's own line for each, and for a confirm command the args it waits to run with */
   done?: TurnDone[];
 }

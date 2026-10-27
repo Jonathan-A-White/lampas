@@ -40,7 +40,7 @@ import { finishWelcome } from './data/repositories/welcome';
 import { pendingOfferOf, settleOffer } from './talk/offers';
 import { filesOf, type OutgoingPicture } from './talk/pictures';
 import { answerDrawn } from './services/clientTiming';
-import { fetchPassages } from './services/talkFetch';
+import { fetchOutcome, type FetchOutcome } from './services/talkFetch';
 import { askTalk, buildTalkRequest, fitHistory, MAX_HISTORY_TURNS, MAX_LINKS, scopeRef, scopeTitle, summaryOfKeyPoints, talkNameOf, type TalkAnswer, type TalkFocus, type TalkScope } from './services/talk';
 import type { HebrewSounds } from './data/db';
 import { isOrphan, pendingOf, setPending, startRunning, talkKey, usePendingAsks, type AskState, type SentRef } from './pending/pendingAsks';
@@ -279,8 +279,14 @@ export function useTalk(
           pictured.current[ref] = undefined;
           ranDo?.undos.forEach((undo, i) => (undo ? holdUndo(id, i, undo) : undefined));
           // The passages the tutor asked for are read from the app's own text in the background, after the answer is kept: he waits for nothing, the turn then says what was read,
-          // and the next request holds them (mw-5r3p30.734, src/services/talkFetch.ts); it never fails the talk.
-          if (answer.fetch?.length) void fetchPassages(answer.fetch).then((read) => (read.length > 0 ? keepFetched(id, read) : undefined)).catch(() => undefined);
+          // and the next request holds them (mw-5r3p30.734, src/services/talkFetch.ts); what could not be read is said too (mw-5r3p30.825); it never fails the talk.
+          const fetching = answer.fetch;
+          if (fetching?.length) {
+            void fetchOutcome(fetching)
+              .catch((): FetchOutcome => ({ read: [], unread: fetching }))
+              .then(({ read, unread }) => (read.length > 0 || unread.length > 0 ? keepFetched(id, read, unread) : undefined))
+              .catch(() => undefined);
+          }
           // the answer is kept: the message is done, even if the screen went away as it came
           setPending(key, undefined);
           void answerDrawn(sentAs);
