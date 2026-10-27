@@ -1,14 +1,20 @@
 // src/ipa/course.ts — the optional course 'Learn the IPA sounds' (mw-5r3p30.356, his words: "an optional exercise ... a drill and everything like that and how to
 // get to The Standard ... make sure that it's rigorous"): what it teaches, from the standard in the middle (src/speech/sounds.ts). Each sound the chosen Greek scheme
-// writes (Pronunciation.sounds) has a lesson: its IPA symbol, the reader's English accent's key word, the Greek letters that make it and a Greek word the voice says
-// (Pronunciation.soundGuide). Nothing here names a Greek sound or an English key word: the scheme and the accent tables do. The drills are ./drill.ts, what is kept is
+// writes (Pronunciation.sounds) has a lesson: its IPA symbol, the reader's English accent's key word, the letters that make it and a word the voice says
+// (Pronunciation.soundGuide). The course takes a language, Greek or Hebrew (mw-gdcyf98.24). Nothing here names a Greek or Hebrew sound or an English key word: the scheme and the accent tables do. The drills are ./drill.ts, what is kept is
 // ./progress.ts, the screens are ./IpaCourse.tsx.
 import { accentOf, AMERICAN_ID, chosenAccent, soundHint, type EnglishAccent } from '../speech/accents';
 import { chosenPronunciation } from '../speech/greek';
-import type { Pronunciation } from '../speech/pronunciation';
+import { chosenHebrewPronunciation, type Pronunciation } from '../speech/pronunciation';
 import { CONFUSABLE, SOUND_IDS, type SoundId } from '../speech/sounds';
 import { shuffle, type Random } from '../data/random';
 import { buildQuestion, type Direction, type IpaQuestion } from './drill';
+
+/** The language a course teaches the sounds of: Koine Greek ('grc', as the course has always done) or Hebrew ('he', mw-gdcyf98.24). */
+export type CourseLanguage = 'grc' | 'he';
+
+/** The scheme a course of `language` teaches: the chosen Greek pronunciation, or the chosen Hebrew one. */
+export const courseScheme = (language: CourseLanguage = 'grc'): Pronunciation => (language === 'he' ? chosenHebrewPronunciation() : chosenPronunciation());
 
 /** One sound of the course. */
 export interface CourseSound {
@@ -18,9 +24,9 @@ export interface CourseSound {
   keyWord: string;
   /** the key word as one choice of a quiz */
   choice: string;
-  /** the Greek letters that make it */
+  /** the letters that make it, in the scheme's own script (Greek, or Hebrew) */
   letters: readonly string[];
-  /** a Greek word the voice says that has it */
+  /** a word of the scheme's language the voice says that has it */
   word: string;
   at: 'start' | 'inside';
   confusables: readonly SoundId[];
@@ -33,7 +39,7 @@ export function courseAccent(chosen: EnglishAccent = chosenAccent()): EnglishAcc
 }
 
 /** Every sound `scheme` writes, in the inventory's order, as a lesson of the course; throws, naming the sound, when the scheme has no lesson for one it writes. */
-export function courseSounds(scheme: Pronunciation = chosenPronunciation(), accent: EnglishAccent = courseAccent()): CourseSound[] {
+export function courseSounds(scheme: Pronunciation = courseScheme(), accent: EnglishAccent = courseAccent()): CourseSound[] {
   const written = new Set(Object.values(scheme.sounds));
   return SOUND_IDS.filter((id) => written.has(id)).map((id) => {
     const guide = scheme.soundGuide?.[id];
@@ -47,7 +53,7 @@ export function courseSounds(scheme: Pronunciation = chosenPronunciation(), acce
 export const PASS_FRACTION = 0.9;
 
 /** The pass check's questions: every sound both ways, once each, in a shuffled order, with no hint (a question carries none and the screen shows none). */
-export function passCheckQuestions(sounds: readonly CourseSound[], random: Random, scheme: Pronunciation = chosenPronunciation()): IpaQuestion[] {
+export function passCheckQuestions(sounds: readonly CourseSound[], random: Random, scheme: Pronunciation = courseScheme()): IpaQuestion[] {
   const all = sounds.map((s) => s.id);
   const items = sounds.flatMap((s) => (['hear', 'see'] as Direction[]).map((direction) => ({ sound: s.id, direction })));
   return shuffle(items, random).map((item) => buildQuestion(item.sound, item.direction, all, random, sounds, scheme));

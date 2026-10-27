@@ -4,13 +4,12 @@
 import { useMemo, useState } from 'react';
 import { mulberry32 } from '../data/random';
 import { noteIpaAnswer } from '../data/repositories';
-import { greekMarked } from '../ui/GreekMarked';
 import { focusOnMount } from '../ui/focus';
 import { NextBar } from '../ui/NextBar';
-import { chosenPronunciation } from '../speech/greek';
 import type { SoundId } from '../speech/sounds';
-import { passCheckQuestions, type CheckAnswer, type CourseSound } from './course';
+import { courseScheme, passCheckQuestions, type CheckAnswer, type CourseLanguage, type CourseSound } from './course';
 import { answerDrill, currentQuestion, drawRound, isRoundOver, questionFor, startRound, type DrillState } from './drill';
+import { marked } from './marked';
 import { QuestionCard } from './QuestionCard';
 import { ipaSeed } from './seed';
 import { strengthOf, type IpaProgress } from './progress';
@@ -20,8 +19,8 @@ export const PRIMARY = `${BUTTON} border-accent bg-accent text-accent-fg`;
 export const PLAIN = `${BUTTON} border-line text-accent active:bg-line`;
 
 /** The drill: `pool` is the sounds whose card he has opened. */
-export function IpaDrill({ progress, sounds, onDone }: { progress: IpaProgress; sounds: readonly CourseSound[]; onDone: () => void }) {
-  const scheme = chosenPronunciation();
+export function IpaDrill({ language, progress, sounds, onDone }: { language: CourseLanguage; progress: IpaProgress; sounds: readonly CourseSound[]; onDone: () => void }) {
+  const scheme = courseScheme(language);
   // the sounds he has opened when the drill starts: a card opened meanwhile joins the next drill
   const [pool] = useState(() => progress.learned);
   const [start] = useState(progress);
@@ -36,7 +35,7 @@ export function IpaDrill({ progress, sounds, onDone }: { progress: IpaProgress; 
   const pick = (id: SoundId): void => {
     if (!question || picked !== null) return;
     setPicked(id);
-    void noteIpaAnswer(question.sound, question.direction, id === question.right);
+    void noteIpaAnswer(question.sound, question.direction, id === question.right, language);
   };
   const next = (): void => {
     if (!question || picked === null) return;
@@ -79,7 +78,7 @@ export function IpaDrill({ progress, sounds, onDone }: { progress: IpaProgress; 
         <div role="status" data-testid="ipa-told" data-result={right ? 'right' : 'wrong'} className="mt-3 text-lg">
           <p className={`font-medium ${right ? 'text-good' : 'text-bad'}`}>{right ? 'Right.' : 'Not quite. It comes back.'}</p>
           <p className="mt-1">
-            {greekMarked(lesson.word)} has {lesson.id}, {lesson.keyWord}.
+            {marked(language, lesson.word)} has {lesson.id}, {lesson.keyWord}.
           </p>
         </div>
       ) : (
@@ -98,8 +97,8 @@ export function IpaDrill({ progress, sounds, onDone }: { progress: IpaProgress; 
 }
 
 /** The pass check; `onResult` is told how it went when the last question is answered. */
-export function IpaCheck({ sounds, onResult }: { sounds: readonly CourseSound[]; onResult: (answers: CheckAnswer[]) => void }) {
-  const scheme = chosenPronunciation();
+export function IpaCheck({ language, sounds, onResult }: { language: CourseLanguage; sounds: readonly CourseSound[]; onResult: (answers: CheckAnswer[]) => void }) {
+  const scheme = courseScheme(language);
   const [questions] = useState(() => passCheckQuestions(sounds, mulberry32(ipaSeed.next()), scheme));
   const [at, setAt] = useState(0);
   const [answers, setAnswers] = useState<CheckAnswer[]>([]);
@@ -111,7 +110,7 @@ export function IpaCheck({ sounds, onResult }: { sounds: readonly CourseSound[];
   const next = (): void => {
     if (picked === null) return;
     const answer: CheckAnswer = { sound: question.sound, direction: question.direction, right: picked === question.right };
-    void noteIpaAnswer(answer.sound, answer.direction, answer.right);
+    void noteIpaAnswer(answer.sound, answer.direction, answer.right, language);
     const all = [...answers, answer];
     setAnswers(all);
     setPicked(null);

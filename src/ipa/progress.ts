@@ -1,9 +1,13 @@
 // src/ipa/progress.ts — what the course 'Learn the IPA sounds' keeps on the device (mw-5r3p30.356), like his other lessons: whether he has begun it (met the
 // 'Why learn it?' card and tapped Start), the sounds whose card he has opened, a running count of answers right in a row for each sound each way, and when he passed the
 // check. One value, saved as text under one settings key (src/data/repositories/ipaCourse.ts). The sounds are the standard's (src/speech/sounds.ts), so the progress
-// belongs to no Greek pronunciation. Pure.
+// belongs to no pronunciation, but to a language of the course (progressKeyOf). Pure.
 import { SOUND_IDS, type SoundId } from '../speech/sounds';
 import type { Direction } from './drill';
+import type { CourseLanguage } from './course';
+
+/** The settings key a language's progress is kept under: Greek's is the key it has always had, Hebrew's is its own (mw-gdcyf98.24), so neither course touches the other's. */
+export const progressKeyOf = (language: CourseLanguage = 'grc'): string => (language === 'he' ? 'ipaCourse.he' : 'ipaCourse');
 
 export interface IpaProgress {
   /** tapped Start on the 'Why learn it?' card */

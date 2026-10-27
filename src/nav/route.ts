@@ -9,6 +9,7 @@ import { useSyncExternalStore } from 'react';
 import { bookOf } from '../data/books';
 import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
+import type { CourseLanguage } from '../ipa/course';
 import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
 
@@ -217,6 +218,15 @@ export function paradigmHash({ table, mode, cell, word, parse, lemma, own }: Par
   return query ? `#/paradigms?${query}` : '#/paradigms';
 }
 
+/** The IPA course's address: `#/ipa` is Greek's, `#/ipa?lang=he` Hebrew's (mw-gdcyf98.24: one route, a language on it, so no screen of the app gains a place). */
+export const ipaHash = (language: CourseLanguage = 'grc'): string => (language === 'he' ? '#/ipa?lang=he' : '#/ipa');
+
+/** The language of the course an address opens: Hebrew when it says `lang=he`, else Greek. */
+export function ipaLanguageOf(hash: string): CourseLanguage {
+  const q = hash.indexOf('?');
+  return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('lang') === 'he' ? 'he' : 'grc';
+}
+
 const urlFor = (hash: string) => `${window.location.pathname}${window.location.search}${hash}`;
 
 /** Opens a screen; `replace` swaps the current history entry instead of adding one. Opening the screen he is already on adds nothing (a double tap). */
@@ -227,6 +237,14 @@ export function navigate(route: Route, options: { replace?: boolean; tutor?: boo
     window.history.pushState(options.tutor ? ({ tutorGo: true } satisfies TutorGoEntry) : null, '', urlFor(hashFor(route)));
     notify();
   }
+}
+
+/** Opens the IPA course of a language, as a new Back step. */
+export function openIpaCourse(language: CourseLanguage = 'grc'): void {
+  const hash = ipaHash(language);
+  if (window.location.hash === hash) return;
+  window.history.pushState(null, '', urlFor(hash));
+  notify();
 }
 
 /** A header back button's way to `route`: a step Back when the entry behind this one is that screen (the phone's Back after it then leaves this screen's

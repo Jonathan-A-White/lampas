@@ -1,11 +1,12 @@
-// src/ipa/IpaCourse.tsx — the optional course 'Learn the IPA sounds' (mw-5r3p30.356, #/ipa; PROVISIONAL, the Governor to confirm the design). Reached only by the Optional entry
+// src/ipa/IpaCourse.tsx — the optional course 'Learn the IPA sounds' (mw-5r3p30.356, #/ipa; PROVISIONAL, the Governor to confirm the design). Reached only by the Optional entries
 // on the Goal screen (./OptionalEntry.tsx) and never required, counted, nudged or pushed. It opens on 'Why learn it?' (until he has tapped Start once), then the sounds:
-// a card for each (the symbol, his accent's key word, the Greek letters that make it, the voice saying a Greek word that has it), the drill, and the pass check, which
-// offers 'Show IPA in hints' on a pass. What is kept is ./progress.ts, through data/repositories/ipaCourse.ts.
+// a card for each (the symbol, his accent's key word, the letters that make it, the voice saying a word that has it), the drill, and the pass check, which
+// offers 'Show IPA in hints' on a pass. It teaches Greek (#/ipa) or Hebrew (#/ipa?lang=he, mw-gdcyf98.24): the same screens on the chosen pronunciation of that language, Hebrew drawn right to left.
+// What is kept is ./progress.ts, through data/repositories/ipaCourse.ts, apart for each language.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { getIpaProgress, learnIpaSound, passIpaCheck, startIpaCourse } from '../data/repositories';
-import { backTo, navigate } from '../nav/route';
+import { backTo, ipaLanguageOf, navigate, useAddress } from '../nav/route';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { englishAccentSetting } from '../settings/definitions/englishAccent';
 import { setSetting } from '../settings/store';
@@ -14,13 +15,12 @@ import { SpeakButton } from '../speech/SpeakButton';
 import type { SoundId } from '../speech/sounds';
 import { useAccent } from '../speech/accents/useAccent';
 import { useReportScreen } from '../tutor/screenContext';
-import { greekMarked } from '../ui/GreekMarked';
 import type { EnglishAccent } from '../speech/accents';
 import type { Pronunciation } from '../speech/pronunciation';
-import { checkResult, courseAccent, courseSounds, type CheckAnswer, type CheckResult, type CourseSound } from './course';
+import { checkResult, courseAccent, courseScheme, courseSounds, type CheckAnswer, type CheckResult, type CourseLanguage, type CourseSound } from './course';
 import { IpaCheck, IpaDrill, PLAIN, PRIMARY } from './IpaDrill';
+import { marked } from './marked';
 import { solidOf, type IpaProgress } from './progress';
-import { chosenPronunciation } from '../speech/greek';
 
 type View = { kind: 'why' } | { kind: 'home' } | { kind: 'card'; id: SoundId } | { kind: 'drill' } | { kind: 'check' } | { kind: 'result'; result: CheckResult };
 
@@ -34,10 +34,12 @@ function soundsOf(scheme: Pronunciation, accent: EnglishAccent): CourseSound[] |
 }
 
 export function IpaCourse() {
-  const progress = useLiveQuery(getIpaProgress, []);
+  const language = ipaLanguageOf(useAddress());
+  const progress = useLiveQuery(() => getIpaProgress(language), [language]);
   const accent = useAccent();
-  // the lessons are the chosen Greek pronunciation's, in the key words of the chosen English accent (American's when that is IPA)
-  const scheme = chosenPronunciation();
+  const name = language === 'he' ? 'Hebrew' : 'Greek';
+  // the lessons are the chosen pronunciation's of the language, in the key words of the chosen English accent (American's when that is IPA)
+  const scheme = courseScheme(language);
   const [view, setView] = useState<View | null>(null);
   // a pronunciation that has no lesson for a sound it writes has no course yet (courseSounds throws, naming it): the screen says so rather than break
   const sounds = soundsOf(scheme, courseAccent(accent));
@@ -46,7 +48,7 @@ export function IpaCourse() {
   useReportScreen({
     name: 'Learn the IPA sounds',
     facts: [
-      { label: 'About', value: 'An optional course, not needed for Lampas or for reading Greek: the IPA symbols for the sounds of the Greek, drilled both ways' },
+      { label: 'About', value: `An optional course, not needed for Lampas or for reading ${name}: the IPA symbols for the sounds of the ${name}, drilled both ways` },
       { label: 'Sounds', value: progress && sounds ? `${progress.learned.length} of ${sounds.length} opened, ${solidOf(progress).length} solid` : 'Loading' },
       { label: 'Pass check', value: progress?.passedAt !== undefined ? 'Passed' : 'Not passed yet' },
     ],
@@ -60,31 +62,33 @@ export function IpaCourse() {
     );
   return (
     <>
-      <ScreenHeader title="Learn the IPA sounds" back={back} />
+      <ScreenHeader title={language === 'he' ? 'Learn the IPA sounds of Hebrew' : 'Learn the IPA sounds'} back={back} />
       {sounds === null ? (
         <main className="screen min-h-0 flex-1 px-4 pt-4" data-testid="ipa-unavailable">
-          <p className="text-lg">The Greek pronunciation you chose has no lessons in this course yet. Choose another in Settings.</p>
+          <p className="text-lg">The {name} pronunciation you chose has no lessons in this course yet. Choose another in Settings.</p>
         </main>
       ) : current === null || !progress ? (
         <main className="screen min-h-0 flex-1" aria-busy="true" />
       ) : current.kind === 'why' ? (
         <Why
+          language={language}
           onStart={() => {
-            void startIpaCourse();
+            void startIpaCourse(language);
             setView({ kind: 'home' });
           }}
           onNotNow={() => navigate('goal')}
         />
       ) : current.kind === 'card' ? (
-        <SoundCard sound={sounds.find((s) => s.id === current.id)!} sounds={sounds} onOpen={(id) => setView({ kind: 'card', id })} />
+        <SoundCard language={language} sound={sounds.find((s) => s.id === current.id)!} sounds={sounds} onOpen={(id) => setView({ kind: 'card', id })} />
       ) : current.kind === 'drill' ? (
-        <IpaDrill progress={progress} sounds={sounds} onDone={() => setView({ kind: 'home' })} />
+        <IpaDrill language={language} progress={progress} sounds={sounds} onDone={() => setView({ kind: 'home' })} />
       ) : current.kind === 'check' ? (
         <IpaCheck
+          language={language}
           sounds={sounds}
           onResult={(answers: CheckAnswer[]) => {
             const result = checkResult(answers);
-            if (result.passed) void passIpaCheck();
+            if (result.passed) void passIpaCheck(Date.now(), language);
             setView({ kind: 'result', result });
           }}
         />
@@ -100,11 +104,11 @@ export function IpaCourse() {
 const SMALL_BUTTON = 'min-h-12 rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line';
 
 /** 'Why learn it?', the first thing the Optional entry opens: it says first that the course is not needed, then what it is for. Start and Not now are the same size and weight. */
-function Why({ onStart, onNotNow }: { onStart: () => void; onNotNow: () => void }) {
+function Why({ language, onStart, onNotNow }: { language: CourseLanguage; onStart: () => void; onNotNow: () => void }) {
   return (
     <main className="screen min-h-0 flex-1 px-4 pt-4" data-testid="ipa-why">
       <h2 className="text-2xl font-semibold">Why learn it?</h2>
-      <p className="mt-3 text-lg font-medium">You do not need this for Lampas or for reading Greek. It is only here if you want it.</p>
+      <p className="mt-3 text-lg font-medium">You do not need this for Lampas or for reading {language === 'he' ? 'Hebrew' : 'Greek'}. It is only here if you want it.</p>
       <p className="mt-3 text-base">IPA is the one standard way to write down how a word sounds. Learning it gets you:</p>
       <ul className="mt-2 list-disc space-y-2 pl-6 text-base">
         <li>One standard for every language and dictionary: the same symbols everywhere, so a sound you learn here reads the same in any other.</li>
@@ -173,9 +177,9 @@ function Home({ progress, sounds, onView }: { progress: IpaProgress; sounds: rea
   );
 }
 
-/** One sound: the symbol, his accent's key word, the Greek letters that make it, and the voice saying a Greek word that has it. Opening it counts as meeting the sound. */
-function SoundCard({ sound, sounds, onOpen }: { sound: CourseSound; sounds: readonly CourseSound[]; onOpen: (id: SoundId) => void }) {
-  useEffect(() => void learnIpaSound(sound.id), [sound.id]);
+/** One sound: the symbol, his accent's key word, the letters that make it, and the voice saying a word that has it. Opening it counts as meeting the sound. */
+function SoundCard({ language, sound, sounds, onOpen }: { language: CourseLanguage; sound: CourseSound; sounds: readonly CourseSound[]; onOpen: (id: SoundId) => void }) {
+  useEffect(() => void learnIpaSound(sound.id, language), [sound.id, language]);
   const at = sounds.findIndex((s) => s.id === sound.id);
   const before = sounds[at - 1];
   const after = sounds[at + 1];
@@ -187,17 +191,17 @@ function SoundCard({ sound, sounds, onOpen }: { sound: CourseSound; sounds: read
       <p data-testid="ipa-card-key" className="mt-3 text-center text-xl">
         {sound.keyWord}
       </p>
-      <h2 className="mt-5 text-base font-medium">Greek letters that make it</h2>
+      <h2 className="mt-5 text-base font-medium">{language === 'he' ? 'Hebrew' : 'Greek'} letters that make it</h2>
       <ul data-testid="ipa-card-letters" className="mt-1 space-y-1 text-lg">
         {sound.letters.map((letter) => (
-          <li key={letter}>{greekMarked(letter)}</li>
+          <li key={letter}>{marked(language, letter)}</li>
         ))}
       </ul>
       <h2 className="mt-5 text-base font-medium">Hear it</h2>
       <div className="mt-1 flex items-center gap-3">
-        <SpeakButton text={sound.word} id={`ipa-${sound.id}`} label="Hear it" kind="speaker" className="shrink-0" />
+        <SpeakButton text={sound.word} id={`ipa-${sound.id}`} label="Hear it" kind="speaker" language={language === 'he' ? 'hebrew' : 'greek'} className="shrink-0" />
         <p data-testid="ipa-card-word" className="text-lg">
-          {greekMarked(sound.word)} {sound.at === 'start' ? 'starts with it' : 'has it inside'}
+          {marked(language, sound.word)} {sound.at === 'start' ? 'starts with it' : 'has it inside'}
         </p>
       </div>
       {sound.confusables.length ? (
