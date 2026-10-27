@@ -12,7 +12,7 @@ The reader, the word sheet, the voices and the drills read the chapter's `lang` 
 ## Building
 
 ```bash
-npm run data:build     # downloads data/raw/msb_nt_tables.tsv and data/raw/tbesg.txt if absent, then writes public/data
+npm run data:build     # downloads data/raw/msb_nt_tables.tsv, data/raw/tbesg.txt and data/raw/byztxt-v3.3.2/*.csv if absent, then writes public/data
 ```
 
 `data/raw` is git-ignored and the download is skipped for a file already there. A second run changes no file:
@@ -24,6 +24,7 @@ build no longer produces are deleted. Tests use the small slices in `tests/fixtu
 | Source | Licence | Used for |
 | --- | --- | --- |
 | Majority Standard Bible NT tables, https://majoritybible.com/msb_nt_tables.tsv | public domain | the Byzantine Greek, its Strong's numbers, Robinson-Pierpont (RP) parsing codes, transliteration, and the MSB English aligned word by word |
+| Robinson-Pierpont 2018 apparatus, https://github.com/byztxt/byzantine-majority-text tag `v3.3.2`, `csv-unicode/ccat/with-variants` | public domain | the variant readings of each chapter's `variants` ('Variants' below) |
 | STEPBible TBESG (Translators Brief lexicon of Extended Strongs for Greek), https://github.com/STEPBible/STEPBible-Data | CC BY 4.0, credit STEPBible / Tyndale House, Cambridge | lemma, gloss and definition per Strong's number |
 
 The table's Greek is the Robinson-Pierpont 2005 edition, not 2018: `docs/greek-edition.md` (`npm run greek:edition`) has the word-by-word comparison.
@@ -124,6 +125,7 @@ Compact: short keys, no indentation, each lexicon entry once per file.
 | `verses[].e` | the English chunks **in English order**, so joined with spaces they read as the MSB verse |
 | `e[].t` | the chunk's English with its punctuation and quotation marks, without the `[ ]` and `{ }` marks |
 | `e[].g` | indexes into the verse's `g` array of the Greek word(s) the chunk renders, in Greek order |
+| `variants` | the New Testament's variant readings, one unit per place: `{"v":3,"w":[15,16,17],"base":"ἐπί σε ὡς","alts":[{"code":"N","text":"ὡς"}]}`. Absent in an Old Testament file ('Variants' below) |
 | `e[].s` | which words of the chunk the translators supplied (they are in `[square brackets]` in the MSB): their positions, from 0, among the chunk's `t` split on white space (`"was king"` with `s: [0]`: *was* is supplied, *king* is not); sorted, never empty; absent when no word is supplied. Punctuation alone is never supplied, so a chunk is wholly supplied when every word of it with a letter is listed |
 
 The reader draws only the supplied words in italics (`englishRuns` in `src/data/chapter.ts` cuts a chunk into runs), and the tutor is
@@ -146,6 +148,70 @@ for the words of Jesus, or the first line of an indented block: `indent1stline`,
 `red` forms). The indented lines inside a poetry block (`indent1`, `indent2`) are not paragraph starts. A paragraph
 that starts in the middle of a verse is not carried: a break is only ever at a verse. The first verse of a chapter
 starts a paragraph whether or not it has `p`; the reader treats it so.
+
+## Variants
+
+Each New Testament chapter carries `variants`: the apparatus of Robinson and Pierpont's 2018 edition, laid on the chapter's own Greek words
+(`scripts/data/variants.ts`, run by `npm run data:build`; mw-9ji6ek0.1). No screen reads it yet.
+
+**Source.** <https://github.com/byztxt/byzantine-majority-text> at tag `v3.3.2`, `csv-unicode/ccat/with-variants`, the 27 book files
+(`MAT.csv` to `REV.csv`, fetched from `https://raw.githubusercontent.com/byztxt/byzantine-majority-text/v3.3.2/csv-unicode/ccat/with-variants/<FILE>.csv`
+into `data/raw/byztxt-v3.3.2/`, git-ignored; nothing of them is committed). The build checks the 27 files' bytes, one after another in
+canon order, against one sha256, `VARIANTS_SHA256`:
+`ef05d3a361c425bd3c2925251b3415efcd700899d360d524aab2da0aa9e99397`, and stops on any other. `PA.csv` (the Pericope Adulterae's own
+Byzantine text) and `ACT24.csv` (Acts 24:6-8 as the minority has it) are other texts with their own units, not the apparatus of the
+text the table has, and are not read; `JOH.csv` holds John 7:53-8:11 with its NA units. Public domain, like the edition.
+
+**A unit** in the files is `{CODE base > reading = reading }` set in the verse's text after a word of its base (usually the first,
+not always: Revelation 17:8 `τὰ {NA τὰ ὀνόματα > …} ὀνόματα {Byz τὰ ὀνόματα > …}`); `-` as a reading leaves the base out, `{NA ~ }` says
+the NA text leaves out the whole verse (11 verses, John 5:4, Romans 16:24 and others), and `…` in a base and its reading marks words apart
+(Mark 4:8 `ἐν... ἐν... ἐν`). The code, as the files spell it and as a chapter keeps it (byztxt's converter expands Robinson's CCAT
+letters, which the chapter keeps):
+
+| File | Chapter | Whose reading |
+| --- | --- | --- |
+| `Byz` | `B` | where the Byzantine manuscripts divide, their other reading (Robinson's own apparatus) |
+| `NA` | `N` | the Nestle-Aland text, 27th and 28th editions |
+| `NA27/28` | `C` | NA27 and NA28 together (only in Acts, beside the `M` units) |
+| `NA27` | `S` | NA27 only (only in James to Jude) |
+| `NA28` | `E` | NA28 only (only in James to Jude) |
+| `ECM` | `M` | the *Editio Critica Maior* (Acts) |
+
+**Aligning.** The table's Greek is the 2005 edition and the apparatus the 2018's: they differ at six words, all in accent or capital
+(`docs/greek-edition.md`), and the table sets a few hundred words in another place. So words are matched by their letters alone (no
+accents, breathings or case, final sigma as sigma, the marks beside a word off): the unit's base is found among the 2018 verse's words
+nearest its brace, the 2018 verse is lined up with the table's verse (longest common run of letters), and each base word is carried to
+the table word it lines up with. A base not carried whole is looked for again with the 2018 verse lined up against the table's verse
+before, the verse itself and the verse after (Matthew 15:5's last words are the start of the table's 15:6), and laid there when all its
+words land in one verse; words that stand together in the base are kept together. A `~` unit is on every word of the verse. Units on
+the same words of a verse are one unit, with the readings of each in the files' order (Revelation 3:2: one unit on ἔμελλες ἀποβάλλειν,
+two `B` readings and one `N`).
+
+| Key | Meaning |
+| --- | --- |
+| `v` | the verse (it can be the verse before or after the one the files set the unit in, as above) |
+| `w` | indexes into that verse's `g`, in Greek order |
+| `base` | the 2018 text's words there, as the apparatus writes them (`…` kept); for a `~` unit the verse's words |
+| `alts[].code` | `B`, `N`, `C`, `S`, `E` or `M` |
+| `alts[].text` | the reading as the apparatus writes it (NA's `[ ]` and `[[ ]]` kept); `""` when it leaves the base out |
+
+Units are in verse order, then by their first word.
+
+**Counts** (the build prints them; tag v3.3.2, 2026-10-27): 7,522 units in the files read, B 669, N 6,746, C 46, S 29, E 14, M 18
+(Revelation B 350, N 443); 7,514 aligned (99.9%), in 7,200 units of the chapters (571 KB in all).
+
+**Not aligned** (8; the build lists them as `not aligned:`):
+
+| Verse | Code | Base | Why |
+| --- | --- | --- | --- |
+| Matthew 4:3 | N | αὐτῷ ὁ πειράζων εἶπεν | the table's order is ὁ πειράζων αὐτῷ εἶπεν |
+| Matthew 5:25 | N | ἐν τῇ ὁδῷ μετ’ αὐτοῦ | the table has μετ' αὐτοῦ ἐν τῇ ὁδῷ, the NA's order |
+| Matthew 13:51 | N | Λέγει αὐτοῖς ὁ Ἰησοῦς | the table's Greek order for the verse is out of order (Λέγει ταῦτα ὁ αὐτοῖς … Ἰησοῦς) |
+| Acts 25:25 | N | πέμπειν αὐτόν | the table's verse ends ἔκρινα πέμπειν, without αὐτόν |
+| Romans 14:26 | N | 14.24--26 | not a reading of words: the NA prints 14:24-26 elsewhere (as 16:25-27) |
+| Revelation 11:16 | N | οἱ ἐνώπιον τοῦ θρόνου | the table has ἐνώπιον τοῦ θεοῦ, without τοῦ θρόνου |
+| Revelation 11:16 | B | τοῦ θρόνου | the same |
+| Revelation 13:1 | N | ἐστάθην | the table ends 12:17 with Καὶ ἐστάθην …, in another chapter |
 
 ## Changes to the sources
 
