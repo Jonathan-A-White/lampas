@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.19
+_2026-10-27_
+- Fixed: The Font chooser in Settings now shows each font in its own face, whichever font you have picked.
+
 ## 0.5.18
 _2026-10-27_
 - New: Reading an Old Testament chapter now teaches you its Hebrew words a few at a time, and Words, Review, the Quick test and the Parsing drill ask them in Hebrew.

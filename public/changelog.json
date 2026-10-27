@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.5.19",
+    "date": "2026-10-27",
+    "story": "mw-5r3p30.822",
+    "kind": "fixed",
+    "text": "The Font chooser in Settings now shows each font in its own face, whichever font you have picked."
+  },
+  {
     "version": "0.5.18",
     "date": "2026-10-27",
     "story": "mw-gdcyf98.19",
