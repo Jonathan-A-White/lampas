@@ -62,7 +62,7 @@ test('an English tap opens the sheet with the Hebrew word of the chunk and the E
   const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(sheet.getByTestId('sheet-heading')).toContainText('the heavens');
   await expect(sheet.getByTestId('sheet-lemma')).toHaveText('שָׁמַיִם');
-  await expect(sheet.getByRole('listitem')).toHaveCount(2);
+  await expect(sheet.getByRole('listitem')).toHaveCount(1);
   await expect(sheet.getByRole('button', { name: 'Listen: heavens' })).toBeVisible();
   await noSideways(page);
   await shot(page, 'hebrew-word-sheet-english-tap');

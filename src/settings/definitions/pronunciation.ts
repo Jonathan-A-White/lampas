@@ -1,7 +1,7 @@
 // Pronunciation (Settings > Listening > Pronunciation, mw-gdcyf98.6): ONE choice for both languages, a family, as Greek and Hebrew are said and spelled out together
 // (Modern: Modern Greek and Israeli Hebrew). Writing the family writes both languages' own settings (greekPronunciation, hebrewPronunciation; src/settings/registry.ts);
 // 'Set each language on its own' swaps the family for the two rows. PROVISIONAL: the labels and hints are the Mayor's, the Governor to confirm.
-import { DEFAULT_HEBREW_PRONUNCIATION, DEFAULT_PRONUNCIATION, pronunciationsOf, type GreekPronunciation } from '../../speech/pronunciation';
+import { DEFAULT_HEBREW_PRONUNCIATION, DEFAULT_PRONUNCIATION, hebrewPronunciationOf, pronunciationOf, pronunciationsOf, type GreekPronunciation } from '../../speech/pronunciation';
 import { defineSetting, type Dependency } from '../define';
 import { depthFrom } from './interest';
 
@@ -16,7 +16,7 @@ export interface PronunciationFamily {
 }
 
 export const PRONUNCIATION_FAMILIES: readonly PronunciationFamily[] = [
-  { id: 'modern', label: 'Modern', note: 'Modern Greek and Israeli Hebrew', greek: DEFAULT_PRONUNCIATION, hebrew: DEFAULT_HEBREW_PRONUNCIATION },
+  { id: 'modern', label: 'Modern', note: `${pronunciationOf(DEFAULT_PRONUNCIATION).label} and ${hebrewPronunciationOf(DEFAULT_HEBREW_PRONUNCIATION).label} Hebrew`, greek: DEFAULT_PRONUNCIATION, hebrew: DEFAULT_HEBREW_PRONUNCIATION },
 ];
 
 export const DEFAULT_FAMILY: string = PRONUNCIATION_FAMILIES[0].id;
@@ -31,7 +31,7 @@ export const pronunciationSetting = defineSetting<string>({
   section: 'pronunciation',
   label: 'Pronunciation',
   hint: 'How Greek and Hebrew are said and spelled out: one way for both',
-  help: 'How Greek and Hebrew are said and respelled, one choice for both. **Modern** is Modern Greek and Israeli Hebrew. It shows while Set each language on its own is Off.',
+  help: 'How Greek and Hebrew are said and respelled, one choice for both. **Modern** says both the modern way. It shows while Set each language on its own is Off.',
   // the family is shown while each language is not set on its own (and, through the switch, from Curious up)
   dependsOn: { key: 'pronunciationSeparate', shown: (value) => value !== 'on' },
 });

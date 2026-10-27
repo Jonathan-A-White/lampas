@@ -54,7 +54,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `englishRate` — English speed. How fast English is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `greekRate` — Greek speed. How fast Greek is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `hebrewRate` — Hebrew speed. How fast Hebrew is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
-- `pronunciation` — Pronunciation. How Greek and Hebrew are said and respelled, one choice for both. Modern is Modern Greek and Israeli Hebrew. It shows while Set each language on its own is Off. Value: "modern".
+- `pronunciation` — Pronunciation. How Greek and Hebrew are said and respelled, one choice for both. Modern says both the modern way. It shows while Set each language on its own is Off. Value: "modern".
 - `pronunciationSeparate` — Set each language on its own. On shows a Greek pronunciation and a Hebrew pronunciation to choose on their own. Off puts both back on Pronunciation.
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced when it is read aloud. Value: "modern" (Modern Greek).
 - `hebrewPronunciation` — Hebrew pronunciation. How Hebrew is pronounced when it is read aloud. Value: "israeli".

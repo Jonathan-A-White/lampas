@@ -35,7 +35,7 @@ describeFeature(
       And('the Greek speed is saved as 0.8 and the English speed is still 1', async () => {
         expect(await getSpeechRate('greek')).toBe(0.8);
         expect(await getSpeechRate('english')).toBe(1);
-        await expectLatest('rates-changed', (e) => expect(e?.rates).toEqual({ english: 1, greek: 0.8 }));
+        await expectLatest('rates-changed', (e) => expect(e?.rates).toEqual({ english: 1, greek: 0.8, hebrew: 1 }));
       });
       And('the grist carried the settings as they stood, the Greek speed at 1', () => {
         expect(received(0).input.settings).toMatchObject({ greekRate: 1, theme: 'phone', textSize: 'normal' });
