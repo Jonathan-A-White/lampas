@@ -55,12 +55,15 @@ const VERSE_WORD = new RegExp(String.raw`(?<![\p{L}\p{N}])(?:verses?|vv?|vs)\.?\
 /** '2:9', '2:9-11' with no book: the chapter must be the talk's own */
 const CHAPTER_VERSE = /(?<![\p{L}\p{N}:.])(\d+)\s*:\s*(\d+)(?:\s*[-–]\s*(\d+))?/gu;
 
+/** A reference (either Testament) that names a verse of the talk's own chapter: the book's code, the chapter and a verse, never which Testament the book is in. */
+const inChapter = (chapter: Chapter, r: { book: string; chapter?: number; verse?: number }): boolean => r.book === chapter.code && r.chapter === chapter.chapter && r.verse !== undefined;
+
 const spread = (from: number, to: number | undefined): number[] => (to !== undefined && to > from && to - from < 200 ? Array.from({ length: to - from + 1 }, (_, i) => from + i) : [from]);
 
 /** The verse numbers of the talk's own chapter that `text` names, in the order it names them. */
 export function versesNamed(chapter: Chapter, text: string): number[] {
   const found: number[] = [];
-  for (const r of findReferences(text)) if (r.testament === 'nt' && r.book === chapter.code && r.chapter === chapter.chapter && r.verse !== undefined) found.push(...spread(r.verse, r.lastVerse));
+  for (const r of findReferences(text)) if (inChapter(chapter, r)) found.push(...spread(r.verse!, r.lastVerse));
   for (const m of text.matchAll(VERSE_WORD)) {
     found.push(...spread(Number(m[1]), m[2] === undefined ? undefined : Number(m[2])));
     for (const more of m[3].matchAll(/(\d+)(?:\s*[-–]\s*(\d+))?/g)) found.push(...spread(Number(more[1]), more[2] === undefined ? undefined : Number(more[2])));
@@ -75,7 +78,7 @@ export function versesLinked(chapter: Chapter, links: readonly AnswerLink[] | un
   for (const link of links ?? []) {
     if (link.kind !== 'verse') continue;
     const r = parseCanonReference(link.reference);
-    if (r && r.testament === 'nt' && r.book === chapter.code && r.chapter === chapter.chapter && r.verse !== undefined) found.push(...spread(r.verse, r.to));
+    if (r && inChapter(chapter, r)) found.push(...spread(r.verse!, r.to));
   }
   return found;
 }

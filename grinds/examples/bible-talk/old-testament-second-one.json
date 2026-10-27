@@ -1,0 +1,34 @@
+{
+  "description": "An Old Testament talk keeps the thread (mw-5r3p30.819): on Genesis 3 the first answer listed three questions God asks and linked the second (3:11); the follow-up 'and the second one?' names no verse, so the request holds 3:10-12 (the verse the last answer linked, with one on each side) and carries that turn in `history`. The answer is about the second question, 'Who told you that you were naked?', not about the first of the three or the start of the chapter.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 3",
+    "greek": "וַיֹּאמֶר אֶת־ קֹלְךָ שָׁמַעְתִּי בַּגָּן וָאִירָא כִּי־ עֵירֹם אָנֹכִי וָאֵחָבֵא וַיֹּאמֶר מִי הִגִּיד לְךָ כִּי עֵירֹם אָתָּה הֲמִן־ הָעֵץ אֲשֶׁר צִוִּיתִיךָ לְבִלְתִּי אֲכָל־ מִמֶּנּוּ אָכָלְתָּ וַיֹּאמֶר הָאָדָם הָאִשָּׁה אֲשֶׁר נָתַתָּה עִמָּדִי הִוא נָתְנָה־ לִּי מִן־ הָעֵץ וָאֹכֵל",
+    "english": "“I heard Your voice in the garden,” he replied, “and I was afraid because I *was* naked; so I hid myself.” “Who told you that you *were* naked?” asked *the LORD God.* “Have you eaten from the tree of which I commanded you not to eat?” And the man answered, “The woman whom You gave me, she gave me *fruit* from the tree, and I ate it.”",
+    "verses": "3:10-12",
+    "question": "and the second one?",
+    "history": [
+      {
+        "q": "Which questions does God ask Adam and Eve here?",
+        "a": "God asks three questions in this scene: \"Where are you?\" (Genesis 3:9), \"Who told you that you were naked? Have you eaten from the tree?\" (Genesis 3:11) and, to the woman, \"What is this you have done?\" (Genesis 3:13)."
+      }
+    ],
+    "solid_words": [],
+    "settings": {
+      "greekInterest": "0",
+      "hebrewInterest": "0"
+    },
+    "reader_view": "english"
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Nn]aked|told you|eaten|עֵירֹם"
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
