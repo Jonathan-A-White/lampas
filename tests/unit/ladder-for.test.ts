@@ -40,15 +40,16 @@ describe('ladderFor', () => {
     expect(grc.ideaOf('alphabet')).toBe(LADDER[0]);
   });
 
-  it('answers for Hebrew with its own ladder: the provisional tiers and one idea to start, the alphabet', () => {
+  it('answers for Hebrew with its own ladder: the provisional tiers and the 44 ideas of the first three, the alphabet first', () => {
     const hbo = ladderFor('hbo');
     expect(hbo.lang).toBe('hbo');
     expect(hbo.ideas).toBe(HEBREW_LADDER);
     expect(hbo.tiers).toBe(HEBREW_TIERS);
     expect([...hbo.tiers]).toEqual(['letters', 'sounds', 'marks', 'nouns', 'pronouns', 'prepositions', 'verbs', 'joiners', 'sentences']);
-    expect(hbo.ideas.map((i) => i.id)).toEqual(['he-alphabet']);
+    expect(hbo.ideas).toHaveLength(44);
     expect(hbo.ideas[0]).toMatchObject({ id: 'he-alphabet', title: 'The Hebrew alphabet', tier: 'letters', rung: 1, needs: [] });
-    expect(Object.keys(hbo.teach)).toEqual(['he-alphabet']);
+    expect(hbo.ideas[1]).toMatchObject({ id: 'he-letter-alef', title: 'Alef', tier: 'letters', rung: 2, needs: ['he-alphabet'] });
+    expect(Object.keys(hbo.teach).sort()).toEqual(hbo.ideas.map((i) => i.id).sort());
     expect(hbo.teach['he-alphabet'].worked.length).toBeGreaterThan(0);
     expect(hbo.foundation).toEqual(['he-alphabet']);
     expect(hbo.terms).toEqual([]);

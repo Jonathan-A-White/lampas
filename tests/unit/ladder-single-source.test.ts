@@ -47,7 +47,8 @@ describe('the ladder is the single source', () => {
     const src = real();
     const hbo = src.hebrew!;
     const noCard = ladderProblems({ ...src, hebrew: { ...hbo, cardIds: new Set() } });
-    expect(noCard).toEqual(['the Hebrew ladder (hbo): he-alphabet: no teach card; add one in src/data/grammar/hebrew/teach/index.ts']);
+    expect(noCard).toHaveLength(HEBREW_LADDER.length);
+    expect(noCard[0]).toBe('the Hebrew ladder (hbo): he-alphabet: no teach card; add one in src/data/grammar/hebrew/teach/index.ts');
 
     const stale = ladderProblems({ ...src, grammarDoc: src.grammarDoc.replace('| `he-alphabet` | The Hebrew alphabet |', '| `he-alphabet` | The Hebrew alphabet (edited) |') });
     expect(stale).toHaveLength(1);

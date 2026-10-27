@@ -585,6 +585,49 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | Rung | Tier | Id | Title | Terms | Rests on |
 | --- | --- | --- | --- | --- | --- |
 | 1 | letters | `he-alphabet` | The Hebrew alphabet | – | – |
+| 2 | letters | `he-letter-alef` | Alef | – | `he-alphabet` |
+| 3 | letters | `he-letter-bet` | Bet | – | `he-alphabet` |
+| 4 | letters | `he-letter-gimel` | Gimel | – | `he-alphabet` |
+| 5 | letters | `he-letter-dalet` | Dalet | – | `he-alphabet` |
+| 6 | letters | `he-letter-he` | He | – | `he-alphabet` |
+| 7 | letters | `he-letter-vav` | Vav | – | `he-alphabet` |
+| 8 | letters | `he-letter-zayin` | Zayin | – | `he-alphabet` |
+| 9 | letters | `he-letter-chet` | Chet | – | `he-alphabet` |
+| 10 | letters | `he-letter-tet` | Tet | – | `he-alphabet` |
+| 11 | letters | `he-letter-yod` | Yod | – | `he-alphabet` |
+| 12 | letters | `he-letter-kaf` | Kaf | – | `he-alphabet` |
+| 13 | letters | `he-letter-lamed` | Lamed | – | `he-alphabet` |
+| 14 | letters | `he-letter-mem` | Mem | – | `he-alphabet` |
+| 15 | letters | `he-letter-nun` | Nun | – | `he-alphabet` |
+| 16 | letters | `he-letter-samekh` | Samekh | – | `he-alphabet` |
+| 17 | letters | `he-letter-ayin` | Ayin | – | `he-alphabet` |
+| 18 | letters | `he-letter-pe` | Pe | – | `he-alphabet` |
+| 19 | letters | `he-letter-tsade` | Tsade | – | `he-alphabet` |
+| 20 | letters | `he-letter-qof` | Qof | – | `he-alphabet` |
+| 21 | letters | `he-letter-resh` | Resh | – | `he-alphabet` |
+| 22 | letters | `he-letter-shin` | Shin | – | `he-alphabet` |
+| 23 | letters | `he-letter-tav` | Tav | – | `he-alphabet` |
+| 24 | letters | `he-final-forms` | The final forms | – | `he-letter-kaf`, `he-letter-mem`, `he-letter-nun`, `he-letter-pe`, `he-letter-tsade` |
+| 25 | letters | `he-pair-bet-vet` | Bet and vet | – | `he-letter-bet` |
+| 26 | letters | `he-pair-kaf-khaf` | Kaf and khaf | – | `he-letter-kaf` |
+| 27 | letters | `he-pair-pe-fe` | Pe and fe | – | `he-letter-pe` |
+| 28 | letters | `he-shin-sin` | Shin and sin | – | `he-letter-shin` |
+| 29 | sounds | `he-vowel-patach` | Patach | – | `he-alphabet` |
+| 30 | sounds | `he-vowel-qamats` | Qamats | – | `he-alphabet` |
+| 31 | sounds | `he-vowel-segol` | Segol | – | `he-alphabet` |
+| 32 | sounds | `he-vowel-tsere` | Tsere | – | `he-alphabet` |
+| 33 | sounds | `he-vowel-hiriq` | Hiriq | – | `he-alphabet` |
+| 34 | sounds | `he-vowel-holam` | Holam | – | `he-alphabet` |
+| 35 | sounds | `he-vowel-qubuts` | Qubuts | – | `he-alphabet` |
+| 36 | sounds | `he-vowel-shuruq` | Shuruq | – | `he-alphabet` |
+| 37 | sounds | `he-vowel-shewa` | The shewa | – | `he-vowel-patach`, `he-vowel-qamats`, `he-vowel-segol`, `he-vowel-tsere`, `he-vowel-hiriq`, `he-vowel-holam`, `he-vowel-qubuts`, `he-vowel-shuruq` |
+| 38 | sounds | `he-dagesh` | The dagesh | – | `he-pair-bet-vet`, `he-pair-kaf-khaf`, `he-pair-pe-fe` |
+| 39 | sounds | `he-mappiq` | The mappiq | – | `he-dagesh`, `he-letter-he` |
+| 40 | sounds | `he-furtive-patach` | The furtive patach | – | `he-vowel-patach`, `he-letter-chet`, `he-letter-ayin` |
+| 41 | sounds | `he-syllable` | The syllable | – | `he-vowel-shewa` |
+| 42 | marks | `he-maqaf` | The maqaf | – | `he-syllable` |
+| 43 | marks | `he-cantillation` | The cantillation marks | – | `he-syllable` |
+| 44 | marks | `he-ketiv-qere` | Ketiv and qere | – | `he-cantillation` |
 <!-- ladder-hbo:end -->
 
 ## Approaches
