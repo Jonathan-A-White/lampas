@@ -26,6 +26,7 @@ import { chosenPronunciation } from '../../speech/greek';
 import { soundRuleOf, type Pronunciation } from '../../speech/pronunciation';
 import { mulberry32, shuffle } from '../quiz';
 import { isSolid } from './inference';
+import { seenKey } from './fetchedItems';
 import { collect, itemSteps, perFacet, questionKey, rng, sideFacet, type DrillContext, type RawStep } from './drillItems';
 import { LADDER_PATH, groupOfItem, ideaOf, type Facet } from './ladder';
 import type { Level } from './needs';
@@ -46,6 +47,8 @@ export interface DrillOptions {
   scheme?: Pronunciation;
   /** the questions' seed: the same seed gives the same steps */
   seed?: number;
+  /** the questions he has been asked on the idea (seenKey of each): left out, so a seen question never counts toward proving it (mw-indx1x6.2); a question about no verse is never noted, so is never left out */
+  seen?: ReadonlySet<string>;
 }
 
 /** A question of a step, with what it is about. */
@@ -104,18 +107,29 @@ function passageSteps(ctx: DrillContext): RawStep[] {
 export function drillSteps(ideaId: string, options: DrillOptions = {}): DrillStep[] {
   const idea = ideaOf(ideaId);
   const ctx: DrillContext = { idea, passage: options.passage ?? [], scheme: options.scheme ?? chosenPronunciation(), seed: options.seed ?? 1 };
-  const raw = itemSteps(ctx) ?? prepositionSteps(ctx) ?? compoundSteps(ctx) ?? passageSteps(ctx);
+  const unseen = (questions: GrammarQuestion[]): GrammarQuestion[] =>
+    options.seen ? questions.filter((q) => !q.ref || !options.seen?.has(seenKey({ prompt: q.prompt, ref: q.ref }))) : questions;
+  const raw = (itemSteps(ctx) ?? prepositionSteps(ctx) ?? compoundSteps(ctx) ?? passageSteps(ctx)).map((r) => ({ ...r, questions: unseen(r.questions) }));
   const own: Facet = { id: idea.id, label: idea.title };
   const kept = raw.filter((r) => r.questions.length > 0);
   // an idea nothing could be asked about is asked by what it says of itself
-  const steps = kept.length > 0 ? kept : [{ title: 'What it is', questions: collect(ctx, (random) => buildConcept(idea, random, ctx.scheme), 10, 0) }];
+  const steps = kept.length > 0 ? kept : [{ title: 'What it is', questions: unseen(collect(ctx, (random) => buildConcept(idea, random, ctx.scheme), 10, 0)) }].filter((r) => r.questions.length > 0);
   return steps.map((r, i) => ({
     step: i + 1,
     title: r.title,
-    ...(r.words ? { words: true } : {}),
+    ...('words' in r && r.words ? { words: true } : {}),
     questions: shuffle(r.questions, mulberry32((ctx.seed + i * 31) >>> 0)).map((q): DrillQuestion => ({ ...q, facet: q.facet ?? (q.kind === 'concept' ? MEANING : own), step: i + 1, key: questionKey(q) })),
   }));
 }
+
+/**
+ * Whether these steps can prove the idea (mw-indx1x6.2): their top step is the idea's own top step (`whole`, the steps with nothing left out: a hard step he has seen every question of is gone, and the
+ * easier one below it must not stand in for it) and holds the PROVED_STREAK questions whose unhinted rights in a row prove an idea. With fewer, an idea is not proved on questions he has not been asked.
+ */
+export const enoughToProve = (steps: readonly DrillStep[], whole: readonly DrillStep[] = steps): boolean => {
+  const top = steps[steps.length - 1];
+  return top !== undefined && top.title === whole[whole.length - 1]?.title && top.questions.length >= PROVED_STREAK;
+};
 
 // ---- The foundation ----
 
@@ -148,6 +162,24 @@ export function asDrillQuestion(kept: GrammarQuestion, place: DrillQuestion, ste
 export function serveFetched(walk: DrillWalk, kept: GrammarQuestion): DrillWalk {
   if (walk.result || !walk.current || kept.ideaId !== walk.ideaId) return walk;
   return { ...walk, current: asDrillQuestion(kept, walk.current, walk.steps) };
+}
+
+/**
+ * The walk with questions the mill wrote added to its top step (the idea's own, `whole`'s last; a walk without it gets it): used when the built questions he has not been asked are too few to prove an idea on (mw-indx1x6.2), so
+ * the fresh ones are what he is proved on. An item of another idea is left out.
+ */
+export function addFetched(walk: DrillWalk, kept: readonly GrammarQuestion[], whole: readonly DrillStep[] = walk.steps): DrillWalk {
+  const items = kept.filter((q) => q.ideaId === walk.ideaId);
+  if (items.length === 0 || walk.result) return walk;
+  const idea = ideaOf(walk.ideaId);
+  const own: Facet = { id: idea.id, label: idea.title };
+  const top = walk.steps[walk.steps.length - 1];
+  const title = whole[whole.length - 1]?.title ?? 'Questions from the mill';
+  // the idea's own top step may be gone (he has seen every question of it): the fresh questions make it again
+  const step = top && top.title === title ? top.step : (top?.step ?? 0) + 1;
+  const added = items.map((q): DrillQuestion => ({ ...q, facet: q.facet ?? own, step, key: questionKey(q) }));
+  const steps = top && top.title === title ? walk.steps.map((s) => (s === top ? { ...s, questions: [...s.questions, ...added] } : s)) : [...walk.steps, { step, title, questions: added }];
+  return { ...walk, steps, current: walk.current ?? added[0] };
 }
 
 // ---- The walk ----

@@ -1,13 +1,14 @@
 // src/review/moreItems.ts — after a Review round, more items on the ideas he missed, from the mill (mw-hqd5bz.36, docs/grammar.md 'More items from the mill'). The Governor's words: "after each
 // drill round, a grist asks for more items on your weakest ideas, saved so the next round starts at once." So nothing here is waited on: the round's end card is drawn first, this runs after it,
 // asks for nothing when the phone is offline, holds no key or no licence, or another ask is still out, and a round draws its questions from what is kept (kinds.ts GRAMMAR.draw), never from the mill.
-// The Drill it screens serve the same kept items (src/DrillItScreen.tsx, src/PlanDrillScreen.tsx); the request carries the questions he has been asked (src/data/repositories/seenItems.ts).
+// An idea whose kept unseen items run low is asked for ahead of need (keepStocked, mw-indx1x6.2). The Drill it screens serve the same kept items (src/DrillItScreen.tsx, src/PlanDrillScreen.tsx); the request carries the questions he has been asked (src/data/repositories/seenItems.ts).
 import { DEVICE_KEY_STORAGE_KEY } from '../config';
 import type { Chapter } from '../data/chapter';
-import { buildDrillItemsRequest, checkedItems, DRILL_ITEMS_KIND, isDrillItemsAnswer, weakestMissed } from '../data/grammar/fetchedItems';
+import { buildDrillItemsRequest, checkedItems, DRILL_ITEMS_KIND, isDrillItemsAnswer, isFetchable, weakestMissed } from '../data/grammar/fetchedItems';
+import { ideaOf } from '../data/grammar/ladder';
 import type { GrammarIdea } from '../data/grammar/ladder';
 import { mulberry32 } from '../data/quiz';
-import { listSeenOf, saveFetchedItems } from '../data/repositories';
+import { countFetchedItems, listSeen, listSeenOf, listToConfirm, listUnseenFetched, saveFetchedItems } from '../data/repositories';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { currentLicence } from '../services/licenceNow';
 import { askGrind } from '../services/tutor';
@@ -38,11 +39,19 @@ export interface MoreItemsOptions {
 }
 
 let running: Promise<MoreItems> | null = null;
+/** The counts of stock (keepStocked) that have not decided yet whether to ask. */
+const counting = new Set<Promise<void>>();
 
-/** Resolves when no ask is out: a screen that must not show a half-done state, and a test, wait on it. */
+/** Resolves when no ask is out and no count of stock is still deciding whether to ask: a screen that must not show a half-done state, and a test, wait on it. */
 export const whenIdle = async (): Promise<void> => {
+  while (counting.size > 0) await Promise.all([...counting]);
   await running;
+  // a count that finished may have started an ask
+  if (counting.size > 0 || running) await whenIdle();
 };
+
+/** Fewer kept items than this that he has not been asked, on an idea he may be proved on or asked to confirm, start an ask ahead (PROVISIONAL, mw-indx1x6.2). */
+export const LOW_KEPT = 2;
 
 /** The phone's key, or undefined when it holds none yet (asking never makes one). */
 function keyIfAny(options: MoreItemsOptions): Uint8Array | undefined {
@@ -93,5 +102,41 @@ async function ask(ideas: GrammarIdea[], missed: readonly string[], options: Mor
   } catch (error) {
     console.warn('could not fetch more drill items', error);
     return 'failed';
+  }
+}
+
+const fetchable = (id: string): boolean => {
+  try {
+    return isFetchable(ideaOf(id));
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Asks the mill ahead of need (mw-indx1x6.2): for the ideas of `ideaIds` that he may be proved on or asked to confirm (he has been asked questions on it, it is marked to confirm or the mill wrote items for it) and whose kept items he has not been asked are fewer than LOW_KEPT, in the background, so Prove it and the confirm rarely wait. Called when a drill, a Review round or Prove it
+ * opens on an idea and when a kept item is served. Never throws, never waits for the mill: it resolves once the stock is counted. An idea he has never been asked is left alone (every built question is
+ * new to him). Nothing is asked while another ask is out, offline, with no key or no licence (askForMoreItems).
+ */
+export function keepStocked(ideaIds: readonly string[], options: MoreItemsOptions = {}): Promise<void> {
+  const counted = count(ideaIds, options).finally(() => counting.delete(counted));
+  counting.add(counted);
+  return counted;
+}
+
+async function count(ideaIds: readonly string[], options: MoreItemsOptions): Promise<void> {
+  if (running) return;
+  try {
+    const marked = new Set(await listToConfirm());
+    const low: string[] = [];
+    for (const id of new Set(ideaIds)) {
+      // an id the ladder no longer has asks nothing
+      if (!fetchable(id)) continue;
+      if ((await listUnseenFetched(id)).length >= LOW_KEPT) continue;
+      if (marked.has(id) || (await countFetchedItems(id)) > 0 || (await listSeen(id)).length > 0) low.push(id);
+    }
+    if (low.length > 0) void askForMoreItems(low, options);
+  } catch (error) {
+    console.warn('could not count the kept drill items', error);
   }
 }

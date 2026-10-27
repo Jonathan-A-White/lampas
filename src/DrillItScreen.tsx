@@ -6,18 +6,20 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import type { Chapter } from './data/chapter';
-import { answer as answerWalk, serveFetched, start, type DrillResult, type DrillWalk } from './data/grammar/drillIt';
+import { addFetched, answer as answerWalk, enoughToProve, PROVED_STREAK, serveFetched, start, type DrillResult, type DrillWalk } from './data/grammar/drillIt';
+import { seenKey } from './data/grammar/fetchedItems';
 import { planFrom, shortDrill, type PlanItem } from './data/grammar/drillPlan';
 import { drillSeed } from './data/grammar/drillSeed';
 import { hintTakes } from './data/grammar/hint';
 import { ideaOf, type Facet } from './data/grammar/ladder';
 import type { Level } from './data/grammar/needs';
 import { DialogAskTutor } from './AskTutor';
-import type { GrammarQuestion } from './data/grammar/questions';
-import { answerPlanItem, getDrillPlan, noteAsked, takeFetchedItems, type DrillMode } from './data/repositories';
+import { answerPlanItem, getDrillPlan, listSeen, listUnseenFetched, noteAsked, takeAllFetched, takeFetchedItems, type DrillMode } from './data/repositories';
 import { FacetLabel } from './FacetLabel';
 import { GrammarCard } from './GrammarCard';
 import { PlanDrillScreen } from './PlanDrillScreen';
+import { confirmAnswer } from './review/confirm';
+import { keepStocked } from './review/moreItems';
 import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
@@ -27,9 +29,9 @@ import { useSettled } from './ui/settle';
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
 /** The walk of an idea. The ideas it builds on are taken to be solid (the sheet asked him about them before): a drill tests one idea, never what is under it. */
-function begin(ideaId: string, passage: readonly Chapter[] | undefined): DrillWalk | null {
+function begin(ideaId: string, passage: readonly Chapter[] | undefined, seed: number, seen?: ReadonlySet<string>): DrillWalk | null {
   const assumed = new Map<string, Level>(ideaOf(ideaId).needs.map((id) => [id, 'solid']));
-  const walk = start(ideaId, assumed, { passage, seed: drillSeed.next() });
+  const walk = start(ideaId, assumed, { passage, seed, seen });
   return 'needs' in walk ? null : walk;
 }
 
@@ -130,7 +132,12 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
 }) {
   useSheetBack(onClose);
   const idea = ideaOf(ideaId);
-  const [walk, setWalk] = useState<DrillWalk | null>(() => begin(ideaId, passage));
+  // the walk is drawn at once, then made again from the questions he has not been asked once the phone's list of them is read (a seen question never counts toward proving, docs/grammar.md
+  // 'Confirming a missed idea'; the same seed, so nothing is asked that the first walk did not hold); an answer given before that waits for it. Never the network.
+  const [seed] = useState(() => drillSeed.next());
+  const [walk, setWalk] = useState<DrillWalk | null>(() => begin(ideaId, passage, seed));
+  const [ready, setReady] = useState(false);
+  const [onTheirWay, setOnTheirWay] = useState(false);
   // the walk after the answer he has given, held until he taps Next so he can read whether he was right
   const [after, setAfter] = useState<{ walk: DrillWalk; picked: string } | null>(null);
   const [taken, setTaken] = useState<ReadonlySet<number> | null>(null);
@@ -139,28 +146,42 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
   const [talkKey] = useState(() => `screen.drill-it.${Date.now()}`);
   const reported = useRef(false);
   const result = walk?.result ?? null;
-  // a question the mill wrote for this idea is asked in place of one built question (docs/grammar.md 'More items from the mill'): taken from the phone as the screen opens, never waited for;
-  // it goes in at once if no answer has been given yet, else at the next question
-  const live = useRef({ walk, after });
-  useEffect(() => {
-    live.current = { walk, after };
-  });
-  const waiting = useRef<GrammarQuestion | null>(null);
-  const taking = useRef(false);
+  // a question the mill wrote for this idea is asked in place of the first built one (docs/grammar.md 'More items from the mill'): taken from the phone as the screen opens, never waited for.
+  // With too few built questions he has not been asked to prove the idea on, the kept ones he has not been asked make up the number; with too few of those, nothing is proved: the mill is asked
+  // in the background and the screen says so.
+  const opened = useRef(false);
+  const pending = useRef<string | null>(null);
   useEffect(() => {
     // once for this screen: a second run of the effect must not take a second item
-    if (taking.current) return;
-    taking.current = true;
-    takeFetchedItems([ideaId])
-      .then((kept) => {
-        const item = kept.get(ideaId);
-        if (!item) return;
-        const now = live.current;
-        if (now.walk && now.walk.asked.length === 0 && !now.after) setWalk(serveFetched(now.walk, item));
-        else waiting.current = item;
-      })
-      .catch((error: unknown) => console.warn('could not take a kept drill item', error));
-  }, [ideaId]);
+    if (opened.current) return;
+    opened.current = true;
+    void (async () => {
+      try {
+        const seen = new Set((await listSeen(ideaId).catch(() => [])).map(seenKey));
+        const drawn = begin(ideaId, passage, seed);
+        let first = seen.size > 0 ? begin(ideaId, passage, seed, seen) : drawn;
+        if (first && drawn && !enoughToProve(first.steps, drawn.steps) && enoughToProve(drawn.steps)) {
+          const top = first.steps[first.steps.length - 1];
+          const have = top?.title === drawn.steps[drawn.steps.length - 1].title ? top.questions.length : 0;
+          if (have + (await listUnseenFetched(ideaId)).length >= PROVED_STREAK) first = addFetched(first, await takeAllFetched(ideaId), drawn.steps);
+          else {
+            setOnTheirWay(true);
+            first = null;
+          }
+        } else if (first) {
+          const item = (await takeFetchedItems([ideaId])).get(ideaId);
+          if (item) first = serveFetched(first, item);
+        }
+        setWalk(first);
+        // a kept item was served, or the stock is low: the next ones are asked for ahead, in the background
+        void keepStocked([ideaId]);
+      } catch (error) {
+        console.warn('could not start Drill it', error);
+      } finally {
+        setReady(true);
+      }
+    })();
+  }, [ideaId, passage, seed]);
   // Hint (and Done, after Finish) stands where Next was: a second tap of a double tap on Next lands on it, so it waits for the new card to settle
   // as the card's options do (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(walk?.asked.length ?? 0);
@@ -177,15 +198,28 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
   const question = walk?.current ?? null;
   const pick = (option: string) => {
     if (!walk || !question || after) return;
+    // the list of questions he has been asked is not read yet: this answer waits for the walk it may change
+    if (!ready) {
+      pending.current = option;
+      return;
+    }
     setAfter({ walk: answerWalk(walk, option === question.right, taken !== null), picked: option });
     setTries((all) => [...all, { question, picked: option, hinted: taken !== null }]);
-    void noteAsked(question);
+    // noted as asked first: the ask the confirm may start carries the questions he has seen
+    void noteAsked(question).then(() => confirmAnswer(question, option === question.right, { hinted: taken !== null }));
   };
+  useEffect(() => {
+    // an answer given before the walk was made again from the unseen questions
+    const option = pending.current;
+    if (!ready || option === null) return;
+    pending.current = null;
+    // the walk may have changed the question under his tap: an option it does not have is not an answer
+    if (question?.options.includes(option)) pick(option);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
   const next = () => {
     if (!after) return;
-    const item = waiting.current;
-    waiting.current = null;
-    setWalk(item ? serveFetched(after.walk, item) : after.walk);
+    setWalk(after.walk);
     setAfter(null);
     setTaken(null);
   };
@@ -208,7 +242,11 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
         )}
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-3">
-        {walk === null ? (
+        {onTheirWay ? (
+          <p role="status" data-testid="drill-more-on-the-way" className="text-lg">
+            More questions are on their way. Drill it again in a little while: it proves an idea only on questions you have not been asked.
+          </p>
+        ) : walk === null ? (
           <p className="text-lg">Drill it could not start on this idea.</p>
         ) : result ? (
           <Result result={result} mode={mode} passage={passage} />

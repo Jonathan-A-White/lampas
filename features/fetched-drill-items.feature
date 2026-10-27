@@ -44,3 +44,26 @@ Feature: More drill items from the mill, in the background
     When he starts a short drill on the second declension
     Then the short drill asks a built question at once
     And the mill is sent no drill-items grist
+
+  Scenario: A right answer on an idea he missed before is confirmed on a question he has not been asked
+    Given the genitive case is due in Review, he missed it before, and the mill will answer a drill-items grist
+    When he answers the genitive case right in a Review round
+    Then the genitive case is marked to confirm
+    And the mill is sent one drill-items grist naming "case-genitive" with the question he saw
+    When the mill answers it with items made from the verses it was sent
+    Then the items are kept for "case-genitive"
+    When he starts the next Review round
+    Then the round asks the genitive case with an item the mill wrote
+    And the genitive case is known: it is no longer to confirm and its row has moved up
+
+  Scenario: Prove it does not prove an idea whose questions he has all seen, and proves it on fresh ones
+    Given he has been asked every question of the top step of Drill it on the genitive case but one
+    When he starts Prove it on the genitive case
+    Then Prove it says more questions are on their way
+    And the mill is sent one drill-items grist naming "case-genitive"
+    And the genitive case is not proved
+    When the mill answers it with two items made from the verses it was sent
+    And he starts Prove it on the genitive case again
+    And he answers every question of Prove it right
+    Then Drill it says it is proved
+    And Prove it asked no question he had been asked before

@@ -28,12 +28,15 @@ import { instructionsOf } from '../../scripts/grind-parts';
 import { MAX_REQUEST_BYTES } from '../../src/services/requestBudget';
 import { setCurrentLicence } from '../../src/services/licenceNow';
 import { tutorTimings } from '../../src/services/tutor';
-import { askForMoreItems } from '../../src/review/moreItems';
+import { confirmAnswer } from '../../src/review/confirm';
+import { askForMoreItems, whenIdle } from '../../src/review/moreItems';
+import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { GRAMMAR } from '../../src/review/kinds';
 import { drawReviewRound } from '../../src/review/round';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { validate, type Schema } from '../support/schema-validate';
+import { ASYNC_WAIT_MS as timeout } from '../support/timeouts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const inputSchema = readJson('grinds/drill-items.input.schema.json') as Schema;
@@ -403,5 +406,53 @@ describe('the next round on that idea', () => {
     expect(items.find((i) => i.kind === 'grammar' && i.id === 'declension-2')).toMatchObject({ question: kept });
     // served once: the round after has the built-in questions, and the idea is not due again until tomorrow
     expect((await drawReviewRound(mulberry32(3))).items.some((i) => i.kind === 'grammar' && i.id === 'declension-2')).toBe(false);
+  });
+});
+
+describe('one ask in flight across a Review round and a drill (mw-indx1x6.2)', () => {
+  let postern: FakePostern;
+  beforeEach(async () => {
+    // the earlier tests' drawn rounds may still be counting their stock: they decide before this phone holds a key
+    await whenIdle();
+    stubChapterFetch();
+    const chapterFetch = globalThis.fetch;
+    postern = makeFakePostern();
+    postern.autoReply = { status: 'answered', answer: { items: [TAP, MEANING] } };
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith('https://postern') ? postern.fetch(input, init) : chapterFetch(input, init)));
+    tutorTimings.pollMs = 20;
+    setCurrentLicence('licensed');
+    localStorage.clear();
+    localStorage.setItem(DEVICE_KEY_STORAGE_KEY, '00'.repeat(31) + '0c');
+    await db.open();
+    await Promise.all([db.settings.clear(), db.reviews.clear()]);
+    await db.reviews.put({ kind: 'grammar', id: 'declension-2', step: 3, rights: 0, due: 0, lastWhen: 0, lapses: 1 });
+  });
+  afterEach(async () => {
+    await whenIdle();
+    vi.unstubAllGlobals();
+  });
+
+  it('the ask a right answer on a missed idea starts holds the round end\'s ask back, and the round end\'s holds back the next right answer\'s', async () => {
+    const release = Promise.withResolvers<void>();
+    postern.holds[DRILL_ITEMS_KIND] = release.promise;
+    const question = { kind: 'tap-form' as const, ideaId: 'declension-2', prompt: 'Tap the second declension noun', options: TAP.options, right: TAP.right, ref: TAP.ref };
+    // a right answer in a drill starts the confirm's ask; the round ends while it is out
+    await confirmAnswer(question, true);
+    await vi.waitFor(() => expect(postern.calls.length).toBeGreaterThan(0), { timeout });
+    expect(await askForMoreItems(['declension-2'], { passage })).toBe('busy');
+    release.resolve();
+    await whenIdle();
+    expect(postern.received).toHaveLength(1);
+    // and the other way round: a round end's ask is out, a right answer in a drill asks nothing more
+    postern.received.length = 0;
+    const second = Promise.withResolvers<void>();
+    postern.holds[DRILL_ITEMS_KIND] = second.promise;
+    await db.settings.delete('toConfirm');
+    const round = askForMoreItems(['declension-2'], { key: KEY, passage });
+    await confirmAnswer({ ...question, prompt: 'Another question' }, true);
+    second.resolve();
+    await round;
+    await whenIdle();
+    expect(postern.received).toHaveLength(1);
   });
 });

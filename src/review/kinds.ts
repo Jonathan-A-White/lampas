@@ -18,6 +18,8 @@ import { buildQuestion, drawWords, mulberry32, seedDistractors, type Question, t
 import { loadPassage, planFacetQuestions } from '../data/repositories/reviewPassage';
 import { chosenPronunciation, speakWord } from '../speech/greek';
 import { speakQuestion } from '../speech/speakQuestion';
+import { confirmAnswer } from './confirm';
+import { keepStocked } from './moreItems';
 import {
   getDrillPlan,
   answerPlanItem,
@@ -28,6 +30,7 @@ import {
   listSolidLemmas,
   LESSON_KIND,
   listWords,
+  missedBefore,
   pushGrammarAnswer,
   recordAnswer,
   noteAnswer,
@@ -207,6 +210,8 @@ export const GRAMMAR: ReviewKind = {
     const graded = await gradedVersesOf(passage);
     // the items the mill wrote after an earlier round (src/review/moreItems.ts) are served first on their idea; they are read from the phone, so nothing waits on the network (mw-hqd5bz.36)
     const fetched = await takeFetchedItems(due.map((r) => r.id)).catch(() => new Map<string, GrammarQuestion>());
+    // the stock of questions he has not been asked is topped up, in the background, for the ideas of the round that need one (mw-indx1x6.2); a kept item served here is counted as gone
+    void keepStocked(due.map((r) => r.id));
     return due.flatMap((r): GrammarItem[] => {
       const idea = ideaIfAny(r.id);
       if (!idea) return [];
@@ -224,9 +229,12 @@ export const GRAMMAR: ReviewKind = {
   },
   record: async (item, right) => {
     if (item.kind !== 'grammar') return;
+    // read before the answer is written: whether he missed the idea before decides whether this right answer marks it to confirm (src/review/confirm.ts)
+    const wasMissed = await missedBefore(item.id).catch(() => false);
     await recordGrammarAnswer(item.id, right);
-    // the question is remembered as asked, so the mill is not asked for it again and a kept copy is not served (mw-indx1x6.1)
+    // the question is remembered as asked, so the mill is not asked for it again and a kept copy is not served (mw-indx1x6.1); before the confirm, whose ask carries the seen list
     await noteAsked(item.question);
+    await confirmAnswer(item.question, right, { rowWritten: true, wasMissed });
     // a form read right shows its letters, sounds and marks; a miss on a letter or sound counts against it (mw-hqd5bz.17)
     await noteAnswer(item.question, right);
     // the ring of the last 20 grammar answers that decides whether New words at moves (src/review/pickerMove.ts)
