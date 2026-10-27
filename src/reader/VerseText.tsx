@@ -3,7 +3,7 @@ import type { BarHandlers } from 'voice-kit/composer';
 import { Fragment, useEffect, useRef, type MouseEvent, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
+import { chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { useAiAllowed } from '../gate/licenceContext';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
@@ -244,6 +244,13 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
     if (language === 'hebrew' && hasVoice('hebrew') === false) return;
     if (speakWord(text, language)) publish({ kind: 'word-spoken', text, language, verse: verse.n });
   };
+  // a marked word the MSB gives no English of its own is in no chunk: it is drawn, marked, in its own place in the English and the weave (weave.ts strayMarks, mw-5r3p30.817)
+  const strays = view === 'greek' || marked === undefined ? { before: new Map<number, readonly number[]>(), end: [] as readonly number[] } : strayMarks(verse, marked, drawnOrder(verse, woven));
+  const strayWord = (i: number) => (
+    <Tap key={`w${i}`} still={still} data-word={String(i)} data-marked="" {...own} dir={ownDir} className={`${face} text-accent ${TAP_PAD} ${MARKED}`} onTap={() => lookGreek(verse.g[i])} onLongPress={() => say(verse.g[i].t, ownSpeech)}>
+      {verse.g[i].t}
+    </Tap>
+  );
   return (
     <span data-text>
       {view === 'greek'
@@ -252,7 +259,9 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
               {w.t}
             </Tap>
           ))
-        : drawnOrder(verse, woven).map((i) => {
+        : [...drawnOrder(verse, woven), -1].flatMap((i) => {
+            if (i < 0) return strays.end.map(strayWord);
+            const before = (strays.before.get(i) ?? []).map(strayWord);
             // a Greek-order weave may have moved a sentence's closing mark to the end of its last piece (weave.ts chunkText)
             const text = chunkText(verse, woven, i);
             const c = text === verse.e[i].t ? verse.e[i] : { ...verse.e[i], t: text };
@@ -264,7 +273,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                   {w.t}
                 </Tap>
               ));
-              return (
+              return [...before, (
                 <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-learning={weft.learning ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${isMarked(c) ? MARKED : ''}`}>
                   {weft.learning ? (
                     <span className="inline-flex flex-col items-center align-top leading-tight">
@@ -277,9 +286,9 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                     words
                   )}
                 </span>
-              );
+              )];
             }
-            return weft ? (
+            return [...before, weft ? (
               <Tap
                 key={i}
                 still={still}
@@ -308,7 +317,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
               <Tap key={i} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
                 {c.s ? <SuppliedText chunk={c} /> : c.t}
               </Tap>
-            );
+            )];
           })}
     </span>
   );

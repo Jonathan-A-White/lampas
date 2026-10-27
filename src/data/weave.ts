@@ -114,6 +114,41 @@ export function wovenInOrder(verse: Verse, woven: Woven[], order: WeaveOrder): W
   return Object.assign([...woven], { order: drawn, ...(texts ? { texts } : {}) });
 }
 
+/** Where a marked Greek word that no English chunk renders is drawn in a verse's English or weave (mw-5r3p30.817): `before` maps a chunk index to the words drawn just before
+ * that chunk, `end` holds those drawn after the last chunk. */
+export interface StrayMarks {
+  before: ReadonlyMap<number, readonly number[]>;
+  end: readonly number[];
+}
+
+/**
+ * A word the MSB gives no English of its own ('ὃ' of 'ὃ ἠδίκησεν', 'his wrong,') is in no chunk, so an English or woven verse never drew it, and a card that marks it
+ * (a Review question's verse) showed nothing marked. `strayMarks` places each of the `marked` Greek indexes that no chunk holds beside its neighbours: before the chunk
+ * that holds the next Greek word after it, or at the end of the drawn chunk that holds the word before it when none follows; a verse none of whose words has a chunk draws them
+ * all at the start. `order` is the drawn order (drawnOrder).
+ */
+export function strayMarks(verse: Verse, marked: ReadonlySet<number>, order: readonly number[]): StrayMarks {
+  const held = new Map<number, number>();
+  verse.e.forEach((chunk, i) => chunk.g.forEach((g) => held.set(g, i)));
+  const before = new Map<number, number[]>();
+  const end: number[] = [];
+  const put = (chunk: number | undefined, word: number): void => {
+    if (chunk === undefined) end.push(word);
+    else before.set(chunk, [...(before.get(chunk) ?? []), word]);
+  };
+  for (const word of [...marked].filter((i) => !held.has(i) && verse.g[i] !== undefined).sort((a, b) => a - b)) {
+    const next = [...held.keys()].filter((g) => g > word).sort((a, b) => a - b)[0];
+    if (next !== undefined) {
+      put(held.get(next), word);
+      continue;
+    }
+    const last = [...held.keys()].filter((g) => g < word).sort((a, b) => b - a)[0];
+    if (last === undefined) put(order[0], word);
+    else put(order[order.indexOf(held.get(last) as number) + 1], word);
+  }
+  return { before, end };
+}
+
 /** The chunk indexes of `verse` in the order a weave lays them out. */
 export const drawnOrder = (verse: Verse, woven: WovenVerse | null): readonly number[] => woven?.order ?? verse.e.map((_, i) => i);
 
