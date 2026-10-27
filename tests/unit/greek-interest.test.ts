@@ -40,6 +40,7 @@ const GREEK_ROWS: Readonly<Record<string, readonly [Follows, GreekLevel]>> = {
   greekPronunciation: ['greekInterest', 1],
   greekKeyboard: ['greekInterest', 1],
   'resource.strongs': ['greekInterest', 1],
+  'link.goal': ['depth', 1],
   'link.words': ['depth', 1],
   'link.review': ['depth', 1],
   weave: ['depth', 2],
