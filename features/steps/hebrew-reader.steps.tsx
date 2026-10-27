@@ -50,6 +50,8 @@ async function openOn(title: string, settings: Record<string, string> = {}, soli
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  // an Old Testament chapter is read by the Hebrew dial (mw-gdcyf98.3), which a phone not yet placed reads at 0: these scenarios are of a phone with Hebrew All in
+  await db.settings.put({ key: 'hebrewInterest', value: '5' });
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   await db.words.bulkPut(solid.map((lemma) => ({ lemma, lemmas: [lemma], gloss: '', lesson: 0, state: 'solid' as const, since: Date.now() })));
   render(<App />);

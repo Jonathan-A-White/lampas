@@ -1,6 +1,6 @@
 // A dial per language (mw-gdcyf98.2): 'How much Greek?' (mw-3ased2.2) and 'How much Hebrew?', each 0 to 5 with the same six named steps, each step a real change.
 // A dial's level decides which of its language's settings and views are shown, by the ordinary dependsOn rule (a row says `dependsOn: interestFrom(lang, n)`:
-// shown from step n up; a shared row says `depthFrom(n)`, the higher of the two). The Reader reads the Greek one too (viewAt, weaveAt, newWordsAt in greekInterest.ts).
+// shown from step n up; a shared row says `depthFrom(n)`, the higher of the two). The Reader reads the dial of the chapter's own language (levelOf, then viewAt, weaveAt, newWordsAt in greekInterest.ts: they take a step, and the step is of the chapter's language).
 // Moving a dial is src/data/repositories/greekInterest.ts. The names and lines are the Mayor's, PROVISIONAL until the Governor confirms them (the epic mw-3ased2).
 // A phone not yet placed reads Greek 5, All in (nothing hidden) and Hebrew 0 until placeInterest has chosen both; the languages he reads is the two dials' own state (languagesOf).
 import { defineSetting, type Dependency } from '../define';
@@ -41,6 +41,18 @@ const HEBREW_STEPS: readonly InterestStep[] = [
 
 /** The six steps of a language's dial, lowest first. */
 export const levelsOf = (lang: InterestLang): readonly InterestStep[] => (lang === 'grc' ? GREEK_STEPS : HEBREW_STEPS);
+
+/** The two dials' steps together: Greek ('grc') and Hebrew ('he', the code a study resource gives its language). */
+export interface InterestLevels {
+  grc: InterestLevel;
+  he: InterestLevel;
+}
+
+/** The step of the dial that belongs to a chapter's source language (mw-gdcyf98.3): a New Testament chapter ('grc') is read by the Greek dial, an Old Testament one ('hbo') by the Hebrew dial. */
+export const levelOf = (source: InterestLang, levels: InterestLevels): InterestLevel => (source === 'hbo' ? levels.he : levels.grc);
+
+/** The higher of the two dials: what a thing both languages share (his Logos works, the tutor's resources) is shown at. */
+export const higherOf = (levels: InterestLevels): InterestLevel => (levels.grc > levels.he ? levels.grc : levels.he);
 
 /** The key of a language's dial in the settings store. */
 export const interestKeyOf = (lang: InterestLang): 'greekInterest' | 'hebrewInterest' => (lang === 'grc' ? 'greekInterest' : 'hebrewInterest');

@@ -56,3 +56,48 @@ Feature: Which languages he reads, and how far into each
     And the tutor changes "hebrewInterest" to "0"
     Then Which languages? has "Greek" chosen
     And Settings draws no dial "How much Hebrew?"
+
+  # A chapter is read by the dial of its own language (mw-gdcyf98.3): the Old Testament by How much Hebrew?, the New Testament by How much Greek?, whatever the other dial stands at.
+  # These scenarios open the chapter with the two dials saved at the steps the scenario names.
+
+  Scenario: Genesis 1 at Hebrew Curious shows its switch and Matthew 1 at Greek Just English none
+    Given Lampas is opened on "Genesis 1" with Greek at "Just English" and Hebrew at "Curious"
+    Then the language switch offers "English" and "Hebrew"
+    When Lampas is opened on "Matthew 1" with Greek at "Just English" and Hebrew at "Curious"
+    Then the Reader draws no language switch
+
+  Scenario: Matthew 1 at Greek Curious shows its switch and Genesis 1 at Hebrew Just English none
+    Given Lampas is opened on "Matthew 1" with Greek at "Curious" and Hebrew at "Just English"
+    Then the language switch offers "English" and "Greek"
+    When Lampas is opened on "Genesis 1" with Greek at "Curious" and Hebrew at "Just English"
+    Then the Reader draws no language switch
+
+  Scenario: A Review card of Jonah 1:1 is in the Hebrew view at Hebrew Curious, whatever Greek stands at
+    Given a phone with Greek at "Just English" and Hebrew at "Curious" whose Reader is set to the original
+    When a Review card of "Jonah 1:1" is opened
+    Then the card shows the verse in Hebrew, right to left
+
+  Scenario: A Review card of Jonah 1:1 is in English at Hebrew Just English, whatever Greek stands at
+    Given a phone with Greek at "All in" and Hebrew at "Just English" whose Reader is set to the original
+    When a Review card of "Jonah 1:1" is opened
+    Then the card shows the verse in English
+
+  Scenario: At English only Genesis 1 is plain and only the English word sheet opens
+    Given Lampas is opened on "Genesis 1" with Greek at "Just English" and Hebrew at "Just English"
+    Then the Reader draws no language switch
+    And verse 1 is drawn in English
+    When he taps the English word "heavens" in verse 1
+    Then only the English word sheet opens
+
+  Scenario: At English only Matthew 1 is plain and only the English word sheet opens
+    Given Lampas is opened on "Matthew 1" with Greek at "Just English" and Hebrew at "Just English"
+    Then the Reader draws no language switch
+    And verse 1 is drawn in English
+    When he taps the English word "Abraham" in verse 1
+    Then only the English word sheet opens
+
+  Scenario: A talk on Genesis 1 carries hebrew_interest beside greek_interest
+    Given Lampas is opened on "Genesis 1" behind a fake Postern with Greek at "Curious" and Hebrew at "Learning"
+    When he opens the talk and asks "What does the first word mean?"
+    Then the request carries greek_interest "Curious" with "Dipping a toe" next
+    And the request carries hebrew_interest "Learning" with "Reading in Hebrew" next

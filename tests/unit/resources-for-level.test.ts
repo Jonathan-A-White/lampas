@@ -1,6 +1,7 @@
 // tests/unit/resources-for-level.test.ts — every study resource is marked Greek or English (mw-5r3p30.710) and one selector, src/resources/resourcesForLevel.ts,
 // says what the 'How much Greek?' dial shows of a list: Just English hides the Greek ones, the steps between put the English ones first, All in changes nothing.
 import { describe, expect, it } from 'vitest';
+import { publish } from '../../src/events/bus';
 import type { StudyResources } from '../../src/data/repositories';
 import { RESOURCES } from '../../src/resources';
 import type { CatalogueEntry } from '../../src/resources/catalogue';
@@ -52,6 +53,35 @@ describe('resourcesForLevel', () => {
     const lang = (r: { key: string }): ResourceLang => (r.key === 'b' ? 'en' : 'grc');
     expect(resourcesForLevel(rows, 0, lang).map((r) => r.key)).toEqual(['b']);
     expect(resourcesForLevel(rows, 2, lang).map((r) => r.key)).toEqual(['b', 'a', 'c']);
+  });
+});
+
+describe('resourcesForLevel by language (mw-gdcyf98.3)', () => {
+  const MIXED = [item('g', 'grc'), item('h', 'he'), item('e', 'en'), item('b', 'both')];
+
+  it('hides a Greek entry at Greek 0 and a Hebrew one at Hebrew 0, each by its own dial', () => {
+    expect(ids(resourcesForLevel(MIXED, 0, undefined, { grc: 0, he: 0 }))).toEqual(['e', 'b']);
+    expect(ids(resourcesForLevel(MIXED, 0, undefined, { grc: 0, he: 1 }))).toEqual(['e', 'b', 'h']);
+    expect(ids(resourcesForLevel(MIXED, 0, undefined, { grc: 1, he: 0 }))).toEqual(['e', 'b', 'g']);
+  });
+
+  it('shows a Hebrew lexicon at Hebrew Curious with Greek at 0, and hides it at Hebrew 0 with Greek at All in', () => {
+    const lexicon = [item('hebrew-lexicon', 'he')];
+    expect(ids(resourcesForLevel(lexicon, 5, undefined, { grc: 0, he: 1 }))).toEqual(['hebrew-lexicon']);
+    expect(resourcesForLevel(lexicon, 5, undefined, { grc: 5, he: 0 })).toEqual([]);
+  });
+
+  it('puts the English ones first at the steps between and leaves the list unchanged only when both dials stand at All in', () => {
+    expect(ids(resourcesForLevel(MIXED, 5, undefined, { grc: 5, he: 5 }))).toEqual(['g', 'h', 'e', 'b']);
+    expect(ids(resourcesForLevel(MIXED, 5, undefined, { grc: 5, he: 2 }))).toEqual(['e', 'b', 'g', 'h']);
+    expect(ids(resourcesForLevel(MIXED, 5, undefined, { grc: 3, he: 3 }))).toEqual(['e', 'b', 'g', 'h']);
+  });
+
+  it('reads the Hebrew dial from the bus when no levels are given, and the Greek step it is handed', () => {
+    publish({ kind: 'setting-changed', key: 'hebrewInterest', value: '1' });
+    expect(ids(resourcesForLevel(MIXED, 0))).toEqual(['e', 'b', 'h']);
+    publish({ kind: 'setting-changed', key: 'hebrewInterest', value: '0' });
+    expect(ids(resourcesForLevel(MIXED, 3))).toEqual(['e', 'b', 'g']);
   });
 });
 

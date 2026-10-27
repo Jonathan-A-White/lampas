@@ -112,7 +112,26 @@
       "enum": ["english", "greek"]
     },
     "greek_interest": {
-      "description": "Optional. The Greek dial as he set it (Settings > How much Greek?), from 0, Just English, to 5, All in: `level` and its `name`, and `next`, the one step above it, which is all you may offer to raise it to (see the instructions, 'Offering the Greek'). `next` is missing at All in: there is nothing to offer. Missing in a talk from a screen and in a quiz.",
+      "description": "Optional. The Greek dial as he set it (Settings > How much Greek?), from 0, Just English, to 5, All in: `level` and its `name`, and `next`, the one step above it, which is all you may offer to raise it to (see the instructions, 'Offering the Greek'). `next` is missing at All in: there is nothing to offer. The chapter's language picks which dial an offer may name: this one for a New Testament chapter, `hebrew_interest` for an Old Testament one. Missing in a talk from a screen and in a quiz.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "name"],
+      "properties": {
+        "level": { "type": "number", "minimum": 0, "maximum": 5 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "next": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["level", "name"],
+          "properties": {
+            "level": { "type": "number", "minimum": 1, "maximum": 5 },
+            "name": { "type": "string", "minLength": 1, "maxLength": 40 }
+          }
+        }
+      }
+    },
+    "hebrew_interest": {
+      "description": "Optional. The Hebrew dial as he set it (Settings > How much Hebrew?), in the shape of `greek_interest`: `level`, its `name` and `next`, the one step above it. A chapter is read by the dial of its own language: in an Old Testament chapter `hebrew_interest` is the one an offer to raise a dial may name, in a New Testament chapter `greek_interest`. Missing in a talk from a screen and in a quiz.",
       "type": "object",
       "additionalProperties": false,
       "required": ["level", "name"],

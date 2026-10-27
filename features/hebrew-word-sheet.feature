@@ -86,7 +86,7 @@ Feature: The Hebrew word sheet
     Then the Hebrew word sheet offers "Turn on Logos"
 
   Scenario: At Just English an English tap opens the small English sheet and no Hebrew word does
-    Given Lampas is opened on Genesis 1 with the Greek dial at Just English
+    Given Lampas is opened on Genesis 1 with the Hebrew dial at Just English
     When he taps the chunk "God" of verse 1
     Then the English word sheet opens headed "God"
     And the Hebrew word sheet is not opened
@@ -114,7 +114,7 @@ Feature: The Hebrew word sheet
     Then the Hebrew word sheet shows one Hebrew word
 
   Scenario: At Just English a tapped word of a chunk lists only that word
-    Given Lampas is opened on Genesis 1 with the Greek dial at Just English and Logos on
+    Given Lampas is opened on Genesis 1 with the Hebrew dial at Just English and Logos on
     When he taps the word "heavens" of the chunk "the heavens" of verse 1
     Then the English word sheet is headed "the heavens"
     And the English word sheet has the one link "Look it up in Logos: heavens"

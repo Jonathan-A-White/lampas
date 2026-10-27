@@ -60,6 +60,8 @@ async function openOn(title: string | null, phone: Phone = {}): Promise<void> {
   }
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  // an Old Testament chapter is read by the Hebrew dial (mw-gdcyf98.3), which a phone not yet placed reads at 0: these scenarios are of a phone with Hebrew All in
+  await db.settings.put({ key: 'hebrewInterest', value: '5' });
   for (const [key, value] of Object.entries(phone.settings ?? {})) await db.settings.put({ key, value });
   if (phone.ticked) await setResourceOption('logos', JSON.stringify(phone.ticked));
   if (phone.hash !== undefined) restoreLastRoute();
@@ -265,7 +267,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('At Just English an English tap opens the small English sheet and no Hebrew word does', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Genesis 1 with the Greek dial at Just English', () => openOn('Genesis 1', { settings: { greekInterest: '0' } }));
+    Given('Lampas is opened on Genesis 1 with the Hebrew dial at Just English', () => openOn('Genesis 1', { settings: { hebrewInterest: '0' } }));
     When('he taps the chunk {string} of verse {int}', async (_, text: string, n: number) => user.click(chunkEl(n, text)));
     Then('the English word sheet opens headed {string}', async (_, word: string) => {
       const dialog = await screen.findByRole('dialog', { name: 'English word' });
@@ -321,7 +323,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('At Just English a tapped word of a chunk lists only that word', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Genesis 1 with the Greek dial at Just English and Logos on', () => openOn('Genesis 1', { settings: { greekInterest: '0', ...LOGOS } }));
+    Given('Lampas is opened on Genesis 1 with the Hebrew dial at Just English and Logos on', () => openOn('Genesis 1', { settings: { hebrewInterest: '0', ...LOGOS } }));
     When('he taps the word {string} of the chunk {string} of verse {int}', tapsWordOfChunk);
     Then('the English word sheet is headed {string}', async (_, word: string) => {
       const dialog = await screen.findByRole('dialog', { name: 'English word' });

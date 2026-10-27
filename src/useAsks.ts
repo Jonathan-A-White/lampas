@@ -15,7 +15,7 @@ import { learnerSummary } from './data/learnerSummary';
 import { settingsSentTo } from './tutor/knows';
 import { addAnswer, getGreekPronunciation, listLevels, listSolidHeadwords, shelfOf, verseRef } from './data/repositories';
 import { worksForTutor } from './resources/tutorLinks';
-import { greekLevelOf } from './settings/definitions/greekInterest';
+import { higherInterest } from './services/interestField';
 import { isOrphan, pendingOf, setPending, startRunning, usePendingAsks, type AskState, type SentRef } from './pending/pendingAsks';
 import { answerDrawn } from './services/clientTiming';
 import { getDeviceKeyBytes } from './services/deviceKey';
@@ -80,7 +80,7 @@ export function useAsks(book: string, chapter: number, title: string, data: Chap
           // What he lacks under the topic his words name (mw-1vuvq6.5), worked out here so the tutor picks from it and never guesses
           const missing = levels ? missingFoundations(text, levelsOf(levels)) : undefined;
           // the tutor client adds the facts it reads up front and its catalogue to the fields, which stay as they are (src/tutor/registry.ts askRegistry)
-          const request = await askWithFacts(buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty, chapterData.current ?? undefined, worksForTutor(shelf, { book, chapter, verse: verse.n }, text, greekLevelOf(settings.greekInterest))), 0);
+          const request = await askWithFacts(buildRequest(unitReference(title, verse), verse, text, solid, learner, grammar, settings, requests, profile, spoken, pronunciation, memory, missing, rusty, chapterData.current ?? undefined, worksForTutor(shelf, { book, chapter, verse: verse.n }, text, higherInterest(settings))), 0);
           let sentAs: string | undefined;
           const answer = await askTutor(request, {
             key: getDeviceKeyBytes(),

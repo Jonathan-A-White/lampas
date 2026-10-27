@@ -131,8 +131,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // An Old Testament chapter ('hbo') is read in English or in its Hebrew (mw-5vvlay.1): the switch's second choice is the chapter's one source view ('greek' in code, the Hebrew of this
   // chapter and the Greek of a New Testament one, so the saved view opens either), and the weave lays the English against the Hebrew.
   const hbo = isHebrewBook(BOOK);
-  const settings = useReaderSettings() ?? NO_SETTINGS;
-  const { greek, view, weave, weaveShown, weaveOrder, solid, learning, layout, headings, readSpan } = settings;
+  const settings = useReaderSettings(hbo ? 'hbo' : 'grc') ?? NO_SETTINGS;
+  const { level, view, weave, weaveShown, weaveOrder, solid, learning, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
   const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
   // the language of the chapter's own words (the switch's last choice, the Hebrew or the Greek view); the book says it before the chapter has loaded
@@ -166,11 +166,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const selected = selectedEvent?.chapter === CHAPTER ? selectedEvent.verse : null;
   const [lookup, setLookup] = useState<Lookup | null>(null);
   // A tap on a word of an Old Testament chapter opens the word sheet like a Greek word's, but Hebrew (mw-5vvlay.2): a Hebrew word's own sheet, an English chunk's sheet with the Hebrew words it renders
-  // and, under them, the English sheet of its words; below the Greek dial's Curious step an English chunk opens the English sheet alone (WordSheet).
+  // and, under them, the English sheet of its words; below the Hebrew dial's Curious step (mw-gdcyf98.3) an English chunk opens the English sheet alone (WordSheet).
   // The teach sheet (src/TeachSheet.tsx), opened by the 'New N' chip.
   const [teaching, setTeaching] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
-  const pace = usePace();
+  const pace = usePace(source);
   const newWords = useNewWords(hbo ? null : chapter, solid, learning, pace?.count);
   const { asks, ask, resume: resumeAsk } = useAsks(BOOK, CHAPTER, TITLE, chapter);
   // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
@@ -438,7 +438,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       <div data-reader-top className="reader-top">
       <ReaderHeader
         title={TITLE}
-        view={view && greek !== undefined && greek >= GREEK_VIEW_FROM ? view : undefined}
+        view={view && level !== undefined && level >= GREEK_VIEW_FROM ? view : undefined}
         source={source}
         weave={weave ?? 'off'}
         weaveShown={weaveShown ?? false}

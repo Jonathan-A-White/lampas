@@ -25,7 +25,7 @@ import {
   type GreekLevel,
 } from '../../settings/definitions/greekInterest';
 import { HEBREW_TOP, hebrewInterestSetting, hebrewLevelOf, type HebrewLevel } from '../../settings/definitions/hebrewInterest';
-import { languagesOf, type InterestLang, type InterestLevel, type Languages } from '../../settings/definitions/interest';
+import { languagesOf, type InterestLang, type InterestLevel, type InterestLevels, type Languages } from '../../settings/definitions/interest';
 import { getSetting, setSetting } from '../../settings/store';
 import { BOOK_INDEX } from '../bookIndex';
 import { parseGoal } from '../goal';
@@ -50,6 +50,12 @@ export const getGreekInterest = async (): Promise<GreekLevel> => greekLevelOf(aw
 
 /** The saved Hebrew step; 0, no Hebrew, until the phone has been placed. */
 export const getHebrewInterest = async (): Promise<HebrewLevel> => hebrewLevelOf(await getSetting(hebrewInterestSetting));
+
+/** Both saved steps, as the Reader picks one by the language of the chapter it draws (levelOf in src/settings/definitions/interest.ts). */
+export async function getInterestLevels(): Promise<InterestLevels> {
+  const [grc, he] = await Promise.all([getGreekInterest(), getHebrewInterest()]);
+  return { grc, he };
+}
 
 /** A setting the dial turns off below the step `from`: how it is written back from the text it was kept as, and what off is. */
 interface Managed {

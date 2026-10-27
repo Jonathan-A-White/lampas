@@ -222,6 +222,25 @@
         }
       }
     },
-    "settings": { "description": "Optional. The app settings that bear on an answer, by key: hebrewDepth (how a Hebrew word is written), askBy (\"speaking\" or \"typing\"), englishAccent (\"american\", \"british\" or \"ipa\": the English the reader hears sounds in), readTutor (whether answers are read aloud to him), weave and weaveGrammar (how much Greek is woven into his English), greekInterest (\"0\" Just English to \"5\" All in: how much Greek he has asked the app to show): { \"hebrewDepth\": \"both\", \"askBy\": \"speaking\" }.", "type": "object" }
+    "hebrew_interest": {
+      "description": "Optional. The Hebrew dial as he set it (Settings > How much Hebrew?), from 0, Just English, to 5, All in: `level`, its `name` and `next`, the one step above it. Present with `settings`, whose `greekInterest` is the Greek dial. The language of the verse's chapter picks the dial that matters to the answer: `hebrew_interest` for an Old Testament verse, `greekInterest` for a New Testament one.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "name"],
+      "properties": {
+        "level": { "type": "number", "minimum": 0, "maximum": 5 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "next": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["level", "name"],
+          "properties": {
+            "level": { "type": "number", "minimum": 1, "maximum": 5 },
+            "name": { "type": "string", "minLength": 1, "maxLength": 40 }
+          }
+        }
+      }
+    },
+    "settings": { "description": "Optional. The app settings that bear on an answer, by key: hebrewDepth (how a Hebrew word is written), askBy (\"speaking\" or \"typing\"), englishAccent (\"american\", \"british\" or \"ipa\": the English the reader hears sounds in), readTutor (whether answers are read aloud to him), weave and weaveGrammar (how much Greek is woven into his English), greekInterest and hebrewInterest (\"0\" Just English to \"5\" All in: how much Greek, and how much Hebrew, he has asked the app to show): { \"hebrewDepth\": \"both\", \"askBy\": \"speaking\" }.", "type": "object" }
   }
 }

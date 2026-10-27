@@ -1,7 +1,8 @@
 // The Study resources follow the 'How much Greek?' dial (mw-5r3p30.710, PROVISIONAL): every resource is marked Greek or English (src/resources/types.ts lang),
 // and Settings > Study resources, the word sheet's look-ups and the tutor's links all go through one selector (src/resources/resourcesForLevel.ts). At Just English the
 // Greek ones (Strong's, the Black grammar) are hidden; between, the English ones and the apps that open both (Logos) come first; at All in nothing changes.
-// A resource the dial hides keeps its switch. At 390x844, from a phone placed at All in (the config's storage state).
+// A resource the dial hides keeps its switch. Each language has its own dial (mw-gdcyf98.3): a Greek resource follows 'How much Greek?' and a Hebrew one 'How much Hebrew?', so a phone
+// that reads Hebrew alone lists no Greek resource. At 390x844, from a phone placed at All in (the config's storage state).
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
@@ -94,6 +95,32 @@ test('Just English lists no Greek resource in Study resources, and no book at an
   expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos']);
   await expect(section.getByRole('switch', { name: "Strong's", exact: true })).toHaveAttribute('aria-checked', 'true');
   await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
+});
+
+test('a phone that reads Hebrew alone lists no Greek resource, and Greek brings Strong\'s back', async ({ page }) => {
+  await openUnlocked(page);
+  await holdAppLinks(page);
+  await openReader(page);
+  // Which languages? = Hebrew puts the Greek dial at Just English: Strong's (a Greek resource) is hidden, Logos (both) stays
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const languages = page.getByRole('group', { name: 'Which languages?', exact: true });
+  await languages.getByRole('button', { name: 'Hebrew', exact: true }).click();
+  await expect(languages.getByRole('button', { name: 'Hebrew', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  let section = await studySection(page);
+  expect(await resourceSwitches(section)).toEqual(['Logos']);
+  await shot(page, 'study-resources-hebrew-only');
+  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
+  await leaveSettings(page);
+  // Greek and Hebrew: the Greek dial comes back at the All in it was left at, and the list is as it was at All in
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await languages.getByRole('button', { name: 'Greek and Hebrew', exact: true }).click();
+  await expect(languages.getByRole('button', { name: 'Greek and Hebrew', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  section = await studySection(page);
+  expect(await resourceSwitches(section)).toEqual(["Strong's", 'Logos']);
 });
 
 test('at a step between, the English resources come before the Greek in Study resources', async ({ page }) => {

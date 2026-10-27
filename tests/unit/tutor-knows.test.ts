@@ -4,10 +4,11 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { db } from '../../src/data/db';
-import type { Verse } from '../../src/data/chapter';
+import { NO_CHAPTER, type Verse } from '../../src/data/chapter';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { setGreekPronunciation } from '../../src/data/repositories';
 import { buildReadingRequest } from '../../src/services/reading';
+import { buildTalkRequest } from '../../src/services/talk';
 import { buildRequest } from '../../src/services/tutor';
 import { currentSettings, SETTINGS } from '../../src/settings/registry';
 import { isTalkable } from '../../src/settings/rows';
@@ -136,6 +137,17 @@ describe('the builders send what the table says', () => {
     const knows = TUTOR_KNOWS['verse-ask'];
     for (const key of Object.keys(knows.settings)) expect(at(request, knows.settings[key]), `verse-ask request lacks ${key} at ${knows.settings[key]}`).toBeDefined();
     for (const part of Object.keys(knows.progress)) expect(at(request, knows.progress[part]), `verse-ask request lacks ${part} at ${knows.progress[part]}`).toBeDefined();
+  });
+
+  it('the Hebrew dial is its own field beside the Greek one: hebrew_interest to the Bible talk and the ask, in the shape of greek_interest (mw-gdcyf98.3)', async () => {
+    expect(TUTOR_KNOWS['bible-talk'].settings.hebrewInterest).toBe('hebrew_interest');
+    expect(TUTOR_KNOWS['verse-ask'].settings.hebrewInterest).toBe('settings.hebrewInterest');
+    const talk = buildTalkRequest({ title: 'Romans 8', chapter: NO_CHAPTER, verse: null }, 'Hello', [], [], { greekInterest: '2', hebrewInterest: '4' });
+    expect(talk.greek_interest).toEqual({ level: 2, name: 'Dipping a toe', next: { level: 3, name: 'Learning' } });
+    expect(talk.hebrew_interest).toEqual({ level: 4, name: 'Reading in Hebrew', next: { level: 5, name: 'All in' } });
+    const ask = buildRequest('Romans 8:28', verse, 'What is this?', [], undefined, undefined, { greekInterest: '2', hebrewInterest: '5' });
+    expect(ask.hebrew_interest).toEqual({ level: 5, name: 'All in' });
+    for (const kind of ['bible-talk', 'verse-ask'] as const) expect(Object.keys(inputSchema(kind).properties ?? {})).toContain('hebrew_interest');
   });
 
   it('verse-read: every setting and part of progress the table lists is in the request', () => {

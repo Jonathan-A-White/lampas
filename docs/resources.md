@@ -307,17 +307,19 @@ His ask (2026-10-21): at Just English the Greek grammars and Greek Logos resourc
 | `lang` | meaning | today |
 |---|---|---|
 | `'grc'` | a Greek resource: a Greek grammar or lexicon, the Greek number | Strong's, Black's grammar |
-| `'he'` | a Hebrew lexicon (mw-5vvlay.2): opened for a Hebrew word only; the dial treats it like `'grc'` (hidden at Just English, after the English ones between) | BDB, TWOT, Gesenius ... |
+| `'he'` | a Hebrew lexicon (mw-5vvlay.2): opened for a Hebrew word only; hidden at Hebrew 0 and, between, after the English ones, by the Hebrew dial (mw-gdcyf98.3) | BDB, TWOT, Gesenius ... |
 | `'en'` | an English resource | Calvin's commentaries and both Institutes |
 | `'both'` | an app that opens Greek and English; the dial treats it as English | Logos, Accordance |
 
-The one selector is `resourcesForLevel(list, level)` (`src/resources/resourcesForLevel.ts`); no list filters or orders a resource on its own. **Just English (0):** only `en` and `both`, in their own order.
-**Curious to Reading in Greek (1 to 4):** `en` and `both` first, then `grc` and `he`, each side in its own order. **All in (5):** the list unchanged. An unplaced phone reads 5. The Mayor's cheap choice, not his word:
+The one selector is `resourcesForLevel(list, level, langOf?, levels?)` (`src/resources/resourcesForLevel.ts`); no list filters or orders a resource on its own. **Each language has its own dial (mw-gdcyf98.3):** a `grc`
+entry follows 'How much Greek?' and a `he` entry 'How much Hebrew?', so `levels` is `{grc, he}`; a caller that has not been taught the Hebrew dial passes the Greek `level` alone and the Hebrew dial is read as the bus
+last told it (`setting-changed` of `hebrewInterest`, which the app tells at its start and at every move), else it equals `level`. **Just English (0) of an entry's own dial:** the entry is hidden, so a Greek one is hidden at Greek 0 and a Hebrew one at Hebrew 0, while `en` and `both` are always shown, in their own order.
+**Curious to Reading in Greek or Hebrew (1 to 4):** `en` and `both` first, then `grc` and `he`, each side in its own order. **All in (5):** the list unchanged when every dial that shows a source entry stands there. An unplaced phone reads Greek 5 and Hebrew 0. The Mayor's cheap choice, not his word:
 the Governor may change the rule in that one file. A resource the dial hides keeps its switch or tick (nothing is deleted): the lists draw fewer entries, and the stored ids are written over the whole list.
 
 Who goes through it: Settings > Study resources (the switches: `orderResourceRows` in `src/settings/rows.ts` for the order, the row's `dependsOn` in `registry.ts` for hiding; the library row in
-`src/settings/controls/resources.tsx`; Settings lists no book, so the dial's hiding of Greek books is a matter for the Library pages), the word sheet's Study row (`studyGroups` in `src/WordSheet.tsx`), the idea sheet's Read more (`readMoreFor`'s
-`level`), and the tutor (`resourcesForTutor`, `worksForTutor`, `wordChips`, `verseChips`, `workChip`, each given the level; `src/useTalk.ts` and `src/TutorLinks.tsx` pass it, and a Greek work the dial hides is not
+`src/settings/controls/resources.tsx`; Settings lists no book, so the dial's hiding of Greek books is a matter for the Library pages), the word sheet's Study row (`studyGroups` in `src/WordSheet.tsx`, given both dials from `useInterestLevels`), the idea sheet's Read more (`readMoreFor`'s
+`level`), and the tutor (`resourcesForTutor`, `worksForTutor`, `wordChips`, `verseChips`, `workChip`, each given the level, the HIGHER of the two dials, `higherInterest` in `src/services/interestField.ts`, because a shelf belongs to both languages; `src/useTalk.ts` and `src/TutorLinks.tsx` pass it, and a Greek work the dial hides is not
 offered to the tutor and its link is dropped). Not through it, because they ask for one named resource and Logos is `both`: the Today, chapter picker and reference card Logos links, the English dictionary row, the
 tutor's Settings list (the tutor is told every setting, shown or not) and the tips' count of switches on. **When a Logos work is added to `WORKS`, say whether it is Greek or English in `lang`.**
 Not yet marked: the lexicons ticked inside Logos (BDAG, Louw-Nida ...) are Greek but are choices of the one `both` app, so they show at every step.

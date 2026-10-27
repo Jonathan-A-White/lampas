@@ -29,7 +29,7 @@ import { armFallback } from '../resources/openApp';
 import { worksForTutor, workChip } from '../resources/tutorLinks';
 import { workOf } from '../resources/works';
 import { setPractise } from '../review/practise';
-import { greekLevelOf } from '../settings/definitions/greekInterest';
+import { higherInterest } from '../services/interestField';
 import { dailyTicksSetting } from '../settings/definitions';
 import { applyChanges, currentSettings, MAX_CHANGES, undoChange, type ChangeResult } from '../settings/registry';
 import { getSetting } from '../settings/store';
@@ -135,7 +135,7 @@ const FACTS: readonly Fact[] = [
   {
     name: 'works',
     tell: 'the digest of his Logos shelf: pinned books, commentaries, grammars',
-    read: async () => worksForTutor(await shelfOf().catch(() => []), undefined, '', greekLevelOf((await currentSettings()).greekInterest)),
+    read: async () => worksForTutor(await shelfOf().catch(() => []), undefined, '', higherInterest(await currentSettings())),
   },
   {
     name: 'memorizing',
@@ -247,7 +247,7 @@ const workPlace: Place = {
   open: async (args) => {
     const id = workIdOf(args);
     const [ticked, shelf, settings] = await Promise.all([getWorks(), shelfOf().catch(() => []), currentSettings()]);
-    const found = workChip(id, undefined, ticked, undefined, greekLevelOf(settings.greekInterest), shelf.map((row) => row.id));
+    const found = workChip(id, undefined, ticked, undefined, higherInterest(settings), shelf.map((row) => row.id));
     if (!found) throw new Error('that book is not on his shelf, or Logos has nowhere to open it');
     // The app's own address; when the phone has no app for it nothing happens, so the https fallback is armed as a tap on the link arms it
     workDoor.open(found.chip.url);

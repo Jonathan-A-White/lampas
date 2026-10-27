@@ -28,6 +28,7 @@ import { leaveSheetForTutor } from './ui/sheetBack';
 import { currentSettings, offeredChange } from './settings/registry';
 import { greekOfferOf } from './talk/greekOffer';
 import { greekLevelOf } from './settings/definitions/greekInterest';
+import { higherInterest } from './services/interestField';
 import { rustyOfferOf } from './talk/rustyOffer';
 import { quizGoalOfferOf } from './talk/quizGoalOffer';
 import { rustyNow } from './data/learnerRusty';
@@ -190,7 +191,8 @@ export function useTalk(
           const { talk, when: firstWhen } = talkNameOf(ref, turns, startedAt);
           const said: { session?: TalkSession } = {};
           // the Greek dial's step: the resources and works the tutor is told of follow it (resourcesForLevel)
-          const greekLevel = greekLevelOf(settings.greekInterest);
+          // the tutor's resources and works follow the higher of the two dials (mw-gdcyf98.3); the Greek offer, below, the Greek one
+          const greekLevel = higherInterest(settings);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
           const request = fitHistory(await withTutorFacts(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today, chapterMaps), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const options = {

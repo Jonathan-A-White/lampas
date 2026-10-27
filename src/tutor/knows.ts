@@ -114,9 +114,9 @@ const NO_QUIZ = 'The quiz is the Bible talk\'s Quiz me mode alone; this grind ne
 export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
   'bible-talk': {
     // currentSettings(): what every registry setting holds now, in `settings`; the pronunciation also has its own field the sound questions use (mw-5r3p30.241)
-    // the Greek dial is also its own field, greek_interest, with the step's name and the one step above it: all the Greek offer may name (mw-3ased2.3). The Hebrew dial and the
-    // languages he reads are sent in `settings` (everySetting); story mw-gdcyf98.a2 gives the Hebrew dial its own field, hebrew_interest, the same way.
-    settings: { ...everySetting, greekPronunciation: 'pronunciation', greekInterest: 'greek_interest' },
+    // each dial is also its own field, greek_interest and hebrew_interest, with the step's name and the one step above it: all an offer may name, the chapter's language picking
+    // which (mw-3ased2.3, mw-gdcyf98.3). The languages he reads is sent in `settings` (everySetting).
+    settings: { ...everySetting, greekPronunciation: 'pronunciation', greekInterest: 'greek_interest', hebrewInterest: 'hebrew_interest' },
     progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works', maps: 'maps' },
     notSent: {},
   },
@@ -128,6 +128,8 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       weave: 'settings.weave',
       weaveGrammar: 'settings.weaveGrammar',
       greekInterest: 'settings.greekInterest',
+      // the Hebrew dial is also its own field, hebrew_interest (mw-gdcyf98.3), the Bible talk's shape
+      hebrewInterest: 'settings.hebrewInterest',
       greekPronunciation: 'pronunciation',
       englishAccent: 'settings.englishAccent',
       goal: 'learner_grammar.goal',
@@ -148,8 +150,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       studyWay: NO_QUIZ,
       today: 'An ask is about one verse he is reading; what is on his Today list is for the Bible talk, where he can ask what is on his drill and be offered Today.',
       maps: 'An ask is about one verse and links no map; the maps of its chapter are the Bible talk\'s to name and to link, and the Verse view has its own Maps door.',
-      hebrewInterest: 'How much Hebrew he wants in the app reaches the asks as the field of mw-gdcyf98.a2 (hebrew_interest); until that story lands the ask is told the Greek dial alone.',
-      languages: 'Which languages he reads is the two dials read together (greekInterest here, hebrew_interest from mw-gdcyf98.a2), so the ask is not given the sum a second time.',
+      languages: 'Which languages he reads is the two dials read together (greekInterest and hebrewInterest here, and hebrew_interest as a field), so the ask is not given the sum a second time.',
     },
   },
   'verse-read': {

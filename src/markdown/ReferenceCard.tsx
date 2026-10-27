@@ -20,13 +20,14 @@ import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
 import { VerseText } from '../reader/VerseText';
 import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
+import { isOrdered, rowAttrs } from '../reader/sourceText';
 import { textClass } from '../reader/textClass';
-import { langOf } from '../script/greekLang';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
 
 /** The translation the reader's English is, and the edition its Greek follows. */
 const TRANSLATION = 'Majority Standard Bible';
 const GREEK_TEXT = 'Robinson-Pierpont Greek';
+const HEBREW_TEXT = 'Westminster Leningrad Codex';
 
 const MARGIN = 8;
 const GAP = 6;
@@ -44,17 +45,18 @@ const markedIn = (verse: Verse, form: string): ReadonlySet<number> => {
 /** The passage as the Reader would draw it, in his view and Weave, with the Greek word `mark` marked when there is one (mw-5r3p30.652). The words are plain text: a tap on a card opens nothing. */
 function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPlace; mark?: string }) {
   const saved = useViewSettings();
-  // an Old Testament chapter is read in English only, whatever view he saved
+  // the dial of the chapter's own language decides the view and the weave, as it does in the Reader (mw-gdcyf98.3)
   const settings = saved && settingsFor(saved, chapter);
+  const source = sourceLanguage(chapter);
   const woven = useWoven(chapter, settings ?? {});
   if (!settings) return <p role="status" className="py-1 text-base text-muted">Loading…</p>;
   const inRange = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => v.n >= held.first && v.n <= held.last);
   return (
-    <p data-reference-text data-view={settings.view} {...langOf(settings.view === 'greek')} className={`break-words leading-snug ${textClass(settings.view)}`}>
+    <p data-reference-text data-view={settings.view} {...rowAttrs(settings.view, source, isOrdered(woven))} className={`break-words leading-snug ${textClass(settings.view, source)}`}>
       {inRange.map(({ v, i }, k) => (
         <span key={v.n}>
           {inRange.length > 1 ? <sup className="mr-0.5 font-sans text-xs text-muted">{v.n}</sup> : null}
-          <VerseText verse={v} view={settings.view} woven={woven?.[i] ?? null} onLook={() => undefined} marked={mark === undefined ? undefined : markedIn(v, mark)} still />
+          <VerseText verse={v} view={settings.view} source={source} woven={woven?.[i] ?? null} onLook={() => undefined} marked={mark === undefined ? undefined : markedIn(v, mark)} still />
           {k < inRange.length - 1 ? ' ' : ''}
         </span>
       ))}
@@ -176,8 +178,9 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   useSheetBack(onClose);
   const { held } = card;
   const [passage, setPassage] = useState<Passage>(null);
-  const saved = useViewSettings()?.view;
-  const view = passage !== null && passage !== 'failed' && sourceLanguage(passage) !== 'grc' ? 'english' : saved;
+  const saved = useViewSettings();
+  // the view the passage is drawn in: by the dial of its chapter's language (the Greek one's until the chapter has loaded)
+  const view = saved && settingsFor(saved, passage !== null && passage !== 'failed' ? passage : {}).view;
   const box = useRef<HTMLDivElement>(null);
   const layer = useRef<HTMLDivElement>(null);
   const head = useRef<HTMLDivElement>(null);
@@ -257,7 +260,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
           )}
         </div>
         <div ref={foot} className="flex flex-col gap-1 border-t border-line px-4 py-2">
-          {held ? <span className="text-sm text-muted">{view === 'greek' ? GREEK_TEXT : TRANSLATION}</span> : null}
+          {held ? <span className="text-sm text-muted">{view === 'greek' ? (passage !== null && passage !== 'failed' && sourceLanguage(passage) === 'hbo' ? HEBREW_TEXT : GREEK_TEXT) : TRANSLATION}</span> : null}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <PlayControls card={card} />

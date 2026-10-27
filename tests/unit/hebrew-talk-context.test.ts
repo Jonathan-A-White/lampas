@@ -55,7 +55,10 @@ describe('the Bible talk on a Greek chapter', () => {
     const r = buildTalkRequest({ title: 'Romans 8', chapter: rom8, verse: verse(rom8, 28) }, 'Why does it say all things?', [], []);
     expect(r.greek).toBe(verse(rom8, 28).g.map((w) => w.t).join(' '));
     expect(r.greek_words?.length).toBeGreaterThan(0);
-    const sha = createHash('sha256').update(JSON.stringify(r)).digest('hex');
+    // the one field added since (mw-gdcyf98.3) is hebrew_interest, beside greek_interest; with it taken out the request is the bytes it was
+    const { hebrew_interest: hebrew, ...before } = r;
+    expect(hebrew).toEqual({ level: 0, name: 'Just English', next: { level: 1, name: 'Curious' } });
+    const sha = createHash('sha256').update(JSON.stringify(before)).digest('hex');
     expect(sha).toBe('afe0c5b037583144be4268b7a5d092a53848965db7275eb6facd3b60de564af0');
   });
 });

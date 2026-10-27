@@ -34,12 +34,13 @@ import { openedOnReader, readerOf, routeOf } from '../nav/route';
 import { weaveOrderSetting, weaveSetting } from '../settings/definitions';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
 import { GREEK_VIEW_FROM, GREEK_WEAVE_FROM, viewAt, weaveAt, type GreekLevel } from '../settings/definitions/greekInterest';
+import { levelOf, type InterestLang } from '../settings/definitions/interest';
 import { announceSetting, toldSetting, useSetting } from '../settings/store';
-import { useGreekInterest } from '../settings/useGreekInterest';
+import { useInterestLevels } from '../settings/useInterestLevels';
 
 export interface ReaderSettings {
-  /** the Greek dial's step, read in the same render as the view, so the English | Greek switch is there as soon as the verses are (mw-3ased2.2) */
-  greek: GreekLevel;
+  /** the step of the dial of the chapter's language (Greek for a New Testament chapter, Hebrew for an Old Testament one, mw-gdcyf98.3), read in the same render as the view, so the English | Greek or English | Hebrew switch is there as soon as the verses are (mw-3ased2.2) */
+  level: GreekLevel;
   view: ReaderView;
   weave: Weave;
   weaveGrammar: WeaveGrammar;
@@ -55,10 +56,11 @@ export interface ReaderSettings {
   levels: ReadonlyMap<string, GrammarLevel>;
 }
 
-/** The Reader's settings, or undefined until every value has loaded. */
-export function useReaderSettings(): ReaderSettings | undefined {
-  // the Greek dial (mw-3ased2.2): what it hides does not act, whatever is saved or an address asks for
-  const level = useGreekInterest();
+/** The Reader's settings for a chapter in `source`, or undefined until every value has loaded. */
+export function useReaderSettings(source: InterestLang = 'grc'): ReaderSettings | undefined {
+  // the dial of the chapter's language (mw-3ased2.2, mw-gdcyf98.3): what it hides does not act, whatever is saved or an address asks for
+  const dials = useInterestLevels();
+  const level = dials && levelOf(source, dials);
   const savedView = useLiveQuery(getReaderView, []);
   const savedWeave = useLiveQuery(getWeave, []);
   const view = savedView && level !== undefined ? viewAt(level, savedView) : undefined;
@@ -111,7 +113,7 @@ export function useReaderSettings(): ReaderSettings | undefined {
   return useMemo(
     () =>
       level !== undefined && view && weave && weaveGrammar && weaveOrder && plainUnder !== undefined && levels && solid && learning && layout && headings && readSpan
-        ? { greek: level, view, weave, weaveGrammar, weaveOrder, weaveShown: weave !== 'off' && plainUnder !== weave, layout, headings, readSpan, solid, learning, levels }
+        ? { level, view, weave, weaveGrammar, weaveOrder, weaveShown: weave !== 'off' && plainUnder !== weave, layout, headings, readSpan, solid, learning, levels }
         : undefined,
     [level, view, weave, weaveGrammar, weaveOrder, plainUnder, levels, solid, learning, layout, headings, readSpan],
   );

@@ -18,6 +18,7 @@ import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunc
 import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { hebrewWordsFitting, type HebrewWordEntry } from './hebrewWords';
+import { hebrewInterestField, type InterestField } from './interestField';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { TALK_KINDS, type GristKind } from './gristKinds';
@@ -192,6 +193,8 @@ export interface VerseAskRequest {
   pronunciation_guide?: string;
   /** the settings that bear on this answer, by key (src/tutor/knows.ts settingsSentTo): { hebrewDepth: 'both', askBy: 'speaking', weave: 'off', ... } */
   settings?: Record<string, string>;
+  /** the Hebrew dial as he set it (mw-gdcyf98.3), the Bible talk's `hebrew_interest` field: its step, the step's name and the one above; sent with the settings (whose `greekInterest` is the Greek dial) */
+  hebrew_interest?: InterestField;
   /** the requests he sent to the factory and where each stands (src/data/requestsForTutor.ts): up to 10, newest first; missing when he has sent none */
   requests?: TutorRequest[];
   /** present only when the grammar words of his question name a topic that rests on ideas he lacks (mw-1vuvq6.5, src/data/grammar/bridge.ts), as the Bible talk is sent it */
@@ -261,7 +264,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
     ...(memory ? { memory } : {}),
-    ...(settings ? { settings } : {}),
+    ...(settings ? { settings, hebrew_interest: hebrewInterestField(settings) } : {}),
     ...(requests.length > 0 ? { requests } : {}),
     ...(missingFoundations ? { missing_foundations: missingFoundations } : {}),
     ...(rusty && rusty.length > 0 ? { rusty } : {}),

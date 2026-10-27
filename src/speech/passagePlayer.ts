@@ -7,7 +7,7 @@
 // its 'Reading verse N' line stay out of it, and a Listen of its own key, whose natural end (readAloud.ts listenCompletedNow) is how the player knows to go on
 // rather than being stopped: the reading's end by itself goes to the next reference, a Stop or another speech taking the voice ends the player.
 import type { HeldPlace } from '../markdown/verseLinks';
-import { loadChapter } from '../data/chapter';
+import { loadChapter, sourceLanguage } from '../data/chapter';
 import { readViewSettings, settingsFor } from '../reader/useViewSettings';
 import { wovenOf } from '../reader/useWoven';
 import { getReading, listenCompletedNow, pauseReading, planOf, resumeReading, startReading, stopReading, subscribeReading, type PlanVerse } from './readAloud';
@@ -70,6 +70,7 @@ async function planOfReference(held: HeldPlace): Promise<PlanVerse[]> {
     wanted.map(({ v }) => v),
     settings.view,
     woven ? wanted.map(({ i }) => woven[i] ?? null) : null,
+    sourceLanguage(chapter),
   );
 }
 

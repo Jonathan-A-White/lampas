@@ -55,7 +55,7 @@ without Syllables and sounds (no conversation to ask in).
 
 On an Old Testament chapter the header's switch reads **English | Hebrew** (with the Weave on, **English | Weave | Hebrew**); on a Greek chapter it reads English | Greek as before. In code the second choice is
 the chapter's one *source view* (`ReaderView` 'greek', labelled by `sourceLanguage(chapter)`, src/reader/sourceText.ts), so the choice he saved opens an Old Testament chapter in Hebrew and a New Testament one in Greek.
-Like the Greek view it shows from the Greek dial's Curious step up (`viewAt`).
+Like the Greek view it shows from the Hebrew dial's Curious step up (`viewAt` of `levelOf('hbo', levels)`, mw-gdcyf98.3).
 
 - **The Hebrew view** draws each verse right to left (`lang="he" dir="rtl"`, the `.script-he` face at the Greek size, `.reader-hebrew`), the words in the chapter's own order, pointed and accented as the data has
   them (the WLC's cantillation is drawn: it is the text; it is only taken off when the phone speaks it). The verse number stands at the right edge, a section heading is right-aligned, the play button is at the left.

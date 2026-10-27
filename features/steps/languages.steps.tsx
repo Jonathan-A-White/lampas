@@ -5,7 +5,14 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
+import { ReferenceLink } from '../../src/markdown/ReferenceCard';
+import { tutorTimings } from '../../src/services/tutor';
+import { stopReading } from '../../src/speech/readAloud';
+import { GREEK_LEVELS } from '../../src/settings/definitions/greekInterest';
+import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
 import { placeInterest } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -47,6 +54,52 @@ async function openOnNewPhone(): Promise<void> {
   await screen.findByRole('heading', { name: 'Settings', level: 1 });
   await screen.findByRole('group', { name: 'Which languages?' });
 }
+
+const stepOf = (name: string): string => {
+  const found = GREEK_LEVELS.find((l) => l.name === name);
+  if (!found) throw new Error(`no step ${name}`);
+  return String(found.level);
+};
+const PHONE_KEY = '00'.repeat(31) + '02';
+let fake: FakePostern | undefined;
+
+/** The app opened on a chapter with the two dials saved at these steps and nothing else of a reader (the address names the chapter). A fake Postern answers the tutor when `postern` is true. */
+async function openChapter(title: string, greek: string, hebrew: string, postern = false): Promise<void> {
+  cleanup();
+  stopReading();
+  clearBus();
+  forgetTrail();
+  localStorage.clear();
+  vi.unstubAllGlobals();
+  stubChapterFetch();
+  fake = undefined;
+  if (postern) {
+    localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
+    tutorTimings.pollMs = 20;
+    fake = makeFakePostern();
+    fake.autoReply = { status: 'answered', answer: { answer: 'It means in the beginning.', words: [] } };
+    const chapterFetch = globalThis.fetch;
+    const mill = fake;
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? mill.fetch(input, init) : chapterFetch(input, init)));
+  }
+  const at = title.lastIndexOf(' ');
+  const book = BOOKS.find((b) => b.name === title.slice(0, at));
+  if (!book) throw new Error(`no book ${title}`);
+  window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
+  await db.open();
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
+  await db.settings.bulkPut([
+    { key: 'greekInterest', value: stepOf(greek) },
+    { key: 'hebrewInterest', value: stepOf(hebrew) },
+  ]);
+  render(<App />);
+  await screen.findByRole('heading', { name: title, level: 1 });
+  await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+}
+
+const switchGroup = (): HTMLElement | null => screen.queryByRole('group', { name: 'Language' });
+const talkGrists = (): ReceivedGrist[] => (fake?.received ?? []).filter((g) => g.grist.kind === 'bible-talk');
+const OPENED = 'Lampas is opened on {string} with Greek at {string} and Hebrew at {string}';
 
 const languages = (): HTMLElement => screen.getByRole('group', { name: 'Which languages?' });
 const dial = (name: string): HTMLElement | null => screen.queryByRole('group', { name });
@@ -180,5 +233,124 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('Which languages? has {string} chosen', languagesHas);
     And('Settings draws no dial {string}', noDialNamed);
+  });
+
+  const switchOffers = async (_: unknown, a: string, b: string): Promise<void> => {
+    await waitFor(() => expect(switchGroup()).not.toBeNull());
+    expect(within(switchGroup()!).getAllByRole('button').map((x) => x.textContent)).toEqual([a, b]);
+  };
+  const noSwitch = async (): Promise<void> => {
+    // the verses are drawn before the check, and with them the header
+    expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0);
+    await waitFor(() => expect(switchGroup()).toBeNull());
+  };
+  const opened = (_: unknown, title: string, greek: string, hebrew: string): Promise<void> => openChapter(title, greek, hebrew);
+  const verseInEnglish = (_: unknown, n: number): void => {
+    const verse = document.querySelector<HTMLElement>(`[data-verse="${n}"]`)!;
+    expect(verse.querySelector('[data-chunk]')).not.toBeNull();
+    expect(verse.querySelector('[data-word]')).toBeNull();
+  };
+
+  Scenario('Genesis 1 at Hebrew Curious shows its switch and Matthew 1 at Greek Just English none', ({ Given, When, Then }) => {
+    Given(OPENED, opened);
+    Then('the language switch offers {string} and {string}', switchOffers);
+    When(OPENED, opened);
+    Then('the Reader draws no language switch', noSwitch);
+  });
+
+  Scenario('Matthew 1 at Greek Curious shows its switch and Genesis 1 at Hebrew Just English none', ({ Given, When, Then }) => {
+    Given(OPENED, opened);
+    Then('the language switch offers {string} and {string}', switchOffers);
+    When(OPENED, opened);
+    Then('the Reader draws no language switch', noSwitch);
+  });
+
+  const cardPhone = async (_: unknown, greek: string, hebrew: string): Promise<void> => {
+    cleanup();
+    clearBus();
+    forgetTrail();
+    localStorage.clear();
+    vi.unstubAllGlobals();
+    stubChapterFetch();
+    window.history.replaceState(null, '', '/');
+    await db.open();
+    await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+    await db.settings.bulkPut([
+      { key: 'greekInterest', value: stepOf(greek) },
+      { key: 'hebrewInterest', value: stepOf(hebrew) },
+      { key: 'readerView', value: 'greek' },
+    ]);
+  };
+  const openCard = async (_: unknown, written: string): Promise<void> => {
+    // the card a verse list or a Review question opens: the passage held (an Old Testament one too), as the reader's chapter file has it
+    render(<ReferenceLink written={written} found={{ heading: written, held: { book: 'jon', chapter: 1, first: 1, last: 1 } }}>{written}</ReferenceLink>);
+    await user.click(screen.getByRole('link', { name: written }));
+    const card = await screen.findByRole('dialog', { name: written });
+    await waitFor(() => expect(card.querySelector('[data-reference-text]')).not.toBeNull());
+  };
+  const cardText = (): HTMLElement => document.querySelector<HTMLElement>('[data-reference-text]')!;
+
+  Scenario('A Review card of Jonah 1:1 is in the Hebrew view at Hebrew Curious, whatever Greek stands at', ({ Given, When, Then }) => {
+    Given('a phone with Greek at {string} and Hebrew at {string} whose Reader is set to the original', cardPhone);
+    When('a Review card of {string} is opened', openCard);
+    Then('the card shows the verse in Hebrew, right to left', () => {
+      expect(cardText()).toHaveAttribute('data-view', 'greek');
+      expect(cardText()).toHaveAttribute('lang', 'he');
+      expect(cardText()).toHaveAttribute('dir', 'rtl');
+      expect(cardText().textContent).toMatch(/[\u0590-\u05FF]/);
+      expect(cardText().textContent).not.toContain('word of the LORD');
+    });
+  });
+
+  Scenario('A Review card of Jonah 1:1 is in English at Hebrew Just English, whatever Greek stands at', ({ Given, When, Then }) => {
+    Given('a phone with Greek at {string} and Hebrew at {string} whose Reader is set to the original', cardPhone);
+    When('a Review card of {string} is opened', openCard);
+    Then('the card shows the verse in English', () => {
+      expect(cardText()).toHaveAttribute('data-view', 'english');
+      expect(cardText().textContent).toContain('word of the LORD');
+    });
+  });
+
+  const taps = async (_: unknown, word: string, n: number): Promise<void> => {
+    const chunk = [...document.querySelectorAll<HTMLElement>(`[data-verse="${n}"] [data-chunk]`)].find((c) => (c.textContent ?? '').includes(word));
+    expect(chunk, `no chunk with ${word}`).toBeDefined();
+    await user.click(chunk!);
+  };
+  const onlyEnglishSheet = async (): Promise<void> => {
+    await screen.findByRole('dialog', { name: 'English word' });
+    expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull();
+  };
+  for (const title of ['At English only Genesis 1 is plain and only the English word sheet opens', 'At English only Matthew 1 is plain and only the English word sheet opens']) {
+    Scenario(title, ({ Given, When, Then, And }) => {
+      Given(OPENED, opened);
+      Then('the Reader draws no language switch', noSwitch);
+      And('verse {int} is drawn in English', verseInEnglish);
+      When('he taps the English word {string} in verse {int}', taps);
+      Then('only the English word sheet opens', onlyEnglishSheet);
+    });
+  }
+
+  Scenario('A talk on Genesis 1 carries hebrew_interest beside greek_interest', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} behind a fake Postern with Greek at {string} and Hebrew at {string}', (_: unknown, title: string, greek: string, hebrew: string) => openChapter(title, greek, hebrew, true));
+    When('he opens the talk and asks {string}', async (_: unknown, question: string) => {
+      const bar = await waitFor(() => {
+        const found = document.querySelector<HTMLElement>('[data-talk-bar]');
+        if (!found) throw new Error('the Talk bar is not drawn yet');
+        return found;
+      });
+      await user.click(await within(bar).findByRole('button', { name: 'Talk' }));
+      const sheet = await screen.findByRole('dialog', { name: /^Talk about / });
+      await user.type(await within(sheet).findByRole('textbox', { name: 'Your message' }), question);
+      await user.click(within(sheet).getByRole('button', { name: 'Send' }));
+      await waitFor(() => expect(talkGrists()).toHaveLength(1));
+    });
+    Then('the request carries greek_interest {string} with {string} next', (_: unknown, name: string, next: string) => {
+      const field = (talkGrists()[0].input as { greek_interest?: { name: string; next?: { name: string } } }).greek_interest;
+      expect([field?.name, field?.next?.name]).toEqual([name, next]);
+    });
+    And('the request carries hebrew_interest {string} with {string} next', (_: unknown, name: string, next: string) => {
+      const field = (talkGrists()[0].input as { hebrew_interest?: { name: string; next?: { name: string } } }).hebrew_interest;
+      expect([field?.name, field?.next?.name]).toEqual([name, next]);
+    });
   });
 });

@@ -35,8 +35,9 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { wordUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
 import { AllLexiconsSheet } from './library/AllLexiconsSheet';
-import { GREEK_VIEW_FROM, type GreekLevel } from './settings/definitions/greekInterest';
-import { useGreekInterest } from './settings/useGreekInterest';
+import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
+import { levelOf, type InterestLevels } from './settings/definitions/interest';
+import { useInterestLevels } from './settings/useInterestLevels';
 import { useKnownTerms } from './useKnownTerms';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { HintCard } from './tips/HintCard';
@@ -120,11 +121,11 @@ interface StudyGroup {
   door?: LogosStudy['door'];
 }
 
-/** The links of every study resource he switched on (Settings > Study resources) that the Greek dial shows, for this word, a group per resource, English resources first (resourcesForLevel). */
-function studyGroups(chosen: StudyResources | undefined, level: GreekLevel | undefined, word: GreekWord, ref: StudyRef | undefined, gloss: string): StudyGroup[] {
-  if (!chosen || level === undefined) return [];
+/** The links of every study resource he switched on (Settings > Study resources) that the dials show, for this word, a group per resource, English resources first (resourcesForLevel). */
+function studyGroups(chosen: StudyResources | undefined, levels: InterestLevels | undefined, word: GreekWord, ref: StudyRef | undefined, gloss: string): StudyGroup[] {
+  if (!chosen || levels === undefined) return [];
   const study = { form: word.t, lemma: wordLemma(word), strongs: word.s, topic: topicOf(gloss), ref };
-  return resourcesForLevel(RESOURCES, level)
+  return resourcesForLevel(RESOURCES, levels.grc, undefined, levels)
     .filter((r) => chosen.on.includes(r.id))
     .map((resource): StudyGroup => {
       const option = optionOf(resource, chosen.options[resource.id]);
@@ -136,10 +137,10 @@ function studyGroups(chosen: StudyResources | undefined, level: GreekLevel | und
 }
 
 /** The Study groups of a word as the sheet draws them: the verse it stands in is the chapter's, which a link may name. */
-function studyGroupsOf(chapter: Chapter, word: GreekWord, study: StudyResources | undefined, level: GreekLevel | undefined): StudyGroup[] {
+function studyGroupsOf(chapter: Chapter, word: GreekWord, study: StudyResources | undefined, levels: InterestLevels | undefined): StudyGroup[] {
   const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   const ref = verse === undefined ? undefined : { book: chapter.code, chapter: chapter.chapter, verse };
-  return studyGroups(study, level, word, ref, wordGloss(chapter, word));
+  return studyGroups(study, levels, word, ref, wordGloss(chapter, word));
 }
 
 /** More tiles than this and the sheet is a long one: a Close button sits under its scroll box and a fade says there is more below. 5 since the list lost its third app (mw-5r3p30.738): Strong's, three pinned lexicons, Bible Word Study and the door (6) is still a long sheet. */
@@ -272,12 +273,12 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
 /** A Hebrew word's card (an Old Testament chapter, mw-5vvlay.2): the pointed form large, right to left, with Listen in the phone's he-IL voice; its transliteration where the Greek has the respelling;
  * the lemma, the Parsing as the chapter's parse map decodes it (plain words: the Grammar sheet explains Greek terms only), the Meaning and the Definition of the chapter's lex, Strong's and the English
  * of its chunk. No Paradigm row, Heart note or Help with this word row yet: they are Greek-only for now (docs/layout/word-sheet.md lists them as LATER). With Logos off the first card offers to turn it on. */
-function HebrewCard({ chapter, word, english, study, level, offerLogos, onMissing, onAll }: {
+function HebrewCard({ chapter, word, english, study, levels, offerLogos, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
   study: StudyResources | undefined;
-  level: GreekLevel | undefined;
+  levels: InterestLevels | undefined;
   offerLogos: boolean;
   onMissing: (resource: StudyResource) => void;
   onAll: (word: GreekWord, door: NonNullable<StudyGroup['door']>) => void;
@@ -328,13 +329,13 @@ function HebrewCard({ chapter, word, english, study, level, offerLogos, onMissin
           </Fact>
         ) : null}
       </dl>
-      <StudyRow groups={studyGroupsOf(chapter, word, study, level)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
+      <StudyRow groups={studyGroupsOf(chapter, word, study, levels)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
       {offerLogos && logosOn === false ? <TurnOnLogos /> : null}
     </section>
   );
 }
 
-function WordCard({ chapter, word, english, pronunciation, known, study, level, onHelp, onTerm, onParadigm, onMissing, onAll }: {
+function WordCard({ chapter, word, english, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
@@ -342,7 +343,7 @@ function WordCard({ chapter, word, english, pronunciation, known, study, level, 
   known: ReadonlySet<string>;
   study: StudyResources | undefined;
   /** the Greek dial's step, which decides the Study links drawn and their order (undefined while it is read) */
-  level: GreekLevel | undefined;
+  levels: InterestLevels | undefined;
   onHelp?: (help: WordHelp) => void;
   /** a grammar word of the Parsing was tapped: the term, and the verse the word stands in */
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
@@ -410,7 +411,7 @@ function WordCard({ chapter, word, english, pronunciation, known, study, level, 
       </dl>
       {/* the note kept for a word that earns one: the thread behind its senses, always here to go back to (mw-bsf54t.14) */}
       <HeartOfWord lemma={wordLemma(word)} className="mt-3" />
-      <StudyRow groups={studyGroupsOf(chapter, word, study, level)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
+      <StudyRow groups={studyGroupsOf(chapter, word, study, levels)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}
@@ -428,11 +429,12 @@ interface WordSheetProps {
   onAskTerm?: (ask: TermAsk) => void;
 }
 
-/** The word's sheet is the source language's (its word, lemma, parsing and Strong's number: Greek, or Hebrew in an Old Testament chapter), so the Greek dial draws it from Curious up (mw-3ased2.2); at Just English an English word opens EnglishWordSheet. */
+/** The word's sheet is the source language's (its word, lemma, parsing and Strong's number: Greek, or Hebrew in an Old Testament chapter), so the dial of the chapter's language draws it from Curious up
+ * (mw-3ased2.2, mw-gdcyf98.3); at Just English of that language an English word opens EnglishWordSheet. */
 export function WordSheet(props: WordSheetProps) {
-  const level = useGreekInterest();
-  if (level === undefined || level >= GREEK_VIEW_FROM) return <WordSheetBody {...props} />;
-  // at Just English an English word he taps opens the small English sheet instead (mw-5r3p30.707); a Greek word has no sheet. An Old Testament chunk lists each of its words (mw-uqlxea.2).
+  const dials = useInterestLevels();
+  if (dials === undefined || levelOf(sourceLanguage(props.chapter), dials) >= GREEK_VIEW_FROM) return <WordSheetBody {...props} />;
+  // at Just English an English word he taps opens the small English sheet instead (mw-5r3p30.707); a source word has no sheet. An Old Testament chunk lists each of its words (mw-uqlxea.2).
   const { lookup, onClose, chapter } = props;
   return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} tapped={lookup.tapped} listWords={sourceLanguage(chapter) === 'hbo'} onClose={onClose} /> : null;
 }
@@ -478,8 +480,8 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
   const pronunciation = useLatest('pronunciation-changed')?.pronunciation;
   const known = useKnownTerms();
   const study = useLiveQuery(getStudyResources, []);
-  const level = useGreekInterest();
-  const tiles = lookup.words.reduce((n, w) => n + studyGroupsOf(sheetChapter, w, study, level).reduce((m, g) => m + g.links.length + (g.door ? 1 : 0), 0), 0);
+  const levels = useInterestLevels();
+  const tiles = lookup.words.reduce((n, w) => n + studyGroupsOf(sheetChapter, w, study, levels).reduce((m, g) => m + g.links.length + (g.door ? 1 : 0), 0), 0);
   const many = tiles > MANY_TILES;
   const heading = lookup.fromEnglish && lookup.english;
   const scroll = useRef<HTMLDivElement>(null);
@@ -563,7 +565,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 word={w}
                 english={lookup.fromEnglish ? undefined : lookup.english}
                 study={study}
-                level={level}
+                levels={levels}
                 offerLogos={i === 0}
                 onMissing={setMissing}
                 onAll={(word, door) => setAllLexicons({ word, door })}
@@ -577,7 +579,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 pronunciation={pronunciation}
                 known={known}
                 study={study}
-                level={level}
+                levels={levels}
                 onHelp={help}
                 onTerm={openTerm}
                 onParadigm={openTable}

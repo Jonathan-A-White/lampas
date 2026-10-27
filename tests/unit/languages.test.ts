@@ -22,7 +22,10 @@ import {
 import { isExistingReader, startWelcomeIfFirst } from '../../src/data/repositories/welcome';
 import { GREEK_LEVELS, greekInterestSetting, greekLevelOf } from '../../src/settings/definitions/greekInterest';
 import { HEBREW_LEVELS, hebrewFrom, hebrewInterestSetting, hebrewLevelOf } from '../../src/settings/definitions/hebrewInterest';
-import { depthFrom, interestSetting, languagesOf, levelsOf } from '../../src/settings/definitions/interest';
+import { depthFrom, interestSetting, languagesOf, levelOf, levelsOf, type InterestLevel } from '../../src/settings/definitions/interest';
+import { viewAt, weaveAt } from '../../src/settings/definitions/greekInterest';
+import { readViewSettings, settingsFor } from '../../src/reader/useViewSettings';
+import { setReaderView, setWeave } from '../../src/data/repositories';
 import { readValues, visibleRows } from '../../src/settings/rows';
 import { settingOf } from '../../src/settings/registry';
 
@@ -290,3 +293,52 @@ describe('where a phone starts on both', () => {
     expect(await getReaderView()).toBe('english');
   });
 });
+
+
+describe('the dial of the chapter\'s language (mw-gdcyf98.3)', () => {
+  const LEVELS: readonly InterestLevel[] = [0, 1, 2, 3, 4, 5];
+
+  it('levelOf picks the Greek dial for a Greek chapter and the Hebrew one for an Old Testament chapter', () => {
+    expect(levelOf('grc', { grc: 2, he: 4 })).toBe(2);
+    expect(levelOf('hbo', { grc: 2, he: 4 })).toBe(4);
+  });
+
+  it('shows the source view of a chapter exactly when the dial of its own language stands at Curious or above, at every pair of levels', () => {
+    for (const grc of LEVELS) {
+      for (const he of LEVELS) {
+        expect(viewAt(levelOf('grc', { grc, he }), 'greek'), `NT at Greek ${grc} Hebrew ${he}`).toBe(grc >= 1 ? 'greek' : 'english');
+        expect(viewAt(levelOf('hbo', { grc, he }), 'greek'), `OT at Greek ${grc} Hebrew ${he}`).toBe(he >= 1 ? 'greek' : 'english');
+      }
+    }
+  });
+
+  it('weaves a chapter exactly when the dial of its own language stands at Dipping a toe or above, at every pair of levels', () => {
+    for (const grc of LEVELS) {
+      for (const he of LEVELS) {
+        expect(weaveAt(levelOf('grc', { grc, he }), 'solid'), `NT at Greek ${grc} Hebrew ${he}`).toBe(grc >= 2 ? 'solid' : 'off');
+        expect(weaveAt(levelOf('hbo', { grc, he }), 'solid'), `OT at Greek ${grc} Hebrew ${he}`).toBe(he >= 2 ? 'solid' : 'off');
+      }
+    }
+  });
+
+  it('settingsFor draws a card\'s or the player\'s verse by the dial of its chapter, not in English only', async () => {
+    await setSettings(0, 2);
+    const hebrewOnly = await readViewSettings();
+    expect(settingsFor(hebrewOnly, { lang: 'hbo' })).toMatchObject({ view: 'greek', weave: 'solid' });
+    expect(settingsFor(hebrewOnly, {})).toMatchObject({ view: 'english', weave: 'off', weaveShown: false });
+    await setSettings(1, 0);
+    const greekOnly = await readViewSettings();
+    expect(settingsFor(greekOnly, { lang: 'hbo' })).toMatchObject({ view: 'english', weave: 'off', weaveShown: false });
+    expect(settingsFor(greekOnly, {})).toMatchObject({ view: 'greek', weave: 'off' });
+  });
+});
+
+async function setSettings(greek: InterestLevel, hebrew: InterestLevel): Promise<void> {
+  await db.settings.clear();
+  await db.settings.bulkPut([
+    { key: 'greekInterest', value: String(greek) },
+    { key: 'hebrewInterest', value: String(hebrew) },
+  ]);
+  await setReaderView('greek');
+  await setWeave('solid');
+}
