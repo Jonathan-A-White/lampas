@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.18
+_2026-10-27_
+- New: Reading an Old Testament chapter now teaches you its Hebrew words a few at a time, and Words, Review, the Quick test and the Parsing drill ask them in Hebrew.
+- Fixed: The tutor on an Old Testament chapter keeps hold of the verse you were just talking about when you ask a follow-up.
+
 ## 0.5.16
 _2026-10-27_
 - Fixed: the Font you pick in Settings is now the face of the Bible text, also with the Immersive reader on, where "The phone's own" used to leave a serif.
