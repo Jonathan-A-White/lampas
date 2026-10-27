@@ -42,5 +42,10 @@ export const AMERICAN: EnglishAccent = {
     '/nd/': { word: 'under' },
     '/ŋɡ/': { word: 'finger' },
     '/ŋks/': { word: 'thanks' },
+    '/h/': { word: 'hat' },
+    '/ʁ/': { word: 'red', note: 'said further back in the throat' },
+    '/ʃ/': { word: 'ship' },
+    '/ts/': { word: 'cats' },
+    '/j/': { word: 'yes' },
   },
 };

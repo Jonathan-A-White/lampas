@@ -279,7 +279,7 @@ export const MODERN_SOUNDS: Readonly<Record<string, SoundId>> = {
  * that says it only in a place says so) and a Greek word the voice says that has it. Each word is held to respellModern's own reading by
  * tests/unit/ipa-course.test.ts (it has the sound, starts with it where `at` is 'start', and has none of the sound's confusable partners); words not in the New Testament
  * (μπάλα, ντουλάπι, γκάζι) are for the three sounds the New Testament's Greek has no word to start with (it keeps μπ, ντ and γκ for inside a word). */
-export const MODERN_SOUND_GUIDE: Readonly<Record<SoundId, SoundGuide>> = {
+export const MODERN_SOUND_GUIDE: Readonly<Partial<Record<SoundId, SoundGuide>>> = {
   '/a/': { letters: ['α'], word: 'ἄρτος', at: 'start' },
   '/e/': { letters: ['ε', 'αι'], word: 'ἔργον', at: 'start' },
   '/i/': { letters: ['η', 'ι', 'υ', 'ει', 'οι', 'υι'], word: 'ἵνα', at: 'start' },

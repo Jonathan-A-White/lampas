@@ -37,6 +37,12 @@ export const SOUNDS = {
   '/nd/': 'n and d',
   '/ŋɡ/': 'velar nasal and g',
   '/ŋks/': 'velar nasal, k and s',
+  // the sounds Hebrew has and Greek has no use for (mw-gdcyf98.24, the Israeli scheme)
+  '/h/': 'voiceless glottal fricative',
+  '/ʁ/': 'voiced uvular fricative (the Israeli resh)',
+  '/ʃ/': 'voiceless postalveolar fricative',
+  '/ts/': 't and s said together as one sound',
+  '/j/': 'palatal approximant',
 } as const;
 
 /** A sound's standard id: '/o/', '/x/', '/ɣ/'. */
@@ -65,6 +71,9 @@ const CONFUSABLE_PAIRS: readonly (readonly [SoundId, SoundId])[] = [
   ['/ks/', '/ŋks/'],
   ['/m/', '/n/'],
   ['/l/', '/ɾ/'],
+  ['/s/', '/ʃ/'],
+  ['/s/', '/ts/'],
+  ['/h/', '/x/'],
 ];
 
 /** Each sound's confusable partners, by id. */
