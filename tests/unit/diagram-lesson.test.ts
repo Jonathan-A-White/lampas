@@ -4,8 +4,9 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { layoutDiagram } from '../../src/diagram/layout';
 import { checkPrompt, keepLessonDone, keepLessonStep, LESSON_STEPS, lessonDone, lessonStep } from '../../src/diagram/lesson';
+import { ideaOf } from '../../src/data/grammar/ladder';
 import { validateDiagram } from '../../src/diagram/validate';
-import { EXPECTED_STEPS } from '../fixtures/diagrams/lesson-steps';
+import { EXPECTED_STEPS, EXPECTED_TERMS } from '../fixtures/diagrams/lesson-steps';
 import { loadFixture } from '../support/diagram-fixtures';
 
 const width = (text: string): number => text.length * 10;
@@ -22,8 +23,12 @@ function verseWords(book: string, chapter: number, n: number): string[] {
 const contains = (whole: string[], part: string[]): boolean => whole.some((_, at) => part.every((word, k) => whole[at + k] === word));
 
 describe('the lesson steps', () => {
-  it('are the nine of the story, in order, each of its verse and its mode', () => {
+  it('are the ten of the story, in order, each of its verse and its mode', () => {
     expect(LESSON_STEPS.map((s) => [s.reference, s.mode])).toEqual(EXPECTED_STEPS.map((s) => [s.reference, s.mode]));
+  });
+
+  it('step 10 is titled as the story sets it', () => {
+    expect(LESSON_STEPS[9].title).toBe(EXPECTED_STEPS[9].title);
   });
 
   it.each(LESSON_STEPS.map((s, at) => [at + 1, s] as const))('step %i: the diagram passes validateDiagram', (_, step) => {
@@ -63,6 +68,21 @@ describe('the lesson steps', () => {
     expect(step.words.some((word) => /[Ͱ-Ͽἀ-῿]/.test(word.text))).toBe(true);
   });
 
+  it('step 10 is Colossians 3:1 of the existing Greek fixture, word for word', () => {
+    const step = LESSON_STEPS[9];
+    const greek = loadFixture('greek');
+    expect(step.mode).toBe('greek');
+    expect(step.words).toEqual(greek.words);
+    expect(step.diagram).toEqual(greek.diagram);
+    expect(step.check).toEqual({ role: 'dative', answer: 4 });
+  });
+
+  it('step 10 lists the terms, each with the idea its lesson is', () => {
+    expect((LESSON_STEPS[9].terms ?? []).map((t) => [t.term, t.ideaId])).toEqual(EXPECTED_TERMS);
+    for (const [, id] of EXPECTED_TERMS) expect(ideaOf(id).id).toBe(id);
+    expect(LESSON_STEPS.slice(0, 9).every((s) => s.terms === undefined)).toBe(true);
+  });
+
   it.each(EXPECTED_STEPS.map((e, at) => [at + 1, e] as const))('step %i draws %s', (at, expected) => {
     const step = LESSON_STEPS[at - 1];
     const layout = layoutDiagram(step.diagram, step.words, width);
@@ -99,7 +119,7 @@ describe('what the lesson keeps', () => {
   });
 
   it('ignores a kept step that is not one of the steps', () => {
-    for (const bad of ['-1', '9', '2.5', 'x', '']) {
+    for (const bad of ['-1', '10', '2.5', 'x', '']) {
       localStorage.setItem('lampas.diagram-lesson.step', bad);
       expect(lessonStep(), bad).toBe(0);
     }

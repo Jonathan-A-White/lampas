@@ -1,8 +1,10 @@
-// src/diagram/DiagramLesson.tsx — the optional lesson 'How to read a sentence diagram' (mw-q6t5tvn.1, #/diagram-lesson). Nine steps (./lesson.ts), one Reed-Kellogg convention each: its sentences above
+// src/diagram/DiagramLesson.tsx — the optional lesson 'How to read a sentence diagram' (mw-q6t5tvn.1, #/diagram-lesson). Ten steps (./lesson.ts), one Reed-Kellogg convention each: its sentences above
 // the diagram ReedKellogg draws from a diagram written by hand (the Verse view's own face and sideways scroll), then a one-tap check, 'Tap the <role>': a right tap says so, a wrong one shows the
 // right word lit. Next and Back walk the steps; the last step's Done keeps the lesson done on the phone (localStorage 'lampas.diagram-lesson', no Dexie) and returns to where he came from.
+// The tenth step lists each line by its Greek term, each term a button that opens that idea's lesson in the idea sheet over the step (closing it comes back to the step).
 // Leaving early keeps the step he reached, and the lesson opens there next time. Optional: only the Verse view's Diagram pane points to it ('How to read this', and an invitation until he has finished or dismissed it); no other screen names it, nudges toward it or counts it.
 import { useState } from 'react';
+import { IdeaSheetWithWord } from '../IdeaSheetWithWord';
 import { navigate } from '../nav/route';
 import { previousAddress } from '../nav/lastRoute';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
@@ -23,6 +25,8 @@ export function DiagramLesson() {
   const [at, setAt] = useState(lessonStep);
   // his answer to the check of the step on show: the word he tapped, forgotten with the step
   const [tapped, setTapped] = useState<number | null>(null);
+  // the idea whose lesson is open over the step (a term of the tenth step), if any
+  const [idea, setIdea] = useState<string | null>(null);
   const step = LESSON_STEPS[at];
   const last = at === STEPS - 1;
   const right = tapped !== null && tapped === step.check.answer;
@@ -64,7 +68,20 @@ export function DiagramLesson() {
         <div className="mt-2" data-testid="diagram-lesson-diagram">
           <ReedKellogg key={at} diagram={step.diagram} words={step.words} mode={step.mode} reference={step.reference} onWord={setTapped} lit={tapped === null ? undefined : step.check.answer} />
         </div>
+        {step.terms ? (
+          <ul className="mt-4 space-y-1" data-testid="diagram-lesson-terms">
+            {step.terms.map((t) => (
+              <li key={t.term} className="grid grid-cols-[8rem_minmax(0,1fr)] items-center gap-x-2 text-lg">
+                <button type="button" onClick={() => setIdea(t.ideaId)} className="min-h-11 justify-self-start rounded-lg px-1 font-medium text-accent underline active:bg-line">
+                  {t.term}
+                </button>
+                <span className="min-w-0 text-muted">{t.line}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </main>
+      {idea ? <IdeaSheetWithWord ideaId={idea} onClose={() => setIdea(null)} /> : null}
       {/* Back and Next stay where a thumb finds them, however tall the diagram is */}
       <footer className="grid shrink-0 grid-cols-2 gap-3 border-t border-line px-4 pt-2 pb-[var(--lp-bar-inset)]">
         <button type="button" disabled={at === 0} onClick={() => go(at - 1)} className={BUTTON}>

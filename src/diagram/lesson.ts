@@ -1,7 +1,7 @@
-// src/diagram/lesson.ts — the optional lesson 'How to read a sentence diagram' (mw-q6t5tvn.1, #/diagram-lesson): nine steps, one Reed-Kellogg convention each, drawn by ReedKellogg from a diagram
+// src/diagram/lesson.ts — the optional lesson 'How to read a sentence diagram' (mw-q6t5tvn.1, #/diagram-lesson): ten steps, one Reed-Kellogg convention each, drawn by ReedKellogg from a diagram
 // written by hand here (never asked of the tutor) on a real verse or part of one, each with a one-tap check, and what he has done kept on the phone (localStorage, no Dexie), with whether the Diagram pane still invites him to it (mw-q6t5tvn.2). The conventions are
 // the ones docs/layout/diagram.md 'The Reed-Kellogg conventions, as drawn' sets out, so the lesson teaches what the app draws. Pure data and the little keeping; the screen is DiagramLesson.tsx.
-import { english, hang, prep, slot, understood, w } from './handwritten';
+import { english, greek, hang, prep, slot, understood, w } from './handwritten';
 import type { Diagram, DiagramWords, Modifier, Slot, WrittenDiagram } from './types';
 
 /** The check of a step: the screen says 'Tap the <role>', and `answer` is the index in the step's words of the word that is right. */
@@ -17,6 +17,15 @@ export interface LessonStep extends WrittenDiagram {
   /** one or two plain sentences, above the diagram */
   text: string;
   check: LessonCheck;
+  /** only the step that names the lines by their Greek terms: one entry a term, each a link that opens that idea's lesson */
+  terms?: readonly LessonTerm[];
+}
+
+/** One line of the list under step 10's diagram: `term` is the button (the idea's lesson at `ideaId` opens from it), `line` says which line of the diagram it is. */
+export interface LessonTerm {
+  term: string;
+  ideaId: string;
+  line: string;
 }
 
 /** The understood 'you' of a command. */
@@ -62,6 +71,61 @@ const SINCE: Modifier = { kind: 'clause', connector: w(1), clause: { subject: sl
 const COLOSSIANS: Diagram = {
   clauses: [{ clause: { subject: YOU, verb: slot([8], [hang(0), prep(9, slot([11], [hang(10), hang(12, [WHERE])])), SINCE]) } }],
 };
+
+/** The Greek of Colossians 3:1 as the Greek face of the Diagram draws it (tests/fixtures/diagrams/col-3-1-greek.json): the verse's own words, marks stripped. */
+const COLOSSIANS_GREEK: DiagramWords = greek(
+  [0, 'Εἰ'], [1, 'οὖν'], [2, 'συνηγέρθητε'], [3, 'τῷ'], [4, 'χριστῷ'], [5, 'τὰ'], [6, 'ἄνω'], [7, 'ζητεῖτε'], [8, 'οὗ'],
+  [9, 'ὁ'], [10, 'χριστός'], [11, 'ἐστιν'], [12, 'ἐν'], [13, 'δεξιᾷ'], [14, 'τοῦ'], [15, 'θεοῦ'], [16, 'καθήμενος'],
+);
+
+/** The same tree with the Greek's own words: 'you' is understood on both verbs (the ending carries it), and 'χριστῷ' hangs under 'συνηγέρθητε' as an indirect object. */
+const COLOSSIANS_GREEK_TREE: Diagram = {
+  clauses: [
+    {
+      clause: {
+        subject: understood('ὑμεῖς'),
+        verb: slot([7], [
+          hang(1),
+          {
+            kind: 'clause',
+            connector: w(0),
+            clause: { subject: understood('ὑμεῖς'), verb: slot([2]), complement: { kind: 'indirect-object', slot: slot([4], [hang(3)]) } },
+          },
+        ]),
+        complement: {
+          kind: 'direct-object',
+          slot: slot([6], [
+            hang(5),
+            {
+              kind: 'clause',
+              connector: w(8),
+              clause: {
+                subject: slot([10], [hang(9)]),
+                verb: slot([11], [prep(12, slot([13], [hang(15, [hang(14)])]))]),
+                complement: { kind: 'predicate-adjective', slot: slot([16]) },
+              },
+            },
+          ]),
+        },
+      },
+    },
+  ],
+};
+
+/** Each line of a diagram by its Greek term, in the order step 10 lists them. */
+const TERMS: readonly LessonTerm[] = [
+  { term: 'nominative', ideaId: 'case-nominative', line: 'the subject line' },
+  { term: 'accusative', ideaId: 'case-accusative', line: 'the direct object, after the vertical bar' },
+  { term: 'dative', ideaId: 'case-dative', line: 'the indirect object, hung below the verb' },
+  { term: 'genitive', ideaId: 'case-genitive', line: 'often a modifier hung below a noun' },
+  { term: 'article', ideaId: 'article', line: 'a modifier hung below a noun' },
+  { term: 'adjective', ideaId: 'adjective', line: 'a modifier hung below a noun' },
+  { term: 'verb', ideaId: 'verb', line: 'the verb line' },
+  { term: 'adverb', ideaId: 'adverb', line: 'a modifier hung below the verb' },
+  { term: 'preposition', ideaId: 'preposition', line: 'on the slanted line, its object after it' },
+  { term: 'participle', ideaId: 'mood-participle', line: 'stands in the place of the part it serves' },
+  { term: 'infinitive', ideaId: 'mood-infinitive', line: 'stands in the place of the part it serves' },
+];
 
 export const LESSON_TITLE = 'How to read a sentence diagram';
 
@@ -160,6 +224,17 @@ export const LESSON_STEPS: readonly LessonStep[] = [
     words: COLOSSIANS_WOVEN,
     diagram: COLOSSIANS,
     check: { role: 'verb of the top line', answer: 8 },
+  },
+  {
+    title: 'Which line is which, in Greek',
+    text: 'Every line of a diagram has its Greek name, the grammar term for the word that stands on it. Tap a term to open its lesson, and come back here when you close it.',
+    reference: 'Colossians 3:1',
+    verse: { book: 'col', chapter: 3, verse: 1 },
+    mode: 'greek',
+    words: COLOSSIANS_GREEK,
+    diagram: COLOSSIANS_GREEK_TREE,
+    check: { role: 'dative', answer: 4 },
+    terms: TERMS,
   },
 ];
 
