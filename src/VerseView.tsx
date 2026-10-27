@@ -44,7 +44,7 @@ import { SendOff } from './plan/SendOff';
 import { useSendOff } from './plan/useSendOff';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
-import { langOf } from './script/greekLang';
+import { isOrdered, rowAttrs } from './reader/sourceText';
 import type { WovenVerse } from './data/weave';
 import type { WovenReading } from './services/reading';
 
@@ -136,8 +136,11 @@ export function VerseView(props: VerseViewProps) {
   const copyUnit = useMemo(() => copyUnitOf(chapterText, verse, { view, woven: wovenChapter ?? null }), [chapterText, verse, view, wovenChapter]);
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
-  const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
-  const size = view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
+  // A Hebrew verse is set as big as the Greek one, in the app's Hebrew face (.script-he, whose .reader-hebrew gives the Greek size and the Reader's leading), right to left; the English view is English whatever the chapter.
+  const source = sourceLanguage(chapterText);
+  const hebrewView = view === 'greek' && source === 'hbo';
+  const big = hebrewView ? 'script-he reader-hebrew [--lp-greek-size:2.25rem]' : view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
+  const size = hebrewView ? '' : view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
   const typeClass = `leading-(--lp-leading) ${big} ${size}`;
   return (
     <section aria-label="Verse view" data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
@@ -173,7 +176,7 @@ export function VerseView(props: VerseViewProps) {
           {passage ? (
             <div data-sheet-verse>{text}</div>
           ) : (
-            <p data-sheet-verse data-size="big" {...langOf(view === 'greek')} className={`break-words ${typeClass}`}>
+            <p data-sheet-verse data-size="big" {...rowAttrs(view, source, isOrdered(wovenChapter))} className={`break-words ${typeClass}`}>
               {text}
             </p>
           )}
@@ -188,7 +191,7 @@ export function VerseView(props: VerseViewProps) {
             aria-label="Actions"
             className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 @max-[15rem]:grid-cols-2 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
           >
-            {actionsFor(ai, sourceLanguage(chapterText)).map((a) => (
+            {actionsFor(ai, source, view).map((a) => (
               <button
                 key={a.id}
                 type="button"
@@ -253,7 +256,7 @@ export function VerseView(props: VerseViewProps) {
             <>
               <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
               <AskStatus verse={verse} state={ask} onAsk={onAsk} />
-              {passage || sourceLanguage(chapterText) !== 'grc' ? null : (
+              {passage || source !== 'grc' ? null : (
                 <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
                   Talk about verse {verse.n}
                 </button>

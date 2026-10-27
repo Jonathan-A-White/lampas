@@ -2,7 +2,7 @@
 // right to left. The Reader's one 'source' view (ReaderView 'greek' in code) is the Greek of a Greek chapter and the Hebrew of an Old Testament one.
 import type { SourceLanguage } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import { GREEK_LANG } from '../script/greekLang';
+import { GREEK_LANG, langOfSource } from '../script/greekLang';
 
 /** How a Hebrew span is tagged: lang he, the ancient meaning in data-lang. */
 export const HEBREW_LANG_ATTRS = { lang: 'he', 'data-lang': 'hbo' } as const;
@@ -19,7 +19,11 @@ export const sourceFace = (source: SourceLanguage): string => (source === 'hbo' 
 /** The attributes of a row of verse text: the source view is Hebrew right to left or Greek; the English view is English, and an Old Testament weave laid out in the Hebrew
  * word order (`ordered`) is a row that runs right to left too, its English chunks each isolated left to right (VerseText). */
 export function rowAttrs(view: ReaderView, source: SourceLanguage, ordered = false): { lang: string; dir?: 'rtl'; 'data-lang'?: string } {
-  if (view === 'greek') return source === 'hbo' ? { ...HEBREW_LANG_ATTRS, dir: 'rtl' } : GREEK_LANG;
+  if (view === 'greek') {
+    // the face (className) is the caller's: textClass gives it
+    const own = langOfSource(source);
+    return { lang: own.lang, ...(own['data-lang'] ? { 'data-lang': own['data-lang'] } : {}), ...(own.dir ? { dir: own.dir } : {}) };
+  }
   return source === 'hbo' && ordered ? { lang: 'en', dir: 'rtl' } : { lang: 'en' };
 }
 
