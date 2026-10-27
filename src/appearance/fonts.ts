@@ -24,6 +24,9 @@ export const FONTS: readonly FontInfo[] = [
   { id: 'lexend', label: 'Lexend', line: 'Built for reading ease; suits younger readers and anyone who tires over long lines.', stack: '"Lexend", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' },
 ];
 
+/** The phone's own face: the fallback of --font-sans in src/index.css without --lp-font-english. The Font chooser draws "The phone's own" in it whatever is chosen. */
+export const PHONE_STACK = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+
 export const DEFAULT_FONT: FontId = 'phone';
 
 export function isFont(value: unknown): value is FontId {

@@ -5,7 +5,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { injectManifestOptions } from '../../pwa-precache';
 import { applyFont, restoreAppearance, startAppearanceSync } from '../../src/appearance/appearanceSync';
-import { DEFAULT_FONT, ENGLISH_FONT_VAR, FONTS, isFont, stackOf } from '../../src/appearance/fonts';
+import { DEFAULT_FONT, ENGLISH_FONT_VAR, FONTS, PHONE_STACK, isFont, stackOf } from '../../src/appearance/fonts';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { fontSetting } from '../../src/settings/definitions';
@@ -48,6 +48,13 @@ describe('the English fonts', () => {
 
   it('are none of them a novelty: every named face is serif or plain sans, with a generic fallback', () => {
     for (const f of FONTS.filter((x) => x.stack)) expect(f.stack, f.id).toMatch(/(serif|sans-serif)$/);
+  });
+});
+
+describe("the phone's own face in the Font chooser", () => {
+  it('is the fallback of --font-sans in src/index.css, so the chooser draws the same face the app does with no font chosen', () => {
+    const css = readFileSync('src/index.css', 'utf8');
+    expect(css).toContain(`--font-sans: var(${ENGLISH_FONT_VAR}, ${PHONE_STACK});`);
   });
 });
 
