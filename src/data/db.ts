@@ -293,14 +293,19 @@ export interface RustyOffer {
   items: Array<{ kind: 'word' | 'idea'; id: string; title: string }>;
 }
 
-/** The tutor's offer to raise the Greek dial one step (mw-3ased2.3): a tap raises it to `to`, and a `word` offer then opens that word's sheet in Greek (`lemma`, a word of the text);
+/** The tutor's offer to raise the dial of the original's language one step (mw-3ased2.3; the Greek dial, or the Hebrew one with `lang` 'he', mw-gdcyf98.17): a tap raises it to `to`, and a `word` offer then opens that word's sheet in Greek (`lemma`, a word of the text);
  * `text` is the button's line, naming the step. `to` is set by the app from the dial as the answer came (the welcome's is Dipping a toe); an offer kept without it raises one step from where the dial stands. */
 export interface GreekOffer {
   kind: 'word' | 'view';
   text: string;
   lemma?: string;
   to?: 0 | 1 | 2 | 3 | 4 | 5;
+  /** the language of the dial the offer raises (mw-gdcyf98.17): absent reads as 'grc'; 'he' is the Hebrew dial of an Old Testament chapter; 'both' only in the welcome. A turn's field: no Dexie bump. */
+  lang?: OfferLang;
 }
+
+/** The language an offer of the original is of: Greek, Hebrew, or (the welcome's, for a reader who came for both) both. */
+export type OfferLang = 'grc' | 'he' | 'both';
 
 /** How a Hebrew word is said, as the tutor's sound answer gave it: the word, its syllables in Hebrew letters in reading order and how each sounds in Latin letters. */
 export interface HebrewSounds {

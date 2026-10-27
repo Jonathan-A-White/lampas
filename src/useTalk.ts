@@ -26,8 +26,9 @@ import { doneLinesOf } from './talk/doneLines';
 import { holdUndo } from './talk/doneUndo';
 import { leaveSheetForTutor } from './ui/sheetBack';
 import { currentSettings, offeredChange } from './settings/registry';
-import { greekOfferOf } from './talk/greekOffer';
+import { chapterOfferLang, greekOfferOf } from './talk/greekOffer';
 import { greekLevelOf } from './settings/definitions/greekInterest';
+import { hebrewLevelOf } from './settings/definitions/hebrewInterest';
 import { higherInterest } from './services/interestField';
 import { rustyOfferOf } from './talk/rustyOffer';
 import { quizGoalOfferOf } from './talk/quizGoalOffer';
@@ -244,11 +245,12 @@ export function useTalk(
           // What the tutor learned of him as a student is kept beside his profile (checked and never over what he set); it never fails the talk.
           if (answer.profile_update || answer.profile_question) await learnFromTalk(ref, answer.profile_update ?? [], answer.profile_question).catch(() => undefined);
           // What the tutor wants to keep of him: appends at once, a replace or remove only when he asked (src/talk/memoryUpdate.ts); it never fails the talk.
-          await applyMemoryFromAnswer(answer).catch(() => undefined);
+          await applyMemoryFromAnswer(answer, Date.now(), chapterOfferLang(scope)).catch(() => undefined);
           // The welcome interview is over once the tutor says so with its line of thanks; the sheet stays open to be read (src/Welcome.tsx)
           if (scope.welcome && answer.welcome_done) await finishWelcome().catch(() => undefined);
-          // The one offer of the Greek, kept only while this talk has made none and his no is not in the index the request carried or in this very answer (src/talk/greekOffer.ts)
-          const greekOffer = greekOfferOf(answer, scope, turns, memory?.index, waiting?.offer.kind === 'greek' && answer.offer_reply === 'decline', greekLevelOf(settings.greekInterest));
+          // The one offer of the original, kept only while this talk has made none and his no (of its language) is not in the index the request carried or in this very answer; it raises the dial of the chapter's language (src/talk/greekOffer.ts)
+          const dial = chapterOfferLang(scope) === 'he' ? hebrewLevelOf(settings.hebrewInterest) : greekLevelOf(settings.greekInterest);
+          const greekOffer = greekOfferOf(answer, scope, turns, memory?.index, waiting?.offer.kind === 'greek' && answer.offer_reply === 'decline', dial);
           // The one offer to move the rust back to Frontier: only the items this request listed, once a talk, none after his no in this very answer (src/talk/rustyOffer.ts)
           const rustyOffer = rustyOfferOf(answer, scope, turns, rusty, waiting?.offer.kind === 'rusty' && answer.offer_reply === 'decline');
           // The one offer to open Today: only when this request listed its items, once a talk, none after his no in this very answer (src/talk/todayOffer.ts)

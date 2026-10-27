@@ -3,12 +3,16 @@
 // there is nothing here: the tutor remembers it.
 import type { GreekOffer, TalkTurn } from '../data/db';
 import { GREEK_LEVELS } from '../settings/definitions/greekInterest';
-import { takeGreekOffer } from './greekOffer';
+import { HEBREW_LEVELS } from '../settings/definitions/hebrewInterest';
+import { offerLangOf, takeGreekOffer } from './greekOffer';
 
-/** What the sheet says after the tap: the step the dial now stands at, and for a word offer that its sheet opened. */
+/** What the sheet says after the tap: the step the dial now stands at (the Hebrew dial's for a Hebrew offer, both for the welcome's), and for a word offer that its sheet opened. */
 const confirmation = (offer: GreekOffer): string => {
-  const step = offer.to === undefined ? 'The Greek dial is up one step.' : `The Greek dial is now ${GREEK_LEVELS[offer.to].name}.`;
-  return offer.kind === 'word' ? `${step} Opened the Greek word.` : step;
+  const lang = offerLangOf(offer);
+  const dial = lang === 'both' ? 'The Greek and Hebrew dials' : lang === 'he' ? 'The Hebrew dial' : 'The Greek dial';
+  const levels = lang === 'he' ? HEBREW_LEVELS : GREEK_LEVELS;
+  const step = offer.to === undefined ? `${dial} ${lang === 'both' ? 'are' : 'is'} up one step.` : `${dial} ${lang === 'both' ? 'are' : 'is'} now ${levels[offer.to].name}.`;
+  return offer.kind === 'word' ? `${step} Opened the ${lang === 'he' ? 'Hebrew' : 'Greek'} word.` : step;
 };
 
 export function GreekOfferButton({ turn }: { turn: TalkTurn }) {
@@ -18,6 +22,7 @@ export function GreekOfferButton({ turn }: { turn: TalkTurn }) {
       <button
         type="button"
         onClick={() => void takeGreekOffer(turn)}
+        data-offer-lang={offerLangOf(turn.greekOffer)}
         className="min-h-11 rounded-lg border border-accent px-4 text-left text-base font-medium text-accent active:bg-line"
       >
         {turn.greekOffer.text}

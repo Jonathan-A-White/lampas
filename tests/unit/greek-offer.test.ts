@@ -6,11 +6,12 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { addTurn, getGreekInterest, getReaderView, getWeave, listTurns, setGreekInterest } from '../../src/data/repositories';
-import { appendToIndex, getIndex, GREEK_NO_PREFIX, greekNoLine, hasGreekNo } from '../../src/data/repositories/memory';
+import { addTurn, getGreekInterest, getHebrewInterest, getReaderView, getWeave, listTurns, setGreekInterest, setHebrewInterest } from '../../src/data/repositories';
+import { appendToIndex, getIndex, GREEK_NO_PREFIX, greekNoLine, hasGreekNo, hasOfferNo, HEBREW_NO_PREFIX, offerNoLine } from '../../src/data/repositories/memory';
 import { learnerMemory } from '../../src/data/learnerMemory';
+import { NO_CHAPTER } from '../../src/data/chapter';
 import { buildTalkRequest, isTalkAnswer, type TalkScope } from '../../src/services/talk';
-import { greekOfferOf, registerGreekWordOpener, takeGreekOffer } from '../../src/talk/greekOffer';
+import { chapterOfferLang, greekOfferOf, offerLangOf, registerGreekWordOpener, takeGreekOffer } from '../../src/talk/greekOffer';
 import { applyMemoryFromAnswer } from '../../src/talk/memoryUpdate';
 import { offerOfTurn, pendingOfferOf, settleOffer } from '../../src/talk/offers';
 import { validate, type Schema } from '../support/schema-validate';
@@ -25,6 +26,10 @@ beforeEach(async () => {
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const scope: TalkScope = { title: 'Romans 8', chapter, verse: chapter.verses[27] };
+const genesis = JSON.parse(readFileSync('public/data/gen/1.json', 'utf8')) as Chapter;
+const otScope: TalkScope = { title: 'Genesis 1', chapter: genesis, verse: genesis.verses[0] };
+const welcomeScope: TalkScope = { title: 'Welcome', chapter: NO_CHAPTER, verse: null, screen: { name: 'Welcome', facts: [] }, welcome: true };
+const HEBREW_VIEW = { kind: 'view' as const, text: 'Want to raise the Hebrew to Curious?', lang: 'he' as const };
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
 const answerSchema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
 const good = { answer: 'It means to love.', question: 'What does it say?', words: [] };
@@ -36,6 +41,7 @@ const turnWith = async (done: Parameters<typeof addTurn>[5]) => {
   return (await listTurns('rom.8.28')).at(-1)!;
 };
 const NOON = new Date('2026-10-13T12:00:00Z').getTime();
+const request = (q: string) => buildTalkRequest(scope, q, [], []);
 
 describe('the answer', () => {
   it('may carry a greek_offer, in both the schema and isTalkAnswer', () => {
@@ -64,7 +70,7 @@ describe('the answer', () => {
 describe('the offer a turn holds', () => {
   it('is the Greek offer text as a button until a tap or a no settles it', async () => {
     const turn = await turnWith({ ...none, greekOffer: VIEW_OFFER });
-    expect(offerOfTurn(turn)).toEqual({ kind: 'greek', text: VIEW_OFFER.text });
+    expect(offerOfTurn(turn)).toEqual({ kind: 'greek', text: VIEW_OFFER.text, lang: 'grc' });
     expect(offerOfTurn({ ...turn, greekChoice: 'taken' })).toBeUndefined();
     expect(offerOfTurn({ ...turn, greekChoice: 'declined' })).toBeUndefined();
   });
@@ -286,5 +292,171 @@ describe('the dial\'s examples', () => {
       expect(e.request.settings.greekInterest, file).toBe(String(e.request.greek_interest!.level));
       expect(validate(e.request, inputSchema), file).toEqual([]);
     }
+  });
+});
+
+describe('the offer of the Hebrew (mw-gdcyf98.17)', () => {
+  it('is a greek_offer with a lang, optional, that the schema and isTalkAnswer take: grc, he or both, nothing else', () => {
+    for (const offer of [HEBREW_VIEW, { ...VIEW_OFFER, lang: 'grc' }, { ...VIEW_OFFER, lang: 'both' }, { ...WORD_OFFER, lang: 'grc' }]) {
+      const value = { ...good, greek_offer: offer };
+      expect(validate(value, answerSchema), JSON.stringify(offer)).toEqual([]);
+      expect(isTalkAnswer(value), JSON.stringify(offer)).toBe(true);
+    }
+    for (const offer of [{ ...VIEW_OFFER, lang: 'fr' }, { ...VIEW_OFFER, lang: 'he', extra: 1 }]) {
+      const value = { ...good, greek_offer: offer };
+      expect(validate(value, answerSchema)).not.toEqual([]);
+      expect(isTalkAnswer(value)).toBe(false);
+    }
+  });
+
+  it('reads an offer without lang as Greek: every old answer and example still reads', () => {
+    expect(offerLangOf(VIEW_OFFER)).toBe('grc');
+    expect(offerLangOf(HEBREW_VIEW)).toBe('he');
+    expect(greekOfferOf({ ...good, greek_offer: VIEW_OFFER }, scope, [], '', false, 1)).toEqual({ ...VIEW_OFFER, to: 2 });
+    // an Old Testament chapter picks the Hebrew dial: an offer with no lang is a Greek one and is not kept there
+    expect(greekOfferOf({ ...good, greek_offer: VIEW_OFFER }, otScope, [], '', false, 0)).toBeUndefined();
+  });
+
+  it('is made to a reader at Hebrew 0 on an Old Testament chapter, to Curious', () => {
+    expect(chapterOfferLang(otScope)).toBe('he');
+    expect(chapterOfferLang(scope)).toBe('grc');
+    expect(greekOfferOf({ ...good, greek_offer: HEBREW_VIEW }, otScope, [], '', false, 0)).toEqual({ ...HEBREW_VIEW, to: 1 });
+  });
+
+  it('is a one-step offer on the Hebrew dial at Curious and above, and none at All in', () => {
+    for (const level of [1, 2, 3, 4] as const) expect(greekOfferOf({ ...good, greek_offer: HEBREW_VIEW }, otScope, [], '', false, level)?.to).toBe(level + 1);
+    expect(greekOfferOf({ ...good, greek_offer: HEBREW_VIEW }, otScope, [], '', false, 5)).toBeUndefined();
+  });
+
+  it('is not made on a New Testament chapter, nor a Greek one on an Old Testament chapter', () => {
+    expect(greekOfferOf({ ...good, greek_offer: HEBREW_VIEW }, scope, [], '', false, 0)).toBeUndefined();
+    expect(greekOfferOf({ ...good, greek_offer: { ...VIEW_OFFER, lang: 'grc' } }, otScope, [], '', false, 0)).toBeUndefined();
+  });
+
+  it('is kept once a talk, and not after a no said to the Hebrew offer, while the Greek offer on a New Testament chapter still is', () => {
+    const noHebrew = `likes short answers\n${offerNoLine(NOON, 'he')}`;
+    expect(noHebrew).toContain('said no to the Hebrew offer 2026-10-13');
+    expect(hasOfferNo(noHebrew, 'he')).toBe(true);
+    expect(hasOfferNo(noHebrew, 'grc')).toBe(false);
+    expect(greekOfferOf({ ...good, greek_offer: HEBREW_VIEW }, otScope, [], noHebrew, false, 0)).toBeUndefined();
+    expect(greekOfferOf({ ...good, greek_offer: VIEW_OFFER }, scope, [], noHebrew, false, 0)).toEqual({ ...VIEW_OFFER, to: 1 });
+    // and the other way: a Greek no leaves the Hebrew offer
+    expect(greekOfferOf({ ...good, greek_offer: HEBREW_VIEW }, otScope, [], greekNoLine(NOON), false, 0)).toEqual({ ...HEBREW_VIEW, to: 1 });
+  });
+
+  it('shows as a pending offer of kind greek with its lang', async () => {
+    const turn = await turnWith({ ...none, greekOffer: { ...HEBREW_VIEW, to: 1 } });
+    expect(offerOfTurn(turn)).toEqual({ kind: 'greek', text: HEBREW_VIEW.text, lang: 'he' });
+    expect(validate({ ...request('a'), pending_offer: offerOfTurn(turn) }, inputSchema)).toEqual([]);
+  });
+
+  it('on a tap raises the Hebrew dial and not the Greek one', async () => {
+    await setGreekInterest(0);
+    await setHebrewInterest(0);
+    const turn = await turnWith({ ...none, greekOffer: { ...HEBREW_VIEW, to: 1 } });
+    await takeGreekOffer(turn);
+    expect(await getHebrewInterest()).toBe(1);
+    expect(await getGreekInterest()).toBe(0);
+    expect((await db.talks.get(turn.id!))?.greekChoice).toBe('taken');
+  });
+
+  it('on a tap with no step raises the Hebrew dial one step from where it stands, and never lowers it', async () => {
+    await setHebrewInterest(2);
+    await takeGreekOffer(await turnWith({ ...none, greekOffer: { kind: 'view', text: 'x', lang: 'he' } }));
+    expect(await getHebrewInterest()).toBe(3);
+    await takeGreekOffer(await turnWith({ ...none, greekOffer: { ...HEBREW_VIEW, to: 1 } }));
+    expect(await getHebrewInterest()).toBe(3);
+  });
+
+  it('on a no writes "said no to the Hebrew offer <date>" and no Greek line', async () => {
+    const turn = await turnWith({ ...none, greekOffer: HEBREW_VIEW });
+    await settleOffer('decline', pendingOfferOf([turn]), otScope, NOON);
+    const index = (await getIndex()).text;
+    expect(index).toContain(`${HEBREW_NO_PREFIX} 2026-10-13`);
+    expect(index).not.toContain(GREEK_NO_PREFIX);
+    expect((await db.talks.get(turn.id!))?.greekChoice).toBe('declined');
+  });
+
+  it('greek_asked clears the line of the chapter\'s language only', async () => {
+    await appendToIndex(greekNoLine(NOON), 'tutor');
+    await appendToIndex(offerNoLine(NOON, 'he'), 'tutor');
+    await applyMemoryFromAnswer({ greek_asked: true }, NOON, 'he');
+    expect(hasOfferNo((await getIndex()).text, 'he')).toBe(false);
+    expect(hasOfferNo((await getIndex()).text, 'grc')).toBe(true);
+    await applyMemoryFromAnswer({ greek_asked: true }, NOON);
+    expect(hasGreekNo((await getIndex()).text)).toBe(false);
+  });
+
+  it('is the request\'s own: reader_view is hebrew on a Hebrew chapter in its original, and hebrew_interest names its dial', () => {
+    const built = buildTalkRequest(otScope, 'what is this?', [], [], { greekInterest: '0', hebrewInterest: '0' }, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, 'modern', false, undefined, undefined, 'greek');
+    expect(built.reader_view).toBe('hebrew');
+    expect(built.hebrew_interest).toEqual({ level: 0, name: 'Just English', next: { level: 1, name: 'Curious' } });
+    expect(validate(built, inputSchema)).toEqual([]);
+    const english = buildTalkRequest(otScope, 'what is this?', [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, 'modern', false, undefined, undefined, 'english');
+    expect(english.reader_view).toBe('english');
+  });
+});
+
+describe('the welcome\'s offer (mw-gdcyf98.17)', () => {
+  const WELCOME = (lang: 'grc' | 'he' | 'both', text: string) => ({ ...good, greek_offer: { kind: 'view' as const, text, lang } });
+
+  it('keeps the offer of the Greek, of the Hebrew, or of both, once, at Dipping a toe', () => {
+    for (const [lang, text] of [['grc', 'Show me the Greek'], ['he', 'Show me the Hebrew'], ['both', 'Show me the Greek and the Hebrew']] as const) {
+      expect(validate(WELCOME(lang, text), answerSchema)).toEqual([]);
+      expect(greekOfferOf(WELCOME(lang, text), welcomeScope, [], '')).toEqual({ kind: 'view', text, lang, to: 2 });
+    }
+  });
+
+  it('on a tap raises the named dial(s) to Dipping a toe', async () => {
+    await setGreekInterest(0);
+    await setHebrewInterest(0);
+    await takeGreekOffer(await turnWith({ ...none, greekOffer: { kind: 'view', text: 'Show me the Hebrew', lang: 'he', to: 2 } }));
+    expect([await getGreekInterest(), await getHebrewInterest()]).toEqual([0, 2]);
+    await setHebrewInterest(0);
+    await takeGreekOffer(await turnWith({ ...none, greekOffer: { kind: 'view', text: 'Show me the Greek and the Hebrew', lang: 'both', to: 2 } }));
+    expect([await getGreekInterest(), await getHebrewInterest()]).toEqual([2, 2]);
+    await setGreekInterest(0);
+    await setHebrewInterest(0);
+    await takeGreekOffer(await turnWith({ ...none, greekOffer: { kind: 'view', text: 'Show me the Greek', lang: 'grc', to: 2 } }));
+    expect([await getGreekInterest(), await getHebrewInterest()]).toEqual([2, 0]);
+  });
+});
+
+describe('the Hebrew instructions and examples', () => {
+  const text = instructionsOf('bible-talk');
+  const offering = text.slice(text.indexOf('## Offering the Greek'), text.indexOf('\n## ', text.indexOf('## Offering the Greek') + 5));
+
+  it('keep the heading and the eight-line list, name `hebrew_interest`, `lang` and the Hebrew no, and read the original language-neutrally', () => {
+    expect(offering).toContain('## Offering the Greek');
+    expect(offering).toContain('`hebrew_interest`');
+    expect(offering).toContain('`lang`');
+    expect(offering).toContain('said no to the Hebrew offer');
+    expect(offering).toMatch(/`reader_view` is `greek` or `hebrew`/);
+    expect(offering.match(/^[1-8]\. /gm)).toHaveLength(8);
+  });
+
+  it('say the welcome asks the new first question and names the three answers', () => {
+    const start = text.indexOf('## The welcome');
+    const welcome = text.slice(start, text.indexOf('\n## ', start + 1)).replace(/\s+/g, ' ');
+    expect(welcome).toContain("'Why are you here: to read, to study, or to learn the Greek or the Hebrew?'");
+    for (const line of ["'Show me the Greek'", "'Show me the Hebrew'", "'Show me the Greek and the Hebrew'"]) expect(welcome).toContain(line);
+  });
+
+  it('let verse-ask make no offer on an Old Testament verse', () => {
+    const ask = instructionsOf('verse-ask');
+    expect(ask).toContain('make no offer: the Bible talk makes them');
+    expect(ask).not.toContain('offer no Greek');
+  });
+
+  it('have a Hebrew offer on Genesis 1:1 and a welcome answer for the Hebrew, both fitting the schemas', () => {
+    const read = (file: string) => JSON.parse(readFileSync(`grinds/examples/bible-talk/${file}.json`, 'utf8')) as { request: Record<string, unknown> & { hebrew_interest?: { level: number } }; expect: Record<string, { equals?: string; matches?: string }> };
+    const genesis = read('hebrew-offer-on-genesis');
+    expect(genesis.request.hebrew_interest?.level).toBe(0);
+    expect(genesis.expect['greek_offer.lang'].equals).toBe('he');
+    expect(genesis.expect['greek_offer.text'].matches).toContain('Curious');
+    const welcome = read('welcome-learn-hebrew');
+    expect(welcome.expect['greek_offer.lang'].equals).toBe('he');
+    expect(welcome.expect['greek_offer.text'].matches).toContain('Hebrew');
+    for (const e of [genesis, welcome]) expect(validate(e.request, inputSchema)).toEqual([]);
   });
 });

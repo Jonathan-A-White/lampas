@@ -114,7 +114,7 @@ label is the value itself (`"on" (On)`) is written once. The answer schema still
 - Pace and ways each change the answer; `background`, `why`, `age` (never mentioned) → kept.
 - `hearing` or `doing`: the LAST sentence is the invitation, after any explanation → kept ("write the explanation first ... never closes on an explanation" dropped as a repeat of the same rule).
 - Never build on a word or idea he has not met without saying so; the profile never excuses it → kept.
-- The dial: 0 and 1 no Greek unasked; from 2 as far as the step goes; interest beyond the dial → kept, the offer's details are a repeat of 130.
+- The dial: 0 and 1 no Greek unasked (since mw-gdcyf98.17, none of the original: the chapter's language picks `greek_interest` or `hebrew_interest`); from 2 as far as the step goes; interest beyond the dial → kept, the offer's details are a repeat of 130.
 - Use it quietly; never repeat it; never let it change what is true → kept. Detect first, ask last; no profile, teach as usual → kept (the pointer to 110 dropped).
 
 ## 110 Learning about him
@@ -187,7 +187,7 @@ label is the value itself (`"on" (On)`) is written once. The answer schema still
 - At most three questions, one at a time, no Greek, never two in an answer, never one answered, a no moves on, no `profile_question` → kept.
 - The three questions, the first word for word → kept. Write each answer down (`memory_update`, `profile_update`); a no is not written → kept.
 - The last answer: thanks, `welcome_done`, no question; fewer answers; stopping → kept.
-- Learning the Greek: one `greek_offer` `view`, 'Show me the Greek' → kept. Anything else: one sentence; never talk of settings → kept.
+- Learning the Greek: one `greek_offer` `view`, 'Show me the Greek' → kept; since mw-gdcyf98.17 also the Hebrew ('Show me the Hebrew', `lang` `he`) and both ('Show me the Greek and the Hebrew', `both`), and the first question names the Hebrew. Anything else: one sentence; never talk of settings → kept.
 - "Do not use `learner_grammar`, `requests` or `rusty` (they are not sent)" → dropped: they are not in the request, so there is nothing to use. The JSON example (pinned by tests) → kept.
 
 ## 200 Links to his study resources
@@ -254,3 +254,13 @@ The instructions were 99,992 bytes after mw-5r3p30.731; this story brought them 
 - 060, 070, 080, 090: "Leave `syllables` out" said once (060), not in each part; the wrong-sound paragraph says each thing once with its pinned phrases.
 - 170: the quiz bullet "Teach a new word on the spot" is 340's rule (repeat); the Genesis 1 map example is one line.
 - 010, 030 and others: examples and parentheticals that a rule next to them already gave.
+
+## The offer of the original (mw-gdcyf98.17)
+
+`greek_offer` kept its name and gained `lang` (`grc` when absent, `he`, `both` in the welcome only); the instructions went from 97,877 to 98,675 bytes (ceiling 99,500).
+
+- 130 (heading, part name and the eight-line list kept): the dial is the chapter's (`greek_interest` for a New Testament chapter, `hebrew_interest` for an Old Testament one); line 3 also stops at `reader_view` `hebrew`; line 4 names both memory lines ('said no to the Greek offer', 'said no to the Hebrew offer'), each honoured for its language, and `greek_asked` clears the chapter's; line 6 reads 'the original'; an Old Testament offer is always `view` (no word list is sent for Hebrew). The worked example stays the Greek one; the Hebrew one is `grinds/examples/bible-talk/hebrew-offer-on-genesis.json`.
+- 190: the first question is 'Why are you here: to read, to study, or to learn the Greek or the Hebrew?'; the offer is by the answer: 'Show me the Greek' (`grc`), 'Show me the Hebrew' (`he`), one offer 'Show me the Greek and the Hebrew' (`both`); the JSON example gains `"lang": "grc"`.
+- 010 (`reader_view` may be `"hebrew"`; a `greek` `pending_offer` has its `lang`), 100 (the dial of the chapter's language), 280 (the example reply names the Hebrew): 'the Greek' in this sense is 'the original'.
+- The 150/160 fold: the twinned rules of the two sections (the app's own list: never add, leave out or guess an item; ONE offer at most once a talk, none in a quiz, none after his no) are said once, at the head of 150, and 160 points to them. The two parts went from 3,075 to 3,045 bytes: the fold saved 30, not the 600 first guessed, because the twins were mostly worded differently; 130 and 190 together added 670 within the headroom.
+- verse-ask 055: 'offer no Greek' became 'make no offer: the Bible talk makes them'; the line about quoting no Greek (the Septuagint is not sent) stays.

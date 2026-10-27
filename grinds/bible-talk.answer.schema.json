@@ -161,7 +161,7 @@
       "enum": ["confirm", "decline", "read_back"]
     },
     "greek_offer": {
-      "description": "ONE short line offering to raise the Greek dial (`greek_interest` in the request) ONE step, to `greek_interest.next`. Whether to make it is decided by the numbered list in the instructions, 'Offering the Greek', alone, the first line that fits: never while `pending_offer` is `greek`, never in a quiz or a talk from a screen (the welcome has its own rule, 'The welcome'), never at All in (no `next`), never when `reader_view` is `greek` (he is already reading the original), never when `memory.index` holds 'said no to the Greek offer' and never in the answer that sets `greek_asked`, never after an offer in the history; at 0 only when he asks about the Greek; at 1 to 4 whenever his question shows real interest in the original (what a word really means, an English word too: 'what does love really mean?'). The app draws it as a button; a tap raises the dial one step. `kind` 'word' is about one word of the passage (give its dictionary form in `lemma`, a word of the passage you were given): after raising the dial the app opens that word's sheet; `kind` 'view' is about the verse or the original in general. A question about what one word means is always `word`, with its `lemma`; `view` only when no single word of the passage is what he asks about. `text` names the step `next.name`.",
+      "description": "ONE short line offering to raise the dial of the chapter's language ONE step, to its `next`: `greek_interest` for a New Testament chapter, `hebrew_interest` for an Old Testament one (`lang` says which). Whether to make it is decided by the numbered list in the instructions, 'Offering the Greek', alone, the first line that fits: never while `pending_offer` is `greek`, never in a quiz or a talk from a screen (the welcome has its own rule, 'The welcome'), never at All in (no `next`), never when `reader_view` is `greek` or `hebrew` (he is already reading the original), never when `memory.index` holds 'said no to the Greek offer' (or 'the Hebrew offer', for lang `he`) and never in the answer that sets `greek_asked`, never after an offer in the history; at 0 only when he asks about the original; at 1 to 4 whenever his question shows real interest in the original (what a word really means, an English word too: 'what does love really mean?'). The app draws it as a button; a tap raises the dial one step. `kind` 'word' is about one word of the passage (give its dictionary form in `lemma`, a word of the passage you were given): after raising the dial the app opens that word's sheet; `kind` 'view' is about the verse or the original in general. A question about what one word means is always `word`, with its `lemma`; `view` only when no single word of the passage is what he asks about. `text` names the step `next.name`.",
       "anyOf": [
         {
           "type": "object",
@@ -169,6 +169,11 @@
           "required": ["kind", "text"],
           "properties": {
             "kind": { "type": "string", "enum": ["view"] },
+            "lang": {
+              "description": "Which dial the offer raises: 'he' on an Old Testament chapter (the Hebrew dial), 'grc' on a New Testament one (the Greek dial). Left out, it reads as 'grc'. 'both' only in the welcome, for a reader who came to learn both.",
+              "type": "string",
+              "enum": ["grc", "he", "both"]
+            },
             "text": {
               "description": "The button's line, a plain question or invitation in English, such as 'Want to raise the Greek to Dipping a toe?', naming the step `greek_interest.next.name`. At most 120 characters.",
               "type": "string",
@@ -183,6 +188,11 @@
           "required": ["kind", "text", "lemma"],
           "properties": {
             "kind": { "type": "string", "enum": ["word"] },
+            "lang": {
+              "description": "Which dial the offer raises: 'he' on an Old Testament chapter (the Hebrew dial), 'grc' on a New Testament one (the Greek dial). Left out, it reads as 'grc'. 'both' only in the welcome, for a reader who came to learn both.",
+              "type": "string",
+              "enum": ["grc", "he", "both"]
+            },
             "text": {
               "description": "The button's line, a plain question or invitation in English, such as 'Want to try Curious: tap a word to see its Greek?', naming the step `greek_interest.next.name`. At most 120 characters.",
               "type": "string",

@@ -5,7 +5,7 @@ waits, `pending_offer` carries its `kind` and `text`: the exact text it would se
 the quiz goal, the button's label). Decide from `question` alone, loosely as a person dictates, and say so in `offer_reply`:
 
 - `confirm`: yes in any words ('yes', 'yes send it', 'yeah please pass that on'). The app does exactly what the button does (its section says what);
-  say in one sentence that it is done ('Sent to the makers.', 'Theme is now Dark.', 'Raising the Greek for you.'); never promise what the makers will decide.
+  say in one sentence that it is done ('Sent to the makers.', 'Theme is now Dark.', 'Raising the Hebrew for you.'); never promise what the makers will decide.
 - `decline`: no ('no', 'not now', 'forget it'). The offer is withdrawn; say in one sentence that you will not.
 - `read_back`: he asks to hear it first ('read it back to me', 'what will it change'). The offer stays. Speak the `text` of `pending_offer` word for
   word, unshortened, then ask 'Shall I do that?' and stop.

@@ -56,7 +56,7 @@ describe('an offer he already took, whose button stays on screen', () => {
     const turn = await turnWith({ ...none, greekOffer: greek });
     expect(pendingOfferOf([turn])?.offer.kind).toBe('greek');
     const taken = { ...turn, greekChoice: 'taken' as const };
-    expect(pendingOfferOf([taken])?.offer).toEqual({ kind: 'greek', text: 'Hear it in Greek' });
+    expect(pendingOfferOf([taken])?.offer).toEqual({ kind: 'greek', text: 'Hear it in Greek', lang: 'grc' });
     expect(pendingOfferOf([taken, { ...taken, id: 99, greekOffer: undefined, greekChoice: undefined }])).toBeUndefined();
     expect(pendingOfferOf([{ ...taken, greekChoice: 'declined' }])).toBeUndefined();
   });

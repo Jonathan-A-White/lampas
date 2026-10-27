@@ -9,7 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { getGreekInterest, getNewWordsADay, getReaderView, getWeave, setDeveloper } from '../../src/data/repositories';
+import { getGreekInterest, getHebrewInterest, getNewWordsADay, getReaderView, getWeave, setDeveloper } from '../../src/data/repositories';
 import { getIndex } from '../../src/data/repositories/memory';
 import { saveProfile } from '../../src/data/repositories/profile';
 import { getWelcome } from '../../src/data/repositories/welcome';
@@ -35,7 +35,7 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const NOW = Date.parse('2026-10-12T12:00:00.000Z');
 const ISSUER_PUB = '02' + '11'.repeat(32);
-const FIRST_QUESTION = 'Why are you here: to read, to study, or to learn the Greek?';
+const FIRST_QUESTION = 'Why are you here: to read, to study, or to learn the Greek or the Hebrew?';
 const held = (): Promise<LicenceStatus> => Promise.resolve({ state: 'held', outpoint: { txid: 'a'.repeat(64), vout: 0 }, collection: 'lampas', checkedAt: new Date(NOW).toISOString() });
 
 /** What the tutor answers to each of his answers, by his words. */
@@ -52,7 +52,19 @@ const REPLIES: Record<string, Record<string, unknown>> = {
     answer: 'Wonderful. Would you like me to show you the Greek now?',
     words: [],
     memory_update: [{ name: 'index', append: 'came to learn the Greek' }],
-    greek_offer: { kind: 'view', text: 'Show me the Greek' },
+    greek_offer: { kind: 'view', text: 'Show me the Greek', lang: 'grc' },
+  },
+  'I want to learn the Hebrew': {
+    answer: 'Wonderful. Would you like me to show you the Hebrew now?',
+    words: [],
+    memory_update: [{ name: 'index', append: 'came to learn the Hebrew' }],
+    greek_offer: { kind: 'view', text: 'Show me the Hebrew', lang: 'he' },
+  },
+  'I want to learn both': {
+    answer: 'Wonderful. Would you like me to show you both now?',
+    words: [],
+    memory_update: [{ name: 'index', append: 'came to learn the Greek and the Hebrew' }],
+    greek_offer: { kind: 'view', text: 'Show me the Greek and the Hebrew', lang: 'both' },
   },
 };
 let fake: FakePostern;
@@ -190,6 +202,37 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the Weave is on', async () => {
       await waitFor(async () => expect(await getWeave()).toBe('solid'));
+    });
+  });
+
+  Scenario('Answering learn the Hebrew offers the Hebrew and a tap raises the Hebrew dial to Dipping a toe', ({ Given, When, Then, And }) => {
+    Given('a new phone whose licence is found when Lampas opens', newPhone);
+    When('he answers {string}', answers);
+    Then('the welcome talk shows the button {string}', async (_, name: string) => {
+      expect(await within(await welcome()).findByRole('button', { name })).toBeInTheDocument();
+    });
+    And('the memory index holds {string}', async (_, line: string) => indexHolds(line));
+    When('he taps {string}', taps);
+    Then('the Hebrew dial is Dipping a toe', async () => {
+      await waitFor(async () => expect(await getHebrewInterest()).toBe(2));
+    });
+    And('the Greek dial is Just English', async () => {
+      expect(await getGreekInterest()).toBe(0);
+    });
+  });
+
+  Scenario('Answering both offers one button for both and a tap raises both dials to Dipping a toe', ({ Given, When, Then, And }) => {
+    Given('a new phone whose licence is found when Lampas opens', newPhone);
+    When('he answers {string}', answers);
+    Then('the welcome talk shows the button {string}', async (_, name: string) => {
+      expect(await within(await welcome()).findByRole('button', { name })).toBeInTheDocument();
+    });
+    When('he taps {string}', taps);
+    Then('the Hebrew dial is Dipping a toe', async () => {
+      await waitFor(async () => expect(await getHebrewInterest()).toBe(2));
+    });
+    And('the Greek dial is Dipping a toe', async () => {
+      await waitFor(async () => expect(await getGreekInterest()).toBe(2));
     });
   });
 

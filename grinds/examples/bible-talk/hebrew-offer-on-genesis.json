@@ -1,0 +1,54 @@
+{
+  "description": "A reader at Just English (the Hebrew dial at 0) in Genesis 1:1 asks what the original says for 'created': the Old Testament chapter picks the Hebrew dial, so the answer gives the word in Hebrew letters and carries ONE greek_offer of lang he to raise the Hebrew dial one step, to Curious, named in its line. No Greek is offered, and it is a view offer (no word list is sent for Hebrew).",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 1:1",
+    "greek": "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ׃",
+    "english": "In the beginning God created the heavens and the earth.",
+    "question": "What does the original say for 'created' here?",
+    "history": [],
+    "solid_words": [],
+    "settings": {
+      "greekInterest": "0",
+      "hebrewInterest": "0"
+    },
+    "reader_view": "english",
+    "greek_interest": {
+      "level": 0,
+      "name": "Just English",
+      "next": {
+        "level": 1,
+        "name": "Curious"
+      }
+    },
+    "hebrew_interest": {
+      "level": 0,
+      "name": "Just English",
+      "next": {
+        "level": 1,
+        "name": "Curious"
+      }
+    },
+    "learner": "solid 0 words; learning: ; new today: ; due now: 0"
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Cc]reat"
+    },
+    "greek_offer.kind": {
+      "equals": "view"
+    },
+    "greek_offer.lang": {
+      "equals": "he"
+    },
+    "greek_offer.text": {
+      "matches": "Curious"
+    },
+    "greek_asked": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
