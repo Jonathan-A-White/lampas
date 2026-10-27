@@ -87,8 +87,10 @@ const lineOf = (summary: string): HTMLElement => row(summary).querySelector('[da
 const sendStatus = (summary: string, status: string, more: Record<string, unknown> = {}, sealedBy?: string): void =>
   fake.sendStatus(PHONE_PUBLIC, statusFor(txids.get(summary) as string, status, more), sealedBy);
 
+// `<date>` in a line stands for the date the status was set, which reads by the locale
 const readsAs = async (summary: string, line: string): Promise<void> => {
-  await waitFor(() => expect(lineOf(summary)).toHaveTextContent(new RegExp(`^${line.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`)));
+  const pattern = line.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('<date>', '.+');
+  await waitFor(() => expect(lineOf(summary)).toHaveTextContent(new RegExp(`^${pattern}$`)));
 };
 
 /** Waits until the screen has pulled at least `count` more times than `before`. */
@@ -187,7 +189,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     );
     Then('the request {string} reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
     And('{string} is a link to the commit the record names', (_, name: string) => {
-      const link = screen.getByRole('link', { name });
+      const link = screen.getByRole('link', { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('<date>', '.+')}$`) });
       expect(link).toHaveAttribute('href', COMMIT_URL);
       expect(link).toHaveAttribute('target', '_blank');
       expect(link.getAttribute('rel')).toContain('noreferrer');

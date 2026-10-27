@@ -16,14 +16,17 @@ const VIEWPORTS = [
 ];
 const COMMIT_URL = 'https://github.com/Jonathan-A-White/lampas/commit/0123456789abcdef0123456789abcdef01234567';
 
+// `<date>` stands for the date the status was set (the locale writes it: it ends in a year)
 const REQUESTS = [
-  { summary: 'Let me hear the Greek at half speed in one tap', line: 'Sent' },
-  { summary: 'A sepia reading theme for the evening', line: 'Filed' },
-  { summary: 'Read the chapter to me while I walk', line: 'Being built' },
-  { summary: 'Show the verse number big beside the verse', line: 'Adopted in 0.1.86' },
-  { summary: 'Add the Old Testament in Hebrew with a tutor', line: 'Declined: outside what this app is for' },
-  { summary: 'Make the Greek text larger than Largest', line: 'Now a setting: Settings > Appearance > Text size' },
+  { summary: 'Let me hear the Greek at half speed in one tap', line: 'Sent to the factory · <date>' },
+  { summary: 'A sepia reading theme for the evening', line: 'Filed as a story · <date>, waiting its turn' },
+  { summary: 'Read the chapter to me while I walk', line: 'Being built · since <date>' },
+  { summary: 'Show the verse number big beside the verse', line: 'Adopted in 0.1.86 · <date>' },
+  { summary: 'Add the Old Testament in Hebrew with a tutor', line: 'Declined · <date>: outside what this app is for' },
+  { summary: 'Make the Greek text larger than Largest', line: 'Now a setting: Settings > Appearance > Text size · <date>' },
 ];
+const lineMatching = (line: string): RegExp => new RegExp(`^${line.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('<date>', '.+?\\d{4}')}$`);
+
 
 const txidOf = (index: number): string => `direct:${String(index + 1).repeat(64)}`;
 
@@ -124,13 +127,13 @@ for (const { name, width, height } of VIEWPORTS) {
 
     for (const { summary, line } of REQUESTS) {
       const row = page.locator('[data-request]', { hasText: summary });
-      await expect(row.locator('[data-request-status]')).toHaveText(line);
+      await expect(row.locator('[data-request-status]')).toHaveText(lineMatching(line));
       await row.scrollIntoViewIfNeeded();
       const box = await row.boundingBox();
       expect(box?.x ?? -1).toBeGreaterThanOrEqual(0);
       expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width);
     }
-    const link = page.getByRole('link', { name: 'Adopted in 0.1.86' });
+    const link = page.getByRole('link', { name: lineMatching('Adopted in 0.1.86 · <date>') });
     await expect(link).toHaveAttribute('href', COMMIT_URL);
     await link.scrollIntoViewIfNeeded();
     expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
@@ -197,7 +200,7 @@ for (const { name, width, height } of VIEWPORTS) {
     await expect(withWords).toContainText('Asked the tutor');
     await expect(withWords).toContainText(await dateOf(Date.now() - 6 * 86_400_000)); // sent
     await expect(detail).toContainText(await dateOf(1_790_000_000_000)); // the status set
-    await expect(withWords.locator('[data-request-status]')).toHaveText('Filed');
+    await expect(withWords.locator('[data-request-status]')).toHaveText(lineMatching('Filed as a story · <date>, waiting its turn'));
     await expect(detail).toContainText('mw-x.0');
     expect(await sideways()).toBe(false);
     await shot(page, `your-requests-open-${name}`);
@@ -344,18 +347,18 @@ for (const { width, height } of VIEWPORTS) {
     await chip('Declined (1)').click();
     await expect(chip('Declined (1)')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('[data-request]')).toHaveCount(1);
-    await expect(page.locator('[data-request-status]')).toHaveText('Declined: outside what this app is for');
+    await expect(page.locator('[data-request-status]')).toHaveText(lineMatching('Declined · <date>: outside what this app is for'));
     await expect(page.locator('[data-request-group] > h2')).toHaveText(['Asked the tutor (1)']);
     await shot(page, `your-requests-declined-${width}`);
 
     await chip('Waiting (5)').click();
     await expect(page.locator('[data-request]')).toHaveCount(5);
-    await expect(page.locator('[data-request-status]')).toHaveText(['Sent', 'Sent', 'Being built', 'Filed', 'Sent']);
+    await expect(page.locator('[data-request-status]')).toHaveText(['Sent to the factory · <date>', 'Sent to the factory · <date>', 'Being built · since <date>', 'Filed as a story · <date>, waiting its turn', 'Sent to the factory · <date>'].map(lineMatching));
     await expect(page.locator('[data-request-group] > h2')).toHaveText(['Asked the tutor (5)']);
 
     await chip('Adopted (2)').click();
     await expect(page.locator('[data-request]')).toHaveCount(2);
-    await expect(page.locator('[data-request-status]')).toHaveText(['Now a setting: Settings > Appearance > Text size', 'Adopted in 0.1.86']);
+    await expect(page.locator('[data-request-status]')).toHaveText(['Now a setting: Settings > Appearance > Text size · <date>', 'Adopted in 0.1.86 · <date>'].map(lineMatching));
 
     await chip('All (8)').click();
     await expect(page.locator('[data-request]')).toHaveCount(8);
@@ -454,7 +457,7 @@ test('a double tap on the Adopted link opens one tab', async ({ page, context })
   await seed(page);
   fake.sendStatus(SEED_PUBLIC_KEY, status(3, { status: 'landed', version: '0.1.86', commit: '0123456789abcdef0123456789abcdef01234567', url: COMMIT_URL }));
   await page.reload();
-  const link = page.getByRole('link', { name: 'Adopted in 0.1.86' });
+  const link = page.getByRole('link', { name: lineMatching('Adopted in 0.1.86 · <date>') });
   await expect(link).toHaveAttribute('href', COMMIT_URL);
   await link.scrollIntoViewIfNeeded();
   await pageTime(page, SETTLE_MS + 100);
@@ -473,3 +476,31 @@ test('a double tap on the Adopted link opens one tab', async ({ page, context })
   await tapTwice(page, link, SETTLE_MS + 100);
   await expect.poll(() => opened.length).toBe(3);
 });
+
+// Under a filed request that has waited more than 7 days one quiet line says so (mw-5r3p30.796); a fresh filed one, and every other status, has none.
+for (const { name, width, height } of VIEWPORTS) {
+  test(`a filed request older than 7 days says Still in the queue at ${width}x${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    const fake = makeFakePostern();
+    await routePostern(page, fake);
+    await openUnlocked(page);
+    await page.goto('/#/requests');
+    await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
+    await seed(page, ['Waited a fortnight', 'Filed yesterday', 'Being built for a fortnight']);
+    const DAY = 86_400_000;
+    fake.sendStatus(SEED_PUBLIC_KEY, status(0, { status: 'filed', ts: Date.now() - 14 * DAY }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(1, { status: 'filed', ts: Date.now() - DAY }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(2, { status: 'building', ts: Date.now() - 14 * DAY }));
+    await page.reload();
+
+    const old = page.locator('[data-request]', { hasText: 'Waited a fortnight' });
+    await expect(old.locator('[data-request-status]')).toHaveText(lineMatching('Filed as a story · <date>, waiting its turn'));
+    await expect(old.locator('[data-request-queue]')).toHaveText('Still in the queue');
+    await expect(page.locator('[data-request]', { hasText: 'Filed yesterday' }).locator('[data-request-queue]')).toHaveCount(0);
+    await expect(page.locator('[data-request]', { hasText: 'Being built for a fortnight' }).locator('[data-request-queue]')).toHaveCount(0);
+    await expect(page.locator('[data-request-queue]')).toHaveCount(1);
+    const { scrollWidth, clientWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+    await shot(page, `your-requests-queue-${name}`);
+  });
+}

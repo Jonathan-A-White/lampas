@@ -199,8 +199,8 @@ library**.
 ### Your requests
 
 `#/requests` (route `requests`, kept; Settings > More > Your requests and a button on About) lists the rows of `requests`, newest first, each with its summary
-(or his words), what kind it was and one status line (`src/RequestsScreen.tsx`): **Sent**, **Filed**, **Being built**, **Adopted in 0.1.86** (a link to the
-record's `url`, new tab), **Declined: <reason>**, **Now a setting: <name>**. The backend pushes nothing for a grist (Postern protocol section 9 item 6), so the
+(or his words), what kind it was and one status line (`src/RequestsScreen.tsx`) that says what became of the ask and when (mw-5r3p30.796, wording table below; a link to the
+record's `url`, new tab, for **Adopted**). The backend pushes nothing for a grist (Postern protocol section 9 item 6), so the
 screen pulls `GET /api/messages?since=` when it opens, every `requestTimings.pollMs` (20 s) while it is up and at once when the page is shown again (mw-5r3p30.220), never overlapping and not while the page is hidden
 (`src/services/requestStatus.ts` `pullStatuses`). The cursor is the backend's `next`, kept in the settings store (`requestsCursor`, no table;
 `getRequestsCursor` / `setRequestsCursor`, it never goes back), so a record is read once. A record counts only when it is a `grist` record from the mill
@@ -208,6 +208,19 @@ to this key, signed (when the backend says who) and sealed by the mill, whose pl
 (`applyRequestStatus`); anything else is skipped and the cursor passes it. A row takes a record only when its `ts` is newer than the one it already took
 (`statusAt`), so the newest by `ts` shows whatever order they arrive in. The row keeps `bead`, and `version`/`commit`/`url`, `reason` or `setting` for the status that carries them
 (optional fields, no Dexie version). A failed pull shows 'Could not check for news just now' and leaves the list as it was.
+
+**The status line** (mw-5r3p30.796, `src/data/requestWording.ts` `statusWording`, used by the screen; the tutor's lines and the search keep the kit's bare `statusLine`, so a date never matches a search). `<date>` is the day the status was set (`statusAt`; the sent day for Sent), written as the sent date is (`26 Oct 2026` in the phone's locale); a record with no `statusAt` reads without it. A status the wording does not know throws (`tests/unit/request-wording.test.ts`).
+
+| status | line | without a date, version, reason or setting |
+| --- | --- | --- |
+| `sent` | Sent to the factory · `<date>` | (always has its sent day) |
+| `filed` | Filed as a story · `<date>`, waiting its turn | Filed as a story, waiting its turn |
+| `building` | Being built · since `<date>` | Being built |
+| `landed` | Adopted in `<version>` · `<date>` (the link) | Adopted in `<version>` / Adopted |
+| `declined` | Declined · `<date>`: `<reason>` | Declined: `<reason>` / Declined |
+| `adopted-as-setting` | Now a setting: `<name>` · `<date>` | Now a setting: `<name>` / Now a setting |
+
+Under a **Filed** line, once the request has waited more than 7 days (`QUEUE_DAYS`, `stillInQueue`: since it was filed, since it was sent when no filing date came), one quiet line reads **Still in the queue** (`data-request-queue`; PROVISIONAL, the Governor to confirm). Proof: `tests/e2e/your-requests.spec.ts` at 390x844 and 844x390, `features/your-requests.feature`.
 
 What a request keeps on the phone (mw-5r3p30.794): a tutor-ask keeps the tutor's one-line `summary` and, since that story, his own `words` (the text he sent; optional, no Dexie version; a row kept before has none and shows its summary; `requestStore.all()` still hands the pwa-kit/requests twin check no words, so the same ask can be sent again), the number of `pictures` that went with it, `app_version` and `sentAt`; every other kind keeps its full text in `text` (a book its title and Resource ID, a library request a line that counts the books, an approach, text or translation the name with why after it). Every row is a button: folded it shows three lines of his words (the summary or text for a row without `words`), the kind and the date sent, and the status line; a tap opens it in place: his words and the tutor's summary when they differ, the date the status was last set (`statusAt`), the bead the factory filed and, when landed, the version (the link stays on the status line); a second tap folds it. The search over twenty rows also looks in his words and in the summary.
 

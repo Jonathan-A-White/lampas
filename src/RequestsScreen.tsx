@@ -1,8 +1,8 @@
 // src/RequestsScreen.tsx — Your requests (mw-vy3ghg.5, #/requests, reached from Settings > More and from About): every request he sent to the
 // factory, the newest first, each with where it stands: Sent, Filed, Being built, Adopted in <version> (a link to the commit), Declined: <reason>
-// or Now a setting: <name>. The backend pushes nothing for a grist, so while the screen is up it pulls the mill's request-status records
+// or Now a setting: <name>, each worded with the date it was set (src/data/requestWording.ts; a filed one older than 7 days adds 'Still in the queue'). The backend pushes nothing for a grist, so while the screen is up it pulls the mill's request-status records
 // (src/services/requestStatus.ts) when it opens, every requestTimings.pollMs and at once when the phone shows the app again (never while it is
-// hidden: pwa-kit/requests' watchStatuses, whose statusLine and webLink word each row too); the list is a live query, so a record shows as it is applied.
+// hidden: pwa-kit/requests' watchStatuses, whose statusLine words the search's view of a status, as the tutor's lines, and webLink links a landed row); the list is a live query, so a record shows as it is applied.
 // The list is drawn here, not by the kit's RequestsList: every request is a button that opens it in full and folds it again (mw-5r3p30.794).
 // At scale (mw-rfjjzd.15): the rows are grouped by kind, each group headed by its plural name and its count ('Books (14)', the header WordsScreen's lesson groups
 // use), the newest first within a group and the group holding the newest request first; a library request is one row (its text counts the books); over 20 rows a
@@ -13,6 +13,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { statusLine, watchStatuses, webLink } from 'pwa-kit/requests';
 import { FILTERS, filterOf, type StatusFilter } from './data/requestFilter';
+import { sentOn, statusWording, stillInQueue } from './data/requestWording';
 import { listRequests, recordOf, type RequestRow } from './data/repositories/requests';
 import { backTo, requestsOf, useAddress } from './nav/route';
 import { matching, type ListItem } from './ui/listFilter';
@@ -64,7 +65,7 @@ const wordsOf = (row: RequestRow): string => row.summary ?? row.text ?? 'A reque
 /** The line a request shows: his own words when the phone kept them (a tutor-ask since mw-5r3p30.794), else the summary or the text kept. */
 const lineOf = (row: RequestRow): string => row.words ?? wordsOf(row);
 
-/** The rows that hold every word typed, in his words, the summary, the kind's name or the status line; all of them for an empty search. */
+/** The rows that hold every word typed, in his words, the summary, the kind's name or the status's word (the kit's statusLine: no date, so a digit he types never matches one); all of them for an empty search. */
 function found(rows: readonly RequestRow[], query: string): RequestRow[] {
   const items = rows.map((row) => ({ id: row.txid, name: lineOf(row), also: `${row.summary ?? ''} ${KIND_NAMES[row.kind] ?? ''} ${statusLine(recordOf(row))}` }));
   let kept: ListItem[] = items;
@@ -84,8 +85,6 @@ function grouped(rows: readonly RequestRow[]): { kind: string; name: string; row
   }
   return [...groups.values()];
 }
-
-const sentOn = (ms: number): string => new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
 /** Pulls the statuses now and then until the screen goes (pwa-kit/requests' watchStatuses: never while the page is hidden, at once when it is shown
  * again, one pull at a time); true while the last pull failed. A pull still on its way when the screen goes writes nothing. */
@@ -110,9 +109,11 @@ function useStatusPulling(): boolean {
 
 /** A request, folded to three lines of its words; the row is a button, a tap opens it in place (his words, the tutor's summary when it is another thing,
  * the date the status was set, the bead, the version it shipped in) and a second tap folds it. The landed link sits beside the button, not in it. */
-function Request({ row }: { row: RequestRow }) {
+function Request({ row, now }: { row: RequestRow; now: number }) {
   const [open, setOpen] = useState(false);
-  const status = statusLine(recordOf(row));
+  const record = recordOf(row);
+  const status = statusWording(record);
+  const queued = stillInQueue(record, now);
   const link = row.status === 'landed' ? webLink(row.url) : undefined;
   const shown = lineOf(row);
   const summary = row.summary !== undefined && row.summary !== shown ? row.summary : undefined;
@@ -147,6 +148,11 @@ function Request({ row }: { row: RequestRow }) {
           </a>
         </p>
       ) : null}
+      {queued ? (
+        <p data-request-queue className="text-sm text-muted">
+          Still in the queue
+        </p>
+      ) : null}
       {open ? (
         <dl id={detailId} data-request-detail className="pt-2 text-base">
           {summary !== undefined ? <Detail label="The tutor's summary">{summary}</Detail> : null}
@@ -169,7 +175,7 @@ function Detail({ label, children }: { label: string; children: string }) {
 }
 
 /** The status chips, the search field (over SEARCH_OVER rows in the chip) and the groups of the rows that match it. */
-function RequestGroups({ rows, query, onQuery }: { rows: readonly RequestRow[]; query: string; onQuery: (q: string) => void }) {
+function RequestGroups({ rows, query, onQuery, now }: { rows: readonly RequestRow[]; query: string; onQuery: (q: string) => void; now: number }) {
   const [filter, setFilter] = useState<StatusFilter>('all');
   const counts = Object.fromEntries(FILTERS.map(([value]) => [value, inFilter(rows, value).length])) as Record<StatusFilter, number>;
   const inChip = inFilter(rows, filter);
@@ -208,7 +214,7 @@ function RequestGroups({ rows, query, onQuery }: { rows: readonly RequestRow[]; 
           </h2>
           <ul aria-label={group.name}>
             {group.rows.map((row) => (
-              <Request key={row.txid} row={row} />
+              <Request key={row.txid} row={row} now={now} />
             ))}
           </ul>
         </section>
@@ -220,6 +226,7 @@ function RequestGroups({ rows, query, onQuery }: { rows: readonly RequestRow[]; 
 export function RequestsScreen() {
   const requests = useLiveQuery(listRequests, []);
   const [query, setQuery] = useState('');
+  const [now] = useState(() => Date.now()); // when the screen opened: what 'Still in the queue' is measured at
   const failed = useStatusPulling();
   const from = requestsOf(useAddress());
   const back = from === 'about' ? 'About' : 'Settings';
@@ -239,7 +246,7 @@ export function RequestsScreen() {
               Nothing sent yet. When you ask for another approach, or the tutor offers to send what it could not do, it is listed here.
             </p>
           ) : (
-            <RequestGroups rows={requests} query={query} onQuery={setQuery} />
+            <RequestGroups rows={requests} query={query} onQuery={setQuery} now={now} />
           )}
         </div>
       </main>
