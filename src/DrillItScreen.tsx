@@ -213,7 +213,8 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
     const option = pending.current;
     if (!ready || option === null) return;
     pending.current = null;
-    pick(option);
+    // the walk may have changed the question under his tap: an option it does not have is not an answer
+    if (question?.options.includes(option)) pick(option);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
   const next = () => {
