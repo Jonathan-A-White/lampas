@@ -1,5 +1,6 @@
 // tests/unit/fetch-diagram.test.ts — fetchDiagram (src/diagram/fetchDiagram.ts, mw-souyao.2) and the table of kept diagrams (db v31, src/data/repositories/diagrams.ts), with a fake askGrind:
 // a kept diagram means no ask; a first bad answer and then a good one is two asks and the good one kept; two bad answers are two asks, nothing kept and the faults returned; redraw asks past a kept one.
+// A tree of Colossians 3:2 kept before mw-5r3p30.800 (μὴ hung on φρονεῖτε) is never drawn again: the unit is asked for once more.
 import 'fake-indexeddb/auto';
 import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
@@ -54,6 +55,51 @@ describe('the diagrams table', () => {
     await keepDiagram('Colossians 3:1', 'english', good, 2);
     expect(await getDiagram('Colossians 3:1', 'english')).toEqual(good);
     expect(await db.diagrams.count()).toBe(1);
+  });
+});
+
+describe('a tree of Colossians 3:2 kept before the rule on a negative in a contrast (mw-5r3p30.800)', () => {
+  const verse2 = [col3.verses.find((v) => v.n === 2)!];
+  /** τὰ ἄνω φρονεῖτε, μὴ τὰ ἐπὶ τῆς γῆς as the grind drew it before: one clause, μὴ (3) on φρονεῖτε (2), the second member in the object beside the first. */
+  const hungOnTheVerb: Diagram = {
+    clauses: [{ clause: {
+      subject: { words: [{ implied: 'ὑμεῖς' }], modifiers: [] },
+      verb: { words: [{ i: 2 }], modifiers: [{ kind: 'word', word: { i: 3 }, modifiers: [] }] },
+      complement: { kind: 'direct-object', slot: { words: [{ i: 1 }, { i: 4 }], modifiers: [
+        { kind: 'word', word: { i: 0 }, modifiers: [] },
+        { kind: 'prepositional', preposition: { i: 5 }, object: { words: [{ i: 7 }], modifiers: [{ kind: 'word', word: { i: 6 }, modifiers: [] }] } }] } },
+    } }],
+  };
+  /** The row as the phone kept it before this fix: under the grind's version and nothing more. */
+  const keptBefore = (ref: string, lang: 'greek' | 'english', diagram: Diagram) => db.diagrams.put({ ref, lang, version: DIAGRAM_VERSION, diagram, at: 1 });
+
+  it('is not returned, in either mode, nor is a passage that holds the verse; another verse kept before is', async () => {
+    await keptBefore('Colossians 3:2', 'greek', hungOnTheVerb);
+    await keptBefore('Colossians 3:2', 'english', good);
+    await keptBefore('Colossians 3:1-2', 'greek', good);
+    await keptBefore('Colossians 3:1', 'english', good);
+    expect(await getDiagram('Colossians 3:2', 'greek')).toBeUndefined();
+    expect(await getDiagram('Colossians 3:2', 'english')).toBeUndefined();
+    expect(await getDiagram('Colossians 3:1-2', 'greek')).toBeUndefined();
+    expect(await getDiagram('Colossians 3:1', 'english')).toEqual(good);
+  });
+
+  it('is asked for once more, and the new tree is kept and drawn with no second ask', async () => {
+    await keptBefore('Colossians 3:2', 'greek', hungOnTheVerb);
+    const redrawn = structuredClone(hungOnTheVerb);
+    redrawn.clauses[0].clause.verb.modifiers = [];
+    redrawn.clauses[0].clause.complement!.slot.words = [{ i: 1 }];
+    redrawn.clauses.push({ clause: {
+      subject: { words: [{ implied: 'ὑμεῖς' }], modifiers: [] },
+      verb: { words: [{ implied: 'φρονεῖτε' }], modifiers: [{ kind: 'word', word: { i: 3 }, modifiers: [] }] },
+      complement: { kind: 'direct-object', slot: { words: [{ i: 4 }], modifiers: [] } },
+    } });
+    const { ask, asked } = fakeAsk(redrawn);
+    expect(await fetchDiagram(col3, verse2, 'greek', { ask, key })).toMatchObject({ ok: true, diagram: redrawn, kept: false });
+    expect(asked).toHaveLength(1);
+    const again = fakeAsk();
+    expect(await fetchDiagram(col3, verse2, 'greek', { ask: again.ask, key })).toMatchObject({ ok: true, diagram: redrawn, kept: true });
+    expect(again.asked).toHaveLength(0);
   });
 });
 
