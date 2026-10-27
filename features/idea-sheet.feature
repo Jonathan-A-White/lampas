@@ -78,6 +78,21 @@ Feature: The idea sheet
     Then the idea, Grammar and word sheets are gone and the sheet is titled "Talk about Romans 8:2"
     And the grist carries the focus term "genitive" and kind grammar-term
 
+  # mw-5r3p30.818: a lesson opened anywhere but a word's Grammar sheet (the Goal screen, Learn next, the path) asks about the lesson itself: its Talk sheet opens over the idea sheet, and
+  # the request's `screen` is the lesson (its id and title, the worked example and its steps).
+  Scenario: Ask the tutor on a lesson opened from the Goal screen talks about that lesson
+    Given Lampas is opened on Romans 8 with the goal "1 John 2:1", no idea level and a fake Postern
+    When he opens the idea sheet of "enclitics" from the Goal screen
+    And he taps Ask the tutor on the idea sheet
+    Then the Talk sheet is titled "Ask the tutor: Lesson" and the idea sheet is still under it
+    When he sends "Why has μου no accent?" in the Talk sheet
+    Then the grist is for the screen "Lesson" and has no verse text
+    And the grist's lesson facts name the lesson "enclitics" titled "Enclitics", its worked word "μου" in "1 John 2:1" and its three steps
+    And the grist carries the question "Why has μου no accent?"
+    And the grist carries only fields the input schema allows
+    When he closes the Talk sheet
+    Then the idea sheet "Enclitics" is open again
+
   Scenario: The sheet for The Greek alphabet shows examples from the verse
     Given Lampas is opened on Romans 8 with the goal "1 John 1:1", no idea level and a fake Postern
     When he opens the Goal screen and taps Learn next

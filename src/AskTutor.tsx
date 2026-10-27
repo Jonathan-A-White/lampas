@@ -2,7 +2,7 @@
 // screens that have no chapter of their own. The button is the same everywhere: bottom right, above the phone's bar, 56 px, hidden while a
 // sheet is open. The sheet is the Talk sheet over a TalkScope with a `screen` (name and facts, src/tutor/screen.ts), kept under 'screen.<name>';
 // it opens with the questions fitted to the screen. The Reader draws the same button but opens its own chapter talk (src/Reader.tsx).
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { listTurns } from './data/repositories';
 import { NO_CHAPTER } from './data/chapter';
 import { useAiAllowed } from './gate/licenceContext';
@@ -221,4 +221,38 @@ export function DialogAskTutor({ screen, kept, suggestions }: { screen: ScreenCo
       ) : null}
     </>
   );
+}
+
+/**
+ * The talk of a lesson (mw-5r3p30.818, the idea sheet's Ask the tutor): `ask` opens the Talk sheet over the sheet that calls this, `sheet` is what that sheet draws (at the foot of its own
+ * root, so it stands over everything the sheet holds), and `ask` is undefined where a licence does not allow the tutor. `screen` is the lesson (src/tutor/lessonTalk.ts), `kept` the key its
+ * talk is kept under, one for each lesson. The talk's state lives in the calling sheet, so closing the Talk sheet while an answer is on its way loses nothing.
+ */
+export function useLessonTalk(screen: ScreenContext, kept: string, suggestions: string[]): { ask: (() => void) | undefined; sheet: ReactNode } {
+  const [open, setOpen] = useState(false);
+  const ai = useAiAllowed();
+  const fitted = fitScreen(screen);
+  const scope: TalkScope = { title: fitted.name, chapter: NO_CHAPTER, verse: null, screen: fitted, kept };
+  const talk = useScreenTalk(scope, open, useCallback(() => setOpen(false), []));
+  if (!ai || !talk.ref) return { ask: undefined, sheet: null };
+  const sheet = open ? (
+    <TalkSheet
+      scope={scope}
+      talkRef={talk.ref}
+      state={talk.state}
+      suggestions={suggestions}
+      onSay={(message, focus, pictures) => talk.say(scope, message, focus, pictures)}
+      onResume={() => talk.resume(scope)}
+      onHelp={() => {}}
+      onAskTerm={() => {}}
+      onClose={talk.close}
+    />
+  ) : null;
+  return {
+    ask: () => {
+      stopReading();
+      setOpen(true);
+    },
+    sheet,
+  };
 }
