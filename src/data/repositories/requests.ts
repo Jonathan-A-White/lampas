@@ -32,7 +32,7 @@ const STATUS_FIELDS = ['bead', 'version', 'commit', 'url', 'reason', 'setting'] 
 
 /** The kit's record of a row, for the kit to move on: Lampas keeps no talk or person on a row, so they are the app's one reader's. */
 export function recordOf(row: RequestRow): RequestRecord {
-  const words = row.text ?? row.summary ?? '';
+  const words = row.words ?? row.text ?? row.summary ?? '';
   const record: RequestRecord = {
     id: row.txid,
     kind: row.kind,
@@ -51,9 +51,10 @@ export function recordOf(row: RequestRow): RequestRecord {
 
 /** The row after the kit moved its record: the row's sent fields, the new status and only what that status carries (the kit decides which). */
 function rowOf(row: RequestRow, moved: RequestRecord): RequestRow {
-  const { txid, kind, summary, text, resource, pictures, app_version, sentAt } = row;
+  const { txid, kind, summary, words, text, resource, pictures, app_version, sentAt } = row;
   const kept: RequestRow = { txid, kind, app_version, sentAt, status: moved.status, statusAt: moved.statusAt };
   if (summary !== undefined) kept.summary = summary;
+  if (words !== undefined) kept.words = words;
   if (text !== undefined) kept.text = text;
   if (resource !== undefined) kept.resource = resource;
   if (pictures !== undefined) kept.pictures = pictures;
@@ -74,10 +75,10 @@ export function applyRequestStatus(record: StatusRecord): Promise<boolean> {
   });
 }
 
-/** The store pwa-kit/requests files into, over the requests table (Dexie stays the store): `all` is the rows as the kit's records, newest first, with no `words`:
- * the table keeps the tutor's summary, not his words, so the kit never takes a row for the same ask filed twice (a request that failed after its grist went out
- * is sent again on a Retry, never answered as sent); `put` keeps a record the table does not hold yet, as sent (a request already kept with its grist id is left
- * as it is, so a status it took is never undone). */
+/** The store pwa-kit/requests files into, over the requests table (Dexie stays the store): `all` is the rows as the kit's records, newest first, with no `words`
+ * even though the table keeps his own beside the tutor's summary: the kit's twin check compares words, so with none it never takes a row for the same ask filed
+ * twice (a request that failed after its grist went out is sent again on a Retry, never answered as sent); `put` keeps a record the table does not hold yet, as
+ * sent (a request already kept with its grist id is left as it is, so a status it took is never undone). */
 export function requestStore(appVersion: string): RequestStore {
   return {
     async all() {
@@ -86,7 +87,7 @@ export function requestStore(appVersion: string): RequestStore {
     async put(record) {
       await db.transaction('rw', db.requests, async () => {
         if (await db.requests.get(record.id)) return;
-        const what = record.kind === 'tutor-ask' ? { summary: record.summary } : { text: record.words };
+        const what = record.kind === 'tutor-ask' ? { summary: record.summary, words: record.words } : { text: record.words };
         await keepRequest({ txid: record.id, kind: record.kind, ...what, app_version: appVersion, sentAt: record.sentAt });
       });
     },

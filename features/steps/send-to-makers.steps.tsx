@@ -219,7 +219,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(view()).getByRole('button', { name: link })).toBeInTheDocument();
     });
     And('the phone keeps one request row, kind tutor-ask, with his words as its line', async () => {
-      await waitFor(async () => expect(await db.requests.toArray()).toMatchObject([{ txid: fake.txids[0], kind: 'tutor-ask', summary: 'The Greek is too small here', pictures: 1 }]));
+      await waitFor(async () => expect(await db.requests.toArray()).toMatchObject([{ txid: fake.txids[0], kind: 'tutor-ask', summary: 'The Greek is too small here', words: 'The Greek is too small here', pictures: 1 }]));
     });
     When('he opens Your requests', async () => {
       act(() => openRequests('settings'));

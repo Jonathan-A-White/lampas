@@ -18,7 +18,7 @@ Feature: An ask Lampas cannot meet is offered to the makers
     And the feedback grist carries only fields the feedback input schema allows
     And the turn shows "Sent" and "The answer will come back."
     And the bus has heard feedback-sent for tutor-ask
-    And the phone keeps one request row with the grist's id, kind tutor-ask, the tutor's summary, the app version, when it was sent and status sent
+    And the phone keeps one request row with the grist's id, kind tutor-ask, the tutor's summary, his words, the app version, when it was sent and status sent
 
   Scenario: An answer without an offer has no such button and nothing is sent by itself
     Given Lampas is opened on #/goal behind a fake Postern whose tutor does not offer feedback

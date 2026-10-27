@@ -236,12 +236,12 @@ export function isFeedbackAnswer(value: unknown): value is FeedbackAnswer {
   return Object.keys(answer).length === 1 && answer.status === 'sent';
 }
 
-/** What the requests table keeps of a request: the tutor's summary for a tutor-ask, his words for a grammar approach, the title of a book (and its Resource ID, which finds it again), a line that
+/** What the requests table keeps of a request: for a tutor-ask the tutor's summary and his own words, his words for a grammar approach, the title of a book (and its Resource ID, which finds it again), a line that
  * counts the books of a library request, and for an Ask for more form the name with why after it ('The ESV: To read it beside the Greek.'). */
 function kept(request: FeedbackRequest, txid: string, sentAt: number, files: readonly MillFile[]): Parameters<typeof keepRequest>[0] {
   const what =
     request.kind === 'tutor-ask'
-      ? { summary: request.summary }
+      ? { summary: request.summary, words: request.text }
       : request.kind === 'book'
         ? { text: request.title, ...(request.resource ? { resource: request.resource } : {}) }
         : request.kind === 'library'

@@ -131,10 +131,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('the bus has heard feedback-sent for tutor-ask', async () => {
       await waitFor(() => expect(latest('feedback-sent')).toEqual({ kind: 'feedback-sent', feedback: 'tutor-ask' }));
     });
-    And('the phone keeps one request row with the grist\'s id, kind tutor-ask, the tutor\'s summary, the app version, when it was sent and status sent', async () => {
+    And('the phone keeps one request row with the grist\'s id, kind tutor-ask, the tutor\'s summary, his words, the app version, when it was sent and status sent', async () => {
       const rows = await db.requests.toArray();
       expect(rows).toHaveLength(1);
-      expect(rows[0]).toEqual({ txid: fake.txids[1], kind: 'tutor-ask', summary: SUMMARY, app_version: __APP_VERSION__, sentAt: expect.any(Number), status: 'sent' });
+      expect(rows[0]).toEqual({ txid: fake.txids[1], kind: 'tutor-ask', summary: SUMMARY, words: 'Can this work with Olive Tree?', app_version: __APP_VERSION__, sentAt: expect.any(Number), status: 'sent' });
       expect(Math.abs(rows[0].sentAt - Date.now())).toBeLessThan(60_000);
     });
   });
