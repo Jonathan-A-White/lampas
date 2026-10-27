@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.4.2",
+    "date": "2026-10-27",
+    "story": "mw-5r3p30.785",
+    "kind": "new",
+    "text": "The small link words (ὅτι, γάρ, οὖν, δέ, ἀλλά and the rest) now have memory pictures, one family of two bars and a link drawn differently for each, so you can tell them apart."
+  },
+  {
+    "version": "0.4.2",
+    "date": "2026-10-27",
+    "story": "mw-zbjgn3r.7",
+    "kind": "new",
+    "text": "With Logos on, the Maps sheet now has a Logos Atlas block that opens the atlas map for the verse, centred on its places, and your Lexham Geographic Commentary at the passage, in Logos."
+  },
+  {
     "version": "0.4.1",
     "date": "2026-10-27",
     "story": "mw-indx1x6.1",

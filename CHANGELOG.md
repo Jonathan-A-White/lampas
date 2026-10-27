@@ -1,5 +1,10 @@
 # What's new
 
+## 0.4.2
+_2026-10-27_
+- New: The small link words (ὅτι, γάρ, οὖν, δέ, ἀλλά and the rest) now have memory pictures, one family of two bars and a link drawn differently for each, so you can tell them apart.
+- New: With Logos on, the Maps sheet now has a Logos Atlas block that opens the atlas map for the verse, centred on its places, and your Lexham Geographic Commentary at the passage, in Logos.
+
 ## 0.4.1
 _2026-10-27_
 - New: Drill it and the short drill now use the extra questions the tutor writes for the ideas you miss, and never ask you the same one twice.
