@@ -97,19 +97,20 @@
       "maxLength": 80
     },
     "pending_offer": {
-      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal), 'bridge' (your `bridge`; `text` is 'Take me there: <title of the idea it opens>'; his yes opens that idea's sheet) 'greek' (your `greek_offer`; `text` is its line; his yes opens the Greek word or switches the Reader to Greek, and his no is kept by the app in the memory index) 'rusty' (your `rusty_offer`; `text` is 'Move back to Frontier and practise'; his yes moves the rusty items you named back to Frontier and opens their practice) or 'today' (your `today_offer`; `text` is 'Open today's drill'; his yes opens Today). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
+      "description": "Optional. Present only while an offer of yours waits for his tap: the newest such offer of this conversation. `kind` is 'feedback' (Send this to the makers; `text` is the summary it would send), 'setting' (a setting change from `setting_offer`; `text` is what it would change, such as 'Change Theme: Dark') 'quiz-goal' (the goal from `quiz_goal_offer`; `text` is the goal), 'bridge' (your `bridge`; `text` is 'Take me there: <title of the idea it opens>'; his yes opens that idea's sheet) 'greek' (your `greek_offer`, of the language in `lang`; `text` is its line; his yes raises that dial and opens the word, and his no is kept by the app in the memory index) 'rusty' (your `rusty_offer`; `text` is 'Move back to Frontier and practise'; his yes moves the rusty items you named back to Frontier and opens their practice) or 'today' (your `today_offer`; `text` is 'Open today's drill'; his yes opens Today). Decide from `question` whether he confirms, declines or asks to hear it, and say so in `offer_reply`.",
       "type": "object",
       "additionalProperties": false,
       "required": ["kind", "text"],
       "properties": {
         "kind": { "type": "string", "enum": ["feedback", "setting", "quiz-goal", "bridge", "greek", "rusty", "today"] },
-        "text": { "type": "string", "minLength": 1, "maxLength": 200 }
+        "text": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "lang": { "description": "Only of a 'greek' offer: the language of the dial it raises, as your `greek_offer.lang` said (absent reads as 'grc').", "type": "string", "enum": ["grc", "he", "both"] }
       }
     },
     "reader_view": {
-      "description": "Optional. Which language the Reader shows him now: 'english' or 'greek' (what he chose with English | Greek at the top of the Reader). Missing in a talk from a screen and in a quiz.",
+      "description": "Optional. Which language the Reader shows him now: 'english', 'greek' (a New Testament chapter in its original) or 'hebrew' (an Old Testament chapter in its original): what he chose with English | Greek or English | Hebrew at the top of the Reader. Missing in a talk from a screen and in a quiz.",
       "type": "string",
-      "enum": ["english", "greek"]
+      "enum": ["english", "greek", "hebrew"]
     },
     "greek_interest": {
       "description": "Optional. The Greek dial as he set it (Settings > How much Greek?), from 0, Just English, to 5, All in: `level` and its `name`, and `next`, the one step above it, which is all you may offer to raise it to (see the instructions, 'Offering the Greek'). `next` is missing at All in: there is nothing to offer. The chapter's language picks which dial an offer may name: this one for a New Testament chapter, `hebrew_interest` for an Old Testament one. Missing in a talk from a screen and in a quiz.",

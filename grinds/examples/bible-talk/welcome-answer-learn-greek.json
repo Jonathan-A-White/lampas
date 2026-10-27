@@ -7,7 +7,7 @@
     "history": [
       {
         "q": "Hello, I have just started using Lampas.",
-        "a": "Welcome to Lampas. Why are you here: to read, to study, or to learn the Greek?"
+        "a": "Welcome to Lampas. Why are you here: to read, to study, or to learn the Greek or the Hebrew?"
       }
     ],
     "solid_words": [],
@@ -19,7 +19,9 @@
     }
   },
   "expect": {
-    "words": { "equals": [] },
+    "words": {
+      "equals": []
+    },
     "memory_update.0.name": {
       "equals": "index"
     },
@@ -31,6 +33,9 @@
     },
     "setting_offer": {
       "present": false
+    },
+    "greek_offer.lang": {
+      "equals": "grc"
     }
   }
 }

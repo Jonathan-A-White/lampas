@@ -148,4 +148,19 @@ describe('the welcome instructions', () => {
     expect(s).toMatch(/greek_offer/);
     expect(s).toContain('"kind": "view"');
   });
+
+  it('asks the first question word for word, with the Hebrew in it, and offers by the three answers (mw-gdcyf98.17)', () => {
+    const s = section();
+    expect(s).toContain("'Why are you here: to read, to study, or to learn the Greek or the Hebrew?'");
+    expect(s).toContain("`lang` `grc` and `text` 'Show me the Greek'");
+    expect(s).toContain("`he` and 'Show me the Hebrew'");
+    expect(s).toContain("`both` and 'Show me the Greek and the Hebrew'");
+  });
+
+  it('has an example for each of the Greek and the Hebrew, writing the memory line in his own terms', () => {
+    const read = (file: string) => JSON.parse(readFileSync(`grinds/examples/bible-talk/${file}.json`, 'utf8')) as { request: { history: { a: string }[] }; expect: Record<string, { equals?: string }> };
+    expect(read('welcome-answer-learn-greek').expect['greek_offer.lang'].equals).toBe('grc');
+    expect(read('welcome-learn-hebrew').expect['greek_offer.lang'].equals).toBe('he');
+    for (const file of ['welcome-answer-learn-greek', 'welcome-answer-read', 'welcome-learn-hebrew', 'welcome-last-answer']) expect(read(file).request.history[0].a, file).toContain('to learn the Greek or the Hebrew?');
+  });
 });
