@@ -43,10 +43,10 @@ for (const { screen, path } of [
   });
 }
 
-test('from Settings: a go for Psalm 23 moves nothing and the answer says it could not open it', async ({ page }) => {
-  const sheet = await askFrom(page, '/#/settings', 'Settings', { book: 'Psalms', chapter: 23 }, 'take me to Psalm 23');
+test('from Settings: a go for Psalm 151 moves nothing and the answer says it could not open it', async ({ page }) => {
+  const sheet = await askFrom(page, '/#/settings', 'Settings', { book: 'Psalms', chapter: 151 }, 'take me to Psalm 151');
   await expect(sheet.locator('[data-turn]')).toHaveCount(1);
-  await expect(sheet.getByText('Could not open Psalms 23')).toBeVisible();
+  await expect(sheet.getByText('Could not open Psalms 151')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
   expect(page.url()).toContain('#/settings');
 });

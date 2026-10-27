@@ -54,14 +54,14 @@ test('the home has seven rows with counts, thumb-sized controls and no sideways 
   await shot(page, 'library-home');
 });
 
-test('Lexicons with 19 on: All on, two off, each of the three hit areas selects, thumb-sized', async ({ page }) => {
+test('Lexicons with 27 on: All on, two off, each of the three hit areas selects, thumb-sized', async ({ page }) => {
   await open(page, 'library?kind=lexicon', 'Lexicons');
   await page.getByRole('button', { name: 'All on', exact: true }).click();
-  await expect(page.getByTestId('kind-status')).toHaveText('21 on');
+  await expect(page.getByTestId('kind-status')).toHaveText('29 on');
   for (const name of ['Intermediate Greek-English Lexicon', 'NT Greek Vocabulary']) {
     await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
   }
-  await expect(page.getByTestId('kind-status')).toHaveText('19 on');
+  await expect(page.getByTestId('kind-status')).toHaveText('27 on');
   await expectThumbSized(page);
   await page.locator('.screen').evaluate((box) => void (box.scrollTop = 0));
   await shot(page, 'library-lexicons');

@@ -60,8 +60,8 @@ test('a fresh install shows nothing of his on Words, Review, the grammar ladder 
   // and nothing was written for him behind the screens
   await page.waitForTimeout(500);
   const counts = await rowsIn(page, ['words', 'reviews', 'grammarLevels', 'grammarKnown', 'settings', 'talks', 'results']);
-  // the one setting is the Greek dial's placement (greekInterest, written as the app opens: mw-3ased2.2), nothing of his
-  expect(counts).toEqual({ words: 0, reviews: 0, grammarLevels: 0, grammarKnown: 0, settings: 1, talks: 0, results: 0 });
+  // the two settings are the dial's placement (greekInterest and hebrewInterest, both written as the app opens: mw-3ased2.2), nothing of his
+  expect(counts).toEqual({ words: 0, reviews: 0, grammarLevels: 0, grammarKnown: 0, settings: 2, talks: 0, results: 0 });
 });
 
 test('a phone that already holds his words keeps them after the app opens', async ({ page }) => {

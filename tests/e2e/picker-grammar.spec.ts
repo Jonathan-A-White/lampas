@@ -43,7 +43,7 @@ test('Settings > New words: New words at and Move it are one line of 48 px chips
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await openGroup(page, 'Greek');
+  await openGroup(page, 'Learning');
   const rows = [
     { group: page.getByRole('group', { name: 'New words at', exact: true }), chips: ['Solid grammar', 'Frontier grammar'], pressed: 'Frontier grammar' },
     { group: page.getByRole('group', { name: 'Move it', exact: true }), chips: ['Ask', 'Auto', 'Off'], pressed: 'Ask' },

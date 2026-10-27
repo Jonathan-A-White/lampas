@@ -105,7 +105,7 @@ test('The Settings home at 360 px: Your Logos library is the first row, one thum
   await expect(libraryLine).toBeVisible();
   await expect(libraryLine).toBeInViewport();
   const order = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
-  expect(order.slice(0, 2)).toEqual(['library', 'greekInterest']);
+  expect(order.slice(0, 2)).toEqual(['library', 'languages']);
   const line = await libraryLine.boundingBox();
   expect(line?.height).toBeGreaterThanOrEqual(43.5);
   expect((line?.x ?? 0) + (line?.width ?? 0)).toBeLessThanOrEqual(360);
