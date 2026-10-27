@@ -115,11 +115,12 @@
   --color-good: var(--lp-good);
   --color-bad: var(--lp-bad);
 
-  /* The English faces follow the Font setting (--lp-font-english on <html>, set by src/appearance/appearanceSync.ts); unset, they are the phone's own
-   * sans and the book serif. The Greek and the Hebrew below never read it. */
+  /* The English faces follow the Font setting (--lp-font-english on <html>, set by src/appearance/appearanceSync.ts); unset ("The phone's own"), they are
+   * the phone's own sans, the book face too (mw-5r3p30.820: the Immersive reader's English is set in the chosen Font, never in a serif of its own).
+   * The Greek and the Hebrew below never read it. */
   --font-sans: var(--lp-font-english, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
   --font-greek: "Gentium Plus", "Noto Serif", "Cardo", "Times New Roman", serif;
-  --font-book: var(--lp-font-english, Georgia, "Noto Serif", "Times New Roman", serif);
+  --font-book: var(--font-sans);
   --font-hebrew: "Noto Serif Hebrew", "SBL Hebrew", "Ezra SIL", "Times New Roman", serif;
 }
 
@@ -642,7 +643,7 @@ textarea,
   transition: transform 200ms ease, visibility 0s 200ms;
 }
 /* The Immersive reader sets the text like a book (mw-5r3p30.297): tight lines wherever no line sits under a word (a verse with a [data-hint]
- * keeps its roomy spacing), a book serif for the English (the Greek face is already one), justified and hyphenated in the text's own language
+ * keeps its roomy spacing), the English in the Font he chose (the Greek face is already a serif), justified and hyphenated in the text's own language
  * (the lang on the verse or paragraph), small dim verse numbers, and pure black behind it in the dark theme. Type size is untouched. The verse
  * number is still a 44 px button: its vertical margin is pulled in so it no longer makes its line 44 px tall. Off draws none of this.
  * The passage view (src/VerseView.tsx, mw-5r3p30.319) shares every rule but the background: its text is [data-passage-text] inside
