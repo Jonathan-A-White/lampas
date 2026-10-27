@@ -41,3 +41,13 @@ export async function ensureSettingsGroup(id: GroupId): Promise<void> {
   if (document.querySelector(`[data-settings-group="${id}"]`) !== null) return;
   await showSettingsGroup(id);
 }
+
+/** On the Listening page (brought up if it is not), turns 'Set each language on its own' On or Off with its own buttons, and waits for the row it shows or hides. */
+export async function setEachOnItsOwn(user: UserEvent, on: boolean): Promise<void> {
+  await ensureSettingsGroup('listening');
+  const group = await screen.findByRole('group', { name: 'Set each language on its own' });
+  await user.click(within(group).getByRole('button', { name: on ? 'On' : 'Off' }));
+  if (on) await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
+  else await screen.findByRole('radiogroup', { name: 'Pronunciation' });
+}
+

@@ -39,6 +39,7 @@ Feature: Settings
   Scenario: Greek pronunciation shows Modern Greek, selected
     Given Lampas is opened on a phone with a Greek voice
     When he taps the gear in the reader's header
+    And he sets each language on its own
     Then Greek pronunciation lists only "Modern Greek"
     And "Modern Greek" is selected
 
@@ -53,7 +54,7 @@ Feature: Settings
     And Weave is set to Solid words in Settings
     And the Greek voice picker shows "Greek (Cyprus)"
     And the English voice picker shows "English (US)"
-    And "Modern Greek" is selected
+    And "Modern" is selected
 
   Scenario: Words and About are reachable from Settings
     Given Lampas is opened on a phone with a Greek voice

@@ -48,7 +48,7 @@ describe('the setting', () => {
     });
     expect(englishAccentSetting.default).toBe('american');
     const keys = ROWS.filter((r) => r.section === 'pronunciation').map((r) => r.key);
-    expect(keys).toEqual(['greekPronunciation', 'englishAccent']);
+    expect(keys).toEqual(['pronunciation', 'pronunciationSeparate', 'greekPronunciation', 'hebrewPronunciation', 'englishAccent']);
   });
 
   it('is kept on the device: it reads back what was written, and an unknown saved value reads as American', async () => {

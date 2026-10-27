@@ -3,10 +3,10 @@
 // settings store, on the bus and in Settings by the same code, and nothing else names 'english' or 'greek' as a list.
 
 /** The ids of the entries below: the languages that have a voice and a speed of their own in Settings. */
-export type SettableLanguage = 'english' | 'greek';
+export type SettableLanguage = 'english' | 'greek' | 'hebrew';
 
-/** Every language the app can speak. Hebrew (mw-5r3p30.98) is said in the phone's he-IL voice at the normal speed; it has no voice or speed setting yet. */
-export type SpeechLanguage = SettableLanguage | 'hebrew';
+/** Every language the app can speak: each has a voice and a speed of its own in Settings (Hebrew's, mw-gdcyf98.6, is said in the phone's he-IL voice by default). */
+export type SpeechLanguage = SettableLanguage;
 
 /** The language tag of spoken Hebrew: modern Israeli. */
 export const HEBREW_LANG = 'he-IL';
@@ -22,6 +22,7 @@ export interface SpeechLanguageInfo {
 export const LANGUAGES: readonly SpeechLanguageInfo[] = [
   { id: 'english', label: 'English', lang: 'en-US' },
   { id: 'greek', label: 'Greek', lang: 'el-GR' },
+  { id: 'hebrew', label: 'Hebrew', lang: HEBREW_LANG },
 ];
 
 /** The speed of each language: 1 is the engine's normal. */

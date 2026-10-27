@@ -167,6 +167,9 @@ export const soundRulesOf = (scheme: Pronunciation, accent: EnglishAccent = chos
 /** What the tutor is told of `scheme` (the grinds' `pronunciation_guide`), its sounds said in `accent` (the chosen English accent when none is named). */
 export const tutorGuideOf = (scheme: Pronunciation, accent: EnglishAccent = chosenAccent()): string => saidIn(scheme, accent).guide;
 
+/** What the tutor is told of the Hebrew scheme `hebrew` (the grinds' `hebrew_pronunciation_guide`, beside the Greek scheme's `pronunciation_guide`), its sounds said in `accent` (the chosen English accent when none is named); the default scheme's for an id the registry does not hold, or none. */
+export const hebrewGuideOf = (hebrew?: unknown, accent: EnglishAccent = chosenAccent()): string => tutorGuideOf(hebrewPronunciationOf(typeof hebrew === 'string' ? hebrew : undefined), accent);
+
 /** The rule of `scheme` that changes the sound of the ladder idea `ideaId`, if any. */
 export const soundRuleOf = (scheme: Pronunciation, ideaId: string, accent: EnglishAccent = chosenAccent()): SoundRule | undefined =>
   soundRulesOf(scheme, accent).find((r) => r.ideaId === ideaId);
@@ -217,8 +220,19 @@ export function hebrewPronunciationOf(id?: HebrewPronunciationId): Pronunciation
   return HEBREW_SCHEMES.find((p) => p.id === id) ?? ISRAELI;
 }
 
-/** What the voice is handed for Hebrew `text`, in the chosen scheme (there is no setting to choose another yet: the default's). */
-export const hebrewVoiceForm = (text: string): string => hebrewPronunciationOf(DEFAULT_HEBREW_PRONUNCIATION).voiceForm(text);
+// The Hebrew scheme he chose in Settings (src/speech/settingsSync.ts hands it over; speak() cannot wait for a database read), as the Greek one is kept in greek.ts.
+let chosenHebrew: HebrewPronunciationId = DEFAULT_HEBREW_PRONUNCIATION;
+
+/** Tells the speaker which Hebrew scheme he chose (the id of a scheme of the Hebrew list; any other reads as the default's). */
+export function setHebrewPronunciation(id: HebrewPronunciationId): void {
+  chosenHebrew = id;
+}
+
+/** The Hebrew scheme he chose. */
+export const chosenHebrewPronunciation = (): Pronunciation => hebrewPronunciationOf(chosenHebrew);
+
+/** What the voice is handed for Hebrew `text`, in the scheme he chose. */
+export const hebrewVoiceForm = (text: string): string => chosenHebrewPronunciation().voiceForm(text);
 
 /** Hebrew `text` as the tutor is handed it: pointed, with the cantillation marks (which a voice cannot say and a question about a word does not need) taken off, so a word list weighs less. */
 export const hebrewPointedForm = (text: string): string => stripCantillation(text);

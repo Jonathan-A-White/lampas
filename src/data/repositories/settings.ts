@@ -83,8 +83,8 @@ export async function setWeaveGrammar(grammar: WeaveGrammar): Promise<void> {
 /** Which of the phone's voices reads each language: its voiceURI, or null for the phone's default. */
 export type VoiceLanguage = SettableLanguage;
 
-const VOICE_KEYS: Record<VoiceLanguage, string> = { english: 'voice.english', greek: 'voice.greek' };
-const RATE_KEYS: Record<VoiceLanguage, string> = { english: 'rate.english', greek: 'rate.greek' };
+const VOICE_KEYS: Record<VoiceLanguage, string> = { english: 'voice.english', greek: 'voice.greek', hebrew: 'voice.hebrew' };
+const RATE_KEYS: Record<VoiceLanguage, string> = { english: 'rate.english', greek: 'rate.greek', hebrew: 'rate.hebrew' };
 
 export async function getVoice(language: VoiceLanguage): Promise<string | null> {
   const row = await db.settings.get(VOICE_KEYS[language]);

@@ -3,8 +3,8 @@
 /** The most a request may weigh, as JSON in UTF-8: the record's payload is capped (bsv-kit's grist MAX_PAYLOAD_BYTES, 20 KiB) and the sealed grist is base64 of this, with the envelope (a request at this cap seals to about 12 KiB, tests/unit/request-budget.test.ts).
  * Raised from 6500 (mw-5r3p30.689): the quiz-me request after its first turn weighed 6495, and every setting added makes it bigger; the cap leaves HEADROOM there. Raised from 8000 (mw-rfjjzd.10): the digest of his shelf
  * (WORKS_BYTES) is the one field a request gained at 110 books, and the same request weighed 7918 with it in, 73 from the old cap. Raised from 9000 (mw-9txn0x1.1): When you copy's four settings
- * took the 110-book request to 973 bytes of headroom, 27 under HEADROOM_BYTES (tests/unit/request-budget.test.ts). */
-export const MAX_REQUEST_BYTES = 9200;
+ * took the 110-book request to 973 bytes of headroom, 27 under HEADROOM_BYTES (tests/unit/request-budget.test.ts). Raised from 9200 (mw-gdcyf98.6): one pronunciation setting for both languages, the Hebrew voice, speed and keyboard added six settings, which took the 110-book request to 930 bytes of headroom. */
+export const MAX_REQUEST_BYTES = 9400;
 
 /** The most the digest of his Logos shelf may weigh in a request (mw-rfjjzd.10, src/resources/tutorLinks.ts worksForTutor): 110 books chosen by the place come to about this, and fitHistory cuts the digest from its end before it cuts the history, after the word list. */
 export const WORKS_BYTES = 1200;

@@ -130,7 +130,7 @@ describe('defineSetting', () => {
 
 describe('the definitions', () => {
   it('lists the settings declared once: the pilot', () => {
-    expect(DEFINITIONS.map((d) => d.key)).toEqual(['theme', 'weave', 'tips', 'immersiveReader', 'immersiveHint', 'askBy', 'audioBible', 'readingPlan', 'readLessons', 'englishAccent', 'weaveOrder', 'handwritingDrills', 'readingMode', 'chapterButtons', 'copyText', 'copyReference', 'copyNumbers', 'copyLink', 'font', 'greekInterest', 'hebrewInterest', 'dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'dailyTicks', 'greekKeyboard', 'talk', 'send', 'paradigmExtent']);
+    expect(DEFINITIONS.map((d) => d.key)).toEqual(['theme', 'weave', 'tips', 'immersiveReader', 'immersiveHint', 'askBy', 'audioBible', 'readingPlan', 'readLessons', 'englishAccent', 'weaveOrder', 'handwritingDrills', 'readingMode', 'chapterButtons', 'copyText', 'copyReference', 'copyNumbers', 'copyLink', 'font', 'greekInterest', 'hebrewInterest', 'dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'dailyTicks', 'greekKeyboard', 'hebrewKeyboard', 'pronunciation', 'pronunciationSeparate', 'hebrewPronunciation', 'talk', 'send', 'paradigmExtent']);
   });
 
   it('make the registry entries and rows of the settings they declare', () => {

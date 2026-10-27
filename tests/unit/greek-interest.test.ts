@@ -27,6 +27,7 @@ import { GREEK_LEVELS, greekFrom, newWordsAt, placementOf, viewAt, weaveAt, type
 import { languagesOf } from '../../src/settings/definitions/interest';
 import { ROWS, visibleRows, type Values } from '../../src/settings/rows';
 import { settingOf } from '../../src/settings/registry';
+import { SEPARATE_KEYS } from '../../src/settings/definitions/pronunciation';
 
 const LEVELS: readonly GreekLevel[] = [0, 1, 2, 3, 4, 5];
 
@@ -39,6 +40,11 @@ const GREEK_ROWS: Readonly<Record<string, readonly [Follows, GreekLevel]>> = {
   greekRate: ['greekInterest', 1],
   greekPronunciation: ['greekInterest', 1],
   greekKeyboard: ['greekInterest', 1],
+  hebrewVoice: ['hebrewInterest', 1],
+  hebrewRate: ['hebrewInterest', 1],
+  hebrewKeyboard: ['hebrewInterest', 1],
+  hebrewPronunciation: ['hebrewInterest', 1],
+  pronunciationSeparate: ['depth', 1],
   'resource.strongs': ['greekInterest', 1],
   'link.words': ['depth', 1],
   'link.review': ['depth', 1],
@@ -67,6 +73,10 @@ const valuesAt = (greek: GreekLevel, hebrew: GreekLevel = 0): Values => ({
   depth: String(Math.max(greek, hebrew)),
   weave: 'solid',
   newWordsADay: '3',
+  // Set each language on its own is On, so a language's own pronunciation row follows its dial (readValues derives the two keys from the switch and the dial)
+  pronunciationSeparate: 'on',
+  'pronunciationSeparate.grc': greek >= 1 ? 'on' : 'off',
+  'pronunciationSeparate.he': hebrew >= 1 ? 'on' : 'off',
 });
 
 /** The level the dial a row follows stands at. */
@@ -115,9 +125,11 @@ describe('the table', () => {
     for (const [key, [follows]] of Object.entries(GREEK_ROWS)) {
       const row = ROWS.find((r) => r.key === key);
       expect(row, key).toBeDefined();
+      // a language's own pronunciation row follows its dial through the key readValues derives from the switch and that dial
+      const reaches = (k: string | undefined): boolean => k === follows || (follows === 'greekInterest' && k === SEPARATE_KEYS.grc) || (follows === 'hebrewInterest' && k === SEPARATE_KEYS.he);
       let at = row;
-      while (at?.dependsOn && at.dependsOn.key !== follows) at = ROWS.find((r) => r.key === at?.dependsOn?.key);
-      expect(at?.dependsOn?.key, `${key} reaches ${follows}`).toBe(follows);
+      while (at?.dependsOn && !reaches(at.dependsOn.key)) at = ROWS.find((r) => r.key === at?.dependsOn?.key);
+      expect(reaches(at?.dependsOn?.key), `${key} reaches ${follows}`).toBe(true);
     }
   });
 

@@ -25,3 +25,13 @@ Feature: A Hebrew word in the tutor's answer is tappable like a Greek one
     Then the mill received a sound question about "צֶדֶק" in Hebrew
     And the answer carries a guide with the syllables "צֶ" and "דֶק" over "TSE" and "dek"
     And tapping the syllable "דֶק" speaks it in "he-IL"
+
+  Scenario: A Hebrew word in the tutor's answer is said at the Hebrew speed in the Hebrew voice he chose
+    Given Lampas is opened on a phone with two Hebrew voices, "Carmit" chosen as the Hebrew voice and "0.7" as the Hebrew speed, and the tutor's answer has the Hebrew word "צֶדֶק" in it
+    When he taps the Hebrew word "צֶדֶק"
+    Then the phone speaks "צֶדֶק" in "he-IL" at the speed "0.7" with the voice "Carmit"
+
+  Scenario: A long press on a Hebrew word in the Reader is said at the Hebrew speed in the Hebrew voice he chose
+    Given Genesis 1 is opened in its Hebrew on a phone with two Hebrew voices, "Carmit" chosen as the Hebrew voice and "0.7" as the Hebrew speed
+    When he long presses the Hebrew word "הַשָּׁמַ֖יִם" of verse 1
+    Then the phone speaks "הַשָּׁמַיִם" in "he-IL" at the speed "0.7" with the voice "Carmit"

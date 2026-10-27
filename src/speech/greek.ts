@@ -22,9 +22,8 @@ import {
 import { useSpeech } from 'voice-kit/speech/react';
 import { ClipPlayer } from '../audio/clipPlayer';
 import { isElided, joinElidedLetters, withoutElision } from './elision';
-import { DEFAULT_RATE, DEFAULT_RATES, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
-import { DEFAULT_HEBREW_PRONUNCIATION, hebrewPronunciationOf, hebrewVoiceForm } from './hebrewPronunciation';
-import { DEFAULT_PRONUNCIATION, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
+import { DEFAULT_RATES, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
+import { DEFAULT_PRONUNCIATION, chosenHebrewPronunciation, hebrewVoiceForm, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
 
 /** how long warmVoices() waits for the phone to list its voices */
 const VOICES_WAIT_MS = 1500;
@@ -34,7 +33,7 @@ export type SpeakOutcome = 'speaking' | 'stopped' | 'no-voice';
 
 // What he chose in Settings (src/speech/settingsSync.ts hands it over; speak() cannot wait for a database read).
 let pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION;
-const chosenVoices: Record<SettableLanguage, string | null> = { english: null, greek: null };
+const chosenVoices: Record<SettableLanguage, string | null> = { english: null, greek: null, hebrew: null };
 const rates: SpeechRates = { ...DEFAULT_RATES };
 
 /** The language tag of the Greek being spoken (the pronunciation's), such as 'el-GR'. */
@@ -42,10 +41,10 @@ export const greekLang = (): string => pronunciationOf(pronunciation).lang;
 
 /** The language tag put on an utterance in `language`. */
 const langOf = (language: SpeechLanguage): string =>
-  language === 'greek' ? greekLang() : language === 'hebrew' ? hebrewPronunciationOf(DEFAULT_HEBREW_PRONUNCIATION).lang : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en-US');
+  language === 'greek' ? greekLang() : language === 'hebrew' ? chosenHebrewPronunciation().lang : (LANGUAGES.find((l) => l.id === language)?.lang ?? 'en-US');
 
-/** How fast `language` is spoken: his speed for it, or the normal one for a language with no speed of its own (Hebrew). */
-const rateOf = (language: SpeechLanguage): number => (language === 'hebrew' ? DEFAULT_RATE : rates[language]);
+/** How fast `language` is spoken: his speed for it. */
+const rateOf = (language: SpeechLanguage): number => rates[language];
 
 /** The pronunciation he chose (its respell cuts a word into syllables). */
 export const chosenPronunciation = (): Pronunciation => pronunciationOf(pronunciation);
@@ -133,7 +132,7 @@ function applyChoices(utterance: SpeechSynthesisUtterance, synth: SpeechSynthesi
   // the Greek of the pronunciation he chose (the package names the Greek of its letters el-GR)
   if (language === 'greek') utterance.lang = greekLang();
   utterance.rate = slow ? rateOf(language) * SLOW_FACTOR : rateOf(language);
-  const chosen = language === 'hebrew' ? null : chosenVoices[language];
+  const chosen = chosenVoices[language];
   if (chosen === null) return;
   const voice = synth.getVoices().find((v) => voiceKey(v) === chosen && isLanguage(language)(v));
   if (voice) utterance.voice = voice;

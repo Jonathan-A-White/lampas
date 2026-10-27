@@ -21,7 +21,7 @@ import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
 import { besideNow, greekVoiceForm, hasGreekVoice, hasVoice, loneLetterCuts, playInTurn, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside, type Piece } from './greek';
 import type { SpeechLanguage } from './languages';
-import { DEFAULT_HEBREW_PRONUNCIATION, pronunciationsOf } from './pronunciation';
+import { hebrewVoiceForm } from './pronunciation';
 import type { ReadSpan } from './readSpan';
 import { dropWaiting } from './tutorWaiting';
 import { keepAwake, letSleep } from './wakeLock';
@@ -239,9 +239,6 @@ function afterVerse(at: number, my: number): void {
   if (reach === 'passage' && next.heading) return finish(my, true);
   readVerse(next.n, my);
 }
-
-/** The Hebrew a run is handed to the voice as: the chosen Hebrew scheme's voice form (the registry's default; there is no setting to choose another yet). */
-const hebrewVoiceForm = (text: string): string => (pronunciationsOf('he').find((p) => p.id === DEFAULT_HEBREW_PRONUNCIATION) ?? pronunciationsOf('he')[0]).voiceForm(text);
 
 /** The runs of a verse as the one text handed to the package: a run to a line, so the package cuts a sentence at the end of every run too. A Greek run
  * goes in its pronunciation's voice form, so the voice says what the respelling writes (mw-5r3p30.264). */

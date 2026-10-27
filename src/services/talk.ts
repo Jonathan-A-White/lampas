@@ -27,7 +27,7 @@ import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { mapsForTutor, type TutorMap } from '../maps/forTutor';
 import type { MapCard } from '../maps/types';
-import { greekInterestField, hebrewInterestField, type InterestField } from './interestField';
+import { greekInterestField, hebrewGuideField, hebrewInterestField, type InterestField } from './interestField';
 import { askGrind, type AskOptions } from './tutor';
 import { FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES, TALK_SUMMARY_MAX } from './requestBudget';
 import { solidWordsField } from './solidWords';
@@ -254,6 +254,8 @@ export interface TalkRequest {
   pronunciation?: GreekPronunciation;
   /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): the grind describes every sound by them */
   pronunciation_guide?: string;
+  /** the Hebrew pronunciation's name and sound rules (mw-gdcyf98.6), beside the Greek scheme's: a Hebrew sound is described by them; sent from the Hebrew dial's Curious up */
+  hebrew_pronunciation_guide?: string;
   /** the study resources he has switched on in Settings (mw-5r3p30.123): the only ones the tutor may link; missing in About, whose request is the credits */
   resources?: TutorResource[];
   /** the digest of his Logos shelf chosen by the place (mw-rfjjzd.10, worksForTutor): the pinned books, the commentaries that cover the chapter, the grammars and Greek texts for a question about a form or a reading, and a closing `more` line; the only books the tutor may link as a `work`; missing when none is on his shelf and in About; fitHistory cuts it from its end after the word list and before the history */
@@ -612,6 +614,7 @@ export function buildTalkRequest(
     settings,
     pronunciation,
     pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
+    ...hebrewGuideField(settings),
     ...(focus ? { focus: withHeart(withRespelling(focus, pronunciation)) } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar && !aboutCredits ? { learner_grammar: learnerGrammar } : {}),

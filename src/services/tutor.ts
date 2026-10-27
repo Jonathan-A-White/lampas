@@ -18,7 +18,7 @@ import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunc
 import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { hebrewWordsFitting, type HebrewWordEntry } from './hebrewWords';
-import { hebrewInterestField, type InterestField } from './interestField';
+import { hebrewGuideField, hebrewInterestField, type InterestField } from './interestField';
 import { solidWordsField } from './solidWords';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { TALK_KINDS, type GristKind } from './gristKinds';
@@ -191,6 +191,8 @@ export interface VerseAskRequest {
   pronunciation: GreekPronunciation;
   /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a sound is described by them */
   pronunciation_guide?: string;
+  /** the Hebrew pronunciation's name and sound rules (mw-gdcyf98.6), beside the Greek scheme's: a Hebrew sound is described by them; sent for an Old Testament verse and from the Hebrew dial's Curious up */
+  hebrew_pronunciation_guide?: string;
   /** the settings that bear on this answer, by key (src/tutor/knows.ts settingsSentTo): { hebrewDepth: 'both', askBy: 'speaking', weave: 'off', ... } */
   settings?: Record<string, string>;
   /** the Hebrew dial as he set it (mw-gdcyf98.3), the Bible talk's `hebrew_interest` field: its step, the step's name and the one above; sent with the settings (whose `greekInterest` is the Greek dial) */
@@ -260,6 +262,7 @@ export function buildRequest(reference: string, verse: Verse, question: string, 
     ...solidWordsField(solidWords),
     pronunciation,
     pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
+    ...hebrewGuideField(settings, hebrew),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
@@ -501,6 +504,7 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
  */
 export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   let guide = request.pronunciation_guide;
+  let hebrewGuide = request.hebrew_pronunciation_guide;
   let solid = request.solid_words;
   let requests = request.requests;
   let notes = request.memory?.notes;
@@ -518,6 +522,7 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
     ...(facts ? { facts } : {}),
     ...(isHebrew ? { hebrew: text.greek, english: text.english } : text),
     pronunciation_guide: guide,
+    hebrew_pronunciation_guide: hebrewGuide,
     solid_words: solid,
     ...(words ? { greek_words: words } : {}),
     ...(hebrewWords ? { hebrew_words: hebrewWords } : {}),
@@ -533,6 +538,7 @@ export function fitAsk(request: VerseAskRequest): VerseAskRequest {
   if (tooBig()) catalogue = undefined;
   if (tooBig()) facts = undefined;
   guide = undefined;
+  hebrewGuide = undefined;
   while (solid.length > 0 && tooBig()) solid = solid.slice(1);
   while (words && words.length > 0 && tooBig()) words = words.slice(0, -1);
   while (hebrewWords && hebrewWords.length > 0 && tooBig()) hebrewWords = hebrewWords.slice(0, -1);

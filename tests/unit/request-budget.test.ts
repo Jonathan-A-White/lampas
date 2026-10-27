@@ -71,7 +71,7 @@ describe('the quiz-me second request (features/quiz-me.feature: an answer carrie
 
   it('keeps its earlier turn with the headroom to spare once the guide and the words of the text have given way', async () => {
     const request = await secondQuizRequest();
-    const fitted = fitHistory({ ...request, greek_words: [], pronunciation_guide: undefined });
+    const fitted = fitHistory({ ...request, greek_words: [], pronunciation_guide: undefined, hebrew_pronunciation_guide: undefined });
     expect(fitted.history).toEqual(request.history);
     expect(fitted.history).toHaveLength(1);
     expect(MAX_REQUEST_BYTES - bytes(fitted), `the request weighs ${bytes(fitted)} of ${MAX_REQUEST_BYTES}`).toBeGreaterThanOrEqual(HEADROOM_BYTES);
@@ -227,7 +227,7 @@ describe('the Bible talk request with the digest of 110 books On', () => {
   it('keeps the headroom with the digest in, once the guide and the words of the text have given way', async () => {
     const request = await withDigest();
     expect(request.works?.length).toBeGreaterThan(10);
-    const fitted = fitHistory({ ...request, greek_words: [], pronunciation_guide: undefined });
+    const fitted = fitHistory({ ...request, greek_words: [], pronunciation_guide: undefined, hebrew_pronunciation_guide: undefined });
     expect(fitted.works).toEqual(request.works);
     expect(fitted.history).toEqual(request.history);
     expect(MAX_REQUEST_BYTES - bytes(fitted), `the request weighs ${bytes(fitted)} of ${MAX_REQUEST_BYTES}`).toBeGreaterThanOrEqual(HEADROOM_BYTES);

@@ -13,7 +13,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
-import { ensureSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { ensureSettingsGroup, leaveSettings, setEachOnItsOwn } from '../../tests/support/settings-pages';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -158,6 +158,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Greek pronunciation shows Modern Greek, selected', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
     When("he taps the gear in the reader's header", openSettings);
+    And('he sets each language on its own', () => setEachOnItsOwn(user, true));
     Then('Greek pronunciation lists only {string}', async (_, label: string) => {
       await ensureSettingsGroup('listening');
       const group = await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });

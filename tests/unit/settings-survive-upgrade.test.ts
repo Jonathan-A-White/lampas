@@ -67,18 +67,19 @@ describe('no upgrade, start or speech rewrites a saved setting', () => {
     for (const entry of SETTINGS.filter(isStored)) expect(await entry.read(), entry.key).toEqual(saved[entry.key]);
   });
 
-  it('saves a Greek speed of 0.5 and an English speed of 1 and reads 0.5 and 1 back after the upgrades and the start', async () => {
+  it('saves a Greek speed of 0.5, an English speed of 1 and a Hebrew speed of 1.2 and reads them back after the upgrades and the start', async () => {
     await db.settings.bulkPut([
       { key: 'rate.greek', value: '0.5' },
       { key: 'rate.english', value: '1' },
+      { key: 'rate.hebrew', value: '1.2' },
     ]);
     db.close();
     await db.open();
     clearBus();
     const stop = startSpeechSettingsSync();
-    await waitFor(() => expect(latest('rates-changed')?.rates).toEqual({ english: 1, greek: 0.5 }));
+    await waitFor(() => expect(latest('rates-changed')?.rates).toEqual({ english: 1, greek: 0.5, hebrew: 1.2 }));
     stop();
-    expect(await getSpeechRates()).toEqual({ english: 1, greek: 0.5 });
+    expect(await getSpeechRates()).toEqual({ english: 1, greek: 0.5, hebrew: 1.2 });
   });
 
   it('keeps every setting through the app starting its speech settings and the speech engine speaking', async () => {

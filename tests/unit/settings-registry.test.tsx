@@ -35,6 +35,8 @@ describe('the registry lists every Settings row', () => {
       { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },
       { key: 'devotional', value: 'random' },
+      // Set each language on its own: the Greek and the Hebrew row are drawn, not the Pronunciation family
+      { key: 'pronunciationSeparate', value: 'on' },
     ]);
     // jsdom has no speechSynthesis: two voice pickers still draw, empty
     render(<SettingsScreen />);
@@ -51,21 +53,21 @@ describe('the registry lists every Settings row', () => {
     const all: string[] = [];
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);
-      const expected = SETTINGS.filter((s) => !isHomeRow(s) && groupOf(s.section).id === group.id && !s.key.startsWith('resource.'))
+      const expected = SETTINGS.filter((s) => !isHomeRow(s) && s.key !== 'pronunciation' && groupOf(s.section).id === group.id && !s.key.startsWith('resource.'))
         .map((s) => s.label)
         .sort();
       await waitFor(() => expect(drawnOnPage().sort()).toEqual(expected));
       all.push(...drawnOnPage());
     }
     // 'Which languages?' and the dials are drawn on the home above the groups, not on a page of a group
-    expect([...all].sort()).toEqual(SETTINGS.filter((s) => !isHomeRow(s) && !s.key.startsWith('resource.')).map((s) => s.label).sort());
+    expect([...all].sort()).toEqual(SETTINGS.filter((s) => !isHomeRow(s) && s.key !== 'pronunciation' && !s.key.startsWith('resource.')).map((s) => s.label).sort());
     cleanup();
   });
 
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['askBy', 'audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'copyText', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'hebrewInterest', 'immersiveHint', 'immersiveReader', 'languages', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
+      ['askBy', 'audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'copyText', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'hebrewInterest', 'hebrewKeyboard', 'hebrewPronunciation', 'hebrewRate', 'hebrewVoice', 'immersiveHint', 'immersiveReader', 'languages', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'pronunciation', 'pronunciationSeparate', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -166,7 +168,7 @@ describe('applyChanges', () => {
     expect(applied).toEqual([{ key: 'greekRate', label: 'Greek speed', from: 1, to: 0.8, shown: 'Greek speed 0.8x' }]);
     expect(await getSpeechRate('greek')).toBe(0.8);
     expect(await getSpeechRate('english')).toBe(1);
-    expect(latest('rates-changed')?.rates).toEqual({ english: 1, greek: 0.8 });
+    expect(latest('rates-changed')?.rates).toEqual({ english: 1, greek: 0.8, hebrew: 1 });
   });
 
   it('applies each kind of setting through its own saved choice and bus event', async () => {
@@ -208,7 +210,7 @@ describe('applyChanges', () => {
     expect(latest('headings-changed')?.headings).toBe('off');
     expect(latest('weave-changed')?.weave).toBe('solid');
     expect(latest('weave-grammar-changed')?.grammar).toBe('solid+frontier');
-    expect(latest('voices-changed')).toMatchObject({ greek: null });
+    expect(latest('voices-changed')).toMatchObject({ voices: { greek: null } });
   });
 
   it('refuses an unknown key, a value the setting does not allow, and a change that is not a {key, value}, and says so', async () => {
@@ -308,7 +310,12 @@ describe('currentSettings', () => {
       greekVoice: 'default',
       englishRate: 1,
       greekRate: 1,
+      hebrewVoice: 'default',
+      hebrewRate: 1,
+      pronunciation: 'modern',
+      pronunciationSeparate: 'off',
       greekPronunciation: 'modern',
+      hebrewPronunciation: 'israeli',
       englishAccent: 'american',
       goal: '',
       grammarApproach: 'ladder',
@@ -335,6 +342,7 @@ describe('currentSettings', () => {
       todaysDevotional: 'LLS:20.10.1',
       dailyTicks: 'on',
       greekKeyboard: 'off',
+      hebrewKeyboard: 'off',
     });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);
     await db.settings.put({ key: 'voice.english', value: 'Some voice' });

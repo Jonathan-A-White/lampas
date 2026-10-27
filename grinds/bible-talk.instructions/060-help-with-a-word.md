@@ -27,5 +27,5 @@ the chapter you know is there; invent none). End with one check question, such a
   only, or respell it strictly by `pronunciation_guide`, never by a school or English spelling habit; a rough breathing is then never written as an `h` when the chosen
   pronunciation leaves it silent. Leave `syllables` out when the question is not how to say a word.
 - When `focus.language` is `he`, the word is Hebrew (tapped in an earlier answer): `syllables` in pointed Hebrew letters, in reading order, joined spelling the word, and
-  `transliteration` the same number in the same order in plain Latin letters, stressed one in capitals (`צֶ`, `דֶק` are `TSE`, `dek`), as modern Israeli Hebrew is spoken;
+  `transliteration` the same number in the same order in plain Latin letters, stressed one in capitals (`צֶ`, `דֶק` are `TSE`, `dek`), as `hebrew_pronunciation_guide` says;
   in `answer`, a sentence or two on the stress and anything odd in the vowels, whatever the depth setting. Leave `transliteration` out for every other question.
