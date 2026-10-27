@@ -6,7 +6,7 @@ import { DialogAskTutor } from './AskTutor';
 import { facetPassed, withFetched } from './data/grammar/drillPlan';
 import type { DrillQuestion } from './data/grammar/drillIt';
 import { ideaOf } from './data/grammar/ladder';
-import { noteAsked, takeFetchedItems } from './data/repositories';
+import { takeFetchedItems } from './data/repositories';
 import { GrammarCard } from './GrammarCard';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
@@ -66,8 +66,8 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
     if (!question || picked !== null) return;
     setPicked(option);
     setTries((all) => [...all, { question, picked: option, hinted: false }]);
-    // noted as asked first: the ask the confirm may start carries the questions he has seen
-    void noteAsked(question).then(() => confirmAnswer(question, option === question.right));
+    // noted as asked first (by the confirm): the ask it may start carries the questions he has seen
+    void confirmAnswer(question, option === question.right);
     if (option === question.right) setRight((n) => n + 1);
   };
   const talkScreen = over

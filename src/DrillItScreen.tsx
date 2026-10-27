@@ -7,7 +7,6 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import type { Chapter } from './data/chapter';
 import { addFetched, answer as answerWalk, enoughToProve, PROVED_STREAK, serveFetched, start, type DrillResult, type DrillWalk } from './data/grammar/drillIt';
-import { seenKey } from './data/grammar/fetchedItems';
 import { planFrom, shortDrill, type PlanItem } from './data/grammar/drillPlan';
 import { drillSeed } from './data/grammar/drillSeed';
 import { hintTakes } from './data/grammar/hint';
@@ -15,7 +14,7 @@ import type { Facet } from './data/grammar/ladder';
 import { ideaOfAny as ideaOf, ladderLangOf } from './data/grammar/ladders';
 import type { Level } from './data/grammar/needs';
 import { DialogAskTutor } from './AskTutor';
-import { answerPlanItem, getDrillPlan, listSeen, listUnseenFetched, noteAsked, takeAllFetched, takeFetchedItems, type DrillMode } from './data/repositories';
+import { answerPlanItem, askedKeys, getDrillPlan, listUnseenFetched, takeAllFetched, takeFetchedItems, type DrillMode } from './data/repositories';
 import { FacetLabel } from './FacetLabel';
 import { GrammarCard } from './GrammarCard';
 import { PlanDrillScreen } from './PlanDrillScreen';
@@ -158,7 +157,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
     opened.current = true;
     void (async () => {
       try {
-        const seen = new Set((await listSeen(ideaId).catch(() => [])).map(seenKey));
+        const seen = new Set(await askedKeys(ideaId).catch(() => []));
         const drawn = begin(ideaId, passage, seed);
         let first = seen.size > 0 ? begin(ideaId, passage, seed, seen) : drawn;
         if (first && drawn && !enoughToProve(first.steps, drawn.steps) && enoughToProve(drawn.steps)) {
@@ -206,8 +205,8 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
     }
     setAfter({ walk: answerWalk(walk, option === question.right, taken !== null), picked: option });
     setTries((all) => [...all, { question, picked: option, hinted: taken !== null }]);
-    // noted as asked first: the ask the confirm may start carries the questions he has seen
-    void noteAsked(question).then(() => confirmAnswer(question, option === question.right, { hinted: taken !== null }));
+    // noted as asked first (by the confirm): the ask it may start carries the questions he has seen
+    void confirmAnswer(question, option === question.right, { hinted: taken !== null });
   };
   useEffect(() => {
     // an answer given before the walk was made again from the unseen questions

@@ -100,9 +100,9 @@ export { fingerprintOf, keepPictureRefs, keptPictureRefs, KEPT_PICTURES } from '
 export type { PictureRefsRow } from './pictureRefs';
 export { answerPlanItem, closeDrillPlan, drillPlanCounts, getDrillPlan, listDrillPlans, saveDrillPlan } from './drillPlans';
 export type { PlanAnswer } from './drillPlans';
-export { countFetchedItems, isFreshQuestion, listFetchedIdeas, listUnseenFetched, saveFetchedItems, takeAllFetched, takeFetchedItems } from './fetchedItems';
-export { clearToConfirm, isToConfirm, listToConfirm, markToConfirm, missedBefore } from './toConfirm';
-export { listSeen, listSeenOf, noteAsked, noteSeen } from './seenItems';
+export { connectMill, countFetchedItems, fetchedStock, isFreshQuestion, listFetchedIdeas, listUnseenFetched, saveFetchedItems, takeAllFetched, takeFetchedItems } from './fetchedItems';
+export { askedKeys, freshStore, isToConfirm, keptStore, listSeen, listSeenOf, listToConfirm, noteAsked, noteSeen, questionKey } from './freshStore';
+export { markConfirmed, missedBefore } from './missedBefore';
 export { getLevel, levelFromStep, listLevels, otherFrontier, recordDrill, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel, SOLID_STEP, teachIdea } from './grammarLevels';
 export type { DrillMode, FrontierChoice, GrammarLevel, GrammarLevelHow, GrammarLevelName, IdeaOutcome, TeachResult } from './grammarLevels';
 export { getEvidence, noteAnswer, noteDrillAnswer, noteWordRead } from './inference';

@@ -279,6 +279,8 @@ describe('asking the mill for more after a round', () => {
   const passage = [{ ...chapter, verses: chapter.verses.slice(0, 1) }];
 
   beforeEach(async () => {
+    // a take of the tests before it starts the stock's top-up (the kit's `served`), which may still be deciding
+    await whenIdle();
     postern = makeFakePostern();
     postern.autoReply = { status: 'answered', answer: { items: [TAP, MEANING, { ...TAP, right: 'nope' }] } };
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => postern.fetch(input, init));
@@ -325,7 +327,8 @@ describe('asking the mill for more after a round', () => {
     release.resolve();
     expect(await first).toEqual({ kept: 2 });
     expect(postern.received).toHaveLength(1);
-    // and once it is done the next may go
+    // and once it is done the next may go (the stock keeps no item twice, so the mill writes others this time)
+    postern.autoReply = { status: 'answered', answer: { items: [{ ...TAP, prompt: 'Tap the noun in the genitive' }, { ...MEANING, prompt: 'What does this form say?' }] } };
     expect(await askForMoreItems(MISSED, { key: KEY, passage })).toEqual({ kept: 2 });
     expect(postern.received).toHaveLength(2);
   });

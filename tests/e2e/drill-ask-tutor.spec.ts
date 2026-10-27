@@ -42,7 +42,7 @@ async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object
   );
 }
 
-/** He has not been asked anything yet: the list of questions the idea has been asked ('seenItems.<idea id>', src/data/repositories/seenItems.ts) is emptied, because
+/** He has not been asked anything yet: the list of questions the idea has been asked ('seenItems.<idea id>', src/data/repositories/freshStore.ts) is emptied, because
  * a question he was asked is not drawn again (mw-5r3p30.803), and the walk would not be the one the spec learned from. */
 async function forgetQuestions(page: Page) {
   await page.evaluate(

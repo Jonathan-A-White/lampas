@@ -1,100 +1,77 @@
-// src/data/repositories/fetchedItems.ts — the drill items the mill wrote, kept until a round uses them (mw-hqd5bz.36, docs/grammar.md 'More items from the mill'). One JSON list of questions
-// per idea in the settings store under 'fetchedItems.<idea id>' (no table, outside the settings registry so only a finished fetch writes it). A repository owns its transactions.
+// src/data/repositories/fetchedItems.ts — the drill items the mill wrote, kept until a round uses them (mw-hqd5bz.36, docs/grammar.md 'More items from the mill'). The keeping is learn-kit/fresh's stock (mw-74h98vg.1):
+// `fetchedStock` serves the oldest kept item of an idea once, never one he has been asked, and tops itself up in the background through the mill call src/review/moreItems.ts connects. The kept list of an idea is
+// one JSON list of questions in the settings store (freshStore.ts keptStore, 'fetchedItems.<idea id>'; no table, outside the settings registry so only a finished fetch writes it).
+import { createStock, isFresh } from 'learn-kit/fresh';
 import { db } from '../db';
-import { MAX_KEPT, isKeptQuestion, seenKey } from '../grammar/fetchedItems';
+import { MAX_KEPT } from '../grammar/fetchedItems';
 import { ideaOf } from '../grammar/ladder';
 import type { GrammarQuestion } from '../grammar/questions';
-import { SEEN_PREFIX, parseSeen } from './seenItems';
+import { KEPT_PREFIX, freshStore, keptStore, parseKept, questionKey, saveKept } from './freshStore';
 
-const PREFIX = 'fetchedItems.';
+/** The mill call the stock tops up with: the repository cannot reach the review layer, so src/review/moreItems.ts connects it when it loads. It resolves none until then. */
+type Ask = (ideaId: string, request: { count: number; avoid: string[] }) => Promise<GrammarQuestion[]>;
+let ask: Ask = async () => [];
+export const connectMill = (next: Ask): void => {
+  ask = next;
+};
 
-/** The questions the mill wrote that were taken to be asked this session (seenKey of each): a fresh question is one of these, whatever screen asks it (mw-indx1x6.2). */
+const keyOf = (q: GrammarQuestion): string => questionKey(q);
+
+/** The ask-ahead stock of questions he has not been asked: kept in the settings store (cap MAX_KEPT), checked against the ledger of what he has been asked. */
+export const fetchedStock = createStock<GrammarQuestion>({ ask: (ideaId, request) => ask(ideaId, request), keyOf, store: keptStore, fresh: freshStore, cap: MAX_KEPT });
+
+/** The questions the mill wrote that were taken to be asked this session (the kit's key of each): a fresh question is one of these, whatever screen asks it (mw-indx1x6.2). */
 const served = new Set<string>();
 
-const keyOf = (q: GrammarQuestion): string => `${q.ideaId}|${seenKey({ prompt: q.prompt, ref: q.ref ?? '' })}`;
+const servedKey = (q: GrammarQuestion): string => `${q.ideaId}|${keyOf(q)}`;
 
 /** Whether this question is one the mill wrote and a take handed out (not a built one). */
-export const isFreshQuestion = (q: GrammarQuestion): boolean => served.has(keyOf(q));
-
-/** The questions a settings value holds; a value that is not a list, or an item that is not a drawable question, is left out. */
-function parse(value: unknown): GrammarQuestion[] {
-  if (typeof value !== 'string') return [];
-  try {
-    const list: unknown = JSON.parse(value);
-    return Array.isArray(list) ? list.filter(isKeptQuestion) : [];
-  } catch {
-    return [];
-  }
-}
+export const isFreshQuestion = (q: GrammarQuestion): boolean => served.has(servedKey(q));
 
 /** Keeps these items after the ones already kept for their ideas; an idea keeps its newest MAX_KEPT. */
-export async function saveFetchedItems(items: readonly GrammarQuestion[]): Promise<void> {
-  const ideas = [...new Set(items.map((q) => q.ideaId))];
-  await db.transaction('rw', db.settings, async () => {
-    for (const id of ideas) {
-      const kept = parse((await db.settings.get(PREFIX + id))?.value);
-      const next = [...kept, ...items.filter((q) => q.ideaId === id)].slice(-MAX_KEPT);
-      await db.settings.put({ key: PREFIX + id, value: JSON.stringify(next) });
-    }
-  });
-}
+export const saveFetchedItems = saveKept;
 
 /** How many items are kept for an idea. */
-export async function countFetchedItems(ideaId: string): Promise<number> {
-  return parse((await db.settings.get(PREFIX + ideaId))?.value).length;
-}
+export const countFetchedItems = (ideaId: string): Promise<number> => fetchedStock.count(ideaId);
 
 /**
  * Takes the oldest kept item of each of these ideas, so it is served once: the ideas that have none are left out of the map. One read and write, never a wait on the network.
- * A kept item he has been asked already (seenItems.ts: the same prompt on the same verse) is not served; it is dropped.
+ * A kept item he has been asked already (the same prompt on the same verse) is not served; it is dropped. Each take starts the stock's top-up when it runs low.
  */
 export async function takeFetchedItems(ideaIds: readonly string[]): Promise<Map<string, GrammarQuestion>> {
   const taken = new Map<string, GrammarQuestion>();
-  if (ideaIds.length === 0) return taken;
-  await db.transaction('rw', db.settings, async () => {
-    for (const id of new Set(ideaIds)) {
-      const kept = parse((await db.settings.get(PREFIX + id))?.value);
-      const seen = new Set(parseSeen((await db.settings.get(SEEN_PREFIX + id))?.value).map(seenKey));
-      const [first, ...rest] = kept.filter((q) => !seen.has(seenKey({ prompt: q.prompt, ref: q.ref ?? '' })));
-      if (!first) {
-        if (kept.length > 0) await db.settings.delete(PREFIX + id);
-        continue;
-      }
-      taken.set(id, first);
-      served.add(keyOf(first));
-      if (rest.length > 0) await db.settings.put({ key: PREFIX + id, value: JSON.stringify(rest) });
-      else await db.settings.delete(PREFIX + id);
-    }
-  });
+  for (const id of new Set(ideaIds)) {
+    const item = await fetchedStock.take(id);
+    if (!item) continue;
+    taken.set(id, item);
+    served.add(servedKey(item));
+  }
   return taken;
 }
 
 /** The kept items of an idea that he has not been asked, the oldest first; nothing is taken. */
 export async function listUnseenFetched(ideaId: string): Promise<GrammarQuestion[]> {
-  const kept = parse((await db.settings.get(PREFIX + ideaId))?.value);
-  const seen = new Set(parseSeen((await db.settings.get(SEEN_PREFIX + ideaId))?.value).map(seenKey));
-  return kept.filter((q) => !seen.has(seenKey({ prompt: q.prompt, ref: q.ref ?? '' })));
+  const kept = await keptStore.get(ideaId);
+  const fresh = await Promise.all(kept.map((q) => isFresh(freshStore, ideaId, keyOf(q))));
+  return kept.filter((_, i) => fresh[i]);
 }
 
 /** Takes every kept item of an idea that he has not been asked (Prove it, when the built questions he has not seen are too few to prove an idea on); they are used up. */
 export async function takeAllFetched(ideaId: string): Promise<GrammarQuestion[]> {
-  const items = await db.transaction('rw', db.settings, async () => {
-    const unseen = await listUnseenFetched(ideaId);
-    await db.settings.delete(PREFIX + ideaId);
-    return unseen;
-  });
-  for (const q of items) served.add(keyOf(q));
+  const items: GrammarQuestion[] = [];
+  for (let item = await fetchedStock.take(ideaId); item; item = await fetchedStock.take(ideaId)) items.push(item);
+  for (const q of items) served.add(servedKey(q));
   return items;
 }
 
 /** The ids of the ideas that have kept items, the lower rung first (a stored id the ladder no longer has is left out). */
 export async function listFetchedIdeas(): Promise<string[]> {
-  const rows = await db.settings.where('key').startsWith(PREFIX).toArray();
+  const rows = await db.settings.where('key').startsWith(KEPT_PREFIX).toArray();
   return rows
-    .filter((r) => parse(r.value).length > 0)
+    .filter((r) => parseKept(r.value).length > 0)
     .flatMap((r) => {
       try {
-        return [ideaOf(r.key.slice(PREFIX.length))];
+        return [ideaOf(r.key.slice(KEPT_PREFIX.length))];
       } catch {
         return [];
       }

@@ -228,6 +228,8 @@ export interface DrillWalk {
   result: DrillResult | null;
   /** the facets of the sides of the idea's sound rule that its steps ask (mw-i7xe0n.7): each must be answered right before the idea is proved */
   sides?: string[];
+  /** the questions he has been asked on the idea (the kit's ledger: seenKey of each), when the walk was told them: a right answer on one counts for nothing toward proving (learn-kit/drill WalkOptions.isFresh, mw-74h98vg.1) */
+  seen?: ReadonlySet<string>;
 }
 
 /** The question being asked, or null once the walk is over. */
@@ -273,7 +275,7 @@ export function start(ideaId: string, levels: ReadonlyMap<string, Level>, option
   const required = rule ? rule.sides.map((side) => sideFacet(rule, side).id) : [];
   const walk = startWalk(ladderFor(ladderLangOf(ideaId)).path, ideaId, needLevels(ideaId, levels), kitSteps(steps), { required });
   if ('needs' in walk) return walk;
-  return { ideaId, steps, step: 1, asked: [], current: walk.current?.payload ?? null, streak: 0, result: null, sides: walk.required };
+  return { ideaId, steps, step: 1, asked: [], current: walk.current?.payload ?? null, streak: 0, result: null, sides: walk.required, ...(options.seen ? { seen: options.seen } : {}) };
 }
 
 /**
@@ -293,6 +295,8 @@ export function answer(walk: DrillWalk, right: boolean, hinted: boolean): DrillW
     maxQuestions: MAX_QUESTIONS,
     provedStreak: PROVED_STREAK,
     required: walk.sides ?? [],
+    // the question asked is fresh unless it is in the ledger (a question about no verse is never noted, so is always fresh)
+    ...(walk.seen ? { isFresh: (key: string) => key !== walk.current?.key || !walk.current.ref || !walk.seen?.has(seenKey({ prompt: walk.current.prompt, ref: walk.current.ref })) } : {}),
   };
   const next = answerWalk(kit, right, hinted);
   return { ...walk, step: next.step, asked: next.asked, current: next.current?.payload ?? null, streak: next.streak, result: next.result && resultFromKit(next.result) };
