@@ -185,7 +185,7 @@ test('How much of a table: the header switch and Settings show one setting; Any 
   await page.getByRole('button', { name: '‹ Paradigms', exact: true }).click();
   await expect(page.locator('[data-paradigm="article"]').getByTestId('paradigm-available')).toHaveText('Solid forms: 8 of 24');
   await page.goto('/#/settings');
-  await openGroup(page, 'Greek');
+  await openGroup(page, 'Learning');
   const row = page.getByRole('group', { name: 'How much of a table', exact: true });
   await row.scrollIntoViewIfNeeded();
   await expect(row.getByRole('button', { name: 'Solid only', exact: true })).toHaveAttribute('aria-pressed', 'true');

@@ -68,7 +68,7 @@ test('a Hebrew word in an answer is lang he, dir rtl, in the Hebrew font, with t
 test('Settings > Hebrew in the tutor offers three choices, Hebrew and transliteration chosen at first, each a thumb', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   await openUnlocked(page);
-  await page.goto('/#/settings?group=tutor');
+  await page.goto('/#/settings?group=greek');
   const group = page.getByRole('group', { name: 'Hebrew in the tutor' });
   await group.scrollIntoViewIfNeeded();
   const names = ['Transliteration', 'Hebrew and transliteration', 'Full'];

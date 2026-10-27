@@ -50,7 +50,7 @@ test('the foot of a chapter in Scroll is the chapter links and nothing else: no 
     el.scrollTop = el.scrollHeight;
   });
   await expect(page.getByRole('navigation', { name: 'Chapters', exact: true })).toBeInViewport();
-  expect(await afterLastVerse(page)).toEqual(['nav:Chapters']);
+  expect(await afterLastVerse(page)).toEqual(['button:Maps · 2', 'nav:Chapters']);
   await expect(page.locator('[data-reader]').getByRole('button', { name: 'About', exact: true })).toHaveCount(0);
   await expect(page.locator('[data-reader]').getByTestId('build-version')).toHaveCount(0);
   await expect(page.getByTestId('build-version')).toHaveCount(0);
