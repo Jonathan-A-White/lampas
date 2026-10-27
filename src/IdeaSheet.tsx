@@ -42,7 +42,8 @@ import { armFallback } from './resources/openApp';
 import type { GrammarBook } from './resources/types';
 import { useAccent } from './speech/accents/useAccent';
 import { chosenPronunciation } from './speech/greek';
-import { pronunciationOf, type Pronunciation } from './speech/pronunciation';
+import { hebrewPronunciationOf, pronunciationOf, type Pronunciation } from './speech/pronunciation';
+import { hebrewLetterOf, isHebrewDrillable } from './data/grammar/hebrew/letters';
 import { proseOf } from './speech/proseOf';
 import { LessonReadAloud } from './speech/ReadAloud';
 import { SpeakButton } from './speech/SpeakButton';
@@ -180,13 +181,12 @@ function usePassage(): Loaded {
   return loaded;
 }
 
-/** Greek inside a table: the Greek face at the size of the cell, so four columns fit a phone held upright. */
-const inTable = (text: string) => greekMarked(text, 'font-greek');
-
 /** An idea's title in a line of the sheet (the heading, a button, a question): its Greek, as in 'The preposition περί', at the reading size, as the examples under it (mw-86e9r1.38). */
 const titled = (title: string) => greekMarked(title);
 
-function TableView({ table }: { table: TeachTable }) {
+function TableView({ table, lang = 'grc' }: { table: TeachTable; lang?: LadderLang }) {
+  // (a Hebrew card's table draws its Hebrew in the Hebrew face, mw-gdcyf98.11)
+  const inTable = (text: string) => (lang === 'hbo' ? markedFor(lang, text) : greekMarked(text, 'font-greek'));
   return (
     <div data-testid="idea-table" className="mt-3">
       <table className="w-full table-fixed border-collapse text-center">
@@ -219,7 +219,7 @@ function TableView({ table }: { table: TeachTable }) {
           ))}
         </tbody>
       </table>
-      {table.note ? <p className="pt-1 text-sm text-muted">{greekMarked(table.note)}</p> : null}
+      {table.note ? <p className="pt-1 text-sm text-muted">{lang === 'hbo' ? markedFor(lang, table.note) : greekMarked(table.note)}</p> : null}
     </div>
   );
 }
@@ -235,9 +235,12 @@ function Worked({ teach, passage, scheme, lang }: { teach: Teach; passage: IdeaP
       <Part>Worked example</Part>
       <div className="mt-1 flex items-center gap-2">
         {lang === 'hbo' ? (
-          <span data-testid="worked-word" {...HEBREW_LANG_ATTRS} dir="rtl" className="script-he text-3xl">
-            {worked.word}
-          </span>
+          <>
+            <span data-testid="worked-word" {...HEBREW_LANG_ATTRS} dir="rtl" className="script-he text-3xl">
+              {worked.word}
+            </span>
+            <SpeakButton text={said} id={`worked:${said}`} label={`Hear ${worked.word}`} kind="speaker" language="hebrew" className="shrink-0" />
+          </>
         ) : (
           <>
             <span data-testid="worked-word" {...GREEK_LANG} className="font-greek text-3xl">
@@ -497,14 +500,17 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   const kept = useLiveQuery(async () => (await reviewsOf([{ kind: IDEA_KIND, id: idea.id }]))[0] ?? null, [idea.id]);
   // the lesson of a sound is the chosen pronunciation's (mw-5r3p30.229); until the saved choice is read, the one the speaker already holds
   const chosen = useLiveQuery(getGreekPronunciation, []);
-  const scheme = chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
+  // the ladder of the idea's own language: its card, its script and what it can do (mw-gdcyf98.10); a Hebrew idea's sounds are the Hebrew scheme's
+  const lang = ladderLangOf(idea.id);
+  const hebrew = lang === 'hbo';
+  const scheme = hebrew ? hebrewPronunciationOf() : chosen === undefined ? chosenPronunciation() : pronunciationOf(chosen);
   // the writes follow one another: a second move made while the first is being written waits for it, and is not lost
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const accent = useAccent(); // the hints below are said in the chosen English accent: draw again when it is chosen
-  const tiles = teachTiles(idea, scheme);
-  // the ladder of the idea's own language: its card, its script and what it can do (mw-gdcyf98.10)
-  const lang = ladderLangOf(idea.id);
-  const hebrew = lang === 'hbo';
+  const tiles = hebrew ? [] : teachTiles(idea, scheme);
+  // a Hebrew letter has Hear it, in the Hebrew voice; Drill it walks the alphabet and each letter (the other Hebrew ideas have no drill yet)
+  const hebrewLetter = hebrewLetterOf(idea.id);
+  const drillable = !hebrew || isHebrewDrillable(idea.id);
   const card = cardOf(idea.id);
   const sounds = soundLesson(idea, scheme);
   const passage = loaded && loaded !== 'failed' ? loaded.passage : undefined;
@@ -551,7 +557,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
       .then(async () => {
         const result = await teachIdea(idea.id, outcome, undefined, 'sheet', choice);
         if (result.status === 'busy') setSwitching(ideaOf(result.other));
-        else if (result.status === 'taught' && outcome === 'got-it' && idea.id === 'alphabet') setLetterDrill(true);
+        else if (result.status === 'taught' && outcome === 'got-it' && (idea.id === 'alphabet' || idea.id === 'he-alphabet')) setLetterDrill(true);
       })
       .catch((error: unknown) => console.error('could not keep the level', error));
   };
@@ -559,8 +565,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     setAsking(null);
     const outcome = OUTCOME_OF_STOP[to];
     if (outcome) teach(outcome);
-    // I know it proves itself with a drill; a Hebrew idea has none yet, so it is marked known (the level written, no review row)
-    else if (hebrew) teach('known');
+    // I know it proves itself with a drill; a Hebrew idea with no drill yet is marked known (the level written, no review row)
+    else if (!drillable) teach('known');
     else setDrill('prove');
   };
   const slideTo = (to: number): void => {
@@ -595,7 +601,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     openParadigm({ table });
   };
   // the Hard sounds lessons on this letter or pair for his accent (mw-5r3p30.361): optional, a tap opens one, and Back brings this sheet back as from a table
-  const letter = idea.glyphs?.[0] ?? idea.pair;
+  const letter = hebrew ? undefined : (idea.glyphs?.[0] ?? idea.pair);
   const soundLessons = letter ? lessonsForLetter(letter, scheme.id, accent) : [];
   const learnToSay = (lesson: string): void => {
     holdIdea(idea.id, textBox.current?.scrollTop ?? 0);
@@ -609,8 +615,14 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     <div data-testid="idea-sounds" className={short ? 'pb-1' : undefined}>
       <Part className={short ? 'mt-1' : 'mt-4'}>How it sounds</Part>
       <p data-testid="idea-text" className="mt-1 text-lg">
-        {greekMarked(sounds)}
+        {hebrew ? markedFor(lang, sounds) : greekMarked(sounds)}
       </p>
+      {hebrewLetter ? (
+        <div className="mt-1 flex items-center gap-2">
+          <SpeakButton text={hebrewLetter.letter} id={`hear:${hebrewLetter.id}`} label="Hear it" kind="speaker" language="hebrew" className="shrink-0" />
+          <span className="text-base text-muted">Hear it</span>
+        </div>
+      ) : null}
     </div>
   ) : null;
 
@@ -687,7 +699,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           <p data-testid="idea-spot" className="mt-1 text-lg">
             {markedFor(lang, card.howToSpot)}
           </p>
-          {card.table ? <TableView table={card.table} /> : null}
+          {card.table ? <TableView table={card.table} lang={lang} /> : null}
           {short ? null : soundBlock}
           {soundLessons.map((lesson) => (
             <button
@@ -770,7 +782,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
             </button>
           )}
           <div className="mt-1 flex flex-wrap gap-2">
-            {hebrew ? null : (
+            {!drillable ? null : (
               <button type="button" disabled={loaded === null} onClick={() => setDrill('practice')} className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}>
                 Drill it
               </button>
@@ -858,7 +870,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
         />
       ) : null}
       {trying && passage ? <TryItSheet idea={idea} passage={passage} onClose={() => setTrying(false)} /> : null}
-      {letterDrill ? <LetterDrillScreen onClose={() => setLetterDrill(false)} /> : null}
+      {letterDrill ? <LetterDrillScreen lang={lang} onClose={() => setLetterDrill(false)} /> : null}
       {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onDismiss={onDismiss} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
     </div>
   );

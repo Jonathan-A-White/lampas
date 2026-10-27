@@ -23,12 +23,13 @@
 import { MAX_QUESTIONS, PROVED_STREAK, answerWalk, startWalk, unmetNeed as kitUnmetNeed, type DrillResult as KitResult, type Walk, type WalkStep } from 'learn-kit/drill';
 import type { Chapter } from '../chapter';
 import { chosenPronunciation } from '../../speech/greek';
-import { soundRuleOf, type Pronunciation } from '../../speech/pronunciation';
+import { hebrewPronunciationOf, soundRuleOf, type Pronunciation } from '../../speech/pronunciation';
 import { mulberry32, shuffle } from '../quiz';
 import { isSolid } from './inference';
 import { seenKey } from './fetchedItems';
 import { collect, itemSteps, perFacet, questionKey, rng, sideFacet, type DrillContext, type RawStep } from './drillItems';
 import { groupOfItem, type Facet } from './ladder';
+import { hebrewLetterSteps } from './hebrew/drillSteps';
 import { ideaOfAny as ideaOf, ladderFor, ladderLangOf } from './ladders';
 import type { Level } from './needs';
 import { COMPOUND_VERBS, PREPOSITIONS } from './prepositions';
@@ -70,6 +71,9 @@ export interface DrillStep {
   words?: boolean;
 }
 
+/** The pronunciation an idea's sounds are read in: the chosen Greek one, or the Hebrew scheme for a Hebrew idea (mw-gdcyf98.11). */
+const schemeOf = (ideaId: string): Pronunciation => (ladderLangOf(ideaId) === 'hbo' ? hebrewPronunciationOf() : chosenPronunciation());
+
 // ---- The steps ----
 
 /** A preposition by what it means: first against other prepositions' meanings, then against its own other cases too. */
@@ -107,10 +111,10 @@ function passageSteps(ctx: DrillContext): RawStep[] {
  */
 export function drillSteps(ideaId: string, options: DrillOptions = {}): DrillStep[] {
   const idea = ideaOf(ideaId);
-  const ctx: DrillContext = { idea, passage: options.passage ?? [], scheme: options.scheme ?? chosenPronunciation(), seed: options.seed ?? 1 };
+  const ctx: DrillContext = { idea, passage: options.passage ?? [], scheme: options.scheme ?? schemeOf(ideaId), seed: options.seed ?? 1 };
   const unseen = (questions: GrammarQuestion[]): GrammarQuestion[] =>
     options.seen ? questions.filter((q) => !q.ref || !options.seen?.has(seenKey({ prompt: q.prompt, ref: q.ref }))) : questions;
-  const raw = (itemSteps(ctx) ?? prepositionSteps(ctx) ?? compoundSteps(ctx) ?? passageSteps(ctx)).map((r) => ({ ...r, questions: unseen(r.questions) }));
+  const raw = (hebrewLetterSteps(ctx) ?? itemSteps(ctx) ?? prepositionSteps(ctx) ?? compoundSteps(ctx) ?? passageSteps(ctx)).map((r) => ({ ...r, questions: unseen(r.questions) }));
   const own: Facet = { id: idea.id, label: idea.title };
   const kept = raw.filter((r) => r.questions.length > 0);
   // an idea nothing could be asked about is asked by what it says of itself
@@ -265,7 +269,7 @@ export function start(ideaId: string, levels: ReadonlyMap<string, Level>, option
   const needs = unmetNeed(ideaId, levels);
   if (needs !== null) return { needs };
   const steps = drillSteps(ideaId, options);
-  const rule = soundRuleOf(options.scheme ?? chosenPronunciation(), ideaId);
+  const rule = soundRuleOf(options.scheme ?? schemeOf(ideaId), ideaId);
   const required = rule ? rule.sides.map((side) => sideFacet(rule, side).id) : [];
   const walk = startWalk(ladderFor(ladderLangOf(ideaId)).path, ideaId, needLevels(ideaId, levels), kitSteps(steps), { required });
   if ('needs' in walk) return walk;

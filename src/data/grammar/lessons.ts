@@ -8,12 +8,13 @@ import { chosenAccent, type EnglishAccent } from '../../speech/accents';
 import { chosenPronunciation } from '../../speech/greek';
 import { lessonsOf, type Pronunciation, type SoundLesson } from '../../speech/pronunciation';
 import type { GrammarIdea } from './ladder';
+import { isHebrewSoundIdea } from './hebrew/ladder';
 
 const GROUPS: readonly string[] = ['diphthongs', 'consonant-pairs', 'breathings', 'words-sound-alike', 'accents', 'marks-change-word'];
 
 /** An idea whose text or question is about how something sounds: a letter, a pair or a breathing, the group of pairs or of breathings, the words a scheme says
  * alike, the accents (how the stress is said) or the marks that change a word (whether the mark is heard). */
-export const bearsSound = (idea: GrammarIdea): boolean => idea.glyphs !== undefined || idea.parent !== undefined || GROUPS.includes(idea.id);
+export const bearsSound = (idea: GrammarIdea): boolean => idea.glyphs !== undefined || idea.parent !== undefined || GROUPS.includes(idea.id) || isHebrewSoundIdea(idea.id);
 
 /** The lesson `scheme` gives the idea, its sounds said in `accent` (mw-5r3p30.352: the one way a sheet, a tile or a question reads a sound's hint). */
 const lessonOf = (idea: GrammarIdea, scheme: Pronunciation | null, accent: EnglishAccent): SoundLesson | undefined =>

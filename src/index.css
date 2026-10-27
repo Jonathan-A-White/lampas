@@ -769,6 +769,21 @@ textarea,
   line-height: 1.4;
 }
 
+/* A Hebrew glyph or word on a question card (src/GrammarCard.tsx, mw-gdcyf98.11): the sizes the card gives its Greek, text-3xl for a choice and text-5xl for the form. They follow
+ * .script-he, which is unlayered like them, so they win over its own 1.25em and over the utilities, which are layered; a short window takes the smaller choice as the Greek one does. */
+.script-he.hebrew-choice {
+  font-size: 1.875rem;
+}
+.script-he.hebrew-form {
+  font-size: 3rem;
+  line-height: 1.3;
+}
+@media (max-height: 500px) {
+  .script-he.hebrew-choice {
+    font-size: 1.5rem;
+  }
+}
+
 /* The Reader's Hebrew view (src/reader/sourceText.ts, mw-5vvlay.1): the same face at the Greek size the text-size setting scales, in the Reader's own leading; it follows
  * .script-he, which is unlayered like it, so these two win over the utilities that set the same properties on a verse row. */
 .reader-hebrew {

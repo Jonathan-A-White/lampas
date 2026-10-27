@@ -22,7 +22,7 @@ Feature: The Hebrew ladder on the Goal and Placement screens
   Scenario: Placement on the Hebrew ladder places at its foundation
     Given Hebrew is the only language chosen and the Goal screen is open
     When he taps Place me and then Start from the letters
-    Then the placement says "Where you are: solid 0, frontier 0, not yet 0; untested 1"
+    Then the placement says "Where you are: solid 0, frontier 0, not yet 0; untested 44"
     And it says Learn next on the Goal screen opens "The Hebrew alphabet"
 
   Scenario: With both chosen the segment switches ladders and the Greek one is as before

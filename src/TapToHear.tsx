@@ -16,10 +16,10 @@ const languageOf = (text: string): SpeechLanguage => (splitScripts(text).some((p
 
 /** `text` is the Greek (or Hebrew) said on a tap; `letter` says it is a letter or pair asked about by ear (a sound question), whose sound is said (speakSound: a vowel
  * doubled to the Greek voice, a consonant still named; mw-5r3p30.421). */
-export function TapToHear({ text, letter = false }: { text: string; letter?: boolean }) {
+export function TapToHear({ text, letter = false, language: given }: { text: string; letter?: boolean; language?: SpeechLanguage }) {
   const [help, setHelp] = useState<string | null>(null);
   const playing = useWordSaid(text);
-  const language = languageOf(text);
+  const language = given ?? languageOf(text);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const tap = useCallback(() => {

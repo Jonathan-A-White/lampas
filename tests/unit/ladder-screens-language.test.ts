@@ -93,20 +93,22 @@ describe('the Greek screens\' data is what it was', () => {
 describe('the Hebrew ladder on the screens', () => {
   const hebrew = ladderFor('hbo');
 
-  it('holds one idea, the alphabet, found by ideaOfAny', () => {
-    expect(hebrew.ideas.map((i) => i.id)).toEqual(['he-alphabet']);
+  it('holds the 44 ideas of its first three tiers, the alphabet first, found by ideaOfAny', () => {
+    expect(hebrew.ideas).toHaveLength(44);
+    expect(hebrew.ideas[0].id).toBe('he-alphabet');
+    expect(ideaOfAny('he-letter-alef').title).toBe('Alef');
     expect(ideaOfAny('he-alphabet').title).toBe('The Hebrew alphabet');
   });
 
-  it('places at its foundation: one idea, nothing to ask, and the Greek ladder\'s ideas nowhere in it', () => {
+  it('places at its foundation: every idea is of the letters, sounds and marks, nothing to ask, and the Greek ladder\'s ideas nowhere in it', () => {
     const state = startPlacement(null, new Map(), hebrew.ideas.map((i) => i.id), 0, new Map(), 'hbo');
     expect(state.lang).toBe('hbo');
-    expect(state.ideas).toEqual(['he-alphabet']);
+    expect(state.ideas).toEqual(hebrew.ideas.map((i) => i.id));
     expect(state.done).toBe('finished');
     const summary = summarize(state);
-    expect(summary.tiers.map((t) => t.tier)).toEqual(['letters']);
-    expect(summary.total).toBe(1);
-    expect(summary.untested).toBe(1);
+    expect(summary.tiers.map((t) => t.tier)).toEqual(['letters', 'sounds', 'marks']);
+    expect(summary.total).toBe(44);
+    expect(summary.untested).toBe(44);
     expect(answer(state, true)).toBe(state);
   });
 
@@ -121,7 +123,9 @@ describe('the Hebrew ladder on the screens', () => {
 
   it('is told to the tutor in its own titles when the learner\'s grammar is of Hebrew', () => {
     const ideas = orderedIdeas(undefined, new Map([['he-alphabet', 'solid' as const]]), 'hbo');
-    expect(ideas).toEqual([{ id: 'he-alphabet', title: 'The Hebrew alphabet', level: 'solid' }]);
+    expect(ideas).toHaveLength(44);
+    expect(ideas[0]).toEqual({ id: 'he-alphabet', title: 'The Hebrew alphabet', level: 'solid' });
+    expect(ideas.slice(1).every((i) => i.level === 'notYet')).toBe(true);
     const field = learnerGrammarOf({ goal: null, words: { solid: 0, frontier: 0, notYet: 0 }, ideas, placed: false, move: 'none' as never, pickerLevel: 'any' as never, approach: { name: 'x', credit: null, nextLesson: null } });
     expect(field.ideas.solid).toEqual(['The Hebrew alphabet']);
   });

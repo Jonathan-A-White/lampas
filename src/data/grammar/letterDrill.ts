@@ -3,10 +3,16 @@
 // ROUND_SIZE questions. A target is right once he has answered it right; a round asks what is not right yet first and fills a short last round from what is, and a
 // target answered wrong again later is not right any more. The drill is over when every target is right. Nothing here touches the store or the screen
 // (src/LetterDrillScreen.tsx draws it; src/data/repositories/inference.ts noteDrillAnswer keeps what each answer shows, and never makes a letter solid).
+// The drill takes the letters of the ladder in hand (mw-gdcyf98.11, `LetterSet`): Greek's 24 letters, small and capital, as above, or Hebrew's 27 glyphs (the 22 letters and the 5 final forms, one target each),
+// asked from the Israeli scheme's lessons (hebrew/letterQuestions.ts); every function takes the set last and means the Greek one when it is left out. Hebrew has no Say it and no Write it yet.
 import { mulberry32, shuffle, type Random } from '../random';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
+import { hebrewPronunciationOf } from '../../speech/pronunciation';
 import { LADDER, itemsOf, type GrammarIdea } from './ladder';
+import type { LadderLang } from './ladders';
+import { HEBREW_FINALS, HEBREW_LETTERS } from './hebrew/letters';
+import { buildHebrewLetter, buildHebrewSound, type HebrewForm } from './hebrew/letterQuestions';
 import { buildLetter, buildSay, buildSound, type GrammarQuestion, type LetterForm } from './questions';
 
 /** Where a drill gets its seed (src/LetterDrillScreen.tsx): a new one each time it opens. A seam: a feature step fixes it, so it knows the questions. */
@@ -23,9 +29,10 @@ export const SAY_AT = 2;
 
 /** One thing the drill asks: a letter in a form. */
 export interface LetterTarget {
-  /** the letter's ladder id, 'letter-beta' */
+  /** the letter's ladder id, 'letter-beta' or 'he-letter-alef' */
   letter: string;
-  form: LetterForm;
+  /** a Greek letter's small form or capital; a Hebrew letter's ordinary shape ('small') or its final form */
+  form: LetterForm | HebrewForm;
 }
 
 /** Heard (Tap to hear, then tap the glyph), named ('Which letter is Beta?') or said (Say it: the letter is shown and he says its name or its sound, mw-86e9r1.12). */
@@ -42,6 +49,30 @@ export const TARGETS: readonly LetterTarget[] = LETTERS.flatMap((l): LetterTarge
 
 const keyOf = (t: LetterTarget): string => `${t.letter}:${t.form}`;
 
+/** The letters a drill asks, in one language: the ladder idea it is about, its targets and the scheme its sounds are read in. */
+export interface LetterSet {
+  lang: LadderLang;
+  /** the ladder idea the drill is about: 'alphabet', 'he-alphabet' */
+  alphabetId: string;
+  targets: readonly LetterTarget[];
+  /** the scheme the sounds are read in: the chosen Greek pronunciation, the Hebrew scheme */
+  scheme(): Pronunciation;
+}
+
+/** The Greek 24 letters, small and capital (48 targets). */
+export const GREEK_SET: LetterSet = { lang: 'grc', alphabetId: 'alphabet', targets: TARGETS, scheme: chosenPronunciation };
+
+/** The Hebrew 27 glyphs: each of the 22 letters, then each of the 5 final forms (27 targets). */
+export const HEBREW_SET: LetterSet = {
+  lang: 'hbo',
+  alphabetId: 'he-alphabet',
+  targets: [...HEBREW_LETTERS.map((l): LetterTarget => ({ letter: l.id, form: 'small' })), ...HEBREW_FINALS.map((l): LetterTarget => ({ letter: l.id, form: 'final' }))],
+  scheme: () => hebrewPronunciationOf(),
+};
+
+/** The set of the language in hand. */
+export const letterSetOf = (lang: LadderLang): LetterSet => (lang === 'hbo' ? HEBREW_SET : GREEK_SET);
+
 /** What the drill has so far: the targets answered right and the ones last answered wrong (their keys). */
 export interface LetterDrillState {
   right: readonly string[];
@@ -52,13 +83,13 @@ export interface LetterDrillState {
 export const startLetterDrill = (): LetterDrillState => ({ right: [], missed: [] });
 
 /** The targets not right yet, in the order of TARGETS. */
-export const remainingTargets = (state: LetterDrillState): LetterTarget[] => TARGETS.filter((t) => !state.right.includes(keyOf(t)));
+export const remainingTargets = (state: LetterDrillState, set: LetterSet = GREEK_SET): LetterTarget[] => set.targets.filter((t) => !state.right.includes(keyOf(t)));
 
 /** True when every letter is right in both forms. */
-export const isComplete = (state: LetterDrillState): boolean => remainingTargets(state).length === 0;
+export const isComplete = (state: LetterDrillState, set: LetterSet = GREEK_SET): boolean => remainingTargets(state, set).length === 0;
 
-/** How many of the 48 targets are right. */
-export const rightCount = (state: LetterDrillState): number => TARGETS.length - remainingTargets(state).length;
+/** How many of the targets (48 Greek, 27 Hebrew) are right. */
+export const rightCount = (state: LetterDrillState, set: LetterSet = GREEK_SET): number => set.targets.length - remainingTargets(state, set).length;
 
 /** The state after an answer: a right answer makes the target right, a wrong one takes it back. */
 export function answerTarget(state: LetterDrillState, target: LetterTarget, right: boolean): LetterDrillState {
@@ -75,11 +106,19 @@ export interface RoundItem {
 
 const letterOf = (id: string): GrammarIdea => LETTERS.find((l) => l.id === id)!;
 
-/** The question for a target in a mode: heard (buildSound), named (buildLetter, by name) or said (buildSay). */
-export function questionFor(target: LetterTarget, mode: LetterMode, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
-  const ask = { letter: letterOf(target.letter), form: target.form };
+/**
+ * The question for a target in a mode: heard (buildSound), named (buildLetter, by name) or said (buildSay). A Hebrew target is heard, or asked by its name or, by chance, by its sound
+ * (the Israeli scheme's lesson); Hebrew has no Say it yet, so a 'say' is heard.
+ */
+export function questionFor(target: LetterTarget, mode: LetterMode, random: Random, scheme?: Pronunciation, set: LetterSet = GREEK_SET): GrammarQuestion {
+  const read = scheme ?? set.scheme();
+  if (set.lang === 'hbo') {
+    const ask = { letter: HEBREW_LETTERS.find((l) => l.id === target.letter)!, form: target.form as HebrewForm };
+    return mode === 'name' ? buildHebrewLetter(ask, random, read) : buildHebrewSound(ask, random, read);
+  }
+  const ask = { letter: letterOf(target.letter), form: target.form as LetterForm };
   if (mode === 'say') return buildSay(ALPHABET, ask);
-  return mode === 'hear' ? buildSound(ALPHABET, random, scheme, ask) : buildLetter(ALPHABET, random, scheme, { ...ask, byName: true });
+  return mode === 'hear' ? buildSound(ALPHABET, random, read, ask) : buildLetter(ALPHABET, random, read, { ...ask, byName: true });
 }
 
 /**
@@ -87,15 +126,15 @@ export function questionFor(target: LetterTarget, mode: LetterMode, random: Rand
  * than a round are left, so a round is always a full one. Each is heard or named by chance, the two modes alternating from a random start so a round is never all of one.
  * With `say` (the phone can hear him, mw-86e9r1.12) the question at SAY_AT is Say it instead; without it the round is the same as it always was.
  */
-export function drawRound(state: LetterDrillState, random: Random, scheme: Pronunciation = chosenPronunciation(), say = false): RoundItem[] {
-  const missed = shuffle(TARGETS.filter((t) => state.missed.includes(keyOf(t))), random);
-  const fresh = shuffle(remainingTargets(state).filter((t) => !state.missed.includes(keyOf(t))), random);
-  const done = shuffle(TARGETS.filter((t) => state.right.includes(keyOf(t))), random);
+export function drawRound(state: LetterDrillState, random: Random, scheme?: Pronunciation, say = false, set: LetterSet = GREEK_SET): RoundItem[] {
+  const missed = shuffle(set.targets.filter((t) => state.missed.includes(keyOf(t))), random);
+  const fresh = shuffle(remainingTargets(state, set).filter((t) => !state.missed.includes(keyOf(t))), random);
+  const done = shuffle(set.targets.filter((t) => state.right.includes(keyOf(t))), random);
   const targets = [...missed, ...fresh, ...done].slice(0, ROUND_SIZE);
   const start = random() < 0.5 ? 0 : 1;
   return shuffle(targets, random).map((target, i) => {
-    const mode: LetterMode = say && i === SAY_AT ? 'say' : (i + start) % 2 === 0 ? 'hear' : 'name';
-    return { target, mode, question: questionFor(target, mode, random, scheme) };
+    const mode: LetterMode = say && i === SAY_AT && set.lang === 'grc' ? 'say' : (i + start) % 2 === 0 ? 'hear' : 'name';
+    return { target, mode, question: questionFor(target, mode, random, scheme, set) };
   });
 }
 

@@ -571,7 +571,11 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 
 ## The Hebrew ladder
 
-**PROVISIONAL** (mw-gdcyf98.9; the Governor to confirm). Biblical Hebrew has a ladder of its own beside the Greek one, in `src/data/grammar/hebrew/ladder.ts`, with the same idea shape (`GrammarIdea`) and these tiers, easy first: letters, sounds, marks, nouns, pronouns, prepositions, verbs, joiners, sentences. It holds one idea to start, `he-alphabet` (The Hebrew alphabet, tier letters, its card in `src/data/grammar/hebrew/teach/index.ts`); stories g and h add the ideas of the other tiers.
+**PROVISIONAL** (mw-gdcyf98.9; the Governor to confirm). Biblical Hebrew has a ladder of its own beside the Greek one, in `src/data/grammar/hebrew/ladder.ts`, with the same idea shape (`GrammarIdea`) and these tiers, easy first: letters, sounds, marks, nouns, pronouns, prepositions, verbs, joiners, sentences. It holds 44 ideas (mw-gdcyf98.11, below) in the first three tiers; the grammar tiers come with story 12.
+
+**The first three tiers** (mw-gdcyf98.11, PROVISIONAL): 28 ideas of the letters tier (`he-alphabet`, `he-letter-alef` to `he-letter-tav` each resting on the alphabet, `he-final-forms`, the pairs the dagesh makes `he-pair-bet-vet`, `he-pair-kaf-khaf`, `he-pair-pe-fe`, and `he-shin-sin`), 13 of the sounds tier (a vowel point each, `he-vowel-patach` to `he-vowel-shuruq`, `he-vowel-shewa`, `he-dagesh`, `he-mappiq`, `he-furtive-patach`, `he-syllable`) and 3 of the marks tier (`he-maqaf`, `he-cantillation`, `he-ketiv-qere`). The shewa is `he-vowel-shewa`, not `he-shewa`, because the Israeli scheme keys its lesson by that id (`hebrew-israeli-lessons.ts`). Each idea has a card in `hebrew/teach/{letters,sounds,marks}.ts` in the Greek card's shape, with worked words of Genesis 1 and Jonah 1 that `tests/unit/hebrew-ladder.test.ts` reads against `public/data` (a word not in its verse fails the test); the card and the idea's text name no sound, which is the scheme's lesson for the letter or vowel (`lessonsOf(hebrewPronunciationOf())`) shown under How it sounds. The 22 letters are in `hebrew/letters.ts` (name, letter, final form, lesson id, a glyph line; `HEBREW_GLYPHS` is the 27 glyphs the letter drill asks).
+
+**The letter drill and Drill it in Hebrew** (mw-gdcyf98.11). `LetterDrillScreen` takes the language of the idea whose Got it opened it: `letterDrill.ts` `LetterSet` is the Greek 24 letters in two forms (48 targets, as before) or the Hebrew 27 glyphs (22 letters and 5 final forms, one target each), each function taking the set last; the questions are `hebrew/letterQuestions.ts` (a question carries `lang: 'hbo'`, which `GrammarCard` draws right to left in `.script-he` with `.hebrew-choice` / `.hebrew-form`, and Tap to hear says in the Hebrew voice). Hebrew has no Say it, no Write it and keeps no evidence of an answer yet. Drill it is offered on each of the 22 letters (`isHebrewDrillable`): `hebrew/drillSteps.ts` asks its name, the letter from its name or its sound, hearing it or its sound, and which word holds it (the lemmas of the goal's Hebrew chapters, else `HEBREW_DRILL_WORDS`); a Proved drill writes the level and no review row. `drillSeed.next(lang)` takes the idea's language.
 
 `src/data/grammar/ladders.ts` is the one door: `ladderFor('grc' | 'hbo')` answers `{ideas, tiers, teach, terms, foundationTiers, foundation, ideaOf, ideasOf, ideasOfWord}`, and `LADDER_LANGS` names the two. The Greek ladder is `ladder.ts`, unchanged (`LADDER`, `TIERS`, `ideasOf` and the rest are as they were, and now also `ladderFor('grc')`). A Hebrew word has no parsing code yet, so `ideasOf` and `ideasOfWord` of the Hebrew ladder answer none until g and h.
 
@@ -585,6 +589,49 @@ tenses, the stress mark, the diaeresis, the parts of speech) and fails on one it
 | Rung | Tier | Id | Title | Terms | Rests on |
 | --- | --- | --- | --- | --- | --- |
 | 1 | letters | `he-alphabet` | The Hebrew alphabet | – | – |
+| 2 | letters | `he-letter-alef` | Alef | – | `he-alphabet` |
+| 3 | letters | `he-letter-bet` | Bet | – | `he-alphabet` |
+| 4 | letters | `he-letter-gimel` | Gimel | – | `he-alphabet` |
+| 5 | letters | `he-letter-dalet` | Dalet | – | `he-alphabet` |
+| 6 | letters | `he-letter-he` | He | – | `he-alphabet` |
+| 7 | letters | `he-letter-vav` | Vav | – | `he-alphabet` |
+| 8 | letters | `he-letter-zayin` | Zayin | – | `he-alphabet` |
+| 9 | letters | `he-letter-chet` | Chet | – | `he-alphabet` |
+| 10 | letters | `he-letter-tet` | Tet | – | `he-alphabet` |
+| 11 | letters | `he-letter-yod` | Yod | – | `he-alphabet` |
+| 12 | letters | `he-letter-kaf` | Kaf | – | `he-alphabet` |
+| 13 | letters | `he-letter-lamed` | Lamed | – | `he-alphabet` |
+| 14 | letters | `he-letter-mem` | Mem | – | `he-alphabet` |
+| 15 | letters | `he-letter-nun` | Nun | – | `he-alphabet` |
+| 16 | letters | `he-letter-samekh` | Samekh | – | `he-alphabet` |
+| 17 | letters | `he-letter-ayin` | Ayin | – | `he-alphabet` |
+| 18 | letters | `he-letter-pe` | Pe | – | `he-alphabet` |
+| 19 | letters | `he-letter-tsade` | Tsade | – | `he-alphabet` |
+| 20 | letters | `he-letter-qof` | Qof | – | `he-alphabet` |
+| 21 | letters | `he-letter-resh` | Resh | – | `he-alphabet` |
+| 22 | letters | `he-letter-shin` | Shin | – | `he-alphabet` |
+| 23 | letters | `he-letter-tav` | Tav | – | `he-alphabet` |
+| 24 | letters | `he-final-forms` | The final forms | – | `he-letter-kaf`, `he-letter-mem`, `he-letter-nun`, `he-letter-pe`, `he-letter-tsade` |
+| 25 | letters | `he-pair-bet-vet` | Bet and vet | – | `he-letter-bet` |
+| 26 | letters | `he-pair-kaf-khaf` | Kaf and khaf | – | `he-letter-kaf` |
+| 27 | letters | `he-pair-pe-fe` | Pe and fe | – | `he-letter-pe` |
+| 28 | letters | `he-shin-sin` | Shin and sin | – | `he-letter-shin` |
+| 29 | sounds | `he-vowel-patach` | Patach | – | `he-alphabet` |
+| 30 | sounds | `he-vowel-qamats` | Qamats | – | `he-alphabet` |
+| 31 | sounds | `he-vowel-segol` | Segol | – | `he-alphabet` |
+| 32 | sounds | `he-vowel-tsere` | Tsere | – | `he-alphabet` |
+| 33 | sounds | `he-vowel-hiriq` | Hiriq | – | `he-alphabet` |
+| 34 | sounds | `he-vowel-holam` | Holam | – | `he-alphabet` |
+| 35 | sounds | `he-vowel-qubuts` | Qubuts | – | `he-alphabet` |
+| 36 | sounds | `he-vowel-shuruq` | Shuruq | – | `he-alphabet` |
+| 37 | sounds | `he-vowel-shewa` | The shewa | – | `he-vowel-patach`, `he-vowel-qamats`, `he-vowel-segol`, `he-vowel-tsere`, `he-vowel-hiriq`, `he-vowel-holam`, `he-vowel-qubuts`, `he-vowel-shuruq` |
+| 38 | sounds | `he-dagesh` | The dagesh | – | `he-pair-bet-vet`, `he-pair-kaf-khaf`, `he-pair-pe-fe` |
+| 39 | sounds | `he-mappiq` | The mappiq | – | `he-dagesh`, `he-letter-he` |
+| 40 | sounds | `he-furtive-patach` | The furtive patach | – | `he-vowel-patach`, `he-letter-chet`, `he-letter-ayin` |
+| 41 | sounds | `he-syllable` | The syllable | – | `he-vowel-shewa` |
+| 42 | marks | `he-maqaf` | The maqaf | – | `he-syllable` |
+| 43 | marks | `he-cantillation` | The cantillation marks | – | `he-syllable` |
+| 44 | marks | `he-ketiv-qere` | Ketiv and qere | – | `he-cantillation` |
 <!-- ladder-hbo:end -->
 
 ## Approaches

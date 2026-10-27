@@ -15,6 +15,7 @@ import { TapToHear } from './TapToHear';
 import { useSettled } from './ui/settle';
 import { SelfGrade } from './ui/SelfGrade';
 import { GREEK_LANG, greekLang } from './script/greekLang';
+import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 
 const LOOK = {
   idle: 'border-line bg-surface',
@@ -26,6 +27,8 @@ const LOOK = {
 };
 
 const GREEK = /[Ͱ-Ͽἀ-῿]/;
+/** Hebrew letters (a question about Hebrew, mw-gdcyf98.11, draws them right to left in the Hebrew face). */
+const HEBREW = /[\u0590-\u05FF]/;
 
 /** The kinds that show the words of a verse as buttons to tap. */
 const showsVerse = (q: GrammarQuestion): boolean => q.kind === 'tap-form' || q.kind === 'roles' || q.kind === 'tap-use';
@@ -98,7 +101,11 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
         <p data-testid="grammar-prompt" data-idea={question.ideaId} data-kind={question.kind} data-mode={mode} className="text-xl font-medium">
           <GreekRuns text={question.prompt} size="text-3xl" />
         </p>
-        {question.form ? (
+        {question.form && question.lang === 'hbo' ? (
+          <p data-testid="grammar-form" {...HEBREW_LANG_ATTRS} dir="rtl" className="mt-3 min-w-0 break-words script-he hebrew-form">
+            {question.form}
+          </p>
+        ) : question.form ? (
           <p data-testid="grammar-form" {...GREEK_LANG} className={`mt-3 min-w-0 break-words font-greek ${question.kind === 'meaning' && question.form.length > 16 ? 'text-4xl' : 'text-5xl'}`}>
             <MarkedForm form={question.form} span={question.span} />
           </p>
@@ -115,7 +122,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
       </div>
       {question.say ? (
         <div className="mt-4">
-          <TapToHear text={question.say} letter={question.kind === 'sound'} />
+          <TapToHear text={question.say} letter={question.kind === 'sound'} language={question.lang === 'hbo' ? 'hebrew' : undefined} />
         </div>
       ) : null}
     </>
@@ -166,6 +173,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
   const buttons = question.options.map((option, i) => {
     const look = lookOf(option, i);
     const greek = GREEK.test(option);
+    const hebrew = question.lang === 'hbo' && HEBREW.test(option);
     return (
       <button
         key={i}
@@ -173,7 +181,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
         data-option
         data-taken={look === 'taken' ? '' : undefined}
         data-result={look === 'right' || look === 'wrong' ? look : undefined}
-        {...greekLang(greek)}
+        {...(hebrew ? { ...HEBREW_LANG_ATTRS, dir: 'rtl' as const } : greekLang(greek))}
         disabled={answered || taken?.has(i)}
         onClick={() => {
           if (!settled()) return;
@@ -183,7 +191,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
         className={`${LOOK[look]} rounded-xl border ${look === 'taken' ? 'disabled:opacity-40' : 'disabled:opacity-100'} ${
           tapForm
             ? 'min-h-12 min-w-12 px-3 font-greek text-2xl'
-            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : 'text-left text-lg'}`
+            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : hebrew ? 'script-he hebrew-choice' : 'text-left text-lg'}`
         }`}
       >
         {option}
