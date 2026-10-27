@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.13
+_2026-10-27_
+- New: You can now read Old Testament verses aloud in Hebrew, starting from the easiest verse to say, and get them checked.
+
 ## 0.5.12
 _2026-10-27_
 - New: You can now learn Old Testament verses by heart in Hebrew, read right to left, saying or typing them and being checked on the letters.
