@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.5.11",
+    "date": "2026-10-27",
+    "story": "mw-gdcyf98.24",
+    "kind": "new",
+    "text": "You can now learn the IPA sounds of Hebrew too, as an optional lesson on the Goal screen, and a new IPA lesson setting turns the optional lessons off."
+  },
+  {
     "version": "0.5.10",
     "date": "2026-10-27",
     "story": "mw-gdcyf98.12",

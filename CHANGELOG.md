@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.11
+_2026-10-27_
+- New: You can now learn the IPA sounds of Hebrew too, as an optional lesson on the Goal screen, and a new IPA lesson setting turns the optional lessons off.
+
 ## 0.5.10
 _2026-10-27_
 - New: The Hebrew lessons now go past the letters to nouns, pronouns, prepositions, verbs and sentences, twenty-six new cards with words from Genesis 1 and Jonah 1.
