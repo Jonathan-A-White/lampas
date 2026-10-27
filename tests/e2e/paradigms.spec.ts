@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { LADDER } from '../../src/data/grammar/ladder';
-import { PARADIGMS } from '../../src/data/paradigms';
+import { paradigmsIn } from '../../src/data/paradigms';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
@@ -232,11 +232,12 @@ async function sweep(page: Page, ids: string[], size: keyof typeof SIZES): Promi
   return found;
 }
 
-const ALL = PARADIGMS.map((table) => table.id);
+// the Greek tables; the Hebrew ones are swept in tests/e2e/hebrew-paradigms.spec.ts
+const ALL = paradigmsIn('grc').map((table) => table.id);
 
 test('mw-svw421.15: a six-column table prints no Greek over the next column at 390 px', async ({ page }) => {
   await openAllSolid(page);
-  const sixColumns = PARADIGMS.filter((table) => table.columns.length >= 6).map((table) => table.id);
+  const sixColumns = paradigmsIn('grc').filter((table) => table.columns.length >= 6).map((table) => table.id);
   expect(sixColumns).toEqual(expect.arrayContaining(['article', 'adjective-endings', 'pronouns-demonstrative-relative']));
   expect(await sweep(page, sixColumns, 'Normal')).toEqual([]);
   await page.goto('/#/paradigms?t=adjective-endings&mode=learn');
