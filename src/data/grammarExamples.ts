@@ -1,6 +1,7 @@
-// src/data/grammarExamples.ts — the examples a Grammar sheet shows: words of the chapter whose parsing has the term.
-import type { Chapter, GreekWord } from './chapter';
-import { parseSegments } from './parseCode';
+// src/data/grammarExamples.ts — the examples a Grammar sheet shows: words of the chapter whose parsing has the term. The chapter's own language decides which terms its parsings are cut
+// into: the Greek ones (GRAMMAR_TERMS) or, for a Hebrew chapter, the Hebrew parsing terms (hebrew/terms.ts, mw-gdcyf98.12).
+import { sourceLanguage, type Chapter, type GreekWord } from './chapter';
+import { hebrewParseSegments, parseSegments } from './parseCode';
 
 export interface GrammarExample {
   word: GreekWord;
@@ -14,11 +15,12 @@ export const MAX_EXAMPLES = 3;
  * as a whole term, so middle does not find 'middle or passive'. The lemma of `except` (the word he is looking at) is left out:
  * it is no example of itself. */
 export function grammarExamples(chapter: Chapter, term: string, except?: GreekWord, max = MAX_EXAMPLES): GrammarExample[] {
+  const cut = sourceLanguage(chapter) === 'hbo' ? hebrewParseSegments : parseSegments;
   const has = new Map<string, boolean>();
   const hasTerm = (code: string): boolean => {
     let found = has.get(code);
     if (found === undefined) {
-      found = parseSegments(chapter.parse[code] ?? '').some((s) => s.term === term);
+      found = cut(chapter.parse[code] ?? '').some((s) => s.term === term);
       has.set(code, found);
     }
     return found;

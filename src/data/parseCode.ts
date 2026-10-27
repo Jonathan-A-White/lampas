@@ -3,6 +3,7 @@
 // new source release that adds one fails the data build instead of shipping a guess. A Hebrew word's parsing is decoded by the data build into the chapter's own
 // parse map (docs/data.md), so only the way the word sheet cuts it (parseSegments) knows the language.
 import type { SourceLanguage } from './chapter';
+import { HEBREW_TERMS } from './grammar/hebrew/terms';
 
 const WORDS: Record<string, string> = {
   PREP: 'preposition',
@@ -290,20 +291,17 @@ export interface ParseSegment {
 
 const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // The longest term first, so 'middle or passive deponent' is one term and not 'middle' and 'passive deponent'.
-const TERM_PATTERN = new RegExp(
-  `(?<![A-Za-z0-9])(${[...GRAMMAR_TERMS].sort((a, b) => b.length - a.length).map(escape).join('|')})(?![A-Za-z0-9])`,
-  'g',
-);
+const patternOf = (terms: readonly string[]): RegExp =>
+  new RegExp(`(?<![A-Za-z0-9])(${[...terms].sort((a, b) => b.length - a.length).map(escape).join('|')})(?![A-Za-z0-9])`, 'g');
+const TERM_PATTERN = patternOf(GRAMMAR_TERMS);
+// The longest first here too: 'Infinitive construct' is one term and not 'Infinitive' and 'construct', 'Conjunctive waw' not 'Conjunctive' and 'waw'.
+const HEBREW_TERM_PATTERN = patternOf(HEBREW_TERMS);
 
-/** A decoded parsing ('verb, present active indicative, 3rd person singular') cut into its terms and the text between them; the
- * segments' texts joined are the parsing itself. A Hebrew word's parsing (`language` 'hbo') is one plain stretch, no term a link. */
-export function parseSegments(decoded: string, language: SourceLanguage = 'grc'): ParseSegment[] {
-  // A Hebrew parsing arrives decoded in the chapter's own parse map ('Verb - Qal - Perfect - third person masculine singular'); the Grammar sheet explains Greek terms only
-  // (Hebrew grammar is a later story of the epic, mw-5vvlay), so no word of it is a link
-  if (language === 'hbo') return decoded === '' ? [] : [{ text: decoded }];
+/** A decoded parsing cut at the terms `pattern` finds, with the text between them. */
+function cutAt(decoded: string, pattern: RegExp): ParseSegment[] {
   const out: ParseSegment[] = [];
   let at = 0;
-  for (const m of decoded.matchAll(TERM_PATTERN)) {
+  for (const m of decoded.matchAll(pattern)) {
     if (m.index > at) out.push({ text: decoded.slice(at, m.index) });
     out.push({ text: m[0], term: m[0] });
     at = m.index + m[0].length;
@@ -311,3 +309,16 @@ export function parseSegments(decoded: string, language: SourceLanguage = 'grc')
   if (at < decoded.length) out.push({ text: decoded.slice(at) });
   return out;
 }
+
+/** A decoded parsing ('verb, present active indicative, 3rd person singular') cut into its terms and the text between them; the
+ * segments' texts joined are the parsing itself. A Hebrew word's parsing (`language` 'hbo') is one plain stretch, no term a link: the word sheet draws it so until
+ * story j2 wires its links to the Grammar sheet (hebrewParseSegments is the cut it will draw). */
+export function parseSegments(decoded: string, language: SourceLanguage = 'grc'): ParseSegment[] {
+  // A Hebrew parsing arrives decoded in the chapter's own parse map ('Verb - Qal - Perfect - third person masculine singular'); its terms are the Hebrew table's (hebrew/terms.ts)
+  if (language === 'hbo') return decoded === '' ? [] : [{ text: decoded }];
+  return cutAt(decoded, TERM_PATTERN);
+}
+
+/** A Hebrew parsing as the chapter's parse map has it ('Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular') cut into its terms
+ * (hebrew/terms.ts, ladderFor('hbo').terms) and the text between them, as a Greek parsing is: each term belongs to one idea of the Hebrew ladder. */
+export const hebrewParseSegments = (decoded: string): ParseSegment[] => cutAt(decoded, HEBREW_TERM_PATTERN);
