@@ -1,6 +1,8 @@
 // src/data/grammar/teach/prepositions.ts — the cards of the prepositions tier (mw-5r3p30.234): the preposition, and each of the twelve made from its
 // lesson in src/data/grammar/prepositions.ts (how it is spelt, each case it takes with its meaning and a real phrase), so the card and the questions
-// teach the same thing. A preposition that 1 John 1:1 or John 1:1 has is worked on that verse's phrase first.
+// teach the same thing. A preposition that 1 John 1:1 or John 1:1 has is worked on that verse's phrase first. The preposition draws Ἐν ἀρχῇ as a
+// sentence diagram (mw-5r3p30.792).
+import { greek, hang, prep, slot } from '../../../diagram/handwritten';
 import { bookOf } from '../../books';
 import { PREPOSITIONS, type Preposition, type PrepUse } from '../prepositions';
 import type { Teach, WorkedExample } from './types';
@@ -81,6 +83,15 @@ const PREPOSITION: Teach = {
     caption: 'The twelve commonest prepositions',
     columns: ['spelt', 'with the genitive', 'with the dative', 'with the accusative'],
     rows: PREPOSITIONS.map((p) => ({ label: p.greek, cells: [spellings(p), ...CASES.map((c) => p.uses.find((u) => u.case === c)?.meaning ?? '')] })),
+  },
+  // Ἐν ἀρχῇ ἦν ὁ λόγος, “in the beginning was the Word”: Ἐν on the slanted line under ἦν, ἀρχῇ its object on the level line
+  diagram: {
+    reference: 'John 1:1',
+    verse: { book: 'jhn', chapter: 1, verse: 1 },
+    mode: 'greek',
+    words: greek([0, 'Ἐν'], [1, 'ἀρχῇ'], [2, 'ἦν'], [3, 'ὁ'], [4, 'λόγος']),
+    diagram: { clauses: [{ clause: { subject: slot([4], [hang(3)]), verb: slot([2], [prep(0, slot([1]))]) } }] },
+    lit: [0, 1],
   },
   worked: [ON_HIS_VERSE.apo, ON_HIS_VERSE.en],
 };

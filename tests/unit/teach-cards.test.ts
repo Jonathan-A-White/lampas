@@ -7,6 +7,7 @@ import { foundationOf } from '../../src/data/grammar/inference';
 import { LADDER, ideaOf, ideasBelow, type GrammarIdea } from '../../src/data/grammar/ladder';
 import { cardTexts, stepsOf, teachOf } from '../../src/data/grammar/teach';
 import { validateDiagram } from '../../src/diagram/validate';
+import type { Clause, Diagram, Modifier, TokenRef } from '../../src/diagram/types';
 import { ideaChoice } from '../../src/data/grammar/lessons';
 import { DEFAULT_PRONUNCIATION, pronunciationOf } from '../../src/speech/pronunciation';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -126,14 +127,16 @@ describe('a worked example that names its verse', () => {
 });
 
 describe('a card that draws its idea in a sentence diagram (mw-5r3p30.791)', () => {
-  /** the cards that carry one; the other parts of speech are the next story's */
-  const DRAWN = ['noun', 'case-nominative', 'case-accusative', 'case-genitive', 'case-dative'];
+  /** the nine other parts of speech (mw-5r3p30.792) */
+  const PARTS = ['conjunction', 'article', 'adjective', 'pronoun', 'preposition', 'verb', 'mood-infinitive', 'mood-participle', 'adverb'];
+  /** the cards that carry one */
+  const DRAWN = ['noun', 'case-nominative', 'case-accusative', 'case-genitive', 'case-dative', ...PARTS];
   const drawn = LADDER.filter((i) => teachOf(i.id).diagram);
   /** a verse's word as the diagram's request strips it (src/diagram/request.ts): no marks at its edges, an elision's apostrophe kept */
   const bare = (t: string) => t.replace(/^[^\p{L}\p{M}\p{N}']+|[^\p{L}\p{M}\p{N}']+$/gu, '').normalize('NFC');
 
-  it('is drawn on the noun and the four cases', () => {
-    expect(drawn.map((i) => i.id)).toEqual(expect.arrayContaining(DRAWN));
+  it('is drawn on the noun, the four cases and the nine other parts of speech', () => {
+    expect(DRAWN.filter((id) => !teachOf(id).diagram)).toEqual([]);
   });
 
   it('keeps every word once in its tree, and lights only its own words, at least one', () => {
@@ -180,6 +183,97 @@ describe('a card that draws its idea in a sentence diagram (mw-5r3p30.791)', () 
     expect(teachOf('case-accusative').diagram!.lit).toEqual(indexes(accusative.slot));
     expect(litWords('noun').length).toBeGreaterThanOrEqual(2);
     for (const id of ['case-genitive', 'case-dative']) expect(litWords(id), id).toHaveLength(1);
+  });
+
+  /** Where each word of a diagram sits: the verb lines, the places of a noun (subjects and complements), the words hung on a slanted line (and those
+   * hung straight under a verb), the prepositions with their objects, and the joiners of clauses. */
+  const placesOf = (diagram: Diagram) => {
+    const at = {
+      verbs: [] as number[][],
+      nounPlaces: [] as number[],
+      hung: [] as number[],
+      underVerb: [] as number[],
+      preps: [] as number[][],
+      joiners: [] as number[],
+    };
+    const ids = (refs: TokenRef[]) => refs.flatMap((r) => ('i' in r ? [r.i] : []));
+    const modifiers = (list: Modifier[], underVerb: boolean): void => {
+      for (const m of list) {
+        if (m.kind === 'word') {
+          at.hung.push(...ids([m.word]));
+          if (underVerb) at.underVerb.push(...ids([m.word]));
+          modifiers(m.modifiers, false);
+        } else if (m.kind === 'prepositional') {
+          at.preps.push([...ids([m.preposition]), ...ids(m.object.words)]);
+          at.nounPlaces.push(...ids(m.object.words));
+          modifiers(m.object.modifiers, false);
+        } else {
+          at.joiners.push(...ids(m.connector ? [m.connector] : []));
+          clause(m.clause);
+        }
+      }
+    };
+    const clause = (c: Clause): void => {
+      at.verbs.push(ids(c.verb.words));
+      at.nounPlaces.push(...ids(c.subject.words), ...ids(c.complement?.slot.words ?? []));
+      modifiers(c.subject.modifiers, false);
+      modifiers(c.verb.modifiers, true);
+      modifiers(c.complement?.slot.modifiers ?? [], false);
+    };
+    for (const entry of diagram.clauses) {
+      at.joiners.push(...ids(entry.joinedBy ? [entry.joinedBy] : []));
+      clause(entry.clause);
+    }
+    return at;
+  };
+
+  it('lights each part of speech in its place: the joiner of two clauses, the article and adjective hung under their noun, a preposition with its object, the verb line, the infinitive and participle in a noun\'s place, the adverb under the verb', () => {
+    const wrong: string[] = [];
+    const check = (id: string, ok: (lit: number[], at: ReturnType<typeof placesOf>) => boolean, what: string) => {
+      const card = teachOf(id).diagram;
+      if (!card || !ok([...card.lit].sort((a, b) => a - b), placesOf(card.diagram))) wrong.push(`${id}: lights ${card?.lit.join(', ') ?? 'nothing'}, not ${what}`);
+    };
+    const sorted = (list: number[]) => [...list].sort((a, b) => a - b).join();
+    check('conjunction', (lit, at) => at.joiners.length > 0 && sorted(lit) === sorted(at.joiners), 'the joiner of two clauses');
+    check('article', (lit, at) => lit.every((i) => at.hung.includes(i)), 'the articles hung under their nouns');
+    check('adjective', (lit, at) => lit.every((i) => at.hung.includes(i) && !at.underVerb.includes(i)), 'an adjective hung under its noun');
+    check('pronoun', (lit) => lit.length > 0, 'its pronouns');
+    check('preposition', (lit, at) => at.preps.some((p) => sorted(p) === sorted(lit)), 'a preposition with its object');
+    check('verb', (lit, at) => at.verbs.some((v) => sorted(v) === sorted(lit)), 'the verb line');
+    for (const id of ['mood-infinitive', 'mood-participle']) check(id, (lit, at) => lit.length === 1 && at.nounPlaces.includes(lit[0]), 'its word in a noun\'s place');
+    check('adverb', (lit, at) => lit.length > 0 && lit.every((i) => at.underVerb.includes(i)), 'the adverb hung under the verb');
+    expect(wrong).toEqual([]);
+  });
+
+  it('lights words the verse\'s parsing names as that part of speech', async () => {
+    /** Robinson's parsing codes (src/data/parseCode.ts): a finite verb has a mood of I, S, O or M; the infinitive's is N, the participle's P */
+    const AS: Record<string, RegExp> = {
+      conjunction: /^CONJ$/,
+      article: /^T-/,
+      adjective: /^A-/,
+      pronoun: /^P-/,
+      preposition: /^(PREP|N-.*)$/,
+      verb: /^V-2?[A-Z]{2}[ISOM]-/,
+      'mood-infinitive': /^V-2?[A-Z]{2}N$/,
+      'mood-participle': /^V-2?[A-Z]{2}P-/,
+      adverb: /^ADV$/,
+    };
+    stubChapterFetch();
+    const wrong: string[] = [];
+    for (const id of PARTS) {
+      const card = teachOf(id).diagram;
+      if (!card) {
+        wrong.push(`${id}: no diagram`);
+        continue;
+      }
+      const verse = (await loadChapter(card.verse.book, card.verse.chapter)).verses.find((v) => v.n === card.verse.verse);
+      for (const i of card.lit) {
+        const word = card.words[i];
+        const code = word && 'word' in word ? verse?.g[word.word]?.p : undefined;
+        if (!code || !AS[id].test(code)) wrong.push(`${id}: ${word?.text} is ${code}`);
+      }
+    }
+    expect(wrong).toEqual([]);
   });
 
   it('gives its reference among the card\'s texts', () => {

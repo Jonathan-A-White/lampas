@@ -1,5 +1,7 @@
 // src/data/grammar/teach/joiners.ts — the cards of the joiners tier (mw-5r3p30.234): particles, adverbs, question words, "if", interjections, the
-// spellings borrowed from Athens and from poetry, two words run together, and the words kept from Aramaic and Hebrew.
+// spellings borrowed from Athens and from poetry, two words run together, and the words kept from Aramaic and Hebrew. The adverb draws a verse as a
+// sentence diagram, the adverb lit under its verb (mw-5r3p30.792).
+import { greek, hang, prep, slot } from '../../../diagram/handwritten';
 import type { Teach } from './types';
 
 export const JOINERS: Record<string, Teach> = {
@@ -21,6 +23,15 @@ export const JOINERS: Record<string, Teach> = {
     whatItIs: 'An adverb tells how, when, where or how much: quickly, now, here, so, truly. Example: in “he ought to walk so”, so is the adverb.',
     howToSpot:
       'Many end in -ως, from an adjective: καλῶς “well”, ἀληθῶς “truly”, οὕτως “so, in this way”. Others you learn by sight: νῦν “now”, ἤδη “already”, ἐκεῖ “there”, πάλιν “again”. An adverb never changes its ending.',
+    // ἀληθῶς ἐν τούτῳ ἡ ἀγάπη τοῦ θεοῦ τετελείωται, “truly in him the love of God is made complete”: ἀληθῶς hangs under the verb and says how
+    diagram: {
+      reference: '1 John 2:5',
+      verse: { book: '1jn', chapter: 2, verse: 5 },
+      mode: 'greek',
+      words: greek([7, 'ἀληθῶς'], [8, 'ἐν'], [9, 'τούτῳ'], [10, 'ἡ'], [11, 'ἀγάπη'], [12, 'τοῦ'], [13, 'θεοῦ'], [14, 'τετελείωται']),
+      diagram: { clauses: [{ clause: { subject: slot([4], [hang(3), hang(6, [hang(5)])]), verb: slot([7], [hang(0), prep(1, slot([2]))]) } }] },
+      lit: [0],
+    },
     worked: [
       {
         word: 'οὕτως',

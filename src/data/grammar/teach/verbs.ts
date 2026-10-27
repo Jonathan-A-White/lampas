@@ -1,6 +1,8 @@
 // src/data/grammar/teach/verbs.ts — the cards of the verbs tier (mw-5r3p30.234): the verb, compound verbs, each tense with its endings, the voices
 // and the deponents, and the moods. A tense's table is its endings for I, you, he, we, you, they; a card names a voice or a mood only once a card
-// below it has taught it.
+// below it has taught it. The verb, the infinitive and the participle each draw a verse as a sentence diagram, the word they teach lit in its place
+// (mw-5r3p30.792).
+import { greek, hang, prep, slot } from '../../../diagram/handwritten';
 import type { Teach, TeachTable } from './types';
 
 const PERSONS = ['I', 'you (one)', 'he, she, it', 'we', 'you (many)', 'they'];
@@ -21,6 +23,15 @@ export const VERBS: Record<string, Teach> = {
     whatItIs: 'A verb says what someone does or what happens: write, see, love, be. Every sentence has one. Example: in “We have seen it”, “have seen” is the verb.',
     howToSpot:
       'A Greek verb is a stem with an ending, and the ending tells who does it (the person) and how many (the number): λέγω “I say”, λέγεις “you say”, λέγει “he says”, λέγομεν “we say”, λέγετε “you say”, λέγουσι(ν) “they say”. So one Greek word is often a whole English sentence. A dictionary lists a verb under its “I” form: λέγω.',
+    // ὁ λόγος ἦν πρὸς τὸν θεόν, “the Word was with God”: ἦν on the base line, right of the bar
+    diagram: {
+      reference: 'John 1:1',
+      verse: { book: 'jhn', chapter: 1, verse: 1 },
+      mode: 'greek',
+      words: greek([6, 'ὁ'], [7, 'λόγος'], [8, 'ἦν'], [9, 'πρὸς'], [10, 'τὸν'], [11, 'θεόν']),
+      diagram: { clauses: [{ clause: { subject: slot([1], [hang(0)]), verb: slot([2], [prep(3, slot([5], [hang(4)]))]) } }] },
+      lit: [2],
+    },
     worked: [
       {
         word: 'ἀκηκόαμεν',
@@ -452,6 +463,16 @@ export const VERBS: Record<string, Teach> = {
         { label: 'to love', cells: ['-αν', 'ἀγαπᾶν'] },
       ],
     },
+    // τὸ γὰρ θέλειν παράκειταί μοι, “for to will is present with me”: θέλειν, with τὸ, stands where a noun would, as the subject; γὰρ, which joins this
+    // sentence to the one before, is left out
+    diagram: {
+      reference: 'Romans 7:18',
+      verse: { book: 'rom', chapter: 7, verse: 18 },
+      mode: 'greek',
+      words: greek([14, 'τὸ'], [16, 'θέλειν'], [17, 'παράκειταί'], [18, 'μοι']),
+      diagram: { clauses: [{ clause: { subject: slot([1], [hang(0)]), verb: slot([2], [hang(3)]) } }] },
+      lit: [1],
+    },
     worked: [
       {
         word: 'περιπατεῖν',
@@ -474,6 +495,18 @@ export const VERBS: Record<string, Teach> = {
         { label: 'with -ως', cells: ['-ως, -οτος, -οτες, -οτας', '-υια', '-ος'] },
         { label: 'with θ', cells: ['-θεις, -θεντος, -θεντες', '-θεισα', '-θεν'] },
       ],
+    },
+    // Ὁ πιστεύων εἰς τὸν υἱὸν ἔχει ζωὴν αἰώνιον, “the one who believes in the Son has eternal life”: πιστεύων, with Ὁ, is the subject, and εἰς τὸν
+    // υἱὸν hangs under it, since it says whom he believes in
+    diagram: {
+      reference: 'John 3:36',
+      verse: { book: 'jhn', chapter: 3, verse: 36 },
+      mode: 'greek',
+      words: greek([0, 'Ὁ'], [1, 'πιστεύων'], [2, 'εἰς'], [3, 'τὸν'], [4, 'υἱὸν'], [5, 'ἔχει'], [6, 'ζωὴν'], [7, 'αἰώνιον']),
+      diagram: {
+        clauses: [{ clause: { subject: slot([1], [hang(0), prep(2, slot([4], [hang(3)]))]), verb: slot([5]), complement: { kind: 'direct-object', slot: slot([6], [hang(7)]) } } }],
+      },
+      lit: [1],
     },
     worked: [
       {

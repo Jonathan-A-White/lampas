@@ -195,3 +195,36 @@ test('the genitive card draws a verse as a sentence diagram under "In a diagram"
   await expect(idea.getByRole('heading', { name: 'In a diagram' })).toHaveCount(0);
   await expect(idea.getByTestId('idea-diagram')).toHaveCount(0);
 });
+
+test('the verb and the preposition each draw a verse under "In a diagram", their part of speech lit, inside the phone\'s width (mw-5r3p30.792)', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await put(page, [{ key: 'goal', value: '1 John 1:1' }]);
+  await page.reload();
+  await page.getByTestId('goal-strip').click();
+  await page.getByTestId('ideas-bar').click();
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
+  const cards = [
+    { title: 'The verb', lit: ['ἦν'], shot: 'idea-sheet-diagram-verb' },
+    { title: 'The preposition', lit: ['Ἐν', 'ἀρχῇ'], shot: 'idea-sheet-diagram-preposition' },
+  ];
+  for (const card of cards) {
+    await page.getByTestId('ideas-list').getByRole('button', { name: card.title, exact: true }).click();
+    await expect(idea.getByRole('heading', { name: card.title, exact: true })).toBeVisible();
+    await expect(idea.getByRole('heading', { name: 'In a diagram', exact: true })).toBeVisible();
+    const drawn = idea.getByTestId('idea-diagram');
+    await drawn.scrollIntoViewIfNeeded();
+    await expect(drawn.getByRole('img', { name: 'Sentence diagram of John 1:1, Greek' })).toBeVisible();
+    await expect(drawn.locator('button[data-lit]')).toHaveCount(card.lit.length);
+    for (const word of card.lit) await expect(drawn.locator('button[data-lit]', { hasText: word })).toBeVisible();
+    const box = await drawn.boundingBox();
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+    const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
+    expect(fits.w).toBeLessThanOrEqual(fits.c);
+    await shot(page, card.shot);
+    await idea.getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(idea).toHaveCount(0);
+  }
+});
