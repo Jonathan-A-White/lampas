@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.7
+_2026-10-27_
+- New: The Verse view now shows an Old Testament verse in Hebrew, right to left, and Listen reads it in a Hebrew voice, when you open it from the Hebrew view.
+
 ## 0.5.5
 _2026-10-27_
 - New: The Goal and Placement screens now work for Hebrew, with a Greek | Hebrew switch when you read both, and The Hebrew alphabet can be learned or marked known there.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.5.7",
+    "date": "2026-10-27",
+    "story": "mw-gdcyf98.4",
+    "kind": "new",
+    "text": "The Verse view now shows an Old Testament verse in Hebrew, right to left, and Listen reads it in a Hebrew voice, when you open it from the Hebrew view."
+  },
+  {
     "version": "0.5.5",
     "date": "2026-10-27",
     "story": "mw-gdcyf98.10",
