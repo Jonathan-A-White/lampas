@@ -10,7 +10,6 @@ import { VersePlay } from '../speech/ReadControls';
 import type { Lookup } from '../WordSheet';
 import { READING_CLASS, textClass } from './textClass';
 import { VerseNumber, VerseText, type VerseProps, type VerseTalk } from './VerseText';
-import { langOf } from '../script/greekLang';
 import { isOrdered, rowAttrs } from './sourceText';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 
@@ -105,9 +104,11 @@ export function SectionHeading({ text, onOpen, onCopy, mirrored }: { text: strin
  * block, each a [data-passage-text] with the Reader's face, size and leading, so src/index.css sets the book look and the weave's roomy lines block by block as it
  * does in the Reader. Each verse has a small number before it and the one being read is highlighted; the reading is followed down the box the view scrolls the
  * passage in (data-passage-box), by moving that box and nothing else. Each verse is the Reader's own VerseText, so the weave and the tappable words follow it. */
-export function PassageText({ passage, view, layout, wovenOf, reading, onLook }: {
+export function PassageText({ passage, view, source = 'grc', layout, wovenOf, reading, onLook }: {
   passage: Passage;
   view: ReaderView;
+  /** the language of the chapter's own words: a Hebrew chapter's blocks are tagged he and run right to left in the source view, not el */
+  source?: SourceLanguage;
   layout: ReadingLayout;
   wovenOf: (verse: Verse) => WovenVerse | null;
   reading: number | null;
@@ -125,11 +126,11 @@ export function PassageText({ passage, view, layout, wovenOf, reading, onLook }:
   return (
     <div ref={box} data-passage={passage.first}>
       {blocksOf(passage.verses, layout).map((block) => (
-        <p key={block[0].n} data-passage-text {...langOf(view === 'greek')} className={`break-words leading-(--lp-leading) ${layout === 'paragraph' ? 'mb-2' : 'mb-1'} ${textClass(view)}`}>
+        <p key={block[0].n} data-passage-text {...rowAttrs(view, source, isOrdered(passage.verses.map(wovenOf)))} className={`break-words leading-(--lp-leading) ${layout === 'paragraph' ? 'mb-2' : 'mb-1'} ${textClass(view, source)}`}>
           {block.map((verse) => (
             <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
               <sup data-passage-number className="mr-1 font-sans text-xs font-semibold leading-[0] text-muted">{verse.n}</sup>
-              <VerseText verse={verse} view={view} woven={wovenOf(verse)} onLook={onLook} />
+              <VerseText verse={verse} view={view} source={source} woven={wovenOf(verse)} onLook={onLook} />
             </span>
           ))}
         </p>

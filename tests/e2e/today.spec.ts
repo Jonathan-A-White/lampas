@@ -234,9 +234,10 @@ test('the plan row offers Read in Logos only with Logos on and Listen in Audible
   await openToday(page, [{ key: 'readingPlan', value: 'on' }, planAt('gen', 1)]);
   const plan = piece(page, 'Reading plan');
   await expect(plan).toContainText('Next: Genesis 1');
-  // neither is on: nothing to open, and the way to turn them on
+  // neither is on: no link to open; an Old Testament chapter is read in Lampas (mw-gdcyf98.4), so it has no 'Turn on Logos to read it' either
   await expect(plan.getByRole('link')).toHaveCount(0);
-  await expect(plan.getByRole('button', { name: 'Turn on Logos to read it' })).toBeVisible();
+  await expect(plan.getByRole('button', { name: 'Read in Lampas' })).toBeVisible();
+  await expect(plan.getByRole('button', { name: 'Turn on Logos to read it' })).toHaveCount(0);
 
   await putSettings(page, [{ key: 'resource.logos', value: 'on' }]);
   await page.reload();

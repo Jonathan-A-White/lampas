@@ -1,7 +1,7 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable); under it one row of actions (Listen, Read it aloud,
-// Ask the tutor, Quiz me, Diagram and Copy link; an Old Testament verse, read in English, has no Quiz me or Diagram, mw-uqlxea.3; its Ask the tutor sends the Hebrew, mw-5vvlay.3); then what the chosen action shows; and at the foot ONE control
+// Ask the tutor, Quiz me, Diagram and Copy link; an Old Testament verse has no Quiz me or Diagram, mw-uqlxea.3, and no Read it aloud in the Hebrew view, mw-gdcyf98.4; its Ask the tutor sends the Hebrew, mw-5vvlay.3; the verse is drawn in the Reader's view, the Hebrew big and right to left); then what the chosen action shows; and at the foot ONE control
 // that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar), or for Ask the tutor voice-kit's Composer
 // (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar with his words above it, and Type a question beneath). Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
@@ -44,7 +44,7 @@ import { SendOff } from './plan/SendOff';
 import { useSendOff } from './plan/useSendOff';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
-import { langOf } from './script/greekLang';
+import { isOrdered, rowAttrs } from './reader/sourceText';
 import type { WovenVerse } from './data/weave';
 import type { WovenReading } from './services/reading';
 
@@ -136,8 +136,11 @@ export function VerseView(props: VerseViewProps) {
   const copyUnit = useMemo(() => copyUnitOf(chapterText, verse, { view, woven: wovenChapter ?? null }), [chapterText, verse, view, wovenChapter]);
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
-  const big = view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
-  const size = view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
+  // A Hebrew verse is set as big as the Greek one, in the app's Hebrew face (.script-he, whose .reader-hebrew gives the Greek size and the Reader's leading), right to left; the English view is English whatever the chapter.
+  const source = sourceLanguage(chapterText);
+  const hebrewView = view === 'greek' && source === 'hbo';
+  const big = hebrewView ? 'script-he reader-hebrew [--lp-greek-size:2.25rem]' : view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
+  const size = hebrewView ? '' : view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
   const typeClass = `leading-(--lp-leading) ${big} ${size}`;
   return (
     <section aria-label="Verse view" data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
@@ -173,7 +176,7 @@ export function VerseView(props: VerseViewProps) {
           {passage ? (
             <div data-sheet-verse>{text}</div>
           ) : (
-            <p data-sheet-verse data-size="big" {...langOf(view === 'greek')} className={`break-words ${typeClass}`}>
+            <p data-sheet-verse data-size="big" {...rowAttrs(view, source, isOrdered(wovenChapter))} className={`break-words ${typeClass}`}>
               {text}
             </p>
           )}
@@ -188,7 +191,7 @@ export function VerseView(props: VerseViewProps) {
             aria-label="Actions"
             className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 @max-[15rem]:grid-cols-2 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
           >
-            {actionsFor(ai, sourceLanguage(chapterText)).map((a) => (
+            {actionsFor(ai, source, view).map((a) => (
               <button
                 key={a.id}
                 type="button"
@@ -253,7 +256,7 @@ export function VerseView(props: VerseViewProps) {
             <>
               <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
               <AskStatus verse={verse} state={ask} onAsk={onAsk} />
-              {passage || sourceLanguage(chapterText) !== 'grc' ? null : (
+              {passage || source !== 'grc' ? null : (
                 <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
                   Talk about verse {verse.n}
                 </button>

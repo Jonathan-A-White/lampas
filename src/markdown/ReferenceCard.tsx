@@ -284,7 +284,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
  *  A reference found by name rather than written for the tutor's `cardOf` (Share to Lampas lists 'Song of Solomon 2:1', 'Gen. 1:28' with their book known) gives
  *  its `old` Testament place and `heading`, or, for the New Testament, its `found` card (what `referencesIn` gives), and a `className`, `href` (what a long press has) and `data` of its own. */
 export function ReferenceLink({ written, onLeave, replacing, old, found, mark, className, href, data, children }: { written: string; onLeave?: () => void; replacing?: boolean; mark?: string; old?: { heading: string; place: ElsewherePlace }; found?: Card; className?: string; href?: string; data?: Record<string, string>; children: ReactNode }) {
-  const card = useMemo(() => (old ? { heading: old.heading, held: null } : found ?? cardOf(written)), [written, old, found]);
+  const card = useMemo(() => (old ? { heading: old.heading, held: null } : found ?? cardOf(written, mark !== undefined)), [written, old, found, mark]);
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLAnchorElement>(null);
   if (!card) return <>{children}</>;
