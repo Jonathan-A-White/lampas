@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.4
+_2026-10-27_
+- New: Settings now ask which languages you read (English only, Greek, Hebrew or both) and give Hebrew its own "How much Hebrew?" dial beside the Greek one.
+- New: Your requests now says when each request was sent, filed, built or answered, and tells you when one has been waiting in the queue for over a week.
+
 ## 0.5.3
 _2026-10-27_
 - New: The sentence-diagram lesson has a tenth step that names each line of a diagram by its Greek grammar term, and each term opens its own lesson.

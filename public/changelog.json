@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.5.4",
+    "date": "2026-10-27",
+    "story": "mw-gdcyf98.2",
+    "kind": "new",
+    "text": "Settings now ask which languages you read (English only, Greek, Hebrew or both) and give Hebrew its own \"How much Hebrew?\" dial beside the Greek one."
+  },
+  {
+    "version": "0.5.4",
+    "date": "2026-10-27",
+    "story": "mw-5r3p30.796",
+    "kind": "new",
+    "text": "Your requests now says when each request was sent, filed, built or answered, and tells you when one has been waiting in the queue for over a week."
+  },
+  {
     "version": "0.5.3",
     "date": "2026-10-27",
     "story": "mw-5r3p30.793",
