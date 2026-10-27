@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.9
+_2026-10-27_
+- New: One Pronunciation setting now covers both Greek and Hebrew, with a switch to set each on its own, Hebrew gets its own voice, speed and keyboard settings, and a Hebrew word's sheet shows how it sounds in English letters.
+- Fixed: In Turn pages, a chapter's last page no longer comes out blank when the Maps button fell just past the end of the text.
+
 ## 0.5.8
 _2026-10-27_
 - New: You can now learn the Hebrew letters in Lampas, with a card, a sound lesson and a drill for each one, and the other reading marks have cards too.
