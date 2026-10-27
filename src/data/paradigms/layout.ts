@@ -2,7 +2,7 @@
 // mw-svw421.15, .26 and .27). Pure arithmetic on the table's own forms and headings, in rem, so it follows the Text size (rem is the root
 // font size, which --lp-scale sets): a table that does not fit in one block is drawn as several, each holding the columns that fit, one under
 // the other, with the row labels repeated. Nothing is made smaller and nothing scrolls sideways. ParadigmsScreen measures the box and draws.
-import type { Paradigm, ParadigmColumn } from './types';
+import type { Paradigm, ParadigmCell, ParadigmColumn } from './types';
 
 /** The row-label column: 5.5rem (w-[5.5rem], not tailwind w-22: spacing stays in pixels as the Text size grows, rem does not). */
 export const LABEL_REM = 5.5;
@@ -18,6 +18,22 @@ const GROUP_REM = 0.875;
 /** The least a column is given, so a cell stays a target for a thumb. */
 const LEAST_REM = 2.75;
 
+/** The size of a Hebrew form in rem (text-2xl): the pointed Hebrew is read at the Greek's larger size. */
+export const HEBREW_REM = 1.5;
+/** A Hebrew letter's width as a share of its size; the points under and over it add none. */
+const HEBREW_EM_PER_LETTER = 0.62;
+const HEBREW_MARKS = /[\u0591-\u05C7]/g;
+
+/** Which way a table is drawn: a Hebrew table right to left, its person (row label) column at the right and its first column next to it (mw-gdcyf98.13); every other table left to right. */
+export const tableDirection = (table: Paradigm): 'rtl' | 'ltr' => (table.rows[0]?.cells.some((cell) => cell.lang === 'he') ? 'rtl' : 'ltr');
+
+/** How wide a cell's form is, in rem: Greek by its letters, Hebrew by its consonants (a point is no letter), none for English. */
+function formRem(cell: ParadigmCell | undefined, table: Paradigm): number {
+  if (cell?.lang === 'el') return cell.form.length * GREEK_EM_PER_LETTER * greekRemOf(table);
+  if (cell?.lang === 'he') return cell.form.replace(HEBREW_MARKS, '').length * HEBREW_EM_PER_LETTER * HEBREW_REM;
+  return 0;
+}
+
 /** The size of a table's Greek in rem: the larger one where there are one or two columns to share the width, as before. */
 export const greekRemOf = (table: Paradigm): number => (table.columns.length <= 2 ? 1.5 : 1.25);
 
@@ -25,11 +41,11 @@ const longestWord = (text: string): number => Math.max(0, ...text.split(/\s+/).m
 
 /** The width of column `c` in rem: its widest Greek form, or its heading if that is wider. */
 export function columnNeedRem(table: Paradigm, c: number, span = 1): number {
-  const letters = Math.max(0, ...table.rows.map((row) => (row.cells[c]?.lang === 'el' ? row.cells[c].form.length : 0)));
+  const forms = Math.max(0, ...table.rows.map((row) => formRem(row.cells[c], table)));
   const column = table.columns[c];
   const heading = (longestWord(column.short ?? column.label) * HEADING_EM_PER_LETTER * HEADING_REM);
   const group = (longestWord(column.group ?? '') * HEADING_EM_PER_LETTER * GROUP_REM) / span;
-  return Math.max(LEAST_REM, letters * GREEK_EM_PER_LETTER * greekRemOf(table) + CELL_EXTRA_REM, heading + CELL_EXTRA_REM, group + CELL_EXTRA_REM);
+  return Math.max(LEAST_REM, forms + CELL_EXTRA_REM, heading + CELL_EXTRA_REM, group + CELL_EXTRA_REM);
 }
 
 /** The columns of one heading in `columns`, as runs: [[0, 1, 2], [3, 4, 5]] for Singular and Plural; every column in one run when none has a group. */

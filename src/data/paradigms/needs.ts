@@ -1,5 +1,6 @@
 // src/data/paradigms/needs.ts — what a locked cell says it needs (mw-svw421.25): its missing ideas, the lowest on the ladder first, and the line in words.
-import { ideaOf, type GrammarIdea } from '../grammar/ladder';
+import type { GrammarIdea } from '../grammar/ladder';
+import { ideaOfAny as ideaOf } from '../grammar/ladders';
 import { missingIdeas, type Levels, type ParadigmCell } from '.';
 
 /** The ideas a locked form still needs, the lowest on the ladder first: what he should learn first heads the note. */

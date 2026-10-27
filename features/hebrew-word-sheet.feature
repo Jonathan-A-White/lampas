@@ -4,7 +4,7 @@ Feature: The Hebrew word sheet
   tap in an Old Testament chapter opens the same sheet with the Hebrew words the chunk renders, and under them the English sheet of its words. #/?word=H7225, the pointed lemma or the
   lemma with its points off opens the sheet of a word by itself. With Logos on the Study row has Strong's Hebrew, Bible Word Study at lbs/he and his Hebrew lexicons; with Logos off it offers to
   turn it on. Genesis 1 is the copy of the built chapter in tests/fixtures/data/gen/1.json (scripts/fixture-chapter.mjs). The Greek sheet is as it was (features/word-sheet-study.feature and the others
-  run on it too). Not yet, and not drawn for a Hebrew word: the Paradigm row, the Heart note, Help with this word and the Grammar sheet of a parsing term (docs/layout/word-sheet.md lists them as LATER).
+  run on it too). The Paradigm row of a Hebrew word is features/hebrew-paradigms.feature's. Not yet, and not drawn for a Hebrew word: the Heart note, Help with this word and the Grammar sheet of a parsing term (docs/layout/word-sheet.md lists them as LATER).
 
   Scenario: A tap on בְּרֵאשִׁ֖ית opens its sheet: the form, the respelling, the lemma, the meaning, the parsing, H7225 and Listen
     Given Lampas is opened on Genesis 1 with the saved view "greek" and Strong's on

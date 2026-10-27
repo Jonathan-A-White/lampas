@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ideaOf, LADDER, TIERS } from '../../src/data/grammar/ladder';
-import { availableCount, availableText, cellName, cellsOf, isAvailable, missingIdeas, paradigmById, PARADIGMS } from '../../src/data/paradigms';
+import { LADDER, TIERS } from '../../src/data/grammar/ladder';
+import { ideaOfAny } from '../../src/data/grammar/ladders';
+import { availableCount, availableText, cellName, cellsOf, isAvailable, missingIdeas, paradigmById, paradigmsIn, PARADIGMS } from '../../src/data/paradigms';
 
 import { needsOf, needsText } from '../../src/data/paradigms/needs';
 
@@ -28,9 +29,12 @@ const COUNTS: Record<string, number> = {
   participle: 30,
 };
 
+// the Greek tables: the Hebrew ones (mw-gdcyf98.13) are proven in tests/unit/hebrew-paradigms.test.ts
+const GREEK_TABLES = paradigmsIn('grc');
+
 describe('the paradigm tables', () => {
   it('are twenty, each with its stated number of cells', () => {
-    expect(PARADIGMS.map((p) => p.id)).toEqual([
+    expect(GREEK_TABLES.map((p) => p.id)).toEqual([
       'article',
       'noun-endings',
       'eimi',
@@ -52,16 +56,16 @@ describe('the paradigm tables', () => {
       'infinitive',
       'participle',
     ]);
-    for (const table of PARADIGMS) expect(cellsOf(table), table.id).toHaveLength(COUNTS[table.id]);
+    for (const table of GREEK_TABLES) expect(cellsOf(table), table.id).toHaveLength(COUNTS[table.id]);
   });
 
   it('have a cell under every column of every row, and no id twice', () => {
-    expect(new Set(PARADIGMS.map((p) => p.id)).size).toBe(PARADIGMS.length);
-    for (const table of PARADIGMS) for (const row of table.rows) expect(row.cells, `${table.id} ${row.label}`).toHaveLength(table.columns.length);
+    expect(new Set(GREEK_TABLES.map((p) => p.id)).size).toBe(GREEK_TABLES.length);
+    for (const table of GREEK_TABLES) for (const row of table.rows) expect(row.cells, `${table.id} ${row.label}`).toHaveLength(table.columns.length);
   });
 
   it('write every Greek form in NFC, and nothing empty', () => {
-    for (const table of PARADIGMS)
+    for (const table of GREEK_TABLES)
       for (const cell of cellsOf(table)) {
         expect(cell.form.length, table.id).toBeGreaterThan(0);
         if (cell.lang === 'el') expect(cell.form, `${table.id} ${cell.form}`).toBe(cell.form.normalize('NFC'));
@@ -70,7 +74,7 @@ describe('the paradigm tables', () => {
   });
 
   it('name only ideas that the grammar ladder has, and at least one each', () => {
-    for (const table of PARADIGMS)
+    for (const table of GREEK_TABLES)
       for (const cell of cellsOf(table)) {
         expect(cell.ideas.length, `${table.id} ${cell.form}`).toBeGreaterThan(0);
         for (const id of cell.ideas) expect(IDEA_IDS.has(id), `${table.id} ${cell.form}: ${id}`).toBe(true);
@@ -78,7 +82,7 @@ describe('the paradigm tables', () => {
   });
 
   it('say which ideas each table teaches, all of them in the ladder, and which tier it belongs to', () => {
-    for (const table of PARADIGMS) {
+    for (const table of GREEK_TABLES) {
       expect(table.ideas.length, table.id).toBeGreaterThan(0);
       for (const id of table.ideas) expect(IDEA_IDS.has(id), `${table.id}: ${id}`).toBe(true);
       expect(TIERS, table.id).toContain(table.tier);
@@ -95,7 +99,7 @@ describe('the paradigm tables', () => {
   });
 
   it('give no two cells of a table the same place', () => {
-    for (const table of PARADIGMS) {
+    for (const table of GREEK_TABLES) {
       const places = table.rows.flatMap((row) => row.cells.map((_, c) => cellName(table, row, c)));
       expect(new Set(places).size, table.id).toBe(places.length);
     }
@@ -234,7 +238,7 @@ describe('the verb tables of the indicative', () => {
   const word = (form: string) => form.replace(/-/g, '');
 
   it('name the future and aorist tables by the names the list shows', () => {
-    expect(PARADIGMS.slice(9, 16).map((p) => p.name)).toEqual([
+    expect(GREEK_TABLES.slice(9, 16).map((p) => p.name)).toEqual([
       'Future and aorist',
       'Aorist and future passive',
       'Perfect and pluperfect',
@@ -243,7 +247,7 @@ describe('the verb tables of the indicative', () => {
       'Verbs in -μι',
       'οἶδα',
     ]);
-    for (const p of PARADIGMS.slice(9)) expect(p.tier, p.id).toBe('verbs');
+    for (const p of GREEK_TABLES.slice(9)) expect(p.tier, p.id).toBe('verbs');
   });
 
   it('write the passive, perfect and second aorist forms the story asks for', () => {
@@ -290,7 +294,7 @@ describe('the verb tables of the indicative', () => {
   });
 
   it('name in every verb cell the verb, a mood, a person and a number, and one tense', () => {
-    for (const t of PARADIGMS.slice(9, 16))
+    for (const t of GREEK_TABLES.slice(9, 16))
       for (const cell of cellsOf(t)) {
         expect(cell.ideas, `${t.id} ${cell.form}`).toEqual(expect.arrayContaining(['verb', 'mood-indicative']));
         expect(cell.ideas.filter((id) => id.startsWith('person-')), `${t.id} ${cell.form}`).toHaveLength(1);
@@ -303,7 +307,7 @@ describe('the verb tables of the indicative', () => {
     // -ειν -εις -ει -ειμεν -ειτε -εισαν: the six persons in the order of the rows; no -εμεν or -ετε beside them
     const ENDINGS = ['ειν', 'εις', 'ει', 'ειμεν', 'ειτε', 'εισαν'];
     let seen = 0;
-    for (const t of PARADIGMS)
+    for (const t of GREEK_TABLES)
       for (const row of t.rows) {
         const person = row.cells[0] && ENDINGS[t.rows.filter((r) => r.group === row.group).indexOf(row)];
         row.cells.forEach((cell, c) => {
@@ -358,7 +362,7 @@ describe('the verb tables of the other moods', () => {
   };
 
   it('are named as the list shows them, in the verbs tier, each teaching its mood', () => {
-    expect(PARADIGMS.slice(16).map((p) => [p.name, p.tier, p.ideas])).toEqual([
+    expect(GREEK_TABLES.slice(16).map((p) => [p.name, p.tier, p.ideas])).toEqual([
       ['The subjunctive', 'verbs', ['mood-subjunctive']],
       ['The imperative', 'verbs', ['mood-imperative']],
       ['The infinitive', 'verbs', ['mood-infinitive']],
@@ -443,7 +447,7 @@ describe('what a locked cell says it needs', () => {
         expect(shown.map((idea) => idea.id).sort(), `${table.id} ${cell.form}`).toEqual([...missing].sort());
         expect(shown.map((idea) => idea.rung)).toEqual(shown.map((idea) => idea.rung).sort((a, b) => a - b));
         const text = needsText(cell, none);
-        for (const id of missing) expect(text.toLowerCase(), `${table.id} ${cell.form}`).toContain(ideaOf(id).title.toLowerCase());
+        for (const id of missing) expect(text.toLowerCase(), `${table.id} ${cell.form}`).toContain(ideaOfAny(id).title.toLowerCase());
       }
     }
   });
