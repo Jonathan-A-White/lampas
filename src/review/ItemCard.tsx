@@ -42,7 +42,7 @@ const RENDERERS: { [K in ReviewItem['kind']]: (props: ItemCardProps & { item: Ex
     item.question ? (
       <GrammarCard key={index} question={item.question} mode={item.mode} picked={picked} onPick={onPick} />
     ) : (
-      <SoundWordCard key={index} word={item.word ?? ''} picked={picked} onPick={onPick} />
+      <SoundWordCard key={index} word={item.word ?? ''} hebrew={item.lang === 'he'} picked={picked} onPick={onPick} />
     ),
 };
 

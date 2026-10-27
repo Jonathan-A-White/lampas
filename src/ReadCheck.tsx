@@ -10,16 +10,17 @@ import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
 import { ClipPlayer, usePlaying } from './audio/clipPlayer';
 import { speechTimesOf, type SpeechTimes } from './audio/voiceSpan';
 import type { Verse } from './data/chapter';
+import { isHebrewBook } from './data/books';
 import { unitId, unitName } from './data/passage';
 import { getDeveloper, getGreekPronunciation, getMissTally, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
-import { markWords, normalWord, plainQuotes, readingLang, readingText, RESULT_HEADINGS, sayOf, wordsOfText, WOVEN_LANG, type ReadingView, type WovenReading } from './services/reading';
-import { GREEK_LANG } from './script/greekLang';
+import { markWords, normalWord, plainQuotes, readingLang, readingText, readingViewOf, RESULT_HEADINGS, sayOf, wordsOfText, WOVEN_LANG, type ReadingView, type WovenReading } from './services/reading';
+import { GREEK_LANG, langOfSource } from './script/greekLang';
 import { announce } from './ui/live';
 import { oneTap } from './ui/settle';
 import { FAILURE_TITLES } from './services/tutor';
-import { pronunciationOf } from './speech/pronunciation';
+import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciation';
 import { drillButtonLabel, drillOffer, drillWhy, type DrillOffer } from './data/readingDrill';
-import { isLadderLang } from './data/readingLadder';
+import { isLadderLang, LADDER_NAMES } from './data/readingLadder';
 import { ReadingDrill } from './ReadingDrill';
 import { LadderActions, LadderPosition, LadderStart } from './ReadingLadder';
 import { NextBar } from './ui/NextBar';
@@ -93,35 +94,42 @@ function Waiting({ state }: { state: Extract<ReadState, { phase: 'sending' | 'wa
   );
 }
 
-/** What the verse and its words are set in: English in the sans face, Greek (lang el, data-lang grc) in the Greek one at its own size. */
+/** What the verse and its words are set in: English in the sans face, Greek (lang el, data-lang grc) in the Greek one at its own size, Hebrew (lang he, right to left, data-lang hbo) in the Hebrew one at the same size. */
 const typeOf = (view: ReadingView) =>
   view === 'greek'
     ? { attrs: GREEK_LANG, face: 'font-greek text-[length:var(--lp-greek-size)]', chunks: 'font-greek' }
-    : { attrs: { lang: 'en' }, face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
+    : view === 'hebrew'
+      ? { attrs: langOfSource('hbo'), face: 'script-he reader-hebrew', chunks: 'script-he' }
+      : { attrs: { lang: 'en' }, face: 'font-sans text-[length:var(--lp-english-size)]', chunks: '' };
 
 const GREEK_LETTERS = /\p{Script=Greek}/u;
+const HEBREW_LETTERS = /\p{Script=Hebrew}/u;
 
-/** The view a word is set and spoken in: in a woven reading (mw-5r3p30.411) a word in Greek letters is Greek, whichever view the verse is read in. */
-const viewOfWord = (view: ReadingView, word: string): ReadingView => (view === 'english' && GREEK_LETTERS.test(word) ? 'greek' : view);
+/** The view a word is set and spoken in: in a woven reading (mw-5r3p30.411) a word in Greek letters is Greek and one in Hebrew letters Hebrew, whichever view the verse is read in. */
+const viewOfWord = (view: ReadingView, word: string): ReadingView =>
+  view !== 'english' ? view : GREEK_LETTERS.test(word) ? 'greek' : HEBREW_LETTERS.test(word) ? 'hebrew' : view;
 
-/** The text of a reading with each word in Greek letters set in the Greek face (a woven verse is part Greek), the rest as the parent sets it. */
+/** The text of a reading with each word in Greek or Hebrew letters set in that language's face (a woven verse is part Greek or Hebrew), the rest as the parent sets it. */
 function MixedText({ text, view }: { text: string; view: ReadingView }) {
-  if (view !== 'english' || !GREEK_LETTERS.test(text)) return <>{text}</>;
-  const greek = typeOf('greek');
+  if (view !== 'english' || !(GREEK_LETTERS.test(text) || HEBREW_LETTERS.test(text))) return <>{text}</>;
   return (
     <>
-      {wordsOfText(text).map((token, i) => (
-        <Fragment key={i}>
-          {i > 0 ? ' ' : ''}
-          {GREEK_LETTERS.test(token) ? (
-            <span {...greek.attrs} className={greek.face}>
-              {token}
-            </span>
-          ) : (
-            token
-          )}
-        </Fragment>
-      ))}
+      {wordsOfText(text).map((token, i) => {
+        const own = viewOfWord(view, token);
+        const type = typeOf(own);
+        return (
+          <Fragment key={i}>
+            {i > 0 ? ' ' : ''}
+            {own === 'english' ? (
+              token
+            ) : (
+              <span {...type.attrs} className={type.face}>
+                {token}
+              </span>
+            )}
+          </Fragment>
+        );
+      })}
     </>
   );
 }
@@ -139,7 +147,7 @@ function SayWord({ fix, view: shown, id, label, className }: { fix: FixWord; vie
       id={id}
       label={label}
       kind="speaker"
-      language={view === 'greek' ? 'greek' : 'english'}
+      language={view === 'greek' ? 'greek' : view === 'hebrew' ? 'hebrew' : 'english'}
       className={className}
     />
   );
@@ -427,8 +435,9 @@ export const WEAVE_READ_AS_SHOWN = 'Read it as it is shown: the Greek words in G
 
 /** The reading check of the verse in the Verse view. `hold` is the bar's hold for this verse, `checks` has the states; the bar itself is drawn
  * into `slot`, the foot of the Verse view (the one hold bar on that screen), and says what a hold does now. */
-export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave = null, onRetry, slot }: {
+export function ReadCheckPanel({ verse, view: shown, book, chapter, checks, hold, weave = null, onRetry, slot }: {
   verse: Verse;
+  /** the Reader's view: 'greek' is the chapter's source text, the Hebrew of an Old Testament chapter (readingViewOf) */
   view: 'english' | 'greek';
   book: string;
   chapter: number;
@@ -440,6 +449,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
   slot: HTMLElement | null;
 }) {
   const ref = verseRef(book, chapter, unitId(verse));
+  const view: ReadingView = readingViewOf(shown, isHebrewBook(book) ? 'hbo' : 'grc');
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   // a verse read woven is a reading of its own (WOVEN_LANG): its words are not one language's, and its text is the weave's
   const woven = view === 'english' ? weave : null;
@@ -516,11 +526,16 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
       <section ref={section} aria-label="Reading check" data-readcheck={unitId(verse)} className="mb-3 space-y-3 px-1">
         {walking && reading ? null : (
           <>
-            <p className="text-sm text-muted">Read {unitName(verse)} aloud{view === 'greek' ? ' in Greek' : ''}</p>
+            <p className="text-sm text-muted">Read {unitName(verse)} aloud{view === 'greek' ? ' in Greek' : view === 'hebrew' ? ' in Hebrew' : ''}</p>
             <p className="text-sm text-muted">Hold the bar below and read the verse aloud. Let go to send.</p>
             {view === 'greek' ? (
               <p className="text-sm text-muted">
                 It listens for {pronunciationOf(pronunciation).label} ({pronunciationOf(pronunciation).lang}), the way you chose to hear Greek in Settings.
+              </p>
+            ) : null}
+            {view === 'hebrew' ? (
+              <p className="text-sm text-muted">
+                It listens for {chosenHebrewPronunciation().label} ({chosenHebrewPronunciation().lang}), the way you chose to hear Hebrew in Settings.
               </p>
             ) : null}
           </>
@@ -534,7 +549,7 @@ export function ReadCheckPanel({ verse, view, book, chapter, checks, hold, weave
         {ladderLang && !ladder.onLadder && !walking && !out ? (
           <div className="space-y-1">
             <LadderStart lang={ladderLang} how="here" />
-            <p className="text-sm text-muted">Starts at the easiest verse to say in {ladderLang === 'el' ? 'Greek' : 'English'} and keeps your place.</p>
+            <p className="text-sm text-muted">Starts at the easiest verse to say in {LADDER_NAMES[ladderLang]} and keeps your place.</p>
           </div>
         ) : null}
         {ladderLang && ladder.onLadder ? <LadderPosition lang={ladderLang} here={ladder} /> : null}

@@ -2,7 +2,7 @@
 // the recording attached, scored by the mill and answered by its verse-read grind (grinds/verse-read.json). The wire work is
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
 import { fold } from 'learn-kit/recall';
-import { NO_CHAPTER, type Chapter, type GreekWord, type Verse } from '../data/chapter';
+import { NO_CHAPTER, type Chapter, type GreekWord, type SourceLanguage, type Verse } from '../data/chapter';
 import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { WOVEN_LANG } from '../data/wovenLang';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
@@ -11,7 +11,7 @@ import type { MemoryField } from '../data/learnerMemory';
 import type { Recording } from '../audio/recorder';
 import { extensionOf, MAX_RECORDING_MS } from '../audio/recorder';
 import { chosenAccent } from '../speech/accents';
-import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
+import { chosenHebrewPronunciation, DEFAULT_PRONUNCIATION, hebrewPointedForm, HEBREW_PRONUNCIATIONS, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { greekWordsFitting, type GreekWordEntry } from './greekWords';
 import { askGrind, tutorTimings, type AskOptions } from './tutor';
 
@@ -30,19 +30,20 @@ export const MAX_SAY = 60;
 
 /** What the grind is sent (Verse Read Request 1): the verse, the text he was to read and its language. The mill scores the
  * recording against `target_text` in `lang`, one of the grind's scoring.langs: 'en', or the chosen pronunciation's scoringLang for the Greek
- * ('el' for Modern Greek, src/speech/pronunciation.ts). */
+ * ('el' for Modern Greek) or the Hebrew ('he' for Israeli Hebrew; mw-gdcyf98.14), src/speech/pronunciation.ts. */
 export interface VerseReadRequest {
   reference: string;
   target_text: string;
   lang: string;
   /** with the weave on and some of the verse shown in Greek (mw-5r3p30.411): the verse as he reads it, in the order it is drawn, each piece with its own language ('en', or the
-   * Greek pronunciation's scoringLang). `target_text` is their text end to end, so a word's `index` counts the same in both; the mill's scorer turns each piece to IPA in its own language */
+   * Greek or Hebrew pronunciation's scoringLang). `target_text` is their text end to end, so a word's `index` counts the same in both; the mill's scorer turns each piece to IPA in its own language */
   segments?: ReadingSegment[];
   /** with a verse read in Greek: each distinct word of `target_text` with its lemma, gloss, parsing and the app's respelling, syllables and stress, as the Bible talk is sent it (src/services/greekWords.ts, mw-5r3p30.659): a tip on a word's syllables and stress reads them from here, never counts */
   greek_words?: GreekWordEntry[];
-  /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound in a tip is described by it */
+  /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound in a tip is described by it. A Hebrew reading (`lang` he)
+   * sends the Hebrew scheme he chose instead (mw-gdcyf98.14): no new field */
   pronunciation: GreekPronunciation;
-  /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a tip on a Greek sound follows them */
+  /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a tip on a Greek (or Hebrew) sound follows them */
   pronunciation_guide: string;
   /** the English the reader hears sounds in (mw-5r3p30.353, Settings > English accent): the tip's sounds and respellings are written for it */
   english_accent: string;
@@ -157,9 +158,9 @@ export function tipRespelling(tip: string): string | null {
 
 /** What a speaker beside a flagged word says: the respelling the answer gave, else (English only) the respelling its tip spells in
  * capitals, since the phone's voice reads 'Levites' as LEV-its though the tip says LEE-vites (mw-5r3p30.140), else the word as written. A Greek reading's
- * `say` that is not Greek letters ('ee mee') is dropped: the Greek voice reads Latin letters as Greek ones, so it would never say it (mw-5r3p30.701). */
+ * `say` that is not Greek letters ('ee mee') is dropped: the Greek voice reads Latin letters as Greek ones, so it would never say it (mw-5r3p30.701); a Hebrew reading's likewise (mw-gdcyf98.14). */
 export const sayOf = (fix: { word: string; tip?: string; say?: string }, view: ReadingView = 'english'): string =>
-  (view === 'greek' && fix.say !== undefined && !/\p{Script=Greek}/u.test(fix.say) ? undefined : fix.say) ??
+  ((view === 'greek' && fix.say !== undefined && !/\p{Script=Greek}/u.test(fix.say)) || (view === 'hebrew' && fix.say !== undefined && !/\p{Script=Hebrew}/u.test(fix.say)) ? undefined : fix.say) ??
   (view === 'english' && fix.tip ? tipRespelling(fix.tip) : null) ??
   fix.word;
 
@@ -174,7 +175,15 @@ export function cutNote(answer: VerseReadAnswer, targetText: string): string {
  * already escapes, so a reading kept that way shows plain quote marks (mw-5r3p30.110). */
 export const plainQuotes = (text: string): string => text.replace(/\\+"/g, '"');
 
-export type ReadingView = 'english' | 'greek';
+/** What a reading is of: the English, the Greek of the New Testament ('greek'), or the Hebrew of the Old ('hebrew', mw-gdcyf98.14). The Reader's and the Verse view's own view says only 'english' or 'greek' (the
+ * chapter's source text); readingViewOf turns that into this one by the chapter's language. */
+export type ReadingView = 'english' | 'greek' | 'hebrew';
+
+/** The reading's view for the Reader's `view` in a chapter of `source`: the source text of an Old Testament chapter is Hebrew. */
+export const readingViewOf = (view: 'english' | 'greek', source: SourceLanguage): ReadingView => (view === 'greek' && source === 'hbo' ? 'hebrew' : view);
+
+/** Whether `lang` is the scoring language of a Hebrew scheme ('he'). */
+export const isHebrewLang = (lang: string): boolean => HEBREW_PRONUNCIATIONS.some((p) => p.scoringLang === lang);
 
 /** A verse (or a passage) read as the weave shows it: its pieces in the order they are drawn, and the Greek words among them. */
 export interface WovenReading {
@@ -182,16 +191,23 @@ export interface WovenReading {
   words: GreekWord[];
 }
 
-/** The text he is asked to read, as one line: the verse's English, its Greek words in Greek order, or, read woven, the pieces of the weave one after another. */
+/** The text he is asked to read, as one line: the verse's English, its Greek words in Greek order, its Hebrew words (pointed, without the cantillation marks a voice cannot say), or, read woven, the pieces of the weave one after another. */
 export const readingText = (verse: Verse, view: ReadingView = 'english', weave?: WovenReading | null): string =>
-  weave ? weave.segments.map((s) => s.text).join(' ') : view === 'greek' ? verse.g.map((w) => w.t).join(' ') : verse.e.map((c) => c.t.trim()).join(' ');
+  weave
+    ? weave.segments.map((s) => s.text).join(' ')
+    : view === 'greek'
+      ? verse.g.map((w) => w.t).join(' ')
+      : view === 'hebrew'
+        ? verse.g.map((w) => hebrewPointedForm(w.t)).join(' ')
+        : verse.e.map((c) => c.t.trim()).join(' ');
 
-/** The verses of a unit as the weave shows them to be read (mw-5r3p30.411): the Greek of a woven chunk in Greek (`greek`: the scoring language of the chosen pronunciation), every other chunk in
+/** The verses of a unit as the weave shows them to be read (mw-5r3p30.411): the Greek of a woven chunk in Greek (`greek`: the scoring language of the chosen pronunciation; of an Old Testament chapter, the Hebrew one, mw-gdcyf98.14, whose words are read without their cantillation marks), every other chunk in
  * English, chunk by chunk in the order the verse is drawn (a Greek-order weave lays them out in the Greek word order), each verse after the one before. Neighbours in one language are one segment.
  * `woven` is each verse's weave, in step with `verses`. null when no chunk is shown in Greek: that reading is the plain English one. */
 export function wovenReading(verses: readonly Verse[], woven: readonly (WovenVerse | null | undefined)[], greek: string): WovenReading | null {
   const segments: ReadingSegment[] = [];
   const words: GreekWord[] = [];
+  const hebrew = isHebrewLang(greek);
   const add = (text: string, lang: string): void => {
     if (!text) return;
     const last = segments[segments.length - 1];
@@ -204,33 +220,36 @@ export function wovenReading(verses: readonly Verse[], woven: readonly (WovenVer
       const weft = weave?.[i];
       if (weft) {
         words.push(...weft.words);
-        add(weft.words.map((w) => w.t).join(' '), greek);
+        add(weft.words.map((w) => (hebrew ? hebrewPointedForm(w.t) : w.t)).join(' '), greek);
       } else add(chunkText(verse, weave, i).trim(), 'en');
     }
   });
   return words.length === 0 ? null : { segments, words };
 }
 
-/** The language the mill scores a reading in: English, or the chosen Greek pronunciation's. */
+/** The language the mill scores a reading in: English, the chosen Greek pronunciation's, or the chosen Hebrew scheme's ('he'). */
 export const readingLang = (view: ReadingView, pronunciation: unknown): string =>
-  view === 'greek' ? pronunciationOf(pronunciation).scoringLang : 'en';
+  view === 'hebrew' ? chosenHebrewPronunciation().scoringLang : view === 'greek' ? pronunciationOf(pronunciation).scoringLang : 'en';
 
 export function buildReadingRequest(reference: string, verse: Verse, view: ReadingView = 'english', lang: string = readingLang(view, undefined), learnerProfile?: LearnerProfile, learner?: string, learnerGrammar?: LearnerGrammar, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, chapter: Chapter = NO_CHAPTER, weave?: WovenReading | null): VerseReadRequest {
   const woven = view === 'english' ? weave ?? null : null;
+  // a Hebrew reading, or a woven verse with Hebrew in it, is told the Hebrew scheme he chose where a Greek one is told the Greek (the same two fields), and is sent no Greek word
+  const hebrew = view === 'hebrew' || (woven !== null && woven.segments.some((s) => isHebrewLang(s.lang)));
+  const scheme = hebrew ? chosenHebrewPronunciation() : pronunciationOf(pronunciation);
   const request: VerseReadRequest = {
     reference,
     target_text: readingText(verse, view, woven),
     lang,
     ...(woven ? { segments: woven.segments } : {}),
-    pronunciation,
-    pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
+    pronunciation: hebrew ? scheme.id : pronunciation,
+    pronunciation_guide: tutorGuideOf(scheme),
     english_accent: chosenAccent().id,
     ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
     ...(memory ? { memory } : {}),
     ...(learner ? { learner } : {}),
     ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
   };
-  if (view !== 'greek' && !woven) return request;
+  if (hebrew || (view !== 'greek' && !woven)) return request;
   // the words of the verse (a woven reading's: the ones shown in Greek) weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule); a reading names no word, so none is held past the budget
   const words = greekWordsFitting(chapter, [woven ? { ...verse, g: woven.words } : verse], '', pronunciation, new TextEncoder().encode(JSON.stringify(request)).length);
   return words.length > 0 ? { ...request, greek_words: words } : request;

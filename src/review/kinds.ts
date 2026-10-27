@@ -99,8 +99,10 @@ export interface SoundItem {
   id: string;
   /** the Greek sound's question (the ladder idea's), null for an English word */
   question: GrammarQuestion | null;
-  /** the English word to say, null for a Greek sound */
+  /** the English or Hebrew word to say, null for a Greek sound */
   word: string | null;
+  /** the language of `word`: absent is English; a Hebrew word he missed reading aloud (mw-gdcyf98.14) is 'he' */
+  lang?: 'he';
   mode: QuestionMode;
 }
 
@@ -341,6 +343,7 @@ export const SOUNDS: ReviewKind = {
       const at = parseReviewId(r.id);
       if (!at) return [];
       if (at.lang === 'en') return [{ kind: 'sound', id: r.id, question: null, word: at.unit, mode: 'flashcard' }];
+      if (at.lang === 'he') return [{ kind: 'sound', id: r.id, question: null, word: at.unit, lang: 'he', mode: 'flashcard' }];
       const idea = ideaIfAny(at.unit);
       return idea?.parent ? [{ kind: 'sound', id: r.id, question: buildIdeaQuestion(idea, [], own, respell), word: null, mode: modeFor(r.step) }] : [];
     });
@@ -349,7 +352,7 @@ export const SOUNDS: ReviewKind = {
   hear: (item) => {
     if (item.kind !== 'sound') return;
     if (item.question) speakQuestion(item.question);
-    else if (item.word) speakWord(item.word, 'english');
+    else if (item.word) speakWord(item.word, item.lang === 'he' ? 'hebrew' : 'english');
   },
   record: async (item, right) => {
     if (item.kind === 'sound') await recordReview(SOUND_KIND, item.id, right);

@@ -157,3 +157,17 @@ a new word's sheet reads each word as it comes up). The words are never hidden; 
 may refuse speech that no tap asked for: the utterance then ends in the error 'not-allowed' (`onSpeechRefused` in `src/speech/greek.ts`), and the speaker becomes a gently
 pulsing 'Tap to listen' (still a button; `motion-safe:animate-pulse`) instead of silence. A refusal that never fires an error (a browser that just stays quiet) is not detected.
 Tests: features/read-lessons.feature.
+
+## A Hebrew reading (mw-gdcyf98.14)
+
+*Read it aloud* is offered in the Hebrew view of an Old Testament verse as in the English one (`actionsFor`, `src/verse/action.ts`). In the Hebrew view (`ReadingView` 'hebrew', made from the Reader's 'greek' view by the chapter's
+language: `readingViewOf`, `src/services/reading.ts`; `useReadChecks` does it by the book) the verse is read in Hebrew, **pointed and without the cantillation marks** (`readingText`, `hebrewPointedForm`), and the request carries:
+`lang` `'he'` (the chosen Hebrew scheme's `scoringLang`, `src/speech/pronunciation.ts`; `grinds/verse-read.json` `scoring.langs` is `en`, `el`, `he`), `target_text` the Hebrew words in order, the Hebrew scheme's id and guide in the
+`pronunciation` and `pronunciation_guide` fields that carry the Greek scheme's for a Greek reading (no new field, so `src/tutor/knows.ts` is as it was), and **no `greek_words`**. A woven Old Testament verse (`wovenReading` with the
+Hebrew scoring language) is sent as segments `en` and `he`, the Hebrew pieces without cantillation, and is kept as a reading of its own (`WOVEN_LANG`), off the ladder and the drill tally, as the Greek weave is.
+
+The panel's words follow the view: a marked Hebrew word is drawn right to left in the Hebrew face, its speaker (`Hear <word>`, "Should sound") says the word, or the answer's `say` when that has Hebrew letters (a `say` in Latin letters is
+dropped, as a Greek reading's is), in the phone's Hebrew voice, and `Me` plays his own clip of the word as it does for any language. In a woven reading each token is set and spoken by its own letters: Greek, Hebrew or English.
+
+The miss tally and the drill: a Hebrew reading is tallied by the word itself (`hebrewUnit`: pointed, no cantillation, no maqaf), as an English one is, and the words missed in two of the last five readings are offered as
+*Drill these words*; the drill sheet reads them in Hebrew, and finishing schedules them in Review (`he:<word>`), where the card is a Hebrew flashcard (`SoundWordCard`).

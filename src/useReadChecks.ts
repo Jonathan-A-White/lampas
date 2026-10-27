@@ -3,7 +3,7 @@
 // at a time. Pressing stops any reading aloud (page audio could take the microphone); a buzz says the microphone is live;
 // a press under 500 ms is a tap and a hold under 1 s is too short, and neither sends anything; a slide off the button drops it. A reading keeps waiting when he selects
 // another verse, and all stop when the screen goes away. The view decides what is read and in which language the mill
-// scores it (English, or the Greek in the chosen pronunciation's scoring language); the states returned are those of the
+// scores it (English, the Greek in the chosen pronunciation's scoring language, or the Hebrew in the chosen Hebrew scheme's); the states returned are those of the
 // language shown, a reading in the other one carries on unseen. With the weave on and some of the verse shown in Greek (mw-5r3p30.411) he reads it as shown, the Greek
 // words in Greek and the English in English: the request carries its pieces in order, each with its language (services/reading.ts wovenReading), and the answer is kept
 // as a reading of its own (WOVEN_LANG) with the text it was scored against.
@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Chapter, Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { getGreekPronunciation, keepVerseReading, reachOf, verseRef } from './data/repositories';
+import { isHebrewBook } from './data/books';
 import { clipOf } from './audio/clip';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from './audio/recorder';
 import { answerDrawn } from './services/clientTiming';
@@ -82,8 +83,10 @@ const buzz = (ms: number) => navigator.vibrate?.(ms);
 /** Where an answer goes instead of the reading history: the reading drill (src/ReadingDrill.tsx) reads words that are not verses and keeps nothing of them there. */
 export type KeepAnswer = (unit: Verse, answer: VerseReadAnswer, language: string) => void | Promise<void>;
 
-export function useReadChecks(book: string, chapter: number, title: string, view: ReadingView = 'english', pronunciation?: string, keep?: KeepAnswer, data?: Chapter | null): UseReadChecks {
+export function useReadChecks(book: string, chapter: number, title: string, readerView: ReadingView = 'english', pronunciation?: string, keep?: KeepAnswer, data?: Chapter | null): UseReadChecks {
   const [all, setAll] = useState<AllStates>({});
+  // the source view of an Old Testament chapter is its Hebrew (mw-gdcyf98.14): the Reader says 'greek', the reading is 'hebrew' and is scored in the Hebrew scheme's language
+  const view: ReadingView = readerView === 'greek' && isHebrewBook(book) ? 'hebrew' : readerView;
   const keepRef = useRef(keep);
   useEffect(() => {
     keepRef.current = keep;

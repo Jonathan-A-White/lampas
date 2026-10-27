@@ -21,16 +21,28 @@ describe('grinds/verse-read.json', () => {
 
   it('takes one recording of audio/webm, audio/ogg or audio/mp4, up to 8 MiB, and scores it against target_text', () => {
     expect(grind.attachments).toEqual({ min: 1, max: 1, mime: ['audio/webm', 'audio/ogg', 'audio/mp4'], maxBytes: 8388608 });
-    expect(grind.scoring).toEqual({ audio: true, target_field: 'target_text', langs: ['en', 'el'] });
+    expect(grind.scoring).toEqual({ audio: true, target_field: 'target_text', langs: ['en', 'el', 'he'] });
   });
 
-  it('scores in English and in modern Greek, and its instructions cover a Greek reading', () => {
-    expect((grind.scoring as { langs: string[] }).langs).toEqual(['en', 'el']);
+  it('scores in English, in modern Greek and in Hebrew, and its instructions cover a Greek reading', () => {
+    expect((grind.scoring as { langs: string[] }).langs).toEqual(['en', 'el', 'he']);
     const text = instructionsOf(grind.kind as string);
     expect(text).toContain('`el`');
     // mw-5r3p30.268: the pronunciation is named by the request's pronunciation_guide, from the scheme, not by these instructions
     expect(text).toContain('`pronunciation_guide`');
     expect(text).toContain('Greek syllables');
+  });
+
+  it('has instructions for a Hebrew reading (mw-gdcyf98.14): Hebrew letters and no Greek word', () => {
+    const text = instructionsOf(grind.kind as string).replace(/\s+/g, ' ');
+    expect(text).toContain('## A Hebrew reading (`lang` is `he`)');
+    expect(text).toContain('`he` (Hebrew)');
+    expect(text).toContain('never with a Hebrew one');
+    expect(text).toContain('in Hebrew letters with its points');
+    expect(text).toContain('a word `lang` `he` as Hebrew');
+    const schema = JSON.parse(readFileSync('grinds/verse-read.input.schema.json', 'utf8')) as { properties: { lang: { enum: string[] }; segments: { items: { properties: { lang: { enum: string[] } } } } } };
+    expect(schema.properties.lang.enum).toEqual(['en', 'el', 'he']);
+    expect(schema.properties.segments.items.properties.lang.enum).toEqual(['en', 'el', 'he']);
   });
 
   it('names an instructions file and an answer schema that exist', () => {

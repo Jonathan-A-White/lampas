@@ -1,12 +1,15 @@
 // src/data/readingLadder.ts — the reading ladder on the phone (mw-neuq78.4, docs/reading-ladder.md): the lists public/data/ladder/<lang>.json (every verse, easiest to
 // pronounce first; loaded when the ladder is first used, never precached: src/sw.ts keeps them with the other /data/ files once fetched), and the place on a list.
-// The place is the first verse he has not read well; a verse he skipped for now is passed over and comes back once he has read SKIP_GAP others well. English and
-// Greek each have a list and a place. ladderPlace is pure; currentLadderPlace reads the phone.
+// The place is the first verse he has not read well; a verse he skipped for now is passed over and comes back once he has read SKIP_GAP others well. English,
+// Greek and Hebrew each have a list and a place. ladderPlace is pure; currentLadderPlace reads the phone.
 import { getLadderRow, listWellRead } from './repositories/ladder';
 
-/** The languages that have a list: 'el' is the Modern Greek sounds the Greek view reads in (src/speech/pronunciation.ts scoringLang), 'en' English. */
-export const LADDER_LANGS = ['el', 'en'] as const;
+/** The languages that have a list: 'el' is the Modern Greek sounds the Greek view reads in (src/speech/pronunciation.ts scoringLang), 'en' English, 'he' the Israeli Hebrew the Hebrew view reads in. */
+export const LADDER_LANGS = ['el', 'en', 'he'] as const;
 export type LadderLang = (typeof LADDER_LANGS)[number];
+
+/** What each list is called on screen. */
+export const LADDER_NAMES: Record<LadderLang, string> = { el: 'Greek', en: 'English', he: 'Hebrew' };
 
 export const isLadderLang = (lang: string): lang is LadderLang => (LADDER_LANGS as readonly string[]).includes(lang);
 

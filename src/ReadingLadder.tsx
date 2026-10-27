@@ -1,9 +1,9 @@
 // src/ReadingLadder.tsx — the reading ladder on screen (mw-neuq78.4, docs/reading-ladder.md): the 'Reading ladder' button that starts it (in the Verse view's Read it
 // aloud panel, and two on the Goal screen, one per language), the line 'Number N of M on the ladder' while he is on it, and what to do after a reading: 'Next verse' after a good one,
 // 'Try again' and 'Skip for now' after one with words to fix or only part of the verse. The place is worked out from his readings (src/data/readingLadder.ts); this
-// file keeps which verse the ladder has on screen and moves the Verse view to the next one. Greek and English each have a list and a place.
+// file keeps which verse the ladder has on screen and moves the Verse view to the next one. Greek, English and Hebrew each have a list and a place.
 import { useRef, useState } from 'react';
-import { currentLadderPlace, refParts, type LadderLang } from './data/readingLadder';
+import { currentLadderPlace, LADDER_NAMES, refParts, type LadderLang } from './data/readingLadder';
 import { setLadderShowing, setReaderView, skipLadderVerse, type ReaderView, type VerseReading } from './data/repositories';
 import { moveVerse, openVerseAt } from './nav/route';
 import { NextBar } from './ui/NextBar';
@@ -11,8 +11,9 @@ import { useSettled } from './ui/settle';
 import type { LadderHere } from './useLadder';
 import { setVerseAction } from './verse/action';
 
-const NAMES: Record<LadderLang, string> = { el: 'Greek', en: 'English' };
-const VIEWS: Record<LadderLang, ReaderView> = { el: 'greek', en: 'english' };
+const NAMES = LADDER_NAMES;
+/** The Reader's view a list is read in: the source text (Greek, or the Hebrew of an Old Testament chapter) or English. */
+const VIEWS: Record<LadderLang, ReaderView> = { el: 'greek', en: 'english', he: 'greek' };
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-3 text-lg font-medium';
 // Try again | Skip for now side by side: at 130 % text on a 360 px phone 'Skip for now' wraps at text-lg and the bar is a line taller than it need be (mw-5r3p30.642)
 const PAIR = 'min-h-12 w-full rounded-xl border border-line px-2 text-base font-medium';

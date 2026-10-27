@@ -4,7 +4,7 @@ Every verse of the New Testament, ordered by how hard it is to **pronounce**: to
 It says nothing about how hard a verse is to understand. The Reading ladder (below) walks him up it, easiest first.
 
 ```bash
-npm run ladder     # scripts/ladder-el.ts and scripts/ladder-en.ts: read public/data, write public/data/ladder/el.json and en.json
+npm run ladder     # scripts/ladder-el.ts, ladder-en.ts and ladder-he.ts: read public/data, write public/data/ladder/el.json, en.json and he.json
 ```
 
 The script is deterministic (a second run changes no byte) and is never run by the app. The generated file is committed;
@@ -73,6 +73,37 @@ Matthew 1:8 and 1:13, lists of begettings (Jehoshaphat, Zerubbabel, Eliakim), sc
 
 **The weights and the syllable count are a first guess** (`WEIGHTS` in the script), to be tuned by hearing him read.
 `tests/unit/ladder-en.test.ts` pins the syllables of fourteen words, a few scores by hand and the two ranks above.
+
+## Hebrew (mw-gdcyf98.14)
+
+The Old Testament has a list of its own: `public/data/ladder/he.json`, written by `scripts/ladder-he.ts` (the same `npm run ladder` runs it after the other two). It has the shape of `el.json`
+(`ref`, `score`, `why`; easiest first, ties in canonical order, every verse once, the same bytes on a second run): 23,144 verses (Exodus 20:14, *lō tin·ʾāp̄*, is the
+easiest at 3). `scripts/ladder-shared.ts` `buildLadderWith` takes which books to walk (`'grc'` for el and en, so they stay New Testament only; `'hbo'` for he), and the scorer is
+`scoreHebrewWords` in `src/data/ladderScore.ts`: one function for the script and the phone, so the two cannot disagree.
+
+What is scored is each word's **syllabified transliteration** (`tr` in the chapter files: `way·hî`, `hag·gə·ḏō·w·lāh`; the dot is the syllable break), as the Hebrew view shows the words:
+
+| What | Points |
+| --- | --- |
+| each word (a `tr` of two forms is two words) | 1 |
+| each syllable after a word's first (a part between dots with a vowel in it; the lone `w` or `y` after a vowel, as in `yō·w·nāh`, is the vowel's letter and no syllable) | 1 |
+| the longest word, for each syllable past 3 | 2 |
+| a run of two or more consonants inside a word (a doubled consonant counts once; aleph and ayin break a run) | 1; a run of three or more, 2 |
+| a shewa `ə` or a reduced vowel (a hataf: `ă ĕ ŏ`) | 1 |
+| a letter doubled by a dagesh (`mit·tay`: written twice, said once) | 1 |
+| each rare letter: `ḥ` (khet), `ḵ` (khaf), `ṣ` (tsadi), `ʿ` (ayin) | 2 |
+
+Jonah 1:1 scores 20 (8 words, 15 syllables, two clusters, shewas and doubled letters); Genesis 1:1, with its long words and shewas, 26; Genesis 1:2, 63. **The weights are a first guess**
+(`HEBREW_WEIGHTS`), to be tuned by hearing him read. `tests/unit/ladder-he.test.ts` pins the ten easiest verses and the rank of those three.
+
+**What the scorer cannot syllabify.** A word with no vowel to say (an unpointed form, a ketiv, the paragraph sign `p̄`) or no `tr` at all is counted as one word and one syllable and nothing more;
+the script prints the verses that hold one and `ladder-he.test.ts` pins them: 25 verses (21 hold a form with no vowel, 4 a word with no `tr`).
+
+On the phone the Hebrew list is a language like the other two (`LADDER_LANGS` is `el`, `en`, `he`; `he` is the Hebrew scheme's `scoringLang`, `src/speech/pronunciation.ts`). He reads a Hebrew verse in the
+Hebrew view of an Old Testament chapter; the Verse view's Read it aloud offers it there, `Reading ladder` in the panel starts the Hebrew list, and the Goal screen has `Reading ladder: Hebrew`
+where Hebrew is the language in hand (the Greek | Hebrew segment when he chose both). The reading check, its drill and the place work as the others do (`docs/read-aloud.md` 'A Hebrew reading').
+The drill of a Hebrew reading is the words he missed, as in English (the word itself is the unit; a diphthong is a Greek idea).
+Tests: `features/hebrew-reading-ladder.feature`, `tests/unit/hebrew-read-check.test.ts`, `tests/e2e/hebrew-reading-ladder.spec.ts` (`shot(page, 'hebrew-reading-ladder')`).
 
 ## The Reading ladder on the phone (mw-neuq78.4)
 

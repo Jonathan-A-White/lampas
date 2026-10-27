@@ -191,7 +191,7 @@ export function VerseView(props: VerseViewProps) {
             aria-label="Actions"
             className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 @max-[15rem]:grid-cols-2 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
           >
-            {actionsFor(ai, source, view).map((a) => (
+            {actionsFor(ai, source).map((a) => (
               <button
                 key={a.id}
                 type="button"
