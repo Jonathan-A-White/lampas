@@ -14,6 +14,7 @@ import {
   placeGreekInterest,
   setGoal,
   setGreekInterest,
+  setHebrewInterest,
   setNewWordsADay,
   setQuizGoal,
   setReaderView,
@@ -23,38 +24,52 @@ import { startWelcomeIfFirst, isExistingReader, showWelcomeAgain } from '../../s
 import { getSetting, setSetting } from '../../src/settings/store';
 import { handwritingSetting, readLessonsSetting, weaveOrderSetting } from '../../src/settings/definitions';
 import { GREEK_LEVELS, greekFrom, newWordsAt, placementOf, viewAt, weaveAt, type GreekLevel } from '../../src/settings/definitions/greekInterest';
+import { languagesOf } from '../../src/settings/definitions/interest';
 import { ROWS, visibleRows, type Values } from '../../src/settings/rows';
 import { settingOf } from '../../src/settings/registry';
 
 const LEVELS: readonly GreekLevel[] = [0, 1, 2, 3, 4, 5];
 
-/** Every row that is Greek, and the least level at which the dial shows it (the epic's table, mw-3ased2). */
-const GREEK_ROWS: Readonly<Record<string, GreekLevel>> = {
-  greekVoice: 1,
-  greekRate: 1,
-  greekPronunciation: 1,
-  greekKeyboard: 1,
-  'resource.strongs': 1,
-  'link.words': 1,
-  'link.review': 1,
-  weave: 2,
-  weaveOrder: 2,
-  weaveGrammar: 2,
-  newWordsADay: 3,
-  pickerGrammar: 3,
-  grammarMove: 3,
-  grammarApproach: 3,
-  handwritingDrills: 3,
-  readLessons: 3,
-  quizGoal: 3,
-  goal: 4,
-  hebrewDepth: 5,
-  'link.paradigms': 5,
-  paradigmExtent: 5,
+/** Which dial a row follows: the Greek one, the Hebrew one, or 'depth' (the higher of the two, for a row both languages share). */
+type Follows = 'greekInterest' | 'hebrewInterest' | 'depth';
+
+/** Every row a dial decides, the dial it follows and the least level at which that dial shows it (the epic's table, mw-3ased2, and mw-gdcyf98.2's columns). */
+const GREEK_ROWS: Readonly<Record<string, readonly [Follows, GreekLevel]>> = {
+  greekVoice: ['greekInterest', 1],
+  greekRate: ['greekInterest', 1],
+  greekPronunciation: ['greekInterest', 1],
+  greekKeyboard: ['greekInterest', 1],
+  'resource.strongs': ['greekInterest', 1],
+  'link.words': ['depth', 1],
+  'link.review': ['depth', 1],
+  weave: ['depth', 2],
+  weaveOrder: ['depth', 2],
+  weaveGrammar: ['depth', 2],
+  newWordsADay: ['depth', 3],
+  pickerGrammar: ['depth', 3],
+  grammarMove: ['depth', 3],
+  grammarApproach: ['greekInterest', 3],
+  handwritingDrills: ['greekInterest', 3],
+  readLessons: ['depth', 3],
+  quizGoal: ['depth', 3],
+  goal: ['depth', 4],
+  hebrewDepth: ['hebrewInterest', 1],
+  'link.paradigms': ['depth', 5],
+  paradigmExtent: ['depth', 5],
 };
 
-/** The values the rows' dependencies read with every Greek detail switched on, at dial level `level`. */
-const valuesAt = (level: GreekLevel): Values => ({ greekInterest: String(level), weave: 'solid', newWordsADay: '3' });
+/** The values the rows' dependencies read with every detail switched on, at the Greek dial `greek` and the Hebrew dial `hebrew` (readValues answers `languages` and `depth` the same way). */
+const valuesAt = (greek: GreekLevel, hebrew: GreekLevel = 0): Values => ({
+  languages: languagesOf(greek, hebrew),
+  greekInterest: String(greek),
+  hebrewInterest: String(hebrew),
+  depth: String(Math.max(greek, hebrew)),
+  weave: 'solid',
+  newWordsADay: '3',
+});
+
+/** The level the dial a row follows stands at. */
+const levelFor = (follows: Follows, greek: GreekLevel, hebrew: GreekLevel): number => (follows === 'greekInterest' ? greek : follows === 'hebrewInterest' ? hebrew : Math.max(greek, hebrew));
 
 beforeEach(async () => {
   window.localStorage.clear();
@@ -73,29 +88,35 @@ describe('the table', () => {
     }
   });
 
-  it('shows at each level exactly the Greek rows the table gives it, by the dependsOn rule', () => {
-    for (const level of LEVELS) {
-      const shown = new Set(visibleRows(valuesAt(level), '').map((r) => r.key));
-      for (const [key, from] of Object.entries(GREEK_ROWS)) {
-        expect(shown.has(key), `${key} at level ${level} (shown from ${from})`).toBe(level >= from);
+  it('shows at every pair of levels exactly the rows the table gives it, by the dial each follows (the Greek one, the Hebrew one, or the higher)', () => {
+    for (const greek of LEVELS) {
+      for (const hebrew of LEVELS) {
+        const shown = new Set(visibleRows(valuesAt(greek, hebrew), '').map((r) => r.key));
+        for (const [key, [follows, from]] of Object.entries(GREEK_ROWS)) {
+          expect(shown.has(key), `${key} at Greek ${greek} and Hebrew ${hebrew} (${follows} from ${from})`).toBe(levelFor(follows, greek, hebrew) >= from);
+        }
       }
     }
   });
 
-  it('shows no Greek row at 0 and every one at 5, and keeps the dial itself on the home', () => {
-    expect(visibleRows(valuesAt(0), '').filter((r) => r.key in GREEK_ROWS)).toEqual([]);
-    expect(visibleRows(valuesAt(5), '').filter((r) => r.key in GREEK_ROWS)).toHaveLength(Object.keys(GREEK_ROWS).length);
-    for (const level of LEVELS) expect(visibleRows(valuesAt(level), '').some((r) => r.key === 'greekInterest')).toBe(true);
+  it('shows no such row with both dials at 0 and every one with both at 5, and keeps each dial on the home while its language is chosen', () => {
+    expect(visibleRows(valuesAt(0, 0), '').filter((r) => r.key in GREEK_ROWS)).toEqual([]);
+    expect(visibleRows(valuesAt(5, 5), '').filter((r) => r.key in GREEK_ROWS)).toHaveLength(Object.keys(GREEK_ROWS).length);
+    for (const level of LEVELS.slice(1)) {
+      expect(visibleRows(valuesAt(level, 0), '').some((r) => r.key === 'greekInterest')).toBe(true);
+      expect(visibleRows(valuesAt(level, 0), '').some((r) => r.key === 'hebrewInterest')).toBe(false);
+    }
+    expect(visibleRows(valuesAt(0, 0), '').some((r) => r.key === 'greekInterest' || r.key === 'hebrewInterest')).toBe(false);
     expect(ROWS.find((r) => r.key === 'greekInterest')?.section).toBe('dial');
   });
 
-  it('lists a Greek row only because of the dial or a setting that depends on it (no second visibility mechanism)', () => {
-    for (const key of Object.keys(GREEK_ROWS)) {
+  it('lists a row only because of the dial it follows or a setting that depends on it (no second visibility mechanism)', () => {
+    for (const [key, [follows]] of Object.entries(GREEK_ROWS)) {
       const row = ROWS.find((r) => r.key === key);
       expect(row, key).toBeDefined();
       let at = row;
-      while (at?.dependsOn && at.dependsOn.key !== 'greekInterest') at = ROWS.find((r) => r.key === at?.dependsOn?.key);
-      expect(at?.dependsOn?.key, `${key} reaches the dial`).toBe('greekInterest');
+      while (at?.dependsOn && at.dependsOn.key !== follows) at = ROWS.find((r) => r.key === at?.dependsOn?.key);
+      expect(at?.dependsOn?.key, `${key} reaches ${follows}`).toBe(follows);
     }
   });
 
@@ -196,6 +217,27 @@ describe('moving the dial', () => {
     expect((await db.settings.toArray()).some((r) => r.key.startsWith('greekKept.'))).toBe(true);
     await setGreekInterest(5);
     expect((await db.settings.toArray()).some((r) => r.key.startsWith('greekKept.'))).toBe(false);
+  });
+
+  // the Hebrew dial (mw-gdcyf98.2): the settings follow the higher of the two dials, so every expectation above is the Greek dial alone with the Hebrew one at 0
+  it('turns new words off when Greek 3 goes to 0 with Hebrew at 0, and keeps them when Hebrew stands at 3', async () => {
+    await setGreekInterest(3);
+    await setNewWordsADay(10);
+    await setGreekInterest(0);
+    expect(await getNewWordsADay()).toBe(0);
+    await setGreekInterest(3);
+    await setHebrewInterest(3);
+    await setGreekInterest(0);
+    expect(await getNewWordsADay()).toBe(10);
+  });
+
+  it('brings the source view and a goal he kept when Hebrew goes from 0 to 4', async () => {
+    await setGreekInterest(4);
+    await setGoal('Romans 8');
+    await setGreekInterest(0);
+    await setHebrewInterest(4);
+    expect(await getReaderView()).toBe('greek');
+    expect(await getGoal()).toBe('Romans 8');
   });
 
   it('is moved by the registry entry too (the tutor and the Settings dial write through it)', async () => {

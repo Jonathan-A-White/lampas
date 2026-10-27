@@ -30,6 +30,7 @@ describe('the registry lists every Settings row', () => {
     window.location.hash = '#/settings';
     // a setting's details are drawn only while it is on (mw-5r3p30.106): turn on the ones that have some
     await db.settings.bulkPut([
+      { key: 'hebrewInterest', value: '5' },
       { key: 'weave', value: 'solid' },
       { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },
@@ -56,7 +57,7 @@ describe('the registry lists every Settings row', () => {
       await waitFor(() => expect(drawnOnPage().sort()).toEqual(expected));
       all.push(...drawnOnPage());
     }
-    // the Greek dial is drawn on the home above the groups, not on a page of a group
+    // 'Which languages?' and the dials are drawn on the home above the groups, not on a page of a group
     expect([...all].sort()).toEqual(SETTINGS.filter((s) => !isHomeRow(s) && !s.key.startsWith('resource.')).map((s) => s.label).sort());
     cleanup();
   });
@@ -64,7 +65,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['askBy', 'audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'copyText', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'immersiveHint', 'immersiveReader', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
+      ['askBy', 'audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'copyText', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'hebrewInterest', 'immersiveHint', 'immersiveReader', 'languages', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -276,7 +277,9 @@ describe('undoChange', () => {
 describe('currentSettings', () => {
   it('reports every setting as the grind may name it', async () => {
     expect(await currentSettings()).toEqual({
+      languages: 'greek',
       greekInterest: '5',
+      hebrewInterest: '0',
       theme: 'phone',
       font: 'phone',
       textSize: 'normal',

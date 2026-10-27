@@ -1,5 +1,5 @@
 Feature: Settings has a search field and one registry behind every row
-  Settings is a home that lists a few groups (Reading, Greek, The tutor, Listening, Daily, Study resources, Account), each its own page. A search
+  Settings is a home that lists a few groups (Reading, Learning, The tutor, Listening, Daily, Study resources, Account), each its own page. A search
   field at the top of the home finds a setting by what it is called or what its one-line hint says, ignoring capitals and accents, and lists
   what it found, each saying its group; choosing one opens its page at that row. Clearing the search lists the groups again. A setting whose
   details are hidden while it is off (Bible in Logos while Logos is Off) is reached through the setting that turns it on.
@@ -8,7 +8,7 @@ Feature: Settings has a search field and one registry behind every row
 
   Scenario: The home lists the groups and no setting
     Given Lampas is opened on Settings with nothing chosen
-    Then Settings lists the groups "Reading", "Greek", "The tutor", "Listening", "Daily", "Study resources" and "Account"
+    Then Settings lists the groups "Reading", "Learning", "The tutor", "Listening", "Daily", "Study resources" and "Account"
     And Settings has no group "Theme"
 
   Scenario: Typing logos lists the Logos settings with their group
@@ -23,7 +23,7 @@ Feature: Settings has a search field and one registry behind every row
     Given Lampas is opened on Settings with Logos On
     When he types "logos" in the Settings search
     And he clears the Settings search
-    Then Settings lists the groups "Reading", "Greek", "The tutor", "Listening", "Daily", "Study resources" and "Account"
+    Then Settings lists the groups "Reading", "Learning", "The tutor", "Listening", "Daily", "Study resources" and "Account"
 
   Scenario: The search matches a setting's hint, ignoring capitals and accents
     Given Lampas is opened on Settings with nothing chosen

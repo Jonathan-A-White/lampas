@@ -7,8 +7,9 @@ import { DailyDevotionalControl, DailyMemorizeControl, DailyPlanControl, DailyPs
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
 import { GrammarExtentControl } from './grammarExtent';
-import { GreekInterestControl } from './greekInterest';
+import { GreekInterestControl, HebrewInterestControl } from './interest';
 import { HandwritingControl } from './handwriting';
+import { LanguagesControl } from './languages';
 import { LinkControl } from './links';
 import { MapsControl } from './maps';
 import { NewWordsControl } from './newWords';
@@ -21,7 +22,9 @@ import { WeaveControl } from './weave';
 
 /** The control of each row, by the row's key (src/settings/rows.ts): a row with no control here is a test failure. */
 export const CONTROLS: Readonly<Record<string, Control>> = {
+  languages: LanguagesControl,
   greekInterest: GreekInterestControl,
+  hebrewInterest: HebrewInterestControl,
   theme: AppearanceControl,
   font: FontControl,
   textSize: AppearanceControl,

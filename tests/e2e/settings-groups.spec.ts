@@ -18,7 +18,7 @@ async function openSettings(page: Page) {
 
 test('Settings opens on a home that lists the groups and no setting; Developer waits until it is found', async ({ page }) => {
   await openSettings(page);
-  for (const name of ['Reading', 'Greek', 'The tutor', 'Listening', 'Daily', 'Study resources', 'Account']) {
+  for (const name of ['Reading', 'Learning', 'The tutor', 'Listening', 'Daily', 'Study resources', 'Account']) {
     const button = group(page, name);
     await expect(button).toBeVisible();
     expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
@@ -106,6 +106,6 @@ test('a detail hidden while its setting is off shows on its page when a link nam
 test('a section link lands on the page of its group', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings?section=goal');
-  await expect(heading(page, 'Greek')).toBeVisible();
+  await expect(heading(page, 'Learning')).toBeVisible();
   await expect(page.locator('section[data-section="goal"]')).toBeInViewport();
 });

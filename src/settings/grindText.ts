@@ -49,10 +49,19 @@ function valueText(entry: SettingEntry, help: string): string {
 const isOnOff = ({ allowed }: SettingEntry): boolean =>
   allowed.kind === 'choice' && allowed.values.length === 2 && allowed.values[0].value === 'on' && allowed.values[1].value === 'off';
 
-/** The list of keys and values the instructions carry, between the two markers: a setting's help, or its hint when it has no help. */
+/** The most a setting's help may take of the instructions, in bytes (mw-gdcyf98.2): a longer help gives way to the setting's hint, which the Value list after it completes. */
+export const HELP_MAX_BYTES = 400;
+
+/** The setting whose long help the instructions keep whole: Which devotional lists the devotionals, which the tutor names. */
+const HELP_KEPT = 'devotional';
+
+const bytesOf = (text: string): number => new TextEncoder().encode(text).length;
+
+/** The list of keys and values the instructions carry, between the two markers: a setting's help, or its hint when it has no help or its help is longer than HELP_MAX_BYTES. */
 export function settingsBlock(): string {
   const lines = SETTINGS.map((s) => {
-    const help = s.help ? helpPlain(s.help) : s.hint;
+    const plain = s.help ? helpPlain(s.help) : s.hint;
+    const help = s.key !== HELP_KEPT && s.hint && bytesOf(plain) > HELP_MAX_BYTES ? s.hint : plain;
     return `- \`${s.key}\` — ${s.label}. ${help}${isOnOff(s) ? '' : ` Value: ${valueText(s, help)}.`}`;
   });
   return [SETTINGS_BEGIN, ...lines, SETTINGS_END].join('\n');

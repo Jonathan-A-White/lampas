@@ -69,6 +69,7 @@ describe('Settings search and a help in Markdown', () => {
     expect(searchSettings('restores them').map((r) => r.key)).toContain('greekInterest');
     expect(searchSettings('**').length).toBe(0);
     const values = new Map<string, string>(ROWS.map((r) => [r.key, '']));
-    expect(visibleRows(values as never, 'dipping a toe').map((r) => r.key)).toContain('greekInterest');
+    // a row whose language is not chosen is reached through the row that chooses it, Which languages? (the values here are all unread)
+    expect(visibleRows(values as never, 'dipping a toe').map((r) => r.key)).toContain('languages');
   });
 });

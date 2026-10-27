@@ -28,10 +28,19 @@ const openReader = async (page: Page): Promise<void> => {
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 };
 
-/** From the Reader: Settings, the dial moved to `name`, back to the Reader. */
+/** From the Reader: Settings, the dial moved to `name` (Just English is "English only" of Which languages?, never a button of the dial; any other step brings the dial back with "Greek"), back to the Reader. */
 async function setStep(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const languages = page.getByRole('group', { name: 'Which languages?', exact: true });
+  if (name === 'Just English') {
+    await languages.getByRole('button', { name: 'English only', exact: true }).click();
+    await expect(languages.getByRole('button', { name: 'English only', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
+    await expect(page.locator('[data-verse="1"]')).toBeVisible();
+    return;
+  }
   const dial = page.getByRole('group', { name: 'How much Greek?', exact: true });
+  if ((await dial.count()) === 0) await languages.getByRole('button', { name: 'Greek', exact: true }).click();
   await dial.getByRole('button', { name, exact: true }).click();
   await expect(dial.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();

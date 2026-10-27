@@ -49,6 +49,10 @@ import {
   setVoice,
   setWeaveGrammar,
   setGreekInterest,
+  setHebrewInterest,
+  setLanguages,
+  getGreekInterest,
+  getHebrewInterest,
   type GrammarMove,
   type PickerGrammar,
   type ReadingLayout,
@@ -81,6 +85,8 @@ import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
 import { greekFrom, greekInterestSetting, greekLevelOf } from './definitions/greekInterest';
+import { hebrewFrom, hebrewInterestSetting, hebrewLevelOf } from './definitions/hebrewInterest';
+import { LANGUAGES_CHOICES, depthFrom, languagesOf, type Languages } from './definitions/interest';
 import { getSetting, setSetting, settingsStore } from './store';
 
 export type { Allowed, Dependency, SectionId, SettingValue };
@@ -154,7 +160,7 @@ const depthEntries = SCRIPTS.map((script) =>
     },
     {
       section: 'hebrew',
-      dependsOn: greekFrom(5),
+      dependsOn: hebrewFrom(1),
       help: `How deep into ${script.label} the tutor goes when it writes a ${script.label} word:\n\n${DEPTHS.map((d) => `- **${d.label}** (${d.id}) writes it like ${script.examples[d.id]}`).join('\n')}\n\n${DEPTHS.find((d) => d.id === DEFAULT_DEPTH)?.label} by default.`,
     },
   ),
@@ -250,7 +256,7 @@ const goalOf = (value: string) => (value.trim() === '' ? null : (parseGoal(value
 
 const goalEntry: SettingEntry = {
   section: 'goal',
-  dependsOn: greekFrom(4),
+  dependsOn: depthFrom(4),
   key: 'goal',
   label: 'Goal',
   hint: 'The passage you are working toward: a book, a chapter or a verse.',
@@ -269,7 +275,7 @@ const goalEntry: SettingEntry = {
 
 const quizGoalEntry: SettingEntry = {
   section: 'studyWay',
-  dependsOn: greekFrom(3),
+  dependsOn: depthFrom(3),
   key: 'quizGoal',
   label: 'Quiz goal',
   hint: 'Why you want Quiz me; the tutor quizzes to match. Empty: it asks.',
@@ -288,7 +294,7 @@ const logosBibleEntry: SettingEntry = {
   key: 'logosBible',
   label: 'Bible in Logos',
   hint: 'The Bible that Old Testament chapters open in, in Logos.',
-  help: `The Bible in your Logos library that Old Testament chapters open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible). Lampas has no Old Testament text; it shows only while Logos is On. It is chosen on Library > Bibles.`,
+  help: `The Bible in your Logos library that Old Testament chapters open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible). It shows only while Logos is On. It is chosen on Library > Bibles.`,
   allowed: { kind: 'text', valid: isResourceId, example: DEFAULT_LOGOS_BIBLE },
   read: getLogosBible,
   write: async (value) => {
@@ -326,9 +332,34 @@ const greekInterestEntry: SettingEntry = {
   write: (value) => setGreekInterest(greekLevelOf(value)),
 };
 
+/** How much Hebrew (under the Greek dial): the same, for the Hebrew dial. */
+const hebrewInterestEntry: SettingEntry = {
+  ...fromDefinition(hebrewInterestSetting),
+  write: (value) => setHebrewInterest(hebrewLevelOf(value)),
+};
+
+/**
+ * Which languages he reads (first row of the Settings home, mw-gdcyf98.2): the two dials' own state, not a setting of its own, so it has no store. Reading it answers
+ * languagesOf the dials; writing it moves them (setLanguages): English only puts both at 0, Greek or Hebrew keeps that one and puts the other at 0, Both raises each dial
+ * that stands at 0 to the level it was left at (else 1). The dials' rows are drawn only while their language is chosen.
+ */
+const languagesEntry: SettingEntry = {
+  key: 'languages',
+  section: 'dial',
+  label: 'Which languages?',
+  // PROVISIONAL (the Mayor's words, the Governor to confirm)
+  hint: 'The Bible in English, or with its Greek, its Hebrew, or both',
+  allowed: { kind: 'choice', values: LANGUAGES_CHOICES },
+  read: async () => languagesOf(await getGreekInterest(), await getHebrewInterest()),
+  write: (value) => setLanguages(String(value) as Languages),
+  show: (value) => `Which languages?: ${LANGUAGES_CHOICES.find((c) => c.value === value)?.label ?? String(value)}`,
+};
+
 /** Every talkable Settings item. (The screen draws them in src/settings/rows.ts's order, section by section.) */
 export const SETTINGS: readonly SettingEntry[] = [
+  languagesEntry,
   greekInterestEntry,
+  hebrewInterestEntry,
   fromDefinition(themeSetting),
   fromDefinition(fontSetting),
   choice(
@@ -452,7 +483,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     },
     {
       section: 'newWords',
-      dependsOn: greekFrom(3),
+      dependsOn: depthFrom(3),
       help: 'From the chapter you are reading, most common first. Off offers none; the app offers none while many reviews are due or the last round went badly, and one notch more after a clean week.',
     },
   ),
