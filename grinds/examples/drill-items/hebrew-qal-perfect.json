@@ -1,0 +1,163 @@
+{
+  "description": "He missed the Hebrew perfect twice: the grind writes Hebrew items on he-perfect from Jonah 1:2 and 1:4, taking the words as the verses write them (the maqaf kept on עַל־, a prefix never cut off), the four options of a tap-form all words of the verse and only the right one a perfect.",
+  "schemaVersion": "1",
+  "request": {
+    "language": "he",
+    "ideas": [
+      {
+        "id": "he-perfect",
+        "title": "The perfect",
+        "what": "The perfect is the form for an action seen as a whole and complete: ‘he created’, ‘I have given’. Hebrew has no past tense as English does; the perfect is the form most used for the past. Who does it is shown by an ending: בָּרָא ‘he’, שָׁרְצוּ ‘they’, נָתַתִּי ‘I’.",
+        "misses": 2
+      }
+    ],
+    "verses": [
+      {
+        "ref": "Jonah 1:2",
+        "hebrew": "קוּם לֵךְ אֶל־ נִינְוֵה הָעִיר הַגְּדוֹלָה וּקְרָא עָלֶיהָ כִּי־ עָלְתָה רָעָתָם לְפָנָי",
+        "hebrew_words": [
+          {
+            "form": "קוּם",
+            "lemma": "קָמָי",
+            "translit": "qūm",
+            "gloss": "(Leb)-kamai",
+            "parse": "Verb - Qal - Imperative - masculine singular"
+          },
+          {
+            "form": "לֵךְ",
+            "lemma": "הָלַךְ",
+            "translit": "lêḵ",
+            "gloss": "to go, went",
+            "parse": "Verb - Qal - Imperative - masculine singular"
+          },
+          {
+            "form": "אֶל־",
+            "lemma": "אֶל",
+            "translit": "’el-",
+            "gloss": "to(wards)",
+            "parse": "Preposition"
+          },
+          {
+            "form": "נִינְוֵה",
+            "lemma": "נִינְוֵה",
+            "translit": "nî·nə·wêh",
+            "gloss": "Nineveh",
+            "parse": "Noun - proper - feminine singular"
+          },
+          {
+            "form": "הָעִיר",
+            "lemma": "עִיר",
+            "translit": "hā·‘îr",
+            "gloss": "excitement",
+            "parse": "Article | Noun - feminine singular"
+          },
+          {
+            "form": "הַגְּדוֹלָה",
+            "lemma": "גָּדוֹל",
+            "translit": "hag·gə·ḏō·w·lāh",
+            "gloss": "great, large",
+            "parse": "Article | Adjective - feminine singular"
+          },
+          {
+            "form": "וּקְרָא",
+            "lemma": "קָרָא",
+            "translit": "ū·qə·rā",
+            "gloss": "to call, call to",
+            "parse": "Conjunctive waw | Verb - Qal - Imperative - masculine singular"
+          }
+        ],
+        "english": "“Get up! Go to the great city of Nineveh and preach against it, because its wickedness has come up before Me.”",
+        "uses": [
+          {
+            "idea": "he-perfect",
+            "form": "עָלְתָה",
+            "parse": "Verb - Qal - Perfect - third person feminine singular"
+          }
+        ]
+      },
+      {
+        "ref": "Jonah 1:4",
+        "hebrew": "וַיהוָה הֵטִיל רוּחַ־ גְּדוֹלָה אֶל־ הַיָּם וַיְהִי סַעַר־ גָּדוֹל בַּיָּם וְהָאֳנִיָּה חִשְּׁבָה לְהִשָּׁבֵר",
+        "hebrew_words": [
+          {
+            "form": "וַיהוָה",
+            "lemma": "יְהֹוָה",
+            "translit": "Yah·weh",
+            "gloss": "LORD",
+            "parse": "Conjunctive waw | Noun - proper - masculine singular"
+          },
+          {
+            "form": "הֵטִיל",
+            "lemma": "טוּל",
+            "translit": "hê·ṭîl",
+            "gloss": "to throw",
+            "parse": "Verb - Hifil - Perfect - third person masculine singular"
+          },
+          {
+            "form": "רוּחַ־",
+            "lemma": "רוּחַ",
+            "translit": "rū·aḥ-",
+            "gloss": "spirit",
+            "parse": "Noun - common singular"
+          },
+          {
+            "form": "גְּדוֹלָה",
+            "lemma": "גָּדוֹל",
+            "translit": "gə·ḏō·w·lāh",
+            "gloss": "great, large",
+            "parse": "Adjective - feminine singular"
+          },
+          {
+            "form": "אֶל־",
+            "lemma": "אֶל",
+            "translit": "’el-",
+            "gloss": "to(wards)",
+            "parse": "Preposition"
+          },
+          {
+            "form": "הַיָּם",
+            "lemma": "יָם",
+            "translit": "hay·yām",
+            "gloss": "sea",
+            "parse": "Article | Noun - masculine singular"
+          },
+          {
+            "form": "וַיְהִי",
+            "lemma": "הָיָה",
+            "translit": "way·hî",
+            "gloss": "to be",
+            "parse": "Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular"
+          }
+        ],
+        "english": "Then the LORD hurled a great wind upon the sea, and such a violent storm arose that the ship was in danger of breaking apart.",
+        "uses": [
+          {
+            "idea": "he-perfect",
+            "form": "הֵטִיל",
+            "parse": "Verb - Hifil - Perfect - third person masculine singular"
+          },
+          {
+            "idea": "he-perfect",
+            "form": "חִשְּׁבָה",
+            "parse": "Verb - Piel - Perfect - third person feminine singular"
+          }
+        ]
+      }
+    ],
+    "per_idea": 2
+  },
+  "expect": {
+    "items.0.idea": {
+      "equals": "he-perfect"
+    },
+    "items.0.kind": {
+      "one_of": [
+        "tap-form",
+        "meaning"
+      ]
+    },
+    "items.0.right": {
+      "present": true
+    }
+  }
+}

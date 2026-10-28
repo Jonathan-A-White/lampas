@@ -3,6 +3,8 @@
 import { useCallback, useState } from 'react';
 import type { SourceLanguage } from '../data/chapter';
 import { useAiAllowed } from '../gate/licenceContext';
+import { hebrewInterestSetting, hebrewLevelOf } from '../settings/definitions/hebrewInterest';
+import { useSetting } from '../settings/store';
 
 export const VERSE_ACTIONS = [
   { id: 'listen', label: 'Listen' },
@@ -18,15 +20,21 @@ export type VerseAction = (typeof VERSE_ACTIONS)[number]['id'];
  * sent to the mill (the verse-read grist). */
 const AI_ACTIONS: readonly VerseAction[] = ['read', 'ask', 'quiz', 'diagram'];
 
-/** The actions that need the verse's source language taught (mw-uqlxea.3): Quiz me asks about the Greek and Diagram draws its words. An Old Testament ('hbo') verse is not offered them
- * (mw-5vvlay.3): Quiz me is the Talk sheet's quiz, written in the Greek ladder's terms, and the drill-items grind it would use takes Greek grammar ideas and Greek words (docs/hebrew.md says what a
- * Hebrew quiz would need). The others (Listen, Read it aloud, Ask the tutor) work on the English, and Ask the tutor also sends the Hebrew (src/services/hebrewWords.ts). */
+/** The actions of a verse's source language alone (mw-uqlxea.3, mw-gdcyf98.21). Diagram draws a Greek sentence (the diagram epic, src/diagram/, is Greek and English): it is not offered for an Old Testament ('hbo')
+ * verse. Quiz me is, once there is Hebrew to quiz on: it opens the Talk sheet's quiz, whose request carries the verse's `hebrew` and `hebrew_words` from the Hebrew dial's Curious up (src/services/talk.ts), so at
+ * Hebrew 0, where the talk holds the English alone, it is not offered. The others (Listen, Read it aloud, Ask the tutor) work on the English, and Ask the tutor also sends the Hebrew (src/services/hebrewWords.ts). */
 const SOURCE_ACTIONS: readonly VerseAction[] = ['quiz', 'diagram'];
 
-/** The actions the Verse view offers: all of them with a licence, only Listen without; the source language's own (Quiz me, Diagram) only for a chapter read in Greek, chosen by `lang`, not by the view.
- * Read it aloud is offered in the Hebrew view of an Old Testament verse as in the English one (mw-gdcyf98.14: its reading check is scored in Hebrew). */
-export const actionsFor = (ai: boolean, lang: SourceLanguage = 'grc'): typeof VERSE_ACTIONS[number][] =>
-  VERSE_ACTIONS.filter((a) => (ai || !AI_ACTIONS.includes(a.id)) && (lang === 'grc' || !SOURCE_ACTIONS.includes(a.id)));
+/** Whether an action is offered on a verse of this source language: every action on a Greek verse; on an Old Testament verse Quiz me with any Hebrew (`hebrewOn`), and never Diagram. */
+const offered = (id: VerseAction, lang: SourceLanguage, hebrewOn: boolean): boolean => lang === 'grc' || !SOURCE_ACTIONS.includes(id) || (id === 'quiz' && hebrewOn);
+
+/** The actions the Verse view offers: all of them with a licence, only Listen without; Diagram only for a chapter read in Greek, chosen by `lang`, not by the view, and Quiz me for an Old Testament chapter only
+ * with the Hebrew dial above 0 (`hebrewOn`, true by default). Read it aloud is offered in the Hebrew view of an Old Testament verse as in the English one (mw-gdcyf98.14: its reading check is scored in Hebrew). */
+export const actionsFor = (ai: boolean, lang: SourceLanguage = 'grc', hebrewOn = true): typeof VERSE_ACTIONS[number][] =>
+  VERSE_ACTIONS.filter((a) => (ai || !AI_ACTIONS.includes(a.id)) && offered(a.id, lang, hebrewOn));
+
+/** Whether the Hebrew dial is above 0 (some Hebrew is wanted): the tutor's quiz on an Old Testament verse is in its Hebrew from there. */
+export const useHebrewOn = (): boolean => hebrewLevelOf(useSetting(hebrewInterestSetting)) >= 1;
 
 const KEY = 'lampas.verseAction';
 
@@ -52,11 +60,12 @@ export function setVerseAction(action: VerseAction): void {
 export function useVerseAction(lang: SourceLanguage = 'grc'): [VerseAction, (action: VerseAction) => void] {
   const [action, set] = useState<VerseAction>(getVerseAction);
   const ai = useAiAllowed();
+  const hebrewOn = useHebrewOn();
   const choose = useCallback((next: VerseAction) => {
     setVerseAction(next);
     set(next);
   }, []);
   // Left on Read it aloud, Ask the tutor, Quiz me or Diagram by a licensed phone, an unlicensed one opens on Listen (what is kept stays, for when the licence is back);
-  // left on Quiz me or Diagram, an Old Testament verse opens on Listen too (the kept action is not changed, so the next verse opens on it).
-  return [(!ai && AI_ACTIONS.includes(action)) || (lang !== 'grc' && SOURCE_ACTIONS.includes(action)) ? 'listen' : action, choose];
+  // left on Diagram (or on Quiz me at Hebrew 0), an Old Testament verse opens on Listen too (the kept action is not changed, so the next verse opens on it).
+  return [(!ai && AI_ACTIONS.includes(action)) || !offered(action, lang, hebrewOn) ? 'listen' : action, choose];
 }

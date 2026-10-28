@@ -295,10 +295,10 @@ describeFeature(feature, ({ Scenario }) => {
     Then('Drill it says {string}', async (_, headline: string) => {
       expect(await within(drillItDialog()).findByRole('heading', { name: headline })).toBeInTheDocument();
     });
-    And('a question asked a word that holds the letter, and {string} has the level solid and no review row', async (_, id: string) => {
+    And('a question asked a word that holds the letter, and {string} has the level solid and a review row', async (_, id: string) => {
       expect(askedWord).toBe(true);
       await waitFor(async () => expect((await db.grammarLevels.get(id))?.level).toBe('solid'));
-      expect(await db.reviews.count()).toBe(0);
+      expect(await db.reviews.get(['grammar', id])).toBeDefined();
     });
   });
 

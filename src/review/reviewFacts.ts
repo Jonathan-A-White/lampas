@@ -1,5 +1,5 @@
 // src/review/reviewFacts.ts — what Review's Ask the tutor tells the tutor (src/ReviewScreen.tsx reports it as the screen's facts).
-import { ideaOf } from '../data/grammar/ladder';
+import { ideaOfAny as ideaOf } from '../data/grammar/ladders';
 import { wordHeart } from '../data/wordHeart';
 import type { ScreenFact } from '../tutor/screen';
 import type { ReviewItem } from './kinds';

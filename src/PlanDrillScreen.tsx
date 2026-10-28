@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { DialogAskTutor } from './AskTutor';
 import { facetPassed, withFetched } from './data/grammar/drillPlan';
 import type { DrillQuestion } from './data/grammar/drillIt';
-import { ideaOf } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { takeFetchedItems } from './data/repositories';
 import { GrammarCard } from './GrammarCard';
 import { confirmAnswer } from './review/confirm';

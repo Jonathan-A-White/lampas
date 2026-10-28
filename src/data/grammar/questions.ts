@@ -20,6 +20,7 @@ import { ENCLITIC_USES, MARK_PAIRS, blankWord } from './marks';
 import { SOUND_ALIKE } from './soundAlike';
 import { COMPOUND_VERBS, PREPOSITIONS, examplesOf, type CompoundVerb, type PrepCase, type VerseRef } from './prepositions';
 import { quickQuestion } from './quickRound';
+import { refuseHebrew } from './hebrew/refused';
 import { laterTermsIn, termIsTaught } from './taughtTerms';
 import { teachOf } from './teach';
 
@@ -698,6 +699,7 @@ function buildPairs(idea: GrammarIdea, group: string, what: string, random: Rand
 }
 
 export function buildSubscript(idea: GrammarIdea, random: Random): GrammarQuestion {
+  refuseHebrew(idea, 'the iota subscript');
   const right = pick(['ᾳ', 'ῃ', 'ῳ'], random);
   // the near miss is the same letter without its iota
   const bare = right.normalize('NFD')[0];
@@ -705,6 +707,7 @@ export function buildSubscript(idea: GrammarIdea, random: Random): GrammarQuesti
 }
 
 export function buildPunctuation(idea: GrammarIdea, random: Random): GrammarQuestion {
+  refuseHebrew(idea, 'Greek punctuation');
   const [prompt, right] = pick(PUNCTUATION, random);
   const facet = right === ';' ? { id: 'question-mark', label: 'The question mark ;' } : { id: 'raised-dot', label: 'The raised dot ·' };
   // the near miss is the other Greek mark
@@ -746,6 +749,7 @@ export const MOVABLE: readonly MovableQuestion[] = [
 
 /** A word that changes its last letter: οὐ, οὐκ or οὐχ, ἐκ or ἐξ, ἀπ᾿ or ἀφ᾿, a movable ν; four to choose from, one right, the same word's other forms first. */
 export function buildMovable(idea: GrammarIdea, random: Random): GrammarQuestion {
+  refuseHebrew(idea, 'movable letters');
   const { prompt, right, near, others, facet, reason } = pick(MOVABLE, random);
   return { ...fromTable(idea, prompt, right, near.filter((o) => o !== right), others, random, facet), rule: reason };
 }
@@ -757,6 +761,7 @@ export function buildMovable(idea: GrammarIdea, random: Random): GrammarQuestion
  * letters with the other mark, is always among the four choices, so a reader who ignores the mark cannot tell it from the right word.
  */
 export function buildMarksChangeWord(idea: GrammarIdea, random: Random): GrammarQuestion {
+  refuseHebrew(idea, 'marks that change a word');
   const pair = pick(MARK_PAIRS, random);
   const [word, twin] = random() < 0.5 ? [pair.a, pair.b] : [pair.b, pair.a];
   return {
@@ -773,6 +778,7 @@ const bareLetters = (word: string): string => word.normalize('NFD').replace(/\p{
 
 /** A small word that leans on the one before it, or the question word τίς it is not: the right one among its twin and other forms, in a real phrase. */
 export function buildEnclitic(idea: GrammarIdea, random: Random): GrammarQuestion {
+  refuseHebrew(idea, 'enclitics');
   const use = pick(ENCLITIC_USES, random);
   // the near miss is its twin, the same letters with another accent (τις, τίς; μου, ἐμοῦ), else the first of the others, which marks.ts puts first
   const twins = use.others.filter((o) => bareLetters(o).includes(bareLetters(use.right)) || bareLetters(use.right).includes(bareLetters(o)));
@@ -795,6 +801,7 @@ export function buildEnclitic(idea: GrammarIdea, random: Random): GrammarQuestio
  * scheme says alike are the ones asked, when it says any.
  */
 export function buildSoundAlike(idea: GrammarIdea, random: Random, scheme: Pronunciation = chosenPronunciation()): GrammarQuestion {
+  refuseHebrew(idea, 'words that sound alike');
   const alike = SOUND_ALIKE.filter((p) => scheme.respell(p.a.word) === scheme.respell(p.b.word));
   const pair = pick(alike.length > 0 ? alike : SOUND_ALIKE, random);
   const [word, twin] = random() < 0.5 ? [pair.a, pair.b] : [pair.b, pair.a];
@@ -835,6 +842,7 @@ function meaningChoices(right: string, near: readonly string[], others: readonly
  * preposition's other cases is among the choices, so a reader who ignores the case misses it. A case has several phrases and one is drawn.
  */
 export function buildPreposition(idea: GrammarIdea, random: Random, only?: { case: PrepCase; near: boolean }): GrammarQuestion {
+  refuseHebrew(idea, 'a preposition by its case');
   const prep = PREPOSITIONS.find((p) => idea.id === `preposition-${p.key}`);
   if (!prep) throw new Error(`${idea.id} is not a preposition idea`);
   // Drill it asks one case at a time, first without the meanings of the preposition's other cases among the choices (`near` false)
@@ -858,6 +866,7 @@ export function buildPreposition(idea: GrammarIdea, random: Random, only?: { cas
 
 /** What a verb made of a preposition and a verb means: 'ἐκ + βάλλω (“throw”) makes ἐκβάλλω, as in ἐξεβάλομεν. What does ἐκβάλλω mean?' */
 export function buildCompound(idea: GrammarIdea, random: Random, which?: CompoundVerb): GrammarQuestion {
+  refuseHebrew(idea, 'a compound verb');
   const verb = which ?? pick(COMPOUND_VERBS, random);
   return {
     kind: 'compound',
@@ -916,6 +925,7 @@ export function syllablesOf(word: string, respell: Respell = DEFAULT_RESPELL): {
 
 /** Which syllable of a word of the passage is said loudest, from the pronunciation's respell. */
 export function buildStress(idea: GrammarIdea, passage: readonly Chapter[], random: Random, respell: Respell = DEFAULT_RESPELL): GrammarQuestion {
+  refuseHebrew(idea, 'stress and syllables');
   const spoken = [...wordsOf(passage, random), ...SAMPLE_WORDS.map((word) => ({ word }))];
   for (const s of spoken) {
     const parts = syllablesOf(s.word, respell);
@@ -937,6 +947,7 @@ export function buildStress(idea: GrammarIdea, passage: readonly Chapter[], rand
 
 /** How many syllables a word of the passage has. */
 export function buildSyllables(idea: GrammarIdea, passage: readonly Chapter[], random: Random, respell: Respell = DEFAULT_RESPELL): GrammarQuestion {
+  refuseHebrew(idea, 'stress and syllables');
   const spoken = [...wordsOf(passage, random), ...SAMPLE_WORDS.map((word) => ({ word }))];
   for (const s of spoken) {
     const count = respell(s.word).split('-').length;
@@ -974,6 +985,7 @@ export function breathingOf(word: string): 'Rough' | 'Smooth' | undefined {
 
 /** Rough or smooth: the breathing on the first letter of a word of the passage. */
 export function buildBreathing(idea: GrammarIdea, passage: readonly Chapter[], random: Random): GrammarQuestion {
+  refuseHebrew(idea, 'breathings');
   const spoken = [...wordsOf(passage, random), ...SAMPLE_WORDS.map((word) => ({ word }))];
   for (const s of spoken) {
     const breathing = breathingOf(s.word);
@@ -1012,7 +1024,7 @@ function nameStems(idea: GrammarIdea): string[] {
 }
 
 /** `text` with the idea's own name taken out (blankedText's work). */
-function blankOut(idea: GrammarIdea, text: string): string {
+export function blankOut(idea: GrammarIdea, text: string): string {
   const secrets = [idea.title, idea.title.replace(/^The /, ''), ...idea.terms, ...nameStems(idea)].sort((a, b) => b.length - a.length);
   const pattern = new RegExp(`\\w*(?:${secrets.map(escapeRegExp).join('|')})\\w*`, 'giu');
   const blanked = text.replace(/\s*\(say [^)]*\)/gi, '').replace(pattern, BLANK);

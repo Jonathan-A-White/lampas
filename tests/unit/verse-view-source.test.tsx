@@ -35,7 +35,8 @@ describe('the language of a span by the chapter\'s source', () => {
 
 describe('the actions of the Verse view by its source language', () => {
   it('offer Read it aloud on an Old Testament verse, in its Hebrew view as in the English one (mw-gdcyf98.14)', () => {
-    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask']);
+    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'quiz']);
+    expect(actionsFor(true, 'hbo', false).map((a) => a.id)).toEqual(['listen', 'read', 'ask']);
   });
 
   it('keep Read it aloud on a New Testament verse', () => {

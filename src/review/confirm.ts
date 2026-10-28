@@ -4,7 +4,7 @@
 // The rule is learn-kit/fresh's recordAnswer (mw-74h98vg.1): it notes the question as asked and returns what the answer is, and this file writes Lampas's rows from the verdict.
 import { isFresh, recordAnswer, type FreshStore } from 'learn-kit/fresh';
 import { isFetchable } from '../data/grammar/fetchedItems';
-import { ideaOf } from '../data/grammar/ladder';
+import { ideaOfAny as ideaOf } from '../data/grammar/ladders';
 import type { GrammarQuestion } from '../data/grammar/questions';
 import { fetchedStock, freshStore, isFreshQuestion, isToConfirm, markConfirmed, missedBefore, noteSeen, questionKey, recordGrammarAnswer } from '../data/repositories';
 

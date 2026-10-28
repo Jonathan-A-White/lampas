@@ -29,10 +29,6 @@ export { SOLID_STEP, levelFromStep } from 'learn-kit/graph';
 const SEEDED_KEY = 'grammarLevelsSeeded';
 /** The pronunciation scheme the sound ideas are being learned in now. */
 const schemeNow = getGreekPronunciation;
-/** Whether an idea has a schedule row (mw-gdcyf98.9): a Greek one does; a Hebrew one (id 'he-…') is only written to the levels until story l gives it a card and a drill
- * (ideaOf in reviews.ts and the card of src/GrammarCard.tsx are Greek and throw on a he- id). */
-const isScheduled = (id: string): boolean => !isHebrewIdeaId(id);
-
 /** The row of an idea in `scheme`, with the idea's plain id; inside the caller's transaction when it has one. */
 async function rowOf(id: string, scheme: string): Promise<GrammarLevel | undefined> {
   const row = await db.grammarLevels.get(storedId(id, scheme));
@@ -91,7 +87,7 @@ export async function otherFrontier(id: string): Promise<string | undefined> {
 /** Starts an idea's schedule at the first gap (step 0, due after it) unless it has a row already, which keeps its steps, lapses and rights. */
 async function startLearning(id: string, now: number, scheme: string): Promise<void> {
   const key = storedId(id, scheme);
-  if (!isScheduled(id) || (await db.reviews.get([IDEA_KIND, key]))) return;
+  if (await db.reviews.get([IDEA_KIND, key])) return;
   await db.reviews.put({ kind: IDEA_KIND, id: key, ...startSchedule(now) });
 }
 
@@ -231,7 +227,7 @@ export async function recordGrammarAnswer(id: string, right: boolean, now = Date
  * schedule keeps its row. Returns how many rows it added.
  */
 export async function scheduleIdea(id: string, level: GrammarLevelName, now = Date.now()): Promise<number> {
-  if (level === 'notYet' || !isScheduled(id)) return 0;
+  if (level === 'notYet') return 0;
   const start = level === 'solid' ? () => knownSchedule(now) : undefined;
   const key = storedId(id, await schemeNow());
   const added = await db.transaction('rw', db.reviews, () => writeScheduled(IDEA_KIND, [key], now, start));
@@ -271,9 +267,9 @@ export async function teachIdea(id: string, outcome: IdeaOutcome, now = Date.now
       await putRow({ id: other, level: 'notYet', since: now, how }, scheme);
       moved.push({ id: other, level: 'notYet' });
     }
-    if (isScheduled(id) && outcome === 'not-yet') {
+    if (outcome === 'not-yet') {
       await db.reviews.where('[kind+id]').equals([IDEA_KIND, key]).delete();
-    } else if (isScheduled(id)) {
+    } else {
       const there = await db.reviews.get([IDEA_KIND, key]);
       const schedule = outcome === 'known' ? knownSchedule(now, there) : { ...startSchedule(now), lapses: there?.lapses ?? 0, rights: there?.rights ?? 0 };
       await db.reviews.put({ kind: IDEA_KIND, id: key, ...schedule });

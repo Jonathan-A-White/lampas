@@ -7,7 +7,7 @@
 import { asked, markAsked, type FreshStore, type StockStore } from 'learn-kit/fresh';
 import { db } from '../db';
 import { MAX_KEPT, isFetchable, isKeptQuestion, isSeenQuestion, seenKey, type SeenQuestion } from '../grammar/fetchedItems';
-import { ideaOf } from '../grammar/ladder';
+import { ideaOfAny as ideaOf } from '../grammar/ladders';
 import type { GrammarQuestion } from '../grammar/questions';
 
 export const SEEN_PREFIX = 'seenItems.';

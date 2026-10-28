@@ -4,6 +4,7 @@ import { db, type Review } from '../db';
 import { publish } from '../../events/bus';
 import { PLAN_KIND, parseRowId } from '../grammar/drillPlan';
 import { IDEA_KIND, ideaOf } from '../grammar/ladder';
+import { ideaOfAny } from '../grammar/ladders';
 import { ideaOfStored, storedId } from '../grammar/soundScope';
 import { availableCount, paradigmById } from '../paradigms';
 import { PARADIGM_KIND } from '../paradigms/cells';
@@ -106,7 +107,7 @@ export async function recordDrillMiss(kind: string, id: string, now = Date.now()
 /** Whether a ladder idea with this id exists (Review leaves out a row of one the ladder no longer has). */
 function ideaExists(id: string): boolean {
   try {
-    ideaOf(id);
+    ideaOfAny(id);
     return true;
   } catch {
     return false;

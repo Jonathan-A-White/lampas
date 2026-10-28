@@ -243,8 +243,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Read it aloud is offered on the English verse and on the Hebrew one', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with the saved view {string} and a licence', (_, view: string) => openOn('Jonah 1', { readerView: view }, [], { licensed: true }));
     When('he taps the number of verse {int}', tapVerseNumber);
-    Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
-      expect(actionNames()).toEqual([a, b, c, d]);
+    Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', async (_, a: string, b: string, c: string, d: string, e: string) => {
+      // Quiz me follows the Hebrew dial, which the Verse view reads live (Hebrew 0 until it has): wait for it.
+      await waitFor(() => expect(actionNames()).toEqual([a, b, c, d, e]));
     });
     When('he closes the Verse view and chooses {string} in the language switch', async (_, name: string) => {
       await user.click(within(viewEl()).getByRole('button', { name: '‹ Reader' }));
@@ -252,8 +253,9 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(screen.getByRole('group', { name: 'Language' })).getByRole('button', { name }));
     });
     And('he taps the number of verse {int}', tapVerseNumber);
-    Then('the Verse view still offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
-      expect(actionNames()).toEqual([a, b, c, d]);
+    Then('the Verse view still offers the actions {string}, {string}, {string}, {string} and {string}', async (_, a: string, b: string, c: string, d: string, e: string) => {
+      // Quiz me follows the Hebrew dial, which the Verse view reads live (Hebrew 0 until it has): wait for it.
+      await waitFor(() => expect(actionNames()).toEqual([a, b, c, d, e]));
     });
   });
 

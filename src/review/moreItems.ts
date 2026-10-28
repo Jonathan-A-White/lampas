@@ -7,14 +7,15 @@
 import { DEVICE_KEY_STORAGE_KEY } from '../config';
 import type { Chapter } from '../data/chapter';
 import { buildDrillItemsRequest, checkedItems, DRILL_ITEMS_KIND, isDrillItemsAnswer, isFetchable, weakestMissed } from '../data/grammar/fetchedItems';
-import { ideaOf } from '../data/grammar/ladder';
 import type { GrammarIdea } from '../data/grammar/ladder';
+import { ideaOfAny as ideaOf, ladderLangOf } from '../data/grammar/ladders';
 import type { GrammarQuestion } from '../data/grammar/questions';
 import { mulberry32 } from '../data/quiz';
 import { connectMill, countFetchedItems, fetchedStock, isToConfirm, listSeen, listSeenOf, listUnseenFetched, saveFetchedItems } from '../data/repositories';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { currentLicence } from '../services/licenceNow';
 import { askGrind } from '../services/tutor';
+import { loadHebrewPassage } from '../data/repositories/reviewPassage';
 import { gradedVersesOf, loadPassage } from './kinds';
 
 /** What asking for more items did. */
@@ -134,8 +135,10 @@ async function askMill(ideas: GrammarIdea[], missed: readonly string[], options:
   if (currentLicence() !== 'licensed') return stop('no-licence');
   try {
     const seed = Math.floor(Math.random() * 0x100000000);
-    const passage = options.passage ?? (await loadPassage(mulberry32(seed)));
-    const graded = await gradedVersesOf(passage).catch(() => undefined);
+    // a Hebrew idea is asked about Hebrew verses; the graded order is the Greek words' (gradedVerses.ts), so a Hebrew request takes the passage's order
+    const hebrew = ladderLangOf(ideas[0].id) === 'hbo';
+    const passage = options.passage ?? (hebrew ? await loadHebrewPassage(mulberry32(seed)) : await loadPassage(mulberry32(seed)));
+    const graded = hebrew ? undefined : await gradedVersesOf(passage).catch(() => undefined);
     const counts = new Map<string, number>();
     for (const id of missed) counts.set(id, (counts.get(id) ?? 0) + 1);
     // the questions he has been asked on these ideas go with the request, so the mill writes none of them (mw-indx1x6.1)

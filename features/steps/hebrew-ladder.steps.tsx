@@ -100,9 +100,9 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Goal lists {string} as Solid', async (_, title: string) => {
       await waitFor(async () => expect(await hebrewRow(title)).toHaveAttribute('data-level', 'solid'));
     });
-    And('{string} has the level solid and no review row', async (_, id: string) => {
+    And('{string} has the level solid and a review row', async (_, id: string) => {
       expect((await db.grammarLevels.get(id))?.level).toBe('solid');
-      expect(await db.reviews.count()).toBe(0);
+      expect(await db.reviews.get(['grammar', id])).toBeDefined();
     });
   });
 

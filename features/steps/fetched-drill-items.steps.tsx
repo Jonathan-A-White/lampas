@@ -16,8 +16,10 @@ import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { shortDrill } from '../../src/data/grammar/drillPlan';
 import { buildDrillItemsRequest, checkedItems, type DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
 import { ideaOf } from '../../src/data/grammar/ladder';
+import { hebrewFormOf, hebrewIdeasOfWord } from '../../src/data/grammar/hebrew/wordQuestions';
+import { ideaOfAny } from '../../src/data/grammar/ladders';
 import { mulberry32 } from '../../src/data/quiz';
-import { countFetchedItems, isToConfirm, listSeen, missedBefore, reviewsOf, saveFetchedItems } from '../../src/data/repositories';
+import { countFetchedItems, isToConfirm, listSeen, listUnseenFetched, missedBefore, reviewsOf, saveFetchedItems } from '../../src/data/repositories';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
@@ -50,6 +52,7 @@ const IDEA = 'declension-2';
 /** The prompt the scenarios give the item the mill writes. */
 const MILL_PROMPT = 'Tap the second declension noun';
 const romans8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+const genesis1 = JSON.parse(readFileSync('public/data/gen/1.json', 'utf8')) as Chapter;
 
 let fake: FakePostern;
 
@@ -143,6 +146,19 @@ function itemFrom(request: DrillItemsRequest, over: Record<string, unknown> = {}
     return { idea, kind: 'tap-form', ref: sent.ref, prompt: MILL_PROMPT, options: [right.t, ...others.slice(0, 3)], right: right.t, ...over };
   }
   throw new Error('the verses sent hold no word of the second declension to ask about');
+}
+
+/** An item the mill could write from the first Hebrew verse it was sent that has a word of the idea: a tap-form on that word among words that do not show it. */
+function hebrewItemFrom(request: DrillItemsRequest, idea = 'he-article'): Record<string, unknown> {
+  for (const sent of request.verses) {
+    const use = sent.uses.find((u) => u.idea === idea);
+    const verse = genesis1.verses.find((v) => `${genesis1.book} ${genesis1.chapter}:${v.n}` === sent.ref);
+    if (!use || !verse) continue;
+    const others = [...new Set(verse.g.filter((w) => !hebrewIdeasOfWord(genesis1, w).includes(idea)).map(hebrewFormOf))].filter((f) => f !== use.form);
+    if (others.length < 3) continue;
+    return { idea, kind: 'tap-form', ref: sent.ref, prompt: 'Tap a word with the article', options: [use.form, ...others.slice(0, 3)], right: use.form };
+  }
+  throw new Error('the verses sent hold no word of the Hebrew article to ask about');
 }
 
 const grist = async (): Promise<{ input: DrillItemsRequest; kind: string }> => {
@@ -457,6 +473,42 @@ describeFeature(feature, ({ Scenario }) => {
     And('Prove it asked no question he had been asked before', () => {
       expect(shown.length).toBeGreaterThan(0);
       expect(shown.filter((sig) => seenBefore.has(sig))).toEqual([]);
+    });
+  });
+
+  Scenario('Misses on the Hebrew article ask the mill for Hebrew items from Hebrew verses', ({ Given, When, Then, And }) => {
+    Given('the Hebrew article is due in Review and the mill will answer a drill-items grist', async () => {
+      await freshPhone();
+      await makeDue(0, 'he-article');
+    });
+    When('he misses the Hebrew article in a Review round', async () => {
+      await openReview();
+      await playRound('he-article');
+    });
+    Then('the mill is sent one drill-items grist naming {string} in Hebrew, with Hebrew verses and words and no Greek', async (_, id: string) => {
+      const { input, kind } = await grist();
+      expect(kind).toBe('drill-items');
+      expect(input.language).toBe('he');
+      expect(input.ideas.map((i) => i.id)).toEqual([id]);
+      expect(input.ideas[0].what).toBe(ideaOfAny(id).text);
+      expect(input.verses.length).toBeGreaterThan(0);
+      for (const verse of input.verses) {
+        expect(verse.ref).toMatch(/^Genesis 1:/);
+        expect(verse.hebrew).toBeTruthy();
+        expect(verse.hebrew_words?.length).toBeGreaterThan(0);
+        expect('greek' in verse).toBe(false);
+      }
+    });
+    When('the mill answers it with Hebrew items made from the verses it was sent', async () => {
+      const { input } = await grist();
+      await fake.answer({ status: 'answered', answer: { items: [hebrewItemFrom(input)] } });
+    });
+    Then('the items are kept for {string}', async (_, id: string) => {
+      await waitFor(async () => expect(await countFetchedItems(id)).toBe(1));
+    });
+    And('the item kept for {string} is a Hebrew question', async (_, id: string) => {
+      const [kept] = await listUnseenFetched(id);
+      expect(kept).toMatchObject({ kind: 'tap-form', ideaId: id, lang: 'hbo' });
     });
   });
 });

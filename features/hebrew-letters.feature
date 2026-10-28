@@ -37,7 +37,7 @@ Feature: Learning to read Hebrew: the letters
     Then Drill it asks "What is this letter called?" first
     When he answers every question right until Drill it ends
     Then Drill it says "Proved"
-    And a question asked a word that holds the letter, and "he-letter-alef" has the level solid and no review row
+    And a question asked a word that holds the letter, and "he-letter-alef" has the level solid and a review row
 
   Scenario: The Greek letter drill is as it was
     Given Greek is the only language chosen, the goal is "1 John 1:1" and the Goal screen is open

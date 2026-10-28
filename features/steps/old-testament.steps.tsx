@@ -587,7 +587,7 @@ describeFeature(feature, ({ Scenario }) => {
     [...within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button')].map((b) => b.textContent?.trim() ?? '');
   const phoneLicensed = 'Lampas is opened on Jonah 1 with a licence';
 
-  Scenario('The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor and Share', ({ Given, When, Then, And }) => {
+  Scenario('The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor, Quiz me and Share', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with a licence and a phone that can share', () => openOn('Jonah 1', {}, false, { licensed: true, share: true }));
     When('he taps the number of verse {int}', tapVerseNumber);
     Then('the Verse view is headed {string}', async (_, reference: string) => {
@@ -597,15 +597,15 @@ describeFeature(feature, ({ Scenario }) => {
       const verse = viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
       expect(squash(verse.textContent)).toContain('The men knew that he was fleeing from the presence of the LORD');
     });
-    And('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
-      expect(actionNames()).toEqual([a, b, c, d, e]);
+    And('the Verse view offers the actions {string}, {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string, f: string) => {
+      expect(actionNames()).toEqual([a, b, c, d, e, f]);
     });
-    And('the Verse view has no {string} and no {string}', (_, a: string, b: string) => {
-      for (const name of [a, b]) expect(within(viewEl()).queryByRole('button', { name, exact: true }), name).toBeNull();
+    And('the Verse view has no {string}', (_, name: string) => {
+      expect(within(viewEl()).queryByRole('button', { name, exact: true }), name).toBeNull();
     });
   });
 
-  Scenario('Quiz me kept from a New Testament verse opens an Old Testament verse on Listen and is kept', ({ Given, When, Then, And }) => {
+  Scenario('Diagram kept from a New Testament verse opens an Old Testament verse on Listen and is kept', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with a licence and the kept action {string}', (_, kept: string) => openOn('Jonah 1', {}, false, { licensed: true, kept }));
     When('he taps the number of verse {int}', tapVerseNumber);
     Then('the chosen action of the Verse view is {string}', (_, name: string) => {

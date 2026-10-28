@@ -4,7 +4,7 @@
 import { createStock, isFresh } from 'learn-kit/fresh';
 import { db } from '../db';
 import { MAX_KEPT } from '../grammar/fetchedItems';
-import { ideaOf } from '../grammar/ladder';
+import { ideaOfAny as ideaOf } from '../grammar/ladders';
 import type { GrammarQuestion } from '../grammar/questions';
 import { KEPT_PREFIX, freshStore, keptStore, parseKept, questionKey, saveKept } from './freshStore';
 

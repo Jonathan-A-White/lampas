@@ -5,8 +5,13 @@
   "additionalProperties": false,
   "required": ["ideas", "verses", "per_idea"],
   "properties": {
+    "language": {
+      "description": "Which language the ideas and verses are of: 'grc' (Koine Greek, the verses carry `greek`) or 'he' (Biblical Hebrew, the verses carry `hebrew` and `hebrew_words`). Left out, it is 'grc'.",
+      "type": "string",
+      "enum": ["grc", "he"]
+    },
     "ideas": {
-      "description": "The one to three grammar ideas he missed most in the round he just finished, the most missed first.",
+      "description": "The one to three grammar ideas he missed most in the round he just finished, the most missed first. In Greek they are the ideas of the Greek ladder; in Hebrew (`language` 'he'), of the Hebrew ladder, with ids that start 'he-'.",
       "type": "array",
       "minItems": 1,
       "maxItems": 3,
@@ -29,10 +34,29 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["ref", "greek", "english", "uses"],
+        "required": ["ref", "english", "uses"],
+        "anyOf": [{ "required": ["greek"] }, { "required": ["hebrew"] }],
         "properties": {
           "ref": { "description": "Such as 'Romans 8:1'. Copy it into each item's `ref`.", "type": "string", "minLength": 1, "maxLength": 40 },
-          "greek": { "description": "The verse's Greek, the words as the text has them, separated by spaces.", "type": "string", "minLength": 1, "maxLength": 700 },
+          "greek": { "description": "A Greek verse's Greek, the words as the text has them, separated by spaces. Missing in a Hebrew request.", "type": "string", "minLength": 1, "maxLength": 700 },
+          "hebrew": { "description": "A Hebrew verse's Hebrew, the words as the text has them (pointed, no cantillation marks), separated by spaces; a word with a maqaf or an inseparable prefix is one word. Missing in a Greek request.", "type": "string", "minLength": 1, "maxLength": 700 },
+          "hebrew_words": {
+            "description": "A Hebrew verse's words, in order, each once: the form as it stands in `hebrew`, its dictionary form, transliteration, the lexicon's gloss and its parsing in plain words. Missing in a Greek request.",
+            "type": "array",
+            "maxItems": 40,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["form", "parse"],
+              "properties": {
+                "form": { "description": "The word as `hebrew` has it.", "type": "string", "minLength": 1, "maxLength": 60 },
+                "lemma": { "description": "Its dictionary form.", "type": "string", "maxLength": 60 },
+                "translit": { "description": "Its transliteration.", "type": "string", "maxLength": 60 },
+                "gloss": { "description": "Its gloss in the lexicon.", "type": "string", "maxLength": 120 },
+                "parse": { "description": "What the word is, in plain words.", "type": "string", "maxLength": 160 }
+              }
+            }
+          },
           "english": { "description": "The verse's English as the translators wrote it.", "type": "string", "maxLength": 700 },
           "uses": {
             "description": "The words of the verse that use one of the ideas.",
@@ -44,8 +68,8 @@
               "required": ["idea", "form", "parse"],
               "properties": {
                 "idea": { "description": "The id of the idea the word uses.", "type": "string", "minLength": 1, "maxLength": 60 },
-                "form": { "description": "The word as the verse has it.", "type": "string", "minLength": 1, "maxLength": 60 },
-                "parse": { "description": "What the word is, in plain words.", "type": "string", "maxLength": 120 }
+                "form": { "description": "The word as the verse has it (a Hebrew word as `hebrew` has it).", "type": "string", "minLength": 1, "maxLength": 60 },
+                "parse": { "description": "What the word is, in plain words.", "type": "string", "maxLength": 160 }
               }
             }
           }
