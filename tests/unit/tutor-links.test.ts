@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MAX_LINKS, isTalkAnswer } from '../../src/services/talk';
 import { verseLink } from '../../src/resources/logosBible';
-import { mapChip, placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
+import { hebrewLinkLemma, mapChip, placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
 import type { MapCard } from '../../src/maps/types';
 import { TEST_CARDS } from '../support/test-maps';
 import type { StudyResources } from '../../src/data/repositories';
@@ -192,5 +192,22 @@ describe('a map link (mw-zbjgn3r.4)', () => {
     expect(mapChip('NoSuchMap', TEST_CARDS['gen.10'])).toBeNull();
     expect(mapChip('Genesis_10', TEST_CARDS['gen.10'])).toBeNull();
     expect(mapChip('SodomAndGomorrah', [])).toBeNull();
+  });
+});
+
+describe('a word link to a Hebrew lemma (mw-gdcyf98.20)', () => {
+  const lemma = 'רֵאשִׁית';
+
+  it('is a Hebrew lemma when it holds Hebrew letters, and a Greek one never is', () => {
+    expect(hebrewLinkLemma(lemma)).toBe(true);
+    expect(hebrewLinkLemma('ἀγάπη')).toBe(false);
+  });
+
+  it('gives the Hebrew lexicons he ticked and Strong\'s Hebrew, never a Greek lexicon', () => {
+    const chosen: StudyResources = { on: ['strongs', 'logos'], options: { logos: JSON.stringify(['bdag', 'bdb']) } };
+    const chips = wordChips(lemma, 'H7225', chosen);
+    expect(chips.map((c) => c.label)).toEqual([`H7225 for ${lemma}`, `Open in Logos: Enhanced Brown-Driver-Briggs Hebrew and English Lexicon for ${lemma}`]);
+    expect(chips[0].url).toBe('https://www.stepbible.org/?q=strong=H7225');
+    expect(chips[1].url).toBe('logosres:LLS:46.30.16;hw=%D7%A8%D7%90%D7%A9%D7%99%D7%AA');
   });
 });

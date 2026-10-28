@@ -49,7 +49,7 @@ export async function addLemmaToLearn(scope: TalkScope, lemma: string, now = Dat
   try {
     entry = await lookupLemma(headword, lang);
   } catch {
-    const gloss = glossOf(scope, { greek: headword, lemma: headword, note: '' });
+    const gloss = glossOf(scope, { greek: headword, lemma: headword, note: '', language: lang === 'hbo' ? 'he' : 'grc' });
     return gloss ? { headword, result: await addWordToLearn(headword, gloss, now, '', lang) } : { headword, result: 'unknown' };
   }
   if (!entry) return { headword, result: 'unknown' };

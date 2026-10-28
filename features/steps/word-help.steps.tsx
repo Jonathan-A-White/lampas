@@ -20,7 +20,7 @@ import { greekSyllables, stressedSyllable } from '../../src/speech/greekSyllable
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, SOUND_HELP_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
-import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
+import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
 
@@ -46,16 +46,17 @@ let fake: FakePostern;
 let synth: FakeSynth | undefined;
 let heard: EventOf<'word-help'>[] = [];
 
-async function open(configure: (f: FakePostern) => void, speaks = false): Promise<void> {
+/** `place` is the address to open on ('' for Romans 8), `settings` are saved before the app opens; `speaks` 'hebrew' is a phone with a Hebrew voice too. */
+async function open(configure: (f: FakePostern) => void, speaks: boolean | 'hebrew' = false, place = '', settings: Record<string, string> = {}): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  synth = speaks ? stubSpeech([GREEK_VOICE, ENGLISH_VOICE]) : undefined;
+  synth = speaks ? stubSpeech(speaks === 'hebrew' ? [GREEK_VOICE, ENGLISH_VOICE, HEBREW_VOICE] : [GREEK_VOICE, ENGLISH_VOICE]) : undefined;
   heard = [];
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
-  window.location.hash = '';
+  window.location.hash = place;
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
   configure(fake);
@@ -67,6 +68,7 @@ async function open(configure: (f: FakePostern) => void, speaks = false): Promis
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
   await seedHisWords();
+  for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
@@ -93,7 +95,7 @@ async function tapsWord(text: string, verse: number): Promise<void> {
   await user.click(within(verseEl(verse)).getByRole('button', { name: text }));
   await screen.findByRole('dialog', { name: 'Word' });
 }
-const tapsHelp = (name: 'Grammar' | 'Sound it out') => async (): Promise<void> => {
+const tapsHelp = (name: 'Grammar' | 'Sound it out' | 'Syllables and sounds') => async (): Promise<void> => {
   await user.click(within(wordSheet()).getByRole('button', { name }));
 };
 const grists = (count: number) => async (): Promise<void> => {
@@ -238,6 +240,68 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the answer shows in the Talk sheet under the question about the word', answerShows);
     And('the retried grist carries the same grammar focus', () => {
       expect(focusOf(0)).toEqual({ form: FORM, lemma: LEMMA, parse: PARSE, kind: 'grammar' });
+    });
+  });
+
+  // a Hebrew word of Jonah 1 (the copy of the built chapter in tests/fixtures/data), in the Hebrew view, with the Hebrew dial at All
+  const HEBREW = { hebrewInterest: '5', readerView: 'greek' };
+  const HE_FORM = 'נִינְוֵה';
+  const HE_PARSE = 'Noun - proper - feminine singular';
+  const tapsHebrewWord = async (_: unknown, text: string, verse: number): Promise<void> => {
+    await user.click(await within(verseEl(verse)).findByText((_c, el) => el?.hasAttribute('data-word') === true && (el.textContent ?? '').replace(/\s+/g, ' ').trim() === text));
+    await screen.findByRole('dialog', { name: 'Word' });
+  };
+  const hasHebrewFocus = (kind: 'grammar' | 'sound') => async (_: unknown, form: string, lemma: string, parse: string): Promise<void> => {
+    await waitFor(() => expect(fake.received.length).toBeGreaterThan(0));
+    expect(focusOf(0)).toEqual({ form, lemma, parse, kind, language: 'he' });
+    expect(HE_FORM).toBe(form);
+    expect(parse).toBe(HE_PARSE);
+  };
+
+  Scenario('Grammar on the word sheet of a Hebrew word sends a grammar focus in Hebrew', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Jonah 1 with word help behind a fake Postern, in the Hebrew view', () => open(grammarAnswer, false, '#/?b=jon&c=1', HEBREW));
+    And('he taps the Hebrew word {string} in verse {int}', tapsHebrewWord);
+    When('he taps Grammar on the word sheet', tapsHelp('Grammar'));
+    Then('the word sheet is gone and the sheet is titled {string}', async (_, title: string) => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
+      expect(talkSheet()).toHaveAccessibleName(title);
+    });
+    And('the mill received {int} grist for the lampas app, kind bible-talk', (_, count: number) => grists(count)());
+    And('the grist carries the Hebrew focus form {string}, lemma {string}, parse {string} and kind grammar', hasHebrewFocus('grammar'));
+    And('the grist carries the Hebrew of the verse and the reference {string}', (_, reference: string) => {
+      const { input } = received(0);
+      expect(input.reference).toBe(reference);
+      expect(String(input.hebrew)).toContain(HE_FORM);
+      expect('greek' in input).toBe(false);
+    });
+    And('the grist question names the word, its lemma, its parsing and the reference and asks to explain the grammar', () => {
+      const question = String(received(0).input.question);
+      for (const part of [HE_FORM, HE_PARSE, 'Jonah 1:2', 'Explain the grammar of this form and what I need to know to read it']) expect(question).toContain(part);
+    });
+  });
+
+  Scenario('Syllables and sounds on a Hebrew word sends a sound focus in Hebrew, and the word is said in Hebrew before the answer', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Jonah 1 with word help behind a fake Postern that holds its answers and a phone that speaks Hebrew', () =>
+      open((f) => void (f.autoReply = undefined), 'hebrew', '#/?b=jon&c=1', HEBREW),
+    );
+    And('he taps the Hebrew word {string} in verse {int}', tapsHebrewWord);
+    When('he taps Syllables and sounds on the word sheet', tapsHelp('Syllables and sounds'));
+    Then('the mill received {int} grist for the lampas app, kind bible-talk', (_, count: number) => grists(count)());
+    And('the grist carries the Hebrew focus form {string}, lemma {string}, parse {string} and kind sound', hasHebrewFocus('sound'));
+    And('that focus carries no Greek respelling or syllables', () => {
+      expect(focusOf(0)).not.toHaveProperty('respelling');
+      expect(focusOf(0)).not.toHaveProperty('syllables');
+    });
+    And('the grist question asks to pronounce the Hebrew word, its syllables in Hebrew letters and how each sounds', () => {
+      const question = String(received(0).input.question);
+      for (const part of [HE_FORM, 'Jonah 1:2', 'Help me pronounce the Hebrew word', 'its syllables in Hebrew letters and how each sounds']) expect(question).toContain(part);
+    });
+    And('the word {string} was spoken in Hebrew, slowly, before any answer', (_, word: string) => {
+      const engine = synth as FakeSynth;
+      expect(engine.spoken).toHaveLength(1);
+      expect(engine.spoken[0].text).toBe(word);
+      expect(engine.spoken[0].lang).toBe('he-IL');
+      expect(engine.spoken[0].rate).toBeLessThan(1);
     });
   });
 });

@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { LicenceContext } from '../../src/gate/licenceContext';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
 import { setResourceOption } from '../../src/data/repositories';
@@ -37,6 +38,8 @@ interface Phone {
   speaks?: boolean;
   /** the address to open instead of a chapter */
   hash?: string;
+  /** a phone with no licence: the AI is off (mw-8m9dyu.2) */
+  unlicensed?: boolean;
 }
 
 /** Opens the app on a chapter (the address names it) or on a link, with these settings saved. */
@@ -65,7 +68,15 @@ async function openOn(title: string | null, phone: Phone = {}): Promise<void> {
   for (const [key, value] of Object.entries(phone.settings ?? {})) await db.settings.put({ key, value });
   if (phone.ticked) await setResourceOption('logos', JSON.stringify(phone.ticked));
   if (phone.hash !== undefined) restoreLastRoute();
-  render(<App />);
+  render(
+    phone.unlicensed ? (
+      <LicenceContext.Provider value={{ licence: 'not-licensed', locked: null, publicKeyHex: '', checkAgain: () => undefined }}>
+        <App />
+      </LicenceContext.Provider>
+    ) : (
+      <App />
+    ),
+  );
   if (title !== null) {
     await screen.findByRole('heading', { name: title, level: 1 });
     await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -150,18 +161,121 @@ describeFeature(feature, ({ Scenario }) => {
     And('it has a Listen button', async () => {
       expect(within(await sheet()).getByRole('button', { name: 'Listen' })).toBeInTheDocument();
     });
-    And('it has no Paradigm row and no Help with this word row', async () => {
+    And('it has no Paradigm row', async () => {
       expect(within(await sheet()).queryByTestId('sheet-paradigm')).toBeNull();
+    });
+  });
+
+  const termsAreLinks = async (_: unknown, ...terms: string[]): Promise<void> => {
+    const buttons = within(await fact('sheet-parse')).getAllByRole('button');
+    expect(buttons.map((b) => squash(b.textContent))).toEqual(terms);
+    for (const b of buttons) expect(b.getAttribute('data-term')).toBe(squash(b.textContent));
+  };
+
+  Scenario('The parsing of a verb is the long form, in plain words, each Hebrew term a link', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the saved view {string}', (_, view: string) => openOn('Genesis 1', { settings: { readerView: view } }));
+    When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
+    Then('it shows the parsing {string}', showsParsing);
+    And('the terms of the parsing are links: {string}, {string}, {string}, {string}, {string} and {string}', termsAreLinks);
+  });
+
+  const helpRowHas = async (): Promise<void> => {
+    const row = await within(await sheet()).findByRole('group', { name: 'Help with this word' });
+    expect(within(row).getAllByRole('button').map((b) => squash(b.textContent))).toEqual(['Grammar', 'Syllables and sounds', 'Ask the tutor']);
+  };
+
+  Scenario('The sheet of נִינְוֵה has Help with this word with its three rows and the parsing as links', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Jonah 1 with the saved view {string}', (_, view: string) => openOn('Jonah 1', { settings: { readerView: view } }));
+    When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
+    Then('it shows the parsing {string}', showsParsing);
+    And('the terms of the parsing are links: {string}, {string}, {string} and {string}', termsAreLinks);
+    And('the Help with this word row has Grammar, Syllables and sounds and Ask the tutor', helpRowHas);
+  });
+
+  Scenario('The sheet of a verb with a table has the Paradigm row and Help with this word under it', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Jonah 1 with the saved view {string}', (_, view: string) => openOn('Jonah 1', { settings: { readerView: view } }));
+    When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
+    Then('the Hebrew word sheet has a Paradigm row', async () => {
+      expect(await fact('sheet-paradigm')).toBeInTheDocument();
+    });
+    And('the Help with this word row has Grammar, Syllables and sounds and Ask the tutor', helpRowHas);
+  });
+
+  const tapsTerm = async (_: unknown, term: string): Promise<void> => {
+    await user.click(within(await fact('sheet-parse')).getByRole('button', { name: term }));
+  };
+  const grammarSheet = (): Promise<HTMLElement> => screen.findByRole('dialog', { name: 'Grammar' });
+
+  Scenario('A tap on Noun in the parsing opens the Grammar sheet of Noun, with its examples in Hebrew', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Jonah 1 with the saved view {string}', (_, view: string) => openOn('Jonah 1', { settings: { readerView: view } }));
+    When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
+    And('he taps the parsing term {string}', tapsTerm);
+    Then('the Grammar sheet of {string} opens over the word sheet', async (_, term: string) => {
+      const grammar = await grammarSheet();
+      expect(within(grammar).getByRole('heading', { name: term })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Word' })).toBeInTheDocument();
+    });
+    And('its examples are Hebrew words, right to left', async () => {
+      const grammar = await grammarSheet();
+      const examples = await waitFor(() => {
+        const found = [...grammar.querySelectorAll<HTMLElement>('[data-testid="grammar-example"] [lang="he"]')];
+        if (found.length === 0) throw new Error('no Hebrew example drawn yet');
+        return found;
+      });
+      for (const el of examples) expect(el.getAttribute('dir')).toBe('rtl');
+    });
+  });
+
+  Scenario('A Hebrew word he marked I know this has that term plain in the parsing', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Jonah 1 with the saved view {string}', (_, view: string) => openOn('Jonah 1', { settings: { readerView: view } }));
+    When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
+    And('he taps the parsing term {string}', tapsTerm);
+    And('he taps I know this on the Grammar sheet', async () => {
+      await user.click(within(await grammarSheet()).getByRole('button', { name: /I know this/ }));
+    });
+    Then('the parsing term {string} under the Grammar sheet is plain, not underlined', async (_, term: string) => {
+      // the Grammar sheet is modal, so the word sheet beneath is found by its test id and not by role
+      await waitFor(() => expect(document.querySelector(`[data-testid="sheet-parse"] [data-term="${term}"]`)?.getAttribute('data-known')).toBe('true'));
+    });
+  });
+
+  Scenario('Help with this word and the term\'s Ask the tutor are not offered without the AI', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Jonah 1 with the saved view {string} and no licence', (_, view: string) => openOn('Jonah 1', { settings: { readerView: view }, unlicensed: true }));
+    When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
+    Then('the Hebrew word sheet has no Help with this word row', async () => {
+      await sheet();
       expect(within(await sheet()).queryByRole('group', { name: 'Help with this word' })).toBeNull();
     });
   });
 
-  Scenario('The parsing of a verb is the long form, in plain words with no Greek term to tap', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Genesis 1 with the saved view {string}', (_, view: string) => openOn('Genesis 1', { settings: { readerView: view } }));
+  Scenario('With many Hebrew lexicons On the Study row has All 8 lexicons, and its sheet draws the word in Hebrew', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Jonah 1 with the saved view {string} and Logos on with all the Hebrew lexicons ticked', (_, view: string) =>
+      openOn('Jonah 1', { settings: { readerView: view, ...LOGOS }, ticked: ['bdb', 'dblhebrew', 'twot', 'gesenius', 'abridgedbdb', 'tlot', 'lxhotlex', 'lexhamanalyticalhebrew'] }),
+    );
     When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
-    Then('it shows the parsing {string}', showsParsing);
-    And('no word of the parsing is a link', async () => {
-      expect(within(await fact('sheet-parse')).queryAllByRole('button')).toHaveLength(0);
+    And('he taps {string} in the Study row', async (_, name: string) => {
+      await user.click(await within(await sheet()).findByRole('button', { name }));
+    });
+    Then('the All lexicons sheet opens', async () => {
+      expect(await screen.findByRole('dialog', { name: 'All lexicons' })).toBeInTheDocument();
+    });
+    And('it names the word {string} in Hebrew, right to left, and not in Greek type', async (_, lemma: string) => {
+      const list = within(await screen.findByRole('dialog', { name: 'All lexicons' }));
+      const named = list.getAllByText(lemma);
+      expect(named.length).toBeGreaterThan(1);
+      for (const el of named) {
+        expect(el.getAttribute('lang')).toBe('he');
+        expect(el.getAttribute('dir')).toBe('rtl');
+        expect(el.classList.contains('script-he')).toBe(true);
+        expect(el.classList.contains('font-greek')).toBe(false);
+      }
+    });
+    And('its rows open the word\'s entry in each of the 8 Hebrew lexicons, in Logos', async () => {
+      const dialog = await screen.findByRole('dialog', { name: 'All lexicons' });
+      const rows = [...dialog.querySelectorAll<HTMLAnchorElement>('[data-lexicon]')];
+      expect(rows).toHaveLength(8);
+      // a lexicon filed by lemma opens at the word's consonants; the Strong's dictionaries at its Hebrew number (H5210)
+      for (const row of rows) expect(row.getAttribute('href')).toMatch(/^logosres:LLS:[\w.]+;(hw=%D7%A0%D7%99%D7%A0%D7%95%D7%94|ref=HebrewStrongs\.5210)$/);
     });
   });
 

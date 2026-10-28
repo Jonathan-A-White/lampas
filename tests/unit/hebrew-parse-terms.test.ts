@@ -81,9 +81,9 @@ describe('hebrewParseSegments: a Hebrew parsing cut into its terms', () => {
     expect(hebrewParseSegments('')).toEqual([]);
   });
 
-  it('is left plain by parseSegments for a Hebrew word, until the word sheet links it (story j2)', () => {
+  it('is cut the same way by parseSegments for a Hebrew word, which the word sheet links (mw-gdcyf98.20)', () => {
     const decoded = 'Verb - Qal - Perfect - third person masculine singular';
-    expect(parseSegments(decoded, 'hbo')).toEqual([{ text: decoded }]);
+    expect(parseSegments(decoded, 'hbo')).toEqual(hebrewParseSegments(decoded));
   });
 
   it('cuts every parse string of Genesis 1 and Jonah 1 into terms and separators alone, each term with an idea', () => {

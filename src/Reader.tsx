@@ -644,8 +644,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
       {linked ? <WordSheet chapter={linked.chapter} lookup={linked.lookup} onClose={() => setLinked(null)} /> : null}
       {chapter && lookup ? (
-        // Help with this word and Ask the tutor on a term are the Greek word's until the tutor learns Hebrew (mw-5vvlay.3)
-        <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={hbo ? undefined : tutor.helpWithWord} onAskTerm={hbo ? undefined : tutor.askAboutTerm} />
+        <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={tutor.helpWithWord} onAskTerm={tutor.askAboutTerm} />
       ) : null}
     </>
   );

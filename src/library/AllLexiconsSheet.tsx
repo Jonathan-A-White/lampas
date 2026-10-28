@@ -2,7 +2,7 @@
 // A search field, then every lexicon that is On as a full-width row that opens the word's entry in it (the pinned ones first, as the row drew them), and Manage at the foot, which opens the
 // Lexicons page of the Library. A direct role=dialog child of its own .fixed.inset-0 overlay (rig decision mw-5r3p30.636), over the word sheet; Back, Done, Escape and a tap outside close it.
 import { useState } from 'react';
-import { greekLang } from '../script/greekLang';
+import { faceOf } from '../script/greekLang';
 import { armFallback } from '../resources/openApp';
 import type { LexiconEntry } from '../resources/logos';
 import { focusOnMount } from '../ui/focus';
@@ -13,6 +13,8 @@ import { useSheetBack } from '../ui/sheetBack';
 interface Props {
   /** the word the rows open, as the word sheet names it (its lemma) */
   word: string;
+  /** the word is Hebrew (an Old Testament chapter): it is drawn right to left in the Hebrew face, not in Greek type */
+  hebrew?: boolean;
   /** every lexicon On that has an entry for the word, the pinned ones first */
   entries: readonly (LexiconEntry & { pinned: boolean })[];
   onClose: () => void;
@@ -22,7 +24,7 @@ interface Props {
   onManage: () => void;
 }
 
-export function AllLexiconsSheet({ word, entries, onClose, onMissing, onManage }: Props) {
+export function AllLexiconsSheet({ word, hebrew = false, entries, onClose, onMissing, onManage }: Props) {
   const [query, setQuery] = useState('');
   useEscapeToClose(onClose);
   useSheetBack(onClose);
@@ -55,7 +57,7 @@ export function AllLexiconsSheet({ word, entries, onClose, onMissing, onManage }
           />
           <p className="pt-1 text-sm text-muted" aria-live="polite">
             {query.trim() === '' ? 'Each opens ' : `${shown.length} of ${entries.length} shown · each opens `}
-            <span {...greekLang(true)} className="font-greek">{word}</span>
+            <span {...faceOf(hebrew ? 'hbo' : 'grc', { greek: '', hebrew: '' })}>{word}</span>
           </p>
         </div>
         <div data-testid="all-lexicons-list" className="mx-4 mt-1 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-lg border border-line">
@@ -73,7 +75,7 @@ export function AllLexiconsSheet({ word, entries, onClose, onMissing, onManage }
             >
               <span className="title-wrap text-base font-medium text-accent">{link.tile}</span>
               <span className="text-sm text-muted">
-                {pinned ? 'Pinned · opens ' : 'Opens '}<span {...greekLang(true)} className="font-greek">{word}</span>
+                {pinned ? 'Pinned · opens ' : 'Opens '}<span {...faceOf(hebrew ? 'hbo' : 'grc', { greek: '', hebrew: '' })}>{word}</span>
               </span>
             </a>
           ))}

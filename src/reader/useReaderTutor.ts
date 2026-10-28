@@ -141,12 +141,12 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
   const helpWithWord = useCallback(
     (help: WordHelp) => {
       if (!chapter) return;
-      const focus: WordFocus = { form: help.form, lemma: help.lemma, parse: help.parse, kind: help.kind };
+      const focus: WordFocus = { form: help.form, lemma: help.lemma, parse: help.parse, kind: help.kind, ...(help.language ? { language: help.language } : {}) };
       publish({ kind: 'word-help', help: help.kind, form: focus.form, lemma: focus.lemma, parse: focus.parse, chapter: CHAPTER, verse: help.verse });
       askFrom(help.verse, (scope) => ({
         question: helpQuestion(focus, scopeTitle(scope)),
         focus,
-        beforeSay: () => help.kind === 'sound' && speakWord(help.form, 'greek', true),
+        beforeSay: () => help.kind === 'sound' && speakWord(help.form, help.language === 'he' ? 'hebrew' : 'greek', true),
       }));
     },
     [chapter, askFrom, CHAPTER],

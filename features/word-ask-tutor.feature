@@ -33,3 +33,22 @@ Feature: Ask the tutor about a word, holding what the app knows
     And he taps Ask the tutor on the question
     Then the Reader is open with the sheet titled "Talk about Romans 8:1"
     And the grist carries the quiz focus for the word "ἀμήν" with no form, no parsing and no earlier answers
+
+  Scenario: Ask the tutor on the sheet of a Hebrew word sends the word with its language
+    Given Lampas is opened on Jonah 1 in the Hebrew view behind a fake Postern
+    And he taps the Hebrew word "נִֽינְוֵ֛ה" in verse 2
+    When he taps Ask the tutor on the word sheet
+    Then the word sheet is gone and the sheet is titled "Talk about Jonah 1:2"
+    And the mill received 1 grist for the lampas app, kind bible-talk
+    And the grist carries the Hebrew focus form "נִינְוֵה", lemma "נִינְוֵה", parse "Noun - proper - feminine singular" and kind word
+    And the grist question names the word, its lemma, its parsing and the reference "Jonah 1:2"
+
+  Scenario: Ask the tutor on the Grammar sheet of a term of a Hebrew word sends the term
+    Given Lampas is opened on Jonah 1 in the Hebrew view behind a fake Postern
+    And he taps the Hebrew word "נִֽינְוֵ֛ה" in verse 2
+    When he taps the parsing term "Noun" on the word sheet
+    And he taps Ask the tutor on the Grammar sheet
+    Then the word sheet is gone and the sheet is titled "Talk about Jonah 1:2"
+    And the grist carries the term focus "Noun" of kind grammar-term
+    And the grist question asks to explain "Noun" and names "Jonah 1:2"
+

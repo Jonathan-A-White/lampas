@@ -29,6 +29,9 @@ const WORD_ANSWER = {
   words: [{ greek: 'דְּבַר־', lemma: 'דָּבָר', note: 'noun, masculine singular construct', language: 'he' }],
 };
 
+const ADD_ANSWER = { answer: 'Adding דָּבָר.', words: [], words_to_add: ['דָּבָר'] };
+const LINK_ANSWER = { answer: 'The word for word is דָּבָר.', words: [], links: [{ kind: 'word', lemma: 'דָּבָר' }] };
+
 const opened = (place: string, level: string, answer: unknown = TALK_ANSWER) => async (): Promise<void> => {
   await open((f: FakePostern) => void (f.autoReply = { status: 'answered', answer }), false, PLACES[place]);
   await db.settings.put({ key: 'hebrewInterest', value: LEVELS[level] });
@@ -138,6 +141,90 @@ describeFeature(
       Then('the word sheet opens on the Hebrew word {string}', async (_, form: string) => {
         const dialog = await screen.findByRole('dialog', { name: 'Word' });
         expect(dialog).toHaveTextContent(form);
+      });
+    });
+
+    const answered = async (): Promise<HTMLElement> =>
+      waitFor(() => {
+        const found = sheet().querySelector<HTMLElement>('[data-turn]');
+        if (!found?.querySelector('[data-answer-text]')) throw new Error('the answer has not arrived');
+        return found;
+      });
+    const hasWord = async (_: unknown, lemma: string, gloss: string): Promise<void> => {
+      await waitFor(async () => expect(await db.words.get(lemma.normalize('NFC'))).toMatchObject({ lemma, lang: 'hbo', gloss, state: 'learning' }));
+      expect((await db.words.toArray()).filter((w) => w.lemma === lemma)).toHaveLength(1);
+    };
+
+    Scenario("Add to my words on the answer's Hebrew word lists the lemma as a Hebrew word with the lexicon's gloss", ({ Given, When, And, Then }) => {
+      Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer explains the Hebrew word {string}', () => opened('Jonah 1', 'Curious', WORD_ANSWER)());
+      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      And('he sends {string}', sends);
+      And('he taps Add to my words on the answer\'s word {string}', async (_, lemma: string) => {
+        const list = await waitFor(() => {
+          const found = sheet().querySelector<HTMLElement>('[data-talk-words]');
+          if (!found) throw new Error('the answer has not arrived');
+          return found;
+        });
+        // the button is drawn once the list has been asked whether the word is on it
+        const button = await waitFor(() => {
+          const found = list.querySelector<HTMLElement>(`[data-add-word="${lemma}"]`);
+          if (!found) throw new Error(`no Add to my words for ${lemma}`);
+          return found;
+        });
+        await user.click(button);
+      });
+      Then('his words hold {string} as a Hebrew word with the gloss {string}', hasWord);
+      And('the answer\'s button for {string} now reads On my list', async (_, lemma: string) => {
+        await waitFor(() => expect(sheet().querySelector(`[data-add-word="${lemma}"]`)).toHaveTextContent('On my list'));
+      });
+    });
+
+    Scenario('An answer that asks to add a Hebrew lemma to his words says so in the Hebrew face', ({ Given, When, And, Then }) => {
+      Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer adds the Hebrew word {string} to his words', () => opened('Jonah 1', 'Curious', ADD_ANSWER)());
+      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      And('he sends {string}', sends);
+      Then('the answer says {string}, the lemma right to left in the Hebrew face', async (_, line: string) => {
+        const turn = await answered();
+        const added = await waitFor(() => {
+          const found = turn.querySelector<HTMLElement>('[data-talk-added]');
+          if (!found) throw new Error('no line yet');
+          return found;
+        });
+        expect(added.textContent?.normalize('NFC')).toBe(line.normalize('NFC'));
+        const lemma = added.querySelector<HTMLElement>('[lang]');
+        expect(lemma?.getAttribute('lang')).toBe('he');
+        expect(lemma?.getAttribute('dir')).toBe('rtl');
+        expect(lemma?.classList.contains('script-he')).toBe(true);
+        expect(lemma?.classList.contains('font-greek')).toBe(false);
+      });
+      And('his words hold {string} as a Hebrew word with the gloss {string}', hasWord);
+    });
+
+    Scenario("A word link to a Hebrew lemma is drawn in Hebrew and opens the Hebrew word's sheet", ({ Given, When, And, Then }) => {
+      Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer links the Hebrew word {string}', () => opened('Jonah 1', 'Curious', LINK_ANSWER)());
+      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      And('he sends {string}', sends);
+      Then("the answer's study links name {string} right to left in the Hebrew face and not in Greek type", async (_, lemma: string) => {
+        const links = await waitFor(() => {
+          const found = sheet().querySelector<HTMLElement>('[data-tutor-links]');
+          if (!found) throw new Error('no links yet');
+          return found;
+        });
+        const name = [...links.querySelectorAll<HTMLElement>('[lang]')].find((el) => el.textContent === lemma);
+        expect(name, lemma).toBeDefined();
+        expect(name?.getAttribute('lang')).toBe('he');
+        expect(name?.getAttribute('dir')).toBe('rtl');
+        expect(name?.classList.contains('script-he')).toBe(true);
+        expect(name?.classList.contains('font-greek')).toBe(false);
+      });
+      When("he taps the answer's link {string}", async (_, name: string) => {
+        await user.click(await within(sheet()).findByRole('button', { name }));
+      });
+      Then('the Hebrew word sheet opens over the Talk sheet on the lemma {string} with the meaning {string}', async (_, lemma: string, meaning: string) => {
+        const dialog = await screen.findByRole('dialog', { name: 'Word' });
+        expect(await within(dialog).findByTestId('sheet-lemma')).toHaveTextContent(lemma);
+        expect(within(dialog).getByTestId('sheet-gloss')).toHaveTextContent(meaning);
+        expect(within(dialog).getByTestId('sheet-word').getAttribute('lang')).toBe('he');
       });
     });
 
