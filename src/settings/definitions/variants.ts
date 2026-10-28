@@ -20,7 +20,7 @@ export const variantsSetting = defineSetting<Variants>({
   section: 'variants',
   label: 'Variants',
   hint: 'Whether the Reader shows where the manuscripts differ.',
-  help: 'Marks where manuscripts differ: **Those that change the English** keeps readings that change it; **All**, every one.',
+  help: 'Where manuscripts differ: **Those that change the English** keeps readings that change it; **All**, every one.',
 });
 
 export const variantWitnessesSetting = defineSetting<VariantWitnesses>({
