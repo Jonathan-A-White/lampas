@@ -17,6 +17,7 @@ export type SectionId =
   | 'headings'
   | 'immersive'
   | 'weave'
+  | 'variants'
   | 'newWords'
   | 'paradigms'
   | 'goal'

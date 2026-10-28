@@ -48,6 +48,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'headings', title: 'Section headings' },
   { id: 'immersive', title: 'Immersive reader' },
   { id: 'weave', title: 'Weave' },
+  { id: 'variants', title: 'Variants' },
   { id: 'newWords', title: 'New words' },
   { id: 'paradigms', title: 'Paradigms' },
   { id: 'goal', title: 'Goal' },
@@ -87,7 +88,7 @@ export type SettingsGroup = KitGroup<SectionId, GroupId>;
 /** The groups, in the order the home lists them, and the one table that says which group a section is in (a unit test fails on a section in none or two).
  *  PROVISIONAL: the grouping is the Builder's, to be amended by the Governor. */
 export const GROUPS: readonly SettingsGroup[] = [
-  { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave'] },
+  { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave', 'variants'] },
   { id: 'greek', title: 'Learning', hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting and Hebrew in the tutor.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'hebrew'] },
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },

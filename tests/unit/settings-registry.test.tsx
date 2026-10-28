@@ -32,6 +32,7 @@ describe('the registry lists every Settings row', () => {
     await db.settings.bulkPut([
       { key: 'hebrewInterest', value: '5' },
       { key: 'weave', value: 'solid' },
+      { key: 'variants', value: 'all' },
       { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },
       { key: 'devotional', value: 'random' },
@@ -67,7 +68,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['askBy', 'audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'copyText', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'hebrewInterest', 'hebrewKeyboard', 'hebrewPronunciation', 'hebrewRate', 'hebrewVoice', 'immersiveHint', 'immersiveReader', 'ipaLesson', 'languages', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'pronunciation', 'pronunciationSeparate', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'weave', 'weaveGrammar', 'weaveOrder'],
+      ['askBy', 'audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'copyText', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'hebrewInterest', 'hebrewKeyboard', 'hebrewPronunciation', 'hebrewRate', 'hebrewVoice', 'immersiveHint', 'immersiveReader', 'ipaLesson', 'languages', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'pronunciation', 'pronunciationSeparate', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'sectionHeadings', 'send', 'talk', 'textSize', 'theme', 'tips', 'todaysDevotional', 'variantWitnesses', 'variants', 'weave', 'weaveGrammar', 'weaveOrder'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -341,6 +342,8 @@ describe('currentSettings', () => {
       devotional: 'LLS:20.10.1',
       devotionalDraw: 'all',
       todaysDevotional: 'LLS:20.10.1',
+      variantWitnesses: 'ecm',
+      variants: 'off',
       dailyTicks: 'on',
       greekKeyboard: 'off',
       hebrewKeyboard: 'off',

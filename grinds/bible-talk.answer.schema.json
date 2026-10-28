@@ -1472,6 +1472,8 @@
                   "weave",
                   "weaveGrammar",
                   "weaveOrder",
+                  "variants",
+                  "variantWitnesses",
                   "newWordsADay",
                   "pickerGrammar",
                   "grammarMove",
@@ -1702,6 +1704,18 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "weaveOrder" }, "value": { "type": "string", "enum": ["english", "greek"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "variants" }, "value": { "type": "string", "enum": ["off", "english", "all"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "variantWitnesses" }, "value": { "type": "string", "enum": ["byz", "na", "ecm"] } }
           },
           {
             "type": "object",
