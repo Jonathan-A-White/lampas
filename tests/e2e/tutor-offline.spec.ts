@@ -6,7 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
-import { composerOf, questionField } from './ask-composer';
+import { composerOf, questionField, talkSheetOf, talkTurnsOf } from './ask-composer';
 import { honestMic } from '../support/honest-fakes';
 import { chooseAction, openTalkAbout } from './verse-view';
 import { talkField } from './talk-field';
@@ -26,7 +26,7 @@ test('the backend answering 503 says the tutor is offline right now, not his con
   await page.goto('/');
   await chooseAction(page, 28, 'Ask the tutor');
   await askAbout28(page);
-  const box = page.locator('[data-ask-failed]');
+  const box = talkSheetOf(page);
   await expect(box.getByText('Could not reach the tutor')).toBeVisible();
   await expect(box.getByText('The tutor is offline right now. This is not your connection; try again later.')).toBeVisible();
   await expect(box.getByText(/Check the connection/)).toHaveCount(0);
@@ -44,7 +44,7 @@ test('a phone with no network says he is offline', async ({ page, context }) => 
   await context.setOffline(true);
   await page.route(`${POSTERN_ORIGIN}/**`, (route) => route.abort('internetdisconnected'));
   await askAbout28(page);
-  const box = page.locator('[data-ask-failed]');
+  const box = talkSheetOf(page);
   await expect(box.getByText('You are offline. Check your connection and try again.')).toBeVisible();
   await expect(box.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
 });
@@ -82,7 +82,7 @@ test('a gateway 502 with no CORS headers and the phone online says the tutor is 
   await page.goto('/');
   await chooseAction(page, 28, 'Ask the tutor');
   await askAbout28(page);
-  const box = page.locator('[data-ask-failed]');
+  const box = talkSheetOf(page);
   await expect(box.getByText('Could not reach the tutor')).toBeVisible();
   await expect(box.getByText('The tutor is offline right now. This is not your connection; try again later.')).toBeVisible();
   await expect(page.getByText(/You are offline/)).toHaveCount(0);
@@ -90,7 +90,7 @@ test('a gateway 502 with no CORS headers and the phone online says the tutor is 
   // airplane mode on: the browser says so, and now it is his connection
   await context.setOffline(true);
   await box.getByRole('button', { name: 'Retry', exact: true }).click();
-  await expect(page.locator('[data-ask-failed]').getByText('You are offline. Check your connection and try again.')).toBeVisible();
+  await expect(talkSheetOf(page).getByText('You are offline. Check your connection and try again.')).toBeVisible();
   await expect(page.getByText(/The tutor is offline right now/)).toHaveCount(0);
 });
 
@@ -116,12 +116,12 @@ test('the phone going offline while the tutor is still thinking says he is offli
   await chooseAction(page, 28, 'Ask the tutor');
   await askAbout28(page);
   // the question has gone and the tutor has not answered: the box counts the wait
-  await expect(page.locator('[data-ask-pending]').getByText(/Waiting for the tutor…/)).toBeVisible();
+  await expect(talkSheetOf(page).getByText(/Waiting for the tutor…/)).toBeVisible();
   await expect.poll(() => fake.received.length).toBe(1);
   // airplane mode: the browser says so and every call to the backend fails to connect
   await context.setOffline(true);
   await page.route(`${POSTERN_ORIGIN}/**`, (route) => route.abort('internetdisconnected'));
-  const box = page.locator('[data-ask-failed]');
+  const box = talkSheetOf(page);
   await expect(box.getByText('You are offline. Check your connection and try again.')).toBeVisible();
   await expect(box.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
   await expect(page.getByText(/Waiting for the tutor…/)).toHaveCount(0);
@@ -132,7 +132,7 @@ test('the phone going offline while the tutor is still thinking says he is offli
   await routePostern(page, fake);
   await box.getByRole('button', { name: 'Retry', exact: true }).click();
   await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
-  await expect(page.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
+  await expect(talkTurnsOf(page)).toContainText(SYNERGEI_ANSWER.answer);
   expect(fake.received).toHaveLength(1);
 });
 

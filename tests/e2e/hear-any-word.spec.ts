@@ -28,9 +28,10 @@ async function openAnswer(page: Page) {
   await page.clock.install();
   await openUnlocked(page);
   await page.goto('/');
-  const view = await chooseAction(page, 28, 'Ask the tutor');
+  await chooseAction(page, 28, 'Ask the tutor');
   await typeQuestion(page, 'Where does righteousness come from?');
-  const card = view.locator('[data-answer]');
+  // the answer is the Talk sheet's (mw-5r3p30.842)
+  const card = page.getByRole('dialog', { name: /^Talk about / }).locator('[data-turn]');
   await expect(card).toContainText('ἀγαθόν');
   // the answer is read aloud when it arrives: only what the press adds counts
   await page.waitForTimeout(300);
@@ -44,7 +45,7 @@ async function hold(page: Page, word: string, ms: number) {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
       const i = node.textContent?.indexOf(needle) ?? -1;
-      if (i >= 0 && node.parentElement?.closest('[data-answer]')) {
+      if (i >= 0 && node.parentElement?.closest('[data-turn]')) {
         const range = document.createRange();
         range.setStart(node, i);
         range.setEnd(node, i + needle.length);

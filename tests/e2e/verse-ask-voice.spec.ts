@@ -6,7 +6,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { clips, honestMic } from '../support/honest-fakes';
-import { askBar, composerOf, typeQuestion } from './ask-composer';
+import { composerOf, talkSheetOf, talkTurnsOf } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
@@ -57,7 +57,7 @@ async function pressBar(page: Page): Promise<void> {
 
 test('Hold to ask: his words show as he speaks, above the bar, then his question stays above Waiting until the answer', async ({ page }) => {
   const fake = makeFakePostern();
-  const view = await start(page, fake);
+  await start(page, fake);
   const live = composerOf(page).getByTestId('live-transcript');
 
   await pressBar(page);
@@ -71,98 +71,40 @@ test('Hold to ask: his words show as he speaks, above the bar, then his question
   await shot(page, 'verse-ask-holding');
 
   await page.mouse.up();
-  const pending = view.locator('[data-ask-pending]');
-  await expect(pending).toContainText(SAID);
-  await expect(view.getByText(/Waiting for the tutor…/)).toBeVisible();
-  await expectShownAboveBar(page, pending);
-  await expectShownAboveBar(page, view.getByText(/Waiting for the tutor…/));
+  // the question goes to the Talk sheet (mw-5r3p30.842), which shows it above its Waiting line
+  const sheet = talkSheetOf(page);
+  await expect(sheet).toContainText(SAID);
+  const waiting = sheet.getByText(/Waiting for the tutor…/);
+  await expect(waiting).toBeVisible();
   // the question is shown above the Waiting line
-  expect((await box(pending)).y).toBeLessThan((await box(view.getByText(/Waiting for the tutor…/))).y);
+  expect((await box(sheet.getByText(SAID, { exact: true }).first())).y).toBeLessThan((await box(waiting)).y);
   expect(fake.received).toHaveLength(1);
   expect(fake.received[0].input.question).toBe(SAID);
   await shot(page, 'verse-ask-waiting');
 
-  // it stays until the answer comes; then the answer card shows
+  // it stays until the answer comes; then the answer shows in the sheet
   await page.waitForTimeout(1500);
-  await expect(pending).toContainText(SAID);
+  await expect(sheet).toContainText(SAID);
   await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
-  await expect(view.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
-  await expect(pending).toHaveCount(0);
-  await expect(askBar(page)).toBeEnabled();
+  await expect(talkTurnsOf(page)).toContainText(SYNERGEI_ANSWER.answer);
+  await expect(sheet.getByText(/Waiting for the tutor…/)).toHaveCount(0);
 });
 
-test('a failed send keeps the question in the field to send again, and typing a question and tapping Send still works', async ({ page }) => {
+test('a failed send shows No licence in the Talk sheet with Retry, and Retry asks the same question again', async ({ page }) => {
   const fake = makeFakePostern();
   fake.licensed = false;
-  const view = await start(page, fake);
+  await start(page, fake);
 
-  // by voice
   await pressBar(page);
   await expect(composerOf(page).getByTestId('live-transcript')).toHaveText(SAID, { timeout: 15_000 });
   await page.mouse.up();
-  await expect(view.getByRole('alert')).toContainText('No licence');
-  const field = composerOf(page).getByRole('textbox', { name: 'Your question' });
-  await expect(field).toHaveValue(SAID);
-  await expect(view.locator('[data-ask-pending]')).toHaveCount(0);
+  const sheet = talkSheetOf(page);
+  await expect(sheet.getByRole('alert')).toContainText('No licence');
+  await expect(sheet.getByText(/Waiting for the tutor…/)).toHaveCount(0);
 
-  // by hand: what he types goes with Send, and a failure leaves it there
-  await field.fill('What is the subject of this verse?');
   fake.licensed = true;
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
-  await composerOf(page).getByRole('button', { name: 'Send', exact: true }).click();
-  await expect(view.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
-  expect(fake.received.at(-1)?.input.question).toBe('What is the subject of this verse?');
-  await expect(askBar(page)).toBeEnabled();
-});
-
-test('at the end of the chapter with an answer kept, the last answer scrolls fully clear of the composer', async ({ page }) => {
-  const fake = makeFakePostern();
-  fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
-  await page.setViewportSize(VIEWPORT);
-  await routePostern(page, fake);
-  await honestMic(page);
-  await openUnlocked(page);
-  await page.goto('/#/?c=8&view=english&weave=off');
-  await page.locator('[data-verse="39"]').scrollIntoViewIfNeeded();
-  const view = await chooseAction(page, 39, 'Ask the tutor');
-  await typeQuestion(page, 'Who can separate us?');
-  await expect(view.locator('[data-answer]')).toHaveCount(1);
-
-  await view.locator('.screen').evaluate((el) => el.scrollTo(0, el.scrollHeight));
-  const last = await box(view.getByRole('button', { name: 'Talk about verse 39', exact: true }));
-  const composer = await box(composerOf(page));
-  expect(last.y + last.height).toBeLessThanOrEqual(composer.y);
-  expect(overlaps(last, composer)).toBe(false);
-});
-
-const CLEANED = 'What does κέκληται mean?';
-
-test('a spoken question shows his own words under the cleaned heading as a muted "You said" line (mw-5r3p30.308)', async ({ page }) => {
-  const fake = makeFakePostern();
-  const view = await start(page, fake);
-  await pressBar(page);
-  await expect(composerOf(page).getByTestId('live-transcript')).toHaveText(SAID, { timeout: 15_000 });
-  await page.mouse.up();
-  await fake.answer({ status: 'answered', answer: { ...SYNERGEI_ANSWER, question: CLEANED } });
-
-  const card = view.locator('[data-answer]');
-  const heading = card.locator('[data-answer-question]');
-  await expect(heading).toHaveText(CLEANED);
-  const said = card.locator('[data-you-said]');
-  await expect(said).toHaveText(`You said: ${SAID}`);
-  await expect(said).toHaveClass(/text-muted/);
-  // the line is under the heading, before the answer
-  expect((await box(said)).y).toBeGreaterThanOrEqual((await box(heading)).y + (await box(heading)).height - 0.5);
-  expect((await box(said)).y).toBeLessThan((await box(card.locator('.leading-snug'))).y);
-  await shot(page, 'verse-ask-you-said');
-});
-
-test('a typed question shows no "You said" line, even when the tutor tidied it', async ({ page }) => {
-  const fake = makeFakePostern();
-  fake.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, question: CLEANED } };
-  const view = await start(page, fake);
-  await typeQuestion(page, 'what does keklaytai mean');
-  const card = view.locator('[data-answer]');
-  await expect(card.locator('[data-answer-question]')).toHaveText(CLEANED);
-  await expect(card.locator('[data-you-said]')).toHaveCount(0);
+  await sheet.getByRole('button', { name: 'Retry' }).click();
+  await expect(talkTurnsOf(page)).toContainText(SYNERGEI_ANSWER.answer);
+  expect(fake.received.at(-1)?.input.question).toBe(SAID);
 });

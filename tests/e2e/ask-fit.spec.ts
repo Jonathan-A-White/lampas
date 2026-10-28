@@ -1,19 +1,12 @@
-// tests/e2e/ask-fit.spec.ts — Ask the tutor in the Verse view fits the phone (mw-5r3p30.170): at 390 x 844 the answer is scrolled into view when it comes, its
-// first lines clear of the composer and of the speaking bar; at 844 x 390 (landscape) the whole composer, Type a question included, is inside the window, with
+// tests/e2e/ask-fit.spec.ts — Ask the tutor in the Verse view fits the phone (mw-5r3p30.170): at 844 x 390 (landscape) the whole composer, Type a question included, is inside the window, with
 // the text box closed and open; and Type a question is a 44 px thumb target. jsdom has no layout, so it is proven here.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic, honestSpeech } from '../support/honest-fakes';
-import { composerOf, typeQuestion } from './ask-composer';
+import { composerOf } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-
-// three sentences, as the story's report has it (mw-5r3p30.188)
-const THREE_SENTENCES = {
-  answer: 'Called means chosen by God for a purpose. It is the same word Paul uses for all who love him. So the call comes first, and the love answers it.',
-  words: [] as { greek: string; lemma: string; note: string }[],
-};
 
 async function openAsk(
   page: Page,
@@ -42,28 +35,6 @@ async function box(el: Locator) {
   return b;
 }
 
-test('390 x 844: the answer is scrolled into view when it comes, clear of the composer and the speaking bar', async ({ page }) => {
-  const { view } = await openAsk(page, { width: 390, height: 844 });
-  await typeQuestion(page, 'What does called mean?');
-  const card = view.locator('[data-answer]');
-  await expect(card).toContainText(SYNERGEI_ANSWER.answer);
-  const speaking = page.getByRole('region', { name: 'Speaking', exact: true });
-  await expect(speaking).toBeVisible();
-  const scroller = await box(view.locator('.screen'));
-  const bar = await box(speaking);
-  const composer = await box(composerOf(page));
-  // the card's first lines are in the scrolling box once the answer has come (the box scrolls to it)
-  await expect.poll(async () => (await box(card)).y + 100, { message: 'the answer is scrolled into view' }).toBeLessThanOrEqual(scroller.y + scroller.height);
-  const c = await box(card);
-  // its first lines (a heading line and two lines of answer) are inside the scrolling box, above the speaking bar and the composer
-  expect(c.y).toBeGreaterThanOrEqual(scroller.y - 1);
-  expect(c.y + 100).toBeLessThanOrEqual(scroller.y + scroller.height);
-  expect(scroller.y + scroller.height).toBeLessThanOrEqual(bar.y + 1);
-  expect(c.y + 100).toBeLessThanOrEqual(bar.y);
-  expect(c.y + 100).toBeLessThanOrEqual(composer.y);
-  await shot(page, 'ask-fit-answer');
-});
-
 test('844 x 390: the whole composer is inside the window, with the text box closed and open', async ({ page }) => {
   await openAsk(page, { width: 844, height: 390 });
   const typeInstead = composerOf(page).getByRole('button', { name: 'Type a question', exact: true });
@@ -87,50 +58,4 @@ test('Type a question is a 44 px target', async ({ page }) => {
   await openAsk(page, { width: 390, height: 844 });
   const t = await box(composerOf(page).getByRole('button', { name: 'Type a question', exact: true }));
   expect(t.height).toBeGreaterThanOrEqual(43.5);
-});
-
-// mw-5r3p30.188: sideways, the passage and the answer shared a scroll box 28 px tall under the speaking bar; the question and the first answer line must be
-// fully in view at once, with the card's top edge not cut off.
-async function expectAnswerReadable(view: Locator, viewport: { width: number; height: number }): Promise<void> {
-  const card = view.locator('[data-answer]');
-  const scroller = view.locator('.screen');
-  const settled = async () => {
-    const s = await box(scroller);
-    const q = await box(card.locator('[data-answer-question]'));
-    const a = await box(card.locator('.markdown, p').nth(1));
-    return { s, q, a };
-  };
-  // the box is tall enough to read in, and the question and the first answer line sit wholly inside it. 90 px: the card's question line (20 px) and its first
-  // answer line with the card's padding need about 70, and the 28 px of mw-5r3p30.188 is far below it. It was 100 until 'Send to the makers' (commit b5efb771)
-  // put a row of 34 px into the composer, leaving 95 px beside the speaking bar in landscape: the lines are wholly in view at 95, so 100 asked for more than reading needs.
-  await expect
-    .poll(async () => {
-      const { s, q, a } = await settled();
-      const c = await box(card);
-      return s.height >= 90 && c.y >= s.y - 0.5 && q.y >= s.y - 0.5 && a.y + 24 <= s.y + s.height + 0.5 && q.y + q.height <= a.y + 0.5;
-    }, { message: 'the answer card is in view with its top edge, its question and its first line' })
-    .toBe(true);
-  const { s } = await settled();
-  expect(s.y + s.height).toBeLessThanOrEqual(viewport.height);
-}
-
-test('844 x 390: the answer is readable with the speaking bar showing, after Stop, and after rotating', async ({ page }) => {
-  const sideways = { width: 844, height: 390 };
-  const { view } = await openAsk(page, sideways, THREE_SENTENCES);
-  await typeQuestion(page, 'What does called mean?');
-  const card = view.locator('[data-answer]');
-  await expect(card).toContainText('Called means chosen');
-  const speaking = page.getByRole('region', { name: 'Speaking', exact: true });
-  await expect(speaking).toBeVisible();
-  await expectAnswerReadable(view, sideways);
-  await shot(page, 'ask-fit-landscape-answer');
-  await speaking.getByRole('button', { name: 'Stop', exact: true }).click();
-  await expectAnswerReadable(view, sideways);
-  await shot(page, 'ask-fit-landscape-answer-stopped');
-  // rotate upright and back to sideways with the answer open
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.setViewportSize(sideways);
-  await expect(card).toBeVisible();
-  await expectAnswerReadable(view, sideways);
-  await shot(page, 'ask-fit-landscape-answer-rotated');
 });

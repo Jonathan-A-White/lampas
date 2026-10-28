@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
-import { askBar, composerOf, expectOneAskBar, questionField } from './ask-composer';
+import { askBar, composerOf, expectOneAskBar, questionField, talkTurnsOf } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -56,6 +56,6 @@ test('Romans 8:1-11, Ask the tutor: one composer with a gold Hold to ask bar and
   expect(parseFloat(await field.evaluate((el) => getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
   await shot(page, 'ask-composer-typing');
   await send.click();
-  await expect(view.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
+  await expect(talkTurnsOf(page)).toContainText(SYNERGEI_ANSWER.answer);
   expect(fake.received[0].input.reference).toBe('Romans 8:1-11');
 });

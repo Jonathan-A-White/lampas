@@ -35,3 +35,9 @@ export async function expectOneAskBar(page: Page, viewport: { width: number; hei
   expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
   await expect(page.locator('[data-talk-bar]')).toHaveCount(0);
 }
+
+/** The Talk sheet the Verse view's Ask the tutor opens over the view (mw-5r3p30.842): the one tutor's wait, answers and failures are its. */
+export const talkSheetOf = (page: Page): Locator => page.getByRole('dialog', { name: /^Talk about / });
+
+/** The turns of the open Talk sheet: his question and the tutor's answer in each. */
+export const talkTurnsOf = (page: Page): Locator => talkSheetOf(page).locator('[data-turn]');

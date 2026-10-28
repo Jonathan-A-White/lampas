@@ -6,7 +6,7 @@ import { makeFakePostern, SYNERGEI_ANSWER, type FakePostern } from '../support/f
 import { routePostern } from '../support/playwright-postern';
 import { clips, honestMic } from '../support/honest-fakes';
 import { longQuestion } from '../support/long-text';
-import { askBar, composerOf, typeQuestion } from './ask-composer';
+import { askBar, composerOf, talkSheetOf, talkTurnsOf, typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
@@ -25,7 +25,7 @@ async function start(page: Page, fake: FakePostern, transcript = QUESTION) {
 
 test('an 885-character spoken question from verse 28 is sent whole, waits and is answered', async ({ page }) => {
   const fake = makeFakePostern();
-  const view = await start(page, fake);
+  await start(page, fake);
   const bar = await askBar(page).boundingBox();
   if (!bar) throw new Error('no bar');
   await page.mouse.move(bar.x + bar.width / 2, bar.y + bar.height / 2);
@@ -33,25 +33,25 @@ test('an 885-character spoken question from verse 28 is sent whole, waits and is
   await expect(composerOf(page).getByTestId('live-transcript')).toHaveText(QUESTION, { timeout: 20_000 });
   await page.mouse.up();
 
-  await expect(view.getByText(/Waiting for the tutor…/)).toBeVisible();
-  await expect(view.locator('[data-ask-pending]')).toContainText(QUESTION.slice(0, 80));
+  await expect(talkSheetOf(page).getByText(/Waiting for the tutor…/)).toBeVisible();
+  await expect(talkSheetOf(page)).toContainText(QUESTION.slice(0, 80));
   expect(fake.received).toHaveLength(1);
   expect(fake.received[0].input.question).toBe(QUESTION);
   expect(String(fake.received[0].input.question)).toHaveLength(LENGTH);
   await shot(page, 'ask-long-question-spoken');
   await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
-  await expect(view.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
+  await expect(talkTurnsOf(page)).toContainText(SYNERGEI_ANSWER.answer);
 });
 
 test('an 885-character typed question from verse 28 is sent whole, waits and is answered', async ({ page }) => {
   const fake = makeFakePostern();
-  const view = await start(page, fake);
+  await start(page, fake);
   await typeQuestion(page, QUESTION);
 
-  await expect(view.getByText(/Waiting for the tutor…/)).toBeVisible();
+  await expect(talkSheetOf(page).getByText(/Waiting for the tutor…/)).toBeVisible();
   expect(fake.received).toHaveLength(1);
   expect(fake.received[0].input.question).toBe(QUESTION);
   await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
-  await expect(view.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
-  await expect(view.getByRole('alert')).toHaveCount(0);
+  await expect(talkTurnsOf(page)).toContainText(SYNERGEI_ANSWER.answer);
+  await expect(talkSheetOf(page).getByRole('alert')).toHaveCount(0);
 });

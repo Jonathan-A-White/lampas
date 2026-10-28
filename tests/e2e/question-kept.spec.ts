@@ -1,12 +1,11 @@
-// tests/e2e/question-kept.spec.ts — a question is never lost (mw-5r3p30.602, folding mw-5r3p30.439 .441 .437 .493): a question that failed, or went and waits for its answer,
+// tests/e2e/question-kept.spec.ts — a question is never lost (mw-5r3p30.602, folding mw-5r3p30.439 .441 .437 .493): a question that failed, or went and waits for its answer in the Talk sheet (the Verse view's Ask goes there too, mw-5r3p30.842),
 // comes back when he leaves the page and returns or the page reloads (src/pending/pendingAsks.ts); after Send the question, the wait and a failure stand in view above the
-// composer on a phone held sideways; and a long question sent in Talk or Ask leaves the first line of the answer on screen, not his own words. mw-5r3p30.434 (the phone
+// composer on a phone held sideways; and a long question sent in Talk leaves the first line of the answer on screen, not his own words. mw-5r3p30.434 (the phone
 // goes offline mid-wait) is in tutor-offline.spec.ts.
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { makeFakePostern, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../support/fake-postern';
+import { makeFakePostern, TALK_ANSWER, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { longQuestion } from '../support/long-text';
-import { composerOf, questionField, typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { expectInList } from './talk-list';
 import { openUnlocked } from './unlocked';
@@ -43,41 +42,7 @@ async function sayInTalk(sheet: Locator, text: string): Promise<void> {
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 }
 
-/** Whole inside the box that scrolls (the Verse view's .screen) and above the composer. */
-async function expectAboveComposer(page: Page, target: Locator, what: string): Promise<void> {
-  await expect(target, `${what} is not drawn`).toBeVisible();
-  const [at, screen, composer] = await Promise.all([target.boundingBox(), page.locator('.screen').last().boundingBox(), composerOf(page).boundingBox()]);
-  if (!at || !screen || !composer) throw new Error('no box');
-  expect(at.y, `${what} starts above the verse box`).toBeGreaterThanOrEqual(screen.y - 0.5);
-  expect(at.y + at.height, `${what} ends below the verse box`).toBeLessThanOrEqual(screen.y + screen.height + 0.5);
-  expect(at.y + at.height, `${what} ends under the composer`).toBeLessThanOrEqual(composer.y + 0.5);
-}
-
 test.describe('a question that failed or waits is kept (mw-5r3p30.439, mw-5r3p30.441)', () => {
-  test('Ask: a failed question, its red box and Retry are still there after leaving the page and coming back, and Retry asks it', async ({ page }) => {
-    const fake = makeFakePostern();
-    fake.gateway = 503;
-    await start(page, fake);
-    await chooseAction(page, 28, 'Ask the tutor');
-    await typeQuestion(page, QUESTION);
-    await expect(page.locator('[data-ask-failed]').getByText('Could not reach the tutor')).toBeVisible();
-
-    await page.goto('about:blank');
-    await page.goBack();
-    await reopenAsk(page);
-    const box = page.locator('[data-ask-failed]');
-    await expect(box.getByText('Could not reach the tutor')).toBeVisible();
-    await expect(box.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
-    await expect(await questionField(page)).toHaveValue(QUESTION);
-    await shot(page, 'question-kept-ask-failed');
-
-    fake.gateway = undefined;
-    fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
-    await box.getByRole('button', { name: 'Retry', exact: true }).click();
-    await expect(page.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
-    await expect(page.locator('[data-ask-failed]')).toHaveCount(0);
-  });
-
   test('Talk: a question sent while the tutor is held is still in the talk after a reload, and its answer shows under it', async ({ page }) => {
     const fake = makeFakePostern();
     await start(page, fake);
@@ -101,44 +66,9 @@ test.describe('a question that failed or waits is kept (mw-5r3p30.439, mw-5r3p30
     await shot(page, 'question-kept-talk-reloaded');
   });
 
-  test('Ask: a question sent while the tutor is held is still waiting after a reload, and its answer comes', async ({ page }) => {
-    const fake = makeFakePostern();
-    await start(page, fake);
-    await chooseAction(page, 28, 'Ask the tutor');
-    await typeQuestion(page, QUESTION);
-    await expect(page.locator('[data-ask-pending]')).toContainText(QUESTION);
-    await expect.poll(() => fake.received.length).toBe(1);
-
-    await page.reload();
-    await expect(page.locator('[data-verse="28"]')).toBeAttached();
-    const view = await reopenAsk(page);
-    await expect(view.locator('[data-ask-pending]')).toContainText(QUESTION);
-    await expect(view.getByText(/Waiting for the tutor…/)).toBeVisible();
-    await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
-    await expect(view.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
-    await expect(view.locator('[data-ask-pending]')).toHaveCount(0);
-    expect(fake.received, 'the reload must not send a second grist').toHaveLength(1);
-  });
 });
 
 test.describe('after Send, what was sent and its wait or failure are in view, sideways (mw-5r3p30.437)', () => {
-  test('Ask: the question and Waiting for the tutor are above the composer, and so are a failure and Retry', async ({ page }) => {
-    const fake = makeFakePostern();
-    await start(page, fake, SIDEWAYS);
-    await chooseAction(page, 28, 'Ask the tutor');
-    await typeQuestion(page, QUESTION);
-    const pending = page.locator('[data-ask-pending]');
-    await expectAboveComposer(page, pending.getByText(QUESTION, { exact: true }), 'the question');
-    await expectAboveComposer(page, pending.getByText(/Waiting for the tutor…/), 'Waiting for the tutor');
-    await shot(page, 'question-kept-ask-waiting-sideways');
-
-    await fake.answer({ status: 'failed', reason: 'no' });
-    const failed = page.locator('[data-ask-failed]');
-    await expectAboveComposer(page, failed.getByText('Could not reach the tutor'), 'the failure');
-    await expectAboveComposer(page, failed.getByRole('button', { name: 'Retry', exact: true }), 'Retry');
-    await shot(page, 'question-kept-ask-failed-sideways');
-  });
-
   test('Talk: the question and Waiting for the tutor are in the box, and so are a failure and Retry', async ({ page }) => {
     const fake = makeFakePostern();
     await start(page, fake, SIDEWAYS);
@@ -243,21 +173,5 @@ test.describe('a long question leaves the first line of the answer on screen (mw
       await shot(page, `question-kept-talk-${question === LONG ? 'long' : 'short'}`);
     });
 
-    test(`Ask: ${name}, the answer's first line is in view`, async ({ page }) => {
-      const fake = makeFakePostern();
-      fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
-      await start(page, fake);
-      await chooseAction(page, 28, 'Ask the tutor');
-      await typeQuestion(page, question);
-      const answer = page.locator('[data-answer] .text-lg').first();
-      await expect(answer).toContainText(SYNERGEI_ANSWER.answer.slice(0, 20));
-      await expect.poll(async () => {
-        const [a, screen, composer] = await Promise.all([answer.boundingBox(), page.locator('.screen').last().boundingBox(), composerOf(page).boundingBox()]);
-        return a && screen && composer ? a.y >= screen.y - 0.5 && a.y + 24 <= Math.min(screen.y + screen.height, composer.y) : false;
-      }, { message: 'the first line of the answer is not in the verse box above the composer' }).toBe(true);
-      await inWindow(page, answer, 'the answer');
-      await expect(page.locator('[data-answer-question]')).toBeAttached();
-      await shot(page, `question-kept-ask-${question === LONG ? 'long' : 'short'}`);
-    });
   }
 });
