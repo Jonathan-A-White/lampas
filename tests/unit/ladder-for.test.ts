@@ -75,11 +75,11 @@ describe('ladderFor', () => {
 });
 
 describe('a Hebrew idea marked known', () => {
-  it('is written to the grammar levels and schedules no review row yet', async () => {
+  it('is written to the grammar levels and scheduled as a Greek idea is: Review asks it (mw-gdcyf98.21)', async () => {
     const now = Date.UTC(2026, 9, 26, 9, 0, 0);
     expect(await teachIdea('he-alphabet', 'known', now)).toEqual({ status: 'taught' });
     expect(await getLevel('he-alphabet')).toMatchObject({ id: 'he-alphabet', level: 'solid', how: 'sheet' });
-    expect(await db.reviews.toArray()).toEqual([]);
+    expect((await db.reviews.toArray()).map((r) => [r.kind, r.id])).toEqual([['grammar', 'he-alphabet']]);
   });
 
   it('still schedules a Greek idea marked known', async () => {

@@ -2,7 +2,7 @@
 // Drill it), and a button that runs it on a screen of its own (PlanDrillScreen, DrillItScreen). When the drill is over the card is answered: KNEW_IT when the step is passed (a short drill with
 // one miss allowed; Prove it proved), else NOT_YET, and the item goes the way kinds.ts DRILL_PLAN.record puts it. Prove it keeps its own run and moves the level like the idea sheet's does (recordDrill).
 import { useRef, useState } from 'react';
-import { ideaOf } from '../data/grammar/ladder';
+import { ideaOfAny as ideaOf } from '../data/grammar/ladders';
 import type { DrillResult } from '../data/grammar/drillIt';
 import { recordDrill } from '../data/repositories';
 import { DrillItScreen } from '../DrillItScreen';

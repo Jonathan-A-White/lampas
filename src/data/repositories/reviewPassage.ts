@@ -30,6 +30,18 @@ export async function loadPassage(chooser: Random): Promise<Chapter[]> {
   return loaded.filter((c): c is Chapter => c !== null);
 }
 
+/**
+ * The passage a Hebrew idea's questions are about (mw-gdcyf98.21): the Hebrew chapters of loadPassage's (his goal's, or the chapter the Reader has open) or, when it has none (a Greek goal, a New Testament
+ * chapter open), the Old Testament chapter the Reader last had open (getStudyChapter('hbo'): Genesis 1 until then). A phone that cannot load it is asked questions that need no passage.
+ */
+export async function loadHebrewPassage(chooser: Random): Promise<Chapter[]> {
+  const hebrew = (await loadPassage(chooser)).filter((c) => c.lang === 'hbo');
+  if (hebrew.length > 0) return hebrew;
+  const study = getStudyChapter('hbo');
+  const fallback = await loadChapter(study.book, study.chapter).catch(() => null);
+  return fallback ? [fallback] : [];
+}
+
 /** The questions of a facet's short drill over a fixed passage and seed: none when the idea never asks about that facet. */
 export async function planFacetQuestions(ideaId: string, item: PlanItem): Promise<DrillQuestion[]> {
   const passage = await loadPassage(mulberry32(COUNT_SEED));

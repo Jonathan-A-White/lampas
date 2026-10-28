@@ -2,11 +2,15 @@
 // missed most are sent to the drill-items grind (grinds/drill-items.json) with verses of his passage that use them; what comes back is short questions of the shapes the app already draws
 // (tap the form, what does this say), kept on the phone and served first in the next round on that idea. Pure: the caller hands in the passage and the answer; nothing here touches the store,
 // the network or a screen. The answer is not believed: every item is checked against the verse it names, and an item that does not match is dropped.
-import type { Chapter, GreekWord, Verse } from '../chapter';
+import { wordParse, type Chapter, type GreekWord, type Verse } from '../chapter';
 import { decodeParse } from '../parseCode';
 import { OPTION_COUNT } from '../choices';
-import { LADDER, ideaOf, ideasOfWord, type GrammarIdea, type Tier } from './ladder';
+import { LADDER, ideasOfWord, type GrammarIdea, type Tier } from './ladder';
+import { ideaOfAny, ladderLangOf } from './ladders';
+import { HEBREW_LADDER } from './hebrew/ladder';
+import { hebrewFormOf, hebrewIdeasOfWord } from './hebrew/wordQuestions';
 import type { GradedVerse } from './gradedVerses';
+import { hebrewWordsOf, type HebrewWordEntry } from '../../services/hebrewWords';
 import { MAX_REQUEST_BYTES } from '../../services/requestBudget';
 import { SAYS, SPOT, type GrammarQuestion } from './questions';
 
@@ -21,6 +25,8 @@ export const VERSES_PER_IDEA = 2;
 export const MAX_VERSES = 6;
 /** The longest verse (Greek or English) that is sent; a longer one is left out. */
 export const VERSE_MAX_CHARS = 400;
+/** The most the Hebrew words of one verse may weigh in the request (hebrew_words, JSON in UTF-8): a request holds up to MAX_VERSES of them within MAX_REQUEST_BYTES. */
+const HEBREW_WORDS_PER_VERSE_BYTES = 1100;
 /** The most uses of an idea named in one verse. */
 const USES_PER_VERSE = 6;
 /** The most items kept for an idea: the oldest go first. */
@@ -50,7 +56,7 @@ export function isFetchable(idea: GrammarIdea): boolean {
 export function weakestMissed(missed: readonly string[], limit = MAX_IDEAS): GrammarIdea[] {
   const counts = new Map<string, number>();
   for (const id of missed) counts.set(id, (counts.get(id) ?? 0) + 1);
-  const known = new Map(LADDER.map((idea) => [idea.id, idea]));
+  const known = new Map([...LADDER, ...HEBREW_LADDER].map((idea) => [idea.id, idea]));
   return [...counts]
     .flatMap(([id, misses]) => {
       const idea = known.get(id);
@@ -76,15 +82,20 @@ export interface VerseUse {
   parse: string;
 }
 
+/** A verse of the request: its `greek` for a Greek idea, its `hebrew` (pointed, no cantillation) and the words of it, `hebrew_words`, for a Hebrew one (mw-gdcyf98.21). */
 export interface AskedVerse {
   ref: string;
-  greek: string;
+  greek?: string;
+  hebrew?: string;
+  hebrew_words?: HebrewWordEntry[];
   english: string;
   uses: VerseUse[];
 }
 
 /** Drill Items Request 1 (grinds/drill-items.input.schema.json). */
 export interface DrillItemsRequest {
+  /** 'he' when the ideas and verses are Hebrew (the Hebrew ladder's, `hebrew` verses); absent for Greek */
+  language?: 'he';
   ideas: AskedIdea[];
   verses: AskedVerse[];
   per_idea: number;
@@ -151,10 +162,40 @@ function seenList(asked: readonly GrammarIdea[], seen: ReadonlyMap<string, reado
   return entries.flatMap(({ q }) => (keys.has(seenKey(q)) ? [] : (keys.add(seenKey(q)), [{ prompt: q.prompt, ref: q.ref }])));
 }
 
+/** The request's size in bytes, as the grist's record counts it. */
+const bytes = (r: DrillItemsRequest): number => new TextEncoder().encode(JSON.stringify(r)).length;
+
+/** The request with the last verses left off until it fits MAX_REQUEST_BYTES, then the questions he has seen added as far as there is room (the oldest dropped first); null when no verse is left. */
+function fitted(request: DrillItemsRequest, asked: readonly GrammarIdea[], seen: ReadonlyMap<string, readonly SeenQuestion[]>): DrillItemsRequest | null {
+  // the grist's record is small (MAX_REQUEST_BYTES): the last verses go first
+  while (request.verses.length > 0 && bytes(request) > MAX_REQUEST_BYTES) request.verses.pop();
+  if (request.verses.length === 0) return null;
+  // the verses come first: what room is left carries the questions he has seen, the oldest dropped first
+  const carried = seenList(asked, seen);
+  while (carried.length > 0 && bytes({ ...request, seen: carried }) > MAX_REQUEST_BYTES) carried.shift();
+  return carried.length > 0 ? { ...request, seen: carried } : request;
+}
+
+/** The verses to send, VERSES_PER_IDEA for each idea in turn and MAX_VERSES in all, the easiest for him first (`graded` is gradedVerses' order, its at-level verses before the rest; without it the passage's order). */
+function chosenOf<C extends { chapter: Chapter; verse: Verse; uses: Map<string, unknown> }>(asked: readonly GrammarIdea[], candidates: readonly C[], graded?: readonly GradedVerse[]): Set<C> {
+  const rank = new Map<string, number>();
+  graded?.forEach((g, i) => rank.set(g.ref, g.atLevel ? i : graded.length + i));
+  const easiest = [...candidates].sort((a, b) => (rank.get(keyOf(a.chapter, a.verse)) ?? Infinity) - (rank.get(keyOf(b.chapter, b.verse)) ?? Infinity));
+  const chosen = new Set<C>();
+  for (const idea of asked) {
+    for (const c of easiest.filter((c) => c.uses.has(idea.id) && !chosen.has(c)).slice(0, VERSES_PER_IDEA)) if (chosen.size < MAX_VERSES) chosen.add(c);
+  }
+  return chosen;
+}
+
+const askedIdeas = (asked: readonly GrammarIdea[], misses: ReadonlyMap<string, number>): AskedIdea[] =>
+  asked.map((idea) => ({ id: idea.id, title: idea.title, what: idea.text, misses: Math.min(20, Math.max(1, misses.get(idea.id) ?? 1)) }));
+
 /**
  * The request for these ideas (one to MAX_IDEAS, the first the most missed): for each idea, up to VERSES_PER_IDEA verses of the passage that use it, the easiest for him first
  * (`graded` is gradedVerses' order, its at-level verses before the rest; without it the passage's order), MAX_VERSES in all. Null when the passage has no verse that uses any of them.
  * `seen` is the questions he has been asked, by idea (oldest first): the request carries them as `seen`, the oldest left out until the request fits MAX_REQUEST_BYTES with its verses.
+ * A request is of one language, the first idea's: Hebrew ideas (the Hebrew ladder's, ids that start 'he-') make a request of Hebrew verses (hebrewRequest); the ideas of the other language are left out.
  */
 export function buildDrillItemsRequest(
   ideas: readonly GrammarIdea[],
@@ -163,16 +204,13 @@ export function buildDrillItemsRequest(
   graded?: readonly GradedVerse[],
   seen: ReadonlyMap<string, readonly SeenQuestion[]> = new Map(),
 ): DrillItemsRequest | null {
-  const asked = ideas.slice(0, MAX_IDEAS);
-  if (asked.length === 0) return null;
+  const first = ideas[0];
+  if (!first) return null;
+  const language = ladderLangOf(first.id);
+  const asked = ideas.filter((idea) => ladderLangOf(idea.id) === language).slice(0, MAX_IDEAS);
+  if (language === 'hbo') return hebrewRequest(asked, misses, passage, graded, seen);
   const candidates = candidatesFor(new Set(asked.map((i) => i.id)), passage);
-  const rank = new Map<string, number>();
-  graded?.forEach((g, i) => rank.set(g.ref, g.atLevel ? i : graded.length + i));
-  const easiest = [...candidates].sort((a, b) => (rank.get(keyOf(a.chapter, a.verse)) ?? Infinity) - (rank.get(keyOf(b.chapter, b.verse)) ?? Infinity));
-  const chosen = new Set<Candidate>();
-  for (const idea of asked) {
-    for (const c of easiest.filter((c) => c.uses.has(idea.id) && !chosen.has(c)).slice(0, VERSES_PER_IDEA)) if (chosen.size < MAX_VERSES) chosen.add(c);
-  }
+  const chosen = chosenOf(asked, candidates, graded);
   if (chosen.size === 0) return null;
   const wanted = new Set(asked.map((i) => i.id));
   const verses = candidates.filter((c) => chosen.has(c)).map(
@@ -186,19 +224,60 @@ export function buildDrillItemsRequest(
         .slice(0, USES_PER_VERSE),
     }),
   );
-  const request: DrillItemsRequest = {
-    ideas: asked.map((idea) => ({ id: idea.id, title: idea.title, what: idea.text, misses: Math.min(20, Math.max(1, misses.get(idea.id) ?? 1)) })),
-    verses,
-    per_idea: ITEMS_PER_IDEA,
-  };
-  // the grist's record is small (MAX_REQUEST_BYTES): the last verses go first
-  const bytes = (r: DrillItemsRequest): number => new TextEncoder().encode(JSON.stringify(r)).length;
-  while (request.verses.length > 0 && bytes(request) > MAX_REQUEST_BYTES) request.verses.pop();
-  if (request.verses.length === 0) return null;
-  // the verses come first: what room is left carries the questions he has seen, the oldest dropped first
-  const carried = seenList(asked, seen);
-  while (carried.length > 0 && bytes({ ...request, seen: carried }) > MAX_REQUEST_BYTES) carried.shift();
-  return carried.length > 0 ? { ...request, seen: carried } : request;
+  return fitted({ ideas: askedIdeas(asked, misses), verses, per_idea: ITEMS_PER_IDEA }, asked, seen);
+}
+
+const hebrewOf = (verse: Verse): string => verse.g.map(hebrewFormOf).join(' ');
+
+interface HebrewCandidate {
+  chapter: Chapter;
+  verse: Verse;
+  /** the words that use each idea, by idea id */
+  uses: Map<string, GreekWord[]>;
+}
+
+/** The verses of the passage's Hebrew chapters that use any of these Hebrew ideas (by the terms of their words' parsing) and are short enough to send, in the passage's order. */
+function hebrewCandidatesFor(ids: ReadonlySet<string>, passage: readonly Chapter[]): HebrewCandidate[] {
+  return passage.flatMap((chapter) =>
+    chapter.lang !== 'hbo'
+      ? []
+      : chapter.verses.flatMap((verse): HebrewCandidate[] => {
+          if (hebrewOf(verse).length > VERSE_MAX_CHARS || englishOf(verse).length > VERSE_MAX_CHARS || englishOf(verse) === '') return [];
+          const uses = new Map<string, GreekWord[]>();
+          for (const word of verse.g) for (const id of hebrewIdeasOfWord(chapter, word)) if (ids.has(id)) uses.set(id, [...(uses.get(id) ?? []), word]);
+          return uses.size > 0 ? [{ chapter, verse, uses }] : [];
+        }),
+  );
+}
+
+/**
+ * The request for Hebrew ideas (mw-gdcyf98.21): `language` 'he', and for each verse its `hebrew` (the words as the Reader shows them: pointed, no cantillation, a word with a maqaf or an inseparable
+ * prefix one word), `hebrew_words` (each with its lemma, transliteration, gloss and parsing in plain words) and the words that use the ideas, from the Hebrew chapters of the passage.
+ */
+function hebrewRequest(
+  asked: readonly GrammarIdea[],
+  misses: ReadonlyMap<string, number>,
+  passage: readonly Chapter[],
+  graded: readonly GradedVerse[] | undefined,
+  seen: ReadonlyMap<string, readonly SeenQuestion[]>,
+): DrillItemsRequest | null {
+  const candidates = hebrewCandidatesFor(new Set(asked.map((i) => i.id)), passage);
+  const chosen = chosenOf(asked, candidates, graded);
+  if (chosen.size === 0) return null;
+  const wanted = new Set(asked.map((i) => i.id));
+  const verses = candidates.filter((c) => chosen.has(c)).map(
+    (c): AskedVerse => ({
+      ref: refOf(c.chapter, c.verse),
+      hebrew: hebrewOf(c.verse),
+      hebrew_words: hebrewWordsOf(c.chapter, [c.verse], '', HEBREW_WORDS_PER_VERSE_BYTES),
+      english: englishOf(c.verse),
+      uses: [...c.uses]
+        .filter(([id]) => wanted.has(id))
+        .flatMap(([id, words]) => words.map((w): VerseUse => ({ idea: id, form: hebrewFormOf(w), parse: wordParse(c.chapter, w) || w.p })))
+        .slice(0, USES_PER_VERSE),
+    }),
+  );
+  return fitted({ language: 'he', ideas: askedIdeas(asked, misses), verses, per_idea: ITEMS_PER_IDEA }, asked, seen);
 }
 
 /** One item as the grind answers it (grinds/drill-items.answer.schema.json). */
@@ -260,8 +339,39 @@ function sentVerses(request: DrillItemsRequest, passage: readonly Chapter[]): Ma
 /** Whether a word of the verse is what the idea is about. */
 const usesIdea = (word: GreekWord, id: string): boolean => ideasOfForm(word).includes(id);
 
+/**
+ * One item of a Hebrew request as a question (lang 'hbo'), or null when it does not hold: the words are the verse's own as the Reader writes them (pointed, no cantillation), the right word of a
+ * tap-form item shows the idea and no other of the four does, and the right English of a meaning item is the translators' own.
+ */
+function hebrewQuestionFrom(item: AnsweredItem, sent: SentVerse, ideaId: string): GrammarQuestion | null {
+  const { verse, chapter } = sent;
+  const wordOf = (text: string): GreekWord | undefined => verse.g.find((w) => hebrewFormOf(w) === nfc(text));
+  const uses = (word: GreekWord): boolean => hebrewIdeasOfWord(chapter, word).includes(ideaId);
+  if (new Set(item.options.map(lower)).size !== item.options.length || !item.options.includes(item.right)) return null;
+  if (item.kind === 'tap-form') {
+    if (item.form !== undefined) return null;
+    const words = item.options.map(wordOf);
+    const right = wordOf(item.right);
+    if (!right || words.some((w) => w === undefined) || !uses(right)) return null;
+    // another option that shows the idea leaves the prompt with two right answers
+    if (words.some((w) => w !== right && uses(w as GreekWord))) return null;
+    return { kind: 'tap-form', ideaId, prompt: item.prompt, options: item.options.map(nfc), right: nfc(item.right), ref: sentRef(sent), code: right.p, facet: SPOT, lang: 'hbo' };
+  }
+  if (item.form === undefined) return null;
+  const marked = item.form.split(/\s+/).filter(Boolean);
+  const words = marked.map(wordOf);
+  if (marked.length === 0 || words.some((w) => w === undefined) || !words.some((w) => uses(w as GreekWord))) return null;
+  const places = words.map((w) => verse.g.indexOf(w as GreekWord));
+  if (places.some((p, i) => i > 0 && p <= places[i - 1])) return null;
+  if (!sent.english.includes(item.right) && !lower(sent.english).includes(lower(item.right))) return null;
+  const form = words.map((w) => hebrewFormOf(w as GreekWord)).join(' ');
+  const code = (words.find((w) => uses(w as GreekWord)) as GreekWord).p;
+  return { kind: 'meaning', ideaId, prompt: item.prompt, options: item.options, right: item.right, ref: sentRef(sent), form, marked: words.map((w) => hebrewFormOf(w as GreekWord)), say: form, code, facet: SAYS, lang: 'hbo' };
+}
+
 /** One item as a question, or null when it does not hold: see checkedItems. */
 function questionFrom(item: AnsweredItem, sent: SentVerse, ideaId: string): GrammarQuestion | null {
+  if (ladderLangOf(ideaId) === 'hbo') return hebrewQuestionFrom(item, sent, ideaId);
   const { verse } = sent;
   const wordOf = (text: string): GreekWord | undefined => verse.g.find((w) => nfc(w.t) === nfc(text));
   if (new Set(item.options.map(lower)).size !== item.options.length || !item.options.includes(item.right)) return null;
@@ -318,7 +428,7 @@ export function isKeptQuestion(value: unknown): value is GrammarQuestion {
   if (typeof value !== 'object' || value === null) return false;
   const q = value as Partial<GrammarQuestion>;
   try {
-    ideaOf(q.ideaId ?? '');
+    ideaOfAny(q.ideaId ?? '');
   } catch {
     return false;
   }

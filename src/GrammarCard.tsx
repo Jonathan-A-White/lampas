@@ -136,7 +136,11 @@ function Flash({ question, picked, onPick, onSeeTable }: Omit<Props, 'mode'>) {
     <>
       <Heading question={question} mode="flashcard" />
       {showsVerse(question) ? (
-        <p data-testid="verse-words" {...GREEK_LANG} className="mt-4 text-center font-greek text-2xl">
+        <p
+          data-testid="verse-words"
+          {...(question.lang === 'hbo' ? { ...HEBREW_LANG_ATTRS, dir: 'rtl' as const } : GREEK_LANG)}
+          className={`mt-4 text-center ${question.lang === 'hbo' ? 'script-he hebrew-choice' : 'font-greek text-2xl'}`}
+        >
           {question.options.map((word, i) => (
             <span key={i} className={shown && word === question.right ? 'rounded bg-good/20 px-1 font-medium' : 'px-1'}>
               {word}{' '}
@@ -190,7 +194,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
         }}
         className={`${LOOK[look]} rounded-xl border ${look === 'taken' ? 'disabled:opacity-40' : 'disabled:opacity-100'} ${
           tapForm
-            ? 'min-h-12 min-w-12 px-3 font-greek text-2xl'
+            ? `min-h-12 min-w-12 px-3 ${hebrew ? 'script-he hebrew-choice' : 'font-greek text-2xl'}`
             : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : hebrew ? 'script-he hebrew-choice' : 'text-left text-lg'}`
         }`}
       >

@@ -132,10 +132,10 @@ describe('the Hebrew ladder on the screens', () => {
     expect(field.ideas.solid).toEqual(['The Hebrew alphabet']);
   });
 
-  it('is taught and marked known with the level written and no review row, and its frontier is its own', async () => {
+  it('is taught and marked known with the level written and its review row, and its frontier is its own', async () => {
     expect(await teachIdea('he-alphabet', 'known')).toEqual({ status: 'taught' });
     expect((await getLevel('he-alphabet'))?.level).toBe('solid');
-    expect(await db.reviews.count()).toBe(0);
+    expect(await db.reviews.count()).toBe(1);
     // a Greek idea at the frontier does not keep a Hebrew one from it, and the other way round
     expect(await teachIdea('alphabet', 'got-it')).toEqual({ status: 'taught' });
     expect(await teachIdea('he-alphabet', 'got-it')).toEqual({ status: 'taught' });

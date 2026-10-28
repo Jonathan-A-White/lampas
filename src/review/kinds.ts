@@ -7,7 +7,9 @@ import { drillSteps, type DrillQuestion } from '../data/grammar/drillIt';
 import { facetQuestions, PLAN_KIND, parseRowId, type PlanItem } from '../data/grammar/drillPlan';
 import { gradedVerses, ideaMetBy } from '../data/grammar/gradedVerses';
 import { pickerPasses } from '../data/grammar/formLevel';
-import { ideaOf, IDEA_KIND, type GrammarIdea } from '../data/grammar/ladder';
+import { IDEA_KIND, type GrammarIdea } from '../data/grammar/ladder';
+import { ideaOfAny, ladderLangOf } from '../data/grammar/ladders';
+import { buildHebrewIdeaQuestion } from '../data/grammar/hebrew/wordQuestions';
 import { buildIdeaQuestion, type GrammarQuestion } from '../data/grammar/questions';
 import { paradigmById } from '../data/paradigms';
 import { PARADIGM_KIND, drawCellQuestions, spokenForm } from '../data/paradigms/cells';
@@ -17,8 +19,9 @@ import { drawWords, mulberry32, type Question, type Random } from '../data/quiz'
 import { loadForms, questionsOf } from '../data/quizWords';
 import { wordsInPlay } from '../data/studyLanguage';
 import { readSourceSegment } from '../ui/sourceSegmentStore';
-import { loadPassage, planFacetQuestions } from '../data/repositories/reviewPassage';
+import { loadHebrewPassage, loadPassage, planFacetQuestions } from '../data/repositories/reviewPassage';
 import { chosenPronunciation, speakWord } from '../speech/greek';
+import { hebrewPronunciationOf } from '../speech/pronunciation';
 import { speakQuestion } from '../speech/speakQuestion';
 import { confirmAnswer } from './confirm';
 import { keepStocked } from './moreItems';
@@ -191,10 +194,10 @@ const grammarSeed = (random: Random): number => Math.floor(random() * 0x10000000
 /** The random the grammar questions of a round use, from the round's own (tests find the seed that gives the question they need through it). */
 export const grammarRandom = (random: Random): Random => mulberry32(grammarSeed(random));
 
-/** The ladder's idea with this id; undefined for one the ladder no longer has, which Review leaves out. */
+/** The idea with this id, from the ladder of its own language (a 'he-' id is the Hebrew ladder's); undefined for one the ladder no longer has, which Review leaves out. */
 function ideaIfAny(id: string): GrammarIdea | undefined {
   try {
-    return ideaOf(id);
+    return ideaOfAny(id);
   } catch {
     return undefined;
   }
@@ -223,6 +226,8 @@ export const GRAMMAR: ReviewKind = {
     const seed = grammarSeed(random);
     const own = mulberry32(seed);
     const passage = await loadPassage(mulberry32(seed ^ 0x5bd1e995));
+    // a Hebrew idea is asked about the Hebrew chapters of the passage (Jonah 1 where it has none)
+    const hebrewPassage = due.some((r) => ladderLangOf(r.id) === 'hbo') ? await loadHebrewPassage(mulberry32(seed ^ 0x2545f491)) : [];
     const scheme = chosenPronunciation();
     // an ending is asked only of a form whose table he has opened (mw-svw421.5)
     const opened = new Set(await listOpenedParadigms());
@@ -236,6 +241,8 @@ export const GRAMMAR: ReviewKind = {
       if (!idea) return [];
       const kept = fetched.get(idea.id);
       if (kept) return [{ kind: 'grammar', id: idea.id, question: kept, mode: modeFor(r.step) }];
+      // a Hebrew idea is asked from the Hebrew ladder: a letter by name or glyph, a word idea by tapping a word of the passage's Hebrew chapters (mw-gdcyf98.21)
+      if (ladderLangOf(idea.id) === 'hbo') return [{ kind: 'grammar', id: idea.id, question: buildHebrewIdeaQuestion(idea, hebrewPassage, own, hebrewPronunciationOf()), mode: modeFor(r.step) }];
       // an idea at SOLID_STEP or more may also be asked to parse a whole word (mw-emk3xt.3, PROVISIONAL)
       const question = buildIdeaQuestion(idea, passage, own, scheme.respell, scheme, opened, graded, r.step >= SOLID_STEP);
       // a full parsing is asked step by step, for a strong idea too: it is never a flashcard
@@ -254,7 +261,7 @@ export const GRAMMAR: ReviewKind = {
     // the question is remembered as asked too (confirmAnswer notes it first), so the mill is not asked for it again and a kept copy is not served (mw-indx1x6.1); the ask the confirm may start carries the seen list
     await confirmAnswer(item.question, right, { rowWritten: true, wasMissed });
     // a form read right shows its letters, sounds and marks; a miss on a letter or sound counts against it (mw-hqd5bz.17)
-    await noteAnswer(item.question, right);
+    if (item.question.lang !== 'hbo') await noteAnswer(item.question, right);
     // the ring of the last 20 grammar answers that decides whether New words at moves (src/review/pickerMove.ts)
     await pushGrammarAnswer(right);
   },
