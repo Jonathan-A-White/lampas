@@ -393,3 +393,63 @@ test.describe('a variant unit is opened by its siglum, and its words open the wo
     await expect(page.locator('[data-brace][role="button"], [data-brace-reading][role="button"]')).toHaveCount(0);
   });
 });
+
+// The siglum never wraps away from its brace (mw-9ji6ek0.16): in Revelation 3:3 English the brace '{you will know B}' broke so that the boxed B stood alone on the next line. At 360, 390 and 412 px, in the
+// English and the Greek view, on every brace of Revelation 2-3 and John 1: each reading's first word is on the line of the '{' that opens the brace, and each siglum and the '}' are on the line of the last word
+// of the reading they close (a siglum's top is above the bottom of that word). Shot: shots/variants-siglum-wrap.png (Revelation 3:3, English, 360 px).
+test.describe('a siglum stays on the line of the last word of its reading', () => {
+  const WIDTHS = [360, 390, 412];
+  const CHAPTERS = ['rev&c=2', 'rev&c=3', 'jhn&c=1'];
+
+  /** Every brace on the page: the broken pairs, as text, with the places that break. */
+  const broken = (page: Page) =>
+    page.evaluate(() => {
+      const out: string[] = [];
+      const top = (el: Element) => el.getBoundingClientRect();
+      for (const brace of document.querySelectorAll('[data-verse] [data-brace]')) {
+        const verse = brace.closest('[data-verse]')?.getAttribute('data-verse');
+        const name = `${verse}:${brace.textContent}`;
+        const readings = [...brace.querySelectorAll('[data-brace-reading]')];
+        const open = brace.firstElementChild!;
+        const close = brace.querySelector('[data-brace-close]')!;
+        const firstWord = readings[0].querySelector('[data-brace-word]') ?? readings[0].querySelector('[data-brace-text]')!;
+        // the opening brace and the first word share a line: the word's box reaches the brace's top
+        if (top(open).top >= top(firstWord).bottom - 1) out.push(`${name}: '{' apart from its first word`);
+        readings.forEach((r, i) => {
+          const words = r.querySelectorAll('[data-brace-word]');
+          const last = words.length ? words[words.length - 1] : r.querySelector('[data-brace-text]')!;
+          for (const s of r.querySelectorAll('[data-witness]')) {
+            if (top(s).top >= top(last).bottom - 1) out.push(`${name}: siglum ${s.textContent} below the last word of reading ${i + 1}`);
+          }
+          if (i === readings.length - 1 && top(close).top >= top(last).bottom - 1) out.push(`${name}: '}' below the last word`);
+        });
+      }
+      return out;
+    });
+
+  for (const width of WIDTHS) {
+    for (const view of ['English', 'Greek'] as const) {
+      test(`${view} at ${width} px: no brace breaks from its siglum`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 844 });
+        await openUnlocked(page);
+        for (const [n, chapter] of CHAPTERS.entries()) {
+          await page.goto(`/#/?b=${chapter}`);
+          await expect(page.locator('[data-verse="1"] [data-text]')).toBeVisible();
+          if (n === 0) {
+            await chip(page).click();
+            await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+            await choice(page, view).click();
+            await expect(choice(page, view)).toHaveAttribute('aria-pressed', 'true');
+          }
+          await expect(page.locator('[data-brace]').first()).toBeAttached();
+          expect(await broken(page), `${chapter}`).toEqual([]);
+        }
+        if (view === 'English' && width === 360) {
+          await page.goto('/#/?b=rev&c=3');
+          await page.locator('[data-verse="3"] [data-brace]').first().scrollIntoViewIfNeeded();
+          await shot(page, 'variants-siglum-wrap');
+        }
+      });
+    }
+  }
+});

@@ -12,6 +12,9 @@ import { braceReadings, type BraceReading, type ShownUnit, type WitnessChip } fr
 const SPELLED: Record<WitnessChip, string> = { B: 'Byzantine split', NA: 'Nestle-Aland', ECM: 'ECM' };
 const LEFT_OUT = 'left out';
 const SAME = 'same';
+/** A no-break space and a word joiner: nothing between the last word of a reading and its sigla, or between a siglum and the closing brace, is a place to break the line (mw-9ji6ek0.16). */
+const NBSP = '\u00a0';
+const JOIN = '\u2060';
 
 export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
   shown: ShownUnit;
@@ -37,37 +40,48 @@ export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
             {i > 0 ? <span aria-hidden="true" className="px-0.5 text-accent">|</span> : null}
             <span data-brace-reading="">
               <span data-brace-text="" {...(language === 'greek' && r.text ? GREEK_LANG : { lang: 'en' })} className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : 'text-fg') : 'italic'}>
-                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : r.text.split(/\s+/).filter(Boolean).map((word, k) => (
-                  <Tap key={k} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(word, r, shown)} onLongPress={() => onSay?.(word, language)}>
+                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : r.text.split(/\s+/).filter(Boolean).map((word, k, all) => (
+                  <Tap key={k} glued={k === all.length - 1} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(word, r, shown)} onLongPress={() => onSay?.(word, language)}>
                     {word}
                   </Tap>
                 ))}
               </span>
-              {r.chips.map((c) => (
-                <span
-                  key={c}
-                  role="button"
-                  tabIndex={0}
-                  data-witness=""
-                  aria-label={`Where the manuscripts differ: ${SPELLED[c]}`}
-                  onClick={open}
-                  onKeyDown={(e: KeyboardEvent) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      open();
-                    }
-                  }}
-                  className={`inline-flex min-h-(--lp-tap) min-w-(--lp-tap) cursor-pointer items-center justify-center rounded align-middle ${NO_SELECT} active:bg-line`}
-                >
-                  <span aria-hidden="true" className="rounded border border-accent/60 px-1 text-[0.75em] font-semibold leading-tight text-accent">
-                    {c}
+              {r.same || !r.text ? NBSP : null}
+              <span data-brace-tail="" className="whitespace-nowrap">
+                {JOIN}
+                {r.chips.map((c, k) => (
+                  <Fragment key={c}>
+                    {k > 0 ? JOIN : null}
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      data-witness=""
+                      aria-label={`Where the manuscripts differ: ${SPELLED[c]}`}
+                      onClick={open}
+                      onKeyDown={(e: KeyboardEvent) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          open();
+                        }
+                      }}
+                      className={`inline-flex min-h-(--lp-tap) min-w-(--lp-tap) cursor-pointer items-center justify-center rounded align-middle ${NO_SELECT} active:bg-line`}
+                    >
+                      <span aria-hidden="true" className="rounded border border-accent/60 px-1 text-[0.75em] font-semibold leading-tight text-accent">
+                        {c}
+                      </span>
+                    </span>
+                  </Fragment>
+                ))}
+                {i === readings.length - 1 ? (
+                  <span aria-hidden="true" data-brace-close="" className="text-accent">
+                    {JOIN}
+                    {'}'}
                   </span>
-                </span>
-              ))}
+                ) : null}
+              </span>
             </span>
           </Fragment>
         ))}
-        <span aria-hidden="true" className="text-accent">{'}'}</span>
       </span>{' '}
     </>
   );
