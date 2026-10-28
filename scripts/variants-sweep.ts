@@ -1,11 +1,14 @@
 // scripts/variants-sweep.ts — `npm run variants:sweep [-- --write]`: re-judges changesEnglish of every committed variant unit in the verse (src/data/variantVerse.ts,
 // mw-9ji6ek0.14) and reports the units that flip. A unit that changed the English by its own snippet and no longer does by its verse flips shown -> hidden under
-// 'Those that change the English'; the other way round must not happen. --write sets the new value in public/data (the same bytes otherwise).
+// 'Those that change the English'; the other way round must not happen. --write sets the new value in public/data (the same bytes otherwise) and stamps the
+// chapter's new fingerprint in public/data/index.json, so a phone fetches the chapter again.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import type { Chapter } from '../src/data/chapter';
+import type { BookIndex, Chapter } from '../src/data/chapter';
+import { chapterFingerprint } from './data/chapterWriter';
 import { changesEnglish } from './data/variantEnglish';
 
 const write = process.argv.includes('--write');
+const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
 const hidden: string[] = [];
 const shown: string[] = [];
 let units = 0;
@@ -23,9 +26,14 @@ for (const dir of readdirSync('public/data', { withFileTypes: true }).filter((d)
       unit.changesEnglish = now;
       changed = true;
     }
-    if (write && changed) writeFileSync(path, JSON.stringify(chapter));
+    if (write && changed) {
+      writeFileSync(path, JSON.stringify(chapter));
+      const book = index.books.find((b) => b.code === chapter.code);
+      if (book) book.fingerprints[chapter.chapter - 1] = chapterFingerprint(chapter);
+    }
   }
 }
+if (write) writeFileSync('public/data/index.json', JSON.stringify(index));
 console.log(`${units} units; shown -> hidden ${hidden.length}; hidden -> shown ${shown.length}`);
 for (const line of hidden) console.log(`  hidden: ${line}`);
 for (const line of shown) console.log(`  SHOWN: ${line}`);
