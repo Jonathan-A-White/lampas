@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { quizGoalOfferOf } from '../../src/talk/quizGoalOffer';
 import { isTalkAnswer } from '../../src/services/talk';
+import { validate } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
 
 describe('the instructions on his quiz goal', () => {
@@ -72,5 +73,21 @@ describe('the answer schema holds a slip of the model (mw-gdcyf98.32)', () => {
   it('is a key the app accepts and checks', () => {
     expect(isTalkAnswer({ answer: 'a', question: 'q', words: [], quiz_goal_state: 'kept' })).toBe(true);
     expect(isTalkAnswer({ answer: 'a', question: 'q', words: [], quiz_goal_state: 'sometimes' })).toBe(false);
+  });
+});
+
+describe('the schema rule, as the answer validator reads it (mw-gdcyf98.32)', () => {
+  const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8'));
+  const base = { answer: 'a', question: 'q', words: [] };
+
+  it('refuses an offer beside kept, once or no state; accepts one beside none', () => {
+    expect(validate({ ...base, quiz_goal_offer: 'learning Hebrew', quiz_goal_state: 'kept' }, schema)).not.toEqual([]);
+    expect(validate({ ...base, quiz_goal_offer: 'learning Hebrew', quiz_goal_state: 'once' }, schema)).not.toEqual([]);
+    expect(validate({ ...base, quiz_goal_offer: 'learning Hebrew' }, schema)).not.toEqual([]);
+    expect(validate({ ...base, quiz_goal_offer: 'learning Hebrew', quiz_goal_state: 'none' }, schema)).toEqual([]);
+  });
+
+  it('accepts a kept state with no offer', () => {
+    expect(validate({ ...base, quiz_goal_state: 'kept' }, schema)).toEqual([]);
   });
 });
