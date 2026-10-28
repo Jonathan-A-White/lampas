@@ -25,15 +25,16 @@ const spanOf: Components['span'] = ({ lang, dir, className, children }) =>
     </span>
   );
 
-/** `onLeave` is called before a reference's Open opens the reader: the Talk sheet closes itself there. */
-const componentsFor = (onLeave: () => void): Components => ({
+/** `onLeave` is called before a reference's Open opens the reader: the Talk sheet closes itself there. `trusted` is text we wrote ourselves (the lessons' Sources): any https link is drawn as a link, not
+ *  only one to a host a study resource builds on. */
+const componentsFor = (onLeave: () => void, trusted: boolean): Components => ({
   span: spanOf,
   a: ({ href, children }) => {
     // A reference the answer names: a card first (ReferenceCard.tsx), and its Open opens the reader there.
     const written = href === undefined ? null : writtenOf(href);
     if (written !== null) return <ReferenceLink written={written} onLeave={onLeave}>{children}</ReferenceLink>;
     // Any other link leaves the app in a new tab, never over the reader, and only to a host the study resources build links on or a credit's own address (About): the rest is text.
-    if (href === undefined || !isKnownLink(href)) return <>{children}</>;
+    if (href === undefined || !(isKnownLink(href) || (trusted && /^https:\/\//.test(href)))) return <>{children}</>;
     return (
       <a href={href} target="_blank" rel="noopener noreferrer">
         {children}
@@ -44,12 +45,12 @@ const componentsFor = (onLeave: () => void): Components => ({
 
 /** Memoized on its text: an answer is parsed once, however often the sheet around it redraws. `onOpen` is called before a reference's card opens the reader
  *  (the Talk sheet closes itself there); it is read when called, so a new one does not rebuild the answer (and close a card that is open). */
-export const Markdown = memo(function Markdown({ text, onOpen }: { text: string; onOpen?: () => void }) {
+export const Markdown = memo(function Markdown({ text, onOpen, trusted = false }: { text: string; onOpen?: () => void; trusted?: boolean }) {
   const latest = useRef(onOpen);
   useEffect(() => {
     latest.current = onOpen;
   });
-  const components = useMemo(() => componentsFor(() => latest.current?.()), []);
+  const components = useMemo(() => componentsFor(() => latest.current?.(), trusted), [trusted]);
   return (
     <div className="markdown">
       <ReactMarkdown remarkPlugins={[remarkGfm, remarkVerses, remarkScripts]} components={components}>

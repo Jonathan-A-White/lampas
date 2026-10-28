@@ -13,6 +13,8 @@ export interface HelpPage {
   line: string;
   /** the page: a few short paragraphs */
   body: string[];
+  /** a button at the page's foot: its name and the screen it opens */
+  opens?: { label: string; route: 'lessons' };
 }
 
 /** The most pieces the list holds, and the most words a page holds. */
@@ -27,7 +29,9 @@ export const HELP_PAGES: HelpPage[] = [
     body: [
       'The title opens the chapter picker, which lists all 66 books. A tap on a verse number opens the Verse view: Listen, Read it aloud, Ask the tutor, Copy link, Share and Memorize. A tap on a word opens its sheet.',
       'An Old Testament chapter opens in English or, from How much Hebrew? at Curious, in its Hebrew. Copy and Share give the verse, passage or chapter as you read it, with its reference and link; Settings > Reading > When you copy chooses the text.',
+      'Where manuscripts differ, Variants in Settings can show it. Five short lessons explain how to read that, and they read offline.',
     ],
+    opens: { label: 'Lessons on variant readings', route: 'lessons' },
   },
   {
     id: 'languages',

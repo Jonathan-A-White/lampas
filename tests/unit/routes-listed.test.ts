@@ -21,12 +21,14 @@ const EXCLUDED: Record<string, Record<string, string>> = {
   [COLD_START]: {
     home: 'the Reader: the same spec reloads it above (#/?b=Rom&c=8&view=...), its address carries a chapter',
     essay: 'its address is #/preface/robinson, not #/essay, so the list\'s `#/${screen}` is not its address',
+    lessons: 'its address is #/lessons/variants, not #/lessons, so the list\'s `#/${screen}` is not its address; tests/e2e/variant-lessons.spec.ts opens it',
     memorize: 'the bare address opens the next verse that is due and moves on to a session address (#/memorize/<ref>/<lang>)',
     share: 'the first test of the file, which needs a share to show',
     unlock: 'the licence page: openUnlocked leaves it, a licensed page goes back to the Reader',
   },
   [SPLIT_SCREEN]: {
     home: 'the Reader: the first test of the file walks its own header at the six sizes',
+    lessons: 'its address is #/lessons/variants, not #/lessons, so the list\'s `#/${route}` is not its address; tests/e2e/variant-lessons.spec.ts opens it',
     unlock: 'the licence page has no ScreenHeader',
   },
 };
