@@ -30,6 +30,7 @@ import { HintCard } from './tips/HintCard';
 import { GOAL_OPENED } from './tips/hints';
 import { SourceSegment } from './ui/SourceSegment';
 import { useLanguageInHand } from './useLanguageInHand';
+import { languageFact } from './tutor/screen';
 import { useReportScreen } from './tutor/screenContext';
 import { useGoalProgress, type GoalProgress } from './useGoalProgress';
 import { WordSheet, type Lookup } from './WordSheet';
@@ -104,9 +105,11 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
   const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
   const next = learnNext({ ideas: [] }, approach, levels);
   const learning = learningNow(levels);
+  const { both } = useLanguageInHand();
   useReportScreen({
     name: 'Goal',
     facts: [
+      ...languageFact('grc', both),
       { label: 'Goal', value: 'None set yet' },
       ...(learning ? [{ label: 'Learning now', value: learning.title }] : []),
       ...(next ? [{ label: 'Learn next', value: learnNextText(next) }] : []),
@@ -288,6 +291,7 @@ function HebrewGoalBody() {
   useReportScreen({
     name: 'Goal',
     facts: [
+      ...languageFact('hbo', true),
       { label: 'Goal', value: 'Read the Old Testament in Hebrew' },
       { label: 'Grammar ideas', value: legendText(counts) },
       { label: 'Learning now', value: learning ? learning.title : 'Nothing yet' },
@@ -396,10 +400,12 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
   const words = nextWords(needs, states);
   const placed = placedAt(rows);
   const title = goalTitle(goal, BOOK_INDEX);
+  const { both } = useLanguageInHand();
   // what the round Ask the tutor control hands the tutor (src/tutor/screen.ts): the screen's own numbers and words, as it writes them
   useReportScreen({
     name: 'Goal',
     facts: [
+      ...languageFact('grc', both),
       { label: 'Goal', value: title },
       { label: 'Words', value: legendText(progress.progress.words) },
       { label: 'Grammar ideas', value: legendText(progress.progress.grammar) },

@@ -21,6 +21,7 @@ import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { HintCard } from './tips/HintCard';
 import { REVIEW_OPENED } from './tips/hints';
+import { languageFact } from './tutor/screen';
 import { useReportScreen } from './tutor/screenContext';
 import { reviewFacts } from './review/reviewFacts';
 import { focusOnMount } from './ui/focus';
@@ -152,8 +153,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   const stillDue = due?.reduce((a, b, i) => a + (KINDS[i].kind === LESSON_KIND ? 0 : b), 0);
   const lessons = useLiveQuery(async () => (await listDue(LESSON_KIND, Date.now())).flatMap((r) => passageLessonOf(r.id)), []);
   // with both languages chosen the start screen has the Greek | Hebrew segment: a round asks the words of the language it is on (mw-gdcyf98.19)
-  const { both } = useLanguageInHand();
-  useReportScreen({ name: 'Review', facts: reviewFacts(round, due ? dueText(due) : undefined) });
+  const { lang, both } = useLanguageInHand();
+  useReportScreen({ name: 'Review', facts: [...languageFact(lang, both), ...reviewFacts(round, due ? dueText(due) : undefined)] });
 
   const draw = () =>
     void drawReviewRound(newRandom(), Date.now(), undefined, takePractise()).then(({ items }) =>

@@ -9,6 +9,13 @@ export interface ScreenFact {
   value: string;
 }
 
+/**
+ * The fact that names the language a screen shows (mw-gdcyf98.22): 'Language: Hebrew' on a Hebrew screen, and 'Language: Greek' on a Greek one once Hebrew is chosen too (`hebrewChosen`),
+ * so the tutor never takes a Hebrew word's count for a Greek one's. A reader of Greek alone is told nothing of language: every screen is Greek to him.
+ */
+export const languageFact = (lang: 'grc' | 'hbo' | null | undefined, hebrewChosen: boolean): ScreenFact[] =>
+  lang === 'hbo' ? [{ label: 'Language', value: 'Hebrew' }] : lang === 'grc' && hebrewChosen ? [{ label: 'Language', value: 'Greek' }] : [];
+
 /** One setting as Settings shows it (mw-5r3p30.107): its name, what it holds now ('Off', 'Solid words', '0.8x') and its hint, the line under its control. */
 export interface ScreenSetting {
   name: string;
