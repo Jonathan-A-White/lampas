@@ -148,6 +148,20 @@ const LIBRARY_ROW: SettingsRow = {
   section: 'resources',
 };
 
+/** Bible in Logos for the Old Testament and for the Apocrypha (mw-5r3p30.841): the New Testament's is the setting `logosBible` (registry.ts), these two are rows of the same section drawn after it. Each follows
+ *  the New Testament's until it is picked. Doors to a value the screen keeps, not settings: the tutor does not read or change them (isTalkable) and its Settings request does not carry them. */
+const PART_ROWS: readonly SettingsRow[] = [
+  { key: 'logosBibleOt', part: 'Old Testament' },
+  { key: 'logosBibleApocrypha', part: 'Apocrypha' },
+].map(({ key, part }) => ({
+  key,
+  label: `${part} Bible in Logos`,
+  hint: `The Bible that ${part} verses open in, in Logos.`,
+  help: `The Bible in your Logos library that ${part} verses open in. It is the New Testament's Bible until you pick one. It shows only while Logos is On. Library > Bibles sets all three at once.`,
+  section: 'logos',
+  dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
+}));
+
 /** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
 const DEVELOPER: SettingsRow = {
   key: 'developer',
@@ -168,7 +182,7 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   ai: AI_KEYS.has(s.key) || undefined,
 });
 
-const unordered: readonly SettingsRow[] = [LIBRARY_ROW, ...SETTINGS.map(rowOfSetting), ...REQUESTS, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [LIBRARY_ROW, ...SETTINGS.map(rowOfSetting), ...PART_ROWS, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
@@ -184,8 +198,8 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   return rows.map((r) => (isSwitch(r) ? ordered[next++] : r)).filter((r): r is SettingsRow => r !== undefined);
 }
 
-/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library';
+/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && !PART_ROWS.some((r) => r.key === key);
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 

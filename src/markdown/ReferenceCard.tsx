@@ -10,10 +10,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, sourceLanguage, type Chapter, type Verse } from '../data/chapter';
 import { isHebrewBook, otBookOf } from '../data/books';
 import { AnotherBookButton } from '../library/InLogosDoors';
-import { getLogosBible, getStudyResources } from '../data/repositories';
+import { getLogosBibles, getStudyResources } from '../data/repositories';
 import { openAtVerse } from '../nav/readerRequest';
 import { openSettingsSection } from '../settings/link';
-import { verseLink } from '../resources/logosBible';
+import { bibleFor, verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
 import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage } from '../speech/passagePlayer';
 import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
@@ -77,8 +77,8 @@ export interface ElsewherePlace {
 /** 'Open in Logos' at `place`, in the Bible he chose in Settings; nothing while Logos is not linked or the place has no link there. `className` is its look. */
 function LogosDoor({ place, className }: { place: ElsewherePlace; className: string }) {
   const resources = useLiveQuery(getStudyResources, []);
-  const bible = useLiveQuery(getLogosBible, []);
-  const link = resources?.on.includes('logos') && bible !== undefined ? verseLink(place.book, place.chapter, place.verse ?? 1, bible) : undefined;
+  const bibles = useLiveQuery(getLogosBibles, []);
+  const link = resources?.on.includes('logos') && bibles !== undefined ? verseLink(place.book, place.chapter, place.verse ?? 1, bibleFor(place.book, bibles)) : undefined;
   if (!link) return null;
   return (
     <a href={link.url} data-fallback={link.fallback} onClick={() => armFallback(link.fallback)} className={className}>
@@ -91,10 +91,10 @@ function LogosDoor({ place, className }: { place: ElsewherePlace; className: str
  *  words 'Not in Lampas yet' are already said above it (the notice a link leaves under the header). */
 export function ElsewhereLine({ place, said = true, onSettings }: { place: ElsewherePlace | null; said?: boolean; onSettings: () => void }) {
   const resources = useLiveQuery(getStudyResources, []);
-  const bible = useLiveQuery(getLogosBible, []);
+  const bibles = useLiveQuery(getLogosBibles, []);
   const not = said ? 'Not in Lampas yet' : null;
-  if (!resources || bible === undefined) return not ? <p className="py-1 text-lg text-muted">{not}</p> : null;
-  const link = resources.on.includes('logos') && place ? verseLink(place.book, place.chapter, place.verse ?? 1, bible) : undefined;
+  if (!resources || bibles === undefined) return not ? <p className="py-1 text-lg text-muted">{not}</p> : null;
+  const link = resources.on.includes('logos') && place ? verseLink(place.book, place.chapter, place.verse ?? 1, bibleFor(place.book, bibles)) : undefined;
   if (!link) {
     return (
       <p className="py-1 text-lg text-muted">

@@ -9,7 +9,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { RANDOM, devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
 import { getDay, getExplained, localDate, markOpened, noteExplained, pickAnotherDevotional } from '../data/daily/dailyStore';
 import { dailyReadings } from '../data/daily/psalmsProverbs';
-import { countDue, getLogosBible, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
+import { countDue, getLogosBibles, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
 import { backTo, navigate, openMemorizeSession, openReader } from '../nav/route';
@@ -24,7 +24,7 @@ import { useMovePlace } from '../plan/useMovePlace';
 import { useSendOff } from '../plan/useSendOff';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { devotionalLink } from '../resources/logosDevotional';
-import { chapterLink, verseLink } from '../resources/logosBible';
+import { bibleFor, chapterLink, verseLink } from '../resources/logosBible';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from '../resources/audioBible';
 import { armFallback } from '../resources/openApp';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
@@ -136,14 +136,14 @@ function MemorizePiece({ ticks }: { ticks: Ticks }) {
 function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   const plan = usePlan();
   const resources = useLiveQuery(getStudyResources, []);
-  const bible = useLiveQuery(getLogosBible, []);
+  const bibles = useLiveQuery(getLogosBibles, []);
   const audioId = useSetting(audioBibleSetting);
   const sendOff = useSendOff();
   const [starting, setStarting] = useState(false);
   const [placing, setPlacing] = useState(false);
   const place = useMovePlace();
   const runs = readRuns(plan?.started?.readOn(date) ?? []);
-  if (!plan || !resources || bible === undefined || audioId === undefined) return null;
+  if (!plan || !resources || bibles === undefined || audioId === undefined) return null;
   const { started } = plan;
   const next = started?.next;
   // what he read today (chapters marked done on this date), each run with a ticked box that un-marks it, above Next (mw-5r3p30.630)
@@ -182,7 +182,7 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   } else {
     const name = chapterName(next);
     const logosOn = resources.on.includes('logos');
-    const logos = logosOn ? verseLink(next.code, next.chapter, undefined, bible) : undefined;
+    const logos = logosOn ? verseLink(next.code, next.chapter, undefined, bibleFor(next.code, bibles)) : undefined;
     const audio = audioBibleOf(audioId);
     const inLampas = bookOf(next.code) !== undefined;
     const listen = audio && audibleChapterLabel(next.code, next.chapter) !== undefined ? audio : undefined;
@@ -252,8 +252,8 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
 }
 
 function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
-  const bible = useLiveQuery(getLogosBible, []);
-  if (bible === undefined) return null;
+  const bibles = useLiveQuery(getLogosBibles, []);
+  if (bibles === undefined) return null;
   return (
     <section aria-label="Psalms and Proverbs">
       <h2 className={HEADING}>Psalms and Proverbs</h2>
@@ -261,7 +261,7 @@ function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
         {dailyReadings(today).map((reading) => {
           const id = `${reading.code}.${reading.chapter}`;
           const name = passageName(reading.code, reading.chapter);
-          const link = chapterLink(reading.code, reading.chapter, bible);
+          const link = chapterLink(reading.code, reading.chapter, bibleFor(reading.code, bibles));
           return (
             <Piece key={id} id={id} label={name} ticks={ticks}>
               {link ? (

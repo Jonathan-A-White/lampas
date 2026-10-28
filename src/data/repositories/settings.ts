@@ -7,7 +7,7 @@ import { MOVE_WINDOW, type GrammarMove } from '../grammar/move';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
 import type { Theme } from '../../appearance/themes';
-import { DEFAULT_LOGOS_BIBLE, isResourceId } from '../../resources/logosBible';
+import { DEFAULT_LOGOS_BIBLE, LOGOS_PARTS, isResourceId, type LogosBibles, type LogosPart } from '../../resources/logosBible';
 import { playToOf, type PlayTo } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
@@ -310,16 +310,38 @@ export async function setQuizGoal(text: string): Promise<void> {
   await db.settings.put({ key: QUIZ_GOAL_KEY, value: text.trim().slice(0, QUIZ_GOAL_MAX) });
 }
 
-const LOGOS_BIBLE_KEY = 'logosBible';
+const LOGOS_BIBLE_KEYS = Object.fromEntries(LOGOS_PARTS.map((p) => [p.part, p.key])) as Record<LogosPart, string>;
 
-/** The Resource ID of the Bible an Old Testament chapter opens in, in Logos; the default (the Legacy Standard Bible) while none was chosen or the saved one is malformed. */
-export async function getLogosBible(): Promise<string> {
-  const row = await db.settings.get(LOGOS_BIBLE_KEY);
-  return typeof row?.value === 'string' && isResourceId(row.value) ? row.value.trim() : DEFAULT_LOGOS_BIBLE;
+/** The Resource IDs saved for the three parts (undefined for a part with none or a malformed one), read in one go. */
+async function savedBibles(): Promise<Record<LogosPart, string | undefined>> {
+  const rows = await db.settings.bulkGet(LOGOS_PARTS.map((p) => p.key));
+  const saved = (i: number): string | undefined => (typeof rows[i]?.value === 'string' && isResourceId(rows[i]?.value) ? rows[i]?.value.trim() : undefined);
+  return { nt: saved(0), ot: saved(1), apocrypha: saved(2) };
 }
 
+/** The Resource ID of his Bible in Logos for each part of the canon. The New Testament's is the default (the Legacy Standard Bible) while none was chosen or the saved one is malformed; the
+ *  Old Testament and the Apocrypha follow the New Testament's until each is picked. */
+export async function getLogosBibles(): Promise<LogosBibles> {
+  const saved = await savedBibles();
+  const nt = saved.nt ?? DEFAULT_LOGOS_BIBLE;
+  return { nt, ot: saved.ot ?? nt, apocrypha: saved.apocrypha ?? nt };
+}
+
+/** His Bible in Logos for one part (the New Testament's when none is named). */
+export async function getLogosBible(part: LogosPart = 'nt'): Promise<string> {
+  return (await getLogosBibles())[part];
+}
+
+/** One Bible in Logos for every part: what choosing a Bible in the Library does (KindPage.tsx, TypedBible.tsx). */
 export async function setLogosBible(resourceId: string): Promise<void> {
-  await db.settings.put({ key: LOGOS_BIBLE_KEY, value: resourceId.trim() });
+  const id = resourceId.trim();
+  await db.settings.bulkPut(Object.values(LOGOS_BIBLE_KEYS).map((key) => ({ key, value: id })));
+}
+
+/** The Bible in Logos of one part. The other two are kept as they are now, so a part that was following another does not move with it. */
+export async function setLogosBibleFor(part: LogosPart, resourceId: string): Promise<void> {
+  const bibles = { ...(await getLogosBibles()), [part]: resourceId.trim() };
+  await db.settings.bulkPut((Object.keys(LOGOS_BIBLE_KEYS) as LogosPart[]).map((p) => ({ key: LOGOS_BIBLE_KEYS[p], value: bibles[p] })));
 }
 
 const APPROACH_KEY = 'grammarApproach';

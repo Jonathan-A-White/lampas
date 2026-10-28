@@ -64,7 +64,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `maps.logosatlas` — Logos Atlas. This source is used, and its row shown, only while Logos is On in Study resources.
 - `audioBible` — Audio Bible. The Word of Promise in Audible: the Verse view links to it. Value: "off", "word-of-promise" (The Word of Promise (NKJV), in Audible).
 - `readingPlan` — Reading plan. Whether Lampas keeps a reading plan: the whole Bible, Genesis to Revelation, a chapter at a time, in your audio Bible. On: it remembers where you started, the chapters done and the next one. Starting a plan turns this On, and the Audio Bible too if it was Off.
-- `logosBible` — Bible in Logos. The Bible in your Logos library that Old Testament chapters open in, named by its Resource ID, such as LLS:LGCYSTNDRDBBLSB (the Legacy Standard Bible). It shows only while Logos is On. It is chosen on Library > Bibles. Value: text, for example "LLS:LGCYSTNDRDBBLSB" (a book, a chapter or a verse; "" for none).
+- `logosBible` — Bible in Logos. The Bible that New Testament verses open in, in Logos. Value: text, for example "LLS:LGCYSTNDRDBBLSB" (a book, a chapter or a verse; "" for none).
 - `dailyReview` — Review. Whether Today holds a Review piece: the words and ideas that are due.
 - `dailyMemorize` — Memorize. Whether Today holds the verses due to recall.
 - `dailyPlan` — Plan chapter. Whether Today holds the reading plan's chapter for the day, to read in Logos. With no plan started there is nothing to show.

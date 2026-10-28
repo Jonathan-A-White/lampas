@@ -5,12 +5,13 @@
 // Nothing leaves the app until he taps one; the Audible link is made again at the tap (src/resources/oldTestamentChoices.ts).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { isHebrewBook } from '../data/books';
-import { getLogosBible } from '../data/repositories';
+import { getLogosBibles } from '../data/repositories';
 import { getStudyResources } from '../data/repositories/resources';
 import { MapsDoor } from '../maps/MapsDoor';
 import { SendOff } from '../plan/SendOff';
 import { useSendOff } from '../plan/useSendOff';
 import { audioBibleOf } from '../resources/audioBible';
+import { bibleFor } from '../resources/logosBible';
 import { oldTestamentChoices } from '../resources/oldTestamentChoices';
 import { armFallback } from '../resources/openApp';
 import { audioBibleSetting } from '../settings/definitions';
@@ -30,12 +31,12 @@ export function ChapterActions({ name, code, chapter, immersive }: { name: strin
 
 function OutsideActions({ name, code, chapter }: { name: string; code: string; chapter: number }) {
   const resources = useLiveQuery(getStudyResources, []);
-  const bible = useLiveQuery(getLogosBible, []);
+  const bibles = useLiveQuery(getLogosBibles, []);
   const audioId = useSetting(audioBibleSetting);
   const sendOff = useSendOff();
-  if (!resources || bible === undefined || audioId === undefined) return null;
+  if (!resources || bibles === undefined || audioId === undefined) return null;
   const audio = audioBibleOf(audioId);
-  const { logos, audible } = oldTestamentChoices(code, chapter, { logosOn: resources.on.includes('logos'), logosBible: bible, audio });
+  const { logos, audible } = oldTestamentChoices(code, chapter, { logosOn: resources.on.includes('logos'), logosBible: bibleFor(code, bibles), audio });
   if (!logos && !(audio && audible)) return null;
   return (
     <div role="group" data-chapter-actions aria-label={`${name} ${chapter}: read or listen`} className="mx-3 mt-6 flex flex-col gap-2 rounded-xl border border-line bg-surface p-3">

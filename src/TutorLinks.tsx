@@ -6,11 +6,12 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import type { AnswerLink } from './data/db';
 import { lookupLemma } from './data/lexicon';
-import { getLogosBible, getStudyResources, getWorks, setResourceOn, shelfOf } from './data/repositories';
+import { getLogosBibles, getStudyResources, getWorks, setResourceOn, shelfOf } from './data/repositories';
 import { openReader } from './nav/route';
 import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS } from './services/talk';
+import { bibleFor } from './resources/logosBible';
 import { armFallback } from './resources/openApp';
 import { hebrewLinkLemma, mapChip, placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
 import { openMaps } from './maps/openMaps';
@@ -64,7 +65,7 @@ interface Group {
 /** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. `onWord` opens the word sheet of a Hebrew lemma over the Talk sheet (the Word chip is drawn only with it). `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. */
 export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef }) {
   const chosen = useLiveQuery(getStudyResources, []);
-  const bible = useLiveQuery(getLogosBible, []);
+  const bibles = useLiveQuery(getLogosBibles, []);
   const works = useLiveQuery(getWorks, []);
   const shelf = useLiveQuery(shelfOf, []);
   const level = useGreekInterest();
@@ -73,7 +74,7 @@ export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLin
   const mapCards = useMaps(place && shown.some((l) => l.kind === 'map') ? place : null);
   const strongs = useStrongs(shown.flatMap((l) => (l.kind === 'word' ? [l.lemma.normalize('NFC')] : [])));
   const [missing, setMissing] = useState<StudyResource | null>(null);
-  if (!chosen || bible === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
+  if (!chosen || bibles === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
   if (place && shown.some((l) => l.kind === 'map') && mapCards === undefined) return null;
 
   const groups: Group[] = [];
@@ -93,7 +94,7 @@ export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLin
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);
-      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, place, chips: verseChips(place, place.name, chosen, bible, level) });
+      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, place, chips: verseChips(place, place.name, chosen, bibleFor(place.book, bibles), level) });
     }
   }
   const drawn = groups.filter((g) => g.reader || g.setting || g.map || (g.hebrew && onWord) || g.chips.length > 0);

@@ -1,5 +1,5 @@
 // src/library/TypedBible.tsx — the one escape hatch of the Library (docs/design/library-at-scale.md 12, Q8): on the Bibles page, the Resource ID of a Bible he owns that the catalogue lacks can be typed,
-// and Old Testament chapters then open in it. A typed ID is kept as soon as it is well formed. Choosing a Bible of the list writes the same setting (KindPage.tsx), so Bible in Logos is one fact.
+// and every part then opens in it. A typed ID is kept as soon as it is well formed. Choosing a Bible of the list writes the same setting (KindPage.tsx), so Bible in Logos is one fact.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { getLogosBible, setLogosBible } from '../data/repositories';
@@ -8,19 +8,20 @@ import { DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 
 export function TypedBible() {
   const saved = useLiveQuery(getLogosBible, []);
-  const [typed, setTyped] = useState('');
+  // null until the field has been given the saved Bible, so it is not drawn empty and then filled under his first keystroke
+  const [typed, setTyped] = useState<string | null>(null);
   // the field follows the saved Bible when it changes elsewhere (choosing one of the list), but not when it is his own typing coming back a moment later: the saved text
   // arrives one keystroke behind, so every text he has written is remembered and none of them moves the field
   const written = useRef(new Set<string>());
   useEffect(() => {
     if (saved !== undefined && !written.current.has(saved)) setTyped(saved);
   }, [saved]);
-  if (saved === undefined) return null;
+  if (saved === undefined || typed === null) return null;
   const bad = typed.trim() !== '' && !isResourceId(typed);
   return (
     <div className="mt-3">
       <p className="text-base">
-        Old Testament chapters open in <span className="font-medium">{entryOf(saved)?.short ?? saved}</span>.
+        New Testament verses open in <span className="font-medium">{entryOf(saved)?.short ?? saved}</span>. A Bible chosen or typed here is set for the Old Testament and the Apocrypha too; Settings sets each part apart.
       </p>
       <label className="mt-2 block">
         <span className="block text-base font-medium">Resource ID</span>
