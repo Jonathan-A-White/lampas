@@ -7,7 +7,7 @@ import { FACT_VALUE_MAX, MAX_FACTS, SCREEN_NAMES, type ScreenContext, type Scree
 /** The key a lesson's talk is kept under: one for each lesson, so a lesson's talk is never another's. */
 export const variantLessonKept = (id: string): string => `screen.variant-lesson.${id}`;
 
-/** How many lessons there are, as the facts say 'Page 3 of 5': the list's length is the caller's. */
+/** What a lesson's screen reads of a lesson. */
 type LessonOf = Pick<VariantLesson, 'id' | 'title' | 'order' | 'markdown'>;
 
 /** The page as plain sentences up to its Sources: no headings, no marks, no link addresses, one line. */
