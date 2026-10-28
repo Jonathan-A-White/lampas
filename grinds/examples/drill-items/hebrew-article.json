@@ -1,0 +1,365 @@
+{
+  "description": "He missed the Hebrew article twice, and has already been asked to tap a word with the article in Genesis 1:1: the grind writes Hebrew items on he-article from the five verses of Genesis 1 sent, every option a word of the verse copied with its points, a word with a prefix or a maqaf whole, and none that repeats the seen question on Genesis 1:1.",
+  "schemaVersion": "1",
+  "request": {
+    "language": "he",
+    "ideas": [
+      {
+        "id": "he-article",
+        "title": "The Hebrew article",
+        "what": "Hebrew has a word for ‘the’ and none for ‘a’. ‘The’ is the letter ה written on the front of the noun, with a dagesh in the letter after it where one can be written: הַיּוֹם ‘the day’. A name, such as Jonah, needs no article: it is definite already.",
+        "misses": 2
+      }
+    ],
+    "verses": [
+      {
+        "ref": "Genesis 1:1",
+        "hebrew": "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ",
+        "hebrew_words": [
+          {
+            "form": "בְּרֵאשִׁית",
+            "lemma": "רֵאשִׁית",
+            "translit": "bə·rê·šîṯ",
+            "gloss": "first, beginning",
+            "parse": "Preposition-b | Noun - feminine singular"
+          },
+          {
+            "form": "בָּרָא",
+            "lemma": "בָּרָא",
+            "translit": "bā·rā",
+            "gloss": "to create",
+            "parse": "Verb - Qal - Perfect - third person masculine singular"
+          },
+          {
+            "form": "אֱלֹהִים",
+            "lemma": "אֱלֹהִים",
+            "translit": "’ĕ·lō·hîm",
+            "gloss": "God",
+            "parse": "Noun - masculine plural"
+          },
+          {
+            "form": "אֵת",
+            "lemma": "אֵת",
+            "translit": "’êṯ",
+            "gloss": "[Obj.]",
+            "parse": "Direct object marker"
+          },
+          {
+            "form": "הַשָּׁמַיִם",
+            "lemma": "שָׁמַיִם",
+            "translit": "haš·šā·ma·yim",
+            "gloss": "heaven",
+            "parse": "Article | Noun - masculine plural"
+          },
+          {
+            "form": "וְאֵת",
+            "lemma": "אֵת",
+            "translit": "wə·’êṯ",
+            "gloss": "[Obj.]",
+            "parse": "Conjunctive waw | Direct object marker"
+          },
+          {
+            "form": "הָאָרֶץ",
+            "lemma": "אֶ֫רֶץ",
+            "translit": "hā·’ā·reṣ",
+            "gloss": "land, country, planet",
+            "parse": "Article | Noun - feminine singular"
+          }
+        ],
+        "english": "In the beginning God created the heavens and the earth.",
+        "uses": [
+          {
+            "idea": "he-article",
+            "form": "הַשָּׁמַיִם",
+            "parse": "Article | Noun - masculine plural"
+          },
+          {
+            "idea": "he-article",
+            "form": "הָאָרֶץ",
+            "parse": "Article | Noun - feminine singular"
+          }
+        ]
+      },
+      {
+        "ref": "Genesis 1:2",
+        "hebrew": "וְהָאָרֶץ הָיְתָה תֹהוּ וָבֹהוּ וְחֹשֶׁךְ עַל־ פְּנֵי תְהוֹם וְרוּחַ אֱלֹהִים מְרַחֶפֶת עַל־ פְּנֵי הַמָּיִם",
+        "hebrew_words": [
+          {
+            "form": "וְהָאָרֶץ",
+            "lemma": "אֶ֫רֶץ",
+            "translit": "wə·hā·’ā·reṣ",
+            "gloss": "land, country, planet",
+            "parse": "Conjunctive waw, Article | Noun - feminine singular"
+          },
+          {
+            "form": "הָיְתָה",
+            "lemma": "הָיָה",
+            "translit": "hā·yə·ṯāh",
+            "gloss": "to be",
+            "parse": "Verb - Qal - Perfect - third person feminine singular"
+          },
+          {
+            "form": "תֹהוּ",
+            "lemma": "תֹּ֫הוּ",
+            "translit": "ṯō·hū",
+            "gloss": "formlessness",
+            "parse": "Noun - masculine singular"
+          },
+          {
+            "form": "וָבֹהוּ",
+            "lemma": "בֹּהוּ",
+            "translit": "wā·ḇō·hū",
+            "gloss": "void",
+            "parse": "Conjunctive waw | Noun - masculine singular"
+          },
+          {
+            "form": "וְחֹשֶׁךְ",
+            "lemma": "חֹ֫שֶׁךְ",
+            "translit": "wə·ḥō·šeḵ",
+            "gloss": "darkness",
+            "parse": "Conjunctive waw | Noun - masculine singular"
+          },
+          {
+            "form": "עַל־",
+            "lemma": "עַל",
+            "translit": "‘al-",
+            "gloss": "upon",
+            "parse": "Preposition"
+          },
+          {
+            "form": "פְּנֵי",
+            "lemma": "פָּנֶה",
+            "translit": "pə·nê",
+            "gloss": "face, before",
+            "parse": "Noun - common plural construct"
+          }
+        ],
+        "english": "Now the earth was formless and void, and darkness was over the surface of the deep. And the Spirit of God was hovering over the surface of the waters.",
+        "uses": [
+          {
+            "idea": "he-article",
+            "form": "וְהָאָרֶץ",
+            "parse": "Conjunctive waw, Article | Noun - feminine singular"
+          },
+          {
+            "idea": "he-article",
+            "form": "הַמָּיִם",
+            "parse": "Article | Noun - masculine plural"
+          }
+        ]
+      },
+      {
+        "ref": "Genesis 1:3",
+        "hebrew": "וַיֹּאמֶר אֱלֹהִים יְהִי אוֹר וַיְהִי־ אוֹר",
+        "hebrew_words": [
+          {
+            "form": "וַיֹּאמֶר",
+            "lemma": "אָמַר",
+            "translit": "way·yō·mer",
+            "gloss": "to say",
+            "parse": "Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular"
+          },
+          {
+            "form": "אֱלֹהִים",
+            "lemma": "אֱלֹהִים",
+            "translit": "’ĕ·lō·hîm",
+            "gloss": "God",
+            "parse": "Noun - masculine plural"
+          },
+          {
+            "form": "יְהִי",
+            "lemma": "הָיָה",
+            "translit": "yə·hî",
+            "gloss": "to be",
+            "parse": "Verb - Qal - Imperfect Jussive - third person masculine singular"
+          },
+          {
+            "form": "אוֹר",
+            "lemma": "אוֹר",
+            "translit": "’ō·wr",
+            "gloss": "light",
+            "parse": "Noun - common singular"
+          },
+          {
+            "form": "וַיְהִי־",
+            "lemma": "הָיָה",
+            "translit": "way·hî-",
+            "gloss": "to be",
+            "parse": "Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular"
+          }
+        ],
+        "english": "And God said, “Let there be light,” and there was light.",
+        "uses": []
+      },
+      {
+        "ref": "Genesis 1:4",
+        "hebrew": "וַיַּרְא אֱלֹהִים אֶת־ הָאוֹר כִּי־ טוֹב וַיַּבְדֵּל אֱלֹהִים בֵּין הָאוֹר וּבֵין הַחֹשֶׁךְ",
+        "hebrew_words": [
+          {
+            "form": "וַיַּרְא",
+            "lemma": "רָאָה",
+            "translit": "way·yar",
+            "gloss": "to see",
+            "parse": "Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular"
+          },
+          {
+            "form": "אֱלֹהִים",
+            "lemma": "אֱלֹהִים",
+            "translit": "’ĕ·lō·hîm",
+            "gloss": "God",
+            "parse": "Noun - masculine plural"
+          },
+          {
+            "form": "אֶת־",
+            "lemma": "אֵת",
+            "translit": "’eṯ-",
+            "gloss": "[Obj.]",
+            "parse": "Direct object marker"
+          },
+          {
+            "form": "הָאוֹר",
+            "lemma": "אוֹר",
+            "translit": "hā·’ō·wr",
+            "gloss": "light",
+            "parse": "Article | Noun - common singular"
+          },
+          {
+            "form": "כִּי־",
+            "lemma": "כִּי",
+            "translit": "kî-",
+            "gloss": "for",
+            "parse": "Conjunction"
+          },
+          {
+            "form": "טוֹב",
+            "lemma": "טוֹב",
+            "translit": "ṭō·wḇ",
+            "gloss": "pleasant",
+            "parse": "Adjective - masculine singular"
+          },
+          {
+            "form": "וַיַּבְדֵּל",
+            "lemma": "בָּדַל",
+            "translit": "way·yaḇ·dêl",
+            "gloss": "to divide",
+            "parse": "Conjunctive waw | Verb - Hifil - Consecutive imperfect - third person masculine singular"
+          },
+          {
+            "form": "בֵּין",
+            "lemma": "בַּ֫יִן",
+            "translit": "bên",
+            "gloss": "between",
+            "parse": "Preposition"
+          }
+        ],
+        "english": "And God saw that the light was good, and He separated the light from the darkness.",
+        "uses": [
+          {
+            "idea": "he-article",
+            "form": "הָאוֹר",
+            "parse": "Article | Noun - common singular"
+          },
+          {
+            "idea": "he-article",
+            "form": "הָאוֹר",
+            "parse": "Article | Noun - common singular"
+          },
+          {
+            "idea": "he-article",
+            "form": "הַחֹשֶׁךְ",
+            "parse": "Article | Noun - masculine singular"
+          }
+        ]
+      },
+      {
+        "ref": "Genesis 1:5",
+        "hebrew": "וַיִּקְרָא אֱלֹהִים לָאוֹר יוֹם וְלַחֹשֶׁךְ קָרָא לָיְלָה וַיְהִי־ עֶרֶב וַיְהִי־ בֹקֶר יוֹם אֶחָדפ",
+        "hebrew_words": [
+          {
+            "form": "וַיִּקְרָא",
+            "lemma": "קָרָא",
+            "translit": "way·yiq·rā",
+            "gloss": "to call, call to",
+            "parse": "Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular"
+          },
+          {
+            "form": "אֱלֹהִים",
+            "lemma": "אֱלֹהִים",
+            "translit": "’ĕ·lō·hîm",
+            "gloss": "God",
+            "parse": "Noun - masculine plural"
+          },
+          {
+            "form": "לָאוֹר",
+            "lemma": "אוֹר",
+            "translit": "lā·’ō·wr",
+            "gloss": "light",
+            "parse": "Preposition-l, Article | Noun - common singular"
+          },
+          {
+            "form": "יוֹם",
+            "lemma": "יוֹם",
+            "translit": "yō·wm",
+            "gloss": "day",
+            "parse": "Noun - masculine singular"
+          },
+          {
+            "form": "וְלַחֹשֶׁךְ",
+            "lemma": "חֹ֫שֶׁךְ",
+            "translit": "wə·la·ḥō·šeḵ",
+            "gloss": "darkness",
+            "parse": "Conjunctive waw, Preposition-l, Article | Noun - masculine singular"
+          },
+          {
+            "form": "קָרָא",
+            "lemma": "קָרָא",
+            "translit": "qā·rā",
+            "gloss": "to call, call to",
+            "parse": "Verb - Qal - Perfect - third person masculine singular"
+          },
+          {
+            "form": "לָיְלָה",
+            "lemma": "לַ֫יְלָה",
+            "translit": "lā·yə·lāh",
+            "gloss": "night",
+            "parse": "Noun - masculine singular"
+          }
+        ],
+        "english": "God called the light “day,” and the darkness He called “night.” And there was evening, and there was morning — the first day.",
+        "uses": [
+          {
+            "idea": "he-article",
+            "form": "לָאוֹר",
+            "parse": "Preposition-l, Article | Noun - common singular"
+          },
+          {
+            "idea": "he-article",
+            "form": "וְלַחֹשֶׁךְ",
+            "parse": "Conjunctive waw, Preposition-l, Article | Noun - masculine singular"
+          }
+        ]
+      }
+    ],
+    "per_idea": 2,
+    "seen": [
+      {
+        "prompt": "Tap a word with the article",
+        "ref": "Genesis 1:1"
+      }
+    ]
+  },
+  "expect": {
+    "items.0.idea": {
+      "equals": "he-article"
+    },
+    "items.0.kind": {
+      "one_of": [
+        "tap-form",
+        "meaning"
+      ]
+    },
+    "items.0.right": {
+      "present": true
+    }
+  }
+}
