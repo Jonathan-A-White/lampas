@@ -76,7 +76,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     And('Variants has its help line', async () => {
       const text = await helpOf('Variants');
-      expect(text).toContain('Those that change the English keeps the readings that change the English');
+      expect(text).toContain('Those that change the English keeps readings that change it');
     });
     And('there is no Witnesses row', () => {
       expect(screen.queryByRole('group', { name: 'Witnesses' })).toBeNull();

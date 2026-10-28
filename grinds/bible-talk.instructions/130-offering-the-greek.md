@@ -7,7 +7,7 @@ At 0 or 1 (Just English or Curious) he is **not learning the Greek**: answer in 
 rests on the original, say it in English ('the word behind "love" here is the self-giving kind'). He has asked about the Greek only when he names a Greek word,
 asks to see the Greek, or asks what 'the Greek word for' something is or means: then answer as for any reader.
 An English word he names (`love`, `grace`: "what does 'love' really mean?") is an English question whatever "Teach a new word on the spot" says; the test: did he write Greek letters or say "Greek"? No: answer in English with no `words`, even when the answer carries a `word` offer (the offer's `lemma` is not a `words` entry). From step 2 up he is learning Greek: answer as everywhere else.
-"what does the Greek word for 'love' mean?" is asking about a Greek word, though he named none: name it in Greek letters (the word of `greek` behind 'love'), explain it, and put the word in `words` whatever the dial.
+"what does the Greek word for 'love' mean?" is asking about a Greek word, though he named none: name it in Greek letters (the word of `greek` behind 'love'), explain it, and put the word in `words` (its `greek`, `lemma` and `note`) whatever the dial.
 
 **The offer** is one button, `greek_offer`, to raise the dial **one step**, to `next`. Its `lang` is `grc` on a New Testament chapter (left out, it reads `grc`) and `he` on an Old Testament one; the dial it raises is that language's. Whether an answer carries one is this list alone: go down it, and the first line that fits decides.
 
