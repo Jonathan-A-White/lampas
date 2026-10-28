@@ -9,7 +9,7 @@ const STEPS: readonly { lang: LadderLang; label: string }[] = [
   { lang: 'hbo', label: 'Hebrew' },
 ];
 
-/** The two-step segment: the step in hand is pressed. A step is a 48 px button; the pair is a group named by `label`. */
+/** The two-step segment: the step in hand is pressed. A step is a 48 px button that may shrink to its label (a third of a phone held sideways leaves a screen 208 px); the pair is a group named by `label`. */
 export function SourceSegment({ label = 'Language' }: { label?: string }) {
   const segment = useSourceSegment();
   return (
@@ -21,7 +21,7 @@ export function SourceSegment({ label = 'Language' }: { label?: string }) {
           aria-pressed={segment === step.lang}
           data-lang={step.lang}
           onClick={() => writeSourceSegment(step.lang)}
-          className={`min-h-12 flex-1 px-4 text-lg font-medium ${segment === step.lang ? 'bg-accent text-accent-fg' : 'text-fg active:bg-line'}`}
+          className={`min-h-12 min-w-0 flex-1 px-1 text-lg font-medium ${segment === step.lang ? 'bg-accent text-accent-fg' : 'text-fg active:bg-line'}`}
         >
           {step.label}
         </button>
