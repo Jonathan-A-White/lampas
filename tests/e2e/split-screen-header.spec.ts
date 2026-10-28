@@ -127,7 +127,7 @@ for (const size of SIZES) {
 // overlap and none is outside the window. The walk of everything else on these screens is mw-5r3p30.769.
 const SCREENS = [
   'words', 'import', 'test', 'drill', 'review', 'today', 'paradigms', 'placement', 'goal', 'path', 'ipa', 'diagram-lesson', 'sounds', 'studyway', 'aboutyou', 'memory', 'requests',
-  'conversations', 'askmore', 'about', 'preface', 'essay', 'library', 'lists', 'memorize', 'settings', 'share',
+  'conversations', 'askmore', 'help', 'about', 'preface', 'essay', 'library', 'lists', 'memorize', 'settings', 'share',
 ];
 
 /** The buttons and links of the screen's own header (the first header on the page), by name and box. */

@@ -2,7 +2,7 @@ import { navigate, openRequests } from '../../nav/route';
 import type { SettingsRow } from '../rows';
 import { SettingRow } from './SettingRow';
 
-const LINK_TO = { 'link.aboutyou': 'aboutyou', 'link.memory': 'memory', 'link.studyway': 'studyway', 'link.goal': 'goal', 'link.words': 'words', 'link.review': 'review', 'link.paradigms': 'paradigms', 'link.askmore': 'askmore', 'link.requests': 'requests', 'link.conversations': 'conversations', 'link.about': 'about' } as const;
+const LINK_TO = { 'link.aboutyou': 'aboutyou', 'link.memory': 'memory', 'link.studyway': 'studyway', 'link.goal': 'goal', 'link.words': 'words', 'link.review': 'review', 'link.paradigms': 'paradigms', 'link.askmore': 'askmore', 'link.requests': 'requests', 'link.conversations': 'conversations', 'link.help': 'help', 'link.about': 'about' } as const;
 
 export function LinkControl({ row }: { row: SettingsRow }) {
   const to = LINK_TO[row.key as keyof typeof LINK_TO];

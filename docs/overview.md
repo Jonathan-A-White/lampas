@@ -34,5 +34,5 @@ Every other screen and module: `docs/module-map.md` section 1, and `docs/layout/
 1. Test first: write the failing scenario or test, then the code. See CLAUDE.md "Tests".
 2. UI reaches Dexie only through `src/data/repositories`; never edit an old `version()`. See CLAUDE.md "Conventions".
 3. The page never scrolls, and a pinned bar pads with `var(--lp-bar-inset)`, never `env(safe-area-inset-bottom)`. See CLAUDE.md "Conventions" and `docs/pwa-best-practices.md`.
-4. Credit what you build on in `ATTRIBUTION.md`, and a change to a text, source or what the app does updates About and `src/preface.ts` in the same story. See CLAUDE.md "Conventions".
+4. Credit what you build on in `ATTRIBUTION.md`, and a change to a text or source updates About and `src/preface.ts` (the Preface holds only what we chose), and a change to what the app does updates About and its page of Help (`src/help.ts`), in the same story. See CLAUDE.md "Conventions".
 5. A new setting is classified in `src/tutor/knows.ts` and the grinds are rebuilt (`npm run grind:build`). See CLAUDE.md "What the tutor is told".

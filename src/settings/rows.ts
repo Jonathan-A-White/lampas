@@ -93,7 +93,7 @@ export const GROUPS: readonly SettingsGroup[] = [
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
   { id: 'study', title: 'Study resources', hint: 'Links to the tools you own.', sections: ['resources', 'logos', 'maps'] },
-  { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests and About.', sections: ['aboutYou', 'memory', 'more'] },
+  { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests, Help and About.', sections: ['aboutYou', 'memory', 'more'] },
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
 ];
 
@@ -122,6 +122,7 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.askmore', label: 'Ask for more', hint: 'Ask for an approach, a study resource, a text or a translation Lampas lacks.', section: 'more' },
   { key: 'link.conversations', label: 'Conversations', hint: 'Every talk you have kept with the tutor: search them and carry one on.', section: 'more' },
   { key: 'link.requests', label: 'Your requests', hint: 'What became of the things you asked the factory for.', section: 'more' },
+  { key: 'link.help', label: 'Help', hint: 'A short page on each piece of the app, and the tutor to ask.', section: 'more' },
   { key: 'link.about', label: 'About', hint: 'Where the text comes from, and its licences.', section: 'more' },
 ];
 

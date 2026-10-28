@@ -13,11 +13,11 @@ import type { CourseLanguage } from '../ipa/course';
 import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'help' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
 
 const ROUTE_TABLE: Record<Route, true> = {
   home: true, words: true, import: true, test: true, drill: true, review: true, today: true, paradigms: true, placement: true, goal: true, path: true, ipa: true, 'diagram-lesson': true, sounds: true, studyway: true,
-  aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, about: true, preface: true, essay: true, library: true, lists: true, memorize: true, settings: true, share: true, unlock: true,
+  aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, help: true, about: true, preface: true, essay: true, library: true, lists: true, memorize: true, settings: true, share: true, unlock: true,
 };
 
 /** Every screen of the app, once: the table the tutor's places are checked against (src/tutor/registry.ts, tests/unit/tutor-registry.test.ts). A new Route fails typecheck until it is listed here. */
@@ -85,6 +85,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/requests') return 'requests';
   if (path === '#/conversations') return 'conversations';
   if (path === '#/askmore') return 'askmore';
+  if (path === '#/help') return 'help';
   if (path === '#/about') return 'about';
   if (path === '#/preface') return 'preface';
   if (path === ESSAY_PATH) return 'essay';
@@ -258,6 +259,20 @@ export function backTo(route: Route): void {
     return;
   }
   navigate(route);
+}
+
+/** The page of Help an address opens (`#/help?page=licence`), or undefined for the list; the screen checks the id against its pages (src/help.ts). */
+export function helpPageOf(hash: string): string | undefined {
+  const q = hash.indexOf('?');
+  return (new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('page') ?? undefined) || undefined;
+}
+
+/** Opens a page of Help as a new Back step; Back returns to the list. */
+export function openHelpPage(id: string): void {
+  const hash = `#/help?page=${encodeURIComponent(id)}`;
+  if (window.location.hash === hash) return;
+  window.history.pushState(null, '', urlFor(hash));
+  notify();
 }
 
 /** What the address says about the Library screen (src/library/): no kind is the home; a kind (`kind=lexicon`) is that kind's page, and a book (`book=<Resource ID>`) is the one the page opens at. Both are raw text:

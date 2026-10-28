@@ -6,7 +6,7 @@ import { reportScreen, screenContextNow } from '../../src/tutor/screenContext';
 
 describe('screen names and suggestions', () => {
   it('names every route but the Reader, and each has two or three suggested questions', () => {
-    expect(Object.keys(SCREEN_NAMES).sort()).toEqual(['about', 'aboutyou', 'askmore', 'conversations', 'diagram-lesson', 'drill', 'essay', 'goal', 'import', 'ipa', 'library', 'lists', 'memorize', 'memory', 'paradigms', 'path', 'placement', 'preface', 'requests', 'review', 'settings', 'sounds', 'studyway', 'test', 'today', 'words']);
+    expect(Object.keys(SCREEN_NAMES).sort()).toEqual(['about', 'aboutyou', 'askmore', 'conversations', 'diagram-lesson', 'drill', 'essay', 'goal', 'help', 'import', 'ipa', 'library', 'lists', 'memorize', 'memory', 'paradigms', 'path', 'placement', 'preface', 'requests', 'review', 'settings', 'sounds', 'studyway', 'test', 'today', 'words']);
     for (const name of Object.values(SCREEN_NAMES)) {
       const questions = suggestionsFor(name);
       expect(questions.length, name).toBeGreaterThanOrEqual(2);

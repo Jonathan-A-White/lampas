@@ -58,6 +58,8 @@ describe('the trail of places he visited', () => {
     expect(isKeptHash('#/memory')).toBe(true);
     expect(isKeptHash('#/requests')).toBe(true);
     expect(isKeptHash('#/askmore')).toBe(true);
+    expect(isKeptHash('#/help')).toBe(true);
+    expect(isKeptHash('#/help?page=licence')).toBe(true);
     expect(isKeptHash('#/library?kind=lexicon')).toBe(true);
     expect(isKeptHash('#/conversations')).toBe(true);
     expect(isKeptHash('#/lists')).toBe(true);

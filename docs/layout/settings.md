@@ -66,6 +66,7 @@ Typing on the home swaps the groups for the rows that match by name or hint (`vi
 ## Files
 
 ```
+src/HelpScreen.tsx help.ts  # Help (mw-5r3p30.823, #/help, Settings > Account > More > Help, `link.help`): the app's own notes as a list of HELP_PAGES (at most HELP_MAX_PAGES = 12, each a title, one line and a page of under HELP_MAX_WORDS = 120 words, no paragraph over the tutor's 400-character fact), a tap on one is `#/help?page=<id>` (`helpPageOf`, `openHelpPage`); Ask the tutor is the first button of the list and of a page (`askTheTutor()`, src/tutor/askNow.ts; without a licence it reads Needs a licence), and the screen reports name 'Help' with a fact for each piece (the list) or the page (a page). A note about what the app does goes on a page here, never on the Preface (tests/unit/help.test.tsx holds both)
 src/SettingsScreen.tsx  # the home (search field, groups, found rows) and a group's page (its sections, drawn from the rows, each with its control); reports the screen to the tutor with every setting
 src/settings/rows.ts  # SECTIONS, GROUPS (which group a section is in), ROWS, visibleRows, rowsAt, neededFor, visibleGroups, searchSettings; the links, the Ask for a devotional door (it opens Ask for a book), the Your Logos library row (the door to #/library, not talkable) and Developer mode are rows too
 src/settings/define.ts  # defineSetting and SectionId
