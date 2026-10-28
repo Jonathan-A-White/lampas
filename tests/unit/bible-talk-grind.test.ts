@@ -409,6 +409,27 @@ describe('the word and quiz focus (mw-5r3p30.80)', () => {
   });
 });
 
+describe('quiz mode on an Old Testament verse (mw-gdcyf98.30)', () => {
+  const part = instructionParts(grind.kind as string).find(({ file }) => file.endsWith('170-quiz-mode.md'))?.text.replace(/\s+/g, ' ') ?? '';
+  const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
+
+  it('tells the tutor the text of an Old Testament verse is `hebrew` and `english`, and the quiz asks in its words, never in Greek', () => {
+    expect(part).toContain('The text is only the text in `greek` (on an Old Testament verse, `hebrew`) and `english`');
+    expect(part).toMatch(/Old Testament verse the request carries `hebrew` \(and `hebrew_words`\) instead of `greek`/);
+    expect(part).toMatch(/words and forms of `hebrew`, pitched at his Hebrew \(`settings\.hebrewDepth`\), and never quotes Greek/);
+    expect(part).toMatch(/Learning Greek or Hebrew/);
+  });
+
+  it('has the hebrew-quiz example: Jonah 1:1 in quiz mode, Hebrew and its words, no Greek, which the request schema accepts', () => {
+    const example = readJson('grinds/examples/bible-talk/hebrew-quiz.json') as { request: Record<string, unknown> };
+    expect(example.request).toMatchObject({ reference: 'Jonah 1:1', mode: 'quiz', quiz_goal: 'learning Hebrew' });
+    expect(example.request.hebrew).toBeTruthy();
+    expect(example.request.hebrew_words).toBeInstanceOf(Array);
+    expect(example.request).not.toHaveProperty('greek');
+    expect(validate(example.request, input)).toEqual([]);
+  });
+});
+
 describe('the screen field (mw-5r3p30.91)', () => {
   const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
   const base = { reference: 'Goal', question: 'Where am I?', history: [], solid_words: [], settings: {} };
