@@ -61,6 +61,15 @@ Feature: Bible talk
     And the second grist holds the passage "Revelation 2:8-11" with the Greek and the English of verses 8 to 11 of Revelation 2
     And the second grist still carries the Greek and the English of verse 28
 
+  @grist
+  Scenario: The tutor asks for a passage the app cannot read; the turn says so instead of staying silent
+    Given Lampas is opened on Romans 8 with a talk behind a fake Postern whose answer asks to fetch Revelation 40:1
+    And he selects verse 28
+    And he opens Talk
+    When he sends "Which churches suffered for him like this?"
+    Then under the answer one quiet line says "Could not read Revelation 40:1"
+    And no line says "Tutor fetched"
+
   @answer
   Scenario: The answer shows in the sheet and is read aloud
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern and a phone that speaks English and Greek

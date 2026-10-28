@@ -172,6 +172,29 @@ describeFeature(
       });
     });
 
+    Scenario('The tutor asks for a passage the app cannot read; the turn says so instead of staying silent', ({ Given, And, When, Then }) => {
+      Given('Lampas is opened on Romans 8 with a talk behind a fake Postern whose answer asks to fetch Revelation 40:1', () =>
+        open((f) => void (f.autoReply = { status: 'answered', answer: { ...TALK_ANSWER, fetch: ['Revelation 40:1'] } })),
+      );
+      And('he selects verse 28', selectVerse28);
+      And('he opens Talk', openTalk);
+      When('he sends {string}', (_, question: string) => send(question));
+      Then('under the answer one quiet line says {string}', async (_, line: string) => {
+        await turnsKept(1);
+        const lines = await waitFor(() => {
+          const found = Array.from(sheet().querySelectorAll<HTMLElement>('[data-talk-unread]'));
+          expect(found).toHaveLength(1);
+          return found;
+        });
+        expect(lines[0]).toHaveTextContent(line);
+        expect(within(lines[0]).queryByRole('button')).toBeNull();
+      });
+      And('no line says {string}', (_, line: string) => {
+        expect(sheet().querySelector('[data-talk-fetched]')).toBeNull();
+        expect(sheet()).not.toHaveTextContent(line);
+      });
+    });
+
     Scenario('The eleventh turn sends only the last 10 as history', ({ Given, And, When, Then }) => {
       Given('Lampas is opened on Romans 8 with a talk behind a fake Postern', () => open());
       And('ten turns were already kept for verse 28', async () => {

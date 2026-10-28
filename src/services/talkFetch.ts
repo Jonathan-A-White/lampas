@@ -68,8 +68,21 @@ export function passageOf(book: string, chapter: number, verses: readonly Verse[
   }
 }
 
-/** Reads the passages an answer's `fetch` names from the app's chapter data (`load`, loadChapter): a chapter that does not load and verses it does not have are left out; it never throws. */
-export async function fetchPassages(refs: readonly string[], load: (book: string, chapter: number) => Promise<Chapter> = loadChapter): Promise<HeldPassage[]> {
+/** What a fetch came to (mw-5r3p30.825): the passages read, and the references of the answer that gave nothing, written as the tutor named them. */
+export interface FetchOutcome {
+  read: HeldPassage[];
+  unread: string[];
+}
+
+/** 'Revelation 6:2-7' -> its book's name, chapter and first verse; null for a reference in no such form. */
+const startOf = (reference: string): string | null => {
+  const m = /^(.+) (\d+):(\d+)/.exec(reference);
+  return m ? `${m[1]} ${m[2]}:${Number(m[3])}` : null;
+};
+
+/** Reads the passages an answer's `fetch` names from the app's chapter data (`load`, loadChapter): a chapter that does not load and verses it does not have are left out, each reference left out is
+ * returned in `unread`; it never throws. */
+export async function fetchOutcome(refs: readonly string[], load: (book: string, chapter: number) => Promise<Chapter> = loadChapter): Promise<FetchOutcome> {
   const read: HeldPassage[] = [];
   for (const want of wantedOf(refs)) {
     const chapter = await load(want.book, want.chapter).catch(() => undefined);
@@ -78,8 +91,19 @@ export async function fetchPassages(refs: readonly string[], load: (book: string
     const passage = passageOf(want.book, want.chapter, verses, sourceLanguage({ lang: chapter?.lang }));
     if (!read.some((p) => p.reference === passage.reference)) read.push(passage);
   }
-  return read;
+  const got = new Set(read.map((p) => startOf(p.reference)));
+  const unread: string[] = [];
+  for (const ref of refs.slice(0, MAX_FETCH)) {
+    const want = wantedOf([ref])[0];
+    const start = want ? startOf(`${bookOf(want.book)?.name ?? want.book} ${want.chapter}:${want.from}`) : null;
+    const name = ref.trim();
+    if (!(start && got.has(start)) && !unread.includes(name)) unread.push(name);
+  }
+  return { read, unread };
 }
+
+/** The passages `fetchOutcome` read. */
+export const fetchPassages = async (refs: readonly string[], load?: (book: string, chapter: number) => Promise<Chapter>): Promise<HeldPassage[]> => (await fetchOutcome(refs, load)).read;
 
 /** 'Rev 2:8-11', '1 John 1:9': a reference by its book's short name. */
 function shortReference(reference: string): string {
@@ -88,6 +112,9 @@ function shortReference(reference: string): string {
   const code = r && OSIS[r.book];
   return parts && code ? `${code.replace(/^(\d)/, '$1 ')} ${parts[2]}` : reference;
 }
+
+/** The quiet line under an answer whose fetch read nothing, or not all: 'Could not read Isaiah 53:5'. */
+export const unreadLine = (references: readonly string[]): string => `Could not read ${references.join(', ')}`;
 
 /** The quiet line under an answer whose fetch was read: 'Tutor fetched Rev 2:8-11, Heb 7:1-3'. */
 export const fetchedLine = (passages: readonly HeldPassage[]): string => `Tutor fetched ${passages.map((p) => shortReference(p.reference)).join(', ')}`;

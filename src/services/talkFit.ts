@@ -39,9 +39,37 @@ export const trimShelfDigest: Cut<TalkRequest> = (request) =>
 /** The maps of the passage's chapter (mw-zbjgn3r.4) go whole, after the shelf digest: a map the tutor is not told of is a link it does not offer; null when the request has none. */
 export const dropMaps: Cut<TalkRequest> = (request) => (request.maps ? without(request, 'maps') : null);
 
-/** The oldest of the passages the tutor fetched (the last in the list, newest first), before a verse of the talk's own text or a turn (mw-5r3p30.734); null when none is held. */
-export const dropOldestHeldPassage: Cut<TalkRequest> = (request) =>
-  request.held_passages && request.held_passages.length > 0 ? withoutEmpty({ ...request, held_passages: request.held_passages.slice(0, -1) }, 'held_passages') : null;
+/** The passages the tutor fetched older than the newest one go, the oldest first (the last in the list, newest first), before anything of the talk's own is cut (mw-5r3p30.734); null when one or none is held. */
+export const dropOlderHeldPassage: Cut<TalkRequest> = (request) =>
+  request.held_passages && request.held_passages.length > 1 ? { ...request, held_passages: request.held_passages.slice(0, -1) } : null;
+
+/**
+ * The lesser fields the tutor can answer without, cut to make room for a fetched passage before it or the last turns are touched (mw-5r3p30.825: his Revelation 6 request weighed about 8,700 of
+ * 9,400 bytes in fields that were never cut, and the passage the tutor asked for was the first thing to go). What the rusty items and Today hold are offers the tutor may do without for a turn;
+ * his solid words go but for their count. Each returns null when the request holds no passage (a talk that fetched nothing keeps them) or has none of the field.
+ */
+export const dropRusty: Cut<TalkRequest> = (request) => (request.held_passages?.length && request.rusty ? without(request, 'rusty') : null);
+export const dropToday: Cut<TalkRequest> = (request) => (request.held_passages?.length && request.today ? without(request, 'today') : null);
+export const dropSolidWords: Cut<TalkRequest> = (request) => (request.held_passages?.length && request.solid_words.length > 0 ? { ...request, solid_words: [] } : null);
+
+/** The longest of a held passage's two texts must stay at least this long (characters) for the fit to clip it: a passage cut shorter than a few verses is not worth sending. */
+export const HELD_CLIP_FLOOR = 600;
+
+/**
+ * The newest fetched passage, clipped a tenth at a time (the longer of its Greek and English, ending in the mark that says the text goes on, as clipPassageText does the talk's own) once
+ * every other cut but the turns has been made; null when it is gone or clipped to HELD_CLIP_FLOOR.
+ */
+export const clipNewestHeldPassage: Cut<TalkRequest> = (request) => {
+  const [newest, ...rest] = request.held_passages ?? [];
+  if (!newest) return null;
+  const key = newest.greek.length >= newest.english.length ? 'greek' : 'english';
+  if (newest[key].length <= HELD_CLIP_FLOOR) return null;
+  const clipped = clipPassage(newest[key]);
+  return clipped === newest[key] ? null : { ...request, held_passages: [{ ...newest, [key]: clipped }, ...rest] };
+};
+
+/** The newest fetched passage goes only when the history is down to the newest turn: the last of the talk's text to give way but the newest turn and the summary. */
+export const dropNewestHeldPassage: Cut<TalkRequest> = (request) => (request.held_passages && request.held_passages.length > 0 ? withoutEmpty({ ...request, held_passages: request.held_passages.slice(1) }, 'held_passages') : null);
 
 /** A request keeps the key of a list only while the list holds something. */
 function withoutEmpty(request: TalkRequest, key: 'works' | 'held_passages'): TalkRequest {
@@ -73,21 +101,30 @@ export const clipPassageText: Cut<TalkRequest> = (request) => {
   return clipped === texts[key] ? null : { ...request, english: texts.english, [key]: clipped };
 };
 
+/** The turns of the history the fit keeps until every other cut has been made (mw-5r3p30.825). */
+export const KEPT_TURNS = 3;
+
 /**
  * The oldest turn of the history goes, never the newest (it is what he is answering, mw-5r3p30.615). A turn dropped for room is folded into the summary instead of lost, cut short, behind the turns already
  * waiting to be: only when none is left waiting behind them (`unfolded`), else the summary would skip them. The first `held` turns of the history are in the summary already, since an earlier fit
- * folded them: they go without a second fold. The cut counts those as it goes, so a list of steps is for one fit.
+ * folded them: they go without a second fold. The cut counts those as it goes, so a list of steps is for one fit. It stops with `keep` turns left: the first pass keeps the last three
+ * (KEPT_TURNS, mw-5r3p30.825) and the second goes down to the newest.
  */
-export const foldOldestTurn = (held: number): Cut<TalkRequest> => {
-  let covered = held;
+export const foldOldestTurn = (held: number, keep = 1, name = 'foldOldestTurn', turns = { covered: held }): Cut<TalkRequest> => {
   const cut: Cut<TalkRequest> = (request) => {
-    if (request.history.length <= 1) return null;
-    const fold = covered > 0 || request.unfolded ? request.fold : [...(request.fold ?? []), foldedTurn(request.history[0])];
-    if (covered > 0) covered -= 1;
+    if (request.history.length <= keep) return null;
+    const fold = turns.covered > 0 || request.unfolded ? request.fold : [...(request.fold ?? []), foldedTurn(request.history[0])];
+    if (turns.covered > 0) turns.covered -= 1;
     const next: TalkRequest = { ...request, history: request.history.slice(1) };
     return fold && fold.length > 0 ? { ...next, fold } : without(next, 'fold');
   };
-  return Object.defineProperty(cut, 'name', { value: 'foldOldestTurn' });
+  return Object.defineProperty(cut, 'name', { value: name });
+};
+
+/** The two passes over the history that share one count of the turns the summary holds already: down to the last KEPT_TURNS, and later down to the newest. */
+const foldPasses = (held: number): [Cut<TalkRequest>, Cut<TalkRequest>] => {
+  const turns = { covered: held };
+  return [foldOldestTurn(held, KEPT_TURNS, 'foldToLastThreeTurns', turns), foldOldestTurn(held, 1, 'foldOldestTurn', turns)];
 };
 
 /** What the cut turns would add goes first when the request is still over: the fold is the oldest turns' last claim on the record. */
@@ -128,21 +165,29 @@ export const dropSummary: Cut<TalkRequest> = (request) => (request.summary ? wit
  * buildTalkRequest carries. `held` is how many of the history's oldest turns the summary holds already (foldOldestTurn); the list is for one fit.
  */
 export const bibleTalkSteps = (held: number): readonly Cut<TalkRequest>[] => {
+  const [foldToKept, foldToNewest] = foldPasses(held);
   const steps: Cut<TalkRequest>[] = [
     clipLongAnswer,
     dropPronunciationGuide,
     trimGreekWordsWhileHistory,
     trimShelfDigest,
     dropMaps,
-    dropOldestHeldPassage,
+    dropOlderHeldPassage,
+    dropRusty,
+    dropToday,
+    dropSolidWords,
     dropFarthestVerse,
     clipPassageText,
-    foldOldestTurn(held),
+    foldToKept,
     dropFoldTail,
     trimGreekWords,
     dropOldestRequest,
     dropLastNote,
     dropDrillAnswer,
+    clipNewestHeldPassage,
+    foldToNewest,
+    dropFoldTail,
+    dropNewestHeldPassage,
     dropNewestTurn,
     dropSummary,
   ];

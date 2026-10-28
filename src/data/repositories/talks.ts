@@ -147,9 +147,10 @@ export async function markUnopenedOpened(turnId: number): Promise<void> {
   });
 }
 
-/** Keeps the passages the turn's answer asked for (mw-5r3p30.734), once they are read: the turn then reads 'Tutor fetched ...' and the talk's next request holds them. */
-export async function keepFetched(turnId: number, passages: HeldPassage[]): Promise<void> {
-  await db.talks.update(turnId, { fetched: passages });
+/** Keeps the passages the turn's answer asked for (mw-5r3p30.734), once they are read: the turn then reads 'Tutor fetched ...' and the talk's next request holds them; and the references it could
+ * not read (mw-5r3p30.825), which the turn says in a line of its own. */
+export async function keepFetched(turnId: number, passages: HeldPassage[], unread: string[] = []): Promise<void> {
+  await db.talks.update(turnId, { ...(passages.length > 0 ? { fetched: passages } : {}), ...(unread.length > 0 ? { unread } : {}) });
 }
 
 /** Marks the turn's feedback offer as sent, so it reads Sent from then on. */
