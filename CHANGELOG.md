@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.26
+_2026-10-28_
+- New: with Variants on, the Reader marks the words where the manuscripts differ and shows the other reading in a small brace with its witness (B, NA, ECM), in English, weave and Greek; a ⁑ chip under the header turns them on and off, and holding it chooses which to show.
+
 ## 0.5.25
 _2026-10-28_
 - New: A Hebrew word's sheet now has Help with this word (Grammar, Syllables and sounds, Ask the tutor), grammar terms you can tap, and the tutor can add Hebrew words to your list.
