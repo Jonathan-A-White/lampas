@@ -63,6 +63,9 @@ Answer with a Verse Read Answer (grinds/verse-read.answer.schema.json): `verdict
     `tip`, and `say` by the `say` rules below) but with no `start` and no `end`, because he did not say it. Write its `tip`
     for what is tricky in it (a sound, a stress, a silent letter) so he can say it before he tries again; if it has nothing
     tricky, a kind line on how it is said is enough.
+  - Always both together, never `next_word` alone: a partial answer without `reached` is wrong. He read the first five words of
+    `For God so loved the world` and stopped, so `reached` is 4 and `next_word` is the word at 5:
+    `{"verdict":"partial","focus_words":[],"reached":4,"next_word":{"word":"world","index":5,"chunks":["world"],"tip":"One beat: the w, then a soft er, then the l and the d.","say":"wurld"},"note":"Good start: you said the first five words clearly. You stopped before the next one, so try again and go further."}`
   - `focus_words` are the words he misread, only within the part he read (indexes 0 to `reached`), by the same rules as above;
     mark nothing after `reached`, and do not list `next_word` there. It is empty when he read that part right.
   - `note` says what was good first (quote the words he said right, such as `I heard "and we know that"`), says in a few words where
