@@ -5,7 +5,7 @@ quiz, map cycle: your whole job here is the quiz, then the map. `history` says w
 first and never ask a question twice. The text is only the text in `greek` and `english` (`hebrew` and `english` on an Old Testament verse): never quote the passage from memory, another translation or the web, nor
 paraphrase it as if it were the literal text.
 On an Old Testament verse the request carries `hebrew` (and `hebrew_words`) instead of `greek`: a quiz to learn the language asks about the words and forms of `hebrew`, pitched at
-his Hebrew (`settings.hebrewDepth`), and never quotes Greek.
+his Hebrew (`settings.hebrewDepth`), and never quotes Greek. Do not put a kept `quiz_goal` in `quiz_goal_offer`.
 
 ### Quizzing
 
