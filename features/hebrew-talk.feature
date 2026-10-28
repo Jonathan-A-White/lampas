@@ -31,6 +31,29 @@ Feature: The Bible talk on a verse of the Old Testament
     When he taps the Hebrew word "דְּבַר־" of the answer
     Then the word sheet opens on the Hebrew word "דְּבַר־"
 
+  Scenario: Add to my words on the answer's Hebrew word lists the lemma as a Hebrew word with the lexicon's gloss
+    Given Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer explains the Hebrew word "דְּבַר־"
+    When he taps the number of verse 1 and chooses "Talk about verse 1"
+    And he sends "What does the Hebrew word for word mean here?"
+    And he taps Add to my words on the answer's word "דָּבָר"
+    Then his words hold "דָּבָר" as a Hebrew word with the gloss "word"
+    And the answer's button for "דָּבָר" now reads On my list
+
+  Scenario: An answer that asks to add a Hebrew lemma to his words says so in the Hebrew face
+    Given Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer adds the Hebrew word "דָּבָר" to his words
+    When he taps the number of verse 1 and chooses "Talk about verse 1"
+    And he sends "Add דָּבָר to my words"
+    Then the answer says "Added דָּבָר to your words", the lemma right to left in the Hebrew face
+    And his words hold "דָּבָר" as a Hebrew word with the gloss "word"
+
+  Scenario: A word link to a Hebrew lemma is drawn in Hebrew and opens the Hebrew word's sheet
+    Given Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer links the Hebrew word "דָּבָר"
+    When he taps the number of verse 1 and chooses "Talk about verse 1"
+    And he sends "What does the Hebrew word for word mean here?"
+    Then the answer's study links name "דָּבָר" right to left in the Hebrew face and not in Greek type
+    When he taps the answer's link "Open דָּבָר in Lampas"
+    Then the Hebrew word sheet opens over the Talk sheet on the lemma "דָּבָר" with the meaning "word"
+
   Scenario: A talk on a Greek chapter is as it was
     Given Lampas is opened on Romans 8 with the Hebrew dial at Curious and a talk behind a fake Postern
     When he taps the number of verse 28 and chooses "Talk about verse 28"

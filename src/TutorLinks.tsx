@@ -12,7 +12,7 @@ import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS } from './services/talk';
 import { armFallback } from './resources/openApp';
-import { mapChip, placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
+import { hebrewLinkLemma, mapChip, placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
 import { openMaps } from './maps/openMaps';
 import { useMaps } from './maps/useMaps';
 import type { MapRef } from './maps/types';
@@ -20,7 +20,7 @@ import type { StudyResource } from './resources';
 import { useGreekInterest } from './settings/useGreekInterest';
 import { AppMissingSheet } from './WordSheet';
 import { AnotherBookButton } from './library/InLogosDoors';
-import { greekLang } from './script/greekLang';
+import { faceOf } from './script/greekLang';
 
 /** The Strong's number of each linked lemma, from the lexicon; '' for a lemma it lacks or when it cannot be loaded. Undefined until they are looked up. */
 function useStrongs(lemmas: string[]): Record<string, string> | undefined {
@@ -28,7 +28,8 @@ function useStrongs(lemmas: string[]): Record<string, string> | undefined {
   const [found, setFound] = useState<{ key: string; strongs: Record<string, string> }>();
   useEffect(() => {
     let live = true;
-    void Promise.all(lemmas.map(async (lemma) => [lemma, (await lookupLemma(lemma).catch(() => undefined))?.s ?? ''] as const)).then((pairs) => {
+    // a Hebrew lemma is asked of the Hebrew lexicon, a Greek one of the Greek (mw-gdcyf98.20)
+    void Promise.all(lemmas.map(async (lemma) => [lemma, (await lookupLemma(lemma, hebrewLinkLemma(lemma) ? 'hbo' : 'grc').catch(() => undefined))?.s ?? ''] as const)).then((pairs) => {
       if (live) setFound({ key, strongs: Object.fromEntries(pairs) });
     });
     return () => {
@@ -44,9 +45,11 @@ const CHIP = 'inline-flex min-h-11 min-w-11 items-center justify-center rounded-
 
 interface Group {
   key: string;
-  /** what the group is about: the lemma in Greek type, or the reference */
+  /** what the group is about: the lemma in Greek type (or Hebrew, `hebrew`), or the reference */
   name: string;
   greek: boolean;
+  /** a Hebrew lemma: drawn right to left in the Hebrew face, with a chip that opens its word sheet in Lampas */
+  hebrew?: boolean;
   /** the Reader chip of a verse link */
   reader?: { book: string; chapter: number; verse?: number };
   /** a verse link: the second door, In another book, opens the chooser of his Logos shelf at the place */
@@ -58,8 +61,8 @@ interface Group {
   chips: LinkChip[];
 }
 
-/** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. */
-export function TutorLinks({ links, onLeave, place }: { links: AnswerLink[]; onLeave: () => void; place?: MapRef }) {
+/** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. `onWord` opens the word sheet of a Hebrew lemma over the Talk sheet (the Word chip is drawn only with it). `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. */
+export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef }) {
   const chosen = useLiveQuery(getStudyResources, []);
   const bible = useLiveQuery(getLogosBible, []);
   const works = useLiveQuery(getWorks, []);
@@ -77,7 +80,8 @@ export function TutorLinks({ links, onLeave, place }: { links: AnswerLink[]; onL
   for (const [i, link] of shown.entries()) {
     if (link.kind === 'word') {
       const lemma = link.lemma.normalize('NFC');
-      groups.push({ key: `${i}`, name: lemma, greek: true, chips: wordChips(lemma, strongs[lemma] || undefined, chosen, level) });
+      const hebrew = hebrewLinkLemma(lemma);
+      groups.push({ key: `${i}`, name: lemma, greek: !hebrew, hebrew, chips: wordChips(lemma, strongs[lemma] || undefined, chosen, level) });
     } else if (link.kind === 'setting') {
       const row = settingLink(link.key) ? rowOf(link.key) : undefined;
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
@@ -92,7 +96,7 @@ export function TutorLinks({ links, onLeave, place }: { links: AnswerLink[]; onL
       if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, place, chips: verseChips(place, place.name, chosen, bible, level) });
     }
   }
-  const drawn = groups.filter((g) => g.reader || g.setting || g.map || g.chips.length > 0);
+  const drawn = groups.filter((g) => g.reader || g.setting || g.map || (g.hebrew && onWord) || g.chips.length > 0);
   if (drawn.length === 0) return null;
 
   return (
@@ -100,9 +104,21 @@ export function TutorLinks({ links, onLeave, place }: { links: AnswerLink[]; onL
       <ul data-tutor-links aria-label="Study links" className="mt-2 space-y-2 border-t border-line pt-2">
         {drawn.map((group) => (
           <li key={group.key} data-tutor-link role="group" aria-label={group.name} className="flex flex-wrap items-center gap-2">
-            <span {...greekLang(group.greek)} className={`mr-1 break-words ${group.greek ? 'font-greek text-2xl' : 'text-base font-medium'}`}>
-              {group.name}
-            </span>
+            {group.hebrew ? (
+              <span {...faceOf('hbo', { greek: '', hebrew: 'hebrew-choice' }, 'mr-1 break-words')}>{group.name}</span>
+            ) : (
+              <span {...(group.greek ? faceOf('grc', { greek: 'text-2xl', hebrew: '' }, 'mr-1 break-words') : { className: 'mr-1 break-words text-base font-medium' })}>{group.name}</span>
+            )}
+            {group.hebrew && onWord ? (
+              <button
+                type="button"
+                aria-label={`Open ${group.name} in Lampas`}
+                onClick={() => onWord(group.name)}
+                className={CHIP}
+              >
+                Word
+              </button>
+            ) : null}
             {group.reader ? (
               <button
                 type="button"

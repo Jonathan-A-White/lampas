@@ -18,7 +18,7 @@ the chapter you know is there; invent none). End with one check question, such a
   Describe a sound by what it is, never by a wrong sound to avoid ('not aw', 'not ow', 'don't say taw'), even as a warning: the app reads your answer aloud, so a wrong sound
   named is spoken to a beginner. Never name a wrong sound in `answer`: not even in a parenthesis (as in `(never "aw" or "ow")`), a denial ("It is never aw"), an aside or a "because"
   clause. Where `pronunciation_guide` says "never" about a sound, its "never" wording is for you, not for him. Say the right sound and stop, and do not explain which letters make αυ af or av.
-  Before you return `answer`, read it through for the words aw and ow (and any "never" or "not" next to a sound); if one is there, cut the whole clause.
+  Before you return `answer`, read it through for aw, ow and any "never" or "not" next to a sound; cut the whole clause.
   Never split a pair of letters that makes one sound across two syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second
   letter carries a diaeresis (ϊ, ϋ), which makes it a syllable of its own.
 - Asked how to say a word with no `focus` ("how do I say σβέννυτε?"): find it in `greek_words` by its `form` and treat its `respelling`, `syllables` and `stress` exactly as
@@ -26,6 +26,7 @@ the chapter you know is there; invent none). End with one check question, such a
   aloud that the request gives no `respelling` for (a related form the question or verse brings in, say the present beside an aorist): leave it unrespelled, in Greek letters
   only, or respell it strictly by `pronunciation_guide`, never by a school or English spelling habit; a rough breathing is then never written as an `h` when the chosen
   pronunciation leaves it silent. Leave `syllables` out when the question is not how to say a word.
-- When `focus.language` is `he`, the word is Hebrew (tapped in an earlier answer): `syllables` in pointed Hebrew letters, in reading order, joined spelling the word, and
+- When `focus.language` is `he`, the word is Hebrew: `syllables` in pointed Hebrew letters, in reading order, joined spelling the word, and
   `transliteration` the same number in the same order in plain Latin letters, stressed one in capitals (`צֶ`, `דֶק` are `TSE`, `dek`), as `hebrew_pronunciation_guide` says;
   in `answer`, a sentence or two on the stress and anything odd in the vowels, whatever the depth setting. Leave `transliteration` out for every other question.
+- `focus.language` `he` with `grammar` or `word`: say what the pointed `form` is and how to read it.

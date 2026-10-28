@@ -311,11 +311,10 @@ function cutAt(decoded: string, pattern: RegExp): ParseSegment[] {
 }
 
 /** A decoded parsing ('verb, present active indicative, 3rd person singular') cut into its terms and the text between them; the
- * segments' texts joined are the parsing itself. A Hebrew word's parsing (`language` 'hbo') is one plain stretch, no term a link: the word sheet draws it so until
- * story j2 wires its links to the Grammar sheet (hebrewParseSegments is the cut it will draw). */
+ * segments' texts joined are the parsing itself. A Hebrew word's parsing (`language` 'hbo') is cut at the Hebrew table's terms (hebrewParseSegments), each a link to the Grammar sheet. */
 export function parseSegments(decoded: string, language: SourceLanguage = 'grc'): ParseSegment[] {
   // A Hebrew parsing arrives decoded in the chapter's own parse map ('Verb - Qal - Perfect - third person masculine singular'); its terms are the Hebrew table's (hebrew/terms.ts)
-  if (language === 'hbo') return decoded === '' ? [] : [{ text: decoded }];
+  if (language === 'hbo') return hebrewParseSegments(decoded);
   return cutAt(decoded, TERM_PATTERN);
 }
 

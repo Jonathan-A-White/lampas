@@ -54,3 +54,24 @@ Feature: Word help
     When the backend comes back and he taps Retry
     Then the answer shows in the Talk sheet under the question about the word
     And the retried grist carries the same grammar focus
+
+  Scenario: Grammar on the word sheet of a Hebrew word sends a grammar focus in Hebrew
+    Given Lampas is opened on Jonah 1 with word help behind a fake Postern, in the Hebrew view
+    And he taps the Hebrew word "נִֽינְוֵ֛ה" in verse 2
+    When he taps Grammar on the word sheet
+    Then the word sheet is gone and the sheet is titled "Talk about Jonah 1:2"
+    And the mill received 1 grist for the lampas app, kind bible-talk
+    And the grist carries the Hebrew focus form "נִינְוֵה", lemma "נִינְוֵה", parse "Noun - proper - feminine singular" and kind grammar
+    And the grist carries the Hebrew of the verse and the reference "Jonah 1:2"
+    And the grist question names the word, its lemma, its parsing and the reference and asks to explain the grammar
+
+  Scenario: Syllables and sounds on a Hebrew word sends a sound focus in Hebrew, and the word is said in Hebrew before the answer
+    Given Lampas is opened on Jonah 1 with word help behind a fake Postern that holds its answers and a phone that speaks Hebrew
+    And he taps the Hebrew word "נִֽינְוֵ֛ה" in verse 2
+    When he taps Syllables and sounds on the word sheet
+    Then the mill received 1 grist for the lampas app, kind bible-talk
+    And the grist carries the Hebrew focus form "נִינְוֵה", lemma "נִינְוֵה", parse "Noun - proper - feminine singular" and kind sound
+    And that focus carries no Greek respelling or syllables
+    And the grist question asks to pronounce the Hebrew word, its syllables in Hebrew letters and how each sounds
+    And the word "נִינְוֵה" was spoken in Hebrew, slowly, before any answer
+

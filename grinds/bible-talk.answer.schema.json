@@ -52,7 +52,7 @@
       "items": { "type": "string", "minLength": 1, "maxLength": 40 }
     },
     "words_to_add": {
-      "description": "Only when he asked to put words on his words-to-learn list ('add σάρξ to my words'): the dictionary form of each word, in Greek letters. Leave it out otherwise.",
+      "description": "Only when he asked to put words on his words-to-learn list ('add σάρξ to my words'): the dictionary form of each word, in Greek letters, or a Hebrew word's pointed TBESH headword (the language is read from the script: U+0590-05FF is Hebrew). Leave it out otherwise.",
       "type": "array",
       "minItems": 1,
       "maxItems": 12,

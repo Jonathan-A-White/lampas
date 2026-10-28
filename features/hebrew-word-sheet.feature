@@ -4,7 +4,8 @@ Feature: The Hebrew word sheet
   tap in an Old Testament chapter opens the same sheet with the Hebrew words the chunk renders, and under them the English sheet of its words. #/?word=H7225, the pointed lemma or the
   lemma with its points off opens the sheet of a word by itself. With Logos on the Study row has Strong's Hebrew, Bible Word Study at lbs/he and his Hebrew lexicons; with Logos off it offers to
   turn it on. Genesis 1 is the copy of the built chapter in tests/fixtures/data/gen/1.json (scripts/fixture-chapter.mjs). The Greek sheet is as it was (features/word-sheet-study.feature and the others
-  run on it too). The Paradigm row of a Hebrew word is features/hebrew-paradigms.feature's. Not yet, and not drawn for a Hebrew word: the Heart note, Help with this word and the Grammar sheet of a parsing term (docs/layout/word-sheet.md lists them as LATER).
+  run on it too). The Paradigm row of a Hebrew word is features/hebrew-paradigms.feature's. Each term of the parsing is a link to the Grammar sheet, and Help with this word (Grammar, Syllables and sounds, Ask the tutor)
+  sits under the Study row (mw-gdcyf98.20; what Ask the tutor and the others send is features/word-ask-tutor.feature's and features/word-help.feature's). Not yet, and not drawn for a Hebrew word: the Heart note (docs/layout/word-sheet.md lists it as LATER).
 
   Scenario: A tap on בְּרֵאשִׁ֖ית opens its sheet: the form, the respelling, the lemma, the meaning, the parsing, H7225 and Listen
     Given Lampas is opened on Genesis 1 with the saved view "greek" and Strong's on
@@ -17,13 +18,53 @@ Feature: The Hebrew word sheet
     And it shows the parsing "Preposition-b | Noun - feminine singular"
     And it shows the Strong's number "H7225"
     And it has a Listen button
-    And it has no Paradigm row and no Help with this word row
+    And it has no Paradigm row
 
-  Scenario: The parsing of a verb is the long form, in plain words with no Greek term to tap
+  Scenario: The parsing of a verb is the long form, in plain words, each Hebrew term a link
     Given Lampas is opened on Genesis 1 with the saved view "greek"
     When he taps the Hebrew word "בָּרָ֣א" of verse 1
     Then it shows the parsing "Verb - Qal - Perfect - third person masculine singular"
-    And no word of the parsing is a link
+    And the terms of the parsing are links: "Verb", "Qal", "Perfect", "third person", "masculine" and "singular"
+
+  Scenario: The sheet of נִינְוֵה has Help with this word with its three rows and the parsing as links
+    Given Lampas is opened on Jonah 1 with the saved view "greek"
+    When he taps the Hebrew word "נִֽינְוֵ֛ה" of verse 2
+    Then it shows the parsing "Noun - proper - feminine singular"
+    And the terms of the parsing are links: "Noun", "proper", "feminine" and "singular"
+    And the Help with this word row has Grammar, Syllables and sounds and Ask the tutor
+
+  Scenario: The sheet of a verb with a table has the Paradigm row and Help with this word under it
+    Given Lampas is opened on Jonah 1 with the saved view "greek"
+    When he taps the Hebrew word "וַֽיְהִי֙" of verse 1
+    Then the Hebrew word sheet has a Paradigm row
+    And the Help with this word row has Grammar, Syllables and sounds and Ask the tutor
+
+  Scenario: A tap on Noun in the parsing opens the Grammar sheet of Noun, with its examples in Hebrew
+    Given Lampas is opened on Jonah 1 with the saved view "greek"
+    When he taps the Hebrew word "נִֽינְוֵ֛ה" of verse 2
+    And he taps the parsing term "Noun"
+    Then the Grammar sheet of "Noun" opens over the word sheet
+    And its examples are Hebrew words, right to left
+
+  Scenario: A Hebrew word he marked I know this has that term plain in the parsing
+    Given Lampas is opened on Jonah 1 with the saved view "greek"
+    When he taps the Hebrew word "נִֽינְוֵ֛ה" of verse 2
+    And he taps the parsing term "Noun"
+    And he taps I know this on the Grammar sheet
+    Then the parsing term "Noun" under the Grammar sheet is plain, not underlined
+
+  Scenario: Help with this word and the term's Ask the tutor are not offered without the AI
+    Given Lampas is opened on Jonah 1 with the saved view "greek" and no licence
+    When he taps the Hebrew word "נִֽינְוֵ֛ה" of verse 2
+    Then the Hebrew word sheet has no Help with this word row
+
+  Scenario: With many Hebrew lexicons On the Study row has All 8 lexicons, and its sheet draws the word in Hebrew
+    Given Lampas is opened on Jonah 1 with the saved view "greek" and Logos on with all the Hebrew lexicons ticked
+    When he taps the Hebrew word "נִֽינְוֵ֛ה" of verse 2
+    And he taps "All 8 lexicons ›" in the Study row
+    Then the All lexicons sheet opens
+    And it names the word "נִינְוֵה" in Hebrew, right to left, and not in Greek type
+    And its rows open the word's entry in each of the 8 Hebrew lexicons, in Logos
 
   Scenario: Listen says the word in the phone's Hebrew voice
     Given Lampas is opened on Genesis 1 with the saved view "greek" on a phone with an English, a Greek and a Hebrew voice

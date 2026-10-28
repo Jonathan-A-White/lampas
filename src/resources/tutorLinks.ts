@@ -7,6 +7,7 @@
 import { BOOK_INDEX } from '../data/bookIndex';
 import { titleOf, otBookOf } from '../data/books';
 import type { StudyResources } from '../data/repositories';
+import { isHebrewText } from '../data/lemma';
 import { parseCanonReference } from '../nav/links';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import { optionOf, resourceOf, RESOURCES, type StudyPlace, type StudyResource } from './index';
@@ -59,6 +60,9 @@ export function placeOf(reference: string): TutorPlace | null {
 
 /** The resources he switched on that the dial shows (resourcesForLevel: Greek ones are hidden at Just English and follow the English ones between), in that order. A hidden one keeps its switch. */
 const switchedOn = (chosen: StudyResources, level: GreekLevel): StudyResource[] => resourcesForLevel(RESOURCES, level).filter((r) => chosen.on.includes(r.id));
+
+/** Whether a word link names a Hebrew lemma (Hebrew letters or points, the Hebrew block): it is then drawn in the Hebrew face, looked up in the Hebrew lexicon and opens the Hebrew word's sheet (mw-gdcyf98.20). */
+export const hebrewLinkLemma = (lemma: string): boolean => isHebrewText(lemma);
 
 /** The chips of a word link: the first link of every resource that is on. `strongs` is the lemma's number from the lexicon; without it a resource of
  *  kind 'number' (Strong's) gives no chip, as it has nothing to link. */

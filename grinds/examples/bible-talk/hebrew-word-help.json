@@ -1,0 +1,123 @@
+{
+  "description": "Help with this word on the Hebrew word נִינְוֵה (Jonah 1:2), kind grammar: the focus is Hebrew (language he), so the answer says what the form is in plain words (a proper noun, feminine singular) and how to read its points, in Hebrew letters, and cites no Greek.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Jonah 1:2",
+    "hebrew": "קוּם לֵךְ אֶל־ נִינְוֵה הָעִיר הַגְּדוֹלָה וּקְרָא עָלֶיהָ כִּי־ עָלְתָה רָעָתָם לְפָנָי",
+    "hebrew_words": [
+      {
+        "form": "קוּם",
+        "lemma": "קָמָי",
+        "gloss": "(Leb)-kamai",
+        "translit": "qūm",
+        "parse": "Verb - Qal - Imperative - masculine singular"
+      },
+      {
+        "form": "לֵךְ",
+        "lemma": "הָלַךְ",
+        "gloss": "to go, went",
+        "translit": "lêḵ",
+        "parse": "Verb - Qal - Imperative - masculine singular"
+      },
+      {
+        "form": "אֶל־",
+        "lemma": "אֶל",
+        "gloss": "to(wards)",
+        "translit": "’el-",
+        "parse": "Preposition"
+      },
+      {
+        "form": "נִינְוֵה",
+        "lemma": "נִינְוֵה",
+        "gloss": "Nineveh",
+        "translit": "nî·nə·wêh",
+        "parse": "Noun - proper - feminine singular"
+      },
+      {
+        "form": "הָעִיר",
+        "lemma": "עִיר",
+        "gloss": "excitement",
+        "translit": "hā·‘îr",
+        "parse": "Article | Noun - feminine singular"
+      },
+      {
+        "form": "הַגְּדוֹלָה",
+        "lemma": "גָּדוֹל",
+        "gloss": "great, large",
+        "translit": "hag·gə·ḏō·w·lāh",
+        "parse": "Article | Adjective - feminine singular"
+      },
+      {
+        "form": "וּקְרָא",
+        "lemma": "קָרָא",
+        "gloss": "to call, call to",
+        "translit": "ū·qə·rā",
+        "parse": "Conjunctive waw | Verb - Qal - Imperative - masculine singular"
+      },
+      {
+        "form": "עָלֶיהָ",
+        "lemma": "עַל",
+        "gloss": "upon",
+        "translit": "‘ā·le·hā",
+        "parse": "Preposition | third person feminine singular"
+      },
+      {
+        "form": "כִּי־",
+        "lemma": "כִּי",
+        "gloss": "for",
+        "translit": "kî-",
+        "parse": "Conjunction"
+      },
+      {
+        "form": "עָלְתָה",
+        "lemma": "עָלָה",
+        "gloss": "to ascend, rise",
+        "translit": "‘ā·lə·ṯāh",
+        "parse": "Verb - Qal - Perfect - third person feminine singular"
+      },
+      {
+        "form": "רָעָתָם",
+        "lemma": "רַע",
+        "gloss": "bad, harmful",
+        "translit": "rā·‘ā·ṯām",
+        "parse": "Noun - feminine singular construct | third person masculine plural"
+      },
+      {
+        "form": "לְפָנָי",
+        "lemma": "פָּנֶה",
+        "gloss": "face, before",
+        "translit": "lə·p̄ā·nāy",
+        "parse": "Preposition-l | Noun - masculine plural construct | first person common singular"
+      }
+    ],
+    "english": "“Get up! Go to the great city of Nineveh and preach against it, because its wickedness has come up before Me.”",
+    "question": "The word נִינְוֵה (lemma נִינְוֵה; Noun - proper - feminine singular) in Jonah 1:2. Explain the grammar of this form and what I need to know to read it.",
+    "history": [],
+    "solid_words": [],
+    "settings": {
+      "greekInterest": "0",
+      "hebrewInterest": "5",
+      "hebrewDepth": "both"
+    },
+    "hebrew_interest": {
+      "level": 5,
+      "name": "All in"
+    },
+    "reader_view": "greek",
+    "focus": {
+      "form": "נִינְוֵה",
+      "lemma": "נִינְוֵה",
+      "parse": "Noun - proper - feminine singular",
+      "kind": "grammar",
+      "language": "he"
+    }
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Pp]roper|[Nn]ame|[Nn]oun"
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

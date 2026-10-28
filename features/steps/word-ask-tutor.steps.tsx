@@ -32,7 +32,7 @@ const LEMMA = 'συνεργέω';
 const PARSE = 'verb, present active indicative, 3rd person singular';
 let fake: FakePostern;
 
-async function open(hash: string, round?: unknown): Promise<void> {
+async function open(hash: string, round?: unknown, settings: Record<string, string> = {}): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -53,6 +53,7 @@ async function open(hash: string, round?: unknown): Promise<void> {
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.results.clear()]);
+  for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   render(<App newRandom={() => mulberry32(7)} />);
 }
 
@@ -194,6 +195,58 @@ describeFeature(feature, ({ Scenario }) => {
       expect(sent).toMatchObject({ kind: 'quiz', lemma, answers: [] });
       expect(sent).not.toHaveProperty('form');
       expect(sent).not.toHaveProperty('parse');
+    });
+  });
+
+  // a Hebrew word of Jonah 1 (the copy of the built chapter in tests/fixtures/data), in the Hebrew view, with the Hebrew dial at All
+  const openHebrew = async (): Promise<void> => {
+    await open('#/?b=jon&c=1', undefined, { hebrewInterest: '5', readerView: 'greek' });
+    await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+  };
+  const tapsHebrewWord = async (_: unknown, text: string, verse: number): Promise<void> => {
+    await user.click(await within(verseEl(verse)).findByText((_c, el) => el?.hasAttribute('data-word') === true && (el.textContent ?? '').replace(/\s+/g, ' ').trim() === text));
+    await screen.findByRole('dialog', { name: 'Word' });
+  };
+  const HE_FORM = 'נִינְוֵה';
+  const HE_PARSE = 'Noun - proper - feminine singular';
+  const sheetTitled = async (_: unknown, title: string): Promise<void> => {
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
+    await titled(title);
+  };
+
+  Scenario('Ask the tutor on the sheet of a Hebrew word sends the word with its language', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Jonah 1 in the Hebrew view behind a fake Postern', openHebrew);
+    And('he taps the Hebrew word {string} in verse {int}', tapsHebrewWord);
+    When('he taps Ask the tutor on the word sheet', async () => {
+      await user.click(within(wordSheet()).getByRole('button', { name: 'Ask the tutor' }));
+    });
+    Then('the word sheet is gone and the sheet is titled {string}', sheetTitled);
+    And('the mill received {int} grist for the lampas app, kind bible-talk', (_, count: number) => grists(count));
+    And('the grist carries the Hebrew focus form {string}, lemma {string}, parse {string} and kind word', (_, form: string, lemma: string, parse: string) => {
+      expect(focus()).toEqual({ form, lemma, parse, kind: 'word', language: 'he' });
+      expect([form, parse]).toEqual([HE_FORM, HE_PARSE]);
+    });
+    And('the grist question names the word, its lemma, its parsing and the reference {string}', (_, reference: string) => {
+      for (const part of [HE_FORM, HE_PARSE, reference]) expect(question()).toContain(part);
+    });
+  });
+
+  Scenario('Ask the tutor on the Grammar sheet of a term of a Hebrew word sends the term', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Jonah 1 in the Hebrew view behind a fake Postern', openHebrew);
+    And('he taps the Hebrew word {string} in verse {int}', tapsHebrewWord);
+    When('he taps the parsing term {string} on the word sheet', async (_, term: string) => {
+      await user.click(within(within(wordSheet()).getByTestId('sheet-parse')).getByRole('button', { name: term }));
+    });
+    And('he taps Ask the tutor on the Grammar sheet', async () => {
+      await user.click(within(await screen.findByRole('dialog', { name: 'Grammar' })).getByRole('button', { name: 'Ask the tutor' }));
+    });
+    Then('the word sheet is gone and the sheet is titled {string}', sheetTitled);
+    And('the grist carries the term focus {string} of kind grammar-term', async (_, term: string) => {
+      await grists(1);
+      expect(focus()).toEqual({ term, kind: 'grammar-term' });
+    });
+    And('the grist question asks to explain {string} and names {string}', (_, term: string, reference: string) => {
+      for (const part of [`“${term}”`, reference]) expect(question()).toContain(part);
     });
   });
 });

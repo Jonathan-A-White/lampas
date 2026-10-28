@@ -95,11 +95,12 @@ export interface WordFocus {
   heart?: string;
 }
 
-/** The question the Hebrew guide's Syllables and sounds sends for a Hebrew word of an answer, and the focus that rides with it. */
-export function hebrewSoundAsk(word: string): { message: string; focus: WordFocus } {
+/** The question the Hebrew guide's Syllables and sounds sends for a Hebrew word of an answer, and the focus that rides with it. The word sheet's Syllables and sounds (mw-gdcyf98.20) shares it
+ * and adds what the sheet knows of the word: its lemma and its parsing in plain words. */
+export function hebrewSoundAsk(word: string, known: { lemma: string; parse: string } = { lemma: word, parse: 'Hebrew word' }): { message: string; focus: WordFocus } {
   return {
     message: `Help me pronounce the Hebrew word ${word}: its syllables in Hebrew letters and how each sounds.`,
-    focus: { form: word, lemma: word, parse: 'Hebrew word', kind: 'sound', language: 'he' },
+    focus: { form: word, lemma: known.lemma, parse: known.parse || 'Hebrew word', kind: 'sound', language: 'he' },
   };
 }
 
@@ -180,6 +181,7 @@ export function paradigmQuestion(table: string, revealed: number, on: Pick<Parad
  * reference, then asks. */
 export function helpQuestion(focus: WordFocus, reference: string): string {
   const word = `${focus.form} (lemma ${focus.lemma}; ${focus.parse}) in ${reference}`;
+  if (focus.language === 'he' && focus.kind === 'sound') return `Help me pronounce the Hebrew word ${word}: its syllables in Hebrew letters and how each sounds.`;
   if (focus.kind === 'word') return `Tell me about the word ${word}: what it means here, why it has this form and how to remember it.`;
   return focus.kind === 'grammar'
     ? `The word ${word}. Explain the grammar of this form and what I need to know to read it.`

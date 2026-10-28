@@ -9,6 +9,9 @@ import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } fr
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Waiting } from './Ask';
 import { findGreekWord, glossOf } from './data/answerWord';
+import { languageOfLemma } from './data/lemma';
+import { loadLexicon } from './data/lexicon';
+import { findWord, lemmaSheet } from './nav/links';
 import type { GreekWord } from './data/chapter';
 import type { AnswerWord } from './data/db';
 import { addTurnChanges, addWordToLearn, getTalkSummary, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
@@ -64,7 +67,7 @@ import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { setPending, talkKey, type AskState } from './pending/pendingAsks';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
-import { faceOf, GREEK_LANG } from './script/greekLang';
+import { faceOf } from './script/greekLang';
 import { announce, plainText } from './ui/live';
 import { addWord } from './tutor/registry';
 
@@ -173,7 +176,7 @@ function AddWord({ scope, word }: { scope: TalkScope; word: AnswerWord }) {
     try {
       // The lexicon's gloss and part of speech; a word it lacks still goes in with the gloss the chapter has, as he asked.
       const { result } = await addWord(scope, word.lemma);
-      if (result === 'unknown') await addWordToLearn(word.lemma, glossOf(scope, word));
+      if (result === 'unknown') await addWordToLearn(word.lemma, glossOf(scope, word), Date.now(), '', languageOfLemma(word.lemma));
     } finally {
       setBusy(false);
     }
@@ -191,7 +194,7 @@ function AddWord({ scope, word }: { scope: TalkScope; word: AnswerWord }) {
   );
 }
 
-/** The lemmas of a words_to_add, written in Greek type: 'Added σάρξ to your words'. */
+/** The lemmas of a words_to_add, written in Greek type, or in the Hebrew face for a Hebrew lemma: 'Added σάρξ to your words'. */
 function WordsLine({ lemmas, before, after }: { lemmas: string[]; before: string; after: string }) {
   return (
     <li data-talk-added className="py-1 text-base">
@@ -199,9 +202,7 @@ function WordsLine({ lemmas, before, after }: { lemmas: string[]; before: string
       {lemmas.map((l, i) => (
         <span key={l}>
           {i > 0 ? (i === lemmas.length - 1 ? ' and ' : ', ') : ''}
-          <span {...GREEK_LANG} className="font-greek text-lg">
-            {l}
-          </span>
+          <span {...faceOf(languageOfLemma(l), { greek: 'text-lg', hebrew: 'hebrew-choice' })}>{l}</span>
         </span>
       ))}
       {after}
@@ -423,7 +424,7 @@ function lookupFor(scope: TalkScope, found: GreekWord): Lookup {
   return { words: [found], english: found.e === undefined ? undefined : scope.chapter.verses.find((v) => v.g.includes(found))?.e[found.e]?.t, fromEnglish: false };
 }
 
-function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLeave: () => void }) {
+function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLemma: (lemma: string) => void; onLeave: () => void }) {
   const { unopened } = turn;
   return (
     <article data-turn data-turn-id={turn.id} className="space-y-2">
@@ -515,7 +516,7 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
           </dl>
         ) : null}
         {turn.guide ? <HebrewSoundGuide guide={turn.guide} /> : null}
-        {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} place={scope.screen ? undefined : { book: scope.chapter.code, chapter: scope.chapter.chapter }} /> : null}
+        {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} onWord={onLemma} place={scope.screen ? undefined : { book: scope.chapter.code, chapter: scope.chapter.chapter }} /> : null}
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
         <QuizGoalOffer turn={turn} />
         <SettingOffer turn={turn} />
@@ -627,7 +628,15 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   useEffect(() => registerTalkLeave(onClose), [onClose]);
   const { drag, handle } = useSheetDrag(onClose);
   // The word sheet above this one takes the Escape.
-  useEscapeToClose(onClose, lookup === null);
+  // A Hebrew lemma the tutor linked opens its word sheet over this one, from the Hebrew lexicon (mw-gdcyf98.20): it is no word of the chapter, so it has no verse to help with
+  const [linkedWord, setLinkedWord] = useState<ReturnType<typeof lemmaSheet> | null>(null);
+  const openLemma = useCallback((lemma: string) => {
+    void loadLexicon('hbo').then((lexicon) => {
+      const found = findWord(lemma, lexicon);
+      if (found) setLinkedWord(lemmaSheet({ lemma: found.lemma, strongs: found.entry.s, gloss: found.entry.g }));
+    }, () => undefined);
+  }, []);
+  useEscapeToClose(onClose, lookup === null && linkedWord === null);
   useSheetBack(onClose);
   // the hold that opened the sheet (the Talk bar, a verse number) is drawn here; the sheet's own hold is the Composer's, which draws its own words and notice
   const live = opened?.listening ? opened : undefined;
@@ -902,7 +911,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
             {turns?.length === 0 && !state && suggestions?.length ? <Suggestions questions={suggestions} onAsk={ask} /> : null}
             <HebrewAskContext.Provider value={hebrew}>
               {turns?.map((turn) => (
-                <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLeave={onClose} />
+                <Turn key={turn.id} turn={turn} scope={scope} onLook={setLookup} onLemma={openLemma} onLeave={onClose} />
               ))}
             </HebrewAskContext.Provider>
             {state ? (
@@ -982,6 +991,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
         </div>
       </div>
       {lookup ? <WordSheet chapter={scope.chapter} lookup={lookup} onClose={closeWord} onHelp={onHelp} onAskTerm={onAskTerm} /> : null}
+      {linkedWord ? <WordSheet chapter={linkedWord.chapter} lookup={linkedWord.lookup} onClose={() => setLinkedWord(null)} /> : null}
       <BridgeIdeaHost owner="talk" />
     </>
   );

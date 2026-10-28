@@ -32,7 +32,7 @@ other books of that kind are under In another book on the verse, never that he h
 - A grammar (`g`) only for a construction the book treats: name the idea, not a page. A Greek text (`t`) only for a textual question, with `reference`.
 - A book (`b`) takes no `reference`. When it has `p`, the link always takes a `place`, the book and chapter (and section) you know treats it, never a guess. A `p` link with no `place` is never sent: if you know no chapter, give no link. Example, on predestination: `{"kind": "work", "work": "calvin-institutes-lcc", "place": "3.24"}`.
 
-Say only what you know of the author's view, without quoting it; the link is where he checks it.
+Say only what you know of the author's view, unquoted; the link is where he checks it.
 
 ### Links to a map
 

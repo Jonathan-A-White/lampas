@@ -47,6 +47,7 @@ import { WORD_SHEET_OPENED } from './tips/hints';
 import { GREEK_LANG, greekLang } from './script/greekLang';
 import { HeartOfWord } from './HeartOfWord';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
+import { hebrewPointedForm } from './speech/hebrewPronunciation';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
 export interface Lookup {
@@ -67,6 +68,8 @@ export interface WordHelp {
   lemma: string;
   parse: string;
   verse: number;
+  /** 'he' for a Hebrew word of an Old Testament chapter (mw-gdcyf98.20): the form is pointed with the cantillation off, as the tutor's answers write it */
+  language?: 'he';
 }
 
 /** What a tap on Ask the tutor, on the Grammar sheet of `term`, asks for: the term and the verse of the word whose sheet it was opened from. */
@@ -251,9 +254,9 @@ export function AppMissingSheet({ app, onClose, onTurnOff }: { app: string; onCl
 
 const HELP_BUTTON = 'min-h-12 flex-1 rounded-xl border border-line px-3 text-base font-medium text-accent active:bg-line';
 
-/** Help with this word: Grammar and Sound it out, the two ways a word he struggled with can be helped; and, under them, Ask the tutor
+/** Help with this word: Grammar and Sound it out (for a Hebrew word Syllables and sounds, the Hebrew guide's own label), the two ways a word he struggled with can be helped; and, under them, Ask the tutor
  * about the word with what the app knows of it already handed over. */
-function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
+function HelpRow({ help, hebrew = false }: { help: (kind: WordHelp['kind']) => void; hebrew?: boolean }) {
   return (
     <div role="group" aria-label="Help with this word" className="mt-3">
       <p className="mb-1 text-sm text-muted">Help with this word</p>
@@ -262,7 +265,7 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
           Grammar
         </button>
         <button type="button" onClick={() => help('sound')} className={HELP_BUTTON}>
-          Sound it out
+          {hebrew ? 'Syllables and sounds' : 'Sound it out'}
         </button>
       </div>
       <button type="button" onClick={() => help('word')} className={`${HELP_BUTTON} mt-2 w-full`}>
@@ -274,14 +277,18 @@ function HelpRow({ help }: { help: (kind: WordHelp['kind']) => void }) {
 
 /** A Hebrew word's card (an Old Testament chapter, mw-5vvlay.2): the pointed form large, right to left, with Listen in the phone's he-IL voice; its respelling in the chosen Hebrew scheme where the Greek has its own (mw-gdcyf98.6: the scholarly transliteration is no longer drawn);
  * the lemma, the Parsing as the chapter's parse map decodes it (plain words: the Grammar sheet explains Greek terms only), the Paradigm row where a Hebrew table holds the word's parsing (mw-gdcyf98.13), the Meaning and the Definition of the chapter's lex, Strong's and the English
- * of its chunk. No Heart note or Help with this word row yet: they are Greek-only for now (docs/layout/word-sheet.md lists them as LATER). With Logos off the first card offers to turn it on. */
-function HebrewCard({ chapter, word, english, study, levels, offerLogos, onParadigm, onMissing, onAll }: {
+ * of its chunk. Each term of the Parsing is a link to the Grammar sheet (mw-gdcyf98.20), and Help with this word (Grammar, Syllables and sounds, Ask the tutor) sits under the Study row where the screen can send it. No Heart note: it is Greek-only for now (docs/layout/word-sheet.md lists it as LATER). With Logos off the first card offers to turn it on. */
+function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, onHelp, onTerm, onParadigm, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
   english?: string;
+  known: ReadonlySet<string>;
   study: StudyResources | undefined;
   levels: InterestLevels | undefined;
   offerLogos: boolean;
+  onHelp?: (help: WordHelp) => void;
+  /** a term of the Parsing was tapped: the term, and the verse the word stands in */
+  onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
   /** the Paradigm row was tapped: the word, to open its table */
   onParadigm: (word: GreekWord) => void;
   onMissing: (resource: StudyResource) => void;
@@ -295,6 +302,7 @@ function HebrewCard({ chapter, word, english, study, levels, offerLogos, onParad
   // the Hebrew table that holds the word's parsing (mw-gdcyf98.13), if one does: the row names it and a tap opens it with the word's own cell lit
   const table = parse ? paradigmOfHebrewWord(word, parse)?.table : undefined;
   const definition = chapter.lex[word.s]?.d ?? '';
+  const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       <div className="flex items-start justify-between gap-2">
@@ -315,7 +323,7 @@ function HebrewCard({ chapter, word, english, study, levels, offerLogos, onParad
         </Fact>
         {parse ? (
           <Fact label="Parsing" testId="sheet-parse">
-            <ParseTerms parse={parse} known={new Set()} open={() => undefined} language="hbo" />
+            <ParseTerms parse={parse} known={known} open={(term) => onTerm(term, word, verse)} language="hbo" />
           </Fact>
         ) : null}
         {table ? (
@@ -350,6 +358,9 @@ function HebrewCard({ chapter, word, english, study, levels, offerLogos, onParad
         ) : null}
       </dl>
       <StudyRow groups={studyGroupsOf(chapter, word, study, levels)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
+      {onHelp && verse !== undefined ? (
+        <HelpRow hebrew help={(kind) => onHelp({ kind, form: hebrewPointedForm(word.t), lemma: wordLemma(word), parse: wordParse(chapter, word), verse, language: 'he' })} />
+      ) : null}
       {offerLogos && logosOn === false ? <TurnOnLogos /> : null}
     </section>
   );
@@ -592,9 +603,12 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 chapter={sheetChapter}
                 word={w}
                 english={lookup.fromEnglish ? undefined : lookup.english}
+                known={known}
                 study={study}
                 levels={levels}
                 offerLogos={i === 0}
+                onHelp={help}
+                onTerm={openTerm}
                 onParadigm={openHebrewTable}
                 onMissing={setMissing}
                 onAll={(word, door) => setAllLexicons({ word, door })}
@@ -680,6 +694,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
       {allLexicons ? (
         <AllLexiconsSheet
           word={wordLemma(allLexicons.word)}
+          hebrew={hebrew}
           entries={allLexicons.door.entries}
           onClose={() => setAllLexicons(null)}
           onMissing={() => setMissing(logos)}

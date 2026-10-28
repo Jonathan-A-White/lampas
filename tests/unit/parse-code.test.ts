@@ -78,11 +78,11 @@ describe('parseSegments by the language of the chapter (mw-5vvlay.2)', () => {
     expect(parseSegments(decodeParse('V-PAI-3S'), 'grc')).toEqual(segments);
   });
 
-  it('keeps a Hebrew parsing, as the chapter\'s parse map decodes it, whole and plain: no term of it is a link to a Greek Grammar sheet', () => {
+  it('cuts a Hebrew parsing, as the chapter\'s parse map decodes it, at the Hebrew table\'s terms (mw-gdcyf98.20): each a link to the Grammar sheet', () => {
     const decoded = 'Verb - Qal - Perfect - third person masculine singular';
-    expect(parseSegments(decoded, 'hbo')).toEqual([{ text: decoded }]);
+    const segments = parseSegments(decoded, 'hbo');
+    expect(segments.filter((s) => s.term).map((s) => s.term)).toEqual(['Verb', 'Qal', 'Perfect', 'third person', 'masculine', 'singular']);
+    expect(segments.map((s) => s.text).join('')).toBe(decoded);
     expect(parseSegments('', 'hbo')).toEqual([]);
-    // the Greek cut of the same words would have linked 'masculine' and 'singular'
-    expect(parseSegments(decoded).some((s) => s.term)).toBe(true);
   });
 });
