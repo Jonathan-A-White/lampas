@@ -206,3 +206,111 @@ test('the Immersive reader marks the variant words and draws the braces; a brace
     await expect(page.locator('[data-brace], [data-variant]')).toHaveCount(0);
   }
 });
+
+// One even dotted line under a unit (mw-9ji6ek0.13): "for being alive," of 3:1 is the chunks "for " and "being alive, ", and each used to start its own dot pattern, so the dots crowded
+// into a short dash where the two meet. The test reads the line's pixels: along the row of the dots, every dot (a run of the accent) is as long as the others and so is every
+// gap, across the join. Shots: shots/variants-dots-<view>-<light|dark>.png (verse 1, the line magnified: the phone at twice the pixels).
+test.describe('the dotted line under a variant unit is one even run of dots', () => {
+  test.use({ deviceScaleFactor: 2 });
+
+  /** Per contiguous group of marked words on one line, the lengths (device px) of the dots and of the gaps between them along the dotted row, found in a screenshot of the verse. */
+  async function dotRuns(page: Page, verse: number): Promise<{ text: string; dots: number[]; gaps: number[] }[]> {
+    const groups = await page.evaluate((n) => {
+      const rects = [...document.querySelectorAll(`[data-verse="${n}"] [data-variant]`)].map((el) => {
+        const r = el.getBoundingClientRect();
+        return { text: el.textContent ?? '', x: r.x, right: r.right, y: r.y, bottom: r.bottom };
+      });
+      const out: { text: string; x: number; right: number; y: number; bottom: number }[] = [];
+      for (const r of rects) {
+        const last = out[out.length - 1];
+        if (last && Math.abs(last.y - r.y) < 2 && Math.abs(last.right - r.x) < 1.5) {
+          last.text += r.text;
+          last.right = r.right;
+        } else out.push({ ...r });
+      }
+      return out;
+    }, verse);
+    expect(groups.length).toBeGreaterThan(0);
+    const colour = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--color-accent)';
+      document.body.append(probe);
+      const accent = getComputedStyle(probe).color;
+      probe.remove();
+      return { accent, background: getComputedStyle(document.body).backgroundColor };
+    });
+    // the words are drawn clear for the measure: a Greek letter in the accent that dips through the dotted row is not a dot
+    const clear = await page.addStyleTag({ content: '[data-text] * { color: transparent !important; }' });
+    const found: { text: string; dots: number[]; gaps: number[] }[] = [];
+    for (const g of groups) {
+      const picture = await page.screenshot({ clip: { x: Math.max(0, g.x), y: g.y, width: Math.min(390, g.right) - Math.max(0, g.x), height: g.bottom - g.y } });
+      const runs = await page.evaluate(
+        async ({ data, accent, background }) => {
+          const rgb = (c: string) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+          const [a, b] = [rgb(accent), rgb(background)];
+          const dist = (p: number[], q: number[]) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+          const img = new Image();
+          img.src = `data:image/png;base64,${data}`;
+          await img.decode();
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0);
+          const pixels = ctx.getImageData(0, 0, img.width, img.height).data;
+          // a pixel is a dot's when it is nearer the accent than half way from the page's colour
+          const on = (x: number, y: number) => dist([pixels[(y * img.width + x) * 4], pixels[(y * img.width + x) * 4 + 1], pixels[(y * img.width + x) * 4 + 2]], a) < dist(a, b) / 2;
+          let best = 0;
+          let row = 0;
+          for (let y = 0; y < img.height; y++) {
+            let count = 0;
+            for (let x = 0; x < img.width; x++) if (on(x, y)) count++;
+            if (count > best) [best, row] = [count, y];
+          }
+          const dots: number[] = [];
+          const gaps: number[] = [];
+          let x = 0;
+          while (x < img.width) {
+            const state = on(x, row);
+            let end = x;
+            while (end < img.width && on(end, row) === state) end++;
+            // the first and the last run are cut by the box's edges
+            if (x > 0 && end < img.width) (state ? dots : gaps).push(end - x);
+            x = end;
+          }
+          return { dots, gaps };
+        },
+        { data: picture.toString('base64'), ...colour },
+      );
+      found.push({ text: g.text, ...runs });
+    }
+    await clear.evaluate((el) => (el as Element).remove());
+    return found;
+  }
+
+  for (const scheme of ['light', 'dark'] as const) {
+    for (const view of VIEWS) {
+      test(`3:1 in ${view}, ${scheme} theme`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: scheme });
+        await openUnlocked(page);
+        await page.goto('/#/?b=rev&c=3&weave=solid');
+        await expect(page.locator('[data-verse="1"] [data-text]')).toBeVisible();
+        await chip(page).click();
+        await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+        await choice(page, view).click();
+        await expect(choice(page, view)).toHaveAttribute('aria-pressed', 'true');
+        await expect(page.locator('[data-verse="1"] [data-variant]').first()).toBeVisible();
+        const groups = await dotRuns(page, 1);
+        // the unit stands in the English as the two chunks "for " and "being alive, ", in the Greek as two words: a group of more than one word is the join he saw
+        const joined = groups.filter((g) => g.text.trim().includes(' '));
+        expect(joined.length).toBeGreaterThan(0);
+        for (const g of joined) {
+          expect(g.dots.length, g.text).toBeGreaterThan(8);
+          expect(Math.max(...g.dots) - Math.min(...g.dots), `dots of "${g.text}": ${g.dots.join(',')}`).toBeLessThanOrEqual(1);
+          expect(Math.max(...g.gaps) - Math.min(...g.gaps), `gaps of "${g.text}": ${g.gaps.join(',')}`).toBeLessThanOrEqual(1);
+        }
+        await shot(page, `variants-dots-${view.toLowerCase()}-${scheme}`);
+      });
+    }
+  }
+});

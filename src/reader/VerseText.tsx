@@ -223,8 +223,37 @@ export interface VerseProps {
   onVariant?: (shown: ShownUnit) => void;
 }
 
-/** How a variant unit's words are drawn (mw-9ji6ek0.5): a dotted underline in the accent, which reads in the light and the dark themes and leaves the word's own colour. */
-const VARIANT = 'underline decoration-accent decoration-dotted decoration-2 underline-offset-[0.25em]';
+/** How a variant unit's words are drawn (mw-9ji6ek0.5): a dotted line under them in the accent, which reads in the light and the dark themes and leaves the word's own colour.
+ * The line is the background of one span around the whole run of marked words (mw-9ji6ek0.13), a 2 px dot every 4 px: a dotted text-decoration starts its own pattern in each
+ * word's span, and where two meet (the space after 'for ') the dots crowd into a dash. Each word stays its own tap target inside the run. The span's padding is under the line only
+ * (an inline box's vertical padding costs the line nothing). */
+const VARIANT_RUN =
+  'pb-[0.1em] [background-image:linear-gradient(to_right,var(--color-accent)_50%,transparent_50%)] [background-size:4px_2px] [background-position:left_bottom] bg-repeat-x [box-decoration-break:clone]';
+
+/** One thing drawn in a verse's row; a `run` one is under the variant line (VARIANT_RUN) with its marked neighbours, a brace or any other word ends the run. */
+interface Drawn {
+  node: ReactNode;
+  run?: boolean;
+}
+
+/** The nodes of a row, the consecutive `run` ones wrapped in one span that draws the unit's one dotted line. */
+function underRuns(items: readonly Drawn[]): ReactNode[] {
+  const out: ReactNode[] = [];
+  let run: ReactNode[] = [];
+  const close = () => {
+    if (run.length) out.push(<span key={`run${out.length}`} data-variant-run="" className={VARIANT_RUN}>{run}</span>);
+    run = [];
+  };
+  for (const item of items) {
+    if (item.run) run.push(item.node);
+    else {
+      close();
+      out.push(item.node);
+    }
+  }
+  close();
+  return out;
+}
 
 /** Where each brace of a verse stands and which words or chunks are marked (VerseText): in the Greek view after the unit's last word; in the English and the weave after
  * the last drawn chunk that holds a word of the unit (or, where the MSB gives the unit's words no English, after the chunk of the word before them, or at the start), in
@@ -305,23 +334,29 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   );
   // the variant units (mw-9ji6ek0.5): their words or chunks marked, a brace after them; a verse on a card (still) has none
   const plan = still ? NO_PLAN : planVariants(verse, view, woven, variants);
-  const variantOf = (i: number): string => (plan.marked.has(i) ? VARIANT : '');
-  const bracesAt = (items: readonly { shown: ShownUnit; language: 'greek' | 'english' }[] | undefined) =>
-    (items ?? []).map(({ shown, language }) => <VariantBrace key={`v${variants?.indexOf(shown) ?? 0}`} shown={shown} language={language} onOpen={onVariant} />);
+  const bracesAt = (items: readonly { shown: ShownUnit; language: 'greek' | 'english' }[] | undefined): Drawn[] =>
+    (items ?? []).map(({ shown, language }) => ({ node: <VariantBrace key={`v${variants?.indexOf(shown) ?? 0}`} shown={shown} language={language} onOpen={onVariant} /> }));
+  const plain = (nodes: ReactNode[]): Drawn[] => nodes.map((node) => ({ node }));
   return (
     <span data-text>
-      {view === 'greek'
-        ? verse.g.flatMap((w, i) => [
-            <Tap key={i} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''} ${variantOf(i)}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
-              {w.t}
-            </Tap>,
+      {underRuns(view === 'greek'
+        ? verse.g.flatMap((w, i): Drawn[] => [
+            {
+              run: plan.marked.has(i),
+              node: (
+                <Tap key={i} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
+                  {w.t}
+                </Tap>
+              ),
+            },
             ...bracesAt(plan.after.get(i)),
           ])
-        : [-2, ...drawnOrder(verse, woven), -1].flatMap((i) => {
+        : [-2, ...drawnOrder(verse, woven), -1].flatMap((i): Drawn[] => {
             if (i === -2) return bracesAt(plan.start);
-            if (i < 0) return strays.end.map(strayWord);
+            if (i < 0) return plain(strays.end.map(strayWord));
             const braces = bracesAt(plan.after.get(i));
-            const before = (strays.before.get(i) ?? []).map(strayWord);
+            const before = plain((strays.before.get(i) ?? []).map(strayWord));
+            const run = plan.marked.has(i);
             // a Greek-order weave may have moved a sentence's closing mark to the end of its last piece (weave.ts chunkText)
             const text = chunkText(verse, woven, i);
             const c = text === verse.e[i].t ? verse.e[i] : { ...verse.e[i], t: text };
@@ -333,8 +368,8 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                   {w.t}
                 </Tap>
               ));
-              return [...before, (
-                <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-learning={weft.learning ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${isMarked(c) ? MARKED : ''} ${variantOf(i)}`}>
+              return [...before, { run, node: (
+                <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-learning={weft.learning ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${isMarked(c) ? MARKED : ''}`}>
                   {weft.learning ? (
                     <span className="inline-flex flex-col items-center align-top leading-tight">
                       <span data-greek>{words}</span>
@@ -346,9 +381,9 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                     words
                   )}
                 </span>
-              ), ...braces];
+              ) }, ...braces];
             }
-            return [...before, weft ? (
+            return [...before, { run, node: weft ? (
               <Tap
                 key={i}
                 still={still}
@@ -359,7 +394,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 data-learning={weft.learning ? '' : undefined}
                 {...own}
                 dir={ownDir}
-                className={`${face} text-accent ${TAP_PAD} ${isMarked(c) ? MARKED : ''} ${variantOf(i)}`}
+                className={`${face} text-accent ${TAP_PAD} ${isMarked(c) ? MARKED : ''}`}
                 onTap={() => lookEnglish(c)}
                 onLongPress={() => say(weft.words.map((w) => w.t).join(' '), ownSpeech)}
               >
@@ -375,11 +410,11 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 )}
               </Tap>
             ) : (
-              <Tap key={i} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''} ${variantOf(i)}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
+              <Tap key={i} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
                 {c.s ? <SuppliedText chunk={c} /> : c.t}
               </Tap>
-            ), ...braces];
-          })}
+            ) }, ...braces];
+          }))}
     </span>
   );
 }
