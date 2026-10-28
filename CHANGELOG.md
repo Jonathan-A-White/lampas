@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.7
+_2026-10-28_
+- Fixed: a chapter that cannot load now tells you after a few seconds and offers Try again, instead of a black screen, and says so when Lampas is open in another tab.
+- Fixed: "Those that change the English" no longer shows a variant that leaves the verse reading the same, such as Revelation 3:9.
+- Fixed: In the variant readings, the little letter box after a reading (B, NA) now stays on the same line as the last word instead of dropping to the next line alone.
+
 ## 0.7.6
 _2026-10-28_
 - New: Five short lessons on variant readings, read in the app even without a network, each with Ask the tutor, reached from Help.

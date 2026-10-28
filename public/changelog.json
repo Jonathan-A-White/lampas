@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.7",
+    "date": "2026-10-28",
+    "story": "mw-5r3p30.846",
+    "kind": "fixed",
+    "text": "a chapter that cannot load now tells you after a few seconds and offers Try again, instead of a black screen, and says so when Lampas is open in another tab."
+  },
+  {
+    "version": "0.7.7",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.14",
+    "kind": "fixed",
+    "text": "\"Those that change the English\" no longer shows a variant that leaves the verse reading the same, such as Revelation 3:9."
+  },
+  {
+    "version": "0.7.7",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.16",
+    "kind": "fixed",
+    "text": "In the variant readings, the little letter box after a reading (B, NA) now stays on the same line as the last word instead of dropping to the next line alone."
+  },
+  {
     "version": "0.7.6",
     "date": "2026-10-28",
     "story": "mw-9ji6ek0.18",
