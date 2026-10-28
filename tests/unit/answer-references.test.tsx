@@ -25,10 +25,10 @@ describe('referencesIn', () => {
     expect(referencesIn('in Romans 8 Paul')[0]).toMatchObject({ written: 'Romans 8', card: { heading: 'Romans 8:1', held: { book: 'rom', chapter: 8, first: 1, last: 1 } } });
   });
 
-  it('gives the Old Testament a card with no passage', () => {
-    expect(referencesIn('Ps. 110')[0]).toMatchObject({ written: 'Ps. 110', card: { heading: 'Psalm 110', held: null } });
-    expect(referencesIn('Isaiah 53:5-7')[0].card).toEqual({ heading: 'Isaiah 53:5-7', held: null });
-    expect(referencesIn('1 Samuel 2:1')[0].card).toEqual({ heading: '1 Samuel 2:1', held: null });
+  it('gives the Old Testament a card with its passage, as Lampas holds it (mw-5r3p30.840)', () => {
+    expect(referencesIn('Ps. 110')[0]).toMatchObject({ written: 'Ps. 110', card: { heading: 'Psalm 110:1', held: { book: 'psa', chapter: 110, first: 1, last: 1 } } });
+    expect(referencesIn('Isaiah 53:5-7')[0].card).toEqual({ heading: 'Isaiah 53:5-7', held: { book: 'isa', chapter: 53, first: 5, last: 7 } });
+    expect(referencesIn('1 Samuel 2:1')[0].card).toEqual({ heading: '1 Samuel 2:1', held: { book: '1sa', chapter: 2, first: 1, last: 1 } });
   });
 
   it('keeps a range inside its chapter and a backward range at its first verse', () => {
@@ -48,7 +48,7 @@ describe('referencesIn', () => {
   it('carries the reference in the address and back', () => {
     expect(writtenOf(referenceHash('Heb 7:1-3'))).toBe('Heb 7:1-3');
     expect(writtenOf('#/?b=heb&c=7&v=2')).toBeNull();
-    expect(cardOf('Ps. 110')?.heading).toBe('Psalm 110');
+    expect(cardOf('Ps. 110')?.heading).toBe('Psalm 110:1');
     expect(cardOf('Nonsense 4')).toBeNull();
   });
 });

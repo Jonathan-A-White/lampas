@@ -2,10 +2,10 @@
 // and none for a resource he has not (nothing says so; a book of his Logos shelf, mw-rfjjzd.10: the tutor is told a digest of it chosen by the place, worksForTutor, at most WORKS_BYTES, and a `work` link opens one book, workChip). A word link gives the first link of each resource that is on, named for the lemma
 // ('Open in Logos: BDAG for ἀγάπη', his first pinned lexicon, else the first he ticked); a verse link gives, for each resource that can show a Bible, the verse in it (Logos: his
 // Bible in Logos). A verse may be in any book of the Bible (placeOf, one canon list: data/books.ts and data/otBooks.ts); the Old Testament has the resources'
-// chips and no Reader chip, as Lampas holds no Old Testament text. Lampas's own Reader is not a resource: the verse chip that opens it is drawn by src/TutorLinks.tsx. Pure: the Strong's number and
+// chips and a Reader chip, as Lampas holds its text. Lampas's own Reader is not a resource: the verse chip that opens it is drawn by src/TutorLinks.tsx. Pure: the Strong's number and
 // his Bible are looked up by the caller. Links only, no text of any lexicon (docs/resources.md).
 import { BOOK_INDEX } from '../data/bookIndex';
-import { titleOf, otBookOf } from '../data/books';
+import { titleOf, otBookOf, isHeld } from '../data/books';
 import type { StudyResources } from '../data/repositories';
 import { isHebrewText } from '../data/lemma';
 import { parseCanonReference } from '../nav/links';
@@ -31,8 +31,8 @@ export interface LinkChip {
   fallback?: string;
 }
 
-/** The place a verse link names, with its name as Lampas writes it. `reader` is whether Lampas can open it in its own Reader: only the books it holds (the New
- *  Testament) can. When an Old Testament reader comes, that is the one line to change (and the chip then follows). */
+/** The place a verse link names, with its name as Lampas writes it. `reader` is whether Lampas can open it in its own Reader: the books whose data it holds (books.ts isHeld),
+ *  of either testament. */
 export interface TutorPlace extends StudyPlace {
   name: string;
   reader: boolean;
@@ -55,7 +55,7 @@ export function placeOf(reference: string): TutorPlace | null {
     if (!info || chapter > info.chapters) return null;
     title = `${info.name} ${chapter}`;
   }
-  return { book, chapter, ...(verse === undefined ? {} : { verse }), name: verse === undefined ? title : `${title}:${verse}`, reader: parsed.testament === 'nt' };
+  return { book, chapter, ...(verse === undefined ? {} : { verse }), name: verse === undefined ? title : `${title}:${verse}`, reader: isHeld(book) };
 }
 
 /** The resources he switched on that the dial shows (resourcesForLevel: Greek ones are hidden at Just English and follow the English ones between), in that order. A hidden one keeps its switch. */

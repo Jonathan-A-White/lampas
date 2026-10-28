@@ -5,7 +5,7 @@ import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
-import { leaveSettings, openGroup } from './settings-group';
+import { leaveSettings } from './settings-group';
 import { talkField } from './talk-field';
 
 // A Bible reference in the tutor's answer opens a card under it (mw-5r3p30.133, features/reference-card.feature) at a small phone's width.
@@ -66,12 +66,12 @@ test('a reference in the tutor\'s answer opens a card that fits a 360 px phone, 
   await expect(card).toBeHidden();
   await expect(sheet).toBeVisible();
 
-  // The 'Not in Lampas yet' card. Psalm 110 is held by the Reader now, but a reference in a tutor's answer still takes this card for any Old Testament book (src/resources/tutorLinks.ts
-  // placeOf: `reader` is true for the New Testament only), and no reference outside the Bible is a link at all, so this is the one way the card is reached today.
+  // An Old Testament reference Lampas holds is a card like the New Testament's: the text, Open, and nothing that says it is missing (mw-5r3p30.840).
   await sheet.getByRole('link', { name: 'Ps. 110', exact: true }).click();
-  const psalm = page.getByRole('dialog', { name: 'Psalm 110' });
-  await expect(psalm.getByText('Not in Lampas yet')).toBeVisible();
-  await expect(psalm.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0);
+  const psalm = page.getByRole('dialog', { name: 'Psalm 110:1', exact: true });
+  await expect(psalm.getByRole('button', { name: 'Open', exact: true })).toBeVisible();
+  await expect(psalm.locator('[data-reference-text]')).not.toBeEmpty();
+  await expect(psalm.getByText('Not in Lampas yet')).toHaveCount(0);
   await psalm.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(psalm).toBeHidden();
 
@@ -88,8 +88,10 @@ test('a reference in the tutor\'s answer opens a card that fits a 360 px phone, 
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 });
 
-// A passage Lampas does not hold (mw-5r3p30.345): with no Bible app linked the card links to Settings, and once Logos is linked it opens the verse in his Bible.
-test('an Old Testament reference links to Settings until Logos is linked, then opens in Logos in his Bible', async ({ page }) => {
+// An Old Testament passage Lampas holds (mw-5r3p30.840, which replaced mw-5r3p30.345's 'Not in Lampas yet'): Open goes to the Reader, and once Logos is linked Open in Logos
+// is on the card, second to Open, in his Bible. The 'Not in Lampas yet' card of a book with no data, and its Link Logos in Settings, are proved by tests/unit/reference-card-unheld.test.tsx
+// (every book is held today, so no screen reaches them: mw-5r3p30.427's scrolled-Settings test went with that door).
+test('an Old Testament reference opens in the Reader, and in Logos once Logos is linked', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: { answer: 'The end of the matter is in Ecclesiastes 12:13 and the whole of Psalm 110.', words: [] } };
@@ -105,63 +107,40 @@ test('an Old Testament reference links to Settings until Logos is linked, then o
 
   await sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
   const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
-  await expect(card.getByText('Not in Lampas yet. Link Logos in Settings to open it there.')).toBeVisible();
+  await expect(card.getByRole('button', { name: 'Open', exact: true })).toBeVisible();
+  await expect(card.getByText('Not in Lampas yet')).toHaveCount(0);
   await expect(card.getByRole('link', { name: 'Open in Logos' })).toHaveCount(0);
-  await shot(page, 'reference-card-link-logos');
+  await shot(page, 'reference-card-old-testament');
 
-  await card.getByRole('link', { name: 'Link Logos in Settings', exact: true }).click();
-  await expect(card).toBeHidden();
-  expect(page.url()).toContain('#/settings?section=resources');
+  // Logos is linked in Settings
+  await page.goto('/#/settings?section=resources');
   const logos = page.getByRole('switch', { name: 'Logos', exact: true });
-  await expect(logos).toBeVisible();
-  await expect(logos).toBeInViewport();
   await logos.click();
   await expect(logos).toBeChecked();
-
   await leaveSettings(page);
+
   await openTalkAbout(page, 28);
   await page.getByRole('dialog', { name: 'Talk about Romans 8:28' }).getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
   const open = card.getByRole('link', { name: 'Open in Logos' });
   await expect(open).toBeVisible();
   await expect(open).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ec12.13');
-  await expect(card.getByText('Not in Lampas yet', { exact: true })).toBeVisible();
-  await expect(card.getByRole('button', { name: 'Open', exact: true })).toHaveCount(0);
+  await expect(card.getByText('Not in Lampas yet')).toHaveCount(0);
+  const door = await card.getByRole('button', { name: 'Open', exact: true }).boundingBox();
+  const logosBox = await open.boundingBox();
+  const cardBox = await card.boundingBox();
+  expect(door && logosBox && cardBox).toBeTruthy();
+  if (door && logosBox && cardBox) {
+    expect(logosBox.y, 'Open in Logos comes after Open').toBeGreaterThan(door.y);
+    expect(logosBox.height).toBeGreaterThanOrEqual(43.5);
+    expect(cardBox.x + cardBox.width).toBeLessThanOrEqual(VIEWPORT.width);
+    expect(cardBox.y + cardBox.height).toBeLessThanOrEqual(VIEWPORT.height);
+  }
   await shot(page, 'reference-card-open-in-logos');
-});
 
-// Settings left scrolled to its bottom (mw-5r3p30.427): the card's Link Logos in Settings still opens it at Study resources, not at the remembered place.
-test('Link Logos in Settings opens Settings at Study resources after Settings was left scrolled to its bottom', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  const fake = makeFakePostern();
-  fake.autoReply = { status: 'answered', answer: { answer: 'The end of the matter is in Ecclesiastes 12:13.', words: [] } };
-  await routePostern(page, fake);
-  await openUnlocked(page);
-  await page.goto('/');
-  await expect(page.locator('[data-verse="1"]')).toBeVisible();
-
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await openGroup(page, 'Study resources');
-  const box = page.locator('main.screen');
-  await expect(page.getByRole('switch', { name: 'Logos', exact: true })).toHaveCount(1);
-  await box.evaluate((el) => { el.scrollTop = el.scrollHeight; });
-  await expect.poll(() => box.evaluate((el) => el.scrollHeight - el.clientHeight - el.scrollTop)).toBeLessThan(2);
-  await leaveSettings(page);
-
-  await openTalkAbout(page, 28);
-  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await (await talkField(sheet)).fill('Where does Ecclesiastes end?');
-  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
-  await sheet.getByRole('link', { name: 'Ecclesiastes 12:13', exact: true }).click();
-  const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
-  await card.getByRole('link', { name: 'Link Logos in Settings', exact: true }).click();
-  expect(page.url()).toContain('#/settings?section=resources');
-
-  const logos = page.getByRole('switch', { name: 'Logos', exact: true });
-  await expect(logos).toBeInViewport();
-  // the restore of the old place must have ended too (it holds for up to 2.5 s): the Logos switch is still on screen after it
-  await page.waitForTimeout(3000);
-  await expect(logos).toBeInViewport();
-  await shot(page, 'reference-card-link-logos-after-scrolled-settings');
+  // Open takes him to the chapter in the Reader
+  await card.getByRole('button', { name: 'Open', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Ecclesiastes 12', level: 1 })).toBeVisible();
+  expect(page.url()).toContain('b=ecc');
 });
 
 // A second tap on the reference a moment after the first (mw-5r3p30.429): the card's backdrop covers the reference, but that tap is not one outside the card.

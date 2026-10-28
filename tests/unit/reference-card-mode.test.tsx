@@ -5,7 +5,8 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
-import { setReaderView, setWeave } from '../../src/data/repositories';
+import { setLogosBible, setReaderView, setResourceOn, setWeave } from '../../src/data/repositories';
+import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { clearBus } from '../../src/events/bus';
 import { ReferenceLink } from '../../src/markdown/ReferenceCard';
 import { pendingRequest } from '../../src/nav/readerRequest';
@@ -79,5 +80,39 @@ describe('Open', () => {
     expect(at.verse).toBeUndefined();
     expect(at.passage).toBeUndefined();
     expect(pendingRequest()).toMatchObject({ action: 'verse', book: 'heb', chapter: 7, verse: 2 });
+  });
+});
+
+// An Old Testament passage Lampas holds opens in the Reader like a New Testament one, Logos one tap away (mw-5r3p30.840).
+describe('a held Old Testament reference', () => {
+  async function openDaniel(): Promise<HTMLElement> {
+    render(<ReferenceLink written="Daniel 2:28-29">Daniel 2:28-29</ReferenceLink>);
+    await userEvent.click(screen.getByRole('link', { name: 'Daniel 2:28-29' }));
+    const card = await screen.findByRole('dialog', { name: 'Daniel 2:28-29' });
+    await waitFor(() => expect(card.querySelector('[data-reference-text]')).not.toBeNull());
+    return card;
+  }
+
+  it('has Open, which opens the Reader at Daniel 2:28, and not "Not in Lampas yet"', async () => {
+    const card = await openDaniel();
+    expect(within(card).queryByText(/Not in Lampas yet/)).toBeNull();
+    await userEvent.click(within(card).getByRole('button', { name: 'Open' }));
+    expect(readerOf(window.location.hash)).toMatchObject({ book: 'dan', chapter: 2 });
+    expect(pendingRequest()).toMatchObject({ action: 'verse', book: 'dan', chapter: 2, verse: 28 });
+  });
+
+  it('has Open in Logos after Open once Logos is linked, at the first verse', async () => {
+    await setResourceOn('logos', true);
+    await setLogosBible(DEFAULT_LOGOS_BIBLE);
+    const card = await openDaniel();
+    const open = within(card).getByRole('button', { name: 'Open' });
+    const logos = await within(card).findByRole('link', { name: 'Open in Logos' });
+    expect(logos).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Da2.28');
+    expect(open.compareDocumentPosition(logos) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('has no Open in Logos while Logos is not linked', async () => {
+    const card = await openDaniel();
+    expect(within(card).queryByRole('link', { name: 'Open in Logos' })).toBeNull();
   });
 });

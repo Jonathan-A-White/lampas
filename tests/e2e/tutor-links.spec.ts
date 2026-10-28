@@ -76,7 +76,7 @@ test('the tutor\'s links at phone width: chips for the resources he switched on,
   expect(page.url()).toContain('v=35');
 });
 
-test('an Old Testament verse link opens in his Bible in Logos (LSB today) and has no Reader chip', async ({ page }) => {
+test('an Old Testament verse link opens in his Bible in Logos (LSB today) and in the Reader, which holds it', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = {
@@ -113,7 +113,9 @@ test('an Old Testament verse link opens in his Bible in Logos (LSB today) and ha
   await expect(logos).toBeVisible();
   await expect(logos).toHaveText('Logos');
   await expect(logos).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ge15.6');
-  await expect(links.getByRole('button')).toHaveCount(0);
+  // Lampas holds Genesis, so the Reader chip is there beside Logos (mw-5r3p30.840)
+  await expect(links.getByRole('button')).toHaveCount(1);
+  await expect(links.getByRole('button', { name: 'Open Genesis 15:6 in Lampas', exact: true })).toBeVisible();
   const box = await logos.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(43.5);
   expect(box?.width).toBeGreaterThanOrEqual(43.5);

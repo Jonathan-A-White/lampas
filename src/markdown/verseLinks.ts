@@ -2,11 +2,11 @@
 // replaced mw-5r3p30.123's link straight to the verse): a tap opens a card with the passage's text, and the card's Open opens the reader there (ReferenceCard.tsx).
 // referencesIn finds them in a text; remarkVerses is the remark plugin that wraps each in a link whose address is the `?ref=` form Lampas takes in (nav/links.ts,
 // docs/links.md), carrying the reference as written. nav/links.ts reads the book, tutorLinks.ts placeOf checks the chapter and verse: no second parser. The Old
-// Testament is linked too; its card says Lampas has no text for it yet. A name is capitalised, so 'a 7:2 ratio' is not a reference.
+// Testament is linked too; a book Lampas holds no data for has a card that says it is not in Lampas yet (books.ts isHeld). A name is capitalised, so 'a 7:2 ratio' is not a reference.
 import { CANON_INDEX } from '../data/bookIndex';
 import { placeOf } from '../resources/tutorLinks';
 
-/** The passage of the New Testament a reference names, which Lampas holds: `first` and `last` are verses of `chapter`. */
+/** The passage a reference names in a book Lampas holds: `first` and `last` are verses of `chapter`. */
 export interface HeldPlace {
   book: string;
   chapter: number;
@@ -15,7 +15,7 @@ export interface HeldPlace {
 }
 
 /** What a reference's card shows: its heading ('Hebrews 7:1-3'; a whole chapter is headed by its first verse, 'Hebrews 7:1', which is the verse shown) and the
- *  passage when Lampas holds its text (null for the Old Testament). */
+ *  passage when Lampas holds its text (null for a book it has no data for). */
 export interface ReferenceCard {
   heading: string;
   held: HeldPlace | null;
@@ -48,13 +48,13 @@ function cardFrom([, name, chapter, verse, end]: RegExpExecArray | RegExpMatchAr
 }
 
 /** The card of one reference as written ('Heb 7:1-3'), or null when it names no place in the Bible. With `every` the card holds an Old Testament passage too (a Review question's
- *  verse, whose chapter the Reader holds in Hebrew, mw-gdcyf98.4); without it the Old Testament is linked only, as the tutor's answers link it. */
+ *  verse, whose chapter the Reader holds in Hebrew, mw-gdcyf98.4); without it a place Lampas holds no data for is linked only. */
 export function cardOf(written: string, every = false): ReferenceCard | null {
   const m = WHOLE.exec(written.trim());
   return m && cardFrom(m, every);
 }
 
-/** Where an Old Testament reference as written ('Ecclesiastes 12:13', 'Isaiah 53:5-7') points, for a link to a Bible app: the book's code, the chapter and the first verse
+/** Where a reference as written ('Ecclesiastes 12:13', 'Isaiah 53:5-7') points, for a link to a Bible app: the book's code, the chapter and the first verse
  *  (none for a whole chapter). Null for a place Lampas holds, which opens in the Reader, and for a text that names no place. */
 export function elsewhereOf(written: string): { book: string; chapter: number; verse?: number } | null {
   const m = WHOLE.exec(written.trim());
