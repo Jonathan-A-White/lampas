@@ -67,6 +67,12 @@ describe('the trail of places he visited', () => {
     expect(isKeptHash('#/lists/')).toBe(false);
     expect(isKeptHash('#/lists/x')).toBe(false);
     expect(isKeptHash('#/preface')).toBe(true);
+    // the lessons on variant readings (mw-9ji6ek0.18): the list and each page
+    expect(isKeptHash('#/lessons/variants')).toBe(true);
+    expect(isKeptHash('#/lessons/variants/3')).toBe(true);
+    expect(isKeptHash('#/lessons/variants/')).toBe(false);
+    expect(isKeptHash('#/lessons/variants/x')).toBe(false);
+    expect(isKeptHash('#/lessons')).toBe(false);
     expect(isKeptHash('#/preface/robinson')).toBe(true);
     expect(isKeptHash('#/paradigms?t=eimi&mode=review')).toBe(true);
     expect(isKeptHash('#/unlock')).toBe(false);
