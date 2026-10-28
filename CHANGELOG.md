@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.3
+_2026-10-28_
+- Fixed: Quiz me on an Old Testament verse now quizzes you on its Hebrew words, not Greek.
+- Fixed: A rescored reading ladder now reaches a phone that had already loaded the old one.
+
 ## 0.7.1
 _2026-10-28_
 - Fixed: the dotted line under a word or phrase that has a variant reading is now one even row of dots, no longer bunched into dashes where words meet.

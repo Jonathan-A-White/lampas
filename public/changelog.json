@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.3",
+    "date": "2026-10-28",
+    "story": "mw-gdcyf98.30",
+    "kind": "fixed",
+    "text": "Quiz me on an Old Testament verse now quizzes you on its Hebrew words, not Greek."
+  },
+  {
+    "version": "0.7.3",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.10",
+    "kind": "fixed",
+    "text": "A rescored reading ladder now reaches a phone that had already loaded the old one."
+  },
+  {
     "version": "0.7.1",
     "date": "2026-10-28",
     "story": "mw-9ji6ek0.13",
