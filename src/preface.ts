@@ -70,7 +70,7 @@ export const PREFACE_LINKS: PrefaceLink[] = [
   },
   {
     name: 'The Majority Standard Bible (majoritybible.com)',
-    about: 'The English translation Lampas reads, and its downloads. The site has no separate preface.',
+    about: 'The English translation Lampas reads, and its downloads; its footnotes give the critical text’s English for many variant readings. The site has no separate preface.',
     url: 'https://majoritybible.com/',
   },
 ];

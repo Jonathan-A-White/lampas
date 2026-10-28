@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { runBuild } from '../../scripts/data-build';
+import { buildData, parseLexicon, runBuild } from '../../scripts/data-build';
 import {
   VARIANTS_FILES,
   VARIANTS_RAW_DIR,
@@ -204,6 +204,13 @@ describe('the build', () => {
   const sha = createHash('sha256');
   for (const name of Object.values(VARIANTS_FILES)) sha.update(fileOf(name));
   const fixtureSha = sha.digest('hex');
+  // the English the units need (mw-9ji6ek0.3): one entry for each unit the fixture's apparatus has, found the way `npm run variants:english` finds them
+  const lampas = Object.fromEntries(
+    buildData(msb, parseLexicon(tbesg), new Map([['rev', parseVariantsCsv(fileOf('REV'))]]), undefined, { lampas: {}, strict: false }).missingEnglish.map((m) => [
+      m.key,
+      { source: 'lampas', base: `the ${m.unit.base}`, alts: m.unit.alts.map((a) => (a.text ? `not ${a.text}` : '')) },
+    ]),
+  );
 
   async function build(checksum?: string) {
     const base = mkdtempSync(join(tmpdir(), 'lampas-variants-'));
@@ -211,6 +218,7 @@ describe('the build', () => {
     mkdirSync(raw, { recursive: true });
     writeFileSync(join(raw, 'msb_nt_tables.tsv'), msb);
     writeFileSync(join(raw, 'tbesg.txt'), tbesg);
+    writeFileSync(join(base, 'variant-english.json'), JSON.stringify(lampas));
     const downloads: string[] = [];
     const log: string[] = [];
     try {
@@ -220,6 +228,7 @@ describe('the build', () => {
         log: (line) => log.push(line),
         variantsSha256: checksum,
         rp2026: false,
+        englishFile: join(base, 'variant-english.json'),
         download: async (url, dest) => {
           downloads.push(url);
           mkdirSync(join(dest, '..'), { recursive: true });
@@ -238,7 +247,17 @@ describe('the build', () => {
     expect(downloads).toContain(`https://raw.githubusercontent.com/byztxt/byzantine-majority-text/${VARIANTS_TAG}/csv-unicode/ccat/with-variants/REV.csv`);
     expect(VARIANTS_RAW_DIR).toBe(`byztxt-${VARIANTS_TAG}`);
     expect(rev.variants).toHaveLength(6);
-    expect(rev.variants![0]).toEqual({ v: 8, w: [17], base: 'ὑπάγειν', alts: [{ code: 'N', text: 'ὑπάγει' }] });
+    expect(rev.variants![0]).toEqual({
+      v: 8,
+      w: [17],
+      base: 'ὑπάγειν',
+      alts: [{ code: 'N', text: 'ὑπάγει' }],
+      english: { source: 'lampas', base: 'the ὑπάγειν', alts: ['not ὑπάγει'] },
+      changesEnglish: true,
+      witness: 'na',
+    });
+    expect(log).toContain('variant English: 6 units: msb 0, lampas 6');
+    expect(log).toContain('variant witness: byz 4, na 2, ecm 0');
     expect(log).toContain(`variants (byztxt ${VARIANTS_TAG}): 8 units: B 4, N 4`);
     expect(log).toContain('variants aligned: 8 of 8 (100.0%), 0 not aligned');
     expect(log).toContain('  Revelation: B 4, N 4');

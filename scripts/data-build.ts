@@ -16,7 +16,8 @@ import type { FrequencyEntry } from '../src/data/frequency';
 import { COLUMNS, addRow, checkHeader, splitReference, wordOf, type TableGroup, type TableVerse, type TableWord } from './data/bereanTable';
 import { buildVerse, chapterFingerprint, fetchTo, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { parseTbes, type Lexicon } from './data/tbes';
-import { OVERLAY_FILE, applyOverlay, diffEdition, loadRp2026, overlayReport, type OverlayEntry, type OverlayResult } from './data/rp2026';
+import { OVERLAY_FILE, applyOverlay, diffEdition, loadRp2026, overlayReport, type OverlayEntry, type OverlayResult, type PlacedUnit } from './data/rp2026';
+import { VARIANT_ENGLISH_FILE, englishReport, englishStats, finishUnit, layEnglish, readLampasEnglish, type LampasEnglishFile, type MissingEnglish, type WordNote } from './data/variantEnglish';
 import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
 
 export { suppliedWords } from './data/bereanTable';
@@ -173,6 +174,12 @@ export interface BuiltChapter {
   path: string;
   chapter: Chapter;
 }
+/** Where the English of a variant unit comes from besides the MSB's footnotes: data/variant-english.json (scripts/data/variantEnglish.ts). A strict build stops on a unit with no English, naming the verse. */
+export interface EnglishOptions {
+  lampas: LampasEnglishFile;
+  strict: boolean;
+}
+
 export interface BuiltData {
   index: BookIndex;
   chapters: BuiltChapter[];
@@ -182,6 +189,10 @@ export interface BuiltData {
   frequency: FrequencyEntry[];
   /** the apparatus's units by code, how many were aligned, and those that were not; absent when the build was given no apparatus */
   variants?: VariantStats;
+  /** the units with no English (only when the build was not strict: `npm run variants:english` renders them) */
+  missingEnglish: MissingEnglish[];
+  /** the units that took an entry of data/variant-english.json, with its key: an entry not listed is stale */
+  lampasUsed: MissingEnglish[];
   /** what became of the RP 2026 overlay's entries; absent when the build was given no overlay */
   overlay?: OverlayResult;
 }
@@ -223,11 +234,22 @@ export function countWords(chapters: BuiltChapter[], lex: Lexicon): FrequencyEnt
     .sort((a, b) => b.count - a.count || numeric(a.strongs, b.strongs));
 }
 
+/** The MSB table's footnotes of a verse, each with the place of its word among the verse's Greek words (the order of `g`). */
+const notesOf = (v: TableVerse): WordNote[] =>
+  [...v.words].sort((a, b) => a.sourceSort - b.sourceSort).flatMap((w, i): WordNote[] => (w.note ? [{ w: i, note: w.note }] : []));
+
 /**
  * `apparatus`: the Robinson-Pierpont 2018 apparatus of each book by its code, 'chapter:verse' -> text (loadApparatus); without it no chapter has `variants`.
  * `overlay`: the RP 2026 wording changes (scripts/data/rp2026.ts) laid on the Greek of the chapters they name, after the apparatus is laid on it.
+ * `english`: the English made for the units the MSB's footnotes do not speak for; a strict build (the default) fails on a unit with no English.
  */
-export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, Map<string, string>>, overlay?: OverlayEntry[]): BuiltData {
+export function buildData(
+  msbTsv: string,
+  lex: Lexicon,
+  apparatus?: Map<string, Map<string, string>>,
+  overlay?: OverlayEntry[],
+  english: EnglishOptions = { lampas: {}, strict: true },
+): BuiltData {
   const byBook = new Map<string, Map<number, TableVerse[]>>();
   for (const v of parseMsb(msbTsv)) {
     const chapters = byBook.get(v.book) ?? new Map<number, TableVerse[]>();
@@ -243,6 +265,8 @@ export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, 
   const lexicon: LemmaLexicon = {};
   const variants: VariantStats = { counts: {}, aligned: {}, unaligned: [], books: [] };
   const laid: OverlayResult = { applied: 0, already: 0, dropped: 0 };
+  const missingEnglish: MissingEnglish[] = [];
+  const lampasUsed: MissingEnglish[] = [];
   for (const [code, name] of BOOKS) {
     const book = byBook.get(name);
     if (!book) continue;
@@ -263,12 +287,27 @@ export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, 
         seen.add(v.n);
       }
       // A verse the Byzantine text lacks (Luke 17:36, Acts 8:37, 15:34, 24:7) has a row in the table and no words.
-      const built = verses.filter((v) => v.words.length > 0).map((v) => greekVerse(v, lex));
-      let units: VariantUnit[] = [];
+      const withWords = verses.filter((v) => v.words.length > 0);
+      const built = withWords.map((v) => greekVerse(v, lex));
+      let units: PlacedUnit[] = [];
       const rp = apparatus?.get(code);
       if (rp) {
         const found = alignChapter(name, n, built.map((v) => ({ n: v.n, words: v.g.map((w) => w.t) })), rp);
-        units = found.units;
+        const laidEnglish = layEnglish(found.units, {
+          book: name,
+          code,
+          chapter: n,
+          verses: built,
+          notes: new Map(withWords.map((v) => [v.n, notesOf(v)])),
+          lampas: english.lampas,
+        });
+        units = laidEnglish.units;
+        missingEnglish.push(...laidEnglish.missing);
+        lampasUsed.push(...laidEnglish.used);
+        if (english.strict && laidEnglish.missing.length) {
+          const first = laidEnglish.missing[0];
+          throw new Error(`${first.ref}: the variant unit "${first.unit.base}" has no English (${laidEnglish.missing.length} in ${name} ${n}); run npm run variants:english`);
+        }
         addCounts(bookCounts, found.counts);
         addCounts(variants.counts, found.counts);
         addCounts(variants.aligned, found.aligned);
@@ -293,7 +332,7 @@ export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, 
         parse: Object.fromEntries(codes.map((c) => [c, decodeParse(c)])),
         verses: built,
       };
-      if (units.length) chapter.variants = units;
+      if (units.length) chapter.variants = units.flatMap((u): VariantUnit[] => (u.english ? [finishUnit({ ...u, english: u.english })] : []));
       // The first use of a lemma, in canonical order, names its Strong's number and part of speech.
       for (const w of built.flatMap((v) => v.g)) {
         if (!(w.l in lexicon)) lexicon[w.l] = { g: chapter.lex[w.s].g, s: w.s, c: splitParse(w.p).pos };
@@ -305,7 +344,7 @@ export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, 
     index.books.push({ code, name, chapters: count, verses: counts, fingerprints, lang: 'grc' });
     if (apparatus?.has(code)) variants.books.push({ name, counts: bookCounts });
   }
-  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}) };
+  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), missingEnglish, lampasUsed, ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}) };
 }
 
 // ---------------------------------------------------------------- files
@@ -326,10 +365,15 @@ export interface BuildOptions {
   rp2026Sha256?: string;
   /** where the overlay is written; default data/rp2026-overlay.json */
   overlayFile?: string;
+  /** the English made for variant units (data/variant-english.json, written by npm run variants:english); default VARIANT_ENGLISH_FILE */
+  englishFile?: string;
 }
 
-export async function runBuild(options: BuildOptions): Promise<{ chapters: number; written: number; bytes: number }> {
-  const { rawDir, outDir, download = fetchTo, log = () => undefined, variants = true, rp2026 = variants, overlayFile = OVERLAY_FILE } = options;
+/** What a build reads: the MSB table and TBESG (fetched into rawDir unless they are there), the apparatus and the RP 2026 overlay (written to overlayFile). Also read by `npm run variants:english`. */
+export async function loadInputs(
+  options: Pick<BuildOptions, 'rawDir' | 'download' | 'log' | 'variants' | 'variantsSha256' | 'rp2026' | 'rp2026Sha256' | 'overlayFile'>,
+): Promise<{ msbTsv: string; lex: Lexicon; apparatus?: Map<string, Map<string, string>>; overlay?: OverlayEntry[] }> {
+  const { rawDir, download = fetchTo, log = () => undefined, variants = true, rp2026 = variants, overlayFile = OVERLAY_FILE } = options;
   const msbPath = join(rawDir, MSB_FILE);
   const tbesgPath = join(rawDir, TBESG_FILE);
   for (const [url, path] of [[MSB_URL, msbPath], [TBESG_URL, tbesgPath]] as const) {
@@ -344,8 +388,16 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
     overlay = diffEdition(apparatus, await loadRp2026(rawDir, download, log, options.rp2026Sha256));
     writeIfChanged(overlayFile, `${JSON.stringify(overlay, null, 1)}\n`);
   }
-  const built = buildData(readFileSync(msbPath, 'utf8'), parseLexicon(readFileSync(tbesgPath, 'utf8')), apparatus, overlay);
+  return { msbTsv: readFileSync(msbPath, 'utf8'), lex: parseLexicon(readFileSync(tbesgPath, 'utf8')), apparatus, overlay };
+}
+
+export async function runBuild(options: BuildOptions): Promise<{ chapters: number; written: number; bytes: number }> {
+  const { outDir, log = () => undefined } = options;
+  const { msbTsv, lex, apparatus, overlay } = await loadInputs(options);
+  const lampas = readLampasEnglish(options.englishFile ?? VARIANT_ENGLISH_FILE);
+  const built = buildData(msbTsv, lex, apparatus, overlay, { lampas, strict: true });
   if (built.variants) for (const line of variantsReport(built.variants)) log(line);
+  if (built.variants) for (const line of englishReport(englishStats(built.chapters.flatMap((c) => c.chapter.variants ?? [])))) log(line);
   if (overlay && built.overlay) for (const line of overlayReport(overlay, built.overlay)) log(line);
 
   // index.json lists the 66 books: this build writes the 27 read in Greek and keeps the Old Testament's from the index on disk (scripts/data-build-ot.ts writes those)

@@ -6,7 +6,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { VariantCode, VariantUnit } from '../../src/data/chapter';
+import type { VariantCode, VariantPlace } from '../../src/data/chapter';
 
 export const VARIANTS_TAG = 'v3.3.2';
 export const VARIANTS_DIR = 'csv-unicode/ccat/with-variants';
@@ -159,7 +159,7 @@ export interface Unaligned {
 }
 export type CodeCounts = Partial<Record<VariantCode, number>>;
 export interface ChapterVariants {
-  units: VariantUnit[];
+  units: VariantPlace[];
   unaligned: Unaligned[];
   /** apparatus units (braces) by code */
   counts: CodeCounts;

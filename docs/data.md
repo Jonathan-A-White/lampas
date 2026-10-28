@@ -139,7 +139,7 @@ Links are mutual: `e[g[i].e].g` contains `i`, and every `g[e[j].g[k]].e` is `j`.
 In the MSB table a word whose English is `-` or `vvv` has no English (no `e`, no chunk). A word whose English is
 `. . .` is rendered by the chunk that completes it later in the English ("In all, then, there were fourteen
 . . . generations"): its index joins that chunk's `g` array. Quotation marks and punctuation that sit on a word
-with no English of its own move to the neighbouring chunk. Footnotes in the table are not carried.
+with no English of its own move to the neighbouring chunk. Footnotes in the table (column 21, `footnotes`) are not carried into the chapters' words; the 'CT …' ones give the English of the New Testament's variant units ('Variant English' below).
 
 Headings and paragraphs come from two columns of the table. `Hdg` (`<p class=|hdg|>Walking by the Spirit`) is on
 the first word of the verse the heading comes before; the tag comes off and the text is `h`. `Par` is the paragraph
@@ -152,7 +152,8 @@ starts a paragraph whether or not it has `p`; the reader treats it so.
 ## Variants
 
 Each New Testament chapter carries `variants`: the apparatus of Robinson and Pierpont's 2018 edition, laid on the chapter's own Greek words
-(`scripts/data/variants.ts`, run by `npm run data:build`; mw-9ji6ek0.1). No screen reads it yet.
+(`scripts/data/variants.ts`, run by `npm run data:build`; mw-9ji6ek0.1), each unit with its English, whether it changes the English and whose reading it is
+('Variant English' below; mw-9ji6ek0.3). No screen reads it yet.
 
 **Source.** <https://github.com/byztxt/byzantine-majority-text> at tag `v3.3.2`, `csv-unicode/ccat/with-variants`, the 27 book files
 (`MAT.csv` to `REV.csv`, fetched from `https://raw.githubusercontent.com/byztxt/byzantine-majority-text/v3.3.2/csv-unicode/ccat/with-variants/<FILE>.csv`
@@ -194,6 +195,9 @@ two `B` readings and one `N`).
 | `base` | the 2018 text's words there, as the apparatus writes them (`…` kept); for a `~` unit the verse's words |
 | `alts[].code` | `B`, `N`, `C`, `S`, `E` or `M` |
 | `alts[].text` | the reading as the apparatus writes it (NA's `[ ]` and `[[ ]]` kept); `""` when it leaves the base out |
+| `english` | `{"source":"msb"\|"lampas","base":"…","alts":["…"]}`: the base in English and each of `alts` in English, the same order ('Variant English' below) |
+| `changesEnglish` | `true` when the English of the base and of any reading differ once case, punctuation and white space are set aside; `false` when the Greek differs (a spelling, a word order, an article) and the English does not |
+| `witness` | `"byz"` (code `B`), `"na"` (`N`, `C`, `S`, `E`) or `"ecm"` (`M`); a unit with several codes takes the first class in that order |
 
 Units are in verse order, then by their first word.
 
@@ -212,6 +216,35 @@ Units are in verse order, then by their first word.
 | Revelation 11:16 | N | οἱ ἐνώπιον τοῦ θρόνου | the table has ἐνώπιον τοῦ θεοῦ, without τοῦ θρόνου |
 | Revelation 11:16 | B | τοῦ θρόνου | the same |
 | Revelation 13:1 | N | ἐστάθην | the table ends 12:17 with Καὶ ἐστάθην …, in another chapter |
+
+## Variant English
+
+Every unit has `english` (mw-9ji6ek0.3), from one of two sources, and the chapter build stops on a unit with neither, naming the verse
+(`Revelation 3:2: the variant unit "…" has no English (…); run npm run variants:english`).
+
+**`msb`: the MSB's footnote.** The table's column 21, `footnotes`, is read into `TableWord.note` (`scripts/data/bereanTable.ts`). A footnote that begins
+`CT` is the critical text's reading against the MSB's own (Byzantine) one: `CT <i>King Herod</i>` on a word says the CT reads "King Herod" there.
+`parseFootnote` (`scripts/data/variantEnglish.ts`) reads the first `<i>…</i>` (later ones are other witnesses, `; GOC and TR <i>…</i>`, or other
+renderings, `or <i>…</i>`) and its kind: `CT does not include <i>X</i>` (X is left out), `CT includes <i>X</i>`, or a reading in place of the MSB's. The build lays a footnote on the
+unit of its verse that holds the footnote's word (the narrowest, and one unit per footnote) when the unit has **one** other reading and it is not a Byzantine
+split (`B`): then `english` is `{source:'msb', base, alts:[alt]}`, the alt being the footnote's English and the base the MSB's own English of the unit's words (the
+chunks `e` that hold them, which can be more than the unit's words) or, for an omission, the footnote's X with the alt `""`. `CT includes …` and an
+omission of part of a base are not laid (the unit's alt text is more than the footnote says): those units are made like the rest.
+
+**`lampas`: made by the tutor's model.** `npm run variants:english` (`scripts/variants-english.ts`, on the home host, where `claude` runs; `--raw <dir>` where the downloads are)
+asks sonnet, the tutor's model, for each unit the footnotes do not speak for: the verse in Greek and in the MSB's English, the base and the other readings with the lemma
+and gloss of each of their words (from the lexicon of the whole text), 25 units a request. The answer is the English of the base and of each reading, 1-6 words
+each (`""` for a reading that leaves the base out), in the verse's own vocabulary and with the same English for the same Greek word. Each answer is checked
+(`problemsWith`): the word count, no Greek letters or brackets, and against the Greek lemmas: a reading with a noun, verb or adjective whose lemma is known must share
+the first four letters of one English word with the gloss or definition of one of them. An item that fails is asked again with what was wrong, twice; one that still fails
+is kept and listed when the script ends (the lexicon's gloss can be wrong for a name: Ἀσά is "Asaph" in TBESG). The result is `data/variant-english.json`, committed, one entry to a line:
+`"mat 1:5 w4-5 6c2914bf": {"source":"lampas","base":"Boaz out of","alts":["Boes out of"]}`. The key is the book code, the verse, the first and last word of the unit and eight hex
+digits of the sha256 of its readings, so an entry for a unit whose readings changed is not found (the unit is rendered again, the old entry dropped). A second run with nothing
+new renders nothing and changes nothing.
+
+Units from the files and from the table are never changed by the model: it only writes English beside them. To correct an entry, edit it in the file (the next run keeps it).
+
+**Counts** (2026-10-27): 7,198 units in the chapters: English `msb` 908, `lampas` 6,290 (`data/variant-english.json` holds 6,292 entries: two are for units the RP 2026 overlay then dropped); `changesEnglish` 5,901 of 7,198; `witness` `byz` 667, `na` 6,527, `ecm` 4 (the 18 `M` units mostly share words with a `C` or `N` unit, which is the first class). The build prints these as `variant English:`, `variants that change the English:` and `variant witness:`. 13 entries that came back over six words (long bases of Mark 3, 4, 6, 9, 13, 1 Corinthians 9:20, Jude 1:23 and 25, Revelation 1:2) were shortened by hand in the file; the script’s check still lists about 130 readings whose English shares no beginning with the lemma’s gloss (irregular verbs, "if" for εἰ, names), which are left as they are.
 
 ## The RP 2026 overlay
 

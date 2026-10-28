@@ -31,6 +31,7 @@ npm run fixture:chapter -- <book> <n>   # node scripts/fixture-chapter.mjs: copi
 npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json + frequency.json,
                      #   with the RP 2018 apparatus and the RP 2026 changes laid on the Greek (the changes are written to data/rp2026-overlay.json, docs/data.md);
                      #   the output is committed and a second run changes nothing (docs/data.md)
+npm run variants:english  # scripts/variants-english.ts: the English of each variant unit the MSB footnotes do not speak for, made by the tutor's model (sonnet, through `claude -p` on the home host) into data/variant-english.json; renders only the units without an entry (--raw <dir>, --limit N, --batch N, --parallel N); data:build stops on a unit with no English (docs/data.md 'Variant English')
 ```
 
 ## Timing tests (MW_TIMING)
