@@ -8,7 +8,7 @@ npm run ladder     # scripts/ladder-el.ts, ladder-en.ts and ladder-he.ts: read p
 ```
 
 The script is deterministic (a second run changes no byte) and is never run by the app. The generated file is committed;
-`npm run data:build` leaves `public/data/ladder/` alone.
+`npm run data:build` leaves `public/data/ladder/` alone (and keeps the `ladders` fingerprints in `index.json`).
 
 ## The file
 
@@ -114,7 +114,7 @@ He said: "start with the easiest to pronounce verse and work from there ... keep
   After a reading that is `Well read` it offers `Next verse`, which opens the next verse he has not read well. After `Words to fix`, `Part of the verse` (a partial reading, mw-neuq78.7) or `Read the whole verse` it offers `Try again` (sets the result aside; the verse stays) and `Skip for now`. A verse with no result yet offers `Skip for now`.
 * **The place is not stored twice.** It is the first verse of the list with no `well-read` in the reading history of that language (`readingHistory`, `src/data/repositories/readings.ts`), so a reading made any other way counts too, a well-read moves it at once, and reopening the app resumes it. `src/data/readingLadder.ts` `ladderPlace` is the pure rule; the Dexie `ladder` table (v18, `src/data/repositories/ladder.ts`) keeps per language `showing` (the verse the ladder last opened, whose panel is the ladder's) and `skipped` (`{ref, at}`).
 * **Skipped.** A skip is remembered with its time. The verse is passed over and comes back (as the place) after he has read `SKIP_GAP` (5, PROVISIONAL) other verses well since the skip; skipped again, its wait starts afresh; when nothing else is left the oldest skipped verse is the place.
-* **The list loads lazily.** `loadLadder` fetches `/data/ladder/<lang>.json` when the ladder is started or a ladder verse is on screen, never at startup. The files are not in the precache (`pwa-precache.ts` names its data files); the worker's `/data/` route keeps one once fetched. Offline and not yet fetched, the button says `The ladder is not on this phone yet, and you are offline.`
+* **The list loads lazily.** `loadLadder` fetches `/data/ladder/<lang>.json?v=<fingerprint>` (`ladderUrl`; the fingerprint is `ladders.<lang>` in `public/data/index.json`, which `npm run ladder` stamps: the first 12 hex characters of the SHA-256 of the list's bytes) when the ladder is started or a ladder verse is on screen, never at startup. The files are not in the precache (`pwa-precache.ts` names its data files); the worker keeps one once fetched under that address, as it does a chapter (`isVersionedLadder`, `serveChapter`), so a rescored list, which has a new fingerprint, is fetched once and replaces its old copy (mw-9ji6ek0.10). Offline and not yet fetched, the button says `The ladder is not on this phone yet, and you are offline.`
 * Only a verse is on the ladder: a passage (a section heading's view) shows no ladder. A Greek pronunciation other than modern has no list, so no button.
 * Tests: `features/reading-ladder.feature`, `tests/unit/reading-ladder.test.ts`, `tests/e2e/reading-ladder.spec.ts` (`shot(page, 'reading-ladder')`).
 
