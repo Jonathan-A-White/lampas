@@ -4,6 +4,7 @@ import { subscribe } from './events/bus';
 import { afterCatalogueUpdate, seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { Essay } from './Essay';
+import { VariantLessons } from './lessons/VariantLessons';
 import { HelpScreen } from './HelpScreen';
 import { Preface } from './Preface';
 import { AskTutor } from './AskTutor';
@@ -155,6 +156,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <Preface />
       ) : route === 'essay' ? (
         <Essay />
+      ) : route === 'lessons' ? (
+        <VariantLessons />
       ) : route === 'library' ? (
         <LibraryScreen />
       ) : route === 'lists' ? (

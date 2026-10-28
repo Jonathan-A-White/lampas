@@ -13,11 +13,11 @@ import type { CourseLanguage } from '../ipa/course';
 import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'help' | 'about' | 'preface' | 'essay' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'help' | 'about' | 'preface' | 'essay' | 'lessons' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
 
 const ROUTE_TABLE: Record<Route, true> = {
   home: true, words: true, import: true, test: true, drill: true, review: true, today: true, paradigms: true, placement: true, goal: true, path: true, ipa: true, 'diagram-lesson': true, sounds: true, studyway: true,
-  aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, help: true, about: true, preface: true, essay: true, library: true, lists: true, memorize: true, settings: true, share: true, unlock: true,
+  aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, help: true, about: true, preface: true, essay: true, lessons: true, library: true, lists: true, memorize: true, settings: true, share: true, unlock: true,
 };
 
 /** Every screen of the app, once: the table the tutor's places are checked against (src/tutor/registry.ts, tests/unit/tutor-registry.test.ts). A new Route fails typecheck until it is listed here. */
@@ -89,6 +89,7 @@ export function routeOf(hash: string): Route {
   if (path === '#/about') return 'about';
   if (path === '#/preface') return 'preface';
   if (path === ESSAY_PATH) return 'essay';
+  if (path === LESSONS_PATH || path.startsWith(`${LESSONS_PATH}/`)) return 'lessons';
   if (path === '#/library') return 'library';
   if (path === LISTS_PATH || path.startsWith(`${LISTS_PATH}/`)) return 'lists';
   if (path === MEMORIZE_PATH || path.startsWith(`${MEMORIZE_PATH}/`)) return 'memorize';
@@ -107,6 +108,9 @@ export const MEMORIZE_PATH = '#/memorize';
 /** The in-app copy of Robinson's essay (src/Essay.tsx), a page under the Preface. */
 export const ESSAY_PATH = '#/preface/robinson';
 
+/** The lessons on variant readings (src/lessons/VariantLessons.tsx): the list, and one page is `#/lessons/variants/<n>`, n from 1. */
+export const LESSONS_PATH = '#/lessons/variants';
+
 const pageOpenedOnReader = typeof window === 'undefined' || routeOf(window.location.hash) === 'home';
 
 /** The page was loaded on the Reader (a reopen, a link, a reload there), not on another screen. A page loaded on Settings and reloaded there
@@ -114,7 +118,7 @@ const pageOpenedOnReader = typeof window === 'undefined' || routeOf(window.locat
  * over the saved setting (src/reader/useReaderSettings.ts, mw-5r3p30.658). */
 export const openedOnReader = (): boolean => pageOpenedOnReader;
 
-export const hashFor = (route: Route) => (route === 'home' ? '#/' : route === 'essay' ? ESSAY_PATH : `#/${route}`);
+export const hashFor = (route: Route) => (route === 'home' ? '#/' : route === 'essay' ? ESSAY_PATH : route === 'lessons' ? LESSONS_PATH : `#/${route}`);
 
 const wholeNumber = (text: string | null): number | undefined => (text !== null && /^[1-9]\d{0,3}$/.test(text) ? Number(text) : undefined);
 
@@ -328,6 +332,41 @@ export function verseListOf(hash: string): number | undefined {
 }
 
 export const verseListHash = (id: number): string => `${LISTS_PATH}/${id}`;
+
+/** The page of the lessons on variant readings an address opens (`#/lessons/variants/3`), or undefined for the list and any address that is no page's; the screen checks the number against its five pages. */
+export function variantLessonOf(hash: string): number | undefined {
+  const m = /^#\/lessons\/variants\/([1-9]\d{0,3})$/.exec(pathOf(hash));
+  return m ? Number(m[1]) : undefined;
+}
+
+/** The address of the lessons' list, or of its page `n`. */
+export const variantLessonHash = (n?: number): string => (n === undefined ? LESSONS_PATH : `${LESSONS_PATH}/${n}`);
+
+/** Opens the lessons' list, or its page `n`, as a new Back step; Back returns to where he was. */
+export function openVariantLesson(n?: number): void {
+  const hash = variantLessonHash(n);
+  if (window.location.hash === hash) return;
+  window.history.pushState(null, '', urlFor(hash));
+  notify();
+}
+
+/** Moves to another page of the lessons, or to its list, in place: the entry he is on is replaced, so one Back leaves the lessons however many pages he has read. */
+export function showVariantLesson(n?: number): void {
+  replaceHash(variantLessonHash(n));
+}
+
+/** The back arrow of the list: a step Back to where he came from (Help, a link), else Help opened afresh (a reload left nothing behind). */
+export function leaveVariantLessons(): void {
+  if (previousAddress() !== null) window.history.back();
+  else navigate('help', { replace: true });
+}
+
+/** The back arrow of a page: a step Back when the entry behind it is the list, else the list in this page's place. */
+export function backToVariantLessons(): void {
+  const behind = previousAddress();
+  if (behind !== null && pathOf(behind) === LESSONS_PATH) window.history.back();
+  else replaceHash(LESSONS_PATH);
+}
 
 /** The session an address opens (`#/memorize/Rom.8.28/en`): the canonical reference and the language, or undefined for the Memorize home and any address that is no session's. */
 export function memorizeSessionOf(hash: string): { ref: string; lang: MemorizeLang } | undefined {

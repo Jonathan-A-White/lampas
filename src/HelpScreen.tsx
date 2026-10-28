@@ -3,7 +3,7 @@
 // answered from Help. The words are in src/help.ts. Reached from Settings, Account, More.
 import { useAiAllowed } from './gate/licenceContext';
 import { HELP_PAGES, helpPageById, type HelpPage } from './help';
-import { backTo, helpPageOf, openHelpPage, openLicence, useAddress } from './nav/route';
+import { backTo, helpPageOf, navigate, openHelpPage, openLicence, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { askTheTutor } from './tutor/askNow';
@@ -44,6 +44,7 @@ function AskButton() {
 
 export function HelpScreen() {
   const page = helpPageById(helpPageOf(useAddress()));
+  const opens = page?.opens;
   useReportScreen(page ? pageScreen(page) : listScreen());
   const scrollRef = useScrollMemory('help');
   return (
@@ -64,6 +65,15 @@ export function HelpScreen() {
                 {text}
               </p>
             ))}
+            {opens ? (
+              <button
+                type="button"
+                onClick={() => navigate(opens.route)}
+                className="mt-4 min-h-12 w-full rounded-xl border border-line px-5 text-base font-medium text-accent"
+              >
+                {opens.label}
+              </button>
+            ) : null}
           </article>
         ) : (
           <ul className="list-none space-y-2 py-4">

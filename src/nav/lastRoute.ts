@@ -8,7 +8,7 @@
 // them, so Back walks them as if he never closed the app (and, past the oldest, lands on Home). Every history
 // entry carries its place in the trail (history.state.i); the trail is kept up to the entry he is on. Each address
 // also keeps its own scroll offsets (src/nav/scrollMemory.ts).
-import { pathOf, readerOf, routeOf, verseListOf } from './route';
+import { pathOf, readerOf, routeOf, variantLessonOf, verseListOf } from './route';
 
 const ROUTE_KEY = 'lampas.lastRoute';
 const TRAIL_KEY = 'lampas.trail';
@@ -21,7 +21,7 @@ const TRAIL_IN_MEMORY = 100;
 
 /** The paths that are somewhere to come back to. Anything else (the Unlock screen and the licence screen, if they
  * ever had an address) is not kept. */
-const KEPT_PATHS = ['#/', '#/words', '#/import', '#/test', '#/drill', '#/review', '#/today', '#/paradigms', '#/placement', '#/goal', '#/path', '#/ipa', '#/sounds', '#/studyway', '#/aboutyou', '#/memory', '#/requests', '#/conversations', '#/askmore', '#/help', '#/library', '#/lists', '#/about', '#/preface', '#/preface/robinson', '#/settings', '#/share'];
+const KEPT_PATHS = ['#/', '#/words', '#/import', '#/test', '#/drill', '#/review', '#/today', '#/paradigms', '#/placement', '#/goal', '#/path', '#/ipa', '#/sounds', '#/studyway', '#/aboutyou', '#/memory', '#/requests', '#/conversations', '#/askmore', '#/help', '#/library', '#/lists', '#/about', '#/preface', '#/preface/robinson', '#/lessons/variants', '#/settings', '#/share'];
 
 /** The offsets of each address that has any, least recently written first. */
 type StoredScrolls = Record<string, Record<string, number>>;
@@ -39,7 +39,7 @@ function store(): Storage | undefined {
 
 /** Whether an address is somewhere to come back to. */
 export function isKeptHash(hash: string): boolean {
-  return KEPT_PATHS.includes(pathOf(hash)) || verseListOf(hash) !== undefined;
+  return KEPT_PATHS.includes(pathOf(hash)) || verseListOf(hash) !== undefined || variantLessonOf(hash) !== undefined;
 }
 
 /** Keeps `hash` as where he is, unless it is a place not worth returning to. */

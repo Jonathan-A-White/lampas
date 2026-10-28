@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { libraryHash, libraryOf, paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf, verseListHash, verseListOf } from '../../src/nav/route';
+import { libraryHash, libraryOf, paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf, variantLessonHash, variantLessonOf, verseListHash, verseListOf } from '../../src/nav/route';
 
 describe('the address', () => {
   it('says where the placement was started from', () => {
@@ -124,5 +124,31 @@ describe('the address of one verse list (#/lists/<id>)', () => {
 
   it('writes the address back', () => {
     expect(verseListHash(7)).toBe('#/lists/7');
+  });
+});
+
+describe('the address of the lessons on variant readings (#/lessons/variants[/<n>])', () => {
+  it('is the lessons screen, the list and each page', () => {
+    expect(routeOf('#/lessons/variants')).toBe('lessons');
+    expect(routeOf('#/lessons/variants/3')).toBe('lessons');
+    expect(routeOf('#/lessons')).toBe('home');
+    expect(routeOf('#/lessons/variantsx')).toBe('home');
+  });
+
+  it('reads the number of a page, and nothing from the list or an address that is no number', () => {
+    expect(variantLessonOf('#/lessons/variants/3')).toBe(3);
+    expect(variantLessonOf('#/lessons/variants/12?x=1')).toBe(12);
+    expect(variantLessonOf('#/lessons/variants')).toBeUndefined();
+    expect(variantLessonOf('#/lessons/variants/')).toBeUndefined();
+    expect(variantLessonOf('#/lessons/variants/x')).toBeUndefined();
+    expect(variantLessonOf('#/lessons/variants/0')).toBeUndefined();
+    expect(variantLessonOf('#/lessons/variants/3/4')).toBeUndefined();
+    expect(variantLessonOf('#/lists/3')).toBeUndefined();
+  });
+
+  it('writes the address back', () => {
+    expect(variantLessonHash()).toBe('#/lessons/variants');
+    expect(variantLessonHash(3)).toBe('#/lessons/variants/3');
+    expect(variantLessonOf(variantLessonHash(5))).toBe(5);
   });
 });
