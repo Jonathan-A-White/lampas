@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.22
+_2026-10-28_
+- New: Help in Settings is a short list of the app's pieces, each a page of a few lines, with Ask the tutor at its top; the Preface now says only which texts we chose.
+
 ## 0.5.21
 _2026-10-28_
 - New: Your requests now says when a request was built another way than you asked, or has become part of another story, instead of leaving it at Filed.
