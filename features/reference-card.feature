@@ -1,8 +1,10 @@
 Feature: A Bible reference in the tutor's answer opens a card first
   A reference the tutor writes ('Ps. 110', 'Heb 7:1-3', 'Romans 8:28') is a link. A tap opens a small card under it with the reference as its heading, the
   verse's text as the Reader draws it now (English in the Majority Standard Bible, the Weave, or Greek; tests/unit/reference-card-mode.test.tsx) and Open, which opens the reader on that verse's chapter with the verse brought to the top, never the Verse view. A tap outside the card or Back closes
-  it and nothing moves. A whole chapter shows its first verse. A book Lampas has no text for shows the card with 'Not in Lampas yet'; with Logos linked in Settings it
-  has Open in Logos, in the Bible he chose there, and without it a link to Settings where Logos is linked. It has no Open for the reader.
+  it and nothing moves. A whole chapter shows its first verse. Whether Lampas holds a passage is read from the data it has, not from the testament: an Old Testament
+  reference (Daniel 2:28-29) opens in the Reader like a New Testament one, and with Logos linked in Settings its card also has Open in Logos, in the Bible he chose there, second to Open.
+  A book Lampas holds no data for says 'Not in Lampas yet', with Open in Logos or a link to Settings where Logos is linked, and no Open
+  (tests/unit/reference-card-unheld.test.tsx: every book the tutor can name is held today, so no feature reaches that card).
 
   Scenario: Each reference in an answer is a link and the words around them are unchanged
     Given a tutor answer says "Compare Ps. 110 with Heb 7:1-3 and Romans 8:28 today."
@@ -43,34 +45,35 @@ Feature: A Bible reference in the tutor's answer opens a card first
     When he taps the link "Hebrews 7"
     Then a card headed "Hebrews 7:1" shows the text "This Melchizedek was king of Salem"
 
-  Scenario: A book Lampas has no text for says so and cannot be opened in the reader
-    Given a tutor answer says "Compare Ps. 110 with Heb 7:1-3 and Romans 8:28 today."
+  Scenario: An Old Testament passage Lampas holds has Open, not "Not in Lampas yet"
+    Given a tutor answer says "The mystery is told in Daniel 2:28-29 to the king."
     And no Bible app is linked
-    When he taps the link "Ps. 110"
-    Then a card headed "Psalm 110" says "Not in Lampas yet. Link Logos in Settings to open it there."
-    And the card has no Open button
+    When he taps the link "Daniel 2:28-29"
+    Then a card headed "Daniel 2:28-29" shows the text "there is a God in heaven who reveals mysteries"
+    And the card has an Open button
+    And the card does not say "Not in Lampas yet"
+    And the card has no Open in Logos link
 
-  Scenario: With Logos linked an Old Testament verse opens in his Bible in Logos
+  Scenario: Open on an Old Testament card opens the reader on Daniel 2 with verse 28 at the top
+    Given a tutor answer says "The mystery is told in Daniel 2:28-29 to the king."
+    When he taps the link "Daniel 2:28-29"
+    And he taps Open on the card
+    Then the reader is opened on Daniel 2 with verse 28 brought to the top
+    And no card is showing
+
+  Scenario: With Logos linked an Old Testament card has Open in Logos second to Open
     Given a tutor answer says "Hear the end of it in Ecclesiastes 12:13."
     And Logos is linked and his Bible is the LSB
     When he taps the link "Ecclesiastes 12:13"
-    Then a card headed "Ecclesiastes 12:13" says "Not in Lampas yet"
-    And the card has an Open in Logos link to "logosres:lgcystndrdbblsb;ref=Bible.Ec12.13"
-    And the card has no Open button
+    Then the card has an Open button
+    And the card has an Open in Logos link to "logosres:lgcystndrdbblsb;ref=Bible.Ec12.13" after Open
+    And the card does not say "Not in Lampas yet"
 
   Scenario: A whole Old Testament chapter opens in Logos at its first verse
     Given a tutor answer says "See Psalm 110 as well."
     And Logos is linked and his Bible is the LSB
     When he taps the link "Psalm 110"
     Then the card has an Open in Logos link to "logosres:lgcystndrdbblsb;ref=Bible.Ps110.1"
-
-  Scenario: With no Bible app linked the card links to Settings
-    Given a tutor answer says "Hear the end of it in Ecclesiastes 12:13."
-    And no Bible app is linked
-    When he taps the link "Ecclesiastes 12:13"
-    And he taps "Link Logos in Settings" on the card
-    Then the address is the Settings study resources
-    And no card is showing
 
   Scenario: A New Testament passage still has no Open in Logos
     Given a tutor answer says "Compare Ps. 110 with Heb 7:1-3 and Romans 8:28 today."

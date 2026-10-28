@@ -122,10 +122,10 @@ describe('an Old Testament verse link', () => {
     expect(instructions).toMatch(/any book of the Bible/i);
   });
 
-  it('is placed by the one canon list: Isaiah 53:5 is a place with no Reader, Romans 8:31 keeps its Reader', () => {
-    expect(placeOf('Isaiah 53:5')).toEqual({ book: 'isa', chapter: 53, verse: 5, name: 'Isaiah 53:5', reader: false });
+  it('is placed by the one canon list: Isaiah 53:5 and Romans 8:31 both have a Reader, as Lampas holds both books', () => {
+    expect(placeOf('Isaiah 53:5')).toEqual({ book: 'isa', chapter: 53, verse: 5, name: 'Isaiah 53:5', reader: true });
     expect(placeOf('Romans 8:31')).toMatchObject({ book: 'rom', chapter: 8, verse: 31, name: 'Romans 8:31', reader: true });
-    expect(placeOf('Psalm 23')).toMatchObject({ book: 'psa', chapter: 23, name: 'Psalms 23', reader: false });
+    expect(placeOf('Psalm 23')).toMatchObject({ book: 'psa', chapter: 23, name: 'Psalms 23', reader: true });
   });
 
   it('drops a place the canon lacks: a chapter past the end, a verse 0, an unknown book', () => {

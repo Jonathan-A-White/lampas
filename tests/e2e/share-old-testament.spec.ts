@@ -1,6 +1,6 @@
 // tests/e2e/share-old-testament.spec.ts — an Old Testament reference on the Share to Lampas list (mw-s1dc0n.7), at 390x844: a tap on 'Gen. 1:28' opens the
 // card the New Testament's references open, headed 'Genesis 1:28' and holding its English (mw-uqlxea.3), not Romans 8 with a notice; Back returns to the list; with Logos on the card
-// still has Open, which goes to the Reader, and no Open in Logos (features/share-references.feature).
+// has Open, which goes to the Reader, and Open in Logos after it (mw-5r3p30.840; features/share-references.feature).
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -59,7 +59,7 @@ test('Gen. 1:28 opens the card with its English, not Romans 8, and Back returns 
   await expect(link).toBeVisible();
 });
 
-test('with Logos on the card has Open, which goes to the Reader, and no Open in Logos', async ({ page }) => {
+test('with Logos on the card has Open, which goes to the Reader, and Open in Logos after it', async ({ page }) => {
   await openShare(page);
   await page.evaluate(
     () =>
@@ -82,5 +82,5 @@ test('with Logos on the card has Open, which goes to the Reader, and no Open in 
   await page.getByRole('link', { name: 'Gen. 1:28', exact: true }).tap();
   const card = page.getByRole('dialog', { name: 'Genesis 1:28', exact: true });
   await expect(card.getByRole('button', { name: 'Open', exact: true })).toBeVisible();
-  await expect(card.getByRole('link', { name: 'Open in Logos' })).toHaveCount(0);
+  await expect(card.getByRole('link', { name: 'Open in Logos' })).toBeVisible();
 });

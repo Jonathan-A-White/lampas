@@ -1,7 +1,7 @@
 Feature: The tutor links the reader's study resources
   A Bible talk answer may carry up to three links (mw-5r3p30.75): a word (its lemma) or a verse (its reference). Each shows under the
   answer as a group of chips that open in the study resources he switched on in Settings (Strong's, Logos): a word
-  link in the first link of each, such as his first ticked Logos lexicon at that lemma; a verse link in Lampas's own Reader and, with
+  link in the first link of each, such as his first ticked Logos lexicon at that lemma; a verse link of any book Lampas holds in Lampas's own Reader and, with
   Logos on, in his Bible in Logos. A link to a resource he has not switched on is not shown, and nothing says so.
   An answer may also link a work of his Logos library that he ticked in Settings > Study resources > Works (mw-5r3p30.675): John Calvin's commentaries, opened at the
   passage, or his Institutes, opened at the start. The request names the ticked works (with Black's grammar first, which starts pinned), and a link to a work he did not tick is dropped.
@@ -61,12 +61,12 @@ Feature: The tutor links the reader's study resources
     When he asks the tutor about verse 28
     Then the answer shows 3 study links
 
-  Scenario: An Old Testament verse link opens in his Bible in Logos and has no Reader button
+  Scenario: An Old Testament verse link opens in his Bible in Logos and in the Reader, which holds it
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 15:6"
     And the study resource "Logos" is switched on
     When he asks the tutor about verse 28
     Then the answer shows the study link "Open Genesis 15:6 in Logos" to "logosres:lgcystndrdbblsb;ref=Bible.Ge15.6"
-    And the answer has no Reader button
+    And the answer also shows a button "Open Genesis 15:6 in Lampas"
 
   Scenario: An Old Testament verse link follows the Bible he picked in Settings
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 15:6"
@@ -75,16 +75,15 @@ Feature: The tutor links the reader's study resources
     When he asks the tutor about verse 28
     Then the answer shows the study link "Open Genesis 15:6 in Logos" to "logosres:1.0.710;ref=Bible.Ge15.6"
 
-  Scenario: An Old Testament verse link with no study resource on shows nothing
+  Scenario: An Old Testament verse link with no study resource on shows only its Reader button
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 15:6"
     When he asks the tutor about verse 28
-    Then the answer shows no study links
+    Then the answer shows only the button "Open Genesis 15:6 in Lampas"
 
-  Scenario: An Old Testament verse link the tutor adds with no study resource on is dropped
+  Scenario: An Old Testament verse link the tutor adds with no study resource on still has its Reader button
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the verse "Genesis 14:18"
     When he asks the tutor about verse 28
-    Then the answer shows no study links
-    And the answer has no Reader button
+    Then the answer shows only the button "Open Genesis 14:18 in Lampas"
 
   Scenario: A link to Calvin's commentaries opens them at the passage in his Logos library
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the work "calvin-commentaries" at "John 3:16"

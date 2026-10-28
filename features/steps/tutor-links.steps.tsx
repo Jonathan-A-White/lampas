@@ -62,6 +62,12 @@ const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const turn = () => sheet().querySelector<HTMLElement>('[data-turn]') as HTMLElement;
 const links = () => within(turn()).queryAllByRole('link');
 
+/** The one thing the links row holds is the Reader button `name`: no link of a study resource beside it. */
+async function onlyButton(_: unknown, name: string): Promise<void> {
+  expect(await within(turn()).findByRole('button', { name, exact: true })).toBeInTheDocument();
+  expect(links()).toEqual([]);
+}
+
 async function askAboutVerse28(text = 'Tell me about love'): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Verse 28' }));
   const view = await screen.findByRole('region', { name: 'Verse view' });
@@ -193,13 +199,13 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('An Old Testament verse link opens in his Bible in Logos and has no Reader button', ({ Given, And, When, Then }) => {
+  Scenario('An Old Testament verse link opens in his Bible in Logos and in the Reader, which holds it', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with a link to the verse {string}', verse);
     And('the study resource {string} is switched on', switchOn);
     When('he asks the tutor about verse 28', ask);
     Then('the answer shows the study link {string} to {string}', shows);
-    And('the answer has no Reader button', () => {
-      expect(within(turn()).queryAllByRole('button', { name: /in Lampas/ })).toEqual([]);
+    And('the answer also shows a button {string}', async (_, name: string) => {
+      expect(await within(turn()).findByRole('button', { name, exact: true })).toBeInTheDocument();
     });
   });
 
@@ -213,27 +219,16 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the answer shows the study link {string} to {string}', shows);
   });
 
-  Scenario('An Old Testament verse link with no study resource on shows nothing', ({ Given, When, Then }) => {
+  Scenario('An Old Testament verse link with no study resource on shows only its Reader button', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with a link to the verse {string}', verse);
     When('he asks the tutor about verse 28', ask);
-    Then('the answer shows no study links', async () => {
-      await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(turn().querySelector('[data-tutor-links]')).toBeNull();
-    });
+    Then('the answer shows only the button {string}', onlyButton);
   });
 
-  Scenario('An Old Testament verse link the tutor adds with no study resource on is dropped', ({ Given, When, Then, And }) => {
+  Scenario('An Old Testament verse link the tutor adds with no study resource on still has its Reader button', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with a link to the verse {string}', verse);
     When('he asks the tutor about verse 28', ask);
-    Then('the answer shows no study links', async () => {
-      await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(turn().querySelector('[data-tutor-links]')).toBeNull();
-    });
-    And('the answer has no Reader button', () => {
-      expect(within(turn()).queryAllByRole('button', { name: /in Lampas/ })).toEqual([]);
-    });
+    Then('the answer shows only the button {string}', onlyButton);
   });
 
   Scenario("A link to Calvin's commentaries opens them at the passage in his Logos library", ({ Given, And, When, Then }) => {

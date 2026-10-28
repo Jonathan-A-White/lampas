@@ -1,6 +1,6 @@
 // src/markdown/ReferenceCard.tsx — a Bible reference in the tutor's answer (mw-5r3p30.133), the pop-up Logos gives a verse: a tap on the link opens a small card
 // under it with the reference as its heading, the passage as the Reader draws it now (English, the Weave with his weave settings, or Greek, mw-5r3p30.697) and Open,
-// which opens the Reader on the verse's chapter with the verse brought to the top and the rest above and below it (never the Verse view). A whole chapter shows its first verse. Lampas holds no Old Testament text, so that card says 'Not in Lampas yet' and has no Open: with Logos linked in Settings it has 'Open in Logos' instead, at that
+// which opens the Reader on the verse's chapter with the verse brought to the top and the rest above and below it (never the Verse view). A whole chapter shows its first verse. Lampas holds every book of the Bible (books.ts isHeld, by the data it has), so that card is the Old Testament's too and Daniel 2:28-29 opens in the Reader; a book it holds no data for says 'Not in Lampas yet' and has no Open: with Logos linked in Settings it has 'Open in Logos' instead (a held Old Testament card has it too, second to Open), at that
 // verse (a whole chapter at its first) in the Bible he chose there (src/resources/logosBible.ts), and with no Bible app linked a link to Settings where he links Logos. A tap outside the
 // card (not on the reference itself: a second tap there changes nothing, mw-5r3p30.429), Close, Escape or Back closes it and nothing moves (it is a sheet for Back, src/ui/sheetBack.ts). The card sits below the reference, or above it when
 // there is no room below, so it never covers what was tapped.
@@ -8,7 +8,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalS
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, sourceLanguage, type Chapter, type Verse } from '../data/chapter';
-import { otBookOf } from '../data/books';
+import { isHebrewBook, otBookOf } from '../data/books';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { getLogosBible, getStudyResources } from '../data/repositories';
 import { openAtVerse } from '../nav/readerRequest';
@@ -74,7 +74,20 @@ export interface ElsewherePlace {
   verse?: number;
 }
 
-/** What an Old Testament card says under its heading: that Lampas lacks it and where to read it instead. `onSettings` opens Settings. `said` is false where the
+/** 'Open in Logos' at `place`, in the Bible he chose in Settings; nothing while Logos is not linked or the place has no link there. `className` is its look. */
+function LogosDoor({ place, className }: { place: ElsewherePlace; className: string }) {
+  const resources = useLiveQuery(getStudyResources, []);
+  const bible = useLiveQuery(getLogosBible, []);
+  const link = resources?.on.includes('logos') && bible !== undefined ? verseLink(place.book, place.chapter, place.verse ?? 1, bible) : undefined;
+  if (!link) return null;
+  return (
+    <a href={link.url} data-fallback={link.fallback} onClick={() => armFallback(link.fallback)} className={className}>
+      Open in Logos<span aria-hidden="true"> ↗</span>
+    </a>
+  );
+}
+
+/** What a card for a place Lampas holds no data for says under its heading: that Lampas lacks it and where to read it instead. `onSettings` opens Settings. `said` is false where the
  *  words 'Not in Lampas yet' are already said above it (the notice a link leaves under the header). */
 export function ElsewhereLine({ place, said = true, onSettings }: { place: ElsewherePlace | null; said?: boolean; onSettings: () => void }) {
   const resources = useLiveQuery(getStudyResources, []);
@@ -271,6 +284,12 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
               </button>
             ) : null}
           </div>
+          {/* the Old Testament's second door, Logos at the verse, one tap away (mw-5r3p30.840); the New Testament's cards have none */}
+          {held && isHebrewBook(held.book) ? (
+            <div className="flex">
+              <LogosDoor place={{ book: held.book, chapter: held.chapter, verse: held.first }} className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-base font-medium text-accent active:bg-line" />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>,

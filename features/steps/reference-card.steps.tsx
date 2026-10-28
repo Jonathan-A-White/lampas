@@ -136,37 +136,64 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A book Lampas has no text for says so and cannot be opened in the reader', ({ Given, When, Then, And }) => {
+  Scenario('An Old Testament passage Lampas holds has Open, not "Not in Lampas yet"', ({ Given, When, Then, And }) => {
     Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
     And('no Bible app is linked', () => setResourceOn('logos', false));
     When('he taps the link {string}', async (_, name: string) => {
       await user.click(screen.getByRole('link', { name }));
     });
-    Then('a card headed {string} says {string}', async (_, heading: string, text: string) => {
+    Then('a card headed {string} shows the text {string}', async (_, heading: string, text: string) => {
       const dialog = await screen.findByRole('dialog', { name: heading });
-      await within(dialog).findByText((_, el) => el?.tagName === 'P' && el.textContent === text);
+      await waitFor(() => expect(dialog.querySelector('[data-reference-text]')).toHaveTextContent(text));
     });
-    And('the card has no Open button', () => {
-      expect(within(card() as HTMLElement).queryByRole('button', { name: 'Open' })).toBeNull();
+    And('the card has an Open button', () => {
+      expect(within(card() as HTMLElement).getByRole('button', { name: 'Open' })).toBeInTheDocument();
+    });
+    And('the card does not say {string}', (_, text: string) => {
+      expect(within(card() as HTMLElement).queryByText(text, { exact: false })).toBeNull();
+    });
+    And('the card has no Open in Logos link', () => {
+      expect(within(card() as HTMLElement).queryByRole('link', { name: 'Open in Logos' })).toBeNull();
     });
   });
 
-  Scenario('With Logos linked an Old Testament verse opens in his Bible in Logos', ({ Given, When, Then, And }) => {
+  Scenario('Open on an Old Testament card opens the reader on Daniel 2 with verse 28 at the top', ({ Given, When, Then, And }) => {
+    Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(screen.getByRole('link', { name }));
+    });
+    And('he taps Open on the card', async () => {
+      await user.click(await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Open' }));
+    });
+    Then('the reader is opened on Daniel 2 with verse 28 brought to the top', () => {
+      const at = readerOf(window.location.hash);
+      expect(at).toMatchObject({ book: 'dan', chapter: 2 });
+      expect(at.verse).toBeUndefined();
+      expect(pendingRequest()).toMatchObject({ action: 'verse', book: 'dan', chapter: 2, verse: 28 });
+    });
+    And('no card is showing', async () => {
+      await waitFor(() => expect(card()).toBeNull());
+    });
+  });
+
+  Scenario('With Logos linked an Old Testament card has Open in Logos second to Open', ({ Given, When, Then, And }) => {
     Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
     And('Logos is linked and his Bible is the LSB', linkLogos);
     When('he taps the link {string}', async (_, name: string) => {
       await user.click(screen.getByRole('link', { name }));
     });
-    Then('a card headed {string} says {string}', async (_, heading: string, text: string) => {
-      const dialog = await screen.findByRole('dialog', { name: heading });
-      await within(dialog).findByText((_, el) => el?.tagName === 'P' && el.textContent === text);
+    Then('the card has an Open button', async () => {
+      await within(await screen.findByRole('dialog')).findByRole('button', { name: 'Open' });
     });
-    And('the card has an Open in Logos link to {string}', async (_, url: string) => {
-      const link = await within(card() as HTMLElement).findByRole('link', { name: 'Open in Logos' });
+    And('the card has an Open in Logos link to {string} after Open', async (_, url: string) => {
+      const dialog = card() as HTMLElement;
+      const link = await within(dialog).findByRole('link', { name: 'Open in Logos' });
       expect(link.getAttribute('href')).toBe(url);
+      const open = within(dialog).getByRole('button', { name: 'Open' });
+      expect(open.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
-    And('the card has no Open button', () => {
-      expect(within(card() as HTMLElement).queryByRole('button', { name: 'Open' })).toBeNull();
+    And('the card does not say {string}', (_, text: string) => {
+      expect(within(card() as HTMLElement).queryByText(text, { exact: false })).toBeNull();
     });
   });
 
@@ -179,23 +206,6 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the card has an Open in Logos link to {string}', async (_, url: string) => {
       const link = await within(await screen.findByRole('dialog')).findByRole('link', { name: 'Open in Logos' });
       expect(link.getAttribute('href')).toBe(url);
-    });
-  });
-
-  Scenario('With no Bible app linked the card links to Settings', ({ Given, When, Then, And }) => {
-    Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
-    And('no Bible app is linked', () => setResourceOn('logos', false));
-    When('he taps the link {string}', async (_, name: string) => {
-      await user.click(screen.getByRole('link', { name }));
-    });
-    And('he taps {string} on the card', async (_, name: string) => {
-      await user.click(await within(await screen.findByRole('dialog')).findByRole('link', { name }));
-    });
-    Then('the address is the Settings study resources', () => {
-      expect(window.location.hash).toBe('#/settings?section=resources');
-    });
-    And('no card is showing', async () => {
-      await waitFor(() => expect(card()).toBeNull());
     });
   });
 

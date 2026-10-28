@@ -3,6 +3,7 @@
 // counts are here; the picker's grid reads the counts of the New Testament from index.json through loadIndex (src/data/chapter.ts).
 // tests/unit/books.test.ts holds this list equal to the index.
 import { CANON, type CanonBook } from './canon';
+import { CANON_INDEX } from './bookIndex';
 
 export type Book = CanonBook;
 
@@ -29,3 +30,6 @@ export const isHebrewBook = (code: string): boolean => otBookOf(code) !== undefi
 
 /** 'Romans 8', '1 John 1'. */
 export const titleOf = (code: string, chapter: number): string => `${bookOf(code)?.name ?? code} ${chapter}`;
+
+/** Whether Lampas holds the book's text: its chapters are in the data index (public/data/index.json), whatever the testament. The one check behind a reference that opens in the Reader. */
+export const isHeld = (code: string): boolean => CANON_INDEX.books.some((b) => b.code === code);
