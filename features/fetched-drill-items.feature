@@ -67,3 +67,11 @@ Feature: More drill items from the mill, in the background
     And he answers every question of Prove it right
     Then Drill it says it is proved
     And Prove it asked no question he had been asked before
+
+  Scenario: Misses on the Hebrew article ask the mill for Hebrew items from Hebrew verses
+    Given the Hebrew article is due in Review and the mill will answer a drill-items grist
+    When he misses the Hebrew article in a Review round
+    Then the mill is sent one drill-items grist naming "he-article" in Hebrew, with Hebrew verses and words and no Greek
+    When the mill answers it with Hebrew items made from the verses it was sent
+    Then the items are kept for "he-article"
+    And the item kept for "he-article" is a Hebrew question
