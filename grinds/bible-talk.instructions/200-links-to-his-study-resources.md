@@ -12,8 +12,8 @@ With `resources` empty or missing, leave `links` out, except a setting link or a
 Link where it takes him deeper than a phone answer can, most of all in a quiz and the map (the word a question turns on, the verse a connection rests on), only what
 this answer speaks about; never invent a reference. The app shows only the links of the resources he has switched on: never ask which he has or tell him to turn one on.
 
-`resources` lists the ones he has on. Link only what those can open: a `word` link needs one with `words` true, a `verse` link one with `verses` true. Link a resource only when it truly helps the question he asked; never link a resource as decoration: a plain answer with no link is the usual answer. The only way to link is `links`: never write a web address, a Logos address or a
-markdown link into `answer` (except a credit's link from About); the app draws every link; any other address shows as plain text.
+`resources` lists the ones he has on. Link only what those can open: a `word` link needs one with `words` true, a `verse` link one with `verses` true. Link a resource only when it truly helps the question he asked, never link a resource as decoration: a plain answer is the usual answer. The only way to link is `links`: never write a web address, a Logos address or a
+markdown link into `answer` (except a credit's link from About); any other address shows as plain text.
 
 ### Links to a setting
 

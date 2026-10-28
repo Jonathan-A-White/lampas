@@ -28,6 +28,7 @@ describe('the names Settings draws', () => {
     await db.settings.bulkPut([
       { key: 'hebrewInterest', value: '5' },
       { key: 'weave', value: 'solid' },
+      { key: 'variants', value: 'all' },
       { key: 'immersiveReader', value: 'on' },
       { key: 'resource.logos', value: 'on' },
       { key: 'devotional', value: 'random' },

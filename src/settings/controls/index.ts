@@ -18,6 +18,7 @@ import { AudioBibleControl, LibraryControl, LogosBibleControl, ReadingPlanContro
 import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
 import type { Control } from './types';
 import { EnglishAccentControl, FamilyControl, IpaLessonControl, PronunciationControl, PronunciationSeparateControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
+import { VariantsControl, VariantWitnessesControl } from './variants';
 import { WeaveControl } from './weave';
 
 /** The control of each row, by the row's key (src/settings/rows.ts): a row with no control here is a test failure. */
@@ -41,6 +42,8 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   weave: WeaveControl,
   weaveGrammar: WeaveControl,
   weaveOrder: WeaveControl,
+  variants: VariantsControl,
+  variantWitnesses: VariantWitnessesControl,
   newWordsADay: NewWordsControl,
   pickerGrammar: NewWordsControl,
   grammarMove: NewWordsControl,
