@@ -37,7 +37,7 @@ import { takeByHand } from './copy/useCopyHold';
 import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './useAsks';
-import { actionsFor, type VerseAction } from './verse/action';
+import { actionsFor, useHebrewOn, type VerseAction } from './verse/action';
 import { useAiAllowed } from './gate/licenceContext';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from './resources/audioBible';
 import { SendOff } from './plan/SendOff';
@@ -117,6 +117,7 @@ export function VerseView(props: VerseViewProps) {
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
+  const hebrewOn = useHebrewOn();
   const reference = unitReference(title, verse);
   const audioBible = audioBibleOf(useSetting(audioBibleSetting) ?? 'off');
   // The Audible Bible is in English: in Greek view no English audio is offered (mw-5r3p30.653); English and the Weave keep it.
@@ -191,7 +192,7 @@ export function VerseView(props: VerseViewProps) {
             aria-label="Actions"
             className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 @max-[15rem]:grid-cols-2 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
           >
-            {actionsFor(ai, source).map((a) => (
+            {actionsFor(ai, source, hebrewOn).map((a) => (
               <button
                 key={a.id}
                 type="button"
