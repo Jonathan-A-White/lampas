@@ -68,7 +68,7 @@ test('a reference in the tutor\'s answer opens a card that fits a 360 px phone, 
 
   // An Old Testament reference Lampas holds is a card like the New Testament's: the text, Open, and nothing that says it is missing (mw-5r3p30.840).
   await sheet.getByRole('link', { name: 'Ps. 110', exact: true }).click();
-  const psalm = page.getByRole('dialog', { name: 'Psalm 110' });
+  const psalm = page.getByRole('dialog', { name: 'Psalm 110:1', exact: true });
   await expect(psalm.getByRole('button', { name: 'Open', exact: true })).toBeVisible();
   await expect(psalm.locator('[data-reference-text]')).not.toBeEmpty();
   await expect(psalm.getByText('Not in Lampas yet')).toHaveCount(0);
