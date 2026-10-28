@@ -581,6 +581,17 @@ export interface DiagramRow {
   at: number;
 }
 
+/** A reading set he keeps (src/data/repositories/readingSets.ts, the ONLY file that reads or writes the table; src/reader/readingSets.ts, mw-9ji6ek0.23): the reading he chose in each variant unit.
+ *  The built-in sets (Byzantine, NA, ECM) are rules and have no row; Mine (id 'mine') and the sets he names do. */
+export interface ReadingSetRow {
+  id: string;
+  name: string;
+  /** a unit's key (`rev 3:2 ἔμελλες ἀποβάλλειν`, src/reader/readingSets.ts unitKey) -> the index of the reading in the unit's `alts`, -1 for the text's own */
+  choices: Record<string, number>;
+  /** a set started under NA or ECM reads that set's reading in a unit it has no choice for; absent: the text's own */
+  from?: 'na' | 'ecm';
+}
+
 // Never edit an old version(): repeat the whole stores map on each bump with a '// vN:' comment
 // (docs/pwa-best-practices.md section 15).
 class LampasDB extends Dexie {
@@ -612,6 +623,7 @@ class LampasDB extends Dexie {
   verseLists!: EntityTable<VerseListRow, 'id'>;
   recalls!: EntityTable<RecallRow, 'id'>;
   diagrams!: EntityTable<DiagramRow, 'ref' | 'lang' | 'version'>;
+  readingSets!: EntityTable<ReadingSetRow, 'id'>;
 
   constructor() {
     super('lampas');
@@ -1273,6 +1285,39 @@ class LampasDB extends Dexie {
             word.lang = 'grc';
           });
       });
+
+    // v33: readingSets `id`, the reading sets he keeps {id, name, choices: unit key -> reading index, from?}, repositories/readingSets.ts, mw-9ji6ek0.23; the set in force is db.settings 'readingSet' (default 'byzantine'). The other tables are as v32.
+    this.version(33).stores({
+      words: 'lemma, lesson, state, *lemmas',
+      meta: 'key',
+      settings: 'key',
+      results: '++id, [lemma+when]',
+      answers: '++id, [ref+when]',
+      talks: '++id, [ref+when]',
+      drills: '++id, lemma, [lemma+step]',
+      readings: 'ref',
+      grammarKnown: 'term',
+      reviews: '[kind+id], due, kind',
+      grammarLevels: 'id, level',
+      usage: 'key, day, name',
+      tips: 'id, status',
+      talkPictures: '++id, turnId',
+      shares: 'id, createdAt',
+      requests: 'txid, sentAt, status',
+      readingHistory: '++id, ref, [lang+at]',
+      missTally: '[lang+unit], lang',
+      ladder: 'lang',
+      drillRuns: '++id, ideaId, at',
+      passageLessons: 'key, state',
+      pictureRefs: 'hash, at',
+      talkSummaries: 'ref',
+      library: 'id, kind',
+      exportRows: 'resource',
+      verseLists: '++id, created',
+      recalls: '++id, [ref+lang], when',
+      diagrams: '[ref+lang+version]',
+      readingSets: 'id',
+    });
   }
 }
 

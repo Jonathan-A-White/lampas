@@ -59,7 +59,7 @@ describe('the v32 upgrade', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(32);
+    expect(db.verno).toBe(33);
     expect((await listWords()).map((w) => [w.lemma, w.lang, w.gloss, w.state, w.source])).toEqual([
       ['λόγος', 'grc', 'word', 'solid', undefined],
       ['ἀγάπη', 'grc', 'love', 'learning', 'frontier'],
