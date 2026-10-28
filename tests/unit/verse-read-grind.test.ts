@@ -281,6 +281,21 @@ describe('a partial reading (mw-neuq78.7)', () => {
     expect(text()).toMatch(/misread[^.]*only within the part he read/i);
     expect(text()).toMatch(/Never call a partial reading `well-read`/);
   });
+
+  // mw-5r3p30.828: the rule alone let one run in three of read-start-only give next_word and drop reached; the schema cannot
+  // require reached (it is optional for the other verdicts), so the partial bullet shows both fields in one worked answer
+  it('shows, in the partial bullet, a worked answer that carries reached and next_word together', () => {
+    const bullet = text().match(/`verdict` is `partial` when(.*?) - `verdict` is `incomplete`/)?.[1] ?? '';
+    const worked = [...bullet.matchAll(/`(\{ ?"verdict".*?\})`/g)].map((m) => JSON.parse(m[1]) as Record<string, unknown>);
+    expect(worked.length).toBeGreaterThan(0);
+    for (const answer of worked) {
+      expect(answer).toMatchObject({ verdict: 'partial' });
+      expect(typeof answer.reached).toBe('number');
+      expect((answer.next_word as { index: number }).index).toBe((answer.reached as number) + 1);
+      expect(validate(answer, schema as Schema)).toEqual([]);
+      expect(isVerseReadAnswer(answer)).toBe(true);
+    }
+  });
 });
 
 describe('a recording that carries a misread (mw-neuq78.10)', () => {
