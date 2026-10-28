@@ -23,6 +23,8 @@ const refOf = (written: string): PassageRef => {
   if (!card) throw new Error(`not a reference: ${written}`);
   return card;
 };
+/** A reference to a book Lampas holds no data for: every book is held today (books.ts isHeld), so the card is made by hand, as cardOf makes it for a book without data. */
+const unheldOf = (heading: string): PassageRef => ({ heading, held: null });
 const chapterOf = (book: string, n: number) => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
 const englishOf = (book: string, n: number, verse: number): string =>
   chapterOf(book, n)
@@ -99,8 +101,8 @@ describe('the passage player reads references in order', () => {
 const flat = (text: string) => text.replace(/\s+/g, ' ').trim();
 
 describe('a New Testament reference is announced by its heading first (mw-9q8wp1.9)', () => {
-  it('says the heading in English, then the verses, and the Old Testament one only its skip line', async () => {
-    playPassages([refOf('John 10:27'), refOf('Ps 62:1-2'), refOf('Heb 7:24-25')]);
+  it('says the heading in English, then the verses, and a book with no data only its skip line', async () => {
+    playPassages([refOf('John 10:27'), unheldOf('Psalm 62:1-2'), refOf('Heb 7:24-25')]);
     await listenToTheEnd();
     const said = synth.spoken.map((s) => flat(s.text));
     const john = said.indexOf('John 10:27');
@@ -172,9 +174,9 @@ describe('a New Testament reference is announced by its heading first (mw-9q8wp1
   });
 });
 
-describe('an Old Testament reference', () => {
-  it('is announced as skipped, and the player goes on to the New Testament one', async () => {
-    playPassages([refOf('Isa 30:21'), refOf('Rom 8:1')]);
+describe('a reference to a book Lampas holds no data for', () => {
+  it('is announced as skipped, and the player goes on to the next one', async () => {
+    playPassages([unheldOf('Isaiah 30:21'), refOf('Rom 8:1')]);
     await listenToTheEnd();
     expect(synth.spoken[0].text).toBe('Isaiah 30:21: skipping, no Old Testament present');
     expect(synth.spoken[0].lang).toBe('en-US');
@@ -182,9 +184,16 @@ describe('an Old Testament reference', () => {
   });
 
   it('speaks only the announcement when it is the whole list', async () => {
-    playPassages([refOf('Ps 62:1-2')]);
+    playPassages([unheldOf('Psalm 62:1-2')]);
     await listenToTheEnd();
     expect(synth.spoken.map((s) => s.text)).toEqual(['Psalm 62:1-2: skipping, no Old Testament present']);
+  });
+
+  it('is read like any other when Lampas holds the book (mw-5r3p30.840)', async () => {
+    playPassages([refOf('Isa 30:21')]);
+    await listenToTheEnd();
+    expect(synth.spoken[0]).toMatchObject({ text: 'Isaiah 30:21', lang: 'en-US' });
+    expect(synth.spoken.slice(1).map((s) => s.text).join(' ')).toContain(englishOf('isa', 30, 21).slice(0, 30));
   });
 });
 
@@ -280,7 +289,7 @@ describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)',
   });
 
   it('the Old Testament announcement: Pause holds the voice, Resume goes on, and Stop ends the list', async () => {
-    playPassages([refOf('Isa 30:21'), refOf('Rom 8:1')]);
+    playPassages([unheldOf('Isaiah 30:21'), refOf('Rom 8:1')]);
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     pausePassage();
     await vi.waitFor(() => expect(getPassagePlayer().state).toBe('paused'), { timeout });
@@ -295,7 +304,7 @@ describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)',
   });
 
   it('the hand-off to an Old Testament reference: Pause just as one ends holds its announcement until Resume', async () => {
-    playPassages([refOf('Isa 30:21'), refOf('Ps 62:1')]);
+    playPassages([unheldOf('Isaiah 30:21'), unheldOf('Psalm 62:1')]);
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     synth.finishAll();
     pausePassage();
@@ -309,7 +318,7 @@ describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)',
   });
 
   it('the hand-off to an Old Testament reference: Stop just as one ends means the next is never spoken', async () => {
-    playPassages([refOf('Isa 30:21'), refOf('Ps 62:1')]);
+    playPassages([unheldOf('Isaiah 30:21'), unheldOf('Psalm 62:1')]);
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     synth.finishAll();
     stopPassage();
@@ -348,7 +357,7 @@ describe('Pause, Resume and Stop', () => {
   });
 
   it('stops while the next reference is still being fetched', async () => {
-    playPassages([refOf('Isa 30:21'), refOf('Rom 8:1')]);
+    playPassages([unheldOf('Isaiah 30:21'), refOf('Rom 8:1')]);
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     synth.finishAll();
     stopPassage();

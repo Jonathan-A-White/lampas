@@ -1,5 +1,5 @@
 // tests/unit/reference-card-play.test.tsx — the pop-up a Bible reference opens has Play (mw-9q8wp1.4): it reads the passage aloud through the passage player,
-// turns into Pause and Stop, and an Old Testament card says 'no Old Testament present'; closing the card stops the reading.
+// turns into Pause and Stop, on an Old Testament card as on a New Testament one (a book with no data says 'no Old Testament present', tests/unit/passage-player.test.ts); closing the card stops the reading.
 import 'fake-indexeddb/auto';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -86,13 +86,16 @@ describe('Play on a New Testament card', () => {
   });
 });
 
-describe('Play on an Old Testament card', () => {
-  it('says there is no Old Testament present', async () => {
+describe('Play on an Old Testament card Lampas holds (mw-5r3p30.840)', () => {
+  it('reads the reference, then the verse, and the card has Open', async () => {
     const card = await openCard('Isa 30:21', 'Isa 30:21', 'Isaiah 30:21');
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
     await vi.waitFor(() => expect(synth.spoken.length).toBe(1), { timeout });
-    expect(synth.spoken[0].text).toBe('Isaiah 30:21: skipping, no Old Testament present');
-    expect(within(card).queryByRole('button', { name: 'Open' })).toBeNull();
+    expect(synth.spoken[0].text).toBe('Isaiah 30:21');
+    synth.finish();
+    await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(1), { timeout });
+    expect(synth.spoken[1].text).not.toContain('skipping');
+    expect(within(card).getByRole('button', { name: 'Open' })).toBeInTheDocument();
   });
 });
 
