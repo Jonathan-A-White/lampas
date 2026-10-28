@@ -20,6 +20,8 @@ export const STATUS_FILTER: Record<RequestStatus, Exclude<StatusFilter, 'all'>> 
   landed: 'adopted',
   'adopted-as-setting': 'adopted',
   declined: 'declined',
+  'built-differently': 'adopted', // answered, though not as asked
+  moved: 'waiting', // folded into another story, still to be built (PROVISIONAL, mw-5r3p30.798)
 };
 
 /** The chip a status sits under; none for a status nobody mapped (it shows under All only). */

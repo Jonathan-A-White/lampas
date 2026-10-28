@@ -27,7 +27,7 @@ export type RequestStatus = Exclude<KitStatus, 'sent'>;
 /** What a request-status record says (protocol section 19), already read: only fields the status carries. It is pwa-kit/requests' StatusUpdate. */
 export type StatusRecord = StatusUpdate;
 
-/** What a status record may carry besides its status. */
+/** What a status record may carry besides its status (the kit's moved() keeps only what each status carries: reason and bead for built-differently and moved too). */
 const STATUS_FIELDS = ['bead', 'version', 'commit', 'url', 'reason', 'setting'] as const;
 
 /** The kit's record of a row, for the kit to move on: Lampas keeps no talk or person on a row, so they are the app's one reader's. */

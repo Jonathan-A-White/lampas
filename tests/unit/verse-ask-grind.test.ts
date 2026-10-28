@@ -127,8 +127,9 @@ describe('his requests (mw-vy3ghg.6)', () => {
   it('tells the tutor to answer questions about his requests from `requests`, status by status', () => {
     expect(text).toContain('- `requests`:');
     expect(text).toContain('## His requests');
-    for (const status of ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting']) {
+    for (const status of ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting', 'built-differently', 'moved']) {
       expect(text, status).toContain(`- \`${status}\``);
+      if (status === 'moved') continue; // a moved request has no example: it reads as filed does
       const example = readJson(`grinds/examples/verse-ask/request-${status}.json`) as { request: { requests: { status: string }[] } };
       expect(example.request.requests[0].status).toBe(status);
     }

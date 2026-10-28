@@ -1,5 +1,5 @@
 // src/data/requestsForTutor.ts — what the tutor is told of the requests he sent to the factory (mw-vy3ghg.6, docs/ask-tutor.md 'Your requests'):
-// up to 10 lines, the newest first, each {summary, status, version?, setting?, reason?} with only the field its status carries. Both the
+// up to 10 lines, the newest first, each {summary, status, version?, setting?, reason?} with only the field its status carries (built-differently: its reason, moved: none). Both the
 // verse-ask and the bible-talk request carry them as `requests` (their input schemas), so the tutor can say what became of his idea and, for
 // one that became a setting, offer to switch it on. Names the tutor needs and nothing else: no txid, no bead, no link.
 import type { RequestRow } from './db';
@@ -15,7 +15,7 @@ export const REQUEST_SETTING_MAX = 80;
 export const REQUEST_REASON_MAX = 120;
 
 /** Where a request stands, as the tutor is told: the same words the mill's request-status records use, and 'sent' before any record came. */
-export const TUTOR_REQUEST_STATUSES = ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting'] as const;
+export const TUTOR_REQUEST_STATUSES = ['sent', 'filed', 'building', 'landed', 'declined', 'adopted-as-setting', 'built-differently', 'moved'] as const;
 export type TutorRequestStatus = (typeof TUTOR_REQUEST_STATUSES)[number];
 
 export interface TutorRequest {
@@ -25,7 +25,7 @@ export interface TutorRequest {
   version?: string;
   /** adopted-as-setting: the setting's name, where Settings has it */
   setting?: string;
-  /** declined: the reason, one plain sentence */
+  /** declined, built-differently: the reason, one plain sentence (a moved line carries none: 'now part of another story') */
   reason?: string;
 }
 
@@ -43,7 +43,7 @@ function lineOf(row: RequestRow): TutorRequest | undefined {
   const line: TutorRequest = { summary, status: row.status };
   if (row.status === 'landed' && row.version) line.version = clip(row.version, REQUEST_VERSION_MAX);
   if (row.status === 'adopted-as-setting' && row.setting) line.setting = clip(row.setting, REQUEST_SETTING_MAX);
-  if (row.status === 'declined' && row.reason) line.reason = clip(row.reason, REQUEST_REASON_MAX);
+  if ((row.status === 'declined' || row.status === 'built-differently') && row.reason) line.reason = clip(row.reason, REQUEST_REASON_MAX);
   return line;
 }
 

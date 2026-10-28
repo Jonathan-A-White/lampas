@@ -1,5 +1,5 @@
-// tests/e2e/your-requests.spec.ts — Your requests (mw-vy3ghg.5) at phone width, upright (390x844) and sideways (844x390): six requests, one in each
-// state (Sent, Filed, Being built, Adopted in a version with its link, Declined with the reason, Now a setting), the statuses the fake Postern's mill
+// tests/e2e/your-requests.spec.ts — Your requests (mw-vy3ghg.5) at phone width, upright (390x844) and sideways (844x390): eight requests, one in each
+// state (Sent, Filed, Being built, Adopted in a version with its link, Declined with the reason, Now a setting, Built another way, Now part of another story), the statuses the fake Postern's mill
 // sealed to the phone's key. Every line is readable inside the phone, the link is a thumb tall, nothing scrolls sideways; ends with a shot of each.
 // Settings > Your requests opens the screen. jsdom has no layout, so every size and place is proven here.
 import { expect, test, type Page } from '@playwright/test';
@@ -24,6 +24,8 @@ const REQUESTS = [
   { summary: 'Show the verse number big beside the verse', line: 'Adopted in 0.1.86 · <date>' },
   { summary: 'Add the Old Testament in Hebrew with a tutor', line: 'Declined · <date>: outside what this app is for' },
   { summary: 'Make the Greek text larger than Largest', line: 'Now a setting: Settings > Appearance > Text size · <date>' },
+  { summary: 'Let me read in a warm evening colour', line: 'Built another way · <date>: Theme now has a Sepia choice' },
+  { summary: 'Let me pick the voice speed with a slider', line: 'Now part of another story · <date>' },
 ];
 const lineMatching = (line: string): RegExp => new RegExp(`^${line.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('<date>', '.+?\\d{4}')}$`);
 
@@ -123,6 +125,8 @@ for (const { name, width, height } of VIEWPORTS) {
     fake.sendStatus(SEED_PUBLIC_KEY, status(3, { status: 'landed', version: '0.1.86', commit: '0123456789abcdef0123456789abcdef01234567', url: COMMIT_URL }));
     fake.sendStatus(SEED_PUBLIC_KEY, status(4, { status: 'declined', reason: 'outside what this app is for' }));
     fake.sendStatus(SEED_PUBLIC_KEY, status(5, { status: 'adopted-as-setting', setting: 'Settings > Appearance > Text size' }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(6, { status: 'built-differently', reason: 'Theme now has a Sepia choice', version: '0.5.9' }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(7, { status: 'moved', bead: 'mw-y.7', reason: 'Speed and pitch in one story' }));
     await page.reload();
 
     for (const { summary, line } of REQUESTS) {
@@ -133,11 +137,15 @@ for (const { name, width, height } of VIEWPORTS) {
       expect(box?.x ?? -1).toBeGreaterThanOrEqual(0);
       expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width);
     }
+    const movedRow = page.locator('[data-request]', { hasText: 'Let me pick the voice speed' });
+    await movedRow.locator('[data-request-toggle]').click();
+    await expect(movedRow.locator('[data-request-detail]')).toContainText('mw-y.7'); // the story it is part of now
+    await movedRow.locator('[data-request-toggle]').click();
     const link = page.getByRole('link', { name: lineMatching('Adopted in 0.1.86 · <date>') });
     await expect(link).toHaveAttribute('href', COMMIT_URL);
     await link.scrollIntoViewIfNeeded();
     expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
-    await expect(page.locator('[data-request]').first()).toContainText('Make the Greek text larger'); // the newest first
+    await expect(page.locator('[data-request]').first()).toContainText('Let me pick the voice speed'); // the newest first
     const { scrollWidth, clientWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
     await page.locator('.screen').first().evaluate((el) => (el.scrollTop = 0));
@@ -322,22 +330,24 @@ for (const { width, height } of VIEWPORTS) {
     await openUnlocked(page);
     await page.goto('/#/requests');
     await expect(page.getByRole('heading', { name: 'Your requests', level: 1 })).toBeVisible();
-    const rows = Array.from({ length: 8 }, (_, i) => ({ kind: 'tutor-ask', summary: `Idea number ${i + 1} for the Greek` }));
+    const rows = Array.from({ length: 10 }, (_, i) => ({ kind: 'tutor-ask', summary: `Idea number ${i + 1} for the Greek` }));
     await seedRows(page, rows);
-    // 0 sent, 1 filed, 2 building, 3 landed, 4 declined, 5 adopted as a setting, 6 and 7 sent
+    // 0 sent, 1 filed, 2 building, 3 landed, 4 declined, 5 adopted as a setting, 6 built another way, 7 moved, 8 and 9 sent
     fake.sendStatus(SEED_PUBLIC_KEY, status(1, { status: 'filed' }));
     fake.sendStatus(SEED_PUBLIC_KEY, status(2, { status: 'building' }));
     fake.sendStatus(SEED_PUBLIC_KEY, status(3, { status: 'landed', version: '0.1.86', commit: '0123456789abcdef0123456789abcdef01234567', url: COMMIT_URL }));
     fake.sendStatus(SEED_PUBLIC_KEY, status(4, { status: 'declined', reason: 'outside what this app is for' }));
     fake.sendStatus(SEED_PUBLIC_KEY, status(5, { status: 'adopted-as-setting', setting: 'Settings > Appearance > Text size' }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(6, { status: 'built-differently', reason: 'Theme now has a Sepia choice' }));
+    fake.sendStatus(SEED_PUBLIC_KEY, status(7, { status: 'moved', bead: 'mw-y.7' }));
     await page.reload();
 
     const chips = page.getByRole('group', { name: 'Status' });
     await expect(chips).toBeVisible();
     const chip = (label: string) => chips.getByRole('button', { name: label });
-    await expect(chips.getByRole('button')).toHaveText(['All (8)', 'Waiting (5)', 'Adopted (2)', 'Declined (1)']);
-    await expect(chip('All (8)')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('[data-request]')).toHaveCount(8);
+    await expect(chips.getByRole('button')).toHaveText(['All (10)', 'Waiting (6)', 'Adopted (3)', 'Declined (1)']);
+    await expect(chip('All (10)')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-request]')).toHaveCount(10);
     const sideways = (): Promise<boolean> => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     expect(await sideways()).toBe(false);
     const box = await chips.boundingBox();
@@ -351,17 +361,17 @@ for (const { width, height } of VIEWPORTS) {
     await expect(page.locator('[data-request-group] > h2')).toHaveText(['Asked the tutor (1)']);
     await shot(page, `your-requests-declined-${width}`);
 
-    await chip('Waiting (5)').click();
-    await expect(page.locator('[data-request]')).toHaveCount(5);
-    await expect(page.locator('[data-request-status]')).toHaveText(['Sent to the factory · <date>', 'Sent to the factory · <date>', 'Being built · since <date>', 'Filed as a story · <date>, waiting its turn', 'Sent to the factory · <date>'].map(lineMatching));
-    await expect(page.locator('[data-request-group] > h2')).toHaveText(['Asked the tutor (5)']);
+    await chip('Waiting (6)').click();
+    await expect(page.locator('[data-request]')).toHaveCount(6);
+    await expect(page.locator('[data-request-status]')).toHaveText(['Sent to the factory · <date>', 'Sent to the factory · <date>', 'Now part of another story · <date>', 'Being built · since <date>', 'Filed as a story · <date>, waiting its turn', 'Sent to the factory · <date>'].map(lineMatching));
+    await expect(page.locator('[data-request-group] > h2')).toHaveText(['Asked the tutor (6)']);
 
-    await chip('Adopted (2)').click();
-    await expect(page.locator('[data-request]')).toHaveCount(2);
-    await expect(page.locator('[data-request-status]')).toHaveText(['Now a setting: Settings > Appearance > Text size · <date>', 'Adopted in 0.1.86 · <date>'].map(lineMatching));
+    await chip('Adopted (3)').click();
+    await expect(page.locator('[data-request]')).toHaveCount(3);
+    await expect(page.locator('[data-request-status]')).toHaveText(['Built another way · <date>: Theme now has a Sepia choice', 'Now a setting: Settings > Appearance > Text size · <date>', 'Adopted in 0.1.86 · <date>'].map(lineMatching));
 
-    await chip('All (8)').click();
-    await expect(page.locator('[data-request]')).toHaveCount(8);
+    await chip('All (10)').click();
+    await expect(page.locator('[data-request]')).toHaveCount(10);
     expect(await sideways()).toBe(false);
   });
 }

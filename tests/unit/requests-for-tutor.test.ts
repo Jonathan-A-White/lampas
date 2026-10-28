@@ -26,6 +26,8 @@ describe('requestsOf', () => {
       row(4, { status: 'landed', version: '0.1.86', commit: 'abc', url: 'https://example.org/c' }),
       row(5, { status: 'declined', reason: 'outside what this app is for' }),
       row(6, { status: 'adopted-as-setting', setting: 'Settings > Appearance > Sepia' }),
+      row(7, { status: 'built-differently', reason: 'Theme has Sepia now', bead: 'mw-x.7', version: '0.5.9', commit: 'abc' }),
+      row(8, { status: 'moved', bead: 'mw-y.8', reason: 'Sepia and Night theme' }),
     ]);
     expect(lines).toEqual([
       { summary: 'Idea 1', status: 'sent' },
@@ -34,6 +36,8 @@ describe('requestsOf', () => {
       { summary: 'Idea 4', status: 'landed', version: '0.1.86' },
       { summary: 'Idea 5', status: 'declined', reason: 'outside what this app is for' },
       { summary: 'Idea 6', status: 'adopted-as-setting', setting: 'Settings > Appearance > Sepia' },
+      { summary: 'Idea 7', status: 'built-differently', reason: 'Theme has Sepia now' },
+      { summary: 'Idea 8', status: 'moved' },
     ]);
   });
 
@@ -53,6 +57,16 @@ describe('requestsOf', () => {
 
 describe('the requests in the two grinds\' requests', () => {
   const lines = requestsOf([row(2, { status: 'landed', version: '0.1.86' }), row(1, { status: 'adopted-as-setting', setting: 'Sepia theme' })]);
+
+  it('both input schemas take a built-differently line with its reason and a moved line, and refuse a reason on a landed one', () => {
+    const more = requestsOf([row(2, { status: 'moved', bead: 'mw-y.8' }), row(1, { status: 'built-differently', reason: 'Theme has Sepia now' })]);
+    expect(more).toEqual([{ summary: 'Idea 2', status: 'moved' }, { summary: 'Idea 1', status: 'built-differently', reason: 'Theme has Sepia now' }]);
+    for (const schema of [talkSchema, askSchema]) {
+      const base = schema === talkSchema ? { reference: 'Goal', question: 'Q', history: [], solid_words: [], settings: {} } : { reference: 'Romans 8:28', greek: 'g', english: 'e', question: 'Q', solid_words: [] };
+      expect(validate({ ...base, requests: more }, schema)).toEqual([]);
+      expect(validate({ ...base, requests: [{ summary: 'x', status: 'moved', reason: 'r'.repeat(121) }] }, schema)).not.toEqual([]);
+    }
+  });
 
   it('bible-talk: buildTalkRequest carries them, and the input schema takes them', () => {
     const scope = { title: 'Romans 8', chapter, verse: null };

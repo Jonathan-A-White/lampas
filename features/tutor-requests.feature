@@ -1,7 +1,7 @@
 Feature: The tutor knows his requests
   The requests he sent to the factory (Your requests, #/requests) ride with every verse-ask and bible-talk request as `requests`: at most the
-  10 newest, each with its summary, where it stands (sent, filed, building, landed, declined, adopted-as-setting) and what that status
-  carries (the version it landed in, the reason it was declined, the setting it became). The tutor answers 'what happened to my idea' from
+  10 newest, each with its summary, where it stands (sent, filed, building, landed, declined, adopted-as-setting, built-differently, moved) and what that
+  status carries (the version it landed in, the reason it was declined or built another way, the setting it became). The tutor answers 'what happened to my idea' from
   them and, for an idea that became a setting, offers to switch it on. The grinds are read by the mill, so these scenarios prove what the
   phone sends and what it does with a fake tutor's answer; grinds/examples/ hold the live scenarios.
 
@@ -19,6 +19,8 @@ Feature: The tutor knows his requests
       | landed             | version 0.1.86                    | Your idea Add a sepia theme landed in version 0.1.86.              |
       | declined           | reason outside what this app is for | Your idea Add a sepia theme was declined: it is outside what this app is for. |
       | adopted-as-setting | setting Settings > Appearance > Theme | Your idea became the setting Theme. Shall I switch it on?     |
+      | built-differently  | reason Theme now has a Sepia choice | Your idea Add a sepia theme was built another way: Theme now has a Sepia choice. |
+      | moved              | -                                 | Your idea Add a sepia theme is now part of another story.          |
 
   Scenario: The tutor offers to switch on an adopted setting and a tap does it
     Given Lampas is opened on #/goal behind a fake Postern with the request "Make it dark" adopted-as-setting setting Settings > Appearance > Theme

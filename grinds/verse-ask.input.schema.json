@@ -185,7 +185,7 @@
       }
     },
     "requests": {
-      "description": "Optional. The requests he has sent to the factory (an ask the tutor offered to pass on, an approach he asked for), at most the 10 newest, newest first, each with where it stands. Missing when he has sent none. status: sent (the factory has it, nothing more yet), filed (the makers have it on their list), building (being built now), landed (built and shipped; `version` is the app version it is in), declined (the makers decided not to; `reason` is why) or adopted-as-setting (it became a setting; `setting` is where Settings has it). Answer 'what happened to my idea' from this, never from a guess.",
+      "description": "Optional. The requests he has sent to the factory (an ask the tutor offered to pass on, an approach he asked for), at most the 10 newest, newest first, each with where it stands. Missing when he has sent none. status: sent (the factory has it, nothing more yet), filed (the makers have it on their list), building (being built now), landed (built and shipped; `version` is the app version it is in), declined (the makers decided not to; `reason` is why) adopted-as-setting (it became a setting; `setting` is where Settings has it), built-differently (the makers answered it another way than asked; `reason` says how) or moved (it is now part of another story, still to be built; `reason` is not sent). Answer 'what happened to my idea' from this, never from a guess.",
       "type": "array",
       "maxItems": 10,
       "items": {
@@ -194,10 +194,10 @@
         "required": ["summary", "status"],
         "properties": {
           "summary": { "description": "What he asked for, in one line.", "type": "string", "minLength": 1, "maxLength": 120 },
-          "status": { "type": "string", "enum": ["sent", "filed", "building", "landed", "declined", "adopted-as-setting"] },
+          "status": { "type": "string", "enum": ["sent", "filed", "building", "landed", "declined", "adopted-as-setting", "built-differently", "moved"] },
           "version": { "description": "Only with landed: the app version the idea shipped in.", "type": "string", "minLength": 1, "maxLength": 40 },
           "setting": { "description": "Only with adopted-as-setting: the setting's name, as the makers wrote it ('Settings > Appearance > Sepia').", "type": "string", "minLength": 1, "maxLength": 80 },
-          "reason": { "description": "Only with declined: why, in one plain sentence.", "type": "string", "minLength": 1, "maxLength": 120 }
+          "reason": { "description": "Only with declined or built-differently: why, or how it was done instead, in one plain sentence.", "type": "string", "minLength": 1, "maxLength": 120 }
         }
       }
     },

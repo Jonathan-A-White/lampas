@@ -1,13 +1,13 @@
 // src/RequestsScreen.tsx — Your requests (mw-vy3ghg.5, #/requests, reached from Settings > More and from About): every request he sent to the
 // factory, the newest first, each with where it stands: Sent, Filed, Being built, Adopted in <version> (a link to the commit), Declined: <reason>
-// or Now a setting: <name>, each worded with the date it was set (src/data/requestWording.ts; a filed one older than 7 days adds 'Still in the queue'). The backend pushes nothing for a grist, so while the screen is up it pulls the mill's request-status records
+// Now a setting: <name>, Built another way: <reason> or Now part of another story, each worded with the date it was set (src/data/requestWording.ts; a filed one older than 7 days adds 'Still in the queue'). The backend pushes nothing for a grist, so while the screen is up it pulls the mill's request-status records
 // (src/services/requestStatus.ts) when it opens, every requestTimings.pollMs and at once when the phone shows the app again (never while it is
 // hidden: pwa-kit/requests' watchStatuses, whose statusLine words the search's view of a status, as the tutor's lines, and webLink links a landed row); the list is a live query, so a record shows as it is applied.
 // The list is drawn here, not by the kit's RequestsList: every request is a button that opens it in full and folds it again (mw-5r3p30.794).
 // At scale (mw-rfjjzd.15): the rows are grouped by kind, each group headed by its plural name and its count ('Books (14)', the header WordsScreen's lesson groups
 // use), the newest first within a group and the group holding the newest request first; a library request is one row (its text counts the books); over 20 rows a
 // search field filters them by the words he types (listFilter's matching, one word at a time, all of them needed), and the headers count what is shown.
-// A status filter (mw-5r3p30.795), chips above the groups whenever there is a row: All, Waiting (sent, filed, building), Adopted (landed, adopted as a setting)
+// A status filter (mw-5r3p30.795), chips above the groups whenever there is a row: All, Waiting (sent, filed, building, moved), Adopted (landed, adopted as a setting, built another way)
 // and Declined, each with its count; the chip is kept while the screen is open, the search works within it, and a chip with no rows says so.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
