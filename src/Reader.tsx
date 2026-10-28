@@ -53,6 +53,10 @@ import { readingModeSetting } from './settings/definitions';
 import { useSheetOpen } from './ui/sheetBack';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
+import { ChapterStill } from './reader/ChapterStill';
+import { useStillLoading } from './reader/useStillLoading';
+import { useDbBlocked } from './data/dbBlocked';
+import { db } from './data/db';
 import { useChapter } from './reader/useChapter';
 import { useReadFrom } from './reader/useReadFrom';
 import { useWoven } from './reader/useWoven';
@@ -138,7 +142,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const settings = useReaderSettings(hbo ? 'hbo' : 'grc') ?? NO_SETTINGS;
   const { level, view, weave, weaveShown, weaveOrder, solid, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
-  const { chapter, failed, retry } = useChapter(BOOK, CHAPTER);
+  const { chapter, failed, retry: retryChapter } = useChapter(BOOK, CHAPTER);
+  // 'Loading …' that goes on 8 s (the chapter's fetch hangs, or the settings wait on a database an older tab blocks) offers Try again instead of a black screen (mw-5r3p30.846).
+  const dbBlocked = useDbBlocked();
+  const stillLoading = useStillLoading(!failed && !(chapter && view && layout && headings));
+  const retry = useCallback(() => {
+    retryChapter();
+    if (!db.isOpen()) db.open().catch(() => undefined);
+  }, [retryChapter]);
   // the language of the chapter's own words (the switch's last choice, the Hebrew or the Greek view); the book says it before the chapter has loaded
   const source: SourceLanguage = chapter ? sourceLanguage(chapter) : hbo ? 'hbo' : 'grc';
   // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse (the view and weave it names are
@@ -549,9 +560,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
             <ChapterNav book={BOOK} chapter={CHAPTER} />
           </>
         ) : (
-          <p role="status" className="px-4 pt-6 text-center text-muted">
-            Loading {TITLE}…
-          </p>
+          stillLoading ? (
+            <ChapterStill title={TITLE} blocked={dbBlocked} onRetry={retry} onPick={() => setPicking(true)} />
+          ) : (
+            <p role="status" className="px-4 pt-6 text-center text-muted">
+              Loading {TITLE}…
+            </p>
+          )
         )}
         </div>
       </main>

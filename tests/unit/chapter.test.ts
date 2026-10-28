@@ -33,13 +33,13 @@ describe('loadChapter', () => {
   it('asks the plain address for a chapter the index does not know', async () => {
     const fetchMock = stubFetch();
     await loadChapter('zzz', 1).catch(() => undefined);
-    expect(fetchMock).toHaveBeenCalledWith('/data/zzz/1.json');
+    expect(fetchMock).toHaveBeenCalledWith('/data/zzz/1.json', expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 
   it('fetches /data/<book>/<chapter>.json and returns the chapter', async () => {
     const fetchMock = stubFetch();
     const chapter = await loadChapter('rom', 8);
-    expect(fetchMock).toHaveBeenCalledWith(`/data/rom/8.json?v=${fingerprintOf('rom', 8)}`);
+    expect(fetchMock).toHaveBeenCalledWith(`/data/rom/8.json?v=${fingerprintOf('rom', 8)}`, expect.anything());
     expect(chapter.book).toBe('Romans');
     expect(chapter.chapter).toBe(8);
     expect(chapter.verses).toHaveLength(39);

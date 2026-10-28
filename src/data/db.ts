@@ -4,6 +4,7 @@ import type { Diagram } from '../diagram/types';
 import { cleanGloss } from './gloss';
 import { withAoristNote } from './irregular-aorists';
 import { isItemId, legacyStoredId, plainIdOf } from './grammar/soundScope';
+import { setDbBlocked } from './dbBlocked';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
 
@@ -1322,3 +1323,6 @@ class LampasDB extends Dexie {
 }
 
 export const db = new LampasDB();
+// An upgrade waits on an older tab that still holds the database: the screens say so (src/data/dbBlocked.ts) instead of waiting in silence; it ends when that tab lets go.
+db.on('blocked', () => setDbBlocked(true));
+db.on('ready', () => setDbBlocked(false));

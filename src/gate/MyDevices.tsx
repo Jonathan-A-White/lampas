@@ -3,6 +3,7 @@
 // device loses its licence'), has the backend revoke that key's licence and free its slot, and removing THIS phone hands back to the page, which is then Not licensed.
 // A refusal is the backend's own words in a role=alert. A licence from the Governor's own issuer has no person behind it, so the page does not draw this at all.
 import { useCallback, useEffect, useState } from 'react';
+import { useStillLoading } from '../reader/useStillLoading';
 import { listDevices, removeDevice, renameDevice, type RegisterDevice } from '../services/register';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
@@ -89,6 +90,9 @@ export function MyDevices({ deviceKey, onRemovedThisPhone }: Props) {
     };
   }, [deviceKey, attempt]);
 
+  // the list is asked of Postern; a call that never answers offers Try again after 8 s (mw-5r3p30.846)
+  const stillLoading = useStillLoading(devices === null && !problem, attempt);
+
   const keep = useCallback(() => setConfirming(null), []);
 
   async function save(event: React.FormEvent): Promise<void> {
@@ -131,7 +135,18 @@ export function MyDevices({ deviceKey, onRemovedThisPhone }: Props) {
       <h2 id="my-devices-title" className="text-lg font-semibold">
         My devices
       </h2>
-      {devices === null && !problem ? <p className="text-base text-muted">Loading…</p> : null}
+      {devices === null && !problem ? (
+        stillLoading ? (
+          <div role="status" className="flex flex-col gap-2">
+            <p className="text-base text-muted">Still loading your devices</p>
+            <button type="button" onClick={() => setAttempt((n) => n + 1)} className="min-h-12 rounded-xl border border-line px-4 text-base font-medium">
+              Try again
+            </button>
+          </div>
+        ) : (
+          <p className="text-base text-muted">Loading…</p>
+        )
+      ) : null}
       {devices ? (
         <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
           {devices.map((device) => {

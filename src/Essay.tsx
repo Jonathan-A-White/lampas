@@ -11,6 +11,7 @@ import { usePageActions } from './PageActions';
 import { ESSAY_CREDIT, ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, ESSAY_RELEASE, ESSAY_SOURCE, ESSAY_TITLE } from './preface';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
+import { orGiveUp } from './data/within';
 
 const NOTE_BUTTON =
   'relative px-1 align-super text-xs font-semibold text-accent underline after:absolute after:-inset-x-2 after:-inset-y-3 after:content-[""]';
@@ -98,7 +99,7 @@ export function Essay() {
   const [open, setOpen] = useState<ReadonlySet<number>>(new Set());
   useEffect(() => {
     let live = true;
-    import('./essay/robinson.json')
+    orGiveUp(import('./essay/robinson.json'))
       .then((m) => live && setEssay(m.default as EssayData))
       .catch(() => live && setFailed(true));
     return () => {

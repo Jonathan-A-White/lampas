@@ -12,12 +12,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import type { PlanChapter } from './data/plans';
-import { type BookIndex, loadIndex } from './data/chapter';
+import { type BookIndex, forgetCanonIndex, loadIndex } from './data/chapter';
 import type { OpenChapter } from './data/readerChapter';
 import { keyOf } from './data/repositories/readingPlan';
 import { bookPart, readPlace, type PlaceRead } from './nav/parseReference';
 import { bringVerse, openAtVerse } from './nav/readerRequest';
 import { navigate, openReader } from './nav/route';
+import { useStillLoading } from './reader/useStillLoading';
 import { usePlan, type PlanView } from './plan/usePlan';
 import { focusQuietly } from './ui/focus';
 import { matching, matchingInOrder } from './ui/listFilter';
@@ -69,11 +70,17 @@ function Chapters({ code, current, marks, onPick }: { code: string; current: Ope
   }, [attempt, code]);
   // the Old Testament's counts are in the bundle (src/data/books.ts); the New Testament's come from the index
   const count = isHebrewBook(code) ? bookOf(code)?.chapters : index?.books.find((b) => b.code === code)?.chapters;
-  if (failed && count === undefined) {
+  // 'Loading chapters…' that goes on 8 s says so and offers Try again; the fetch itself is given up on at 30 s (mw-5r3p30.846)
+  const still = useStillLoading(count === undefined && !failed);
+  const tryAgain = () => {
+    forgetCanonIndex();
+    setAttempt((n) => n + 1);
+  };
+  if ((failed || still) && count === undefined) {
     return (
-      <div role="alert" className="px-1 pt-2">
-        <p className="text-base">Could not load the list of chapters.</p>
-        <button type="button" onClick={() => setAttempt((n) => n + 1)} className="mt-3 min-h-12 rounded-xl bg-accent px-6 text-base font-medium text-accent-fg">
+      <div role={failed ? 'alert' : 'status'} className="px-1 pt-2">
+        <p className="text-base">{failed ? 'Could not load the list of chapters.' : 'Still loading the list of chapters.'}</p>
+        <button type="button" onClick={tryAgain} className="mt-3 min-h-12 rounded-xl bg-accent px-6 text-base font-medium text-accent-fg">
           Try again
         </button>
       </div>

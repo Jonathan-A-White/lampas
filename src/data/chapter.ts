@@ -3,6 +3,7 @@
 // are the same for every source language. Screens read a chapter through loadChapter and the word helpers below, never through the short keys.
 
 import { CANON_INDEX, greekBooks } from './bookIndex';
+import { within } from './within';
 
 /** The language a chapter's words are in: Koine Greek ('grc') or Biblical Hebrew ('hbo', whose Aramaic verses are words of the same chapter). */
 export type SourceLanguage = 'grc' | 'hbo';
@@ -239,7 +240,9 @@ export function loadChapter(book: string, n: number): Promise<Chapter> {
   const key = `${book}/${n}`;
   const known = chapters.get(key);
   if (known) return known;
-  const request = fetch(chapterUrl(book, n)).then(async (response) => {
+  // A fetch the worker never answers (a half-written cache entry) is given up on, so the Reader can say so rather than load for ever (mw-5r3p30.846).
+  const request = within(async (signal) => {
+    const response = await fetch(chapterUrl(book, n), { signal });
     if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
     return fillChapter((await response.json()) as Chapter);
   });
@@ -251,12 +254,18 @@ export function loadChapter(book: string, n: number): Promise<Chapter> {
   return request;
 }
 
+/** Forgets a chapter's request still in flight, so the next loadChapter asks afresh (the Reader's Try again). */
+export function forgetChapter(book: string, n: number): void {
+  chapters.delete(`${book}/${n}`);
+}
+
 let index: Promise<BookIndex> | null = null;
 
 /** Fetches /data/index.json (precached) once: the 66 books of the canon and how many chapters each has. A failure is not kept. */
 export function loadCanonIndex(): Promise<BookIndex> {
   if (index) return index;
-  const request = fetch('/data/index.json').then(async (response) => {
+  const request = within(async (signal) => {
+    const response = await fetch('/data/index.json', { signal });
     if (!response.ok) throw new Error(`Could not load the book index: ${response.status}`);
     return (await response.json()) as BookIndex;
   });
@@ -269,6 +278,11 @@ export function loadCanonIndex(): Promise<BookIndex> {
 
 /** The books of the New Testament and how many chapters each has, from the same file: what the pickers and goals read until the Old Testament opens (mw-uqlxea.2). */
 export const loadIndex = (): Promise<BookIndex> => loadCanonIndex().then(greekBooks);
+
+/** Forgets the index request still in flight, so the next loadCanonIndex asks afresh (a picker's Try again). */
+export function forgetCanonIndex(): void {
+  index = null;
+}
 
 /** Drops every chapter and the index held in memory (tests). */
 export function forgetChapters(): void {
