@@ -264,7 +264,7 @@
       "additionalProperties": false,
       "required": ["chapter_units", "units"],
       "properties": {
-        "chapter_units": { "description": "How many places the chapter has where the manuscripts differ, under his filters.", "type": "integer", "minimum": 1 },
+        "chapter_units": { "description": "How many places the chapter has where the manuscripts differ, under his filters.", "type": "number", "minimum": 1 },
         "units": {
           "type": "array",
           "items": {
@@ -272,7 +272,7 @@
             "additionalProperties": false,
             "required": ["verse", "text", "other_readings"],
             "properties": {
-              "verse": { "description": "The verse the unit is set in.", "type": "integer" },
+              "verse": { "description": "The verse the unit is set in.", "type": "number" },
               "asked": { "description": "True on the unit he asked about from its sheet.", "type": "boolean" },
               "text": {
                 "type": "object",
