@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.5.21",
+    "date": "2026-10-28",
+    "story": "mw-5r3p30.798",
+    "kind": "new",
+    "text": "Your requests now says when a request was built another way than you asked, or has become part of another story, instead of leaving it at Filed."
+  },
+  {
+    "version": "0.5.21",
+    "date": "2026-10-28",
+    "story": "mw-5r3p30.825",
+    "kind": "fixed",
+    "text": "the tutor's extra passages now reach its next answer, and a passage the app cannot read is said so under the reply."
+  },
+  {
     "version": "0.5.20",
     "date": "2026-10-28",
     "story": "mw-5r3p30.818",

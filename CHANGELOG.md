@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.21
+_2026-10-28_
+- New: Your requests now says when a request was built another way than you asked, or has become part of another story, instead of leaving it at Filed.
+- Fixed: the tutor's extra passages now reach its next answer, and a passage the app cannot read is said so under the reply.
+
 ## 0.5.20
 _2026-10-28_
 - New: Every grammar lesson now has an Ask the tutor button, and the tutor knows which lesson you are on and the step.
