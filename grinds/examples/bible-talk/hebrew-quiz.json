@@ -77,7 +77,8 @@
     },
     "reader_view": "hebrew",
     "mode": "quiz",
-    "quiz_goal": "learning Hebrew"
+    "quiz_goal": "learning Hebrew",
+    "quiz_goal_offer_closed": true
   },
   "expect": {
     "answer": {
