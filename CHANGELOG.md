@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.25
+_2026-10-28_
+- New: A Hebrew word's sheet now has Help with this word (Grammar, Syllables and sounds, Ask the tutor), grammar terms you can tap, and the tutor can add Hebrew words to your list.
+- Fixed: An old reading check of Philemon 1:1 or Revelation 13:14 no longer marks the wrong word or says it covered 38 words.
+
 ## 0.5.24
 _2026-10-28_
 - New: Settings has a Variants choice (and, under it, which witnesses count) that you can set now; the Reader does not show variants yet.

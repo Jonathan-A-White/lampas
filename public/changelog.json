@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.5.25",
+    "date": "2026-10-28",
+    "story": "mw-gdcyf98.20",
+    "kind": "new",
+    "text": "A Hebrew word's sheet now has Help with this word (Grammar, Syllables and sounds, Ask the tutor), grammar terms you can tap, and the tutor can add Hebrew words to your list."
+  },
+  {
+    "version": "0.5.25",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.11",
+    "kind": "fixed",
+    "text": "An old reading check of Philemon 1:1 or Revelation 13:14 no longer marks the wrong word or says it covered 38 words."
+  },
+  {
     "version": "0.5.24",
     "date": "2026-10-28",
     "story": "mw-9ji6ek0.4",
