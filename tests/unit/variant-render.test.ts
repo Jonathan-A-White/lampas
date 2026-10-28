@@ -195,18 +195,46 @@ describe('what the Reader shows of a chapter', () => {
   });
 });
 
+describe('the English filter compares the verse, not the unit’s own snippet (mw-9ji6ek0.14)', () => {
+  const rev3 = JSON.parse(readFileSync('public/data/rev/3.json', 'utf8')) as Chapter;
+  const at = (v: number, first: number) => rev3.variants!.find((u) => u.v === v && u.w[0] === first)!;
+  const english = (units: VariantUnit[]) => readerVariants({ variants: units, verses: rev3.verses }, { variants: 'english', witnesses: 'ecm' });
+  const all = (units: VariantUnit[]) => readerVariants({ variants: units, verses: rev3.verses }, { variants: 'all', witnesses: 'ecm' });
+
+  it("Revelation 3:9 'that' / 'that I' (the Byzantine ἐγώ) is hidden under 'Those that change the English' and shown under 'All'", () => {
+    const that = at(9, 30);
+    expect(that.english).toMatchObject({ base: 'that', alts: ['that I'] });
+    expect(english([that]).byVerse?.get(9)).toBeUndefined();
+    expect(english([that]).count).toBe(0);
+    expect(all([that]).byVerse?.get(9)).toHaveLength(1);
+  });
+
+  it("Revelation 3:12 'out of' / 'from' and 'My' / 'the' new name stay shown under both", () => {
+    const units = [at(12, 39), at(12, 49)];
+    expect(english(units).byVerse?.get(12)).toHaveLength(2);
+    expect(all(units).byVerse?.get(12)).toHaveLength(2);
+  });
+
+  it('a unit whose snippet differs but whose verse reads the same is sameEnglish; without the verse the snippets alone are compared', () => {
+    const that = at(9, 30);
+    expect(shownUnits([that], { english: 'all', witnesses: 'ecm' }, rev3.verses)[0].readings[0].sameEnglish).toBe(true);
+    expect(shownUnits([that], { english: 'english', witnesses: 'ecm' })).toHaveLength(1);
+  });
+});
+
 describe('the committed chapters', () => {
-  const units: VariantUnit[] = readdirSync('public/data', { withFileTypes: true })
+  const chapters: Chapter[] = readdirSync('public/data', { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .flatMap((d) =>
       readdirSync(`public/data/${d.name}`)
         .filter((f) => /^\d+\.json$/.test(f))
-        .flatMap((f) => (JSON.parse(readFileSync(`public/data/${d.name}/${f}`, 'utf8')) as Chapter).variants ?? []),
+        .map((f) => JSON.parse(readFileSync(`public/data/${d.name}/${f}`, 'utf8')) as Chapter),
     );
+  const units: VariantUnit[] = chapters.flatMap((c) => c.variants ?? []);
 
   it("the Reader's English filter agrees with the build's changesEnglish on every unit", () => {
     expect(units.length).toBeGreaterThan(5000);
-    const shown = new Set(shownUnits(units, { english: 'english', witnesses: 'ecm' }).map((s) => s.unit));
+    const shown = new Set(chapters.flatMap((c) => shownUnits(c.variants ?? [], { english: 'english', witnesses: 'ecm' }, c.verses)).map((s) => s.unit));
     expect(units.filter((u) => shown.has(u) !== u.changesEnglish)).toEqual([]);
   });
 

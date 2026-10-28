@@ -15,6 +15,7 @@ import {
   type LampasEnglishFile,
 } from '../../scripts/data/variantEnglish';
 import { COLUMNS } from '../../scripts/data/bereanTable';
+import { sameInVerse } from '../../src/data/variantVerse';
 import type { Chapter, VariantCode, VariantPlace, VariantUnit, Verse } from '../../src/data/chapter';
 
 describe('an MSB footnote', () => {
@@ -122,6 +123,25 @@ describe('the English of a unit changing', () => {
   });
 });
 
+describe('the English of a unit changing, in its verse (mw-9ji6ek0.14)', () => {
+  const rev3 = JSON.parse(readFileSync('public/data/rev/3.json', 'utf8')) as Chapter;
+  const unit = (v: number, first: number) => rev3.variants!.find((u) => u.v === v && u.w[0] === first)!;
+  const verse = (n: number) => rev3.verses.find((x) => x.n === n)!;
+
+  it('is false for Revelation 3:9 w30-30: "that" / "that I" before "I love you" reads the same verse', () => {
+    const u = unit(9, 30);
+    expect(changesEnglish(u.english)).toBe(true);
+    expect(changesEnglish(u.english, verse(9), u.w)).toBe(false);
+  });
+
+  it('stays true for Revelation 3:12 "out of" / "from" heaven and "My" / "the" new name', () => {
+    for (const first of [39, 49]) {
+      const u = unit(12, first);
+      expect(changesEnglish(u.english, verse(12), u.w)).toBe(true);
+    }
+  });
+});
+
 describe('the witness of a unit', () => {
   const alts = (...codes: VariantCode[]) => codes.map((code) => ({ code }));
 
@@ -190,10 +210,14 @@ describe('the build', () => {
 describe('the committed data', () => {
   const books = existsSync('public/data') ? readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && !['ladder'].includes(d.name)) : [];
   const all: Array<{ ref: string; unit: VariantUnit }> = [];
+  const verses = new Map<VariantUnit, Verse>();
   for (const dir of books) {
     for (const file of readdirSync(`public/data/${dir.name}`)) {
       const chapter = JSON.parse(readFileSync(`public/data/${dir.name}/${file}`, 'utf8')) as Chapter;
-      for (const unit of chapter.variants ?? []) all.push({ ref: `${chapter.book} ${chapter.chapter}:${unit.v}`, unit });
+      for (const unit of chapter.variants ?? []) {
+        all.push({ ref: `${chapter.book} ${chapter.chapter}:${unit.v}`, unit });
+        verses.set(unit, chapter.verses.find((v) => v.n === unit.v)!);
+      }
     }
   }
 
@@ -204,7 +228,7 @@ describe('the committed data', () => {
   });
 
   it('has changesEnglish on every unit and a witness byz, na or ecm that agrees with its codes', () => {
-    const bad = all.filter(({ unit }) => typeof unit.changesEnglish !== 'boolean' || unit.witness !== witnessOf(unit.alts) || unit.changesEnglish !== changesEnglish(unit.english));
+    const bad = all.filter(({ unit }) => typeof unit.changesEnglish !== 'boolean' || unit.witness !== witnessOf(unit.alts) || unit.changesEnglish !== changesEnglish(unit.english, verses.get(unit), unit.w));
     expect(bad.map((b) => b.ref)).toEqual([]);
   });
 
@@ -228,5 +252,27 @@ describe('alignChapter units', () => {
     const rp = parseVariantsCsv('chapter,verse,text\n3,3,"Μνημόνευε οὖν {Byz οὖν > γὰρ } πῶς"\n');
     const r = alignChapter('Revelation', 3, [{ n: 3, words: ['Μνημόνευε', 'οὖν', 'πῶς'] }], rp);
     expect(Object.keys(r.units[0]).sort()).toEqual(['alts', 'base', 'v', 'w']);
+  });
+});
+
+describe('a reading compared in its verse (src/data/variantVerse.ts, mw-9ji6ek0.14)', () => {
+  const verse = { e: [{ t: 'they will know', g: [0] }, { t: 'that', g: [1] }, { t: 'I love', g: [2] }, { t: 'you.', g: [3] }] };
+
+  it('reads the same when the extra word of the reading is already said next to it, either side', () => {
+    expect(sameInVerse(verse, [1], 'that', 'that I')).toBe(true);
+    expect(sameInVerse(verse, [2], 'I love', 'I love you')).toBe(true);
+  });
+
+  it('is a change when the verse differs, and falls back to the snippets without the verse or without a chunk for the words', () => {
+    expect(sameInVerse(verse, [1], 'that', 'because')).toBe(false);
+    expect(sameInVerse(verse, [3], 'you', '')).toBe(false);
+    expect(sameInVerse(undefined, [1], 'that', 'that I')).toBe(false);
+    expect(sameInVerse(verse, [9], 'that', 'that I')).toBe(false);
+    expect(sameInVerse(undefined, [1], 'That,', 'that')).toBe(true);
+  });
+
+  it('is a change when the snippet drops words of the chunk it stands for (the verse is not given back)', () => {
+    const chunky = { e: [{ t: 'whoever', g: [0] }, { t: 'loses his life', g: [1, 2] }, { t: 'will preserve', g: [3] }, { t: 'it.', g: [4] }] };
+    expect(sameInVerse(chunky, [1, 3], 'loses it', 'loses')).toBe(false);
   });
 });

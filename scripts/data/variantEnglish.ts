@@ -5,7 +5,10 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import type { VariantCode, VariantEnglish, VariantEnglishSource, VariantPlace, VariantUnit, VariantWitness, Verse } from '../../src/data/chapter';
+import { plainEnglish, sameInVerse } from '../../src/data/variantVerse';
 import type { PlacedUnit } from './rp2026';
+
+export { plainEnglish };
 
 /** where the English made by the model is committed */
 export const VARIANT_ENGLISH_FILE = 'data/variant-english.json';
@@ -150,17 +153,12 @@ export function layEnglish(units: VariantPlace[], input: EnglishInput): { units:
   return { units: out, missing, used };
 }
 
-/** The words of an English reading with case, punctuation and white space set aside, for comparing two. */
-export const plainEnglish = (s: string): string =>
-  s
-    .normalize('NFC')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim();
-
-export function changesEnglish(english: VariantEnglish): boolean {
-  const base = plainEnglish(english.base);
-  return english.alts.some((alt) => plainEnglish(alt) !== base);
+/**
+ * Whether any reading of a unit changes the English. With the unit's verse and word places the compare is in the verse (src/data/variantVerse.ts): a reading
+ * whose snippet differs ('that' / 'that I') but whose verse reads the same ('… that I love you') does not change it; without them, the snippets alone.
+ */
+export function changesEnglish(english: VariantEnglish, verse?: Pick<Verse, 'e'>, unitWords: readonly number[] = []): boolean {
+  return english.alts.some((alt) => !sameInVerse(verse, unitWords, english.base, alt));
 }
 
 const WITNESS: Record<VariantCode, VariantWitness> = { B: 'byz', N: 'na', C: 'na', S: 'na', E: 'na', M: 'ecm' };
@@ -172,9 +170,9 @@ export function witnessOf(alts: ReadonlyArray<{ code: VariantCode }>): VariantWi
   return WITNESS_ORDER.find((w) => classes.has(w)) ?? 'byz';
 }
 
-/** A unit with its English laid, as a chapter file keeps it. */
-export function finishUnit(unit: PlacedUnit & { english: VariantEnglish }): VariantUnit {
-  return { v: unit.v, w: unit.w, base: unit.base, alts: unit.alts, english: unit.english, changesEnglish: changesEnglish(unit.english), witness: witnessOf(unit.alts) };
+/** A unit with its English laid, as a chapter file keeps it (`verse` is the unit's, for changesEnglish). */
+export function finishUnit(unit: PlacedUnit & { english: VariantEnglish }, verse?: Pick<Verse, 'e'>): VariantUnit {
+  return { v: unit.v, w: unit.w, base: unit.base, alts: unit.alts, english: unit.english, changesEnglish: changesEnglish(unit.english, verse, unit.w), witness: witnessOf(unit.alts) };
 }
 
 // ---------------------------------------------------------------- what the build prints
