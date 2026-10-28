@@ -414,7 +414,7 @@ describe('quiz mode on an Old Testament verse (mw-gdcyf98.30)', () => {
   const input = readJson('grinds/bible-talk.input.schema.json') as Schema;
 
   it('tells the tutor the text of an Old Testament verse is `hebrew` and `english`, and the quiz asks in its words, never in Greek', () => {
-    expect(part).toContain('The text is only the text in `greek` (on an Old Testament verse, `hebrew`) and `english`');
+    expect(part).toContain('The text is only the text in `greek` and `english` (`hebrew` and `english` on an Old Testament verse)');
     expect(part).toMatch(/Old Testament verse the request carries `hebrew` \(and `hebrew_words`\) instead of `greek`/);
     expect(part).toMatch(/words and forms of `hebrew`, pitched at his Hebrew \(`settings\.hebrewDepth`\), and never quotes Greek/);
     expect(part).toMatch(/Learning Greek or Hebrew/);
