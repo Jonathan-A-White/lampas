@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.0
+_2026-10-28_
+- Fixed: with Variants on, the variant marks and braces now show in the Immersive reader too.
+- New: Ask the tutor now knows your Hebrew words, where you are on the Hebrew lessons and how long since you met a Hebrew word, as it knows your Greek, and the Preface says what an Old Testament chapter offers.
+- New: The tutor now understands a verse of the Old Testament: ask it about the Hebrew in a Bible talk and it answers with the Hebrew words.
+
 ## 0.6.0
 _2026-10-28_
 - New: With Variants on, the tutor now knows the places where manuscripts differ in the verse you are reading, and Ask the tutor on a variant's sheet opens a talk with the question ready to send.

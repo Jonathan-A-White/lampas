@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.0",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.12",
+    "kind": "fixed",
+    "text": "with Variants on, the variant marks and braces now show in the Immersive reader too."
+  },
+  {
+    "version": "0.7.0",
+    "date": "2026-10-28",
+    "story": "mw-gdcyf98.22",
+    "kind": "new",
+    "text": "Ask the tutor now knows your Hebrew words, where you are on the Hebrew lessons and how long since you met a Hebrew word, as it knows your Greek, and the Preface says what an Old Testament chapter offers."
+  },
+  {
+    "version": "0.7.0",
+    "date": "2026-10-28",
+    "story": "mw-gdcyf98.29",
+    "kind": "new",
+    "text": "The tutor now understands a verse of the Old Testament: ask it about the Hebrew in a Bible talk and it answers with the Hebrew words."
+  },
+  {
     "version": "0.6.0",
     "date": "2026-10-28",
     "story": "mw-9ji6ek0.7",
