@@ -90,15 +90,16 @@ async function openSheet(): Promise<void> {
   await screen.findByRole('dialog', { name: /^Talk about / });
 }
 async function typeInSheet(words: string): Promise<void> {
-  const box = await waitFor(() => {
-    const open = within(sheet()).queryByRole('textbox', { name: 'Your message' });
-    if (!open) throw new Error('no box');
-    return open;
-  }).catch(async () => {
-    await user.click(within(sheet()).getByRole('button', { name: 'Type a message' }));
-    return within(sheet()).getByRole('textbox', { name: 'Your message' });
+  // The box is either already open or behind 'Type a message'; wait for whichever is drawn, not ten seconds for the box.
+  const door = await waitFor(() => {
+    const found = within(sheet()).queryByRole('textbox', { name: 'Your message' }) ?? within(sheet()).queryByRole('button', { name: 'Type a message' });
+    if (!found) throw new Error('no box and no Type a message');
+    return found;
   });
-  await user.type(box, words);
+  if (door.getAttribute('role') === 'button' || door.tagName === 'BUTTON') await user.click(door);
+  const box = within(sheet()).getByRole('textbox', { name: 'Your message' });
+  await user.click(box);
+  await user.paste(words);
 }
 async function openAsk(): Promise<void> {
   const heading = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => squash(h.textContent) === 'Walking by the Spirit');
