@@ -4,6 +4,7 @@
 // verse (a whole chapter at its first) in the Bible he chose there (src/resources/logosBible.ts), and with no Bible app linked a link to Settings where he links Logos. A tap outside the
 // card (not on the reference itself: a second tap there changes nothing, mw-5r3p30.429), Close, Escape or Back closes it and nothing moves (it is a sheet for Back, src/ui/sheetBack.ts). The card sits below the reference, or above it when
 // there is no room below, so it never covers what was tapped.
+import { useStillLoading } from '../reader/useStillLoading';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -49,7 +50,8 @@ function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPl
   const settings = saved && settingsFor(saved, chapter);
   const source = sourceLanguage(chapter);
   const woven = useWoven(chapter, settings ?? {});
-  if (!settings) return <p role="status" className="py-1 text-base text-muted">Loading…</p>;
+  const still = useStillLoading(!settings);
+  if (!settings) return <p role="status" className="py-1 text-base text-muted">{still ? 'Still loading. Close this card and open it again.' : 'Loading…'}</p>;
   const inRange = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => v.n >= held.first && v.n <= held.last);
   return (
     <p data-reference-text data-view={settings.view} {...rowAttrs(settings.view, source, isOrdered(woven))} className={`break-words leading-snug ${textClass(settings.view, source)}`}>
@@ -187,6 +189,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   const foot = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState<Spot | null>(null);
 
+  const stillPassage = useStillLoading(!!held && passage === null);
   useEffect(() => {
     if (!held) return;
     let live = true;
@@ -252,7 +255,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
           {!held ? (
             <ElsewhereLine place={place} onSettings={onSettings} />
           ) : passage === null ? (
-            <p role="status" className="py-1 text-base text-muted">Loading…</p>
+            <p role="status" className="py-1 text-base text-muted">{stillPassage ? 'Still loading. Close this card and open it again.' : 'Loading…'}</p>
           ) : passage === 'failed' ? (
             <p role="status" className="py-1 text-base text-muted">This passage is not on this phone yet, and you are offline.</p>
           ) : (

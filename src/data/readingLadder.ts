@@ -3,6 +3,7 @@
 // The place is the first verse he has not read well; a verse he skipped for now is passed over and comes back once he has read SKIP_GAP others well. English,
 // Greek and Hebrew each have a list and a place. ladderPlace is pure; currentLadderPlace reads the phone.
 import { ladderUrl } from './chapter';
+import { within } from './within';
 import { getLadderRow, listWellRead } from './repositories/ladder';
 
 /** The languages that have a list: 'el' is the Modern Greek sounds the Greek view reads in (src/speech/pronunciation.ts scoringLang), 'en' English, 'he' the Israeli Hebrew the Hebrew view reads in. */
@@ -36,7 +37,8 @@ const lists = new Map<LadderLang, Promise<LadderEntry[]>>();
 export function loadLadder(lang: LadderLang): Promise<LadderEntry[]> {
   const known = lists.get(lang);
   if (known) return known;
-  const request = fetch(ladderUrl(lang)).then(async (response) => {
+  const request = within(async (signal) => {
+    const response = await fetch(ladderUrl(lang), { signal });
     if (!response.ok) throw new Error(`Could not load the ${lang} ladder: ${response.status}`);
     return (await response.json()) as LadderEntry[];
   });

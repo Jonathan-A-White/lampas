@@ -1,7 +1,7 @@
 // src/reader/useChapter.ts — fetches the chapter the Reader shows (docs/module-map.md R1): the chapter once it is here, `failed` when it cannot be
-// fetched, and retry to ask again.
+// fetched, and retry to ask again (a request still hanging is dropped first, so Try again does not wait on it).
 import { useEffect, useState } from 'react';
-import { loadChapter, type Chapter } from '../data/chapter';
+import { forgetChapter, loadChapter, type Chapter } from '../data/chapter';
 
 export function useChapter(book: string, chapterN: number) {
   const [chapter, setChapter] = useState<Chapter | null>(null);
@@ -17,5 +17,12 @@ export function useChapter(book: string, chapterN: number) {
       current = false;
     };
   }, [attempt, book, chapterN]);
-  return { chapter, failed, retry: () => setAttempt((n) => n + 1) };
+  return {
+    chapter,
+    failed,
+    retry: () => {
+      forgetChapter(book, chapterN);
+      setAttempt((n) => n + 1);
+    },
+  };
 }
