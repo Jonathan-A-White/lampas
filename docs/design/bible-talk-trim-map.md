@@ -264,3 +264,35 @@ The instructions were 99,992 bytes after mw-5r3p30.731; this story brought them 
 - 010 (`reader_view` may be `"hebrew"`; a `greek` `pending_offer` has its `lang`), 100 (the dial of the chapter's language), 280 (the example reply names the Hebrew): 'the Greek' in this sense is 'the original'.
 - The 150/160 fold: the twinned rules of the two sections (the app's own list: never add, leave out or guess an item; ONE offer at most once a talk, none in a quiz, none after his no) are said once, at the head of 150, and 160 points to them. The two parts went from 3,075 to 3,045 bytes: the fold saved 30, not the 600 first guessed, because the twins were mostly worded differently; 130 and 190 together added 670 within the headroom.
 - verse-ask 055: 'offer no Greek' became 'make no offer: the Bible talk makes them'; the line about quoting no Greek (the Septuagint is not sent) stays.
+
+## A third trim: the settings list (mw-gdcyf98.28)
+
+The instructions were 99,479 bytes at e31a9625 (99,481 at f9f01268); this story brought them to 96,987 (`cat grinds/bible-talk.instructions/* | wc -c`;
+`tests/unit/bible-talk-grind.test.ts` holds 97,000 for it and 99,500 as the ceiling, which is unchanged), to make room for part 245 (Bible talk on a
+Hebrew verse, mw-gdcyf98.18) and the two examples of mw-5r3p30.829. Every cut is in the generator (`src/settings/grindText.ts`), so the list
+`npm run grind:build` writes stays the registry's, and the answer schema still lists every key and every value (`settings_changes`, the `setting` link).
+No other part was touched. Part 330's prose before the list is unchanged. What changed in the list, one line each:
+
+- The three voices (`englishVoice`, `greekVoice`, `hebrewVoice`) and the three speeds (`englishRate`, `greekRate`, `hebrewRate`) were six lines that differ
+  only in the language they name: now two lines, each naming its three keys and three labels once, the speeds saying 'that language' → every key and its words kept.
+- `devotional`'s values: the three 'Today in Christian History' books and the three 'Twelve Months of Sundays' books share one label each, written once; the six
+  'Spurgeon (Volume N)' books are `"LLS:365SPURGEON1" to "LLS:365SPURGEON6" (365 Days with Spurgeon (Volume 1 to 6))` → every id still in the schema; `todaysDevotional` still says 'any value of `devotional` but "random"'.
+- A value's label is not written beside it when its help already names it: `copyText` (As you read it, The original), `variants` (Those that change the English),
+  `newWordsADay` (Off), `hebrewDepth` (Hebrew and transliteration), the voices (Phone default) → kept in the help.
+- A setting whose values are "off" and "on" in either order takes the same as one in the order on, off: `readingPlan` has no `Value:`, as `isOnOff` says once in 330.
+- `Which languages?.`, `How much Greek?.` and `How much Hebrew?.` lose the doubled stop.
+- A help over 280 bytes (was 400; `HELP_MAX_BYTES`) gives way to the setting's hint, which the `Value:` list after it completes. These went to their hints, and the sentences
+  that no longer appear are descriptions of the screen, not rules for the tutor; the hint shown under the control on Settings (`screen.settings`) says the same as what is kept:
+  - `readingMode`: 'Turn pages' tap zones (right third, left third, middle opens a word) and 'Scroll is the default' → hint 'Scroll, or turn the pages like a book'; the value keeps its label (Turn pages).
+  - `chapterButtons`: 'Show is the default', 'Hide: no buttons; swipe ... (with Turn pages, swipe past the last or first page)' → hint 'The ‹ and › buttons at the end of each chapter. Swipe left or right to change chapter.'
+  - `immersiveHint`: the card's two buttons ('Got it' closes it until the Reader opens again; "Don't show this again" switches this Off), 'On by default' → hint.
+  - `readLessons`: which sheets read themselves (idea, Grammar, new word), the voices used, the speaker stopping the voice, 'Off by default: then a lesson is read only when you tap its speaker' → hint.
+  - `readTutor`: what is spoken (the reading check's verdict, never the verse itself), 'On by default; Off speaks nothing by itself (the speaker on an answer still reads it)' → hint.
+  - `audioBible`: the 'Listen in Audible' link, the line naming the chapter ('Chapters > Luke 15'), 'It needs the Audible app and the book in your Audible library' → hint.
+  - `weave`, `askBy` and `devotional` keep their whole help (`HELP_KEPT`): `weave` says what 'Solid' and '+ Learning' show, and `askBy` names the words that switch it ("let me type").
+
+If a later story needs one of the dropped sentences in the tutor's hands, the place is that setting's line in `HELP_KEPT`, paid for by a trim elsewhere.
+
+verse-ask's instructions (`grinds/verse-ask.instructions/`) are 32,597 bytes, far from the 100,000 warning. The twins of the bible-talk parts that
+the story names, listed and not folded here: verse-ask 020 (1,624 B; bible-talk 020 says the same in 1,222) and verse-ask 090 'Other passages' (848 B; the
+same rule is the first paragraph of bible-talk 220, 904 B with its `fetch` rule, in fewer words). Folding them to the bible-talk wording would free about 400 B and 250 B of verse-ask, not of bible-talk.
