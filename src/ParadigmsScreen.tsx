@@ -52,6 +52,8 @@ import { askTheTutor } from './tutor/askNow';
 import { useReportScreen } from './tutor/screenContext';
 import type { ScreenFact } from './tutor/screen';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { HintCard } from './tips/HintCard';
+import { PARADIGMS_OPENED } from './tips/hints';
 import { GREEK_LANG, greekLang } from './script/greekLang';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 import { SourceSegment } from './ui/SourceSegment';
@@ -112,6 +114,7 @@ function ParadigmList({ levels, extent }: { levels: Levels | undefined; extent: 
     <>
       <ScreenHeader title="Paradigms" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
       {both ? <SourceSegment label="Language of the tables" /> : null}
+      <HintCard event={PARADIGMS_OPENED} className="mx-4 mt-2 shrink-0" />
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <p className="text-base text-muted">Tables to learn by heart. A form unlocks when you have the grammar it needs.</p>
         {ai ? (

@@ -19,6 +19,8 @@ import type { RunningRound } from './review/heldRound';
 import { hasPractise, takePractise } from './review/practise';
 import { drawReviewRound } from './review/round';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { HintCard } from './tips/HintCard';
+import { REVIEW_OPENED } from './tips/hints';
 import { useReportScreen } from './tutor/screenContext';
 import { reviewFacts } from './review/reviewFacts';
 import { focusOnMount } from './ui/focus';
@@ -172,7 +174,10 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   }, []);
 
   const header = (subtitle?: string) => (
-    <ScreenHeader title="Review" subtitle={subtitle} back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
+    <>
+      <ScreenHeader title="Review" subtitle={subtitle} back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
+      <HintCard event={REVIEW_OPENED} className="mx-4 mt-2 shrink-0" />
+    </>
   );
 
   if (round.status === 'loading') {

@@ -2,6 +2,8 @@
 // Preface (src/preface.ts), which keeps only the texts we chose. Plain words, no promise beyond what the app does; a page is under HELP_MAX_WORDS words so it fits a phone screen, and a
 // paragraph is under 400 characters because the tutor is told each one as a screen fact (src/tutor/screen.ts FACT_VALUE_MAX).
 
+import { LISTED_HINTS } from './tips/hints';
+
 export interface HelpPage {
   /** the address: #/help?page=<id> */
   id: string;
@@ -116,6 +118,15 @@ export const HELP_PAGES: HelpPage[] = [
     body: [
       'Lampas is free to read: the Greek, the English, the lessons and the quizzes need no licence. A licence unlocks the AI, which is the tutor and everything sent to it. Until a phone has one, Settings shows those options off, with “Needs a licence”.',
       'The Licence page has Get a licence: it is free, asks for an email and a phone (Twilio sends a code to each to prove them; Lampas keeps them only as scrambled fingerprints). A licence covers up to five devices: My devices lists them, each with Rename and Remove, and a new phone joins by Get a licence with the same phone number.',
+    ],
+  },
+  {
+    id: 'tips',
+    title: 'Tips',
+    line: 'The one-line tips, to read again.',
+    body: [
+      'A tip shows once on its screen until you tap Got it. Settings > Tips turns them off. All of them:',
+      LISTED_HINTS.map((h) => `${h.text}.`).join(' '),
     ],
   },
 ];

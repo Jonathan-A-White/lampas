@@ -79,4 +79,8 @@ commit in `package.json`, the library has no release tag yet); Lampas supplies t
   `CHAPTER_NAV_SHOWN`), and `hide-chapter-buttons` (the offer 'You swipe between chapters. Hide these buttons?', Hide or Keep, on `CHAPTER_BUTTONS_OFFER`; its own card in
   `ChapterNav.tsx`, answering it dismisses it). The offer shows in place of the tip once `chapterSwiped()` (a chapter changed by a swipe, `noteChapterSwipe()`). Both are
   under the Tips setting; Hide sets Settings > Reading > Chapter buttons, which works with Tips Off.
+- The main screens (mw-5r3p30.824): Goal, Words, Review, Memorize and Paradigms each draw a `HintCard` under their header on the first open, one sentence under 90 characters
+  (`goal-screen`, `words-screen`, `review-screen`, `memorize-screen`, `paradigms-screen`; events `GOAL_OPENED` ...). Got it dismisses it for good. The Reader has none: its first visit already
+  has the welcome, the Immersive card and the chapter-button tips. Help has a Tips page (`src/help.ts`) that lists every hint (`LISTED_HINTS`, all but the Hide offer) so a dismissed one can be read again.
+  `openUnlocked`/`openUnlicensed` (tests/e2e/unlocked.ts) dismiss these five, so no spec finds a card it is not about; `{ hints: true }` leaves them due (tests/e2e/screen-hints.spec.ts).
 - Adding a tip: one line in `HINTS`, and a `<HintCard event="…" />` where it belongs.

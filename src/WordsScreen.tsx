@@ -7,6 +7,8 @@ import { listWords, setWordState, type Word, type WordState } from './data/repos
 import { backTo, navigate, openPlacement } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { HintCard } from './tips/HintCard';
+import { WORDS_OPENED } from './tips/hints';
 import { speakWord } from './speech/greek';
 import { useReportScreen } from './tutor/screenContext';
 import { SpeakButton } from './speech/SpeakButton';
@@ -108,6 +110,7 @@ export function WordsScreen() {
           </>
         }
       />
+      <HintCard event={WORDS_OPENED} className="mx-4 mt-2 shrink-0" />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-3">
         <div>
         {both ? <SourceSegment label="Words language" /> : null}

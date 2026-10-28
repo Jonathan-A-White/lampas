@@ -12,11 +12,26 @@ export const CHAPTER_BUTTONS_OFFER = 'chapter-buttons-offer';
 /** The offer's id: dismissing it is answering it (Hide or Keep), for good. */
 export const HIDE_CHAPTER_BUTTONS = 'hide-chapter-buttons';
 
+/** The first open of a main screen (mw-5r3p30.824): the screen draws a HintCard of its event, once. The Reader has none: its first visit already has the welcome, the Immersive card and the chapter-button tips. */
+export const GOAL_OPENED = 'goal-opened';
+export const WORDS_OPENED = 'words-opened';
+export const REVIEW_OPENED = 'review-opened';
+export const MEMORIZE_OPENED = 'memorize-opened';
+export const PARADIGMS_OPENED = 'paradigms-opened';
+
 export const HINTS: readonly tips.Tip[] = [
   { id: 'long-press-word', text: 'Long-press a word to hear it', event: WORD_SHEET_OPENED },
   { id: 'swipe-chapters', text: 'Swipe the text left or right to change chapter', event: CHAPTER_NAV_SHOWN },
   { id: HIDE_CHAPTER_BUTTONS, text: 'You swipe between chapters. Hide these buttons?', event: CHAPTER_BUTTONS_OFFER },
+  { id: 'goal-screen', text: 'Pick a goal, then Learn next opens the lesson that gets you there', event: GOAL_OPENED },
+  { id: 'words-screen', text: 'Your words live here; Test quizzes you on them', event: WORDS_OPENED },
+  { id: 'review-screen', text: 'Review asks what is due; say how well you knew each word', event: REVIEW_OPENED },
+  { id: 'memorize-screen', text: 'Verses you Memorize come here; Start all asks those due', event: MEMORIZE_OPENED },
+  { id: 'paradigms-screen', text: 'Tap a form in a table to open the Reader where it is used', event: PARADIGMS_OPENED },
 ];
+
+/** The hints Help lists under 'Tips' (src/help.ts): all but the offer, which is a question and not a tip. */
+export const LISTED_HINTS: readonly tips.Tip[] = HINTS.filter((h) => h.id !== HIDE_CHAPTER_BUTTONS);
 
 /** localStorage, or nothing when the phone refuses it: then the tip shows again, which is harmless. */
 const storage: tips.TipStorage = {

@@ -24,10 +24,20 @@ function today(): string {
   return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
 }
 
+/** The one-line hints of the main screens (src/tips/hints.ts, mw-5r3p30.824) are already dismissed, so no spec finds a card it is not about; `hints: true` leaves them due. */
+async function dismissScreenHints(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem('lampas.tipsDismissed') === null) {
+      window.localStorage.setItem('lampas.tipsDismissed', JSON.stringify(['goal-screen', 'words-screen', 'review-screen', 'memorize-screen', 'paradigms-screen']));
+    }
+  });
+}
+
 /** Past the gate: the seeded key, remembered as holding a licence a minute ago, the chain unreachable. Today's tip is marked as asked, so the
  * sitting sends no tips grist (src/tips/offer.ts), the phone holds the Governor's word list (tests/e2e/his-words.ts; `empty: true` is a new install, mw-5r3p30.385), the welcome is already done (`welcome: true` leaves it due), and a new question card takes a tap at once (`lampas.settleMs` 0); `tips: true` leaves the day free for a spec that wants the grist. */
-export async function openUnlocked(page: Page, options: { tips?: boolean; welcome?: boolean; empty?: boolean } = {}): Promise<void> {
+export async function openUnlocked(page: Page, options: { tips?: boolean; welcome?: boolean; empty?: boolean; hints?: boolean } = {}): Promise<void> {
   if (!options.empty) await giveHisWords(page);
+  if (!options.hints) await dismissScreenHints(page);
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.addInitScript(
@@ -42,8 +52,9 @@ export async function openUnlocked(page: Page, options: { tips?: boolean; welcom
 }
 
 /** A phone with no licence: the seeded key, nothing remembered, the chain unreachable (so useLicence says not-licensed). Same quiet as openUnlocked otherwise. */
-export async function openUnlicensed(page: Page, options: { tips?: boolean; empty?: boolean } = {}): Promise<void> {
+export async function openUnlicensed(page: Page, options: { tips?: boolean; empty?: boolean; hints?: boolean } = {}): Promise<void> {
   if (!options.empty) await giveHisWords(page);
+  if (!options.hints) await dismissScreenHints(page);
   await refuseChain(page);
   await seedDeviceKey(page);
   await page.addInitScript(() => window.localStorage.setItem('lampas.settleMs', '0'));

@@ -26,6 +26,8 @@ import { pronunciationOf } from './speech/pronunciation';
 import { backTo, navigate, openPlacement, openReader, openVerseRange } from './nav/route';
 import { openSetting, openSettingsSection } from './settings/link';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { HintCard } from './tips/HintCard';
+import { GOAL_OPENED } from './tips/hints';
 import { SourceSegment } from './ui/SourceSegment';
 import { useLanguageInHand } from './useLanguageInHand';
 import { useReportScreen } from './tutor/screenContext';
@@ -356,6 +358,7 @@ export function GoalScreen() {
       <ScreenHeader title="Goal" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
       {both ? <SourceSegment label="Goal language" /> : null}
       <SwitchNote />
+      <HintCard event={GOAL_OPENED} className="mx-4 mt-2 shrink-0" />
     </>
   );
   if (lang === undefined) return <>{header}<main className="screen min-h-0 flex-1" aria-busy="true" /></>;

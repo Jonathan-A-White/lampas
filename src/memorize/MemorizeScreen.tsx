@@ -6,6 +6,8 @@ import type { ReactNode } from 'react';
 import { listVerseLists } from '../data/repositories';
 import { closeMemorize, memorizeSessionOf, openMemorizeSession, useAddress } from '../nav/route';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
+import { HintCard } from '../tips/HintCard';
+import { MEMORIZE_OPENED } from '../tips/hints';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { announce } from '../ui/live';
@@ -79,6 +81,7 @@ function MemorizeHome() {
   return (
     <>
       <ScreenHeader title={SCREEN_NAMES.memorize} back={back} />
+      <HintCard event={MEMORIZE_OPENED} className="mx-4 mt-2 shrink-0" />
       <main className="screen min-h-0 flex-1 px-4">
         {refs.length === 0 ? (
           <div className="mt-3">
