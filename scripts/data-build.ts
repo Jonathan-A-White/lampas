@@ -10,12 +10,13 @@ import { withAoristNote } from '../src/data/irregular-aorists';
 import { decodeParse, splitParse } from '../src/data/parseCode';
 import { CANON } from '../src/data/canon';
 import { OT_BOOKS } from '../src/data/books';
-import type { BookIndex, Chapter, LexEntry } from '../src/data/chapter';
+import type { BookIndex, Chapter, LexEntry, VariantUnit } from '../src/data/chapter';
 import type { LemmaLexicon } from '../src/data/lexicon';
 import type { FrequencyEntry } from '../src/data/frequency';
 import { COLUMNS, addRow, checkHeader, splitReference, wordOf, type TableGroup, type TableVerse, type TableWord } from './data/bereanTable';
 import { buildVerse, chapterFingerprint, fetchTo, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { parseTbes, type Lexicon } from './data/tbes';
+import { OVERLAY_FILE, applyOverlay, diffEdition, loadRp2026, overlayReport, type OverlayEntry, type OverlayResult } from './data/rp2026';
 import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
 
 export { suppliedWords } from './data/bereanTable';
@@ -181,6 +182,8 @@ export interface BuiltData {
   frequency: FrequencyEntry[];
   /** the apparatus's units by code, how many were aligned, and those that were not; absent when the build was given no apparatus */
   variants?: VariantStats;
+  /** what became of the RP 2026 overlay's entries; absent when the build was given no overlay */
+  overlay?: OverlayResult;
 }
 
 /** A name: any use of the word is coded N-PRI (an indeclinable proper noun, 'Ἀβραάμ'), or a use is coded as a noun (N-...) and the
@@ -220,8 +223,11 @@ export function countWords(chapters: BuiltChapter[], lex: Lexicon): FrequencyEnt
     .sort((a, b) => b.count - a.count || numeric(a.strongs, b.strongs));
 }
 
-/** `apparatus`: the Robinson-Pierpont 2018 apparatus of each book by its code, 'chapter:verse' -> text (loadApparatus); without it no chapter has `variants`. */
-export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, Map<string, string>>): BuiltData {
+/**
+ * `apparatus`: the Robinson-Pierpont 2018 apparatus of each book by its code, 'chapter:verse' -> text (loadApparatus); without it no chapter has `variants`.
+ * `overlay`: the RP 2026 wording changes (scripts/data/rp2026.ts) laid on the Greek of the chapters they name, after the apparatus is laid on it.
+ */
+export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, Map<string, string>>, overlay?: OverlayEntry[]): BuiltData {
   const byBook = new Map<string, Map<number, TableVerse[]>>();
   for (const v of parseMsb(msbTsv)) {
     const chapters = byBook.get(v.book) ?? new Map<number, TableVerse[]>();
@@ -236,6 +242,7 @@ export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, 
   const chapters: BuiltChapter[] = [];
   const lexicon: LemmaLexicon = {};
   const variants: VariantStats = { counts: {}, aligned: {}, unaligned: [], books: [] };
+  const laid: OverlayResult = { applied: 0, already: 0, dropped: 0 };
   for (const [code, name] of BOOKS) {
     const book = byBook.get(name);
     if (!book) continue;
@@ -257,6 +264,23 @@ export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, 
       }
       // A verse the Byzantine text lacks (Luke 17:36, Acts 8:37, 15:34, 24:7) has a row in the table and no words.
       const built = verses.filter((v) => v.words.length > 0).map((v) => greekVerse(v, lex));
+      let units: VariantUnit[] = [];
+      const rp = apparatus?.get(code);
+      if (rp) {
+        const found = alignChapter(name, n, built.map((v) => ({ n: v.n, words: v.g.map((w) => w.t) })), rp);
+        units = found.units;
+        addCounts(bookCounts, found.counts);
+        addCounts(variants.counts, found.counts);
+        addCounts(variants.aligned, found.aligned);
+        variants.unaligned.push(...found.unaligned);
+      }
+      if (overlay) {
+        const result = applyOverlay(name, n, built, units, overlay);
+        units = result.units;
+        laid.applied += result.applied;
+        laid.already += result.already;
+        laid.dropped += result.dropped;
+      }
       const strongs = [...new Set(built.flatMap((v) => v.g.map((w) => w.s)))].sort(numeric);
       const codes = [...new Set(built.flatMap((v) => v.g.map((w) => w.p)))].sort();
       const chapter: Chapter = {
@@ -269,15 +293,7 @@ export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, 
         parse: Object.fromEntries(codes.map((c) => [c, decodeParse(c)])),
         verses: built,
       };
-      const rp = apparatus?.get(code);
-      if (rp) {
-        const found = alignChapter(name, n, built.map((v) => ({ n: v.n, words: v.g.map((w) => w.t) })), rp);
-        if (found.units.length) chapter.variants = found.units;
-        addCounts(bookCounts, found.counts);
-        addCounts(variants.counts, found.counts);
-        addCounts(variants.aligned, found.aligned);
-        variants.unaligned.push(...found.unaligned);
-      }
+      if (units.length) chapter.variants = units;
       // The first use of a lemma, in canonical order, names its Strong's number and part of speech.
       for (const w of built.flatMap((v) => v.g)) {
         if (!(w.l in lexicon)) lexicon[w.l] = { g: chapter.lex[w.s].g, s: w.s, c: splitParse(w.p).pos };
@@ -289,7 +305,7 @@ export function buildData(msbTsv: string, lex: Lexicon, apparatus?: Map<string, 
     index.books.push({ code, name, chapters: count, verses: counts, fingerprints, lang: 'grc' });
     if (apparatus?.has(code)) variants.books.push({ name, counts: bookCounts });
   }
-  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), ...(apparatus ? { variants } : {}) };
+  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}) };
 }
 
 // ---------------------------------------------------------------- files
@@ -304,10 +320,16 @@ export interface BuildOptions {
   variants?: boolean;
   /** the sha256 the apparatus files must have; default VARIANTS_SHA256 (a test's own files have their own) */
   variantsSha256?: string;
+  /** lay the RP 2026 wording changes on the chapters (the release is fetched into rawDir/rp2026 and the overlay written to overlayFile); default: when `variants` is on, since the overlay is laid over the 2018 base */
+  rp2026?: boolean;
+  /** the sha256 the RP 2026 zip must have; default RP2026_SHA256 (a test's own zip has its own) */
+  rp2026Sha256?: string;
+  /** where the overlay is written; default data/rp2026-overlay.json */
+  overlayFile?: string;
 }
 
 export async function runBuild(options: BuildOptions): Promise<{ chapters: number; written: number; bytes: number }> {
-  const { rawDir, outDir, download = fetchTo, log = () => undefined, variants = true } = options;
+  const { rawDir, outDir, download = fetchTo, log = () => undefined, variants = true, rp2026 = variants, overlayFile = OVERLAY_FILE } = options;
   const msbPath = join(rawDir, MSB_FILE);
   const tbesgPath = join(rawDir, TBESG_FILE);
   for (const [url, path] of [[MSB_URL, msbPath], [TBESG_URL, tbesgPath]] as const) {
@@ -316,8 +338,15 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
     await download(url, path);
   }
   const apparatus = variants ? await loadApparatus(rawDir, download, log, options.variantsSha256) : undefined;
-  const built = buildData(readFileSync(msbPath, 'utf8'), parseLexicon(readFileSync(tbesgPath, 'utf8')), apparatus);
+  let overlay: OverlayEntry[] | undefined;
+  if (rp2026) {
+    if (!apparatus) throw new Error('the RP 2026 overlay is laid over the RP 2018 base: it needs the variants (the apparatus holds the 2018 text)');
+    overlay = diffEdition(apparatus, await loadRp2026(rawDir, download, log, options.rp2026Sha256));
+    writeIfChanged(overlayFile, `${JSON.stringify(overlay, null, 1)}\n`);
+  }
+  const built = buildData(readFileSync(msbPath, 'utf8'), parseLexicon(readFileSync(tbesgPath, 'utf8')), apparatus, overlay);
   if (built.variants) for (const line of variantsReport(built.variants)) log(line);
+  if (overlay && built.overlay) for (const line of overlayReport(overlay, built.overlay)) log(line);
 
   // index.json lists the 66 books: this build writes the 27 read in Greek and keeps the Old Testament's from the index on disk (scripts/data-build-ot.ts writes those)
   const index = mergeIndex(readIndex(outDir), built.index.books, 'grc');

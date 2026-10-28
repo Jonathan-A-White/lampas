@@ -16,6 +16,20 @@ How it was found:
 - Each verse of the table is lined up with the same verse of an edition word by word (words with the same letters, ignoring accents, breathings and case, are matched; the words between two matches are paired in order). Every word that differs is counted once, by the most basic difference, in the order of the list below.
 - Everything is in NFC. The elision apostrophe is one character in both. Punctuation is taken off each word and compared apart.
 
+## The text the app shows: Robinson-Pierpont 2018 with its apparatus, and the 2026 changes
+
+The Greek words of a chapter are the MSB table's (above); the apparatus laid on them is that of the Robinson-Pierpont 2018 edition (the byztxt repository's with-variants files, tag `v3.3.2`, `csv-unicode/ccat/with-variants`, sha256 `ef05d3a361c425bd3c2925251b3415efcd700899d360d524aab2da0aa9e99397`: docs/data.md 'Variants'); and the changes the Robinson-Pierpont 2026 text makes to the 2018 wording are laid over the words (docs/data.md 'The RP 2026 overlay'). Robinson-Pierpont 2018 is the base the 2026 text is compared with, word by word and by letters only, because the 2026 release is plain ASCII letters with no accents, capitals or punctuation.
+
+The 2026 text is <https://byzantinetext.com/wp-content/uploads/2026/10/ByzASCII.zip> (sha256 `527149c3081647b7f36e370d12da9f7e331e0e087f82b5410944fba4e5b306c1`), fetched by `npm run data:build`, which writes the changes to `data/rp2026-overlay.json`; nothing else of it is kept. This file lists that file's 5 changes. Where the 2026 words are laid on a chapter, they are Greek letters with the accents the old word had where the letters are the same.
+
+| Verse | RP 2018 | RP 2026 | In the chapter |
+| --- | --- | --- | --- |
+| Matthew 26:29 | `τοῦ γεννήματος τῆς` | `του γενηματος της` | laid on the table’s Greek |
+| Romans 13:9 | `ὡς σεαυτόν` | `ως εαυτον` | the table already reads so (it follows RP2005 there) |
+| Philemon 1:1 | `δέσμιος χριστοῦ Ἰησοῦ καὶ` | `δεσμιος ιησου χριστου και` | laid on the table’s Greek |
+| Revelation 11:16 | `τοῦ θρόνου τοῦ θεοῦ` | `του θεου` | the table already reads so (it follows RP2005 there) |
+| Revelation 13:14 | `εἶχεν τὴν πληγὴν` | `ειχεν πληγην` | laid on the table’s Greek |
+
 ## The table against each edition
 
 The table has 140,147 Greek words in 7,957 verses.

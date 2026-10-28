@@ -2,11 +2,14 @@
 // Finds which Robinson-Pierpont edition the Greek of the MSB tables (the file scripts/data-build.ts reads) follows, by comparing it
 // word by word with RP2018 (github.com/byztxt/byzantine-majority-text, tag v3.3.2) and with RP2005 (the same repository's v2.0.3,
 // the release its README names as closest to the 2005 text), and writes docs/greek-edition.md. Not part of the app build;
-// it needs the network (the downloads are kept in data/raw, which git ignores).
+// it needs the network (the downloads are kept in data/raw, which git ignores). It also says what the app's text is made of: the table's Greek,
+// the RP 2018 apparatus laid on it and the RP 2026 changes of data/rp2026-overlay.json (scripts/data/rp2026.ts, mw-9ji6ek0.2).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { BOOKS, MSB_URL, parseMsb } from './data-build';
+import { OVERLAY_FILE, RP2026_SHA256, RP2026_URL, overlayStatus, type OverlayEntry } from './data/rp2026';
+import { VARIANTS_DIR, VARIANTS_SHA256, VARIANTS_TAG } from './data/variants';
 
 export type DiffKind = 'accent' | 'punctuation' | 'spelling' | 'capitals' | 'added' | 'missing';
 export const KINDS: readonly DiffKind[] = ['accent', 'punctuation', 'spelling', 'capitals', 'added', 'missing'];
@@ -260,6 +263,8 @@ export interface Report {
   tally: Record<Edition | 'neither', number>;
   verdict: Edition | 'undecided';
   decidingVerses: number;
+  /** the RP 2026 overlay's entries, each with where it stands against the table's Greek of the verse */
+  overlay: Array<{ entry: OverlayEntry; status: ReturnType<typeof overlayStatus> }>;
 }
 
 const EXAMPLES_PER_KIND = 10;
@@ -277,7 +282,7 @@ interface TableVerse {
   text: string;
 }
 
-export function buildReport(table: TableVerse[], rp: Record<Edition, Map<string, Map<string, string>>>): Report {
+export function buildReport(table: TableVerse[], rp: Record<Edition, Map<string, Map<string, string>>>, overlay: OverlayEntry[] = []): Report {
   const editions = {} as Record<Edition, EditionReport>;
   const all: Record<Edition, Record<DiffKind, Example[]>> = { '2005': emptyLists(), '2018': emptyLists() };
   for (const edition of ['2018', '2005'] as const) {
@@ -333,7 +338,12 @@ export function buildReport(table: TableVerse[], rp: Record<Edition, Map<string,
       for (const key of verses.keys()) if (!tableKeys.has(`${code} ${key}`)) editions[edition].editionOnly.push(`${bookName(code)} ${key}`);
     }
   }
-  return { editions, places, tally, verdict: editionVerdict(tally), decidingVerses: decidingRefs.size };
+  const stands = overlay.map((entry) => {
+    const verse = table.find((t) => bookName(t.code) === entry.book && t.chapter === entry.chapter && t.verse === entry.verse);
+    if (!verse) throw new Error(`${entry.book} ${entry.chapter}:${entry.verse}: the RP 2026 overlay names a verse the table lacks`);
+    return { entry, status: overlayStatus(entry, rpWords(verse.text).map((w) => w.word)) };
+  });
+  return { editions, places, tally, verdict: editionVerdict(tally), decidingVerses: decidingRefs.size, overlay: stands };
 }
 
 function emptyLists(): Record<DiffKind, Example[]> {
@@ -401,6 +411,22 @@ export function renderReport(report: Report): string {
   out('- Everything is in NFC. The elision apostrophe is one character in both. Punctuation is taken off each word and compared apart.');
   out();
 
+  out('## The text the app shows: Robinson-Pierpont 2018 with its apparatus, and the 2026 changes');
+  out();
+  out(
+    `The Greek words of a chapter are the MSB table's (above); the apparatus laid on them is that of the Robinson-Pierpont 2018 edition (the byztxt repository's with-variants files, tag \`${VARIANTS_TAG}\`, \`${VARIANTS_DIR}\`, sha256 \`${VARIANTS_SHA256}\`: docs/data.md 'Variants'); ` +
+      `and the changes the Robinson-Pierpont 2026 text makes to the 2018 wording are laid over the words (docs/data.md 'The RP 2026 overlay'). Robinson-Pierpont 2018 is the base the 2026 text is compared with, word by word and by letters only, because the 2026 release is plain ASCII letters with no accents, capitals or punctuation.`,
+  );
+  out();
+  out(`The 2026 text is <${RP2026_URL}> (sha256 \`${RP2026_SHA256}\`), fetched by \`npm run data:build\`, which writes the changes to \`${OVERLAY_FILE}\`; nothing else of it is kept. This file lists that file's ${n(report.overlay.length)} changes. Where the 2026 words are laid on a chapter, they are Greek letters with the accents the old word had where the letters are the same.`);
+  out();
+  const states = { laid: 'laid on the table’s Greek', already: 'the table already reads so (it follows RP2005 there)', neither: 'neither' };
+  out('| Verse | RP 2018 | RP 2026 | In the chapter |');
+  out('| --- | --- | --- | --- |');
+  for (const { entry, status } of report.overlay) {
+    out(`| ${entry.book} ${entry.chapter}:${entry.verse} | ${cell(entry.from.join(' '))} | ${cell(entry.to.join(' '))} | ${states[status]} |`);
+  }
+  out();
   out('## The table against each edition');
   out();
   out(`The table has ${n(e18.words)} Greek words in ${n(e18.verses)} verses.`);
@@ -490,7 +516,8 @@ export async function run(options: { rawDir: string; outFile: string; log: (line
   });
   log(`${table.length} verses; reading RP2018 and RP2005 from GitHub`);
   const rp = { '2018': await loadEdition('2018', rawDir), '2005': await loadEdition('2005', rawDir) };
-  const report = buildReport(table, rp);
+  const overlay = JSON.parse(readFileSync(OVERLAY_FILE, 'utf8')) as OverlayEntry[];
+  const report = buildReport(table, rp, overlay);
   writeFileSync(outFile, renderReport(report));
   log(`verdict: ${report.verdict}; ${report.places.length} deciding places (${JSON.stringify(report.tally)}); wrote ${outFile}`);
   return report;

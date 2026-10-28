@@ -28,7 +28,8 @@ npm run greek:edition # compares the MSB table's Greek with Robinson-Pierpont 20
 npm run ladder       # scripts/ladder-el.ts scores every verse for how hard it is to PRONOUNCE and writes public/data/ladder/el.json, easiest first; scripts/ladder-en.ts does the same for the English as the Reader shows it (en.json, its own list); scripts/ladder-he.ts scores every Old Testament verse from its words' syllabified transliteration (he.json, 23,144 verses; it prints the verses it could not syllabify) (docs/reading-ladder.md; the output is committed, a second run changes nothing, data:build leaves ladder/ alone; its weights are a first guess)
 npm run forms:build  # public/lemma-forms/<lemma>.json from the chapters (docs/data.md); git-ignored, `npm run build` makes it first, a dev server needs it once for a table's This word
 npm run fixture:chapter -- <book> <n>   # node scripts/fixture-chapter.mjs: copies a built chapter, byte for byte, from public/data/<book>/<n>.json to tests/fixtures/data/<book>/<n>.json (tests/support/chapter-fetch.ts serves a fixture before the built file; jon 1 is features/old-testament.feature's chapter); never retype a fixture
-npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json + frequency.json;
+npm run data:build   # data/raw (git-ignored, downloaded if absent) -> public/data/<book>/<chapter>.json + index.json + lexicon.json + frequency.json,
+                     #   with the RP 2018 apparatus and the RP 2026 changes laid on the Greek (the changes are written to data/rp2026-overlay.json, docs/data.md);
                      #   the output is committed and a second run changes nothing (docs/data.md)
 ```
 

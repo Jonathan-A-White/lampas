@@ -219,6 +219,7 @@ describe('the build', () => {
         outDir: join(base, 'out'),
         log: (line) => log.push(line),
         variantsSha256: checksum,
+        rp2026: false,
         download: async (url, dest) => {
           downloads.push(url);
           mkdirSync(join(dest, '..'), { recursive: true });
