@@ -1098,7 +1098,7 @@ describe('the bible-talk instructions name each fact the tutor can ask for (mw-0
 });
 
 describe('the learner facts are told per language (mw-gdcyf98.31)', () => {
-  const part = (kind: string, file: string): string => readFileSync(`grinds/${kind}.instructions/${file}`, 'utf8');
+  const part = (kind: string, file: string): string => instructionParts(kind).find((p) => p.file.endsWith(file))!.text;
 
   it('bible-talk 245 and 010 no longer call solid_words and learner his Greek, and say they hold both languages', () => {
     const verse = part('bible-talk', '245-a-verse-of-the-old-testament.md');
