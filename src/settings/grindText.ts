@@ -81,7 +81,7 @@ const isOnOff = ({ allowed }: SettingEntry): boolean =>
   allowed.kind === 'choice' && allowed.values.length === 2 && allowed.values.some((v) => v.value === 'on') && allowed.values.some((v) => v.value === 'off');
 
 /** The most a setting's help may take of the instructions, in bytes (mw-gdcyf98.2, 400 B; mw-gdcyf98.28, 280 B): a longer help gives way to the setting's hint, which the Value list after it completes. */
-export const HELP_MAX_BYTES = 280;
+export const HELP_MAX_BYTES = 260;
 
 /** The settings whose long help the instructions keep whole: Which devotional lists the devotionals, which the tutor names; Weave says what Solid and + Learning show, which its hint does not; Ask by names the words that switch it, which its hint does not. */
 const HELP_KEPT: readonly string[] = ['devotional', 'weave', 'askBy'];
