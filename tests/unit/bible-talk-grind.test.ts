@@ -932,6 +932,28 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(bytes).toBeLessThanOrEqual(99_500);
   });
 
+  it("tells the tutor, in the input schema, that a text ending in ' …' was clipped to fit and the rest is fetched by its reference (mw-5r3p30.827)", () => {
+    const input = readJson('grinds/bible-talk.input.schema.json') as unknown as { properties: Record<string, { description?: string; items?: { properties: Record<string, { description?: string }> } }> };
+    const flatText = (s: string | undefined) => (s ?? '').replace(/\s+/g, ' ');
+    const held = flatText(input.properties.held_passages.description);
+    expect(held).toContain("ends in ' …'");
+    expect(held).toMatch(/clipped to fit/);
+    expect(held).toMatch(/fetch the rest by its reference/);
+    expect(held).toMatch(/never answer as if you held the whole passage/);
+    const items = input.properties.held_passages.items?.properties ?? {};
+    for (const key of ['greek', 'hebrew', 'english']) expect(flatText(items[key]?.description), `held_passages ${key}`).toContain("ends in ' …'");
+    for (const key of ['greek', 'hebrew', 'english']) expect(flatText(input.properties[key].description), key).toContain("ends in ' …'");
+    const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
+    expect(bytes).toBeLessThanOrEqual(99_500);
+  });
+
+  it('has an example whose held passage is clipped and whose question needs a verse past the clip (mw-5r3p30.827)', () => {
+    const ex = readJson('grinds/examples/bible-talk/held-passage-clipped.json') as unknown as { request: { held_passages: { greek: string; english: string }[] }; expect: Record<string, Record<string, unknown>> };
+    const [held] = ex.request.held_passages;
+    expect(held.english.endsWith(' …') || held.greek.endsWith(' …')).toBe(true);
+    expect(ex.expect.fetch).toEqual({ present: true });
+  });
+
   it('changes a setting by the set-setting command when the catalogue lists it, and by settings_changes when it does not', () => {
     const settings = flat(text.slice(text.indexOf('## Changing the app'), text.indexOf('<!-- settings:begin -->')));
     expect(settings).toContain('`set-setting`');

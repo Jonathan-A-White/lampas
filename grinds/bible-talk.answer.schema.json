@@ -1525,7 +1525,7 @@
       }
     },
     "fetch": {
-      "description": "Only when the talk is heading toward New Testament verses that neither `verses` nor `held_passages` holds (see the instructions, 'Other passages'): their references by book name, chapter and verses, `Revelation 2:8-11`, at most 30 verses in all. The app reads them from his phone after this answer is shown, with no wait and no word to him but one quiet line, 'Tutor fetched Rev 2:8-11', and the next request carries them in `held_passages`. Leave it out otherwise.",
+      "description": "Only when the talk is heading toward New Testament verses that neither `verses` nor `held_passages` holds, or holds only clipped (a text ending in ' …', see `held_passages`) (see the instructions, 'Other passages'): their references by book name, chapter and verses, `Revelation 2:8-11`, at most 30 verses in all. The app reads them from his phone after this answer is shown, with no wait and no word to him but one quiet line, 'Tutor fetched Rev 2:8-11', and the next request carries them in `held_passages`. Leave it out otherwise.",
       "type": "array",
       "minItems": 1,
       "maxItems": 4,

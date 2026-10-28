@@ -6,11 +6,11 @@
   "required": ["reference", "question", "history", "solid_words", "settings"],
   "properties": {
     "reference": { "description": "What the conversation is about: 'Romans 8:28' or 'Romans 8'; in a talk from a screen (`screen` is present), the screen's name.", "type": "string", "minLength": 1, "maxLength": 80 },
-    "greek": { "description": "The Greek of the verses the talk holds (see `verses`): the verse or the passage under a heading (the whole passage), the verses his question or the last answer's links name, or the chapter's first verses. Missing in a talk from a screen (`screen` is present), which is not about a text, and in a talk on an Old Testament chapter (`hebrew` holds its text, or, for a reader with no Hebrew yet, the English alone).", "type": "string", "minLength": 1 },
-    "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses. Words the translators supplied are between asterisks (*was* king): they are in italics in his reader. Missing in a talk from a screen.", "type": "string", "minLength": 1 },
+    "greek": { "description": "The Greek of the verses the talk holds (see `verses`): the verse or the passage under a heading (the whole passage), the verses his question or the last answer's links name, or the chapter's first verses. A text that ends in ' …' was clipped to fit: the verses go on past where it stops, and `verses` still names the whole range. Missing in a talk from a screen (`screen` is present), which is not about a text, and in a talk on an Old Testament chapter (`hebrew` holds its text, or, for a reader with no Hebrew yet, the English alone).", "type": "string", "minLength": 1 },
+    "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses. Words the translators supplied are between asterisks (*was* king): they are in italics in his reader. A text that ends in ' …' was clipped to fit, as `greek` is. Missing in a talk from a screen.", "type": "string", "minLength": 1 },
     "verses": { "description": "The verses `greek` (or `hebrew`) and `english` hold, the chapter and then the verses: `2:8-10` or `2:9`, in the chapter `reference` names. The window follows the talk (the verses his newest question names, else the verse links of the last answer, else the selected verse, else the chapter's first verses) and a request too big to send gives up whole verses, the farthest from the talk's verse first. A verse outside this range is one you do not hold. Missing in a talk from a screen.", "type": "string", "minLength": 3, "maxLength": 20 },
     "held_passages": {
-      "description": "Optional. The passages you asked for in `fetch` on earlier turns of this talk, read by the app from its own text: newest first, each `reference` (`Revelation 2:8-11`), its `greek` (the Byzantine text), or for an Old Testament passage its `hebrew` (pointed, cantillation off), and its `english` (the Majority Standard Bible, the English his Reader shows, supplied words between asterisks). Hold them as you hold `greek` and `english`: answer from them, never from memory, and do not fetch them again. Kept under a byte budget, so an old one drops off. Missing when the talk holds none, and in About.",
+      "description": "Optional. The passages you asked for in `fetch` on earlier turns of this talk, read by the app from its own text: newest first, each `reference` (`Revelation 2:8-11`), its `greek` (the Byzantine text), or for an Old Testament passage its `hebrew` (pointed, cantillation off), and its `english` (the Majority Standard Bible, the English his Reader shows, supplied words between asterisks). Hold them as you hold `greek` and `english`: answer from them, never from memory, and do not fetch them again. But a text that ends in ' …' was clipped to fit the request: it goes on past where it stops, so fetch the rest by its reference before you answer from it, and never answer as if you held the whole passage. Kept under a byte budget, so an old one drops off. Missing when the talk holds none, and in About.",
       "type": "array",
       "maxItems": 8,
       "items": {
@@ -20,9 +20,9 @@
         "anyOf": [{ "required": ["greek"] }, { "required": ["hebrew"] }],
         "properties": {
           "reference": { "type": "string", "minLength": 3, "maxLength": 40 },
-          "greek": { "type": "string", "minLength": 1 },
-          "hebrew": { "type": "string", "minLength": 1 },
-          "english": { "type": "string", "minLength": 1 }
+          "greek": { "description": "A text that ends in ' …' was clipped to fit: the passage goes on.", "type": "string", "minLength": 1 },
+          "hebrew": { "description": "A text that ends in ' …' was clipped to fit: the passage goes on.", "type": "string", "minLength": 1 },
+          "english": { "description": "A text that ends in ' …' was clipped to fit: the passage goes on.", "type": "string", "minLength": 1 }
         }
       }
     },
@@ -45,7 +45,7 @@
       }
     },
     "hebrew": {
-      "description": "Optional. Only for a verse of the Old Testament, which has no Greek (there is no `greek`): the verses `verses` names in Biblical Hebrew (the Westminster Leningrad Codex), pointed, with the cantillation marks left off, written in reading order, the first word first. Aramaic words of the Old Testament are in it too. Missing for a reader at Hebrew 0 (Just English): then `english` alone is the text.",
+      "description": "Optional. Only for a verse of the Old Testament, which has no Greek (there is no `greek`): the verses `verses` names in Biblical Hebrew (the Westminster Leningrad Codex), pointed, with the cantillation marks left off, written in reading order, the first word first. Aramaic words of the Old Testament are in it too. A text that ends in ' …' was clipped to fit, as `greek` is. Missing for a reader at Hebrew 0 (Just English): then `english` alone is the text.",
       "type": "string"
     },
     "hebrew_words": {

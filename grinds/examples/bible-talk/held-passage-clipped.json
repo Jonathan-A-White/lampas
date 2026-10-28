@@ -1,0 +1,50 @@
+{
+  "description": "Revelation 2, the request holds verses 1-3 and, from an earlier fetch, `held_passages` Revelation 2:8-11 clipped by the fit (both texts end in ' …', after 'Be faithful'): asked what Smyrna was promised in the end, the answer does not claim the passage ends there, it asks in `fetch` for the rest by its reference.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Revelation 2",
+    "greek": "Τῷ ἀγγέλῳ τῆς ἐν Ἐφέσῳ ἐκκλησίας γράψον Τάδε λέγει ὁ κρατῶν τοὺς ἑπτὰ ἀστέρας ἐν τῇ δεξιᾷ αὐτοῦ ὁ περιπατῶν ἐν μέσῳ τῶν ἑπτὰ λυχνιῶν τῶν χρυσῶν Οἶδα τὰ ἔργα σου καὶ τὸν κόπον σου καὶ τὴν ὑπομονήν σου καὶ ὅτι οὐ δύνῃ βαστάσαι κακούς καὶ ἐπείρασας τοὺς λέγοντας ἑαυτοὺς ἀποστόλους εἶναι καὶ οὐκ εἰσίν καὶ εὗρες αὐτοὺς ψευδεῖς καὶ ὑπομονὴν ἔχεις καὶ ἐβάστασας διὰ τὸ ὄνομά μου καὶ οὐκ ἐκοπίασας",
+    "english": "“To the angel of the church in Ephesus write: These *are* the words of Him who holds the seven stars in His right hand *and* walks among the seven golden lampstands. I know your deeds, your labor, and your perseverance. *I know* that you cannot tolerate *those who are* evil, and you have tested and exposed as liars those who falsely claim to be apostles. Without growing weary, you have persevered and endured many things for the sake of My name.",
+    "verses": "2:1-3",
+    "held_passages": [
+      {
+        "reference": "Revelation 2:8-11",
+        "greek": "Καὶ τῷ ἀγγέλῳ τῆς ἐν Σμύρνῃ ἐκκλησίας γράψον Τάδε λέγει ὁ πρῶτος καὶ ὁ ἔσχατος ὃς ἐγένετο νεκρὸς καὶ ἔζησεν Οἶδά σου τὰ ἔργα καὶ τὴν θλίψιν καὶ τὴν πτωχείαν ἀλλὰ πλούσιος εἶ καὶ τὴν βλασφημίαν ἐκ τῶν λεγόντων Ἰουδαίους εἶναι ἑαυτούς καὶ οὐκ εἰσίν ἀλλὰ συναγωγὴ τοῦ Σατανᾶ Μηδὲν φοβοῦ ἃ μέλλεις παθεῖν ἰδοὺ δή μέλλει βαλεῖν ὁ διάβολος ἐξ ὑμῶν εἰς φυλακήν ἵνα πειρασθῆτε καὶ ἕξετε θλίψιν ἡμερῶν δέκα Γίνου πιστὸς ἄχρι …",
+        "english": "To the angel of the church in Smyrna write: These *are* the words of the First and the Last, who died and returned to life. I know your works and *your* affliction and *your* poverty — though you are rich! And *I am aware of* the slander of those who falsely claim to be Jews, but *are in fact* a synagogue of Satan. Do not fear what you are about to suffer. Behold, the devil is about to throw *some* of you into prison to test you, and you will suffer tribulation *for* ten days. Be faithful …"
+      }
+    ],
+    "question": "What is the very last thing he promises Smyrna, at the end of the passage?",
+    "history": [
+      {
+        "q": "Ephesus left its first love. Which church does he write to next?",
+        "a": "Next he writes to Smyrna, a church that was poor and suffering, and he has nothing against it."
+      }
+    ],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    }
+  },
+  "expect": {
+    "fetch": {
+      "present": true
+    },
+    "fetch.0": {
+      "matches": "^(Revelation|Rev\\.?) 2:(8-11|9-11|10-11|11)$"
+    },
+    "answer": {
+      "present": true
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
