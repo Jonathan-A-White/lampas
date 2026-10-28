@@ -1,11 +1,12 @@
 // src/data/answerWord.ts — a Greek word of an answer, found again in the chapter's text, so a tap can open its word sheet.
-import { type GreekWord, type Verse, wordGloss, wordLemma } from './chapter';
+import { type Chapter, type GreekWord, type Verse, wordGloss, wordLemma } from './chapter';
 import type { AnswerWord } from './db';
 import { languageOfLemma, normaliseHeadword } from './lemma';
 import { lookupLemma } from './lexicon';
 import { addWordToLearn, wordIsListed } from './repositories';
 import { hebrewPointedForm } from '../speech/hebrewPronunciation';
 import type { TalkScope } from '../services/talk';
+import type { Lookup } from '../WordSheet';
 
 /** Lower case with no accents or breathings, so a word the companion wrote loosely still finds its place in the text. */
 const plain = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -21,6 +22,11 @@ export function findGreekWord(scope: TalkScope, word: AnswerWord): GreekWord | u
   const loose = (w: GreekWord) => plain(w.t) === plain(word.greek);
   const lemma = (w: GreekWord) => plain(wordLemma(w)) === plain(word.lemma);
   return words.find(exact) ?? words.find(loose) ?? words.find(lemma);
+}
+
+/** The word sheet's lookup for a word of the text: the word and the English that stands for it. */
+export function lookupFor(chapter: Chapter, found: GreekWord): Lookup {
+  return { words: [found], english: found.e === undefined ? undefined : chapter.verses.find((v) => v.g.includes(found))?.e[found.e]?.t, fromEnglish: false };
 }
 
 /** The lexicon's gloss for an answer's word as the chapter has it ('flesh'), or '' when the chapter has no such word. */

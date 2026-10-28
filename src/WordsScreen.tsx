@@ -10,6 +10,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { HintCard } from './tips/HintCard';
 import { WORDS_OPENED } from './tips/hints';
 import { speakWord } from './speech/greek';
+import { languageFact } from './tutor/screen';
 import { useReportScreen } from './tutor/screenContext';
 import { SpeakButton } from './speech/SpeakButton';
 import { NO_SELECT, useLongPress } from './ui/longPress';
@@ -88,7 +89,7 @@ export function WordsScreen() {
   const words = everyWord && inHand !== undefined ? everyWord.filter((w) => languageOfWord(w) === lang) : undefined;
   const [confirming, setConfirming] = useState<string | null>(null);
   const scrollRef = useScrollMemory('words');
-  useReportScreen({ name: 'Words', facts: words ? [{ label: 'His words', value: countLine(words) }] : [] });
+  useReportScreen({ name: 'Words', facts: words ? [...languageFact(lang, both || lang === 'hbo'), { label: 'His words', value: countLine(words) }] : [] });
 
   const tap = (w: Word) => {
     const next = NEXT[w.state];

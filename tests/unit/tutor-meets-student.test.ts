@@ -56,9 +56,9 @@ describe('verse-read and tips are sent learner and learner_grammar', () => {
     expect(validate(request, readJson(schema) as Schema)).toEqual([]);
   });
 
-  it.each(Object.keys(grists))('%s: the schema refuses a learner line over 600 characters', (kind) => {
+  it.each(Object.keys(grists))('%s: the schema refuses a learner line over 1,400 characters (600 for Greek alone: the app trims to it; the schema allows the longer Hebrew line, mw-gdcyf98.22)', (kind) => {
     const { request, schema } = grists[kind](true);
-    expect(validate({ ...request, learner: 'x'.repeat(601) }, readJson(schema) as Schema)).not.toEqual([]);
+    expect(validate({ ...request, learner: 'x'.repeat(1401) }, readJson(schema) as Schema)).not.toEqual([]);
   });
 });
 

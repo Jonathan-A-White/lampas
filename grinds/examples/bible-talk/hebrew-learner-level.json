@@ -1,0 +1,106 @@
+{
+  "description": "A reader of Hebrew alone (the Greek dial at 0), whose Hebrew ladder has him learning the article, asks in the talk about the ha at the start of הָאָרֶץ in Genesis 1:1: the answer is pitched at his Hebrew ladder, names the article and shows it in the verse, and does not teach him Greek.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 1:1",
+    "hebrew": "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ",
+    "english": "In the beginning God created the heavens and the earth.",
+    "hebrew_words": [
+      {
+        "form": "בְּרֵאשִׁית",
+        "lemma": "רֵאשִׁית",
+        "translit": "bə·rê·šîṯ",
+        "gloss": "first, beginning",
+        "parse": "Preposition-b | Noun - feminine singular"
+      },
+      {
+        "form": "בָּרָא",
+        "lemma": "בָּרָא",
+        "translit": "bā·rā",
+        "gloss": "to create",
+        "parse": "Verb - Qal - Perfect - third person masculine singular"
+      },
+      {
+        "form": "אֱלֹהִים",
+        "lemma": "אֱלֹהִים",
+        "translit": "’ĕ·lō·hîm",
+        "gloss": "God",
+        "parse": "Noun - masculine plural"
+      },
+      {
+        "form": "אֵת",
+        "lemma": "אֵת",
+        "translit": "’êṯ",
+        "gloss": "[Obj.]",
+        "parse": "Direct object marker"
+      },
+      {
+        "form": "הַשָּׁמַיִם",
+        "lemma": "שָׁמַיִם",
+        "translit": "haš·šā·ma·yim",
+        "gloss": "heaven",
+        "parse": "Article | Noun - masculine plural"
+      },
+      {
+        "form": "וְאֵת",
+        "lemma": "אֵת",
+        "translit": "wə·’êṯ",
+        "gloss": "[Obj.]",
+        "parse": "Conjunctive waw | Direct object marker"
+      },
+      {
+        "form": "הָאָרֶץ",
+        "lemma": "אֶ֫רֶץ",
+        "translit": "hā·’ā·reṣ",
+        "gloss": "land, country, planet",
+        "parse": "Article | Noun - feminine singular"
+      }
+    ],
+    "verses": "1:1",
+    "question": "What is the little ha at the start of הָאָרֶץ?",
+    "history": [],
+    "solid_count": 2,
+    "solid_words": [
+      "אֶרֶץ",
+      "בָּרָא"
+    ],
+    "learner": "Hebrew: solid 2 words; learning: מַיִם; new today: none; ladder: 3 of 70 ideas known (The Hebrew alphabet, Gender: masculine and feminine, Number: singular, plural and dual); learning: The Hebrew article; next: The construct state | due now: 0",
+    "settings": {
+      "greekInterest": "0",
+      "hebrewInterest": "3",
+      "hebrewDepth": "both"
+    },
+    "reader_view": "hebrew",
+    "greek_interest": {
+      "level": 0,
+      "name": "Just English",
+      "next": {
+        "level": 1,
+        "name": "Curious"
+      }
+    },
+    "hebrew_interest": {
+      "level": 3,
+      "name": "Learning",
+      "next": {
+        "level": 4,
+        "name": "Reading in Hebrew"
+      }
+    }
+  },
+  "expect": {
+    "answer": {
+      "all": [
+        {
+          "matches": "[Aa]rticle"
+        },
+        {
+          "matches": "[Tt]he earth|[Tt]he land"
+        }
+      ]
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

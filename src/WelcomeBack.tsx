@@ -9,7 +9,7 @@ import { BREAK_DAYS, type RustyCandidate } from './data/rusty';
 import { DAY } from './data/schedule';
 import { navigate } from './nav/route';
 import { setPractise } from './review/practise';
-import { greekLang } from './script/greekLang';
+import { rustyFace } from './script/rustyFace';
 
 /** The local day the card was last answered (Refresh or Not now), in localStorage: it is not shown again that day. */
 export const WELCOME_BACK_DAY_KEY = 'lampas.welcomeBackDay';
@@ -50,7 +50,7 @@ export function WelcomeBack({ hidden = false }: { hidden?: boolean }) {
       <p className="text-base text-muted">It has been {card.away} days. A short refresher of what you knew well, most overdue first:</p>
       <ul className="my-1 flex flex-wrap items-baseline gap-x-4 text-lg">
         {card.items.map((item) => (
-          <li key={`${item.kind}:${item.id}`} {...greekLang(item.kind === 'word')} className={item.kind === 'word' ? 'font-greek text-[length:var(--lp-greek-size)]' : undefined}>
+          <li key={`${item.kind}:${item.id}`} {...rustyFace(item)}>
             {item.title}
           </li>
         ))}

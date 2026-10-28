@@ -32,6 +32,11 @@ const RUSTY_ANSWER = {
   words: [],
   rusty_offer: { items: [{ kind: 'word', id: 'λόγος' }, { kind: 'idea', id: 'case-genitive' }] },
 };
+const HEBREW_RUSTY_ANSWER = {
+  answer: 'You are rusty on אֶרֶץ and the Hebrew article: they were solid before.',
+  words: [],
+  rusty_offer: { items: [{ kind: 'word', id: 'אֶרֶץ' }, { kind: 'idea', id: 'he-article' }] },
+};
 let fake: FakePostern;
 
 /** A solid word at the 14-day step, last answered `seen` days ago, with the answers it gave (a day count each, negative = wrong). */
@@ -46,7 +51,21 @@ const wordRow = (lemma: string, seen: number, answers: number[] = []) => ({
   recent: answers.map((a) => ({ when: Date.now() - Math.abs(a) * DAY, right: a > 0 })),
 });
 
-async function openWith(rusty: boolean): Promise<void> {
+/** The phone of a reader of Hebrew alone, with a solid Hebrew word he slipped on and a solid Hebrew idea he has not met for 3 weeks, opened on Genesis 1. */
+async function openHebrew(): Promise<void> {
+  await openWith(false, '#/?b=gen&c=1');
+  cleanup();
+  const now = Date.now();
+  await db.settings.bulkPut([{ key: 'greekInterest', value: '0' }, { key: 'hebrewInterest', value: '3' }]);
+  await Promise.all([db.words.clear(), db.grammarLevels.clear(), db.reviews.clear()]);
+  await db.words.bulkPut([{ lemma: 'אֶרֶץ', lang: 'hbo', lemmas: [], gloss: 'land', lesson: 1, state: 'solid', since: now - 60 * DAY }]);
+  await db.grammarLevels.put({ id: 'he-article', level: 'solid', since: now - 60 * DAY, how: 'placement' });
+  await db.reviews.bulkPut([wordRow('אֶרֶץ', 1, [-4, 2, -1]), { ...wordRow('he-article', 21), kind: 'grammar' }]);
+  render(<App />);
+  await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+}
+
+async function openWith(rusty: boolean, hash = '#/?b=rom&c=8'): Promise<void> {
   cleanup();
   stopReading();
   clearBus();
@@ -54,7 +73,7 @@ async function openWith(rusty: boolean): Promise<void> {
   vi.unstubAllGlobals();
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
-  window.history.replaceState(null, '', '/#/?b=rom&c=8');
+  window.history.replaceState(null, '', `/${hash}`);
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: RUSTY_ANSWER };
@@ -191,5 +210,44 @@ describeFeature(feature, ({ Scenario }) => {
       expect('rusty' in talkGrists()[0].input).toBe(false);
     });
     And('the talk shows no button {string}', noButton);
+  });
+
+  Scenario('The tutor notices rust in his Hebrew', ({ Given, When, And, Then }) => {
+    Given('he has a solid Hebrew word he slipped on and a solid Hebrew idea he has not met for 3 weeks, and Lampas is opened on Genesis 1 behind a fake Postern whose tutor says he is rusty', async () => {
+      fake.autoReply = { status: 'answered', answer: HEBREW_RUSTY_ANSWER };
+      await openHebrew();
+      fake.autoReply = { status: 'answered', answer: HEBREW_RUSTY_ANSWER };
+    });
+    When(WHEN_ASKS, asks);
+    Then('the request carried 2 rusty Hebrew items, {string} first because it {string}, then {string} because it was {string}', (_, first: string, why1: string, second: string, why2: string) => {
+      const rusty = (talkGrists()[0].input as { rusty?: RustyItem[] }).rusty;
+      expect(rusty).toEqual([
+        { kind: 'word', id: first, title: first, why: why1 },
+        { kind: 'idea', id: 'he-article', title: second, why: why2 },
+      ]);
+    });
+    And("the request's learner line says he last met a Hebrew item {string}", (_, ago: string) => {
+      expect(String((talkGrists()[0].input as { learner?: string }).learner)).toContain(`last seen ${ago}`);
+    });
+    And('the talk shows the button {string}', shows);
+    And('the talk draws {string} in the Hebrew face, right to left', (_, word: string) => {
+      const item = [...sheet().querySelectorAll<HTMLElement>('[data-rusty-items] li')].find((li) => li.textContent === word);
+      expect(item, word).toBeDefined();
+      expect(item?.getAttribute('dir')).toBe('rtl');
+      expect(item?.classList.contains('script-he')).toBe(true);
+    });
+    When('he taps {string}', async (_, name: string) => {
+      await user.click(await within(sheet()).findByRole('button', { name }));
+    });
+    Then('the Hebrew word {string} and the Hebrew idea {string} are on the Frontier', async (_, lemma: string, idea: string) => {
+      await waitFor(async () => expect((await db.words.get(lemma))?.state).toBe('learning'));
+      await waitFor(async () => expect((await db.grammarLevels.get(idea))?.level).toBe('frontier'));
+    });
+    And('Review is open', async () => {
+      await screen.findByRole('heading', { name: 'Review', level: 1 });
+      expect(window.location.hash).toBe('#/review');
+      // the offer is marked taken last: the scenario ends after it, not while it is being written
+      await waitFor(async () => expect((await db.talks.toArray()).some((t) => t.rustyChoice === 'taken')).toBe(true));
+    });
   });
 });

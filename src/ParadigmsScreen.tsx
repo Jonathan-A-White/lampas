@@ -50,7 +50,7 @@ import { Grades } from './ui/SelfGrade';
 import { MAX_REVEALED, paradigmQuestion, type ParadigmFocus, type ParadigmPlace } from './services/talk';
 import { askTheTutor } from './tutor/askNow';
 import { useReportScreen } from './tutor/screenContext';
-import type { ScreenFact } from './tutor/screen';
+import { languageFact, type ScreenFact } from './tutor/screen';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { HintCard } from './tips/HintCard';
 import { PARADIGMS_OPENED } from './tips/hints';
@@ -106,9 +106,9 @@ const LIST_FACTS: ScreenFact[] = [{ label: 'Showing', value: 'The list of the pa
 
 function ParadigmList({ levels, extent }: { levels: Levels | undefined; extent: GrammarExtent | undefined }) {
   const ai = useAiAllowed();
-  useReportScreen({ name: 'Paradigms', facts: LIST_FACTS });
   // the tables of the language in hand: Hebrew only when Hebrew is chosen (the segment says which where both are); none until the choice is read, so the other language's never flash; Greek at English only
   const { lang, both } = useLanguageInHand();
+  useReportScreen({ name: 'Paradigms', facts: [...languageFact(lang, both), ...LIST_FACTS] });
   const tablesOfLang = lang === undefined ? [] : paradigmsIn(lang ?? 'grc');
   return (
     <>
@@ -770,7 +770,8 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
   };
   // the tutor is told the table, the mode, the cell in focus and the word (paradigmTalk); the talk is the table's own
   const talk = paradigmTalk(table, mode, lemma, levels && extent ? { levels, extent, drill: run, cell: tapped ?? lit, word, parse } : undefined);
-  useReportScreen({ name: 'Paradigms', facts: talk.facts, kept: screenRef(`paradigms.${table.id}`) });
+  const { both } = useLanguageInHand();
+  useReportScreen({ name: 'Paradigms', facts: [...languageFact(hebrewTable ? 'hbo' : 'grc', both || hebrewTable), ...talk.facts], kept: screenRef(`paradigms.${table.id}`) });
   const ask = () => askTheTutor({ question: paradigmQuestion(table.name, talk.focus.revealed.length, talk.focus), focus: talk.focus });
   return (
     <>

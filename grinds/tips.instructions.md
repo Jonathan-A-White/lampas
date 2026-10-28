@@ -20,7 +20,7 @@ You receive a Tips Request (a JSON object, grinds/tips.input.schema.json) with t
     tutor (`asks`), talked (`talks`), answered the Quick test (`quizAnswers`), answered the Parsing drill
     (`drillAnswers`), read a verse aloud to be checked (`readings`) or marked a grammar term known (`grammarKnown`).
 - `shown`: the ids of the tips he has already been shown.
-- `learner` (it may be missing): where he stands in words, in one line: `solid N words; learning: a, b, c; new today: x, y; due now: M`.
+- `learner` (it may be missing): where he stands in words, in one line: `solid N words; learning: a, b, c; new today: x, y; due now: M`. A reader who chose Hebrew has each language under its name (`Greek: ... | Hebrew: ... | due now: M`); the Hebrew part adds his place on the Hebrew grammar ladder (`ladder:`), the Hebrew reading ladder and when he last met a Hebrew word. For a tip about Hebrew (an Old Testament chapter, the Hebrew view) go by the Hebrew part, never the Greek one. A Greek-only reader has no Hebrew part: offer him no Hebrew tip.
 - `learner_grammar` (it may be missing): where his grammar stands, the same object the Bible talk is sent: `goal`, `words`, `ideas`
   (the titles of the grammar ideas he has `solid`, at the `frontier` and `not_yet`), `placed`, `suggested_move`, `picker_level`,
   `approach` and `weak` (his weak points from Drill it, when he has any).
@@ -57,7 +57,7 @@ Each id in `features_used` and `features_never` is one of these:
 - `word-help`: Help with this word, on a word's sheet.
 - `grammar-sheet`: tapping a grammar term in a word's Parsing.
 - `know-grammar`: marking a grammar term I know this.
-- `weave`: putting the Greek of words he knows into the English (Settings > Weave).
+- `weave`: putting the Greek of words he knows into the English, or the Hebrew in an Old Testament chapter (Settings > Weave).
 - `study-links`: links to his study apps on a word's sheet (Settings > Study resources).
 - `other-chapters`: opening another chapter, from the title or the chapter buttons.
 - `goal`: setting a reading goal (Settings > Goal).

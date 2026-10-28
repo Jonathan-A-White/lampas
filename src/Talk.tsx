@@ -8,7 +8,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Waiting } from './Ask';
-import { findGreekWord, glossOf } from './data/answerWord';
+import { findGreekWord, glossOf, lookupFor as lookupOf } from './data/answerWord';
 import { languageOfLemma } from './data/lemma';
 import { loadLexicon } from './data/lexicon';
 import { findWord, lemmaSheet } from './nav/links';
@@ -421,7 +421,7 @@ function SettingOffer({ turn }: { turn: TalkTurn }) {
 
 /** The word sheet's lookup for a word of the text: the word and the English that stands for it. */
 function lookupFor(scope: TalkScope, found: GreekWord): Lookup {
-  return { words: [found], english: found.e === undefined ? undefined : scope.chapter.verses.find((v) => v.g.includes(found))?.e[found.e]?.t, fromEnglish: false };
+  return lookupOf(scope.chapter, found);
 }
 
 function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLemma: (lemma: string) => void; onLeave: () => void }) {
