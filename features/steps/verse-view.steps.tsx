@@ -73,7 +73,7 @@ async function open(weave: 'off' | 'solid', { speaks = false, tutor = false, mic
     value: { writeText: (text: string) => (copied.push(text), Promise.resolve()) },
   });
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.readings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.readings.clear()]);
   await setReaderView('english');
   await setWeave(weave);
   await seedHisWords();
@@ -96,8 +96,6 @@ const bar = () => {
   expect(bars()).toHaveLength(1);
   return bars()[0];
 };
-/** The text box of the composer, which a failed question comes back into. */
-const askField = (): HTMLTextAreaElement => within(viewEl()).getByRole('textbox', { name: 'Your question' });
 /** The words he has said so far, as the composer shows them above the bar while he holds ('Listening…' and 'Starting the mic…' come before the first). */
 const askLive = (): string => {
   const said = within(viewEl()).queryByTestId('live-transcript')?.textContent ?? '';
@@ -125,9 +123,12 @@ describeFeature(feature, ({ Scenario }) => {
     });
     await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
   };
+  // the Verse view's Ask goes to the Talk sheet's tutor (mw-5r3p30.842): the answer, its wait and its failure are the sheet's
+  const sheetOf = (): Promise<HTMLElement> => screen.findByRole('dialog', { name: /^Talk about / });
   const answerShows = async () => {
-    await waitFor(() => expect(viewEl().querySelectorAll('[data-answer]')).toHaveLength(1));
-    expect(viewEl().querySelector('[data-answer]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
+    const dialog = await sheetOf();
+    await waitFor(() => expect(dialog.querySelectorAll('[data-turn]')).toHaveLength(1));
+    expect(dialog.querySelector('[data-turn]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
   };
   const closed = () => waitFor(() => expect(queryView()).toBeNull());
   const back = async () => {
@@ -283,9 +284,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('a moment goes by', () => {
       act(() => mic?.advance(50));
     });
-    Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question of the whole clip', async (_, reference: string) => {
+    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question of the whole clip', async (_, reference: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
       expect(fake.received[0].input.reference).toBe(reference);
       expect(fake.received[0].input.question).toBe(mic?.transcript);
     });
@@ -299,16 +300,16 @@ describeFeature(feature, ({ Scenario }) => {
     And('he chooses {string}', choose);
     Then('the hold bar is labelled {string}', labelled);
     When('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
-    Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question {string}', async (_, reference: string, question: string) => {
+    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question {string}', async (_, reference: string, question: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
       expect(fake.received[0].input.reference).toBe(reference);
       expect(fake.received[0].input.question).toBe(question);
     });
-    And('the answer shows in the Verse view', answerShows);
+    And('the answer shows in the Talk sheet about Romans 8:11', answerShows);
   });
 
-  Scenario('His question stays shown above Waiting for the tutor until the answer comes', ({ Given, When, Then, And }) => {
+  Scenario('His question stays shown above Waiting for the tutor in the Talk sheet until the answer comes', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern that holds its answers', async (_, weave: string) => {
       await open(weaveOf(weave), { tutor: true });
       fake.autoReply = undefined;
@@ -316,24 +317,25 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
     And('he chooses {string}', choose);
     And('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
-    Then('the Ask box shows his question {string} above Waiting for the tutor', async (_, question: string) => {
+    Then('the Talk sheet shows his question {string} above Waiting for the tutor', async (_, question: string) => {
+      const dialog = await sheetOf();
       await waitFor(() => {
-        const [said, waiting] = Array.from(viewEl().querySelectorAll('[data-ask-pending] p'));
-        expect(said).toHaveTextContent(question);
-        expect(waiting).toHaveTextContent(/Waiting for the tutor/);
+        const said = within(dialog).getByText(question);
+        const waiting = within(dialog).getByText(/^Waiting for the tutor… \d+ s$/);
+        expect(said.compareDocumentPosition(waiting) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       });
     });
     When('the tutor answers', async () => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
       await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
     });
-    Then('the answer shows in the Verse view', answerShows);
-    And('the Ask box shows no pending question', () => {
-      expect(viewEl().querySelector('[data-ask-pending]')).toBeNull();
+    Then('the answer shows in the Talk sheet about Romans 8:11', answerShows);
+    And('the Talk sheet shows no pending question', async () => {
+      expect(within(await sheetOf()).queryByText(/^Waiting for the tutor/)).toBeNull();
     });
   });
 
-  Scenario('A question that could not be sent comes back into the Ask box', ({ Given, When, Then, And }) => {
+  Scenario('A question that could not be sent stays in the Talk sheet with Retry', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern that holds no licence for this phone', async (_, weave: string) => {
       await open(weaveOf(weave), { tutor: true });
       fake.licensed = false;
@@ -341,11 +343,13 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
     And('he chooses {string}', choose);
     And('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
-    Then('the Ask box says {string}', async (_, words: string) => {
-      expect(await within(viewEl()).findByText(words)).toBeInTheDocument();
+    Then('the Talk sheet says {string} with a Retry button', async (_, words: string) => {
+      const dialog = await sheetOf();
+      expect(await within(dialog).findByRole('alert')).toHaveTextContent(words);
+      expect(within(dialog).getByRole('button', { name: 'Retry' })).toBeEnabled();
     });
-    And('the Ask field holds {string}', async (_, question: string) => {
-      await waitFor(() => expect(askField().value).toBe(question));
+    And('the Talk sheet keeps his question {string}', async (_, question: string) => {
+      expect(within(await sheetOf()).getByText(question)).toBeInTheDocument();
     });
   });
 

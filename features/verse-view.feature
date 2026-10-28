@@ -55,8 +55,8 @@ Feature: The Verse view
     And he chooses "Ask the tutor"
     Then the hold bar is labelled "Hold to ask"
     When he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
-    Then the mill received one grist for the lampas app, kind verse-ask, about "Romans 8:11" with the question "What does ζωοποιήσει mean?"
-    And the answer shows in the Verse view
+    Then the mill received one grist for the lampas app, kind bible-talk, about "Romans 8:11" with the question "What does ζωοποιήσει mean?"
+    And the answer shows in the Talk sheet about Romans 8:11
 
   Scenario: Hold to ask shows his words in the Ask box as he says them, not only when the clip ends
     Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a microphone that hears a clip
@@ -69,25 +69,25 @@ Feature: The Verse view
     Then the words on screen are the whole clip
     When he lets go of the hold bar
     And a moment goes by
-    Then the mill received one grist for the lampas app, kind verse-ask, about "Romans 8:11" with the question of the whole clip
+    Then the mill received one grist for the lampas app, kind bible-talk, about "Romans 8:11" with the question of the whole clip
 
-  Scenario: His question stays shown above Waiting for the tutor until the answer comes
+  Scenario: His question stays shown above Waiting for the tutor in the Talk sheet until the answer comes
     Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a recogniser behind a fake Postern that holds its answers
     When he taps the number of verse 11
     And he chooses "Ask the tutor"
     And he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
-    Then the Ask box shows his question "What does ζωοποιήσει mean?" above Waiting for the tutor
+    Then the Talk sheet shows his question "What does ζωοποιήσει mean?" above Waiting for the tutor
     When the tutor answers
-    Then the answer shows in the Verse view
-    And the Ask box shows no pending question
+    Then the answer shows in the Talk sheet about Romans 8:11
+    And the Talk sheet shows no pending question
 
-  Scenario: A question that could not be sent comes back into the Ask box
+  Scenario: A question that could not be sent stays in the Talk sheet with Retry
     Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a recogniser behind a fake Postern that holds no licence for this phone
     When he taps the number of verse 11
     And he chooses "Ask the tutor"
     And he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
-    Then the Ask box says "No licence"
-    And the Ask field holds "What does ζωοποιήσει mean?"
+    Then the Talk sheet says "No licence" with a Retry button
+    And the Talk sheet keeps his question "What does ζωοποιήσει mean?"
 
   Scenario: Copy copies the verse with its link on the last line
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
