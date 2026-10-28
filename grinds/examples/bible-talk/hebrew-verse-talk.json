@@ -115,9 +115,6 @@
     "links.0.lemma": {
       "matches": "ד[ְ-ׇ]*ב[ְ-ׇ]*ר"
     },
-    "greek_offer": {
-      "present": false
-    },
     "setting_offer": {
       "present": false
     }
