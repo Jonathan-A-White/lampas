@@ -11,7 +11,7 @@ export const PREFACE_EDITION_LINE =
 
 /** Where the variant readings come from (docs/greek-edition.md, mw-9ji6ek0.4): the apparatus laid on the Greek, and the 2026 text's changes to the 2018 wording. */
 export const PREFACE_VARIANTS_LINE =
-  'The variant readings Lampas can show beside the Greek are those of the Robinson-Pierpont 2018 edition with its apparatus, and the 2026 changes, where the Robinson-Pierpont 2026 text words a place differently, are applied; the list of them is linked below. The tutor explains a variant when you ask and does not rule on which reading is right.';
+  'The variant readings Lampas can show beside the Greek are those of the Robinson-Pierpont 2018 edition with its apparatus, and the 2026 changes, where the Robinson-Pierpont 2026 text words a place differently, are applied; the list of them is linked below. Five short lessons on variant readings, written for Lampas from public-domain sources, are in the app and read offline; the tutor explains a variant when you ask and, like the lessons, does not rule on which reading is right.';
 
 /** What an Old Testament chapter offers (mw-gdcyf98.22): the Hebrew view and its switch, and the drills; the Diagram is still Greek and English only. A test holds this line to the Reader's behaviour. */
 export const PREFACE_OLD_TESTAMENT_LINE =
