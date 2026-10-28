@@ -1,17 +1,15 @@
 // features/steps/read-aloud-anywhere.steps.tsx — runs features/read-aloud-anywhere.feature: the one small ReadAloud speaker (src/speech/ReadAloud.tsx) on
-// the Grammar sheet, the idea sheet, the new word's sheet, a tutor's kept answer, About's What's new, the sheet shown after an update and a row's More help, over the recording speech fake.
+// the Grammar sheet, the idea sheet, the new word's sheet, About's What's new, the sheet shown after an update and a row's More help, over the recording speech fake.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import type { ReactElement } from 'react';
-import { AnswerCards } from '../../src/Ask';
 import { loadChapter, type Chapter, type GreekWord } from '../../src/data/chapter';
 import { conceptOf } from '../../src/data/grammar-concepts';
 import { db } from '../../src/data/db';
 import { LADDER, ideaOf } from '../../src/data/grammar/ladder';
-import { addAnswer, verseRef } from '../../src/data/repositories/answers';
 import { clearBus } from '../../src/events/bus';
 import { GrammarSheet } from '../../src/GrammarSheet';
 import { IdeaSheet } from '../../src/IdeaSheet';
@@ -46,7 +44,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
     window.location.hash = '';
     stubChapterFetch();
     await db.open();
-    await Promise.all([db.settings.clear(), db.grammarLevels.clear(), db.answers.clear(), db.reviews.clear(), db.words.clear()]);
+    await Promise.all([db.settings.clear(), db.grammarLevels.clear(), db.reviews.clear(), db.words.clear()]);
   });
   AfterEachScenario(() => {
     act(() => stopReading());
@@ -210,20 +208,6 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
     When('he taps Read aloud', () => user.click(readAloud()));
     Then('the phone speaks {string} in {string}', (_, text: string, lang: string) => speaks(text, lang));
     And('the phone speaks {string} in {string}', (_, text: string, lang: string) => speaks(text, lang));
-  });
-
-  Scenario('Each kept answer of the tutor on a verse has the speaker', ({ Given, And, When, Then }) => {
-    Given('a phone with an English and a Greek voice', withBoth);
-    And("the tutor's kept answer {string} is on screen", async (_, answer: string) => {
-      await addAnswer(verseRef('rom', 8, 28), 'What does it mean?', answer, []);
-      render(<AnswerCards verse={28} book="rom" chapter={8} />);
-      await screen.findByText(/means works together/);
-    });
-    When('he taps Read aloud', () => user.click(readAloud()));
-    Then('the phone speaks {string} in {string}', (_, text: string, lang: string) => speaks(text, lang));
-    And('the answer is still on screen', () => {
-      expect(screen.getByText(/means works together/)).toBeVisible();
-    });
   });
 
   Scenario("Each version in What's new has the speaker", ({ Given, And, When, Then }) => {

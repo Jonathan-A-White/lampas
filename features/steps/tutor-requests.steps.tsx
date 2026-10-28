@@ -189,11 +189,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       fake.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, answer, words: [] } };
       await typeQuestion(user, viewEl(), question);
     });
-    Then('the verse-ask grist carried 1 request, {string}, as landed version 0.1.86', async (_, summary: string) => {
-      expectOne(await requestsSent('verse-ask'), summary, 'landed', 'version 0.1.86');
+    Then('the bible-talk grist carried 1 request, {string}, as landed version 0.1.86', async (_, summary: string) => {
+      expectOne(await requestsSent('bible-talk'), summary, 'landed', 'version 0.1.86');
     });
-    And('the Verse view shows the answer {string}', async (_, text: string) => {
-      expect(await within(viewEl()).findByText(text)).toBeInTheDocument();
+    And('the Talk sheet shows the answer {string}', async (_, text: string) => {
+      const sheet = await screen.findByRole('dialog', { name: /^Talk about / });
+      expect(await within(sheet).findByText(text)).toBeInTheDocument();
     });
   });
 });

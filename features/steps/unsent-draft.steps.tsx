@@ -197,7 +197,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the heading {string}', tapHeading);
     And('he chooses {string}', choose);
     And('he pastes a prayer of {number} characters into the Ask the tutor box and taps Send', pasteIntoAskAndSend);
-    Then('the mill received one verse-ask grist whose question is the whole prayer of {number} characters', (_, length: number) => receivedWhole('verse-ask', length));
+    Then('the mill received one bible-talk grist whose question is the whole prayer of {number} characters', (_, length: number) => receivedWhole('bible-talk', length));
     When('he presses Back', pressBack);
     And('he taps the heading {string} again', tapHeading);
     And('he chooses {string} again', choose);

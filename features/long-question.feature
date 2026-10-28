@@ -25,7 +25,7 @@ Feature: A long pasted question is kept and sent whole, never cut
     When he taps the heading "Walking by the Spirit"
     And he chooses "Ask the tutor"
     And he pastes a prayer of 3000 characters into the Ask the tutor box and taps Send
-    Then the mill received one verse-ask grist whose question is the whole prayer of 3000 characters
+    Then the mill received one bible-talk grist whose question is the whole prayer of 3000 characters
 
   Scenario: A 4500-character prayer pasted into Ask the tutor is kept and not sent
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern

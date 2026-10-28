@@ -51,12 +51,12 @@ Feature: He can send a request to the makers from any tutor talk, whenever he li
     Then the mill received 0 grists for the lampas app, kind feedback
     And the composer says "tap Send to the makers"
 
-  Scenario: Send in the Verse view's Ask with a picture in the row asks the tutor nothing and says where pictures go
+  Scenario: Send in the Verse view's Ask with a picture in the row asks the Talk sheet's tutor, with the picture attached
     Given Lampas is opened on Romans 8 with the Verse view's Ask open behind a fake Postern whose tutor offers nothing
     When he attaches a picture and types "What is the Spirit's work" in the Ask composer
     And he taps Send in the Ask composer
-    Then the mill received 0 grists for the lampas app, kind verse-ask
-    And the composer says "does not look at pictures"
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And that grist has the picture attached
 
   Scenario: Your requests lists a request sent from the Talk sheet
     Given Lampas is opened on the Reader behind a fake Postern whose tutor offers nothing
