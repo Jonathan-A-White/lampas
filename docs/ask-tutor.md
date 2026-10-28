@@ -66,6 +66,10 @@ agrees with it: `focus.heart` on a word (Help with this word, Ask the tutor on t
 grammar term carry none), and on Review's Ask the tutor a screen fact, 'Heart of the word', once the answer is in (it explains the answer, so it waits for it as 'Right answer' does). The input
 schema's description of `heart` tells the tutor to agree with it and build on it. A word with no note carries nothing. `tests/unit/word-heart-tutor.test.ts`.
 
+## The Hebrew word's focus (mw-gdcyf98.20)
+
+A Hebrew word's sheet (an Old Testament chapter) has Help with this word under its Study row: Grammar, Syllables and sounds and Ask the tutor, and a term of its Parsing opens the Grammar sheet, whose Ask the tutor asks about the term. Each sends the `focus` `{form, lemma, parse, kind, language: 'he'}` (the form pointed, cantillation off: `WordHelp.language` in `src/WordSheet.tsx`, `helpWithWord` in `src/reader/useReaderTutor.ts`), which the input schema already allowed; Syllables and sounds is `hebrewSoundAsk` (`src/services/talk.ts`), shared with the Hebrew guide, and speaks the word in the he-IL voice first. The instructions' 'Help with a word' (`kind` `sound`: `syllables` and `transliteration`; `grammar` or `word`: what the pointed form is) and 'Help with a grammar term' (a Hebrew word's term is explained in Hebrew) say how to answer; example `hebrew-word-help`. A Hebrew lemma in `words_to_add` (its pointed TBESH headword; the language is read from the script, U+0590-05FF) is added with `lang` `hbo` (`addLemmaToLearn` in `src/data/answerWord.ts`, `languageOfLemma`), and a `{kind: 'word'}` link for one is drawn in the Hebrew face with a Word chip that opens the Hebrew word's sheet over the Talk sheet (`TutorLinks`, `hebrewLinkLemma`); example `hebrew-add-to-words`. `features/hebrew-word-sheet.feature`, `features/word-help.feature`, `features/word-ask-tutor.feature`, `features/hebrew-talk.feature`, `tests/unit/answer-word-hebrew.test.ts`, `tests/e2e/hebrew-word-sheet.spec.ts`.
+
 ## Suggested questions
 
 `suggestionsFor(name)` (`src/tutor/screen.ts`): two or three per screen, shown by the sheet as buttons while the talk has no turn and nothing is

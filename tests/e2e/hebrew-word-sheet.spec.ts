@@ -4,6 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { shelveLexicons, switchOnResources } from './long-library';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -76,4 +77,46 @@ test('#/?word=H7225 opens the sheet of רֵאשִׁית with no parsing', async 
   await expect(sheet.getByTestId('sheet-gloss')).toHaveText('first, beginning');
   await expect(sheet.getByTestId('sheet-parse')).toHaveCount(0);
   await noSideways(page);
+});
+
+test('the sheet of וַיְהִי in Jonah 1:1 has the Paradigm row, Help with this word and All lexicons, each Hebrew and on the screen', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await switchOnResources(page);
+  await shelveLexicons(page);
+  await page.goto('/#/?b=jon&c=1');
+  await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'Hebrew', exact: true }).click();
+  await page.locator('[data-verse="1"] [data-word="0"]').click();
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(sheet.getByTestId('sheet-paradigm')).toBeVisible();
+
+  // each term of the parsing is a link, thumb-sized
+  const term = sheet.getByTestId('sheet-parse').getByRole('button', { name: 'Verb', exact: true });
+  await expect(term).toBeVisible();
+
+  // Help with this word: Grammar, Syllables and sounds, Ask the tutor
+  const help = sheet.getByRole('group', { name: 'Help with this word', exact: true });
+  for (const name of ['Grammar', 'Syllables and sounds', 'Ask the tutor']) {
+    const button = help.getByRole('button', { name });
+    await button.scrollIntoViewIfNeeded();
+    await expect(button).toBeVisible();
+    expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+  }
+
+  // the door to every Hebrew lexicon, whose sheet draws the word right to left in the Hebrew face
+  const door = sheet.getByRole('group', { name: 'Study', exact: true }).getByRole('button', { name: /^All \d+ lexicons ›$/ });
+  await door.scrollIntoViewIfNeeded();
+  await door.click();
+  const all = page.getByRole('dialog', { name: 'All lexicons', exact: true });
+  const drawn = all.locator('.script-he').first();
+  await expect(drawn).toBeVisible();
+  await expect(drawn).toHaveAttribute('lang', 'he');
+  await all.getByRole('button', { name: 'Done', exact: true }).click();
+
+  const dialog = (await sheet.boundingBox())!;
+  expect(dialog.y).toBeGreaterThanOrEqual(0);
+  expect(dialog.y + dialog.height).toBeLessThanOrEqual(844 + 0.5);
+  await noSideways(page);
+  await shot(page, 'hebrew-word-sheet-full');
 });
