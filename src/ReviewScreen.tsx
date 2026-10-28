@@ -204,7 +204,11 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           <p className="mt-2 text-muted">
             {stillDue === 0 ? `${lessons && lessons.length > 0 ? 'No idea or word is due' : 'Nothing is due'}. Start still asks ten of your words.` : 'The due ones come first, then other words, up to ten.'}
           </p>
-          {both ? <SourceSegment label="Review language" /> : null}
+          {both ? (
+            <div className="-mx-4">
+              <SourceSegment label="Review language" />
+            </div>
+          ) : null}
           {round.nothing ? (
             <p role="status" data-testid="nothing-to-ask" className="mt-4 text-lg">
               Nothing is due and there is no word to ask.
