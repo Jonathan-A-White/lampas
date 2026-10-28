@@ -29,6 +29,10 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   Changes: the PDF's Greek, typed in Latin letters, is set in Greek letters (the PDF's text has no accents, so the Greek here has none); the signs the PDF draws as pictures for the papyri, aleph and the Majority text
   are the letters 𝔓, ℵ and 𝔐; footnotes open under the paragraph that cites them; Chart 1 is left in the edition; the list of abbreviations (p. 587) is not carried
   (scripts/essay-build.ts, src/essay/robinson.json). The 2001 article stays linked as "Original (TC Journal, 2001)", as the older text.
+  The five lessons on variant readings (src/lessons/variants/, written for Lampas, mw-9ji6ek0.17) are written from public-domain sources only: this appendix,
+  [the 2005 edition's preface](https://byzantinetext.com/wp-content/uploads/2016/11/editions-rp-01-preface.pdf) (released with it), [the 2018 edition with its preface](https://byzantinetext.com/wp-content/uploads/2021/03/robinson-pierpont-2018-gnt-edition.pdf)
+  (public domain, as its copyright page says), the 2018 apparatus as the byztxt project keeps it, and the Majority Standard Bible's "CT" footnotes (both credited above); each page ends with its sources.
+  Other scholars (Bruce M. Metzger and Bart D. Ehrman, Kurt and Barbara Aland, Zane Hodges and Arthur Farstad, Tommy Wasserman and Peter Gurry) are named as further reading, and nothing is quoted from a licensed book.
 - **[Tyndale House's Brief lexicon of the Greek NT, extended (TBESG), from STEPBible](https://www.stepbible.org).** Licensed
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House, Cambridge. The words' lemmas,
   glosses and definitions (the definitions are Abbott-Smith's). Data used under the licence. The notes on "The heart of the word" (src/data/wordHeart.ts) are written for Lampas and checked against these definitions.
