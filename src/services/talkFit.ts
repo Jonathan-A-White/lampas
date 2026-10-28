@@ -43,12 +43,14 @@ export const dropMaps: Cut<TalkRequest> = (request) => (request.maps ? without(r
 export const dropOlderHeldPassage: Cut<TalkRequest> = (request) =>
   request.held_passages && request.held_passages.length > 1 ? { ...request, held_passages: request.held_passages.slice(0, -1) } : null;
 
-/** The lesser fields the tutor can answer without, cut before the newest fetched passage and the last turns are touched (mw-5r3p30.825: his Revelation 6 request weighed 8,000 of 9,400 bytes in
- * fields that were never cut, and the passage the tutor asked for was the first thing to go). What the rusty items and Today hold are offers the tutor may do without for a turn; his solid words
- * go but for their count. Each returns null when the request has none. */
-export const dropRusty: Cut<TalkRequest> = (request) => (request.rusty ? without(request, 'rusty') : null);
-export const dropToday: Cut<TalkRequest> = (request) => (request.today ? without(request, 'today') : null);
-export const dropSolidWords: Cut<TalkRequest> = (request) => (request.solid_words.length > 0 ? { ...request, solid_words: [] } : null);
+/**
+ * The lesser fields the tutor can answer without, cut to make room for a fetched passage before it or the last turns are touched (mw-5r3p30.825: his Revelation 6 request weighed about 8,700 of
+ * 9,400 bytes in fields that were never cut, and the passage the tutor asked for was the first thing to go). What the rusty items and Today hold are offers the tutor may do without for a turn;
+ * his solid words go but for their count. Each returns null when the request holds no passage (a talk that fetched nothing keeps them) or has none of the field.
+ */
+export const dropRusty: Cut<TalkRequest> = (request) => (request.held_passages?.length && request.rusty ? without(request, 'rusty') : null);
+export const dropToday: Cut<TalkRequest> = (request) => (request.held_passages?.length && request.today ? without(request, 'today') : null);
+export const dropSolidWords: Cut<TalkRequest> = (request) => (request.held_passages?.length && request.solid_words.length > 0 ? { ...request, solid_words: [] } : null);
 
 /** The longest of a held passage's two texts must stay at least this long (characters) for the fit to clip it: a passage cut shorter than a few verses is not worth sending. */
 export const HELD_CLIP_FLOOR = 600;
