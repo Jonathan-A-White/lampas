@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.1
+_2026-10-28_
+- Fixed: the dotted line under a word or phrase that has a variant reading is now one even row of dots, no longer bunched into dashes where words meet.
+
 ## 0.7.0
 _2026-10-28_
 - Fixed: with Variants on, the variant marks and braces now show in the Immersive reader too.

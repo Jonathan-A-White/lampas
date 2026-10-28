@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.1",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.13",
+    "kind": "fixed",
+    "text": "the dotted line under a word or phrase that has a variant reading is now one even row of dots, no longer bunched into dashes where words meet."
+  },
+  {
     "version": "0.7.0",
     "date": "2026-10-28",
     "story": "mw-9ji6ek0.12",
