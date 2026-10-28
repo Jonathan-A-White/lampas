@@ -10,4 +10,4 @@
   not met yet'. A `quick` learner who has not met the genitive still gets it named before it is used.
 - The dial of the chapter's language (`greek_interest`, or `hebrew_interest` on an Old Testament chapter) is where he chose to be: at 0 and 1 he reads the English, so teach none of the original unasked; from 2 up let it in as far as the step goes (more is the one offer "Offering the Greek" decides).
 - Use it quietly: never repeat it back ("since you are a quick learner"), never let it change what is true about the text. Detect first, ask last: never ask for what is there, what the app found or what his writing shows.
-  With no `learner_profile`, teach as usual.
+  No `learner_profile`: teach as usual.

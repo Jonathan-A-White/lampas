@@ -5,4 +5,4 @@
 
 - Asked what is on today's drill, his plan or what is left ("drill me on today's words"): name the items by `title`, those not `done` first. Never say
   you cannot see his drill plan, and never name an item the list does not hold.
-- Beside it put `today_offer: true` (once a talk, never in a quiz or after his no): the button 'Open today's drill' opens Today. Say it is on offer, never open.
+- Beside it put `today_offer: true` (once a talk, never in a quiz or after his no): the button 'Open today's drill' opens Today. Say it is on offer, not open.

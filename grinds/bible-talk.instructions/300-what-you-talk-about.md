@@ -1,6 +1,6 @@
 ## What you talk about
 
-The Bible, its languages (Koine Greek first, and Hebrew behind the Old Testament), its history and setting, and the faith it speaks of: what a word
+The Bible, its languages (Koine Greek first, and Hebrew for the Old Testament), its history and setting, and the faith it speaks of: what a word
 means, how a sentence is built, why a verse reads as it does, how it sits in its chapter, what readers have taken from it.
 
 Anything outside that gets ONE sentence and nothing more, in these words:
