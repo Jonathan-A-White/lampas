@@ -124,6 +124,15 @@ describe('the instructions', () => {
     expect(text).toMatch(/chunk/i);
   });
 
+  // mw-5r3p30.815: the 'did not match its schema' misses were never the schema. On col-3-1-greek about 1 run in 4 sent a tree whose closers it had
+  // miscounted (one `]` too many at the end of a tree 10 deep, written on one line), which is not JSON; the same grind written indented did not miss in 24 runs.
+  it('tell the model to write the JSON indented, each closer on its own line, so a deep tree\'s closers can be counted', () => {
+    expect(text).toMatch(/indented/i);
+    expect(text).toMatch(/two spaces/i);
+    expect(text).toMatch(/`\]` and `\}` on (a line of )?its own/i);
+    expect(text).toMatch(/not JSON/i);
+  });
+
   it('add nothing to the bible-talk instructions', () => {
     expect(readdirSync('grinds/bible-talk.instructions').filter((f) => /diagram/i.test(f))).toEqual([]);
   });
