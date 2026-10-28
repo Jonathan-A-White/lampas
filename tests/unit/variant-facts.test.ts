@@ -7,10 +7,11 @@ import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setSetting } from '../../src/settings/store';
 import { variantsSetting, variantWitnessesSetting } from '../../src/settings/definitions';
-import { buildTalkRequest } from '../../src/services/talk';
+import { buildTalkRequest, type TalkRequest } from '../../src/services/talk';
 import { dropVariants } from '../../src/services/talkFit';
 import { lampasRegistry } from '../../src/tutor/registry';
-import { VARIANT_QUESTION, variantFactsOf } from '../../src/tutor/variantFacts';
+import { BYZANTINE, NA, type ReadingSet } from '../../src/reader/readingSets';
+import { VARIANT_QUESTION, variantFactsHeld, variantFactsOf } from '../../src/tutor/variantFacts';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
 const rev3 = JSON.parse(readFileSync('public/data/rev/3.json', 'utf8')) as Chapter;
@@ -62,6 +63,46 @@ describe('variantFactsOf', () => {
   it('says nothing for a chapter with no variants', () => {
     expect(variantFactsOf({ variants: [] }, [1], ON)).toBeUndefined();
     expect(variantFactsOf({}, [1], ON)).toBeUndefined();
+  });
+});
+
+describe('which reading he is reading (mw-9ji6ek0.26)', () => {
+  const mine: ReadingSet = { id: 'mine', name: 'Mine', choices: { 'rev 3:2 στήρισον': 1 } };
+
+  it('under NA, Revelation 3:2 says he is reading NA\'s reading in the unit NA changes, and names the set once', () => {
+    const facts = variantFactsOf(rev3, [2], { ...ON, readingSet: NA });
+    expect(facts?.read_as).toBe('NA');
+    expect(facts?.units[0]).not.toHaveProperty('he_is_reading');
+    expect(facts?.units[1].he_is_reading).toBe('he is reading: ἔμελλον ἀποθανεῖν, I was about to die (NA)');
+    expect(facts?.units.filter((u) => 'he_is_reading' in u)).toHaveLength(1);
+  });
+
+  it('under Byzantine, or with no set, nothing new', () => {
+    const plain = variantFactsOf(rev3, [2], ON);
+    expect(variantFactsOf(rev3, [2], { ...ON, readingSet: BYZANTINE })).toEqual(plain);
+    expect(JSON.stringify(plain)).not.toMatch(/he is reading|read_as/);
+  });
+
+  it('a reading that leaves the words out says so (NA at 3:7)', () => {
+    const facts = variantFactsOf(rev3, [7], { ...ON, readingSet: NA });
+    expect(facts?.units.map((u) => u.he_is_reading)).toContain('he is reading: left out (NA)');
+  });
+
+  it('a set of his own names itself, and says nothing in a unit where it chose the text\'s own', () => {
+    const facts = variantFactsOf(rev3, [2], { ...ON, readingSet: mine });
+    expect(facts?.read_as).toBe('Mine');
+    expect(facts?.units[0].he_is_reading).toBe('he is reading: τήρησον, keep (Mine)');
+    expect(facts?.units[1]).not.toHaveProperty('he_is_reading');
+  });
+
+  it('follows the Bible talk request: variantFactsHeld takes the set in force', () => {
+    const held = variantFactsHeld(rev3, [{ n: 2 }], { variants: 'all', variantWitnesses: 'ecm' }, NA);
+    expect(held?.read_as).toBe('NA');
+    expect(variantFactsHeld(rev3, [{ n: 2 }], { variants: 'all', variantWitnesses: 'ecm' })?.read_as).toBeUndefined();
+    // the set in force is the last of buildTalkRequest's many optional arguments, after `maps` (20 after the settings)
+    const build = buildTalkRequest as (...args: unknown[]) => TalkRequest;
+    const request = build({ title: 'Revelation 3:2', chapter: rev3, verse: verse2 }, 'Which reading am I reading?', [], [], { variants: 'all', variantWitnesses: 'ecm' }, ...Array<undefined>(19).fill(undefined), [], NA);
+    expect(request.variants?.read_as).toBe('NA');
   });
 });
 

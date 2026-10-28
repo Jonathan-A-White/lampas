@@ -13,7 +13,7 @@ import { learnerGrammar } from '../data/grammar/learnerGrammar';
 import { learnerSummary } from '../data/learnerSummary';
 import { rustyNow } from '../data/learnerRusty';
 import { todayEntries, todayNow } from '../data/learnerToday';
-import { getWorks, listedWord, moveToFrontier, restoreWord, shelfOf, type ItemRef } from '../data/repositories';
+import { getActiveSet, getWorks, listedWord, moveToFrontier, restoreWord, shelfOf, type ItemRef } from '../data/repositories';
 import { RUSTY_MAX } from '../data/rusty';
 import { memorizingEvidenceNow } from '../memorize/evidence';
 import { memorizeVerse, moveVerse, startSession, unmemorizeVerse } from '../memorize/commands';
@@ -129,7 +129,7 @@ async function variantsNow(): Promise<unknown> {
   if (variants === 'off') throw new Error('Variants is Off, so the app marks no variant readings');
   const { book, chapter, verse } = readerOf(window.location.hash);
   if (!book || !chapter) throw new Error('he is not reading a chapter');
-  const facts = variantFactsOf(await loadChapter(book, chapter), verse === undefined ? [] : [verse], { variants, witnesses });
+  const facts = variantFactsOf(await loadChapter(book, chapter), verse === undefined ? [] : [verse], { variants, witnesses, readingSet: await getActiveSet() });
   return facts ?? { chapter_units: 0, units: [] };
 }
 
