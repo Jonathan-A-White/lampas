@@ -14,7 +14,7 @@
 // before and after in the chapter. Nothing else differs, so there is one view engine.
 import { type ReactNode, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnswerCards, AskComposer, AskStatus } from './Ask';
+import { AskComposer } from './Ask';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
 import { InLogosDoors } from './library/InLogosDoors';
@@ -36,7 +36,7 @@ import { useCopyFormat } from './copy/useCopyFormat';
 import { takeByHand } from './copy/useCopyHold';
 import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
-import type { AskState } from './useAsks';
+import type { AskState } from './pending/pendingAsks';
 import { actionsFor, useHebrewOn, type VerseAction } from './verse/action';
 import { useAiAllowed } from './gate/licenceContext';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from './resources/audioBible';
@@ -47,6 +47,7 @@ import { useSetting } from './settings/store';
 import { isOrdered, rowAttrs } from './reader/sourceText';
 import type { WovenVerse } from './data/weave';
 import type { WovenReading } from './services/reading';
+import type { OutgoingPicture } from './talk/pictures';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
 export interface ListenPlayer {
@@ -87,9 +88,9 @@ export interface VerseViewProps {
   /** the Reader's Weave of each verse of the chapter (in step with `chapterText.verses`), or null when it is not woven: the English Diagram draws the words it shows in Greek in Greek */
   wovenChapter?: readonly WovenVerse[] | null;
   onRetryRead: () => void;
-  /** the question in flight for this verse (Ask the tutor), and the way to send one (the composer at the foot, by voice or by hand) */
+  /** the Talk session's state for this verse or passage (a question in flight keeps the composer from sending another), and the way to send one to that Talk sheet (the composer at the foot, by voice or by hand) */
   ask: AskState | undefined;
-  onAsk: (verse: Verse, question: string) => void;
+  onAsk: (verse: Verse, question: string, pictures?: OutgoingPicture[]) => void;
   prefill: { verse: number; text: string } | null;
   /** Talk about this verse: the Bible talk's sheet (src/Talk.tsx) on the verse, for a talk with history */
   onTalk: () => void;
@@ -255,8 +256,6 @@ export function VerseView(props: VerseViewProps) {
           ) : null}
           {action === 'ask' && ai ? (
             <>
-              <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} chapterText={chapterText} onLook={onLook} />
-              <AskStatus verse={verse} state={ask} onAsk={onAsk} />
               {passage ? null : (
                 <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
                   Talk about verse {verse.n}

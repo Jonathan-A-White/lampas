@@ -1,6 +1,6 @@
 // tests/unit/tutor-doors.test.tsx — every door to the tutor opens the one Talk session with the same tools (mw-5r3p30.842). His report: the tutor he reaches with a
 // two-finger tap (the Reader's Talk bar) can send to the makers, and from other doors it answers "I can't do that". The Verse view's Ask the tutor was a second tutor (the verse-ask
-// grind, which has no feedback_offer, no `go`, no `do`, only Ask by in settings_changes). Each door below asks 'send this to the makers: test' and is checked three ways: the grist
+// grind, which has no feedback_offer, no `go`, no `do`, only Ask by in settings_changes); it now sends to the Talk session as every other door does. Each door below asks 'send this to the makers: test' and is checked three ways: the grist
 // is the Talk session's (kind bible-talk), the Talk sheet it opens shows the tutor's offer, Send this to the makers, and the tap files a tutor-ask request.
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -113,16 +113,9 @@ const DOORS: Record<string, () => Promise<void>> = {
   },
 };
 
-/** The Verse view's Ask the tutor is a second tutor (the verse-ask grind) and is the one door that is narrower: mw-5r3p30.842 found that sending its question to the Talk session
- * breaks the Ask box's own waiting, failed and answer cards and eleven feature files (verse-view, ask-composer, ask-by, hebrew-tutor, passage-view, tutor-aloud, ...), a product decision
- * for the story that removes the duplicate buttons (mw-5r3p30.843). `it.fails` keeps the gap in the suite: it turns red the day the Ask goes to the Talk session, and the entry then
- * moves into the doors that pass. */
-const NARROW_DOORS = new Set(["the Verse view's Ask the tutor"]);
-
 describe('every door opens the one Talk session, with its tools', () => {
   for (const [door, open] of Object.entries(DOORS)) {
-    const test = NARROW_DOORS.has(door) ? it.fails : it;
-    test(`${door}: the question goes to the Talk session, whose offer sends to the makers`, async () => {
+    it(`${door}: the question goes to the Talk session, whose offer sends to the makers`, async () => {
       await open();
       await waitFor(() => expect(questionsAsked()).toHaveLength(1));
       // the tool set is the Talk session's: the bible-talk grind, never the verse-ask grind that has no offer for the makers
@@ -143,9 +136,9 @@ const sources = (dir: string): string[] =>
   });
 
 describe('no screen has a tutor of its own', () => {
-  it('the verse-ask grind is asked by useAsks alone (the Verse view\'s Ask, the one narrow door)', () => {
+  it('no screen asks the verse-ask grind: askTutor has no caller in src/', () => {
     const callers = sources('src').filter((file) => /from '\.\/services\/tutor'|from '\.\.\/services\/tutor'/.test(readFileSync(file, 'utf8')) && /\baskTutor\b/.test(readFileSync(file, 'utf8')));
-    expect(callers.map((file) => file.replace(/\\/g, '/')).sort()).toEqual(['src/useAsks.ts']);
+    expect(callers.map((file) => file.replace(/\\/g, '/')).sort()).toEqual([]);
   });
 
   it('every sheet that talks to the tutor is the Talk sheet', () => {
