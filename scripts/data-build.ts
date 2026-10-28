@@ -332,7 +332,7 @@ export function buildData(
         parse: Object.fromEntries(codes.map((c) => [c, decodeParse(c)])),
         verses: built,
       };
-      if (units.length) chapter.variants = units.flatMap((u): VariantUnit[] => (u.english ? [finishUnit({ ...u, english: u.english })] : []));
+      if (units.length) chapter.variants = units.flatMap((u): VariantUnit[] => (u.english ? [finishUnit({ ...u, english: u.english }, built.find((v) => v.n === u.v))] : []));
       // The first use of a lemma, in canonical order, names its Strong's number and part of speech.
       for (const w of built.flatMap((v) => v.g)) {
         if (!(w.l in lexicon)) lexicon[w.l] = { g: chapter.lex[w.s].g, s: w.s, c: splitParse(w.p).pos };

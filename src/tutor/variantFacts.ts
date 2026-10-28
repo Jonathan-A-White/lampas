@@ -43,10 +43,10 @@ export interface VariantSettings {
 }
 
 /** The units one verse (or the verses of a passage) carries, and the chapter's count; undefined with Variants Off and for a chapter with no unit shown. */
-export function variantFactsOf(chapter: Pick<Chapter, 'variants'>, verses: readonly number[], { variants, witnesses }: VariantSettings, isAsked: (unit: VariantUnit) => boolean = () => false): VariantFacts | undefined {
+export function variantFactsOf(chapter: Pick<Chapter, 'variants'> & Partial<Pick<Chapter, 'verses'>>, verses: readonly number[], { variants, witnesses }: VariantSettings, isAsked: (unit: VariantUnit) => boolean = () => false): VariantFacts | undefined {
   if (variants === 'off') return undefined;
   const filter: VariantFilter = { english: variants, witnesses };
-  const shown = shownUnits(chapter.variants ?? [], filter);
+  const shown = shownUnits(chapter.variants ?? [], filter, chapter.verses);
   if (shown.length === 0) return undefined;
   const units = shown
     .filter((s) => verses.includes(s.unit.v))

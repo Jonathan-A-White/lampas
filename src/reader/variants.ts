@@ -5,7 +5,8 @@
 // The header's chip (src/reader/VariantChip.tsx) counts the units shown; VerseText marks their words and draws a brace after them (src/reader/VariantBrace.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
-import type { Chapter, VariantCode, VariantUnit, VariantWitness } from '../data/chapter';
+import type { Chapter, VariantCode, VariantUnit, VariantWitness, Verse } from '../data/chapter';
+import { plainEnglish, sameInVerse } from '../data/variantVerse';
 import { getVariantsLastOn } from '../data/repositories';
 import { variantsSetting, variantWitnessesSetting } from '../settings/definitions';
 import type { Variants, VariantWitnesses } from '../settings/definitions/variants';
@@ -28,20 +29,14 @@ const CHIPS: readonly WitnessChip[] = ['B', 'NA', 'ECM'];
 /** The chip of an apparatus code. */
 export const chipOf = (code: VariantCode): WitnessChip => CHIP[WITNESS[code]];
 
-/** An English reading with case, punctuation and white space set aside, for comparing two (the build's changesEnglish compares so, scripts/data/variantEnglish.ts). */
-export const plainEnglish = (s: string): string =>
-  s
-    .normalize('NFC')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim();
+export { plainEnglish };
 
 /** One other reading of a unit: its Greek as the apparatus writes it ('' when it leaves the words out), its English, and its code. */
 export interface ShownReading {
   greek: string;
   english: string;
   code: VariantCode;
-  /** its English is the text's own, case and punctuation aside */
+  /** its English leaves the verse's English as the text's own does: the snippets agree, or (with the verse) the verse reads the same either way, case and punctuation aside */
   sameEnglish: boolean;
 }
 
@@ -51,21 +46,22 @@ export interface ShownUnit {
   readings: readonly ShownReading[];
 }
 
-/** The readings of `unit` that pass `filter`: a witness no wider than the filter's, and under 'english' an English that is not the text's. */
-export function shownReadings(unit: VariantUnit, filter: VariantFilter): ShownReading[] {
-  const base = plainEnglish(unit.english.base);
+/** The readings of `unit` that pass `filter`: a witness no wider than the filter's, and under 'english' an English that changes the verse (`verse` is the unit's;
+ * without it only the unit's own snippets are compared). */
+export function shownReadings(unit: VariantUnit, filter: VariantFilter, verse?: Pick<Verse, 'e'>): ShownReading[] {
   return unit.alts
     .map((alt, i): ShownReading => {
       const english = unit.english.alts[i] ?? '';
-      return { greek: alt.text, english, code: alt.code, sameEnglish: plainEnglish(english) === base };
+      return { greek: alt.text, english, code: alt.code, sameEnglish: sameInVerse(verse, unit.w, unit.english.base, english) };
     })
     .filter((r) => RANK[WITNESS[r.code]] <= RANK[filter.witnesses] && (filter.english === 'all' || !r.sameEnglish));
 }
 
 /** The units of `units` shown under `filter`, each with its shown readings; a unit none of whose readings passes is left out. */
-export function shownUnits(units: readonly VariantUnit[], filter: VariantFilter): ShownUnit[] {
+export function shownUnits(units: readonly VariantUnit[], filter: VariantFilter, verses: readonly Verse[] = []): ShownUnit[] {
+  const verseOf = new Map(verses.map((v) => [v.n, v]));
   return units.flatMap((unit) => {
-    const readings = shownReadings(unit, filter);
+    const readings = shownReadings(unit, filter, verseOf.get(unit.v));
     return readings.length ? [{ unit, readings }] : [];
   });
 }
@@ -107,10 +103,10 @@ export interface ReaderVariants {
 /** The value a tap on the chip turns Variants on to: the last value it had before it was turned off, 'english' the first time. */
 export const onValue = (lastOn: Variants | null | undefined): Exclude<Variants, 'off'> => (lastOn === 'all' ? 'all' : 'english');
 
-export function readerVariants(chapter: Pick<Chapter, 'variants'> | null, { variants, witnesses, lastOn }: { variants: Variants; witnesses: VariantWitnesses; lastOn?: Variants | null }): ReaderVariants {
+export function readerVariants(chapter: (Pick<Chapter, 'variants'> & Partial<Pick<Chapter, 'verses'>>) | null, { variants, witnesses, lastOn }: { variants: Variants; witnesses: VariantWitnesses; lastOn?: Variants | null }): ReaderVariants {
   const units = chapter?.variants ?? [];
   const on = variants !== 'off';
-  const shown = shownUnits(units, { english: on ? variants : onValue(lastOn), witnesses });
+  const shown = shownUnits(units, { english: on ? variants : onValue(lastOn), witnesses }, chapter?.verses);
   if (!on || !units.length) return { any: units.length > 0, on, count: shown.length, byVerse: null };
   const byVerse = new Map<number, ShownUnit[]>();
   for (const s of shown) byVerse.set(s.unit.v, [...(byVerse.get(s.unit.v) ?? []), s]);
