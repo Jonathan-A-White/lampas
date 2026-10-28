@@ -176,8 +176,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(logos).toHaveAttribute('aria-checked', 'true'));
     });
     And('he opens Your Logos library from Settings', async () => {
-      // its door is the first row of the Settings home, not of Study resources (mw-5r3p30.752)
-      await user.click(screen.getByRole('button', { name: '‹ Settings' }));
+      // its door is the first row of Study resources (mw-5r3p30.837)
       await user.click(await screen.findByRole('button', { name: /^Your Logos library/ }));
       await screen.findByRole('heading', { name: 'Your Logos library', level: 1 });
     });
