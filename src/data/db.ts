@@ -386,6 +386,8 @@ export interface ReadingRecord {
   /** how far it reached and the verse's word count, as on VerseReading; a reading kept before they existed has neither */
   reached?: number;
   total?: number;
+  /** the mark of the Greek words it was read against (readings.ts indexMarkOf) when the verse's words moved in the RP 2026 overlay; absent on a reading of any other verse, and on one kept before the overlay, whose indexes are stale */
+  marks?: string;
 }
 
 /**

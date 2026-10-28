@@ -14,12 +14,14 @@ export const DIAGRAM_VERSION = '1';
  * Colossians 3:2 hung μὴ on φρονεῖτε, the stated verb, not on τὰ ἐπὶ τῆς γῆς (mw-5r3p30.800).
  * The RP 2026 overlay (data/rp2026-overlay.json) moved or changed the Greek words of Matthew 26:29, Philemon 1:1 and Revelation 13:14, and a Greek-mode row holds the verse's word
  * indexes (mw-9ji6ek0.9); an English row holds the English chunks' indexes, which the overlay kept. tests/unit/diagrams-redrawn.test.ts fails on an overlay entry with no mark here.
+ * `moved` is set where the overlay moved or removed a word, so that any Greek word index of the verse kept before is stale: a kept Greek reading holds such indexes too, and
+ * src/data/repositories/readings.ts keeps one under the mark from then on (mw-9ji6ek0.11). tests/unit/readings-redrawn.test.ts fails on an overlay entry that moves a word and is not marked so.
  */
-export const REDRAWN: { book: string; chapter: number; verse: number; mark: string; modes?: DiagramMode[] }[] = [
+export const REDRAWN: { book: string; chapter: number; verse: number; mark: string; modes?: DiagramMode[]; moved?: true }[] = [
   { book: 'Colossians', chapter: 3, verse: 2, mark: 'col-3-2' },
   { book: 'Matthew', chapter: 26, verse: 29, mark: 'rp2026-mat-26-29', modes: ['greek'] },
-  { book: 'Philemon', chapter: 1, verse: 1, mark: 'rp2026-phm-1-1', modes: ['greek'] },
-  { book: 'Revelation', chapter: 13, verse: 14, mark: 'rp2026-rev-13-14', modes: ['greek'] },
+  { book: 'Philemon', chapter: 1, verse: 1, mark: 'rp2026-phm-1-1', modes: ['greek'], moved: true },
+  { book: 'Revelation', chapter: 13, verse: 14, mark: 'rp2026-rev-13-14', modes: ['greek'], moved: true },
 ];
 
 /** The version a unit's diagram is kept under: the grind's, marked when the unit ('Colossians 3:2', 'Colossians 3:1-2') holds a verse of REDRAWN that applies in this mode. */
