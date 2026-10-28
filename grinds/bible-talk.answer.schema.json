@@ -4,6 +4,8 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["answer", "question", "words"],
+  "if": { "required": ["quiz_goal_offer"] },
+  "then": { "required": ["quiz_goal_state"], "properties": { "quiz_goal_state": { "const": "none" } } },
   "properties": {
     "answer": {
       "description": "The reply to what he said, in short plain English; or the one-sentence refusal for anything outside the Bible.",
@@ -69,6 +71,11 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 100
+    },
+    "quiz_goal_state": {
+      "description": "Only in a quiz (mode quiz), written just before `quiz_goal_offer` would be: 'kept' when the request's `quiz_goal` is a string and he has not asked to change it, 'once' when it has `quiz_goal_once`, otherwise 'none'. `quiz_goal_offer` is allowed only with 'none' and then needs this field.",
+      "type": "string",
+      "enum": ["kept", "once", "none"]
     },
     "quiz_goal_offer": {
       "description": "Only in a quiz (mode quiz) with `quiz_goal` null and no `quiz_goal_once`, once you have understood why he wants the quiz: his goal in a few plain words of his own, at most 80 characters ('understanding what the passage says', 'learning Greek words'). The app shows it with Yes, from now on and Just this time buttons and keeps it as his Quiz goal only if he taps Yes. Leave it out once offered, when a goal is kept, and for anything else.",

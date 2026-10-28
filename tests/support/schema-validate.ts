@@ -12,6 +12,9 @@ export interface Schema {
   minLength?: number;
   maxLength?: number;
   anyOf?: Schema[];
+  /** `if` a value fits this schema, it must also fit `then` (the bible-talk answer: a quiz_goal_offer only beside a quiz_goal_state of none) */
+  if?: Schema;
+  then?: Schema;
   const?: unknown;
   minimum?: number;
   maximum?: number;
@@ -19,7 +22,7 @@ export interface Schema {
   $ref?: string;
   $defs?: Record<string, Schema>;
 }
-const KEYWORDS = new Set(['$schema', 'title', 'description', 'type', 'properties', 'required', 'additionalProperties', 'items', 'maxItems', 'minItems', 'minLength', 'maxLength', 'anyOf', 'const', 'enum', 'minimum', 'maximum', '$ref', '$defs']);
+const KEYWORDS = new Set(['$schema', 'title', 'description', 'type', 'properties', 'required', 'additionalProperties', 'items', 'maxItems', 'minItems', 'minLength', 'maxLength', 'anyOf', 'if', 'then', 'const', 'enum', 'minimum', 'maximum', '$ref', '$defs']);
 
 /** The schema a `$ref` names, in the root's `$defs`; a schema with no `$ref` is itself. */
 export function resolveRef(s: Schema, root: Schema): Schema {
@@ -39,6 +42,7 @@ export function validate(value: unknown, schema: Schema, path = '$', root: Schem
   if ('const' in s && value !== s.const) problems.push(`${path}: not ${JSON.stringify(s.const)}`);
   if (s.enum && !s.enum.includes(value)) problems.push(`${path}: not one of ${JSON.stringify(s.enum)}`);
   if (s.anyOf && !s.anyOf.some((option) => validate(value, option, path, root).length === 0)) problems.push(`${path}: matches none of the options`);
+  if (s.if && s.then && validate(value, s.if, path, root).length === 0) problems.push(...validate(value, s.then, path, root));
   if (typeof value === 'number') {
     if (s.minimum !== undefined && value < s.minimum) problems.push(`${path}: below ${s.minimum}`);
     if (s.maximum !== undefined && value > s.maximum) problems.push(`${path}: above ${s.maximum}`);

@@ -84,7 +84,7 @@ describe('the answer', () => {
   it('is described by the answer schema as optional', () => {
     expect(answerSchema.properties.quiz_goal_offer).toBeDefined();
     expect(answerSchema.required).not.toContain('quiz_goal_offer');
-    expect(validate({ ...base, quiz_goal_offer: 'learning Greek' }, answerSchema)).toEqual([]);
+    expect(validate({ ...base, quiz_goal_offer: 'learning Greek', quiz_goal_state: 'none' }, answerSchema)).toEqual([]);
     expect(validate({ ...base, quiz_goal_offer: 'x'.repeat(QUIZ_GOAL_MAX + 1) }, answerSchema)).not.toEqual([]);
   });
 });
