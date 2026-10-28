@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.20
+_2026-10-28_
+- New: Every grammar lesson now has an Ask the tutor button, and the tutor knows which lesson you are on and the step.
+
 ## 0.5.19
 _2026-10-27_
 - Fixed: The Font chooser in Settings now shows each font in its own face, whichever font you have picked.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.5.20",
+    "date": "2026-10-28",
+    "story": "mw-5r3p30.818",
+    "kind": "new",
+    "text": "Every grammar lesson now has an Ask the tutor button, and the tutor knows which lesson you are on and the step."
+  },
+  {
     "version": "0.5.19",
     "date": "2026-10-27",
     "story": "mw-5r3p30.822",
