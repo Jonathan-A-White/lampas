@@ -216,7 +216,8 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the row has no Goal chip and no Tip chip, and the Today chip', async () => {
       await todayChip();
       // the chapter's New words chip may come as the chapter's words are read; it is the Reader's own, the plan adds nothing else
-      await waitFor(() => expect(chipButtons().map((b) => b.dataset.testid).filter((id) => id !== 'new-words')).toEqual(['today-chip']));
+      // and the variants chip of a chapter that has variants is the chapter's own too (mw-9ji6ek0.5)
+      await waitFor(() => expect(chipButtons().map((b) => b.dataset.testid).filter((id) => id !== 'new-words' && id !== 'variants-chip')).toEqual(['today-chip']));
     });
   });
 

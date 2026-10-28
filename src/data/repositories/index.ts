@@ -66,6 +66,8 @@ export {
   setVoice,
   setWeave,
   setWeaveGrammar,
+  getVariantsLastOn,
+  toggleVariants,
 } from './settings';
 export type { PlayTo } from '../../speech/readSpan';
 export type { DeveloperMode, GrammarMove, Immersive, PickerGrammar, ReaderLanguage, ReaderView, ReadingLayout, ReadTutor, SectionHeadings, Tips, VoiceLanguage, Weave, WeaveGrammar } from './settings';

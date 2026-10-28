@@ -3,10 +3,12 @@
 // The Today chip (src/today/TodayChip.tsx, mw-1fwagb.6) replaced the Due and Plan chips: 'Today · 2 of 6' with Tick boxes On, 'Today' with them Off, and a tap opens Today, where Review and
 // the reading plan's chapter now are. It is drawn while any Daily piece is On (all are to start), so the row is there then; with every piece Off it has no chip, and a reader with no Greek activity
 // has no Goal or Tip chip beside it (the 'New' words chip is the chapter's own and was always drawn).
+// The variants chip of a chapter that has variants ('⁑ 3', src/reader/VariantChip.tsx, mw-9ji6ek0.5) follows the chips, so it stays in view where the row scrolls.
 // The count of words woven into Greek ('<n> words in Greek', a status, not a control) sits at the row's right end. A chapter being read aloud
-// hides the chips, as it hid the strips; the count stays.
+// hides the chips (the variants chip too), as it hid the strips; the count stays.
 import type { SourceLanguage } from './data/chapter';
 import { GoalChip } from './GoalStrip';
+import { VariantChip } from './reader/VariantChip';
 import { NewWordsChip } from './NewWordsStrip';
 import { TipChip } from './tips/TipCard';
 import { useOpenTip } from './tips/useOpenTip';
@@ -21,6 +23,7 @@ export function ReaderChips({
   onTip,
   wovenCount,
   source = 'grc',
+  variants = null,
 }: {
   hidden: boolean;
   newWords: number;
@@ -31,6 +34,8 @@ export function ReaderChips({
   wovenCount: number | null;
   /** the language the woven words are in: 'Greek', or 'Hebrew' on an Old Testament chapter */
   source?: SourceLanguage;
+  /** the variants chip (src/reader/VariantChip.tsx): how many units the filter shows and whether Variants is on; null on a chapter with no variants and in the Immersive reader */
+  variants?: { count: number; on: boolean } | null;
 }) {
   const goal = useGoalProgress();
   const tip = useOpenTip();
@@ -49,6 +54,7 @@ export function ReaderChips({
           <NewWordsChip count={newWords} onOpen={onTeach} />
         </>
       )}
+      {variants && !hidden ? <VariantChip count={variants.count} on={variants.on} /> : null}
       {wovenCount === null ? null : (
         <p data-testid="weave-count" className="ml-auto flex shrink-0 items-center whitespace-nowrap pl-2 text-sm text-muted">
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in {source === 'hbo' ? 'Hebrew' : 'Greek'}

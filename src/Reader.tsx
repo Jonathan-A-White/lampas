@@ -61,6 +61,7 @@ import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciati
 import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
 import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
+import { useReaderVariants } from './reader/variants';
 import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
@@ -252,6 +253,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, [chapter, BOOK, CHAPTER]);
   const [action, chooseAction] = useVerseAction(hbo ? 'hbo' : 'grc');
   const woven = useWoven(chapter, settings);
+  // the variant units Settings > Variants shows (mw-9ji6ek0.5): marked in the text with a brace after them, counted by the chip in the row under the header; none in the Immersive reader
+  const variants = useReaderVariants(chapter, immersive);
+  const variantsOf = useCallback((n: number) => variants.byVerse?.get(n), [variants]);
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
   const copyHold = useCopyHold(chapter, view ? { view, woven } : undefined, openChapter);
   // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
@@ -460,6 +464,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         onTip={() => setTipOpen((open) => !open)}
         wovenCount={woven ? wovenCount : null}
         source={source}
+        variants={variants.any && !immersive ? { count: variants.count, on: variants.on } : null}
       />
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
       </div>
@@ -508,6 +513,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onPlay={(n) => readFrom(n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
+                      variantsOf={variantsOf}
                     />
                   ) : (
                     <VerseLine
@@ -522,6 +528,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onPlay={() => readFrom(first.n, false)}
                       onLook={setLookup}
                       talk={verseTalk}
+                      variants={variantsOf(first.n)}
                     />
                   )}
                 </Fragment>

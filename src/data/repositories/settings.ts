@@ -12,10 +12,11 @@ import { playToOf, type PlayTo } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
-import { chapterButtonsSetting, immersiveSetting, themeSetting, tipsSetting, weaveSetting } from '../../settings/definitions';
+import { chapterButtonsSetting, immersiveSetting, themeSetting, tipsSetting, variantsSetting, weaveSetting } from '../../settings/definitions';
 import type { ChapterButtons } from '../../settings/definitions/chapterButtons';
 import type { Immersive } from '../../settings/definitions/immersive';
 import type { Tips } from '../../settings/definitions/tips';
+import type { Variants } from '../../settings/definitions/variants';
 import type { Weave } from '../../settings/definitions/weave';
 import { getSetting, setSetting } from '../../settings/store';
 
@@ -45,6 +46,25 @@ export async function getPlainEnglishUnder(): Promise<Weave | null> {
 
 export async function setPlainEnglishUnder(weave: Weave | null): Promise<void> {
   await db.settings.put({ key: READER_PLAIN_KEY, value: weave ?? '' });
+}
+
+const VARIANTS_LAST_ON_KEY = 'variantsLastOn';
+
+/** The value Variants had when the Reader's chip last turned it Off (mw-9ji6ek0.5), or null when it has not: a tap on the chip turns it back On to that value. */
+export async function getVariantsLastOn(): Promise<Variants | null> {
+  const row = await db.settings.get(VARIANTS_LAST_ON_KEY);
+  return row?.value === 'english' || row?.value === 'all' ? row.value : null;
+}
+
+/** The Reader's chip: Off when Variants is on (keeping the value it had), else On to the value it had last ('english' the first time). */
+export async function toggleVariants(): Promise<void> {
+  const now = await getSetting(variantsSetting);
+  if (now === 'off') {
+    await setSetting(variantsSetting, (await getVariantsLastOn()) ?? 'english');
+    return;
+  }
+  await db.settings.put({ key: VARIANTS_LAST_ON_KEY, value: now });
+  await setSetting(variantsSetting, 'off');
 }
 
 /** The three choices of the Reader's switch: plain English, the woven English, the Greek. */

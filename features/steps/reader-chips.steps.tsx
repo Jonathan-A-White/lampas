@@ -78,7 +78,8 @@ async function openSeeded(prepare: () => Promise<void>): Promise<void> {
 const row = () => screen.queryByTestId('reader-chips');
 /** A chip's text; the Today chip's count ('Today · 1 of 7' changes with the day of the month) is left out, its own scenarios read it. */
 const labelOf = (b: Element): string => (b.textContent ?? '').trim().replace(/^Today · \d+ of \d+$/, 'Today');
-const chipNames = (): string[] => (row() ? [...row()!.querySelectorAll('button')].map(labelOf) : []);
+// the variants chip is the chapter's own (Romans 8 has variants, mw-9ji6ek0.5), not one of the strips': features/variants-reader.feature reads it
+const chipNames = (): string[] => (row() ? [...row()!.querySelectorAll('button:not([data-testid="variants-chip"])')].map(labelOf) : []);
 const todayChip = () => screen.findByTestId('today-chip');
 const chip = async (text: string): Promise<HTMLElement> => {
   const found = await waitFor(() => {
