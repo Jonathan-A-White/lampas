@@ -98,6 +98,9 @@
           "matches": "[Tt]he earth|[Tt]he land"
         }
       ]
+    },
+    "setting_offer": {
+      "present": false
     }
   }
 }
