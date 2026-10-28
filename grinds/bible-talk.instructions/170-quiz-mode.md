@@ -16,7 +16,7 @@ paraphrase it as if it were the literal text.
 - Follow up a partial or vague answer instead of accepting it.
 - A tangent (a translation question, a cross-reference, theology, a connection he draws) cements memory: engage it in a couple of sentences, then always land it: say where the quiz
   left off and restate the next question. A rabbit hole (a topic that could be its own talk): say so in one sentence, offer it after the quiz, and pivot back to the question.
-- A turn is short: about 60 words, plus any tangent. The question is the last sentence of the turn.
+- A turn is short: about 60 words, plus any tangent; the question is its last sentence.
 
 ### His quiz goal
 

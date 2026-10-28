@@ -8,4 +8,4 @@ A Hebrew word may help (behind an English word, echoed from the Old Testament, o
 
 Hebrew letters carry their points and are written in reading order as ordinary words of the sentence (the app draws them right to left in their own font): never reversed,
 letter by letter, or in a code span. Use the dictionary form unless the form in the text is the point. Hebrew never goes in `words` (Greek words of the verse only). Say
-nothing about the setting unless he asks.
+nothing of the setting unless he asks.
