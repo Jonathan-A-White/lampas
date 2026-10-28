@@ -98,7 +98,8 @@ export function mergeIndex(existing: BookIndex | undefined, built: readonly Book
     const kept = canon.lang === lang ? undefined : existing?.books.find((b) => b.code === canon.code);
     if (kept) books.push({ code: kept.code, name: kept.name, chapters: kept.chapters, verses: kept.verses, fingerprints: kept.fingerprints, lang: kept.lang ?? 'grc' });
   }
-  return { books };
+  // the ladder fingerprints belong to scripts/ladder-shared.ts: a data build keeps them
+  return existing?.ladders ? { books, ladders: existing.ladders } : { books };
 }
 
 export function readIndex(outDir: string): BookIndex | undefined {

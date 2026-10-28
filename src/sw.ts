@@ -6,7 +6,7 @@
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
-import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, serveChapter } from './dataCache';
+import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedLadder, serveChapter } from './dataCache';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
 import { isShareRequest, receiveShare } from './share/target';
 
@@ -46,7 +46,12 @@ registerRoute(
   ({ url, request }) => request.method === 'GET' && isVersionedChapter(url),
   ({ request }) => serveChapter(request, self.caches),
 );
-// Everything else under /data/ (the ladder lists) is kept as it first came.
+// A reading ladder list is asked for the same way (/data/ladder/<lang>.json?v=<fingerprint>, the fingerprint in index.json), so a rescored list replaces its old copy (mw-9ji6ek0.10).
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isVersionedLadder(url),
+  ({ request }) => serveChapter(request, self.caches),
+);
+// Everything else under /data/ (a list asked for plain) is kept as it first came.
 registerRoute(
   ({ url, request }) => request.method === 'GET' && url.pathname.startsWith('/data/'),
   new CacheFirst({ cacheName: DATA_CACHE }),
