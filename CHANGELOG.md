@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.4
+_2026-10-28_
+- Fixed: in a variant's braces, tapping the letter (B, NA) now opens the variant card and tapping any word inside opens its word card.
+
 ## 0.7.3
 _2026-10-28_
 - Fixed: Quiz me on an Old Testament verse now quizzes you on its Hebrew words, not Greek.
