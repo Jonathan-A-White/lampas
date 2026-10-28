@@ -7,21 +7,9 @@ import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import type { ShownUnit } from './variants';
-import { witnessLines } from './witness';
+import { readingsOf } from './witness';
 
 const LEFT_OUT = 'left out';
-
-/** The readings of a unit as the sheet lists them: each different Greek once, with the witness lines of every code that reads it. */
-function readingsOf({ readings }: ShownUnit): { greek: string; english: string; lines: string[] }[] {
-  const out: { key: string; greek: string; english: string; codes: ShownUnit['readings'][number]['code'][] }[] = [];
-  for (const r of readings) {
-    const key = r.greek.normalize('NFC');
-    const had = out.find((o) => o.key === key);
-    if (had) had.codes.push(r.code);
-    else out.push({ key, greek: r.greek, english: r.english, codes: [r.code] });
-  }
-  return out.map(({ greek, english, codes }) => ({ greek, english, lines: witnessLines(codes) }));
-}
 
 function Reading({ label, greek, english, lines }: { label: string; greek: string; english: string; lines?: string[] }) {
   return (

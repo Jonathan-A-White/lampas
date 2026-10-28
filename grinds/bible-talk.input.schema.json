@@ -258,6 +258,46 @@
         }
       }
     },
+    "variants": {
+      "description": "Optional. Present while his Variants setting is on and the chapter has places where the manuscripts differ: `units` are the ones set in the verses the talk holds (in the order of the text) and `chapter_units` is how many the chapter has in all. Each unit is `verse`, `text` (the reading in the text he reads, `greek` and `english`), `other_readings` (each a different Greek once, with its `english` and `witness`, the manuscripts or editions that read it spelled out) and `asked: true` on the one unit he opened the talk on from its sheet. A reading that leaves the words out has `left out`. `units` is empty when the held verses have none. Missing with Variants Off, in a talk from a screen, in About, when the chapter has none, and when the request was too big (ask for the fact `variants`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["chapter_units", "units"],
+      "properties": {
+        "chapter_units": { "description": "How many places the chapter has where the manuscripts differ, under his filters.", "type": "number", "minimum": 1 },
+        "units": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["verse", "text", "other_readings"],
+            "properties": {
+              "verse": { "description": "The verse the unit is set in.", "type": "number" },
+              "asked": { "description": "True on the unit he asked about from its sheet.", "type": "boolean" },
+              "text": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["greek", "english"],
+                "properties": { "greek": { "type": "string" }, "english": { "type": "string" } }
+              },
+              "other_readings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["greek", "english", "witness"],
+                  "properties": {
+                    "greek": { "type": "string" },
+                    "english": { "type": "string" },
+                    "witness": { "description": "Who reads it, one sentence each: the Byzantine text is split here; Nestle-Aland 27/28 (or 27 or 28 alone); the Editio Critica Maior.", "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "screen": {
       "description": "Optional. Present when he asked from a full screen of the app (the round Ask the tutor button) and not about a text: the screen's name (Goal, Words, Review, Quick test, Parsing drill, Paradigms, Placement, Settings, My study way, Import, Today, Lesson, About) and what the screen shows, as labelled facts (on Goal: the goal, the solid, frontier and not yet counts of its words and grammar ideas, Learn next and the Next words). `greek` and `english` are then missing.",
       "type": "object",

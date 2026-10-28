@@ -5,6 +5,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { holdFor } from '../support/hold';
 import { shot } from './shot';
+import { talkField } from './talk-field';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
@@ -147,5 +148,8 @@ test('a tap on the brace at Revelation 3:2 opens the sheet with both readings an
   await expect(sheet).toBeVisible();
   await sheet.getByRole('button', { name: 'Ask the tutor' }).click();
   await expect(sheet).toHaveCount(0);
-  await expect(page.getByRole('dialog', { name: 'Talk about Revelation 3:2' })).toBeVisible();
+  const talk = page.getByRole('dialog', { name: 'Talk about Revelation 3:2' });
+  await expect(talk).toBeVisible();
+  // the question is ready to send in its box (mw-9ji6ek0.7)
+  await expect(await talkField(talk)).toHaveValue('What is the difference, and does it change the sense?');
 });
