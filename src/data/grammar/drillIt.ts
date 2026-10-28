@@ -30,6 +30,7 @@ import { seenKey } from './fetchedItems';
 import { collect, itemSteps, perFacet, questionKey, rng, sideFacet, type DrillContext, type RawStep } from './drillItems';
 import { groupOfItem, type Facet } from './ladder';
 import { hebrewLetterSteps } from './hebrew/drillSteps';
+import { buildHebrewConcept, buildHebrewTapForm } from './hebrew/wordQuestions';
 import { ideaOfAny as ideaOf, ladderFor, ladderLangOf } from './ladders';
 import type { Level } from './needs';
 import { COMPOUND_VERBS, PREPOSITIONS } from './prepositions';
@@ -92,6 +93,16 @@ function compoundSteps(ctx: DrillContext): RawStep[] | null {
   return [{ title: 'What a verb with a preposition in front means', questions: COMPOUND_VERBS.map((verb, i) => ({ ...buildCompound(ctx.idea, rng(ctx, i), verb), ideaId: ctx.idea.id })) }];
 }
 
+/** A Hebrew idea that is not a letter: what it is, then finding a word that shows it in a verse of the passage's Hebrew chapters (mw-gdcyf98.21); a Hebrew idea has no ending to fill in. Null for a Greek idea. */
+function hebrewWordSteps(ctx: DrillContext): RawStep[] | null {
+  if (ladderLangOf(ctx.idea.id) !== 'hbo') return null;
+  const { idea, passage } = ctx;
+  return [
+    { title: `What ${idea.title.toLowerCase()} is`, questions: collect(ctx, (random) => buildHebrewConcept(idea, random), 10, 0) },
+    { title: 'Find it in a verse', questions: collect(ctx, (random) => buildHebrewTapForm(idea, passage, random), 60, 200).slice(0, STEP_SIZE) },
+  ];
+}
+
 /** Any other idea: what it is, spotting it in a short verse and a long one, then its ending. */
 function passageSteps(ctx: DrillContext): RawStep[] {
   const { idea, passage } = ctx;
@@ -114,11 +125,12 @@ export function drillSteps(ideaId: string, options: DrillOptions = {}): DrillSte
   const ctx: DrillContext = { idea, passage: options.passage ?? [], scheme: options.scheme ?? schemeOf(ideaId), seed: options.seed ?? 1 };
   const unseen = (questions: GrammarQuestion[]): GrammarQuestion[] =>
     options.seen ? questions.filter((q) => !q.ref || !options.seen?.has(seenKey({ prompt: q.prompt, ref: q.ref }))) : questions;
-  const raw = (hebrewLetterSteps(ctx) ?? itemSteps(ctx) ?? prepositionSteps(ctx) ?? compoundSteps(ctx) ?? passageSteps(ctx)).map((r) => ({ ...r, questions: unseen(r.questions) }));
+  const raw = (hebrewLetterSteps(ctx) ?? itemSteps(ctx) ?? prepositionSteps(ctx) ?? compoundSteps(ctx) ?? hebrewWordSteps(ctx) ?? passageSteps(ctx)).map((r) => ({ ...r, questions: unseen(r.questions) }));
   const own: Facet = { id: idea.id, label: idea.title };
   const kept = raw.filter((r) => r.questions.length > 0);
   // an idea nothing could be asked about is asked by what it says of itself
-  const steps = kept.length > 0 ? kept : [{ title: 'What it is', questions: unseen(collect(ctx, (random) => buildConcept(idea, random, ctx.scheme), 10, 0)) }].filter((r) => r.questions.length > 0);
+  const concept = (random: Parameters<typeof buildConcept>[1]): GrammarQuestion => (ladderLangOf(ideaId) === 'hbo' ? buildHebrewConcept(idea, random) : buildConcept(idea, random, ctx.scheme));
+  const steps = kept.length > 0 ? kept : [{ title: 'What it is', questions: unseen(collect(ctx, concept, 10, 0)) }].filter((r) => r.questions.length > 0);
   return steps.map((r, i) => ({
     step: i + 1,
     title: r.title,
