@@ -64,7 +64,7 @@ async function open(): Promise<void> {
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.readings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.readings.clear()]);
   await setReaderView('english');
   await setWeave('off');
   await seedHisWords();
@@ -93,7 +93,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const received = async (_: unknown, reference: string, question: string) => {
     await waitFor(() => expect(fake.received).toHaveLength(1));
-    expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+    expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
     expect(fake.received[0].input.reference).toBe(reference);
     expect(fake.received[0].input.question).toBe(question);
   };
@@ -102,8 +102,9 @@ describeFeature(feature, ({ Scenario }) => {
     expect(fake.received[0].input.english).toBe(markedEnglishOf(1, 11));
   };
   const answerShows = async () => {
-    await waitFor(() => expect(viewEl().querySelectorAll('[data-answer]')).toHaveLength(1));
-    expect(viewEl().querySelector('[data-answer]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
+    const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:1-11' });
+    await waitFor(() => expect(dialog.querySelectorAll('[data-turn]')).toHaveLength(1));
+    expect(dialog.querySelector('[data-turn]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
   };
   const opened = 'Lampas is opened on Romans 8 in the English view with a tutor and a recogniser behind a fake Postern';
 
@@ -147,10 +148,10 @@ describeFeature(feature, ({ Scenario }) => {
     When('he lets go of the Hold to ask bar', async () => {
       await user.pointer({ keys: '[/MouseLeft]', target: holdBarIn(viewEl()), coords: AT });
     });
-    Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question {string}', received);
+    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question {string}', received);
     And('that grist is marked as spoken', () => expect(fake.received[0].input.spoken).toBe(true));
     And('that grist carries the Greek and the English of verses 1 to 11 and no other', carriesPassage);
-    And('the answer shows in the Verse view', answerShows);
+    And('the answer shows in the Talk sheet about Romans 8:1-11', answerShows);
   });
 
   Scenario('Typing a question and tapping Send asks the same way', ({ Given, When, Then, And }) => {
@@ -164,10 +165,10 @@ describeFeature(feature, ({ Scenario }) => {
       await user.type(within(composerIn(viewEl())).getByRole('textbox', { name: 'Your question' }), question);
       await user.click(within(composerIn(viewEl())).getByRole('button', { name: 'Send' }));
     });
-    Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question {string}', received);
+    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question {string}', received);
     And('that grist is not marked as spoken', () => expect(fake.received[0].input).not.toHaveProperty('spoken'));
     And('that grist carries the Greek and the English of verses 1 to 11 and no other', carriesPassage);
-    And('the answer shows in the Verse view', answerShows);
+    And('the answer shows in the Talk sheet about Romans 8:1-11', answerShows);
   });
 
   Scenario('In the Talk sheet the Hold to talk bar gives way to the message box for typing, and the mic button brings it back', ({ Given, When, Then }) => {
