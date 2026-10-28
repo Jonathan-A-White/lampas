@@ -80,7 +80,7 @@ test('a Reader address set during the cold start keeps its view', async ({ page 
 
 // Every screen an address opens (src/nav/route.ts Route; tests/unit/routes-listed.test.ts names each route left out and why): one that draws a sheet at once
 // leaves a stale sheet entry on a reload, and the fresh page must not go back past its own address to the Reader or another screen.
-const SCREENS = ['words', 'import', 'test', 'drill', 'review', 'today', 'paradigms', 'placement', 'goal', 'path', 'ipa', 'diagram-lesson', 'sounds', 'studyway', 'aboutyou', 'memory', 'requests', 'conversations', 'askmore', 'library', 'lists', 'about', 'preface', 'settings'];
+const SCREENS = ['words', 'import', 'test', 'drill', 'review', 'today', 'paradigms', 'placement', 'goal', 'path', 'ipa', 'diagram-lesson', 'sounds', 'studyway', 'aboutyou', 'memory', 'requests', 'conversations', 'askmore', 'help', 'library', 'lists', 'about', 'preface', 'settings'];
 
 test('a reload on any screen keeps its address', async ({ page }) => {
   test.setTimeout(120_000);

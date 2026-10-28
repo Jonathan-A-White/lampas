@@ -2,7 +2,7 @@
 // Reached from the top of the chapter picker and from About. The words and links are in src/preface.ts; each link opens in a new tab.
 import { backTo, navigate } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
-import { ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, PREFACE_FREE, PREFACE_LINKS, PREFACE_PARAGRAPHS } from './preface';
+import { ESSAY_ORIGINAL, ESSAY_ORIGINAL_NOTE, PREFACE_LINKS, PREFACE_PARAGRAPHS } from './preface';
 import { usePageActions } from './PageActions';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { useReportScreen } from './tutor/screenContext';
@@ -29,10 +29,6 @@ export function Preface() {
               {p}
             </p>
           ))}
-          <h2 data-read-block className="pt-6 text-lg font-semibold">Free to read</h2>
-          <p data-read-block className="break-words pt-3 text-base leading-relaxed">
-            {PREFACE_FREE}
-          </p>
           <h2 data-read-block className="pt-6 text-lg font-semibold">Read more</h2>
           <ul className="list-none space-y-4 py-3">
             {PREFACE_LINKS.map((l) => (

@@ -91,6 +91,7 @@ export const SCREEN_NAMES: Record<Exclude<Route, 'home' | 'share' | 'unlock'>, s
   requests: 'Your requests',
   conversations: 'Conversations',
   askmore: 'Ask for more',
+  help: 'Help',
   library: 'Your Logos library',
   lists: 'Verse lists',
   memorize: 'Memorize',
@@ -174,6 +175,7 @@ const SUGGESTIONS: Record<string, string[]> = {
   Import: ['What words should I add to my list?', 'How do I write a word list to import?'],
   Preface: ['Why does Lampas read the Byzantine text?', 'How does the Majority text differ from the critical text?'],
   'The Case for Byzantine Priority': ['What is Robinson arguing in this essay?', 'What does "Byzantine priority" mean?', 'What do the other scholars say against it?'],
+  Help: ['How do I start?', 'Where do I find my words?', 'What does the licence give me?'],
   About: ['Why do you credit all these?', 'What does each of these do for Lampas?', 'What does STEPBible give me?'],
 };
 

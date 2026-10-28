@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BACKEND_MESSAGES, confirmRegistration, listDevices, RegisterError, removeDevice, renameDevice, startRegistration } from '../../src/services/register';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
-import { PREFACE_FREE } from '../../src/preface';
+import { helpPageById } from '../../src/help';
 
 const KEY = '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798';
 
@@ -207,9 +207,10 @@ describe('the signed calls of My devices', () => {
 });
 
 // mw-cvwm1u.19: a licence covers up to five devices.
-describe('the About copy on the licence', () => {
+describe('the Help page on the licence', () => {
   it('says a licence covers up to five devices', () => {
-    expect(PREFACE_FREE).toContain('A licence covers up to five devices');
-    expect(PREFACE_FREE).not.toContain('up to three devices');
+    const licence = helpPageById('licence')?.body.join(' ');
+    expect(licence).toContain('A licence covers up to five devices');
+    expect(licence).not.toContain('up to three devices');
   });
 });

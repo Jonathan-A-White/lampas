@@ -4,6 +4,7 @@ import { subscribe } from './events/bus';
 import { afterCatalogueUpdate, seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { Essay } from './Essay';
+import { HelpScreen } from './HelpScreen';
 import { Preface } from './Preface';
 import { AskTutor } from './AskTutor';
 import { startAppearanceSync } from './appearance/appearanceSync';
@@ -146,6 +147,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <Conversations />
       ) : route === 'askmore' ? (
         <AskMoreScreen />
+      ) : route === 'help' ? (
+        <HelpScreen />
       ) : route === 'about' ? (
         <About />
       ) : route === 'preface' ? (
