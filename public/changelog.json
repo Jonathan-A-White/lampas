@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.5.27",
+    "date": "2026-10-28",
+    "story": "mw-gdcyf98.21",
+    "kind": "new",
+    "text": "Quiz me now works on an Old Testament verse, and Review can ask about a Hebrew idea you marked known."
+  },
+  {
+    "version": "0.5.27",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.6",
+    "kind": "new",
+    "text": "Tapping a variant's brace in the Reader now opens a sheet with both readings in Greek and English, who reads each, and a button to ask the tutor."
+  },
+  {
     "version": "0.5.26",
     "date": "2026-10-28",
     "story": "mw-9ji6ek0.5",

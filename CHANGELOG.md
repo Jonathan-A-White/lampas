@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.27
+_2026-10-28_
+- New: Quiz me now works on an Old Testament verse, and Review can ask about a Hebrew idea you marked known.
+- New: Tapping a variant's brace in the Reader now opens a sheet with both readings in Greek and English, who reads each, and a button to ask the tutor.
+
 ## 0.5.26
 _2026-10-28_
 - New: with Variants on, the Reader marks the words where the manuscripts differ and shows the other reading in a small brace with its witness (B, NA, ECM), in English, weave and Greek; a ⁑ chip under the header turns them on and off, and holding it chooses which to show.
