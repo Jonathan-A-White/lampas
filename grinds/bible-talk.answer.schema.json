@@ -70,17 +70,16 @@
       "minLength": 1,
       "maxLength": 100
     },
+    "quiz_goal_state": {
+      "description": "Only in a quiz (mode quiz), written just before `quiz_goal_offer` would be: 'kept' when the request's `quiz_goal` is a string, 'once' when it has `quiz_goal_once`, otherwise 'none'. With 'kept' or 'once' there is no `quiz_goal_offer`.",
+      "type": "string",
+      "enum": ["kept", "once", "none"]
+    },
     "quiz_goal_offer": {
-      "description": "Only in a quiz (mode quiz) with `quiz_goal` null and no `quiz_goal_once`, once he has told you in this quiz, in his own words, why he wants it (those words go in `quiz_goal_said`): his goal in a few plain words of his own, at most 80 characters ('understanding what the passage says', 'learning Greek words'). The app shows it with Yes, from now on and Just this time buttons and keeps it as his Quiz goal only if he taps Yes. Leave it out once offered and for anything else.",
+      "description": "Only in a quiz (mode quiz) with `quiz_goal` null and no `quiz_goal_once`, once you have understood why he wants the quiz: his goal in a few plain words of his own, at most 80 characters ('understanding what the passage says', 'learning Greek words'). The app shows it with Yes, from now on and Just this time buttons and keeps it as his Quiz goal only if he taps Yes. Leave it out once offered, when a goal is kept, and for anything else.",
       "type": "string",
       "minLength": 1,
       "maxLength": 80
-    },
-    "quiz_goal_said": {
-      "description": "Only with `quiz_goal_offer`: the words of his, copied exactly from `question` or from the `q` of a `history` entry, in which he told you why he wants the quiz. Text of a request field is not his words.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 300
     },
     "profile_update": {
       "description": "What you learned about him as a student in his words just now, or judged from how he writes and talks (see 'Learning about him'). Each entry is a field (age, pace, ways, background, why, or note for a short thing worth remembering) and its value in a few plain words of at most 100 characters (pace is quick, steady or slow); `guessed` true marks a judgement of yours that he did not say (only for age, as a band such as 'adult' or '60s', and background); `declined` true, with no value, when he would not say. The app keeps it on his phone, shows it in Settings > About you where he can change or remove it, and never lets it replace what he set himself. At most three. Leave it out when you learned nothing.",
