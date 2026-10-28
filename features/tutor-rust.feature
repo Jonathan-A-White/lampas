@@ -39,3 +39,14 @@ Feature: The tutor notices rust
     When he opens the talk and asks "What should I work on?"
     Then the request carried no rusty items
     And the talk shows no button "Move back to Frontier and practise"
+
+  Scenario: The tutor notices rust in his Hebrew
+    Given he has a solid Hebrew word he slipped on and a solid Hebrew idea he has not met for 3 weeks, and Lampas is opened on Genesis 1 behind a fake Postern whose tutor says he is rusty
+    When he opens the talk and asks "What should I work on?"
+    Then the request carried 2 rusty Hebrew items, "אֶרֶץ" first because it "slipped twice this week", then "The Hebrew article" because it was "not seen for 3 weeks"
+    And the request's learner line says he last met a Hebrew item "1 day ago"
+    And the talk shows the button "Move back to Frontier and practise"
+    And the talk draws "אֶרֶץ" in the Hebrew face, right to left
+    When he taps "Move back to Frontier and practise"
+    Then the Hebrew word "אֶרֶץ" and the Hebrew idea "he-article" are on the Frontier
+    And Review is open

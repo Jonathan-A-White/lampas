@@ -84,3 +84,5 @@ commit in `package.json`, the library has no release tag yet); Lampas supplies t
   has the welcome, the Immersive card and the chapter-button tips. Help has a Tips page (`src/help.ts`) that lists every hint (`LISTED_HINTS`, all but the Hide offer) so a dismissed one can be read again.
   `openUnlocked`/`openUnlicensed` (tests/e2e/unlocked.ts) dismiss these five, so no spec finds a card it is not about; `{ hints: true }` leaves them due (tests/e2e/screen-hints.spec.ts).
 - Adding a tip: one line in `HINTS`, and a `<HintCard event="…" />` where it belongs.
+
+**A Hebrew reader's tip (mw-gdcyf98.22).** `learner` in a tips request is per language like the talk's: a reader of Greek alone has the Greek line; one who chose Hebrew has `Greek: ... | Hebrew: ... ladder: ...; reading ladder: ...; last seen D days ago | due now: M`. `grinds/tips.instructions.md` says a tip about Hebrew goes by the Hebrew part and a Greek-only reader is offered none. The Weave feature's label names both languages (`FEATURES` `weave`: Greek words, Hebrew words in an Old Testament chapter).

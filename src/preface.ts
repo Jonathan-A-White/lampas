@@ -13,6 +13,10 @@ export const PREFACE_EDITION_LINE =
 export const PREFACE_VARIANTS_LINE =
   'The variant readings Lampas can show beside the Greek are those of the Robinson-Pierpont 2018 edition with its apparatus, and the 2026 changes, where the Robinson-Pierpont 2026 text words a place differently, are applied; the list of them is linked below. The tutor explains a variant when you ask and does not rule on which reading is right.';
 
+/** What an Old Testament chapter offers (mw-gdcyf98.22): the Hebrew view and its switch, and the drills; the Diagram is still Greek and English only. A test holds this line to the Reader's behaviour. */
+export const PREFACE_OLD_TESTAMENT_LINE =
+  'An Old Testament chapter opens in the Reader in English or, from Curious on the Hebrew dial, in its Hebrew, with a switch between the two; Quiz me, Review and the Quick test ask its Hebrew words and ideas as they ask the Greek. The sentence Diagram is still Greek and English only.';
+
 /** The paragraphs, in the app's voice: what the text is and who stands behind it, not an argument. */
 export const PREFACE_PARAGRAPHS: string[] = [
   'The Greek you read in Lampas is the Byzantine Textform, edited by Maurice A. Robinson and William G. Pierpont and published in 2005 as The New Testament in the Original Greek. It is the form of the text found in the large majority of surviving Greek manuscripts, so it is often called the Majority text.',
@@ -21,6 +25,7 @@ export const PREFACE_PARAGRAPHS: string[] = [
   'Robinson makes the case that this form of the text goes back to the earliest centuries and should be read as the original line of transmission, not as a late revision. Other scholars, who give most weight to the oldest manuscripts, read the evidence differently, and most modern Bibles follow them. Lampas does not settle that question. It tells you which text it uses and points you to the people who wrote about it. Robinson’s essay, The Case for Byzantine Priority, is here to read in the app, as it is printed in the appendix of the 2005 edition, and the older article it grew from is linked beneath it.',
   'The English beside the Greek is the Majority Standard Bible, whose New Testament is translated from the same Robinson and Pierpont text. Its footnotes note where the modern critical texts read differently. The Robinson and Pierpont text and the Majority Standard Bible are both public domain.',
   'The Old Testament is read in the English of the Majority Standard Bible, which there is the Berean Standard Bible, and in the pointed Hebrew and Aramaic of the Westminster Leningrad Codex, word-aligned to it. Both are public domain. The gloss and definition of a Hebrew word are from the STEPBible lexicon.',
+  PREFACE_OLD_TESTAMENT_LINE,
 ];
 
 export interface PrefaceLink {

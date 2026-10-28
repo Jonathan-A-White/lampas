@@ -277,6 +277,21 @@ describeFeature(feature, ({ Scenario }) => {
       expect(text).not.toMatch(/SPIonic|<font|<\/?[a-z]+>/);
     });
   });
+  Scenario('The Preface says what an Old Testament chapter offers', ({ Given, Then, And }) => {
+    Given('Lampas is opened on the Preface', openPreface);
+    Then('the page says {string} and {string}', (_, a: string, b: string) => {
+      const text = document.querySelector('main')?.textContent ?? '';
+      expect(text).toContain(a);
+      expect(text).toContain(b);
+    });
+    And('the page says the Diagram is still Greek and English only', () => {
+      expect(document.querySelector('main')?.textContent).toContain('The sentence Diagram is still Greek and English only.');
+    });
+    And('the page no longer says an Old Testament chapter is English only', () => {
+      const text = document.querySelector('main')?.textContent ?? '';
+      expect(text).not.toMatch(/in the Reader in English only|are not offered|last New Testament chapter/);
+    });
+  });
   Scenario('The Preface says the text is Robinson-Pierpont 2018 with its apparatus and the 2026 changes', ({ Given, Then, And }) => {
     Given('Lampas is opened on the Preface', openPreface);
     Then('the page says {string} and {string}', (_, a: string, b: string) => {
