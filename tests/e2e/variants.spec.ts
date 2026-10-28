@@ -90,6 +90,8 @@ test('Revelation 3:1-3 with Variants Off and On, in English, Weave and Greek, an
   const sheet = page.getByRole('dialog', { name: 'Variants' });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByRole('button', { name: 'Variants in Settings' })).toBeVisible();
+  // the sheet and its backdrop have finished coming in (src/index.css lp-sheet-in, lp-fade-in)
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
   await shot(page, 'variants-sheet');
   await sheet.getByRole('button', { name: 'Done' }).click();
   await expect(sheet).toHaveCount(0);
