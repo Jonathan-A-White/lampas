@@ -116,8 +116,8 @@ describe('the steps of the Bible talk\'s fit', () => {
       expect(fitted.history).toEqual(request.history.slice(-3));
       expect(fitted.held_passages).toHaveLength(1);
       expect(fitted.held_passages?.[0].reference).toBe('Revelation 6:2-8');
-      expect(fitted.held_passages?.[0].greek.length).toBeLessThan(newest.greek.length);
-      expect(fitted.held_passages?.[0].greek.endsWith(' …')).toBe(true);
+      expect(fitted.held_passages?.[0].greek!.length).toBeLessThan(newest.greek.length);
+      expect(fitted.held_passages?.[0].greek!.endsWith(' …')).toBe(true);
     });
   });
 });

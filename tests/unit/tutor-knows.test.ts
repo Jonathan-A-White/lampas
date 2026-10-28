@@ -4,7 +4,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { db } from '../../src/data/db';
-import { NO_CHAPTER, type Verse } from '../../src/data/chapter';
+import { NO_CHAPTER, type Chapter, type Verse } from '../../src/data/chapter';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { setGreekPronunciation } from '../../src/data/repositories';
 import { buildReadingRequest } from '../../src/services/reading';
@@ -148,6 +148,23 @@ describe('the builders send what the table says', () => {
     const ask = buildRequest('Romans 8:28', verse, 'What is this?', [], undefined, undefined, { greekInterest: '2', hebrewInterest: '5' });
     expect(ask.hebrew_interest).toEqual({ level: 5, name: 'All in' });
     for (const kind of ['bible-talk', 'verse-ask'] as const) expect(Object.keys(inputSchema(kind).properties ?? {})).toContain('hebrew_interest');
+  });
+
+  it('the Bible talk on an Old Testament chapter is told the Hebrew by its dial: `hebrew` and `hebrew_words` from Curious up, the English alone at Just English, hebrewDepth always (mw-gdcyf98.18)', () => {
+    const jonah = JSON.parse(readFileSync('public/data/jon/1.json', 'utf8')) as Chapter;
+    const scope = { title: 'Jonah 1', chapter: jonah, verse: jonah.verses[0] };
+    const properties = Object.keys(inputSchema('bible-talk').properties ?? {});
+    for (const field of ['hebrew', 'hebrew_words', 'hebrew_interest']) expect(properties, field).toContain(field);
+    expect(TUTOR_KNOWS['bible-talk'].settings.hebrewDepth).toBe('settings.hebrewDepth');
+    const curious = buildTalkRequest(scope, 'What does it say?', [], [], { hebrewInterest: '1', hebrewDepth: 'both' });
+    expect(curious.hebrew).toBeTruthy();
+    expect(curious.hebrew_words?.length).toBeGreaterThan(0);
+    expect(curious.settings.hebrewDepth).toBe('both');
+    const justEnglish = buildTalkRequest(scope, 'What does it say?', [], [], { hebrewInterest: '0', hebrewDepth: 'both' });
+    expect(justEnglish.hebrew).toBeUndefined();
+    expect(justEnglish.hebrew_words).toBeUndefined();
+    expect(justEnglish.english).toBeTruthy();
+    expect(justEnglish.hebrew_interest).toMatchObject({ level: 0 });
   });
 
   it('verse-read: every setting and part of progress the table lists is in the request', () => {

@@ -18,9 +18,9 @@ export const HELD_PASSAGES_BYTES = 3000;
 /** The most passages a request holds (the input schema's maxItems). */
 export const MAX_HELD_PASSAGES = 8;
 
-/** A verse's source text as a request carries it under `greek`: the Greek words as they stand, or for a chapter of `lang` 'hbo' its Hebrew pointed, the cantillation off
- * (the form the Verse view's `hebrew` is, src/services/tutor.ts); until story j1 names the key `hebrew`. The English is the verse's with the supplied words marked. */
-export const verseGreek = (v: Verse, lang: SourceLanguage = 'grc'): string => v.g.map((w) => (lang === 'grc' ? w.t : hebrewPointedForm(w.t))).join(' ');
+/** A verse's text in the chapter's own language as a request carries it (under `greek`, or under `hebrew` for a chapter of `lang` 'hbo'): the Greek words as they stand, or the Hebrew pointed, the cantillation
+ * off (the form the Verse view's `hebrew` is, src/services/tutor.ts). The English is the verse's with the supplied words marked. */
+export const verseSource = (chapter: Pick<Chapter, 'lang'>, v: Verse): string => v.g.map((w) => (sourceLanguage(chapter) === 'grc' ? w.t : hebrewPointedForm(w.t))).join(' ');
 export const verseEnglish = (v: Verse): string => v.e.map(markSupplied).join(' ');
 
 const bytesOf = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).length;
@@ -62,7 +62,8 @@ const referenceOf = (book: string, chapter: number, verses: readonly Verse[]): s
 export function passageOf(book: string, chapter: number, verses: readonly Verse[], lang: SourceLanguage = 'grc'): HeldPassage {
   let kept = verses;
   for (;;) {
-    const passage = { reference: referenceOf(book, chapter, kept), greek: kept.map((v) => verseGreek(v, lang)).join(' '), english: kept.map(verseEnglish).join(' ') };
+    const text = kept.map((v) => verseSource({ lang }, v)).join(' ');
+    const passage = { reference: referenceOf(book, chapter, kept), ...(lang === 'hbo' ? { hebrew: text } : { greek: text }), english: kept.map(verseEnglish).join(' ') };
     if (kept.length <= 1 || bytesOf(passage) <= HELD_PASSAGES_BYTES) return passage;
     kept = kept.slice(0, -1);
   }
@@ -126,7 +127,7 @@ export function heldPassagesOf(turns: readonly { fetched?: readonly HeldPassage[
     for (const passage of turn.fetched ?? []) {
       if (held.some((p) => p.reference === passage.reference)) continue;
       if (held.length >= MAX_HELD_PASSAGES || bytesOf([...held, passage]) > HELD_PASSAGES_BYTES) return held;
-      held.push({ reference: passage.reference, greek: passage.greek, english: passage.english });
+      held.push({ reference: passage.reference, ...(passage.hebrew === undefined ? { greek: passage.greek } : { hebrew: passage.hebrew }), english: passage.english });
     }
   }
   return held;

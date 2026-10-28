@@ -1,7 +1,7 @@
 // src/services/talk.ts — the Bible talk: one thing he says, sent as a grist through Postern (bsv-kit/grist) and answered by
 // the mill's bible-talk grind (grinds/bible-talk.json). The wire work is the tutor's (src/services/tutor.ts askGrind); this
 // file is the kind's own: the request with the last turns of the conversation, the answer's shape, and the fit to a grist.
-import { sourceLanguage, type Chapter, type Verse } from '../data/chapter';
+import { sourceLanguage, type Chapter, type SourceLanguage, type Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { wordHeart } from '../data/wordHeart';
 import { QUIZ_GOAL_MAX, type ReaderView } from '../data/repositories/settings';
@@ -31,9 +31,11 @@ import { greekInterestField, hebrewGuideField, hebrewInterestField, type Interes
 import { askGrind, type AskOptions } from './tutor';
 import { FOLD_A_CHARS, FOLD_MAX_TURNS, FOLD_Q_CHARS, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES, TALK_SUMMARY_MAX } from './requestBudget';
 import { solidWordsField } from './solidWords';
-import { holdText, talkWindow, textOf, versesLabel } from './talkVerses';
+import { holdText, talkWindow, textOf, versesLabel, type TextHold } from './talkVerses';
 import { GREEK_WORDS_BYTES, greekWordsFitting, type GreekWordEntry } from './greekWords';
-import { heldPassagesOf, MAX_FETCH, verseEnglish, verseGreek, type HeldPassage } from './talkFetch';
+import { hebrewWordsFitting, type HebrewWordEntry } from './hebrewWords';
+import { hebrewLevelOf } from '../settings/definitions/hebrewInterest';
+import { heldPassagesOf, MAX_FETCH, verseEnglish, verseSource, type HeldPassage } from './talkFetch';
 import { clipText as clipTo, fitRequest, isNoteUpdate, jsonBytes, MAX_HISTORY_TURNS, type CatalogueEntry } from 'voice-kit/talks';
 import { bibleTalkSteps, carryingHold, talkBytes } from './talkFit';
 import { tutorFitSteps } from '../tutor/fit';
@@ -206,13 +208,17 @@ export function newWordQuestion(lemma: string, gloss: string, reference: string)
 /** What the grind is sent (Bible Talk Request 1; grinds/bible-talk.input.schema.json). */
 export interface TalkRequest {
   reference: string;
-  /** the verse's, the passage's or the chapter's first verses' Greek; missing in a talk from a screen (`screen`), which is not about a text */
+  /** the verse's, the passage's or the chapter's first verses' Greek; missing in a talk from a screen (`screen`), which is not about a text, and in a talk on an Old Testament chapter (`hebrew` is its text) */
   greek?: string;
+  /** an Old Testament ('hbo') chapter's verses only (mw-gdcyf98.18): the verses `verses` names in Hebrew, pointed, cantillation off, in Hebrew word order, in the place of `greek`; missing at Hebrew 0 (Just English), whose request holds the English alone */
+  hebrew?: string;
   english?: string;
   /** the verses `greek` and `english` hold (mw-5r3p30.733), the chapter and then the verses: '2:8-10' or '2:9'. The window follows the talk (the verses his question names, the last answer's verse links, the selected verse, else the chapter's first verses) and a clip drops whole verses, so a verse outside this is one the tutor does not hold; missing with `screen` */
   verses?: string;
   /** each distinct Greek word of `greek` with its dictionary form, gloss and parsing as the chapter data has them (mw-5r3p30.246): the tutor names a word's lemma from here, never from memory */
   greek_words?: GreekWordEntry[];
+  /** with `hebrew`: each distinct Hebrew word of it with its lemma (the TBESH headword), transliteration, gloss and parsing in plain words (src/services/hebrewWords.ts, the shape the Verse view's ask sends), the Hebrew counterpart of `greek_words` */
+  hebrew_words?: HebrewWordEntry[];
   question: string;
   /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
   spoken?: true;
@@ -488,7 +494,8 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if ('syllables' in value && !(Array.isArray(value.syllables) && value.syllables.length <= 12 && value.syllables.every((s) => isText(s, 40)))) return false;
   if ('transliteration' in value && !(Array.isArray(value.transliteration) && value.transliteration.length <= 12 && value.transliteration.every((s) => isText(s, 40)))) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
-  return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
+  // `language` is optional (absent reads as Greek): 'he' for a Hebrew word of an Old Testament verse (mw-gdcyf98.18)
+  return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 + Number('language' in w) && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300) && (!('language' in w) || w.language === 'grc' || w.language === 'he'));
 }
 
 /** What a talk is about: the chapter (`verse` null), one of its verses, or a passage under a heading (a Verse with `to`, src/data/passage.ts).
@@ -559,6 +566,12 @@ function withHeart(focus: TalkFocus): TalkFocus {
   return heart ? { ...focus, heart } : focus;
 }
 
+/** The text a request holds of the verses in `hold`, in the chapter's own language: Greek under `greek`, Hebrew under `hebrew` (or none, an Old Testament chapter at Hebrew 0), and the English. */
+function textFields(hold: TextHold, source: SourceLanguage, hebrewOn: boolean): { greek?: string; hebrew?: string; english: string } {
+  const { greek, english } = textOf(hold.parts);
+  return source === 'grc' ? { greek, english } : hebrewOn ? { hebrew: greek, english } : { english };
+}
+
 /** The request for what he just said: the verse's or the passage's whole text, the verses his words or the last answer's links name, or the chapter's first three verses (src/services/talkVerses.ts); the last 10 turns, oldest first, the talk's running summary and the next turns to fold into it; the settings as they stand; the word he asked help with, if he did. */
 export function buildTalkRequest(
   scope: TalkScope,
@@ -593,9 +606,11 @@ export function buildTalkRequest(
   const folding = turns.slice(from, Math.min(past, from + FOLD_MAX_TURNS)).map(foldedTurn);
   const waiting = past - from - folding.length;
   // the verses the talk holds follow the talk (mw-5r3p30.733): those he names, those the last answer linked, the selected verse, else the chapter's first; a quiz holds its passage
-  // an Old Testament chapter's Hebrew goes under `greek` pointed, cantillation off, and no Greek word list is made of it (until story j1 names the key `hebrew`)
+  // an Old Testament chapter's Hebrew goes under `hebrew` pointed, cantillation off, with its words (hebrew_words), from the Hebrew dial's Curious up: at Just English the talk holds the English alone;
+  // no Greek word list is ever made of Hebrew
   const source = sourceLanguage(scope.chapter);
-  const hold = scope.screen ? undefined : talkWindow(scope.chapter, scope.verse, question, turns[turns.length - 1], !scope.quiz && !scope.welcome, (v) => verseGreek(v, source), englishOf);
+  const hebrewOn = source === 'hbo' && hebrewLevelOf(settings.hebrewInterest) >= 1;
+  const hold = scope.screen ? undefined : talkWindow(scope.chapter, scope.verse, question, turns[turns.length - 1], !scope.quiz && !scope.welcome, (v) => verseSource(scope.chapter, v), englishOf);
   const verses = hold ? hold.parts.map((p) => p.verse) : [];
   // About (mw-vtjxh4.2) sends the credits, which take most of the record: the credits are the talk, so his words and his grammar stay home
   const aboutCredits = scope.screen?.credits !== undefined;
@@ -606,7 +621,7 @@ export function buildTalkRequest(
   const request: TalkRequest = {
     reference: scopeTitle(scope),
     // a talk from a screen is not about a text: it carries the screen and no verse text
-    ...(scope.screen || !hold ? { screen: scope.screen } : { ...textOf(hold.parts), ...(hold.parts.length > 0 ? { verses: versesLabel(hold.chapter, hold.parts) } : {}) }),
+    ...(scope.screen || !hold ? { screen: scope.screen } : { ...textFields(hold, source, hebrewOn), ...(hold.parts.length > 0 ? { verses: versesLabel(hold.chapter, hold.parts) } : {}) }),
     ...(held.length > 0 ? { held_passages: held } : {}),
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
@@ -642,8 +657,10 @@ export function buildTalkRequest(
     ...(today && today.length > 0 && !aboutCredits && !scope.quiz && !scope.welcome ? { today } : {}),
   };
   if (scope.screen || !hold) return request;
-  // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES
-  if (source !== 'grc') return holdText(request, hold);
+  // the words of the text weigh what the rest leaves of the record, without the history (which is cut first), up to GREEK_WORDS_BYTES (Hebrew: HEBREW_WORDS_BYTES, as the Verse view's ask)
+  if (source !== 'grc') {
+    return holdText(hebrewOn ? { ...request, hebrew_words: hebrewWordsFitting(scope.chapter, verses, request.question, jsonBytes({ ...request, history: [] })) } : request, hold);
+  }
   return holdText({ ...request, greek_words: greekWordsFitting(scope.chapter, verses, request.question, pronunciation, jsonBytes({ ...request, history: [] })) }, hold);
 }
 

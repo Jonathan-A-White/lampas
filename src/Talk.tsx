@@ -64,7 +64,7 @@ import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { setPending, talkKey, type AskState } from './pending/pendingAsks';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
-import { GREEK_LANG } from './script/greekLang';
+import { faceOf, GREEK_LANG } from './script/greekLang';
 import { announce, plainText } from './ui/live';
 import { addWord } from './tutor/registry';
 
@@ -483,26 +483,27 @@ function Turn({ turn, scope, onLook, onLeave }: { turn: TalkTurn; scope: TalkSco
           <dl data-talk-words className="mt-2 space-y-1 border-t border-line pt-2">
             {turn.words.map((w, i) => {
               const found = findGreekWord(scope, w);
+              // a Hebrew word of an Old Testament verse is drawn right to left in the Hebrew face, as the Greek one is in the Greek (mw-gdcyf98.18)
+              const lang = w.language === 'he' ? 'hbo' : 'grc';
               return (
                 <div key={i} className="flex items-start gap-3">
                   <dt className="shrink-0">
                     {found ? (
                       <button
                         type="button"
-                        {...GREEK_LANG}
+                        {...faceOf(lang, { greek: 'text-2xl', hebrew: 'hebrew-choice' }, 'min-h-11 break-words rounded-lg px-1 text-left text-accent active:bg-line')}
                         onClick={() => onLook(lookupFor(scope, found))}
-                        className="min-h-11 break-words rounded-lg px-1 text-left font-greek text-2xl text-accent active:bg-line"
                       >
                         {w.greek}
                       </button>
                     ) : (
-                      <span {...GREEK_LANG} className="block min-h-11 break-words px-1 font-greek text-2xl leading-[44px]">
+                      <span {...faceOf(lang, { greek: 'text-2xl', hebrew: 'hebrew-choice' }, 'block min-h-11 break-words px-1 leading-[44px]')}>
                         {w.greek}
                       </span>
                     )}
                   </dt>
                   <dd className="min-w-0 flex-1 break-words pt-2 text-base">
-                    <span {...GREEK_LANG} className="font-greek text-lg">
+                    <span {...faceOf(lang, { greek: 'text-lg', hebrew: '' })}>
                       {w.lemma}
                     </span>
                     <span className="text-muted"> — {w.note}</span>

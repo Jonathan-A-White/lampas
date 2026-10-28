@@ -38,9 +38,12 @@ export interface TestResult {
 
 /** A word of the tutor's answer: a Greek word of the verse, its lemma and a note with its parsing. */
 export interface AnswerWord {
+  /** the word as it stands in the text: Greek, or Hebrew (pointed) when `language` is 'he'; the key keeps the name it was born with */
   greek: string;
   lemma: string;
   note: string;
+  /** the language of the word: absent reads as Greek; 'he' for a Hebrew word of an Old Testament verse (mw-gdcyf98.18), whose lemma is the TBESH headword */
+  language?: 'grc' | 'he';
 }
 
 /** A link of the tutor's answer to a study resource (mw-5r3p30.75): a word by its lemma (NFC, the dictionary form) or a verse by its reference as the tutor wrote it ('Romans 8:31'); a setting by its key; a work of his Logos library by its id (src/resources/works.ts)
@@ -283,10 +286,12 @@ export interface TurnDone {
   state?: 'undone' | 'ran';
 }
 
-/** A passage the tutor asked for (mw-5r3p30.734): its reference written out ('Revelation 2:8-11'), its Greek and its English (the Reader's, supplied words marked). */
+/** A passage the tutor asked for (mw-5r3p30.734): its reference written out ('Revelation 2:8-11'), its Greek and its English (the Reader's, supplied words marked); a passage of an Old Testament chapter
+ * has its Hebrew, pointed, under `hebrew` instead of `greek` (mw-gdcyf98.18). */
 export interface HeldPassage {
   reference: string;
-  greek: string;
+  greek?: string;
+  hebrew?: string;
   english: string;
 }
 

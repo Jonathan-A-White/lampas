@@ -256,7 +256,7 @@ export function VerseView(props: VerseViewProps) {
             <>
               <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
               <AskStatus verse={verse} state={ask} onAsk={onAsk} />
-              {passage || source !== 'grc' ? null : (
+              {passage ? null : (
                 <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
                   Talk about verse {verse.n}
                 </button>
