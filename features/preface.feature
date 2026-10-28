@@ -67,3 +67,9 @@ Feature: A Preface about the text
   Scenario: Greek in the essay is Greek letters
     Given Lampas is opened on the essay
     Then the essay shows "αγγελος κυριου" with no transliteration markup left in it
+
+  Scenario: The Preface says the text is Robinson-Pierpont 2018 with its apparatus and the 2026 changes
+    Given Lampas is opened on the Preface
+    Then the page says "Robinson-Pierpont 2018" and "the 2026 changes"
+    And the page says the tutor explains a variant and does not rule on it
+    And it links to the list of the 2026 changes at "https://github.com/Jonathan-A-White/lampas/blob/main/docs/greek-edition.md"

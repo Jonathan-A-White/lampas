@@ -277,4 +277,18 @@ describeFeature(feature, ({ Scenario }) => {
       expect(text).not.toMatch(/SPIonic|<font|<\/?[a-z]+>/);
     });
   });
+  Scenario('The Preface says the text is Robinson-Pierpont 2018 with its apparatus and the 2026 changes', ({ Given, Then, And }) => {
+    Given('Lampas is opened on the Preface', openPreface);
+    Then('the page says {string} and {string}', (_, a: string, b: string) => {
+      const text = document.querySelector('main')?.textContent ?? '';
+      expect(text).toContain(a);
+      expect(text).toContain(b);
+    });
+    And('the page says the tutor explains a variant and does not rule on it', () => {
+      expect(document.querySelector('main')?.textContent).toContain('The tutor explains a variant when you ask and does not rule on which reading is right.');
+    });
+    And('it links to the list of the 2026 changes at {string}', (_, url: string) => {
+      expect(pageLinks().map((a) => a.getAttribute('href'))).toContain(url);
+    });
+  });
 });

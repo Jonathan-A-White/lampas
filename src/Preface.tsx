@@ -9,6 +9,7 @@ import { useReportScreen } from './tutor/screenContext';
 
 const FACTS = [
   { label: 'Greek text', value: 'Byzantine Textform, Robinson and Pierpont, the 2005 edition (public domain)' },
+  { label: 'Variant readings', value: 'Robinson-Pierpont 2018 with its apparatus, the 2026 changes applied; the tutor explains a variant and does not rule on it' },
   { label: 'English text', value: 'Majority Standard Bible (public domain)' },
   { label: 'Sources linked', value: PREFACE_LINKS.map((l) => l.name).join('; ') },
 ];
