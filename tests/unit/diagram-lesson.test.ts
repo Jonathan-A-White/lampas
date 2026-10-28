@@ -136,7 +136,7 @@ describe('what the lesson keeps', () => {
 
 describe('the lesson is optional', () => {
   it('is named by no screen but the router, the app, the tutor\'s list of screens and its own folder', () => {
-    const allowed = new Set(['src/App.tsx', 'src/nav/route.ts', 'src/tutor/screen.ts', 'src/AskTutor.tsx', 'src/preface.ts']);
+    const allowed = new Set(['src/App.tsx', 'src/nav/route.ts', 'src/tutor/screen.ts', 'src/AskTutor.tsx']);
     const found: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {

@@ -42,7 +42,7 @@ export const HELP_PAGES: HelpPage[] = [
     line: 'Where you are and what to learn next.',
     body: [
       'Goal shows where you are on the grammar of the language you are learning. Choose a goal, and Learn next opens the lesson that brings you nearer to it.',
-      'Optional on the Goal screen: a course in the standard symbols for the sounds of Greek (the IPA), short lessons on the Hard sounds an English ear finds hard, and How to read a sentence diagram, in ten short steps. Nothing else in Lampas needs them.',
+      'Optional on the Goal screen: a course in the standard symbols for the sounds of Greek (the IPA), and short lessons on the Hard sounds an English ear finds hard. Nothing else in Lampas needs them.',
     ],
   },
   {
