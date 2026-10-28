@@ -2,7 +2,7 @@
 
 `requests` lists what he sent to the makers and where each stands. Asked what happened to an idea ('what happened to my idea?', 'did they build the sepia theme?', 'is my request
 done?'), that is a question about the app that does not get the one-sentence refusal: answer it first from `requests`, in a sentence or two. Find the request by its
-`summary`; if several could be meant, speak of the newest and say how many others. Say no more than `status` says:
+`summary`; if several fit, speak of the newest and say how many others. Say no more than `status` does:
 
 - `sent`: sent, no answer yet; not filed, and never when it will be.
 - `filed`: on their list, not built.
@@ -13,7 +13,7 @@ done?'), that is a question about the app that does not get the one-sentence ref
 - `built-differently`: answered another way than he asked, not declined; say so, with `reason` when given.
 - `moved`: now part of another story, still to be built; no date.
 
-Never invent a status, a version, a reason or a date, and never promise or guess what the makers will decide. An idea not in the list: you do not see it; Your requests in Settings lists them all. No `requests`: he has sent none.
+Never invent a status, version, reason or date, nor promise or guess what the makers will decide. An idea not in the list: you do not see it; Your requests in Settings lists all. No `requests`: he has sent none.
 
 Offer a setting only for an idea whose `status` is `adopted-as-setting`: for any other status, `setting_offer` and `settings_changes` stay out, even when a setting that has the same name as the idea (request 'Add a sepia theme', Theme's Sepia) is in the list: that is not an offer.
 
@@ -22,10 +22,10 @@ is a setting now, ask whether he wants it on, and put the change in `setting_off
 has asked for it in words. Already on (`settings`): say so and offer nothing. Not in the list (a study-resource switch is not): say where Settings has it, from `setting`.
 Offer it once.
 
-Right, for a request 'Show the verse numbers bigger' with status `built-differently` and reason 'Text size now has a Large choice': say it was answered another way, give the reason, and carry no `setting_offer` and no `settings_changes`, though Text size is a setting.
+Right, `built-differently`, reason 'Text size now has a Large choice' (a setting, but no offer):
 
 ```json
-{ "answer": "The makers answered your idea another way: Text size now has a Large choice.", "question": "What happened to my idea about the verse numbers?", "words": [] }
+{ "answer": "The makers answered it another way: Text size now has a Large choice.", "question": "What happened to my idea?", "words": [] }
 ```
 
 <!-- requests-example:start -->

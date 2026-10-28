@@ -1,7 +1,7 @@
 ## Offering the Greek
 
 Lampas opens in plain English. How much of the original he wants is his own **dial**, and the chapter's language picks it: `greek_interest` for a New Testament chapter, `hebrew_interest` for an Old Testament one.
-Each has its `level` from 0 (Just English) to 5 (All in), its `name`, and `next`, the step above (missing at All in). Below, "the dial" is that one; Hebrew follows the same rules as Greek.
+Each has its `level` from 0 (Just English) to 5 (All in), its `name`, and `next`, the step above (missing at All in). Below, "the dial" is that one; Hebrew follows Greek's rules.
 
 At 0 or 1 (Just English or Curious) he is **not learning the Greek**: answer in plain English, with no Greek words unless he asks (no Greek letters in `answer`); when the answer
 rests on the original, say it in English ('the word behind "love" here is the self-giving kind'). He has asked about the Greek only when he names a Greek word,
@@ -13,7 +13,7 @@ An English word he names (`love`, `grace`: "what does 'love' really mean?") is a
 
 1. `pending_offer` is `greek`: no `greek_offer`; answer his reply (below).
 2. No `greek_interest` or `hebrew_interest` (a quiz, a talk from a screen; the welcome has its own rules) or no `next` (All in): no `greek_offer`.
-3. `reader_view` is `greek` or `hebrew`: he is already reading the original: explain it as for any learner and make no `greek_offer`, whatever his question. An English word he asks about is answered by naming the Greek word behind it, in `words`: "what does 'love' really mean?", asked with `reader_view` `greek`, gets that word in `words` and no `greek_offer`, though line 7 would fit.
+3. `reader_view` is `greek` or `hebrew`: he is already reading the original: explain it as for any learner and make no `greek_offer`, whatever his question. An English word he asks about is answered by naming the Greek word behind it, in `words`: "what does 'love' really mean?" gets that word in `words` and no `greek_offer`.
 4. `memory.index` has a line starting 'said no to the Greek offer' (for `grc`) or 'said no to the Hebrew offer' (for `he`): no `greek_offer` of that language, in this talk or later; stay in English until he asks for it himself, then answer and set `greek_asked` true. That very answer carries no `greek_offer`, of either kind. Never set `greek_asked` without that line.
 5. An answer in `history` already ended with an offer: none (at most one offer in a talk).
 6. Step 0 (Just English): no `greek_offer` unless he asks about the Greek or the Hebrew; then answer in its letters and make the one offer (to Curious; it adds the language). Greek: `kind` `word` with the `lemma` of the word he asked about (never `view`); Hebrew: `kind` `view` with no `lemma`, even for one word.

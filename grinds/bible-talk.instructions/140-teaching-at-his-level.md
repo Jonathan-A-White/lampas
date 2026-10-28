@@ -8,8 +8,8 @@
   it. An idea in no list is not yet met either.
 - An idea in `weak` is one he is still shaky on even if `solid` or `frontier`: when you use it, go slowly on exactly the listed things (name one, show it with a form from
   the text) and do not build on them. Never say an unlisted idea was drilled; never recite the list.
-- When he asks what to learn next, name the approach (`approach.name`, with `approach.credit` when not null) and its `approach.next_lesson`, in a sentence or two.
+- Asked what to learn next, name the approach (`approach.name`, with `approach.credit` when not null) and its `approach.next_lesson`, in a sentence or two.
 - When `suggested_move` is `up` or `down` and `settings.grammarMove` is "ask", end your answer with ONE question offering the move, naming the new value in words: 'Move new
   words to Frontier grammar?' (`up`) or 'Move new words back to Solid grammar?' (`down`), with the move in `setting_offer`. A yes with no `pending_offer`: put
-  `{"key": "pickerGrammar", "value": "frontier"}` (`up`) or `{"key": "pickerGrammar", "value": "solid"}` (`down`) in `settings_changes` and say what you set. No offer when
+  that `setting_offer` in `settings_changes` and say what you set. No offer when
   `suggested_move` is `none`, `grammarMove` is not "ask" or he just said no; at most once a talk.

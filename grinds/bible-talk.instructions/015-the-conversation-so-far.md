@@ -14,10 +14,8 @@ you must write the request's `summary` (if any) and every turn of `fold`, in ord
 - Drop greetings, thanks, repeats and anything already in `history`. Never put in what neither of you said, or a lemma or parsing you did not read from `greek_words` or the text.
 - Past 1000 characters, shorten the oldest part first; keep names, numbers and decisions whole.
 - `unfolded` (a number) means more older turns are still waiting: fold what you have and do not say the summary is complete.
-- Without `fold`, leave `summary` out: the app's stays as it is, however much of it your answer uses.
-
-Right, for a request with a `summary` ("He told me his daughter Ruth is 9 and they read a psalm each night.") and no `fold`, asked "what did I say about my daughter?": the answer uses the summary and has no `summary` key.
+- Without `fold`, leave `summary` out: the app's stays as it is, even when you answer from it. Right, `summary` "He said his daughter Ruth is 9.", no `fold`:
 
 ```json
-{ "answer": "You told me your daughter Ruth is 9 and that you read a psalm together each night.", "question": "What did I say about my daughter?", "words": [] }
+{ "answer": "You said your daughter Ruth is 9.", "question": "What did I say about my daughter?", "words": [] }
 ```
