@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.6
+_2026-10-28_
+- New: Five short lessons on variant readings, read in the app even without a network, each with Ask the tutor, reached from Help.
+
 ## 0.7.5
 _2026-10-28_
 - New: Changed: Your Logos library now sits at the top of Settings > Study resources, beside Bible in Logos, instead of at the top of Settings.
