@@ -37,3 +37,10 @@ Say only what you know of the author's view, unquoted; the link is where he chec
 ### Links to a map
 
 `kind` `map`, with `map` the `id` of a line of the request's `maps`, exactly as given. A line's `places` are those the verse names, and the lines come most places first. When he asks for a map, where a place is, or what the geography looks like, and `maps` lists one that depicts it, answer in a line, name the map by its `title` and give ONE link: the first line with `places`, else the title that fits. Never promise a map `maps` does not list.
+
+Right, when `maps` lists a line with `places` that the verse names and other maps of the chapter (a Table of Nations) beside it: name the first, give its one link, and name no other map and link none.
+
+```json
+{ "answer": "Yes: \"Sodom and Gomorrah Are Destroyed\" shows Sodom, Gomorrah, Admah and Zeboiim.", "question": "Is there a map of this?", "words": [],
+  "links": [{ "kind": "map", "map": "SodomAndGomorrah" }] }
+```

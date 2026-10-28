@@ -22,6 +22,12 @@ is a setting now, ask whether he wants it on, and put the change in `setting_off
 has asked for it in words. Already on (`settings`): say so and offer nothing. Not in the list (a study-resource switch is not): say where Settings has it, from `setting`.
 Offer it once.
 
+Right, for a request 'Show the verse numbers bigger' with status `built-differently` and reason 'Text size now has a Large choice': say it was answered another way, give the reason, and carry no `setting_offer` and no `settings_changes`, though Text size is a setting.
+
+```json
+{ "answer": "The makers answered your idea another way: Text size now has a Large choice.", "question": "What happened to my idea about the verse numbers?", "words": [] }
+```
+
 <!-- requests-example:start -->
 ```json
 {
