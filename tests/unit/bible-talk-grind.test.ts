@@ -1096,3 +1096,26 @@ describe('the bible-talk instructions name each fact the tutor can ask for (mw-0
     expect(rule.replace(/\s+/g, ' ')).toMatch(/asks `verseText` alone[^.;]*not `memorizing`/);
   });
 });
+
+describe('the learner facts are told per language (mw-gdcyf98.31)', () => {
+  const part = (kind: string, file: string): string => readFileSync(`grinds/${kind}.instructions/${file}`, 'utf8');
+
+  it('bible-talk 245 and 010 no longer call solid_words and learner his Greek, and say they hold both languages', () => {
+    const verse = part('bible-talk', '245-a-verse-of-the-old-testament.md');
+    expect(verse).not.toMatch(/`solid_words` and `learner` are his Greek/);
+    expect(verse).toMatch(/`solid_words` holds[^\n]*Hebrew[^\n]*`learner`'s `Hebrew:` part/);
+    const contract = part('bible-talk', '010-the-contract.md');
+    expect(contract).not.toMatch(/`solid_count`: how many Greek words/);
+    expect(contract).toMatch(/`solid_count`: [^\n]*Greek and Hebrew/);
+    expect(contract).toMatch(/`learner` \(maybe missing\):[^\n]*`Hebrew:`/);
+    expect(contract).toMatch(/`words` lists only Greek words he asked about or that the answer teaches \(a Hebrew one[^\n]*`language` `he`\)/);
+  });
+
+  it('verse-ask 010 says the same of solid_count, solid_words and learner', () => {
+    const contract = part('verse-ask', '010-the-contract.md');
+    expect(contract).not.toMatch(/`solid_count`: how many Greek words/);
+    expect(contract).not.toMatch(/`solid_words`: the Greek lemmas/);
+    expect(contract).toMatch(/`solid_count`: [^\n]*Greek and Hebrew/);
+    expect(contract).toMatch(/`learner`: [^\n]*`Hebrew:`/);
+  });
+});
