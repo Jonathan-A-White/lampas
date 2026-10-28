@@ -4,6 +4,8 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["answer", "question", "words"],
+  "if": { "required": ["quiz_goal_offer"] },
+  "then": { "required": ["quiz_goal_state"], "properties": { "quiz_goal_state": { "const": "none" } } },
   "properties": {
     "answer": {
       "description": "The reply to what he said, in short plain English; or the one-sentence refusal for anything outside the Bible.",
@@ -71,7 +73,7 @@
       "maxLength": 100
     },
     "quiz_goal_state": {
-      "description": "Only in a quiz (mode quiz), written just before `quiz_goal_offer` would be: 'kept' when the request's `quiz_goal` is a string, 'once' when it has `quiz_goal_once`, otherwise 'none'. With 'kept' or 'once' there is no `quiz_goal_offer`.",
+      "description": "Only in a quiz (mode quiz), written just before `quiz_goal_offer` would be: 'kept' when the request's `quiz_goal` is a string, 'once' when it has `quiz_goal_once`, otherwise 'none'. `quiz_goal_offer` is allowed only with 'none' and then needs this field.",
       "type": "string",
       "enum": ["kept", "once", "none"]
     },
