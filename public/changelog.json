@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.5.28",
+    "date": "2026-10-28",
+    "story": "mw-5r3p30.831",
+    "kind": "fixed",
+    "text": "the Greek and Hebrew buttons on Review and Words are whole in a very narrow window and no longer go under the round Ask button."
+  },
+  {
     "version": "0.5.27",
     "date": "2026-10-28",
     "story": "mw-gdcyf98.21",

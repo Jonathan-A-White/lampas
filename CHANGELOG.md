@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.28
+_2026-10-28_
+- Fixed: the Greek and Hebrew buttons on Review and Words are whole in a very narrow window and no longer go under the round Ask button.
+
 ## 0.5.27
 _2026-10-28_
 - New: Quiz me now works on an Old Testament verse, and Review can ask about a Hebrew idea you marked known.
