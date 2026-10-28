@@ -67,7 +67,7 @@ describe('the quiz-goal offer example is not the goal the smoke example keeps (q
 describe('a setting he asked for loosely is made by `do`, never offered (do-setting)', () => {
   it('"Changing the app\'s settings" says so with the Greek hints as the case', () => {
     expect(part("Changing the app's settings")).toMatch(
-      /His words may fit loosely \('turn off the Greek hints'\): make the nearest change by `do`, never as a `setting_offer`/,
+      /A loose ask \('turn off the Greek hints'\) still gets the nearest change by `do`, never a `setting_offer`/,
     );
   });
 });
