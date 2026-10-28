@@ -5,7 +5,8 @@ import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
 
 // mw-i7xe0n.26: a fast second tap on a sheet's Done, or on its Drill it, landed on whatever stood under the same spot once the sheet was gone or the
-// drill was drawn. The Learn sheet's Done: the Goal screen's Change opened Settings. The Rho sheet's Done: the Learn sheet's own Done closed it too.
+// drill was drawn. The Learn sheet's Done: the Goal screen's Change opened Settings (since the Greek | Hebrew segment came to the Goal screen, mw-gdcyf98.14,
+// the spot is the segment's Hebrew button, and the second tap would have switched the Goal to Hebrew). The Rho sheet's Done: the Learn sheet's own Done closed it too.
 // The Rho sheet's Drill it: the drill's Hint took two answers away ('Hint used'). A sheet that opens or closes swallows a tap in the settle moment
 // after it (the app-wide guard, src/ui/tapGuard.ts).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
@@ -96,11 +97,12 @@ async function thumbDoubleTap(page: Page, target: Locator, drawn: () => Promise<
   await page.waitForTimeout(SETTLE_MS);
 }
 
-test('a double tap on the Learn sheet\'s Done closes it and leaves Settings shut', async ({ page }) => {
+test('a double tap on the Learn sheet\'s Done closes it and leaves the Goal in Greek and Settings shut', async ({ page }) => {
   const learn = await openLearnSheet(page);
-  await thumbDoubleTap(page, learn.getByRole('button', { name: 'Done', exact: true }), () => expect(ideas(page)).toHaveCount(0), { name: 'Change', inside: 'main' });
+  await thumbDoubleTap(page, learn.getByRole('button', { name: 'Done', exact: true }), () => expect(ideas(page)).toHaveCount(0), { name: 'Hebrew', inside: '[role="group"][aria-label="Goal language"]' });
 
   await expect(page).toHaveURL(/#\/goal$/);
+  await expect(page.getByRole('group', { name: 'Goal language' }).getByRole('button', { name: 'Greek', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1');
   await shot(page, 'sheet-leave-learn-done-twice');
 });
