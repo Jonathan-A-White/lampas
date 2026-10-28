@@ -71,7 +71,7 @@
       "maxLength": 100
     },
     "quiz_goal_offer": {
-      "description": "Only in a quiz (mode quiz) with `quiz_goal` null and no `quiz_goal_once`, once you have understood why he wants the quiz: his goal in a few plain words of his own, at most 80 characters ('understanding what the passage says', 'learning Greek words'). The app shows it with Yes, from now on and Just this time buttons and keeps it as his Quiz goal only if he taps Yes. Leave it out once offered, when a goal is kept, and for anything else.",
+      "description": "NEVER when the request's `quiz_goal` is a string (a kept goal, even if you are quizzing to match it) or `quiz_goal_once` is present: leave this field out of every answer of that quiz. Only in a quiz (mode quiz) with `quiz_goal` null and no `quiz_goal_once`, once you have understood why he wants the quiz: his goal in a few plain words of his own, at most 80 characters ('understanding what the passage says', 'learning Greek words'). The app shows it with Yes, from now on and Just this time buttons and keeps it as his Quiz goal only if he taps Yes. Leave it out once offered and for anything else.",
       "type": "string",
       "minLength": 1,
       "maxLength": 80
