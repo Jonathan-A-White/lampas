@@ -71,7 +71,7 @@ async function open({ aloud, hash = '', reply }: { aloud: boolean; hash?: string
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.answers.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.talks.clear()]);
   if (!aloud) await setReadTutor('off');
   await seedHisWords();
   render(<App />);
@@ -220,7 +220,7 @@ describeFeature(feature, ({ Scenario }) => {
       await ask(question);
     });
     Then('the answer is shown and nothing is spoken', async () => {
-      await waitFor(() => expect(document.querySelectorAll('[data-answers-for="28"] [data-answer]').length).toBe(1));
+      await waitFor(() => expect(document.querySelectorAll('[data-talk-a]').length).toBe(1));
       await sleep(150);
       expect(synth.spoken).toHaveLength(0);
     });
@@ -251,7 +251,7 @@ describeFeature(feature, ({ Scenario }) => {
     And(askFirst, askIt);
     And('the phone is speaking the answer', speaking);
     When('he taps the answer', async () => {
-      await user.click(document.querySelector('[data-answer]') as HTMLElement);
+      await user.click(document.querySelector('[data-talk-a]') as HTMLElement);
     });
     Then('the speech has stopped', stopped);
   });
@@ -313,7 +313,7 @@ describeFeature(feature, ({ Scenario }) => {
   /** The answer is on the screen, and the app has decided what to do with it: the page is hidden, so it is held for his return (tutorWaiting.ts), not
    * spoken. The decision comes after a read of the setting, so the step waits for the held answer, not for a pause (mw-5r3p30.735). */
   const answerShownSilent = async () => {
-    await waitFor(() => expect(document.querySelectorAll('[data-answers-for="28"] [data-answer]').length).toBe(1));
+    await waitFor(() => expect(document.querySelectorAll('[data-talk-a]').length).toBe(1));
     await waitFor(() => expect(waitingAnswer()).not.toBeNull());
     expect(synth.spoken).toHaveLength(0);
   };
@@ -368,6 +368,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('he comes back to Lampas', () => setVisibility('visible'));
     And('the bar at the top says {string}', barSays);
     When('he closes the Verse view', async () => {
+      // the answer is the Talk sheet's (mw-5r3p30.842), open over the Verse view: Done closes it, then the view
+      await user.click(within(screen.getByRole('dialog', { name: /^Talk about / })).getByRole('button', { name: 'Done' }));
       await user.click(within(viewEl()).getByRole('button', { name: '‹ Reader' }));
       await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
     });
@@ -390,6 +392,9 @@ describeFeature(feature, ({ Scenario }) => {
     And('the answer is shown and nothing is spoken', answerShownSilent);
     And('he comes back to Lampas', () => setVisibility('visible'));
     When("he presses the phone's Back", async () => {
+      // the first Back closes the Talk sheet the answer is in (mw-5r3p30.842), the second the Verse view under it
+      act(() => window.history.back());
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
       act(() => window.history.back());
       await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
     });
