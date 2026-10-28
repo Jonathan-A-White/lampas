@@ -1,21 +1,27 @@
 // src/reader/VariantBrace.tsx — the brace after a variant unit's words (mw-9ji6ek0.5): '{the Lord NA ECM}', the other reading(s) of the unit, each once with the small chip
-// of every witness that reads it (src/reader/variants.ts braceReadings), in the Greek of the reading or its English as VerseText says. It is a button: a tap opens the
-// unit's sheet (mw-9ji6ek0.6). It is an inline span like a word (VerseText's Tap), so it wraps with the line and its 44 px tap height costs the line nothing.
+// of every witness that reads it (src/reader/variants.ts braceReadings), in the Greek of the reading or its English as VerseText says. The brace is a label, not a button
+// (mw-9ji6ek0.15): each word of a reading is a Tap like a word of the text and opens the word popup (VerseText's onWord), and the siglum (the chip, B or NA) is the target of
+// the unit's sheet (mw-9ji6ek0.6), a 44 px square of its own that takes its own room in the line, so a finger a few pixels off still lands on it and never on a word beside it.
 import { Fragment, type KeyboardEvent } from 'react';
 import { GREEK_LANG } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
-import { braceReadings, type ShownUnit, type WitnessChip } from './variants';
+import { Tap, TAP_PAD } from './Tap';
+import { braceReadings, type BraceReading, type ShownUnit, type WitnessChip } from './variants';
 
 /** Each chip spelled out, for a screen reader. */
 const SPELLED: Record<WitnessChip, string> = { B: 'Byzantine split', NA: 'Nestle-Aland', ECM: 'ECM' };
 const LEFT_OUT = 'left out';
 const SAME = 'same';
 
-export function VariantBrace({ shown, language, onOpen }: {
+export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
   shown: ShownUnit;
   /** the language of the readings: the Greek view's and a woven unit's Greek, else English */
   language: 'greek' | 'english';
   onOpen?: (shown: ShownUnit) => void;
+  /** a tap on a word of a reading: the word as drawn and the reading it is in */
+  onWord?: (word: string, reading: BraceReading, shown: ShownUnit) => void;
+  /** a long press on a word: say it, in the language it is drawn in */
+  onSay?: (word: string, language: 'greek' | 'english') => void;
 }) {
   const readings = braceReadings(shown, language);
   const label = `Other reading${readings.length > 1 ? 's' : ''}: ${readings
@@ -24,32 +30,38 @@ export function VariantBrace({ shown, language, onOpen }: {
   const open = () => onOpen?.(shown);
   return (
     <>
-      <span
-        role="button"
-        tabIndex={0}
-        data-brace=""
-        data-brace-lang={language}
-        aria-label={label}
-        onClick={open}
-        onKeyDown={(e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            open();
-          }
-        }}
-        className={`cursor-pointer ${NO_SELECT} rounded py-[calc((var(--lp-tap)-1em)/2)] font-sans text-[0.85em] font-normal text-muted no-underline active:bg-line`}
-      >
+      <span role="group" data-brace="" data-brace-lang={language} aria-label={label} className="font-sans text-[0.85em] font-normal text-muted">
         <span aria-hidden="true" className="text-accent">{'{'}</span>
         {readings.map((r, i) => (
           <Fragment key={i}>
             {i > 0 ? <span aria-hidden="true" className="px-0.5 text-accent">|</span> : null}
             <span data-brace-reading="">
               <span data-brace-text="" {...(language === 'greek' && r.text ? GREEK_LANG : { lang: 'en' })} className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : 'text-fg') : 'italic'}>
-                {r.same ? SAME : r.text || LEFT_OUT}
+                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : r.text.split(/\s+/).filter(Boolean).map((word, k) => (
+                  <Tap key={k} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(word, r, shown)} onLongPress={() => onSay?.(word, language)}>
+                    {word}
+                  </Tap>
+                ))}
               </span>
               {r.chips.map((c) => (
-                <span key={c} data-witness="" className="ms-1 inline-block rounded border border-accent/60 px-1 align-[0.1em] text-[0.75em] font-semibold leading-tight text-accent">
-                  {c}
+                <span
+                  key={c}
+                  role="button"
+                  tabIndex={0}
+                  data-witness=""
+                  aria-label={`Where the manuscripts differ: ${SPELLED[c]}`}
+                  onClick={open}
+                  onKeyDown={(e: KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      open();
+                    }
+                  }}
+                  className={`inline-flex min-h-(--lp-tap) min-w-(--lp-tap) cursor-pointer items-center justify-center rounded align-middle ${NO_SELECT} active:bg-line`}
+                >
+                  <span aria-hidden="true" className="rounded border border-accent/60 px-1 text-[0.75em] font-semibold leading-tight text-accent">
+                    {c}
+                  </span>
                 </span>
               ))}
             </span>

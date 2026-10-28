@@ -64,10 +64,12 @@ test('Revelation 3:1-3 with Variants Off and On, in English, Weave and Greek, an
     await expect(choice(page, view)).toHaveAttribute('aria-pressed', 'true');
     const braces = page.locator('[data-verse="2"] [data-brace]');
     await expect(braces.first()).toBeVisible();
-    // the brace is a 44 px tap target that costs the line nothing, and it stands inside the frame
+    // the brace stands inside the frame, and its siglum is a 44 px square (mw-9ji6ek0.15)
     const brace = await braces.first().boundingBox();
-    expect(brace!.height).toBeGreaterThanOrEqual(43.5);
     expect(brace!.x + brace!.width).toBeLessThanOrEqual(390.5);
+    const siglum = await braces.first().locator('[data-witness]').first().boundingBox();
+    expect(siglum!.height).toBeGreaterThanOrEqual(43.5);
+    expect(siglum!.width).toBeGreaterThanOrEqual(43.5);
     await expect(page.locator('[data-verse="2"] [data-variant]').first()).toBeVisible();
     await expect(braces.first().locator('[data-witness]').first()).toHaveText(/^(B|NA|ECM)$/);
     await shootVerses(page, `variants-${view.toLowerCase()}-on`);
@@ -105,7 +107,7 @@ test('Revelation 3:1-3 with Variants Off and On, in English, Weave and Greek, an
 
 // A tap on a brace opens the unit's sheet (mw-9ji6ek0.6, src/reader/VariantSheet.tsx): the text's reading and the other reading(s), each in Greek and English, the witness of
 // each spelled out, Ask the tutor, and Back closes it. Shot: shots/variants-brace-sheet.png.
-test('a tap on the brace at Revelation 3:2 opens the sheet with both readings and the witness lines; Ask the tutor opens the verse talk; Back closes it', async ({ page }) => {
+test('a tap on the siglum of the brace at Revelation 3:2 opens the sheet with both readings and the witness lines; Ask the tutor opens the verse talk; Back closes it', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/?b=rev&c=3');
   await expect(page.locator('[data-verse="2"] [data-text]')).toBeVisible();
@@ -115,7 +117,7 @@ test('a tap on the brace at Revelation 3:2 opens the sheet with both readings an
   const brace = page.locator('[data-verse="2"] [data-brace]').first();
   await expect(brace).toBeVisible();
   await expect(brace.locator('[data-brace-text]').first()).toHaveText('τήρησον');
-  await brace.click();
+  await brace.locator('[data-witness]').first().click();
 
   const sheet = page.getByRole('dialog', { name: 'Variant reading' });
   await expect(sheet).toBeVisible();
@@ -144,7 +146,7 @@ test('a tap on the brace at Revelation 3:2 opens the sheet with both readings an
   await expect(page.locator('[data-verse="2"] [data-brace]').first()).toBeVisible();
 
   // Ask the tutor opens the verse's talk, as the Verse view's Ask does
-  await brace.click();
+  await brace.locator('[data-witness]').first().click();
   await expect(sheet).toBeVisible();
   await sheet.getByRole('button', { name: 'Ask the tutor' }).click();
   await expect(sheet).toHaveCount(0);
@@ -190,7 +192,7 @@ test('the Immersive reader marks the variant words and draws the braces; a brace
   await expect(page.locator('[data-verse="2"] [data-variant]').first()).toBeVisible();
   await expect(chip(page)).toHaveCount(0);
   await shot(page, 'variants-immersive');
-  await brace.click();
+  await brace.locator('[data-witness]').first().click();
   const sheet = page.getByRole('dialog', { name: 'Variant reading' });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByRole('heading', { level: 2 })).toContainText('Revelation 3:2');
@@ -313,4 +315,81 @@ test.describe('the dotted line under a variant unit is one even run of dots', ()
       });
     }
   }
+});
+
+// The tap target of a variant unit is its siglum (mw-9ji6ek0.15): the 'B' after 'and you live' of Revelation 3:1 opens the unit's sheet, at least 44 x 44 px and still a hit 8 px either side of its
+// centre; the braces and the span between them are no target, and a word inside the variant opens the word popup as a word of the text does. Shot: shots/variants-siglum.png.
+test.describe('a variant unit is opened by its siglum, and its words open the word popup', () => {
+  const unit = (page: Page) => page.locator('[data-verse="1"] [data-brace]').first();
+  const siglum = (page: Page) => unit(page).locator('[data-witness]').first();
+  const wordSheet = (page: Page) => page.getByRole('dialog', { name: 'Word', exact: true });
+  const variantSheet = (page: Page) => page.getByRole('dialog', { name: 'Variant reading' });
+
+  async function open(page: Page, view: (typeof VIEWS)[number]): Promise<void> {
+    await openUnlocked(page);
+    await page.goto('/#/?b=rev&c=3');
+    await expect(page.locator('[data-verse="1"] [data-text]')).toBeVisible();
+    await chip(page).click();
+    await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+    await choice(page, view).click();
+    await expect(choice(page, view)).toHaveAttribute('aria-pressed', 'true');
+    await expect(unit(page)).toBeVisible();
+  }
+
+  test('English: the B after "and you live" is the target; 8 px either side of it opens the sheet; a word inside opens the word popup', async ({ page }) => {
+    await open(page, 'English');
+    await expect(unit(page).locator('[data-brace-text]').first()).toHaveText('and you live');
+    const box = (await siglum(page).boundingBox())!;
+    expect(box.width).toBeGreaterThanOrEqual(43.5);
+    expect(box.height).toBeGreaterThanOrEqual(43.5);
+    const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2];
+    for (const x of [cx, cx - 8, cx + 8]) {
+      await page.mouse.click(x, cy);
+      await expect(variantSheet(page)).toBeVisible();
+      await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+      await page.goBack();
+      await expect(variantSheet(page)).toHaveCount(0);
+    }
+    await shot(page, 'variants-siglum');
+    // a word inside the variant opens the word popup, for that word
+    await unit(page).locator('[data-brace-word]', { hasText: 'live' }).click();
+    await expect(variantSheet(page)).toHaveCount(0);
+    await expect(wordSheet(page)).toBeVisible();
+    await expect(wordSheet(page).getByTestId('sheet-heading')).toContainText('and you live');
+    await expect(wordSheet(page).getByTestId('sheet-word').filter({ hasText: 'ζῇς' })).toBeVisible();
+    // the quiet source line: the word is from the variant, its siglum named
+    await expect(wordSheet(page).getByTestId('sheet-variant')).toHaveText('in variant B');
+  });
+
+  test('Greek: a word the verse carries opens its card with lemma and parsing; a form it does not carry opens the form and Ask the tutor, nothing invented', async ({ page }) => {
+    await open(page, 'Greek');
+    // 3:1's other reading "καὶ ζῇς": both forms stand in the verse
+    await unit(page).locator('[data-brace-word]', { hasText: 'ζῇς' }).click();
+    await expect(wordSheet(page).getByTestId('sheet-word')).toHaveText('ζῇς');
+    await expect(wordSheet(page).getByTestId('sheet-lemma')).toHaveText('ζάω');
+    await expect(wordSheet(page).getByTestId('sheet-parse')).toHaveText(/\S/);
+    await wordSheet(page).getByRole('button', { name: 'Done' }).click();
+    await expect(wordSheet(page)).toHaveCount(0);
+    // 3:2's other reading "τήρησον" is a form the verse does not have
+    const two = page.locator('[data-verse="2"] [data-brace]').first();
+    await two.locator('[data-brace-word]', { hasText: 'τήρησον' }).click();
+    await expect(wordSheet(page).getByTestId('sheet-word')).toHaveText('τήρησον');
+    await expect(wordSheet(page).getByTestId('sheet-lemma')).toHaveCount(0);
+    await expect(wordSheet(page).getByTestId('sheet-gloss')).toHaveCount(0);
+    await expect(wordSheet(page).getByTestId('sheet-strongs')).toHaveCount(0);
+    await expect(wordSheet(page).getByRole('button', { name: 'Ask the tutor' })).toBeVisible();
+  });
+
+  test('every inline tappable mark of the reader is at least 44 x 44 px at 390 wide: the sigla and the verse numbers; the braces are no button', async ({ page }) => {
+    await open(page, 'English');
+    const marks = page.locator('[data-verse] [data-witness], [data-verse] [data-verse-number]');
+    expect(await marks.count()).toBeGreaterThan(4);
+    for (const mark of await marks.all()) {
+      const b = (await mark.boundingBox())!;
+      const name = (await mark.textContent()) ?? '';
+      expect(b.width, `${name} wide`).toBeGreaterThanOrEqual(43.5);
+      expect(b.height, `${name} tall`).toBeGreaterThanOrEqual(43.5);
+    }
+    await expect(page.locator('[data-brace][role="button"], [data-brace-reading][role="button"]')).toHaveCount(0);
+  });
 });

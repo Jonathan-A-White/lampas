@@ -57,6 +57,10 @@ export interface Lookup {
   fromEnglish: boolean;
   /** the one English word of the tapped chunk his finger was on, when that is known (a tap on a chunk of more than one word): the sheet's English lookups are for it alone; a sheet opened with none (a link, a list) lists a row for each word of the chunk */
   tapped?: string;
+  /** the verse the words are asked about, when they are not all words of it (a form of a variant reading the verse's own text does not carry, mw-9ji6ek0.15): Ask the tutor needs it */
+  verse?: number;
+  /** a word of a variant reading, not of the text: the quiet line the sheet draws first ('in variant B') */
+  variant?: string;
 }
 
 /** What a tap on Grammar or Sound it out asks for: the word as it stands, its lemma, its parsing as the sheet shows it, and
@@ -366,9 +370,11 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
   );
 }
 
-function WordCard({ chapter, word, english, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, onMissing, onAll }: {
+function WordCard({ chapter, word, verseOf, english, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
+  /** the verse to ask about when the word is not one of the chapter's (a form of a variant reading) */
+  verseOf?: number;
   english?: string;
   pronunciation: GreekPronunciation | undefined;
   known: ReadonlySet<string>;
@@ -385,7 +391,9 @@ function WordCard({ chapter, word, english, pronunciation, known, study, levels,
   /** the door to every lexicon was tapped: the word, and the lexicons On with their links for it */
   onAll: (word: GreekWord, door: NonNullable<StudyGroup['door']>) => void;
 }) {
-  const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
+  const verse = verseOf ?? chapter.verses.find((v) => v.g.includes(word))?.n;
+  // a form of a variant reading the verse does not carry is the form alone: no lemma, meaning or number to show
+  const formOnly = word.l === '';
   // The Strong's resource shows the number as its link in the Study row; the plain fact would say it twice.
   const strongsOn = study?.on.includes('strongs') ?? false;
   // the table that holds the word's form (a conjunction or a particle has none): the row names it and a tap opens it with the word's own cell lit
@@ -405,9 +413,11 @@ function WordCard({ chapter, word, english, pronunciation, known, study, levels,
         <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" />
       </div>
       <dl className="mt-2">
-        <Fact label="Lemma" testId="sheet-lemma" greek>
-          {wordLemma(word)}
-        </Fact>
+        {formOnly ? null : (
+          <Fact label="Lemma" testId="sheet-lemma" greek>
+            {wordLemma(word)}
+          </Fact>
+        )}
         {wordParse(chapter, word) ? (
           <Fact label="Parsing" testId="sheet-parse">
             <ParseTerms parse={wordParse(chapter, word)} known={known} open={(term) => onTerm(term, word, verse)} />
@@ -426,10 +436,12 @@ function WordCard({ chapter, word, english, pronunciation, known, study, levels,
             </button>
           </Fact>
         ) : null}
-        <Fact label="Meaning" testId="sheet-gloss">
-          {wordGloss(chapter, word)}
-        </Fact>
-        {strongsOn ? null : (
+        {formOnly ? null : (
+          <Fact label="Meaning" testId="sheet-gloss">
+            {wordGloss(chapter, word)}
+          </Fact>
+        )}
+        {strongsOn || formOnly ? null : (
           <Fact label="Strong's" testId="sheet-strongs">
             {word.s}
           </Fact>
@@ -597,6 +609,11 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
             data-testid="sheet-scroll"
             className={`overflow-y-auto overscroll-contain px-4 pt-3 ${scrollHeight(many, heading, lookup.words.some((w) => (hebrew ? paradigmOfHebrewWord(w, wordParse(sheetChapter, w)) : paradigmOfWord(w)) !== undefined))}`}
           >
+            {lookup.variant ? (
+              <p data-testid="sheet-variant" className="pb-1 text-sm text-muted">
+                {lookup.variant}
+              </p>
+            ) : null}
             {lookup.words.map((w, i) => hebrew ? (
               <HebrewCard
                 key={i}
@@ -618,6 +635,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 key={i}
                 chapter={sheetChapter}
                 word={w}
+                verseOf={lookup.verse}
                 english={lookup.fromEnglish ? undefined : lookup.english}
                 pronunciation={pronunciation}
                 known={known}
