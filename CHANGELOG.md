@@ -1,5 +1,9 @@
 # What's new
 
+## 0.6.0
+_2026-10-28_
+- New: With Variants on, the tutor now knows the places where manuscripts differ in the verse you are reading, and Ask the tutor on a variant's sheet opens a talk with the question ready to send.
+
 ## 0.5.28
 _2026-10-28_
 - Fixed: the Greek and Hebrew buttons on Review and Words are whole in a very narrow window and no longer go under the round Ask button.

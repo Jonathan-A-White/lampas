@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.6.0",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.7",
+    "kind": "new",
+    "text": "With Variants on, the tutor now knows the places where manuscripts differ in the verse you are reading, and Ask the tutor on a variant's sheet opens a talk with the question ready to send."
+  },
+  {
     "version": "0.5.28",
     "date": "2026-10-28",
     "story": "mw-5r3p30.831",
