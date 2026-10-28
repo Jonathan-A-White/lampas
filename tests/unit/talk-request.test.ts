@@ -368,7 +368,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
   };
 
   it('fits the grist with the facts in it: the tell lines go first and the turns stay', async () => {
-    const { plain, built } = await padded(1100);
+    const { plain, built } = await padded(1300);
     expect(size(plain)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(size(built)).toBeGreaterThan(MAX_REQUEST_BYTES);
     const fitted = fitHistory(built, 0, 'rom.8@1');

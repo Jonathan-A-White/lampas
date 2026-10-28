@@ -8,7 +8,7 @@ import { createDexieStore } from 'voice-kit/talks/dexie';
 import { addLemmaToLearn, type AddedLemma } from '../data/answerWord';
 import { BOOKS, titleOf, type Book } from '../data/books';
 import { getDay, localDate, setTicked } from '../data/daily/dailyStore';
-import { NO_CHAPTER } from '../data/chapter';
+import { loadChapter, NO_CHAPTER } from '../data/chapter';
 import { learnerGrammar } from '../data/grammar/learnerGrammar';
 import { learnerSummary } from '../data/learnerSummary';
 import { rustyNow } from '../data/learnerRusty';
@@ -30,7 +30,7 @@ import { worksForTutor, workChip } from '../resources/tutorLinks';
 import { workOf } from '../resources/works';
 import { setPractise } from '../review/practise';
 import { higherInterest } from '../services/interestField';
-import { dailyTicksSetting } from '../settings/definitions';
+import { dailyTicksSetting, variantsSetting, variantWitnessesSetting } from '../settings/definitions';
 import { applyChanges, currentSettings, MAX_CHANGES, undoChange, type ChangeResult } from '../settings/registry';
 import { getSetting } from '../settings/store';
 import { leaveTalk } from '../talk/leave';
@@ -40,9 +40,10 @@ import { openSheetTitles } from '../ui/sheetBack';
 import { settingsSentTo } from './knows';
 import { SCREEN_NAMES } from './screen';
 import { screenContextNow } from './screenContext';
+import { variantFactsOf } from './variantFacts';
 
 /** The facts' names: a name is the one way the tutor has to call a fact or a place, so no screen goes by one of them. */
-const FACT_NAMES: readonly string[] = ['where-he-is', 'today-drill', 'settings', 'progress', 'rusty-words', 'works', 'memorizing', 'verseText', 'memorizeEvidence', 'verse-lists'];
+const FACT_NAMES: readonly string[] = ['where-he-is', 'today-drill', 'settings', 'progress', 'rusty-words', 'works', 'memorizing', 'verseText', 'memorizeEvidence', 'verse-lists', 'variants'];
 
 /** The commands' names, kept from the screens' the same way: the command memorize is the tutor's to call, so the screen Memorize is the place 'memorize-screen'. */
 const COMMAND_NAMES: readonly string[] = ['set-setting', 'tick-today', 'start-review', 'add-word', 'memorize', 'unmemorize', 'moveVerse', 'startSession'];
@@ -122,6 +123,16 @@ const verseTextNow = async (): Promise<unknown> => verseTextsOf([...new Set((awa
 /** His verse lists as the Verse lists screen shows them (newest first): each one's id, name and how many references it holds; the references stay out, so the request stays small. */
 const verseListsNow = async (): Promise<Array<{ id: number; name: string; count: number }>> => (await listVerseLists()).map((list) => ({ id: list.id, name: list.name, count: list.refs.length }));
 
+/** The variant units of the verse in hand in the Reader, as the Bible talk's `variants` field has them (src/tutor/variantFacts.ts): refused while Variants is Off, and where he is not in a chapter. */
+async function variantsNow(): Promise<unknown> {
+  const [variants, witnesses] = await Promise.all([getSetting(variantsSetting), getSetting(variantWitnessesSetting)]);
+  if (variants === 'off') throw new Error('Variants is Off, so the app marks no variant readings');
+  const { book, chapter, verse } = readerOf(window.location.hash);
+  if (!book || !chapter) throw new Error('he is not reading a chapter');
+  const facts = variantFactsOf(await loadChapter(book, chapter), verse === undefined ? [] : [verse], { variants, witnesses });
+  return facts ?? { chapter_units: 0, units: [] };
+}
+
 const FACTS: readonly Fact[] = [
   whereHeIsFact,
   todayDrillFact,
@@ -156,6 +167,11 @@ const FACTS: readonly Fact[] = [
     name: 'verse-lists',
     tell: 'his verse lists, newest first: id (for the place lists), name, count',
     read: verseListsNow,
+  },
+  {
+    name: 'variants',
+    tell: 'where manuscripts differ in the verse he reads: each reading, who reads it; only while Variants is on',
+    read: variantsNow,
   },
 ];
 
@@ -386,7 +402,7 @@ export async function addWord(scope: TalkScope, lemma: string): Promise<AddWordR
   }
 }
 
-/** The Bible talk's registry: ten facts (three core), the eight commands, a place for every screen, for a chapter and for a book of his shelf. */
+/** The Bible talk's registry: eleven facts (three core), the eight commands, a place for every screen, for a chapter and for a book of his shelf. */
 export const lampasRegistry = (): Registry =>
   defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
 
@@ -459,6 +475,7 @@ const LOOKING_AT: Readonly<Record<string, string>> = {
   verseText: 'verses you memorize',
   memorizeEvidence: 'memorizing record',
   'verse-lists': 'verse lists',
+  variants: 'variant readings',
 };
 
 /** The line the sheet shows (and says) while the tutor looks at `names`: 'Looking at your Logos books', 'Looking at your progress and settings'. */

@@ -63,6 +63,8 @@ import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
 import { useReaderVariants, type ShownUnit } from './reader/variants';
 import { VariantSheet } from './reader/VariantSheet';
+import { readDraft, talkDraftKey, writeDraft } from './ui/unsentDraft';
+import { askAboutVariant, clearVariantAsked, VARIANT_QUESTION } from './tutor/variantFacts';
 import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
@@ -332,6 +334,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       return () => reopenTalk(BOOK, CHAPTER, about ?? null);
     };
   });
+  // The unit a talk was opened on from the brace sheet is forgotten when the Talk sheet closes (src/tutor/variantFacts.ts)
+  useEffect(() => {
+    if (talkAbout === undefined) clearVariantAsked();
+  }, [talkAbout]);
   // What he says goes to the open Talk sheet (the Verse view's Ask the tutor has its own composer, src/Ask.tsx).
   useEffect(() => {
     sayAbout.current = (message) => {
@@ -663,6 +669,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               ? () => {
                   stopReading();
                   stopTalking.abort();
+                  // the talk is about this one unit, and its box holds the question ready to send (words he had typed there are his and stay)
+                  if (chapter) askAboutVariant(chapter, variantShown.unit);
+                  const draftKey = talkDraftKey(talkRef(BOOK, CHAPTER, variantShown.unit.v));
+                  if (readDraft(draftKey) === '') writeDraft(draftKey, VARIANT_QUESTION);
                   setVariantShown(null);
                   setTalkAbout(variantShown.unit.v);
                 }

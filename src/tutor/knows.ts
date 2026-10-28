@@ -98,6 +98,7 @@ export const PROGRESS: Readonly<Record<string, string>> = {
   rusty: 'the solid words and ideas he now slips on or has not met for a long while (src/data/rusty.ts, src/data/learnerRusty.ts)',
   works: 'his Logos shelf: the pinned books, the commentaries covering the chapter, and for a question about a form or a reading the grammars and Greek texts, chosen by the place (src/resources/tutorLinks.ts worksForTutor, src/data/repositories/library.ts)',
   maps: 'the maps of the passage the talk holds, as the tutor may link them: the chapter\'s maps with the places the held verse or range names (src/maps/forTutor.ts, Bible Mapper through src/maps)',
+  variants: "the variant units set in the verses the talk holds, while Settings > Variants is on: each reading in Greek and English with its witness spelled out, and the chapter's count (src/tutor/variantFacts.ts)",
   today: "the items behind the Reader's chip 'Today · N of M', each with its title and whether he ticked it (src/data/learnerToday.ts)",
 };
 
@@ -130,7 +131,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     // which (mw-3ased2.3, mw-gdcyf98.3). The languages he reads is sent in `settings` (everySetting). The text of an Old Testament chapter goes under `hebrew` with `hebrew_words` (mw-gdcyf98.18),
     // from the Hebrew dial's Curious up; at Just English the request holds the English alone, and `hebrew_interest` tells the tutor why. `settings.hebrewDepth` is how it writes a Hebrew word.
     settings: { ...everySetting, greekPronunciation: 'pronunciation', greekInterest: 'greek_interest', hebrewInterest: 'hebrew_interest' },
-    progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works', maps: 'maps' },
+    progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works', maps: 'maps', variants: 'variants' },
     notSent: {},
   },
   'verse-ask': {
@@ -167,6 +168,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       studyWay: NO_QUIZ,
       today: 'An ask is about one verse he is reading; what is on his Today list is for the Bible talk, where he can ask what is on his drill and be offered Today.',
       maps: 'An ask is about one verse and links no map; the maps of its chapter are the Bible talk\'s to name and to link, and the Verse view has its own Maps door.',
+      variants: 'An ask is about one verse and reads it as it stands; the manuscripts\' variant readings of it are the Bible talk\'s to explain, and the Reader\'s braces and the brace sheet show them.',
       languages: 'Which languages he reads is the two dials read together (greekInterest and hebrewInterest here, and hebrew_interest as a field), so the ask is not given the sum a second time.',
     },
   },
@@ -207,6 +209,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       today: 'A verdict on one reading is about that reading; what is on his Today list is for the Bible talk to name and to offer to open.',
       works: 'A verdict on one reading is about that reading as he said it; the books of his Logos shelf have no part in it, and the verdict links nothing.',
       maps: 'A verdict on one reading is about that reading as he said it; the maps of its chapter have no part in it, and the verdict links nothing.',
+      variants: 'A verdict on one reading is about that reading as he said it; the variant readings of the manuscripts have no part in it.',
     },
   },
   tips: {
@@ -220,6 +223,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       today: 'A tip is about a feature he has not tried; what is on his Today list is the Bible talk\'s to name and to offer to open.',
       works: 'A tip is about a feature he has not tried; which books his Logos shelf holds is for the talk and the asks to speak of.',
       maps: 'A tip is about a feature he has not tried; which maps a chapter has is for the Bible talk to name and to link.',
+      variants: 'A tip is about a feature he has not tried; which variants a verse has is for the Bible talk to explain.',
     },
   },
 };
