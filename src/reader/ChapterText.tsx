@@ -1,7 +1,7 @@
 // src/reader/ChapterText.tsx — how a chapter's verses are drawn: a verse to a line, a paragraph, a section heading, a passage
 // (moved as is from src/Reader.tsx, module map R1a).
 import { useEffect, useRef } from 'react';
-import type { SourceLanguage, Verse } from '../data/chapter';
+import type { SourceLanguage, VariantUnit, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import type { Passage } from '../data/passage';
 import type { WovenVerse } from '../data/weave';
@@ -12,6 +12,7 @@ import { READING_CLASS, textClass } from './textClass';
 import { VerseNumber, VerseText, type VerseProps, type VerseTalk } from './VerseText';
 import { isOrdered, rowAttrs } from './sourceText';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
+import type { ShownUnit } from './variants';
 
 /** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
 export function VerseLine(props: VerseProps) {
@@ -45,7 +46,7 @@ export function VerseLine(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, talk }: {
+export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, talk, variantsOf, onVariant }: {
   verses: Verse[];
   view: ReaderView;
   source?: SourceLanguage;
@@ -58,6 +59,9 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
   onPlay: (n: number) => void;
   onLook: (lookup: Lookup) => void;
   talk: VerseTalk;
+  /** the variant units the Reader shows in verse `n` (src/reader/variants.ts) */
+  variantsOf?: (n: number) => readonly ShownUnit[] | undefined;
+  onVariant?: (unit: VariantUnit) => void;
 }) {
   return (
     <p data-paragraph {...rowAttrs(view, source, isOrdered(woven))} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view, source)}`}>
@@ -73,7 +77,7 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
           >
             <sup className="text-xs font-semibold text-muted">{verse.n}</sup>
           </VerseNumber>
-          <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} />
+          <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} onVariant={onVariant} />
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}
