@@ -247,7 +247,8 @@ export function isVerseAnswer(value: unknown): value is VerseAnswer {
   if ('question' in value && !isText(value.question, MAX_QUESTION_CHARS)) return false;
   if ('bridge' in value && !isAnswerBridge(value.bridge)) return false;
   if (!Array.isArray(value.words) || value.words.length > 12) return false;
-  return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300));
+  // `language` is optional (absent reads as Greek): 'he' for a Hebrew word of an Old Testament verse (mw-gdcyf98.22), as the Bible talk's answer has it
+  return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 + Number('language' in w) && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300) && (!('language' in w) || w.language === 'grc' || w.language === 'he'));
 }
 
 export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[], chapter: Chapter = NO_CHAPTER, works: TutorWork[] = []): VerseAskRequest {

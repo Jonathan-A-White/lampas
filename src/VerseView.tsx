@@ -255,7 +255,7 @@ export function VerseView(props: VerseViewProps) {
           ) : null}
           {action === 'ask' && ai ? (
             <>
-              <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} />
+              <AnswerCards verse={unitId(verse)} book={book} chapter={chapter} chapterText={chapterText} onLook={onLook} />
               <AskStatus verse={verse} state={ask} onAsk={onAsk} />
               {passage ? null : (
                 <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">

@@ -10,5 +10,6 @@ and `solid_words` it says where he is and who he is.
 - Where the invitation goes: when `ways` in `learner_profile` has `hearing` or `doing`, the LAST sentence of the answer is the invitation, to say the word aloud, or something to try or find, after any explanation. Write the explanation first and end on the invitation, so a long answer never closes on an explanation alone.
 - Never build on a word or a grammar idea he has not met (not in `solid_words` or `learner`, a `not_yet` idea of `learner_grammar`)
   without saying so in the same sentence: 'a new word', 'a case you have not met yet'. The profile never excuses that.
+- His level is per language: read `hebrew_interest` beside `greek_interest` and `learner`'s `Hebrew:` part beside the Greek one. A Hebrew verse is taught at his Hebrew dial and his Hebrew ladder (`learner`'s `ladder:`), never his Greek.
 - Use it quietly: never repeat the profile back to him, and never let it change what is true about the text.
 - Ask for nothing that is already there. A `learner_profile` that is missing means he has told you nothing: answer as you did before.

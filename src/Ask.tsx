@@ -31,7 +31,10 @@ import { revealTop, scrollBoxOf } from './ui/reveal';
 import { YouSaid } from './ui/YouSaid';
 import { useElapsed } from './ui/useElapsed';
 import { askDraftKey, readDraft, writeDraft } from './ui/unsentDraft';
-import { GREEK_LANG } from './script/greekLang';
+import { GREEK_LANG, faceOf } from './script/greekLang';
+import { findGreekWord, lookupFor } from './data/answerWord';
+import type { Chapter } from './data/chapter';
+import type { Lookup } from './WordSheet';
 
 export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending' | 'waiting' }> }) {
   const seconds = useElapsed(state.startedAt);
@@ -42,8 +45,8 @@ export function Waiting({ state }: { state: Extract<AskState, { phase: 'sending'
   );
 }
 
-/** The answers kept for a verse (its number) or a passage (its unitId, '1-11'). */
-export function AnswerCards({ verse, book, chapter }: { verse: number | string; book: string; chapter: number }) {
+/** The answers kept for a verse (its number) or a passage (its unitId, '1-11'). With the chapter's text and `onLook`, a Hebrew word of an answer (an Old Testament verse's) is tappable: it opens the word sheet. */
+export function AnswerCards({ verse, book, chapter, chapterText, onLook }: { verse: number | string; book: string; chapter: number; chapterText?: Chapter; onLook?: (lookup: Lookup) => void }) {
   const ref = verseRef(book, chapter, verse);
   const answers = useLiveQuery(() => listAnswers(ref), [ref]);
   // An answer that is stored while these cards are on screen is read aloud (the setting, src/speech/tutorVoice.ts); the answers already kept
@@ -87,14 +90,14 @@ export function AnswerCards({ verse, book, chapter }: { verse: number | string; 
   return (
     <div ref={cards} data-answers-for={verse} className="mb-2 space-y-2 px-1">
       {answers.map((a) => (
-        <AnswerCard key={a.id} answer={a} />
+        <AnswerCard key={a.id} answer={a} chapterText={chapterText} onLook={onLook} />
       ))}
       <BridgeIdeaHost owner="ask" />
     </div>
   );
 }
 
-function AnswerCard({ answer }: { answer: TutorAnswer }) {
+function AnswerCard({ answer, chapterText, onLook }: { answer: TutorAnswer; chapterText?: Chapter; onLook?: (lookup: Lookup) => void }) {
   const { bridge } = answer;
   return (
     <article data-answer onClick={stopOnTap} className="rounded-xl border border-line bg-surface p-3">
@@ -110,19 +113,33 @@ function AnswerCard({ answer }: { answer: TutorAnswer }) {
       ))}
       {answer.words.length > 0 ? (
         <dl className="mt-2 space-y-1 border-t border-line pt-2">
-          {answer.words.map((w, i) => (
-            <div key={i} className="flex gap-3">
-              <dt {...GREEK_LANG} className="min-w-0 shrink-0 break-words font-greek text-2xl">
-                {w.greek}
-              </dt>
-              <dd className="min-w-0 flex-1 break-words text-base">
-                <span {...GREEK_LANG} className="font-greek text-lg">
-                  {w.lemma}
-                </span>
-                <span className="text-muted"> — {w.note}</span>
-              </dd>
-            </div>
-          ))}
+          {answer.words.map((w, i) => {
+            // a Hebrew word of an Old Testament verse (mw-gdcyf98.22) is drawn right to left in the Hebrew face and opens its word sheet when the verse's text has it
+            const found = w.language === 'he' && chapterText && onLook ? findGreekWord({ title: '', chapter: chapterText, verse: null }, w) : undefined;
+            return (
+              <div key={i} className="flex gap-3">
+                {w.language === 'he' ? (
+                  <dt className="min-w-0 shrink-0">
+                    {found && chapterText && onLook ? (
+                      <button type="button" {...faceOf('hbo', { greek: '', hebrew: 'hebrew-choice' }, 'min-h-11 break-words rounded-lg px-1 text-left text-accent active:bg-line')} onClick={() => onLook(lookupFor(chapterText, found))}>
+                        {w.greek}
+                      </button>
+                    ) : (
+                      <span {...faceOf('hbo', { greek: '', hebrew: 'hebrew-choice' }, 'break-words')}>{w.greek}</span>
+                    )}
+                  </dt>
+                ) : (
+                  <dt {...GREEK_LANG} className="min-w-0 shrink-0 break-words font-greek text-2xl">
+                    {w.greek}
+                  </dt>
+                )}
+                <dd className="min-w-0 flex-1 break-words text-base">
+                  <span {...faceOf(w.language === 'he' ? 'hbo' : 'grc', { greek: 'text-lg', hebrew: '' })}>{w.lemma}</span>
+                  <span className="text-muted"> — {w.note}</span>
+                </dd>
+              </div>
+            );
+          })}
         </dl>
       ) : null}
       {bridge ? <BridgeOffer bridge={bridge} onTake={(next) => openBridgeIdea(next, 'ask')} /> : null}

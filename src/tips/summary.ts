@@ -51,7 +51,7 @@ export const FEATURES: readonly { id: string; label: string; used(e: Evidence): 
   { id: 'word-help', label: 'Help with this word on the word sheet', used: (e) => e.used('word-help') },
   { id: 'grammar-sheet', label: 'Open a grammar term from a word', used: (e) => e.used('grammar-term-opened') },
   { id: 'know-grammar', label: 'Mark a grammar term as known', used: (e) => e.counts.grammarKnown > 0 },
-  { id: 'weave', label: 'Weave Greek words into the English', used: (e) => ['solid', 'solid+learning'].includes(e.saved.weave ?? '') },
+  { id: 'weave', label: 'Weave Greek words (Hebrew words in an Old Testament chapter) into the English', used: (e) => ['solid', 'solid+learning'].includes(e.saved.weave ?? '') },
   { id: 'study-links', label: 'Study links on the word sheet', used: (e) => e.studyOn.length > 0 },
   { id: 'other-chapters', label: 'Open another chapter (the picker or the chapter buttons)', used: (e) => e.used('chapter-changed') },
   { id: 'goal', label: 'Set a reading goal', used: (e) => (e.saved.goal ?? '') !== '' },

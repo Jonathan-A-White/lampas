@@ -387,7 +387,7 @@
       }
     },
     "words": {
-      "description": "The Greek words of the verse the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word.",
+      "description": "The words of the verse the answer speaks about, each with its lemma and a short note that includes its parsing: Greek words of a New Testament verse, Hebrew words of an Old Testament verse (then each has `language` 'he'). Empty when the answer is about no particular word.",
       "type": "array",
       "maxItems": 12,
       "items": {
@@ -395,9 +395,19 @@
         "additionalProperties": false,
         "required": ["greek", "lemma", "note"],
         "properties": {
-          "greek": { "description": "The word as it stands in the verse.", "type": "string", "minLength": 1, "maxLength": 80 },
+          "greek": {
+            "description": "The word as it stands in the verse (pointed, for a Hebrew word).",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
           "lemma": { "description": "Its dictionary form.", "type": "string", "minLength": 1, "maxLength": 80 },
-          "note": { "description": "Its parsing and what it does here, in plain words.", "type": "string", "minLength": 1, "maxLength": 300 }
+          "note": { "description": "Its parsing and what it does here, in plain words.", "type": "string", "minLength": 1, "maxLength": 300 },
+          "language": {
+            "description": "Optional. `he` for a Hebrew word of an Old Testament verse (`greek` then holds its pointed Hebrew form and `lemma` its TBESH headword); missing or `grc` for a Greek word.",
+            "type": "string",
+            "enum": ["grc", "he"]
+          }
         }
       }
     }
