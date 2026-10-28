@@ -1,13 +1,14 @@
 // tests/unit/variant-render.test.ts — the Reader's variants (mw-9ji6ek0.5): which units and readings the filter shows (src/reader/variants.ts), and how a verse is
 // drawn with them (src/reader/VerseText.tsx): the unit's words marked, a brace after them holding the other reading(s) with a witness chip, in the Greek of the
 // reading in the Greek view, its English in the English view, and in the weave the language the unit's words take by the weave rule.
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { createElement } from 'react';
 import { readdirSync, readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord, Verse, VariantUnit, VariantCode } from '../../src/data/chapter';
 import { weaveVerse, wovenInOrder } from '../../src/data/weave';
 import { VerseText } from '../../src/reader/VerseText';
+import type { Lookup } from '../../src/WordSheet';
 import { braceReadings, plainEnglish, readerVariants, shownUnits, type VariantFilter } from '../../src/reader/variants';
 import type { ReaderView } from '../../src/data/repositories';
 
@@ -52,7 +53,7 @@ function draw(view: ReaderView, woven: ReturnType<typeof wovenInOrder> | null = 
 function drawn(container: HTMLElement): string[] {
   return [...container.querySelectorAll<HTMLElement>('[data-variant], [data-brace]')].map((el) =>
     el.hasAttribute('data-brace')
-      ? `{${[...el.querySelectorAll('[data-brace-reading]')].map((r) => [r.querySelector('[data-brace-text]')?.textContent, ...[...r.querySelectorAll('[data-witness]')].map((c) => c.textContent)].join(' ')).join(' | ')}}`
+      ? `{${[...el.querySelectorAll('[data-brace-reading]')].map((r) => [r.querySelector('[data-brace-text]')?.textContent?.trim(), ...[...r.querySelectorAll('[data-witness]')].map((c) => c.textContent)].join(' ')).join(' | ')}}`
       : (el.textContent ?? '').trim(),
   );
 }
@@ -81,11 +82,41 @@ describe('a verse with two units', () => {
     expect([...container.querySelectorAll('[data-brace]')].map((b) => b.getAttribute('data-brace-lang'))).toEqual(['english', 'greek']);
   });
 
-  it('a brace is a button that names the other reading', () => {
+  it('a brace is a label that names the other reading, and its siglum is the button', () => {
     const container = draw('english');
     const brace = container.querySelector<HTMLElement>('[data-brace]');
-    expect(brace?.getAttribute('role')).toBe('button');
+    expect(brace?.getAttribute('role')).toBe('group');
     expect(brace?.getAttribute('aria-label')).toBe('Other reading: the Lord (Nestle-Aland, ECM)');
+    const sigla = [...(brace?.querySelectorAll<HTMLElement>('[data-witness]') ?? [])];
+    expect(sigla.map((c) => [c.getAttribute('role'), c.textContent])).toEqual([['button', 'NA'], ['button', 'ECM']]);
+  });
+
+  it('a word inside the brace opens the word popup: a form the verse carries with its own lemma, a form it does not as the form alone, an English word with the Greek of its reading; the siglum opens the sheet', () => {
+    const looks: Lookup[] = [];
+    const opened: string[] = [];
+    const variants = shownUnits([LORD, HIM], ALL);
+    const mine = (view: ReaderView) => render(createElement(VerseText, { verse: VERSE, view, woven: null, onLook: (l: Lookup) => looks.push(l), variants, onVariant: (s) => opened.push(s.unit.base) })).container;
+    let container = mine('greek');
+    const brace = (n: number) => container.querySelectorAll<HTMLElement>('[data-brace]')[n];
+    // αὐτῷ is not a form of the verse: the form alone, in the verse, from variant B
+    fireEvent.click(brace(1).querySelector('[data-brace-word]')!);
+    expect(looks[0].words).toEqual([{ t: 'αὐτῷ', tr: '', s: '', l: '', p: '' }]);
+    expect(looks[0]).toMatchObject({ verse: 1, variant: 'in variant B', fromEnglish: false });
+    expect(brace(1).querySelectorAll('[data-witness]')).toHaveLength(1);
+    fireEvent.click(brace(1).querySelector('[data-witness]')!);
+    expect(opened).toEqual(['αὐτοῖς']);
+    cleanup();
+    // in English a word of the reading opens the Greek of the reading under that English word
+    container = mine('english');
+    fireEvent.click([...brace(0).querySelectorAll('[data-brace-word]')].find((w) => w.textContent?.trim() === 'Lord')!);
+    expect(looks[1].words.map((w) => w.t)).toEqual(['κύριος']);
+    expect(looks[1]).toMatchObject({ english: 'the Lord', fromEnglish: true, tapped: 'Lord', variant: 'in variant NA, ECM' });
+    cleanup();
+    // a word the verse does carry is the verse's own, with its lemma
+    const carried = shownUnits([unit(1, [1], 'εἶπεν', [['N', 'ἀμήν', 'truly']], 'said')], ALL);
+    const { container: c3 } = render(createElement(VerseText, { verse: VERSE, view: 'greek', woven: null, onLook: (l: Lookup) => looks.push(l), variants: carried }));
+    fireEvent.click(c3.querySelector('[data-brace] [data-brace-word]')!);
+    expect(looks[2].words[0]).toBe(VERSE.g[5]);
   });
 
   it('with no variants given the verse is drawn as before: nothing marked, no brace', () => {
@@ -98,8 +129,8 @@ describe('a verse with two units', () => {
     const out = unit(1, [5], 'ἀμήν', [['B', '', ''], ['N', 'ἀμὴν', 'truly']], 'truly');
     const [shown] = shownUnits([out], ALL);
     expect(braceReadings(shown, 'english')).toEqual([
-      { text: '', same: false, chips: ['B'] },
-      { text: 'truly', same: true, chips: ['NA'] },
+      { text: '', same: false, chips: ['B'], greek: '', english: '' },
+      { text: 'truly', same: true, chips: ['NA'], greek: 'ἀμὴν', english: 'truly' },
     ]);
     const { container } = render(createElement(VerseText, { verse: VERSE, view: 'english', woven: null, onLook: () => {}, variants: [shown] }));
     expect(container.querySelector('[data-brace]')?.textContent).toMatch(/left out.*B.*same.*NA/);

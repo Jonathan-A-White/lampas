@@ -12,13 +12,10 @@ import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
 import { sourceAttrs, sourceFace, sourceSpeech } from './sourceText';
 import { VariantBrace } from './VariantBrace';
-import type { ShownUnit } from './variants';
+import type { BraceReading, ShownUnit } from './variants';
+import { variantLookup } from './variantWords';
 import { wordAtPoint } from './tappedWord';
-// 44 px (--lp-tap) minus 1 em, halved, top and bottom. Every face's content area is taller than 1 em (Gentium Plus
-// about 1.11 em, a phone's sans about 1.1 em), so an inline word is never under 44 px whatever the font, and the line
-// box stays --lp-tap tall, so the spare pixels cost no layout.
-const TAP_PAD = 'py-[calc((var(--lp-tap)-1em)/2)]';
-
+import { Tap, TAP_PAD } from './Tap';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
 function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
   return (
@@ -36,72 +33,6 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
         </Fragment>
       ))}
     </>
-  );
-}
-
-/** A word he can tap: a span with role button and no chrome. The caller pads it to a 44 px tap height (an inline box
- * is as tall as its font's content area, so the padding is 44 px minus that, which differs by face). The trailing
- * space is inside so the gap between two words is tappable too. It has no horizontal padding: the gap between two words is that one space (mw-5r3p30.127). A finger held on it for half a second (`onLongPress`)
- * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
- * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
-function Tap({ onTap, onLongPress, still, lang, dir, className, children, ...data }: {
-  /** a tap by touch or mouse gives its click: where on the word the finger was; the keyboard's Enter gives none */
-  onTap: (e?: MouseEvent<HTMLElement>) => void;
-  onLongPress: () => void;
-  /** read only (a verse on a card): a plain span, not a button */
-  still?: boolean;
-  lang?: string;
-  /** the direction the word is isolated in: an Old Testament weave puts English chunks (ltr) and Hebrew ones (rtl) in one row, each its own way round */
-  dir?: 'ltr' | 'rtl';
-  'data-lang'?: string;
-  className?: string;
-  children: ReactNode;
-  'data-chunk'?: string;
-  'data-woven'?: string;
-  'data-learning'?: string;
-  'data-word'?: string;
-  'data-hint'?: string;
-  'data-marked'?: string;
-  'data-variant'?: string;
-}) {
-  const press = useLongPress((e) => onTap(e as MouseEvent<HTMLElement>), onLongPress);
-  if (still) {
-    return (
-      <>
-        <span lang={lang} dir={dir} {...data} className={className}>
-          {children}
-        </span>{' '}
-      </>
-    );
-  }
-  // A word with a direction of its own is a bidi isolate and its trailing space stands outside it: inside, the space would sit on the isolate's own end, which is the side of the previous neighbour
-  // for a left-to-right chunk and of the next for a right-to-left one, and the gaps in a row of both would fall unevenly.
-  const word = (
-    <span
-      role="button"
-      tabIndex={0}
-      lang={lang}
-      dir={dir}
-      {...data}
-      {...press}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onTap();
-        }
-      }}
-      className={`cursor-pointer ${NO_SELECT} rounded active:bg-line ${className ?? ''}`}
-    >
-      {children}
-      {dir ? null : ' '}
-    </span>
-  );
-  return dir ? (
-    <>
-      {word}{' '}
-    </>
-  ) : (
-    word
   );
 }
 
@@ -325,6 +256,11 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
     if (language === 'hebrew' && hasVoice('hebrew') === false) return;
     if (speakWord(text, language)) publish({ kind: 'word-spoken', text, language, verse: verse.n });
   };
+  // a word inside a variant's brace opens the word popup as a word of the text does (src/reader/variantWords.ts), saying which reading it is from
+  const lookVariant = (word: string, reading: BraceReading, language: 'greek' | 'english') => {
+    const lookup = variantLookup(verse, word, reading, language);
+    if (lookup) onLook(lookup);
+  };
   // a marked word the MSB gives no English of its own is in no chunk: it is drawn, marked, in its own place in the English and the weave (weave.ts strayMarks, mw-5r3p30.817)
   const strays = view === 'greek' || marked === undefined ? { before: new Map<number, readonly number[]>(), end: [] as readonly number[] } : strayMarks(verse, marked, drawnOrder(verse, woven));
   const strayWord = (i: number) => (
@@ -335,7 +271,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   // the variant units (mw-9ji6ek0.5): their words or chunks marked, a brace after them; a verse on a card (still) has none
   const plan = still ? NO_PLAN : planVariants(verse, view, woven, variants);
   const bracesAt = (items: readonly { shown: ShownUnit; language: 'greek' | 'english' }[] | undefined): Drawn[] =>
-    (items ?? []).map(({ shown, language }) => ({ node: <VariantBrace key={`v${variants?.indexOf(shown) ?? 0}`} shown={shown} language={language} onOpen={onVariant} /> }));
+    (items ?? []).map(({ shown, language }) => ({ node: <VariantBrace key={`v${variants?.indexOf(shown) ?? 0}`} shown={shown} language={language} onOpen={onVariant} onWord={(word, reading) => lookVariant(word, reading, language)} onSay={say} /> }));
   const plain = (nodes: ReactNode[]): Drawn[] => nodes.map((node) => ({ node }));
   return (
     <span data-text>

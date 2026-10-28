@@ -99,7 +99,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the brace of verse 2 holds {string} with the chip {string}', (_, reading: string, witness: string) => {
       const brace = document.querySelector('[data-verse="2"] [data-brace]');
       const first = brace?.querySelector('[data-brace-reading]');
-      expect(first?.querySelector('[data-brace-text]')?.textContent).toBe(reading);
+      expect(first?.querySelector('[data-brace-text]')?.textContent?.trim()).toBe(reading);
       expect([...(first?.querySelectorAll('[data-witness]') ?? [])].map((c) => c.textContent)).toEqual([witness]);
     });
   });

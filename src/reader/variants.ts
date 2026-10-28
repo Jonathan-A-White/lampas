@@ -76,6 +76,9 @@ export interface BraceReading {
   text: string;
   same: boolean;
   chips: WitnessChip[];
+  /** the reading's Greek and English, whichever language `text` is in (the Greek is '' for a reading that leaves the words out): a tap on a word of the text looks it up by these */
+  greek: string;
+  english: string;
 }
 
 export function braceReadings(shown: ShownUnit, language: 'greek' | 'english'): BraceReading[] {
@@ -86,10 +89,10 @@ export function braceReadings(shown: ShownUnit, language: 'greek' | 'english'): 
     const key = same ? '=' : language === 'greek' ? text.normalize('NFC') : plainEnglish(text);
     const chip = chipOf(r.code);
     const had = out.find((b) => b.key === key);
-    if (!had) out.push({ key, text, same, chips: [chip] });
+    if (!had) out.push({ key, text, same, chips: [chip], greek: r.greek, english: r.english });
     else if (!had.chips.includes(chip)) had.chips = CHIPS.filter((c) => c === chip || had.chips.includes(c));
   }
-  return out.map(({ text, same, chips }) => ({ text, same, chips }));
+  return out.map(({ text, same, chips, greek, english }) => ({ text, same, chips, greek, english }));
 }
 
 /** The variant units of a chapter as the Reader has them: `byVerse` the shown units of each verse (null while nothing is shown: Variants Off or no
