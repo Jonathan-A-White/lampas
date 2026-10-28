@@ -1,5 +1,9 @@
 # What's new
 
+## 0.5.24
+_2026-10-28_
+- New: Settings has a Variants choice (and, under it, which witnesses count) that you can set now; the Reader does not show variants yet.
+
 ## 0.5.23
 _2026-10-28_
 - New: You can now open the Bible talk from a verse of the Old Testament, and the app sends the tutor the Hebrew.

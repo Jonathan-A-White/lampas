@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.5.24",
+    "date": "2026-10-28",
+    "story": "mw-9ji6ek0.4",
+    "kind": "new",
+    "text": "Settings has a Variants choice (and, under it, which witnesses count) that you can set now; the Reader does not show variants yet."
+  },
+  {
     "version": "0.5.23",
     "date": "2026-10-28",
     "story": "mw-gdcyf98.18",
