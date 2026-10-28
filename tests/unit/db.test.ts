@@ -4,11 +4,11 @@ import { db } from '../../src/data/db';
 afterAll(() => db.close());
 
 describe('the Dexie database', () => {
-  it('opens at version 31 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder, drillRuns, passageLessons, pictureRefs, talkSummaries, library, exportRows, verseLists, recalls and diagrams stores', async () => {
+  it('opens at version 33 with the words, meta, settings, results, answers, talks, drills, readings, grammarKnown, grammarLevels, reviews, usage, tips and talkPictures, shares, requests, readingHistory, missTally, ladder, drillRuns, passageLessons, pictureRefs, talkSummaries, library, exportRows, verseLists, recalls, diagrams and readingSets stores', async () => {
     await db.open();
     expect(db.name).toBe('lampas');
-    expect(db.verno).toBe(32);
-    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'diagrams', 'drillRuns', 'drills', 'exportRows', 'grammarKnown', 'grammarLevels', 'ladder', 'library', 'meta', 'missTally', 'passageLessons', 'pictureRefs', 'readingHistory', 'readings', 'recalls', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talkSummaries', 'talks', 'tips', 'usage', 'verseLists', 'words']);
+    expect(db.verno).toBe(33);
+    expect(db.tables.map((t) => t.name).sort()).toEqual(['answers', 'diagrams', 'drillRuns', 'drills', 'exportRows', 'grammarKnown', 'grammarLevels', 'ladder', 'library', 'meta', 'missTally', 'passageLessons', 'pictureRefs', 'readingHistory', 'readingSets', 'readings', 'recalls', 'requests', 'results', 'reviews', 'settings', 'shares', 'talkPictures', 'talkSummaries', 'talks', 'tips', 'usage', 'verseLists', 'words']);
     expect(db.words.schema.primKey.name).toBe('lemma');
     expect(db.words.schema.idxByName['lemmas']?.multi).toBe(true);
     expect(db.settings.schema.primKey.name).toBe('key');
