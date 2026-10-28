@@ -1,7 +1,7 @@
 // src/reader/VerseText.tsx — how one verse's words are drawn (moved as is from src/Reader.tsx, module map R1a).
 import type { BarHandlers } from 'voice-kit/composer';
 import { Fragment, useEffect, useRef, type MouseEvent, type ReactNode } from 'react';
-import { type EnglishChunk, type GreekWord, type SourceLanguage, type VariantUnit, type Verse, englishRuns } from '../data/chapter';
+import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
@@ -220,7 +220,7 @@ export interface VerseProps {
   /** the variant units of this verse the Reader shows (src/reader/variants.ts): their words are marked and a brace after them holds the other readings; absent, none */
   variants?: readonly ShownUnit[];
   /** a tap on a unit's brace */
-  onVariant?: (unit: VariantUnit) => void;
+  onVariant?: (shown: ShownUnit) => void;
 }
 
 /** How a variant unit's words are drawn (mw-9ji6ek0.5): a dotted underline in the accent, which reads in the light and the dark themes and leaves the word's own colour. */

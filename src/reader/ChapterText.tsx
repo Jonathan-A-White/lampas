@@ -1,7 +1,7 @@
 // src/reader/ChapterText.tsx — how a chapter's verses are drawn: a verse to a line, a paragraph, a section heading, a passage
 // (moved as is from src/Reader.tsx, module map R1a).
 import { useEffect, useRef } from 'react';
-import type { SourceLanguage, VariantUnit, Verse } from '../data/chapter';
+import type { SourceLanguage, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import type { Passage } from '../data/passage';
 import type { WovenVerse } from '../data/weave';
@@ -61,7 +61,7 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
   talk: VerseTalk;
   /** the variant units the Reader shows in verse `n` (src/reader/variants.ts) */
   variantsOf?: (n: number) => readonly ShownUnit[] | undefined;
-  onVariant?: (unit: VariantUnit) => void;
+  onVariant?: (shown: ShownUnit) => void;
 }) {
   return (
     <p data-paragraph {...rowAttrs(view, source, isOrdered(woven))} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view, source)}`}>

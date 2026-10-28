@@ -101,3 +101,51 @@ test('Revelation 3:1-3 with Variants Off and On, in English, Weave and Greek, an
 
   await shot(page, 'variants');
 });
+
+// A tap on a brace opens the unit's sheet (mw-9ji6ek0.6, src/reader/VariantSheet.tsx): the text's reading and the other reading(s), each in Greek and English, the witness of
+// each spelled out, Ask the tutor, and Back closes it. Shot: shots/variants-brace-sheet.png.
+test('a tap on the brace at Revelation 3:2 opens the sheet with both readings and the witness lines; Ask the tutor opens the verse talk; Back closes it', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=rev&c=3');
+  await expect(page.locator('[data-verse="2"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'Greek').click();
+  const brace = page.locator('[data-verse="2"] [data-brace]').first();
+  await expect(brace).toBeVisible();
+  await expect(brace.locator('[data-brace-text]').first()).toHaveText('τήρησον');
+  await brace.click();
+
+  const sheet = page.getByRole('dialog', { name: 'Variant reading' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole('heading', { level: 2 })).toContainText('Revelation 3:2');
+  const readings = sheet.locator('[data-variant-reading]');
+  expect(await readings.count()).toBeGreaterThanOrEqual(2);
+  // the text's own reading, then the other: each in Greek and in English
+  await expect(readings.first().locator('[data-reading-greek]')).toHaveText(/\S/);
+  await expect(readings.first().locator('[data-reading-english]')).toHaveText(/\S/);
+  await expect(readings.nth(1).locator('[data-reading-greek]')).toHaveText('τήρησον');
+  await expect(readings.nth(1).locator('[data-reading-english]')).toHaveText('keep');
+  // the witness spelled out, one line each
+  const lines = sheet.locator('[data-witness-line]');
+  expect(await lines.count()).toBeGreaterThanOrEqual(1);
+  for (const line of await lines.allTextContents()) {
+    expect(line).toMatch(/^(B: the Byzantine text is split here|NA27\/NA28: Nestle-Aland reads this|NA27: Nestle-Aland \(27th edition\) reads this|NA28: Nestle-Aland \(28th edition\) reads this|ECM: the Editio Critica Maior reads this)$/);
+  }
+  await expect(sheet.getByRole('button', { name: 'Ask the tutor' })).toBeVisible();
+  // the sheet and its backdrop have finished coming in (src/index.css lp-sheet-in, lp-fade-in)
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+  await shot(page, 'variants-brace-sheet');
+
+  // Back closes it
+  await page.goBack();
+  await expect(sheet).toHaveCount(0);
+  await expect(page.locator('[data-verse="2"] [data-brace]').first()).toBeVisible();
+
+  // Ask the tutor opens the verse's talk, as the Verse view's Ask does
+  await brace.click();
+  await expect(sheet).toBeVisible();
+  await sheet.getByRole('button', { name: 'Ask the tutor' }).click();
+  await expect(sheet).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Talk about Revelation 3:2' })).toBeVisible();
+});

@@ -2,7 +2,6 @@
 // of every witness that reads it (src/reader/variants.ts braceReadings), in the Greek of the reading or its English as VerseText says. It is a button: a tap opens the
 // unit's sheet (mw-9ji6ek0.6). It is an inline span like a word (VerseText's Tap), so it wraps with the line and its 44 px tap height costs the line nothing.
 import { Fragment, type KeyboardEvent } from 'react';
-import type { VariantUnit } from '../data/chapter';
 import { GREEK_LANG } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
 import { braceReadings, type ShownUnit, type WitnessChip } from './variants';
@@ -16,13 +15,13 @@ export function VariantBrace({ shown, language, onOpen }: {
   shown: ShownUnit;
   /** the language of the readings: the Greek view's and a woven unit's Greek, else English */
   language: 'greek' | 'english';
-  onOpen?: (unit: VariantUnit) => void;
+  onOpen?: (shown: ShownUnit) => void;
 }) {
   const readings = braceReadings(shown, language);
   const label = `Other reading${readings.length > 1 ? 's' : ''}: ${readings
     .map((r) => `${r.same ? 'the same in English' : r.text || LEFT_OUT} (${r.chips.map((c) => SPELLED[c]).join(', ')})`)
     .join('; ')}`;
-  const open = () => onOpen?.(shown.unit);
+  const open = () => onOpen?.(shown);
   return (
     <>
       <span

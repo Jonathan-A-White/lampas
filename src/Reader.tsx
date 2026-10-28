@@ -61,7 +61,8 @@ import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciati
 import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
 import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
-import { useReaderVariants } from './reader/variants';
+import { useReaderVariants, type ShownUnit } from './reader/variants';
+import { VariantSheet } from './reader/VariantSheet';
 import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useTalk } from './useTalk';
@@ -256,6 +257,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // the variant units Settings > Variants shows (mw-9ji6ek0.5): marked in the text with a brace after them, counted by the chip in the row under the header; none in the Immersive reader
   const variants = useReaderVariants(chapter, immersive);
   const variantsOf = useCallback((n: number) => variants.byVerse?.get(n), [variants]);
+  // the unit whose brace he tapped: its sheet (src/reader/VariantSheet.tsx, mw-9ji6ek0.6)
+  const [variantShown, setVariantShown] = useState<ShownUnit | null>(null);
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
   const copyHold = useCopyHold(chapter, view ? { view, woven } : undefined, openChapter);
   // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
@@ -514,6 +517,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onLook={setLookup}
                       talk={verseTalk}
                       variantsOf={variantsOf}
+                      onVariant={setVariantShown}
                     />
                   ) : (
                     <VerseLine
@@ -529,6 +533,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onLook={setLookup}
                       talk={verseTalk}
                       variants={variantsOf(first.n)}
+                      onVariant={setVariantShown}
                     />
                   )}
                 </Fragment>
@@ -646,6 +651,23 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onTalk={() => setTalkAbout(viewUnit.n)}
           quiz={{ started: tutor.quizStarted, onOpen: tutor.openQuiz }}
           lesson={viewLesson}
+        />
+      ) : null}
+      {variantShown ? (
+        <VariantSheet
+          shown={variantShown}
+          reference={`${bookOf(BOOK)?.name ?? BOOK} ${CHAPTER}:${variantShown.unit.v}`}
+          onClose={() => setVariantShown(null)}
+          onAsk={
+            ai
+              ? () => {
+                  stopReading();
+                  stopTalking.abort();
+                  setVariantShown(null);
+                  setTalkAbout(variantShown.unit.v);
+                }
+              : undefined
+          }
         />
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
