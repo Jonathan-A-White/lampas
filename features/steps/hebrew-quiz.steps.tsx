@@ -130,7 +130,8 @@ describeFeature(
       await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
       await screen.findByRole('region', { name: 'Verse view' });
     };
-    const offers = (...names: string[]) => () => expect(actionNames()).toEqual(names);
+    // the Verse view reads the Hebrew dial when it opens (useHebrewOn: unread counts as 0, so Quiz me is left out) and draws it a moment later: a read taken at once on a loaded host races that read
+    const offers = (...names: string[]) => () => waitFor(() => expect(actionNames()).toEqual(names));
     const quizOn = async (): Promise<void> => {
       await user.click(within(viewEl()).getByRole('button', { name: 'Quiz me', exact: true }));
       await user.click(within(viewEl()).getByRole('button', { name: 'Start the quiz', exact: true }));
