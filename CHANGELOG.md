@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.5
+_2026-10-28_
+- New: Changed: Your Logos library now sits at the top of Settings > Study resources, beside Bible in Logos, instead of at the top of Settings.
+- Fixed: A Bible reference to the Old Testament in a tutor's answer, such as Daniel 2:28-29, now shows its text and opens in the Reader, with Open in Logos one tap away.
+
 ## 0.7.4
 _2026-10-28_
 - Fixed: in a variant's braces, tapping the letter (B, NA) now opens the variant card and tapping any word inside opens its word card.
