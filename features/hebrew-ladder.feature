@@ -1,8 +1,8 @@
 Feature: The Hebrew ladder on the Goal and Placement screens
   The Goal, Placement, Drill it and the idea sheet draw the ladder of the language in hand (mw-gdcyf98.10, src/data/grammar/languageInHand.ts, docs/layout/grammar.md): the
   chapter's where a chapter is open, else the one language he chose, else, with both chosen, the language of the Greek | Hebrew segment at the top of the Goal and Placement
-  screens (src/ui/SourceSegment.tsx). The Hebrew ladder has one idea so far, the alphabet: on the Goal it is a card that can be taught and marked known (the level is written,
-  no review row), and a placement on it begins at that foundation. At English only there is no Goal.
+  screens (src/ui/SourceSegment.tsx). The Hebrew ladder has one idea so far, the alphabet: on the Goal it is a card that can be taught and marked known (the level is written
+  and its review row is scheduled), and a placement on it begins at that foundation. At English only there is no Goal.
 
   Scenario: With Hebrew chosen the Goal shows the Hebrew alphabet
     Given Hebrew is the only language chosen and the Goal screen is open
@@ -11,7 +11,7 @@ Feature: The Hebrew ladder on the Goal and Placement screens
     And the screen has no Greek and Hebrew segment
     When he opens "The Hebrew alphabet" and marks it known without a drill
     Then the Goal lists "The Hebrew alphabet" as Solid
-    And "he-alphabet" has the level solid and no review row
+    And "he-alphabet" has the level solid and a review row
 
   Scenario: The Hebrew alphabet is taught from its sheet in Hebrew type
     Given Hebrew is the only language chosen and the Goal screen is open
