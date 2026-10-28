@@ -6,7 +6,7 @@
 // (src/settings/controls/, one file per section) names for its key. A row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens the
 // page holding that section, scrolled to it (a link from elsewhere, such as the reference card's 'Link Logos in Settings'). An address '#/settings?setting=textSize' (src/settings/link.ts,
 // docs/links.md) opens the page holding that row, at the row: it is drawn whatever its dependency would hide (rowsAt), scrolled to and marked until his next tap, and a row that
-// depends on a setting that is off says to turn that on first. Your Logos library is the first row of the home (a link to it, '#/settings?setting=library', marks it there). docs/layout/settings.md.
+// depends on a setting that is off says to turn that on first. Your Logos library is the first row of Study resources (a link to it, '#/settings?setting=library', opens that page and marks it). docs/layout/settings.md.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
@@ -88,7 +88,7 @@ export function SettingsScreen() {
   const page = pageId ? groupById(pageId) : undefined;
   const scrollRef = useScrollMemory('settings');
   const [query, setQuery] = useState('');
-  // a link that names a row of the home (the library door, the dial) clears the search that found it, so the home shows the row marked and not the list of answers
+  // a link that names a row of the home (the dial) clears the search that found it, so the home shows the row marked and not the list of answers
   const [linkSeen, setLinkSeen] = useState(linked);
   if (linkSeen !== linked) {
     setLinkSeen(linked);
@@ -116,9 +116,6 @@ export function SettingsScreen() {
     // 'Which languages?' is the first thing on the home, and under it the dial of each language chosen (mw-3ased2.2, mw-gdcyf98.2); a search lists matching rows instead
     // (a link to a dial whose language is not chosen draws it all the same, marked, as a link does for any row: rowsAt)
     const dialRows = values ? rows.filter((r) => r.section === 'dial') : [];
-    // the door to Your Logos library is the first thing under the search field (mw-5r3p30.752)
-    const libraryRow = rowOf('library');
-    const Library = CONTROLS.library;
     return (
       <>
         <ScreenHeader title="Settings" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
@@ -132,7 +129,6 @@ export function SettingsScreen() {
               values ? (
                 <>
                   <HighlightedSetting.Provider value={highlighted}>
-                    {libraryRow && Library ? <Library row={libraryRow} /> : null}
                     {dialRows.map((row) => {
                       const Dial = CONTROLS[row.key];
                       return Dial ? <Dial key={row.key} row={row} /> : null;

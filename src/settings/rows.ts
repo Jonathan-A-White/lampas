@@ -40,7 +40,6 @@ export type { Values };
 
 /** The sections, in the order the screen draws them (a group's page draws its own, in this order). */
 export const SECTIONS: readonly SettingsSection[] = [
-  { id: 'library', title: 'Your Logos library' },
   { id: 'dial', title: 'Your languages' },
   { id: 'appearance', title: 'Appearance' },
   { id: 'layout', title: 'Layout' },
@@ -74,10 +73,10 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'more', title: 'More' },
 ];
 
-/** The sections drawn on the Settings home itself, above the groups, not on a group's page, in the order the home draws them: the door to Your Logos library (mw-5r3p30.752) and the languages he reads with a dial for each (mw-3ased2.2, mw-gdcyf98.2). They are in no group. */
-export const HOME_SECTIONS: readonly SectionId[] = ['library', 'dial'];
+/** The sections drawn on the Settings home itself, above the groups, not on a group's page: the languages he reads with a dial for each (mw-3ased2.2, mw-gdcyf98.2). They are in no group. */
+export const HOME_SECTIONS: readonly SectionId[] = ['dial'];
 
-/** Whether a row is drawn on the home (the library door, the dial), not on a group's page. */
+/** Whether a row is drawn on the home (the dial), not on a group's page. */
 export const isHomeRow = (row: Pick<SettingsRow, 'section'>): boolean => HOME_SECTIONS.includes(row.section);
 
 export type GroupId = 'reading' | 'greek' | 'tutor' | 'listening' | 'daily' | 'study' | 'account' | 'developer';
@@ -93,7 +92,7 @@ export const GROUPS: readonly SettingsGroup[] = [
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
-  { id: 'study', title: 'Study resources', hint: 'Links to the tools you own.', sections: ['resources', 'logos', 'maps'] },
+  { id: 'study', title: 'Study resources', hint: 'Your Logos library, links to the tools you own, Bible in Logos and maps.', sections: ['resources', 'logos', 'maps'] },
   { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests, Help and About.', sections: ['aboutYou', 'memory', 'more'] },
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
 ];
@@ -139,14 +138,14 @@ const REQUESTS: readonly SettingsRow[] = [
 ];
 
 /** Your Logos library (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8): the one line that says how many books are on and opens the Library, where the lexicons, grammar books, commentaries and
- *  the rest are chosen, and his Verse lists are reached. The first row of the Settings home, above the dial (mw-5r3p30.752: he could not find it two taps down in Study resources), drawn
+ *  the rest are chosen, and his Verse lists are reached. The first row of Study resources, beside Bible in Logos (mw-5r3p30.837; mw-5r3p30.752 had put it on the Settings home), drawn
  *  whether Logos is On or not (the Library holds more than Logos books). A door, not a setting: the tutor does not read or change it (isTalkable) and learns the shelf as `works`, never as settings. */
 const LIBRARY_ROW: SettingsRow = {
   key: 'library',
   label: 'Your Logos library',
   hint: 'The books of your Logos library that Lampas opens, and which are on.',
   help: 'Lampas cannot see your Logos library, so you say which books to use. Open it to tick them by hand or to import your list. The word sheet, the idea sheet and the tutor use the ones that are on; the devotionals that are on are the ones Daily draws from.',
-  section: 'library',
+  section: 'resources',
 };
 
 /** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
@@ -169,7 +168,7 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   ai: AI_KEYS.has(s.key) || undefined,
 });
 
-const unordered: readonly SettingsRow[] = [...SETTINGS.map(rowOfSetting), ...REQUESTS, LIBRARY_ROW, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [LIBRARY_ROW, ...SETTINGS.map(rowOfSetting), ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
