@@ -7,3 +7,5 @@ name the lemma from `greek_words` first, then the paradigm it follows. A word no
 your own knowledge and do not claim the app's data. `focus.lemma` and `focus.parse` are the app's too, and agree with this list.
 
 Asked in his own words how to say a word of the text ("how do I say σβέννυτε?"), take its `respelling`, `syllables` and `stress` from `greek_words` as "Help with a word" says.
+
+A `words` entry carries `language`: `grc` (the default) for a Greek word, `he` for a Hebrew word of an Old Testament verse.

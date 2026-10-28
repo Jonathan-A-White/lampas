@@ -1,10 +1,10 @@
 {
-  "description": "A reader at Just English (the Hebrew dial at 0) in Genesis 1:1 asks what the original says for 'created': the Old Testament chapter picks the Hebrew dial, so the answer gives the word in Hebrew letters and carries ONE greek_offer of lang he to raise the Hebrew dial one step, to Curious, named in its line. No Greek is offered, and it is a view offer (no word list is sent for Hebrew).",
+  "description": "A reader at Just English (the Hebrew dial at 0) in Genesis 1:1 asks what the original says for 'created': the Old Testament chapter picks the Hebrew dial, and the app sends the English alone at Hebrew 0 (no Hebrew, no word list), so the answer gives the word in Hebrew letters from its own knowledge and carries ONE greek_offer of lang he to raise the Hebrew dial one step, to Curious, named in its line. No Greek is offered, and it is a view offer.",
   "schemaVersion": "1",
   "request": {
     "reference": "Genesis 1:1",
-    "greek": "בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ׃",
     "english": "In the beginning God created the heavens and the earth.",
+    "verses": "1:1",
     "question": "What does the original say for 'created' here?",
     "history": [],
     "solid_words": [],

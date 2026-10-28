@@ -56,6 +56,48 @@ describe('Hebrew in the tutor', () => {
     for (const example of ['tsedeq', 'צֶדֶק tsedeq', 'צֶדֶק']) expect(text).toContain(example);
     expect(JSON.stringify(schema)).toContain('hebrewDepth');
   });
+
+  it('has a part for a verse of the Old Testament, at most 1,400 bytes, that teaches hebrew and hebrew_words (mw-gdcyf98.29)', () => {
+    const part = instructionParts(grind.kind as string).find(({ file }) => file.endsWith('245-a-verse-of-the-old-testament.md'));
+    expect(part, 'part 245').toBeDefined();
+    const text = part!.text;
+    expect(Buffer.byteLength(text, 'utf8')).toBeLessThanOrEqual(1_400);
+    expect(text.startsWith('## A verse of the Old Testament\n')).toBe(true);
+    for (const needle of ['`hebrew`', '`hebrew_words`', 'TBESH', '`settings.hebrewDepth`', 'Modern Israeli', '`language`', 'quote no Greek', '`hebrew_pronunciation_guide`']) expect(text, needle).toContain(needle);
+    expect(text).toMatch(/`language` `he`/);
+    expect(text).toMatch(/`greek` its pointed form/);
+  });
+
+  it('no longer says Hebrew never goes in words, and says a words entry carries language (mw-gdcyf98.29)', () => {
+    const text = instructionsOf(grind.kind as string);
+    expect(text).not.toContain('Hebrew never goes in `words`');
+    expect(text).toMatch(/`words` (entry|entries) carr(y|ies) `language`/);
+  });
+
+  it("says a word link's lemma may be a Hebrew lemma on an Old Testament chapter (mw-gdcyf98.29)", () => {
+    const part = instructionParts(grind.kind as string).find(({ file }) => file.includes('/200-'));
+    expect(part!.text).toMatch(/`kind` `word`, with `lemma`: [^\n]*Hebrew lemma[^\n]*TBESH headword/);
+  });
+
+  it('has the two Hebrew talk examples, a Hebrew word in words with language he, and a word link (mw-gdcyf98.29)', () => {
+    type Example = { request: Record<string, unknown>; expect: Record<string, Record<string, unknown>> };
+    const read = (name: string) => readJson(`grinds/examples/bible-talk/${name}.json`) as unknown as Example;
+    const verse = read('hebrew-verse-talk');
+    expect(verse.request.reference).toBe('Jonah 1:1');
+    expect(verse.request).toHaveProperty('hebrew');
+    expect(verse.request).toHaveProperty('hebrew_words');
+    expect(verse.request).not.toHaveProperty('greek_words');
+    expect(verse.expect['words.0.language']).toEqual({ equals: 'he' });
+    expect(new RegExp(verse.expect['words.0.lemma'].matches as string).test('דָּבָר')).toBe(true);
+    expect(verse.expect['links.0.kind']).toEqual({ equals: 'word' });
+    const chapter = read('hebrew-chapter-talk');
+    expect(String(chapter.request.reference)).toMatch(/^Genesis 1/);
+    expect(chapter.request).toHaveProperty('hebrew');
+    expect(chapter.request).toHaveProperty('hebrew_words');
+    const offer = read('hebrew-offer-on-genesis');
+    expect(offer.request).not.toHaveProperty('hebrew');
+    expect(String(offer.request.greek ?? '')).not.toMatch(/[֐-׿]/);
+  });
 });
 
 describe('the answer schema and isTalkAnswer', () => {
@@ -932,9 +974,9 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(bytes).toBeLessThanOrEqual(99_500);
   });
 
-  it('leaves 2,500 bytes of room under that ceiling, for the Hebrew verse part and the two flake fixes (mw-gdcyf98.28)', () => {
+  it('leaves 500 bytes of room under that ceiling, now the Hebrew verse part is in (mw-gdcyf98.29; 2,500 were kept for it by mw-gdcyf98.28)', () => {
     const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(bytes).toBeLessThanOrEqual(97_000);
+    expect(bytes).toBeLessThanOrEqual(99_000);
   });
 
   it('says a run of settings that differ only in their language once, and still names every key (mw-gdcyf98.28)', () => {

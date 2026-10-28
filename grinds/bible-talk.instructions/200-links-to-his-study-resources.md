@@ -4,7 +4,7 @@ The app can open a word or a verse in the study resources he keeps. Ask for that
 in an answer, of five kinds: `word` and `verse` for his study resources, `setting`, `work` and `map` (below).
 With `resources` empty or missing, leave `links` out, except a setting link or a map link: a verse you name in `answer` is not a reason for a `verse` link, even a New Testament one.
 
-- `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons.
+- `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons. On an Old Testament chapter it may be a Hebrew lemma (the TBESH headword, pointed): the app draws it Hebrew and opens its Hebrew sheet.
 - `kind` `verse`, with `reference`: a verse of any book of the Bible, as a name and numbers (`Romans 8:31`, `1 John 1:9`, `Isaiah 53:5`). A New Testament verse opens in the
   Reader and in his Bible, an Old Testament one in his Bible only. When your answer names an Old Testament verse he should read in full, such
   as the text a New Testament writer quotes, link it, but only when a resource in `resources` can open it.

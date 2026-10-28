@@ -1,0 +1,125 @@
+{
+  "description": "Jonah 1:1 held at Hebrew Curious, asked what the Hebrew word for 'word' means here and to open it in his lexicon: the answer is about דָּבָר, put in words with language he (greek its pointed form, lemma the TBESH headword), and a word link carries the Hebrew lemma. No Greek is quoted.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Jonah 1:1",
+    "hebrew": "וַיְהִי דְּבַר־ יְהוָה אֶל־ יוֹנָה בֶן־ אֲמִתַּי לֵאמֹר",
+    "english": "Now the word of the LORD came to Jonah son of Amittai, saying,",
+    "verses": "1:1",
+    "question": "What does the Hebrew word for “word” mean here? Open it in my lexicon.",
+    "history": [],
+    "solid_words": [],
+    "settings": {
+      "greekInterest": "0",
+      "hebrewInterest": "1",
+      "hebrewDepth": "both"
+    },
+    "reader_view": "english",
+    "greek_interest": {
+      "level": 0,
+      "name": "Just English",
+      "next": {
+        "level": 1,
+        "name": "Curious"
+      }
+    },
+    "hebrew_interest": {
+      "level": 1,
+      "name": "Curious",
+      "next": {
+        "level": 2,
+        "name": "Dipping a toe"
+      }
+    },
+    "learner": "solid 0 words; learning: ; new today: ; due now: 0",
+    "hebrew_words": [
+      {
+        "form": "וַיְהִי",
+        "lemma": "הָיָה",
+        "translit": "way·hî",
+        "gloss": "to be",
+        "parse": "Conjunctive waw | Verb - Qal - Consecutive imperfect - third person masculine singular"
+      },
+      {
+        "form": "דְּבַר־",
+        "lemma": "דָּבָר",
+        "translit": "də·ḇar-",
+        "gloss": "word",
+        "parse": "Noun - masculine singular construct"
+      },
+      {
+        "form": "יְהוָה",
+        "lemma": "יְהֹוָה",
+        "translit": "Yah·weh",
+        "gloss": "LORD",
+        "parse": "Noun - proper - masculine singular"
+      },
+      {
+        "form": "אֶל־",
+        "lemma": "אֶל",
+        "translit": "’el-",
+        "gloss": "to(wards)",
+        "parse": "Preposition"
+      },
+      {
+        "form": "יוֹנָה",
+        "lemma": "יוֹנָה",
+        "translit": "yō·w·nāh",
+        "gloss": "Jonah",
+        "parse": "Noun - proper - masculine singular"
+      },
+      {
+        "form": "בֶן־",
+        "lemma": "בֵּן",
+        "translit": "ḇen-",
+        "gloss": "son, child",
+        "parse": "Noun - masculine singular construct"
+      },
+      {
+        "form": "אֲמִתַּי",
+        "lemma": "אֲמִתַּי",
+        "translit": "’ă·mit·tay",
+        "gloss": "Amittai",
+        "parse": "Noun - proper - masculine singular"
+      },
+      {
+        "form": "לֵאמֹר",
+        "lemma": "אָמַר",
+        "translit": "lê·mōr",
+        "gloss": "to say",
+        "parse": "Preposition-l | Verb - Qal - Infinitive construct"
+      }
+    ],
+    "resources": [
+      {
+        "id": "logos",
+        "name": "Logos",
+        "words": true,
+        "verses": true
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "matches": "[Ww]ord"
+    },
+    "words.0.language": {
+      "equals": "he"
+    },
+    "words.0.lemma": {
+      "matches": "ד[ְ-ׇ]*ב[ְ-ׇ]*ר"
+    },
+    "links.0.kind": {
+      "equals": "word"
+    },
+    "links.0.lemma": {
+      "matches": "ד[ְ-ׇ]*ב[ְ-ׇ]*ר"
+    },
+    "greek_offer": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
