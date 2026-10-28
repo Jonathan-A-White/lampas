@@ -1,7 +1,8 @@
 // src/data/readingLadder.ts — the reading ladder on the phone (mw-neuq78.4, docs/reading-ladder.md): the lists public/data/ladder/<lang>.json (every verse, easiest to
-// pronounce first; loaded when the ladder is first used, never precached: src/sw.ts keeps them with the other /data/ files once fetched), and the place on a list.
+// pronounce first; loaded when the ladder is first used, never precached: src/sw.ts keeps each under its fingerprint from index.json once fetched, as it does a chapter), and the place on a list.
 // The place is the first verse he has not read well; a verse he skipped for now is passed over and comes back once he has read SKIP_GAP others well. English,
 // Greek and Hebrew each have a list and a place. ladderPlace is pure; currentLadderPlace reads the phone.
+import { ladderUrl } from './chapter';
 import { getLadderRow, listWellRead } from './repositories/ladder';
 
 /** The languages that have a list: 'el' is the Modern Greek sounds the Greek view reads in (src/speech/pronunciation.ts scoringLang), 'en' English, 'he' the Israeli Hebrew the Hebrew view reads in. */
@@ -31,11 +32,11 @@ export interface LadderSkip {
 
 const lists = new Map<LadderLang, Promise<LadderEntry[]>>();
 
-/** Fetches /data/ladder/<lang>.json once; later and concurrent callers share the one request, and a failure is not kept. */
+/** Fetches /data/ladder/<lang>.json?v=<fingerprint> (ladderUrl) once; later and concurrent callers share the one request, and a failure is not kept. */
 export function loadLadder(lang: LadderLang): Promise<LadderEntry[]> {
   const known = lists.get(lang);
   if (known) return known;
-  const request = fetch(`/data/ladder/${lang}.json`).then(async (response) => {
+  const request = fetch(ladderUrl(lang)).then(async (response) => {
     if (!response.ok) throw new Error(`Could not load the ${lang} ladder: ${response.status}`);
     return (await response.json()) as LadderEntry[];
   });

@@ -18,8 +18,12 @@ export async function dropOldDataCaches(caches: Pick<CacheStorage, 'keys' | 'del
 export const isVersionedChapter = (url: URL): boolean =>
   /^\/data\/[0-9a-z]+\/\d+\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
 
+/** A reading ladder list asked for by its fingerprint: /data/ladder/el.json?v=0123456789ab (src/data/chapter.ts ladderUrl); kept and replaced as a chapter is (mw-9ji6ek0.10). */
+export const isVersionedLadder = (url: URL): boolean =>
+  /^\/data\/ladder\/[a-z]{2}\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
+
 /**
- * Answers a versioned chapter request. A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,
+ * Answers a versioned chapter request (or a versioned ladder list: the same rule). A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,
  * and every other copy of the same chapter (an older fingerprint) is removed. A refusal is passed on and nothing is kept or removed; with no
  * network the older copy of the chapter is read in the new one's place, rather than nothing.
  */

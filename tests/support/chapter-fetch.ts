@@ -22,7 +22,7 @@ export function stubChapterFetch(): ChapterFetch {
       const url = String(input);
       stub.requests.push(url);
       // a chapter is asked for with its fingerprint (?v=, src/data/chapter.ts chapterUrl); the file read is the one without it
-      const path = url.replace(/^(\/data\/[0-9a-z]+\/\d+\.json)\?v=[0-9a-f]{12}$/, '$1');
+      const path = url.replace(/^(\/data\/(?:[0-9a-z]+\/\d+|ladder\/[a-z]{2})\.json)\?v=[0-9a-f]{12}$/, '$1');
       if (!/^\/data\/([0-9a-z]+\/\d+|ladder\/(?:el|en|he)|lexicon|lexicon-hbo|index|frequency|frequency-hbo)\.json$/.test(path)) return new Response('not found', { status: 404 });
       // a chapter copied into tests/fixtures/data by scripts/fixture-chapter.mjs is served in place of the built one
       const file = existsSync(`tests/fixtures${path}`) ? `tests/fixtures${path}` : `public${path}`;

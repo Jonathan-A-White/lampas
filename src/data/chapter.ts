@@ -210,6 +210,8 @@ export interface BookInfo {
 
 export interface BookIndex {
   books: BookInfo[];
+  /** The fingerprint of each reading ladder list (public/data/ladder/<lang>.json), written by `npm run ladder`: a list is asked for as ?v=<fingerprint>, so a rescored one is fetched again (mw-9ji6ek0.10). */
+  ladders?: Partial<Record<'el' | 'en' | 'he', string>>;
 }
 
 export const wordLemma = (w: GreekWord): string => w.l;
@@ -224,6 +226,12 @@ const chapters = new Map<string, Promise<Chapter>>();
 export function chapterUrl(book: string, n: number): string {
   const fingerprint = CANON_INDEX.books.find((b) => b.code === book)?.fingerprints[n - 1];
   return `/data/${book}/${n}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
+}
+
+/** The address of a reading ladder's list: /data/ladder/<lang>.json?v=<fingerprint>, the fingerprint from the index in the bundle; plain when the index has none. */
+export function ladderUrl(lang: 'el' | 'en' | 'he'): string {
+  const fingerprint = CANON_INDEX.ladders?.[lang];
+  return `/data/ladder/${lang}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
 }
 
 /** Fetches /data/<book>/<n>.json once; later and concurrent callers share the one request. */
