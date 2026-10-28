@@ -397,9 +397,9 @@
         }
       }
     },
-    "solid_count": { "description": "Optional. How many Greek words he knows well in all. `solid_words` names only the most recent of them.", "type": "number", "minimum": 0 },
-    "solid_words": { "description": "The Greek lemmas he most recently came to know well: at most 50, the newest last. `solid_count` says how many he knows in all.", "type": "array", "maxItems": 50, "items": { "type": "string" } },
-    "learner": { "description": "Optional. Where he stands in one line: 'solid N words; learning: a, b, c; new today: x, y; due now: M'.", "type": "string", "maxLength": 600 },
+    "solid_count": { "description": "Optional. How many words, Greek and Hebrew together, he knows well in all. `solid_words` names only the most recent of them.", "type": "number", "minimum": 0 },
+    "solid_words": { "description": "The lemmas he most recently came to know well, of either language (a Greek lemma in Greek letters, a Hebrew one in Hebrew letters: each entry's script tells which): at most 50, the newest last. `solid_count` says how many he knows in all.", "type": "array", "maxItems": 50, "items": { "type": "string" } },
+    "learner": { "description": "Optional. Where he stands in one line, per language he chose. A reader of Greek alone: 'solid N words; learning: a, b, c; new today: x, y; due now: M'. A reader who chose Hebrew: each language under its name, joined by ' | ', ended by 'due now: M': 'Greek: solid N words; learning: ...; new today: ... | Hebrew: solid N words; learning: ...; new today: ...; ladder: K of T ideas known (the last few); learning: the idea he is on; next: the next idea; reading ladder: next Genesis 1:2 (N verses read well); last seen D days ago | due now: M'. The Hebrew part names his Hebrew words, his place on the Hebrew grammar ladder, his place on the Hebrew reading ladder (once started) and how long since he last met a Hebrew word or idea (once he has). A language he did not choose is not told.", "type": "string", "maxLength": 1400 },
     "learner_grammar": {
       "description": "Optional (an older app does not send it). Where his grammar stands: the reading goal, how many of its words and grammar ideas are solid, at the frontier and not yet, the titles of the ideas at each level (the goal's needs first, at most 12 a list), whether he has been placed, the move the app's New words at setting should make, the grammar approach with its next lesson, and his weak points from Drill it. At most 900 bytes.",
       "type": "object",
@@ -509,7 +509,7 @@
       }
     },
     "rusty": {
-      "description": "Optional. The solid words and grammar ideas he now slips on (a wrong answer among his last three) or has not met for a long while (a week or more past due), worst first, at most 8. Each: `kind` 'word' or 'idea', `id` (the word's dictionary form, or the idea's id), `title` (what to call it) and `why` (the plain reason, such as 'slipped twice this week' or 'not seen for 3 weeks'). Missing when nothing is rusty, and in a quiz. It is the app's own list, worked out from his answers: never add an item to it or name one that is not in it (see the instructions, 'When he has gone rusty').",
+      "description": "Optional. The solid words and grammar ideas he now slips on (a wrong answer among his last three) or has not met for a long while (a week or more past due), worst first, at most 8. Each: `kind` 'word' or 'idea', `id` (the word's dictionary form, in Greek or Hebrew letters, or the idea's id: a Hebrew idea's starts 'he-'), `title` (what to call it) and `why` (the plain reason, such as 'slipped twice this week' or 'not seen for 3 weeks'). Missing when nothing is rusty, and in a quiz. It is the app's own list, worked out from his answers: never add an item to it or name one that is not in it (see the instructions, 'When he has gone rusty').",
       "type": "array",
       "maxItems": 8,
       "items": {

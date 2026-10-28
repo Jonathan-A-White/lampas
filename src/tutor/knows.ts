@@ -90,6 +90,11 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
 /** The parts of his progress besides the settings (the study way is a list of lines he kept, not a setting). */
 export const PROGRESS: Readonly<Record<string, string>> = {
   words: 'which words are solid, being learned, new today or due (src/data/learnerSummary.ts)',
+  // the Hebrew parts of his progress (mw-gdcyf98.22): told, with the Greek beside them where both are chosen, in the `learner` line, the Greek line unchanged for a Greek-only reader
+  hebrewWords: 'which Hebrew words are solid, being learned or new today, for a reader who chose Hebrew (the Hebrew part of src/data/learnerSummary.ts; his solid Hebrew words are among solid_words too)',
+  hebrewLadder: 'where he stands on the Hebrew grammar ladder: the ideas known, the one he is learning and the next (ladderFor(\'hbo\'), the Hebrew part of src/data/learnerSummary.ts)',
+  hebrewReading: 'where he stands on the Hebrew reading ladder: the next verse and how many he has read well (src/data/readingLadder.ts, the Hebrew part of src/data/learnerSummary.ts)',
+  hebrewRust: 'how long since he last met a Hebrew word or idea (src/data/learnerRusty.ts hebrewRustDays); the rusty Hebrew items are among `rusty`, their ids in Hebrew letters or starting \'he-\'',
   grammar: 'where his grammar stands, his goal, the approach and the move (src/data/grammar/learnerGrammar.ts)',
   profile: 'who he is as a student (src/data/learnerProfile.ts, Settings > About you)',
   memory: 'what Lampas remembers of him: the index and the notes named for the place, word and screen (src/data/learnerMemory.ts, Settings > Memory)',
@@ -131,7 +136,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     // which (mw-3ased2.3, mw-gdcyf98.3). The languages he reads is sent in `settings` (everySetting). The text of an Old Testament chapter goes under `hebrew` with `hebrew_words` (mw-gdcyf98.18),
     // from the Hebrew dial's Curious up; at Just English the request holds the English alone, and `hebrew_interest` tells the tutor why. `settings.hebrewDepth` is how it writes a Hebrew word.
     settings: { ...everySetting, greekPronunciation: 'pronunciation', greekInterest: 'greek_interest', hebrewInterest: 'hebrew_interest' },
-    progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works', maps: 'maps', variants: 'variants' },
+    progress: { words: 'solid_words', hebrewWords: 'learner', hebrewLadder: 'learner', hebrewReading: 'learner', hebrewRust: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works', maps: 'maps', variants: 'variants' },
     notSent: {},
   },
   'verse-ask': {
@@ -151,7 +156,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       pickerGrammar: 'learner_grammar.picker_level',
       grammarApproach: 'learner_grammar.approach',
     },
-    progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', rusty: 'rusty', works: 'works' },
+    progress: { words: 'solid_words', hebrewWords: 'learner', hebrewLadder: 'learner', hebrewReading: 'learner', hebrewRust: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', rusty: 'rusty', works: 'works' },
     notSent: {
       newWordsADay: 'How many new words are offered a day is the picker\'s pace; the answer is about this verse, and learner says what is new today.',
       grammarMove: 'Whether the app moves the grammar level for him is the Bible talk\'s offer to make; learner_grammar.picker_level is the level it left.',
@@ -180,7 +185,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       pickerGrammar: 'learner_grammar.picker_level',
       grammarApproach: 'learner_grammar.approach',
     },
-    progress: { words: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory' },
+    progress: { words: 'learner', hebrewWords: 'learner', hebrewLadder: 'learner', hebrewReading: 'learner', hebrewRust: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory' },
     notSent: {
       readSpan: 'Where the header\'s Play stops (Play to) has no part in the verdict on one verse he read.',
       readLessons: READ_LESSONS,
@@ -215,7 +220,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
   tips: {
     // the summary names, by key, the settings he has changed and the ones he never has (src/tips/summary.ts); a tip is about the app's features, never a sound
     settings: { ...byName, goal: 'learner_grammar.goal', pickerGrammar: 'learner_grammar.picker_level', grammarApproach: 'learner_grammar.approach' },
-    progress: { words: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory' },
+    progress: { words: 'learner', hebrewWords: 'learner', hebrewLadder: 'learner', hebrewReading: 'learner', hebrewRust: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory' },
     notSent: {
       requests: 'A tip is about what he has not yet tried in the app; his requests to the factory are not a feature to try.',
       studyWay: 'A tip may point at My study way through screens_never; the lines he kept change nothing a tip says.',
