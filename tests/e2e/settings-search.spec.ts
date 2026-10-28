@@ -36,6 +36,20 @@ test('Settings search at phone width: a 48 px field at the top, "logos" lists th
   await shot(page, 'settings-search-cleared');
 });
 
+test('a search for "library" finds Your Logos library under Study resources, and opens that page at the row (mw-5r3p30.837)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  await page.getByRole('searchbox', { name: 'Search settings' }).fill('library');
+  const answer = page.getByRole('button', { name: /^Your Logos library/ }).first();
+  await expect(answer).toBeVisible();
+  await expect(answer).toContainText('Study resources');
+  await answer.click();
+  await expect(page.getByRole('heading', { name: 'Study resources', level: 1 })).toBeVisible();
+  const row = page.getByRole('region', { name: 'Study resources' }).getByRole('button', { name: /^Your Logos library · \d+ books? on$/ });
+  await expect(row).toBeInViewport();
+  await expect(page.locator('[data-setting="library"]')).toHaveAttribute('data-highlighted', /.*/);
+});
+
 test('a book\'s title answers a row "BDAG · Your Logos library" that opens its kind page at the book (mw-rfjjzd.5)', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings');

@@ -32,7 +32,7 @@ describe('the groups', () => {
 
   it('gives every row a group through its section', () => {
     for (const row of ROWS.filter((r) => !isHomeRow(r))) expect(groupOf(row.section), row.key).toBeDefined();
-    expect(ROWS.filter(isHomeRow).map((r) => r.key)).toEqual(['library', 'languages', 'greekInterest', 'hebrewInterest']);
+    expect(ROWS.filter(isHomeRow).map((r) => r.key)).toEqual(['languages', 'greekInterest', 'hebrewInterest']);
   });
 });
 

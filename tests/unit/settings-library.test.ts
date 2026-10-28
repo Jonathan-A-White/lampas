@@ -1,33 +1,32 @@
 // Settings after the library (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8 and 8): the Works row is gone, the library has a row the tutor cannot change, and the Settings search
 // answers a book's title from the catalogue.
 import { describe, expect, it } from 'vitest';
-import { GROUPS, groupById, HOME_SECTIONS, isHomeRow, isTalkable, ROWS, rowOf, visibleRows } from '../../src/settings/rows';
+import { groupById, HOME_SECTIONS, isHomeRow, groupOf, isTalkable, ROWS, rowOf, visibleRows } from '../../src/settings/rows';
 import { groupIdOf, settingKeyOf, settingLink } from '../../src/settings/link';
 import { MAX_BOOKS_FOUND, searchLibrary } from '../../src/settings/librarySearch';
-import { settingOf } from '../../src/settings/registry';
+import { settingOf, type SectionId } from '../../src/settings/registry';
 
 describe('the rows of Settings after the library', () => {
   it('has no Works row any more', () => {
     expect(ROWS.some((r) => r.key === 'works')).toBe(false);
   });
 
-  it('has a Your Logos library row on the Settings home, in no group, that is no setting and not talkable', () => {
+  it('has a Your Logos library row in Study resources, in no home section, that is no setting and not talkable', () => {
     const row = rowOf('library');
     expect(row?.label).toBe('Your Logos library');
-    expect(row?.section).toBe('library');
-    expect(HOME_SECTIONS).toContain('library');
-    expect(isHomeRow(row as NonNullable<typeof row>)).toBe(true);
+    expect(row?.section).toBe('resources');
+    expect(HOME_SECTIONS).not.toContain('library');
+    expect(isHomeRow(row as NonNullable<typeof row>)).toBe(false);
     expect(row?.dependsOn).toBeUndefined();
-    expect(GROUPS.some((g) => g.sections.includes('library'))).toBe(false);
+    expect(groupById('study')?.sections).toContain('resources');
     expect(settingOf('library')).toBeUndefined();
     expect(isTalkable('library')).toBe(false);
   });
 
-  it('is the first row of the list, above the dial, and no row of Study resources', () => {
-    expect(ROWS[0]?.key).toBe('library');
-    expect(HOME_SECTIONS.indexOf('library')).toBeLessThan(HOME_SECTIONS.indexOf('dial'));
-    expect(ROWS.filter((r) => r.section === 'resources').map((r) => r.key)).not.toContain('library');
-    expect(groupById('study')?.hint).not.toMatch(/library/i);
+  it('is the first row of Study resources, beside Bible in Logos, and no row of the Settings home', () => {
+    expect(ROWS.filter((r) => r.section === 'resources').map((r) => r.key)[0]).toBe('library');
+    expect(ROWS.filter(isHomeRow).map((r) => r.key)).not.toContain('library');
+    expect(groupById('study')?.hint).toBe('Your Logos library, links to the tools you own, Bible in Logos and maps.');
   });
 
   it('is drawn whether Logos is on or off', () => {
@@ -36,10 +35,11 @@ describe('the rows of Settings after the library', () => {
     expect(visibleRows({}, 'your logos library').map((r) => r.key)).toContain('library');
   });
 
-  it('has a link, which opens the home at the row and never a group page', () => {
+  it('has a link, which opens the Study resources page at the row', () => {
     expect(settingLink('library')).toBe('#/settings?setting=library');
     expect(settingKeyOf('#/settings?setting=library')).toBe('library');
     expect(groupIdOf('#/settings?setting=library')).toBeNull();
+    expect(groupOf(rowOf('library')?.section as SectionId).id).toBe('study');
   });
 });
 

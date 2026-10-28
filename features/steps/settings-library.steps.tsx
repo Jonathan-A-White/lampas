@@ -12,7 +12,7 @@ import { setState, shelfOf } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { libraryOf } from '../../src/nav/route';
-import { groupIdOf, openSetting } from '../../src/settings/link';
+import { openSetting } from '../../src/settings/link';
 import { CATALOGUE } from '../../src/resources/catalogue';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -77,13 +77,6 @@ describeFeature(feature, ({ Scenario }) => {
     await openAt('#/settings?group=study');
     await region();
   };
-  const noRowInStudy = async (_: unknown, name: string) => {
-    const section = await region();
-    const logos = await within(section).findByRole('switch', { name: 'Logos' });
-    // with Logos On the Bible in Logos row arrives once the saved values are read, as the old library row did: wait for it, so an absent row is absent after the draw
-    if (logos.getAttribute('aria-checked') === 'true') await screen.findByRole('button', { name: /^Bible in Logos/ });
-    expect(within(section).queryByRole('button', { name: new RegExp(`^${name}`) })).toBeNull();
-  };
   const noBookLists = async () => {
     const section = await region();
     expect(within(section).queryByRole('group', { name: 'Logos lexicons' })).toBeNull();
@@ -92,13 +85,13 @@ describeFeature(feature, ({ Scenario }) => {
     expect(within(section).queryAllByRole('checkbox')).toHaveLength(0);
   };
   const markedRow = async (_: unknown, name: string) => {
+    await region();
     await waitFor(() => {
       const row = document.querySelector<HTMLElement>('[data-setting="library"]');
       expect(row).not.toBeNull();
       expect(row).toHaveAttribute('data-highlighted');
       expect(within(row as HTMLElement).getByRole('button', { name: new RegExp(`^${name}`) })).toBeInTheDocument();
     });
-    expect(groupIdOf(window.location.hash)).toBeNull();
   };
   const rowButton = (name: string) => screen.findByRole('button', { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`) });
   const tapsRow = async (_: unknown, name: string) => {
@@ -128,82 +121,74 @@ describeFeature(feature, ({ Scenario }) => {
     });
     return found;
   };
-  const firstRowSays = async (_: unknown, name: string) => {
-    const main = document.querySelector('main') as HTMLElement;
+  const firstStudyRowSays = async (_: unknown, name: string) => {
+    const section = await region();
     const row = await libraryRow();
     await waitFor(() => expect(within(row).getByRole('button', { name: new RegExp(`^${name}`) })).toBeInTheDocument());
-    // the first row of the home's content, the search field excluded
-    expect(main.querySelector('[data-setting]')).toBe(row);
+    // the first row of the section (the library's), above Logos and the rest
+    expect(section.querySelector('[data-setting]')).toBe(row);
   };
 
-  Scenario('The Settings home opens with Your Logos library first', ({ Given, Then, And, When }) => {
+  Scenario('The Settings home has no Your Logos library row; Which languages? is first', ({ Given, Then, And }) => {
     Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
-    Then('the first row under the search field is {string}', firstRowSays);
-    And('that row is above the Greek dial and the Settings groups', async () => {
-      const row = await libraryRow();
-      const dial = await waitFor(() => {
-        const el = document.querySelector<HTMLElement>('[data-setting="greekInterest"]');
+    Then('the first row under the search field is {string}', async (_, label: string) => {
+      const first = await waitFor(() => {
+        const el = (document.querySelector('main') as HTMLElement).querySelector<HTMLElement>('[data-setting]');
         expect(el).not.toBeNull();
         return el as HTMLElement;
       });
-      const groups = await screen.findByRole('list', { name: 'Settings groups' });
-      expect(row.compareDocumentPosition(dial) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-      expect(row.compareDocumentPosition(groups) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(first.dataset.setting).toBe('languages');
+      expect(first).toHaveTextContent(label);
     });
+    And('the Settings home shows no row {string}', async (_, name: string) => {
+      await screen.findByRole('list', { name: 'Settings groups' });
+      expect(document.querySelector('[data-setting="library"]')).toBeNull();
+      expect(screen.queryByRole('button', { name: new RegExp(`^${name}`) })).toBeNull();
+    });
+  });
+
+  Scenario('Study resources open with Your Logos library first', ({ Given, Then, When }) => {
+    Given('the shelf holds the books {string} and Settings is open at Study resources with Logos On', studyWith('on'));
+    Then('the first row of Study resources is {string}', firstStudyRowSays);
     When('he taps the row {string}', tapsRow);
     Then('the Library home opens', libraryHome);
   });
 
-  Scenario('The count follows the shelf', ({ Given, Then }) => {
-    Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
-    Then('the first row under the search field is {string}', firstRowSays);
-  });
-
-  Scenario('With Logos Off the home still has the row, and Study resources do not', ({ Given, Then, And, When }) => {
+  Scenario('The count follows the shelf', ({ Given, Then, And }) => {
     Given('the shelf holds the books {string} and Settings is open at Study resources with Logos Off', studyWith('off'));
-    Then('the Study resources show no row {string}', noRowInStudy);
+    Then('the first row of Study resources is {string}', firstStudyRowSays);
     And('Study resources show no Logos lexicons, no Grammar books and no Works list', noBookLists);
-    When('Settings is open at its home', async () => {
-      await openAt('#/settings');
-      await screen.findByRole('searchbox', { name: 'Search settings' });
-    });
-    Then('the first row under the search field is {string}', firstRowSays);
   });
 
-  Scenario('With Logos On the Study resources keep the Logos switch and no library row', ({ Given, Then, And }) => {
-    Given('the shelf holds the books {string} and Settings is open at Study resources with Logos On', studyWith('on'));
-    Then('the Study resources show no row {string}', noRowInStudy);
-    And('the Study resources group hint does not name the library', async () => {
-      await openAt('#/settings');
+  Scenario('The Study resources group hint names the library', ({ Given, Then }) => {
+    Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
+    Then('the Study resources group hint is {string}', async (_, hint: string) => {
       const groups = await screen.findByRole('list', { name: 'Settings groups' });
-      const study = within(groups).getByRole('button', { name: /^Study resources/ });
-      expect(study).toHaveTextContent('Links to the tools you own.');
-      expect(study.textContent).not.toMatch(/library/i);
+      expect(within(groups).getByRole('button', { name: /^Study resources/ })).toHaveTextContent(hint);
     });
   });
 
-  Scenario('A link to the library setting opens the Settings home at the row, marked', ({ Given, When, Then, And }) => {
+  Scenario('A link to the library setting opens Study resources at the row, marked', ({ Given, When, Then }) => {
     Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
     When('a link opens the setting {string}', async (_, key: string) => {
       openSetting(key);
     });
-    Then('the Settings home shows the row {string} marked', markedRow);
-    And('no Study resources page is open', async () => {
-      expect(screen.queryByRole('region', { name: 'Study resources' })).toBeNull();
-      expect(groupIdOf(window.location.hash)).toBeNull();
-      expect(await screen.findByRole('list', { name: 'Settings groups' })).toBeInTheDocument();
-    });
+    Then('the Study resources show the row {string} marked', markedRow);
   });
 
-  Scenario('The Settings search finds Your Logos library and opens the home at it', ({ Given, When, And, Then }) => {
+  Scenario('The Settings search finds Your Logos library under Study resources', ({ Given, When, Then }) => {
     Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
     When('he searches Settings for {string}', async (_, text: string) => {
       await user.type(await screen.findByRole('searchbox', { name: 'Search settings' }), text);
     });
-    And('he taps the answer {string}', async (_, title: string) => {
+    Then('the search answers the row {string} under {string}', async (_, title: string, group: string) => {
+      const answer = await screen.findByRole('button', { name: new RegExp(`^${title}`) });
+      expect(answer).toHaveTextContent(group);
+    });
+    When('he taps the answer {string}', async (_, title: string) => {
       await user.click(await screen.findByRole('button', { name: new RegExp(`^${title}`) }));
     });
-    Then('the Settings home shows the row {string} marked', markedRow);
+    Then('the Study resources show the row {string} marked', markedRow);
   });
 
   Scenario('Bible in Logos opens Library > Bibles, where the Resource ID can be typed', ({ Given, When, Then }) => {

@@ -9,7 +9,6 @@ export type { Allowed, Dependency, SettingValue } from 'pwa-kit/settings';
 
 /** The sections of the Settings screen, in the order it draws them (src/settings/rows.ts SECTIONS has their titles). */
 export type SectionId =
-  | 'library'
   | 'dial'
   | 'appearance'
   | 'layout'

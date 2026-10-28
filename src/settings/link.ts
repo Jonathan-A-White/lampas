@@ -7,7 +7,7 @@ import { openHash, pathOf, replaceHash } from '../nav/route';
 import { settingOf } from './registry';
 import { groupById, type GroupId } from './rows';
 
-/** The rows that are no setting but have a link: the door to Your Logos library, drawn at the top of the Settings home (mw-5r3p30.752). */
+/** The rows that are no setting but have a link: the door to Your Logos library, the first row of Study resources (mw-5r3p30.837). */
 const DOOR_ROWS: readonly string[] = ['library'];
 
 const linkable = (key: string): boolean => settingOf(key) !== undefined || DOOR_ROWS.includes(key);

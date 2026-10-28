@@ -62,7 +62,7 @@ test('a new phone starts at English only: Which languages? on top, no dial, no G
   await expect(english).toHaveCount(0);
 
   await openSettings(page);
-  // Which languages? is the first control, under the one door above it, Your Logos library (mw-5r3p30.752): four choices, English only chosen, and no dial under it
+  // Which languages? is the first control, under the search field (the library door is in Study resources, mw-5r3p30.837): four choices, English only chosen, and no dial under it
   await expect(languages(page)).toBeVisible();
   const box = await languages(page).boundingBox();
   const search = await page.getByRole('searchbox', { name: 'Search settings' }).boundingBox();

@@ -33,7 +33,7 @@ percent-encoded UTF-8, in NFC.
 
 ## Logos: his lexicons, the scheme and the fallback
 
-Since mw-rfjjzd.5 Settings lists no lexicon: the first row of the Settings home (mw-5r3p30.752: moved there from under the Logos switch, Logos On or Off) says `Your Logos library · N books on` and opens `#/library` (`LibraryControl`, `src/settings/controls/resources.tsx`), and the lexicons are chosen on Library > Lexicons (BDAG On
+Since mw-rfjjzd.5 Settings lists no lexicon: the first row of Study resources (mw-5r3p30.837; mw-5r3p30.752 had put it on the Settings home, from under the Logos switch; Logos On or Off) says `Your Logos library · N books on` and opens `#/library` (`LibraryControl`, `src/settings/controls/resources.tsx`), and the lexicons are chosen on Library > Lexicons (BDAG On
 until he changes it; the shelf's rows, `src/data/repositories/library.ts`; `resourceOption.logos` is the old key it took). The list is data: `LEXICONS` in `src/resources/logos.ts`, a view over the catalogue's lexicons (see 'The catalogue' below), in the order Logos' Bible Word Study
 shows them; adding a lexicon is one entry in `data/logos/catalogue-rules.json` and `npm run logos:catalogue`. Each ticked one gives `Open in Logos: <name>` on the word sheet, and one
 `Bible Word Study in Logos` link (for the lemma alone, no verse) always comes with Logos.

@@ -57,9 +57,8 @@ test('the library at scale end to end: import, counts, reasons, turn on, the wor
   const resources = page.getByRole('region', { name: 'Study resources' });
   await resources.getByRole('switch', { name: 'Logos', exact: true }).click();
   await expect(resources.getByRole('switch', { name: 'Logos', exact: true })).toHaveAttribute('aria-checked', 'true');
-  // the door is the first row of the Settings home
-  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
-  await page.getByRole('button', { name: /^Your Logos library/ }).click();
+  // the door is the first row of Study resources
+  await resources.getByRole('button', { name: /^Your Logos library/ }).click();
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Import your library', level: 1 })).toBeVisible();
