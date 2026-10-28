@@ -195,12 +195,12 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The Immersive reader shows no braces and no chip', ({ Given, Then, And }) => {
+  Scenario('The Immersive reader draws the braces and marks the words, and has no chip', ({ Given, Then, And }) => {
     Given('Lampas is opened on Revelation 3 with Variants {string} and the Immersive reader on', (_, value: string) => open('Revelation 3', { variants: value, immersiveReader: 'on' }));
-    Then('no brace is drawn', async () => {
+    Then('a brace is drawn for every unit of the chapter', async () => {
       await screen.findByRole('group', { name: 'Language' });
-      expect(braces()).toHaveLength(0);
-      expect(document.querySelectorAll('[data-variant]')).toHaveLength(0);
+      await waitFor(() => expect(braces()).toHaveLength(UNITS.length));
+      expect(document.querySelectorAll('[data-variant]').length).toBeGreaterThan(0);
     });
     And('the header has no variants chip', () => {
       expect(screen.queryByRole('button', { name: /^Variants,/ })).toBeNull();

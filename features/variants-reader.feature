@@ -3,7 +3,7 @@ Feature: The Reader shows the variants inline, and a chip in its header turns th
   with a small witness chip (B, NA, ECM). A chip in the Reader's header, beside English | Weave | Greek, is drawn only on a chapter that has
   variants: it shows how many the filter shows ('⁑ 3'), dim while Variants is Off. A tap turns Variants on (to its last value, 'Those that
   change the English' the first time) or off; a long press opens a small sheet with the two filters and a link to Settings. The Immersive
-  reader shows no braces.
+  reader marks the words and draws the braces too (a tap on one opens the sheet); only the chip is left out, as the bars slide away.
 
   Scenario: With Variants Off the chip is dim and no brace is drawn
     Given Lampas is opened on Revelation 3 with nothing saved
@@ -53,7 +53,7 @@ Feature: The Reader shows the variants inline, and a chip in its header turns th
     Then a toast says "Greek word order"
     And the variants chip is pressed
 
-  Scenario: The Immersive reader shows no braces and no chip
+  Scenario: The Immersive reader draws the braces and marks the words, and has no chip
     Given Lampas is opened on Revelation 3 with Variants "all" and the Immersive reader on
-    Then no brace is drawn
+    Then a brace is drawn for every unit of the chapter
     And the header has no variants chip

@@ -148,23 +148,19 @@ describe('what the Reader shows of a chapter', () => {
   const chapter = { variants: [LORD, HIM] };
 
   it('with Variants on: the shown units by verse and their count', () => {
-    const shown = readerVariants(chapter, { variants: 'all', witnesses: 'ecm', immersive: false });
+    const shown = readerVariants(chapter, { variants: 'all', witnesses: 'ecm' });
     expect(shown).toMatchObject({ any: true, on: true, count: 2 });
     expect(shown.byVerse?.get(1)?.map((s) => s.unit)).toEqual([LORD, HIM]);
-    expect(readerVariants(chapter, { variants: 'all', witnesses: 'byz', immersive: false }).count).toBe(1);
-  });
-
-  it('the Immersive reader shows no braces', () => {
-    expect(readerVariants(chapter, { variants: 'all', witnesses: 'ecm', immersive: true }).byVerse).toBeNull();
+    expect(readerVariants(chapter, { variants: 'all', witnesses: 'byz' }).count).toBe(1);
   });
 
   it('with Variants Off nothing is shown, and the count is that of the value a tap turns on', () => {
-    const off = readerVariants(chapter, { variants: 'off', witnesses: 'byz', lastOn: 'all', immersive: false });
+    const off = readerVariants(chapter, { variants: 'off', witnesses: 'byz', lastOn: 'all' });
     expect(off).toMatchObject({ any: true, on: false, count: 1, byVerse: null });
   });
 
   it('a chapter with no variants (the Old Testament) has none to show', () => {
-    expect(readerVariants({}, { variants: 'all', witnesses: 'ecm', immersive: false })).toMatchObject({ any: false, count: 0, byVerse: null });
+    expect(readerVariants({}, { variants: 'all', witnesses: 'ecm' })).toMatchObject({ any: false, count: 0, byVerse: null });
   });
 });
 

@@ -256,8 +256,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, [chapter, BOOK, CHAPTER]);
   const [action, chooseAction] = useVerseAction(hbo ? 'hbo' : 'grc');
   const woven = useWoven(chapter, settings);
-  // the variant units Settings > Variants shows (mw-9ji6ek0.5): marked in the text with a brace after them, counted by the chip in the row under the header; none in the Immersive reader
-  const variants = useReaderVariants(chapter, immersive);
+  // the variant units Settings > Variants shows (mw-9ji6ek0.5): marked in the text with a brace after them, counted by the chip in the row under the header; the Immersive reader has the marks and braces too (mw-9ji6ek0.12), not the chip
+  const variants = useReaderVariants(chapter);
   const variantsOf = useCallback((n: number) => variants.byVerse?.get(n), [variants]);
   // the unit whose brace he tapped: its sheet (src/reader/VariantSheet.tsx, mw-9ji6ek0.6)
   const [variantShown, setVariantShown] = useState<ShownUnit | null>(null);
