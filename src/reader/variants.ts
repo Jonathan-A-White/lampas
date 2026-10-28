@@ -1,7 +1,7 @@
 // src/reader/variants.ts — which of a chapter's variant units the Reader shows, and what each brace holds (mw-9ji6ek0.5). The units are the chapter file's
 // (src/data/chapter.ts VariantUnit, docs/data.md 'Variants'); Settings > Reading > Variants says which (src/settings/definitions/variants.ts): 'english' keeps the
 // readings whose English differs from the text's, 'all' every reading, and Witnesses is cumulative (the Byzantine split; with Nestle-Aland; with ECM too).
-// A reading is shown when it passes both; a unit is shown when one of its readings is. With Variants Off or the Immersive reader On nothing is shown.
+// A reading is shown when it passes both; a unit is shown when one of its readings is. With Variants Off nothing is shown; the Immersive reader shows them as the plain one does (mw-9ji6ek0.12), save the header's chip, which slides away with the bars.
 // The header's chip (src/reader/VariantChip.tsx) counts the units shown; VerseText marks their words and draws a brace after them (src/reader/VariantBrace.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
@@ -92,7 +92,7 @@ export function braceReadings(shown: ShownUnit, language: 'greek' | 'english'): 
   return out.map(({ text, same, chips }) => ({ text, same, chips }));
 }
 
-/** The variant units of a chapter as the Reader has them: `byVerse` the shown units of each verse (null while nothing is shown: Variants Off, the Immersive reader On, or no
+/** The variant units of a chapter as the Reader has them: `byVerse` the shown units of each verse (null while nothing is shown: Variants Off or no
  * chapter), and `count` how many units the filter shows, with Off counted under the filter a tap on the chip would turn on. `any` is false for a chapter with no units at all. */
 export interface ReaderVariants {
   any: boolean;
@@ -104,23 +104,23 @@ export interface ReaderVariants {
 /** The value a tap on the chip turns Variants on to: the last value it had before it was turned off, 'english' the first time. */
 export const onValue = (lastOn: Variants | null | undefined): Exclude<Variants, 'off'> => (lastOn === 'all' ? 'all' : 'english');
 
-export function readerVariants(chapter: Pick<Chapter, 'variants'> | null, { variants, witnesses, lastOn, immersive }: { variants: Variants; witnesses: VariantWitnesses; lastOn?: Variants | null; immersive: boolean }): ReaderVariants {
+export function readerVariants(chapter: Pick<Chapter, 'variants'> | null, { variants, witnesses, lastOn }: { variants: Variants; witnesses: VariantWitnesses; lastOn?: Variants | null }): ReaderVariants {
   const units = chapter?.variants ?? [];
   const on = variants !== 'off';
   const shown = shownUnits(units, { english: on ? variants : onValue(lastOn), witnesses });
-  if (!on || immersive || !units.length) return { any: units.length > 0, on, count: shown.length, byVerse: null };
+  if (!on || !units.length) return { any: units.length > 0, on, count: shown.length, byVerse: null };
   const byVerse = new Map<number, ShownUnit[]>();
   for (const s of shown) byVerse.set(s.unit.v, [...(byVerse.get(s.unit.v) ?? []), s]);
   return { any: true, on, count: shown.length, byVerse };
 }
 
 /** The Reader's variants of `chapter`, following Settings > Variants and Witnesses; nothing while they load. */
-export function useReaderVariants(chapter: Chapter | null, immersive: boolean): ReaderVariants & { lastOn: Variants | null } {
+export function useReaderVariants(chapter: Chapter | null): ReaderVariants & { lastOn: Variants | null } {
   const variants = useSetting(variantsSetting);
   const witnesses = useSetting(variantWitnessesSetting);
   const lastOn = useLiveQuery(getVariantsLastOn, []) ?? null;
   return useMemo(
-    () => ({ ...readerVariants(variants && witnesses ? chapter : null, { variants: variants ?? 'off', witnesses: witnesses ?? 'ecm', lastOn, immersive }), lastOn }),
-    [chapter, variants, witnesses, lastOn, immersive],
+    () => ({ ...readerVariants(variants && witnesses ? chapter : null, { variants: variants ?? 'off', witnesses: witnesses ?? 'ecm', lastOn }), lastOn }),
+    [chapter, variants, witnesses, lastOn],
   );
 }

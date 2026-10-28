@@ -153,3 +153,56 @@ test('a tap on the brace at Revelation 3:2 opens the sheet with both readings an
   // the question is ready to send in its box (mw-9ji6ek0.7)
   await expect(await talkField(talk)).toHaveValue('What is the difference, and does it change the sense?');
 });
+
+/** Puts settings in the app's store through raw IndexedDB, as the app wrote them (as immersive-book.spec.ts does). */
+async function keep(page: Page, values: Record<string, string>) {
+  await page.evaluate(
+    (pairs) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction('settings', 'readwrite');
+          for (const [key, value] of Object.entries(pairs)) tx.objectStore('settings').put({ key, value });
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    values,
+  );
+}
+
+// The Immersive reader shows the variants too (mw-9ji6ek0.12): with Variants 'english' the words of 3:2's unit are marked and its brace is drawn, a tap on the brace opens the sheet,
+// and there is no chip (the bars slide away). With Variants Off there is neither mark nor brace in either reader. Shot: shots/variants-immersive.png.
+test('the Immersive reader marks the variant words and draws the braces; a brace tap opens the sheet; Variants Off draws none', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=rev&c=3');
+  await expect(page.locator('[data-verse="2"] [data-text]')).toBeVisible();
+  await keep(page, { immersiveReader: 'on', immersiveHint: 'off', variants: 'english', variantWitnesses: 'na' });
+  await page.reload();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'on');
+  const brace = page.locator('[data-verse="2"] [data-brace]').first();
+  await expect(brace).toBeVisible();
+  await expect(page.locator('[data-verse="2"] [data-variant]').first()).toBeVisible();
+  await expect(chip(page)).toHaveCount(0);
+  await shot(page, 'variants-immersive');
+  await brace.click();
+  const sheet = page.getByRole('dialog', { name: 'Variant reading' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole('heading', { level: 2 })).toContainText('Revelation 3:2');
+  await page.goBack();
+  await expect(sheet).toHaveCount(0);
+
+  // Variants Off: nothing in the Immersive reader, and nothing in the plain one
+  for (const immersive of ['on', 'off']) {
+    await keep(page, { immersiveReader: immersive, variants: 'off' });
+    await page.reload();
+    await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', immersive);
+    await expect(page.locator('[data-verse="2"] [data-text]')).toBeVisible();
+    await expect(page.locator('[data-brace], [data-variant]')).toHaveCount(0);
+  }
+});
