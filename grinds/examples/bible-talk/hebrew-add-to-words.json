@@ -110,7 +110,7 @@
       "equals": "דָּבָר"
     },
     "answer": {
-      "matches": "(?i)add"
+      "matches": "[Aa]dd"
     },
     "setting_offer": {
       "present": false

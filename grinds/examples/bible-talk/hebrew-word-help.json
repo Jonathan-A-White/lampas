@@ -114,7 +114,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "(?i)proper|name|noun"
+      "matches": "[Pp]roper|[Nn]ame|[Nn]oun"
     },
     "setting_offer": {
       "present": false
