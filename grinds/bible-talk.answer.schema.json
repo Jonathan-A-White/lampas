@@ -73,7 +73,7 @@
       "maxLength": 100
     },
     "quiz_goal_state": {
-      "description": "Only in a quiz (mode quiz), written just before `quiz_goal_offer` would be: 'kept' when the request's `quiz_goal` is a string, 'once' when it has `quiz_goal_once`, otherwise 'none'. `quiz_goal_offer` is allowed only with 'none' and then needs this field.",
+      "description": "Only in a quiz (mode quiz), written just before `quiz_goal_offer` would be: 'kept' when the request's `quiz_goal` is a string and he has not asked to change it, 'once' when it has `quiz_goal_once`, otherwise 'none'. `quiz_goal_offer` is allowed only with 'none' and then needs this field.",
       "type": "string",
       "enum": ["kept", "once", "none"]
     },

@@ -369,6 +369,8 @@ export interface TalkAnswer {
   study_way_line?: string;
   /** in a quiz, the goal the tutor understood from him (mw-5r3p30.185), at most QUIZ_GOAL_MAX characters: shown with Yes, from now on | Just this time, kept only when he taps Yes */
   quiz_goal_offer?: string;
+  /** in a quiz, written before `quiz_goal_offer` (mw-gdcyf98.32): kept or once when a goal is held (an offer beside either is dropped), none when the tutor may offer one */
+  quiz_goal_state?: 'kept' | 'once' | 'none';
   /** what the tutor learned about him as a student in this exchange, or judged from how he writes (mw-1vuvq6.3): kept on the phone beside his own profile, never over it */
   profile_update?: ProfileUpdate[];
   /** the field of his profile the question in `answer` asks him about: noted so the tutor does not ask it again at once */
@@ -468,7 +470,7 @@ const isRustyOffer = (value: unknown): value is RustyOfferAnswer =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary' && k !== 'fetch' && k !== 'asks' && k !== 'do' && k !== 'misses' && k !== 'said')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'quiz_goal_state' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary' && k !== 'fetch' && k !== 'asks' && k !== 'do' && k !== 'misses' && k !== 'said')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
@@ -480,6 +482,7 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if ('fetch' in value && !(Array.isArray(value.fetch) && value.fetch.length <= MAX_FETCH && value.fetch.every((r) => isText(r, 40)))) return false;
   if ('study_way_line' in value && !isText(value.study_way_line, STUDY_WAY_LINE_MAX)) return false;
   if ('quiz_goal_offer' in value && !isText(value.quiz_goal_offer, QUIZ_GOAL_MAX)) return false;
+  if ('quiz_goal_state' in value && value.quiz_goal_state !== 'kept' && value.quiz_goal_state !== 'once' && value.quiz_goal_state !== 'none') return false;
   if ('profile_update' in value && !(Array.isArray(value.profile_update) && value.profile_update.length <= 3 && value.profile_update.every(isProfileUpdate))) return false;
   if ('profile_question' in value && !LEARNABLE.some((f) => f === value.profile_question)) return false;
   if ('feedback_offer' in value && !(isObject(value.feedback_offer) && Object.keys(value.feedback_offer).length === 1 && isText(value.feedback_offer.summary, FEEDBACK_SUMMARY_MAX))) return false;
