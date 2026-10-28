@@ -932,6 +932,19 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(bytes).toBeLessThanOrEqual(99_500);
   });
 
+  it('leaves 2,500 bytes of room under that ceiling, for the Hebrew verse part and the two flake fixes (mw-gdcyf98.28)', () => {
+    const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
+    expect(bytes).toBeLessThanOrEqual(97_000);
+  });
+
+  it('says a run of settings that differ only in their language once, and still names every key (mw-gdcyf98.28)', () => {
+    const block = settingsBlock();
+    for (const s of SETTINGS) expect(block, s.key).toContain(`\`${s.key}\``);
+    expect(block.match(/Phone default lets the phone choose/g)).toHaveLength(1);
+    expect(block.match(/is read aloud; 1 is normal/g)).toHaveLength(1);
+    expect(block.match(/365 Days with Spurgeon/g)).toHaveLength(1);
+  });
+
   it("tells the tutor, in the input schema, that a text ending in ' …' was clipped to fit and the rest is fetched by its reference (mw-5r3p30.827)", () => {
     const input = readJson('grinds/bible-talk.input.schema.json') as unknown as { properties: Record<string, { description?: string; items?: { properties: Record<string, { description?: string }> } }> };
     const flatText = (s: string | undefined) => (s ?? '').replace(/\s+/g, ' ');

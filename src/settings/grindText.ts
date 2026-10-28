@@ -10,13 +10,44 @@ export const SETTINGS_END = '<!-- settings:end -->';
 
 /** A choice's values, each with its label up to any subtitle ('Holiness Day by Day: Transformational Thoughts ...' is named by its title); "on" needs no (On). */
 const choiceText = (values: readonly { value: string; label: string }[], help = ''): string =>
-  values
-    .map((v) => {
-      const title = v.label.split(': ')[0];
+  runsOf(values)
+    .map((run) => {
+      const title = run.label.split(': ')[0];
+      const quoted = run.values.map((v) => `"${v}"`);
+      const named = run.values.length > 2 ? `${quoted[0]} to ${quoted[run.values.length - 1]}` : quoted.join(', ');
       // a label the help already names with its colon ('Atkinson Hyperlegible: Very clear') is not said again beside its value (mw-t3xu9a.5)
-      return v.label.toLowerCase() === v.value || help.includes(`${title}:`) ? `"${v.value}"` : `"${v.value}" (${title})`;
+      return run.label.toLowerCase() === run.values[0] || help.includes(title) ? named : `${named} (${title})`;
     })
     .join(', ');
+
+/**
+ * The values of a choice in runs, so a label is said once for the values that share it (mw-gdcyf98.28): the three Today in Christian History
+ * books are one run, and Volume 1 to Volume 6 of a series whose values count the same way ("LLS:365SPURGEON1" to "LLS:365SPURGEON6") are one run
+ * with its label written 'Volume 1 to 6'. A run of two is written out, as a range would not be shorter.
+ */
+function runsOf(values: readonly { value: string; label: string }[]): { values: string[]; label: string }[] {
+  const counted = (v: { value: string; label: string }) => {
+    const l = /^(.*?)(\d+)(\D*)$/.exec(v.label);
+    const k = /^(.*?)(\d+)$/.exec(v.value);
+    return l && k ? { lead: l[1], tail: l[3], head: k[1], at: Number(l[2]), by: Number(k[2]) } : undefined;
+  };
+  const runs: { values: string[]; label: string; last?: ReturnType<typeof counted>; first?: number }[] = [];
+  for (const v of values) {
+    const run = runs[runs.length - 1];
+    const now = counted(v);
+    const last = run?.last;
+    if (run && v.label === run.label) run.values.push(v.value);
+    else if (run && now && last && now.lead === last.lead && now.tail === last.tail && now.head === last.head && now.at === last.at + 1 && now.by === last.by + 1) {
+      run.values.push(v.value);
+      run.last = now;
+    } else runs.push({ values: [v.value], label: v.label, last: now, first: now?.at });
+  }
+  return runs.map((run) => {
+    const { last, first } = run;
+    const counting = last !== undefined && first !== undefined && last.at > first;
+    return { values: run.values, label: counting ? `${last.lead}${first} to ${last.at}${last.tail}` : run.label };
+  });
+}
 
 /**
  * A choice whose values are mostly an earlier setting's (todaysDevotional takes the devotionals Which devotional lists) names that setting
@@ -47,24 +78,38 @@ function valueText(entry: SettingEntry, help: string): string {
 
 /** A setting whose only values are "on" and "off": the instructions say once that it takes those, and the line leaves its Value out. */
 const isOnOff = ({ allowed }: SettingEntry): boolean =>
-  allowed.kind === 'choice' && allowed.values.length === 2 && allowed.values[0].value === 'on' && allowed.values[1].value === 'off';
+  allowed.kind === 'choice' && allowed.values.length === 2 && allowed.values.some((v) => v.value === 'on') && allowed.values.some((v) => v.value === 'off');
 
-/** The most a setting's help may take of the instructions, in bytes (mw-gdcyf98.2): a longer help gives way to the setting's hint, which the Value list after it completes. */
-export const HELP_MAX_BYTES = 400;
+/** The most a setting's help may take of the instructions, in bytes (mw-gdcyf98.2, 400 B; mw-gdcyf98.28, 280 B): a longer help gives way to the setting's hint, which the Value list after it completes. */
+export const HELP_MAX_BYTES = 280;
 
-/** The setting whose long help the instructions keep whole: Which devotional lists the devotionals, which the tutor names. */
-const HELP_KEPT = 'devotional';
+/** The settings whose long help the instructions keep whole: Which devotional lists the devotionals, which the tutor names; Weave says what Solid and + Learning show, which its hint does not; Ask by names the words that switch it, which its hint does not. */
+const HELP_KEPT: readonly string[] = ['devotional', 'weave', 'askBy'];
 
 const bytesOf = (text: string): number => new TextEncoder().encode(text).length;
 
-/** The list of keys and values the instructions carry, between the two markers: a setting's help, or its hint when it has no help or its help is longer than HELP_MAX_BYTES. */
+const LANGUAGES = /\b(?:English|Greek|Hebrew)\b/g;
+
+/**
+ * The list of keys and values the instructions carry, between the two markers: a setting's help, or its hint when it has no help or its help is longer than HELP_MAX_BYTES.
+ * Settings next to each other that say the same but for the language they name (the three voices, the three speeds) are one line (mw-gdcyf98.28):
+ * their keys and labels together, the words once, with 'that language' where the first named its own.
+ */
 export function settingsBlock(): string {
-  const lines = SETTINGS.map((s) => {
+  const lines: { keys: string[]; labels: string[]; body: string; same: string }[] = [];
+  for (const s of SETTINGS) {
     const plain = s.help ? helpPlain(s.help) : s.hint;
-    const help = s.key !== HELP_KEPT && s.hint && bytesOf(plain) > HELP_MAX_BYTES ? s.hint : plain;
-    return `- \`${s.key}\` — ${s.label}. ${help}${isOnOff(s) ? '' : ` Value: ${valueText(s, help)}.`}`;
-  });
-  return [SETTINGS_BEGIN, ...lines, SETTINGS_END].join('\n');
+    const help = !HELP_KEPT.includes(s.key) && s.hint && bytesOf(plain) > HELP_MAX_BYTES ? s.hint : plain;
+    const body = `${help}${isOnOff(s) ? '' : ` Value: ${valueText(s, help)}.`}`;
+    const same = `${s.label.replace(LANGUAGES, '')}|${body.replace(LANGUAGES, '')}`;
+    const last = lines[lines.length - 1];
+    if (last && last.same === same && s.label.search(LANGUAGES) >= 0) {
+      last.keys.push(s.key);
+      last.labels.push(s.label);
+      last.body = last.body.replace(LANGUAGES, 'that language');
+    } else lines.push({ keys: [s.key], labels: [s.label], body, same });
+  }
+  return [SETTINGS_BEGIN, ...lines.map((l) => `- ${l.keys.map((k) => `\`${k}\``).join(', ')} — ${l.labels.join(', ')}${/[?!.]$/.test(l.labels[l.labels.length - 1]) ? '' : '.'} ${l.body}`), SETTINGS_END].join('\n');
 }
 
 /** `instructions` with the text between its two markers replaced by the registry's list. */
