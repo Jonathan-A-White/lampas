@@ -20,7 +20,7 @@ import {
   unzip,
   type OverlayEntry,
 } from '../../scripts/data/rp2026';
-import type { Chapter, GreekWord, Verse, VariantUnit } from '../../src/data/chapter';
+import type { Chapter, GreekWord, Verse, VariantPlace } from '../../src/data/chapter';
 
 // ---------------------------------------------------------------- a zip made here
 
@@ -189,7 +189,7 @@ const texts = (v: Verse): string => v.g.map((w) => w.t).join(' ');
 describe('applying an overlay entry to a verse', () => {
   it('takes out a word the 2026 text lacks, and the other words keep their English and their place', () => {
     const v = verseOf(['οἱ', 'ἐνώπιον', 'τοῦ', 'θρόνου', 'τοῦ', 'θεοῦ', 'καθήμενοι'], ['τοῦ', 'θρόνου']);
-    const units: VariantUnit[] = [
+    const units: VariantPlace[] = [
       { v: 16, w: [6], base: 'καθήμενοι', alts: [{ code: 'B', text: 'οἳ κάθηνται' }] },
       { v: 16, w: [3], base: 'θρόνου', alts: [{ code: 'B', text: 'θρόνων' }] },
     ];
@@ -216,7 +216,7 @@ describe('applying an overlay entry to a verse', () => {
 
   it('moves two words that change places, with their English, and carries the units to their new place', () => {
     const v = verseOf(['δέσμιος', 'χριστοῦ', 'Ἰησοῦ', 'καὶ']);
-    const units: VariantUnit[] = [{ v: 16, w: [2], base: 'Ἰησοῦ', alts: [{ code: 'N', text: 'Ἰησοῦ χριστοῦ' }] }];
+    const units: VariantPlace[] = [{ v: 16, w: [2], base: 'Ἰησοῦ', alts: [{ code: 'N', text: 'Ἰησοῦ χριστοῦ' }] }];
     const result = applyOverlay('Revelation', 11, [v], units, [entry(['δέσμιος', 'χριστοῦ', 'Ἰησοῦ', 'καὶ'], ['δεσμιος', 'ιησου', 'χριστου', 'και'])]);
     expect(texts(v)).toBe('δέσμιος Ἰησοῦ χριστοῦ καὶ');
     expect(v.g.map((w) => v.e[w.e!].t)).toEqual(['e0', 'e2', 'e1', 'e3']);
@@ -233,7 +233,7 @@ describe('applying an overlay entry to a verse', () => {
 
   it('drops a unit whose other readings now read as the text', () => {
     const v = verseOf(['τοῦ', 'γεννήματος', 'τῆς']);
-    const units: VariantUnit[] = [{ v: 16, w: [1], base: 'γεννήματος', alts: [{ code: 'N', text: 'γενήματος' }] }];
+    const units: VariantPlace[] = [{ v: 16, w: [1], base: 'γεννήματος', alts: [{ code: 'N', text: 'γενήματος' }] }];
     const result = applyOverlay('Revelation', 11, [v], units, [entry(['τοῦ', 'γεννήματος', 'τῆς'], ['του', 'γενηματος', 'της'])]);
     expect(result.units).toEqual([]);
     expect(result.dropped).toBe(1);

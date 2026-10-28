@@ -162,12 +162,29 @@ export interface VariantReading {
   text: string;
 }
 /** One place of the apparatus: the words of verse `v` it is about (indexes into the verse's `g`), the text's own words there, and the other readings. */
-export interface VariantUnit {
+export interface VariantPlace {
   v: number;
   w: number[];
   base: string;
   alts: VariantReading[];
 }
+/** A place with its English, its witness and whether it changes the English: what a chapter file keeps. */
+export interface VariantUnit extends VariantPlace {
+  /** the unit in English: the base and each of `alts` (the same order), 0 to 6 words each, '' for a reading that leaves words out (docs/data.md 'Variant English') */
+  english: VariantEnglish;
+  /** true when the English of the base and of any alternative differ after case, punctuation and white space are set aside */
+  changesEnglish: boolean;
+  /** whose reading the first of its codes names: `byz` (B), `na` (N, C, S, E) or `ecm` (M); several codes take the first class in that order */
+  witness: VariantWitness;
+}
+/** `msb`: the MSB's own footnote ('CT ...') gave it; `lampas`: made at build time by the tutor's model (data/variant-english.json). */
+export type VariantEnglishSource = 'msb' | 'lampas';
+export interface VariantEnglish {
+  source: VariantEnglishSource;
+  base: string;
+  alts: string[];
+}
+export type VariantWitness = 'byz' | 'na' | 'ecm';
 
 /** A chapter with no text: the stand-in where a talk is about a screen, not a text (src/tutor/screen.ts), or a word is added with no chapter open. */
 export const NO_CHAPTER: Chapter = { book: '', code: '', chapter: 0, lang: 'grc', translation: 'msb', lex: {}, parse: {}, verses: [] };

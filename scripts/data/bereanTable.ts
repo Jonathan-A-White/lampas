@@ -25,6 +25,7 @@ export const COLUMNS = {
   english: 18,
   pnc: 19,
   endQ: 20,
+  footnotes: 21, // the MSB's footnote on this word (HTML: <i>…</i>); the Old Testament build does not read it
   endText: 22,
 } as const;
 
@@ -41,6 +42,7 @@ export interface TableWord {
   begQ: string;
   tail: string; // pnc + endQ + endText
   par: string; // the table's paragraph markup on this word, '' when none
+  note: string; // the table's footnote on this word as the cell has it (HTML), '' when none
 }
 
 export interface TableVerse {
@@ -155,5 +157,6 @@ export function wordOf(f: readonly string[], sourceSort: number, fields: Pick<Ta
     begQ: f[COLUMNS.begQ],
     tail: f[COLUMNS.pnc] + f[COLUMNS.endQ] + f[COLUMNS.endText],
     par: f[COLUMNS.paragraph],
+    note: f[COLUMNS.footnotes] ?? '',
   };
 }

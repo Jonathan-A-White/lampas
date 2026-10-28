@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
 import { CANON } from '../../src/data/canon';
-import type { GreekWord, VariantUnit, Verse } from '../../src/data/chapter';
+import type { GreekWord, VariantEnglish, VariantPlace, Verse } from '../../src/data/chapter';
 import { letterKey, parseApparatus } from './variants';
 
 export const RP2026_URL = 'https://byzantinetext.com/wp-content/uploads/2026/10/ByzASCII.zip';
@@ -281,6 +281,9 @@ function placeOf(ref: string, keys: string[], words: string[]): number {
   return at.length ? at[0] : -1;
 }
 
+/** A variant place on its way to a chapter file: its English may already be laid (scripts/data/variantEnglish.ts) and goes with its readings. */
+export type PlacedUnit = VariantPlace & { english?: VariantEnglish };
+
 /**
  * Lays the overlay's entries for one chapter on its verses (changed in place) and its variant units (returned). Each entry's 2018 words are found
  * in the verse by their letters and become the 2026 words: a word that stands in both keeps its own entry in the verse (its lemma, parsing code and
@@ -291,8 +294,8 @@ function placeOf(ref: string, keys: string[], words: string[]): number {
  * adds, which would have no lemma, and an English chunk left with no Greek.
  * The units are carried to the words' new places; one left with no word, or with every other reading now the text, is dropped.
  */
-export function applyOverlay(book: string, chapter: number, verses: Verse[], units: VariantUnit[], entries: OverlayEntry[]): OverlayResult & { units: VariantUnit[] } {
-  const result: OverlayResult & { units: VariantUnit[] } = { applied: 0, already: 0, dropped: 0, units };
+export function applyOverlay(book: string, chapter: number, verses: Verse[], units: PlacedUnit[], entries: OverlayEntry[]): OverlayResult & { units: PlacedUnit[] } {
+  const result: OverlayResult & { units: PlacedUnit[] } = { applied: 0, already: 0, dropped: 0, units };
   for (const entry of entries) {
     if (entry.book !== book || entry.chapter !== chapter) continue;
     const ref = `${book} ${chapter}:${entry.verse}`;
@@ -355,12 +358,15 @@ export function applyOverlay(book: string, chapter: number, verses: Verse[], uni
       }
       if (!touches) return [{ ...unit, w }];
       const text = w.map((i) => g[i].t).join(' ');
-      const alts = unit.alts.filter((alt) => plain(alt.text) !== plain(text));
+      const keep = unit.alts.map((alt) => plain(alt.text) !== plain(text));
+      const alts = unit.alts.filter((_, i) => keep[i]);
       if (!alts.length) {
         result.dropped++;
         return [];
       }
-      return [{ ...unit, w, base: text, alts }];
+      // the English of the readings left goes with them
+      const english = unit.english && { ...unit.english, alts: unit.english.alts.filter((_, i) => keep[i]) };
+      return [{ ...unit, w, base: text, alts, ...(english ? { english } : {}) }];
     });
     result.applied++;
   }
