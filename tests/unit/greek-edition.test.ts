@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { compareVerse, decidingPlaces, editionVerdict, rpWords } from '../../scripts/greek-edition';
+import type { OverlayEntry } from '../../scripts/data/rp2026';
 import { PREFACE_EDITION_LINE, PREFACE_LINKS, PREFACE_PARAGRAPHS } from '../../src/preface';
 
 describe('rpWords: a verse of RP text cut into words and the marks beside them', () => {
@@ -133,5 +134,30 @@ describe('docs/greek-edition.md and the Preface', () => {
     const links = PREFACE_LINKS.filter((l) => l.name.includes(verdict ?? '?'));
     expect(links.length).toBeGreaterThan(0);
     expect(links.map((l) => l.url).some((u) => /archive\.org|github\.com\/byztxt/.test(u))).toBe(true);
+  });
+});
+
+describe('docs/greek-edition.md and the RP 2026 changes (mw-9ji6ek0.2)', () => {
+  const doc = readFileSync('docs/greek-edition.md', 'utf8');
+  const overlay = JSON.parse(readFileSync('data/rp2026-overlay.json', 'utf8')) as OverlayEntry[];
+
+  it('says the text is Robinson-Pierpont 2018 with its apparatus and the 2026 changes, and names the 2026 source', () => {
+    expect(doc).toContain('Robinson-Pierpont 2018');
+    expect(doc).toContain('apparatus');
+    expect(doc).toContain('Robinson-Pierpont 2026');
+    expect(doc).toContain('data/rp2026-overlay.json');
+    expect(doc).toContain('https://byzantinetext.com/wp-content/uploads/2026/10/ByzASCII.zip');
+  });
+
+  it('lists every change of the overlay, with its verse, its 2018 words and its 2026 words, and counts them', () => {
+    expect(doc).toContain(`This file lists that file's ${overlay.length} changes.`);
+    for (const e of overlay) {
+      const row = doc.split('\n').find((line) => line.startsWith(`| ${e.book} ${e.chapter}:${e.verse} |`));
+      expect(row, `a row for ${e.book} ${e.chapter}:${e.verse}`).toBeDefined();
+      expect(row).toContain(`\`${e.from.join(' ')}\``);
+      expect(row).toContain(`\`${e.to.join(' ')}\``);
+    }
+    expect(doc).toContain('| Revelation 11:16 |');
+    expect(doc).toContain('| Revelation 13:14 |');
   });
 });

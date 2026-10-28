@@ -213,6 +213,35 @@ Units are in verse order, then by their first word.
 | Revelation 11:16 | B | τοῦ θρόνου | the same |
 | Revelation 13:1 | N | ἐστάθην | the table ends 12:17 with Καὶ ἐστάθην …, in another chapter |
 
+## The RP 2026 overlay
+
+The Robinson-Pierpont 2026 text words five verses otherwise than the 2018 text the apparatus is of; `data/rp2026-overlay.json` holds those changes and
+the New Testament build lays them on the Greek it writes (`scripts/data/rp2026.ts`, run by `npm run data:build`; mw-9ji6ek0.2).
+
+**Source.** <https://byzantinetext.com/wp-content/uploads/2026/10/ByzASCII.zip> (the "Clearview Press 2026 Edition" download on
+<https://byzantinetext.com/study/editions/robinson-pierpont/>), sha256 `527149c3081647b7f36e370d12da9f7e331e0e087f82b5410944fba4e5b306c1`, fetched
+into `data/raw/rp2026/` (git-ignored); the build stops on any other bytes. Its 27 files (`MT05.ASC` … `RE05.ASC`: the names are the 2005 release's) are
+ASCII: each verse is a reference line (`11:16`) and wrapped lines of Greek in letters, `v` the final sigma, `y` theta, `q` psi, `c` chi, `x` xi, `f` phi,
+with no accents, breathings, capitals or punctuation. Nothing of it is committed but the overlay the build writes. Public domain, like the edition.
+
+**The overlay.** For every verse the build lines the 2018 base (the words of `with-variants` with its units taken out) up with the 2026 words by their
+letters only (no accents, breathings or case, final sigma as sigma, no elision apostrophe), and each run of words that differ becomes an entry:
+`{"book":"Revelation","chapter":13,"verse":14,"from":["εἶχεν","τὴν","πληγὴν"],"to":["ειχεν","πληγην"]}`: the 2018 words (accents as the base has
+them) and the 2026 words (Greek letters), each with the word before and the word after the change, so that the entry says where it is. Two runs with one
+word between them are one entry (Philemon 1:1 swaps χριστοῦ and Ἰησοῦ). The build prints `RP 2026 overlay: 5 entries in 4 books (Matthew 1, Romans 1,
+Philemon 1, Revelation 2) …` and the verses. `docs/greek-edition.md` lists them.
+
+**Laying it on.** After the apparatus, in `applyOverlay`: the entry's 2018 words are found in the chapter's verse by their letters and become the 2026
+words. A word in both lists keeps its own entry in the verse (its lemma, parsing code and English), also when it moves; a word spelled otherwise keeps its
+Strong's number, lemma and parsing code, takes the 2026 letters with the old word's accents where the letters are the same (γεννήματος → γενήματος) and
+the beta-code of the 2026 word as its `tr`; a word the 2018 words have and the 2026 words lack goes (Revelation 13:14 τὴν), the verse's `g` indexes in the
+chunks `e[].g` and in `variants[].w` moving with them. A variant unit left with no word, or whose other readings now read as the text, is dropped (the
+build counts them: the `B` unit on τὴν in Revelation 13:14 and the `N` unit on γεννήματος in Matthew 26:29). The table's Greek is the 2005 edition,
+so a verse can read the 2026 words already: Revelation 11:16 (no τοῦ θρόνου, which 2018 added) and Romans 13:9 (εαυτόν, where 2018 has σεαυτόν) are
+left as they are and counted as `already read so`. An entry whose 2018 words are in the verse neither way fails the build, naming the verse; so does a
+word the 2026 text adds (it would have no lemma), and an English chunk left with no Greek. The five entries: Matthew 26:29 (γεννήματος → γενήματος),
+Romans 13:9, Philemon 1:1, Revelation 11:16 and 13:14.
+
 ## Changes to the sources
 
 * TBESG: a Strong's number with several entries (an extended-Strong's split such as G0032G / G0032H) resolves
