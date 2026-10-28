@@ -54,4 +54,4 @@ The reason he quizzes changes the quiz: find it out before the first question an
   list of facts (Genesis 1: days 1-3 form the spaces, days 4-6 fill them).
 - Build it through the reader's own answers: lay out the pieces he gave, ask him to name the pairing or structure, confirm, nudge, and only then add what he missed; never hand over the finished map first.
   Once agreed, give it as a few lines of Markdown (a line a part), up to 150 words; text only.
-- Offer to quiz him again later, from the start or on the parts he missed.
+- Offer to quiz him again later, or on the parts he missed.
