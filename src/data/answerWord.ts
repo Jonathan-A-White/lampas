@@ -4,17 +4,20 @@ import type { AnswerWord } from './db';
 import { languageOfLemma, normaliseHeadword } from './lemma';
 import { lookupLemma } from './lexicon';
 import { addWordToLearn, wordIsListed } from './repositories';
+import { hebrewPointedForm } from '../speech/hebrewPronunciation';
 import type { TalkScope } from '../services/talk';
 
 /** Lower case with no accents or breathings, so a word the companion wrote loosely still finds its place in the text. */
 const plain = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 
 /** The word of the chapter an answer's word stands for: the same word in the verse the talk is about first, then anywhere
- * in the chapter; by the word as written, or else by its lemma. Undefined when the text has no such word. */
+ * in the chapter; by the word as written, or else by its lemma. A word of language 'he' (a Hebrew word of an Old Testament verse, mw-gdcyf98.18) is matched as the app writes the verse's Hebrew,
+ * pointed with the cantillation off. Undefined when the text has no such word. */
 export function findGreekWord(scope: TalkScope, word: AnswerWord): GreekWord | undefined {
   const verses: Verse[] = scope.verse ? [scope.verse, ...scope.chapter.verses.filter((v) => v !== scope.verse)] : scope.chapter.verses;
   const words = verses.flatMap((v) => v.g);
-  const exact = (w: GreekWord) => w.t.normalize('NFC') === word.greek.normalize('NFC');
+  const written = (w: GreekWord): string => (word.language === 'he' ? hebrewPointedForm(w.t) : w.t);
+  const exact = (w: GreekWord) => written(w).normalize('NFC') === word.greek.normalize('NFC');
   const loose = (w: GreekWord) => plain(w.t) === plain(word.greek);
   const lemma = (w: GreekWord) => plain(wordLemma(w)) === plain(word.lemma);
   return words.find(exact) ?? words.find(loose) ?? words.find(lemma);

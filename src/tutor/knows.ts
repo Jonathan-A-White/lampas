@@ -125,7 +125,8 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
   'bible-talk': {
     // currentSettings(): what every registry setting holds now, in `settings`; the pronunciation also has its own field the sound questions use (mw-5r3p30.241)
     // each dial is also its own field, greek_interest and hebrew_interest, with the step's name and the one step above it: all an offer may name, the chapter's language picking
-    // which (mw-3ased2.3, mw-gdcyf98.3). The languages he reads is sent in `settings` (everySetting).
+    // which (mw-3ased2.3, mw-gdcyf98.3). The languages he reads is sent in `settings` (everySetting). The text of an Old Testament chapter goes under `hebrew` with `hebrew_words` (mw-gdcyf98.18),
+    // from the Hebrew dial's Curious up; at Just English the request holds the English alone, and `hebrew_interest` tells the tutor why. `settings.hebrewDepth` is how it writes a Hebrew word.
     settings: { ...everySetting, greekPronunciation: 'pronunciation', greekInterest: 'greek_interest', hebrewInterest: 'hebrew_interest' },
     progress: { words: 'solid_words', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works', maps: 'maps' },
     notSent: {},

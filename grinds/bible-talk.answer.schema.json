@@ -18,7 +18,7 @@
       "maxLength": 4000
     },
     "words": {
-      "description": "The Greek words the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word, or when he names only an English word (what does 'love' mean) and no Greek one: never the `lemma` of a `greek_offer`.",
+      "description": "The Greek words (or, for an Old Testament verse, the Hebrew words) the answer speaks about, each with its lemma and a short note that includes its parsing. Empty when the answer is about no particular word, or when he names only an English word (what does 'love' mean) and no Greek one: never the `lemma` of a `greek_offer`.",
       "type": "array",
       "maxItems": 12,
       "items": {
@@ -28,7 +28,12 @@
         "properties": {
           "greek": { "description": "The word as it stands in the text.", "type": "string", "minLength": 1, "maxLength": 80 },
           "lemma": { "description": "Its dictionary form.", "type": "string", "minLength": 1, "maxLength": 80 },
-          "note": { "description": "Its parsing and what it does here, in plain words.", "type": "string", "minLength": 1, "maxLength": 300 }
+          "note": { "description": "Its parsing and what it does here, in plain words.", "type": "string", "minLength": 1, "maxLength": 300 },
+          "language": {
+            "description": "Optional. `he` for a Hebrew word of an Old Testament verse (`greek` then holds its pointed Hebrew form and `lemma` its TBESH headword); missing or `grc` for a Greek word.",
+            "type": "string",
+            "enum": ["grc", "he"]
+          }
         }
       }
     },
