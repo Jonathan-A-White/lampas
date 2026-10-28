@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.5.23",
+    "date": "2026-10-28",
+    "story": "mw-gdcyf98.18",
+    "kind": "new",
+    "text": "You can now open the Bible talk from a verse of the Old Testament, and the app sends the tutor the Hebrew."
+  },
+  {
+    "version": "0.5.23",
+    "date": "2026-10-28",
+    "story": "mw-5r3p30.824",
+    "kind": "new",
+    "text": "Each main screen now shows a one-line tip the first time you open it, and Help has a Tips page to read them again."
+  },
+  {
     "version": "0.5.22",
     "date": "2026-10-28",
     "story": "mw-5r3p30.823",

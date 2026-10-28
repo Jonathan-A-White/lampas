@@ -1,5 +1,10 @@
 # What's new
 
+## 0.5.23
+_2026-10-28_
+- New: You can now open the Bible talk from a verse of the Old Testament, and the app sends the tutor the Hebrew.
+- New: Each main screen now shows a one-line tip the first time you open it, and Help has a Tips page to read them again.
+
 ## 0.5.22
 _2026-10-28_
 - New: Help in Settings is a short list of the app's pieces, each a page of a few lines, with Ask the tutor at its top; the Preface now says only which texts we chose.
