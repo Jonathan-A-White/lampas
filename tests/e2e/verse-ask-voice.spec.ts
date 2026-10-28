@@ -6,7 +6,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { clips, honestMic } from '../support/honest-fakes';
-import { composerOf, talkSheetOf, talkTurnsOf } from './ask-composer';
+import { askBar, composerOf, talkSheetOf, talkTurnsOf } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
