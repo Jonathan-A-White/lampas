@@ -390,7 +390,8 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the field {string} holds {string} and is ringed', async (_, label: string, value: string) => {
       const select = await within(form()).findByRole('combobox', { name: label });
       expect(within(select as HTMLElement).getByRole('option', { name: value, selected: true })).toBeInTheDocument();
-      expect(select.className).toMatch(/ring-accent/);
+      // the field already holds its start (New list) when the tutor's reply arrives and rings it
+      await waitFor(() => expect(select.className).toMatch(/ring-accent/));
     });
     And('the tutor asks one question: {string}', asks);
     When('he answers {string} and the tutor fills name with {string}', async (_, said: string, value: string) => {
