@@ -62,3 +62,57 @@ Feature: Variants in Settings (mw-9ji6ek0.4)
     Given Settings is open at Reading with nothing chosen
     When he taps the row "Lessons on variant readings"
     Then the lessons on variant readings are open
+
+  # mw-9ji6ek0.25: Read as, the reading set in force, and saving, renaming and deleting his own
+  Scenario: Settings offers Read as with the three built-in sets, Byzantine chosen, and says what ECM is
+    Given Settings is open at Reading with nothing chosen
+    Then Read as offers "Byzantine", "NA" and "ECM" with "Byzantine" chosen
+    And the Reading sets row says "ECM where the apparatus gives it (18 places in Acts); elsewhere NA"
+
+  Scenario: Choosing NA under Read as is kept across a reload
+    Given Settings is open at Reading with nothing chosen
+    When he chooses "NA" in the group "Read as"
+    Then the setting "readingSet" is kept as "na"
+    When Settings is opened again at Reading
+    Then Read as has "NA" chosen
+
+  Scenario: Save as names a copy of the set in force, which can be switched to and from
+    Given Settings is open at Reading with nothing chosen
+    When he chooses "NA" in the group "Read as"
+    And he taps "Save as…" and names the set "My Rev"
+    Then Read as offers "Byzantine", "NA", "ECM" and "My Rev" with "My Rev" chosen
+    When he switches Read as to "Byzantine"
+    Then Read as has "Byzantine" chosen
+    When he switches Read as back to "My Rev"
+    Then "My Rev" is chosen under Read as
+
+  Scenario: Save as with a blank name or Cancel saves nothing
+    Given Settings is open at Reading with nothing chosen
+    When he taps "Save as…"
+    Then he is asked "Name this set" and Save is off while the name is blank
+    When he cancels
+    Then Read as offers "Byzantine", "NA" and "ECM" with "Byzantine" chosen
+
+  Scenario: His own set can be renamed
+    Given Settings is open at Reading with nothing chosen
+    When he chooses "NA" in the group "Read as"
+    And he taps "Save as…" and names the set "My Rev"
+    And he taps "Rename" and renames the set "Revelation"
+    Then Read as offers "Byzantine", "NA", "ECM" and "Revelation" with "Revelation" chosen
+
+  Scenario: The built-in sets have no Rename or Delete
+    Given Settings is open at Reading with nothing chosen
+    Then there is no "Rename" or "Delete" button
+    When he chooses "ECM" in the group "Read as"
+    Then there is still no "Rename" or "Delete" button under "ECM"
+
+  Scenario: His own set is deleted after asking, and Byzantine is read again
+    Given Settings is open at Reading with nothing chosen
+    When he chooses "NA" in the group "Read as"
+    And he taps "Save as…" and names the set "My Rev"
+    And he taps "Delete"
+    Then he is asked "Delete this set?"
+    When he cancels
+    Then Read as offers "Byzantine", "NA", "ECM" and "My Rev" with "My Rev" chosen
+    When he taps "Delete" and confirms with "Delete my set"
+    Then Read as offers "Byzantine", "NA" and "ECM" with "Byzantine" chosen

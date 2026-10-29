@@ -1,15 +1,15 @@
 # How to read a variant
 
-This page shows how Lampas draws a variant in the Reader, and how to read what it shows.
+How Lampas draws a variant in the Reader, and how to read it.
 
 ## Turning variants on
 
-Variants are off until you turn them on. In a New Testament chapter that has any, the row of chips under the Reader's header has one that starts with ⁑ and a number: how many places it would mark. Tap it to turn variants on or off. Press and hold it for a short sheet that chooses which ones you see.
+Variants are off until you turn them on. In a chapter that has any, the chips under the Reader's header include one that starts with ⁑ and a number: how many places it would mark. Tap it to turn variants on or off; press and hold it for a short sheet that chooses which ones you see.
 
 The same choices are in Settings > Reading > Variants:
 
-- **Variants**: Off; Those that change the English (the places where another reading would change the English); or All (every place, even a spelling).
-- **Witnesses**: Byzantine splits only; also Nestle-Aland; or also ECM. This says whose readings count. The second lesson and the third explain who they are.
+- **Variants**: Off; Those that change the English (where another reading would change the English); or All (every place, even a spelling).
+- **Witnesses**: Byzantine splits only; also Nestle-Aland; or also ECM. This says whose readings count.
 
 ## The mark and the brace
 
@@ -17,26 +17,32 @@ With variants on, the words of each place are underlined with a light dotted lin
 
 > you have a reputation for being alive, {and you live **B**}
 
-The underlined words are the text you are reading. The words inside the brace are the other reading, here καὶ ζῇς where the text has ὅτι ζῇς. Its English renders the other Greek word for word, so it does not always fit the sentence around it. The sign **B** says it is a reading on which the Byzantine manuscripts are split. **NA** is the Nestle-Aland text's reading and **ECM** the *Editio Critica Maior*'s. One reading can carry two signs when two editions read alike.
+The underlined words are your text; the brace holds the other reading, here καὶ ζῇς where the text has ὅτι ζῇς. Its English renders the other Greek word for word, so it may not fit the sentence. The sign **B** says it is a reading on which the Byzantine manuscripts are split. **NA** is the Nestle-Aland text's reading and **ECM** the *Editio Critica Maior*'s.
 
-In the Greek view the brace holds the Greek of the reading, and in the English view its English. Inside a brace you may also see:
+The brace holds the reading's Greek in the Greek view and its English in the English view. Inside it you may also see:
 
 - **left out**: the other reading does not have these words at all.
-- **same**: with All chosen, a reading whose Greek differs but whose English does not.
+- **same**: with All chosen, Greek that differs where the English does not.
 - a **|** between two readings, when a place has more than one.
 
 ## The sheet
 
-Tap a brace and a sheet opens from the bottom. Its title is the verse and the words "where the manuscripts differ", as in "Revelation 3:2: where the manuscripts differ". It lists:
+Tap a brace and a sheet opens from the bottom, titled as in "Revelation 3:2: where the manuscripts differ". It lists:
 
 - **The text reads**: the words of the text you are reading, in Greek and in English.
-- **Other reading** (or Other reading 1, 2 and so on): each other reading, in Greek and in English, with a line for each edition that reads it, such as "B: the Byzantine text is split here" or "NA27/NA28: Nestle-Aland reads this". Where Nestle-Aland prints words in square brackets, the brackets are kept.
+- **Other reading**: each other reading, in Greek and in English, with a line for each edition that reads it, such as "NA27/NA28: Nestle-Aland reads this". Nestle-Aland's square brackets are kept.
 
-With a licence, **Ask the tutor** is at the foot of the sheet. It opens a talk about the verse, and the tutor knows its readings. It will explain what each reading says and what each side holds; it does not tell you which is right. **Done**, a swipe down or a tap outside the sheet closes it.
+With a licence, **Ask the tutor** at the foot opens a talk about the verse: it explains each reading and what each side holds, and does not tell you which is right. **Done**, a swipe down or a tap outside closes the sheet.
+
+## Read this, and reading sets
+
+Each reading on the sheet has **Read this**: it lays that reading into the text in place of the text's own, marked with a thin solid line, and the text's own then stands in the brace under the chip **RP**. It is kept on this phone; reading aloud, copying, Read check and the diagram keep the Byzantine words.
+
+What you read is a **reading set**. **Read as**, in the sheet that press and hold opens and in Settings > Reading > Variants, switches the whole text at once: **Byzantine**; **NA** (Nestle-Aland's reading at every place); **ECM** (the *Editio Critica Maior*'s where its apparatus gives it, 18 places in Acts, else NA); **Mine**, which Read this starts from the set you were reading; and sets you name. **Save as…** keeps a copy of the set you are reading under a name; **Rename** and **Delete** change your own sets, never the three built-in ones.
 
 ## Where the English comes from
 
-The English of the other readings comes from two places. Where the Majority Standard Bible's own footnotes give the critical text's reading (its notes that begin "CT"), Lampas uses that English. For the rest, the English was written when the app was built by the model the tutor uses, from the Greek of each reading and the dictionary meanings of its words, and checked against them. Treat it as a guide to the Greek, not a translation of record: the Greek on the sheet is what the edition prints.
+Where the Majority Standard Bible's own footnotes give the critical text's reading (its notes that begin "CT"), Lampas uses that English. For the rest, the model the tutor uses wrote it when the app was built, from the Greek of each reading and the dictionary meanings of its words. Treat it as a guide to the Greek, not a translation of record.
 
 ## Sources
 

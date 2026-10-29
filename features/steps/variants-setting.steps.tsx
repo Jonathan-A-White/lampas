@@ -30,7 +30,7 @@ async function openReading(saved: Record<string, string> = {}): Promise<void> {
   vi.unstubAllGlobals();
   window.localStorage.clear();
   await db.open();
-  await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear(), db.readingSets.clear()]);
   for (const [key, value] of Object.entries(saved)) await db.settings.put({ key, value });
   await showReading();
 }
@@ -154,5 +154,126 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the lessons on variant readings are open', async () => {
       await waitFor(() => expect(window.location.hash).toBe('#/lessons/variants'));
     });
+  });
+
+  // mw-9ji6ek0.25: Read as
+  const buttons = async (name: string) => (await labelsOf(name));
+  Scenario('Settings offers Read as with the three built-in sets, Byzantine chosen, and says what ECM is', ({ Given, Then, And }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    Then('Read as offers {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, chosen: string) => {
+      expect(await buttons('Read as')).toEqual([a, b, c]);
+      expect(await chosenIn('Read as')).toEqual([chosen]);
+    });
+    And('the Reading sets row says {string}', async (_, line: string) => {
+      const row = (await rowOf('Read as')).closest<HTMLElement>('[data-setting]');
+      expect(row?.textContent).toContain(line);
+    });
+  });
+
+  Scenario('Choosing NA under Read as is kept across a reload', ({ Given, When, Then }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    When('he chooses {string} in the group {string}', choose);
+    Then('the setting {string} is kept as {string}', (_, key: string, value: string) => savedAs(key, value));
+    When('Settings is opened again at Reading', reopen);
+    Then('Read as has {string} chosen', async (_, choice: string) => {
+      expect(await chosenIn('Read as')).toEqual([choice]);
+    });
+  });
+
+  const tap = async (_: unknown, name: string) => {
+    await user.click(await screen.findByRole('button', { name, exact: true }));
+  };
+  const nameIt = async (name: string, button = 'Save') => {
+    const box = await screen.findByRole('textbox', { name: /Name this set|Rename this set/ });
+    await user.clear(box);
+    await user.type(box, name);
+    await user.click(screen.getByRole('button', { name: button, exact: true }));
+  };
+
+  const offers = async (names: string[], chosen: string) => {
+    await waitFor(async () => expect(await buttons('Read as')).toEqual(names));
+    expect(await chosenIn('Read as')).toEqual([chosen]);
+  };
+  const isChosen = (choice: string) => waitFor(async () => expect(await chosenIn('Read as')).toEqual([choice]));
+  const cancel = () => tap(null, 'Cancel');
+  const noOwnButtons = () => {
+    expect(screen.queryByRole('button', { name: 'Rename', exact: true })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Delete', exact: true })).toBeNull();
+  };
+
+  Scenario('Save as names a copy of the set in force, which can be switched to and from', ({ Given, When, Then, And }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    When('he chooses {string} in the group {string}', choose);
+    And('he taps {string} and names the set {string}', async (_, button: string, name: string) => {
+      await tap(null, button);
+      await nameIt(name);
+    });
+    Then('Read as offers {string}, {string}, {string} and {string} with {string} chosen', (_, a: string, b: string, c: string, d: string, chosen: string) => offers([a, b, c, d], chosen));
+    When('he switches Read as to {string}', async (_, name: string) => {
+      await user.click(within(await rowOf('Read as')).getByRole('button', { name, exact: true }));
+    });
+    Then('Read as has {string} chosen', (_, choice: string) => isChosen(choice));
+    When('he switches Read as back to {string}', async (_, name: string) => {
+      await user.click(within(await rowOf('Read as')).getByRole('button', { name, exact: true }));
+    });
+    Then('{string} is chosen under Read as', (_, choice: string) => isChosen(choice));
+  });
+
+  Scenario('Save as with a blank name or Cancel saves nothing', ({ Given, When, Then }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    When('he taps {string}', tap);
+    Then('he is asked {string} and Save is off while the name is blank', async (_, ask: string) => {
+      expect(await screen.findByRole('textbox', { name: ask })).toBeTruthy();
+      expect((screen.getByRole('button', { name: 'Save', exact: true }) as HTMLButtonElement).disabled).toBe(true);
+    });
+    When('he cancels', cancel);
+    Then('Read as offers {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, chosen: string) => {
+      await offers([a, b, c], chosen);
+      expect(screen.queryByRole('textbox')).toBeNull();
+    });
+  });
+
+  Scenario('His own set can be renamed', ({ Given, When, Then, And }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    When('he chooses {string} in the group {string}', choose);
+    And('he taps {string} and names the set {string}', async (_, button: string, name: string) => {
+      await tap(null, button);
+      await nameIt(name);
+    });
+    And('he taps {string} and renames the set {string}', async (_, button: string, name: string) => {
+      await tap(null, button);
+      await nameIt(name);
+    });
+    Then('Read as offers {string}, {string}, {string} and {string} with {string} chosen', (_, a: string, b: string, c: string, d: string, chosen: string) => offers([a, b, c, d], chosen));
+  });
+
+  Scenario('The built-in sets have no Rename or Delete', ({ Given, When, Then }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    Then('there is no {string} or {string} button', noOwnButtons);
+    When('he chooses {string} in the group {string}', choose);
+    Then('there is still no {string} or {string} button under {string}', async (_, _a: string, _b: string, chosen: string) => {
+      await isChosen(chosen);
+      noOwnButtons();
+    });
+  });
+
+  Scenario('His own set is deleted after asking, and Byzantine is read again', ({ Given, When, Then, And }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    When('he chooses {string} in the group {string}', choose);
+    And('he taps {string} and names the set {string}', async (_, button: string, name: string) => {
+      await tap(null, button);
+      await nameIt(name);
+    });
+    And('he taps {string}', tap);
+    Then('he is asked {string}', async (_, ask: string) => {
+      expect(await screen.findByText(ask)).toBeTruthy();
+    });
+    When('he cancels', cancel);
+    Then('Read as offers {string}, {string}, {string} and {string} with {string} chosen', (_, a: string, b: string, c: string, d: string, chosen: string) => offers([a, b, c, d], chosen));
+    When('he taps {string} and confirms with {string}', async (_, first: string, confirm: string) => {
+      await tap(null, first);
+      await tap(null, confirm);
+    });
+    Then('Read as offers {string}, {string} and {string} with {string} chosen', (_, a: string, b: string, c: string, chosen: string) => offers([a, b, c], chosen));
   });
 });
