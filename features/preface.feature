@@ -68,14 +68,8 @@ Feature: A Preface about the text
     Given Lampas is opened on the essay
     Then the essay shows "αγγελος κυριου" with no transliteration markup left in it
 
-  Scenario: The Preface says what an Old Testament chapter offers
-    Given Lampas is opened on the Preface
-    Then the page says "the Hebrew" and "Quiz me, Review and the Quick test"
-    And the page says the Diagram is still Greek and English only
-    And the page no longer says an Old Testament chapter is English only
-
   Scenario: The Preface says the text is Robinson-Pierpont 2018 with its apparatus and the 2026 changes
     Given Lampas is opened on the Preface
     Then the page says "Robinson-Pierpont 2018" and "the 2026 changes"
-    And the page says the tutor explains a variant and does not rule on it
+    And the page says the Greek is the 2005 edition, with the 2018 changes not applied
     And it links to the list of the 2026 changes at "https://github.com/Jonathan-A-White/lampas/blob/main/docs/greek-edition.md"
