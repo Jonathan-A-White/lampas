@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.28
+_2026-10-29_
+- Fixed: The line under "Read as" in Settings now says what the chosen reading set reads, instead of always describing ECM.
+
 ## 0.7.27
 _2026-10-29_
 - Fixed: A word you had saved or practised under one of four Greek words whose entries had run two forms together (such as Ἕλλην) is now found again under its proper headword, with your history kept.
