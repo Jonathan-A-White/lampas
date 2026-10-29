@@ -677,6 +677,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           reference={`${bookOf(BOOK)?.name ?? BOOK} ${CHAPTER}:${variantShown.unit.v}`}
           place={{ book: BOOK, chapter: CHAPTER, verse: variantShown.unit.v }}
           verse={chapter?.verses.find((v) => v.n === variantShown.unit.v)}
+          lang={source}
           onLook={setLookup}
           onClose={() => setVariantShown(null)}
           onRead={

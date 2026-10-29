@@ -126,7 +126,7 @@ test('a tap on the siglum of the brace at Revelation 3:2 opens the sheet with bo
   expect(await readings.count()).toBeGreaterThanOrEqual(2);
   // the text's own reading, then the other: each in Greek and in English
   await expect(readings.first().locator('[data-reading-greek]')).toHaveText(/\S/);
-  await expect(readings.first().locator('[data-reading-english]')).toHaveText(/\S/);
+  await expect(readings.first().locator('[data-reading-english]').first()).toHaveText(/\S/);
   await expect(readings.nth(1).locator('[data-reading-greek]')).toHaveText('τήρησον');
   await expect(readings.nth(1).locator('[data-reading-english]')).toHaveText('keep');
   // the witness spelled out, one line each
@@ -565,6 +565,43 @@ test.describe('a siglum stays on the line of the last word of its reading', () =
       });
     }
   }
+});
+
+// Where the English comes from (mw-9ji6ek0.29): Matthew 3:3 reads 'spoken of through the prophet' on the page (the MSB's word, the NA reading), and the card used to say the text reads 'by' (the
+// model's rendering of ὑπὸ) with no source on either. Now the card's 'The text reads' shows the page's 'through' captioned MSB, the model's 'by' under its own caption, and the captions are
+// on the card only: the verse text carries none. Shot: shots/variants-sheet-source.png.
+test('Matthew 3:3: the card names where each English line comes from, and the verse text carries no caption', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=mat&c=3');
+  await expect(page.locator('[data-verse="3"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'English').click();
+  const verse = page.locator('[data-verse="3"]');
+  await expect(verse).toContainText('spoken of through');
+  await expect(page.locator('[data-english-source]')).toHaveCount(0);
+  await verse.locator('[data-brace] [data-witness]').first().click();
+
+  const sheet = page.getByRole('dialog', { name: 'Variant reading' });
+  await expect(sheet).toBeVisible();
+  const own = sheet.locator('[data-variant-reading]').first();
+  await expect(own.locator('[data-reading-greek]')).toHaveText('ὑπὸ');
+  await expect(own.locator('[data-reading-english]')).toHaveText(['through', 'by']);
+  await expect(own.locator('[data-english-source]')).toHaveText(['MSB', 'Lampas (AI)']);
+  const other = sheet.locator('[data-variant-reading]').nth(1);
+  await expect(other.locator('[data-reading-english]')).toHaveText('through');
+  await expect(other.locator('[data-english-source]')).toHaveText('Lampas (AI)');
+  // every English line is followed by its caption
+  for (const p of await sheet.locator('[data-reading-english]').all()) await expect(p.locator('xpath=following-sibling::*[1][@data-english-source]')).toHaveCount(1);
+  // a caption is a 44 px target, and a tap says what the source is
+  const box = await own.locator('[data-english-source]').first().boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  await own.locator('[data-english-source]').first().click();
+  await expect(sheet.locator('[data-english-source-says]')).toContainText('Majority Standard Bible');
+  await shot(page, 'variants-sheet-source');
+  await sheet.getByRole('button', { name: 'The sources, in the Preface' }).click();
+  await expect(page).toHaveURL(/#\/preface$/);
+  await expect(page.getByRole('heading', { name: 'Preface' })).toBeVisible();
 });
 
 // An omission unit marks the text (mw-9ji6ek0.30): Matthew 2:22 'reigning in {left out NA} Judea', where NA has no ἐπὶ. The MSB gives ἐπὶ no chunk of its own ('was reigning in' holds βασιλεύει),

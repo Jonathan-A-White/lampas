@@ -2,11 +2,11 @@
 // unit, each in Greek and in English, the witness of each spelled out one line apiece (src/reader/witness.ts), and Ask the tutor, which opens the verse's talk as the Verse view's
 // Ask does (the tutor's own variant story comes later), and under the readings 'Go deeper' (src/reader/goDeeper.ts, mw-9ji6ek0.20): the lessons, the apparatus, the 2005 edition and his Logos
 // Greek texts at the verse. Each reading has 'Read this' (mw-9ji6ek0.24): it lays that reading into the text in place and closes the sheet; the one in place says 'Reading this'. Each word of a reading's Greek and English lines is a Tap like a word of the text and opens the word card over the sheet (mw-9ji6ek0.22). Done, Back, Escape, a swipe down or a tap outside close it. A portal: the brace is in the Reader's scrolling text.
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import type { Verse } from '../data/chapter';
+import type { SourceLanguage, Verse } from '../data/chapter';
 import { AnotherBookButton } from '../library/InLogosDoors';
-import { openVariantLesson } from '../nav/route';
+import { navigate, openVariantLesson } from '../nav/route';
 import { GREEK_LANG } from '../script/greekLang';
 import { focusOnMount } from '../ui/focus';
 import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
@@ -14,6 +14,7 @@ import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { APPARATUS_LABEL, EDITION_2005, GO_DEEPER_ENTRIES, GO_DEEPER_HEADING, LESSONS_LABEL, LOGOS_LABEL, apparatusUrl, goDeeperPlace } from './goDeeper';
 import type { Lookup } from '../WordSheet';
 import { sayWord } from './sayWord';
+import { SOURCE_CAPTION, SOURCE_LINK, SOURCE_SAYS, textReadsEnglish, unitSource, type EnglishLine, type EnglishSource } from './englishSource';
 import { Tap, TAP_PAD } from './Tap';
 import { BASE } from './readingSets';
 import { braceReadings, type ShownUnit } from './variants';
@@ -75,22 +76,96 @@ function ReadThis({ inPlace, onRead }: { inPlace: boolean; onRead?: () => void }
   );
 }
 
-function Reading({ label, greek, english, lines, actions, leftOut, foot }: { label: string; greek: string; english: string; lines?: string[]; actions?: WordActions; leftOut?: string; foot?: ReactNode }) {
+/** The small muted caption under an English line: where the words come from. A tap says in one line what the source is, with a link to the Preface. */
+function SourceCaption({ source, open, onToggle }: { source: EnglishSource; open: boolean; onToggle: () => void }) {
+  return (
+    <>
+      <button
+        type="button"
+        data-english-source={source}
+        aria-expanded={open}
+        onClick={onToggle}
+        className="-mt-1 flex min-h-11 items-center text-sm text-muted underline decoration-dotted underline-offset-4"
+      >
+        {SOURCE_CAPTION[source]}
+      </button>
+      {open ? (
+        <div data-english-source-says="" className="pb-1 text-sm text-muted">
+          <p>{SOURCE_SAYS[source]}</p>
+          <button
+            type="button"
+            onClick={() => {
+              closeAllSheets();
+              navigate('preface');
+            }}
+            className="flex min-h-11 items-center text-base font-medium text-accent underline"
+          >
+            {SOURCE_LINK}
+          </button>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+/** Every English line of a reading names its source: the lines are the reading's English, each with its source and the actions of a tap on its words. */
+interface ReadingEnglish extends EnglishLine {
+  actions?: WordActions;
+}
+
+function Reading({
+  label,
+  greek,
+  english,
+  lines,
+  actions,
+  leftOut,
+  leftOutSource,
+  foot,
+  openSource,
+  onSource,
+}: {
+  label: string;
+  greek: string;
+  english: ReadingEnglish[];
+  lines?: string[];
+  actions?: WordActions;
+  leftOut?: string;
+  leftOutSource?: EnglishSource;
+  foot?: ReactNode;
+  openSource: string | null;
+  onSource: (key: string | null) => void;
+}) {
+  const caption = (source: EnglishSource, key: string) => <SourceCaption source={source} open={openSource === key} onToggle={() => onSource(openSource === key ? null : key)} />;
   return (
     <section data-variant-reading="" className="border-t border-line py-3">
       <h3 className="pb-1 text-base font-medium text-muted">{label}</h3>
       {leftOut ? (
-        <p data-left-out="" lang="en" className="text-lg text-fg">
-          {leftOut}
-        </p>
+        <>
+          <p data-left-out="" lang="en" className="text-lg text-fg">
+            {leftOut}
+          </p>
+          {leftOutSource ? caption(leftOutSource, `${label}:out`) : null}
+        </>
       ) : (
         <>
           <p data-reading-greek="" {...(greek ? GREEK_LANG : { lang: 'en' })} className={greek ? 'font-greek text-2xl text-fg' : 'text-lg italic text-muted'}>
             {greek ? <Words text={greek} language="greek" actions={actions} /> : LEFT_OUT}
           </p>
-          <p data-reading-english="" lang="en" className={english ? 'text-lg text-fg' : 'text-lg italic text-muted'}>
-            {english ? <Words text={english} language="english" actions={actions} /> : LEFT_OUT}
-          </p>
+          {english.length ? (
+            english.map((line, i) => (
+              <Fragment key={i}>
+                <p data-reading-english="" {...(line.verse ? { 'data-in-verse': '' } : {})} lang="en" className="text-lg text-fg">
+                  <Words text={line.text} language="english" actions={line.actions} />
+                </p>
+                {caption(line.source, `${label}:${i}`)}
+              </Fragment>
+            ))
+          ) : (
+            <p data-reading-english="" lang="en" className="text-lg italic text-muted">
+              {LEFT_OUT}
+            </p>
+          )}
         </>
       )}
       {lines?.map((line) => (
@@ -146,12 +221,15 @@ interface SheetProps {
   onLook?: (lookup: Lookup) => void;
   onClose: () => void;
   onAsk?: () => void;
+  /** the language the unit's chapter is in: an Old Testament card (Hebrew) names the Berean Standard Bible as the English's source, the New Testament's the Majority Standard Bible */
+  lang?: SourceLanguage;
   /** lays a reading into the text in place: the index of the alternative in the unit's `alts`, BASE (-1) for the text's own; without it no reading has Read this */
   onRead?: (index: number) => void;
 }
 
-function Sheet({ shown, reference, place, verse, onLook, onClose, onAsk, onRead }: SheetProps) {
+function Sheet({ shown, reference, place, verse, lang, onLook, onClose, onAsk, onRead }: SheetProps) {
   const { drag, handle } = useSheetDrag(onClose);
+  const [openSource, setOpenSource] = useState<string | null>(null);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   const others = readingsOf(shown);
@@ -191,8 +269,10 @@ function Sheet({ shown, reference, place, verse, onLook, onClose, onAsk, onRead 
           <Reading
             label="The text reads"
             greek={shown.unit.base}
-            english={shown.unit.english.base}
+            english={textReadsEnglish(shown.unit, verse, lang).map((line) => ({ ...line, actions: actionsFor({ ...own, english: line.text }) }))}
             actions={actionsFor(own)}
+            openSource={openSource}
+            onSource={setOpenSource}
             foot={onRead && shown.chosen !== undefined ? <ReadThis inPlace={false} onRead={() => onRead(BASE)} /> : undefined}
           />
           {others.map((r, i) => (
@@ -200,9 +280,12 @@ function Sheet({ shown, reference, place, verse, onLook, onClose, onAsk, onRead 
               key={i}
               label={others.length > 1 ? `Other reading ${i + 1}` : 'Other reading'}
               greek={r.greek}
-              english={r.english}
+              english={r.english ? [{ text: r.english, source: unitSource(shown.unit, lang), actions: actionsFor({ greek: r.greek, english: r.english, g: tagged[i]?.g }, tagged[i] ? variantLabel(tagged[i].chips) : undefined) }] : []}
+              openSource={openSource}
+              onSource={setOpenSource}
               lines={r.lines}
               actions={actionsFor({ greek: r.greek, english: r.english, g: tagged[i]?.g }, tagged[i] ? variantLabel(tagged[i].chips) : undefined)}
+              leftOutSource={shown.unit.english.base ? unitSource(shown.unit, lang) : undefined}
               leftOut={r.greek ? undefined : leftOutLine(tagged[i]?.chips ?? [], shown.unit.english.base, shown.unit.base)}
               foot={
                 onRead && !r.apart ? <ReadThis inPlace={shown.chosen !== undefined && r.indexes.includes(shown.chosen)} onRead={() => onRead(r.index)} /> : undefined
