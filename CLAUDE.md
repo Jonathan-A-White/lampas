@@ -51,7 +51,7 @@ npm run data:build   # also check:step, greek:edition, ladder, fixture:chapter: 
 
 ## Grinds and their examples
 
-Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-talk and verse-ask, instructions in one part per section: read docs/grinds.md before you touch `grinds/`.
+Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-talk, instructions in one part per section: read docs/grinds.md before you touch `grinds/`.
 
 **When you change a grind's behaviour (its instructions, schemas, or what the app sends), update or add its examples in the same story. A new grind ships with an input schema and at least one example.**
 
@@ -84,7 +84,7 @@ Which file holds what is in `docs/layout/`, one file per area (listed under Read
 
 ## What the tutor is told
 
-VISION.md 'The tutor': the tutor is told, on every ask, each app setting and each part of his progress that could change its answer. `src/tutor/knows.ts` is the table of what each grind (bible-talk, verse-ask, verse-read, tips) is sent, with a written reason for each thing it is not; a new setting is classified in its `BEARS_ON` and `tests/unit/tutor-knows.test.ts` fails until it is sent or has a reason (docs/ask-tutor.md 'The tutor knows what bears on its answer').
+VISION.md 'The tutor': the tutor is told, on every ask, each app setting and each part of his progress that could change its answer. `src/tutor/knows.ts` is the table of what each grind (bible-talk, verse-read, tips) is sent, with a written reason for each thing it is not; a new setting is classified in its `BEARS_ON` and `tests/unit/tutor-knows.test.ts` fails until it is sent or has a reason (docs/ask-tutor.md 'The tutor knows what bears on its answer').
 
 ## Conventions
 
@@ -126,7 +126,7 @@ docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another a
 docs/overview.md # the one-screen overview: read first
 docs/accessibility.md # the axe check over the eight main screens, what a screen must meet, the rules left out and why
 docs/commands.md # the long notes of the Quick reference: Playwright projects, e2e:live, grind:build, the data tools
-docs/grinds.md # grinds' examples and the bible-talk / verse-ask instruction parts: how to change one
+docs/grinds.md # grinds' examples and the bible-talk instruction parts: how to change one
 docs/pwa-best-practices.md # copied verbatim from the vault; the law for every screen
 docs/example-words.md # the owner's own BMA word list (public, an example template); the seed's source
 docs/testing.md # the gate's test seam: where the device key lives and how a test seeds it

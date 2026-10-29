@@ -162,7 +162,7 @@ That gives Jonah 1:1 `JONAHSTRAVELS-EN` before `BIBLICALWORLDDIVIDEDKINGDOM-EN`,
 
 ## The tutor brings up maps (mw-zbjgn3r.4)
 
-The Bible talk (not verse-ask) tells the tutor the maps of the passage it holds and may answer with a link to one.
+The Bible talk tells the tutor the maps of the passage it holds and may answer with a link to one.
 
 - **The request**: `maps`, built by `mapsForTutor(cards, text?)` (`src/maps/forTutor.ts`) from `mapsFor` of the talk's chapter (read in `src/useTalk.ts`, handed to `buildTalkRequest`): each card as `{ id, source, title, period, places }` (`source` is the `MapSource.id`, `biblemapper` or `logosatlas`), at most `MAX_TUTOR_MAPS` (12). A video is left out (a map link opens a map in the app, a video is a page in the browser).
   **Two sources (mw-zbjgn3r.8).** A card with `open` (a link-only source's row) is listed after Bible Mapper's ranked cards, at most `MAX_TUTOR_LINK_ROWS` (2) of them, with `places` empty and its title ending ` (opens in Logos)`: the title says where it opens, so the instructions need no rule and no bytes. The two rows keep their lines when Bible Mapper has more than ten cards (10 and 2 of the 12).

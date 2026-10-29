@@ -89,7 +89,7 @@ Modern Greek's is the bare letter in lower case, which a Greek voice names the m
 
 `tutorGuide(say)` (mw-5r3p30.268), read as `tutorGuideOf(scheme)`, is what the tutor is told of the scheme: its name and the sound rules it respells and speaks by. Every tutor ask
 that may speak of a sound sends it as `pronunciation_guide` beside `pronunciation` (the id): bible-talk (`buildTalkRequest`; a full record
-drops it before the history, except on a sound question), verse-ask (`buildRequest`) and verse-read (`buildReadingRequest`). The grinds'
+drops it before the history, except on a sound question), and verse-read (`buildReadingRequest`). The grinds'
 instructions name no sound and no scheme of their own: they say to describe every sound by `pronunciation_guide`. The grind examples carry
 Modern Greek's guide, in American English, word for word.
 
@@ -129,9 +129,9 @@ built afterwards is said in it. IPA is the third accent table (`src/speech/accen
 `keyed('o')` is 'o, /o/' and a guide's vowels are 'each by its IPA symbol, with no English word' (`EnglishAccent.hintedBy`). It is the one accent that
 shows the ids (PROVISIONAL label; the Governor to confirm). Teaching the standard rigorously, not only showing it, is the optional course Learn the IPA sounds (below).
 
-The tutor is told it: every grist (`bible-talk`, `verse-ask`, `verse-read` and the form helper's) carries `english_accent` (`american | british | ipa`), the
+The tutor is told it: every grist (`bible-talk`, `verse-read` and the form helper's) carries `english_accent` (`american | british | ipa`), the
 `pronunciation_guide` is already said in it, and the three grinds' instructions say to give sound examples and respellings for that accent
-(`tests/unit/english-accent-setting.test.ts`; examples `grinds/examples/bible-talk/sound-it-out-british.json`, `verse-ask/sound-of-a-word-ipa.json`).
+(`tests/unit/english-accent-setting.test.ts`; examples `grinds/examples/bible-talk/sound-it-out-british.json`).
 
 ## Learn the IPA sounds, the optional course (mw-5r3p30.356, mw-gdcyf98.24, PROVISIONAL)
 

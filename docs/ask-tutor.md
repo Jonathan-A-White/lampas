@@ -52,12 +52,11 @@ The answer's `links` (at most three, `MAX_LINKS`) take a third kind (mw-5r3p30.5
 ## The tutor knows what bears on its answer (mw-5r3p30.242)
 
 His rule (VISION.md, 'The tutor'): the tutor is told, on every ask, each app setting and each part of his progress that could change its answer.
-`src/tutor/knows.ts` is the table: for each grind (bible-talk, verse-ask, verse-read, tips) the settings and the parts of his progress its request carries,
+`src/tutor/knows.ts` is the table: for each grind (bible-talk, verse-read, tips) the settings and the parts of his progress its request carries,
 and the written reason for each one it does not. Every registry setting has an entry in `BEARS_ON` (speech, language, level, quiz goal, study way, or `screen` for
 one that only changes how the app looks); `tests/unit/tutor-knows.test.ts` fails when one that bears on an answer is in no grind's request without a reason, when a new
 setting has no entry, when a field a row names is not in the grind's input schema, and when a builder does not send what its row says.
-The Greek pronunciation (`pronunciation`, its id) reaches bible-talk, verse-ask and verse-read; verse-ask's `settings` carries the settings the table puts there
-(`settingsSentTo('verse-ask')`). A new setting is classified in `BEARS_ON` and, if it bears on an answer, added to each grind's request or given a reason.
+The Greek pronunciation (`pronunciation`, its id) reaches bible-talk and verse-read. A new setting is classified in `BEARS_ON` and, if it bears on an answer, added to each grind's request or given a reason.
 
 ## The heart of the word (mw-bsf54t.14)
 
@@ -142,7 +141,7 @@ Which tutor conversations name a talk (the sweep of mw-pxji7y.3):
 | A drill's results | `screen.drill-it.<ms>`, one talk for each drill | yes |
 | A shared talk, Ask for more | `talk.<ms>` (free) | yes |
 | The welcome interview | `screen.welcome` | yes in code (the interview is a few turns) |
-| The Verse view's Ask the tutor (verse-ask) | none: one question and its answer in `answers` | no: `TALK_KINDS` leaves verse-ask out |
+| The Verse view's Ask the tutor (the Talk sheet's bible-talk, since mw-5r3p30.842; the verse-ask grind was retired in mw-5r3p30.850) | the talk's turns | yes |
 | FormHelper (Let the tutor do it) | none: its turns live in the component, not in Dexie, so there is no first-turn time | no (a name would be made per opening of the helper; a story of its own) |
 | Reading check, Reading drill, Tips, find-refs, audible-position, drill-items, feedback | none: one request each | no |
 
@@ -237,14 +236,14 @@ What a request keeps on the phone (mw-5r3p30.794): a tutor-ask keeps the tutor's
 
 #### The tutor knows his requests (mw-vy3ghg.6)
 
-Every verse-ask and bible-talk request carries `requests`: the 10 newest rows, newest first, each `{summary, status, version?, setting?, reason?}`
+Every bible-talk request carries `requests`: the 10 newest rows, newest first, each `{summary, status, version?, setting?, reason?}`
 (`src/data/requestsForTutor.ts` `requestsForTutor` / `requestsOf`; the status is `sent` or a record's `filed`, `building`, `landed`, `declined`,
 `adopted-as-setting`, `built-differently` (with its `reason`, how it was done instead) or `moved` (now part of another story: no reason, no bead), and a line holds only the field its status carries; a grammar approach is named by his words; texts are cut to 120/80/40
 characters so ten lines stay a few KB). Both input schemas take it (`maxItems` 10), it is missing when he has sent none and in About (whose request is the
 credits), and `fitHistory` drops the oldest lines when nothing is left of the history to cut. Both grinds' instructions have '## His requests': answer
 'what happened to my idea' from it, status by status, never inventing one. For `adopted-as-setting` the Talk puts the change in `setting_offer` (his tap
-or his yes makes it; `settings_changes` only when he asks in words); verse-ask can change only Ask by, so for any other setting it says where Settings has it.
-Scenarios: `features/tutor-requests.feature`, `grinds/examples/{bible-talk,verse-ask}/request-<status>.json`.
+or his yes makes it; `settings_changes` only when he asks in words).
+Scenarios: `features/tutor-requests.feature`, `grinds/examples/bible-talk/request-<status>.json`.
 
 The whole loop is walked at 390x844 by `tests/e2e/feedback-loop-demo.spec.ts` (mw-vy3ghg.7: three requests sent, the fake mill's filed, building, landed with its link, declined and adopted-as-setting, then 'What happened to my idea?'; shots `your-requests-demo-1-sent` to `-6-tutor`). Live: he sends from the tutor, the Mayor runs `mw grist request <bead> <txid>`, and Your requests moves on its own.
 
@@ -308,15 +307,15 @@ briefly at his level first, so he is never refused.
   'diphthong'; at most three, the highest on the ladder) and `missingFoundations(question, levels, term)` walks `ideasBelow` them (LADDER `needs`, however far down) and keeps the ideas whose level is not yet or not at all (a
   frontier idea is being learned, so it is met; a letter, a pair or a breathing is named by its group idea, `alphabet`...). The request carries it as `missing_foundations` `{topic, total, ideas}`, the lowest on the ladder
   first (at most eight; `total` counts all; `direct` marks what the topic itself names as a need). `ideas[0]` is the next step. No topic named, or nothing missing under it: no field, and no bridge.
-- **What the tutor answers**: an optional `bridge` `{missing, next, why}` in the bible-talk and verse-ask answers: one to three ids (an enum generated from `LADDER` by `npm run grind:build`, so the schema refuses an idea the ladder
-  lacks; `isTalkAnswer` and `isVerseAnswer` refuse too), most important first, `next`, and one plain line why. More than three missing: the answer says 'you are missing quite a bit' and lists exactly three. The instructions
+- **What the tutor answers**: an optional `bridge` `{missing, next, why}` in the bible-talk answer: one to three ids (an enum generated from `LADDER` by `npm run grind:build`, so the schema refuses an idea the ladder
+  lacks; `isTalkAnswer` refuses too), most important first, `next`, and one plain line why. More than three missing: the answer says 'you are missing quite a bit' and lists exactly three. The instructions
   ('When he is not ready for the question') tell it to pick from `missing_foundations` only.
 - **What the app does with it** (`resolveBridge`): without the device's list the bridge is dropped (the model does not guess); the ideas shown are the tutor's that the device listed (three at most, else the first three of the
   device's list); the idea 'Take me there' opens is `missing_foundations.ideas[0]` whatever the model said. The turn keeps it (`TalkTurn.bridge`; a verse answer's `TutorAnswer.bridge`) and `src/talk/BridgeOffer.tsx` draws
   the ideas, the why and **Take me there: <title>**. The block shows the bridge as it stands now (`liveBridge`, with his levels): an idea he has taken up since (Learning or solid) is no longer listed, the button moves on to the lowest idea still lacking, and when none is left the block is gone (mw-1vuvq6.11); a spoken yes carries the same text (`pendingOfferOf(turns, levels)`). A tap, or a spoken yes (`pending_offer` of kind `bridge`, `settleOffer` -> `takeBridgeOffer`, the same function the button calls), opens that idea's sheet
   (`src/IdeaSheet.tsx`) over the talk (`openBridgeIdea`, module state, so a tap and a yes for the same turn leave one sheet open). Done or the phone's Back closes it and the talk is there as it was; the
   button stays to open it again, and a yes to it on the talk's newest turn still carries `pending_offer` and opens it (`takenOfferOf` in `offers.ts`, the same for a taken Greek or rust offer; mw-1vuvq6.8). The talk is not a quiz (no bridge in Quiz me). The bridged idea becomes his frontier only if he starts it there (Got it).
-- Tests: `features/talk-bridge.feature`, `tests/unit/bridge.test.ts`, examples `grinds/examples/bible-talk/bridge-*.json` and `grinds/examples/verse-ask/bridge-quite-a-bit.json`.
+- Tests: `features/talk-bridge.feature`, `tests/unit/bridge.test.ts`, examples `grinds/examples/bible-talk/bridge-*.json`.
 
 ## Rust: he comes back and is rusty (mw-1vuvq6.6, PROVISIONAL)
 
@@ -324,7 +323,7 @@ His words (12 Oct 2026): a person is not always going forward; he takes a break,
 
 - **What the device works out** (`src/data/rusty.ts`, pure; `src/data/learnerRusty.ts` reads the store): a SOLID word or idea is **rusty** when a wrong answer is among its last 3 answers (`Review.recent`, kept beside the schedule by
   `writeReview`; a row from before has none), or when it is 7 or more days past its due date (a 30-day step is meant to be rare, so only an overdue item counts). The request carries up to 8 as `rusty` `[{kind: 'word' | 'idea', id, title, why}]`,
-  worst first (most slips, then the longest unseen); `why` is plain: 'slipped twice this week', 'slipped lately', 'not seen for 3 weeks'. Missing when nothing is rusty, and in a quiz. It goes in the bible-talk and verse-ask requests
+  worst first (most slips, then the longest unseen); `why` is plain: 'slipped twice this week', 'slipped lately', 'not seen for 3 weeks'. Missing when nothing is rusty, and in a quiz. It goes in the bible-talk request
   (`tests/unit/tutor-knows.test.ts`: verse-read and tips have a written reason they are not sent it). The thresholds are constants at the top of `src/data/rusty.ts`; all PROVISIONAL.
 - **What the tutor says** (`grinds/bible-talk.instructions/` 'When he has gone rusty'): when it fits the talk, once, plainly ('You're rusty on X and Y: they were solid before'), and leaves ONE `rusty_offer` `{items: [{kind, id}]}`.
   The verse-ask tutor may mention it in its answer; it leaves no button (the Talk is where the app offers).
@@ -335,7 +334,7 @@ His words (12 Oct 2026): a person is not always going forward; he takes a break,
   no screen yet, so the practice is a Review round.
 - **Welcome back** (`src/WelcomeBack.tsx`): opening the app when the latest day before today with any use (`lastUsageDayBefore`, the usage log) is 7 or more days ago, and some solid item is past its due date, draws a strip with the
   most overdue (`overdueOf`, at most 5), **Refresh** (a Review round of just those) and **Not now** (put away for the day, localStorage `lampas.welcomeBackDay`; Refresh puts it away too). The strip is in the shell's flow and `relative z-60`, so the Verse view and the sheets do not cover it (`tests/e2e/shell-bars-over-views.spec.ts`).
-- Tests: `features/tutor-rust.feature`, `features/welcome-back.feature`, `tests/unit/rusty.test.ts`, `tests/unit/rusty-store.test.ts`, examples `grinds/examples/bible-talk/rusty-*.json` and `grinds/examples/verse-ask/rusty-mentioned.json`.
+- Tests: `features/tutor-rust.feature`, `features/welcome-back.feature`, `tests/unit/rusty.test.ts`, `tests/unit/rusty-store.test.ts`, examples `grinds/examples/bible-talk/rusty-*.json`.
 
 ## Today: the tutor sees the day's list (mw-5r3p30.731, PROVISIONAL)
 
@@ -353,12 +352,12 @@ Hold to talk and Hold to ask use the phone's recogniser in en-US, so a Greek wor
 typed one, or one he edited after speaking, has no such field. `wasSpoken` is asked once, as the message is sent (`useTalk.say`), and forgets the words, so the same words typed after are his typing (mw-5r3p30.333); Retry sends the same text and so stays marked (the failed line in `pendingAsks` keeps `spoken`). Both grinds' instructions
 ('## Greek words said in English speech') tell the tutor to match the sound-alike to the passage's Greek words and lemmas, answer about the best
 match and say in one line which word it took ('I took "Tech N9ne" as τεκνίον.') rather than ask first (PROVISIONAL). Scenario:
-grinds/examples/{bible-talk,verse-ask}/spoken-greek-word.json.
+grinds/examples/bible-talk/spoken-greek-word.json.
 
 ## What he said, cleaned up
 
 He often speaks his question, so the words that reach the grist can have no punctuation, an "um", a repeat or a dropped start. Both tutor grinds
-that take a question (`bible-talk` and `verse-ask`) give it back as the answer's `question` (their instructions' "Cleaning up what he said"): his
+that take a question (`bible-talk`) gives it back as the answer's `question` (their instructions' "Cleaning up what he said"): his
 words with capitals and punctuation, the fillers, repeats and false starts taken out, the meaning unchanged. The Talk sheet's turn
 (`TalkTurn.cleanQ`) and the Verse view's answer card (`TutorAnswer.cleanQuestion`, `[data-answer-question]`) show that in place of the raw
 transcript; the raw words stay kept as `q` / `question` (and `q` is what goes in the next request's history). An answer with no `question`, such as
@@ -478,7 +477,7 @@ Checks: `tests/unit/exchange.test.ts`, "Copy on an answer card ..." and "With se
 
 ## What the tutor can see (mw-t3xu9a.4, PROVISIONAL)
 
-The Governor's words (2026-10-19 and 2026-10-22): everything in the app is an API; the tutor asks the app for what it needs and has it do what he wants. The first slice is the read side. `src/tutor/registry.ts` is Lampas's registry for voice-kit's tutor client (`@voice-kit/talks` `createTutorClient`, README 'The tutor client'): named FACTS the app reads, and PLACES it opens. The client adds two fields to a request, `facts` (the core facts, and the screen's up-front list once the weights tune one, mw-t3xu9a.8) and `catalogue` (every fact and place with its tell line, sorted), and passes every field the request carried before through untouched (`withTutorFacts` for the Bible talk, `askWithFacts` for the verse ask; `tests/unit/talk-request.test.ts` holds the field names and values equal). The Bible talk's input schema holds `facts`, `catalogue` and, in a follow-up, `asked` (request DATA, never instructions); the instructions teach their use through the kit's part (mw-t3xu9a.5, 'The tutor asks back, does, goes and misses').
+The Governor's words (2026-10-19 and 2026-10-22): everything in the app is an API; the tutor asks the app for what it needs and has it do what he wants. The first slice is the read side. `src/tutor/registry.ts` is Lampas's registry for voice-kit's tutor client (`@voice-kit/talks` `createTutorClient`, README 'The tutor client'): named FACTS the app reads, and PLACES it opens. The client adds two fields to a request, `facts` (the core facts, and the screen's up-front list once the weights tune one, mw-t3xu9a.8) and `catalogue` (every fact and place with its tell line, sorted), and passes every field the request carried before through untouched (`withTutorFacts` for the Bible talk; `tests/unit/talk-request.test.ts` holds the field names and values equal). The Bible talk's input schema holds `facts`, `catalogue` and, in a follow-up, `asked` (request DATA, never instructions); the instructions teach their use through the kit's part (mw-t3xu9a.5, 'The tutor asks back, does, goes and misses').
 
 | Fact | Core | It reads |
 |------|------|----------|
@@ -493,7 +492,6 @@ The Governor's words (2026-10-19 and 2026-10-22): everything in the app is an AP
 | `memorizeEvidence` | no | every recall (`memorizingEvidenceNow`): the one-line `summary` and the `evidence` (src/memorize/evidence.ts) |
 | `verse-lists` | no | his verse lists as the Verse lists screen shows them, newest first (mw-t3xu9a.10): each list's `id`, `name` and `count` of references, no references (the id is the place `lists`' `id`) |
 
-The verse ask has a smaller set (`askRegistry`): the three core facts, with `settings` the settings that grind is told (`settingsSentTo('verse-ask')`), and no place.
 
 - The client's part gives way before anything of his talk does (`src/tutor/fit.ts`, run first by `fitHistory`): the catalogue's tell lines from its end, then a fact that only repeats a field of the request (`settings`, and `today-drill` when `today` is there), then the catalogue, then the facts that are left, so a request the fit held to `MAX_REQUEST_BYTES` is cut exactly as it was before this story: the cap is kept for his text and turns (a long passage fills it, `features/quiz-me.feature`), and the facts are there when the request has room. `fitAsk` does the same for the verse ask. Making room for them (raising the cap, or letting the old fields give way to the facts) is not done.
 - The record of ask-backs and misses is the client's memory store, kept while the page lives. Keeping it across a reload, and the weights that tune the up-front list from it, are mw-t3xu9a.8.
@@ -708,7 +706,7 @@ index with the book note of the reference, the word note of the focus word and t
 
 ### The tutor reads and writes it (mw-yrmkdf.2)
 
-Every tutor grist (bible-talk, verse-ask, verse-read, tips) carries `memory` `{index, notes: [{name, text}]}` (`src/data/learnerMemory.ts`
+Every tutor grist (bible-talk, verse-read, tips) carries `memory` `{index, notes: [{name, text}]}` (`src/data/learnerMemory.ts`
 `learnerMemory`, over `selectNotes`; the Bible talk passes the talk's reference, the focus word's lemma and the screen's name, verse-ask and
 verse-read the verse's reference, tips only the index; missing when nothing is kept; not in About's credits request). The tutor is never asked which
 notes it wants: the app chooses by name. The grinds' instructions say to read the index first and use it quietly, as `learner_profile` is used, and never
@@ -720,7 +718,7 @@ names). `src/talk/memoryUpdate.ts applyMemoryFromAnswer`, called by `useTalk`, a
 `remove` is applied ONLY with `directed: true`, which the grind's instructions allow only when he asked for exactly that in his words of this turn; the
 app cannot hear his words, so an undirected one is refused and logged (`console.warn`) and the note is unchanged. That rule and the lines it answers with ('Added to X', 'Replaced X', 'Removed X', 'Did not change X: why') run in voice-kit/talks (`applyNoteUpdates`, mw-o480n1.7) over Lampas's `NoteStore` in `src/talk/memoryUpdate.ts` (book:/word:/topic: names through `memoryName`, 'index' to `appendToIndex`/`setIndex`); the answer guard is the kit's `isNoteUpdate` with Lampas's limits. `wished_notes` (names in the naming
 scheme) are counted and the last 20 names kept (`keepWishedNotes`, settings store key `memoryWished`); About shows 'Notes the tutor wished he had: N' with
-the names under it, and nothing else is sent for them. Examples: `grinds/examples/bible-talk/memory-update-wished.json`, `verse-ask/memory-quiet.json`,
+the names under it, and nothing else is sent for them. Examples: `grinds/examples/bible-talk/memory-update-wished.json`, 
 `verse-read/memory-partial-misread.json`, `tips/memory-index.json`; `features/memory-tutor.feature`, `tests/unit/memory-grist.test.ts`.
 
 ### The Greek offer (mw-yrmkdf.4)
@@ -770,7 +768,7 @@ profile on the phone only: age (a number or a band, as he writes it), pace (Quic
 day it was learned, edited or removed on the page). Every field is optional, each saves as he types, and Clear empties the whole page.
 
 It is kept in the settings store under `learnerProfile` (`src/data/repositories/profile.ts`) and goes out only as the request's `learner_profile`
-(`src/data/learnerProfile.ts`) on the four tutor grinds: bible-talk (not in About, whose request is the credits), verse-ask, verse-read and tips.
+(`src/data/learnerProfile.ts`) on the three tutor grinds: bible-talk (not in About, whose request is the credits), verse-read and tips.
 Only filled fields are sent, the notes as the newest six texts; with nothing filled the field is left out. The four input schemas hold the same
 bounds (`additionalProperties: false`), and each grind's instructions say how to use it ('Meeting him where he is'): pitch the pace and the
 way, never repeat it back, and ask for a missing part at most once a talk, pointing him to Settings > About you.
@@ -779,7 +777,7 @@ All four grinds are told the whole student (mw-1vuvq6.2): verse-read (`buildRead
 sent by `offerTip`) carry `learner` (the words line) and `learner_grammar` (the same object the talk is sent) beside `learner_profile`, built as
 `useAsks` builds them and left out when they cannot be read. Each grind's instructions pitch the answer to the three: age sets the wording and the
 examples, pace how much comes in one answer, ways of learning the activity offered, background the bridges, and a word or grammar idea he has not
-met is never built on without saying so. `grinds/examples/{bible-talk,verse-ask}/profile-*.json` answer one question for a slow, hands-on learner and
+met is never built on without saying so. `grinds/examples/bible-talk/profile-*.json` answer one question for a slow, hands-on learner and
 a quick reader; `tests/unit/tutor-meets-student.test.ts` holds all of it.
 
 ### Detect first, ask last (mw-1vuvq6.3)
