@@ -46,7 +46,7 @@ export function VerseLine(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, variantsOf, chosenOf, onVariant }: {
+export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, variantsOf, chosenOf, onVariant, onRp }: {
   verses: Verse[];
   view: ReaderView;
   source?: SourceLanguage;
@@ -63,6 +63,8 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
   /** the units of verse `n` with a reading laid in place (src/reader/chosenReading.ts) */
   chosenOf?: (n: number) => readonly ChosenUnit[] | undefined;
   onVariant?: (shown: ShownUnit) => void;
+  /** a tap on the 'RP 2026' mark (src/reader/Rp2026Mark.tsx) */
+  onRp?: (key: string) => void;
 }) {
   return (
     <p data-paragraph {...rowAttrs(view, source, isOrdered(woven))} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view, source)}`}>
@@ -77,7 +79,7 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
           >
             <sup className="text-xs font-semibold text-muted">{verse.n}</sup>
           </VerseNumber>
-          <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} />
+          <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} />
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}
@@ -108,7 +110,7 @@ export function SectionHeading({ text, onOpen, onCopy, mirrored }: { text: strin
  * block, each a [data-passage-text] with the Reader's face, size and leading, so src/index.css sets the book look and the weave's roomy lines block by block as it
  * does in the Reader. Each verse has a small number before it and the one being read is highlighted; the reading is followed down the box the view scrolls the
  * passage in (data-passage-box), by moving that box and nothing else. Each verse is the Reader's own VerseText, so the weave and the tappable words follow it. */
-export function PassageText({ passage, view, source = 'grc', layout, wovenOf, reading, onLook }: {
+export function PassageText({ passage, view, source = 'grc', layout, wovenOf, reading, onLook, onRp }: {
   passage: Passage;
   view: ReaderView;
   /** the language of the chapter's own words: a Hebrew chapter's blocks are tagged he and run right to left in the source view, not el */
@@ -117,6 +119,8 @@ export function PassageText({ passage, view, source = 'grc', layout, wovenOf, re
   wovenOf: (verse: Verse) => WovenVerse | null;
   reading: number | null;
   onLook: (lookup: Lookup) => void;
+  /** a tap on the 'RP 2026' mark (src/reader/Rp2026Mark.tsx) */
+  onRp?: (key: string) => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -134,7 +138,7 @@ export function PassageText({ passage, view, source = 'grc', layout, wovenOf, re
           {block.map((verse) => (
             <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
               <sup data-passage-number className="mr-1 font-sans text-xs font-semibold leading-[0] text-muted">{verse.n}</sup>
-              <VerseText verse={verse} view={view} source={source} woven={wovenOf(verse)} onLook={onLook} />
+              <VerseText verse={verse} view={view} source={source} woven={wovenOf(verse)} onLook={onLook} onRp={onRp} />
             </span>
           ))}
         </p>

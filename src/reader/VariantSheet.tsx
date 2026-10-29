@@ -5,6 +5,7 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { SourceLanguage, Verse } from '../data/chapter';
+import { wordOrderOnlyUnit } from '../data/variantVerse';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { navigate, openVariantLesson } from '../nav/route';
 import { GREEK_LANG } from '../script/greekLang';
@@ -24,6 +25,8 @@ import { readingsOf } from './witness';
 const LEFT_OUT = 'left out';
 export const READ_THIS = 'Read this';
 export const READING_THIS = 'Reading this';
+/** The line over Ask the tutor on a unit whose other readings are the text's own words in another order (mw-9ji6ek0.31). */
+export const WORD_ORDER_ONLY = 'Word order only: emphasis, not meaning';
 /** The one line under the readings that says what Read this does not change in this wave (the plan's Q6). */
 export const READ_THIS_NOTE = 'Read aloud, Read check and the diagram keep the Byzantine words; Copy, as you read it, gives your reading.';
 
@@ -307,6 +310,11 @@ function Sheet({ shown, reference, place, verse, lang, onLook, onClose, onAsk, o
             />
           ) : null}
         </div>
+        {wordOrderOnlyUnit(shown.unit) ? (
+          <p data-word-order-only="" className="pt-2 text-base text-muted">
+            {WORD_ORDER_ONLY}
+          </p>
+        ) : null}
         {onAsk ? (
           <button type="button" onClick={onAsk} className="mt-2 min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
             Ask the tutor

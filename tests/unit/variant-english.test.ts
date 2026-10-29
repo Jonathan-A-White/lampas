@@ -121,6 +121,13 @@ describe('the English of a unit changing', () => {
     expect(changesEnglish(english('the Lord', 'the lord'))).toBe(false);
     expect(plainEnglish('  Jesus’  Christ! ')).toBe('jesus christ');
   });
+
+  it('is false for a reading that is the base’s Greek words in another order, though its English reads differently (mw-9ji6ek0.31)', () => {
+    const greek = { base: 'αὐτοῦ ἦν', alts: [{ code: 'N' as const, text: 'ἦν αὐτοῦ' }] };
+    expect(changesEnglish(english('his was', 'was his'))).toBe(true);
+    expect(changesEnglish(english('his was', 'was his'), undefined, [], greek)).toBe(false);
+    expect(changesEnglish(english('his was', 'was his'), undefined, [], { ...greek, alts: [{ code: 'N' as const, text: 'ἦν αὐτῶν' }] })).toBe(true);
+  });
 });
 
 describe('the English of a unit changing, in its verse (mw-9ji6ek0.14)', () => {
@@ -228,7 +235,7 @@ describe('the committed data', () => {
   });
 
   it('has changesEnglish on every unit and a witness byz, na or ecm that agrees with its codes', () => {
-    const bad = all.filter(({ unit }) => typeof unit.changesEnglish !== 'boolean' || unit.witness !== witnessOf(unit.alts) || unit.changesEnglish !== changesEnglish(unit.english, verses.get(unit), unit.w));
+    const bad = all.filter(({ unit }) => typeof unit.changesEnglish !== 'boolean' || unit.witness !== witnessOf(unit.alts) || unit.changesEnglish !== changesEnglish(unit.english, verses.get(unit), unit.w, unit));
     expect(bad.map((b) => b.ref)).toEqual([]);
   });
 

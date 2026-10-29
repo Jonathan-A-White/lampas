@@ -32,6 +32,7 @@ export function Tap({ onTap, onLongPress, still, lang, dir, className, children,
   'data-marked'?: string;
   'data-variant'?: string;
   'data-chosen'?: string;
+  'data-rp2026'?: string;
   'data-brace-word'?: string;
   'data-sheet-word'?: string;
   /** the word's trailing space is a no-break space: the next thing (a variant's siglum) stays on the word's line (mw-9ji6ek0.16) */

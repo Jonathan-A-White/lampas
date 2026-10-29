@@ -6,7 +6,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import type { Chapter, GreekWord, VariantCode, VariantUnit, VariantWitness, Verse } from '../data/chapter';
-import { plainEnglish, sameInVerse } from '../data/variantVerse';
+import { plainEnglish, sameInVerse, wordOrderOnly } from '../data/variantVerse';
 import { getVariantsLastOn } from '../data/repositories';
 import { variantsSetting, variantWitnessesSetting } from '../settings/definitions';
 import { getActiveSet } from '../data/repositories';
@@ -44,7 +44,7 @@ export interface ShownReading {
   code: VariantCode;
   /** the reading's words one by one as the build tagged them (VariantReading.g); absent for a reading that leaves the words out or a unit without them */
   g?: readonly GreekWord[];
-  /** its English leaves the verse's English as the text's own does: the snippets agree, or (with the verse) the verse reads the same either way, case and punctuation aside */
+  /** its English leaves the verse's English as the text's own does: the snippets agree, or (with the verse) the verse reads the same either way, case and punctuation aside, or the reading is the text's own words in another order (wordOrderOnly) */
   sameEnglish: boolean;
   /** the reading is in pieces and cannot be laid over the text: no Read this */
   apart?: true;
@@ -64,7 +64,7 @@ export function shownReadings(unit: VariantUnit, filter: VariantFilter, verse?: 
   return unit.alts
     .map((alt, i): ShownReading => {
       const english = unit.english.alts[i] ?? '';
-      return { index: i, greek: alt.text, english, code: alt.code, ...(alt.g ? { g: alt.g } : {}), ...(alt.apart ? { apart: true as const } : {}), sameEnglish: sameInVerse(verse, unit.w, unit.english.base, english) };
+      return { index: i, greek: alt.text, english, code: alt.code, ...(alt.g ? { g: alt.g } : {}), ...(alt.apart ? { apart: true as const } : {}), sameEnglish: wordOrderOnly(unit.base, alt.text) || sameInVerse(verse, unit.w, unit.english.base, english) };
     })
     .filter((r) => r.index === keep || (RANK[WITNESS[r.code]] <= RANK[filter.witnesses] && (filter.english === 'all' || !r.sameEnglish)));
 }

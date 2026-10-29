@@ -49,7 +49,9 @@ import { canCross, crossChapter } from './reader/crossChapter';
 import { useBringVerse } from './reader/useBringVerse';
 import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
-import { readingModeSetting } from './settings/definitions';
+import { layRp2026English } from './data/rp2026English';
+import { Rp2026Sheet } from './reader/Rp2026Sheet';
+import { readingModeSetting, rp2026EnglishSetting } from './settings/definitions';
 import { useSheetOpen } from './ui/sheetBack';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
@@ -143,7 +145,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const settings = useReaderSettings(hbo ? 'hbo' : 'grc') ?? NO_SETTINGS;
   const { level, view, weave, weaveShown, weaveOrder, solid, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
-  const { chapter, failed, retry: retryChapter } = useChapter(BOOK, CHAPTER);
+  const { chapter: fetched, failed, retry: retryChapter } = useChapter(BOOK, CHAPTER);
+  // English from the 2026 Greek (mw-9ji6ek0.33): with it On, the places where the 2026 Greek changes the English read in Lampas's own words, marked; the chapter waits for the setting, as it waits for the others
+  const rp2026 = useSetting(rp2026EnglishSetting);
+  const chapter = useMemo(() => (fetched && rp2026 ? layRp2026English(fetched, rp2026) : null), [fetched, rp2026]);
+  const [rpShown, setRpShown] = useState<string | null>(null);
   // 'Loading …' that goes on 8 s (the chapter's fetch hangs, or the settings wait on a database an older tab blocks) offers Try again instead of a black screen (mw-5r3p30.846).
   const dbBlocked = useDbBlocked();
   const stillLoading = useStillLoading(!failed && !(chapter && view && layout && headings));
@@ -532,6 +538,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       variantsOf={variantsOf}
                       chosenOf={chosenOf}
                       onVariant={setVariantShown}
+                      onRp={setRpShown}
                     />
                   ) : (
                     <VerseLine
@@ -548,6 +555,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       variants={variantsOf(first.n)}
                       chosen={chosenOf(first.n)}
                       onVariant={setVariantShown}
+                      onRp={setRpShown}
                     />
                   )}
                 </Fragment>
@@ -640,9 +648,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 wovenOf={(v) => sheetWoven?.[chapter.verses.indexOf(v)] ?? null}
                 reading={readingVerse}
                 onLook={setLookup}
+                onRp={setRpShown}
               />
             ) : (
-              <VerseText verse={viewUnit} view={sheetView} source={source} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} />
+              <VerseText verse={viewUnit} view={sheetView} source={source} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} onRp={setRpShown} />
             )
           }
           previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
@@ -671,6 +680,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           lesson={viewLesson}
         />
       ) : null}
+      {rpShown ? <Rp2026Sheet entryKey={rpShown} onClose={() => setRpShown(null)} /> : null}
       {variantShown ? (
         <VariantSheet
           shown={variantShown}

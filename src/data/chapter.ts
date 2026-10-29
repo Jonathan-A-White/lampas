@@ -41,6 +41,11 @@ export interface EnglishChunk {
    * phone from before mw-5r3p30.102 says `s: 1`, the whole chunk; englishRuns reads that too.
    */
   s?: number[];
+  /**
+   * Set only by layRp2026English (src/data/rp2026English.ts, mw-9ji6ek0.33), never in a file: the key of the RP 2026 entry whose Lampas English this chunk
+   * holds in place of the MSB's. The Reader marks the chunk and a tap on the mark opens the entry's sheet.
+   */
+  rp?: string;
 }
 
 /** A run of a chunk's words that are all supplied, or all not. */
@@ -177,7 +182,7 @@ export interface VariantPlace {
 export interface VariantUnit extends VariantPlace {
   /** the unit in English: the base and each of `alts` (the same order), 0 to 6 words each, '' for a reading that leaves words out (docs/data.md 'Variant English') */
   english: VariantEnglish;
-  /** true when the English of the base and of any alternative differ after case, punctuation and white space are set aside */
+  /** true when the English of the base and of any alternative differ after case, punctuation and white space are set aside; a reading that is the base's Greek words in another order never counts */
   changesEnglish: boolean;
   /** whose reading the first of its codes names: `byz` (B), `na` (N, C, S, E) or `ecm` (M); several codes take the first class in that order */
   witness: VariantWitness;
