@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.16
+_2026-10-29_
+- Fixed: the tutor now answers a question about what a screen shows instead of sometimes offering to pass it on to the makers as a wish.
+
 ## 0.7.15
 _2026-10-29_
 - New: On a variant's sheet, Read this lays that reading into the Greek or English text in place, marked with a thin line, and it stays that way when you come back.
