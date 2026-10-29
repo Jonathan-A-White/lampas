@@ -12,7 +12,7 @@ const sources = (dir: string): string[] =>
 const text = (path: string): string => readFileSync(path, 'utf8');
 
 describe('the one feedback sender', () => {
-  it('is used by the tutor (src/talk/makers.ts sendToMakers, which the offer in src/talk/offers.ts, the Talk sheet and the Verse view\'s Ask all call: mw-5r3p30.760) and by the ask-for-approach and ask-for-more commands (src/services/formCommands.ts)', () => {
+  it('is used by the tutor (src/talk/makers.ts sendToMakers, which the offer in src/talk/offers.ts calls: mw-5r3p30.760, .844) and by the ask-for-approach and ask-for-more commands (src/services/formCommands.ts)', () => {
     for (const file of ['src/talk/makers.ts', 'src/services/formCommands.ts']) {
       expect(text(file), file).toMatch(/import \{[^}]*\bsubmitFeedback\b[^}]*\} from '\.{1,2}\/(services\/)?feedback'/);
     }

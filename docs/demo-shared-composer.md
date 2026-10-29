@@ -13,8 +13,7 @@ Mayor.
 
 1. Open **Romans 8** and tap a verse number (**Verse 28**). The **Verse view** opens over the reading.
 2. In the row of actions tap **Ask the tutor**. At the foot of the screen is Postern's composer: one big gold bar,
-   **Hold to ask**, and under it a quiet **Type a question**. There is no **Ask** button and no second bar; beside the field are **Attach a picture** and **Take a photo**, and above the
-   composer **Send to the makers** (the tutor here does not read pictures; they go to the makers).
+   **Hold to ask**, and under it a quiet **Type a question**. There is no **Ask** button and no second bar; beside the field are **Attach a picture** and **Take a photo** (they go to the tutor with the question).
 3. Hold **Hold to ask** and say a question ("What does this verse mean by works together?"). The bar says **Release to
    send** and his words appear above it as he speaks. Slide your finger off the bar before letting go: it says **Let go to
    keep it unsent** and the words wait for you in the box instead.
@@ -60,6 +59,6 @@ Then: "Looks good."
 
 ## Known differences (his word decides which become stories)
 
-- Lampas's Ask has **Attach a picture** and **Take a photo** (labelled so, not **Attach files**), but its tutor takes no pictures: they go with **Send to the makers**; tapping an
+- Lampas's Ask has **Attach a picture** and **Take a photo** (labelled so, not **Attach files**), and the pictures go to the Talk tutor with the question; tapping an
   attachment is a Postern check only. (Lampas's Bible talk sheet has its own picture controls, which are not this composer.)
 - The Postern picture viewer's **Save** button is a separate story (mw-jtzpw0.7) and may not be there yet.

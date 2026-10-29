@@ -1,5 +1,6 @@
-// features/steps/send-to-makers.steps.tsx — runs features/send-to-makers.feature: 'Send to the makers' in the Talk sheet and in the Verse view's Ask files what is in the composer
-// as a tutor-ask request (src/talk/makers.ts), with its pictures, and asks the tutor nothing. A fake Postern answers a feedback grist with {"status":"sent"}.
+// features/steps/send-to-makers.steps.tsx — runs features/send-to-makers.feature (mw-5r3p30.844): the Talk sheet and the Verse view's Ask have no 'Send to the makers' button; the tutor, asked for
+// what Lampas cannot do, offers in the talk to pass it on (`feedback_offer`), and a tap, a typed yes or a spoken yes files it as a tutor-ask request (src/talk/offers.ts sendMakersOffer, with the
+// pictures of the ask). A fake Postern answers a feedback grist with {"status":"sent"}.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -18,8 +19,8 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { composerIn, questionField } from '../../tests/support/composer';
-import { stubRecognizer } from '../../tests/support/fake-recognizer';
-import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
+import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 
@@ -36,7 +37,11 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
-const ACTION = 'Send to the makers';
+const OFFER = 'Send this to the makers';
+const SUMMARY = 'He wants a Greek keyboard.';
+const CANNOT = { answer: 'Lampas has no Greek keyboard. I can pass your wish to the makers; I cannot say what they will decide.', words: [], feedback_offer: { summary: SUMMARY } };
+const SENT_REPLY = 'Done: I have sent that to the makers.';
+const AT = { clientX: 100, clientY: 700 };
 const feedbackSchema = JSON.parse(readFileSync('grinds/feedback.input.schema.json', 'utf8')) as Schema;
 let fake: FakePostern;
 
@@ -53,7 +58,8 @@ async function openReader(): Promise<void> {
   window.history.replaceState(null, '', '/');
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
-  fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
+  fake.autoReply = { status: 'answered', answer: CANNOT };
+  FakeRecognizer.instances = [];
   fake.kindReplies.feedback = { status: 'answered', answer: { status: 'sent' } };
   stubRecognizer();
   stubChapterFetch();
@@ -108,165 +114,164 @@ async function openAsk(): Promise<void> {
   await screen.findByRole('region', { name: 'Verse view' });
   await user.click(within(view()).getByRole('button', { name: 'Ask the tutor', exact: true }));
 }
-const tapMakers = async (root: HTMLElement) => {
-  await user.click(within(root).getByRole('button', { name: ACTION, exact: true }));
-};
 
 const feature = await loadFeature('features/send-to-makers.feature');
 
+const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
+const talkGrists = () => fake.received.filter((g) => g.grist.kind === 'bible-talk');
+const FAILING_OPEN = 'Lampas is opened on the Reader behind a fake Postern whose tutor cannot do what he asks';
+
 describeFeature(feature, ({ Scenario }) => {
-  const opened = 'Lampas is opened on the Reader behind a fake Postern whose tutor offers nothing';
-  const askOpened = "Lampas is opened on Romans 8 with the Verse view's Ask open behind a fake Postern whose tutor offers nothing";
-  const grists = (_: unknown, count: number) => {
-    expect(feedbackGrists()).toHaveLength(count);
-  };
-  const tutorAsk = (_: unknown, words: string, screenName: string, reference: string) => {
-    expect(feedbackGrist().input).toMatchObject({ kind: 'tutor-ask', text: words, screen: screenName, reference, app_version: __APP_VERSION__ });
-  };
+  const openedAsk = "Lampas is opened on Romans 8 with the Verse view's Ask open behind a fake Postern whose tutor cannot do what he asks";
+  const grists = (_: unknown, count: number) => waitFor(() => expect(feedbackGrists()).toHaveLength(count));
+  const tutorAsk = (_: unknown, words: string, summary: string, screenName: string, reference: string) =>
+    waitFor(() => expect(feedbackGrist().input).toMatchObject({ kind: 'tutor-ask', text: words, summary, screen: screenName, reference, app_version: __APP_VERSION__ }));
   const schemaOk = () => expect(validate(feedbackGrist().input, feedbackSchema)).toEqual([]);
   const onePicture = () => {
     expect(feedbackGrist().attachments).toHaveLength(1);
     expect(feedbackGrist().attachments[0]).toMatchObject({ mime: 'image/jpeg', name: 'picture-1.jpg' });
   };
+  const attachesAndTypes = async (_: unknown, words: string) => {
+    await openSheet();
+    await user.upload(picker(sheet()), pictureFile());
+    await waitFor(() => expect(within(sheet()).getByRole('group', { name: 'Pictures to send' })).toBeInTheDocument());
+    await typeInSheet(words);
+  };
+  const noButton = (root: () => HTMLElement) => (_: unknown, name: string) => {
+    expect(within(root()).queryByRole('button', { name, exact: true })).toBeNull();
+  };
+  const asksWithPicture = async (_: unknown, words: string) => {
+    await attachesAndTypes(_, words);
+    await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
+  };
+  const cannotAndOffers = async () => {
+    expect(await within(sheet()).findByText(CANNOT.answer)).toBeInTheDocument();
+    expect(within(sheet()).getByRole('button', { name: OFFER })).toBeInTheDocument();
+  };
+  const tapsOffer = async () => {
+    await user.click(await within(sheet()).findByRole('button', { name: OFFER }));
+  };
+  const nextIsYes = () => {
+    fake.autoReply = { status: 'answered', answer: { answer: SENT_REPLY, words: [], offer_reply: 'confirm' } };
+  };
+  const pending = (n: number) => (talkGrists()[n - 1].input as { pending_offer?: unknown }).pending_offer;
+  const firstTurnSent = async () => {
+    const first = await waitFor(() => turns()[0]);
+    expect(await within(first).findByText('Sent')).toBeInTheDocument();
+    expect(within(first).queryByRole('button', { name: OFFER })).toBeNull();
+  };
+  const sentOnce = async () => {
+    await waitFor(() => expect(turns()).toHaveLength(talkGrists().length));
+    expect(feedbackGrists()).toHaveLength(1);
+  };
+  const feedbackCount = (_: unknown, count: number) => expect(feedbackGrists()).toHaveLength(count);
 
-  Scenario('In the Talk sheet Send to the makers files his words and the screen without asking the tutor', ({ Given, When, And, Then }) => {
-    Given(opened, openReader);
-    When('he opens the Talk sheet on the chapter and types {string} without sending it', async (_, words: string) => {
-      await openSheet();
-      await typeInSheet(words);
-    });
-    And('he taps Send to the makers', () => tapMakers(sheet()));
-    Then('the mill received {int} grists for the lampas app, kind feedback', async (_, count: number) => {
-      await waitFor(() => grists(_, count));
-    });
-    And('the feedback grist is a tutor-ask with his words {string}, the screen {string} and the reference {string}', tutorAsk);
-    And('the feedback grist carries only fields the feedback input schema allows', schemaOk);
-    And('the composer says {string} and has a link {string}', async (_, line: string, link: string) => {
-      expect(await within(sheet()).findByText(new RegExp(line))).toBeInTheDocument();
-      expect(within(sheet()).getByRole('button', { name: link })).toBeInTheDocument();
-    });
-    And('the Talk sheet shows no turn', () => {
-      expect(sheet().querySelectorAll('[data-turn]')).toHaveLength(0);
-      expect(fake.received.filter((g) => g.grist.kind === 'bible-talk')).toHaveLength(0);
-    });
+  Scenario('The Talk sheet has no Send to the makers button, with words typed or a picture attached', ({ Given, When, Then, And }) => {
+    Given(FAILING_OPEN, openReader);
+    When('he opens the Talk sheet on the chapter, attaches a picture and types {string} without sending it', attachesAndTypes);
+    Then('the Talk sheet shows no button {string}', noButton(sheet));
+    And('the mill received {int} grists for the lampas app, kind feedback', feedbackCount);
   });
 
-  Scenario('A picture attached in the Talk sheet goes to the makers with the words', ({ Given, When, And, Then }) => {
-    Given(opened, openReader);
-    When('he opens the Talk sheet on the chapter, attaches a picture and types {string} without sending it', async (_, words: string) => {
-      await openSheet();
-      await user.upload(picker(sheet()), pictureFile());
-      await waitFor(() => expect(within(sheet()).getByRole('group', { name: 'Pictures to send' })).toBeInTheDocument());
-      await typeInSheet(words);
-    });
-    And('he taps Send to the makers', () => tapMakers(sheet()));
-    Then('the mill received {int} grists for the lampas app, kind feedback', async (_, count: number) => {
-      await waitFor(() => grists(_, count));
-    });
-    And('the feedback grist carries one picture', onePicture);
-    And('the phone keeps one request row that says {int} picture went with it', async (_, count: number) => {
-      await waitFor(async () => expect(await db.requests.toArray()).toMatchObject([{ txid: fake.txids[0], kind: 'tutor-ask', pictures: count }]));
-    });
-  });
-
-  Scenario('In the Talk sheet Send to the makers shows once there is something to send', ({ Given, When, Then, And }) => {
-    Given(opened, openReader);
-    When('he opens the Talk sheet on the chapter', openSheet);
-    Then('the Talk sheet shows no button {string}', (_, name: string) => {
-      expect(within(sheet()).queryByRole('button', { name })).toBeNull();
-    });
-    When('he types {string} in the Talk sheet without sending it', (_, words: string) => typeInSheet(words));
-    Then('the Talk sheet shows the button {string}', async (_, name: string) => {
-      expect(await within(sheet()).findByRole('button', { name })).toBeInTheDocument();
-    });
-    And('the mill received {int} grists for the lampas app, kind feedback', grists);
-  });
-
-  Scenario("In the Verse view's Ask, Send to the makers with nothing in the composer sends nothing and says why", ({ Given, When, And, Then }) => {
-    Given(askOpened, async () => {
+  Scenario("The Verse view's Ask has Attach a picture and Take a photo and no Send to the makers button", ({ Given, When, Then, And }) => {
+    Given(openedAsk, async () => {
       await openReader();
       await openAsk();
     });
-    When('he taps Send to the makers', () => tapMakers(view()));
-    Then('the mill received {int} grists for the lampas app, kind feedback', grists);
-    And('the composer says {string}', async (_, line: string) => {
-      expect(await within(view()).findByText(new RegExp(line))).toBeInTheDocument();
+    When('he attaches a picture and types {string} in the Ask composer', async (_, words: string) => {
+      await user.upload(picker(view()), pictureFile());
+      await user.type(await questionField(user, view()), words);
     });
-  });
-
-  Scenario("The Verse view's Ask has Attach a picture and Take a photo, and Send to the makers files words and a picture", ({ Given, When, And, Then }) => {
-    Given(askOpened, async () => {
-      await openReader();
-      await openAsk();
-    });
-    Then('the Ask composer has the buttons {string} and {string} and {string}', (_, attach: string, camera: string, makers: string) => {
+    Then('the Ask composer has the buttons {string} and {string}', (_, attach: string, camera: string) => {
       const composer = composerIn(view());
       expect(within(composer).getByRole('button', { name: attach })).toBeInTheDocument();
       expect(within(composer).getByRole('button', { name: camera })).toBeInTheDocument();
-      expect(within(view()).getByRole('button', { name: makers })).toBeInTheDocument();
     });
-    When('he attaches a picture and types {string} in the Ask composer', async (_, words: string) => {
-      await user.upload(picker(view()), pictureFile());
-      await user.type(await questionField(user, view()), words);
-    });
-    And('he taps Send to the makers', () => tapMakers(view()));
-    Then('the mill received {int} grists for the lampas app, kind feedback', async (_, count: number) => {
-      await waitFor(() => grists(_, count));
-    });
-    And('the feedback grist is a tutor-ask with his words {string}, the screen {string} and the reference {string}', tutorAsk);
+    And('the Verse view shows no button {string}', noButton(view));
+  });
+
+  Scenario('When the tutor cannot do what he asks, the talk offers to pass it on and a tap sends it with the pictures', ({ Given, When, Then, And }) => {
+    Given(FAILING_OPEN, openReader);
+    When('he opens the Talk sheet on the chapter and asks {string} with a picture attached', asksWithPicture);
+    Then('the talk answers that it cannot, and shows the button {string}', cannotAndOffers);
+    And('the mill received {int} grists for the lampas app, kind feedback', feedbackCount);
+    When('he taps Send this to the makers', tapsOffer);
+    Then('the mill received {int} grists for the lampas app, kind feedback', grists);
+    And('the feedback grist is a tutor-ask with his words {string}, the summary {string}, the screen {string} and the reference {string}', tutorAsk);
+    And('the feedback grist carries only fields the feedback input schema allows', schemaOk);
     And('the feedback grist carries one picture', onePicture);
-    And('the composer says {string} and has a link {string}', async (_, line: string, link: string) => {
-      expect(await within(view()).findByText(new RegExp(line))).toBeInTheDocument();
-      expect(within(view()).getByRole('button', { name: link })).toBeInTheDocument();
-    });
-    And('the phone keeps one request row, kind tutor-ask, with his words as its line', async () => {
-      await waitFor(async () => expect(await db.requests.toArray()).toMatchObject([{ txid: fake.txids[0], kind: 'tutor-ask', summary: 'The Greek is too small here', words: 'The Greek is too small here', pictures: 1 }]));
-    });
-    When('he opens Your requests', async () => {
-      act(() => openRequests('settings'));
-      await screen.findByRole('heading', { name: 'Your requests', level: 1 });
-    });
-    Then('Your requests lists {string}', async (_, words: string) => {
-      expect(await screen.findByText(words)).toBeInTheDocument();
-    });
+    And('the first turn shows {string} and no button {string}', firstTurnSent);
   });
 
-  Scenario("Send in the Verse view's Ask with a picture in the row asks the Talk sheet's tutor, with the picture attached", ({ Given, When, And, Then }) => {
-    Given(askOpened, async () => {
-      await openReader();
-      await openAsk();
-    });
-    When('he attaches a picture and types {string} in the Ask composer', async (_, words: string) => {
-      await user.upload(picker(view()), pictureFile());
-      await user.type(await questionField(user, view()), words);
-    });
-    And('he taps Send in the Ask composer', async () => {
-      await user.click(within(composerIn(view())).getByRole('button', { name: 'Send' }));
-    });
-    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
-      await waitFor(() => expect(fake.received.filter((g) => g.grist.kind === 'bible-talk')).toHaveLength(count));
-    });
-    And('that grist has the picture attached', () => {
-      const asked = fake.received.filter((g) => g.grist.kind === 'bible-talk');
-      expect(asked[0].attachments).toHaveLength(1);
-      expect(asked[0].attachments[0].mime).toMatch(/^image\//);
-    });
-  });
-
-  Scenario('Your requests lists a request sent from the Talk sheet', ({ Given, When, And, Then }) => {
-    Given(opened, openReader);
-    When('he opens the Talk sheet on the chapter and types {string} without sending it', async (_, words: string) => {
-      await openSheet();
+  Scenario('Typing yes to the offer sends it as the tap does', ({ Given, When, Then, And }) => {
+    Given(FAILING_OPEN, openReader);
+    When('he opens the Talk sheet on the chapter and asks {string} with a picture attached', asksWithPicture);
+    Then('the talk answers that it cannot, and shows the button {string}', cannotAndOffers);
+    When('the tutor will take his next words as a yes', nextIsYes);
+    And('he types {string} in the Talk sheet and sends it', async (_, words: string) => {
       await typeInSheet(words);
+      await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
     });
-    And('he taps Send to the makers', () => tapMakers(sheet()));
+    Then('the second bible-talk grist carries the pending offer of kind feedback with the summary {string}', async (_, summary: string) => {
+      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      expect(pending(2)).toEqual({ kind: 'feedback', text: summary });
+    });
+    And('the mill received {int} grists for the lampas app, kind feedback', grists);
+    And('the feedback grist is a tutor-ask with his words {string}, the summary {string}, the screen {string} and the reference {string}', tutorAsk);
+    And('the feedback grist carries one picture', onePicture);
+    And('the first turn shows {string} and no button {string}', async () => {
+      await firstTurnSent();
+      await sentOnce();
+    });
+  });
+
+  Scenario('Saying yes to the offer sends it as the tap does', ({ Given, When, Then, And }) => {
+    const holdAndSay = async (words: string) => {
+      const before = FakeRecognizer.instances.length;
+      const bar = await within(sheet()).findByRole('button', { name: /^Hold to talk$/ });
+      await user.pointer({ keys: '[MouseLeft>]', target: bar, coords: AT });
+      await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before));
+      act(() => {
+        FakeRecognizer.last().open();
+        FakeRecognizer.last().say([result(words, false)]);
+      });
+      await user.pointer({ keys: '[/MouseLeft]', target: bar, coords: AT });
+    };
+    Given(FAILING_OPEN, openReader);
+    When('he opens the Talk sheet on the chapter and speaks {string}', async (_, words: string) => {
+      await openSheet();
+      await holdAndSay(words);
+    });
+    Then('the talk answers that it cannot, and shows the button {string}', cannotAndOffers);
+    When('the tutor will take his next words as a yes', nextIsYes);
+    And('he speaks {string} in the Talk sheet', (_, words: string) => holdAndSay(words));
+    Then('the second bible-talk grist is marked as spoken and carries the pending offer of kind feedback with the summary {string}', async (_, summary: string) => {
+      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      expect(talkGrists()[1].input.spoken).toBe(true);
+      expect(pending(2)).toEqual({ kind: 'feedback', text: summary });
+    });
+    And('the mill received {int} grists for the lampas app, kind feedback', grists);
+    And('the first turn shows {string} and no button {string}', async () => {
+      await firstTurnSent();
+      await sentOnce();
+    });
+  });
+
+  Scenario('Your requests lists a request sent from the offer', ({ Given, When, And, Then }) => {
+    Given(FAILING_OPEN, openReader);
+    When('he opens the Talk sheet on the chapter and asks {string} with a picture attached', asksWithPicture);
+    Then('the talk answers that it cannot, and shows the button {string}', cannotAndOffers);
+    When('he taps Send this to the makers', tapsOffer);
     And('he opens Your requests', async () => {
-      await waitFor(async () => expect(await db.requests.count()).toBe(1));
+      await waitFor(() => expect(feedbackGrists()).toHaveLength(1));
       act(() => openRequests('settings'));
       await screen.findByRole('heading', { name: 'Your requests', level: 1 });
     });
     Then('Your requests lists {string}', async (_, words: string) => {
       expect(await screen.findByText(words)).toBeInTheDocument();
+    });
+    And('the phone keeps one request row, kind tutor-ask, that says {int} picture went with it', async (_, count: number) => {
+      await waitFor(async () => expect(await db.requests.toArray()).toMatchObject([{ kind: 'tutor-ask', summary: SUMMARY, pictures: count }]));
     });
   });
 });
