@@ -4,12 +4,10 @@
 // by the view as it opens), never nothing.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Chapter } from '../data/chapter';
-import type { ReaderView } from '../data/repositories';
 import { passagesOf } from '../data/passage';
-import type { WovenVerse } from '../data/weave';
 import { openPassage, openVerse } from '../nav/route';
 import { copy } from '../ui/clipboard';
-import { COPY_DEFAULTS, copyReference, copyText, copyUnitOf, type CopyUnit } from './format';
+import { COPY_DEFAULTS, copyReference, copyText, copyUnitOf, type CopyUnit, type ReadView } from './format';
 import { useCopyFormat } from './useCopyFormat';
 
 /** How long 'Copied Colossians 3:1' stays. */
@@ -36,8 +34,8 @@ export interface CopyHold {
   chapter: () => void;
 }
 
-/** `read` is the view the Reader is in, for Text 'As you read it'; `openChapter` opens the Verse view on the whole chapter (the place line's tap) for a phone that refuses the clipboard. */
-export function useCopyHold(chapter: Chapter | null, read: { view: ReaderView; woven: readonly (WovenVerse | null)[] | null } | undefined, openChapter: () => void): CopyHold {
+/** `read` is the view the Reader is in, with the variants it shows, for Text 'As you read it'; `openChapter` opens the Verse view on the whole chapter (the place line's tap) for a phone that refuses the clipboard. */
+export function useCopyHold(chapter: Chapter | null, read: ReadView | undefined, openChapter: () => void): CopyHold {
   const format = useCopyFormat() ?? COPY_DEFAULTS;
   const [said, setSaid] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -68,9 +66,10 @@ export function useCopyHold(chapter: Chapter | null, read: { view: ReaderView; w
   const verses = chapter?.verses;
   const readView = read?.view;
   const readWoven = read?.woven;
+  const readVariants = read?.variants;
   const unit = useCallback(
-    (n: number, to?: number): CopyUnit | null => (chapter ? copyUnitOf(chapter, { n, to }, readView ? { view: readView, woven: readWoven ?? null } : undefined) : null),
-    [chapter, readView, readWoven],
+    (n: number, to?: number): CopyUnit | null => (chapter ? copyUnitOf(chapter, { n, to }, readView ? { view: readView, woven: readWoven ?? null, variants: readVariants } : undefined) : null),
+    [chapter, readView, readWoven, readVariants],
   );
   return {
     said,

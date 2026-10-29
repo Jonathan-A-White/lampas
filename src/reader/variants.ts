@@ -120,6 +120,20 @@ export function braceReadings(shown: ShownUnit, language: 'greek' | 'english'): 
   return out.map(({ text, same, chips, greek, english, g }) => ({ text, same, chips, greek, english, ...(g ? { g } : {}) }));
 }
 
+/** What a brace says of a reading with no words of its own: the English that reads as the text's own ('same'), or a reading that leaves the words out. */
+export const SAME = 'same';
+export const LEFT_OUT = 'left out';
+
+/** The words a brace draws for one reading, before its chips. */
+export const braceWords = (r: BraceReading): string => (r.same ? SAME : r.text || LEFT_OUT);
+
+/** A brace as plain text, as VariantBrace draws it (the same readings, separators and sigla) and Copy writes it: '{left out NA}', '{for you B | left out NA}'. */
+export function braceText(shown: ShownUnit, language: 'greek' | 'english'): string {
+  return `{${braceReadings(shown, language)
+    .map((r) => [braceWords(r), ...r.chips].join(' '))
+    .join(' | ')}}`;
+}
+
 /** The variant units of a chapter as the Reader has them: `byVerse` the shown units of each verse (null while nothing is shown: Variants Off or no
  * chapter), and `count` how many units the filter shows, with Off counted under the filter a tap on the chip would turn on. `any` is false for a chapter with no units at all.
  * `chosenByVerse` are the units of each verse with a reading laid in place by the set in force (src/reader/chosenReading.ts), shown or not: the reading in place shows with Variants Off too. */
