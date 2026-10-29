@@ -45,6 +45,12 @@ describe('the bible-talk `verses` rule after mw-5r3p30.755', () => {
     const rule = flat(text.slice(text.indexOf('- `verses`:'), text.indexOf('- `greek_words`:')));
     expect(rule).toMatch(/name the whole range \("I hold verses 1 to 3"\), not only where it stops/);
   });
+
+  // mw-5r3p30.853: the smoke of 2026-10-29 08:18Z answered about Smyrna (2:8-11) and never said which verses it holds: the rule was a permission with no place in the answer.
+  it('has the FIRST sentence of the answer name the held range, before the answer to a verse outside it', () => {
+    const rule = flat(text.slice(text.indexOf('- `verses`:'), text.indexOf('- `greek_words`:')));
+    expect(rule).toMatch(/FIRST sentence[^;]*name the whole range \("I hold verses 1 to 3"\)/);
+  });
 });
 
 // mw-5r3p30.751: two smoke examples missed 1 of 3 on 2026-10-24 for a rule stated once and without its limit: bridge-quite-a-bit taught first and never said how much
