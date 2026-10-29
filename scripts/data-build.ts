@@ -19,10 +19,14 @@ import { parseTbes, type Lexicon } from './data/tbes';
 import { OVERLAY_FILE, applyOverlay, diffEdition, loadRp2026, overlayReport, type OverlayEntry, type OverlayResult, type PlacedUnit } from './data/rp2026';
 import { VARIANT_ENGLISH_FILE, englishReport, englishStats, finishUnit, layEnglish, readLampasEnglish, type LampasEnglishFile, type MissingEnglish, type WordNote } from './data/variantEnglish';
 import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
+import { formIndex, tagVariants, taggedLine, untaggedText, type TagTally } from './data/variantWords';
 
 export { suppliedWords } from './data/bereanTable';
 export { chapterFingerprint } from './data/chapterWriter';
 export { cleanDefinition, type Lexicon } from './data/tbes';
+
+/** The forms of the variant readings the text never has (scripts/data/variantWords.ts), committed for review. */
+export const UNTAGGED_FILE = 'data/variant-untagged.txt';
 
 export const MSB_URL = 'https://majoritybible.com/msb_nt_tables.tsv';
 export const TBESG_URL =
@@ -195,6 +199,8 @@ export interface BuiltData {
   lampasUsed: MissingEnglish[];
   /** what became of the RP 2026 overlay's entries; absent when the build was given no overlay */
   overlay?: OverlayResult;
+  /** the words of the variant readings tagged against every form of the text, and the forms left untagged; absent when the build was given no apparatus */
+  tagged?: TagTally;
 }
 
 /** A name: any use of the word is coded N-PRI (an indeclinable proper noun, 'Ἀβραάμ'), or a use is coded as a noun (N-...) and the
@@ -267,6 +273,8 @@ export function buildData(
   const laid: OverlayResult = { applied: 0, already: 0, dropped: 0 };
   const missingEnglish: MissingEnglish[] = [];
   const lampasUsed: MissingEnglish[] = [];
+  // a chapter's fingerprint is taken once the readings' words are tagged, which needs every chapter of the text built
+  const unfingerprinted: Array<{ fingerprints: string[]; at: number; chapter: Chapter }> = [];
   for (const [code, name] of BOOKS) {
     const book = byBook.get(name);
     if (!book) continue;
@@ -338,13 +346,17 @@ export function buildData(
         if (!(w.l in lexicon)) lexicon[w.l] = { g: chapter.lex[w.s].g, s: w.s, c: splitParse(w.p).pos };
       }
       counts.push(built.length);
-      fingerprints.push(chapterFingerprint(chapter));
+      unfingerprinted.push({ fingerprints, at: fingerprints.length, chapter });
+      fingerprints.push('');
       chapters.push({ path: `${code}/${n}.json`, chapter });
     }
     index.books.push({ code, name, chapters: count, verses: counts, fingerprints, lang: 'grc' });
     if (apparatus?.has(code)) variants.books.push({ name, counts: bookCounts });
   }
-  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), missingEnglish, lampasUsed, ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}) };
+  // every reading's words are tagged by the forms of the whole text (scripts/data/variantWords.ts), so after the last chapter
+  const tagged = apparatus ? tagVariants(chapters.map((c) => c.chapter), formIndex(chapters.map((c) => c.chapter)), lex) : undefined;
+  for (const { fingerprints, at, chapter } of unfingerprinted) fingerprints[at] = chapterFingerprint(chapter);
+  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), missingEnglish, lampasUsed, ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}), ...(tagged ? { tagged } : {}) };
 }
 
 // ---------------------------------------------------------------- files
@@ -367,6 +379,8 @@ export interface BuildOptions {
   overlayFile?: string;
   /** the English made for variant units (data/variant-english.json, written by npm run variants:english); default VARIANT_ENGLISH_FILE */
   englishFile?: string;
+  /** where the forms of the readings that stay untagged are listed; default UNTAGGED_FILE */
+  untaggedFile?: string;
 }
 
 /** What a build reads: the MSB table and TBESG (fetched into rawDir unless they are there), the apparatus and the RP 2026 overlay (written to overlayFile). Also read by `npm run variants:english`. */
@@ -399,6 +413,10 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
   if (built.variants) for (const line of variantsReport(built.variants)) log(line);
   if (built.variants) for (const line of englishReport(englishStats(built.chapters.flatMap((c) => c.chapter.variants ?? [])))) log(line);
   if (overlay && built.overlay) for (const line of overlayReport(overlay, built.overlay)) log(line);
+  if (built.tagged) {
+    log(taggedLine(built.tagged));
+    writeIfChanged(options.untaggedFile ?? UNTAGGED_FILE, untaggedText(built.tagged));
+  }
 
   // index.json lists the 66 books: this build writes the 27 read in Greek and keeps the Old Testament's from the index on disk (scripts/data-build-ot.ts writes those)
   const index = mergeIndex(readIndex(outDir), built.index.books, 'grc');
