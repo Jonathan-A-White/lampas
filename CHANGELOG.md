@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.15
+_2026-10-29_
+- New: On a variant's sheet, Read this lays that reading into the Greek or English text in place, marked with a thin line, and it stays that way when you come back.
+
 ## 0.7.14
 _2026-10-29_
 - Fixed: When he asks the tutor about a verse beyond the part of the chapter it is holding, the tutor now says first which verses it has in front of it.
