@@ -254,13 +254,15 @@ describe('the build', () => {
       w: [17],
       base: 'ὑπάγειν',
       alts: [{ code: 'N', text: 'ὑπάγει', g: [{ t: 'ὑπάγει', tr: '', s: '', l: '', p: '' }] }],
-      english: { source: 'lampas', base: 'the ὑπάγειν', alts: ['not ὑπάγει'] },
+      // the one reading's Greek word is untagged, so nothing of its English is paired (mw-9ji6ek0.37)
+      english: { source: 'lampas', base: 'the ὑπάγειν', alts: ['not ὑπάγει'], align: [[]] },
       changesEnglish: true,
       witness: 'na',
     });
     expect(log.find((l) => l.startsWith('variant words tagged:'))).toMatch(/^variant words tagged: \d+ of \d+$/);
     expect(untagged).toContain('ὑπάγει\t');
     expect(log).toContain('variant English: 6 units: msb 0, lampas 6');
+    expect(log.find((l) => l.startsWith('variant English paired word by word (lampas):'))).toMatch(/^variant English paired word by word \(lampas\): \d+ readings fully, \d+ partly, \d+ not at all$/);
     expect(log).toContain('variant witness: byz 4, na 2, ecm 0');
     expect(log).toContain(`variants (byztxt ${VARIANTS_TAG}): 8 units: B 4, N 4`);
     expect(log).toContain('variants aligned: 8 of 8 (100.0%), 0 not aligned');
