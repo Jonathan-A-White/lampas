@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.10",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.20",
+    "kind": "new",
+    "text": "A variant reading's card now has a Go deeper section with the lessons, the apparatus, the 2005 edition and, from your Logos library, the Greek texts at that verse."
+  },
+  {
+    "version": "0.7.10",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.28",
+    "kind": "fixed",
+    "text": "the dotted line under a variant reading no longer runs on into the stretched gap before its brace."
+  },
+  {
+    "version": "0.7.10",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.848",
+    "kind": "fixed",
+    "text": "Asking the tutor \"what does the Hebrew say for fish?\" now just answers in words, without also adding the Hebrew word as a separate word card."
+  },
+  {
+    "version": "0.7.10",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.19",
+    "kind": "new",
+    "text": "The first time you turn on variant readings, a small card offers five short lessons on them, and Settings has a way back to the lessons."
+  },
+  {
     "version": "0.7.9",
     "date": "2026-10-29",
     "story": "mw-5r3p30.842",

@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.10
+_2026-10-29_
+- New: A variant reading's card now has a Go deeper section with the lessons, the apparatus, the 2005 edition and, from your Logos library, the Greek texts at that verse.
+- Fixed: the dotted line under a variant reading no longer runs on into the stretched gap before its brace.
+- Fixed: Asking the tutor "what does the Hebrew say for fish?" now just answers in words, without also adding the Hebrew word as a separate word card.
+- New: The first time you turn on variant readings, a small card offers five short lessons on them, and Settings has a way back to the lessons.
+
 ## 0.7.9
 _2026-10-29_
 - Fixed: Asking the tutor from a verse now opens the same tutor as the Talk button, so it can send your request to the makers too.
