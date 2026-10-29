@@ -9,6 +9,8 @@ import { buildReadingRequest } from '../../src/services/reading';
 import type { Verse } from '../../src/data/chapter';
 import { validate, type Schema } from '../support/schema-validate';
 import { CHECKS, EXAMPLE_FILE_MAX_BYTES, FORWARD_ANSWER_SCHEMA, checkExpect, expectProblems, turnTwoProblems, type GrindExample } from '../support/grind-examples';
+import '../support/grinds-in-graph';
+import '../support/grind-examples-in-graph';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 

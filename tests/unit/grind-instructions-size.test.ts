@@ -4,6 +4,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { instructionParts } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const CEILING = 100_000;
 

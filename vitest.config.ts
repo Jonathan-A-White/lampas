@@ -1,4 +1,5 @@
 import { configDefaults, defineConfig } from 'vitest/config';
+import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
 import { timingFilter } from 'pwa-kit/test-preset';
@@ -6,8 +7,20 @@ import { buildVersion, shortCommit } from './build-version';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
+// A grinds/ .md file is text the tests read by path, which `vitest related` cannot follow; read as a module it is the file's text,
+// so a test can import it and `vitest related <that file>` selects the test (mw-5r3p30.860; a ?raw import never does, since vitest
+// looks up the dependency's path with the query on it).
+const grindsMarkdownAsText: Plugin = {
+  name: 'grinds-markdown-as-text',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!/[\\/]grinds[\\/].*\.md$/.test(id)) return null;
+    return { code: `export default ${JSON.stringify(code)};`, map: null };
+  },
+};
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), grindsMarkdownAsText],
   define: {
     __APP_VERSION__: JSON.stringify(buildVersion(pkg.version, new Date(), shortCommit())),
     // The plain version number (what changelog.json's versions are compared with), without the build's time and commit.
