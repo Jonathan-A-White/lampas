@@ -57,14 +57,14 @@ Never claim a change the list does not have. For a setting the app does not have
 - `pronunciationSeparate` — Set each language on its own. On shows a Greek pronunciation and a Hebrew pronunciation to choose on their own. Off puts both back on Pronunciation.
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced when it is read aloud. Value: "modern" (Modern Greek).
 - `hebrewPronunciation` — Hebrew pronunciation. How Hebrew is pronounced when it is read aloud. Value: "israeli".
-- `englishAccent` — English accent. Which English the hints for Greek sounds are said in, everywhere at once, the tutor's examples too: American: the default. British. IPA (the standard): for readers who know it. Each sound is shown by its own symbol, such as /o/, in place of an English word. Value: "american", "british", "ipa".
-- `ipaLesson` — IPA lesson. Whether the Goal screen offers the optional lesson on IPA, the standard symbols for sounds, for Greek and, while you read Hebrew, for Hebrew too. It is never needed for Lampas. On by default; Off takes it off the Goal screen and keeps what you have done.
+- `englishAccent` — English accent. The English your sound hints and the tutor use: American, British, or IPA. Value: "american", "british", "ipa" (IPA (the standard)).
+- `ipaLesson` — IPA lesson. The optional IPA lesson, for Greek and for Hebrew.
 - `resource.strongs` — Strong's. Shows the word's Strong's number, a link to its entry on STEPBible.
 - `resource.logos` — Logos. Adds Open in Logos for each lexicon in Your Logos library, and Bible Word Study.
 - `maps.biblemapper` — Bible Mapper. The maps of Bible Mapper, shown in the app.
 - `maps.logosatlas` — Logos Atlas. This source is used, and its row shown, only while Logos is On in Study resources.
 - `audioBible` — Audio Bible. The Word of Promise in Audible: the Verse view links to it. Value: "off", "word-of-promise" (The Word of Promise (NKJV), in Audible).
-- `readingPlan` — Reading plan. Whether Lampas keeps a reading plan: the whole Bible, Genesis to Revelation, a chapter at a time, in your audio Bible. On: it remembers where you started, the chapters done and the next one. Starting a plan turns this On, and the Audio Bible too if it was Off.
+- `readingPlan` — Reading plan. Read through the Bible a chapter at a time, with the audio Bible.
 - `logosBible` — Bible in Logos. The Bible that New Testament verses open in, in Logos. Value: text, for example "LLS:LGCYSTNDRDBBLSB" (a book, a chapter or a verse; "" for none).
 - `dailyReview` — Review. Whether Today holds a Review piece: the words and ideas that are due.
 - `dailyMemorize` — Memorize. Whether Today holds the verses due to recall.
