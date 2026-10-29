@@ -45,6 +45,7 @@ import { useSendOff } from './plan/useSendOff';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
 import { isOrdered, rowAttrs } from './reader/sourceText';
+import { useReaderVariants } from './reader/variants';
 import type { WovenVerse } from './data/weave';
 import type { WovenReading } from './services/reading';
 import type { OutgoingPicture } from './talk/pictures';
@@ -134,8 +135,9 @@ export function VerseView(props: VerseViewProps) {
   const copyFormat = useCopyFormat() ?? COPY_DEFAULTS;
   // a hold in the Reader that the clipboard refused opens the view with its text shown selected, to copy by hand (src/copy/useCopyHold.ts)
   const [startByHand] = useState(takeByHand);
-  // 'As you read it' is the view the Reader draws this verse in: its view and, in the Weave, its woven chunks
-  const copyUnit = useMemo(() => copyUnitOf(chapterText, verse, { view, woven: wovenChapter ?? null }), [chapterText, verse, view, wovenChapter]);
+  // 'As you read it' is the view the Reader draws this verse in: its view, in the Weave its woven chunks, and the variant units and readings in place it shows (mw-5r3p30.866)
+  const variants = useReaderVariants(chapterText);
+  const copyUnit = useMemo(() => copyUnitOf(chapterText, verse, { view, woven: wovenChapter ?? null, variants }), [chapterText, verse, view, wovenChapter, variants]);
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
   // A Hebrew verse is set as big as the Greek one, in the app's Hebrew face (.script-he, whose .reader-hebrew gives the Greek size and the Reader's leading), right to left; the English view is English whatever the chapter.

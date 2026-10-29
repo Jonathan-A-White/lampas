@@ -5,6 +5,8 @@ import type { Chapter, SourceLanguage, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { passageUrl, referenceUrl } from '../nav/links';
+import { textWithVariants } from '../reader/variantText';
+import type { ReaderVariants } from '../reader/variants';
 
 /** `asread` is the text in the view on now (the Reader's English, Greek or Hebrew, or its Weave); the others name the text. */
 export type CopyText = 'asread' | 'english' | 'original' | 'both';
@@ -33,10 +35,12 @@ export interface CopyVerse {
   shown?: string;
 }
 
-/** The view a chapter is read in: the Reader's view and, in step with `chapter.verses`, its Weave of each verse (null when it is not woven). */
+/** The view a chapter is read in: the Reader's view and, in step with `chapter.verses`, its Weave of each verse (null when it is not woven); `variants` are the variant units the Reader
+ * shows in it and the readings it lays in place (src/reader/variants.ts useReaderVariants), absent when it shows none: the brace after a shown unit's words is copied with them (mw-5r3p30.866). */
 export interface ReadView {
   view: ReaderView;
   woven: readonly (WovenVerse | null)[] | null;
+  variants?: Pick<ReaderVariants, 'byVerse' | 'chosenByVerse'> | null;
 }
 
 export interface CopyUnit {
@@ -55,8 +59,11 @@ const englishOf = (verse: Verse): string => verse.e.map((chunk) => chunk.t.trim(
 const originalOf = (verse: Verse): string => verse.g.map((word) => word.t).join(' ').trim();
 
 /** The verse as the Reader draws it in `view`: the original's words; the English chunks in the order the weave lays them out, a woven chunk as the words of its own language
- * (what the Reader shows over a learning word's English hint is the Greek alone); else the English. */
-function shownOf(verse: Verse, view: ReaderView, woven: WovenVerse | null): string {
+ * (what the Reader shows over a learning word's English hint is the Greek alone); else the English. With variants shown in it, each unit's brace follows its words and a reading laid in place stands
+ * where the Reader lays it (src/reader/variantText.ts). */
+function shownOf(verse: Verse, view: ReaderView, woven: WovenVerse | null, variants?: ReadView['variants']): string {
+  const drawn = variants ? textWithVariants(verse, view, woven, variants.byVerse?.get(verse.n), variants.chosenByVerse.get(verse.n)) : null;
+  if (drawn !== null) return drawn;
   if (view === 'greek') return originalOf(verse) || englishOf(verse);
   if (!woven) return englishOf(verse);
   return drawnOrder(verse, woven)
@@ -86,7 +93,7 @@ export function copyUnitOf(chapter: Chapter, verse: Pick<Verse, 'n' | 'to'>, rea
       n: v.n,
       english: englishOf(v),
       original: originalOf(v),
-      ...(read ? { shown: shownOf(v, read.view, read.woven?.[chapter.verses.indexOf(v)] ?? null) } : {}),
+      ...(read ? { shown: shownOf(v, read.view, read.woven?.[chapter.verses.indexOf(v)] ?? null, read.variants) } : {}),
     })),
   };
 }

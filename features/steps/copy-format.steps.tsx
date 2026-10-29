@@ -353,4 +353,72 @@ describeFeature(feature, ({ Scenario }) => {
       expect(box.selectionEnd).toBe(box.value.length);
     });
   });
+
+  // Copy follows every mode he is in (mw-5r3p30.866): Variants shown puts each unit's brace after its words
+  const VARIANTS = { variants: 'english', variantWitnesses: 'ecm' };
+  const peter = (settings: Record<string, string>) => () => open(settings, '#/?b=1pe&c=4&view=english&weave=off');
+  const peterPages = () => open({ ...VARIANTS, readingMode: 'pages' }, '#/?b=1pe&c=4&view=english&weave=off');
+  const holdVerse = async (_: unknown, n: number) => {
+    await holdOn(numberOf(n));
+    await waitCopied();
+  };
+  const holdHeading = async (_: unknown, text: string) => {
+    await holdOn(headingButton(text));
+    await waitCopied();
+  };
+  const hasNo = (_: unknown, words: string) => {
+    expect(clip()).not.toContain(words);
+  };
+
+  Scenario('Holding a verse number with Variants shown copies the braces', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4 with Variants shown and When you copy at its defaults', peter(VARIANTS));
+    When('he holds the number of verse {int}', holdVerse);
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard holds {string}", holds);
+  });
+
+  Scenario('Holding a section heading with Variants shown copies the braces of its verses', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4 with Variants shown and When you copy at its defaults', peter(VARIANTS));
+    When('he holds the heading {string}', holdHeading);
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard holds {string}", holds);
+  });
+
+  Scenario('Holding the place line with Variants shown copies the braces', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4 with Variants shown and Turn pages and When you copy at its defaults', peterPages);
+    When('he holds the place line', async () => {
+      await holdOn(placeLine());
+      await waitCopied();
+    });
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard holds {string}", holds);
+  });
+
+  Scenario("The Verse view's Copy with Variants shown copies the braces", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4:1 with Variants shown and When you copy at its defaults', async () => {
+      await open(VARIANTS, '#/?ref=1Pet.4.1');
+      await screen.findByRole('region', { name: 'Verse view' });
+      // the Verse view copies by the defaults until its settings have been read from the store
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
+    });
+    When('he taps {string}', tapCopy);
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard holds {string}", holds);
+  });
+
+  Scenario('With Variants off the verse is copied plain', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4 with Variants off and When you copy at its defaults', peter({ variants: 'off' }));
+    When('he holds the number of verse {int}', holdVerse);
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard has no {string}", hasNo);
+  });
+
+  Scenario('Text English copies the English with no braces even with Variants shown', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4 with Variants shown and When you copy set to Text {string}', (_, text: string) => open({ ...VARIANTS, copyText: text }, '#/?b=1pe&c=4&view=english&weave=off'));
+    When('he holds the number of verse {int}', holdVerse);
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard has no {string}", hasNo);
+  });
 });

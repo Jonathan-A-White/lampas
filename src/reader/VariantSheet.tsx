@@ -28,7 +28,7 @@ export const READING_THIS = 'Reading this';
 /** The line over Ask the tutor on a unit whose other readings are the text's own words in another order (mw-9ji6ek0.31). */
 export const WORD_ORDER_ONLY = 'Word order only: emphasis, not meaning';
 /** The one line under the readings that says what Read this does not change in this wave (the plan's Q6). */
-export const READ_THIS_NOTE = 'Read aloud, copy, Read check and the diagram keep the Byzantine words.';
+export const READ_THIS_NOTE = 'Read aloud, Read check and the diagram keep the Byzantine words; Copy, as you read it, gives your reading.';
 
 /** What a tap or a long press on a word of a reading does: the word, the language it is drawn in. */
 interface WordActions {

@@ -120,3 +120,40 @@ Feature: When you copy
     Given Lampas is opened on Romans 8 on a phone with no licence and a clipboard that refuses and When you copy at its defaults
     When he holds the number of verse 11
     Then the Verse view is open on verse 11 with the text shown selected to copy by hand
+
+  # Copy follows every mode he is in (mw-5r3p30.866): with Variants shown, 'As you read it' copies each shown unit's brace after its words
+  Scenario: Holding a verse number with Variants shown copies the braces
+    Given Lampas is opened on 1 Peter 4 with Variants shown and When you copy at its defaults
+    When he holds the number of verse 1
+    Then the phone's clipboard starts with "Therefore, since Christ suffered for us {left out NA} in His body,"
+    And the phone's clipboard holds "anyone who has suffered {left out NA} in his body is done with sin."
+
+  Scenario: Holding a section heading with Variants shown copies the braces of its verses
+    Given Lampas is opened on 1 Peter 4 with Variants shown and When you copy at its defaults
+    When he holds the heading "Living for God’s Glory"
+    Then the phone's clipboard starts with "1 Therefore, since Christ suffered for us {left out NA} in His body,"
+    And the phone's clipboard holds "anyone who has suffered {left out NA} in his body is done with sin."
+
+  Scenario: Holding the place line with Variants shown copies the braces
+    Given Lampas is opened on 1 Peter 4 with Variants shown and Turn pages and When you copy at its defaults
+    When he holds the place line
+    Then the phone's clipboard starts with "1 Therefore, since Christ suffered for us {left out NA} in His body,"
+    And the phone's clipboard holds "anyone who has suffered {left out NA} in his body is done with sin."
+
+  Scenario: The Verse view's Copy with Variants shown copies the braces
+    Given Lampas is opened on 1 Peter 4:1 with Variants shown and When you copy at its defaults
+    When he taps "Copy"
+    Then the phone's clipboard starts with "Therefore, since Christ suffered for us {left out NA} in His body,"
+    And the phone's clipboard holds "anyone who has suffered {left out NA} in his body is done with sin."
+
+  Scenario: With Variants off the verse is copied plain
+    Given Lampas is opened on 1 Peter 4 with Variants off and When you copy at its defaults
+    When he holds the number of verse 1
+    Then the phone's clipboard starts with "Therefore, since Christ suffered for us in His body,"
+    And the phone's clipboard has no "{"
+
+  Scenario: Text English copies the English with no braces even with Variants shown
+    Given Lampas is opened on 1 Peter 4 with Variants shown and When you copy set to Text "english"
+    When he holds the number of verse 1
+    Then the phone's clipboard starts with "Therefore, since Christ suffered for us in His body,"
+    And the phone's clipboard has no "{"

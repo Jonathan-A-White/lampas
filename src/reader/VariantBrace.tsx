@@ -6,12 +6,10 @@ import { Fragment, type KeyboardEvent } from 'react';
 import { GREEK_LANG } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
 import { Tap, TAP_PAD } from './Tap';
-import { braceReadings, type BraceReading, type ShownUnit, type WitnessChip } from './variants';
+import { braceReadings, LEFT_OUT, SAME, type BraceReading, type ShownUnit, type WitnessChip } from './variants';
 
 /** Each chip spelled out, for a screen reader. */
 const SPELLED: Record<WitnessChip, string> = { B: 'Byzantine split', NA: 'Nestle-Aland', ECM: 'ECM', RP: 'Robinson-Pierpont text' };
-const LEFT_OUT = 'left out';
-const SAME = 'same';
 /** A no-break space and a word joiner: nothing between the last word of a reading and its sigla, or between a siglum and the closing brace, is a place to break the line (mw-9ji6ek0.16). */
 const NBSP = '\u00a0';
 const JOIN = '\u2060';

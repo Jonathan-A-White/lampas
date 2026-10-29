@@ -46,7 +46,7 @@ test('Revelation 3:2: Read this on NA’s “I was about to die” lays it in pl
 
   // the NA siglum after {I was about to die B NA} opens the sheet; the sheet says what Read this leaves alone
   await openSheetOf(page, 2, 'I was about to die');
-  await expect(sheet(page).getByText('Read aloud, copy, Read check and the diagram keep the Byzantine words.')).toBeVisible();
+  await expect(sheet(page).getByText('Read aloud, Read check and the diagram keep the Byzantine words; Copy, as you read it, gives your reading.')).toBeVisible();
   const na = readingOf(page, 'ἔμελλον ἀποθανεῖν');
   await expect(na.getByText('I was about to die', { exact: true })).toBeVisible();
   // no reading is in place yet: the text's own has no button, the others have

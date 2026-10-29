@@ -281,7 +281,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // the unit whose brace he tapped: its sheet (src/reader/VariantSheet.tsx, mw-9ji6ek0.6)
   const [variantShown, setVariantShown] = useState<ShownUnit | null>(null);
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
-  const copyHold = useCopyHold(chapter, view ? { view, woven } : undefined, openChapter);
+  const copyHold = useCopyHold(chapter, view ? { view, woven, variants } : undefined, openChapter);
   // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
   useEffect(() => {
     if (request?.action === 'ask') chooseAction('ask');

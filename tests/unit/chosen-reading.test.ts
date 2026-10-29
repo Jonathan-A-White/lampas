@@ -249,9 +249,9 @@ describe('the variant sheet’s Read this', () => {
     expect(screen.getAllByRole('button', { name: 'Read this' })).toHaveLength(1);
   });
 
-  it('says in one line that read aloud, copy, Read check and the diagram keep the Byzantine words', () => {
+  it('says in one line that read aloud, Read check and the diagram keep the Byzantine words and that Copy, as you read it, gives the reading', () => {
     sheet(2);
-    expect(screen.getByText(/Read aloud, copy, Read check and the diagram keep the Byzantine words/)).toBeTruthy();
+    expect(screen.getByText(/Read aloud, Read check and the diagram keep the Byzantine words; Copy, as you read it, gives your reading/)).toBeTruthy();
   });
 
   it('has no Read this where the Reader gives it nothing to do', () => {
