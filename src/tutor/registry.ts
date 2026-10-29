@@ -37,7 +37,6 @@ import { leaveTalk } from '../talk/leave';
 import type { TalkRequest, TalkScope } from '../services/talk';
 import { heldText, holdText } from '../services/talkVerses';
 import { openSheetTitles } from '../ui/sheetBack';
-import { settingsSentTo } from './knows';
 import { SCREEN_NAMES } from './screen';
 import { screenContextNow } from './screenContext';
 import { variantFactsOf } from './variantFacts';
@@ -296,7 +295,7 @@ const setSettingCommand: Command = {
 const MALFORMED_CHANGE = 'A change was left out: it was not a setting and a value.';
 
 /**
- * The one way the app changes a setting for a talk (an answer's settings_changes, the offered change, the verse ask's Ask by): each change runs the set-setting command, in order, so a later change of the
+ * The one way the app changes a setting for a talk (an answer's settings_changes, the offered change): each change runs the set-setting command, in order, so a later change of the
  * same setting is from the earlier one. Said as applyChanges says it: what was applied, and a plain sentence for each change left out; at most MAX_CHANGES.
  */
 export async function changeSettings(changes: unknown, options: { skipUnchanged?: boolean } = {}): Promise<ChangeResult> {
@@ -406,12 +405,6 @@ export async function addWord(scope: TalkScope, lemma: string): Promise<AddWordR
 export const lampasRegistry = (): Registry =>
   defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
 
-/** The verse ask's smaller set: the core facts only (its settings are the ones its grind is told), and no place: its answer does not go anywhere. */
-export const askRegistry = (): Registry =>
-  defineRegistry({
-    facts: [whereHeIsFact, todayDrillFact, { ...settingsFact, tell: 'what the settings this tutor is told hold now', read: () => settingsSentTo('verse-ask') }],
-  });
-
 /** The tutor's record (the ask-backs and misses of each screen) and the up-front list of each screen are kept on the phone, in a database of their own (the kit's Dexie store; its talks table is not used: the Bible talks are Lampas's own,
  * src/data/repositories/talks.ts), so that the counts last from one launch to the next and the nightly run (src/tutor/weightsRun.ts) has a week of them to read. The clients of both grinds and the nightly one write to it. */
 // the page's own IndexedDB handed over, since the kit's Dexie (its own copy) looks for one when it loads, which a test's fake is not yet
@@ -426,13 +419,12 @@ const clientOf = (registry: Registry, screen: () => string = screenKey, budgetBy
     registry,
     screen,
     ...(budgetBytes ? { budgetBytes } : {}),
-    // Lampas sends its own requests (src/services/talk.ts askTalk, src/services/tutor.ts askTutor, src/tutor/weightsRun.ts): the client builds them and carries out the answer's go
+    // Lampas sends its own requests (src/services/talk.ts askTalk, src/tutor/weightsRun.ts): the client builds them and carries out the answer's go
     send: () => Promise.reject(new Error('the client sends nothing: the app does')),
   });
 
 let talkClient: TutorClient<never> | undefined;
 let nightClient: TutorClient<never> | undefined;
-let askClient: TutorClient<never> | undefined;
 let talkRegistry: Registry | undefined;
 
 /** The client of the Bible talk. */
@@ -447,20 +439,12 @@ export const NIGHTLY_SCREEN = 'nightly';
 /** The client of the nightly tutor-weights run: the Bible talk's registry and record, on the screen 'nightly' (mw-t3xu9a.8). */
 export const nightlyClient = (): TutorClient<never> => (nightClient ??= clientOf(bibleTalkRegistry(), () => NIGHTLY_SCREEN, NIGHTLY_BYTES));
 
-/** The client of the verse ask. */
-export const askClientOf = (): TutorClient<never> => (askClient ??= clientOf(askRegistry()));
-
 /** The request for turn `turn` of a talk: `request` (the app's own fields, passed through untouched) with the facts read up front and the catalogue. */
 export async function withTutorFacts(request: TalkRequest, turn: number): Promise<TalkRequest> {
   const built = await bibleTalkClient().buildRequest(turn, request);
   // the client returns a new object: the verses the request was built from go with it, or the fit would clip the passage by characters instead of dropping whole verses (mw-5r3p30.757)
   const hold = heldText(request);
   return hold ? holdText(built, hold) : built;
-}
-
-/** The same for the verse ask's request, with its smaller set. */
-export async function askWithFacts<F extends object>(request: F, turn: number): Promise<F> {
-  return askClientOf().buildRequest(turn, request);
 }
 
 /** What a fact is called in the line 'Looking at your ...' while the tutor's follow-up is out; a fact with no entry here goes by its name with spaces. */

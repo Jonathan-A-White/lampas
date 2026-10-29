@@ -1,4 +1,4 @@
-// The tips grind (grinds/tips.json) is read by the mill, not by this app: it has the keys of the verse-ask grind (and so of SpellForge's
+// The tips grind (grinds/tips.json) is read by the mill, not by this app: it has the keys of the bible-talk grind (and so of SpellForge's
 // tutor-turn.json), its input schema takes the usage summary and the ids of tips already shown, and its answer schema agrees with
 // isTipAnswer, the guard the phone runs.
 import { describe, expect, it } from 'vitest';
@@ -10,14 +10,14 @@ import { instructionsOf } from '../../scripts/grind-parts';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/tips.json');
-const verseAsk = readJson('grinds/verse-ask.json');
+const bibleTalk = readJson('grinds/bible-talk.json');
 const answerSchema = readJson('grinds/tips.answer.schema.json') as Schema;
 const inputSchema = readJson('grinds/tips.input.schema.json') as Schema;
 const instructions = instructionsOf('tips');
 
 describe('grinds/tips.json', () => {
-  it('has the same keys as grinds/verse-ask.json, for the lampas app and the tips kind, on haiku at low effort', () => {
-    expect(Object.keys(grind).sort()).toEqual(Object.keys(verseAsk).sort());
+  it('has the same keys as grinds/bible-talk.json, for the lampas app and the tips kind, on haiku at low effort', () => {
+    expect(Object.keys(grind).sort()).toEqual(Object.keys(bibleTalk).sort());
     expect(grind).toMatchObject({ grind: 1, app: 'lampas', kind: 'tips', versions: ['1'], model: 'haiku', effort: 'low' });
     expect(grind.attachments).toEqual({ min: 0, max: 0, mime: [], maxBytes: 0 });
   });

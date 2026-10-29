@@ -17,9 +17,9 @@ describe('the longest question', () => {
   });
 
   const base = { reference: 'Romans 8:28', greek: 'α', english: 'x', solid_words: [], settings: {} };
-  it.each(['bible-talk', 'verse-ask'])('%s: the input schema takes a 4000-character question and no more', (kind) => {
+  it.each(['bible-talk'])('%s: the input schema takes a 4000-character question and no more', (kind) => {
     const schema = schemaOf(kind);
-    const request = (question: string) => ({ ...base, question, ...(kind === 'bible-talk' ? { history: [] } : {}) });
+    const request = (question: string) => ({ ...base, question, history: [] });
     expect(validate(request('q'.repeat(4000)), schema)).toEqual([]);
     expect(validate(request('q'.repeat(4001)), schema)).not.toEqual([]);
   });

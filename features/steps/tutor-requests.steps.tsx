@@ -1,5 +1,5 @@
 // features/steps/tutor-requests.steps.tsx — runs features/tutor-requests.feature: the requests he sent to the factory (src/data/repositories/requests.ts)
-// ride in the bible-talk and verse-ask requests as `requests`, and the tutor's answer about them (a fake Postern's, as the grind is read by the mill)
+// ride in the bible-talk requests as `requests`, and the tutor's answer about them (a fake Postern's, as the grind is read by the mill)
 // is shown, with the setting offer an adopted idea gets. The wire is read from the grist the fake mill opened.
 import '@testing-library/react/dont-cleanup-after-each';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';

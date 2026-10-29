@@ -1,5 +1,5 @@
 // Ask by (Settings > Asking the tutor): whether Ask the tutor opens speak-first (the big Hold to ask bar, Type a question beneath it) or type-first (the
-// text box and Send, a small mic beside them). src/Ask.tsx AskComposer reads it; the tutor may switch it when he asks (the verse-ask answer's settings_changes).
+// text box and Send, a small mic beside them). src/Ask.tsx AskComposer reads it; the tutor may switch it when he asks (the bible-talk answer's settings_changes).
 import { defineSetting } from '../define';
 
 export type AskBy = 'speaking' | 'typing';

@@ -21,7 +21,7 @@ export interface GreekWordEntry {
 }
 
 /** The most the word list may weigh, as JSON in UTF-8: a verse of 25 words fits; a long passage's list stops part-way (the grinds' instructions say so),
- * and buildTalkRequest and buildRequest (src/services/tutor.ts) make it smaller still when the rest of the request leaves less room, so the record stays under MAX_REQUEST_BYTES. */
+ * and buildTalkRequest makes it smaller still when the rest of the request leaves less room, so the record stays under MAX_REQUEST_BYTES. */
 export const GREEK_WORDS_BYTES = 4400;
 /** What the key `"greek_words":` and its comma take in the JSON. */
 export const GREEK_WORDS_KEY_BYTES = 16;

@@ -225,22 +225,12 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
 
   Scenario("The tutor's instructions ask it to teach a new word in his terms", ({ Given, Then, And }) => {
     let text = '';
-    Given("the verse-ask grind's instructions", () => {
-      text = instructionsOf('verse-ask');
+    Given("the bible-talk grind's instructions", () => {
+      text = instructionsOf('bible-talk');
     });
     Then('they describe the learner field', () => void expectLearnerField(text));
     And('they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter', () => void expectTeachesNewWord(text));
     And('they say to leave out what he already knows and to keep the answer short for a phone', () => void expectKeepsItShort(text));
-  });
-  Scenario('The verse-ask instructions say to teach at his level', ({ Given, Then }) => {
-    Given("the verse-ask grind's instructions", () => undefined);
-    Then('the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move', () => {
-      const text = instructionsOf('verse-ask');
-      expect(text).toContain('`learner_grammar`');
-      expect(text).toContain('A `frontier` idea is explained');
-      expect(text).toContain('A `not_yet` idea is named only with its plain meaning');
-      expect(text).toContain('do not offer to move New words at here');
-    });
   });
   Scenario('A verse the tutor names in its answer is a link whose card opens that verse in its chapter', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers with {string}', (_, text: string) =>

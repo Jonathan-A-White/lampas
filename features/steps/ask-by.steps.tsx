@@ -1,5 +1,5 @@
 // features/steps/ask-by.steps.tsx — runs features/ask-by.feature: the setting 'Ask by' (Speaking | Typing), the Verse view's Ask the tutor following it, and the
-// tutor switching it when he asks (the verse-ask answer carries a settings_changes entry). Postern and the recogniser are fakes.
+// tutor switching it when he asks (the answer carries a settings_changes entry). Postern and the recogniser are fakes.
 import '@testing-library/react/dont-cleanup-after-each';
 import { readFileSync } from 'node:fs';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
@@ -221,15 +221,14 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario("The tutor's instructions say to switch Ask by only when he asks", ({ Given, Then }) => {
-    Given('the verse-ask grind', () => undefined);
-    Then('its answer schema lets an answer change only Ask by to Speaking or Typing, and its instructions say when', () => {
-      const schema = JSON.parse(readFileSync('grinds/verse-ask.answer.schema.json', 'utf8')) as Schema;
+    Given('the bible-talk grind', () => undefined);
+    Then('its answer schema lets an answer change Ask by to Speaking or Typing and no other value, and its instructions say when', () => {
+      const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
       const base = { answer: 'x', question: 'Why?', words: [] };
       expect(validate({ ...base, settings_changes: [{ key: 'askBy', value: 'typing' }] }, schema)).toEqual([]);
       expect(validate({ ...base, settings_changes: [{ key: 'askBy', value: 'speaking' }] }, schema)).toEqual([]);
       expect(validate({ ...base, settings_changes: [{ key: 'askBy', value: 'shouting' }] }, schema)).not.toEqual([]);
-      expect(validate({ ...base, settings_changes: [{ key: 'theme', value: 'dark' }] }, schema)).not.toEqual([]);
-      const text = instructionsOf('verse-ask');
+      const text = instructionsOf('bible-talk');
       expect(text).toContain('`settings_changes`');
       expect(text).toContain('askBy');
       expect(text).toContain('only when he asks');

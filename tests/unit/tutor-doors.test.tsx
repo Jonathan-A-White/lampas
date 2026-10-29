@@ -1,6 +1,6 @@
 // tests/unit/tutor-doors.test.tsx — every door to the tutor opens the one Talk session with the same tools (mw-5r3p30.842). His report: the tutor he reaches with a
 // two-finger tap (the Reader's Talk bar) can send to the makers, and from other doors it answers "I can't do that". The Verse view's Ask the tutor was a second tutor (the verse-ask
-// grind, which has no feedback_offer, no `go`, no `do`, only Ask by in settings_changes); it now sends to the Talk session as every other door does. Each door below asks 'send this to the makers: test' and is checked three ways: the grist
+// grind, which had no feedback_offer, no `go`, no `do`, only Ask by in settings_changes); it sent to the Talk session as every other door does, and the grind is gone (mw-5r3p30.850). Each door below asks 'send this to the makers: test' and is checked three ways: the grist
 // is the Talk session's (kind bible-talk), the Talk sheet it opens shows the tutor's offer, Send this to the makers, and the tap files a tutor-ask request.
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -28,7 +28,7 @@ const OFFER = 'Send this to the makers';
 const user = userEvent.setup();
 let fake: FakePostern;
 
-/** What the Talk session's tutor answers to a request for the makers: the offer (grinds/bible-talk.answer.schema.json feedback_offer). The verse-ask tutor has no such field. */
+/** What the Talk session's tutor answers to a request for the makers: the offer (grinds/bible-talk.answer.schema.json feedback_offer). */
 const OFFERING_ANSWER = {
   answer: 'I can pass that on to the makers.',
   question: ASK,
@@ -71,7 +71,7 @@ beforeEach(async () => {
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const view = () => screen.getByRole('region', { name: 'Verse view' });
-const questionsAsked = () => fake.received.filter((g) => g.grist.kind === 'bible-talk' || g.grist.kind === 'verse-ask');
+const questionsAsked = () => fake.received.filter((g) => g.grist.kind === 'bible-talk');
 
 /** Selects verse 28: its Verse view opens, on the action named. */
 async function openVerse28(action: string): Promise<void> {
@@ -118,7 +118,7 @@ describe('every door opens the one Talk session, with its tools', () => {
     it(`${door}: the question goes to the Talk session, whose offer sends to the makers`, async () => {
       await open();
       await waitFor(() => expect(questionsAsked()).toHaveLength(1));
-      // the tool set is the Talk session's: the bible-talk grind, never the verse-ask grind that has no offer for the makers
+      // the tool set is the Talk session's: the bible-talk grind
       expect(questionsAsked()[0].grist.kind).toBe('bible-talk');
       // and the tutor's answer shows its offer in the Talk sheet the door opened
       const button = await within(await screen.findByRole('dialog', { name: /^Talk about / })).findByRole('button', { name: OFFER });
@@ -136,8 +136,8 @@ const sources = (dir: string): string[] =>
   });
 
 describe('no screen has a tutor of its own', () => {
-  it('no screen asks the verse-ask grind: askTutor has no caller in src/', () => {
-    const callers = sources('src').filter((file) => /from '\.\/services\/tutor'|from '\.\.\/services\/tutor'/.test(readFileSync(file, 'utf8')) && /\baskTutor\b/.test(readFileSync(file, 'utf8')));
+  it('no screen asks the retired verse-ask grind: no file of src/ sends it', () => {
+    const callers = sources('src').filter((file) => /['"]verse-ask['"]/.test(readFileSync(file, 'utf8')));
     expect(callers.map((file) => file.replace(/\\/g, '/')).sort()).toEqual([]);
   });
 

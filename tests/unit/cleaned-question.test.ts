@@ -1,9 +1,8 @@
-// The tutor grinds that take a spoken question (bible-talk and verse-ask) give it back cleaned up (mw-5r3p30.103): the answer's
+// The tutor grinds that take a spoken question (the bible-talk) give it back cleaned up (mw-5r3p30.103): the answer's
 // `question` is his words with punctuation and capitals, no ums or false starts, the meaning unchanged. The app shows it in place of
 // the raw words when it is there. The schema, the instructions, the phone's guards and the examples all say so.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { isVerseAnswer } from '../../src/services/tutor';
 import { isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
@@ -13,7 +12,6 @@ const readJson = (rel: string): Schema & { required: string[]; properties: Recor
 
 const KINDS = [
   { kind: 'bible-talk', max: 4000, guard: isTalkAnswer },
-  { kind: 'verse-ask', max: 4000, guard: isVerseAnswer },
 ] as const;
 
 const SPOKEN = 'um why are there uh italic words what does it mean for the words to be italic';

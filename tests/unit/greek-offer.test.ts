@@ -184,17 +184,11 @@ describe('which greek_offer is kept', () => {
 
 describe('the grind', () => {
   const instructions = instructionsOf('bible-talk');
-  const verseAsk = instructionsOf('verse-ask');
 
   it('says when to answer in English, when to offer, and the three limits', () => {
     expect(instructions).toContain('## Offering the Greek');
     for (const rule of ['`greek_offer`', '`greek_interest`', '`greek_asked`', 'at most one', 'said no to the Greek offer', 'no Greek words unless he asks']) expect(instructions).toContain(rule);
     expect(instructions).toContain('`greek`');
-  });
-
-  it('is repeated for verse-ask, which answers in English and leaves no offer', () => {
-    expect(verseAsk).toContain('## English for a reader not learning the Greek');
-    expect(verseAsk).toContain('said no to the Greek offer');
   });
 
   it('has examples: an English-only reader is offered once, one who said no is not, a learner of the Greek is not held to English', () => {
@@ -440,12 +434,6 @@ describe('the Hebrew instructions and examples', () => {
     const welcome = text.slice(start, text.indexOf('\n## ', start + 1)).replace(/\s+/g, ' ');
     expect(welcome).toContain("'Why are you here: to read, to study, or to learn the Greek or the Hebrew?'");
     for (const line of ["'Show me the Greek'", "'Show me the Hebrew'", "'Show me the Greek and the Hebrew'"]) expect(welcome).toContain(line);
-  });
-
-  it('let verse-ask make no offer on an Old Testament verse', () => {
-    const ask = instructionsOf('verse-ask');
-    expect(ask).toContain('make no offer: the Bible talk makes them');
-    expect(ask).not.toContain('offer no Greek');
   });
 
   it('have a Hebrew offer on Genesis 1:1 and a welcome answer for the Hebrew, both fitting the schemas', () => {

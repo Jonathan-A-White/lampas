@@ -5,7 +5,6 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname } from 'node:path';
-import { buildRequest } from '../../src/services/tutor';
 import { buildReadingRequest } from '../../src/services/reading';
 import type { Verse } from '../../src/data/chapter';
 import { validate, type Schema } from '../support/schema-validate';
@@ -28,7 +27,7 @@ const grindFiles = readdirSync('grinds').filter((f) => f.endsWith('.json') && !f
 
 describe('the grinds have scenarios', () => {
   it('finds every grind of the rig', () => {
-    expect(grindFiles.sort()).toEqual(['audible-position.json', 'bible-talk.json', 'drill-items.json', 'feedback.json', 'find-refs.json', 'sentence-diagram.json', 'tips.json', 'tutor-weights.json', 'verse-ask.json', 'verse-read.json']);
+    expect(grindFiles.sort()).toEqual(['audible-position.json', 'bible-talk.json', 'drill-items.json', 'feedback.json', 'find-refs.json', 'sentence-diagram.json', 'tips.json', 'tutor-weights.json', 'verse-read.json']);
   });
 
   describe.each(grindFiles)('grinds/%s', (grindFile) => {
@@ -68,14 +67,8 @@ describe('the grinds have scenarios', () => {
   });
 });
 
-describe('the input schemas of verse-ask and verse-read take what the app sends', () => {
+describe('the input schema of verse-read takes what the app sends', () => {
   const verse = { n: 28, g: [{ t: 'οἴδαμεν' }, { t: 'δὲ' }], e: [{ t: 'We know' }, { t: 'that' }] } as unknown as Verse;
-
-  it('verse-ask: buildRequest, with and without the optional fields', () => {
-    const schema = readJson('grinds/verse-ask.input.schema.json') as Schema;
-    expect(validate(buildRequest('Romans 8:28', verse, 'What is οἴδαμεν?', ['ὁ', 'καί']), schema)).toEqual([]);
-    expect(validate(buildRequest('Romans 8:28', verse, 'Why?', [], 'solid 2 words; learning: a; new today: -; due now: 0', undefined, { hebrewDepth: 'both' }), schema)).toEqual([]);
-  });
 
   it('verse-read: buildReadingRequest, English and Greek', () => {
     const schema = readJson('grinds/verse-read.input.schema.json') as Schema;
@@ -227,7 +220,7 @@ describe('bible-talk/other-passage-in-place (mw-5r3p30.153)', () => {
 
 // mw-5r3p30.164: the tutor's cleaned wording varies run to run, so the cleaned-question scenarios check what cleaning promises
 // (no filler, a question that ends in '?', a capital start, the meaning word), never one exact string. Smoke failed at 17:07Z on an `equals`.
-describe.each(['verse-ask', 'bible-talk'])('%s/cleaned-question (mw-5r3p30.164)', (kind) => {
+describe.each(['bible-talk'])('%s/cleaned-question (mw-5r3p30.164)', (kind) => {
   const example = readJson(`grinds/examples/${kind}/cleaned-question.json`) as unknown as GrindExample;
   const answered = (question: string) => checkExpect(example.expect, { question });
 

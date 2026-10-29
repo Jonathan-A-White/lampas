@@ -81,7 +81,7 @@ describe('no scenario note, and no instructions, use the past tense of read', ()
     expect(withoutWrongLines(instructionsOf('verse-read'))).not.toMatch(PAST_READ);
   });
 
-  it.each(['verse-read', 'verse-ask', 'bible-talk'])('the %s instructions have a section on words the voice can misread', (kind) => {
+  it.each(['verse-read', 'bible-talk'])('the %s instructions have a section on words the voice can misread', (kind) => {
     const text = instructionsOf(kind);
     const start = text.indexOf('## Words the voice can misread');
     expect(start, 'the section').toBeGreaterThanOrEqual(0);

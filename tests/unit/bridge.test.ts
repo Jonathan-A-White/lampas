@@ -9,7 +9,6 @@ import { BRIDGE_MAX, MISSING_FOUNDATIONS_MAX, askedIdeas, liveBridge, missingFou
 import { itemsOf, LADDER } from '../../src/data/grammar/ladder';
 import type { Level } from '../../src/data/grammar/needs';
 import { addAnswer, addTurn, listAnswers, listTurns } from '../../src/data/repositories';
-import { buildRequest } from '../../src/services/tutor';
 import { buildTalkRequest, isTalkAnswer, type TalkScope } from '../../src/services/talk';
 import { offerOfTurn } from '../../src/talk/offers';
 import { validate, type Schema } from '../support/schema-validate';
@@ -21,9 +20,7 @@ beforeEach(async () => {
 });
 
 const talkAnswerSchema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
-const verseAnswerSchema = JSON.parse(readFileSync('grinds/verse-ask.answer.schema.json', 'utf8')) as Schema;
 const talkInputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
-const verseInputSchema = JSON.parse(readFileSync('grinds/verse-ask.input.schema.json', 'utf8')) as Schema;
 
 const solid = (ids: readonly string[]): Map<string, Level> => new Map(ids.map((id) => [id, 'solid' as const]));
 /** only the alphabet and its 24 letters are solid */
@@ -38,7 +35,6 @@ const bridgeOf = (ids: string[], next: string) => ({ answer: 'Briefly: it shows 
 describe('the answer schemas', () => {
   it.each([
     ['bible-talk', talkAnswerSchema],
-    ['verse-ask', verseAnswerSchema],
   ])('%s: the bridge ideas are exactly the ladder\'s ids', (_, schema) => {
     const bridge = (schema.properties as Record<string, Schema>).bridge;
     const props = bridge.properties as Record<string, Schema>;
@@ -57,7 +53,6 @@ describe('the answer schemas', () => {
 
   it.each([
     ['bible-talk', talkAnswerSchema],
-    ['verse-ask', verseAnswerSchema],
   ])('%s: an answer naming an idea the ladder lacks is refused, one naming the ladder\'s is taken', (_, schema) => {
     expect(validate(bridgeOf(['case-genitive', 'noun'], 'noun'), schema)).toEqual([]);
     expect(validate(bridgeOf(['case-genitive', 'made-up-idea'], 'noun'), schema)).not.toEqual([]);
@@ -178,13 +173,6 @@ describe('the request and the turn', () => {
     expect(validate(request, talkInputSchema)).toEqual([]);
     expect('missing_foundations' in buildTalkRequest(scope, QUESTION, [], [])).toBe(false);
     expect(validate({ ...request, missing_foundations: { ...hint, total: 'many' } }, talkInputSchema)).not.toEqual([]);
-  });
-
-  it('a verse question carries it too', () => {
-    const verse = chapter.verses[10];
-    const request = buildRequest('Romans 8:11', verse, QUESTION, [], undefined, undefined, undefined, [], undefined, false, undefined, undefined, hint);
-    expect(request.missing_foundations).toEqual(hint);
-    expect(validate(request, verseInputSchema)).toEqual([]);
   });
 
   it('a turn keeps the bridge and offers Take me there until he chooses', async () => {

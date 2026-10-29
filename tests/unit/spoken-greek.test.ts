@@ -1,10 +1,9 @@
 // A question he speaks reaches the tutor marked `spoken` (mw-5r3p30.244): the phone's en-US recogniser writes a Greek word as English
-// sound-alikes ('Tech N9ne' for τεκνίον), so both tutor grinds are told to match them to the passage's Greek and say which word they took.
+// sound-alikes ('Tech N9ne' for τεκνίον), so the Bible talk is told to match them to the passage's Greek and say which word they took.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { buildTalkRequest } from '../../src/services/talk';
-import { buildRequest } from '../../src/services/tutor';
 import { askTranscriber } from '../../src/speech/askTranscriber';
 import { forgetSpoken, noteSpoken, wasSpoken } from '../../src/speech/spoken';
 import { FakeRecognizer, result, stubRecognizer } from '../support/fake-recognizer';
@@ -22,14 +21,9 @@ describe('the request says whether the question was spoken', () => {
     expect('spoken' in buildTalkRequest(scope, 'Why?', [], [])).toBe(false);
   });
 
-  it('verse-ask: spoken: true when spoken, no key when typed', () => {
-    expect(buildRequest('1 John 2:1', verse, 'Tech N9ne?', [], undefined, undefined, undefined, [], undefined, true).spoken).toBe(true);
-    expect('spoken' in buildRequest('1 John 2:1', verse, 'Why?', [])).toBe(false);
-  });
-
-  it.each(['bible-talk', 'verse-ask'])('%s: its input schema takes the field and refuses anything but true', (kind) => {
+  it.each(['bible-talk'])('%s: its input schema takes the field and refuses anything but true', (kind) => {
     const schema = readJson(`grinds/${kind}.input.schema.json`) as Schema;
-    const request = kind === 'bible-talk' ? buildTalkRequest(scope, 'Why?', [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, undefined, true) : buildRequest('1 John 2:1', verse, 'Why?', [], undefined, undefined, undefined, [], undefined, true);
+    const request = buildTalkRequest(scope, 'Why?', [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, undefined, true);
     expect(validate(request, schema)).toEqual([]);
     expect(validate({ ...request, spoken: false }, schema)).not.toEqual([]);
   });
@@ -112,7 +106,7 @@ describe('words kept unsent in the Ask field are marked spoken (mw-5r3p30.307)',
   });
 });
 
-describe.each(['bible-talk', 'verse-ask'])('the %s grind tells the tutor about spoken Greek words', (kind) => {
+describe.each(['bible-talk'])('the %s grind tells the tutor about spoken Greek words', (kind) => {
   const text = instructionsOf(kind);
 
   it('says a spoken question went through an English recogniser and a Greek word may come as sound-alikes', () => {
@@ -139,10 +133,10 @@ describe.each(['bible-talk', 'verse-ask'])('the %s grind tells the tutor about s
     expect(example.request.reference).toBe('1 John 2:1');
     expect(example.request.question).toBe('what paradigm do I need to know to go from Tech N9ne to technia');
     expect(JSON.stringify(example.expect)).toContain('τεκνίον');
-    // the tutor takes the form from the passage data and writes the verse's own Τεκνία (mw-5r3p30.246), so either case is right (verse-ask's example is not part of that fix)
+    // the tutor takes the form from the passage data and writes the verse's own Τεκνία (mw-5r3p30.246), so either case is right
     const answer = (example.expect as { answer: { contains: string; matches: string } }).answer;
     expect(answer.contains).toBe('τεκνίον');
-    for (const right of kind === 'bible-talk' ? ['Τεκνία', 'τεκνία'] : ['τεκνία']) expect(new RegExp(answer.matches).test(`I took "technia" as ${right}.`), right).toBe(true);
+    for (const right of ['Τεκνία', 'τεκνία']) expect(new RegExp(answer.matches).test(`I took "technia" as ${right}.`), right).toBe(true);
     expect(readdirSync(`grinds/examples/${kind}`)).toContain('spoken-greek-word.json');
   });
 

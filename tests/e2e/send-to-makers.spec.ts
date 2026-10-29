@@ -77,7 +77,6 @@ test("the Verse view's Ask: Attach a picture, Take a photo and Send to the maker
   await expect.poll(() => fake.received.filter((g) => g.grist.kind === 'feedback').length).toBe(1);
   expect(fake.received[0].input).toMatchObject({ kind: 'tutor-ask', text: 'The Greek is too small here', screen: 'Verse view', reference: 'Romans 8:1-11' });
   expect(fake.received[0].attachments).toHaveLength(1);
-  expect(fake.received.filter((g) => g.grist.kind === 'verse-ask')).toHaveLength(0);
   await shot(page, 'send-to-makers-ask-sent');
 });
 

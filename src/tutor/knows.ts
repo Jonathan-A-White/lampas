@@ -5,9 +5,9 @@
 // without a reason here, when a new setting has no entry in BEARS_ON, and when a builder does not send what a row says. A new setting, or a new part of his
 // progress, is classified here in the same story that makes it.
 import { SOURCES } from '../maps/sources';
-import { currentSettings, SETTINGS } from '../settings/registry';
+import { SETTINGS } from '../settings/registry';
 
-export const GRINDS = ['bible-talk', 'verse-ask', 'verse-read', 'tips'] as const;
+export const GRINDS = ['bible-talk', 'verse-read', 'tips'] as const;
 export type GrindKind = (typeof GRINDS)[number];
 
 /** What a setting bears on: the five that can change an answer, or `screen` for one that only changes how the app looks or what it offers. */
@@ -140,44 +140,6 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     progress: { words: 'solid_words', hebrewWords: 'learner', hebrewLadder: 'learner', hebrewReading: 'learner', hebrewRust: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', studyWay: 'study_way', rusty: 'rusty', today: 'today', works: 'works', maps: 'maps', variants: 'variants' },
     notSent: {},
   },
-  'verse-ask': {
-    settings: {
-      askBy: 'settings.askBy',
-      hebrewDepth: 'settings.hebrewDepth',
-      readTutor: 'settings.readTutor',
-      weave: 'settings.weave',
-      weaveGrammar: 'settings.weaveGrammar',
-      greekInterest: 'settings.greekInterest',
-      // the Hebrew dial is also its own field, hebrew_interest (mw-gdcyf98.3), the Bible talk's shape
-      hebrewInterest: 'settings.hebrewInterest',
-      greekPronunciation: 'pronunciation',
-      hebrewPronunciation: 'settings.hebrewPronunciation',
-      englishAccent: 'settings.englishAccent',
-      goal: 'learner_grammar.goal',
-      pickerGrammar: 'learner_grammar.picker_level',
-      grammarApproach: 'learner_grammar.approach',
-    },
-    progress: { words: 'solid_words', hebrewWords: 'learner', hebrewLadder: 'learner', hebrewReading: 'learner', hebrewRust: 'learner', grammar: 'learner_grammar', profile: 'learner_profile', memory: 'memory', requests: 'requests', rusty: 'rusty', works: 'works' },
-    notSent: {
-      newWordsADay: 'How many new words are offered a day is the picker\'s pace; the answer is about this verse, and learner says what is new today.',
-      grammarMove: 'Whether the app moves the grammar level for him is the Bible talk\'s offer to make; learner_grammar.picker_level is the level it left.',
-      readSpan: 'Play to (the end of the book or of the Bible) is where the header\'s Play stops; a verse, a section heading or the place line reads just what he tapped. It changes nothing the answer says.',
-      readLessons: READ_LESSONS,
-      englishVoice: SPOKEN_LATER,
-      greekVoice: SPOKEN_LATER,
-      hebrewVoice: SPOKEN_LATER,
-      englishRate: SPOKEN_LATER,
-      greekRate: SPOKEN_LATER,
-      hebrewRate: SPOKEN_LATER,
-      pronunciation: FAMILY_SET_BOTH,
-      quizGoal: NO_QUIZ,
-      studyWay: NO_QUIZ,
-      today: 'An ask is about one verse he is reading; what is on his Today list is for the Bible talk, where he can ask what is on his drill and be offered Today.',
-      maps: 'An ask is about one verse and links no map; the maps of its chapter are the Bible talk\'s to name and to link, and the Verse view has its own Maps door.',
-      variants: 'An ask is about one verse and reads it as it stands; the manuscripts\' variant readings of it are the Bible talk\'s to explain, and the Reader\'s braces and the brace sheet show them.',
-      languages: 'Which languages he reads is the two dials read together (greekInterest and hebrewInterest here, and hebrew_interest as a field), so the ask is not given the sum a second time.',
-    },
-  },
   'verse-read': {
     settings: {
       greekPronunciation: 'pronunciation',
@@ -233,12 +195,3 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
     },
   },
 };
-
-/** The `settings` object of a request to `kind`: the value each setting the table puts at `settings.<key>` holds now (a voice he chose is 'other'). */
-export async function settingsSentTo(kind: GrindKind): Promise<Record<string, string>> {
-  const wanted = Object.values(TUTOR_KNOWS[kind].settings)
-    .filter((field) => field.startsWith('settings.'))
-    .map((field) => field.slice('settings.'.length));
-  const all = await currentSettings();
-  return Object.fromEntries(wanted.map((key) => [key, String(all[key])]));
-}

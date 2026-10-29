@@ -1,18 +1,15 @@
 // What the tutor is told of his requests (mw-vy3ghg.6): up to 10 lines {summary, status, version?, setting?, reason?}, the newest first,
-// in the verse-ask and bible-talk requests; both input schemas take them and the record still fits a grist.
+// in the bible-talk request; its input schema takes them and the record still fits a grist.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { Chapter, Verse } from '../../src/data/chapter';
+import type { Chapter } from '../../src/data/chapter';
 import type { RequestRow } from '../../src/data/db';
 import { MAX_TUTOR_REQUESTS, requestsOf } from '../../src/data/requestsForTutor';
 import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory } from '../../src/services/talk';
-import { buildRequest } from '../../src/services/tutor';
 import { validate, type Schema } from '../support/schema-validate';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const talkSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
-const askSchema = JSON.parse(readFileSync('grinds/verse-ask.input.schema.json', 'utf8')) as Schema;
-const verse = { n: 28, g: [{ t: 'οἴδαμεν' }], e: [{ t: 'We know' }] } as unknown as Verse;
 
 const row = (i: number, more: Partial<RequestRow> = {}): RequestRow => ({ txid: `direct:${i}`, kind: 'tutor-ask', summary: `Idea ${i}`, app_version: '0.1.80', sentAt: 1_780_000_000_000 + i * 1000, status: 'sent', ...more });
 const size = (r: object) => new TextEncoder().encode(JSON.stringify(r)).length;
@@ -55,17 +52,15 @@ describe('requestsOf', () => {
   });
 });
 
-describe('the requests in the two grinds\' requests', () => {
+describe('the requests in the Bible talk\'s request', () => {
   const lines = requestsOf([row(2, { status: 'landed', version: '0.1.86' }), row(1, { status: 'adopted-as-setting', setting: 'Sepia theme' })]);
 
-  it('both input schemas take a built-differently line with its reason and a moved line, and refuse a reason on a landed one', () => {
+  it('the input schema takes a built-differently line with its reason and a moved line, and refuse a reason on a landed one', () => {
     const more = requestsOf([row(2, { status: 'moved', bead: 'mw-y.8' }), row(1, { status: 'built-differently', reason: 'Theme has Sepia now' })]);
     expect(more).toEqual([{ summary: 'Idea 2', status: 'moved' }, { summary: 'Idea 1', status: 'built-differently', reason: 'Theme has Sepia now' }]);
-    for (const schema of [talkSchema, askSchema]) {
-      const base = schema === talkSchema ? { reference: 'Goal', question: 'Q', history: [], solid_words: [], settings: {} } : { reference: 'Romans 8:28', greek: 'g', english: 'e', question: 'Q', solid_words: [] };
-      expect(validate({ ...base, requests: more }, schema)).toEqual([]);
-      expect(validate({ ...base, requests: [{ summary: 'x', status: 'moved', reason: 'r'.repeat(121) }] }, schema)).not.toEqual([]);
-    }
+    const base = { reference: 'Goal', question: 'Q', history: [], solid_words: [], settings: {} };
+    expect(validate({ ...base, requests: more }, talkSchema)).toEqual([]);
+    expect(validate({ ...base, requests: [{ summary: 'x', status: 'moved', reason: 'r'.repeat(121) }] }, talkSchema)).not.toEqual([]);
   });
 
   it('bible-talk: buildTalkRequest carries them, and the input schema takes them', () => {
@@ -83,22 +78,13 @@ describe('the requests in the two grinds\' requests', () => {
     expect('requests' in request).toBe(false);
   });
 
-  it('verse-ask: buildRequest carries them, and the input schema takes them', () => {
-    const request = buildRequest('Romans 8:28', verse, 'What happened to my idea?', [], undefined, undefined, undefined, lines);
-    expect(request.requests).toEqual(lines);
-    expect(validate(request, askSchema)).toEqual([]);
-    expect('requests' in buildRequest('Romans 8:28', verse, 'Why?', [])).toBe(false);
-  });
-
-  it('both schemas hold the lines to at most 10 and refuse a line with an unknown key', () => {
+  it('the schema holds the lines to at most 10 and refuse a line with an unknown key', () => {
     const eleven = Array.from({ length: 11 }, (_, i) => ({ summary: `Idea ${i}`, status: 'sent' }));
-    for (const schema of [talkSchema, askSchema]) {
-      const base = schema === talkSchema ? { reference: 'Goal', question: 'Q', history: [], solid_words: [], settings: {} } : { reference: 'Romans 8:28', greek: 'g', english: 'e', question: 'Q', solid_words: [] };
-      expect(validate({ ...base, requests: eleven.slice(0, 10) }, schema)).toEqual([]);
-      expect(validate({ ...base, requests: eleven }, schema)).not.toEqual([]);
-      expect(validate({ ...base, requests: [{ summary: 'x', status: 'sent', extra: 1 }] }, schema)).not.toEqual([]);
-      expect(validate({ ...base, requests: [{ summary: 'x', status: 'mystery' }] }, schema)).not.toEqual([]);
-    }
+    const base = { reference: 'Goal', question: 'Q', history: [], solid_words: [], settings: {} };
+    expect(validate({ ...base, requests: eleven.slice(0, 10) }, talkSchema)).toEqual([]);
+    expect(validate({ ...base, requests: eleven }, talkSchema)).not.toEqual([]);
+    expect(validate({ ...base, requests: [{ summary: 'x', status: 'sent', extra: 1 }] }, talkSchema)).not.toEqual([]);
+    expect(validate({ ...base, requests: [{ summary: 'x', status: 'mystery' }] }, talkSchema)).not.toEqual([]);
   });
 
   it('bible-talk: ten full lines still fit a grist, the oldest lines going last-first when nothing else is left to cut', () => {

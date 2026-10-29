@@ -11,11 +11,11 @@ import { instructionsOf } from '../../scripts/grind-parts';
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/verse-read.json');
 const schema = readJson('grinds/verse-read.answer.schema.json');
-const verseAsk = readJson('grinds/verse-ask.json');
+const bibleTalk = readJson('grinds/bible-talk.json');
 
 describe('grinds/verse-read.json', () => {
-  it('has the keys of verse-ask.json plus scoring, for the lampas app and the verse-read kind', () => {
-    expect(Object.keys(grind).sort()).toEqual([...Object.keys(verseAsk), 'scoring'].sort());
+  it('has the keys of bible-talk.json plus scoring, for the lampas app and the verse-read kind', () => {
+    expect(Object.keys(grind).sort()).toEqual([...Object.keys(bibleTalk), 'scoring'].sort());
     expect(grind).toMatchObject({ grind: 1, app: 'lampas', kind: 'verse-read', versions: ['1', '2'], model: 'sonnet', effort: 'medium' });
   });
 

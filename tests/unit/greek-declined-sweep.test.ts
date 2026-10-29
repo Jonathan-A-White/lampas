@@ -1,5 +1,5 @@
 // A reader who said no to the Greek offer (memory.index 'said no to the Greek offer <date>') is answered in English with
-// no Greek: mw-5r3p30.365. The 2026-10-14 smoke found verse-ask giving him a `words` entry for 'What does "love" really
+// no Greek: mw-5r3p30.365. The 2026-10-14 smoke found the retired verse-ask grind giving him a `words` entry for 'What does "love" really
 // mean here?', because its instructions let "asks what the original says" cover a question about an English word, and its
 // "How to answer" told it to cite Greek words without an exception. Every grind that is sent `memory` keeps one scenario of
 // this reader, so the smoke sees a leak in any of them.
@@ -14,36 +14,10 @@ const example = (kind: string, name: string): Example => JSON.parse(read(`grinds
 const NO = 'said no to the Greek offer';
 const GREEK_LETTERS = /[Ͱ-Ͼἀ-῿]/;
 
-describe('verse-ask for a reader who said no to the Greek', () => {
-  const text = instructionsOf('verse-ask');
-  const section = text.slice(text.indexOf('## English for a reader not learning the Greek'), text.indexOf('## When he is not ready for the question'));
-
-  it('says an English word\'s meaning is not a request for the Greek, and keeps `words` empty', () => {
-    expect(section).toContain(NO);
-    expect(section).toMatch(/what an English word\s+means/);
-    expect(section).toMatch(/not (?:a request|asking) for the Greek/);
-    expect(section).toContain('`words` stays empty');
-    expect(section).toMatch(/no Greek letters in `answer`/);
-  });
-
-  it('makes the cite-the-Greek rule yield to it', () => {
-    const how = text.slice(text.indexOf('## How to answer'));
-    expect(how).toMatch(/except for a reader not learning the Greek/i);
-  });
-
-  it('has the scenario, and it wants no `words`', () => {
-    const e = example('verse-ask', 'english-reader-said-no');
-    expect(e.request.memory?.index).toContain(NO);
-    expect(e.expect['words.0']).toEqual({ present: false });
-    expect(e.expect.answer.matches).toBeDefined();
-  });
-});
-
 // mw-5r3p30.376: after mw-5r3p30.344 added 'A word he asks about by name is the one he wants explained' the smoke failed again,
 // because 'Teach a new word on the spot' read the English word 'love' as a word to teach. The said-no rule is stated once in each
 // grind that teaches words, and every rule that teaches a word points to it and says it is about a GREEK word.
 describe('teaching a word yields to the reader who said no to the Greek', () => {
-  const verseAsk = instructionsOf('verse-ask');
   const talk = instructionsOf('bible-talk');
   const bullet = (text: string): string => {
     const at = text.indexOf('- Teach a new word on the spot. ');
@@ -53,18 +27,6 @@ describe('teaching a word yields to the reader who said no to the Greek', () => 
     const at = text.indexOf('word he asks about by name');
     return text.slice(at, text.indexOf('\n', at));
   };
-
-  it('verse-ask says once that an English word he names gets an English answer with no `words`', () => {
-    const section = verseAsk.slice(verseAsk.indexOf('## English for a reader not learning the Greek'), verseAsk.indexOf('## When he is not ready for the question'));
-    expect(section).toMatch(/an English word he names[^.]*English[^.]*no `words`/i);
-  });
-
-  it('verse-ask: Teach a new word and the by-name line are about a Greek word and point to it', () => {
-    expect(bullet(verseAsk)).toMatch(/Greek word/);
-    expect(bullet(verseAsk)).toContain('English for a reader not learning the Greek');
-    expect(byName(verseAsk)).toMatch(/Greek word/);
-    expect(byName(verseAsk)).toContain('English for a reader not learning the Greek');
-  });
 
   it('bible-talk says an English word he names gets an English answer with no `words`', () => {
     const section = talk.slice(talk.indexOf('## Offering the Greek'), talk.indexOf('## Teaching at his level'));

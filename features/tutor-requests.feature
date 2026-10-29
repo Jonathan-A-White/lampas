@@ -1,5 +1,5 @@
 Feature: The tutor knows his requests
-  The requests he sent to the factory (Your requests, #/requests) ride with every verse-ask and bible-talk request as `requests`: at most the
+  The requests he sent to the factory (Your requests, #/requests) ride with every bible-talk request as `requests`: at most the
   10 newest, each with its summary, where it stands (sent, filed, building, landed, declined, adopted-as-setting, built-differently, moved) and what that
   status carries (the version it landed in, the reason it was declined or built another way, the setting it became). The tutor answers 'what happened to my idea' from
   them and, for an idea that became a setting, offers to switch it on. The grinds are read by the mill, so these scenarios prove what the

@@ -1,33 +1,18 @@
-// src/services/tutor.ts — the tutor: one question about a verse, sent as a grist through Postern (bsv-kit/grist)
-// and answered by the mill's verse-ask grind (grinds/verse-ask.json). All the wire work is bsv-kit's: the door signs
+// src/services/tutor.ts — asking the tutor: a request sent as a grist through Postern (bsv-kit/grist)
+// and answered by one of the mill's grinds (src/services/gristKinds.ts). All the wire work is bsv-kit's: the door signs
 // every call with the device key, mill.ts sends (bsv-kit's sendGristRecord, with client_timing) and seals the request to the mill, waitForAnswer pages for the reply
 // from the grist's own place in the backend's sequence.
 import { door } from 'bsv-kit/bsv';
 import { POSTERN_DOOR } from '../config';
-import { markSupplied, NO_CHAPTER, sourceLanguage, type Chapter, type Verse } from '../data/chapter';
-import type { AnswerWord } from '../data/db';
-import { isAnswerBridge, type AnswerBridge, type MissingFoundations } from '../data/grammar/bridge';
-import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
-import type { LearnerProfile } from '../data/learnerProfile';
-import type { MemoryField } from '../data/learnerMemory';
-import type { TutorRequest } from '../data/requestsForTutor';
-import type { RustyItem } from '../data/rusty';
-import { trimWorks, type TutorWork } from '../resources/tutorLinks';
-import { hebrewPointedForm } from '../speech/hebrewPronunciation';
-import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
-import { clipTexts, MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from './requestBudget';
-import { greekWordsFitting, type GreekWordEntry } from './greekWords';
-import { hebrewWordsFitting, type HebrewWordEntry } from './hebrewWords';
-import { hebrewGuideField, hebrewInterestField, type InterestField } from './interestField';
-import { solidWordsField } from './solidWords';
+import { MAX_QUESTION_CHARS } from './requestBudget';
 import { claimReport, noteAnswer, releaseReport } from './clientTiming';
 import { TALK_KINDS, type GristKind } from './gristKinds';
 import { listenForAnswers, type StreamTarget } from './answerStream';
 import { AwaitAbortedError, BackendStatusError, GristInputError, meOf, readTimedPage, SendUnknownError, sendTimedGrist, talkSessionOf, timedDoor, UploadTimeoutError, type MillAnswer, type MillFile, type Page, type Resend, type SentGrist, type TalkSession, type TimedDoor } from './mill';
 
-/** The app and kind the mill runs the grind under (grinds/verse-ask.json), and the version of the request below. */
+/** The app the mill runs the grinds under. */
 export const TUTOR_APP = 'lampas';
-export const TUTOR_KIND = 'verse-ask';
+/** The version of every request the app sends. */
 export const TUTOR_VERSION = '1';
 
 /** How long a question may be (src/services/requestBudget.ts). */
@@ -160,126 +145,6 @@ function waitForAnswer(txid: string, since: number, mill: string, d: TimedDoor, 
     // a record that comes after the grist's own place may be the answer; one at or before it cannot be
     if (stream) listening = listenForAnswers(stream, { wake: (seq) => (seq === undefined || seq > since) && poll(), down: poll });
   });
-}
-
-/** What the grind is sent (Verse Ask Request 1): the verse in both languages, his words, his question. */
-export interface VerseAskRequest {
-  reference: string;
-  greek: string;
-  english: string;
-  /** each distinct Greek word of `greek` with its lemma, gloss, parsing and the app's respelling, syllables and stress, as the Bible talk is sent it (src/services/greekWords.ts, mw-5r3p30.643): a typed "how do I say it?" reads the syllables from here, never counts */
-  greek_words?: GreekWordEntry[];
-  /** an Old Testament ('hbo') verse only (mw-5vvlay.3): the verse in Hebrew, pointed, cantillation off, in Hebrew word order (`greek` is then empty) */
-  hebrew?: string;
-  /** with `hebrew`: each distinct Hebrew word with its lemma, transliteration, gloss and parsing in plain words (src/services/hebrewWords.ts), the Hebrew counterpart of `greek_words` */
-  hebrew_words?: HebrewWordEntry[];
-  question: string;
-  /** present (true) only when the question was spoken to the phone's English recogniser (mw-5r3p30.244): a Greek word in it may have come as English sound-alikes */
-  spoken?: true;
-  /** how many solid words he has (src/services/solidWords.ts) and the most recent few of them, newest last */
-  solid_count?: number;
-  solid_words: string[];
-  /** where he stands (src/data/learnerSummary.ts): solid count, the learning words, today's new words, what is due */
-  learner?: string;
-  /** where his grammar stands (src/data/grammar/learnerGrammar.ts) */
-  learner_grammar?: LearnerGrammar;
-  /** who he is as a student (src/data/learnerProfile.ts, Settings > About you): missing when he has filled in nothing */
-  learner_profile?: LearnerProfile;
-  /** what Lampas remembers of him (src/data/learnerMemory.ts, Settings > Memory), as the Bible talk is sent it: missing when nothing is kept */
-  memory?: MemoryField;
-  /** the Greek pronunciation the app speaks and respells in (src/speech/pronunciation.ts), as the Bible talk is sent it: a sound is described by it */
-  pronunciation: GreekPronunciation;
-  /** that pronunciation's name and sound rules, from its scheme (mw-5r3p30.268, Pronunciation.tutorGuide): a sound is described by them */
-  pronunciation_guide?: string;
-  /** the Hebrew pronunciation's name and sound rules (mw-gdcyf98.6), beside the Greek scheme's: a Hebrew sound is described by them; sent for an Old Testament verse and from the Hebrew dial's Curious up */
-  hebrew_pronunciation_guide?: string;
-  /** the settings that bear on this answer, by key (src/tutor/knows.ts settingsSentTo): { hebrewDepth: 'both', askBy: 'speaking', weave: 'off', ... } */
-  settings?: Record<string, string>;
-  /** the Hebrew dial as he set it (mw-gdcyf98.3), the Bible talk's `hebrew_interest` field: its step, the step's name and the one above; sent with the settings (whose `greekInterest` is the Greek dial) */
-  hebrew_interest?: InterestField;
-  /** the requests he sent to the factory and where each stands (src/data/requestsForTutor.ts): up to 10, newest first; missing when he has sent none */
-  requests?: TutorRequest[];
-  /** present only when the grammar words of his question name a topic that rests on ideas he lacks (mw-1vuvq6.5, src/data/grammar/bridge.ts), as the Bible talk is sent it */
-  missing_foundations?: MissingFoundations;
-  /** the solid words and ideas he now slips on or has not met for a long while (mw-1vuvq6.6, src/data/rusty.ts), as the Bible talk is sent it; missing when none. The tutor may say so in its answer; the offer to move them is the Bible talk's. */
-  rusty?: RustyItem[];
-  /** the digest of his Logos shelf chosen by the place (mw-rfjjzd.10, worksForTutor), as the Bible talk is sent it: what he owns that bears on this verse, so the answer can speak of the other books he keeps; missing when none is on his shelf; fitAsk cuts it from its end after the words of the verse */
-  works?: TutorWork[];
-  /** the facts the tutor client read up front, by name (mw-t3xu9a.4, src/tutor/registry.ts askRegistry): where-he-is, today-drill and the settings this tutor is told; fitAsk drops `settings` when it repeats the field above */
-  facts?: Record<string, unknown>;
-  /** the facts the tutor may name, sorted, each with its tell line (fitAsk cuts the tell lines first of all) */
-  catalogue?: { name: string; is: string; core?: true; tell?: string }[];
-}
-
-/** What the grind answers (grinds/verse-ask.answer.schema.json). */
-export interface VerseAnswer {
-  answer: string;
-  words: AnswerWord[];
-  /** what he asked, cleaned up by the tutor (punctuation, capitals, no fillers); shown in place of his raw words when present */
-  question?: string;
-  /** the one setting the tutor may switch when he asks, Ask by (grinds/verse-ask.answer.schema.json). The schema holds the tutor to one exact change,
-   * but the app reads whatever arrives and takes only what askByChange accepts: a change it refuses never costs him the answer (mw-5r3p30.171). */
-  settings_changes?: unknown;
-  /** only when the request carried `missing_foundations` (mw-1vuvq6.5): up to three of those ideas he lacks, the one to start with and why */
-  bridge?: AnswerBridge;
-}
-
-export type AskByChange = { key: 'askBy'; value: 'speaking' | 'typing' };
-
-const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
-const isText = (value: unknown, max: number): value is string => typeof value === 'string' && value.length > 0 && value.length <= max;
-
-/** The change the app makes from an answer: the first entry that sets Ask by to Speaking or Typing (any case), wherever it stands in the list;
- * every other entry is ignored, so a refused change before it never drops it (mw-5r3p30.191). */
-export function askByChange(answer: VerseAnswer): AskByChange[] {
-  const list: unknown[] = Array.isArray(answer.settings_changes) ? answer.settings_changes : [];
-  for (const entry of list) {
-    if (!isObject(entry) || entry.key !== 'askBy' || typeof entry.value !== 'string') continue;
-    const value = entry.value.trim().toLowerCase();
-    if (value === 'speaking' || value === 'typing') return [{ key: 'askBy', value }];
-  }
-  return [];
-}
-
-/** The app's own check of an answer, run before anything is kept (the schema's limits). */
-export function isVerseAnswer(value: unknown): value is VerseAnswer {
-  if (!isObject(value) || Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'bridge') || !isText(value.answer, 1200)) return false;
-  if ('question' in value && !isText(value.question, MAX_QUESTION_CHARS)) return false;
-  if ('bridge' in value && !isAnswerBridge(value.bridge)) return false;
-  if (!Array.isArray(value.words) || value.words.length > 12) return false;
-  // `language` is optional (absent reads as Greek): 'he' for a Hebrew word of an Old Testament verse (mw-gdcyf98.22), as the Bible talk's answer has it
-  return value.words.every((w) => isObject(w) && Object.keys(w).length === 3 + Number('language' in w) && isText(w.greek, 80) && isText(w.lemma, 80) && isText(w.note, 300) && (!('language' in w) || w.language === 'grc' || w.language === 'he'));
-}
-
-export function buildRequest(reference: string, verse: Verse, question: string, solidWords: string[], learner?: string, learnerGrammar?: LearnerGrammar, settings?: Record<string, string>, requests: TutorRequest[] = [], learnerProfile?: LearnerProfile, spoken = false, pronunciation: GreekPronunciation = DEFAULT_PRONUNCIATION, memory?: MemoryField, missingFoundations?: MissingFoundations, rusty?: RustyItem[], chapter: Chapter = NO_CHAPTER, works: TutorWork[] = []): VerseAskRequest {
-  // An Old Testament verse (mw-uqlxea.3) has no Greek: `greek` stays empty and its Hebrew goes in `hebrew` and `hebrew_words` (mw-5vvlay.3), the English as ever.
-  const hebrew = sourceLanguage(chapter) !== 'grc';
-  const request: VerseAskRequest = {
-    reference,
-    greek: hebrew ? '' : verse.g.map((w) => w.t).join(' '),
-    english: verse.e.map(markSupplied).join(' '),
-    question: question.trim(),
-    ...(spoken ? { spoken: true as const } : {}),
-    ...solidWordsField(solidWords),
-    pronunciation,
-    pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
-    ...hebrewGuideField(settings, hebrew),
-    ...(learner ? { learner } : {}),
-    ...(learnerGrammar ? { learner_grammar: learnerGrammar } : {}),
-    ...(learnerProfile ? { learner_profile: learnerProfile } : {}),
-    ...(memory ? { memory } : {}),
-    ...(settings ? { settings, hebrew_interest: hebrewInterestField(settings) } : {}),
-    ...(requests.length > 0 ? { requests } : {}),
-    ...(missingFoundations ? { missing_foundations: missingFoundations } : {}),
-    ...(rusty && rusty.length > 0 ? { rusty } : {}),
-    ...(works.length > 0 ? { works } : {}),
-  };
-  // the words of the verse weigh what the rest leaves of the record, up to GREEK_WORDS_BYTES (the Bible talk's rule, src/services/talk.ts)
-  if (hebrew) {
-    const withText = { ...request, hebrew: verse.g.map((w) => hebrewPointedForm(w.t)).join(' ') };
-    return { ...withText, hebrew_words: hebrewWordsFitting(chapter, [verse], request.question, new TextEncoder().encode(JSON.stringify(withText)).length) };
-  }
-  return { ...request, greek_words: greekWordsFitting(chapter, [verse], request.question, pronunciation, new TextEncoder().encode(JSON.stringify(request)).length) };
 }
 
 /** Why a question did not come back with an answer. */
@@ -497,64 +362,4 @@ export async function askGrind<Answer>(kind: GristKind, request: object, isAnswe
     clearTimeout(timer);
     options.signal?.removeEventListener('abort', stop);
   }
-}
-
-/**
- * Makes the request fit a grist, as the Bible talk's fitHistory does (src/services/talk.ts): while it is over MAX_REQUEST_BYTES the pronunciation's guide goes first,
- * then the oldest of his solid words, the words of the verse (from the end of the list), his requests (the last in the list, newest first) and his notes (from the end of the list; the index always stays). His question is never cut, nor is the text of a verse or a passage that fits: one too long for a request (a whole chapter) is clipped from its end last (clipTexts).
- */
-export function fitAsk(request: VerseAskRequest): VerseAskRequest {
-  let guide = request.pronunciation_guide;
-  let hebrewGuide = request.hebrew_pronunciation_guide;
-  let solid = request.solid_words;
-  let requests = request.requests;
-  let notes = request.memory?.notes;
-  let words = request.greek_words;
-  let hebrewWords = request.hebrew_words;
-  let works = request.works;
-  // an Old Testament verse's Hebrew is clipped like a Greek verse's, in the Greek slot of the pair
-  const isHebrew = request.hebrew !== undefined;
-  let text = { greek: request.hebrew ?? request.greek, english: request.english };
-  let catalogue = request.catalogue;
-  let facts = request.facts;
-  const fitted = (): VerseAskRequest => ({
-    ...request,
-    ...(catalogue ? { catalogue } : {}),
-    ...(facts ? { facts } : {}),
-    ...(isHebrew ? { hebrew: text.greek, english: text.english } : text),
-    pronunciation_guide: guide,
-    hebrew_pronunciation_guide: hebrewGuide,
-    solid_words: solid,
-    ...(words ? { greek_words: words } : {}),
-    ...(hebrewWords ? { hebrew_words: hebrewWords } : {}),
-    ...(works && works.length > 0 ? { works } : { works: undefined }),
-    ...(requests ? { requests } : {}),
-    ...(request.memory && notes ? { memory: { ...request.memory, notes } } : {}),
-  });
-  const tooBig = (): boolean => new TextEncoder().encode(JSON.stringify(fitted())).length > MAX_REQUEST_BYTES;
-  if (!tooBig()) return request;
-  // the tutor client's part gives way first (this story changes no behaviour): the tell lines of the catalogue, then the settings the request carries again as a field, then the catalogue and the facts
-  if (catalogue) catalogue = catalogue.map((entry) => ({ ...entry, tell: undefined }));
-  if (facts && request.settings && tooBig()) facts = Object.fromEntries(Object.entries(facts).filter(([name]) => name !== 'settings'));
-  if (tooBig()) catalogue = undefined;
-  if (tooBig()) facts = undefined;
-  guide = undefined;
-  hebrewGuide = undefined;
-  while (solid.length > 0 && tooBig()) solid = solid.slice(1);
-  while (words && words.length > 0 && tooBig()) words = words.slice(0, -1);
-  while (hebrewWords && hebrewWords.length > 0 && tooBig()) hebrewWords = hebrewWords.slice(0, -1);
-  while (works && works.length > 0 && tooBig()) works = trimWorks(works);
-  while (requests && requests.length > 0 && tooBig()) requests = requests.slice(0, -1);
-  while (notes && notes.length > 0 && tooBig()) notes = notes.slice(0, -1);
-  // a passage longer than a request holds (a whole chapter, mw-5r3p30.699) is sent from its start, cut where it must be, and only after all of the above
-  text = clipTexts(text, (t) => {
-    text = t;
-    return tooBig();
-  });
-  return fitted();
-}
-
-/** Sends the question about a verse and waits for the answer (the verse-ask grind). */
-export function askTutor(request: VerseAskRequest, options: AskOptions): Promise<VerseAnswer> {
-  return askGrind(TUTOR_KIND, fitAsk(request), isVerseAnswer, options);
 }

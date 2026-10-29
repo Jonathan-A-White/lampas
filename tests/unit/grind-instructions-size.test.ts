@@ -15,8 +15,8 @@ const kinds = readdirSync('grinds')
 const bytesOf = (kind: string): number => instructionParts(kind).reduce((sum, { text }) => sum + Buffer.byteLength(text, 'utf8'), 0);
 
 describe('the size of every grind\'s instructions', () => {
-  it('finds the grinds with instructions, bible-talk and verse-ask among them', () => {
-    expect(kinds).toEqual(expect.arrayContaining(['bible-talk', 'verse-ask', 'tips']));
+  it('finds the grinds with instructions, bible-talk and tips among them', () => {
+    expect(kinds).toEqual(expect.arrayContaining(['bible-talk', 'tips']));
   });
 
   it.each(kinds)('%s: its instructions total under 100,000 bytes', (kind) => {

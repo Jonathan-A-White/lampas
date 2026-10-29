@@ -10,7 +10,7 @@ import { belowIn, depthIn, frontierIn, ideaIn, makePath, needsIn, pathProblems, 
 import { teachOf } from '../../src/data/grammar/teach';
 import { AUDIT_DOC, GRAMMAR_DOC, ladderProblems, withAuditTable, withGrammarTable, type LadderSources } from '../../scripts/ladder-docs-text';
 
-const SCHEMAS = ['grinds/bible-talk.answer.schema.json', 'grinds/verse-ask.answer.schema.json'];
+const SCHEMAS = ['grinds/bible-talk.answer.schema.json'];
 
 const real = (): LadderSources => ({
   ladder: LADDER,

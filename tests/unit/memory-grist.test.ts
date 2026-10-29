@@ -8,7 +8,6 @@ import { learnerMemory, memoryFieldOf } from '../../src/data/learnerMemory';
 import { getIndex, getNote, getWishedNotes, putNote, selectNotes, setIndex, WISHED_NAMES_KEPT } from '../../src/data/repositories/memory';
 import { buildReadingRequest } from '../../src/services/reading';
 import { buildTalkRequest, fitHistory, isTalkAnswer, MAX_REQUEST_BYTES, type TalkScope } from '../../src/services/talk';
-import { buildRequest } from '../../src/services/tutor';
 import { applyMemoryFromAnswer } from '../../src/talk/memoryUpdate';
 import { buildTipRequest } from '../../src/tips/tip';
 import { validate, type Schema } from '../support/schema-validate';
@@ -57,10 +56,9 @@ describe('the request carries the memory', () => {
     expect('memory' in request).toBe(false);
   });
 
-  it('rides the other three grinds too', async () => {
+  it('rides the other two grinds too', async () => {
     await keepMemory();
     const memory = await learnerMemory('Romans 8:28', undefined, undefined);
-    expect(buildRequest('Romans 8:28', verse, 'Q?', [], undefined, undefined, undefined, [], undefined, false, 'modern', memory).memory).toEqual(memory);
     expect(buildReadingRequest('Romans 8:28', verse, 'english', 'en', undefined, undefined, undefined, 'modern', memory).memory).toEqual(memory);
     const summary = { settings_changed: [], settings_never: [] } as never;
     expect(buildTipRequest(summary, [], undefined, undefined, undefined, memory).memory).toEqual(memory);
@@ -172,7 +170,7 @@ describe('the answer guard and the schemas', () => {
     expect(ok({ wished_notes: [''] })).not.toEqual([]);
   });
 
-  it.each(['bible-talk', 'verse-ask', 'verse-read', 'tips'])('%s: the input schema takes memory, and not a note without a name', (kind) => {
+  it.each(['bible-talk', 'verse-read', 'tips'])('%s: the input schema takes memory, and not a note without a name', (kind) => {
     const input = schema(`${kind}.input.schema.json`);
     expect(Object.keys(input.properties ?? {})).toContain('memory');
     const memory = (input.properties as Record<string, Schema>).memory;

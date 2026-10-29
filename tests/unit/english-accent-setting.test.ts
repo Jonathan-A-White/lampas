@@ -11,7 +11,6 @@ import { ideaSound } from '../../src/data/grammar/lessons';
 import { settingsForTutor } from '../../src/settings/tutorSettings';
 import { buildReadingRequest } from '../../src/services/reading';
 import { buildTalkRequest } from '../../src/services/talk';
-import { buildRequest } from '../../src/services/tutor';
 import { englishAccentSetting } from '../../src/settings/definitions';
 import { ROWS } from '../../src/settings/rows';
 import { currentSettings, settingOf, writeSetting } from '../../src/settings/registry';
@@ -19,7 +18,7 @@ import { getSetting } from '../../src/settings/store';
 import { ACCENTS, DEFAULT_ACCENT, accentOf, chooseAccent, chosenAccent, missingHints, soundWords } from '../../src/speech/accents';
 import { PRONUNCIATIONS, pronunciationOf, soundRulesOf, tutorGuideOf } from '../../src/speech/pronunciation';
 import { SOUND_IDS } from '../../src/speech/sounds';
-import { TUTOR_KNOWS, settingsSentTo } from '../../src/tutor/knows';
+import { TUTOR_KNOWS } from '../../src/tutor/knows';
 import { startSpeechSettingsSync } from '../../src/speech/settingsSync';
 import type { Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
@@ -124,7 +123,6 @@ describe('the tutor knows the accent', () => {
     const all = await currentSettings();
     return {
       'bible-talk': buildTalkRequest(scope, 'Why?', [], [], all) as unknown as Record<string, unknown>,
-      'verse-ask': buildRequest('Romans 8:28', verse, 'What is this?', [], undefined, undefined, await settingsSentTo('verse-ask')) as unknown as Record<string, unknown>,
       'verse-read': buildReadingRequest('Romans 8:28', verse, 'greek', 'el') as unknown as Record<string, unknown>,
     };
   }
@@ -132,7 +130,7 @@ describe('the tutor knows the accent', () => {
 
   it.each(['american', 'british', 'ipa'])('every tutor grist carries the accent %s, where the table of what each grind is told says', async (id) => {
     for (const [kind, request] of Object.entries(await gristsWith(id))) {
-      const field = TUTOR_KNOWS[kind as 'bible-talk' | 'verse-ask' | 'verse-read'].settings.englishAccent;
+      const field = TUTOR_KNOWS[kind as 'bible-talk' | 'verse-read'].settings.englishAccent;
       expect(field, `${kind} is not told the accent`).toBeDefined();
       expect(at(request, field), `${kind} at ${field}`).toBe(id);
     }
@@ -153,9 +151,7 @@ describe('the tutor knows the accent', () => {
   it('is a field the grinds accept, and each is told to give sound examples and respellings for it', () => {
     const verseRead = JSON.parse(readFileSync('grinds/verse-read.input.schema.json', 'utf8')) as Schema;
     expect(((verseRead.properties ?? {}).english_accent as { enum?: string[] }).enum).toEqual(['american', 'british', 'ipa']);
-    const verseAsk = JSON.parse(readFileSync('grinds/verse-ask.input.schema.json', 'utf8')) as Schema;
-    expect(JSON.stringify((verseAsk.properties ?? {}).settings)).toContain('englishAccent');
-    for (const [kind, name] of [['bible-talk', 'settings.englishAccent'], ['verse-ask', 'settings.englishAccent'], ['verse-read', 'english_accent']]) {
+    for (const [kind, name] of [['bible-talk', 'settings.englishAccent'], ['verse-read', 'english_accent']]) {
       const instructions = instructionsOf(kind);
       const line = instructions.split('\n').find((l) => l.startsWith(`- \`${name}\`:`));
       expect(line, `${kind} does not describe ${name}`).toBeDefined();

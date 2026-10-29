@@ -1,5 +1,4 @@
-// The bible-talk grind (grinds/bible-talk.json) is read by the mill, not by this app: it has the keys of the verse-ask grind
-// (and so of SpellForge's tutor-turn.json), its instructions carry the one-sentence refusal, and its answer schema agrees
+// The bible-talk grind (grinds/bible-talk.json) is read by the mill, not by this app: it has the keys of SpellForge's tutor-turn.json, its instructions carry the one-sentence refusal, and its answer schema agrees
 // with isTalkAnswer, the guard the phone runs.
 import { describe, expect, it } from 'vitest';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -16,12 +15,11 @@ import { KIT_END, instructionParts, instructionsOf, withKitFragment, withKitPart
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/bible-talk.json');
-const verseAsk = readJson('grinds/verse-ask.json');
 const schema = readJson('grinds/bible-talk.answer.schema.json');
 
 describe('grinds/bible-talk.json', () => {
-  it('has the same keys as grinds/verse-ask.json, for the lampas app and the bible-talk kind', () => {
-    expect(Object.keys(grind).sort()).toEqual(Object.keys(verseAsk).sort());
+  it('has the keys of the mill\'s grind shape, for the lampas app and the bible-talk kind', () => {
+    expect(Object.keys(grind).sort()).toEqual(['answerSchema', 'app', 'attachments', 'effort', 'grind', 'instructions', 'kind', 'model', 'versions']);
     expect(grind).toMatchObject({ grind: 1, app: 'lampas', kind: 'bible-talk', versions: ['1'], model: 'sonnet', effort: 'medium' });
     expect(grind.attachments).toEqual({ min: 0, max: 4, mime: ['image/jpeg', 'image/png', 'image/webp'], maxBytes: TALK_PICTURE_MAX_BYTES });
   });
@@ -359,7 +357,7 @@ describe('learner_grammar.weak in the request (mw-i7xe0n.2)', () => {
   });
 
   it('the instructions name the field, as his weak points from Drill it, for every grind sent learner_grammar', () => {
-    for (const kind of ['bible-talk', 'verse-ask', 'verse-read', 'tips']) {
+    for (const kind of ['bible-talk', 'verse-read', 'tips']) {
       const text = instructionsOf(kind);
       expect(text, kind).toMatch(/`weak`/);
       expect(text, kind).toContain('Drill it');
@@ -792,8 +790,8 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     expect(text).toMatch(/rough breathing is then never written as an? `h`/);
   });
 
-  it('holds the same rule in verse-ask and verse-read, where Greek is also said aloud', () => {
-    for (const kind of ['verse-ask', 'verse-read']) {
+  it('holds the same rule in verse-read, where Greek is also said aloud', () => {
+    for (const kind of ['verse-read']) {
       const other = instructionsOf(kind);
       expect(other, kind).toMatch(/gives no `respelling` for/);
       expect(other, kind).toMatch(/rough breathing is never written as an `h`/);
@@ -1109,13 +1107,5 @@ describe('the learner facts are told per language (mw-gdcyf98.31)', () => {
     expect(contract).toMatch(/`solid_count`: [^\n]*Greek and Hebrew/);
     expect(contract).toMatch(/`learner` \(maybe missing\):[^\n]*`Hebrew:`/);
     expect(contract).toMatch(/`words` lists only Greek words he asked about or that the answer teaches \(a Hebrew one[^\n]*`language` `he`\)/);
-  });
-
-  it('verse-ask 010 says the same of solid_count, solid_words and learner', () => {
-    const contract = part('verse-ask', '010-the-contract.md');
-    expect(contract).not.toMatch(/`solid_count`: how many Greek words/);
-    expect(contract).not.toMatch(/`solid_words`: the Greek lemmas/);
-    expect(contract).toMatch(/`solid_count`: [^\n]*Greek and Hebrew/);
-    expect(contract).toMatch(/`learner`: [^\n]*`Hebrew:`/);
   });
 });

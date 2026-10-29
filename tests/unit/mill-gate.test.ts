@@ -10,7 +10,8 @@ import { GRIST_KINDS, type GristKind } from '../../src/services/gristKinds';
 import { setCurrentLicence } from '../../src/services/licenceNow';
 import { readTimedPage, requireLicence, sendTimedGrist, timedDoor } from '../../src/services/mill';
 import { pullStatuses } from '../../src/services/requestStatus';
-import { TutorError, askGrind, askTutor, buildRequest } from '../../src/services/tutor';
+import { buildTalkRequest, isTalkAnswer } from '../../src/services/talk';
+import { TutorError, askGrind } from '../../src/services/tutor';
 import type { Chapter } from '../../src/data/chapter';
 import { actionsFor } from '../../src/verse/action';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
@@ -142,8 +143,7 @@ describe('every send to the mill goes through the gate', () => {
 // So each kind the app sends is listed here with the entry points a phone with no licence is not shown, and each of those names must stand in a scenario
 // of its feature file; a kind sent but not listed, or listed but not sent, fails.
 const KINDS: Record<GristKind, { hidden: string[]; feature: string }> = {
-  'verse-ask': { hidden: ['Ask the tutor'], feature: 'features/ai-needs-licence.feature' },
-  'bible-talk': { hidden: ['Talk bar', 'Help with this word'], feature: 'features/ai-needs-licence.feature' },
+  'bible-talk': { hidden: ['Talk bar', 'Ask the tutor', 'Help with this word'], feature: 'features/ai-needs-licence.feature' },
   'verse-read': { hidden: ['Read it aloud', 'Hold to read bar', 'Reading ladder'], feature: 'features/ai-needs-licence.feature' },
   tips: { hidden: ['Needs a licence'], feature: 'features/licence-page.feature' },
   feedback: { hidden: ['Needs a licence'], feature: 'features/licence-page.feature' },
@@ -208,9 +208,9 @@ describe('the Hebrew entries of the AI are hidden from a phone with no licence t
   it('refuses the ask about Jonah 1:10, Hebrew and all, with no licence, and nothing leaves the phone', async () => {
     if (!verse10) throw new Error('no verse 10');
     setCurrentLicence('not-licensed');
-    const request = buildRequest('Jonah 1:10', verse10, 'What does the Hebrew say for fear?', [], undefined, undefined, undefined, [], undefined, false, undefined, undefined, undefined, undefined, jonah);
+    const request = buildTalkRequest({ title: 'Jonah 1', chapter: jonah, verse: verse10 }, 'What does the Hebrew say for fear?', [], [], { hebrewInterest: '1' });
     expect(request.hebrew_words?.length).toBeGreaterThan(0);
-    const error = await failure(askTutor(request, { key }));
+    const error = await failure(askGrind('bible-talk', request, isTalkAnswer, { key }));
     expect((error as TutorError).failure).toBe('no-licence');
     expect(postern.calls).toEqual([]);
   });

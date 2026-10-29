@@ -1,4 +1,4 @@
-// The bible-talk and verse-ask instructions are one part per section (mw-skwocd.8): grinds/<kind>.instructions/NNN-<section>.md, which the mill
+// The bible-talk instructions are one part per section (mw-skwocd.8): grinds/<kind>.instructions/NNN-<section>.md, which the mill
 // reads in name order, joined by a blank line (millwright mw-skwocd.7). The split changed no byte: the parts joined are the file they came from,
 // read from git (the commit that deleted the file and its parent; before that commit, the working tree's parts and HEAD's file). Every test reads
 // a grind's instructions through scripts/grind-parts.ts instructionsOf, never by path, so no test reads half of them.
@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { instructionParts, instructionsOf, instructionsPath } from '../../scripts/grind-parts';
 import { SETTINGS_BEGIN, SETTINGS_END, joinGrindParts } from '../../src/settings/grindText';
 
-const SPLIT = ['bible-talk', 'verse-ask'] as const;
+const SPLIT = ['bible-talk'] as const;
 
 const git = (args: string): string => execSync(`git ${args}`, { encoding: 'utf8', maxBuffer: 1 << 26 });
 

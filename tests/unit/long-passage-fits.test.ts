@@ -5,7 +5,6 @@ import { readFileSync } from 'node:fs';
 import { markSupplied, type Chapter } from '../../src/data/chapter';
 import { passageVerse, rangeOf } from '../../src/data/passage';
 import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory } from '../../src/services/talk';
-import { buildRequest, fitAsk } from '../../src/services/tutor';
 import { withTutorFacts } from '../../src/tutor/registry';
 import { clipText, clipTexts, TEXT_CLIP_MARK } from '../../src/services/requestBudget';
 
@@ -71,14 +70,5 @@ describe('a whole chapter as the passage', () => {
     const fitted = fitHistory(request);
     expect(fitted.greek).toBe(request.greek);
     expect(fitted.english).toBe(request.english);
-  });
-
-  it('Ask the tutor fits the cap too', () => {
-    const request = buildRequest('Mark 12:1-44', whole, 'Who are the tenants?', []);
-    expect(size(request)).toBeGreaterThan(MAX_REQUEST_BYTES);
-    const fitted = fitAsk(request);
-    expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
-    expect(fitted.question).toBe('Who are the tenants?');
-    expect(fitted.greek.length).toBeLessThan(request.greek.length);
   });
 });

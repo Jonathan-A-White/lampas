@@ -54,7 +54,7 @@ function ask(tapAt = Date.now()): (typeof asks)[number] {
   const controller = new AbortController();
   let resolve!: (txid: string) => void;
   const txid = new Promise<string>((r) => (resolve = r));
-  const done = askGrind('verse-ask', { question: 'What does it mean?' }, isAnything, { key: KEY, tapAt, signal: controller.signal, onSent: resolve });
+  const done = askGrind('bible-talk', { question: 'What does it mean?' }, isAnything, { key: KEY, tapAt, signal: controller.signal, onSent: resolve });
   done.catch(() => undefined);
   const run = { done, txid, abort: () => controller.abort() };
   asks.push(run);

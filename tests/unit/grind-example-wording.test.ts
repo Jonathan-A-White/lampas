@@ -9,61 +9,6 @@ import { instructionsOf } from '../../scripts/grind-parts';
 const example = (path: string): { request: Record<string, unknown>; expect: ExpectBlock } => JSON.parse(readFileSync(`grinds/examples/${path}.json`, 'utf8')) as { request: Record<string, unknown>; expect: ExpectBlock };
 const answerChecks = (path: string): ExpectBlock => ({ answer: example(path).expect.answer });
 
-describe('verse-ask/bridge-quite-a-bit tests the meaning', () => {
-  const checks = answerChecks('verse-ask/bridge-quite-a-bit');
-
-  it('takes any answer that says the question rests on more he has not met', () => {
-    for (const said of [
-      'The genitive is the case that says "of". You are missing quite a bit for this; start with Pairs of vowels.',
-      'The genitive is the case that says "of". Here it appears three times. This rests on several ideas you have not met yet; the first is Pairs of vowels.',
-      'The genitive marks "of". There is a lot more under this that you have not learned yet, so start with Pairs of vowels.',
-      'The genitive says "of". This builds on six ideas you have not met, and Pairs of vowels comes first.',
-      'The genitive says "of". You do not have the ideas under this yet: begin with Pairs of vowels.',
-    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
-  });
-
-  it('does not take an answer that says nothing of what he lacks', () => {
-    expect(checkExpect(checks, { answer: 'The genitive is the case that says "of". It appears three times in this verse.' })).not.toEqual([]);
-  });
-
-  it('keeps the structured fields the bridge is judged by', () => {
-    const { expect: block } = example('verse-ask/bridge-quite-a-bit');
-    expect(block['bridge.next']).toEqual({ equals: 'diphthongs' });
-    expect(block['bridge.missing.3']).toEqual({ present: false });
-  });
-});
-
-describe('verse-ask/request-sent tests the meaning', () => {
-  const checks = answerChecks('verse-ask/request-sent');
-
-  it('takes any answer that says the idea was sent and has no answer yet', () => {
-    for (const said of [
-      'Your idea, "Add a sepia theme", has been sent to the makers of Lampas. They have not answered yet.',
-      'Your idea, "Add a sepia theme", has been sent to the makers of Lampas. They will look at it.',
-      'It was sent to the makers. Nothing has come back from them so far.',
-      'The makers have your sepia theme idea, sent but not answered yet.',
-      'Not answered yet: the makers are still waiting on your idea.',
-      'I see "Add a sepia theme" among your requests. It is sent, and there is no answer from the makers.',
-    ]) expect(checkExpect(checks, { answer: said }), said).toEqual([]);
-  });
-
-  it('does not take an answer that says nothing of the request', () => {
-    expect(checkExpect(checks, { answer: 'The verse says all things work together for good.' })).not.toEqual([]);
-  });
-});
-
-describe('verse-ask/spoken-greek-word takes either case of τεκνία (as bible-talk\'s does, mw-5r3p30.282)', () => {
-  const checks = answerChecks('verse-ask/spoken-greek-word');
-  it.each(['Τεκνία', 'τεκνία'])('%s', (form) => {
-    const said = `I took "Tech N9ne" as τεκνίον, "little child." and "technia" as ${form}, the plural.`;
-    expect(checkExpect(checks, { answer: said })).toEqual([]);
-  });
-  it('still wants both forms named', () => {
-    expect(checkExpect(checks, { answer: 'I took "technia" as τεκνία.' })).not.toEqual([]);
-    expect(checkExpect(checks, { answer: 'I took "Tech N9ne" as τεκνίον.' })).not.toEqual([]);
-  });
-});
-
 describe('bible-talk/memory-update-wished makes the note plain, and the grind says when the entries are required', () => {
   const { request } = example('bible-talk/memory-update-wished');
   const instructions = instructionsOf('bible-talk');
@@ -124,7 +69,7 @@ describe('bible-talk/rusty-offer tests the meaning (mw-5r3p30.424)', () => {
 });
 
 // The sweep of mw-5r3p30.424: each scenario below checked its answer for one English word or phrase a faithful answer may say otherwise.
-describe('bible-talk/bridge-quite-a-bit tests the meaning, as verse-ask\'s does (mw-5r3p30.424)', () => {
+describe('bible-talk/bridge-quite-a-bit tests the meaning (mw-5r3p30.424)', () => {
   const checks = answerChecks('bible-talk/bridge-quite-a-bit');
 
   it('takes any answer that says the question rests on more he has not met', () => {
@@ -150,7 +95,7 @@ describe('bible-talk/bridge-one-missing takes the nominative named at the start 
   });
 });
 
-describe.each(['bible-talk', 'verse-ask'])('%s request scenarios test the status, not one word for it (mw-5r3p30.424)', (kind) => {
+describe.each(['bible-talk'])('%s request scenarios test the status, not one word for it (mw-5r3p30.424)', (kind) => {
   it('request-building takes any answer that says it is being made now', () => {
     const checks = answerChecks(`${kind}/request-building`);
     for (const said of [

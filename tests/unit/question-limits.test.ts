@@ -10,7 +10,6 @@ import { type Chapter } from '../../src/data/chapter';
 import { MAX_ASKED_CHARS, MAX_FEEDBACK_CHARS, buildTutorAskRequest } from '../../src/services/feedback';
 import { MAX_QUESTION_CHARS, MAX_REQUEST_BYTES } from '../../src/services/requestBudget';
 import { MAX_TALK_CHARS, buildTalkRequest, fitHistory, isTalkAnswer } from '../../src/services/talk';
-import { buildRequest, fitAsk, isVerseAnswer } from '../../src/services/tutor';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { longQuestion } from '../support/long-text';
 import { validate, type Schema } from '../support/schema-validate';
@@ -50,18 +49,6 @@ describe('the limits of every grind', () => {
     expect(request.question).toBe(SPEECH);
     expect(validate(request, readSchema('bible-talk.input.schema.json'))).toEqual([]);
     expect(sealedBytes('bible-talk', request)).toBeLessThanOrEqual(PAYLOAD_CAP);
-  });
-
-  it('verse-ask: the app limit, the input schema and the answer check agree, and 3,000 characters of speech seal', () => {
-    expect(readSchema('verse-ask.input.schema.json').properties.question.maxLength).toBe(MAX_QUESTION_CHARS);
-    expect(readSchema('verse-ask.answer.schema.json').properties.question.maxLength).toBe(MAX_QUESTION_CHARS);
-    const answer = { answer: 'a', words: [], question: 'q'.repeat(MAX_QUESTION_CHARS) };
-    expect(isVerseAnswer(answer)).toBe(true);
-    expect(isVerseAnswer({ ...answer, question: 'q'.repeat(MAX_QUESTION_CHARS + 1) })).toBe(false);
-    const request = fitAsk(buildRequest('Romans 8:28', verse, SPEECH, [], undefined, undefined, undefined, [], undefined, true));
-    expect(request.question).toBe(SPEECH);
-    expect(validate(request, readSchema('verse-ask.input.schema.json'))).toEqual([]);
-    expect(sealedBytes('verse-ask', request)).toBeLessThanOrEqual(PAYLOAD_CAP);
   });
 
   // 'Send this to the makers' sends the question he asked the tutor, whole: it was 1200 here while a question could be 4000, and the mill refused a long one

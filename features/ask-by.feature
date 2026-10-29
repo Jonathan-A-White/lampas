@@ -42,5 +42,5 @@ Feature: Ask by Speaking or Typing
     And Ask the tutor shows the text box, Send and a small mic and no Hold to ask bar
 
   Scenario: The tutor's instructions say to switch Ask by only when he asks
-    Given the verse-ask grind
-    Then its answer schema lets an answer change only Ask by to Speaking or Typing, and its instructions say when
+    Given the bible-talk grind
+    Then its answer schema lets an answer change Ask by to Speaking or Typing and no other value, and its instructions say when

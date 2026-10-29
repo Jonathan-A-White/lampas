@@ -18,7 +18,6 @@ import { CATALOGUE } from '../../src/resources/catalogue';
 import { worksForTutor, type TutorWork } from '../../src/resources/tutorLinks';
 import { MAX_REQUEST_BYTES, WORKS_BYTES } from '../../src/services/requestBudget';
 import { buildTalkRequest, fitHistory, type TalkRequest } from '../../src/services/talk';
-import { buildRequest, fitAsk } from '../../src/services/tutor';
 import { SETTINGS } from '../../src/settings/registry';
 import type { SettingValue } from '../../src/settings/define';
 import { QUIZ_GOAL_MAX } from '../../src/data/repositories/settings';
@@ -83,15 +82,6 @@ describe('the quiz-me second request (features/quiz-me.feature: an answer carrie
     expect(bytes(input)).toBe(MAX_REQUEST_BYTES - 1);
     // 20 KiB: bsv-kit's grist MAX_PAYLOAD_BYTES; the sealed record is base64 of the plaintext and the envelope, and must leave at least 6 KiB
     expect(20 * 1024 - sealedBytes('bible-talk', input)).toBeGreaterThanOrEqual(6 * 1024);
-  });
-});
-
-describe('every request built against MAX_REQUEST_BYTES', () => {
-  it('the Verse view ask, on the largest verse with every setting, keeps the headroom once its lesser fields have given way', async () => {
-    const verse = chapter.verses.reduce((a, b) => (bytes(b.g) + bytes(b.e) > bytes(a.g) + bytes(a.e) ? b : a));
-    const request = buildRequest('Romans 8', verse, 'What does it mean?', [], await learnerSummary(), await learnerGrammar(), longestSettings() as Record<string, string>);
-    const bare = fitAsk({ ...request, greek_words: [], pronunciation_guide: undefined });
-    expect(MAX_REQUEST_BYTES - bytes(bare), `the ask weighs ${bytes(bare)} of ${MAX_REQUEST_BYTES}`).toBeGreaterThanOrEqual(HEADROOM_BYTES);
   });
 });
 
@@ -191,26 +181,6 @@ describe('worksForTutor: the digest of his shelf chosen by the place', () => {
     expect(listed).toBeLessThan(17);
     // the 80 books the tutor may be told of (not the lexicons and the devotionals) are listed or counted, none lost
     expect(listed + Object.values(moreOf(works) ?? {}).reduce((a, b) => a + b, 0)).toBe(80);
-  });
-});
-
-describe('the Verse view ask with the digest of 110 books On', () => {
-  it('cuts the digest from its end after the words of the verse and before his requests, counting what it drops', async () => {
-    const { catalogue, shelf } = hundredAndTen();
-    const works = worksForTutor(shelf, ROMANS_8, FORM, undefined, catalogue);
-    const verse = chapter.verses.find((v) => v.n === 28)!;
-    const request = buildRequest('Romans 8:28', verse, 'What does it mean?', [], await learnerSummary(), await learnerGrammar(), longestSettings() as Record<string, string>, [], undefined, false, undefined, undefined, undefined, undefined, chapter, works);
-    expect(request.works).toEqual(works);
-    const listed = (r: { works?: TutorWork[] }) => lines(r.works ?? []).length;
-    // the guide, his words and the words of the verse have given way already: only the digest, his requests and notes are left to cut
-    const bare = { ...request, greek_words: [], solid_words: [], pronunciation_guide: undefined };
-    const padded = (extra: number) => ({ ...bare, question: 'q'.repeat(Math.max(0, MAX_REQUEST_BYTES - bytes({ ...bare, question: '' }) + extra)) });
-    expect(listed(fitAsk(padded(0)))).toBe(listed(request));
-    const cut = fitAsk(padded(100));
-    expect(listed(cut)).toBeLessThan(listed(request));
-    expect(listed(cut)).toBeGreaterThan(0);
-    expect(bytes(cut)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
-    expect(Object.values(moreOf(cut.works ?? []) ?? {}).reduce((a, b) => a + b, 0)).toBeGreaterThan(Object.values(moreOf(request.works ?? []) ?? {}).reduce((a, b) => a + b, 0));
   });
 });
 

@@ -6,14 +6,12 @@ import { readFileSync } from 'node:fs';
 import { db } from '../../src/data/db';
 import { NO_CHAPTER, type Chapter, type Verse } from '../../src/data/chapter';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
-import { setGreekPronunciation } from '../../src/data/repositories';
 import { buildReadingRequest } from '../../src/services/reading';
 import { buildTalkRequest } from '../../src/services/talk';
-import { buildRequest } from '../../src/services/tutor';
 import { currentSettings, SETTINGS } from '../../src/settings/registry';
 import { isTalkable } from '../../src/settings/rows';
 import { buildTipRequest } from '../../src/tips/tip';
-import { BEARS_ON, GRINDS, PROGRESS, TUTOR_KNOWS, settingsSentTo, type GrindKind } from '../../src/tutor/knows';
+import { BEARS_ON, GRINDS, PROGRESS, TUTOR_KNOWS, type GrindKind } from '../../src/tutor/knows';
 import type { Schema } from '../support/schema-validate';
 
 afterAll(() => db.close());
@@ -43,8 +41,8 @@ describe('VISION.md', () => {
 });
 
 describe('the table of what each grind is told (src/tutor/knows.ts)', () => {
-  it('names the four grinds', () => {
-    expect([...GRINDS]).toEqual(['bible-talk', 'verse-ask', 'verse-read', 'tips']);
+  it('names the three grinds', () => {
+    expect([...GRINDS]).toEqual(['bible-talk', 'verse-read', 'tips']);
   });
 
   it('says what every setting of the registry bears on, and nothing else', () => {
@@ -88,22 +86,20 @@ describe('the table of what each grind is told (src/tutor/knows.ts)', () => {
     });
   });
 
-  it('his shelf, works, is sent by the place to the Bible talk and the Verse view ask, and has its reason in the verdict on a reading and in the tips', () => {
+  it('his shelf, works, is sent by the place to the Bible talk, and has its reason in the verdict on a reading and in the tips', () => {
     expect(Object.keys(PROGRESS)).toContain('works');
     expect(TUTOR_KNOWS['bible-talk'].progress.works).toBe('works');
-    expect(TUTOR_KNOWS['verse-ask'].progress.works).toBe('works');
     for (const kind of ['verse-read', 'tips'] as const) {
       expect(TUTOR_KNOWS[kind].progress, `${kind} must not send the shelf`).not.toHaveProperty('works');
       expect(TUTOR_KNOWS[kind].notSent.works, `${kind} must say why it does not`).toMatch(/\w+ \w+ \w+/);
     }
     expect(TUTOR_KNOWS['bible-talk'].notSent).not.toHaveProperty('works');
-    expect(TUTOR_KNOWS['verse-ask'].notSent).not.toHaveProperty('works');
   });
 
   it('the maps of the passage are sent to the Bible talk alone (mw-zbjgn3r.4); the other grinds say why not', () => {
     expect(Object.keys(PROGRESS)).toContain('maps');
     expect(TUTOR_KNOWS['bible-talk'].progress.maps).toBe('maps');
-    for (const kind of ['verse-ask', 'verse-read', 'tips'] as const) {
+    for (const kind of ['verse-read', 'tips'] as const) {
       expect(TUTOR_KNOWS[kind].progress, `${kind} must not send the maps`).not.toHaveProperty('maps');
       expect(TUTOR_KNOWS[kind].notSent.maps, `${kind} must say why it does not`).toMatch(/\w+ \w+ \w+/);
     }
@@ -130,24 +126,12 @@ describe('the builders send what the table says', () => {
   const memory = { index: 'Likes a picture first.', notes: [{ name: 'book:Romans', text: 'Reads it slowly.' }] };
   const at = (request: Record<string, unknown>, path: string): unknown => path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], request);
 
-  it('verse-ask: every setting and part of progress the table lists is in the request', async () => {
-    await setGreekPronunciation('modern');
-    const settings = await settingsSentTo('verse-ask');
-    const request = buildRequest('Romans 8:28', verse, 'What is this?', ['θεός'], 'solid 1 words', grammar, settings, [{ summary: 's', status: 'building' }] as never, profile, false, 'modern', memory, undefined, [{ kind: 'word', id: 'λόγος', title: 'λόγος', why: 'slipped this week' }], undefined, [{ id: 'LLS:CALCOM66RO', t: 'CC Ro', k: 'c' }]) as unknown as Record<string, unknown>;
-    const knows = TUTOR_KNOWS['verse-ask'];
-    for (const key of Object.keys(knows.settings)) expect(at(request, knows.settings[key]), `verse-ask request lacks ${key} at ${knows.settings[key]}`).toBeDefined();
-    for (const part of Object.keys(knows.progress)) expect(at(request, knows.progress[part]), `verse-ask request lacks ${part} at ${knows.progress[part]}`).toBeDefined();
-  });
-
-  it('the Hebrew dial is its own field beside the Greek one: hebrew_interest to the Bible talk and the ask, in the shape of greek_interest (mw-gdcyf98.3)', async () => {
+  it('the Hebrew dial is its own field beside the Greek one: hebrew_interest to the Bible talk, in the shape of greek_interest (mw-gdcyf98.3)', async () => {
     expect(TUTOR_KNOWS['bible-talk'].settings.hebrewInterest).toBe('hebrew_interest');
-    expect(TUTOR_KNOWS['verse-ask'].settings.hebrewInterest).toBe('settings.hebrewInterest');
     const talk = buildTalkRequest({ title: 'Romans 8', chapter: NO_CHAPTER, verse: null }, 'Hello', [], [], { greekInterest: '2', hebrewInterest: '4' });
     expect(talk.greek_interest).toEqual({ level: 2, name: 'Dipping a toe', next: { level: 3, name: 'Learning' } });
     expect(talk.hebrew_interest).toEqual({ level: 4, name: 'Reading in Hebrew', next: { level: 5, name: 'All in' } });
-    const ask = buildRequest('Romans 8:28', verse, 'What is this?', [], undefined, undefined, { greekInterest: '2', hebrewInterest: '5' });
-    expect(ask.hebrew_interest).toEqual({ level: 5, name: 'All in' });
-    for (const kind of ['bible-talk', 'verse-ask'] as const) expect(Object.keys(inputSchema(kind).properties ?? {})).toContain('hebrew_interest');
+    expect(Object.keys(inputSchema('bible-talk').properties ?? {})).toContain('hebrew_interest');
   });
 
   it('the Bible talk on an Old Testament chapter is told the Hebrew by its dial: `hebrew` and `hebrew_words` from Curious up, the English alone at Just English, hebrewDepth always (mw-gdcyf98.18)', () => {
@@ -180,13 +164,5 @@ describe('the builders send what the table says', () => {
     const knows = TUTOR_KNOWS.tips;
     for (const part of Object.keys(knows.progress)) expect(at(request, knows.progress[part]), `tips request lacks ${part}`).toBeDefined();
     for (const key of Object.keys(knows.settings)) expect(at(request, knows.settings[key]), `tips request lacks ${key}`).toBeDefined();
-  });
-
-  it('settingsSentTo gives the value each listed setting holds now, and a Greek pronunciation reaches verse-ask and verse-read', async () => {
-    const settings = await settingsSentTo('verse-ask');
-    const wanted = Object.values(TUTOR_KNOWS['verse-ask'].settings).filter((f) => f.startsWith('settings.')).map((f) => f.slice('settings.'.length));
-    expect(Object.keys(settings).sort()).toEqual(wanted.sort());
-    expect(Object.values(TUTOR_KNOWS['verse-ask'].settings)).toContain('pronunciation');
-    expect(Object.values(TUTOR_KNOWS['verse-read'].settings)).toContain('pronunciation');
   });
 });

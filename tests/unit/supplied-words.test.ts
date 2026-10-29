@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { type Chapter, type EnglishChunk, englishRuns, markSupplied } from '../../src/data/chapter';
-import { buildRequest } from '../../src/services/tutor';
 import { buildTalkRequest } from '../../src/services/talk';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { GREEK_BOOKS, isGreekBook } from '../support/data-books';
@@ -75,12 +74,6 @@ describe('what the tutor is sent', () => {
     expect(markSupplied({ t: 'there is now', g: [0], s: [0, 1] })).toBe('*there is* now');
   });
 
-  it("puts the marks in the verse-ask request's English", () => {
-    const r = buildRequest('Hebrews 7:1', verse1, 'why are there italic words', []);
-    expect(r.english).toContain('Melchizedek *was* king of Salem *and* priest of God Most High.');
-    expect(r.english).not.toMatch(/\bwas king\b(?<!\*was\* king)/);
-  });
-
   it("puts the marks in the Bible talk's English, for a verse, a passage and a chapter", () => {
     for (const verse of [verse1, null]) {
       const r = buildTalkRequest({ title: 'Hebrews 7', chapter: hebrews7, verse }, 'why are there italic words', [], []);
@@ -90,7 +83,7 @@ describe('what the tutor is sent', () => {
 });
 
 describe('what the grinds are told', () => {
-  for (const grind of ['verse-ask', 'bible-talk']) {
+  for (const grind of ['bible-talk']) {
     it(`${grind}: marked words are italic in his reader, supplied by the translators, and the text always shows them`, () => {
       const text = instructionsOf(grind).replace(/\s+/g, ' ');
       expect(text).toContain('## Italic words');

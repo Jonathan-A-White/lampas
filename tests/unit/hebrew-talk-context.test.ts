@@ -1,5 +1,5 @@
 // mw-gdcyf98.1, .18: the Bible talk on an 'hbo' chapter sends the chapter's Hebrew, pointed and with the cantillation off, under `hebrew` with `hebrew_words` (lemma, transliteration, gloss,
-// parsing, as verse-ask sends them) and no `greek` and no greek_words: no Greek syllable or respelling is ever made of a Hebrew word. A Greek chapter's request is as it was.
+// parsing) and no `greek` and no greek_words: no Greek syllable or respelling is ever made of a Hebrew word. A Greek chapter's request is as it was.
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -60,7 +60,7 @@ describe('the Bible talk on an Old Testament chapter', () => {
     expect('hebrew' in clipped || 'greek' in clipped).toBe(false);
   });
 
-  it('keeps the hebrew_words within the budget of verse-ask\'s and the request under the cap', () => {
+  it('keeps the hebrew_words within its budget and the request under the cap', () => {
     const r = buildTalkRequest({ title: 'Jonah 1', chapter: jonah, verse: null }, 'What is this chapter about?', jonah.verses.slice(0, 3).map(() => ({ q: 'q', a: 'a'.repeat(300) })), [], CURIOUS);
     expect(jsonBytes(r.hebrew_words)).toBeLessThanOrEqual(HEBREW_WORDS_BYTES);
     expect(jsonBytes(fitHistory(r))).toBeLessThanOrEqual(MAX_REQUEST_BYTES);

@@ -1,6 +1,6 @@
 // The tutor meets the student where they are (mw-1vuvq6.2): every tutor grind pitches its answer to learner_profile, the grammar and the
-// words he has. verse-read and tips are sent `learner` and `learner_grammar` as bible-talk and verse-ask are; every instruction file says
-// how the profile changes an answer; bible-talk and verse-ask each keep one question answered for two contrasting profiles.
+// words he has. verse-read and tips are sent `learner` and `learner_grammar` as bible-talk is; every instruction file says
+// how the profile changes an answer; bible-talk keeps one question answered for two contrasting profiles.
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import type { Verse } from '../../src/data/chapter';
@@ -63,7 +63,7 @@ describe('verse-read and tips are sent learner and learner_grammar', () => {
 });
 
 describe('every instruction file says how the profile changes an answer', () => {
-  const kinds = ['bible-talk', 'verse-ask', 'verse-read', 'tips'];
+  const kinds = ['bible-talk', 'verse-read', 'tips'];
 
   it.each(kinds)('%s: names learner_profile and what age, pace, ways of learning and background do', (kind) => {
     const text = instructionsOf(kind);
@@ -86,7 +86,7 @@ describe('every instruction file says how the profile changes an answer', () => 
 });
 
 describe('one question, two contrasting profiles', () => {
-  describe.each(['bible-talk', 'verse-ask'])('%s', (kind) => {
+  describe.each(['bible-talk'])('%s', (kind) => {
     const dir = `grinds/examples/${kind}`;
     const pair = readdirSync(dir)
       .filter((f) => f.startsWith('profile-'))

@@ -13,7 +13,6 @@ import { DAY } from '../../src/data/schedule';
 import { mulberry32 } from '../../src/data/quiz';
 import { drawReviewRound } from '../../src/review/round';
 import { hasPractise, setPractise, takePractise } from '../../src/review/practise';
-import { buildRequest, type VerseAskRequest } from '../../src/services/tutor';
 import { buildTalkRequest, fitHistory, isTalkAnswer, type TalkAnswer, type TalkScope } from '../../src/services/talk';
 import { rustyOfferOf } from '../../src/talk/rustyOffer';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -149,15 +148,6 @@ describe('the request and the answer', () => {
     const history = Array.from({ length: 10 }, (_, i) => ({ q: `Q${i}`, a: 'x'.repeat(900) }));
     const request = buildTalkRequest(scope, 'What now?', history, [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], undefined, undefined, false, undefined, undefined, undefined, RUSTY);
     expect(fitHistory(request).rusty).toEqual(RUSTY);
-  });
-
-  it('verse-ask sends rusty too', () => {
-    const verse = chapter.verses[27];
-    const request: VerseAskRequest = buildRequest('Romans 8:28', verse, 'What is this?', [], undefined, undefined, undefined, [], undefined, false, 'modern', undefined, undefined, RUSTY);
-    expect(request.rusty).toEqual(RUSTY);
-    const schema = JSON.parse(readFileSync('grinds/verse-ask.input.schema.json', 'utf8')) as Schema;
-    expect(validate(request, schema)).toEqual([]);
-    expect('rusty' in buildRequest('Romans 8:28', verse, 'What is this?', [])).toBe(false);
   });
 
   it('accepts a rusty_offer in the schema and isTalkAnswer, and refuses a malformed one', () => {

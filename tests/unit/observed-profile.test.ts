@@ -5,7 +5,7 @@ import type { Verse } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { learnerProfile } from '../../src/data/learnerProfile';
 import { observedPace, observedWays, OBSERVED_MIN_ANSWERS, OBSERVED_MIN_USES } from '../../src/data/observedProfile';
-import { buildRequest } from '../../src/services/tutor';
+import { buildReadingRequest } from '../../src/services/reading';
 import { validate, type Schema } from '../support/schema-validate';
 
 afterAll(() => db.close());
@@ -103,9 +103,9 @@ describe('the observed profile rides the grists', () => {
       observed_ways: { hearing: 50, doing: 50 },
       do_not_ask: ['why'],
     });
-    const request = buildRequest('Romans 8:28', verse, 'Why?', [], undefined, undefined, undefined, [], profile);
+    const request = buildReadingRequest('Romans 8:28', verse, 'english', 'en', profile);
     expect(request.learner_profile).toEqual(profile);
-    for (const kind of ['bible-talk', 'verse-ask', 'verse-read', 'tips']) {
+    for (const kind of ['bible-talk', 'verse-read', 'tips']) {
       const input = JSON.parse(readFileSync(`grinds/${kind}.input.schema.json`, 'utf8')) as { properties: { learner_profile: Schema } };
       expect(validate(profile, input.properties.learner_profile), kind).toEqual([]);
       expect(validate({ ...profile, observed_pace: 'warp' }, input.properties.learner_profile), kind).not.toEqual([]);

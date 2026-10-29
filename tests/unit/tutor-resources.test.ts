@@ -13,7 +13,6 @@ import { instructionsOf } from '../../scripts/grind-parts';
 const on = (...ids: string[]): StudyResources => ({ on: ids, options: {} });
 const chapter = { verses: [] } as never;
 const instructions = instructionsOf('bible-talk');
-const verseAsk = instructionsOf('verse-ask');
 const input = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
 
 describe('resourcesForTutor', () => {
@@ -63,7 +62,6 @@ describe('the bible-talk instructions on resources', () => {
 describe('the instructions on other passages', () => {
   it.each([
     ['bible-talk', instructions],
-    ['verse-ask', verseAsk],
   ])('of %s say to answer a question about another passage in place, name the verse, and never send him to ask elsewhere', (_, text) => {
     expect(text).toContain('## Other passages');
     expect(text).toMatch(/answer it\s+(fully\s+)?(here|in place)/i);

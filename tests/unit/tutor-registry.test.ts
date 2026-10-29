@@ -7,7 +7,7 @@ import { currentSettings } from '../../src/settings/registry';
 import { ROUTES, routeOf } from '../../src/nav/route';
 import { SCREEN_NAMES } from '../../src/tutor/screen';
 import { reportScreen } from '../../src/tutor/screenContext';
-import { askRegistry, placeNameOf, lampasRegistry, screenKey } from '../../src/tutor/registry';
+import { placeNameOf, lampasRegistry, screenKey } from '../../src/tutor/registry';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -115,12 +115,5 @@ describe('the catalogue and the screen key', () => {
     const stop = reportScreen({ name: 'Goal', facts: [] });
     expect(screenKey()).toBe('Goal');
     stop();
-  });
-
-  it('the verse ask has a smaller set: facts only, and its own settings', () => {
-    const ask = askRegistry();
-    expect(ask.places).toHaveLength(0);
-    expect(ask.facts.map((f) => f.name).sort()).toEqual(['settings', 'today-drill', 'where-he-is']);
-    expect(ask.facts.every((f) => f.core)).toBe(true);
   });
 });

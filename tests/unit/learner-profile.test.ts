@@ -1,5 +1,5 @@
 // About you (mw-1vuvq6.1): the student's profile lives in the settings store ('learnerProfile', a JSON object, no table); every tutor grist
-// (bible-talk, verse-ask, verse-read, tips) carries what is kept as `learner_profile`, bounded, and carries nothing when nothing is kept.
+// (bible-talk, verse-read, tips) carries what is kept as `learner_profile`, bounded, and carries nothing when nothing is kept.
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { Chapter, Verse } from '../../src/data/chapter';
@@ -22,7 +22,6 @@ import {
 import { learnerProfile, learnerProfileOf } from '../../src/data/learnerProfile';
 import { buildReadingRequest } from '../../src/services/reading';
 import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory } from '../../src/services/talk';
-import { buildRequest } from '../../src/services/tutor';
 import { buildTipRequest } from '../../src/tips/tip';
 import { validate, type Schema } from '../support/schema-validate';
 
@@ -127,7 +126,6 @@ describe('every tutor grist carries learner_profile and validates against its in
       request: buildTalkRequest({ title: 'Romans 8', chapter, verse: undefined } as never, 'Explain', [], [], {}, undefined, undefined, undefined, [], [], 0, { kept: '' }, undefined, [], p) as unknown as Record<string, unknown>,
       schema: 'grinds/bible-talk.input.schema.json',
     }),
-    'verse-ask': (p) => ({ request: buildRequest('Romans 8:28', verse, 'Why?', [], undefined, undefined, undefined, [], p) as unknown as Record<string, unknown>, schema: 'grinds/verse-ask.input.schema.json' }),
     'verse-read': (p) => ({ request: buildReadingRequest('Romans 8:28', verse, 'english', 'en', p) as unknown as Record<string, unknown>, schema: 'grinds/verse-read.input.schema.json' }),
     tips: (p) => ({ request: buildTipRequest(summary, ['a'], p) as unknown as Record<string, unknown>, schema: 'grinds/tips.input.schema.json' }),
   };

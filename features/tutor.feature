@@ -60,14 +60,10 @@ Feature: Ask the tutor about a verse
     And the Talk sheet shows no answer
 
   Scenario: The tutor's instructions ask it to teach a new word in his terms
-    Given the verse-ask grind's instructions
+    Given the bible-talk grind's instructions
     Then they describe the learner field
     And they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter
     And they say to leave out what he already knows and to keep the answer short for a phone
-
-  Scenario: The verse-ask instructions say to teach at his level
-    Given the verse-ask grind's instructions
-    Then the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move
 
   Scenario: A verse the tutor names in its answer is a link whose card opens that verse in its chapter
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers with "Melchizedek is in Hebrews 7:2, where he is called king of righteousness."

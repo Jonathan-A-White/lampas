@@ -12,7 +12,6 @@ import { mulberry32 } from '../../src/data/quiz';
 import { clearBus } from '../../src/events/bus';
 import { buildReadingRequest } from '../../src/services/reading';
 import { buildTalkRequest, type TalkScope } from '../../src/services/talk';
-import { buildRequest } from '../../src/services/tutor';
 import { setGreekPronunciation, speakWord, stopSpeaking } from '../../src/speech/greek';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, registerPronunciation, tutorGuideOf, type Pronunciation } from '../../src/speech/pronunciation';
 import { speakQuestion } from '../../src/speech/speakQuestion';
@@ -84,8 +83,7 @@ describe('a second pronunciation, chosen, is followed everywhere', () => {
     expect(syllablesOf('ταῦτα')).toEqual({ syllables: ['stub', '5'], stressed: 0 });
   });
 
-  it('tells every tutor grind that speaks of a sound the scheme by its own rules', () => {
-    expect(buildRequest('Romans 8:31', verse, 'How is ταῦτα said?', [], undefined, undefined, undefined, [], undefined, false, STUBBISH.id).pronunciation_guide).toBe(tutorGuideOf(STUBBISH));
+  it('tells each tutor grind that speaks of a sound the scheme by its own rules', () => {
     expect(buildReadingRequest('Romans 8:31', verse, 'greek', 'el', undefined, undefined, undefined, STUBBISH.id).pronunciation_guide).toBe(tutorGuideOf(STUBBISH));
   });
 

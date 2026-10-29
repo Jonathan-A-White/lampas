@@ -1,6 +1,6 @@
 // src/data/requestsForTutor.ts — what the tutor is told of the requests he sent to the factory (mw-vy3ghg.6, docs/ask-tutor.md 'Your requests'):
-// up to 10 lines, the newest first, each {summary, status, version?, setting?, reason?} with only the field its status carries (built-differently: its reason, moved: none). Both the
-// verse-ask and the bible-talk request carry them as `requests` (their input schemas), so the tutor can say what became of his idea and, for
+// up to 10 lines, the newest first, each {summary, status, version?, setting?, reason?} with only the field its status carries (built-differently: its reason, moved: none). The
+// bible-talk request carries them as `requests` (its input schema), so the tutor can say what became of his idea and, for
 // one that became a setting, offer to switch it on. Names the tutor needs and nothing else: no txid, no bead, no link.
 import type { RequestRow } from './db';
 import { listRequests } from './repositories/requests';

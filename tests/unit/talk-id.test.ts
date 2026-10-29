@@ -1,5 +1,5 @@
 // A talk names itself to the mill (mw-pxji7y.3): `<ref>@<when of its first turn>`, so the mill keeps one session per talk. The first turn of a talk is stored
-// with the very `when` its id carries, and New talk (deleteTurns) makes the next id by itself. verse-ask names no talk; a long ref is cut to the 80 bytes a name may be.
+// with the very `when` its id carries, and New talk (deleteTurns) makes the next id by itself. a grist that is not a talk names none; a long ref is cut to the 80 bytes a name may be.
 import { Utils } from '@bsv/sdk';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -7,7 +7,7 @@ import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { addTurn, deleteTurns, listTurns, screenRef, talkRef } from '../../src/data/repositories/talks';
 import { setCurrentLicence } from '../../src/services/licenceNow';
-import { askTutor, buildRequest, TUTOR_KIND } from '../../src/services/tutor';
+import { askGrind } from '../../src/services/tutor';
 import { MAX_REQUEST_BYTES, TALK_KIND, TALK_NAME_MAX, askTalk, buildTalkRequest, fitHistory, talkNameOf } from '../../src/services/talk';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 
@@ -94,9 +94,9 @@ describe('what a request carries to the mill', () => {
     expect('talk' in postern.received[0].grist).toBe(false);
   });
 
-  it('a verse-ask request carries no talk, even when one is given', async () => {
-    await askTutor(buildRequest('Romans 8:1', chapter.verses[0], 'What does this mean?', []), { key, talk: 'rom.8.1@5000' });
-    expect(postern.received[0].grist.kind).toBe(TUTOR_KIND);
+  it('a grist that is not a talk (verse-read) carries no talk, even when one is given', async () => {
+    await askGrind('verse-read', { reference: 'Romans 8:1' }, (value): value is object => typeof value === 'object' && value !== null, { key, talk: 'rom.8.1@5000' });
+    expect(postern.received[0].grist.kind).toBe('verse-read');
     expect('talk' in postern.received[0].grist).toBe(false);
   });
 });

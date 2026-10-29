@@ -10,7 +10,6 @@ const FILES = [
   'pwa-manifest.ts',
   'CLAUDE.md',
   'grinds/bible-talk.instructions/000-bible-talk.md',
-  'grinds/verse-ask.instructions/000-verse-ask.md',
   'grinds/drill-items.instructions.md',
 ];
 

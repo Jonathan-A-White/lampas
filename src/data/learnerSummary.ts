@@ -1,6 +1,6 @@
 // src/data/learnerSummary.ts — what the tutor is told of where he stands, in one short line (mw-bsf54t.8): how many words are
-// solid, the words he is learning (newest first), the ones he put on his list today and how many reviews are due. Both grinds
-// (verse-ask, bible-talk) get it as the request's `learner` field, so a question about a new word is answered in his terms.
+// solid, the words he is learning (newest first), the ones he put on his list today and how many reviews are due. The bible-talk grind
+// gets it as the request's `learner` field, so a question about a new word is answered in his terms.
 // It is told per language (mw-gdcyf98.22): a Greek-only reader's line is the Greek one, in the shape it always had; a reader who chose Hebrew is told his Hebrew words,
 // his place on the Hebrew grammar ladder, his place on the Hebrew reading ladder and how long since he last met a Hebrew word or idea; one who chose both, each under its language's name.
 import { bookOf } from './books';

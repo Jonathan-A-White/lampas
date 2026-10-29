@@ -1,13 +1,14 @@
 // Hebrew in the tutor (mw-5r3p30.97): the depth he picks (Settings > Hebrew in the tutor) is kept per language, so Greek or a Hebrew reader
-// can reuse the same code; it is a registry setting, and the verse-ask request carries it.
+// can reuse the same code; it is a registry setting, and the Bible talk's request carries it.
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import type { Chapter, Verse } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { getScriptDepth, setScriptDepth } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
 import { depthSettings } from '../../src/script/depthSettings';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS } from '../../src/script/scripts';
 import { applyChanges, currentSettings, settingOf, undoChange, writeSetting } from '../../src/settings/registry';
-import { buildRequest } from '../../src/services/tutor';
+import { buildTalkRequest } from '../../src/services/talk';
 
 afterAll(() => db.close());
 
@@ -76,10 +77,11 @@ describe('the depth in a request', () => {
     expect(await depthSettings()).toEqual({ hebrewDepth: 'transliteration' });
   });
 
-  it('puts settings.hebrewDepth in the verse-ask request, and leaves settings out when none is given', () => {
-    const verse = { n: 1, g: [{ t: 'λόγος' }], e: [{ t: 'word', g: [0] }] } as unknown as Parameters<typeof buildRequest>[1];
-    const request = buildRequest('John 1:1', verse, 'What is this?', [], undefined, undefined, { hebrewDepth: 'full' });
+  it('puts settings.hebrewDepth in the Bible talk\'s request, and sends no depth when none is given', () => {
+    const verse = { n: 1, g: [{ t: 'λόγος' }], e: [{ t: 'word', g: [0] }] } as unknown as Verse;
+    const scope = { title: 'John 1', chapter: { verses: [verse] } as unknown as Chapter, verse };
+    const request = buildTalkRequest(scope, 'What is this?', [], [], { hebrewDepth: 'full' });
     expect(request.settings).toEqual({ hebrewDepth: 'full' });
-    expect(buildRequest('John 1:1', verse, 'What is this?', []).settings).toBeUndefined();
+    expect(buildTalkRequest(scope, 'What is this?', [], []).settings).toEqual({});
   });
 });

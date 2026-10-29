@@ -1,8 +1,8 @@
-// The small parts of the tutor's knowledge of his Hebrew (mw-gdcyf98.22): the screen fact that names the language, the face a rusty item is drawn in, the ask's answer that may list a
+// The small parts of the tutor's knowledge of his Hebrew (mw-gdcyf98.22): the screen fact that names the language, the face a rusty item is drawn in, the talk's answer that may list a
 // Hebrew word, and the table of what each grind is told of his Hebrew progress. The summary itself is tests/unit/learner-summary-hebrew.test.ts.
 import { describe, expect, it } from 'vitest';
 import { rustyFace } from '../../src/script/rustyFace';
-import { isVerseAnswer } from '../../src/services/tutor';
+import { isTalkAnswer } from '../../src/services/talk';
 import { languageFact } from '../../src/tutor/screen';
 import { GRINDS, PROGRESS, TUTOR_KNOWS } from '../../src/tutor/knows';
 
@@ -37,19 +37,19 @@ describe('how a rusty item is drawn', () => {
   });
 });
 
-describe("the verse-ask answer's words", () => {
+describe("the Bible talk answer's words", () => {
   const word = { greek: 'בָּרָא', lemma: 'בָּרָא', note: 'verb' };
   const answer = (w: object) => ({ answer: 'It is a verb.', question: 'What is it?', words: [w] });
 
   it('may carry language he, or grc, and need not carry one', () => {
-    expect(isVerseAnswer(answer(word))).toBe(true);
-    expect(isVerseAnswer(answer({ ...word, language: 'he' }))).toBe(true);
-    expect(isVerseAnswer(answer({ ...word, language: 'grc' }))).toBe(true);
+    expect(isTalkAnswer(answer(word))).toBe(true);
+    expect(isTalkAnswer(answer({ ...word, language: 'he' }))).toBe(true);
+    expect(isTalkAnswer(answer({ ...word, language: 'grc' }))).toBe(true);
   });
 
   it('refuses any other language, and any other key', () => {
-    expect(isVerseAnswer(answer({ ...word, language: 'el' }))).toBe(false);
-    expect(isVerseAnswer(answer({ ...word, extra: 1 }))).toBe(false);
+    expect(isTalkAnswer(answer({ ...word, language: 'el' }))).toBe(false);
+    expect(isTalkAnswer(answer({ ...word, extra: 1 }))).toBe(false);
   });
 });
 

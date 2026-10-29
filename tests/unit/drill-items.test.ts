@@ -72,7 +72,7 @@ const MEANING: AnsweredItem = {
 describe('the drill-items grind and the app agree', () => {
   it('is the grind the app asks for: no attachments, sonnet, with its instructions and answer schema', () => {
     expect(grind).toMatchObject({ grind: 1, app: 'lampas', kind: DRILL_ITEMS_KIND, versions: ['1'], model: 'sonnet', attachments: { min: 0, max: 0 } });
-    expect(Object.keys(grind).sort()).toEqual(Object.keys(readJson('grinds/verse-ask.json')).sort());
+    expect(Object.keys(grind).sort()).toEqual(Object.keys(readJson('grinds/bible-talk.json')).sort());
   });
 
   it('takes the request the app builds, which fits the grist', () => {
