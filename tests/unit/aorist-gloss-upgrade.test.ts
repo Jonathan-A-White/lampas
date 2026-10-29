@@ -50,7 +50,7 @@ describe('the v29 upgrade of the stored glosses', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(33);
+    expect(db.verno).toBe(34);
     const gloss = async (lemma: string) => (await db.words.get(lemma))?.gloss;
     expect(await gloss('ἔρχομαι')).toBe('to come/go (aorist ἦλθον)');
     expect(await gloss('λύω')).toBe('to loose');
