@@ -334,7 +334,7 @@ changes only a shade the MSB's English never rendered (the article of Revelation
 The build (`runBuild`, after the overlay report) stops, naming the verse, on an overlay change with no entry, an entry for a change no longer in the overlay,
 Lampas English on an entry that does not change the English (or none on one that does), or a missing provenance (`checkRp2026English`,
 `scripts/data/rp2026English.ts`), and prints `RP 2026 English: 5 changes, 1 alters the English, 4 do not` and the verses that alter it with both Englishes.
-Nothing lays this English on the chapters yet: it is the data a setting would read. A new overlay change needs its entry written by hand, with the model that
+`src/data/rp2026English.ts` lays this English on a chapter in the Reader while Settings > Reading > English from the 2026 Greek is On (mw-9ji6ek0.33; `layRp2026English`: the chunks that hold an entry's `msb` words become one chunk of `lampas`, `rp` set to the entry's key, every word's `e` following); the chapter files stay as built. A new overlay change needs its entry written by hand, with the model that
 decided it named in the provenance; there is no script that renders it yet. Entries: Matthew 26:29 (γεννήματος/γενήματος, 'fruit': no), Romans 13:9 (no),
 Philemon 1:1 ('of Christ Jesus' → 'of Jesus Christ': yes), Revelation 11:16 (no) and 13:14 (no).
 

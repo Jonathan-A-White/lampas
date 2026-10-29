@@ -41,6 +41,11 @@ export interface EnglishChunk {
    * phone from before mw-5r3p30.102 says `s: 1`, the whole chunk; englishRuns reads that too.
    */
   s?: number[];
+  /**
+   * Set only by layRp2026English (src/data/rp2026English.ts, mw-9ji6ek0.33), never in a file: the key of the RP 2026 entry whose Lampas English this chunk
+   * holds in place of the MSB's. The Reader marks the chunk and a tap on the mark opens the entry's sheet.
+   */
+  rp?: string;
 }
 
 /** A run of a chunk's words that are all supplied, or all not. */

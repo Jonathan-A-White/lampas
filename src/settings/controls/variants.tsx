@@ -1,5 +1,5 @@
 // The Variants rows (Settings > Reading > Variants, mw-9ji6ek0.4): what to show of the manuscripts' differences, and whose readings count (drawn only while Variants is not Off), Offer the lessons (always drawn, mw-9ji6ek0.19) and Read as (always drawn, mw-9ji6ek0.25).
-import { variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting } from '../definitions';
+import { rp2026EnglishSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting } from '../definitions';
 import { ReadAs } from '../../reader/ReadingSetSheet';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
@@ -31,6 +31,17 @@ export const VariantLessonsOfferControl: Control = ({ row }) => {
     <SettingRow row={row}>
       <RowName row={row} />
       {offer ? <OnOff name={row.label} current={offer} settingKey="variantLessonsOffer" /> : null}
+    </SettingRow>
+  );
+};
+
+/** English from the 2026 Greek (mw-9ji6ek0.33): Off | On, always drawn. */
+export const Rp2026EnglishControl: Control = ({ row }) => {
+  const english = useSetting(rp2026EnglishSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {english ? <ChipRow name={row.label} current={english} options={[['off', 'Off'], ['on', 'On']]} settingKey="rp2026English" /> : null}
     </SettingRow>
   );
 };
