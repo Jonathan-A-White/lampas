@@ -17,6 +17,7 @@ import { COLUMNS, addRow, checkHeader, splitReference, wordOf, type TableGroup, 
 import { buildVerse, chapterFingerprint, fetchTo, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { parseTbes, type Lexicon } from './data/tbes';
 import { OVERLAY_FILE, applyOverlay, diffEdition, loadRp2026, overlayReport, type OverlayEntry, type OverlayResult, type PlacedUnit } from './data/rp2026';
+import { RP2026_ENGLISH_FILE, checkRp2026English, readRp2026English, rp2026EnglishReport } from './data/rp2026English';
 import { VARIANT_ENGLISH_FILE, englishReport, englishStats, finishUnit, layEnglish, readLampasEnglish, type LampasEnglishFile, type MissingEnglish, type WordNote } from './data/variantEnglish';
 import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
 import { formIndex, tagVariants, taggedLine, untaggedText, type TagTally } from './data/variantWords';
@@ -379,6 +380,8 @@ export interface BuildOptions {
   overlayFile?: string;
   /** the English made for variant units (data/variant-english.json, written by npm run variants:english); default VARIANT_ENGLISH_FILE */
   englishFile?: string;
+  /** the English of the RP 2026 changes (data/rp2026-english.json: whether the English changes, and Lampas's own where it does); default RP2026_ENGLISH_FILE */
+  rp2026EnglishFile?: string;
   /** where the forms of the readings that stay untagged are listed; default UNTAGGED_FILE */
   untaggedFile?: string;
 }
@@ -413,6 +416,11 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
   if (built.variants) for (const line of variantsReport(built.variants)) log(line);
   if (built.variants) for (const line of englishReport(englishStats(built.chapters.flatMap((c) => c.chapter.variants ?? [])))) log(line);
   if (overlay && built.overlay) for (const line of overlayReport(overlay, built.overlay)) log(line);
+  if (overlay) {
+    const rp2026English = readRp2026English(options.rp2026EnglishFile ?? RP2026_ENGLISH_FILE);
+    checkRp2026English(overlay, rp2026English);
+    for (const line of rp2026EnglishReport(overlay, rp2026English)) log(line);
+  }
   if (built.tagged) {
     log(taggedLine(built.tagged));
     writeIfChanged(options.untaggedFile ?? UNTAGGED_FILE, untaggedText(built.tagged));

@@ -20,6 +20,7 @@ import {
   unzip,
   type OverlayEntry,
 } from '../../scripts/data/rp2026';
+import { entryKey, type Rp2026EnglishFile } from '../../scripts/data/rp2026English';
 import type { Chapter, GreekWord, Verse, VariantPlace } from '../../src/data/chapter';
 
 // ---------------------------------------------------------------- a zip made here
@@ -281,7 +282,38 @@ describe('the build lays the overlay on the chapters', () => {
     expect(built.overlay).toMatchObject({ applied: 1, already: 0 });
   });
 
+  // the one change the fake zip makes, and the English decided for it
+  const rev17: OverlayEntry = { book: 'Revelation', chapter: 17, verse: 8, from: ['ὃ', 'εἶδες', 'ἦν'], to: ['ο', 'ειδον', 'ην'] };
+  const englishOf = (changes: boolean): Rp2026EnglishFile => ({
+    [entryKey(rev17)]: {
+      ref: 'Revelation 17:8',
+      from: rev17.from,
+      to: rev17.to,
+      changesEnglish: changes,
+      msb: 'which you saw',
+      lampas: changes ? 'which I saw' : null,
+      note: 'a test',
+      provenance: {
+        greek: { source: 'a test', licence: 'a test' },
+        msb: 'a test',
+        decision: { model: 'm', date: 'd' },
+        ...(changes ? { rendering: { kind: 'Lampas rendering, AI-made at build time', model: 'm', date: 'd' } } : {}),
+      },
+    },
+  });
+
+  it('prints the count of the changes and how many alter the English, and stops on a change with no English decided', async () => {
+    const lines = await buildWith(englishOf(true));
+    expect(lines).toContain('RP 2026 English: 1 change, 1 alters the English, 0 do not');
+    expect(lines).toContain('  alters: Revelation 17:8 ("which you saw" → "which I saw")');
+    await expect(buildWith({})).rejects.toThrow(/Revelation 17:8.*no entry/);
+  });
+
   it('fetches the zip, prints the count of the overlay and the books, writes data/rp2026-overlay.json and lays it on the chapter', async () => {
+    await buildWith(englishOf(false));
+  });
+
+  async function buildWith(english: Rp2026EnglishFile): Promise<string[]> {
     const base = mkdtempSync(join(tmpdir(), 'lampas-rp2026-build-'));
     const raw = join(base, 'raw');
     mkdirSync(raw, { recursive: true });
@@ -297,11 +329,14 @@ describe('the build lays the overlay on the chapters', () => {
     const apparatusSha = sha(Object.values(await import('../../scripts/data/variants').then((m) => m.VARIANTS_FILES)).map((n) => Buffer.from(variantsFiles(n))));
     const log: string[] = [];
     const overlayFile = join(base, 'overlay.json');
+    const rp2026EnglishFile = join(base, 'rp2026-english.json');
+    writeFileSync(rp2026EnglishFile, JSON.stringify(english));
     try {
       await runBuild({
         rawDir: raw,
         outDir: join(base, 'out'),
         overlayFile,
+        rp2026EnglishFile,
         untaggedFile: join(base, 'untagged.txt'),
         log: (line) => log.push(line),
         variantsSha256: apparatusSha,
@@ -317,10 +352,11 @@ describe('the build lays the overlay on the chapters', () => {
       expect(log.some((l) => /RP 2026 overlay: 1 entry in 1 book \(Revelation 1\)/.test(l))).toBe(true);
       const rev = JSON.parse(readFileSync(join(base, 'out', 'rev', '17.json'), 'utf8')) as Chapter;
       expect(rev.verses[0].g[3].t).toBe('εἶδον');
+      return log;
     } finally {
       rmSync(base, { recursive: true, force: true });
     }
-  });
+  }
 });
 
 describe('the report', () => {
