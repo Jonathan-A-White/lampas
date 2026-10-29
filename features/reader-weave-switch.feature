@@ -67,3 +67,23 @@ Feature: The Reader's switch is English | Weave | Greek
     And he sets Weave to Solid words
     When he chooses "Weave" in the language switch
     Then verse 1 begins "Therefore there is now no condemnation"
+
+  Scenario: Switching the mode keeps the verse that was on top of an Acts chapter on top
+    Given Lampas is opened on "Acts 18" with the Weave on, in a text whose verses are taller in one mode than in another
+    And verse 14 is the first verse at the top of the text
+    When he chooses "Greek" in the language switch
+    And verse 14 is at the top of the text after Greek or Hebrew
+    And he then chooses "Weave" in the language switch
+    And verse 14 is at the top of the text after Weave
+    And he finally chooses "English" in the language switch
+    Then verse 14 is at the top of the text after English
+
+  Scenario: Switching to Hebrew and back keeps the verse that was on top of an Old Testament chapter on top
+    Given Lampas is opened on "Genesis 1" with the Weave on, in a text whose verses are taller in one mode than in another
+    And verse 20 is the first verse at the top of the text
+    When he chooses "Hebrew" in the language switch
+    And verse 20 is at the top of the text after Greek or Hebrew
+    And he then chooses "Weave" in the language switch
+    And verse 20 is at the top of the text after Weave
+    And he finally chooses "English" in the language switch
+    Then verse 20 is at the top of the text after English

@@ -46,6 +46,7 @@ import { LinkNotice } from './reader/LinkNotice';
 import { SwipeNote } from './reader/SwipeNote';
 import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
 import { canCross, crossChapter } from './reader/crossChapter';
+import { useKeepTopVerse } from './reader/useKeepTopVerse';
 import { useBringVerse } from './reader/useBringVerse';
 import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
@@ -233,6 +234,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const showPage = pages.show;
   // Choose a book's Go to John 18:2: the chapter, with that verse brought to the top of the reading area (no Verse view)
   useBringVerse(main, inner, BOOK, CHAPTER, chapter, paging, showPage);
+  // a change of mode (English, Weave, Greek or Hebrew, the Weave's order) lays the chapter out at other heights: the verse that was on top stays on top (mw-5r3p30.863)
+  useKeepTopVerse(main, inner, `${view}|${weave}|${weaveShown}|${weaveOrder}`, paging);
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);

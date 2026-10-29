@@ -17,7 +17,7 @@ const GAP = 8;
 
 /** Puts `verse` at the top of `box` and keeps it there while the text above it settles (a font arriving, a late row), until his own hand is on the box or SETTLE_MS is up.
  * Returns the function that ends it. */
-function settleAtTop(box: HTMLElement, inner: HTMLElement | null, verse: number): () => void {
+export function settleAtTop(box: HTMLElement, inner: HTMLElement | null, verse: number): () => void {
   const bring = () => {
     const target = box.querySelector<HTMLElement>(`[data-verse="${verse}"]`);
     if (target) moveBox(box, box.scrollTop + target.getBoundingClientRect().top - box.getBoundingClientRect().top - GAP);

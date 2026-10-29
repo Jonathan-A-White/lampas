@@ -97,3 +97,46 @@ for (const { name, size } of SIZES) {
     await shot(page, `weave-switch-off-${name}`);
   });
 }
+
+// The verse on top stays on top when the mode changes (mw-5r3p30.863): in Acts 18 the Governor had verse 14 on top in the Weave, tapped Greek and found verse 11 there.
+test.describe('the verse on top stays on top across a switch of mode, 390x844', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  /** The first verse whose top is at or below the top of the reading area, and how far below it that top is. */
+  const onTop = (page: Page) =>
+    page.locator('[data-reader]').evaluate((box) => {
+      const top = box.getBoundingClientRect().top;
+      const el = [...box.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top);
+      return el ? { verse: Number(el.getAttribute('data-verse')), below: el.getBoundingClientRect().top - top } : null;
+    });
+
+  for (const { path, name, verse, last } of [
+    { path: '/#/?b=act&c=18&weave=solid', name: 'Acts 18', verse: 14, last: 'Greek' },
+    { path: '/#/?b=gen&c=1&weave=solid', name: 'Genesis 1', verse: 20, last: 'Hebrew' },
+  ]) {
+    test(`${name}: verse ${verse} stays on top through ${last}, Weave and English`, async ({ page }) => {
+      await openUnlocked(page);
+      await page.goto(path);
+      await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
+      await expect(page.locator(`[data-verse="${verse}"]`)).toBeAttached();
+      await expect(choice(page, 'Weave')).toHaveAttribute('aria-pressed', 'true');
+
+      // he scrolls until the verse is the first at the top, as a tap on a verse's reference leaves it (8 px below the top)
+      await page.locator('[data-reader]').evaluate((box, n) => {
+        const el = box.querySelector(`[data-verse="${n}"]`) as HTMLElement;
+        box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+      }, verse);
+      await expect.poll(() => onTop(page)).toMatchObject({ verse });
+      const before = (await onTop(page))!;
+      expect(before.below).toBeLessThanOrEqual(16);
+
+      for (const label of [last, 'Weave', 'English']) {
+        await choice(page, label).click();
+        await expect(choice(page, label)).toHaveAttribute('aria-pressed', 'true');
+        await expect.poll(async () => (await onTop(page))?.verse).toBe(verse);
+        expect((await onTop(page))!.below).toBeLessThanOrEqual(16);
+        await shot(page, `weave-switch-keeps-${name.replace(' ', '-').toLowerCase()}-${label.toLowerCase()}`);
+      }
+    });
+  }
+});
