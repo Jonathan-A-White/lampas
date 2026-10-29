@@ -5,6 +5,7 @@ import { cleanGloss } from './gloss';
 import { withAoristNote } from './irregular-aorists';
 import { isItemId, legacyStoredId, plainIdOf } from './grammar/soundScope';
 import { setDbBlocked } from './dbBlocked';
+import { moveCompoundLemmas } from './compoundLemma';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
 
@@ -1319,6 +1320,42 @@ class LampasDB extends Dexie {
       diagrams: '[ref+lang+version]',
       readingSets: 'id',
     });
+
+    // v34: same tables. A word he saved before 0.7.19 sits under a compound lemma ('Ἕλλην=Ἕλλην'); the upgrade rewrites every stored lemma and every key built from one
+    // to the part before '=', merging a row that meets one under the plain lemma (src/data/compoundLemma.ts, mw-5r3p30.868).
+    this.version(34)
+      .stores({
+        words: 'lemma, lesson, state, *lemmas',
+        meta: 'key',
+        settings: 'key',
+        results: '++id, [lemma+when]',
+        answers: '++id, [ref+when]',
+        talks: '++id, [ref+when]',
+        drills: '++id, lemma, [lemma+step]',
+        readings: 'ref',
+        grammarKnown: 'term',
+        reviews: '[kind+id], due, kind',
+        grammarLevels: 'id, level',
+        usage: 'key, day, name',
+        tips: 'id, status',
+        talkPictures: '++id, turnId',
+        shares: 'id, createdAt',
+        requests: 'txid, sentAt, status',
+        readingHistory: '++id, ref, [lang+at]',
+        missTally: '[lang+unit], lang',
+        ladder: 'lang',
+        drillRuns: '++id, ideaId, at',
+        passageLessons: 'key, state',
+        pictureRefs: 'hash, at',
+        talkSummaries: 'ref',
+        library: 'id, kind',
+        exportRows: 'resource',
+        verseLists: '++id, created',
+        recalls: '++id, [ref+lang], when',
+        diagrams: '[ref+lang+version]',
+        readingSets: 'id',
+      })
+      .upgrade(moveCompoundLemmas);
   }
 }
 
