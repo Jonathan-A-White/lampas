@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.18",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.862",
+    "kind": "fixed",
+    "text": "The app now opens within about two seconds even when the phone is slow to open its saved data, instead of leaving the splash up for a long time."
+  },
+  {
+    "version": "0.7.18",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.29",
+    "kind": "new",
+    "text": "The variant card now says, under each English line, whether it comes from the Majority Standard Bible, the Berean Standard Bible or Lampas's own AI rendering, and shows the English the verse actually has."
+  },
+  {
+    "version": "0.7.18",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.835",
+    "kind": "fixed",
+    "text": "holding a verse's number now copies the verse instead of starting to talk to the tutor."
+  },
+  {
     "version": "0.7.16",
     "date": "2026-10-29",
     "story": "mw-5r3p30.854",

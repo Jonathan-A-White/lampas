@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.18
+_2026-10-29_
+- Fixed: The app now opens within about two seconds even when the phone is slow to open its saved data, instead of leaving the splash up for a long time.
+- New: The variant card now says, under each English line, whether it comes from the Majority Standard Bible, the Berean Standard Bible or Lampas's own AI rendering, and shows the English the verse actually has.
+- Fixed: holding a verse's number now copies the verse instead of starting to talk to the tutor.
+
 ## 0.7.16
 _2026-10-29_
 - Fixed: the tutor now answers a question about what a screen shows instead of sometimes offering to pass it on to the makers as a wish.
