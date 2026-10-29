@@ -34,6 +34,18 @@ Tap a brace and a sheet opens from the bottom. Its title is the verse and the wo
 
 With a licence, **Ask the tutor** is at the foot of the sheet. It opens a talk about the verse, and the tutor knows its readings. It will explain what each reading says and what each side holds; it does not tell you which is right. **Done**, a swipe down or a tap outside the sheet closes it.
 
+## Read this, and reading sets
+
+Each reading on the sheet has **Read this**. It lays that reading into the text itself, in place of the text's own, and marks the words with a thin solid line; the text's own reading then stands in the brace after them, under the chip **RP**. The choice is kept on this phone and shows whether variants are on or off. Read aloud, copy, Read check and the diagram still use the Byzantine words.
+
+What you read is a **reading set**: one reading chosen for every place. **Read as** (in the sheet the variants chip opens when you press and hold it, and in Settings > Reading > Variants) switches the whole text at once:
+
+- **Byzantine**: the text as it stands.
+- **NA**: the Nestle-Aland reading at every place that has one.
+- **ECM**: the *Editio Critica Maior*'s reading where its apparatus gives it (18 places in Acts), and Nestle-Aland's elsewhere.
+- **Mine**: starts the first time you use Read this while one of those is in force. It begins as a copy of that set, with your choice on top; the three above never change.
+- Sets you name: **Save as…** keeps a copy of the set you are reading under a name. **Rename** and **Delete** change your own sets; the three built-in sets cannot be renamed or deleted.
+
 ## Where the English comes from
 
 The English of the other readings comes from two places. Where the Majority Standard Bible's own footnotes give the critical text's reading (its notes that begin "CT"), Lampas uses that English. For the rest, the English was written when the app was built by the model the tutor uses, from the Greek of each reading and the dictionary meanings of its words, and checked against them. Treat it as a guide to the Greek, not a translation of record: the Greek on the sheet is what the edition prints.
