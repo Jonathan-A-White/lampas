@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf, instructionParts } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const text = instructionsOf('bible-talk');
 const from = text.indexOf('## Offering the Greek\n');

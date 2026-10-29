@@ -7,6 +7,7 @@ import type { RequestRow } from '../../src/data/db';
 import { MAX_TUTOR_REQUESTS, requestsOf } from '../../src/data/requestsForTutor';
 import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const talkSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;

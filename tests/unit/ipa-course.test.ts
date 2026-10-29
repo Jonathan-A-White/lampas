@@ -13,6 +13,7 @@ import { mulberry32 } from '../../src/data/random';
 import { ACCENTS, accentOf, AMERICAN_ID } from '../../src/speech/accents';
 import { pronunciationOf, type Pronunciation } from '../../src/speech/pronunciation';
 import { CONFUSABLE, SOUND_IDS, type SoundId } from '../../src/speech/sounds';
+import '../support/grinds-in-graph';
 
 const modern = pronunciationOf('modern');
 const american = accentOf('american');

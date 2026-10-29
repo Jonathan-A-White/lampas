@@ -9,6 +9,7 @@ import { infoOf } from '../../src/library/kinds';
 import { applyFormValues, buildFormRequest, FORM_FIELD_MAX, oneQuestion, type FormSpec } from '../../src/formHelper/formHelper';
 import { isTalkAnswer, MAX_REQUEST_BYTES } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const input = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
 const answerSchema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;

@@ -6,6 +6,7 @@ import type { GreekWord, Verse } from '../../src/data/chapter';
 import { chunkOrder, type Woven, type WovenVerse } from '../../src/data/weave';
 import { buildReadingRequest, readingText, wordsOfText, wovenReading } from '../../src/services/reading';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const word = (t: string): GreekWord => ({ t, l: t, p: 'x', s: 'x' }) as unknown as GreekWord;
 /** 'And we know that love' with Greek for And (Καὶ) and love (ἀγαπῶσιν), two English words for οἴδαμεν, and the Greek order οἴδαμεν ... Καὶ */

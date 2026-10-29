@@ -11,6 +11,7 @@ import { buildTalkRequest, fitHistory, isTalkAnswer, MAX_REQUEST_BYTES, type Tal
 import { applyMemoryFromAnswer } from '../../src/talk/memoryUpdate';
 import { buildTipRequest } from '../../src/tips/tip';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

@@ -9,6 +9,7 @@ import { forgetSpoken, noteSpoken, wasSpoken } from '../../src/speech/spoken';
 import { FakeRecognizer, result, stubRecognizer } from '../support/fake-recognizer';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const verse = { n: 1, g: [{ t: 'Τεκνία' }], e: [{ t: 'My little children' }] } as unknown as Verse;

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const text = instructionsOf('bible-talk');
 const section = (): string => {

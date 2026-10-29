@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 import { db } from '../../src/data/db';
 import { learnerSummary } from '../../src/data/learnerSummary';
 import { learnWordToday } from '../support/learner';
+import '../support/grinds-in-graph';
 
 const lastSecondOfDay = (): number => {
   const day = new Date();

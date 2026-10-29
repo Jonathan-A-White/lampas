@@ -11,6 +11,7 @@ import { askBack, bibleTalkClient } from '../../src/tutor/registry';
 import { tuneTheWeights, type WeightsAnswer } from '../../src/tutor/weightsRun';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const schema = (kind: string): Schema => JSON.parse(readFileSync(`grinds/${kind}.input.schema.json`, 'utf8')) as Schema;
 const NIGHT = () => new Date(2026, 9, 25, 4, 0, 0);

@@ -2,6 +2,7 @@
 // asked for (the flake mw-5r3p30.751 fixed) passes unseen. A no-link example (links.0 absent) is left as it is.
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
+import '../support/grinds-in-graph';
 
 const DIR = 'grinds/examples/bible-talk';
 type Expect = Record<string, { equals?: string; present?: boolean }>;

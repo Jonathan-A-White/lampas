@@ -10,6 +10,7 @@ import { weaveVerse, wovenInOrder, type WovenVerse } from '../../src/data/weave'
 import { buildReadingRequest, readingLang, readingText, readingViewOf, sayOf, wordsOfText, wovenReading } from '../../src/services/reading';
 import { DEFAULT_PRONUNCIATION } from '../../src/speech/pronunciation';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const jonah = JSON.parse(readFileSync('public/data/jon/1.json', 'utf8')) as Chapter;
 const jonah1 = jonah.verses.find((v) => v.n === 1) as Verse;

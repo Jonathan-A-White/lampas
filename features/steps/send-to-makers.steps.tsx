@@ -23,6 +23,7 @@ import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { validate, type Schema } from '../../tests/support/schema-validate';
+import '../../tests/support/grinds-in-graph';
 
 const realSeam = { ...imageSeam };
 

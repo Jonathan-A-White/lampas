@@ -20,6 +20,7 @@ import { instructionsOf } from '../../tests/support/learner';
 import { offerSettled } from '../../tests/support/settled-offer';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import '../../tests/support/grinds-in-graph';
 
 afterAll(() => {
   cleanup();

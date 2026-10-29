@@ -18,6 +18,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
+import '../../tests/support/grinds-in-graph';
 
 const realSeam = { ...imageSeam };
 

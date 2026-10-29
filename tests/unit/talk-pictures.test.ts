@@ -11,6 +11,7 @@ import { dataUrlOf, filesOf, isTalkPicture, PICTURE_ONLY_QUESTION, TALK_MAX_EDGE
 import { validate, type Schema } from '../support/schema-validate';
 import { remarkScripts } from '../../src/markdown/scriptRuns';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 

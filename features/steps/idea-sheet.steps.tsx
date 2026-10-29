@@ -32,6 +32,7 @@ import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern 
 import { seedHisWords } from '../../tests/support/his-words';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import { asSpoken, isOneLetter } from '../../tests/support/lone-word';
+import '../../tests/support/grinds-in-graph';
 
 let unregisterTestish: (() => void) | undefined;
 

@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const read = (rel: string): string => readFileSync(rel, 'utf8');
 type Example = { request: { memory?: { index: string }; reader_view?: string }; expect: Record<string, Record<string, unknown>> };

@@ -9,6 +9,7 @@ import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory, scopeRef, type TalkSco
 import { fitScreen, MAX_FACTS } from '../../src/tutor/screen';
 import { lessonKept, lessonScreen, lessonSuggestions } from '../../src/tutor/lessonTalk';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const idea = ideaOf('enclitics');
 const card = ladderFor('grc').teach.enclitics;

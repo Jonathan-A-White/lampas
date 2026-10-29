@@ -10,6 +10,7 @@ import { WORK_LINK_IDS } from '../../src/resources/workIds';
 import { buildTalkRequest, isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const commentaries = WORKS.find((w) => w.id === 'calvin-commentaries');
 const institutes = WORKS.find((w) => w.id === 'calvin-institutes-lcc');

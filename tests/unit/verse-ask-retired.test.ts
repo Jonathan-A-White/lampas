@@ -7,6 +7,7 @@ import { GRIST_KINDS } from '../../src/services/gristKinds';
 import * as tutor from '../../src/services/tutor';
 import * as registry from '../../src/tutor/registry';
 import { GRINDS, TUTOR_KNOWS } from '../../src/tutor/knows';
+import '../support/grinds-in-graph';
 
 const sources = (dir: string): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? sources(`${dir}/${entry.name}`) : /\.tsx?$/.test(entry.name) ? [`${dir}/${entry.name}`] : []));

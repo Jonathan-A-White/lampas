@@ -10,6 +10,7 @@ import { DIAGRAM_VERSION, getDiagram, keepDiagram } from '../../src/data/reposit
 import { fetchDiagram, isDiagramAnswer, type AskDiagram } from '../../src/diagram/fetchDiagram';
 import type { Diagram } from '../../src/diagram/types';
 import { loadFixture } from '../support/diagram-fixtures';
+import '../support/grinds-in-graph';
 
 const col3 = JSON.parse(readFileSync('public/data/col/3.json', 'utf8')) as Chapter;
 const verses = [col3.verses.find((v) => v.n === 1)!];

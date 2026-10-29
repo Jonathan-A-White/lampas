@@ -6,6 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { checkExpect, expectProblems, type GrindExample } from '../support/grind-examples';
 import type { Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const readJson = (rel: string): unknown => JSON.parse(readFileSync(rel, 'utf8'));
 const DIR = 'grinds/examples/verse-read';

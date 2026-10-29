@@ -15,6 +15,7 @@ import { SOLID_WORDS_SENT } from '../../../src/services/solidWords';
 import { TALK_ANSWER } from '../../../tests/support/fake-postern';
 import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTeachesNewWord, instructionsOf, learnWordToday } from '../../../tests/support/learner';
 import { endScenario, fake, history, open, openTalk, received, selectVerse28, send, sheet, turnsKept } from './support';
+import '../../../tests/support/grinds-in-graph';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const revelation2 = JSON.parse(readFileSync('public/data/rev/2.json', 'utf8')) as Chapter;

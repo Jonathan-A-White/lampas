@@ -22,6 +22,7 @@ import { validate, type Schema } from '../../tests/support/schema-validate';
 import { seedHisWords } from '../../tests/support/his-words';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import '../../tests/support/grinds-in-graph';
 
 afterAll(() => {
   cleanup();

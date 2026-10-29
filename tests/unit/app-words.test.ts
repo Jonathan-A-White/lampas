@@ -2,6 +2,7 @@
 // CLAUDE.md's head and the self-descriptions of the three grind parts that name the app all say it, and name the Hebrew.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import '../support/grinds-in-graph';
 
 const FILES = [
   'README.md',

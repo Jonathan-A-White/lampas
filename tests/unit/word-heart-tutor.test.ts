@@ -8,6 +8,7 @@ import { reviewFacts } from '../../src/review/reviewFacts';
 import { buildTalkRequest, type QuizFocus, type WordFocus } from '../../src/services/talk';
 import { wordHeart } from '../../src/data/wordHeart';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const scope = { title: 'Romans 8', chapter, verse: chapter.verses[0] };

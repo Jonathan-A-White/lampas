@@ -24,6 +24,7 @@ import { buildReadingRequest } from '../../src/services/reading';
 import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory } from '../../src/services/talk';
 import { buildTipRequest } from '../../src/tips/tip';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

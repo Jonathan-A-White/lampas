@@ -12,6 +12,7 @@ import { addAnswer, addTurn, listAnswers, listTurns } from '../../src/data/repos
 import { buildTalkRequest, isTalkAnswer, type TalkScope } from '../../src/services/talk';
 import { offerOfTurn } from '../../src/talk/offers';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

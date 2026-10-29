@@ -37,6 +37,7 @@ import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { validate, type Schema } from '../support/schema-validate';
 import { ASYNC_WAIT_MS as timeout } from '../support/timeouts';
+import '../support/grinds-in-graph';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const inputSchema = readJson('grinds/drill-items.input.schema.json') as Schema;

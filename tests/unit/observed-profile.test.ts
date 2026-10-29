@@ -7,6 +7,7 @@ import { learnerProfile } from '../../src/data/learnerProfile';
 import { observedPace, observedWays, OBSERVED_MIN_ANSWERS, OBSERVED_MIN_USES } from '../../src/data/observedProfile';
 import { buildReadingRequest } from '../../src/services/reading';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

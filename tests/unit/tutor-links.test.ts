@@ -10,6 +10,7 @@ import { TEST_CARDS } from '../support/test-maps';
 import type { StudyResources } from '../../src/data/repositories';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
 const instructions = instructionsOf('bible-talk');

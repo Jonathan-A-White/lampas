@@ -9,6 +9,7 @@ import { resourcesForTutor } from '../../src/resources/tutorLinks';
 import { buildTalkRequest } from '../../src/services/talk';
 import type { Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const on = (...ids: string[]): StudyResources => ({ on: ids, options: {} });
 const chapter = { verses: [] } as never;

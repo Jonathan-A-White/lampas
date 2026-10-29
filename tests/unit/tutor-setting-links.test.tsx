@@ -12,6 +12,7 @@ import { SETTINGS } from '../../src/settings/registry';
 import { TutorLinks } from '../../src/TutorLinks';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
 const base = { answer: 'Make the text bigger in Settings.', question: 'What does it say?', words: [] };

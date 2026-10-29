@@ -7,6 +7,7 @@ import { BOOKS } from '../../src/data/books';
 import { osisOf } from '../../src/nav/links';
 import { buildAudiblePositionRequest, checkedReading, CONFIDENCE_WORDS, isAudiblePositionAnswer, type AudiblePositionAnswer } from '../../src/plan/audiblePosition';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const answer = (
   book: string | null,

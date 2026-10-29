@@ -8,6 +8,7 @@ import { accentOf } from '../../src/speech/accents';
 import { pronunciationOf, tutorGuideOf } from '../../src/speech/pronunciation';
 import { respellModern } from '../../src/speech/schemes/modern';
 import { soundRulesIn } from '../support/sound-rules-scan';
+import '../support/grinds-in-graph';
 
 /**
  * What the scan finds that is not a Greek sound rule, or is another story's: [file, the matched text, why it stays]. A new entry needs a reason a

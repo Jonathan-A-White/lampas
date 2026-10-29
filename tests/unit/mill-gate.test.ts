@@ -15,6 +15,7 @@ import { TutorError, askGrind } from '../../src/services/tutor';
 import type { Chapter } from '../../src/data/chapter';
 import { actionsFor } from '../../src/verse/action';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
+import '../support/grinds-in-graph';
 
 const key = Uint8Array.from(Utils.toArray('00'.repeat(31) + '0b', 'hex'));
 const isAnswer = (value: unknown): value is { verdict: string } => typeof value === 'object' && value !== null && 'verdict' in value;
