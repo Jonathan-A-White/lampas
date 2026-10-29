@@ -1,5 +1,7 @@
 # Attribution
 
+<!-- toc: none -->
+
 > If I have seen further it is by standing on the shoulders of Giants.
 > — Isaac Newton, letter to Robert Hooke, 1675
 
