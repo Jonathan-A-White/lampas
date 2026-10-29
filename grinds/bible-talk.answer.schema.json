@@ -1486,6 +1486,7 @@
                   "weaveOrder",
                   "variants",
                   "variantWitnesses",
+                  "rp2026English",
                   "variantLessonsOffer",
                   "newWordsADay",
                   "pickerGrammar",
@@ -1729,6 +1730,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "variantWitnesses" }, "value": { "type": "string", "enum": ["byz", "na", "ecm"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "rp2026English" }, "value": { "type": "string", "enum": ["off", "on"] } }
           },
           {
             "type": "object",

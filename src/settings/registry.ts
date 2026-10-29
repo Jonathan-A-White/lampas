@@ -81,7 +81,7 @@ import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
 import { extentChoices, paradigmExtentSetting } from './definitions/grammarExtent';
-import { ANOTHER, askBySetting, audioBibleSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { ANOTHER, askBySetting, audioBibleSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -512,12 +512,13 @@ export const SETTINGS: readonly SettingEntry[] = [
     {
       section: 'weave',
       dependsOn: { key: 'weave', shown: (value) => value !== 'off' },
-      help: 'Of the words that stand in the Greek or Hebrew, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off.',
+      help: 'Of the woven Greek or Hebrew, keep only forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off.',
     },
   ),
   fromDefinition(weaveOrderSetting),
   fromDefinition(variantsSetting),
   fromDefinition(variantWitnessesSetting),
+  fromDefinition(rp2026EnglishSetting),
   { ...fromDefinition(variantLessonsOfferSetting), write: async (value) => setVariantLessonsOffer(variantLessonsOfferSetting.parse(value)) },
   choice(
     'newWordsADay',
@@ -536,7 +537,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     {
       section: 'newWords',
       dependsOn: depthFrom(3),
-      help: 'From the chapter you are reading, most common first. Off offers none; the app offers none while many reviews are due or the last round went badly, and one notch more after a clean week.',
+      help: 'From the chapter you are reading, most common first. Off offers none; none while many reviews are due or the last round went badly; a clean week adds a notch.',
     },
   ),
   choice(
@@ -551,7 +552,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     {
       section: 'newWords',
       dependsOn: { key: 'newWordsADay', shown: (value) => value !== '0' },
-      help: 'Offer only new words whose form in the chapter uses grammar you have at this level. It shows only while New words a day is not Off.',
+      help: 'Offer only new words whose form uses grammar you have at this level. It shows only while New words a day is not Off.',
     },
   ),
   choice(
@@ -570,7 +571,7 @@ export const SETTINGS: readonly SettingEntry[] = [
     {
       section: 'newWords',
       dependsOn: { key: 'newWordsADay', shown: (value) => value !== '0' },
-      help: 'Whether the app moves New words at by how your grammar reviews go:\n\n- **Ask**: offers.\n- **Auto**: moves and says so.\n- **Off**: never.\n\nIt shows only while New words a day is not Off.',
+      help: 'Whether New words at moves by how your grammar reviews go:\n\n- **Ask**: offers.\n- **Auto**: moves and says so.\n- **Off**: never.\n\nIt shows only while New words a day is not Off.',
     },
   ),
   fromDefinition(paradigmExtentSetting),
