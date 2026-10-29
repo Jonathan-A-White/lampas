@@ -227,9 +227,9 @@ const chapters = new Map<string, Promise<Chapter>>();
 
 /** The address of a chapter's file: /data/<book>/<n>.json?v=<fingerprint>, the fingerprint from the index in the bundle (src/data/bookIndex.ts).
  * The worker keeps a chapter under that address until its fingerprint changes (src/dataCache.ts), so an unchanged chapter is never fetched
- * again. A chapter the index has no fingerprint for is asked for plain. */
-export function chapterUrl(book: string, n: number): string {
-  const fingerprint = CANON_INDEX.books.find((b) => b.code === book)?.fingerprints[n - 1];
+ * again. A chapter the index has no fingerprint for is asked for plain. The offline copy (offlineCopy.ts) asks for the same address, from the index it is given. */
+export function chapterUrl(book: string, n: number, from: BookIndex = CANON_INDEX): string {
+  const fingerprint = from.books.find((b) => b.code === book)?.fingerprints[n - 1];
   return `/data/${book}/${n}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
 }
 

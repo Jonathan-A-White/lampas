@@ -466,6 +466,12 @@ globs name those four files, with no wildcard; `lexicon-hbo.json`, `frequency-hb
 CacheFirst route for `/data/` in `src/sw.ts` (cache `lampas-data-v<N>`, `src/dataCache.ts`: raise the version in a deploy that changes the data's shape, and the old cache is dropped on activate), so a chapter once read stays offline.
 A chapter is kept under its fingerprinted address (`?v=`), so an update that leaves a chapter's data alone never fetches it again, and one that changes it fetches only that chapter and drops its old copy (`serveChapter`, `src/dataCache.ts`); the version is raised only for a change of the cache's own layout (3 is the `?v=` keys). The ladder lists (`/data/ladder/*.json`) are still plain CacheFirst.
 
+### The offline copy (`src/data/offlineCopy.ts`, mw-lcv9z3g.1)
+
+A chosen scope keeps chapters ahead of reading, with no screen yet. Three scopes, saved as `offlineCopy` in the settings store (outside the registry, like `dailyDone`; `getOfflineScope` gives `'none'` for anything else): `'none'` (only what he has read, as above), `'nt'` (the 260 chapters of the 27 Greek books, about 34 MB) and `'all'` (the 1,189 chapters of the 66 books and the two Hebrew lists `lexicon-hbo.json` and `frequency-hbo.json`, about 113 MB).
+Every file is fetched by the address the Reader uses (`chapterUrl`, `?v=<fingerprint>` from `index.json`), so the worker's `serveChapter` keeps it in `lampas-data-v3` and drops an older copy: **a kept chapter is the one at `index.json`'s fingerprint**, and after a deploy that changes a chapter the copy runs again and fetches only the changed ones. The Hebrew lists are asked for plain and kept as they first came.
+A run asks the cache from the page (`caches.open(DATA_CACHE).match(url)`, no HEAD) and fetches only what it lacks, at most 3 at once, each under `within()`. A fetch that fails is tried once more and then listed in `failed`, never thrown; `{done, total, bytes, failed, paused}` goes to `onOfflineProgress` listeners and ends at `done === total`. The `offline` event pauses it (no new fetch starts) and `online` goes on. The page's fetch is kept only when the worker controls the page.
+
 ## The places of each book (not in `public/data`)
 
 `src/maps/data/places/<book>.json` (62 files, the largest about 67 KB, committed) is STEPBible's TIPNR cut into the places each book names, with their verses, Strong's numbers, positions and regions, by `npm run places:build` (`scripts/places-build.ts`).
