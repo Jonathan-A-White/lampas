@@ -9,6 +9,7 @@ Settings is a home and pages (mw-3ased2.1). The grouping is the Builder's, PROVI
 - [The languages and their dials (mw-3ased2.2, mw-gdcyf98.2)](#the-languages-and-their-dials-mw-3ased22-mw-gdcyf982)
 - [The home and the groups](#the-home-and-the-groups)
 - [What the Settings screen holds](#what-the-settings-screen-holds)
+- [Keep on this phone (mw-lcv9z3g.2)](#keep-on-this-phone-mw-lcv9z3g2)
 - [Search](#search)
 - [Links into Settings](#links-into-settings)
 - [The Library screens (mw-rfjjzd.4)](#the-library-screens-mw-rfjjzd4)
@@ -53,6 +54,16 @@ A group's page is `#/settings?group=<id>` (`groupLink`, `groupIdOf`, `openSettin
 
 Settings (opened by the gear; a setting's details show only while it is on, mw-5r3p30.106: the Weave's Grammar row while the Weave is not Off, New words at and Move it while New words a day is not Off, Bible in Logos while Logos is On) holds the Appearance (Theme Phone | Light | Dark | Sepia | High contrast, Text size Small | Normal | Large | Largest), the Layout (Verse by verse | Paragraph), Section headings (On | Off), the Weave (two rows: Words Off | Solid | + Learning, Grammar Any | Solid | + Frontier), the English and Greek voice pickers (under the Greek one, the name of the voice in use and Test, which says πατήρ then ἀγάπη: settings/controls/voice.tsx GreekVoiceInUse, greek.ts voiceInUse / testGreekVoice, features/greek-voice-test.feature), the English and Greek speed sliders, the Greek pronunciation list, and links to Words and About;
 
+## Keep on this phone (mw-lcv9z3g.2)
+
+The row `offlineCopy`, **Keep on this phone**, is in the section `reading` (Settings > Reading, `OFFLINE_COPY_ROW` in `rows.ts`, control `controls/offlineCopy.tsx`, the row itself `src/settings/OfflineCopyRow.tsx`). It is a row, not a registry setting: the scope is the offline copy's own key `offlineCopy` in the settings store (`src/data/offlineCopy.ts`, docs/data.md 'The offline copy'), so the tutor neither reads nor changes it (`isTalkable`; its Settings request is full). Three choices (chips, `OFFLINE_CHOICES`): **Nothing extra** (to start), **New Testament (34 MB)**, **Whole Bible (113 MB)**. Choosing one saves it and starts the run (`chooseOfflineScope`, `offlineCopyState.ts`, which also holds `OFFLINE_CHOICES` and `statusOf`); Nothing extra stops the run and deletes nothing; a phone that chose a scope before checks it again when the row first shows unless a run is going (`resumeOfflineCopy`, which is `refreshOfflineCopy`, the check the app also makes at its start: what is kept is not fetched again). Under the chips the row says, by the run's progress (`statusOf`, `[data-offline-status]`):
+
+1. **Running**: `N of 260 chapters · 12 MB` (chapters kept, megabytes fetched by this run) and the line `Keep the app open`.
+2. **Paused**: `Paused: offline` (above the count, while the phone is offline; the run goes on at 'online').
+3. **Up to date**: `Up to date · checked <time>` once every file is kept (the clock for today, else the day and the clock; the time is the offline copy's own, `getOfflineCheckedAt`, written as a check starts). If a file failed twice the row says `Could not keep N of M.` and `Choose it again to try them again.`
+
+Nothing is said under Nothing extra. `features/offline-copy.feature`, `tests/e2e/offline-copy.spec.ts` (the chapter files are 20 KB stand-ins so the run is fast; the 260 addresses are the real ones).
+
 ## Search
 
 The kit does the work (mw-79en7t.7): `defineSetting`, the registry (`createRegistry`, `entryOf`), `rowsInOrder`, `visibleRows`, `neededFor`, `rowsAt`, `visibleGroups`, `searchSettings` and the search field, group button and found rows are `pwa-kit/settings`'; `src/settings/define.ts`, `registry.ts`, `rows.ts` and `SettingsHome.tsx` keep Lampas's own (its section ids, `SECTIONS`, `GROUPS`, the settings, the links, where a tap goes, the books found) and give the kit's functions Lampas's list and its Markdown-to-words (`helpPlain`). Its look is `pwa-kit/settings/styles.css`, themed in `src/index.css` ('pwa-kit's Settings home'). A setting's `defineSetting` throws at start-up for a default it does not allow.
@@ -81,6 +92,7 @@ Typing on the home swaps the groups for the rows that match by name or hint (`vi
 ```
 src/HelpScreen.tsx help.ts  # Help (mw-5r3p30.823, #/help, Settings > Account > More > Help, `link.help`): the app's own notes as a list of HELP_PAGES (at most HELP_MAX_PAGES = 12, each a title, one line and a page of under HELP_MAX_WORDS = 120 words, no paragraph over the tutor's 400-character fact), a tap on one is `#/help?page=<id>` (`helpPageOf`, `openHelpPage`); Ask the tutor is the first button of the list and of a page (`askTheTutor()`, src/tutor/askNow.ts; without a licence it reads Needs a licence), and the screen reports name 'Help' with a fact for each piece (the list) or the page (a page). A note about what the app does goes on a page here, never on the Preface (tests/unit/help.test.tsx holds both)
 src/SettingsScreen.tsx  # the home (search field, groups, found rows) and a group's page (its sections, drawn from the rows, each with its control); reports the screen to the tutor with every setting
+src/settings/OfflineCopyRow.tsx offlineCopyState.ts  # the Keep on this phone row's chips and status lines, and what choosing a scope does (above)
 src/settings/rows.ts  # SECTIONS, GROUPS (which group a section is in), ROWS, visibleRows, rowsAt, neededFor, visibleGroups, searchSettings; the links, the Ask for a devotional door (it opens Ask for a book), the Your Logos library row (the door to #/library, not talkable) and Developer mode are rows too
 src/settings/define.ts  # defineSetting and SectionId
 src/settings/definitions/greekInterest.ts  # the Greek dial: GREEK_LEVELS, greekFrom, viewAt / weaveAt / newWordsAt, placementOf, the setting

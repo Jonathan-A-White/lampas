@@ -166,6 +166,9 @@ export async function runOfflineCopy(scope: OfflineScope, deps: OfflineDeps = {}
 
 let running: AbortController | undefined;
 
+/** Whether a run started by startOfflineCopy is going (one just stopped counts until it has ended). */
+export const offlineRunning = (): boolean => running !== undefined;
+
 /** Stops the run started by startOfflineCopy, if one is going. */
 export function stopOfflineCopy(): void {
   running?.abort();
@@ -196,11 +199,11 @@ export async function getOfflineCheckedAt(): Promise<number | undefined> {
  * Brings the kept copy up to the index: what the data cache lacks under the index's addresses (a changed fingerprint is a missing address) is fetched, and the worker's
  * serveChapter drops the older copy of each. Run at app start and after each update check (updateChecked). `index` is the bundle's unless a test gives one: the worker's
  * precache and the bundle come from the same build, so a build that has only been found (it waits for his tap) shows its index here once it has taken over and the page reloaded.
- * No scope kept, or a run already going (it covers the index itself): nothing is done and no time is written. Otherwise the time is written when the check starts.
+ * No scope kept, or a run already going (it covers the index itself) unless `force` (he chose a scope in Settings: that run replaces it): nothing is done and no time is written. Otherwise the time is written when the check starts.
  */
-export async function refreshOfflineCopy(deps: OfflineDeps & { now?: () => number } = {}): Promise<OfflineProgress | undefined> {
-  const { now = Date.now, ...run } = deps;
-  if (running || (await getOfflineScope()) === 'none' || running) return undefined;
+export async function refreshOfflineCopy(deps: OfflineDeps & { now?: () => number; force?: boolean } = {}): Promise<OfflineProgress | undefined> {
+  const { now = Date.now, force = false, ...run } = deps;
+  if ((running && !force) || (await getOfflineScope()) === 'none' || (running && !force)) return undefined;
   await db.settings.put({ key: CHECKED_KEY, value: String(now()) });
   return startOfflineCopy(run);
 }

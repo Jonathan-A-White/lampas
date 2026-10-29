@@ -55,7 +55,9 @@ describe('the registry lists every Settings row', () => {
       ]
         .map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '')
         // Read as (mw-9ji6ek0.25) is a row of its own (rows.ts READING_SET_ROW), not a registry setting: the sets live in their own table
-        .filter((label) => label !== 'Read as');
+        .filter((label) => label !== 'Read as')
+        // Keep on this phone (mw-lcv9z3g.2) is likewise a row of its own (rows.ts OFFLINE_COPY_ROW): the scope is the offline copy's key, not a registry setting
+        .filter((label) => label !== 'Keep on this phone');
     // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);
     // the study-resource switches are checkboxes, not groups: the Settings screen's other tests draw them
     const all: string[] = [];

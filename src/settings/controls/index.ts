@@ -13,6 +13,7 @@ import { LanguagesControl } from './languages';
 import { LinkControl } from './links';
 import { MapsControl } from './maps';
 import { NewWordsControl } from './newWords';
+import { OfflineCopyControl } from './offlineCopy';
 import { QuizGoalControl } from './quizGoal';
 import { AudioBibleControl, LibraryControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
 import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
@@ -47,6 +48,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   rp2026English: Rp2026EnglishControl,
   variantLessonsOffer: VariantLessonsOfferControl,
   readingSet: ReadingSetControl,
+  offlineCopy: OfflineCopyControl,
   newWordsADay: NewWordsControl,
   pickerGrammar: NewWordsControl,
   grammarMove: NewWordsControl,

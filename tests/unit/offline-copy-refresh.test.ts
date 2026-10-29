@@ -90,6 +90,23 @@ describe('refreshOfflineCopy', () => {
     await first;
     expect(await getOfflineCheckedAt()).toBeUndefined();
   });
+
+  it('replaces a run that is going when it is forced (he chose a scope in Settings), and writes the time', async () => {
+    await setOfflineScope('nt');
+    const s = setup([]);
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const slow = (async () => {
+      await held;
+      return new Response('body');
+    }) as typeof fetch;
+    const first = startOfflineCopy({ ...s.deps, fetcher: slow, index: { books: OLD.books.slice(0, 1) } });
+    const end = await refreshOfflineCopy({ ...s.deps, index: NEW, now: () => 9, force: true });
+    expect(end?.done).toBe(end?.total);
+    expect(await getOfflineCheckedAt()).toBe(9);
+    release();
+    await first;
+  });
 });
 
 describe('updateChecked (the callback of the update check)', () => {
