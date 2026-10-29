@@ -1,6 +1,6 @@
-// features/steps/tutor.steps.tsx — runs features/tutor.feature: the Ask box of the Verse view's Ask the tutor action, the grist it
-// sends through a fake Postern (tests/support/fake-postern.ts), the answer card, the failure states and the
-// kept answers. fetch is stubbed: /data/ files from disk, https://postern.allmymind.org to the fake.
+// features/steps/tutor.steps.tsx — runs features/tutor.feature: the Ask box of the Verse view's Ask the tutor action, the bible-talk grist it
+// sends through a fake Postern (tests/support/fake-postern.ts) and the Talk sheet that answers it: the answer, the wait and the failure states
+// with Retry (mw-5r3p30.842: the Ask box has no cards of its own). fetch is stubbed: /data/ files from disk, https://postern.allmymind.org to the fake.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -16,10 +16,9 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { composerIn, holdBarIn, questionField, typeQuestion } from '../../tests/support/composer';
-import { expectKeepsItShort, expectLearnerField, expectLearnerSummary, expectTeachesNewWord, instructionsOf, learnWordToday } from '../../tests/support/learner';
-import { exchangeMarkdown, stubClipboard } from '../../tests/support/exchange';
+import { expectKeepsItShort, expectLearnerField, expectTeachesNewWord, instructionsOf } from '../../tests/support/learner';
+import { stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
-import { SOLID_WORDS_SENT } from '../../src/services/solidWords';
 import { seedHisWords } from '../../tests/support/his-words';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -36,7 +35,6 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const QUESTION = 'What does συνεργεῖ mean here?';
 let fake: FakePostern;
-let clipboard = stubClipboard();
 
 async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER })): Promise<void> {
   cleanup();
@@ -46,7 +44,7 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
   tutorTimings.pollMs = 20;
   // the composer shows its Hold to ask bar only on a phone with a recogniser
   stubRecognizer();
-  clipboard = stubClipboard();
+  stubClipboard();
   fake = makeFakePostern();
   configure(fake);
   stubChapterFetch();
@@ -55,7 +53,7 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
   await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -71,32 +69,13 @@ async function selectVerse28(): Promise<void> {
 }
 
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
-/** What the last question is doing (Sending, Waiting, a failure with Retry) is in the view, above the composer at its foot. */
-const askBox = viewEl;
+const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const sendButton = () => within(composerIn(viewEl())).getByRole('button', { name: 'Send' });
-const answersOn28 = () => document.querySelectorAll('[data-answers-for="28"] [data-answer]');
+const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 
 async function ask(question: string): Promise<void> {
   await typeQuestion(user, viewEl(), question);
 }
-
-async function answerShows(): Promise<void> {
-  await waitFor(() => expect(answersOn28().length).toBe(1));
-}
-
-const cards = () => Array.from(document.querySelectorAll<HTMLElement>('[data-answers-for="28"] [data-answer]'));
-const ORDINALS = ['first', 'second'];
-
-/** Asks and waits for the answer card that comes of it (the Ask box is busy until then). */
-async function askAndWait(question: string): Promise<void> {
-  const before = cards().length;
-  await ask(question);
-  await waitFor(() => expect(cards().length).toBe(before + 1));
-  await waitFor(() => expect(holdBarIn(viewEl())).toBeEnabled());
-}
-
-const card = (ordinal: string): HTMLElement => cards()[ORDINALS.indexOf(ordinal)];
-const copyButton = (ordinal: string) => within(card(ordinal)).getByRole('button', { name: 'Copy this exchange' });
 
 const received = () => {
   expect(fake.received).toHaveLength(1);
@@ -106,18 +85,18 @@ const received = () => {
 const feature = await loadFeature('features/tutor.feature');
 
 describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
-  // learnWordToday pins the clock at noon (tests/support/learner.ts); no later scenario keeps it
-  AfterEachScenario(() => {
+  AfterEachScenario(async () => {
+    // an answer still on its way ends as a failure, so it cannot reach the next scenario
+    fake?.endAll({ status: 'failed', reason: 'the scenario ended' });
     vi.useRealTimers();
   });
-  Scenario("Asking about 8:28 sends a grist whose input carries the verse's Greek, English, the question and the solid words", ({ Given, And, When, Then }) => {
+  Scenario("Asking about 8:28 sends a bible-talk grist whose input carries the verse's Greek, English and the question", ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
     And('he selects verse 28', selectVerse28);
     When('he asks {string}', (_, question: string) => ask(question));
-    Then('the mill received one grist for the lampas app, kind verse-ask', async () => {
+    Then('the mill received one grist for the lampas app, kind bible-talk', async () => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      const { grist } = received();
-      expect(grist).toMatchObject({ app: 'lampas', kind: 'verse-ask', v: '1' });
+      expect(received().grist).toMatchObject({ app: 'lampas', kind: 'bible-talk', v: '1' });
     });
     And('its input carries the Greek and the English of verse 28', () => {
       const { input } = received();
@@ -128,36 +107,25 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And('its input carries the question {string}', (_, question: string) => {
       expect(received().input.question).toBe(question);
     });
-    And('its input carries his solid words, and not the words he is still learning', async () => {
-      const solid = (await db.words.where('state').equals('solid').toArray()).map((w) => w.lemma);
-      const learning = (await db.words.where('state').equals('learning').toArray()).map((w) => w.lemma);
-      expect(solid.length).toBeGreaterThan(0);
-      expect(learning.length).toBeGreaterThan(0);
-      const sent = received().input.solid_words as string[];
-      expect(sent).toHaveLength(Math.min(solid.length, SOLID_WORDS_SENT));
-      for (const lemma of sent) expect(solid).toContain(lemma);
-      expect(received().input.solid_count).toBe(solid.length);
-      for (const word of learning) expect(sent).not.toContain(word);
-    });
   });
 
-  Scenario('The answer arrives and shows under the verse', ({ Given, And, When, Then }) => {
+  const answerShowsInSheet = async (): Promise<void> => {
+    const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:28' });
+    await waitFor(() => expect(turns()).toHaveLength(1));
+    expect(dialog).toHaveTextContent(QUESTION);
+    expect(turns()[0]).toHaveTextContent(SYNERGEI_ANSWER.answer);
+  };
+
+  Scenario('The answer arrives and shows in the Talk sheet the question opened', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
     And('he selects verse 28', selectVerse28);
     When('he asks {string}', (_, question: string) => ask(question));
-    Then('the answer shows under verse 28', async () => {
-      await answerShows();
-      const card = answersOn28()[0] as HTMLElement;
-      expect(card).toHaveTextContent(SYNERGEI_ANSWER.answer);
-      expect(card).toHaveTextContent(QUESTION);
-    });
+    Then('the Talk sheet about Romans 8:28 opens and the answer shows in it under his question', answerShowsInSheet);
     And('the answer names the Greek word {string} with its lemma {string}', (_, greek: string, lemma: string) => {
-      const card = answersOn28()[0] as HTMLElement;
-      // the words list under the answer: its Greek is also written in the answer's own text, where it is a word to tap
-      const list = card.querySelector('dl') as HTMLElement;
+      const list = turns()[0].querySelector('dl') as HTMLElement;
       expect(within(list).getByText(greek, { selector: '[lang="el"]' })).toBeInTheDocument();
       expect(within(list).getByText(lemma, { selector: '[lang="el"]' })).toBeInTheDocument();
-      expect(card).toHaveTextContent('third person singular');
+      expect(turns()[0]).toHaveTextContent('third person singular');
     });
     And('the Ask box is ready for the next question', () =>
       waitFor(() => {
@@ -167,156 +135,53 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     );
   });
 
-  Scenario('What he asked is shown above the answer cleaned up, and the raw words stay kept', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern whose answers clean up his question', () =>
-      open((f) => void (f.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, question: 'Why are there italic words? What does it mean for the words to be italic?' } })),
-    );
-    And('he selects verse 28', selectVerse28);
-    When('he asks {string}', (_, question: string) => ask(question));
-    Then('the answer card shows the question {string}', async (_, shown: string) => {
-      await answerShows();
-      expect(answersOn28()[0].querySelector('[data-answer-question]')?.textContent).toBe(shown);
-    });
-    And('the answer kept on the phone has his raw words {string}', async (_, raw: string) => {
-      const kept = await db.answers.toArray();
-      expect(kept).toHaveLength(1);
-      expect(kept[0].question).toBe(raw);
-    });
-  });
-
-  Scenario('A cleaned question that kept his ums and uhs is shown without them', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern whose answers keep the fillers in his question', () =>
-      open((f) => void (f.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, question: 'Um, why are there, uh, italic words? What does it mean?' } })),
-    );
-    And('he selects verse 28', selectVerse28);
-    When('he asks {string}', (_, question: string) => ask(question));
-    Then('the answer card shows the question {string}', async (_, shown: string) => {
-      await answerShows();
-      expect(answersOn28()[0].querySelector('[data-answer-question]')?.textContent).toBe(shown);
-    });
-    And('the answer kept on the phone has his raw words {string}', async (_, raw: string) => {
-      const kept = await db.answers.toArray();
-      expect(kept).toHaveLength(1);
-      expect(kept[0].question).toBe(raw);
-    });
-    And('the answer kept on the phone has the cleaned question {string}', async (_, clean: string) => {
-      expect((await db.answers.toArray())[0].cleanQuestion).toBe(clean);
-    });
-  });
-
-  Scenario('An answer with no cleaned question shows his raw words above it', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
-    And('he selects verse 28', selectVerse28);
-    When('he asks {string}', (_, question: string) => ask(question));
-    Then('the answer card shows the question {string}', async (_, shown: string) => {
-      await answerShows();
-      expect(answersOn28()[0].querySelector('[data-answer-question]')?.textContent).toBe(shown);
-    });
-  });
-
-  Scenario('Copy on an answer card puts the exchange on the clipboard as Markdown', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern whose answers clean up his question', () =>
-      open((f) => void (f.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, question: 'Why are there italic words? What does it mean for the words to be italic?' } })),
-    );
-    And('he selects verse 28', selectVerse28);
-    When('he asks {string}', (_, question: string) => askAndWait(question));
-    And('he taps Copy on the {word} answer card', (_, ordinal: string) => user.click(copyButton(ordinal)));
-    Then('the clipboard holds the Markdown of {string} asking {string} answered by the tutor', (_, reference: string, question: string) => {
-      expect(clipboard.copied).toEqual([exchangeMarkdown(reference, question, SYNERGEI_ANSWER.answer)]);
-    });
-    And('the {word} answer card says {string}', async (_, ordinal: string, text: string) => {
-      await waitFor(() => expect(within(card(ordinal)).getByRole('status')).toHaveTextContent(text));
-    });
-  });
-
-  Scenario('With several answers on the screen each Copy copies only its own', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
-    And('he selects verse 28', selectVerse28);
-    When('he asks {string}', (_, question: string) => askAndWait(question));
-    And('the tutor will answer {string}', (_, answer: string) => {
-      fake.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, answer } };
-    });
-    And('he then asks {string}', (_, question: string) => askAndWait(question));
-    And('he taps Copy on the {word} answer card', (_, ordinal: string) => user.click(copyButton(ordinal)));
-    Then('the clipboard holds the Markdown of {string} asking {string} answered {string}', (_, reference: string, question: string, answer: string) => {
-      expect(clipboard.copied).toEqual([exchangeMarkdown(reference, question, answer)]);
-    });
-    And('the {word} answer card does not say {string}', (_, ordinal: string, text: string) => {
-      expect(card(ordinal)).not.toHaveTextContent(text);
-    });
-    When('he taps Copy on the {word} answer card again', (_, ordinal: string) => user.click(copyButton(ordinal)));
-    Then('the clipboard then holds the Markdown of {string} asking {string} answered by the tutor', (_, reference: string, question: string) => {
-      expect(clipboard.copied.slice(-1)).toEqual([exchangeMarkdown(reference, question, SYNERGEI_ANSWER.answer)]);
-    });
-    And('the {word} answer card says {string}', async (_, ordinal: string, text: string) => {
-      await waitFor(() => expect(within(card(ordinal)).getByRole('status')).toHaveTextContent(text));
-    });
-  });
-
-  Scenario('While the tutor has not answered the box says Sending and then Waiting', ({ Given, And, When, Then }) => {
+  Scenario('While the tutor has not answered the Talk sheet says Waiting', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that holds its answers', () => open((f) => void (f.autoReply = undefined)));
     And('he selects verse 28', selectVerse28);
     When('he asks {string}', (_, question: string) => ask(question));
-    Then('the box says Waiting and nothing can be asked until the answer comes', async () => {
-      await waitFor(() => expect(askBox().querySelector('[data-ask-pending]')).not.toBeNull());
-      const status = within(askBox().querySelector('[data-ask-pending]') as HTMLElement).getByRole('status');
-      await waitFor(() => expect(status).toHaveTextContent(/^Waiting for the tutor… \d+ s$/));
-      expect(holdBarIn(viewEl())).toBeDisabled();
+    Then('the Talk sheet says Waiting and nothing can be sent until the answer comes', async () => {
+      const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:28' });
+      await waitFor(() => expect(within(dialog).getByText(/^Waiting for the tutor… \d+ s$/)).toBeInTheDocument());
+      expect(within(dialog).getByRole('button', { name: 'Attach a picture' })).toBeDisabled();
+      expect(within(dialog).getByText(QUESTION)).toBeInTheDocument();
     });
-    When('the tutor answers', () => fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER }));
-    Then('the answer shows under verse 28', answerShows);
+    When('the tutor answers', async () => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
+    });
+    Then('the Talk sheet about Romans 8:28 opens and the answer shows in it under his question', answerShowsInSheet);
   });
 
-  Scenario('An unlicensed reply shows No licence', ({ Given, And, When, Then }) => {
+  Scenario('An unlicensed reply shows No licence in the Talk sheet', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that holds no licence for this phone', () => open((f) => void (f.licensed = false)));
     And('he selects verse 28', selectVerse28);
     When('he asks {string}', (_, question: string) => ask(question));
-    Then('the box says {string}', async (_, words: string) => {
-      expect(await within(askBox()).findByRole('alert')).toHaveTextContent(words);
+    Then('the Talk sheet says {string}', async (_, words: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:28' });
+      expect(await within(dialog).findByRole('alert')).toHaveTextContent(words);
     });
-    And('no answer shows under verse 28', () => {
-      expect(answersOn28()).toHaveLength(0);
+    And('the Talk sheet shows no answer', () => {
+      expect(turns()).toHaveLength(0);
     });
   });
 
-  Scenario('A backend that cannot be reached shows Could not reach with Retry', ({ Given, And, When, Then }) => {
+  Scenario('A backend that cannot be reached shows Could not reach with Retry in the Talk sheet', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that cannot be reached', () => open((f) => {
       f.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
       f.down = true;
     }));
     And('he selects verse 28', selectVerse28);
     When('he asks {string}', (_, question: string) => ask(question));
-    Then('the box says {string} with a Retry button', async (_, words: string) => {
-      expect(await within(askBox()).findByRole('alert')).toHaveTextContent(words);
-      expect(within(askBox()).getByRole('button', { name: 'Retry' })).toBeEnabled();
+    Then('the Talk sheet says {string} with a Retry button', async (_, words: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:28' });
+      expect(await within(dialog).findByRole('alert')).toHaveTextContent(words);
+      expect(within(dialog).getByRole('button', { name: 'Retry' })).toBeEnabled();
     });
     When('the backend comes back and he taps Retry', async () => {
       fake.down = false;
-      await user.click(within(askBox()).getByRole('button', { name: 'Retry' }));
+      await user.click(within(sheet()).getByRole('button', { name: 'Retry' }));
     });
-    Then('the answer shows under verse 28', answerShows);
-  });
-
-  Scenario('An answer is still there after reload', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
-    And('he selects verse 28', selectVerse28);
-    And('he asks {string}', (_, question: string) => ask(question));
-    And('the answer for verse 28 has arrived', answerShows);
-    When('he reopens Lampas and selects verse 28', async () => {
-      cleanup();
-      fake.calls.length = 0;
-      await seedHisWords();
-      render(<App />);
-      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-      await selectVerse28();
-    });
-    Then('the answer shows under verse 28', async () => {
-      await answerShows();
-      expect(answersOn28()[0]).toHaveTextContent(SYNERGEI_ANSWER.answer);
-    });
-    And('the fake Postern was not asked again', () => {
-      expect(fake.calls.filter((call) => call.includes('/api/'))).toEqual([]);
-    });
+    Then('the Talk sheet about Romans 8:28 opens and the answer shows in it under his question', answerShowsInSheet);
   });
 
   Scenario('Send is not offered with nothing typed', ({ Given, When, Then }) => {
@@ -348,27 +213,14 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers in the wrong shape', () => open((f) => void (f.autoReply = { status: 'answered', answer: { answer: 42 } })));
     And('he selects verse 28', selectVerse28);
     When('he asks {string}', (_, question: string) => ask(question));
-    Then('the box says {string} with a Retry button', async (_, words: string) => {
-      expect(await within(askBox()).findByRole('alert')).toHaveTextContent(words);
-      expect(within(askBox()).getByRole('button', { name: 'Retry' })).toBeEnabled();
+    Then('the Talk sheet says {string} with a Retry button', async (_, words: string) => {
+      const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:28' });
+      expect(await within(dialog).findByRole('alert')).toHaveTextContent(words);
+      expect(within(dialog).getByRole('button', { name: 'Retry' })).toBeEnabled();
     });
-    And('no answer shows under verse 28', () => {
-      expect(answersOn28()).toHaveLength(0);
+    And('the Talk sheet shows no answer', () => {
+      expect(turns()).toHaveLength(0);
     });
-  });
-
-  Scenario('Asking about a new word sends the learner summary', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
-    And('he is learning the word {string} which he added today', (_, lemma: string) => learnWordToday(lemma));
-    And('he selects verse 28', selectVerse28);
-    When('he asks {string}', (_, question: string) => ask(question));
-    Then('the mill received one grist for the lampas app, kind verse-ask', async () => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(received().grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
-    });
-    And('its input carries a learner summary that names his solid words as a count, {string} among the words he is learning and as new today, and what is due now', (_, lemma: string) =>
-      expectLearnerSummary(received().input, lemma),
-    );
   });
 
   Scenario("The tutor's instructions ask it to teach a new word in his terms", ({ Given, Then, And }) => {
@@ -380,25 +232,9 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And('they ask for a new word to be taught with its gloss, a memorable hook and one easy example from the chapter', () => void expectTeachesNewWord(text));
     And('they say to leave out what he already knows and to keep the answer short for a phone', () => void expectKeepsItShort(text));
   });
-  Scenario('Asking about a verse sends learner_grammar, and the instructions say to teach at his level', ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
-    And('he selects verse 28', selectVerse28);
-    When('he asks {string}', (_, question: string) => ask(question));
-    Then('the mill received one grist for the lampas app, kind verse-ask', async () => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(received().grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
-    });
-    And('its input carries learner_grammar with no goal and the Lampas ladder approach', () => {
-      const field = received().input.learner_grammar as { goal: string | null; approach: { name: string; credit: string | null } };
-      expect(field.goal).toBeNull();
-      expect(field.approach).toMatchObject({ name: 'Lampas ladder', credit: null });
-    });
-    And('its input carries the Greek pronunciation {string} and the settings that bear on the answer', (_, pronunciation: string) => {
-      // mw-5r3p30.242: the tutor is told the pronunciation the app speaks and the settings src/tutor/knows.ts lists for verse-ask
-      expect(received().input.pronunciation).toBe(pronunciation);
-      expect(received().input.settings).toMatchObject({ askBy: expect.any(String), hebrewDepth: expect.any(String), weave: expect.any(String), weaveGrammar: expect.any(String), readTutor: expect.any(String) });
-    });
-    And('the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move', () => {
+  Scenario('The verse-ask instructions say to teach at his level', ({ Given, Then }) => {
+    Given("the verse-ask grind's instructions", () => undefined);
+    Then('the verse-ask instructions pitch frontier and not-yet ideas and do not offer the move', () => {
       const text = instructionsOf('verse-ask');
       expect(text).toContain('`learner_grammar`');
       expect(text).toContain('A `frontier` idea is explained');
@@ -413,8 +249,8 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And('he selects verse 28', selectVerse28);
     When('he asks {string}', (_, question: string) => ask(question));
     And('he taps the link {string} in the answer', async (_, name: string) => {
-      await waitFor(() => expect(answersOn28().length).toBe(1));
-      await user.click(within(cards()[0]).getByRole('link', { name }));
+      await waitFor(() => expect(turns().length).toBe(1));
+      await user.click(within(turns()[0]).getByRole('link', { name }));
     });
     And('he taps Open on the reference card', async () => {
       await user.click(await within(await screen.findByRole('dialog', { name: 'Hebrews 7:2' })).findByRole('button', { name: 'Open' }));

@@ -10,8 +10,6 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
-import { askBySetting } from '../../src/settings/definitions/askBy';
-import { setSetting } from '../../src/settings/store';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
@@ -70,7 +68,7 @@ async function start(): Promise<void> {
     String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init),
   );
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.readings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.readings.clear()]);
   await setReaderView('english');
   await setWeave('off');
 }
@@ -103,6 +101,8 @@ async function openAsk(): Promise<void> {
   await within(viewEl()).findByTestId('composer');
 }
 
+/** The reply, its change and its failures are the Talk sheet's (mw-5r3p30.842): the sheet the Verse view's Ask opens. */
+const sheetEl = () => screen.findByRole('dialog', { name: /^Talk about / });
 const askByGroup = async (): Promise<HTMLElement> => screen.findByRole('group', { name: 'Ask by' });
 const askBySaved = async (): Promise<string | undefined> => (await db.settings.get('askBy'))?.value;
 
@@ -175,14 +175,14 @@ describeFeature(feature, ({ Scenario }) => {
     When('he asks {string} by the composer', ask);
     Then('the grist carried Ask by as {string}', async (_, value: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ kind: 'verse-ask' });
+      expect(fake.received[0].grist).toMatchObject({ kind: 'bible-talk' });
       expect(fake.received[0].input.settings).toMatchObject({ askBy: value });
     });
     And('the reply says {string}', async (_, text: string) => {
-      await waitFor(() => expect(within(viewEl()).getAllByText(text).length).toBeGreaterThan(0));
+      await waitFor(async () => expect(within(await sheetEl()).getAllByText(text).length).toBeGreaterThan(0));
     });
     And('the answer says {string}', async (_, text: string) => {
-      expect(await within(viewEl()).findByText(text)).toBeInTheDocument();
+      expect(await within(await sheetEl()).findByText(text)).toBeInTheDocument();
     });
     And('Ask by is saved as {string}', savedAs);
     And('Ask the tutor shows the text box, Send and a small mic and no Hold to ask bar', typeFirst);
@@ -192,7 +192,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(fake.received[0].input.settings).toMatchObject({ askBy: value });
     });
     And('the next reply says {string}', async (_, text: string) => {
-      await waitFor(() => expect(within(viewEl()).getAllByText(text).length).toBeGreaterThan(0));
+      await waitFor(async () => expect(within(await sheetEl()).getAllByText(text).length).toBeGreaterThan(0));
     });
     And('Ask by is now saved as {string}', savedAs);
     And('Ask the tutor shows the Hold to ask bar and a Type a question button and no text box', speakFirst);
@@ -207,43 +207,17 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(within(composerIn(viewEl())).getByRole('button', { name: 'Send' }));
   };
   const answerShows = async (_: unknown, text: string) => {
-    expect(await within(viewEl()).findByText(text)).toBeInTheDocument();
+    expect(await within(await sheetEl()).findByText(text)).toBeInTheDocument();
   };
-  const noText = async (_: unknown, text: string) => {
-    // the answer is on screen by now (the step before awaited it), so a failure or a card would be too
-    expect(within(viewEl()).queryByText(new RegExp(text))).toBeNull();
-  };
-
-  Scenario('A setting change the app refuses never costs him the tutor\'s answer', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
-    When('the tutor answers {string} and also asks to change the theme', (_, text: string) => tutorAnswers(text, [{ key: 'theme', value: 'dark' }]));
-    Then('the answer shows {string}', answerShows);
-    And('no {string} is shown', noText);
-    And('no {string} card is shown', noText);
-    And('Ask by is still speaking', async () => {
-      expect(await askBySaved()).not.toBe('typing');
-    });
-  });
-
   Scenario("Ask by Typing after a change the app ignores still switches it, and the reply's card says so", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
     When('the tutor answers {string} with a theme change first and then Ask by Typing', (_, text: string) => tutorAnswers(text, [{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'typing' }]));
     Then('the answer shows {string}', answerShows);
     And('the answer says {string}', async (_, text: string) => {
-      expect(await within(viewEl()).findByText(text)).toBeInTheDocument();
+      expect(await within(await sheetEl()).findByText(text)).toBeInTheDocument();
     });
     And('Ask by is saved as {string}', savedAs);
     And('Ask the tutor shows the text box, Send and a small mic and no Hold to ask bar', typeFirst);
-  });
-
-  Scenario('A change to the value already set shows no Changed card', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
-    When('the tutor answers {string} and also asks for Ask by Typing while it is Typing', async (_, text: string) => {
-      await setSetting(askBySetting, 'typing');
-      await tutorAnswers(text, [{ key: 'askBy', value: 'typing' }]);
-    });
-    Then('the answer shows {string}', answerShows);
-    And('no {string} card is shown', noText);
   });
 
   Scenario("The tutor's instructions say to switch Ask by only when he asks", ({ Given, Then }) => {

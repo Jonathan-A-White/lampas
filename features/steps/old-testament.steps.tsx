@@ -632,13 +632,13 @@ describeFeature(feature, ({ Scenario }) => {
       await user.type(await within(viewEl()).findByRole('textbox', { name: 'Your question' }), question);
       await user.click(within(viewEl()).getByRole('button', { name: 'Send' }));
     });
-    Then('the mill received one verse-ask grist about {string} with the English {string} and no Greek', async (_, reference: string, english: string) => {
+    Then('the mill received one bible-talk grist about {string} with the English {string} and no Greek', async (_, reference: string, english: string) => {
       await waitFor(() => expect(fake?.received).toHaveLength(1));
       const received = fake?.received[0];
-      expect(received?.grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+      expect(received?.grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
       expect(received?.input.reference).toBe(reference);
       expect(String(received?.input.english)).toContain(english);
-      expect(received?.input.greek).toBe('');
+      expect(received?.input.greek).toBeUndefined();
       expect(received?.input.greek_words).toBeUndefined();
     });
   });

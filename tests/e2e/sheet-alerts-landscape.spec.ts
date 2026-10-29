@@ -133,7 +133,7 @@ for (const size of SIZES) {
       await shot(page, `sheet-alert-talk-${size.name}`);
     });
 
-    test('the Verse view: a failed question keeps its message and Retry on screen', async ({ page }) => {
+    test('the Verse view: a failed Ask the tutor question keeps its message and Copy in the Talk sheet it opens', async ({ page }) => {
       const fake = await putPostern(page);
       await openUnlocked(page);
       await page.goto('/#/?c=8&view=english&weave=off');
@@ -142,26 +142,10 @@ for (const size of SIZES) {
       await view.getByRole('button', { name: 'Type a question', exact: true }).click();
       await view.getByRole('textbox', { name: 'Your question' }).fill('What is the subject of this verse?');
       await view.getByRole('button', { name: 'Send', exact: true }).click();
-      await expect(view.getByRole('alert')).toContainText('No licence');
-      await expectFailureShown(view, ['Retry'], 'Verse view');
+      const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+      await expect(sheet.getByRole('alert')).toContainText('No licence');
+      await expectFailureShown(sheet, ['Copy my question'], 'Verse view Ask, in the Talk sheet');
       await shot(page, `sheet-alert-verse-ask-${size.name}`);
-    });
-
-    test('the Verse view opened again on a question that failed shows its message and Retry at once', async ({ page }) => {
-      const fake = await putPostern(page);
-      await openUnlocked(page);
-      await page.goto('/#/?c=8&view=english&weave=off');
-      let view = await chooseAction(page, 28, 'Ask the tutor');
-      fake.licensed = false;
-      await view.getByRole('button', { name: 'Type a question', exact: true }).click();
-      await view.getByRole('textbox', { name: 'Your question' }).fill('What is the subject of this verse?');
-      await view.getByRole('button', { name: 'Send', exact: true }).click();
-      await expect(view.getByRole('alert')).toContainText('No licence');
-      await view.getByRole('button', { name: '‹ Reader' }).click();
-      await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
-      view = await chooseAction(page, 28, 'Ask the tutor');
-      await expect(view.getByRole('alert')).toContainText('No licence');
-      await expectFailureShown(view, ['Retry'], 'Verse view opened again');
     });
 
     test('the Verse view: a reading that fails keeps its message and Retry on screen', async ({ page }) => {

@@ -18,7 +18,7 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the composer of the Verse view on verse 28 sends the question and shows the answer, at phone width', async ({ page, context }) => {
+test('the composer of the Verse view on verse 28 sends the question and the Talk sheet shows the answer, at phone width', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
@@ -49,7 +49,8 @@ test('the composer of the Verse view on verse 28 sends the question and shows th
   await shot(page, 'ask');
 
   await ask.click();
-  const card = page.locator('[data-answers-for="28"] [data-answer]');
+  // the answer is the Talk sheet's (mw-5r3p30.842): the Verse view's Ask sends the question to the one tutor
+  const card = page.getByRole('dialog', { name: /^Talk about / }).locator('[data-turn]');
   await expect(card).toContainText(SYNERGEI_ANSWER.answer);
   // the explained word's lemma in the words list (the answer's own text has the Greek too, as words to tap)
   await expect(card.locator('dl').getByText('συνεργέω', { exact: true })).toBeVisible();

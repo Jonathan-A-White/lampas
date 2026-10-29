@@ -7,7 +7,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Waiting } from './Ask';
+import { Waiting } from './ui/Waiting';
 import { findGreekWord, glossOf, lookupFor as lookupOf } from './data/answerWord';
 import { languageOfLemma } from './data/lemma';
 import { loadLexicon } from './data/lexicon';

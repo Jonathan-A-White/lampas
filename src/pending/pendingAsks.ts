@@ -1,6 +1,6 @@
 // src/pending/pendingAsks.ts — what each question to the tutor is doing, kept in localStorage so that a question is never lost (mw-5r3p30.602, folding mw-5r3p30.439 and .441):
-// one line per question that is sending, waiting for its answer or failed, until its answer is stored or he asks again. The Verse view's Ask (src/useAsks.ts, key 'ask:<ref>') and the
-// Bible talk (src/useTalk.ts, key 'talk:<ref>') both keep their AskState here instead of in component state, so leaving the page, a screen that goes away or a reload of the page
+// one line per question that is sending, waiting for its answer or failed, until its answer is stored or he asks again. The Bible talk (src/useTalk.ts, key 'talk:<ref>'; the Verse view's Ask goes to it, mw-5r3p30.842) keeps
+// its AskState here instead of in component state, so leaving the page, a screen that goes away or a reload of the page
 // (Android lets go of a page in the background) leaves the question, its wait or its failure and Retry as they were. A question that had gone (`sent`: the grist's id and place)
 // is waited for again, never sent a second time (AskOptions.resume, src/services/tutor.ts). localStorage itself is the truth (the snapshot is parsed again when it changes),
 // so a test that clears it clears this too.

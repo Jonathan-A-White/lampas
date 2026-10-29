@@ -79,13 +79,6 @@ Feature: A small speaker reads any text he may want heard
     Then the phone speaks "πνεῦμα" in "el-GR"
     And the phone speaks "spirit" in "en-US"
 
-  Scenario: Each kept answer of the tutor on a verse has the speaker
-    Given a phone with an English and a Greek voice
-    And the tutor's kept answer "Here συνεργεῖ means works together." is on screen
-    When he taps Read aloud
-    Then the phone speaks "συνεργεῖ" in "el-GR"
-    And the answer is still on screen
-
   Scenario: Each version in What's new has the speaker
     Given a phone with an English and a Greek voice
     And About's What's new lists a version with one new line

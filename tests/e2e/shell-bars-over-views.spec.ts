@@ -251,8 +251,11 @@ for (const size of SIZES) {
     await honestMic(page);
     await honestSpeech(page);
     const { banner } = await openWithUpdateWaiting(page, context);
-    const view = await chooseAction(page, 28, 'Ask the tutor');
+    await chooseAction(page, 28, 'Ask the tutor');
     await typeQuestion(page, 'What does συνεργεῖ mean here?');
+    // the question goes to the Talk sheet, the one tutor (mw-5r3p30.842)
+    const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+    await expect(sheet).toBeVisible();
     await expect.poll(() => fake.received.length).toBe(1);
     await page.evaluate(() => {
       Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
@@ -277,10 +280,10 @@ for (const size of SIZES) {
     expect(apart).toBe(true);
     await expectTappable(banner);
     await expectTappable(waiting);
-    // the Verse view begins under both
-    const top = (await view.boundingBox())!.y;
+    // the Talk sheet begins under both
+    const top = (await sheet.boundingBox())!.y;
     expect(top).toBeGreaterThanOrEqual(Math.max(a!.y + a!.height, b!.y + b!.height) - 0.5);
-    await expectTappable(view.getByRole('button', { name: '‹ Reader', exact: true }));
+    await expectTappable(sheet.getByRole('button', { name: 'Done', exact: true }));
     await shot(page, `shell-update-and-waiting-${size.width}`);
   });
 }

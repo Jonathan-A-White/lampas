@@ -6,6 +6,7 @@
 // The selection, the view and the weave are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md). The chapter comes from
 // /data/<book>/<n>.json; which chapter is open is the address's (b and c), else the one last open (src/data/readerChapter.ts); a chapter is a
 // ReaderBody keyed by it, so choosing another starts the screen afresh.
+import { scopeRef } from './services/talk';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReadHold } from './ReadCheck';
@@ -39,7 +40,6 @@ import { lemmaSheet, linkOf } from './nav/links';
 import { pendingRequest, reopenTalk, takeRequest } from './nav/readerRequest';
 import { closeVerse, openPassage, openVerse, openVerseRange, readerOf, routeOf, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
-import { useAsks } from './useAsks';
 import { useReadChecks } from './useReadChecks';
 import { stepOf, stepOfVerse } from './reader/steps';
 import { LinkNotice } from './reader/LinkNotice';
@@ -187,7 +187,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [tipOpen, setTipOpen] = useState(false);
   const pace = usePace(source);
   const newWords = useNewWords(chapter, pace?.count);
-  const { asks, ask, resume: resumeAsk } = useAsks(BOOK, CHAPTER, TITLE, chapter);
   // A request from another screen (the Parsing drill's links) is met once, as the Reader opens: the Talk sheet on that verse,
   // or the Ask box on it holding the question.
   const [request] = useState(() => {
@@ -305,10 +304,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       : undefined;
   }, [chapter, viewPassage, approach, BOOK, CHAPTER]);
   const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
-  // A question that went and was left waiting (the page was reloaded, or this screen went away) is waited for again when its verse is opened (src/pending/pendingAsks.ts)
-  useEffect(() => {
-    if (viewUnit) resumeAsk(viewUnit);
-  }, [viewUnit, resumeAsk]);
   // whichever hold is going on is dropped as one: the sheet closed, or another screen asked
   const stopTalking = { abort: () => onBar.abort() };
   const tutor = useReaderTutor(open, chapter, talk, stopTalking, { request, viewUnit, openTalkRef });
@@ -663,10 +658,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           weave={viewWeave}
           wovenChapter={sheetWoven}
           onRetryRead={() => checks.retry(viewUnit)}
-          ask={asks[unitId(viewUnit)]}
-          onAsk={(verse, question) => {
+          ask={talk.states[scopeRef(BOOK, CHAPTER, { verse: viewUnit })]}
+          onAsk={(verse, question, pictures) => {
             setPrefill(null);
-            ask(verse, question);
+            tutor.askUnit(verse, question, pictures);
           }}
           prefill={prefill}
           onTalk={() => setTalkAbout(viewUnit.n)}

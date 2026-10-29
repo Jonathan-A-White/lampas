@@ -9,6 +9,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Chapter, Verse } from '../data/chapter';
 import { listTurns, talkRef } from '../data/repositories';
+import type { OutgoingPicture } from '../talk/pictures';
 import type { OpenChapter } from '../data/readerChapter';
 import { publish } from '../events/bus';
 import { pendingReturn, takeReturn, watchReturn, type ReaderRequest } from '../nav/readerRequest';
@@ -40,6 +41,8 @@ export interface ReaderTutor {
   askAboutTerm(ask: TermAsk): void;
   askAboutNewWord(ask: NewWordAsk): void;
   openQuiz(): void;
+  /** The Verse view's Ask the tutor (mw-5r3p30.842): the Talk sheet opens on the verse or the whole passage `unit` and `question` goes as its turn, with `pictures`; a conversation still waiting for its answer is only shown. */
+  askUnit(unit: Verse, question: string, pictures?: OutgoingPicture[]): void;
   /** the quiz of the unit the Verse view shows has a turn or a message on its way: the button then says Continue */
   quizStarted: boolean;
   /** a hold begins on the Talk bar or a verse number: the sheet opens about `about` (null: the chapter) */
@@ -68,8 +71,11 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
   );
   // The quiz (the Verse view's Quiz me, mw-5r3p30.74): the verse or passage the open Talk sheet quizzes, else null.
   const [quizUnit, setQuizUnit] = useState<Verse | null>(null);
+  // The passage the open Talk sheet is about, when it is a passage (a Verse with `to`, src/data/passage.ts): its talk holds the whole range, not its first verse.
+  const [passageUnit, setPassageUnit] = useState<Verse | null>(null);
   const setTalkAbout = useCallback((about: number | null | undefined) => {
     setQuizUnit(null);
+    setPassageUnit(null);
     setTalkAboutRaw(about);
   }, []);
   // The tutor took him to another place from this chapter's Talk sheet and Back has brought him here: the sheet opens again on what it was about (src/nav/readerRequest.ts reopenTalk)
@@ -83,8 +89,9 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     });
   }, [BOOK, CHAPTER, setTalkAbout]);
   useEffect(() => {
-    openTalkRef.current = talkAbout === undefined ? null : quizUnit ? scopeRef(BOOK, CHAPTER, { verse: quizUnit, quiz: true }) : talkRef(BOOK, CHAPTER, talkAbout);
-  }, [openTalkRef, talkAbout, quizUnit, BOOK, CHAPTER]);
+    openTalkRef.current =
+      talkAbout === undefined ? null : quizUnit ? scopeRef(BOOK, CHAPTER, { verse: quizUnit, quiz: true }) : passageUnit ? scopeRef(BOOK, CHAPTER, { verse: passageUnit }) : talkRef(BOOK, CHAPTER, talkAbout);
+  }, [openTalkRef, talkAbout, quizUnit, passageUnit, BOOK, CHAPTER]);
   // A Reader that is gone has no talk open: an answer that came as it went, and is read a moment later (speakTutor reads the saved choice first), is not spoken (mw-5r3p30.114).
   useEffect(() => () => void (openTalkRef.current = null), [openTalkRef]);
 
@@ -92,7 +99,9 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     chapter && talkAbout !== undefined
       ? quizUnit
         ? { title: TITLE, chapter, verse: quizUnit, quiz: true }
-        : { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null }
+        : passageUnit
+          ? { title: TITLE, chapter, verse: passageUnit }
+          : { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null }
       : null;
   const talkKey = talkScope ? scopeRef(BOOK, CHAPTER, talkScope) : null;
 
@@ -170,11 +179,29 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     if (!chapter || !viewUnit || !quizKey) return;
     voice.abort();
     setQuizUnit(viewUnit);
+    setPassageUnit(null);
     setTalkAboutRaw(viewUnit.n);
     if (quizTurns?.length === 0 && !states[quizKey]) {
       say({ title: TITLE, chapter, verse: viewUnit, quiz: true }, quizMeQuestion(scopeTitle({ title: TITLE, verse: viewUnit })));
     }
   }, [chapter, viewUnit, quizKey, quizTurns, states, voice, say, TITLE]);
 
-  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, askAboutNewWord, openQuiz, quizStarted, holdTalk, talkWaiting };
+  // The Verse view's Ask the tutor: the same Talk session the Talk bar opens, on the verse or the whole passage the view shows.
+  const askUnit = useCallback(
+    (unit: Verse, question: string, pictures?: OutgoingPicture[]) => {
+      if (!chapter) return;
+      voice.abort();
+      setQuizUnit(null);
+      const passage = unit.to !== undefined && unit.to !== unit.n;
+      setPassageUnit(passage ? unit : null);
+      setTalkAboutRaw(unit.n);
+      const scope = { title: TITLE, chapter, verse: passage ? unit : (chapter.verses.find((v) => v.n === unit.n) ?? null) };
+      const state = states[scopeRef(BOOK, CHAPTER, scope)];
+      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
+      say(scope, question, undefined, pictures);
+    },
+    [chapter, states, voice, say, BOOK, CHAPTER, TITLE],
+  );
+
+  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, askAboutNewWord, openQuiz, askUnit, quizStarted, holdTalk, talkWaiting };
 }

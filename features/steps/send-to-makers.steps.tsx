@@ -231,7 +231,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario("Send in the Verse view's Ask with a picture in the row asks the tutor nothing and says where pictures go", ({ Given, When, And, Then }) => {
+  Scenario("Send in the Verse view's Ask with a picture in the row asks the Talk sheet's tutor, with the picture attached", ({ Given, When, And, Then }) => {
     Given(askOpened, async () => {
       await openReader();
       await openAsk();
@@ -243,11 +243,13 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps Send in the Ask composer', async () => {
       await user.click(within(composerIn(view())).getByRole('button', { name: 'Send' }));
     });
-    Then('the mill received {int} grists for the lampas app, kind verse-ask', (_, count: number) => {
-      expect(fake.received.filter((g) => g.grist.kind === 'verse-ask')).toHaveLength(count);
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received.filter((g) => g.grist.kind === 'bible-talk')).toHaveLength(count));
     });
-    And('the composer says {string}', async (_, line: string) => {
-      expect(await within(view()).findByText(new RegExp(line))).toBeInTheDocument();
+    And('that grist has the picture attached', () => {
+      const asked = fake.received.filter((g) => g.grist.kind === 'bible-talk');
+      expect(asked[0].attachments).toHaveLength(1);
+      expect(asked[0].attachments[0].mime).toMatch(/^image\//);
     });
   });
 

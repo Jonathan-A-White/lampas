@@ -87,7 +87,7 @@ async function open({ speaks = false, tutor = false, recorder = false, hash = ''
     value: { writeText: (text: string) => (copied.push(text), Promise.resolve()) },
   });
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.readings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.readings.clear()]);
   await setReaderView('english');
   await setWeave('off');
   await seedHisWords();
@@ -312,9 +312,9 @@ describeFeature(feature, ({ Scenario }) => {
       });
       await letGo();
     });
-    Then('the mill received one grist for the lampas app, kind verse-ask, about {string} with the question {string}', async (_, reference: string, question: string) => {
+    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question {string}', async (_, reference: string, question: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
       expect(fake.received[0].input.reference).toBe(reference);
       expect(fake.received[0].input.question).toBe(question);
     });
@@ -322,12 +322,13 @@ describeFeature(feature, ({ Scenario }) => {
       expect(fake.received[0].input.greek).toBe(greekOf(1, 11));
       expect(fake.received[0].input.english).toBe(markedEnglishOf(1, 11));
     });
-    And('the answer shows in the Verse view', async () => {
-      await waitFor(() => expect(viewEl().querySelectorAll('[data-answer]')).toHaveLength(1));
-      expect(viewEl().querySelector('[data-answer]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
+    And('the answer shows in the Talk sheet about Romans 8:1-11', async () => {
+      const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:1-11' });
+      await waitFor(() => expect(dialog.querySelectorAll('[data-turn]')).toHaveLength(1));
+      expect(dialog.querySelector('[data-turn]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
     });
-    And('the answer is kept under {string} and not under verse 1', async (_, ref: string) => {
-      const refs = (await db.answers.toArray()).map((a) => a.ref);
+    And('the talk is kept under {string} and not under verse 1', async (_, ref: string) => {
+      const refs = (await db.talks.toArray()).map((t) => t.ref);
       expect(refs).toEqual([ref]);
     });
   });

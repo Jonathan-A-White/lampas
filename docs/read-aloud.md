@@ -112,10 +112,10 @@ English voice and Greek words in the Greek voice):
 
 - the reading check's verdict (`ReadCheck.tsx`): the heading, the note, and each word to fix with its tip in full ("blessed: say it as one beat, blest");
   never the verse, the chunks or the words of "Read these again", which are for him to read;
-- the answer to Ask the tutor in the Verse view (`Ask.tsx` AnswerCards, an answer stored while the cards are on screen), and the answers of the Talk sheet and of
+- the answer to Ask the tutor in the Verse view (the Talk sheet's, mw-5r3p30.842), and the answers of the Talk sheet and of
   Ask the tutor from any screen (as the Talk sheet already read them, now through the setting). 'Sound it out' still sounds the syllables out: he asked for that.
 
-A new question or message (`useAsks`, `useTalk`), leaving the panel or the cards (`stopAnswerSpeech`), and a tap on the response (not on a button in it, `stopOnTap`) stop the speech
+A new question or message (`useTalk`), leaving the panel or the cards (`stopAnswerSpeech`), and a tap on the response (not on a button in it, `stopOnTap`) stop the speech
 at once; a tapped word, a speaker or a hold to talk only pause it (above). Off, nothing is spoken by itself; the speaker on an answer ('Read aloud') still reads it.
 
 A response that comes while the page is hidden (he is in another app, `document.visibilityState` 'hidden') is not spoken (mw-5r3p30.270): `tutorVoice.ts`

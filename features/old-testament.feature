@@ -200,7 +200,7 @@ Feature: Lampas reads the Old Testament in English
     When he taps the number of verse 10
     And he chooses the action "Ask the tutor"
     And he types the question "Why did he flee?" and sends it
-    Then the mill received one verse-ask grist about "Jonah 1:10" with the English "The men knew that he was fleeing from the presence of the LORD" and no Greek
+    Then the mill received one bible-talk grist about "Jonah 1:10" with the English "The men knew that he was fleeing from the presence of the LORD" and no Greek
 
   Scenario: The Verse view of Jonah 1:10 opens the verse in his Bible in Logos
     Given Lampas is opened on Jonah 1 with Logos on

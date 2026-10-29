@@ -272,7 +272,7 @@ const SCREENS: { name: string; walk: Walk }[] = [
       await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
       await expect(composerOf(page)).toBeVisible();
       await typeQuestion(page, 'What does called mean?');
-      await expect(view.locator('[data-answer]')).toContainText(SYNERGEI_ANSWER.answer);
+      await expect(page.getByRole('dialog', { name: /^Talk about / }).locator('[data-turn]')).toContainText(SYNERGEI_ANSWER.answer);
     },
   },
   {

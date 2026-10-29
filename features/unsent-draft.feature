@@ -53,7 +53,7 @@ Feature: A long question not yet sent is still in the box when the sheet is open
     When he taps the heading "Walking by the Spirit"
     And he chooses "Ask the tutor"
     And he pastes a prayer of 3800 characters into the Ask the tutor box and taps Send
-    Then the mill received one verse-ask grist whose question is the whole prayer of 3800 characters
+    Then the mill received one bible-talk grist whose question is the whole prayer of 3800 characters
     When he presses Back
     And he taps the heading "Walking by the Spirit" again
     And he chooses "Ask the tutor" again

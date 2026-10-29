@@ -32,7 +32,7 @@ const readingIdOf = (id: string | number): number => {
 };
 
 export function ReadAloud({ id, text, runs, className, auto = false }: {
-  /** names what is read: two buttons with the same id agree on whether it is playing (a number is the id of a tutor answer read by useTalk or useAsks) */
+  /** names what is read: two buttons with the same id agree on whether it is playing (a number is the id of a tutor answer read by useTalk) */
   id: string | number;
   /** the prose to read, its Greek found by its letters */
   text?: string;

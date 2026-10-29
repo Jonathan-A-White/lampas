@@ -96,7 +96,9 @@ test('the phone\'s Back out of the Verse view keeps the bar over the Reader, and
   const view = await chooseAction(page, 28, 'Ask the tutor');
   await typeQuestion(page, 'What does συνεργεῖ mean here?');
   await awayAndBack(page, fake, SYNERGEI_ANSWER);
-  // the phone's Back is one way out of the Verse view (its '‹ Reader' is below the bar since mw-5r3p30.636)
+  // the question was sent to the Talk sheet over the view (mw-5r3p30.842): the phone's Back closes it, then the Verse view (its '‹ Reader' is below the bar since mw-5r3p30.636)
+  await page.goBack();
+  await expect(page.getByRole('dialog', { name: 'Talk about Romans 8:28' })).toHaveCount(0);
   await page.goBack();
   await expect(view).toHaveCount(0);
   await expectBarOnTop(page);

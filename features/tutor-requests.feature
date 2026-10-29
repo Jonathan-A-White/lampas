@@ -42,5 +42,5 @@ Feature: The tutor knows his requests
   Scenario: The Verse view's Ask the tutor is sent his requests too
     Given Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen behind a fake Postern with the request "Add a sepia theme" landed version 0.1.86
     When he asks "What happened to my idea?" by the composer and the tutor answers "Your idea landed in version 0.1.86."
-    Then the verse-ask grist carried 1 request, "Add a sepia theme", as landed version 0.1.86
-    And the Verse view shows the answer "Your idea landed in version 0.1.86."
+    Then the bible-talk grist carried 1 request, "Add a sepia theme", as landed version 0.1.86
+    And the Talk sheet shows the answer "Your idea landed in version 0.1.86."

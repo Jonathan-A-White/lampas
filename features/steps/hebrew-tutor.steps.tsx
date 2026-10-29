@@ -67,7 +67,7 @@ async function openChapter(hash: string, title: string, seed?: Seed): Promise<vo
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
   window.history.replaceState(null, '', `/${hash}`);
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.grammarLevels.clear(), db.reviews.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.grammarLevels.clear(), db.reviews.clear()]);
   if (seed) {
     const now = Date.now();
     await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }, { key: 'grammarLevelsSeeded', value: '1' }]);
@@ -80,6 +80,8 @@ async function openChapter(hash: string, title: string, seed?: Seed): Promise<vo
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
+/** The answer is the Talk sheet's (mw-5r3p30.842): the sheet the Verse view's Ask opens. */
+const sheetEl = (): HTMLElement => screen.getByRole('dialog', { name: /^Talk about / });
 const viewEl = (): HTMLElement => screen.getByRole('region', { name: 'Verse view' });
 const received = () => {
   expect(fake.received).toHaveLength(1);
@@ -115,6 +117,8 @@ describeFeature(feature, ({ Scenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const asks = async (_: unknown, question: string): Promise<void> => {
+    // the Talk sheet holds the Hebrew from the Hebrew dial's Curious up (mw-gdcyf98.3); a reader who chose a dial keeps it
+    if (!(await db.settings.get('hebrewInterest'))) await db.settings.put({ key: 'hebrewInterest', value: '1' });
     await user.click(within(viewEl()).getByRole('button', { name: 'Ask the tutor', exact: true }));
     await screen.findByRole('region', { name: 'Ask the tutor' });
     await user.click(await within(viewEl()).findByRole('button', { name: 'Type a question' }));
@@ -127,13 +131,13 @@ describeFeature(feature, ({ Scenario }) => {
     Given(phone, openJonah);
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
     And('he asks the tutor {string}', asks);
-    Then('the mill received one verse-ask grist whose input carries the English of verse 10 and no Greek', async () => {
+    Then('the mill received one bible-talk grist whose input carries the English of verse 10 and no Greek', async () => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
       const { grist, input } = received();
-      expect(grist).toMatchObject({ app: 'lampas', kind: 'verse-ask', v: '1' });
+      expect(grist).toMatchObject({ app: 'lampas', kind: 'bible-talk', v: '1' });
       expect(input.reference).toBe('Jonah 1:10');
       expect(String(input.english)).toContain('The men knew that he was fleeing');
-      expect(input.greek).toBe('');
+      expect(input.greek).toBeUndefined();
       expect(input.greek_words).toBeUndefined();
     });
     And('its input carries the verse in Hebrew, pointed', () => {
@@ -153,11 +157,11 @@ describeFeature(feature, ({ Scenario }) => {
     Given(phone, openJonah);
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
     And('he asks the tutor {string}', asks);
-    Then('the answer shows under verse 10', async () => {
-      await waitFor(() => expect(document.querySelectorAll('[data-answers-for="10"] [data-answer]')).toHaveLength(1));
+    Then('the answer shows in the Talk sheet about Jonah 1:10', async () => {
+      await waitFor(() => expect(sheetEl().querySelectorAll('[data-turn]')).toHaveLength(1));
     });
     And('the answer draws the Hebrew word {string} right to left', (_, word: string) => {
-      const run = [...document.querySelectorAll<HTMLElement>('[data-answers-for="10"] [data-answer-text] [lang="he"]')].find((el) => el.textContent?.includes(word));
+      const run = [...sheetEl().querySelectorAll<HTMLElement>('[data-turn] [lang="he"]')].find((el) => el.textContent?.includes(word));
       expect(run, word).toBeDefined();
       expect(run?.getAttribute('dir')).toBe('rtl');
       expect(run?.classList.contains('script-he')).toBe(true);
@@ -180,9 +184,9 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Genesis 1 with a licence, a tutor behind a fake Postern, and a reader of Hebrew with three Hebrew words and two ideas', () => openChapter('#/?b=gen&c=1', 'Genesis 1', HEBREW_READER));
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
     And('he asks the tutor {string}', asks);
-    Then('the mill received one verse-ask grist whose learner line tells his Hebrew words: 2 solid, learning {string}', async (_, word: string) => {
+    Then('the mill received one bible-talk grist whose learner line tells his Hebrew words: 2 solid, learning {string}', async (_, word: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(received().grist).toMatchObject({ app: 'lampas', kind: 'verse-ask' });
+      expect(received().grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
       expect(learnerLine()).toContain(`Hebrew: solid 2 words; learning: ${word}`);
     });
     And('its learner line puts him on the Hebrew ladder with 2 ideas known, {string} being learned and a next idea', (_, learning: string) => {
@@ -198,7 +202,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Genesis 1 with a licence, a tutor behind a fake Postern, and a Greek-only reader who has kept three Hebrew words', () => openChapter('#/?b=gen&c=1', 'Genesis 1', GREEK_ONLY_READER));
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
     And('he asks the tutor {string}', asks);
-    Then('the mill received one verse-ask grist whose learner line is the Greek line {string}', async (_, line: string) => {
+    Then('the mill received one bible-talk grist whose learner line is the Greek line {string}', async (_, line: string) => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
       expect(learnerLine()).toBe(line);
     });
@@ -216,7 +220,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he asks the tutor {string}', asks);
     Then('the answer lists the Hebrew word {string} with the lemma {string}, right to left in the Hebrew face', async (_, form: string, lemma: string) => {
       const list = await waitFor(() => {
-        const found = document.querySelector<HTMLElement>('[data-answers-for="1"] [data-answer] dl');
+        const found = sheetEl().querySelector<HTMLElement>('[data-turn] dl');
         if (!found) throw new Error('the answer has not arrived');
         return found;
       });
@@ -228,7 +232,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(lemmaSpan?.classList.contains('script-he')).toBe(true);
     });
     When('he taps the Hebrew word {string} of the answer', async (_, form: string) => {
-      await user.click(within(document.querySelector<HTMLElement>('[data-answers-for="1"] dl')!).getByRole('button', { name: form }));
+      await user.click(within(sheetEl().querySelector<HTMLElement>('[data-turn] dl')!).getByRole('button', { name: form }));
     });
     Then('the word sheet opens on the Hebrew word {string}', async (_, form: string) => {
       const dialog = await screen.findByRole('dialog', { name: 'Word' });
