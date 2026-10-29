@@ -447,14 +447,50 @@ test.describe('a variant unit is opened by its siglum, and its words open the wo
     await expect(wordSheet(page).getByTestId('sheet-parse')).toHaveText(/\S/);
     await wordSheet(page).getByRole('button', { name: 'Done' }).click();
     await expect(wordSheet(page)).toHaveCount(0);
-    // 3:2's other reading "τήρησον" is a form the verse does not have
-    const two = page.locator('[data-verse="2"] [data-brace]').first();
-    await two.locator('[data-brace-word]', { hasText: 'τήρησον' }).click();
-    await expect(wordSheet(page).getByTestId('sheet-word')).toHaveText('τήρησον');
+    // 3:18's other reading "ἔγχρισον" is a form no text of the New Testament has: the build leaves it untagged, so the card is the form alone
+    const two = page.locator('[data-verse="18"] [data-brace]').filter({ hasText: 'ἔγχρισον' }).first();
+    await two.locator('[data-brace-word]', { hasText: 'ἔγχρισον' }).click();
+    await expect(wordSheet(page).getByTestId('sheet-word')).toHaveText('ἔγχρισον');
     await expect(wordSheet(page).getByTestId('sheet-lemma')).toHaveCount(0);
     await expect(wordSheet(page).getByTestId('sheet-gloss')).toHaveCount(0);
     await expect(wordSheet(page).getByTestId('sheet-strongs')).toHaveCount(0);
     await expect(wordSheet(page).getByRole('button', { name: 'Ask the tutor' })).toBeVisible();
+    await wordSheet(page).getByRole('button', { name: 'Done' }).click();
+    // a form the verse does not carry but the build tagged (mw-9ji6ek0.22): "ἀποθανεῖν" in the NA reading opens its card, which says "die"; the siglum still opens the sheet
+    const die = page.locator('[data-verse="2"] [data-brace]').filter({ hasText: 'ἀποθανεῖν' }).first();
+    await die.locator('[data-brace-word]', { hasText: 'ἀποθανεῖν' }).click();
+    await expect(wordSheet(page).getByTestId('sheet-word')).toHaveText('ἀποθανεῖν');
+    await expect(wordSheet(page).getByTestId('sheet-lemma')).toHaveText('ἀποθνήσκω');
+    await expect(wordSheet(page).getByTestId('sheet-gloss')).toContainText('die');
+    await wordSheet(page).getByRole('button', { name: 'Done' }).click();
+    await expect(wordSheet(page)).toHaveCount(0);
+    await die.getByRole('button', { name: /Nestle-Aland/ }).click();
+    await expect(variantSheet(page)).toBeVisible();
+  });
+
+  test('English: "and" inside {and you live B} opens the card of καί; the sheet\'s own reading lines tap too, and the word card stacks over the sheet', async ({ page }) => {
+    await open(page, 'English');
+    await unit(page).locator('[data-brace-word]', { hasText: 'and' }).click();
+    await expect(wordSheet(page)).toBeVisible();
+    await expect(wordSheet(page).getByTestId('sheet-lemma').first()).toHaveText('καί');
+    await expect(wordSheet(page).getByTestId('sheet-variant')).toHaveText('in variant B');
+    await wordSheet(page).getByRole('button', { name: 'Done' }).click();
+    // the sheet: its Greek and English reading lines are words he can tap
+    await siglum(page).click();
+    await expect(variantSheet(page)).toBeVisible();
+    const reading = variantSheet(page).locator('[data-variant-reading]').nth(1);
+    const words = reading.locator('[data-reading-greek] [data-sheet-word]');
+    await expect(words).toHaveCount(2);
+    for (const w of await words.all()) expect((await w.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+    await words.nth(1).click();
+    await expect(wordSheet(page)).toBeVisible();
+    await expect(wordSheet(page).getByTestId('sheet-word')).toHaveText('ζῇς');
+    await expect(wordSheet(page).getByTestId('sheet-lemma')).toHaveText('ζάω');
+    await wordSheet(page).getByRole('button', { name: 'Done' }).click();
+    await expect(variantSheet(page)).toBeVisible();
+    await reading.locator('[data-reading-english] [data-sheet-word]', { hasText: 'live' }).click();
+    await expect(wordSheet(page).getByTestId('sheet-word').filter({ hasText: 'ζῇς' })).toBeVisible();
+    await shot(page, 'variants-sheet-words');
   });
 
   test('every inline tappable mark of the reader is at least 44 x 44 px at 390 wide: the sigla and the verse numbers; the braces are no button', async ({ page }) => {

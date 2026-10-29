@@ -32,6 +32,7 @@ export function Tap({ onTap, onLongPress, still, lang, dir, className, children,
   'data-marked'?: string;
   'data-variant'?: string;
   'data-brace-word'?: string;
+  'data-sheet-word'?: string;
   /** the word's trailing space is a no-break space: the next thing (a variant's siglum) stays on the word's line (mw-9ji6ek0.16) */
   glued?: boolean;
   /** no trailing space: the caller draws it, outside the box the word's neighbours share (a variant run's dotted line stops at the word's last letter, mw-9ji6ek0.28) */

@@ -674,6 +674,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           shown={variantShown}
           reference={`${bookOf(BOOK)?.name ?? BOOK} ${CHAPTER}:${variantShown.unit.v}`}
           place={{ book: BOOK, chapter: CHAPTER, verse: variantShown.unit.v }}
+          verse={chapter?.verses.find((v) => v.n === variantShown.unit.v)}
+          onLook={setLookup}
           onClose={() => setVariantShown(null)}
           onAsk={
             ai

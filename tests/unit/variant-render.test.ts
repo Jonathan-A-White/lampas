@@ -119,6 +119,35 @@ describe('a verse with two units', () => {
     expect(looks[2].words[0]).toBe(VERSE.g[5]);
   });
 
+  it('a word of a reading the build tagged opens its tagged card, an English word the tagged Greek of its reading, and a form the build left untagged the form alone (mw-9ji6ek0.22)', () => {
+    const tagged = (t: string, l: string, s: string, p: string): GreekWord => ({ t, tr: '', s, l, p });
+    const tagUnit: VariantUnit = {
+      ...unit(1, [1], 'εἶπεν', [['N', 'ἔλεγον ἀποθανεῖν', 'were about to die']], 'said'),
+      alts: [{ code: 'N', text: 'ἔλεγον ἀποθανεῖν', g: [tagged('ἔλεγον', 'λέγω', 'G3004', 'V-IAI-3P'), tagged('ἀποθανεῖν', 'ἀποθνῄσκω', 'G599', 'V-2AAN')] }],
+    };
+    const bare: VariantUnit = { ...tagUnit, alts: [{ code: 'N', text: 'ἔλεγον ἀποθανεῖν', g: [tagged('ἔλεγον', '', '', ''), tagged('ἀποθανεῖν', 'ἀποθνῄσκω', 'G599', 'V-2AAN')] }] };
+    const looks: Lookup[] = [];
+    const wordsOf = (container: HTMLElement) => [...container.querySelectorAll<HTMLElement>('[data-brace-word]')];
+    const tap = (container: HTMLElement, text: string) => fireEvent.click(wordsOf(container).find((w) => w.textContent?.trim() === text)!);
+    const mine = (u: VariantUnit, view: ReaderView) => render(createElement(VerseText, { verse: VERSE, view, woven: null, onLook: (l: Lookup) => looks.push(l), variants: shownUnits([u], ALL) })).container;
+    // Greek: a form the verse does not carry, tagged: the build's word
+    let container = mine(tagUnit, 'greek');
+    tap(container, 'ἀποθανεῖν');
+    expect(looks[0].words).toEqual([tagUnit.alts[0].g![1]]);
+    expect(looks[0]).toMatchObject({ verse: 1, variant: 'in variant NA', fromEnglish: false });
+    cleanup();
+    // Greek: a form left untagged is the form alone
+    container = mine(bare, 'greek');
+    tap(container, 'ἔλεγον');
+    expect(looks[1].words).toEqual([{ t: 'ἔλεγον', tr: '', s: '', l: '', p: '' }]);
+    cleanup();
+    // English: the Greek words of the reading, tagged, under the English word tapped
+    container = mine(tagUnit, 'english');
+    tap(container, 'die');
+    expect(looks[2].words.map((w) => [w.t, w.l])).toEqual([['ἔλεγον', 'λέγω'], ['ἀποθανεῖν', 'ἀποθνῄσκω']]);
+    expect(looks[2]).toMatchObject({ english: 'were about to die', fromEnglish: true, tapped: 'die' });
+  });
+
   it('with no variants given the verse is drawn as before: nothing marked, no brace', () => {
     const { container } = render(createElement(VerseText, { verse: VERSE, view: 'english', woven: null, onLook: () => {} }));
     expect(container.querySelectorAll('[data-variant], [data-brace]')).toHaveLength(0);
