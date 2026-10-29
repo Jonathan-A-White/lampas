@@ -1,6 +1,7 @@
 import { configDefaults, defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import { timingFilter } from 'pwa-kit/test-preset';
 import { buildVersion, shortCommit } from './build-version';
 
@@ -8,6 +9,8 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 export default defineConfig({
   plugins: [react()],
+  // vite-plugin-pwa makes this module only in a real build: src/main.tsx imports it, and tests/unit/main-first-paint.test.ts boots main.
+  resolve: { alias: { 'virtual:pwa-register': fileURLToPath(new URL('./tests/support/pwa-register.ts', import.meta.url)) } },
   define: {
     __APP_VERSION__: JSON.stringify(buildVersion(pkg.version, new Date(), shortCommit())),
     // The plain version number (what changelog.json's versions are compared with), without the build's time and commit.
