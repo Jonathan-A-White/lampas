@@ -46,7 +46,7 @@ afterAll(() => db.close());
 
 describe('the readingSets table', () => {
   it('is version 33, keyed by id', () => {
-    expect(db.verno).toBe(33);
+    expect(db.verno).toBe(34);
     expect(db.readingSets.schema.primKey.name).toBe('id');
   });
 });

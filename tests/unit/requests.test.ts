@@ -99,7 +99,7 @@ describe('the upgrade from version 15', () => {
     old.close();
 
     await db.open();
-    expect(db.verno).toBe(33);
+    expect(db.verno).toBe(34);
     expect(await db.words.toArray()).toEqual([{ ...word, lang: 'grc' }]) // v32 stamps the language;
     expect(await db.settings.get('theme')).toEqual({ key: 'theme', value: 'dark' });
     expect(await db.talks.toArray()).toEqual([{ ...talk, id: 1 }]);
