@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.13",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.30",
+    "kind": "fixed",
+    "text": "a variant that leaves words out now dots the English where those words belong, and its sheet says which word is left out."
+  },
+  {
     "version": "0.7.12",
     "date": "2026-10-29",
     "story": "mw-9ji6ek0.22",

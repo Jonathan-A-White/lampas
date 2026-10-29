@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.13
+_2026-10-29_
+- Fixed: a variant that leaves words out now dots the English where those words belong, and its sheet says which word is left out.
+
 ## 0.7.12
 _2026-10-29_
 - New: Every word of a variant reading, in the text and on the variant's sheet, opens its word card like any other word.
