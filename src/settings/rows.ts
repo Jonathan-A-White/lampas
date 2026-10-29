@@ -173,6 +173,16 @@ const READING_SET_ROW: SettingsRow = {
   section: 'variants',
 };
 
+/** Keep on this phone (mw-lcv9z3g.2): which chapters the offline copy keeps (src/data/offlineCopy.ts) and how the copy stands (src/settings/OfflineCopyRow.tsx). A row of the Reading section, not a setting:
+ *  the scope is the offline copy's own key in the settings store, so the tutor does not read or change it here (isTalkable; its Settings request is full). */
+const OFFLINE_COPY_ROW: SettingsRow = {
+  key: 'offlineCopy',
+  label: 'Keep on this phone',
+  hint: 'Keep the chapters on this phone, to read with no signal.',
+  help: 'Nothing extra keeps only what you have opened. New Testament (34 MB) fetches all 260 chapters now and Whole Bible (113 MB) every book, and each is kept as it stands today. Keep the app open while it fetches: it waits while the phone is offline and goes on when it is back. Choosing Nothing extra stops the fetching and deletes nothing.',
+  section: 'reading',
+};
+
 /** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
 const DEVELOPER: SettingsRow = {
   key: 'developer',
@@ -193,7 +203,7 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   ai: AI_KEYS.has(s.key) || undefined,
 });
 
-const unordered: readonly SettingsRow[] = [LIBRARY_ROW, ...SETTINGS.map(rowOfSetting), READING_SET_ROW, ...PART_ROWS, ...REQUESTS, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [LIBRARY_ROW, ...SETTINGS.map(rowOfSetting), READING_SET_ROW, OFFLINE_COPY_ROW, ...PART_ROWS, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
@@ -209,8 +219,8 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   return rows.map((r) => (isSwitch(r) ? ordered[next++] : r)).filter((r): r is SettingsRow => r !== undefined);
 }
 
-/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && !PART_ROWS.some((r) => r.key === key);
+/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && !PART_ROWS.some((r) => r.key === key);
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 
