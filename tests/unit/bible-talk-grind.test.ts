@@ -13,6 +13,14 @@ import { validate, type Schema } from '../support/schema-validate';
 import { answerFragment, instructionsPart } from 'voice-kit/talks/grind';
 import { KIT_END, instructionParts, instructionsOf, withKitFragment, withKitPart } from '../../scripts/grind-parts';
 
+// vitest related follows the import graph, and the fs reads below are not in it: these imports put the grind's file, its schemas,
+// its instruction parts and its scenarios in this file's graph, so the gate's `vitest related` runs this test for a change to any of them (mw-5r3p30.860).
+import '../../grinds/bible-talk.json';
+import '../../grinds/bible-talk.answer.schema.json';
+import '../../grinds/bible-talk.input.schema.json';
+import.meta.glob('../../grinds/bible-talk.instructions/*.md', { eager: true, import: 'default' });
+import.meta.glob('../../grinds/examples/bible-talk/*.json', { eager: true, import: 'default' });
+
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/bible-talk.json');
 const schema = readJson('grinds/bible-talk.answer.schema.json');
