@@ -3,6 +3,7 @@ import { CANON_INDEX, BOOK_INDEX } from '../../src/data/bookIndex';
 import { chapterUrl } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { DATA_CACHE } from '../../src/dataCache';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
 import {
   OFFLINE_CONCURRENCY,
   getOfflineScope,
@@ -158,7 +159,7 @@ describe('runOfflineCopy', () => {
         }),
     );
     const run = runOfflineCopy('nt', deps(s));
-    await vi.waitFor(() => expect(s.calls).toHaveLength(3));
+    await vi.waitFor(() => expect(s.calls).toHaveLength(3), { timeout: ASYNC_WAIT_MS });
     s.events.dispatchEvent(new Event('offline'));
     expect(offlineProgress().paused).toBe(true);
     held.splice(0).forEach((release) => release());
