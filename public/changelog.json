@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.11",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.847",
+    "kind": "fixed",
+    "text": "The Preface now says plainly which Greek text Lampas reads and no longer describes how the app works."
+  },
+  {
+    "version": "0.7.11",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.844",
+    "kind": "fixed",
+    "text": "The \"Send to the makers\" button is gone; when the tutor cannot do something you ask, it now offers in the conversation to pass it on, and you tap the offer or say yes."
+  },
+  {
     "version": "0.7.10",
     "date": "2026-10-29",
     "story": "mw-9ji6ek0.20",
