@@ -20,7 +20,7 @@
   },
   "expect": {
     "answer": {
-      "matches": "[Vv]erses? 1(-| to | through |–)3|1.{0,3}3"
+      "matches": "\\b1 ?(-|–|—|to|through|thru) ?3\\b|[Ff]irst three verses|verses 1,? 2,? (and|&) 3"
     },
     "settings_changes": {
       "present": false
