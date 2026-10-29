@@ -121,6 +121,9 @@ const isNamePart = (f: string[]): boolean => /^[A-Z([]/.test(f[6].trim()) && !f[
 /** Which of a TBESH number's lines the number resolves to. */
 const mainSense = (own: string[][]): string[] => (isPlain(own[0]) && isNamePart(own[0]) ? own.find((f) => isPlain(f) && !isNamePart(f)) ?? own[0] : own[0]);
 
+/** A TBESG lemma column is sometimes 'form=lemma' ('Ἕλλην=Ἕλλην', 'Ἑλληνιστί=Ἑλληνικός': a word and the entry it is a spelling of); the word is the lemma, said once (mw-5r3p30.864). */
+export const headLemma = (column: string): string => column.split('=')[0].trim().normalize('NFC');
+
 /**
  * A Strong's number with several entries resolves to its first. TBESG's keys are 'G0686'; TBESH's are 'H0001' and, for a number with several
  * senses, 'H0834a', 'H0834b' ('a' is the number's main sense and comes first in the file, so it is the one the number resolves to). The entry's
@@ -142,7 +145,7 @@ export function parseTbes(text: string, { letter, gloss }: TbesOptions): Lexicon
   }
   for (const [key, own] of lines) {
     const f = letter === 'H' ? mainSense(own) : own[0];
-    const lemma = f[3].trim().normalize('NFC');
+    const lemma = headLemma(f[3]);
     const entry: LexiconEntry = {
       lemma,
       gloss: gloss(lemma, cleanGloss(f[6].trim().normalize('NFC'))),
