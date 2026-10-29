@@ -179,7 +179,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   // the variant units (mw-9ji6ek0.5): their words or chunks marked, a brace after them; a verse on a card (still) has none
   const plan = still ? NO_PLAN : planVariants(verse, view, woven, variants, chosen);
   const bracesAt = (items: readonly { shown: ShownUnit; language: 'greek' | 'english' }[] | undefined): Drawn[] =>
-    (items ?? []).map(({ shown, language }) => ({ node: <VariantBrace key={`v${variants?.indexOf(shown) ?? 0}`} shown={shown} language={language} onOpen={onVariant} onWord={(word, reading) => lookVariant(word, reading, language)} onSay={say} /> }));
+    (items ?? []).map(({ shown, language }) => ({ node: <VariantBrace key={`v${variants?.indexOf(shown) ?? 0}`} shown={shown} language={language} knows={woven?.known} onOpen={onVariant} onWord={(word, reading, _shown, lang) => lookVariant(word, reading, lang)} onSay={say} /> }));
   const plain = (nodes: ReactNode[]): Drawn[] => nodes.map((node) => ({ node }));
   // the English Lampas wrote for a place the 2026 Greek changes (mw-9ji6ek0.33): its chunk carries the entry's key, and the mark after it opens the entry's sheet
   const rpMark = (i: number): Drawn[] => {

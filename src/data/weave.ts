@@ -9,7 +9,12 @@ export type Woven = { words: GreekWord[]; learning: boolean } | null;
 
 /** A verse's weave, chunk by chunk in `verse.e`'s own indexes, and the order the chunks are drawn and read in (mw-5r3p30.250): absent, the
  * English order. */
-export type WovenVerse = Woven[] & { readonly order?: readonly number[]; readonly texts?: readonly string[] };
+export type WovenVerse = Woven[] & {
+  readonly order?: readonly number[];
+  readonly texts?: readonly string[];
+  /** whether a Greek word stands in Greek under the weave in force (weaveKnows): a variant reading's word is woven by the same rule as the text's (mw-9ji6ek0.37); absent when the verse's weave was made without one */
+  readonly known?: (word: GreekWord) => boolean;
+};
 
 /** The lemmas the weave knows (NFC): the solid ones, and with Weave 'Solid and learning words' the learning ones too. */
 export interface WeaveLemmas {
@@ -17,6 +22,14 @@ export interface WeaveLemmas {
   learning?: ReadonlySet<string>;
   /** The grammar dial: false for a word whose form's grammar is not at the level asked (src/data/grammar/formLevel.ts). Absent: every form passes. */
   formPasses?: (word: GreekWord) => boolean;
+}
+
+/** Whether a Greek word is woven under `lemmas`: its lemma is solid, or learning when the weave takes those, and its form passes the grammar dial. A word with no lemma never is. */
+export function weaveKnows({ solid, learning, formPasses }: WeaveLemmas): (word: GreekWord) => boolean {
+  return (word) => {
+    const lemma = wordLemma(word).normalize('NFC');
+    return lemma !== '' && (!formPasses || formPasses(word)) && (solid.has(lemma) || (learning?.has(lemma) ?? false));
+  };
 }
 
 /**
@@ -107,11 +120,13 @@ function movedMarks(verse: Verse, order: readonly number[]): string[] | undefine
 }
 
 /** The weave `woven` of `verse` with the order it is laid out in: Greek carries chunkOrder's (and, where a sentence's closing mark had to move, the chunks' texts), English none (the chunks' own order). */
-export function wovenInOrder(verse: Verse, woven: Woven[], order: WeaveOrder): WovenVerse {
-  if (order !== 'greek') return woven;
+export function wovenInOrder(verse: Verse, woven: Woven[], order: WeaveOrder, known?: (word: GreekWord) => boolean): WovenVerse {
+  // `known` is not an element of the array: it rides along unseen by a compare of the chunks
+  const withKnown = <T extends Woven[]>(list: T): T => (known ? Object.defineProperty(list, 'known', { value: known }) : list);
+  if (order !== 'greek') return withKnown(woven);
   const drawn = chunkOrder(verse, order);
   const texts = movedMarks(verse, drawn);
-  return Object.assign([...woven], { order: drawn, ...(texts ? { texts } : {}) });
+  return withKnown(Object.assign([...woven], { order: drawn, ...(texts ? { texts } : {}) }));
 }
 
 /** Where a marked Greek word that no English chunk renders is drawn in a verse's English or weave (mw-5r3p30.817): `before` maps a chunk index to the words drawn just before

@@ -14,6 +14,7 @@ import {
   witnessOf,
   type LampasEnglishFile,
 } from '../../scripts/data/variantEnglish';
+import { alignIndex, alignReading, alignUnits, pairingOf } from '../../scripts/data/variantAlign';
 import { COLUMNS } from '../../scripts/data/bereanTable';
 import { sameInVerse } from '../../src/data/variantVerse';
 import type { Chapter, VariantCode, VariantPlace, VariantUnit, Verse } from '../../src/data/chapter';
@@ -233,7 +234,10 @@ describe('the build', () => {
     const rev = units(built.chapters.find((c) => c.path === 'rev/17.json')?.chapter);
     expect(rev).toHaveLength(3);
     const go = rev.find((u) => u.base === 'ὑπάγειν')!;
-    expect(go.english).toEqual({ source: 'msb', base: 'go', alts: ['goes away'] });
+    expect(go.english).toMatchObject({ source: 'msb', base: 'go', alts: ['goes away'] });
+    // each reading's English is paired with its Greek once the readings' words are tagged (mw-9ji6ek0.37): one list for the one reading, a place for each of its two English words
+    expect(go.english.align).toHaveLength(1);
+    expect(go.english.align![0] === undefined || go.english.align![0].length === 0 || go.english.align![0].length === 2).toBe(true);
     expect(go).toMatchObject({ changesEnglish: true, witness: 'na' });
     expect(rev.map((u) => u.english.source).sort()).toEqual(['lampas', 'lampas', 'msb']);
     expect(rev.every((u) => typeof u.changesEnglish === 'boolean' && ['byz', 'na', 'ecm'].includes(u.witness))).toBe(true);
@@ -266,7 +270,7 @@ describe('the committed data', () => {
     for (const { ref, unit } of all) unit.alts.forEach((a, i) => { if (a.text === '' && unit.english.alts[i] !== '') bad.push(`${ref} ${unit.base}`); });
     expect(bad).toEqual([]);
     const acts = all.find(({ ref, unit }) => ref === 'Acts 18:17' && unit.base === 'οἱ Ἕλληνες');
-    expect(acts?.unit.english).toEqual({ source: 'msb', base: 'the Greeks', alts: [''], ctReads: 'they all' });
+    expect(acts?.unit.english).toEqual({ source: 'msb', base: 'the Greeks', alts: [''], ctReads: 'they all', align: [[]] });
   });
 
   it('has changesEnglish on every unit and a witness byz, na or ecm that agrees with its codes', () => {
@@ -317,4 +321,58 @@ describe('a reading compared in its verse (src/data/variantVerse.ts, mw-9ji6ek0.
     const chunky = { e: [{ t: 'whoever', g: [0] }, { t: 'loses his life', g: [1, 2] }, { t: 'will preserve', g: [3] }, { t: 'it.', g: [4] }] };
     expect(sameInVerse(chunky, [1, 3], 'loses it', 'loses')).toBe(false);
   });
+});
+
+describe('the English of a reading paired word by word with its Greek (mw-9ji6ek0.37)', () => {
+  const chapters = (): Chapter[] =>
+    readdirSync('public/data', { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .flatMap((d) => readdirSync(`public/data/${d.name}`).filter((f) => /^\d+\.json$/.test(f)).map((f) => JSON.parse(readFileSync(`public/data/${d.name}/${f}`, 'utf8')) as Chapter))
+      .filter((c) => (c.lang ?? 'grc') === 'grc');
+
+  it('pairs "in" of Acts 18:18’s NA reading to ἐν, though the MSB’s chunk of ἐν is "He had his"', () => {
+    const all = chapters();
+    const acts = all.find((c) => c.code === 'act' && c.chapter === 18)!;
+    const u = acts.variants!.find((x) => x.v === 18 && x.english.alts[0] === 'in Cenchreae the head')!;
+    const gloss = (w: { s: string }) => acts.lex[w.s]?.g ?? '';
+    const align = alignReading(u.english.alts[0], u.alts[0].g!, gloss, alignIndex(all));
+    expect(align).toEqual([0, 1, 2, 3]);
+    expect(u.alts[0].g![align[0]!].t).toBe('ἐν');
+  });
+
+  it('pairs one to one, leaves a word no Greek word says null, and a reading with nothing to pair []', () => {
+    const word = (t: string, l: string) => ({ t, tr: '', s: '', l, p: 'X' });
+    const verse: Verse = { n: 1, g: [word('ἐν', 'ἐν'), word('οἴκῳ', 'οἶκος')], e: [{ t: 'in', g: [0] }, { t: 'house', g: [1] }] };
+    const index = alignIndex([{ book: '', code: 'x', chapter: 1, lex: {}, parse: {}, verses: [verse] }]);
+    const g = [word('ἐν', 'ἐν'), word('οἴκοις', 'οἶκος')];
+    expect(alignReading('in the houses', g, () => '', index)).toEqual([0, null, 1]);
+    expect(alignReading('in in', g, () => '', index)).toEqual([0, null]);
+    expect(alignReading('', [], () => '', index)).toEqual([]);
+    expect(alignReading('and then', g, () => '', index)).toEqual([]);
+  });
+
+  it('counts how a reading is paired', () => {
+    expect(pairingOf('in the head', [0, null, 1])).toBe('partly');
+    expect(pairingOf('in the', [0, 1])).toBe('full');
+    expect(pairingOf('in the', [])).toBe('none');
+    expect(pairingOf('in …', [0, null])).toBe('full');
+  });
+
+  it('every committed unit carries the pairing the build would make: one list for each reading, one place for each English word, each an index into the reading’s words (npm run variants:align -- --write)', () => {
+    const all = chapters();
+    const fresh = JSON.parse(JSON.stringify(all)) as Chapter[];
+    alignUnits(fresh);
+    let units = 0;
+    all.forEach((chapter, c) => {
+      for (const [k, unit] of (chapter.variants ?? []).entries()) {
+        units++;
+        expect(unit.english.align, `${chapter.book} ${chapter.chapter}:${unit.v}`).toEqual(fresh[c].variants![k].english.align);
+        unit.english.align!.forEach((list, i) => {
+          if (list.length) expect(list).toHaveLength(unit.english.alts[i].split(/\s+/).filter(Boolean).length);
+          for (const j of list) if (j !== null) expect(unit.alts[i].g![j]).toBeDefined();
+        });
+      }
+    });
+    expect(units).toBeGreaterThan(7000);
+  }, 120_000);
 });

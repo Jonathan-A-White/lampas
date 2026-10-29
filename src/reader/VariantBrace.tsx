@@ -3,10 +3,11 @@
 // (mw-9ji6ek0.15): each word of a reading is a Tap like a word of the text and opens the word popup (VerseText's onWord), and the siglum (the chip, B or NA) is the target of
 // the unit's sheet (mw-9ji6ek0.6), a 44 px square of its own that takes its own room in the line, so a finger a few pixels off still lands on it and never on a word beside it.
 import { Fragment, type KeyboardEvent } from 'react';
+import type { GreekWord } from '../data/chapter';
 import { GREEK_LANG } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
 import { Tap, TAP_PAD } from './Tap';
-import { braceReadings, LEFT_OUT, SAME, type BraceReading, type ShownUnit, type WitnessChip } from './variants';
+import { braceReadings, englishTokens, LEFT_OUT, SAME, type BraceReading, type BraceToken, type ShownUnit, type WitnessChip } from './variants';
 
 /** Each chip spelled out, for a screen reader. */
 const SPELLED: Record<WitnessChip, string> = { B: 'Byzantine split', NA: 'Nestle-Aland', ECM: 'ECM', RP: 'Robinson-Pierpont text' };
@@ -16,13 +17,15 @@ const JOIN = '\u2060';
 /** a mark of the apparatus with no letter in it ('…', where a reading is in pieces) is drawn, not tapped */
 const HAS_LETTER = /\p{L}/u;
 
-export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
+export function VariantBrace({ shown, language, knows, onOpen, onWord, onSay }: {
   shown: ShownUnit;
   /** the language of the readings: the Greek view's and a woven unit's Greek, else English */
   language: 'greek' | 'english';
+  /** in an English brace: whether a Greek word of a reading stands in Greek under the weave (WovenVerse.known); absent, the brace is all English */
+  knows?: (word: GreekWord) => boolean;
   onOpen?: (shown: ShownUnit) => void;
-  /** a tap on a word of a reading: the word as drawn and the reading it is in */
-  onWord?: (word: string, reading: BraceReading, shown: ShownUnit) => void;
+  /** a tap on a word of a reading: the word as drawn, the reading it is in and the language it is drawn in (a Greek word of an English brace, mw-9ji6ek0.37) */
+  onWord?: (word: string, reading: BraceReading, shown: ShownUnit, language: 'greek' | 'english') => void;
   /** a long press on a word: say it, in the language it is drawn in */
   onSay?: (word: string, language: 'greek' | 'english') => void;
 }) {
@@ -46,15 +49,24 @@ export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
                 {...(r.text ? {} : { onClick: open })}
                 className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : 'text-fg') : `italic${r.text ? '' : ' cursor-pointer'}`}
               >
-                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : r.text.split(/\s+/).filter(Boolean).map((word, k, all) =>
-                  HAS_LETTER.test(word) ? (
-                    <Tap key={k} glued={k === all.length - 1} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(word, r, shown)} onLongPress={() => onSay?.(word, language)}>
-                      {word}
+                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : (language === 'greek' ? r.text.split(/\s+/).filter(Boolean).map((text): BraceToken => ({ text })) : englishTokens(r, knows)).map(({ text, greek }, k, all) => {
+                  const lang = greek ? 'greek' : language;
+                  return HAS_LETTER.test(text) ? (
+                    <Tap
+                      key={k}
+                      glued={k === all.length - 1}
+                      data-brace-word=""
+                      {...(greek ? { 'data-woven': '', ...GREEK_LANG } : {})}
+                      className={greek ? `${TAP_PAD} font-greek text-accent` : TAP_PAD}
+                      onTap={() => onWord?.(greek ? greek.t : text, r, shown, lang)}
+                      onLongPress={() => onSay?.(greek ? greek.t : text, lang)}
+                    >
+                      {text}
                     </Tap>
                   ) : (
-                    <Fragment key={k}>{k === all.length - 1 ? `${word}${NBSP}` : `${word} `}</Fragment>
-                  ),
-                )}
+                    <Fragment key={k}>{k === all.length - 1 ? `${text}${NBSP}` : `${text} `}</Fragment>
+                  );
+                })}
               </span>
               {r.same || !r.text ? NBSP : null}
               <span data-brace-tail="" className="whitespace-nowrap">

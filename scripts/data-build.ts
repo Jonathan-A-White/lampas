@@ -20,6 +20,7 @@ import { OVERLAY_FILE, applyOverlay, diffEdition, loadRp2026, overlayReport, typ
 import { RP2026_ENGLISH_FILE, checkRp2026English, readRp2026English, rp2026EnglishReport } from './data/rp2026English';
 import { VARIANT_ENGLISH_FILE, englishReport, englishStats, finishUnit, layEnglish, readLampasEnglish, type LampasEnglishFile, type MissingEnglish, type WordNote } from './data/variantEnglish';
 import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
+import { alignReport, alignUnits, type AlignTally } from './data/variantAlign';
 import { formIndex, tagVariants, taggedLine, untaggedText, type TagTally } from './data/variantWords';
 
 export { suppliedWords } from './data/bereanTable';
@@ -202,6 +203,8 @@ export interface BuiltData {
   overlay?: OverlayResult;
   /** the words of the variant readings tagged against every form of the text, and the forms left untagged; absent when the build was given no apparatus */
   tagged?: TagTally;
+  /** how well the readings' English is paired word by word with their Greek (scripts/data/variantAlign.ts); absent when the build was given no apparatus */
+  aligned?: AlignTally;
 }
 
 /** A name: any use of the word is coded N-PRI (an indeclinable proper noun, 'Ἀβραάμ'), or a use is coded as a noun (N-...) and the
@@ -356,8 +359,10 @@ export function buildData(
   }
   // every reading's words are tagged by the forms of the whole text (scripts/data/variantWords.ts), so after the last chapter
   const tagged = apparatus ? tagVariants(chapters.map((c) => c.chapter), formIndex(chapters.map((c) => c.chapter)), lex) : undefined;
+  // and each reading's English is paired word by word with those words, once they are tagged (scripts/data/variantAlign.ts, mw-9ji6ek0.37)
+  const aligned = apparatus ? alignUnits(chapters.map((c) => c.chapter)) : undefined;
   for (const { fingerprints, at, chapter } of unfingerprinted) fingerprints[at] = chapterFingerprint(chapter);
-  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), missingEnglish, lampasUsed, ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}), ...(tagged ? { tagged } : {}) };
+  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), missingEnglish, lampasUsed, ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}), ...(tagged ? { tagged } : {}), ...(aligned ? { aligned } : {}) };
 }
 
 // ---------------------------------------------------------------- files
@@ -423,6 +428,7 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
   }
   if (built.tagged) {
     log(taggedLine(built.tagged));
+    if (built.aligned) for (const line of alignReport(built.aligned)) log(line);
     writeIfChanged(options.untaggedFile ?? UNTAGGED_FILE, untaggedText(built.tagged));
   }
 

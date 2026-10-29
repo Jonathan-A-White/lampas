@@ -195,6 +195,9 @@ export interface VariantEnglish {
   alts: string[];
   /** on a unit whose one reading leaves the words out: the MSB's own English of the critical text's sentence there, from its 'CT <i>…</i>' footnote ('they all' at Acts 18:17), which reads more than the left-out words; absent otherwise (mw-9ji6ek0.36) */
   ctReads?: string;
+  /** each reading's English word by word, paired to the reading's Greek (mw-9ji6ek0.37): for the English of `alts[i]` split at white space, the index into `VariantUnit.alts[i].g` of the Greek word that
+   * token renders, or null; `[]` for a reading with nothing paired (it leaves the words out, or no word is known). Made at build time (scripts/data/variantAlign.ts); absent in a file from before it. */
+  align?: Array<Array<number | null>>;
 }
 export type VariantWitness = 'byz' | 'na' | 'ecm';
 
