@@ -1,0 +1,108 @@
+{
+  "description": "Revelation 3:2 is held with Variants on and the reading set NA in force: asked 'Which reading am I reading?', the answer names the NA reading (ἔμελλον ἀποθανεῖν, 'I was about to die') as the one in his text and says that the text's own reading differs.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Revelation 3:2",
+    "greek": "Γίνου γρηγορῶν καὶ στήρισον τὰ λοιπὰ ἃ ἔμελλες ἀποβάλλειν οὐ γὰρ εὕρηκά σου τὰ ἔργα πεπληρωμένα ἐνώπιον τοῦ θεοῦ μου",
+    "english": "Wake up and strengthen what remains, which is about to die; for I have found your deeds incomplete in the sight of My God.",
+    "verses": "3:2",
+    "question": "Which reading am I reading?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal",
+      "variants": "all",
+      "variantWitnesses": "ecm"
+    },
+    "resources": [],
+    "variants": {
+      "chapter_units": 29,
+      "read_as": "NA",
+      "units": [
+        {
+          "verse": 2,
+          "text": {
+            "greek": "στήρισον",
+            "english": "establish"
+          },
+          "other_readings": [
+            {
+              "greek": "στήριξον",
+              "english": "establish",
+              "witness": [
+                "B: the Byzantine text is split here"
+              ]
+            },
+            {
+              "greek": "τήρησον",
+              "english": "keep",
+              "witness": [
+                "B: the Byzantine text is split here"
+              ]
+            }
+          ]
+        },
+        {
+          "verse": 2,
+          "text": {
+            "greek": "ἔμελλες ἀποβάλλειν",
+            "english": "you were about to throw away"
+          },
+          "he_is_reading": "he is reading: ἔμελλον ἀποθανεῖν, I was about to die (NA)",
+          "other_readings": [
+            {
+              "greek": "ἠμελλες ἀποβάλλειν",
+              "english": "you were about to throw away",
+              "witness": [
+                "B: the Byzantine text is split here"
+              ]
+            },
+            {
+              "greek": "ἐμέλλον ἀποθάνειν",
+              "english": "I was about to die",
+              "witness": [
+                "B: the Byzantine text is split here"
+              ]
+            },
+            {
+              "greek": "ἔμελλον ἀποθανεῖν",
+              "english": "I was about to die",
+              "witness": [
+                "NA27/NA28: Nestle-Aland reads this"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "all": [
+        {
+          "matches": "NA"
+        },
+        {
+          "matches": "ἔμελλον ἀποθανεῖν|about to die"
+        },
+        {
+          "matches": "ἔμελλες|throw away|text"
+        }
+      ]
+    },
+    "fetch": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

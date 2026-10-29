@@ -26,6 +26,7 @@ import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { mapsForTutor, type TutorMap } from '../maps/forTutor';
+import type { ReadingSet } from '../reader/readingSets';
 import { variantFactsHeld, type VariantFacts } from '../tutor/variantFacts';
 import type { MapCard } from '../maps/types';
 import { greekInterestField, hebrewGuideField, hebrewInterestField, type InterestField } from './interestField';
@@ -607,6 +608,7 @@ export function buildTalkRequest(
   summary?: { text: string; covered: number },
   today?: TodayItem[],
   maps: MapCard[] = [],
+  readingSet?: ReadingSet,
 ): TalkRequest {
   // the turns older than the window that the summary does not hold yet: the next few, oldest first, for the tutor to fold in (mw-5r3p30.700)
   const past = Math.max(0, turns.length - MAX_HISTORY_TURNS);
@@ -627,7 +629,7 @@ export function buildTalkRequest(
   // the maps of the chapter the talk holds: the places they name are those of the held verse or range, none for a chapter
   const mapsHeld = hold && !aboutCredits ? mapsForTutor(maps, scope.verse ? textOf(hold.parts).english : undefined) : [];
   // the variants of the verses held, while Settings > Variants is on and the chapter has any (the Reader's braces under the same filters)
-  const variantsHeld = hold && !aboutCredits ? variantFactsHeld(scope.chapter, hold.parts, settings) : undefined;
+  const variantsHeld = hold && !aboutCredits ? variantFactsHeld(scope.chapter, hold.parts, settings, readingSet) : undefined;
   const request: TalkRequest = {
     reference: scopeTitle(scope),
     // a talk from a screen is not about a text: it carries the screen and no verse text

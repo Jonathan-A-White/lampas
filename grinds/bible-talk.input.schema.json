@@ -259,12 +259,13 @@
       }
     },
     "variants": {
-      "description": "Optional. Present while his Variants setting is on and the chapter has places where the manuscripts differ: `units` are the ones set in the verses the talk holds (in the order of the text) and `chapter_units` is how many the chapter has in all. Each unit is `verse`, `text` (the reading in the text he reads, `greek` and `english`), `other_readings` (each a different Greek once, with its `english` and `witness`, the manuscripts or editions that read it spelled out) and `asked: true` on the one unit he opened the talk on from its sheet. A reading that leaves the words out has `left out`. `units` is empty when the held verses have none. Missing with Variants Off, in a talk from a screen, in About, when the chapter has none, and when the request was too big (ask for the fact `variants`).",
+      "description": "Optional. Present while his Variants setting is on and the chapter has places where the manuscripts differ: `units` are the ones set in the verses the talk holds (in the order of the text) and `chapter_units` is how many the chapter has in all. Each unit is `verse`, `text` (the reading in the text he reads, `greek` and `english`), `other_readings` (each a different Greek once, with its `english` and `witness`, the manuscripts or editions that read it spelled out) `asked: true` on the one unit he opened the talk on from its sheet, and `he_is_reading` (`he is reading: <reading> (<set name>)`) on a unit where the reading set he reads in gives other than the text's own. `read_as` names that set, once; both are missing under Byzantine, the text's own. A reading that leaves the words out has `left out`. `units` is empty when the held verses have none. Missing with Variants Off, in a talk from a screen, in About, when the chapter has none, and when the request was too big (ask for the fact `variants`).",
       "type": "object",
       "additionalProperties": false,
       "required": ["chapter_units", "units"],
       "properties": {
         "chapter_units": { "description": "How many places the chapter has where the manuscripts differ, under his filters.", "type": "number", "minimum": 1 },
+        "read_as": { "description": "The name of the reading set he reads in (NA, ECM, Mine or a name of his); missing when he reads the Byzantine text.", "type": "string" },
         "units": {
           "type": "array",
           "items": {
@@ -274,6 +275,7 @@
             "properties": {
               "verse": { "description": "The verse the unit is set in.", "type": "number" },
               "asked": { "description": "True on the unit he asked about from its sheet.", "type": "boolean" },
+              "he_is_reading": { "description": "'he is reading: <Greek>, <English> (<set name>)': the reading in place for him in this unit, present only where it is not the text's own.", "type": "string" },
               "text": {
                 "type": "object",
                 "additionalProperties": false,
