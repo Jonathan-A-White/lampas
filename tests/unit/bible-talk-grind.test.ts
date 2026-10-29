@@ -572,6 +572,12 @@ describe('the feedback offer', () => {
     expect(instructions).toContain('only when');
   });
 
+  it('answers a question about what a screen shows or means and never takes it for a wish (mw-5r3p30.854)', () => {
+    const rule = instructions.replace(/\s+/g, ' ');
+    expect(rule).toContain('what a screen shows or means');
+    expect(rule).toContain('never a wish');
+  });
+
   it('offers to send an ask that would grow the app (an approach, programme, resource, text or translation) to the makers (mw-hqd5bz.37)', () => {
     for (const words of ['an approach or programme', 'a study resource', 'a text', 'a translation', 'Send this to the makers', 'Ask for more', "I'd like Lampas to have "]) {
       expect(instructions).toContain(words);
