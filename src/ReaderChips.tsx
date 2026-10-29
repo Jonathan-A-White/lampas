@@ -9,6 +9,7 @@
 import type { SourceLanguage } from './data/chapter';
 import { GoalChip } from './GoalStrip';
 import { VariantChip } from './reader/VariantChip';
+import { VariantLessonsOffer } from './reader/VariantLessonsOffer';
 import { NewWordsChip } from './NewWordsStrip';
 import { TipChip } from './tips/TipCard';
 import { useOpenTip } from './tips/useOpenTip';
@@ -42,6 +43,7 @@ export function ReaderChips({
   const any = !hidden;
   if (!any && wovenCount === null) return null;
   return (
+    <>
     <div
       data-testid="reader-chips"
       className="flex h-10 shrink-0 items-stretch gap-1.5 overflow-x-auto overflow-y-hidden border-b border-line px-2 [scrollbar-width:none]"
@@ -61,5 +63,7 @@ export function ReaderChips({
         </p>
       )}
     </div>
+    {variants && !hidden ? <VariantLessonsOffer variantsOn={variants.on} /> : null}
+    </>
   );
 }
