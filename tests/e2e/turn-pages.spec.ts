@@ -872,23 +872,21 @@ test('with Turn pages a tap on any verse number in the left third turns back, an
 
 // mw-5r3p30.609: every point of the outer thirds turns the page, whatever is under it (a word, a verse number, a play button, a gap); only the middle
 // third keeps a word's tap. Pages 2 to 4 of Mark 12: none is the first or the last, whose chapter buttons keep their taps.
-test('with Turn pages every point of the left and right thirds turns the page, on three pages', async ({ page }) => {
-  test.setTimeout(240_000);
-  await openMark12(page, 'pages');
-  expect((await pageOf(page)).of).toBeGreaterThanOrEqual(5);
-  const b = await box(page);
-  const rows: number[] = [];
-  // rows closer than a verse number is tall, so every number on the page is under some row
-  for (let y = b.top + 10; y < b.bottom - 4; y += 24) rows.push(y);
-  const columns = (from: number, to: number) => [0, 1, 2].map((i) => b.left + b.width * (from + ((to - from) * i) / 2));
-  const left = columns(0.04, 0.3);
-  const right = columns(0.7, 0.96);
-  await turnTo(page, 2);
-  for (const on of [2, 3, 4]) {
-    if (on > 2) {
-      await tapAt(page, 0.85);
-      await expect.poll(() => at(page)).toBe(on);
-    }
+// One test for each page (mw-5r3p30.849): the three pages in one test were ~900 taps and ran 3 minutes of the 4 it was given, so a loaded host timed it out;
+// now each test is a third of that, and a host running them on separate workers or one after the other gives each its own 240 s.
+for (const on of [2, 3, 4]) {
+  test(`with Turn pages every point of the left and right thirds turns the page, on page ${on}`, async ({ page }) => {
+    test.setTimeout(240_000);
+    await openMark12(page, 'pages');
+    expect((await pageOf(page)).of).toBeGreaterThanOrEqual(5);
+    const b = await box(page);
+    const rows: number[] = [];
+    // rows closer than a verse number is tall, so every number on the page is under some row
+    for (let y = b.top + 10; y < b.bottom - 4; y += 24) rows.push(y);
+    const columns = (from: number, to: number) => [0, 1, 2].map((i) => b.left + b.width * (from + ((to - from) * i) / 2));
+    const left = columns(0.04, 0.3);
+    const right = columns(0.7, 0.96);
+    await turnTo(page, on);
     // each point is tapped on page `on` in both thirds, and the page it turns to is turned home by the same point of the other third
     for (const y of rows) {
       for (let i = 0; i < left.length; i++) {
@@ -898,8 +896,8 @@ test('with Turn pages every point of the left and right thirds turns the page, o
         await tapTurns(page, left[i], y, on);
       }
     }
-  }
-});
+  });
+}
 
 test('with Scroll nothing changes: the text scrolls, a tap on the right third turns no page, a swipe opens the next chapter', async ({ page }) => {
   await openMark12(page, 'scroll');

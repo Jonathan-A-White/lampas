@@ -136,7 +136,7 @@ describe('Ask the tutor (voice-kit Composer with LAMPAS_TALK_SETTINGS) through a
   it('starts the recogniser again after it ends and asks the whole sentence', async () => {
     const verse = { n: 1, g: [{ t: 'Τεκνία' }], e: [{ t: 'My little children' }] } as unknown as Verse;
     const asked: string[] = [];
-    render(<AskComposer book="1jn" chapter={2} verse={verse} reference="1 John 2:1" state={undefined} onAsk={(_verse, question) => asked.push(question)} />);
+    render(<AskComposer book="1jn" chapter={2} verse={verse} state={undefined} onAsk={(_verse, question) => asked.push(question)} />);
     await pass(100);
     const held = await holdThroughPause(screen.getByRole('button', { name: 'Hold to ask' }), 'why does Paul say', 'all things to all people');
     expect(FakeRecognizer.instances).toHaveLength(1);

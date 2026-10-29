@@ -106,6 +106,8 @@ for (const phone of PHONES) {
         await expect(page.getByTestId('prompt')).toBeVisible();
         for (let i = 0; i < 10; i += 1) {
           const show = page.getByRole('button', { name: 'Show', exact: true });
+          // the card is drawn after Next: wait for it to be a Show card or an options card before choosing, as a one-look isVisible() can come first
+          await expect(show.or(page.locator('[data-option]').last())).toBeVisible();
           if (await show.isVisible()) {
             await show.click();
             await page.getByRole('button', { name: /^(Not yet|Don't know)$/ }).click();
@@ -134,8 +136,11 @@ for (const phone of PHONES) {
 
       test('Parsing drill: after every answer Next step, Next word or Finish is in view', async ({ page }) => {
         await openWithTextSize(page, '#/drill', percent);
-        // the reload that applies the text size finds the round the first look kept
+        // the reload that applies the text size finds the round the first look kept; wait for whichever of the two screens is drawn, since a one-look
+        // isVisible() on a loaded host came before the card and left the walk waiting for an option the card never shows (mw-5r3p30.849)
         const fresh = page.getByRole('button', { name: 'New round' });
+        const option = page.locator('[data-option]').last();
+        await expect(fresh.or(option)).toBeVisible();
         if (await fresh.isVisible()) await fresh.click();
         for (let words = 0; words < 2; words += 1) {
           for (let step = 0; step < 8; step += 1) {

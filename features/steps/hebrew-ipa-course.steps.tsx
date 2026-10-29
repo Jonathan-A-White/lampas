@@ -146,7 +146,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The Hebrew entry shows when he reads Hebrew, and not when he reads Greek only', ({ Given, When, Then }) => {
     Given('Lampas is opened on the Goal screen with his Hebrew dial at {string}', async (_, dial: string) => open(dial));
     Then('the Optional section has the entries {string} and {string}', async (_, a: string, b: string) => {
-      expect(await entryNames()).toEqual([a, b]);
+      await waitFor(async () => expect(await entryNames()).toEqual([a, b]));
     });
     When('Lampas is opened on the Goal screen with his Hebrew dial at {string}', async (_, dial: string) => open(dial));
     Then('the Optional section has the entry {string} alone', async (_, a: string) => {
@@ -179,7 +179,7 @@ describeFeature(feature, ({ Scenario }) => {
       await screen.findByRole('heading', { name: 'Goal', level: 1 });
     });
     Then('the Optional section has the entries {string} and {string}', async (_, a: string, b: string) => {
-      expect(await entryNames()).toEqual([a, b]);
+      await waitFor(async () => expect(await entryNames()).toEqual([a, b]));
     });
   });
 

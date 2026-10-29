@@ -36,7 +36,7 @@ every map of the source; `imageUrl` answers null where the source has no picture
 - **The map**, `src/maps/MapView.tsx`, a second sheet over the first: the title, the period, the low-res picture at the box's width in a box that scrolls both ways; a tap on the picture toggles that width and twice it (`data-map-zoom` `fit` | `in`; the page locks pinch, so the box
   takes `pinch-zoom` only where the phone allows it). Under it the credit from the source (`Map by David P. Barrett, biblemapper.com`, its host a link to `MapSource.homepage`: the link back the site asks, on every map), `About this map` and `Full size` (the article, where the larger pictures are)
   and `All maps for Genesis 10 at Bible Mapper` (`MapSource.allMapsUrl`: `https://biblemapper.com/blog/mapfinder/?ref=Genesis%2010`, the book name and chapter encoded). Back returns to the sheet, then to the verse. While the picture fails to load (offline) its place says `The map needs the internet` and every link stays.
-- **About** lists Bible Mapper from `ATTRIBUTION.md` (the credit of mw-zbjgn3r.1); the Preface (`src/preface.ts`) says what the door does.
+- **About** lists Bible Mapper from `ATTRIBUTION.md` (the credit of mw-zbjgn3r.1); Help's Your Logos library and maps page says what the door does.
 - **Tests**: `features/maps.feature` (`features/steps/maps.steps.tsx`) and `tests/unit/maps-door.test.tsx` run on a source of the tests' own (`tests/support/test-maps.ts`, registered with `setMapSources` in `src/maps/index.ts`: Bible Mapper's identity and links over a few cards, no data file read, no picture fetched);
   `tests/e2e/maps.spec.ts` shoots the Verse view with the door, the sheet and the map at 390x844, the picture stubbed by Playwright's `route`.
 

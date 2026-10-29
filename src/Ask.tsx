@@ -10,22 +10,17 @@ import { MAX_QUESTION_CHARS } from './services/tutor';
 import type { AskState } from './pending/pendingAsks';
 import { askTranscriber } from './speech/askTranscriber';
 import { tapWord, useTalkSettings } from './talkSettings';
-import { failureLine, makersSummary, PICTURES_FOR_THE_MAKERS, sendToMakers } from './talk/makers';
 import { preparePictures, refuseNonPicture, TALK_MAX_PICTURES, TOO_MANY_TO_SEND_LINE, PICTURE_ONLY_QUESTION, type OutgoingPicture } from './talk/pictures';
-import { SendToMakers } from './talk/SendToMakers';
-import { useSendToMakers } from './talk/useSendToMakers';
 import { askDraftKey, readDraft, writeDraft } from './ui/unsentDraft';
 
 /** The composer for `verse` (or a passage, src/data/passage.ts): voice-kit's Composer, speak-first or, by the setting Ask by, type-first, drawn at the foot of the Verse view. Hold to ask streams
  * his words as he speaks and a release asks; Type a question brings out the field and Send asks the Talk sheet's tutor, with the pictures in the row (Attach a picture, Take a photo, mw-5r3p30.760).
- * Send to the makers (src/talk/SendToMakers.tsx) files what is in the composer as a request to the makers. Words typed or pasted and not sent are kept for the verse and put back when the
+ * There is no standing makers button here: a wish the app cannot meet is offered to the makers by the tutor in the talk (src/talk/offers.ts, mw-5r3p30.844). Words typed or pasted and not sent are kept for the verse and put back when the
  * composer opens again (src/ui/unsentDraft.ts, mw-5r3p30.495). */
-export function AskComposer({ book, chapter, verse, reference, state, onAsk, prefill = null }: {
+export function AskComposer({ book, chapter, verse, state, onAsk, prefill = null }: {
   book: string;
   chapter: number;
   verse: Verse;
-  /** what the Verse view is about: 'Romans 8:1-11' */
-  reference: string;
   state: AskState | undefined;
   onAsk: (verse: Verse, question: string, pictures?: OutgoingPicture[]) => void;
   /** a question to put in the field when the composer opens on that verse (the Parsing drill's link); he sends it himself */
@@ -54,20 +49,6 @@ export function AskComposer({ book, chapter, verse, reference, state, onAsk, pre
     return () => keep(box?.querySelector('textarea') ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftKey]);
-  const makers = useSendToMakers();
-  const sendToTheMakers = async ({ text, files }: ComposerMessage): Promise<void> => {
-    const message = text.trim();
-    if (message.length > MAX_QUESTION_CHARS) throw new Error(`${message.length} of ${MAX_QUESTION_CHARS}: the message is too long to send. Shorten it; nothing has been cut.`);
-    if (files.length > TALK_MAX_PICTURES) throw new Error(TOO_MANY_TO_SEND_LINE);
-    const pictures = await preparePictures(files);
-    try {
-      await sendToMakers({ text: message || PICTURES_FOR_THE_MAKERS, summary: makersSummary(message), screen: 'Verse view', reference, pictures });
-    } catch (err) {
-      throw new Error(failureLine(err));
-    }
-    sent.current = true;
-    writeDraft(draftKey, '');
-  };
   const send = async ({ text, files }: ComposerMessage): Promise<boolean> => {
     const question = text.trim();
     if ((!question && files.length === 0) || busy) return false;
@@ -82,7 +63,6 @@ export function AskComposer({ book, chapter, verse, reference, state, onAsk, pre
   };
   return (
     <section ref={section} aria-label="Ask the tutor" data-ask={unitId(verse)} onInput={onInput}>
-      <SendToMakers action={makers} host={section} />
       <Composer
         key={unitId(verse)}
         mode={askBy === 'typing' ? 'type' : 'speak'}
@@ -94,7 +74,7 @@ export function AskComposer({ book, chapter, verse, reference, state, onAsk, pre
         labels={{ ...ASK_LABELS, hold: tapWord('Hold to ask', talkSettings.talk) }}
         initialText={prefilled || readDraft(draftKey)}
         disabled={busy}
-        onSend={(message) => makers.dispatch(message, sendToTheMakers, send)}
+        onSend={send}
       />
     </section>
   );

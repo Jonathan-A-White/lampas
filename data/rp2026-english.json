@@ -1,0 +1,146 @@
+{
+ "Matthew 26:29 f657d11d": {
+  "ref": "Matthew 26:29",
+  "from": [
+   "τοῦ",
+   "γεννήματος",
+   "τῆς"
+  ],
+  "to": [
+   "του",
+   "γενηματος",
+   "της"
+  ],
+  "changesEnglish": false,
+  "msb": "fruit of the",
+  "lampas": null,
+  "note": "γεννήματος (offspring, fruit) and γενήματος (produce, fruit) are one word's two spellings and both read 'fruit of the vine'; the MSB's 'fruit' is right for either.",
+  "provenance": {
+   "greek": {
+    "source": "Robinson-Pierpont 2026 (Clearview Press 2026 Edition, the ByzASCII.zip of byzantinetext.com/study/editions/robinson-pierpont/), compared with Robinson-Pierpont 2018 (byztxt v3.3.2)",
+    "licence": "Free to use: byzantinetext.com says of the RP2026 ASCII file 'This file may be freely distributed by anyone without any restrictions' (checked 2026-10-28); the Robinson-Pierpont text is released to everyone"
+   },
+   "msb": "Majority Standard Bible, public domain (the table's English of the Robinson-Pierpont 2005 Greek)",
+   "decision": {
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-28"
+   }
+  }
+ },
+ "Romans 13:9 c59ee37c": {
+  "ref": "Romans 13:9",
+  "from": [
+   "ὡς",
+   "σεαυτόν"
+  ],
+  "to": [
+   "ως",
+   "εαυτον"
+  ],
+  "changesEnglish": false,
+  "msb": "as yourself",
+  "lampas": null,
+  "note": "The MSB translated ἑαυτόν already (it follows RP 2005 here); σεαυτόν and ἑαυτόν both read 'yourself', so the English is the same either way.",
+  "provenance": {
+   "greek": {
+    "source": "Robinson-Pierpont 2026 (Clearview Press 2026 Edition, the ByzASCII.zip of byzantinetext.com/study/editions/robinson-pierpont/), compared with Robinson-Pierpont 2018 (byztxt v3.3.2)",
+    "licence": "Free to use: byzantinetext.com says of the RP2026 ASCII file 'This file may be freely distributed by anyone without any restrictions' (checked 2026-10-28); the Robinson-Pierpont text is released to everyone"
+   },
+   "msb": "Majority Standard Bible, public domain (the table's English of the Robinson-Pierpont 2005 Greek)",
+   "decision": {
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-28"
+   }
+  }
+ },
+ "Philemon 1:1 7765b3ef": {
+  "ref": "Philemon 1:1",
+  "from": [
+   "δέσμιος",
+   "χριστοῦ",
+   "Ἰησοῦ",
+   "καὶ"
+  ],
+  "to": [
+   "δεσμιος",
+   "ιησου",
+   "χριστου",
+   "και"
+  ],
+  "changesEnglish": true,
+  "msb": "of Christ Jesus",
+  "lampas": "of Jesus Christ",
+  "note": "The two names change places: the MSB's 'Christ Jesus' is the 2005 order, the 2026 text reads Ἰησοῦ χριστοῦ, 'Jesus Christ'.",
+  "provenance": {
+   "greek": {
+    "source": "Robinson-Pierpont 2026 (Clearview Press 2026 Edition, the ByzASCII.zip of byzantinetext.com/study/editions/robinson-pierpont/), compared with Robinson-Pierpont 2018 (byztxt v3.3.2)",
+    "licence": "Free to use: byzantinetext.com says of the RP2026 ASCII file 'This file may be freely distributed by anyone without any restrictions' (checked 2026-10-28); the Robinson-Pierpont text is released to everyone"
+   },
+   "msb": "Majority Standard Bible, public domain (the table's English of the Robinson-Pierpont 2005 Greek)",
+   "decision": {
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-28"
+   },
+   "rendering": {
+    "kind": "Lampas rendering, AI-made at build time",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-28"
+   }
+  }
+ },
+ "Revelation 11:16 32fdb6ec": {
+  "ref": "Revelation 11:16",
+  "from": [
+   "τοῦ",
+   "θρόνου",
+   "τοῦ",
+   "θεοῦ"
+  ],
+  "to": [
+   "του",
+   "θεου"
+  ],
+  "changesEnglish": false,
+  "msb": "before God",
+  "lampas": null,
+  "note": "The MSB translated the 2005 Greek, which already lacks τοῦ θρόνου (2018 adds it: 'before the throne of God'); the 2026 text reads 'before God' too.",
+  "provenance": {
+   "greek": {
+    "source": "Robinson-Pierpont 2026 (Clearview Press 2026 Edition, the ByzASCII.zip of byzantinetext.com/study/editions/robinson-pierpont/), compared with Robinson-Pierpont 2018 (byztxt v3.3.2)",
+    "licence": "Free to use: byzantinetext.com says of the RP2026 ASCII file 'This file may be freely distributed by anyone without any restrictions' (checked 2026-10-28); the Robinson-Pierpont text is released to everyone"
+   },
+   "msb": "Majority Standard Bible, public domain (the table's English of the Robinson-Pierpont 2005 Greek)",
+   "decision": {
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-28"
+   }
+  }
+ },
+ "Revelation 13:14 58aaf5c3": {
+  "ref": "Revelation 13:14",
+  "from": [
+   "εἶχεν",
+   "τὴν",
+   "πληγὴν"
+  ],
+  "to": [
+   "ειχεν",
+   "πληγην"
+  ],
+  "changesEnglish": false,
+  "msb": "that had been wounded",
+  "lampas": null,
+  "note": "The 2026 text drops the article τὴν before πληγήν ('had the wound' becomes 'had a wound'), a shade the MSB's 'had been wounded' never rendered, so the English stands.",
+  "provenance": {
+   "greek": {
+    "source": "Robinson-Pierpont 2026 (Clearview Press 2026 Edition, the ByzASCII.zip of byzantinetext.com/study/editions/robinson-pierpont/), compared with Robinson-Pierpont 2018 (byztxt v3.3.2)",
+    "licence": "Free to use: byzantinetext.com says of the RP2026 ASCII file 'This file may be freely distributed by anyone without any restrictions' (checked 2026-10-28); the Robinson-Pierpont text is released to everyone"
+   },
+   "msb": "Majority Standard Bible, public domain (the table's English of the Robinson-Pierpont 2005 Greek)",
+   "decision": {
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-28"
+   }
+  }
+ }
+}

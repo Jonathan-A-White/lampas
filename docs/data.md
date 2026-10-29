@@ -290,6 +290,24 @@ left as they are and counted as `already read so`. An entry whose 2018 words are
 word the 2026 text adds (it would have no lemma), and an English chunk left with no Greek. The five entries: Matthew 26:29 (γεννήματος → γενήματος),
 Romans 13:9, Philemon 1:1, Revelation 11:16 and 13:14.
 
+## The RP 2026 English
+
+The MSB's English is of the Robinson-Pierpont 2005 Greek, so a change the 2026 text makes to the 2018 wording can leave the MSB's English right or can need other
+English (mw-9ji6ek0.32). `data/rp2026-english.json` holds, for each entry of `data/rp2026-overlay.json` (keyed `Philemon 1:1 <8 hex of its words>`, so a changed
+overlay makes a stale entry the build names rather than a wrong one), whether the English changes: `changesEnglish`; the MSB's English for the affected words
+(`msb`); Lampas's own English for them (`lampas`, `null` unless `changesEnglish`); a `note`; and its `provenance`: `greek` (the Robinson-Pierpont 2026 text, the
+ByzASCII.zip of byzantinetext.com, and its licence: the editors' page says of that file 'This file may be freely distributed by anyone without any restrictions',
+checked 2026-10-28), `msb` (public domain), `decision` (the model and the date) and, only where there is Lampas English, `rendering` (`Lampas rendering, AI-made
+at build time`, the model, the date). An entry whose 2026 words are the 2005 words (Romans 13:9, Revelation 11:16) never changes the MSB's English; one that
+changes only a shade the MSB's English never rendered (the article of Revelation 13:14, which 'had been wounded' leaves out) is left as the MSB has it.
+
+The build (`runBuild`, after the overlay report) stops, naming the verse, on an overlay change with no entry, an entry for a change no longer in the overlay,
+Lampas English on an entry that does not change the English (or none on one that does), or a missing provenance (`checkRp2026English`,
+`scripts/data/rp2026English.ts`), and prints `RP 2026 English: 5 changes, 1 alters the English, 4 do not` and the verses that alter it with both Englishes.
+Nothing lays this English on the chapters yet: it is the data a setting would read. A new overlay change needs its entry written by hand, with the model that
+decided it named in the provenance; there is no script that renders it yet. Entries: Matthew 26:29 (γεννήματος/γενήματος, 'fruit': no), Romans 13:9 (no),
+Philemon 1:1 ('of Christ Jesus' → 'of Jesus Christ': yes), Revelation 11:16 (no) and 13:14 (no).
+
 ## Changes to the sources
 
 * TBESG: a Strong's number with several entries (an extended-Strong's split such as G0032G / G0032H) resolves

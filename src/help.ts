@@ -27,9 +27,10 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'The Reader',
     line: 'Chapters, words and verses.',
     body: [
-      'The title opens the chapter picker, which lists all 66 books. A tap on a verse number opens the Verse view: Listen, Read it aloud, Ask the tutor, Copy link, Share and Memorize. A tap on a word opens its sheet.',
-      'An Old Testament chapter opens in English or, from How much Hebrew? at Curious, in its Hebrew. Copy and Share give the verse, passage or chapter as you read it, with its reference and link; Settings > Reading > When you copy chooses the text.',
+      'The title opens the chapter picker. A tap on a verse number opens the Verse view: Listen, Read it aloud, Ask the tutor, Copy link, Share and Memorize. A tap on a word opens its sheet.',
+      'An Old Testament chapter opens in English or, from How much Hebrew? at Curious, in its Hebrew. Copy and Share give the verse, passage or chapter as you read it, with its reference and link (Settings > Reading > When you copy).',
       'Where manuscripts differ, Variants in Settings can show it. Five short lessons explain how to read that, and they read offline.',
+      'Each variant’s sheet has Go deeper, and the tutor explains it without ruling.',
     ],
     opens: { label: 'Lessons on variant readings', route: 'lessons' },
   },
@@ -40,6 +41,7 @@ export const HELP_PAGES: HelpPage[] = [
     body: [
       'Lampas opens as a plain English Bible. At the top of Settings, Which languages? chooses English only, Greek, Hebrew or Greek and Hebrew.',
       'Each language chosen has a dial, How much Greek? or How much Hebrew?, from Curious to All in. Each step shows more of that language and nothing more: Curious its view and a word’s Strong’s number, Dipping a toe the Weave, Learning new words each day, Reading in Greek or Hebrew opens the Reader in it. English only hides them all and keeps your levels. The Study resources follow the dials.',
+      'The sentence Diagram is Greek and English only.',
     ],
   },
   {

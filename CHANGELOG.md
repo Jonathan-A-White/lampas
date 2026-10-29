@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.11
+_2026-10-29_
+- Fixed: The Preface now says plainly which Greek text Lampas reads and no longer describes how the app works.
+- Fixed: The "Send to the makers" button is gone; when the tutor cannot do something you ask, it now offers in the conversation to pass it on, and you tap the offer or say yes.
+
 ## 0.7.10
 _2026-10-29_
 - New: A variant reading's card now has a Go deeper section with the lessons, the apparatus, the 2005 edition and, from your Logos library, the Greek texts at that verse.

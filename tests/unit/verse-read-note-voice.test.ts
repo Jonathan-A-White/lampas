@@ -159,3 +159,16 @@ describe('the note\'s own bullet carries the voice rule with a right and a wrong
     expect(bullet).toMatch(/Right: .*You said both words/);
   });
 });
+
+describe('the learner line is described for whichever language he reads (mw-5r3p30.851)', () => {
+  const text = instructionsOf('verse-read');
+  const at = text.indexOf('- `learner`: where he stands');
+  const bullet = text.slice(at, text.indexOf('\n- ', at + 1)).replace(/\s+/g, ' ');
+
+  it('is there', () => expect(at).toBeGreaterThanOrEqual(0));
+
+  it('names the Hebrew part a reader of Hebrew is sent, and reads his level in the language he reads', () => {
+    expect(bullet).toMatch(/Greek: \.\.\. \| Hebrew: \.\.\./);
+    expect(bullet).toMatch(/level in the language he reads[^.]*`Hebrew:`/);
+  });
+});
