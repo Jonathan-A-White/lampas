@@ -201,7 +201,7 @@ interface VariantPlan {
 
 const NO_PLAN: VariantPlan = { marked: new Set(), after: new Map(), start: [] };
 
-export function planVariants(verse: Verse, view: ReaderView, woven: WovenVerse | null, variants: readonly ShownUnit[] | undefined): VariantPlan {
+function planVariants(verse: Verse, view: ReaderView, woven: WovenVerse | null, variants: readonly ShownUnit[] | undefined): VariantPlan {
   if (!variants?.length) return NO_PLAN;
   const marked = new Set<number>();
   const after = new Map<number, { shown: ShownUnit; language: 'greek' | 'english' }[]>();

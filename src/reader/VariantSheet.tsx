@@ -48,7 +48,7 @@ function Words({ text, language, actions }: { text: string; language: 'greek' | 
 }
 
 /** What a reading that leaves the unit out says: 'NA leaves out “in” (ἐπὶ)', the English the build gives the words (none: the Greek alone). */
-export function leftOutLine(chips: readonly string[], english: string, greek: string): string {
+function leftOutLine(chips: readonly string[], english: string, greek: string): string {
   const who = chips.length > 1 ? `${chips.slice(0, -1).join(', ')} and ${chips[chips.length - 1]}` : chips[0] ?? 'This reading';
   return `${who} ${chips.length > 1 ? 'leave' : 'leaves'} out ${english ? `“${english}” (${greek})` : greek}`;
 }

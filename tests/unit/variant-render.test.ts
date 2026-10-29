@@ -7,7 +7,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord, Verse, VariantUnit, VariantCode } from '../../src/data/chapter';
 import { weaveVerse, wovenInOrder } from '../../src/data/weave';
-import { VerseText, planVariants } from '../../src/reader/VerseText';
+import { VerseText } from '../../src/reader/VerseText';
 import type { Lookup } from '../../src/WordSheet';
 import { braceReadings, plainEnglish, readerVariants, shownUnits, type VariantFilter } from '../../src/reader/variants';
 import type { ReaderView } from '../../src/data/repositories';
@@ -219,8 +219,10 @@ describe('every omission unit of the committed chapters has a word to dot (mw-9j
           continue;
         }
         const [shown] = shownUnits([u], ALL);
-        if (planVariants(verse, 'greek', null, [shown]).marked.size === 0) noGreek.push(at);
-        if (planVariants(verse, 'english', null, [shown]).marked.size === 0) noChunk.push(at);
+        const marks = (view: ReaderView) => render(createElement(VerseText, { verse, view, woven: null, onLook: () => {}, variants: [shown] })).container.querySelectorAll('[data-variant]').length;
+        if (marks('greek') === 0) noGreek.push(at);
+        if (marks('english') === 0) noChunk.push(at);
+        cleanup();
       }
     }
     expect(seen).toBeGreaterThan(1000);
