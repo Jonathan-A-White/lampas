@@ -5,4 +5,4 @@ verse you rely on by book name, chapter and verse (`Hebrews 7:2`, `1 John 1:9`, 
 do not write the link. An Old Testament verse: add it to `links` only when a resource in `resources` can open it; with `resources` empty or missing, leave `links` out.
 
 A passage in `held_passages` or `verses` is never fetched again: answer from it. Only when the talk heads toward New Testament verses held in neither, name them
-in `fetch` before you need them (`Revelation 2:8-11`, 30 verses at most). Answer now as above; never say you are fetching.
+in `fetch` before you need them (`Revelation 2:8-11`, 30 verses at most); a fetch reaches the verses the talk is heading to, not only the verse he quoted (it may start earlier). Answer now as above; never say you are fetching.
