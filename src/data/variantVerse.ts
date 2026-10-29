@@ -1,7 +1,7 @@
 // src/data/variantVerse.ts — whether a variant reading changes the English of its VERSE, not just of its own words (mw-9ji6ek0.14). A unit's English is
 // the model's or the MSB footnote's short snippet ('that' / 'that I'); the verse may already say the difference ('that I love you': the verb carries the
 // 'I'), so the reading is compared in place: the verse's English with the unit's words' chunks replaced by the reading's English, against the verse itself. Pure and import-free so the data build (scripts/data/variantEnglish.ts) and the Reader (src/reader/variants.ts) share it.
-import type { Verse } from './chapter';
+import type { Verse, VariantUnit } from './chapter';
 
 /** An English reading with case, punctuation and white space set aside, for comparing two. */
 export const plainEnglish = (s: string): string =>
@@ -48,3 +48,28 @@ export function sameInVerse(verse: Pick<Verse, 'e'> | undefined, unitWords: read
   const text = words(verse.e.map((c) => c.t).join(' ')).join(' ');
   return spliceVerse(verse, unitWords, alt) === text && spliceVerse(verse, unitWords, base) === text;
 }
+
+/** A Greek form with case, punctuation and the grave (an acute before another word) set aside, so the same word in another place is the same form. */
+const greekForm = (s: string): string =>
+  s
+    .normalize('NFD')
+    .replace(/\u0300/g, '\u0301')
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{M}]+/gu, '');
+
+const forms = (s: string): string[] => s.split(/\s+/).map(greekForm).filter(Boolean);
+
+/**
+ * True when `alt` is the same Greek words as `base` in another order (the same forms, each as often, in a different sequence): the order changes the emphasis, not the meaning,
+ * so the English is the same (mw-9ji6ek0.31). A reading with a word more, a word fewer or a different form is not, nor is the same words in the same order.
+ */
+export function wordOrderOnly(base: string, alt: string): boolean {
+  const a = forms(base);
+  const b = forms(alt);
+  if (a.length < 2 || a.length !== b.length || a.join(' ') === b.join(' ')) return false;
+  return [...a].sort().join(' ') === [...b].sort().join(' ');
+}
+
+/** True when every other reading of the unit is its words in another order: the unit changes the order and nothing else. */
+export const wordOrderOnlyUnit = (unit: Pick<VariantUnit, 'base' | 'alts'>): boolean => unit.alts.length > 0 && unit.alts.every((alt) => wordOrderOnly(unit.base, alt.text));

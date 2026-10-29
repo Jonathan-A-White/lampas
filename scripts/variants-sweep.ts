@@ -5,6 +5,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { BookIndex, Chapter } from '../src/data/chapter';
 import { chapterFingerprint } from './data/chapterWriter';
+import { wordOrderOnlyUnit } from '../src/data/variantVerse';
 import { changesEnglish } from './data/variantEnglish';
 
 const write = process.argv.includes('--write');
@@ -12,6 +13,7 @@ const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as Book
 const hidden: string[] = [];
 const shown: string[] = [];
 let units = 0;
+const byOrder: string[] = [];
 for (const dir of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
   for (const file of readdirSync(`public/data/${dir.name}`).filter((f) => /^\d+\.json$/.test(f))) {
     const path = `public/data/${dir.name}/${file}`;
@@ -19,7 +21,8 @@ for (const dir of readdirSync('public/data', { withFileTypes: true }).filter((d)
     let changed = false;
     for (const unit of chapter.variants ?? []) {
       units++;
-      const now = changesEnglish(unit.english, chapter.verses.find((v) => v.n === unit.v), unit.w);
+      if (wordOrderOnlyUnit(unit)) byOrder.push(`${chapter.book} ${chapter.chapter}:${unit.v} ${unit.base} / ${unit.alts.map((a) => a.text).join(' / ')} (${unit.english.base} / ${unit.english.alts.join(' / ')})`);
+      const now = changesEnglish(unit.english, chapter.verses.find((v) => v.n === unit.v), unit.w, unit);
       if (now === unit.changesEnglish) continue;
       const alt = unit.english.alts.map((a) => `'${a}'`).join(' / ');
       (unit.changesEnglish ? hidden : shown).push(`${chapter.book} ${chapter.chapter}:${unit.v} w${unit.w[0]}-${unit.w[unit.w.length - 1]} '${unit.english.base}' -> ${alt}`);
@@ -37,3 +40,5 @@ if (write) writeFileSync('public/data/index.json', JSON.stringify(index));
 console.log(`${units} units; shown -> hidden ${hidden.length}; hidden -> shown ${shown.length}`);
 for (const line of hidden) console.log(`  hidden: ${line}`);
 for (const line of shown) console.log(`  SHOWN: ${line}`);
+console.log(`word order only: ${byOrder.length} units (the other reading is the same words in another order: sameEnglish, hidden under 'Those that change the English')`);
+for (const line of byOrder.slice(0, 5)) console.log(`  e.g. ${line}`);

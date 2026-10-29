@@ -663,3 +663,36 @@ test('1 Corinthians 16:7 dots the English the changed δὲ is folded into, and 
   await expect(sheet).toContainText('γὰρ');
   await shot(page, 'variants-folded-sheet');
 });
+
+// A word-order-only unit is not a change of the English (mw-9ji6ek0.31): Matthew 3:4 αὐτοῦ ἦν / ἦν αὐτοῦ ('his was' / 'was his', NA) has no brace under Those that change the English;
+// under All it has one, and its sheet says 'Word order only: emphasis, not meaning' above Ask the tutor. Shot: shots/variants-word-order-sheet.png.
+test('Matthew 3:4: a word-order-only unit shows under All and not under Those that change the English, and its sheet says so', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=mat&c=3');
+  await expect(page.locator('[data-verse="4"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'English').click();
+  const verse = page.locator('[data-verse="4"]');
+  await expect(page.locator('[data-verse="3"] [data-brace]').first()).toBeVisible();
+  await expect(verse.locator('[data-brace]')).toHaveCount(0);
+
+  await holdFor(page, chip(page), 700);
+  const filter = page.getByRole('dialog', { name: 'Variants' });
+  await expect(filter).toBeVisible();
+  await filter.getByRole('button', { name: 'All', exact: true }).click();
+  await filter.getByRole('button', { name: 'Done' }).click();
+  await expect(filter).toHaveCount(0);
+  await expect(verse.locator('[data-brace]')).toHaveCount(1);
+  await verse.scrollIntoViewIfNeeded();
+
+  await verse.locator('[data-brace] [data-witness]').first().click();
+  const sheet = page.getByRole('dialog', { name: 'Variant reading' });
+  await expect(sheet).toBeVisible();
+  const line = sheet.locator('[data-word-order-only]');
+  await expect(line).toHaveText('Word order only: emphasis, not meaning');
+  const ask = sheet.getByRole('button', { name: 'Ask the tutor' });
+  await expect(ask).toBeVisible();
+  expect((await line.boundingBox())!.y).toBeLessThan((await ask.boundingBox())!.y);
+  await shot(page, 'variants-word-order-sheet');
+});

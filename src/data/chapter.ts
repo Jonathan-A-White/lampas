@@ -177,7 +177,7 @@ export interface VariantPlace {
 export interface VariantUnit extends VariantPlace {
   /** the unit in English: the base and each of `alts` (the same order), 0 to 6 words each, '' for a reading that leaves words out (docs/data.md 'Variant English') */
   english: VariantEnglish;
-  /** true when the English of the base and of any alternative differ after case, punctuation and white space are set aside */
+  /** true when the English of the base and of any alternative differ after case, punctuation and white space are set aside; a reading that is the base's Greek words in another order never counts */
   changesEnglish: boolean;
   /** whose reading the first of its codes names: `byz` (B), `na` (N, C, S, E) or `ecm` (M); several codes take the first class in that order */
   witness: VariantWitness;
