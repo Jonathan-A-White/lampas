@@ -1,8 +1,8 @@
 // src/reader/VariantSheet.tsx — the sheet a tap on a variant's brace opens (mw-9ji6ek0.6, src/reader/VariantBrace.tsx): the text's own reading and the other reading(s) of the
 // unit, each in Greek and in English, the witness of each spelled out one line apiece (src/reader/witness.ts), and Ask the tutor, which opens the verse's talk as the Verse view's
 // Ask does (the tutor's own variant story comes later), and under the readings 'Go deeper' (src/reader/goDeeper.ts, mw-9ji6ek0.20): the lessons, the apparatus, the 2005 edition and his Logos
-// Greek texts at the verse. Each word of a reading's Greek and English lines is a Tap like a word of the text and opens the word card over the sheet (mw-9ji6ek0.22). Done, Back, Escape, a swipe down or a tap outside close it. A portal: the brace is in the Reader's scrolling text.
-import { Fragment } from 'react';
+// Greek texts at the verse. Each reading has 'Read this' (mw-9ji6ek0.24): it lays that reading into the text in place and closes the sheet; the one in place says 'Reading this'. Each word of a reading's Greek and English lines is a Tap like a word of the text and opens the word card over the sheet (mw-9ji6ek0.22). Done, Back, Escape, a swipe down or a tap outside close it. A portal: the brace is in the Reader's scrolling text.
+import { Fragment, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Verse } from '../data/chapter';
 import { AnotherBookButton } from '../library/InLogosDoors';
@@ -15,11 +15,16 @@ import { APPARATUS_LABEL, EDITION_2005, GO_DEEPER_ENTRIES, GO_DEEPER_HEADING, LE
 import type { Lookup } from '../WordSheet';
 import { sayWord } from './sayWord';
 import { Tap, TAP_PAD } from './Tap';
+import { BASE } from './readingSets';
 import { braceReadings, type ShownUnit } from './variants';
 import { readingTokens, variantLabel, variantLookup, type WordReading } from './variantWords';
 import { readingsOf } from './witness';
 
 const LEFT_OUT = 'left out';
+export const READ_THIS = 'Read this';
+export const READING_THIS = 'Reading this';
+/** The one line under the readings that says what Read this does not change in this wave (the plan's Q6). */
+export const READ_THIS_NOTE = 'Read aloud, copy, Read check and the diagram keep the Byzantine words.';
 
 /** What a tap or a long press on a word of a reading does: the word, the language it is drawn in. */
 interface WordActions {
@@ -53,7 +58,24 @@ function leftOutLine(chips: readonly string[], english: string, greek: string): 
   return `${who} ${chips.length > 1 ? 'leave' : 'leaves'} out ${english ? `“${english}” (${greek})` : greek}`;
 }
 
-function Reading({ label, greek, english, lines, actions, leftOut }: { label: string; greek: string; english: string; lines?: string[]; actions?: WordActions; leftOut?: string }) {
+/** The foot of a reading: 'Reading this' (not a button) on the one in place, else the 'Read this' button when the sheet can lay a reading in. */
+function ReadThis({ inPlace, onRead }: { inPlace: boolean; onRead?: () => void }) {
+  if (inPlace) {
+    return (
+      <p data-reading-this="" className="pt-1 text-base font-medium text-accent">
+        {READING_THIS}
+      </p>
+    );
+  }
+  if (!onRead) return null;
+  return (
+    <button type="button" data-read-this="" onClick={onRead} className="mt-1 min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line">
+      {READ_THIS}
+    </button>
+  );
+}
+
+function Reading({ label, greek, english, lines, actions, leftOut, foot }: { label: string; greek: string; english: string; lines?: string[]; actions?: WordActions; leftOut?: string; foot?: ReactNode }) {
   return (
     <section data-variant-reading="" className="border-t border-line py-3">
       <h3 className="pb-1 text-base font-medium text-muted">{label}</h3>
@@ -76,6 +98,7 @@ function Reading({ label, greek, english, lines, actions, leftOut }: { label: st
           {line}
         </p>
       ))}
+      {foot}
     </section>
   );
 }
@@ -123,15 +146,17 @@ interface SheetProps {
   onLook?: (lookup: Lookup) => void;
   onClose: () => void;
   onAsk?: () => void;
+  /** lays a reading into the text in place: the index of the alternative in the unit's `alts`, BASE (-1) for the text's own; without it no reading has Read this */
+  onRead?: (index: number) => void;
 }
 
-function Sheet({ shown, reference, place, verse, onLook, onClose, onAsk }: SheetProps) {
+function Sheet({ shown, reference, place, verse, onLook, onClose, onAsk, onRead }: SheetProps) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   const others = readingsOf(shown);
   // braceReadings keys a reading as readingsOf does (its Greek), so the two lists run in step: this one has each reading's tagged words and chips
-  const tagged = braceReadings(shown, 'greek');
+  const tagged = braceReadings({ ...shown, chosen: undefined }, 'greek');
   const actionsFor = (reading: WordReading, variant?: string): WordActions | undefined =>
     verse && onLook
       ? {
@@ -163,7 +188,13 @@ function Sheet({ shown, reference, place, verse, onLook, onClose, onAsk }: Sheet
           </div>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <Reading label="The text reads" greek={shown.unit.base} english={shown.unit.english.base} actions={actionsFor(own)} />
+          <Reading
+            label="The text reads"
+            greek={shown.unit.base}
+            english={shown.unit.english.base}
+            actions={actionsFor(own)}
+            foot={onRead && shown.chosen !== undefined ? <ReadThis inPlace={false} onRead={() => onRead(BASE)} /> : undefined}
+          />
           {others.map((r, i) => (
             <Reading
               key={i}
@@ -173,8 +204,16 @@ function Sheet({ shown, reference, place, verse, onLook, onClose, onAsk }: Sheet
               lines={r.lines}
               actions={actionsFor({ greek: r.greek, english: r.english, g: tagged[i]?.g }, tagged[i] ? variantLabel(tagged[i].chips) : undefined)}
               leftOut={r.greek ? undefined : leftOutLine(tagged[i]?.chips ?? [], shown.unit.english.base, shown.unit.base)}
+              foot={
+                onRead && !r.apart ? <ReadThis inPlace={shown.chosen !== undefined && r.indexes.includes(shown.chosen)} onRead={() => onRead(r.index)} /> : undefined
+              }
             />
           ))}
+          {onRead ? (
+            <p data-read-this-note="" className="border-t border-line py-3 text-base text-muted">
+              {READ_THIS_NOTE}
+            </p>
+          ) : null}
           {place ? (
             <GoDeeper
               place={place}

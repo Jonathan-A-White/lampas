@@ -25,7 +25,7 @@ import { LicenceTip } from './gate/LicenceTip';
 import { ReaderTalkBar, TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import { sourceLanguage, type SourceLanguage, type Verse } from './data/chapter';
-import { getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
+import { chooseReading, getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
 import { neighbours, verseNeighbours } from './data/neighbours';
 import { passageAt, passageVerse, passagesOf, rangeOf, unitId, type Passage } from './data/passage';
@@ -67,6 +67,7 @@ import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
 import { useReaderVariants, type ShownUnit } from './reader/variants';
 import { VariantSheet } from './reader/VariantSheet';
+import { sharingKeys, unitKey } from './reader/readingSets';
 import { readDraft, talkDraftKey, writeDraft } from './ui/unsentDraft';
 import { askAboutVariant, clearVariantAsked, VARIANT_QUESTION } from './tutor/variantFacts';
 import { useReaderTutor } from './reader/useReaderTutor';
@@ -269,6 +270,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // the variant units Settings > Variants shows (mw-9ji6ek0.5): marked in the text with a brace after them, counted by the chip in the row under the header; the Immersive reader has the marks and braces too (mw-9ji6ek0.12), not the chip
   const variants = useReaderVariants(chapter);
   const variantsOf = useCallback((n: number) => variants.byVerse?.get(n), [variants]);
+  // the reading set in force lays its readings into the text in place, with Variants Off too (src/reader/chosenReading.ts, mw-9ji6ek0.24)
+  const chosenOf = useCallback((n: number) => variants.chosenByVerse.get(n), [variants]);
   // the unit whose brace he tapped: its sheet (src/reader/VariantSheet.tsx, mw-9ji6ek0.6)
   const [variantShown, setVariantShown] = useState<ShownUnit | null>(null);
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
@@ -529,6 +532,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onLook={setLookup}
                       talk={verseTalk}
                       variantsOf={variantsOf}
+                      chosenOf={chosenOf}
                       onVariant={setVariantShown}
                     />
                   ) : (
@@ -545,6 +549,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onLook={setLookup}
                       talk={verseTalk}
                       variants={variantsOf(first.n)}
+                      chosen={chosenOf(first.n)}
                       onVariant={setVariantShown}
                     />
                   )}
@@ -677,6 +682,16 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           verse={chapter?.verses.find((v) => v.n === variantShown.unit.v)}
           onLook={setLookup}
           onClose={() => setVariantShown(null)}
+          onRead={
+            chapter
+              ? (index) => {
+                  // 'Read this': the reading goes into the set in force (Mine, started from a built-in set) and the text is laid again at once (src/data/repositories/readingSets.ts)
+                  const units = chapter.variants ?? [];
+                  void chooseReading(unitKey(chapter, variantShown.unit, units), index, sharingKeys(chapter, variantShown.unit, units));
+                  setVariantShown(null);
+                }
+              : undefined
+          }
           onAsk={
             ai
               ? () => {

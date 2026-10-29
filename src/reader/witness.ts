@@ -18,14 +18,17 @@ export const witnessLine = (code: VariantCode): string => LINES[code];
 /** The lines for the codes of one reading, each once, in the order given. */
 export const witnessLines = (codes: readonly VariantCode[]): string[] => [...new Set(codes.map(witnessLine))];
 
-/** The readings of a unit as the brace sheet lists them (and the tutor is told them): each different Greek once, with the witness lines of every code that reads it. */
-export function readingsOf({ readings }: ShownUnit): { greek: string; english: string; lines: string[] }[] {
-  const out: { key: string; greek: string; english: string; codes: VariantCode[] }[] = [];
+/** The readings of a unit as the brace sheet lists them (and the tutor is told them): each different Greek once, with the witness lines of every code that reads it. `index` is the
+ * first of the unit's alternatives that reads it, `indexes` all of them; `apart` is a reading in pieces, which cannot be laid into the text (Read this). */
+export function readingsOf({ readings }: ShownUnit): { greek: string; english: string; lines: string[]; index: number; indexes: number[]; apart: boolean }[] {
+  const out: { key: string; greek: string; english: string; codes: VariantCode[]; indexes: number[]; apart: boolean }[] = [];
   for (const r of readings) {
     const key = r.greek.normalize('NFC');
     const had = out.find((o) => o.key === key);
-    if (had) had.codes.push(r.code);
-    else out.push({ key, greek: r.greek, english: r.english, codes: [r.code] });
+    if (had) {
+      had.codes.push(r.code);
+      had.indexes.push(r.index);
+    } else out.push({ key, greek: r.greek, english: r.english, codes: [r.code], indexes: [r.index], apart: r.apart === true });
   }
-  return out.map(({ greek, english, codes }) => ({ greek, english, lines: witnessLines(codes) }));
+  return out.map(({ greek, english, codes, indexes, apart }) => ({ greek, english, lines: witnessLines(codes), index: indexes[0], indexes, apart }));
 }

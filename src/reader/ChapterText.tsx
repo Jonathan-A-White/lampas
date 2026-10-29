@@ -12,6 +12,7 @@ import { READING_CLASS, textClass } from './textClass';
 import { VerseNumber, VerseText, type VerseProps, type VerseTalk } from './VerseText';
 import { isOrdered, rowAttrs } from './sourceText';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
+import type { ChosenUnit } from './chosenReading';
 import type { ShownUnit } from './variants';
 
 /** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
@@ -46,7 +47,7 @@ export function VerseLine(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, talk, variantsOf, onVariant }: {
+export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, talk, variantsOf, chosenOf, onVariant }: {
   verses: Verse[];
   view: ReaderView;
   source?: SourceLanguage;
@@ -61,6 +62,8 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
   talk: VerseTalk;
   /** the variant units the Reader shows in verse `n` (src/reader/variants.ts) */
   variantsOf?: (n: number) => readonly ShownUnit[] | undefined;
+  /** the units of verse `n` with a reading laid in place (src/reader/chosenReading.ts) */
+  chosenOf?: (n: number) => readonly ChosenUnit[] | undefined;
   onVariant?: (shown: ShownUnit) => void;
 }) {
   return (
@@ -77,7 +80,7 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
           >
             <sup className="text-xs font-semibold text-muted">{verse.n}</sup>
           </VerseNumber>
-          <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} onVariant={onVariant} />
+          <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} />
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}

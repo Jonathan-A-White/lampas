@@ -1,5 +1,5 @@
 // src/reader/VariantBrace.tsx — the brace after a variant unit's words (mw-9ji6ek0.5): '{the Lord NA ECM}', the other reading(s) of the unit, each once with the small chip
-// of every witness that reads it (src/reader/variants.ts braceReadings), in the Greek of the reading or its English as VerseText says. The brace is a label, not a button
+// of every witness that reads it (src/reader/variants.ts braceReadings; with another reading laid in place in the text, mw-9ji6ek0.24, the brace holds the others and the text's own under RP), in the Greek of the reading or its English as VerseText says. The brace is a label, not a button
 // (mw-9ji6ek0.15): each word of a reading is a Tap like a word of the text and opens the word popup (VerseText's onWord), and the siglum (the chip, B or NA) is the target of
 // the unit's sheet (mw-9ji6ek0.6), a 44 px square of its own that takes its own room in the line, so a finger a few pixels off still lands on it and never on a word beside it.
 import { Fragment, type KeyboardEvent } from 'react';
@@ -9,7 +9,7 @@ import { Tap, TAP_PAD } from './Tap';
 import { braceReadings, type BraceReading, type ShownUnit, type WitnessChip } from './variants';
 
 /** Each chip spelled out, for a screen reader. */
-const SPELLED: Record<WitnessChip, string> = { B: 'Byzantine split', NA: 'Nestle-Aland', ECM: 'ECM' };
+const SPELLED: Record<WitnessChip, string> = { B: 'Byzantine split', NA: 'Nestle-Aland', ECM: 'ECM', RP: 'Robinson-Pierpont text' };
 const LEFT_OUT = 'left out';
 const SAME = 'same';
 /** A no-break space and a word joiner: nothing between the last word of a reading and its sigla, or between a siglum and the closing brace, is a place to break the line (mw-9ji6ek0.16). */
