@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.8
+_2026-10-29_
+- New: Settings now lets you choose a different Logos Bible for the New Testament, the Old Testament and the Apocrypha, and Open in Logos uses the one for that part.
+
 ## 0.7.7
 _2026-10-28_
 - Fixed: a chapter that cannot load now tells you after a few seconds and offers Try again, instead of a black screen, and says so when Lampas is open in another tab.
