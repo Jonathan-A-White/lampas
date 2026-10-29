@@ -12,7 +12,7 @@ export const TAP_PAD = 'py-[calc((var(--lp-tap)-1em)/2)]';
  * space is inside so the gap between two words is tappable too. It has no horizontal padding: the gap between two words is that one space (mw-5r3p30.127). A finger held on it for half a second (`onLongPress`)
  * is a press, not a tap: the click that follows is dropped, and so is one after the finger wandered over 10 px
  * (src/ui/longPress.ts). The word never selects text and never raises the phone's callout menu, so the hold is free for the press. */
-export function Tap({ onTap, onLongPress, still, lang, dir, className, children, glued, ...data }: {
+export function Tap({ onTap, onLongPress, still, lang, dir, className, children, glued, bare, ...data }: {
   /** a tap by touch or mouse gives its click: where on the word the finger was; the keyboard's Enter gives none */
   onTap: (e?: MouseEvent<HTMLElement>) => void;
   onLongPress: () => void;
@@ -34,6 +34,8 @@ export function Tap({ onTap, onLongPress, still, lang, dir, className, children,
   'data-brace-word'?: string;
   /** the word's trailing space is a no-break space: the next thing (a variant's siglum) stays on the word's line (mw-9ji6ek0.16) */
   glued?: boolean;
+  /** no trailing space: the caller draws it, outside the box the word's neighbours share (a variant run's dotted line stops at the word's last letter, mw-9ji6ek0.28) */
+  bare?: boolean;
 }) {
   const press = useLongPress((e) => onTap(e as MouseEvent<HTMLElement>), onLongPress);
   if (still) {
@@ -41,7 +43,8 @@ export function Tap({ onTap, onLongPress, still, lang, dir, className, children,
       <>
         <span lang={lang} dir={dir} {...data} className={className}>
           {children}
-        </span>{' '}
+        </span>
+        {bare ? null : ' '}
       </>
     );
   }
@@ -64,12 +67,13 @@ export function Tap({ onTap, onLongPress, still, lang, dir, className, children,
       className={`cursor-pointer ${NO_SELECT} rounded active:bg-line ${className ?? ''}`}
     >
       {children}
-      {dir ? null : glued ? NBSP : ' '}
+      {dir || bare ? null : glued ? NBSP : ' '}
     </span>
   );
   return dir ? (
     <>
-      {word}{' '}
+      {word}
+      {bare ? null : ' '}
     </>
   ) : (
     word

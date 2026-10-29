@@ -161,25 +161,30 @@ export interface VerseProps {
 const VARIANT_RUN =
   'pb-[0.1em] [background-image:linear-gradient(to_right,var(--color-accent)_50%,transparent_50%)] [background-size:4px_2px] [background-position:left_bottom] bg-repeat-x [box-decoration-break:clone]';
 
-/** One thing drawn in a verse's row; a `run` one is under the variant line (VARIANT_RUN) with its marked neighbours, a brace or any other word ends the run. */
+/** One thing drawn in a verse's row; a `run` one is under the variant line (VARIANT_RUN) with its marked neighbours, a brace or any other word ends the run.
+ * A `run` one is a function of `bare`: the run's last word is drawn without its trailing space, which underRuns puts after the run's span (mw-9ji6ek0.28). */
 interface Drawn {
-  node: ReactNode;
+  node: ReactNode | ((bare: boolean) => ReactNode);
   run?: boolean;
 }
 
-/** The nodes of a row, the consecutive `run` ones wrapped in one span that draws the unit's one dotted line. */
+/** The nodes of a row, the consecutive `run` ones wrapped in one span that draws the unit's one dotted line. The space after the run's last word stands outside the span:
+ * Immersive justifies, a line with a brace stretches its spaces, and a background under that space would be dots on nothing (mw-9ji6ek0.28). */
 function underRuns(items: readonly Drawn[]): ReactNode[] {
   const out: ReactNode[] = [];
-  let run: ReactNode[] = [];
+  let run: Drawn[] = [];
+  const draw = (item: Drawn, bare: boolean): ReactNode => (typeof item.node === 'function' ? item.node(bare) : item.node);
   const close = () => {
-    if (run.length) out.push(<span key={`run${out.length}`} data-variant-run="" className={VARIANT_RUN}>{run}</span>);
+    if (run.length) {
+      out.push(<span key={`run${out.length}`} data-variant-run="" className={VARIANT_RUN}>{run.map((item, k) => draw(item, k === run.length - 1))}</span>, ' ');
+    }
     run = [];
   };
   for (const item of items) {
-    if (item.run) run.push(item.node);
+    if (item.run) run.push(item);
     else {
       close();
-      out.push(item.node);
+      out.push(draw(item, false));
     }
   }
   close();
@@ -279,8 +284,8 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
         ? verse.g.flatMap((w, i): Drawn[] => [
             {
               run: plan.marked.has(i),
-              node: (
-                <Tap key={i} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
+              node: (bare: boolean) => (
+                <Tap key={i} bare={bare} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
                   {w.t}
                 </Tap>
               ),
@@ -299,29 +304,30 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
             const weft = woven?.[i];
             if (weft && weft.words.length > 1) {
               // Two Greek words behind one English chunk ("to you." is ὑμῖν γράφω): the wrapper only holds the chunk's marks, each word is its own target (mw-5r3p30.614).
-              const words = weft.words.map((w, k) => (
-                <Tap key={k} still={still} dir={ownDir} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, ownSpeech)}>
+              const words = (bare: boolean) => weft.words.map((w, k) => (
+                <Tap key={k} bare={bare && k === weft.words.length - 1} still={still} dir={ownDir} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, ownSpeech)}>
                   {w.t}
                 </Tap>
               ));
-              return [...before, { run, node: (
+              return [...before, { run, node: (bare: boolean) => (
                 <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-learning={weft.learning ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${isMarked(c) ? MARKED : ''}`}>
                   {weft.learning ? (
                     <span className="inline-flex flex-col items-center align-top leading-tight">
-                      <span data-greek>{words}</span>
+                      <span data-greek>{words(bare)}</span>
                       <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
                         {c.t}
                       </Tap>
                     </span>
                   ) : (
-                    words
+                    words(bare)
                   )}
                 </span>
               ) }, ...braces];
             }
-            return [...before, { run, node: weft ? (
+            return [...before, { run, node: (bare: boolean) => weft ? (
               <Tap
                 key={i}
+                bare={bare}
                 still={still}
                 data-chunk={String(i)}
                 data-woven=""
@@ -346,7 +352,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 )}
               </Tap>
             ) : (
-              <Tap key={i} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
+              <Tap key={i} bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
                 {c.s ? <SuppliedText chunk={c} /> : c.t}
               </Tap>
             ) }, ...braces];
