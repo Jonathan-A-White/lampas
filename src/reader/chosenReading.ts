@@ -1,6 +1,6 @@
 // src/reader/chosenReading.ts — a reading laid into the text in place (mw-9ji6ek0.24). Pure. The reading set in force (src/reader/readingSets.ts) says which reading of each variant unit he
 // reads; where it is not the text's own, VerseText (src/reader/VerseText.tsx) draws the reading's words in place of the unit's: its tagged Greek words, or its short English in place of the
-// unit's chunks with their edge marks kept, or a small ⸆ where the reading leaves the words out. Read aloud, copy, Read check and the diagram keep the Byzantine words in this wave (the plan's Q6).
+// unit's chunks with their edge marks kept, or a small ⸆ where the reading leaves the words out. Read aloud, Read check and the diagram keep the Byzantine words in this wave (the plan's Q6); Copy with Text 'As you read it' gives the reading as laid (src/reader/variantText.ts, mw-5r3p30.866).
 import type { Chapter, GreekWord, VariantCode, VariantReading, VariantUnit, Verse } from '../data/chapter';
 import { sameInVerse } from '../data/variantVerse';
 import { readingOf, unitKeys, type ReadingSet } from './readingSets';

@@ -36,7 +36,7 @@ With a licence, **Ask the tutor** at the foot opens a talk about the verse: it e
 
 ## Read this, and reading sets
 
-Each reading on the sheet has **Read this**: it lays that reading into the text in place of the text's own, marked with a thin solid line, and the text's own then stands in the brace under the chip **RP**. It is kept on this phone; reading aloud, copying, Read check and the diagram keep the Byzantine words.
+Each reading on the sheet has **Read this**: it lays that reading into the text in place of the text's own, marked with a thin solid line, and the text's own then stands in the brace under the chip **RP**. It is kept on this phone; reading aloud, Read check and the diagram keep the Byzantine words, while Copy, set to As you read it, gives your reading.
 
 What you read is a **reading set**. **Read as**, in the sheet that press and hold opens and in Settings > Reading > Variants, switches the whole text at once: **Byzantine**; **NA** (Nestle-Aland's reading at every place); **ECM** (the *Editio Critica Maior*'s where its apparatus gives it, 18 places in Acts, else NA); **Mine**, which Read this starts from the set you were reading; and sets you name. **Save as…** keeps a copy of the set you are reading under a name; **Rename** and **Delete** change your own sets, never the three built-in ones.
 

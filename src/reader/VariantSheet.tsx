@@ -25,7 +25,7 @@ const LEFT_OUT = 'left out';
 export const READ_THIS = 'Read this';
 export const READING_THIS = 'Reading this';
 /** The one line under the readings that says what Read this does not change in this wave (the plan's Q6). */
-export const READ_THIS_NOTE = 'Read aloud, copy, Read check and the diagram keep the Byzantine words.';
+export const READ_THIS_NOTE = 'Read aloud, Read check and the diagram keep the Byzantine words; Copy, as you read it, gives your reading.';
 
 /** What a tap or a long press on a word of a reading does: the word, the language it is drawn in. */
 interface WordActions {
