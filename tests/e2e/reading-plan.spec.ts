@@ -212,9 +212,9 @@ test('a reader with no Greek activity sees the Today chip alone', async ({ page 
   await expect(page.getByRole('button', { name: /^Due:/ })).toHaveCount(0);
   await expect(page.getByTestId('plan-chip')).toHaveCount(0);
   await expect(page.getByTestId('goal-strip')).toHaveCount(0);
-  // the only other chip a new install can have is the 'New 3' of the chapter's unmet words, which the Reader always showed (src/NewWordsStrip.tsx); Today adds none
+  // the only other chips a new install can have are the 'New 3' of the chapter's unmet words (src/NewWordsStrip.tsx) and the 'Variants, 15 shown' of the places the manuscripts differ (src/reader/VariantChip.tsx, mw-9ji6ek0.5); Today adds none
   const names = await page.getByTestId('reader-chips').getByRole('button').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
-  expect(names.filter((name) => !name?.match(/^New \d+ words$/) && !name?.startsWith('Today'))).toEqual([]);
+  expect(names.filter((name) => !name?.match(/^New \d+ words$/) && !name?.match(/^Variants, \d+ shown$/) && !name?.startsWith('Today'))).toEqual([]);
 });
 
 test('a reader with Greek activity sees the Greek chips and the Today chip, and no Due or Plan chip', async ({ page }) => {
