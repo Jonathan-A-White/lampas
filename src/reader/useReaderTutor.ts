@@ -1,5 +1,5 @@
 // src/reader/useReaderTutor.ts — the Reader's tutor wiring (docs/module-map.md R1b): which Talk sheet is open and what it is about, and every way
-// the Reader asks the tutor: a hold on a verse number or the Talk bar (holdTalk), Help with this word (helpWithWord), a grammar term
+// the Reader asks the tutor: a hold on the Talk bar (holdTalk), Help with this word (helpWithWord), a grammar term
 // (askAboutTerm), the teach sheet's new word (askAboutNewWord) and the Verse view's Quiz me (openQuiz); with the request another screen made
 // (the Quick test's ask), met once as the Reader opens. helpWithWord, askAboutTerm and askAboutNewWord differ only in the question
 // they build: askFrom is the one place that opens the sheet on the verse and sends it.
@@ -45,7 +45,7 @@ export interface ReaderTutor {
   askUnit(unit: Verse, question: string, pictures?: OutgoingPicture[]): void;
   /** the quiz of the unit the Verse view shows has a turn or a message on its way: the button then says Continue */
   quizStarted: boolean;
-  /** a hold begins on the Talk bar or a verse number: the sheet opens about `about` (null: the chapter) */
+  /** a hold begins on the Talk bar: the sheet opens about `about` (null: the chapter) */
   holdTalk(about: number | null): void;
   /** that conversation is waiting for its answer: a press on it only opens the sheet, and listens to nothing */
   talkWaiting(about: number | null): boolean;
@@ -115,7 +115,7 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     say({ title: TITLE, chapter, verse }, request.question, request.focus);
   }, [request, chapter, say, TITLE]);
 
-  // A hold on the Talk bar or a verse number opens the sheet about `about`; the hold itself (voice-kit's bar) listens. A conversation still waiting for its answer
+  // A hold on the Talk bar opens the sheet about `about`; the hold itself (voice-kit's bar) listens. A conversation still waiting for its answer
   // is only shown (talkWaiting: the hold is not begun, the press opens the sheet as a tap does).
   const holdTalk = useCallback((about: number | null) => setTalkAbout(about), [setTalkAbout]);
   const talkWaiting = useCallback(

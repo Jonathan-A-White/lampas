@@ -1,4 +1,4 @@
-// src/talk/useTalkHold.ts — a hold-to-talk of the Talk sheet, the Talk bar, a verse number, Welcome and the letter drill: voice-kit/composer's useTalk with
+// src/talk/useTalkHold.ts — a hold-to-talk of the Talk sheet, the Talk bar, Welcome and the letter drill: voice-kit/composer's useTalk with
 // Lampas's settings (src/talkSettings.ts: Settings > Talk; a bar that is also tapped, with holdDelayMs, stays a hold) and the recogniser Lampas listens with (speech/askTranscriber.ts: the reading is paused while he holds, a Listen
 // goes on by itself when the hold is over, and the words are noted as spoken), so every bar listens through a pause the way Ask the tutor's Composer does.
 // `onWords` is what he said, once he lets go; the words of a hold that ends any other way (a slide off, the phone taking the touch, the recogniser failing, the app
@@ -12,7 +12,7 @@ import { holdBegan, holdEnded } from './holding';
 import { keepWords } from './keptWords';
 import { useTalkSettings } from '../talkSettings';
 
-/** How long a press on something that is also tapped (the Reader's Talk bar, a verse number) lasts before it is a hold: the half second a hold has always been. */
+/** How long a press on something that is also tapped (the Reader's Talk bar) lasts before it is a hold: the half second a hold has always been. */
 export const HOLD_AFTER_MS = 500;
 
 export interface TalkHoldOptions {
@@ -65,7 +65,7 @@ export function useTalkHold(onWords: (text: string) => void, { onBegin, onKept =
     }),
     [failed],
   );
-  // a bar that is also tapped (the Reader's Talk bar, a verse number: holdDelayMs) stays a hold whatever Talk says: Tap would begin listening at the first touch, and its tap already means something else
+  // a bar that is also tapped (the Reader's Talk bar: holdDelayMs) stays a hold whatever Talk says: Tap would begin listening at the first touch, and its tap already means something else
   const settings = useTalkSettings();
   const talk = useTalk(holdDelayMs === undefined ? settings : { ...settings, talk: 'hold' }, {
     transcriber,

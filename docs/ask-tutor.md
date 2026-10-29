@@ -261,7 +261,7 @@ His words (Postern general, 2026-10-28): "I feel like send to the makers you sho
 
 | Surface | Files and camera | Voice | Typing | A request to the makers |
 |---|---|---|---|---|
-| Talk sheet (`TalkSheet`, `src/Talk.tsx`: the Reader's Talk bar and verse numbers, the round Ask the tutor button of any other screen (`AskTutor.tsx`, `DialogAskTutor` of the drills), Welcome, Share to Lampas' `ShareTalk`) | yes: Attach a picture, Take a photo, paste | yes: Hold to talk (Tap and By button as Settings > Talk) | yes: Type a message | the tutor's offer, taken by a tap or a yes (mw-5r3p30.844) |
+| Talk sheet (`TalkSheet`, `src/Talk.tsx`: the Reader's Talk bar, the round Ask the tutor button of any other screen (`AskTutor.tsx`, `DialogAskTutor` of the drills), Welcome, Share to Lampas' `ShareTalk`) | yes: Attach a picture, Take a photo, paste | yes: Hold to talk (Tap and By button as Settings > Talk) | yes: Type a message | the tutor's offer, taken by a tap or a yes (mw-5r3p30.844) |
 | Verse view's Ask (`AskComposer`, `src/Ask.tsx`) | yes: they go with the question to the Talk tutor | yes: Hold to ask | yes: Type a question | the Talk tutor's offer, as the Talk sheet (the question goes to the bible-talk grind, mw-5r3p30.842) |
 | Word help (the word sheet's Grammar, Sound it out, Ask the tutor; `useReaderTutor.ts` helpWithWord / askAboutTerm) | opens the Talk sheet: as the Talk sheet | as the Talk sheet | as the Talk sheet | as the Talk sheet |
 | Drill and quiz results (`QuizScreen` Ask the tutor, Drill it, the Plan drill, the Parsing drill's link) | open the Talk sheet (or the Verse view's Ask with the question in the field): as that surface | same | same | same |

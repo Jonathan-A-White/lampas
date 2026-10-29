@@ -2,7 +2,7 @@
 // chapter or the selected verse. The sheet shows the turns so far (kept per chapter and per verse, src/data/repositories/talks.ts),
 // and, last at the foot, voice-kit's Composer (Postern's compose button, as in Ask the tutor: Hold to talk, Type a message, Attach a picture, Take a photo, mw-06ggew.15);
 // what a message is doing is src/useTalk.ts's. He can talk instead of typing: the Composer's own bar, or (src/talk/useTalkHold.ts over voice-kit's TalkBar) the Talk bar held
-// for half a second or a verse number held; his words show live while he holds and go on release. Each answer can be heard (read aloud through
+// for half a second; his words show live while he holds and go on release. Each answer can be heard (read aloud through
 // src/speech/readAloud.ts, a Stop while it plays) and its Greek words open the word sheet.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
@@ -566,7 +566,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   talkRef: string;
   /** what the last message of this conversation is doing; undefined when it is done */
   state: AskState | undefined;
-  /** the hold that opened the sheet (the Reader's Talk bar or a verse number): its words show live too, and what went wrong with it */
+  /** the hold that opened the sheet (the Reader's Talk bar): its words show live too, and what went wrong with it */
   opened?: TalkHold;
   /** questions fitted to where he asks from (src/tutor/screen.ts): shown as buttons while nothing has been said, a tap sends one */
   suggestions?: string[];
@@ -628,7 +628,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   }, []);
   useEscapeToClose(onClose, lookup === null && linkedWord === null);
   useSheetBack(onClose);
-  // the hold that opened the sheet (the Talk bar, a verse number) is drawn here; the sheet's own hold is the Composer's, which draws its own words and notice
+  // the hold that opened the sheet (the Talk bar) is drawn here; the sheet's own hold is the Composer's, which draws its own words and notice
   const live = opened?.listening ? opened : undefined;
   const notice = opened?.notice;
   const talkSettings = useTalkSettings();
