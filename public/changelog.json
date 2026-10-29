@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.26",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.866",
+    "kind": "fixed",
+    "text": "Copy \"As you read it\" now includes the variant readings the Reader shows next to the words, instead of copying the plain verse."
+  },
+  {
     "version": "0.7.25",
     "date": "2026-10-29",
     "story": "mw-lcv9z3g.2",

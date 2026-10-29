@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.26
+_2026-10-29_
+- Fixed: Copy "As you read it" now includes the variant readings the Reader shows next to the words, instead of copying the plain verse.
+
 ## 0.7.25
 _2026-10-29_
 - New: Settings now has "Keep on this phone", which lets you keep the New Testament or the whole Bible on your phone so it reads with no signal, and shows how far it has got.
