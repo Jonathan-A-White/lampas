@@ -302,6 +302,7 @@ describe('the build lays the overlay on the chapters', () => {
         rawDir: raw,
         outDir: join(base, 'out'),
         overlayFile,
+        untaggedFile: join(base, 'untagged.txt'),
         log: (line) => log.push(line),
         variantsSha256: apparatusSha,
         rp2026Sha256: sha([zip]),
