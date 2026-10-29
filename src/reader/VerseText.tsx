@@ -145,7 +145,7 @@ interface Placement {
 
 /** Where each brace of a verse stands and which words or chunks are marked (VerseText): in the Greek view after the unit's last word; in the English and the weave after
  * the last drawn chunk that holds a word of the unit (or, where the MSB gives the unit's words no English, after the chunk of the word before them, or at the start), in
- * the language the unit's chunks take: Greek when every one is woven, else English. A unit a reading leaves out, whose words have no chunk, marks the chunk of the word before them.
+ * the language the unit's chunks take: Greek when every one is woven, else English. A unit whose words have no chunk (a reading leaves them out or changes them) marks the chunk of the word before them.
  * A reading laid in place (mw-9ji6ek0.24) is not marked dotted: `inPlace` are the words or chunks of the text that stay and carry the solid line (the MSB's English when the reading's is the
  * same), `dropped` the ones its words replace, `replace` the reading drawn instead of the last of them, `tail` and `startPut` a reading drawn where the unit has no chunk of its own. */
 interface VariantPlan {
@@ -202,8 +202,8 @@ function planVariants(verse: Verse, view: ReaderView, woven: WovenVerse | null, 
     if (before === undefined) start.push({ shown, language: 'english' });
     else {
       const chunk = held.get(before) as number;
-      // the words are folded into the English of the word before them ('was reigning in' holds ἐπὶ): when a reading leaves them out, that chunk is the one to dot (mw-9ji6ek0.30)
-      if (!isChosen && shown.readings.some((r) => r.greek === '')) marked.add(chunk);
+      // the words are folded into the English of the word before them ('was reigning in' holds ἐπὶ, 'I hope' holds δὲ): whether a reading leaves them out or changes them, that chunk is the one to dot (mw-9ji6ek0.30, .35)
+      if (!isChosen) marked.add(chunk);
       put(chunk, { shown, language: 'english' });
     }
   }

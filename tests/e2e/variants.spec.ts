@@ -634,3 +634,32 @@ test('Matthew 2:22 dots the English the left-out ἐπὶ is folded into, and th
   await expect(sheet.locator('[data-variant-reading]').nth(1)).not.toHaveText(/^Other reading\s*left out\s*left out$/);
   await shot(page, 'variants-omission-sheet');
 });
+
+// A unit whose reading changes the words marks the text when the English folds them into a neighbour (mw-9ji6ek0.35): 1 Corinthians 16:7 'I hope {for NA} to spend some time', where
+// NA reads γὰρ for δὲ and the MSB gives δὲ no chunk of its own ('I hope' holds ἐλπίζω). The chunk is dotted, the brace follows it, and the NA siglum opens a sheet that names γὰρ.
+test('1 Corinthians 16:7 dots the English the changed δὲ is folded into, and the NA siglum opens a sheet that names γὰρ', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=1co&c=16');
+  await expect(page.locator('[data-verse="7"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'English').click();
+  await expect(choice(page, 'English')).toHaveAttribute('aria-pressed', 'true');
+
+  const verse = page.locator('[data-verse="7"]');
+  const brace = verse.locator('[data-brace]').first();
+  await expect(brace).toBeVisible();
+  const run = verse.locator('[data-variant-run]', { hasText: /I hope/ });
+  await expect(run).toHaveText(/I hope\s*$/);
+  await expect(run.locator('[data-variant]')).not.toHaveCount(0);
+  const dotted = await run.evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(dotted).toContain('linear-gradient');
+  expect(await run.evaluate((el) => el.nextElementSibling?.matches('[data-brace]'))).toBe(true);
+  await verse.scrollIntoViewIfNeeded();
+
+  await brace.locator('[data-witness]').first().click();
+  const sheet = page.getByRole('dialog', { name: 'Variant reading' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet).toContainText('γὰρ');
+  await shot(page, 'variants-folded-sheet');
+});
