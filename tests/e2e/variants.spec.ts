@@ -209,6 +209,83 @@ test('the Immersive reader marks the variant words and draws the braces; a brace
   }
 });
 
+// The dotted line stops at the last marked letter (mw-9ji6ek0.28): Immersive justifies its text, so the space after "strengthen" of Revelation 3:2, before the unit's brace, is stretched,
+// and it used to be inside the run's span and so under the dots. The test finds the last letter of each run and reads the pixels of the dotted row from there to the next thing in the
+// line: no dot (a pixel of the accent) in the space. Shot: shots/variants-immersive-justified.png (verse 2, the line magnified: the phone at twice the pixels).
+test.describe('the dotted line under a variant run ends at its last letter in a justified line', () => {
+  test.use({ deviceScaleFactor: 2 });
+
+  test('3:2 in Immersive English: no dots in the stretched space before the brace', async ({ page }) => {
+    await openUnlocked(page);
+    await page.goto('/#/?b=rev&c=3');
+    await expect(page.locator('[data-verse="2"] [data-text]')).toBeVisible();
+    await keep(page, { immersiveReader: 'on', immersiveHint: 'off', variants: 'english', variantWitnesses: 'na' });
+    await page.reload();
+    await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'on');
+    await expect(page.locator('[data-verse="2"] [data-variant-run]').first()).toBeVisible();
+    await expect(page.locator('[data-verse="2"] [data-brace]').first()).toBeVisible();
+    expect(await page.locator('[data-verse="2"] [data-text]').evaluate((el) => getComputedStyle(el).textAlign)).toBe('justify');
+
+    // each run's last fragment: where its box ends, where its last letter ends, and the room to the next thing on the line
+    const runs = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-verse="2"] [data-variant-run]')].map((run) => {
+        const walker = document.createTreeWalker(run, NodeFilter.SHOW_TEXT);
+        let last: Text | null = null;
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) if (n.textContent?.trim()) last = n as Text;
+        const text = last!.textContent ?? '';
+        const range = document.createRange();
+        range.setStart(last!, text.trimEnd().length - 1);
+        range.setEnd(last!, text.trimEnd().length);
+        const letter = range.getBoundingClientRect();
+        const boxes = [...run.getClientRects()];
+        const box = boxes[boxes.length - 1];
+        const next = run.nextElementSibling?.getBoundingClientRect();
+        const sameLine = next !== undefined && Math.abs(next.top - box.top) < box.height;
+        return { text: run.textContent ?? '', letterRight: letter.right, boxRight: box.right, boxBottom: box.bottom, nextLeft: sameLine ? next.left : letter.right + 12 };
+      }),
+    );
+    expect(runs.length).toBeGreaterThan(0);
+
+    const colour = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--color-accent)';
+      document.body.append(probe);
+      const accent = getComputedStyle(probe).color;
+      probe.remove();
+      return { accent, background: getComputedStyle(document.body).backgroundColor };
+    });
+    const clear = await page.addStyleTag({ content: '[data-text] * { color: transparent !important; }' });
+    for (const r of runs) {
+      expect(r.boxRight, `the box of "${r.text}" ends ${(r.boxRight - r.letterRight).toFixed(1)} px past its last letter`).toBeLessThanOrEqual(r.letterRight + 1.5);
+      const width = Math.max(r.nextLeft - r.letterRight - 1.5, 1);
+      const picture = await page.screenshot({ clip: { x: r.letterRight + 1.5, y: r.boxBottom - 6, width, height: 6 } });
+      const dots = await page.evaluate(
+        async ({ data, accent, background }) => {
+          const rgb = (c: string) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+          const [a, b] = [rgb(accent), rgb(background)];
+          const dist = (p: number[], q: number[]) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+          const img = new Image();
+          img.src = `data:image/png;base64,${data}`;
+          await img.decode();
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0);
+          const pixels = ctx.getImageData(0, 0, img.width, img.height).data;
+          let count = 0;
+          for (let i = 0; i < pixels.length; i += 4) if (dist([pixels[i], pixels[i + 1], pixels[i + 2]], a) < dist(a, b) / 2) count++;
+          return count;
+        },
+        { data: picture.toString('base64'), ...colour },
+      );
+      expect(dots, `dots of the accent in the ${width.toFixed(1)} px after "${r.text}"`).toBe(0);
+    }
+    await clear.evaluate((el) => (el as Element).remove());
+    await shot(page, 'variants-immersive-justified');
+  });
+});
+
 // One even dotted line under a unit (mw-9ji6ek0.13): "for being alive," of 3:1 is the chunks "for " and "being alive, ", and each used to start its own dot pattern, so the dots crowded
 // into a short dash where the two meet. The test reads the line's pixels: along the row of the dots, every dot (a run of the accent) is as long as the others and so is every
 // gap, across the join. Shots: shots/variants-dots-<view>-<light|dark>.png (verse 1, the line magnified: the phone at twice the pixels).
