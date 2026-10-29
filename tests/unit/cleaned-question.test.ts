@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const readJson = (rel: string): Schema & { required: string[]; properties: Record<string, Schema & { description: string; maxLength: number }> } =>
   JSON.parse(readFileSync(rel, 'utf8')) as never;

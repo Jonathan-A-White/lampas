@@ -6,6 +6,7 @@ import { getDay, markOpened } from '../../src/data/daily/dailyStore';
 import { SEND_A_SCREENSHOT, suggestionsFor } from '../../src/tutor/screen';
 import { openedTitles, todayFacts } from '../../src/today/tutorFacts';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 beforeEach(async () => {
   await db.settings.clear();

@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { usesBeyondRe2 } from '../support/grind-examples';
+import '../support/grinds-in-graph';
 
 const patternOf = (example: string, field: string): string => {
   const json = JSON.parse(readFileSync(`grinds/examples/bible-talk/${example}.json`, 'utf8')) as { expect: Record<string, { matches?: string }> };

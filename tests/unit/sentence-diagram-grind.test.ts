@@ -11,6 +11,7 @@ import { validateDiagram } from '../../src/diagram/validate';
 import { checkExpect, type GrindExample } from '../support/grind-examples';
 import { loadFixture } from '../support/diagram-fixtures';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const read = <T,>(file: string): T => JSON.parse(readFileSync(file, 'utf8')) as T;
 const answerSchema = read<Schema>('grinds/sentence-diagram.answer.schema.json');

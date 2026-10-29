@@ -17,6 +17,7 @@ import { takeTodayOffer, todayOfferOf } from '../../src/talk/todayOffer';
 import { TODAY_BUTTON } from '../../src/talk/todayOffer';
 import type { TalkTurn } from '../../src/data/repositories';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 const NOW = new Date(2026, 9, 22, 9, 0, 0);

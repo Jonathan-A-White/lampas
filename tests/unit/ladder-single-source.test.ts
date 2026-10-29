@@ -9,6 +9,7 @@ import { HEBREW_TEACH } from '../../src/data/grammar/hebrew/teach';
 import { belowIn, depthIn, frontierIn, ideaIn, makePath, needsIn, pathProblems, type PathIdea } from '../../src/data/grammar/pathGraph';
 import { teachOf } from '../../src/data/grammar/teach';
 import { AUDIT_DOC, GRAMMAR_DOC, ladderProblems, withAuditTable, withGrammarTable, type LadderSources } from '../../scripts/ladder-docs-text';
+import '../support/grinds-in-graph';
 
 const SCHEMAS = ['grinds/bible-talk.answer.schema.json'];
 

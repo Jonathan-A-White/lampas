@@ -17,6 +17,7 @@ import { buildTalkRequest, fitHistory, isTalkAnswer, type TalkAnswer, type TalkS
 import { rustyOfferOf } from '../../src/talk/rustyOffer';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 const NOW = Date.UTC(2026, 9, 12, 12, 0, 0);

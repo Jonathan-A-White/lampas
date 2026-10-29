@@ -6,6 +6,7 @@ import type { Chapter } from '../../src/data/chapter';
 import { buildDiagramRequest } from '../../src/diagram/request';
 import { validate, type Schema } from '../support/schema-validate';
 import { loadFixture } from '../support/diagram-fixtures';
+import '../support/grinds-in-graph';
 
 const col3 = JSON.parse(readFileSync('public/data/col/3.json', 'utf8')) as Chapter;
 const verse = (n: number) => col3.verses.find((v) => v.n === n)!;

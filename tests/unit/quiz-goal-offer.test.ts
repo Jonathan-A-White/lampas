@@ -6,6 +6,7 @@ import { quizGoalOfferOf } from '../../src/talk/quizGoalOffer';
 import { isTalkAnswer } from '../../src/services/talk';
 import { validate } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 describe('the instructions on his quiz goal', () => {
   const all = instructionsOf('bible-talk');

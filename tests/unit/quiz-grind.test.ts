@@ -7,6 +7,7 @@ import { passageVerse, passagesOf } from '../../src/data/passage';
 import { MAX_REQUEST_BYTES, buildTalkRequest, scopeTitle } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const text = instructionsOf('bible-talk');
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema & { properties: Record<string, { enum?: string[]; description?: string }> };

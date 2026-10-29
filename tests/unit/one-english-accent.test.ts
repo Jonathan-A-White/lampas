@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ACCENTS } from '../../src/speech/accents';
 import { keyWordsIn } from '../support/sound-rules-scan';
+import '../support/grinds-in-graph';
 
 const scanned = (): string[] =>
   execSync('git ls-files src grinds', { encoding: 'utf8' })

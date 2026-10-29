@@ -9,6 +9,7 @@ import type { MissWorthAStory } from '../../src/services/feedback';
 import { isWeightsAnswer, NIGHT_HOUR, tuneTheWeights, type WeightsAnswer, type WeightsRequest } from '../../src/tutor/weightsRun';
 import { validate, type Schema } from '../support/schema-validate';
 import { readFileSync } from 'node:fs';
+import '../support/grinds-in-graph';
 
 const fact = (name: string, core = false): Fact => ({ name, tell: `the ${name}`, core: core || undefined, read: async () => ({ [name]: 'read' }) });
 const registry = defineRegistry({ facts: [fact('where-he-is', true), fact('today-drill', true), fact('settings', true), fact('rusty-words'), fact('progress'), fact('works')] });

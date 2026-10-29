@@ -2,6 +2,7 @@
 // resource of his can open. The instructions are read by the mill, not by this app, so a grep proves the rule is stated, in every place that speaks of links.
 import { describe, expect, it } from 'vitest';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const text = instructionsOf('bible-talk');
 

@@ -7,6 +7,7 @@ import { bookNameOf, listReferences } from '../../src/nav/refsInText';
 import { buildFindRefsRequest, checkedReferences, failedLine, FAILED_LINE, FIND_REFS_KIND, isFindRefsAnswer, settledRefs } from '../../src/share/findRefs';
 import { OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError } from '../../src/services/tutor';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 

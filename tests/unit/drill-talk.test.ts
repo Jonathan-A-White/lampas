@@ -11,6 +11,7 @@ import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory, scopeRef, type TalkSco
 import { DRILL_ANSWER_MAX, MAX_DRILL_ANSWERS, fitScreen } from '../../src/tutor/screen';
 import { drillScreen, drillSuggestions, type DrillTry } from '../../src/tutor/drillTalk';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const questions = drillSteps('diphthong-au', { seed: 1 }).flatMap((s) => s.questions);
 const wrongOption = (right: string, options: string[]): string => options.find((o) => o !== right)!;

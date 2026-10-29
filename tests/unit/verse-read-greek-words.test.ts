@@ -8,6 +8,7 @@ import { buildReadingRequest } from '../../src/services/reading';
 import { MAX_REQUEST_BYTES } from '../../src/services/requestBudget';
 import { DEFAULT_PRONUNCIATION } from '../../src/speech/pronunciation';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const thess = JSON.parse(readFileSync('public/data/1th/5.json', 'utf8')) as Chapter;
 const verse19 = thess.verses.find((v) => v.n === 19);

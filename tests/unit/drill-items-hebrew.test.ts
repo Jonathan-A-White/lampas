@@ -10,6 +10,7 @@ import { ideaOfAny, ladderFor } from '../../src/data/grammar/ladders';
 import { MAX_REQUEST_BYTES } from '../../src/services/requestBudget';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const readJson = (rel: string): unknown => JSON.parse(readFileSync(rel, 'utf8'));
 const inputSchema = readJson('grinds/drill-items.input.schema.json') as Schema;

@@ -6,6 +6,7 @@ import { type Chapter, type EnglishChunk, englishRuns, markSupplied } from '../.
 import { buildTalkRequest } from '../../src/services/talk';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { GREEK_BOOKS, isGreekBook } from '../support/data-books';
+import '../support/grinds-in-graph';
 
 const load = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;
 const hebrews7 = load('heb/7');

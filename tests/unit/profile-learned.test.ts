@@ -15,6 +15,7 @@ import {
 } from '../../src/data/repositories/profile';
 import { isTalkAnswer } from '../../src/services/talk';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

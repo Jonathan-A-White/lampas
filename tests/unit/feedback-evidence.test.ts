@@ -7,6 +7,7 @@ import { db, type RecallRow } from '../../src/data/db';
 import { EVIDENCE_BYTES, EVIDENCE_RECALLS, evidenceSummary, memorizeEvidence, memorizingEvidenceNow } from '../../src/memorize/evidence';
 import { buildMoreRequest } from '../../src/services/feedback';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const input = JSON.parse(readFileSync('grinds/feedback.input.schema.json', 'utf8')) as Schema;
 const DAY = 86_400_000;

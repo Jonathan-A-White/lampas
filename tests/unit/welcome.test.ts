@@ -12,6 +12,7 @@ import { WELCOME_OPENING, WELCOME_REF, getWelcome, isExistingReader, setWelcome,
 import { buildTalkRequest, isTalkAnswer, scopeRef } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const text = instructionsOf('bible-talk');
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema & { properties: Record<string, { enum?: string[] }> };

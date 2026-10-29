@@ -13,6 +13,7 @@ import { isTalkable } from '../../src/settings/rows';
 import { buildTipRequest } from '../../src/tips/tip';
 import { BEARS_ON, GRINDS, PROGRESS, TUTOR_KNOWS, type GrindKind } from '../../src/tutor/knows';
 import type { Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

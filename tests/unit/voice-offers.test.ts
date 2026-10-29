@@ -11,6 +11,7 @@ import { offeredChange } from '../../src/settings/registry';
 import { offerOfTurn, pendingOfferOf, settleOffer } from '../../src/talk/offers';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

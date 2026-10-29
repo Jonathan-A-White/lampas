@@ -3,6 +3,7 @@
 // asked about, so the model took it as an English-word question. A Greek word asked about by meaning carries its `words` entry at any dial.
 import { describe, expect, it } from 'vitest';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 describe('the bible-talk instructions for a Greek word asked about at the dial 0 or 1', () => {
   const instructions = instructionsOf('bible-talk');

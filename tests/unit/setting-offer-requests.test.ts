@@ -7,6 +7,7 @@ import { NO_CHAPTER } from '../../src/data/chapter';
 import { bibleTalkRegistry, changeSettings } from '../../src/tutor/registry';
 import { addTurn, listTurns } from '../../src/data/repositories';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const instructions = instructionsOf('bible-talk');
 

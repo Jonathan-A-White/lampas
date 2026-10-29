@@ -22,6 +22,7 @@ import { TUTOR_KNOWS } from '../../src/tutor/knows';
 import { startSpeechSettingsSync } from '../../src/speech/settingsSync';
 import type { Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const modern = pronunciationOf('modern');
 

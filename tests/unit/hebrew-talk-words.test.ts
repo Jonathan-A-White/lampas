@@ -7,6 +7,7 @@ import { hebrewPointedForm } from '../../src/speech/hebrewPronunciation';
 import { MAX_REQUEST_BYTES } from '../../src/services/requestBudget';
 import { buildTalkRequest, fitHistory } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const jonah = JSON.parse(readFileSync('public/data/jon/1.json', 'utf8')) as Chapter;
 const verse10 = jonah.verses.find((v) => v.n === 10);

@@ -13,6 +13,7 @@ import { MAX_TALK_CHARS, buildTalkRequest, fitHistory, isTalkAnswer } from '../.
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { longQuestion } from '../support/long-text';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse = chapter.verses[27];

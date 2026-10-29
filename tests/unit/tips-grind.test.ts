@@ -7,6 +7,7 @@ import { SCREENS, FEATURES, summarize } from '../../src/tips/summary';
 import { isTipAnswer } from '../../src/tips/tip';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const readJson = (rel: string): Record<string, unknown> => JSON.parse(readFileSync(rel, 'utf8')) as Record<string, unknown>;
 const grind = readJson('grinds/tips.json');

@@ -20,6 +20,7 @@ import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '
 import { longQuestion } from '../../tests/support/long-text';
 import { seedHisWords } from '../../tests/support/his-words';
 import { validate, type Schema } from '../../tests/support/schema-validate';
+import '../../tests/support/grinds-in-graph';
 
 afterAll(() => {
   cleanup();

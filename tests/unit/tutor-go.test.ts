@@ -7,6 +7,7 @@ import { readGo, readTarget } from '../../src/talk/go';
 import { bibleTalkRegistry, chapterOf } from '../../src/tutor/registry';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
 const instructions = instructionsOf('bible-talk');

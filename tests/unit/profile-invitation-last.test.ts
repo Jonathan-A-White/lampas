@@ -2,6 +2,7 @@
 // invitation to say or try (1 run in 97). The profile cues sat mid-paragraph and nothing said WHERE the invitation goes, so on a long answer it was dropped.
 import { describe, expect, it } from 'vitest';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 describe.each(['bible-talk'] as const)('the %s instructions for a hearing or doing learner', (kind) => {
   const instructions = instructionsOf(kind);

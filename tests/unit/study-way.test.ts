@@ -15,6 +15,7 @@ import {
 import { MAX_REQUEST_BYTES, buildTalkRequest, isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

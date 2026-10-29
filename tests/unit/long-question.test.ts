@@ -6,6 +6,7 @@ import { MAX_QUESTION_CHARS } from '../../src/services/requestBudget';
 import { MAX_TALK_CHARS } from '../../src/services/talk';
 import { MAX_QUESTION_CHARS as ASK_MAX } from '../../src/services/tutor';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const schemaOf = (kind: string): Schema => JSON.parse(readFileSync(`grinds/${kind}.input.schema.json`, 'utf8')) as Schema;
 

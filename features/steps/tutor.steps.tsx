@@ -20,6 +20,7 @@ import { expectKeepsItShort, expectLearnerField, expectTeachesNewWord, instructi
 import { stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import '../../tests/support/grinds-in-graph';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);

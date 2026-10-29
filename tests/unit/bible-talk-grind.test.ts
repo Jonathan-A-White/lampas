@@ -18,6 +18,7 @@ import { KIT_END, instructionParts, instructionsOf, withKitFragment, withKitPart
 import '../../grinds/bible-talk.json';
 import '../../grinds/bible-talk.answer.schema.json';
 import '../../grinds/bible-talk.input.schema.json';
+import '../support/grinds-in-graph';
 import.meta.glob('../../grinds/bible-talk.instructions/*.md', { eager: true, import: 'default' });
 import.meta.glob('../../grinds/examples/bible-talk/*.json', { eager: true, import: 'default' });
 

@@ -8,6 +8,7 @@ import { getQuizGoal, QUIZ_GOAL_MAX, setQuizGoal } from '../../src/data/reposito
 import { applyChanges } from '../../src/settings/registry';
 import { buildTalkRequest, isTalkAnswer, MAX_REQUEST_BYTES } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 afterAll(() => db.close());
 beforeEach(async () => {

@@ -3,6 +3,7 @@
 // welcome's "view"). A word he asked about is offered as `word`, with its lemma, at every dial.
 import { describe, expect, it } from 'vitest';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 
 describe('the bible-talk instructions for the offer at Just English when he asks about a Greek word', () => {
   const instructions = instructionsOf('bible-talk');
