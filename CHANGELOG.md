@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.12
+_2026-10-29_
+- New: Every word of a variant reading, in the text and on the variant's sheet, opens its word card like any other word.
+
 ## 0.7.11
 _2026-10-29_
 - Fixed: The Preface now says plainly which Greek text Lampas reads and no longer describes how the app works.
