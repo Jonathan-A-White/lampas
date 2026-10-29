@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.25
+_2026-10-29_
+- New: Settings now has "Keep on this phone", which lets you keep the New Testament or the whole Bible on your phone so it reads with no signal, and shows how far it has got.
+
 ## 0.7.23
 _2026-10-29_
 - Fixed: in Acts 18:17 and 72 other places where the critical text leaves words out, the English no longer shows a word where the Greek says "left out", a tap on it opens the explanation, and the Bible's own wording is labelled as the MSB's.
