@@ -56,6 +56,7 @@ function setup(behave: (url: string, call: number) => Promise<void> | void = () 
 
 const deps = (s: Setup) => ({ caches: s.caches, fetcher: s.fetcher, events: s.events, isOnline: () => true });
 
+const timeout = ASYNC_WAIT_MS;
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 beforeEach(async () => {
@@ -159,7 +160,7 @@ describe('runOfflineCopy', () => {
         }),
     );
     const run = runOfflineCopy('nt', deps(s));
-    await vi.waitFor(() => expect(s.calls).toHaveLength(3), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(() => expect(s.calls).toHaveLength(3), { timeout });
     s.events.dispatchEvent(new Event('offline'));
     expect(offlineProgress().paused).toBe(true);
     held.splice(0).forEach((release) => release());
