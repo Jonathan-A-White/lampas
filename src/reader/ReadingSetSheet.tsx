@@ -7,6 +7,7 @@ import { useState, type FormEvent } from 'react';
 import { deleteSet, getActiveSet, listReadingSets, renameSet, saveSetAs, setActive } from '../data/repositories';
 import { Chips } from '../ui/Chips';
 import { focusOnMount } from '../ui/focus';
+import { LimitedInput } from '../ui/LimitedField';
 import { isBuiltIn } from './readingSets';
 
 /** What ECM is, said where it is chosen: the apparatus gives ECM readings only in Acts. */
@@ -30,7 +31,7 @@ function NameForm({ label, initial, onSave, onCancel }: { label: string; initial
       <label htmlFor="reading-set-name" className="block pb-1 text-base font-medium">
         {label}
       </label>
-      <input
+      <LimitedInput
         id="reading-set-name"
         ref={focusOnMount}
         type="text"
