@@ -1,31 +1,28 @@
 // src/preface.ts — what the Preface page says (mw-5r3p30.125): a few plain paragraphs about the text Lampas reads, and the sources it
 // links to. It holds only what we chose (the Greek and Hebrew texts, the English, the sources); what the app does is Help's (src/help.ts, mw-5r3p30.823).
+// The rule, and what a test holds: docs/PREFACE.md.
 // Every address here was fetched and answered 200 before it went in (the story's closing comment lists each one).
 
 /**
- * Which edition the Greek follows, and how we know (docs/greek-edition.md, made by `npm run greek:edition`, mw-5r3p30.136): the
- * table's Greek was compared word by word with both editions, and a test holds this line to that file's verdict.
+ * Which Greek Lampas shows (docs/greek-edition.md, made by `npm run greek:edition`, mw-5r3p30.136): the table's Greek was compared word by word with
+ * both editions, and a test holds this line to that file's verdict. The 2026 changes are data/rp2026-overlay.json (mw-9ji6ek0.2): laid on the Greek,
+ * or already read so in the 2005 edition. docs/PREFACE.md: this page holds the text, never the app.
  */
 export const PREFACE_EDITION_LINE =
-  'The Majority Standard Bible’s table does not say which edition its Greek is, so we compared it word by word with both. It is the 2005 edition: where the 2018 edition, which Robinson recommends in its place, changes a word (a few accents and capitals), the Greek in Lampas has the 2005 reading. Both editions are public domain.';
+  'The Majority Standard Bible’s table does not say which edition its Greek is, so we compared it word by word with both. It is the 2005 edition: where the 2018 edition, which Robinson recommends in its place, changes a word’s accents or capitals, the Greek in Lampas has the 2005 reading, so the 2018 changes are not applied. Over the 2005 Greek we lay the 2026 changes, the few places where the Robinson-Pierpont 2026 text words a verse differently from 2018: Matthew 26:29, Philemon 1:1 and Revelation 13:14 read the 2026 way, and Romans 13:9 and Revelation 11:16 already did in 2005. Both editions are public domain.';
 
-/** Where the variant readings come from (docs/greek-edition.md, mw-9ji6ek0.4): the apparatus laid on the Greek, and the 2026 text's changes to the 2018 wording. */
+/** Where the variant readings come from (docs/greek-edition.md, mw-9ji6ek0.4): the 2018 edition's apparatus, laid on the Greek. */
 export const PREFACE_VARIANTS_LINE =
-  'The variant readings Lampas can show beside the Greek are those of the Robinson-Pierpont 2018 edition with its apparatus, and the 2026 changes, where the Robinson-Pierpont 2026 text words a place differently, are applied; the list of them is linked below. Five short lessons on variant readings, written for Lampas from public-domain sources, are in the app and read offline; the first time you turn variants on, a card offers them. Each variant’s sheet has a Go deeper section: the lessons, the apparatus file of its book, the 2005 edition’s scan and, from your Logos library, the Greek texts at the verse. The tutor explains a variant when you ask and does not rule on which reading is right.';
+  'The variant readings that can be shown beside the Greek are those of the Robinson-Pierpont 2018 edition with its apparatus, which records where the Byzantine manuscripts divide and where the Nestle-Aland text and the Editio Critica Maior read otherwise.';
 
-/** What an Old Testament chapter offers (mw-gdcyf98.22): the Hebrew view and its switch, and the drills; the Diagram is still Greek and English only. A test holds this line to the Reader's behaviour. */
-export const PREFACE_OLD_TESTAMENT_LINE =
-  'An Old Testament chapter opens in the Reader in English or, from Curious on the Hebrew dial, in its Hebrew, with a switch between the two; Quiz me, Review and the Quick test ask its Hebrew words and ideas as they ask the Greek. The sentence Diagram is still Greek and English only.';
-
-/** The paragraphs, in the app's voice: what the text is and who stands behind it, not an argument. */
+/** The paragraphs: what the text is and who stands behind it, not an argument. Nothing of the app (docs/PREFACE.md; tests/unit/preface-rule.test.ts). */
 export const PREFACE_PARAGRAPHS: string[] = [
   'The Greek you read in Lampas is the Byzantine Textform, edited by Maurice A. Robinson and William G. Pierpont and published in 2005 as The New Testament in the Original Greek. It is the form of the text found in the large majority of surviving Greek manuscripts, so it is often called the Majority text.',
   PREFACE_EDITION_LINE,
   PREFACE_VARIANTS_LINE,
-  'Robinson makes the case that this form of the text goes back to the earliest centuries and should be read as the original line of transmission, not as a late revision. Other scholars, who give most weight to the oldest manuscripts, read the evidence differently, and most modern Bibles follow them. Lampas does not settle that question. It tells you which text it uses and points you to the people who wrote about it. Robinson’s essay, The Case for Byzantine Priority, is here to read in the app, as it is printed in the appendix of the 2005 edition, and the older article it grew from is linked beneath it.',
+  'Robinson makes the case that this form of the text goes back to the earliest centuries and should be read as the original line of transmission, not as a late revision. Other scholars, who give most weight to the oldest manuscripts, read the evidence differently, and most modern Bibles follow them. Lampas does not settle that question. It tells you which text it uses and points you to the people who wrote about it. Robinson’s essay, The Case for Byzantine Priority, is carried here as it is printed in the appendix of the 2005 edition, and the older article it grew from is linked beneath it.',
   'The English beside the Greek is the Majority Standard Bible, whose New Testament is translated from the same Robinson and Pierpont text. Its footnotes note where the modern critical texts read differently. The Robinson and Pierpont text and the Majority Standard Bible are both public domain.',
   'The Old Testament is read in the English of the Majority Standard Bible, which there is the Berean Standard Bible, and in the pointed Hebrew and Aramaic of the Westminster Leningrad Codex, word-aligned to it. Both are public domain. The gloss and definition of a Hebrew word are from the STEPBible lexicon.',
-  PREFACE_OLD_TESTAMENT_LINE,
 ];
 
 export interface PrefaceLink {
@@ -59,7 +56,7 @@ export const ESSAY_RELEASE =
 export const PREFACE_LINKS: PrefaceLink[] = [
   {
     name: 'Maurice A. Robinson, The Case for Byzantine Priority',
-    about: 'His essay on why he holds the Byzantine form of the text to be the original line, as printed in the appendix of the 2005 edition, to read here in the app.',
+    about: 'His essay on why he holds the Byzantine form of the text to be the original line, as printed in the appendix of the 2005 edition; a copy is carried here.',
     url: ESSAY_ORIGINAL.url,
     copy: 'essay',
   },
@@ -75,12 +72,12 @@ export const PREFACE_LINKS: PrefaceLink[] = [
   },
   {
     name: 'The 2018 edition and both texts, on GitHub',
-    about: 'Robinson’s files as the byztxt project keeps them (public domain): the 2018 text and its apparatus of variant readings, which Lampas’s chapter files carry, and the release closest to the 2005 text that we compared the Greek with.',
+    about: 'Robinson’s files as the byztxt project keeps them (public domain): the 2018 text and its apparatus of variant readings, which Lampas carries, and the release closest to the 2005 text that we compared the Greek with.',
     url: 'https://github.com/byztxt/byzantine-majority-text',
   },
   {
     name: 'The 2026 changes to the Greek, listed',
-    about: 'Each place where the Robinson-Pierpont 2026 text changes the 2018 wording, and how the app lays it on the Greek.',
+    about: 'Each place where the Robinson-Pierpont 2026 text changes the 2018 wording, and how it is laid on the Greek.',
     url: 'https://github.com/Jonathan-A-White/lampas/blob/main/docs/greek-edition.md',
   },
   {

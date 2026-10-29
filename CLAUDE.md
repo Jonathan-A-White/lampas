@@ -124,6 +124,7 @@ docs/layout/data.md # Layout: Dexie and its versions, the repositories, books, c
 docs/layout/licence.md # Layout: the licence gate, the one gated mill client, the device key
 docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another approach, Ask for more and feedback
 docs/overview.md # the one-screen overview: read first
+docs/PREFACE.md # the Preface rule: the texts, not the app
 docs/accessibility.md # the axe check over the eight main screens, what a screen must meet, the rules left out and why
 docs/commands.md # the long notes of the Quick reference: Playwright projects, e2e:live, grind:build, the data tools
 docs/grinds.md # grinds' examples and the bible-talk / verse-ask instruction parts: how to change one
@@ -155,10 +156,10 @@ docs/best-practices-audit.md # the 2026-10-10 audit of Lampas against the PWA be
 docs/demo-free-ai-licensed.md # free to read, a licence unlocks the AI (mw-8m9dyu.4)
 docs/demo-lampas-share.md # share or paste a screenshot into a tutor talk (mw-y3qno5.3)
 docs/demo-module-splits.md # the Reader and Settings splits
-docs/demo-shared-composer.md # Postern's composer shared with Lampas (mw-jtzpw0.6)
-docs/demo-shared-speech.md # one read-aloud bar in Postern, Lampas and SpellForge (mw-m7v5kc.5)
+docs/demo-shared-composer.md # Postern composer shared with Lampas (mw-jtzpw0.6)
+docs/demo-shared-speech.md # one read-aloud bar in Postern, Lampas, SpellForge (mw-m7v5kc.5)
 docs/demo-reading-plan.md # the listening plan in the Bible view (mw-umv8sp.6)
-docs/demo-english-first-memory.md # English first, the welcome, the Greek offer, Memory notes
+docs/demo-english-first-memory.md # English first, the welcome, Greek offer, Memory
 docs/demo-library-at-scale.md # the Logos library at scale, Import to Your requests
 docs/research/audible-addon-seek.md # an add-on that seeks his Audible Bible to the passage
 docs/research/greek-speech-libraries.md # open-source libraries for Greek sound

@@ -53,5 +53,8 @@ Every sound comes from one pronunciation scheme, so another (Erasmian) plugs in 
 - TalkBack, and braille through TalkBack, are first-class ways to use it.
 - Greek, fonts and size serve the reader and never shrink the type; any font offered is chosen with care and keeps a reverent tone.
 
+## The Preface
+The Preface is only about the text: the Greek and Hebrew we read, the English beside them and the sources, with why we chose them. What the app does belongs to Help. The rule is docs/PREFACE.md; a test holds it.
+
 ## How feedback is weighed
 Feedback that fits this vision is approved and built elegantly; where people differ, a setting; anything crossing a line or changing the vision goes to the Governor.
