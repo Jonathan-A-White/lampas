@@ -1,7 +1,7 @@
 // tests/unit/match-export.test.ts — src/library/matchExport.ts and reasons.ts (mw-rfjjzd.6, docs/design/library-at-scale.md 5.2 and 5.4): a row of his Logos list matches by Resource ID,
 // by a series rule or by a type rule, its covers are read from ReferenceSupersets, and every row left over carries the key of a reason the table can say in words.
 import { existsSync, readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { isListed, matchExport } from '../../src/library/matchExport';
 import { coversOfSupersets, readExport, type ExportRow } from '../../src/library/parseExport';
 import { lineText, reasonLines, reasonOf, REASONS } from '../../src/library/reasons';
@@ -127,7 +127,12 @@ describe('the reasons', () => {
 });
 
 describe.skipIf(!existsSync(VAULT_EXPORT))('matchExport on his whole export (mw-vb8krt)', () => {
-  const { matched, unmatched } = matchExport(readExport(readFileSync(VAULT_EXPORT, 'utf8')));
+  // Read in beforeAll, not in the describe body: vitest runs a body at collection even when skipIf skips its tests, so a host without the CSV would fail the whole file.
+  let matched: ReturnType<typeof matchExport>['matched'] = [];
+  let unmatched: ReturnType<typeof matchExport>['unmatched'] = [];
+  beforeAll(() => {
+    ({ matched, unmatched } = matchExport(readExport(readFileSync(VAULT_EXPORT, 'utf8'))));
+  });
 
   it('opens every book of the catalogue and lists them all: nothing waits for an update', () => {
     expect(matched).toHaveLength(CATALOGUE.length);
