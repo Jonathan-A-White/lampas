@@ -38,6 +38,9 @@ noteVisit();
 startBookRequests();
 
 // The phone is placed on the Greek and Hebrew dials (a new reader at both 0, a reader from before by what he has, once) before the first render, so nothing Greek or Hebrew flashes up first.
+// The wait is bounded (mw-5r3p30.862): a Dexie open that hangs (blocked by another tab, a slow phone) kept his splash up for ~20 s with nothing to say why. After FIRST_PAINT_MS the app
+// renders anyway; placeInterest is not cancelled, so it still places the dials when it ends, and the screens read them live.
+const FIRST_PAINT_MS = 2000;
 const render = (): void =>
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -50,7 +53,15 @@ const render = (): void =>
       </ErrorBoundary>
     </StrictMode>,
   );
-placeInterest().then(render, render);
+let painted = false;
+const paint = (): void => {
+  if (painted) return;
+  painted = true;
+  clearTimeout(paintLate);
+  render();
+};
+const paintLate = setTimeout(paint, FIRST_PAINT_MS);
+placeInterest().then(paint, paint);
 
 // vite.config.ts: registerType 'prompt', so a new build waits for his tap on the banner. The registration
 // goes to the update logic, which shows the banner, sends SKIP_WAITING on the tap, reloads once, and
