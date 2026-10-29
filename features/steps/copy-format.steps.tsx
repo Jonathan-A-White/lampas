@@ -300,14 +300,19 @@ describeFeature(feature, ({ Scenario }) => {
     expect(copied).toEqual([]);
   };
 
-  Scenario('Where the tutor is offered a hold on a verse number still talks about the verse', ({ Given, When, Then }) => {
+  Scenario('Where the tutor is offered a hold on a verse number copies the verse and does not talk', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with When you copy at its defaults', defaults);
     When('he holds the number of verse {int}', async (_, n: number) => {
       await holdOn(numberOf(n));
+      await waitCopied();
     });
-    Then('the Talk sheet is open and nothing was copied', async () => {
-      expect(await screen.findByRole('dialog', { name: /^Talk about Romans 8:11/ })).toBeInTheDocument();
-      expect(copied).toEqual([]);
+    Then("the phone's clipboard holds the English of verse 11, then the line {string}, then the link of Romans 8:11", (_, reference: string) => {
+      expect(clip()).toBe(`${english(11)}\n${reference}\n${referenceUrl('rom', 8, 11)}`);
+    });
+    And('the Reader says {string}', readerSays);
+    And('no Talk sheet is open and the phone is not listening', () => {
+      expect(screen.queryByRole('dialog', { name: /^Talk about/ })).toBeNull();
+      expect(screen.queryByText(/^Listening…/)).toBeNull();
     });
   });
 

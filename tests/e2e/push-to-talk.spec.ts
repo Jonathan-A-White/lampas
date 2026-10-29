@@ -63,7 +63,7 @@ test('holding Talk shows his words live in the sheet and sends them on release',
   await expect(live).toHaveCount(0);
 });
 
-test('a long press on a verse number talks about that verse, and a tap on it opens its Verse view', async ({ page }) => {
+test('a tap on a verse number opens its Verse view, and a hold on it does not talk (it copies, tests/e2e/copy-hold.spec.ts)', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
@@ -79,16 +79,4 @@ test('a long press on a verse number talks about that verse, and a tap on it ope
   await page.getByRole('button', { name: '‹ Reader' }).click();
   await expect(number).toHaveAttribute('aria-pressed', 'false');
   await expect(page.getByRole('dialog')).toHaveCount(0);
-
-  const box = await number.boundingBox();
-  if (!box) throw new Error('no verse number');
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-  await expect(sheet.locator('[data-talk-live]')).toBeVisible();
-  await expect(sheet.locator('[data-talk-live]')).toContainText(SAID);
-  await page.mouse.up();
-  await expect(sheet.locator('[data-turn]')).toContainText(TALK_ANSWER.answer);
-  expect(fake.received[0].input.reference).toBe('Romans 8:28');
-  await expect(number).toHaveAttribute('aria-pressed', 'false');
 });

@@ -1,4 +1,4 @@
-// features/steps/push-to-talk.steps.tsx — runs features/push-to-talk.feature: hold the Talk button (or a verse number) and
+// features/steps/push-to-talk.steps.tsx — runs features/push-to-talk.feature: hold the Talk button and
 // speak, his words live in the sheet, sent on release. The phone's recogniser is a fake (tests/support/fake-recognizer.ts),
 // Postern a fake (tests/support/fake-postern.ts), the press is user-event pointer input held for real time (the half
 // second is the app's), speech synthesis the honest fake where a scenario reads aloud.
@@ -65,7 +65,6 @@ async function open(options: { recogniser?: boolean; speaks?: boolean; android?:
 }
 
 const talkButton = () => screen.getByRole('button', { name: 'Talk', exact: true });
-const verseNumber = (n: number) => screen.getByRole('button', { name: `Verse ${n}`, exact: true });
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 /** The sheet's bar by whatever it says: voice-kit's bar is named by its words (Hold to talk, Starting the mic…, Release to send, Let go to keep it unsent). */
 const holdInSheet = () => within(sheet()).getByRole('button', { name: /^(Hold to talk|Starting the mic…|Release to send|Let go to keep it unsent)$/ });
@@ -145,20 +144,6 @@ describeFeature(feature, ({ Scenario }) => {
     And('the sheet shows the answer under his question', async () => {
       await waitFor(() => expect(turns()).toHaveLength(1));
       expect(turns()[0]).toHaveTextContent(TALK_ANSWER.answer);
-    });
-  });
-
-  Scenario('Long-pressing verse 28 and speaking sends a turn about 8:28', ({ Given, When, Then, And }) => {
-    Given(withRecogniser, () => open());
-    When('he long-presses the number of verse {int}', (_, n: number) => hold(verseNumber(n)));
-    Then('the Talk sheet is open, titled {string}, and the phone is listening', (_, title: string) => expectOpenAndListening(title, true)());
-    When('he says {string}', (_, words: string) => says(words));
-    And('he lets go of the number of verse {int}', (_, n: number) => letGo(verseNumber(n)));
-    Then(mill, millSteps);
-    And('the first grist carries the reference {string} and the question {string}', grist);
-    And('the first grist is marked as spoken', spokenGrist);
-    And('verse {int} was not selected by the press', (_, n: number) => {
-      expect(verseNumber(n)).toHaveAttribute('aria-pressed', 'false');
     });
   });
 

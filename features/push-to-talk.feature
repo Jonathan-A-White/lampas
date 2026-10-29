@@ -1,6 +1,6 @@
 Feature: Push-to-talk
   He can talk to the Bible talk instead of typing, the way Postern's Talk line works: hold the Talk button at the
-  bottom of the reader (or a verse number) for half a second, say the question, and let go. His words appear in the
+  bottom of the reader for half a second, say the question, and let go. His words appear in the
   sheet while he holds and go as the turn on release. A tap under half a second only opens the sheet. Sliding the
   finger away drops what he said. Reading aloud stops when he presses. The sheet's foot is voice-kit's Composer, Postern's compose button as in Ask the tutor (mw-06ggew.15): the big hold-to-talk bar
   with Type a message, Attach a picture and Take a photo beneath it, and the Talk button at the bottom of the reader is the same bar. The phone's recogniser is faked here (tests/support/fake-recognizer.ts); how a phone really hears is
@@ -17,17 +17,6 @@ Feature: Push-to-talk
     And the first grist carries the reference "Romans 8" and the question "What is this chapter about"
     And the first grist is marked as spoken
     And the sheet shows the answer under his question
-
-  Scenario: Long-pressing verse 28 and speaking sends a turn about 8:28
-    Given Lampas is opened on Romans 8 with a talk behind a fake Postern and a recogniser
-    When he long-presses the number of verse 28
-    Then the Talk sheet is open, titled "Talk about Romans 8:28", and the phone is listening
-    When he says "Why does Paul say all things"
-    And he lets go of the number of verse 28
-    Then the mill received 1 grists for the lampas app, kind bible-talk
-    And the first grist carries the reference "Romans 8:28" and the question "Why does Paul say all things"
-    And the first grist is marked as spoken
-    And verse 28 was not selected by the press
 
   Scenario: A tap under 500 ms only opens the sheet
     Given Lampas is opened on Romans 8 with a talk behind a fake Postern and a recogniser

@@ -90,7 +90,7 @@ import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
 import { ChapterActions } from './reader/ChapterActions';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
-import { VerseText, type VerseTalk } from './reader/VerseText';
+import { VerseText } from './reader/VerseText';
 import { isHolding } from './talk/holding';
 
 const NO_SETTINGS: Partial<ReaderSettings> = {};
@@ -234,11 +234,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation, undefined, chapter);
   // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
   const openTalkRef = useRef<string | null>(null);
-  // Push-to-talk (voice-kit's TalkBar through src/talk/useTalkHold.ts): what he says goes as the turn of the conversation the sheet is open on. `onBar` is the Talk bar and a verse
-  // number (a press under half a second is a tap there); the sheet's own hold is the Composer's (src/Talk.tsx), which sends through the sheet's onSay.
+  // Push-to-talk (voice-kit's TalkBar through src/talk/useTalkHold.ts): what he says goes as the turn of the conversation the sheet is open on. `onBar` is the Talk bar
+  // (a press under half a second is a tap there); the sheet's own hold is the Composer's (src/Talk.tsx), which sends through the sheet's onSay.
   const sayAbout = useRef<(message: string) => void>(() => {});
   const send = useCallback((message: string) => sayAbout.current(message), []);
-  // what the finger that began a hold on the Talk bar or a verse number is on: the sheet opens on it as the hold begins
+  // what the finger that began a hold on the Talk bar is on: the sheet opens on it as the hold begins
   const [holdAbout, setHoldAbout] = useState<number | null>(null);
   const holdTalkRef = useRef<(about: number | null) => void>(() => {});
   const onBar = useTalkHold(send, { holdDelayMs: HOLD_AFTER_MS, onBegin: () => holdTalkRef.current(holdAbout) });
@@ -314,7 +314,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     holdTalkRef.current = holdTalk;
   });
-  // The handlers of a press on the Talk bar (about = the selected verse) or on a verse number: a press longer than the hold's delay is the hold of the kit's bar, which opens
+  // The handlers of a press on the Talk bar (about = the selected verse): a press longer than the hold's delay is the hold of the kit's bar, which opens
   // the sheet on `about` as it begins; one that is let go sooner is the tap. A conversation still waiting for its answer is not listened to: the press only opens the sheet.
   const pressOn = (about: number | null): BarHandlers => ({
     ...onBar.bar,
@@ -362,7 +362,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     else if (box && el) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
   }, [paging, showPage]);
   const closeTeach = useCallback(() => setTeaching(false), []);
-  const verseTalk: VerseTalk = { handlers: pressOn, listening: onBar.listening };
   // what the Verse view shows and reads: what the Reader shows, in a Hebrew chapter's view and weave as in a Greek one's (mw-gdcyf98.4)
   const sheetView: ReaderView | undefined = view;
   const sheetWoven = woven;
@@ -530,7 +529,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onCopy={copyHold.verse}
                       onPlay={(n) => readFrom(n, false)}
                       onLook={setLookup}
-                      talk={verseTalk}
                       variantsOf={variantsOf}
                       chosenOf={chosenOf}
                       onVariant={setVariantShown}
@@ -547,7 +545,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       onCopy={() => copyHold.verse(first.n)}
                       onPlay={() => readFrom(first.n, false)}
                       onLook={setLookup}
-                      talk={verseTalk}
                       variants={variantsOf(first.n)}
                       chosen={chosenOf(first.n)}
                       onVariant={setVariantShown}

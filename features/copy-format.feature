@@ -94,10 +94,12 @@ Feature: When you copy
     Then the phone's clipboard starts with "Εἰ οὖν συνηγέρθητε τῷ χριστῷ τὰ ἄνω ζητεῖτε"
     And the Reader says "Copied Colossians 3:1"
 
-  Scenario: Where the tutor is offered a hold on a verse number still talks about the verse
+  Scenario: Where the tutor is offered a hold on a verse number copies the verse and does not talk
     Given Lampas is opened on Romans 8 with When you copy at its defaults
     When he holds the number of verse 11
-    Then the Talk sheet is open and nothing was copied
+    Then the phone's clipboard holds the English of verse 11, then the line "— Romans 8:11 (MSB)", then the link of Romans 8:11
+    And the Reader says "Copied Romans 8:11"
+    And no Talk sheet is open and the phone is not listening
 
   Scenario: A tap on a verse number still opens the Verse view
     Given Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults

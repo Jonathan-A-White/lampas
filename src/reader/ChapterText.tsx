@@ -9,7 +9,7 @@ import { blocksOf, type ReadingLayout } from '../layout/layouts';
 import { VersePlay } from '../speech/ReadControls';
 import type { Lookup } from '../WordSheet';
 import { READING_CLASS, textClass } from './textClass';
-import { VerseNumber, VerseText, type VerseProps, type VerseTalk } from './VerseText';
+import { VerseNumber, VerseText, type VerseProps } from './VerseText';
 import { isOrdered, rowAttrs } from './sourceText';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { ChosenUnit } from './chosenReading';
@@ -17,7 +17,7 @@ import type { ShownUnit } from './variants';
 
 /** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
 export function VerseLine(props: VerseProps) {
-  const { verse, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, talk } = props;
+  const { verse, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay } = props;
   // an Old Testament chapter's rows run right to left in the Hebrew view and in a weave laid out in the Hebrew order; the number and the play button follow the row's direction
   const row = rowAttrs(view, source, isOrdered([woven]));
   return (
@@ -33,7 +33,6 @@ export function VerseLine(props: VerseProps) {
         selected={selected}
         onSelect={onSelect}
         onCopy={onCopy}
-        talk={talk}
         className="inline-block min-h-(--lp-tap) min-w-(--lp-tap) pe-1 text-start align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted"
       >
         {verse.n}
@@ -47,7 +46,7 @@ export function VerseLine(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, talk, variantsOf, chosenOf, onVariant }: {
+export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, variantsOf, chosenOf, onVariant }: {
   verses: Verse[];
   view: ReaderView;
   source?: SourceLanguage;
@@ -59,7 +58,6 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
   onCopy?: (n: number) => void;
   onPlay: (n: number) => void;
   onLook: (lookup: Lookup) => void;
-  talk: VerseTalk;
   /** the variant units the Reader shows in verse `n` (src/reader/variants.ts) */
   variantsOf?: (n: number) => readonly ShownUnit[] | undefined;
   /** the units of verse `n` with a reading laid in place (src/reader/chosenReading.ts) */
@@ -75,7 +73,6 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
             selected={selected === verse.n}
             onSelect={() => onSelect(verse.n)}
             onCopy={onCopy ? () => onCopy(verse.n) : undefined}
-            talk={talk}
             className="-mx-3 inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)"
           >
             <sup className="text-xs font-semibold text-muted">{verse.n}</sup>

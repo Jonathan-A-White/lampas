@@ -1,10 +1,8 @@
 // src/reader/VerseText.tsx — how one verse's words are drawn (moved as is from src/Reader.tsx, module map R1a).
-import type { BarHandlers } from 'voice-kit/composer';
-import { Fragment, useEffect, useRef, type MouseEvent, type ReactNode } from 'react';
+import { Fragment, type MouseEvent, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
-import { useAiAllowed } from '../gate/licenceContext';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
@@ -36,92 +34,22 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
   );
 }
 
-/** What a held verse number does: the handlers of voice-kit's bar for a press on verse `n` (src/Reader.tsx pressOn) open the talk about that verse as the hold begins, listen, send on release and drop on a slide-away. */
-export interface VerseTalk {
-  handlers: (n: number) => BarHandlers;
-  /** a hold of the kit's bar is going on */
-  listening: boolean;
-}
-
-/** The button with a verse's number: a tap selects the verse, a hold (half a second) talks about it. Where the tutor is not offered (no licence) the hold copies the verse
- * instead, at once (`onCopy`, src/copy/useCopyHold.ts: useLongPress, the app's one hold). */
-export function VerseNumber({ n, selected, onSelect, onCopy, talk, className, children }: {
+/** The button with a verse's number: a tap selects the verse (it opens its Verse view), a hold (half a second) copies the verse at once, licence or not, as a hold on a section heading
+ * or the place line copies its passage or the chapter (`onCopy`, src/copy/useCopyHold.ts: useLongPress, the app's one hold). Talking about the verse is one tap away in the Verse view;
+ * the Talk bar's own hold is the hold-to-talk (mw-5r3p30.835). */
+export function VerseNumber({ n, selected, onSelect, onCopy, className, children }: {
   n: number;
   selected: boolean;
   onSelect: () => void;
   onCopy?: () => void;
-  talk: VerseTalk;
   className: string;
   children: ReactNode;
 }) {
-  // Holding the number talks to the tutor: with no licence it is a plain button that selects (mw-8m9dyu.2).
-  const ai = useAiAllowed();
-  const listening = useRef(false);
-  useEffect(() => {
-    listening.current = talk.listening;
-  });
-  // the click that ends a hold is not a tap: the flag is cleared as a press begins, set as its hold has begun by the time the finger lifts
-  const held = useRef(false);
-  const guard = useRef<(() => void) | null>(null);
-  useEffect(() => () => guard.current?.(), []);
-  const handlers = ai ? talk.handlers(n) : null;
   const press = useLongPress(onSelect, () => onCopy?.());
-  const copying = !ai && onCopy !== undefined;
   return (
     <button
       type="button"
-      {...(handlers ?? {})}
-      onPointerDown={
-        copying
-          ? press.onPointerDown
-          : handlers
-          ? (e) => {
-              held.current = false;
-              // the page does not scroll under a finger that holds (React's touchmove is passive: a listener of our own, on while he presses)
-              guard.current?.();
-              const el = e.currentTarget;
-              const keepStill = (event: TouchEvent): void => {
-                if (listening.current && event.cancelable) event.preventDefault();
-              };
-              el.addEventListener('touchmove', keepStill, { passive: false });
-              guard.current = () => {
-                el.removeEventListener('touchmove', keepStill);
-                guard.current = null;
-              };
-              handlers.onPointerDown(e);
-            }
-          : undefined
-      }
-      {...(copying ? { onPointerMove: press.onPointerMove, onContextMenu: press.onContextMenu } : {})}
-      onPointerUp={
-        copying
-          ? press.onPointerUp
-          : handlers
-          ? () => {
-              if (listening.current) held.current = true;
-              guard.current?.();
-              handlers.onPointerUp();
-            }
-          : undefined
-      }
-      onPointerCancel={
-        copying
-          ? press.onPointerCancel
-          : handlers
-          ? () => {
-              guard.current?.();
-              handlers.onPointerCancel();
-            }
-          : undefined
-      }
-      onClick={
-        copying
-          ? press.onClick
-          : () => {
-              if (held.current) held.current = false;
-              else onSelect();
-            }
-      }
+      {...press}
       data-verse-number
       aria-label={`Verse ${n}`}
       aria-pressed={selected}
@@ -143,11 +71,10 @@ export interface VerseProps {
   /** this verse is the one being read aloud */
   reading: boolean;
   onSelect: () => void;
-  /** a hold on the verse's number with no tutor to talk to copies the verse */
+  /** a hold on the verse's number copies the verse */
   onCopy?: () => void;
   onPlay: () => void;
   onLook: (lookup: Lookup) => void;
-  talk: VerseTalk;
   /** the variant units of this verse the Reader shows (src/reader/variants.ts): their words are marked and a brace after them holds the other readings; absent, none */
   variants?: readonly ShownUnit[];
   /** a tap on a unit's brace */

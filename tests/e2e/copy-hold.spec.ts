@@ -1,11 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { holdFor } from '../support/hold';
+import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
-import { openUnlicensed, openUnlocked } from './unlocked';
+import { openUnlocked } from './unlocked';
 
 // A long press on a verse number, a section heading or the place line copies the verse, its passage or the chapter at once (mw-9txn0x1.2), in the 'When you copy' format,
 // and says 'Copied Colossians 3:1' for a moment; the text is never selected and the phone's callout menu never rises. A phone-width claim: 390x844, with touch.
-// A verse number's hold is the tutor's (hold to talk) on a licensed phone, so the number is held on a phone with no licence.
+// A verse number's hold copies the verse on a licensed phone too (mw-5r3p30.835): only the Talk bar's hold is hold-to-talk.
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 test.beforeEach(async ({ page, context }) => {
@@ -37,8 +38,9 @@ async function keep(page: Page, values: Record<string, string>) {
   );
 }
 
-test('a hold on a verse number copies the verse, says so for a moment and selects nothing', async ({ page }) => {
-  await openUnlicensed(page);
+test('a hold on a verse number copies the verse, says so for a moment, selects nothing, and opens no Talk sheet and listens to nothing', async ({ page }) => {
+  await honestMic(page);
+  await openUnlocked(page);
   await page.goto('/#/?b=col&c=3');
   await expect(page.getByRole('heading', { name: 'Colossians 3', level: 1 })).toBeVisible();
   const number = page.locator('[data-verse="1"] [data-verse-number]');
@@ -52,13 +54,15 @@ test('a hold on a verse number copies the verse, says so for a moment and select
   expect(text.split('\n').at(-1)).toBe('https://lampas.allmymind.org/#/?ref=Col.3.1');
   expect(await selection(page)).toBe('');
   await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: /^Talk about/ })).toHaveCount(0);
+  expect(await page.evaluate(() => (window as unknown as { __bsvKitTesting: { mic: { recognitions: unknown[] } } }).__bsvKitTesting.mic.recognitions.length)).toBe(0);
   await shot(page, 'copy-hold');
   await page.clock.runFor(2600);
   await expect(page.getByRole('status').filter({ hasText: 'Copied Colossians 3:1' })).toHaveCount(0);
 });
 
 test('a tap on the number still opens the Verse view and copies nothing', async ({ page }) => {
-  await openUnlicensed(page);
+  await openUnlocked(page);
   await page.goto('/#/?b=col&c=3');
   await expect(page.getByRole('heading', { name: 'Colossians 3', level: 1 })).toBeVisible();
   await page.evaluate(() => navigator.clipboard.writeText('left alone'));
