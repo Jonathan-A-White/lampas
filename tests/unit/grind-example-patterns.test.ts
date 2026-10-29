@@ -39,7 +39,28 @@ const NOT_HA_PASS = [
 const REACHES_SMYRNA_FAIL = ['Revelation 2:1-3', 'Revelation 3:1', 'Revelation 3:1-6', 'Revelation 2:4-7', 'Revelation 2:4', 'Revelation 2:12-17', 'John 2:8-11', 'Revelation 12:8-11'];
 const REACHES_SMYRNA_PASS = ['Revelation 2:8-11', 'Revelation 2:4-11', 'Revelation 2:8', 'Revelation 2:9-11', 'Revelation 2:4-17', 'Revelation 2:1-11', 'Revelation 2:7-12'];
 
+// mw-5r3p30.858: the request holds Revelation 2:1-3; the answer may name that range any way a reader would, and must name it (not Smyrna's 2:8-11).
+const NAMES_HELD_RANGE_PASS = [
+  'I hold Revelation 2:1 to 3, which is the letter to Ephesus, so Smyrna\'s letter is outside it.',
+  'I hold verses 2:1 to 3 here, so Smyrna (Revelation 2:8-11) is outside them.',
+  'I hold verses 1 to 3 of Revelation 2 here, and Smyrna comes in Revelation 2:8-11.',
+  'I hold Revelation 2:1-3 only.',
+  'I hold Revelation 2:1\u20133 only.',
+  'I hold verses 1-3 only.',
+  'I hold verses 1 through 3 only.',
+  'I hold 2:1 through 3 only.',
+  'I only hold the first three verses of the chapter.',
+];
+const NAMES_HELD_RANGE_FAIL = [
+  'Smyrna is Revelation 2:8-11.',
+  'I hold verse 1 only, so I am going by memory.',
+  'The text stops at verse 1; Smyrna is in verses 8 to 11.',
+  'See Revelation 2:11-13.',
+  '',
+];
+
 describe.each([
+  ['verse-outside-the-held-range', 'answer', NAMES_HELD_RANGE_FAIL, NAMES_HELD_RANGE_PASS],
   ['fetch-where-the-talk-heads', 'fetch.0', REACHES_SMYRNA_FAIL, REACHES_SMYRNA_PASS],
   ['sound-it-out-british', 'answer', NOT_AW_FAIL, NOT_AW_PASS],
   ['sound-it-out-tauta', 'answer', NOT_AW_FAIL, NOT_AW_PASS],
