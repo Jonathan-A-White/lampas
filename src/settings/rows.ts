@@ -168,7 +168,7 @@ const PART_ROWS: readonly SettingsRow[] = [
 const READING_SET_ROW: SettingsRow = {
   key: 'readingSet',
   label: 'Read as',
-  hint: 'Which reading of each place the Reader lays in the text: Byzantine, Nestle-Aland, ECM, or a set of your own.',
+  hint: 'Which reading the Reader lays in each place: Byzantine, NA, ECM or a set of your own.',
   help: 'Byzantine reads the text as it stands. NA reads Nestle-Aland where the apparatus gives it, and ECM the Editio Critica Maior where it gives that (18 places in Acts), else NA. Read this on a variant sheet starts Mine from the set you read; Save as… keeps a copy of the set you read under a name, to switch back to, and Rename and Delete change one of yours. The built-in sets never change.',
   section: 'variants',
 };
