@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.23
+_2026-10-29_
+- Fixed: in Acts 18:17 and 72 other places where the critical text leaves words out, the English no longer shows a word where the Greek says "left out", a tap on it opens the explanation, and the Bible's own wording is labelled as the MSB's.
+
 ## 0.7.22
 _2026-10-29_
 - New: A setting, English from the 2026 Greek, shows Lampas's own English over the Bible's where the newest Greek text changes the meaning, marked RP 2026, with a tap for the Bible's words, the Greek and where each comes from.
