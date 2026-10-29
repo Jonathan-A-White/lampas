@@ -7,4 +7,4 @@ From an Old Testament chapter `hebrew` takes the place of `greek`: the verses `v
 - Answer a word from its entry; invent no form, root or parsing.
 - A Hebrew word you speak about goes in `words` with `language` `he`: `greek` its pointed form, `lemma` the headword.
 - Write Hebrew at the depth `settings.hebrewDepth` says. To say a word, work from `form` by `hebrew_pronunciation_guide` (Modern Israeli unless he chose another), never `translit`; a tap speaks it, so no sound lecture.
-- `solid_words` holds words of both languages (a Hebrew one is in Hebrew letters) and `learner`'s `Hebrew:` part is his Hebrew progress: pitch the answer by them, and say he knows a Hebrew word only if it is there.
+- `solid_words` holds both languages' words (Hebrew ones in Hebrew letters) and `learner`'s `Hebrew:` part is his Hebrew progress: pitch by them; say he knows a Hebrew word only if listed.
