@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.14
+_2026-10-29_
+- Fixed: When he asks the tutor about a verse beyond the part of the chapter it is holding, the tutor now says first which verses it has in front of it.
+
 ## 0.7.13
 _2026-10-29_
 - Fixed: a variant that leaves words out now dots the English where those words belong, and its sheet says which word is left out.

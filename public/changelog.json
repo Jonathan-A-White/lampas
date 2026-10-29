@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.14",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.853",
+    "kind": "fixed",
+    "text": "When he asks the tutor about a verse beyond the part of the chapter it is holding, the tutor now says first which verses it has in front of it."
+  },
+  {
     "version": "0.7.13",
     "date": "2026-10-29",
     "story": "mw-9ji6ek0.30",
