@@ -44,3 +44,21 @@ Feature: Variants in Settings (mw-9ji6ek0.4)
     Given Settings is open at Reading with Variants set to "all"
     When he chooses "Off" in the group "Variants"
     Then there is no Witnesses row
+
+  # mw-9ji6ek0.19: the offer of the lessons on variant readings, and the way back to them
+  Scenario: Settings offers the lessons whatever Variants is, On to start, with a row that opens them
+    Given Settings is open at Reading with nothing chosen
+    Then Offer the lessons offers "On" and "Off" with "On" chosen
+    And there is a row "Lessons on variant readings" that opens the lessons
+
+  Scenario: Offer the lessons survives a reload
+    Given Settings is open at Reading with nothing chosen
+    When he chooses "Off" in the group "Offer the lessons"
+    Then the setting "variantLessonsOffer" is kept as "off"
+    When Settings is opened again at Reading
+    Then Offer the lessons has "Off" chosen
+
+  Scenario: The Lessons row opens the lessons
+    Given Settings is open at Reading with nothing chosen
+    When he taps the row "Lessons on variant readings"
+    Then the lessons on variant readings are open
