@@ -192,7 +192,7 @@ function underRuns(items: readonly Drawn[]): ReactNode[] {
 
 /** Where each brace of a verse stands and which words or chunks are marked (VerseText): in the Greek view after the unit's last word; in the English and the weave after
  * the last drawn chunk that holds a word of the unit (or, where the MSB gives the unit's words no English, after the chunk of the word before them, or at the start), in
- * the language the unit's chunks take: Greek when every one is woven, else English. */
+ * the language the unit's chunks take: Greek when every one is woven, else English. A unit a reading leaves out, whose words have no chunk, marks the chunk of the word before them. */
 interface VariantPlan {
   marked: ReadonlySet<number>;
   after: ReadonlyMap<number, readonly { shown: ShownUnit; language: 'greek' | 'english' }[]>;
@@ -227,7 +227,12 @@ function planVariants(verse: Verse, view: ReaderView, woven: WovenVerse | null, 
     }
     const before = [...held.keys()].filter((g) => g < Math.min(...shown.unit.w)).sort((a, b) => b - a)[0];
     if (before === undefined) start.push({ shown, language: 'english' });
-    else put(held.get(before) as number, { shown, language: 'english' });
+    else {
+      const chunk = held.get(before) as number;
+      // the words are folded into the English of the word before them ('was reigning in' holds ἐπὶ): when a reading leaves them out, that chunk is the one to dot (mw-9ji6ek0.30)
+      if (shown.readings.some((r) => r.greek === '')) marked.add(chunk);
+      put(chunk, { shown, language: 'english' });
+    }
   }
   return { marked, after, start };
 }

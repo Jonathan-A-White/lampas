@@ -566,3 +566,34 @@ test.describe('a siglum stays on the line of the last word of its reading', () =
     }
   }
 });
+
+// An omission unit marks the text (mw-9ji6ek0.30): Matthew 2:22 'reigning in {left out NA} Judea', where NA has no ἐπὶ. The MSB gives ἐπὶ no chunk of its own ('was reigning in' holds βασιλεύει),
+// so the chunk it is folded into is dotted and the brace follows the dotted run; the NA siglum opens a sheet that names what is left out. Shot: shots/variants-omission-sheet.png.
+test('Matthew 2:22 dots the English the left-out ἐπὶ is folded into, and the NA siglum opens a sheet that names what NA leaves out', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=mat&c=2');
+  await expect(page.locator('[data-verse="22"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'English').click();
+  await expect(choice(page, 'English')).toHaveAttribute('aria-pressed', 'true');
+
+  const verse = page.locator('[data-verse="22"]');
+  const brace = verse.locator('[data-brace]', { hasText: 'left out' });
+  await expect(brace).toBeVisible();
+  // the dotted run ends in 'in', and the brace is the next thing after it
+  const run = verse.locator('[data-variant-run]', { hasText: /reigning in/ });
+  await expect(run).toHaveText(/\bin\s*$/);
+  await expect(run.locator('[data-variant]')).not.toHaveCount(0);
+  const dotted = await run.evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(dotted).toContain('linear-gradient');
+  expect(await run.evaluate((el) => el.nextElementSibling?.matches('[data-brace]'))).toBe(true);
+  await verse.scrollIntoViewIfNeeded();
+
+  await brace.locator('[data-witness]').first().click();
+  const sheet = page.getByRole('dialog', { name: 'Variant reading' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator('[data-left-out]')).toHaveText('NA leaves out “over” (ἐπὶ)');
+  await expect(sheet.locator('[data-variant-reading]').nth(1)).not.toHaveText(/^Other reading\s*left out\s*left out$/);
+  await shot(page, 'variants-omission-sheet');
+});

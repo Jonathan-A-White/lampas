@@ -47,16 +47,30 @@ function Words({ text, language, actions }: { text: string; language: 'greek' | 
   );
 }
 
-function Reading({ label, greek, english, lines, actions }: { label: string; greek: string; english: string; lines?: string[]; actions?: WordActions }) {
+/** What a reading that leaves the unit out says: 'NA leaves out “in” (ἐπὶ)', the English the build gives the words (none: the Greek alone). */
+function leftOutLine(chips: readonly string[], english: string, greek: string): string {
+  const who = chips.length > 1 ? `${chips.slice(0, -1).join(', ')} and ${chips[chips.length - 1]}` : chips[0] ?? 'This reading';
+  return `${who} ${chips.length > 1 ? 'leave' : 'leaves'} out ${english ? `“${english}” (${greek})` : greek}`;
+}
+
+function Reading({ label, greek, english, lines, actions, leftOut }: { label: string; greek: string; english: string; lines?: string[]; actions?: WordActions; leftOut?: string }) {
   return (
     <section data-variant-reading="" className="border-t border-line py-3">
       <h3 className="pb-1 text-base font-medium text-muted">{label}</h3>
-      <p data-reading-greek="" {...(greek ? GREEK_LANG : { lang: 'en' })} className={greek ? 'font-greek text-2xl text-fg' : 'text-lg italic text-muted'}>
-        {greek ? <Words text={greek} language="greek" actions={actions} /> : LEFT_OUT}
-      </p>
-      <p data-reading-english="" lang="en" className={english ? 'text-lg text-fg' : 'text-lg italic text-muted'}>
-        {english ? <Words text={english} language="english" actions={actions} /> : LEFT_OUT}
-      </p>
+      {leftOut ? (
+        <p data-left-out="" lang="en" className="text-lg text-fg">
+          {leftOut}
+        </p>
+      ) : (
+        <>
+          <p data-reading-greek="" {...(greek ? GREEK_LANG : { lang: 'en' })} className={greek ? 'font-greek text-2xl text-fg' : 'text-lg italic text-muted'}>
+            {greek ? <Words text={greek} language="greek" actions={actions} /> : LEFT_OUT}
+          </p>
+          <p data-reading-english="" lang="en" className={english ? 'text-lg text-fg' : 'text-lg italic text-muted'}>
+            {english ? <Words text={english} language="english" actions={actions} /> : LEFT_OUT}
+          </p>
+        </>
+      )}
       {lines?.map((line) => (
         <p key={line} data-witness-line="" className="pt-1 text-base text-muted">
           {line}
@@ -158,6 +172,7 @@ function Sheet({ shown, reference, place, verse, onLook, onClose, onAsk }: Sheet
               english={r.english}
               lines={r.lines}
               actions={actionsFor({ greek: r.greek, english: r.english, g: tagged[i]?.g }, tagged[i] ? variantLabel(tagged[i].chips) : undefined)}
+              leftOut={r.greek ? undefined : leftOutLine(tagged[i]?.chips ?? [], shown.unit.english.base, shown.unit.base)}
             />
           ))}
           {place ? (
