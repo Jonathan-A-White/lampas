@@ -52,7 +52,10 @@ describe('the registry lists every Settings row', () => {
         // (and the three Bible in Logos pickers, one for each part: the group named Bible in Logos holds the New Testament's, the other two have rows of their own)
         ...screen.queryAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"]') && !isLogosPicker(el)),
         ...screen.queryAllByRole('slider'),
-      ].map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '');
+      ]
+        .map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '')
+        // Read as (mw-9ji6ek0.25) is a row of its own (rows.ts READING_SET_ROW), not a registry setting: the sets live in their own table
+        .filter((label) => label !== 'Read as');
     // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);
     // the study-resource switches are checkboxes, not groups: the Settings screen's other tests draw them
     const all: string[] = [];
