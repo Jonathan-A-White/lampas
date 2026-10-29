@@ -1,5 +1,6 @@
-// The Variants rows (Settings > Reading > Variants, mw-9ji6ek0.4): what to show of the manuscripts' differences, and whose readings count (drawn only while Variants is not Off), and Offer the lessons (always drawn, mw-9ji6ek0.19).
+// The Variants rows (Settings > Reading > Variants, mw-9ji6ek0.4): what to show of the manuscripts' differences, and whose readings count (drawn only while Variants is not Off), Offer the lessons (always drawn, mw-9ji6ek0.19) and Read as (always drawn, mw-9ji6ek0.25).
 import { variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting } from '../definitions';
+import { ReadAs } from '../../reader/ReadingSetSheet';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
@@ -33,3 +34,11 @@ export const VariantLessonsOfferControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** Read as (mw-9ji6ek0.25): the reading set in force and his own sets, the panel the variants chip's sheet has (src/reader/ReadingSetSheet.tsx). Not a registry setting: the sets live in their own table. */
+export const ReadingSetControl: Control = ({ row }) => (
+  <SettingRow row={row}>
+    <RowName row={row} />
+    <ReadAs name={row.label} />
+  </SettingRow>
+);

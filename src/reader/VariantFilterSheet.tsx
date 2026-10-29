@@ -1,6 +1,6 @@
 // src/reader/VariantFilterSheet.tsx — the small sheet a long press on the Reader's variants chip opens (mw-9ji6ek0.5, src/reader/VariantChip.tsx): the two filters of
-// Settings > Reading > Variants, which variants (Those that change the English | All; choosing one turns Variants on) and whose readings count (Witnesses), each
-// written to its setting at once, and a link to the Variants row of Settings. Done, Back, Escape, a swipe down or a tap outside close it.
+// Settings > Reading > Variants, which variants (Those that change the English | All; choosing one turns Variants on), whose readings count (Witnesses), each
+// written to its setting at once, and Read as (the reading set in force, src/reader/ReadingSetSheet.tsx), and a link to the Variants row of Settings. Done, Back, Escape, a swipe down or a tap outside close it.
 import { createPortal } from 'react-dom';
 import { variantsSetting, variantWitnessesSetting } from '../settings/definitions';
 import { ChipRow } from '../settings/controls/SettingRow';
@@ -9,6 +9,7 @@ import { useSetting } from '../settings/store';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
+import { ReadAs } from './ReadingSetSheet';
 
 /** Labels of the setting's own choices, so the sheet says what Settings says. */
 const labelsOf = (def: typeof variantsSetting | typeof variantWitnessesSetting, values: readonly string[]): [string, string][] =>
@@ -44,7 +45,7 @@ function Sheet({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-label="Variants"
         style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-        className="lp-sheet-in relative rounded-t-2xl border-t border-line bg-surface px-4 pb-[calc(1rem+var(--lp-bar-inset))]"
+        className="lp-sheet-in relative max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-t-2xl border-t border-line bg-surface px-4 pb-[calc(1rem+var(--lp-bar-inset))]"
       >
         <div data-testid="sheet-handle" {...handle} className="flex touch-none flex-col items-center pt-2">
           <span aria-hidden="true" className="h-1.5 w-10 rounded-full bg-line" />
@@ -62,6 +63,10 @@ function Sheet({ onClose }: { onClose: () => void }) {
         <h3 className="pb-1 text-base font-medium">Witnesses</h3>
         <div className="pb-3">
           <ChipRow name="Witnesses" current={witnesses ?? 'ecm'} options={labelsOf(variantWitnessesSetting, ['byz', 'na', 'ecm'])} settingKey="variantWitnesses" />
+        </div>
+        <h3 className="pb-1 text-base font-medium">Read as</h3>
+        <div className="pb-3">
+          <ReadAs />
         </div>
         <button type="button" onClick={toSettings} className="flex min-h-12 w-full items-center rounded-xl px-1 text-left text-lg font-medium text-accent">
           Variants in Settings
