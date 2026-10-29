@@ -4,16 +4,15 @@ import { Fragment, useEffect, useRef, type MouseEvent, type ReactNode } from 're
 import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
-import { publish } from '../events/bus';
 import { useAiAllowed } from '../gate/licenceContext';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
-import { hasVoice, speakWord } from '../speech/greek';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
 import { sourceAttrs, sourceFace, sourceSpeech } from './sourceText';
 import { VariantBrace } from './VariantBrace';
 import type { BraceReading, ShownUnit } from './variants';
-import { variantLookup } from './variantWords';
+import { sayWord } from './sayWord';
+import { variantLabel, variantLookup } from './variantWords';
 import { wordAtPoint } from './tappedWord';
 import { Tap, TAP_PAD } from './Tap';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
@@ -256,14 +255,10 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
     onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true, tapped: e ? wordAtPoint(e.currentTarget, e.clientX, e.clientY) : undefined });
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
   // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.
-  const say = (text: string, language: SpeechLanguage) => {
-    // a phone that lists no Hebrew voice says nothing: its default voice would read the letters as English (the reading shows the line about it, ReadControls)
-    if (language === 'hebrew' && hasVoice('hebrew') === false) return;
-    if (speakWord(text, language)) publish({ kind: 'word-spoken', text, language, verse: verse.n });
-  };
+  const say = (text: string, language: SpeechLanguage) => sayWord(text, language, verse.n);
   // a word inside a variant's brace opens the word popup as a word of the text does (src/reader/variantWords.ts), saying which reading it is from
   const lookVariant = (word: string, reading: BraceReading, language: 'greek' | 'english') => {
-    const lookup = variantLookup(verse, word, reading, language);
+    const lookup = variantLookup(verse, word, reading, language, variantLabel(reading.chips));
     if (lookup) onLook(lookup);
   };
   // a marked word the MSB gives no English of its own is in no chunk: it is drawn, marked, in its own place in the English and the weave (weave.ts strayMarks, mw-5r3p30.817)

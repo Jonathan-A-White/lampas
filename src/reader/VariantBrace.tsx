@@ -15,6 +15,8 @@ const SAME = 'same';
 /** A no-break space and a word joiner: nothing between the last word of a reading and its sigla, or between a siglum and the closing brace, is a place to break the line (mw-9ji6ek0.16). */
 const NBSP = '\u00a0';
 const JOIN = '\u2060';
+/** a mark of the apparatus with no letter in it ('…', where a reading is in pieces) is drawn, not tapped */
+const HAS_LETTER = /\p{L}/u;
 
 export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
   shown: ShownUnit;
@@ -40,11 +42,15 @@ export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
             {i > 0 ? <span aria-hidden="true" className="px-0.5 text-accent">|</span> : null}
             <span data-brace-reading="">
               <span data-brace-text="" {...(language === 'greek' && r.text ? GREEK_LANG : { lang: 'en' })} className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : 'text-fg') : 'italic'}>
-                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : r.text.split(/\s+/).filter(Boolean).map((word, k, all) => (
-                  <Tap key={k} glued={k === all.length - 1} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(word, r, shown)} onLongPress={() => onSay?.(word, language)}>
-                    {word}
-                  </Tap>
-                ))}
+                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : r.text.split(/\s+/).filter(Boolean).map((word, k, all) =>
+                  HAS_LETTER.test(word) ? (
+                    <Tap key={k} glued={k === all.length - 1} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(word, r, shown)} onLongPress={() => onSay?.(word, language)}>
+                      {word}
+                    </Tap>
+                  ) : (
+                    <Fragment key={k}>{k === all.length - 1 ? `${word}${NBSP}` : `${word} `}</Fragment>
+                  ),
+                )}
               </span>
               {r.same || !r.text ? NBSP : null}
               <span data-brace-tail="" className="whitespace-nowrap">

@@ -5,7 +5,7 @@
 // The header's chip (src/reader/VariantChip.tsx) counts the units shown; VerseText marks their words and draws a brace after them (src/reader/VariantBrace.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
-import type { Chapter, VariantCode, VariantUnit, VariantWitness, Verse } from '../data/chapter';
+import type { Chapter, GreekWord, VariantCode, VariantUnit, VariantWitness, Verse } from '../data/chapter';
 import { plainEnglish, sameInVerse } from '../data/variantVerse';
 import { getVariantsLastOn } from '../data/repositories';
 import { variantsSetting, variantWitnessesSetting } from '../settings/definitions';
@@ -36,6 +36,8 @@ export interface ShownReading {
   greek: string;
   english: string;
   code: VariantCode;
+  /** the reading's words one by one as the build tagged them (VariantReading.g); absent for a reading that leaves the words out or a unit without them */
+  g?: readonly GreekWord[];
   /** its English leaves the verse's English as the text's own does: the snippets agree, or (with the verse) the verse reads the same either way, case and punctuation aside */
   sameEnglish: boolean;
 }
@@ -52,7 +54,7 @@ export function shownReadings(unit: VariantUnit, filter: VariantFilter, verse?: 
   return unit.alts
     .map((alt, i): ShownReading => {
       const english = unit.english.alts[i] ?? '';
-      return { greek: alt.text, english, code: alt.code, sameEnglish: sameInVerse(verse, unit.w, unit.english.base, english) };
+      return { greek: alt.text, english, code: alt.code, ...(alt.g ? { g: alt.g } : {}), sameEnglish: sameInVerse(verse, unit.w, unit.english.base, english) };
     })
     .filter((r) => RANK[WITNESS[r.code]] <= RANK[filter.witnesses] && (filter.english === 'all' || !r.sameEnglish));
 }
@@ -75,6 +77,8 @@ export interface BraceReading {
   /** the reading's Greek and English, whichever language `text` is in (the Greek is '' for a reading that leaves the words out): a tap on a word of the text looks it up by these */
   greek: string;
   english: string;
+  /** the reading's Greek words as the build tagged them, when it did */
+  g?: readonly GreekWord[];
 }
 
 export function braceReadings(shown: ShownUnit, language: 'greek' | 'english'): BraceReading[] {
@@ -85,10 +89,10 @@ export function braceReadings(shown: ShownUnit, language: 'greek' | 'english'): 
     const key = same ? '=' : language === 'greek' ? text.normalize('NFC') : plainEnglish(text);
     const chip = chipOf(r.code);
     const had = out.find((b) => b.key === key);
-    if (!had) out.push({ key, text, same, chips: [chip], greek: r.greek, english: r.english });
+    if (!had) out.push({ key, text, same, chips: [chip], greek: r.greek, english: r.english, ...(r.g ? { g: r.g } : {}) });
     else if (!had.chips.includes(chip)) had.chips = CHIPS.filter((c) => c === chip || had.chips.includes(c));
   }
-  return out.map(({ text, same, chips, greek, english }) => ({ text, same, chips, greek, english }));
+  return out.map(({ text, same, chips, greek, english, g }) => ({ text, same, chips, greek, english, ...(g ? { g } : {}) }));
 }
 
 /** The variant units of a chapter as the Reader has them: `byVerse` the shown units of each verse (null while nothing is shown: Variants Off or no
