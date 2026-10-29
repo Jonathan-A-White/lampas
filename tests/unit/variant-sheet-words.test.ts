@@ -67,3 +67,28 @@ describe('the words of a reading on the variant sheet', () => {
     }
   });
 });
+
+describe('a reading that leaves the unit out names what it leaves out (mw-9ji6ek0.30)', () => {
+  const OUT: VariantUnit = {
+    v: 1,
+    w: [1],
+    base: 'εἶπεν',
+    alts: [{ code: 'N', text: '', g: [] }, { code: 'M', text: '', g: [] }],
+    english: { source: 'lampas', base: 'over', alts: ['', ''] },
+    changesEnglish: true,
+    witness: 'na',
+  };
+
+  it('says which witnesses leave out which English and Greek, not the bare "left out"', () => {
+    const shown = shownUnits([OUT], { english: 'all', witnesses: 'ecm' })[0];
+    render(createElement(VariantSheet, { shown, verse: VERSE, reference: 'Mark 1:1', onClose: () => {}, onLook: () => {} }));
+    const line = document.querySelector('[data-left-out]');
+    expect(line?.textContent).toBe('NA and ECM leave out “over” (εἶπεν)');
+  });
+
+  it('with no English for the snippet names the Greek alone', () => {
+    const shown = shownUnits([{ ...OUT, english: { ...OUT.english, base: '' } }], { english: 'all', witnesses: 'ecm' })[0];
+    render(createElement(VariantSheet, { shown, reference: 'Mark 1:1', onClose: () => {} }));
+    expect(document.querySelector('[data-left-out]')?.textContent).toBe('NA and ECM leave out εἶπεν');
+  });
+});
