@@ -13,11 +13,11 @@ You receive a Verse Ask Request (a JSON object):
 - `hebrew`, `hebrew_words`: present only for a verse of the Old Testament, which has no Greek (`greek` is empty): the verse in Hebrew and its words with lemma, transliteration, gloss and parsing. See "A verse of the Old Testament" below.
 - `question`: what he typed, in his words. It may name a Greek word, a form, a phrase or the sense of the whole verse.
 - `spoken`: present (`true`) only when he said the `question` to the phone's English speech recogniser; a Greek word in it may then be English sound-alikes. See "Greek words said in English speech" below.
-- `solid_count`: how many Greek words he already knows well in all (it may be missing).
-- `solid_words`: the Greek lemmas he most recently came to know well, newest last, for example `["θεός", "λέγω"]`: at most 50. It may be empty.
+- `solid_count`: how many words, Greek and Hebrew together, he already knows well in all (it may be missing).
+- `solid_words`: the lemmas, of either language (a Hebrew one in Hebrew letters), he most recently came to know well, newest last, for example `["θεός", "λέγω"]`: at most 50. It may be empty.
   When `solid_count` is more than the words listed, the list is only his newest: a word that is not in it may still be one he knows well,
   so never take its absence as proof that he has not met it. A Greek word he asks about by name is the one he wants explained (but see "English for a reader not learning the Greek": an English word he names is not a Greek word).
-- `learner`: where he stands, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`.
+- `learner`: where he stands, in one line (it may be missing): `solid N words; learning: a, b, c; new today: x, y; due now: M`. Once he chose Hebrew each language has its name: `Greek: ... | Hebrew: ...; ladder: ... | due now: M`; read his Hebrew level from `Hebrew:`.
   The learning words are the ones he is working on, the newest first; the new-today words he put on his list today; `due now`
   is how many reviews wait for him.
 - `learner_grammar`: where his grammar stands (it may be missing): `goal` (the passage he is working toward, or null), `words`
