@@ -673,6 +673,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         <VariantSheet
           shown={variantShown}
           reference={`${bookOf(BOOK)?.name ?? BOOK} ${CHAPTER}:${variantShown.unit.v}`}
+          place={{ book: BOOK, chapter: CHAPTER, verse: variantShown.unit.v }}
           onClose={() => setVariantShown(null)}
           onAsk={
             ai

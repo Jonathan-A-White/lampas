@@ -1,11 +1,15 @@
 // src/reader/VariantSheet.tsx — the sheet a tap on a variant's brace opens (mw-9ji6ek0.6, src/reader/VariantBrace.tsx): the text's own reading and the other reading(s) of the
 // unit, each in Greek and in English, the witness of each spelled out one line apiece (src/reader/witness.ts), and Ask the tutor, which opens the verse's talk as the Verse view's
-// Ask does (the tutor's own variant story comes later). Done, Back, Escape, a swipe down or a tap outside close it. A portal: the brace is in the Reader's scrolling text.
+// Ask does (the tutor's own variant story comes later), and under the readings 'Go deeper' (src/reader/goDeeper.ts, mw-9ji6ek0.20): the lessons, the apparatus, the 2005 edition and his Logos
+// Greek texts at the verse. Done, Back, Escape, a swipe down or a tap outside close it. A portal: the brace is in the Reader's scrolling text.
 import { createPortal } from 'react-dom';
+import { AnotherBookButton } from '../library/InLogosDoors';
+import { openVariantLesson } from '../nav/route';
 import { GREEK_LANG } from '../script/greekLang';
 import { focusOnMount } from '../ui/focus';
-import { useSheetBack } from '../ui/sheetBack';
+import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
+import { APPARATUS_LABEL, EDITION_2005, GO_DEEPER_ENTRIES, GO_DEEPER_HEADING, LESSONS_LABEL, LOGOS_LABEL, apparatusUrl, goDeeperPlace } from './goDeeper';
 import type { ShownUnit } from './variants';
 import { readingsOf } from './witness';
 
@@ -30,7 +34,41 @@ function Reading({ label, greek, english, lines }: { label: string; greek: strin
   );
 }
 
-function Sheet({ shown, reference, onClose, onAsk }: { shown: ShownUnit; reference: string; onClose: () => void; onAsk?: () => void }) {
+const ROW = 'flex min-h-11 items-center text-lg font-medium text-accent underline';
+
+/** 'Go deeper': the lessons, the apparatus of the unit's book, the 2005 edition and, while Logos is On and a Greek text of his shelf opens there, the Greek texts at the verse. Web links open outside the app. */
+function GoDeeper({ place, onLessons }: { place: VariantPlace; onLessons: () => void }) {
+  const apparatus = apparatusUrl(place.book);
+  const { place: studyPlace, name } = goDeeperPlace(place.book, place.chapter, place.verse);
+  return (
+    <section data-go-deeper="" aria-labelledby="go-deeper-heading" className="border-t border-line py-3">
+      <h3 id="go-deeper-heading" className="pb-1 text-base font-medium text-muted">
+        {GO_DEEPER_HEADING}
+      </h3>
+      <button type="button" onClick={onLessons} className={`${ROW} w-full text-left`}>
+        {LESSONS_LABEL}
+      </button>
+      {apparatus ? (
+        <a href={apparatus} target="_blank" rel="noreferrer" className={ROW}>
+          {APPARATUS_LABEL}
+        </a>
+      ) : null}
+      <a href={EDITION_2005.url} target="_blank" rel="noreferrer" className={ROW}>
+        {EDITION_2005.label}
+      </a>
+      <AnotherBookButton place={studyPlace} name={name} entries={GO_DEEPER_ENTRIES} label={LOGOS_LABEL} className={`${ROW} w-full`} />
+    </section>
+  );
+}
+
+/** Where the unit is: its book (our code) and chapter; the verse is the unit's own. */
+export interface VariantPlace {
+  book: string;
+  chapter: number;
+  verse: number;
+}
+
+function Sheet({ shown, reference, place, onClose, onAsk }: { shown: ShownUnit; reference: string; place?: VariantPlace; onClose: () => void; onAsk?: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
@@ -59,6 +97,15 @@ function Sheet({ shown, reference, onClose, onAsk }: { shown: ShownUnit; referen
           {others.map((r, i) => (
             <Reading key={i} label={others.length > 1 ? `Other reading ${i + 1}` : 'Other reading'} greek={r.greek} english={r.english} lines={r.lines} />
           ))}
+          {place ? (
+            <GoDeeper
+              place={place}
+              onLessons={() => {
+                closeAllSheets();
+                openVariantLesson();
+              }}
+            />
+          ) : null}
         </div>
         {onAsk ? (
           <button type="button" onClick={onAsk} className="mt-2 min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
@@ -70,7 +117,7 @@ function Sheet({ shown, reference, onClose, onAsk }: { shown: ShownUnit; referen
   );
 }
 
-/** The sheet, drawn over everything. `onAsk` is left out when the tutor is not allowed (no licence): the button is then not drawn. */
-export function VariantSheet(props: { shown: ShownUnit; reference: string; onClose: () => void; onAsk?: () => void }) {
+/** The sheet, drawn over everything. `place` is the unit's book, chapter and verse (Go deeper is left out without it). `onAsk` is left out when the tutor is not allowed (no licence): the button is then not drawn. */
+export function VariantSheet(props: { shown: ShownUnit; reference: string; place?: VariantPlace; onClose: () => void; onAsk?: () => void }) {
   return createPortal(<Sheet {...props} />, document.body);
 }
