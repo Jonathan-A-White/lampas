@@ -32,7 +32,8 @@ export const VARIANT_LESSON_SOURCES: readonly string[] = [
   'https://github.com/byztxt/byzantine-majority-text',
   'https://github.com/byztxt/byzantine-majority-text/tree/v3.3.2/csv-unicode/ccat/with-variants',
   'https://majoritybible.com/',
-  'https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md',
+  'https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md#variants',
+  'https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md#variant-english',
 ];
 
 export const VARIANT_LESSONS: VariantLesson[] = [

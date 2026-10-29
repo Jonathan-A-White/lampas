@@ -32,4 +32,4 @@ Further reading, named and not quoted: Zane Hodges and Arthur Farstad's *The Gre
 - [The 2005 edition's preface](https://byzantinetext.com/wp-content/uploads/2016/11/editions-rp-01-preface.pdf), pages i to xx (public domain): von Soden, Hoskier, the margin, the Textus Receptus.
 - [The byztxt project's files](https://github.com/byztxt/byzantine-majority-text) (public domain): its notes say the 2018 apparatus was brought up to date for NA28 and ECM.
 - [The editors' page for the edition](https://byzantinetext.com/study/editions/robinson-pierpont/).
-- [How Lampas counts and lays the readings](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md): B, N, C, S, E and M, and the 18 ECM places.
+- [How Lampas counts and lays the readings](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md#variants): B, N, C, S, E and M, and the 18 ECM places.

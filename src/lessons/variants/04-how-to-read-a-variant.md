@@ -50,4 +50,4 @@ Where the Majority Standard Bible's own footnotes give the critical text's readi
 
 - [The 2018 apparatus, as the byztxt project keeps it](https://github.com/byztxt/byzantine-majority-text/tree/v3.3.2/csv-unicode/ccat/with-variants) (public domain): every reading the brace and the sheet show.
 - [The Majority Standard Bible](https://majoritybible.com/) (public domain): the English you read, and the "CT" footnotes.
-- [How Lampas builds the readings and their English](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md) (the sections "Variants" and "Variant English").
+- [How Lampas builds the readings](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md#variants) (the section "Variants") and [their English](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md#variant-english) (the section "Variant English").
