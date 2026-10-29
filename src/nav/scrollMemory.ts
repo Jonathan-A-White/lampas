@@ -10,7 +10,8 @@ import { pathOf, readerHash, readerOf, useAddress } from './route';
 const offsets = new Map<string, number>();
 
 /** The address a scroll offset is kept under: the reader without its selected verse (tapping a verse number does not
- * move the text, and the place is the same whichever verse is selected). */
+ * move the text, and the place is the same whichever verse is selected) and without its view and weave (a switch of mode lays the same chapter out at other
+ * heights; the offset of the mode he left is no place in the one he comes to, and the Reader carries the place by its verse, src/reader/useKeepTopVerse.ts, mw-5r3p30.863). */
 export function scrollAddress(hash: string): string {
   // a link to a setting (src/settings/link.ts) has a place of its own: Settings opens at that row, not where he last left it
   if (pathOf(hash) === '#/settings') {
@@ -26,7 +27,7 @@ export function scrollAddress(hash: string): string {
     return group ? `#/settings?group=${group}` : '#/settings';
   }
   if (pathOf(hash) !== '#/') return pathOf(hash);
-  return readerHash({ ...readerOf(hash), verse: undefined });
+  return readerHash({ ...readerOf(hash), verse: undefined, view: undefined, weave: undefined });
 }
 
 /** How long after the last scroll event the offsets are written to the phone. */
