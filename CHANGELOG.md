@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.19
+_2026-10-29_
+- New: You can read the whole New Testament as Nestle-Aland or the Editio Critica Maior, or as a set of your own that you name, save, rename and delete.
+- Fixed: the word card for Ἕλληνες and three other words showed the dictionary form twice joined by an equals sign; it now shows it once.
+
 ## 0.7.18
 _2026-10-29_
 - Fixed: The app now opens within about two seconds even when the phone is slow to open its saved data, instead of leaving the splash up for a long time.

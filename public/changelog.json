@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.19",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.25",
+    "kind": "new",
+    "text": "You can read the whole New Testament as Nestle-Aland or the Editio Critica Maior, or as a set of your own that you name, save, rename and delete."
+  },
+  {
+    "version": "0.7.19",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.864",
+    "kind": "fixed",
+    "text": "the word card for Ἕλληνες and three other words showed the dictionary form twice joined by an equals sign; it now shows it once."
+  },
+  {
     "version": "0.7.18",
     "date": "2026-10-29",
     "story": "mw-5r3p30.862",
