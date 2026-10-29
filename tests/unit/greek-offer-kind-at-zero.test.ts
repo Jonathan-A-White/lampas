@@ -19,4 +19,11 @@ describe('the bible-talk instructions for the offer at Just English when he asks
     expect(line6).toMatch(/`kind` `word`[^.]*`lemma`/);
     expect(line6).toMatch(/never `view`/);
   });
+
+  // mw-5r3p30.859: the same example missed again (1 in 3) with `words` empty and the offer right: the lemma went in the offer only. Line 6 says the word he
+  // asked about goes in `words` too, so the offer's lemma is not taken for its place.
+  it('puts the word he asked about in `words` as well as in the offer', () => {
+    expect(line6).toMatch(/`words`/);
+    expect(line6).toMatch(/offer's `lemma` does not stand for it/);
+  });
 });
