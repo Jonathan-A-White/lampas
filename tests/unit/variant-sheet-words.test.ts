@@ -92,3 +92,34 @@ describe('a reading that leaves the unit out names what it leaves out (mw-9ji6ek
     expect(document.querySelector('[data-left-out]')?.textContent).toBe('NA and ECM leave out εἶπεν');
   });
 });
+
+describe('an omission the MSB gives English for the critical text’s sentence (Acts 18:17, mw-9ji6ek0.36)', () => {
+  const ACTS: VariantUnit = {
+    v: 1,
+    w: [1],
+    base: 'οἱ Ἕλληνες',
+    alts: [{ code: 'N', text: '', g: [] }],
+    english: { source: 'msb', base: 'the Greeks', alts: [''], ctReads: 'they all' },
+    changesEnglish: true,
+    witness: 'na',
+  };
+  const open = (u: VariantUnit) => {
+    const shown = shownUnits([u], { english: 'all', witnesses: 'ecm' })[0];
+    render(createElement(VariantSheet, { shown, verse: VERSE, reference: 'Acts 18:17', onClose: () => {}, onLook: () => {} }));
+  };
+
+  it('says what NA leaves out, then, as the MSB’s, how the MSB reads the NA text', () => {
+    open(ACTS);
+    expect(document.querySelector('[data-left-out]')?.textContent).toBe('NA leaves out “the Greeks” (οἱ Ἕλληνες)');
+    const msb = document.querySelector('[data-msb-reads]');
+    expect(msb?.textContent).toBe('The MSB reads the NA text: “they all”');
+    // under its MSB caption, never as the model's or as ours
+    expect(msb?.nextElementSibling?.textContent).toBe('MSB');
+    expect(document.body.textContent).not.toContain('Lampas (AI)');
+  });
+
+  it('has no such line when the MSB gives nothing', () => {
+    open({ ...ACTS, english: { source: 'msb', base: 'the Greeks', alts: [''] } });
+    expect(document.querySelector('[data-msb-reads]')).toBeNull();
+  });
+});

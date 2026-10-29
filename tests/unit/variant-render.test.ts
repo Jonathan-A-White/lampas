@@ -416,3 +416,43 @@ describe('the committed chapters', () => {
     }
   });
 });
+
+describe('Acts 18:17 οἱ Ἕλληνες: NA leaves the words out (mw-9ji6ek0.36)', () => {
+  // The unit as the chapter file had it (the MSB's 'CT: they all', its English of the NA sentence, laid as the omission's English) and as it is now (nothing, the footnote kept as ctReads)
+  const ACTS: Verse = {
+    n: 17,
+    g: [word('ἐπιλαβόμενοι', 'ἐπιλαμβάνομαι', 0), word('πάντες', 'πᾶς', 1), word('οἱ', 'ὁ', 2), word('Ἕλληνες', 'Ἕλλην', 2)],
+    e: [{ t: 'seized', g: [0] }, { t: 'they all', g: [1] }, { t: 'the Greeks', g: [2, 3] }],
+  };
+  const STALE: VariantUnit = { ...unit(17, [2, 3], 'οἱ Ἕλληνες', [['N', '', 'they all']], 'the Greeks'), english: { source: 'msb', base: 'the Greeks', alts: ['they all'] } };
+  const NOW: VariantUnit = { ...unit(17, [2, 3], 'οἱ Ἕλληνες', [['N', '', '']], 'the Greeks'), english: { source: 'msb', base: 'the Greeks', alts: [''], ctReads: 'they all' } };
+  const brace = (u: VariantUnit, view: ReaderView, props: Record<string, unknown> = {}) =>
+    render(createElement(VerseText, { verse: ACTS, view, woven: null, onLook: () => {}, variants: shownUnits([u], ALL), ...props })).container;
+
+  it.each([['english', STALE], ['english', NOW], ['greek', NOW]] as const)('the %s brace reads "left out", as the Greek brace does', (view, u) => {
+    const container = brace(u, view);
+    expect(drawn(container).at(-1)).toBe('{left out NA}');
+    expect(container.querySelector('[data-brace]')?.getAttribute('aria-label')).toBe('Other reading: left out (Nestle-Aland)');
+  });
+
+  it.each(['english', 'greek'] as const)('a tap on the "left out" of the %s brace opens the sheet and no word card', (view) => {
+    const opened: string[] = [];
+    const looks: Lookup[] = [];
+    const container = brace(NOW, view, { onVariant: (s: { unit: VariantUnit }) => opened.push(s.unit.base), onLook: (l: Lookup) => looks.push(l) });
+    fireEvent.click(container.querySelector('[data-brace-text]')!);
+    expect(opened).toEqual(['οἱ Ἕλληνες']);
+    expect(looks).toEqual([]);
+  });
+
+  it('a tap on the siglum still opens the sheet once, and a word of a reading with words still opens the word card', () => {
+    const opened: string[] = [];
+    const looks: Lookup[] = [];
+    const container = brace(LORD, 'english', { variants: shownUnits([LORD], ALL), onVariant: (s: { unit: VariantUnit }) => opened.push(s.unit.base), onLook: (l: Lookup) => looks.push(l) });
+    fireEvent.click([...container.querySelectorAll('[data-brace-word]')].find((w) => w.textContent?.trim() === 'Lord')!);
+    expect([opened.length, looks.length]).toEqual([0, 1]);
+    cleanup();
+    const again = brace(NOW, 'english', { onVariant: (s: { unit: VariantUnit }) => opened.push(s.unit.base) });
+    fireEvent.click(again.querySelector('[data-witness]')!);
+    expect(opened).toEqual(['οἱ Ἕλληνες']);
+  });
+});

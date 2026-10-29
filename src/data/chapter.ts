@@ -193,6 +193,8 @@ export interface VariantEnglish {
   source: VariantEnglishSource;
   base: string;
   alts: string[];
+  /** on a unit whose one reading leaves the words out: the MSB's own English of the critical text's sentence there, from its 'CT <i>…</i>' footnote ('they all' at Acts 18:17), which reads more than the left-out words; absent otherwise (mw-9ji6ek0.36) */
+  ctReads?: string;
 }
 export type VariantWitness = 'byz' | 'na' | 'ecm';
 

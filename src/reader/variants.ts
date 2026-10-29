@@ -63,7 +63,8 @@ export interface ShownUnit {
 export function shownReadings(unit: VariantUnit, filter: VariantFilter, verse?: Pick<Verse, 'e'>, keep?: number): ShownReading[] {
   return unit.alts
     .map((alt, i): ShownReading => {
-      const english = unit.english.alts[i] ?? '';
+      // a reading that leaves the words out has no English of its own, whatever an older chapter file kept there (mw-9ji6ek0.36)
+      const english = alt.text === '' ? '' : (unit.english.alts[i] ?? '');
       return { index: i, greek: alt.text, english, code: alt.code, ...(alt.g ? { g: alt.g } : {}), ...(alt.apart ? { apart: true as const } : {}), sameEnglish: wordOrderOnly(unit.base, alt.text) || sameInVerse(verse, unit.w, unit.english.base, english) };
     })
     .filter((r) => r.index === keep || (RANK[WITNESS[r.code]] <= RANK[filter.witnesses] && (filter.english === 'all' || !r.sameEnglish)));

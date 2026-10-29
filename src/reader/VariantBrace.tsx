@@ -41,7 +41,13 @@ export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
           <Fragment key={i}>
             {i > 0 ? <span aria-hidden="true" className="px-0.5 text-accent">|</span> : null}
             <span data-brace-reading="">
-              <span data-brace-text="" {...(language === 'greek' && r.text ? GREEK_LANG : { lang: 'en' })} className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : 'text-fg') : 'italic'}>
+              {/* a reading that leaves the words out has no word to tap: a tap on its 'left out' opens the unit's sheet, as its siglum does (mw-9ji6ek0.36) */}
+              <span
+                data-brace-text=""
+                {...(language === 'greek' && r.text ? GREEK_LANG : { lang: 'en' })}
+                {...(r.text ? {} : { onClick: open })}
+                className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : 'text-fg') : `italic${r.text ? '' : ' cursor-pointer'}`}
+              >
                 {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : r.text.split(/\s+/).filter(Boolean).map((word, k, all) =>
                   HAS_LETTER.test(word) ? (
                     <Tap key={k} glued={k === all.length - 1} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(word, r, shown)} onLongPress={() => onSay?.(word, language)}>

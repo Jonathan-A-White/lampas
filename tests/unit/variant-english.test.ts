@@ -90,6 +90,33 @@ describe('a CT footnote', () => {
   });
 });
 
+describe('a CT footnote on a unit the critical text leaves out (Acts 18:17, mw-9ji6ek0.36)', () => {
+  // Acts 18:17 in little: RP has 'οἱ Ἕλληνες' (w3-4, "the Greeks") where NA has nothing; the MSB's footnote 'CT <i>they all</i>' is its English of the NA sentence, not of a reading of the unit
+  const ACTS = verse(17, [
+    { t: 'they all', g: [2] },
+    { t: 'the Greeks', g: [3, 4] },
+  ]);
+  const OMIT: VariantPlace = { v: 17, w: [3, 4], base: 'οἱ Ἕλληνες', alts: [{ code: 'N', text: '' }] };
+  const acts = (notes: Array<{ w: number; note: string }>) => ({ book: 'Acts', code: 'act', chapter: 18, verses: [ACTS], notes: new Map([[17, notes]]), lampas: {} });
+
+  it('never lays the footnote’s English as the omission’s own: the reading is nothing, the footnote is kept as ctReads', () => {
+    const { units, missing } = layEnglish([OMIT], acts([{ w: 3, note: 'CT <i>they all</i>' }]));
+    expect(missing).toEqual([]);
+    expect(units[0].english).toEqual({ source: 'msb', base: 'the Greeks', alts: [''], ctReads: 'they all' });
+  });
+
+  it('leaves ctReads off a unit whose footnote is not a replace (an omit footnote already gives the base the footnote’s words)', () => {
+    const { units } = layEnglish([OMIT], acts([{ w: 3, note: 'CT does not include <i>the Greeks</i>.' }]));
+    expect(units[0].english).toEqual({ source: 'msb', base: 'the Greeks', alts: [''] });
+  });
+
+  it('still lays a replace footnote as the reading’s English on a unit whose reading has words', () => {
+    const WORDS: VariantPlace = { v: 17, w: [3, 4], base: 'οἱ Ἕλληνες', alts: [{ code: 'N', text: 'πάντες' }] };
+    const { units } = layEnglish([WORDS], acts([{ w: 3, note: 'CT <i>they all</i>' }]));
+    expect(units[0].english).toEqual({ source: 'msb', base: 'the Greeks', alts: ['they all'] });
+  });
+});
+
 describe('a unit without a footnote', () => {
   const lampas: LampasEnglishFile = { [unitKey('rev', 17, BYZ_UNIT)]: { source: 'lampas', base: 'the beast', alts: ['beast'] } };
 
@@ -232,6 +259,14 @@ describe('the committed data', () => {
     expect(all.length).toBeGreaterThan(7000);
     const bad = all.filter(({ unit }) => !['msb', 'lampas'].includes(unit.english?.source) || unit.english.alts.length !== unit.alts.length);
     expect(bad.map((b) => b.ref)).toEqual([]);
+  });
+
+  it('has no English on a reading that leaves the words out: the MSB’s English of the critical text’s sentence is kept in ctReads (mw-9ji6ek0.36)', () => {
+    const bad: string[] = [];
+    for (const { ref, unit } of all) unit.alts.forEach((a, i) => { if (a.text === '' && unit.english.alts[i] !== '') bad.push(`${ref} ${unit.base}`); });
+    expect(bad).toEqual([]);
+    const acts = all.find(({ ref, unit }) => ref === 'Acts 18:17' && unit.base === 'οἱ Ἕλληνες');
+    expect(acts?.unit.english).toEqual({ source: 'msb', base: 'the Greeks', alts: [''], ctReads: 'they all' });
   });
 
   it('has changesEnglish on every unit and a witness byz, na or ecm that agrees with its codes', () => {

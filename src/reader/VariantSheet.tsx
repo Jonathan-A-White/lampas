@@ -116,6 +116,12 @@ interface ReadingEnglish extends EnglishLine {
   actions?: WordActions;
 }
 
+/** What the MSB's own footnote says the critical text reads where the reading leaves the unit out: 'The MSB reads the NA text: “they all”' (the MSB's English of the sentence, not of a reading; mw-9ji6ek0.36). */
+function msbReadsLine(chips: readonly string[], text: string): string {
+  const who = chips.length > 1 ? `${chips.slice(0, -1).join(', ')} and ${chips[chips.length - 1]}` : chips[0] ?? 'critical';
+  return `The MSB reads the ${who} text: “${text}”`;
+}
+
 function Reading({
   label,
   greek,
@@ -124,6 +130,7 @@ function Reading({
   actions,
   leftOut,
   leftOutSource,
+  msbReads,
   foot,
   openSource,
   onSource,
@@ -135,6 +142,8 @@ function Reading({
   actions?: WordActions;
   leftOut?: string;
   leftOutSource?: EnglishSource;
+  /** the MSB's English of the critical text's sentence at an omission (VariantEnglish.ctReads), already worded */
+  msbReads?: string;
   foot?: ReactNode;
   openSource: string | null;
   onSource: (key: string | null) => void;
@@ -149,6 +158,14 @@ function Reading({
             {leftOut}
           </p>
           {leftOutSource ? caption(leftOutSource, `${label}:out`) : null}
+          {msbReads ? (
+            <>
+              <p data-msb-reads="" lang="en" className="pt-1 text-lg text-fg">
+                {msbReads}
+              </p>
+              {caption('msb', `${label}:msb`)}
+            </>
+          ) : null}
         </>
       ) : (
         <>
@@ -290,6 +307,7 @@ function Sheet({ shown, reference, place, verse, lang, onLook, onClose, onAsk, o
               actions={actionsFor({ greek: r.greek, english: r.english, g: tagged[i]?.g }, tagged[i] ? variantLabel(tagged[i].chips) : undefined)}
               leftOutSource={shown.unit.english.base ? unitSource(shown.unit, lang) : undefined}
               leftOut={r.greek ? undefined : leftOutLine(tagged[i]?.chips ?? [], shown.unit.english.base, shown.unit.base)}
+              msbReads={r.greek || !shown.unit.english.ctReads ? undefined : msbReadsLine(tagged[i]?.chips ?? [], shown.unit.english.ctReads)}
               foot={
                 onRead && !r.apart ? <ReadThis inPlace={shown.chosen !== undefined && r.indexes.includes(shown.chosen)} onRead={() => onRead(r.index)} /> : undefined
               }

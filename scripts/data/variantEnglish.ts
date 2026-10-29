@@ -112,7 +112,7 @@ export interface EnglishInput {
 /**
  * Lays English on a chapter's units. A unit with one other reading that the critical text holds (not a Byzantine split) takes the English of the
  * MSB footnote on its words when there is one ('CT <i>King Herod</i>': the CT's reading is "King Herod", the base's is the MSB's own English of the
- * unit's words; 'CT does not include <i>X</i>' on a reading that leaves the base out: the base is X, the reading nothing); a footnote that is
+ * unit's words; 'CT does not include <i>X</i>' on a reading that leaves the base out: the base is X, the reading nothing; 'CT <i>they all</i>' on a unit the CT leaves out is kept as `ctReads`, the reading's English stays nothing); a footnote that is
  * about a whole unit goes to the narrowest unit that holds its word. Every other unit takes its entry of data/variant-english.json, and a unit
  * with no entry is returned in `missing`.
  */
@@ -131,7 +131,9 @@ export function layEnglish(units: VariantPlace[], input: EnglishInput): { units:
       const unit = here[0];
       if (!unit) continue;
       const base = fn.kind === 'omit' ? fn.text : chunkEnglish(verse.get(unit.v), unit);
-      given.set(unit, { source: 'msb', base, alts: [fn.kind === 'omit' ? '' : fn.text] });
+      // A 'replace' footnote is the MSB's English of the critical text's sentence, not of a reading of this unit: where the unit's reading is nothing (an omission) it is kept apart as `ctReads`, never as the reading's own English (mw-9ji6ek0.36)
+      if (fn.kind === 'replace' && unit.alts[0].text === '') given.set(unit, { source: 'msb', base, alts: [''], ctReads: fn.text });
+      else given.set(unit, { source: 'msb', base, alts: [fn.kind === 'omit' ? '' : fn.text] });
     }
   }
   const missing: MissingEnglish[] = [];

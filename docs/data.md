@@ -275,6 +275,9 @@ unit of its verse that holds the footnote's word (the narrowest, and one unit pe
 split (`B`): then `english` is `{source:'msb', base, alts:[alt]}`, the alt being the footnote's English and the base the MSB's own English of the unit's words (the
 chunks `e` that hold them, which can be more than the unit's words) or, for an omission, the footnote's X with the alt `""`. `CT includes …` and an
 omission of part of a base are not laid (the unit's alt text is more than the footnote says): those units are made like the rest.
+A footnote that is a reading (`CT <i>they all</i>`) on a unit whose one reading **leaves the words out** (Acts 18:17 `οἱ Ἕλληνες`, NA has nothing) is the MSB's English of the
+critical text's *sentence*, not of a reading of the unit: the alt stays `""` and the footnote's English is kept beside it as `english.ctReads` (`"ctReads":"they all"`; 73 units,
+mw-9ji6ek0.36). The brace shows `left out` and a tap on it opens the sheet, which says `NA leaves out “the Greeks” (οἱ Ἕλληνες)` and, as the MSB's, `The MSB reads the NA text: “they all”`.
 
 **`lampas`: made by the tutor's model.** `npm run variants:english` (`scripts/variants-english.ts`, on the home host, where `claude` runs; `--raw <dir>` where the downloads are)
 asks sonnet, the tutor's model, for each unit the footnotes do not speak for: the verse in Greek and in the MSB's English, the base and the other readings with the lemma
