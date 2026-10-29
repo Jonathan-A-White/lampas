@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.27
+_2026-10-29_
+- Fixed: A word you had saved or practised under one of four Greek words whose entries had run two forms together (such as Ἕλλην) is now found again under its proper headword, with your history kept.
+
 ## 0.7.26
 _2026-10-29_
 - Fixed: Copy "As you read it" now includes the variant readings the Reader shows next to the words, instead of copying the plain verse.
