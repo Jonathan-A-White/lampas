@@ -161,6 +161,10 @@ export interface VariantReading {
   code: VariantCode;
   /** the reading's words as the apparatus writes them; '' when it leaves the base out */
   text: string;
+  /** the reading's words one by one, tagged by their letters against every form of the New Testament text (docs/data.md 'Variants'): a form the text never has carries `t` alone (`s: ''`). Empty for a reading that leaves the base out */
+  g?: GreekWord[];
+  /** true when the reading is in pieces ('ὁ μὲν... ὁ δὲ'): it cannot be laid over the text word for word; absent otherwise */
+  apart?: true;
 }
 /** One place of the apparatus: the words of verse `v` it is about (indexes into the verse's `g`), the text's own words there, and the other readings. */
 export interface VariantPlace {

@@ -62,7 +62,8 @@ const APOSTROPHES = /['ʼ᾽’]/g;
 const bare = (token: string): string => token.normalize('NFC').replace(MARKS, '').replace(APOSTROPHES, '’');
 /** what two spellings of one word share: letters only, no accents, breathings or case, final sigma as sigma */
 export const letterKey = (word: string): string => bare(word).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/ς/g, 'σ');
-const wordsOf = (text: string): string[] => text.split(/\s+/).map(bare).filter(Boolean);
+/** the words of a reading or a base, each with the marks beside it off */
+export const wordsOf = (text: string): string[] => text.split(/\s+/).map(bare).filter(Boolean);
 
 /** A verse of the apparatus: the edition's words (the units taken out, the marks beside each word off) and its units in order. */
 export function parseApparatus(text: string): { words: string[]; units: ApparatusUnit[] } {

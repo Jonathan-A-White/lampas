@@ -125,7 +125,7 @@ Compact: short keys, no indentation, each lexicon entry once per file.
 | `verses[].e` | the English chunks **in English order**, so joined with spaces they read as the MSB verse |
 | `e[].t` | the chunk's English with its punctuation and quotation marks, without the `[ ]` and `{ }` marks |
 | `e[].g` | indexes into the verse's `g` array of the Greek word(s) the chunk renders, in Greek order |
-| `variants` | the New Testament's variant readings, one unit per place: `{"v":3,"w":[15,16,17],"base":"ἐπί σε ὡς","alts":[{"code":"N","text":"ὡς"}]}`. Absent in an Old Testament file ('Variants' below) |
+| `variants` | the New Testament's variant readings, one unit per place: `{"v":3,"w":[15,16,17],"base":"ἐπί σε ὡς","alts":[{"code":"N","text":"ὡς","g":[{"t":"ὡς","tr":"","s":"G5613","l":"ὡς","p":"ADV"}]}]}` (the English fields left out). Absent in an Old Testament file ('Variants' below) |
 | `e[].s` | which words of the chunk the translators supplied (they are in `[square brackets]` in the MSB): their positions, from 0, among the chunk's `t` split on white space (`"was king"` with `s: [0]`: *was* is supplied, *king* is not); sorted, never empty; absent when no word is supplied. Punctuation alone is never supplied, so a chunk is wholly supplied when every word of it with a letter is listed |
 
 The reader draws only the supplied words in italics (`englishRuns` in `src/data/chapter.ts` cuts a chunk into runs), and the tutor is
@@ -195,11 +195,26 @@ two `B` readings and one `N`).
 | `base` | the 2018 text's words there, as the apparatus writes them (`…` kept); for a `~` unit the verse's words |
 | `alts[].code` | `B`, `N`, `C`, `S`, `E` or `M` |
 | `alts[].text` | the reading as the apparatus writes it (NA's `[ ]` and `[[ ]]` kept); `""` when it leaves the base out |
+| `alts[].g` | the reading's words one by one, each a `g` word as above (`t`, `tr`, `s`, `l`, `p`): `t` is the word with the apparatus's brackets and marks off, `tr` is `""`, and `s`, `l`, `p` are its Strong's number, lemma and parsing where the text has the form ('Tagged words' below); `[]` when the reading leaves the base out. The chapter's `lex` and `parse` hold the entries these words use |
+| `alts[].apart` | `true` when the reading has an ellipsis (`ἓν... ἓν... ἓν`, `ὃ μὲν... ὃ δὲ... ὃ δὲ`): it is in pieces and cannot be laid over the text word for word; absent otherwise (its `g` still holds its words) |
 | `english` | `{"source":"msb"\|"lampas","base":"…","alts":["…"]}`: the base in English and each of `alts` in English, the same order ('Variant English' below) |
 | `changesEnglish` | `true` when the English of the base and of any reading differ once case, punctuation and white space are set aside; `false` when the Greek differs (a spelling, a word order, an article) and the English does not, or when the verse reads the same either way (`src/data/variantVerse.ts`: the verse's chunks of the unit's words replaced by the base's English, and by the reading's, both give the verse itself, so 'that' / 'that I' before 'I love you' changes nothing; mw-9ji6ek0.14). The Reader's English filter (`shownUnits`) judges each reading the same way, with the chapter's verses; `npm run variants:sweep` re-judges the committed chapters (`-- --write` fixes the flag) |
 | `witness` | `"byz"` (code `B`), `"na"` (`N`, `C`, `S`, `E`) or `"ecm"` (`M`); a unit with several codes takes the first class in that order |
 
 Units are in verse order, then by their first word.
+
+**Tagged words** (mw-9ji6ek0.21; `scripts/data/variantWords.ts`, run last in `buildData`, once every chapter and the RP 2026 overlay are laid). A reading is a string of
+Greek the verse need not have, so each of its words is looked up in an index of every form the whole New Testament text uses (the inverse of
+`scripts/build-lemma-forms.mjs`: a form -> the lemma, Strong's number and parsing it is used as). The form is matched whole first (lower case, a grave accent the
+acute, so `καὶ` is `καί`); failing that by its letters alone (no accents or breathings), but only where every use of those letters is one Strong's number (`ἦ`
+could be `ἡ` or `ἢ`, so it is left). Among several uses of a form the commonest wins (`λύει` indicative or subjunctive), a tie going to the book nearest the
+chapter's in the canon. A form the text never has (`εἶπαν`, a numeral letter `ΙΒ`, `ἠμελλες`) keeps `t` alone with `s`, `l` and `p` `""`: no lemma is invented for it.
+The build prints `variant words tagged: N of M` and writes the forms left alone to `data/variant-untagged.txt` (committed for review; one line a form: the form, how often
+the readings read it, and the verse of its first reading). Because a chapter's fingerprint is its file's, the fingerprints in `index.json` are taken after the tagging.
+
+**Tagged counts** (2026-10-28): 9,595 of 11,078 words of the readings tagged (86.6%); 1,053 distinct forms are left, mostly the New Testament editions' own spellings the
+Byzantine text does not have (`εἶπαν` 86 times, `τεσσεράκοντα`, `ἔπεσαν`, `λήμψεται`, `Μωϋσεῖ`) and the letter numerals (`ΙΒ`, `ΚΔ`). Three readings are `apart`.
+The chapters grew by about 1.1 MB in all (36.2 to 37.2 MB of JSON).
 
 **Counts** (the build prints them; tag v3.3.2, 2026-10-27): 7,522 units in the files read, B 669, N 6,746, C 46, S 29, E 14, M 18
 (Revelation B 350, N 443); 7,514 aligned (99.9%), in 7,200 units of the chapters (571 KB in all).

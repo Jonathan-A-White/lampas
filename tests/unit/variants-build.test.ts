@@ -16,7 +16,8 @@ import {
   parseVariantsCsv,
   variantsReport,
 } from '../../scripts/data/variants';
-import type { Chapter } from '../../src/data/chapter';
+import type { Chapter, GreekWord } from '../../src/data/chapter';
+import { formIndex, tagReading, tagVariants, taggedLine, untaggedText } from '../../scripts/data/variantWords';
 
 // Revelation 3:1-3 as REV.csv has it, and the same verses' words in the MSB table, in Greek order.
 const REV_3 = `chapter,verse,text
@@ -229,20 +230,21 @@ describe('the build', () => {
         variantsSha256: checksum,
         rp2026: false,
         englishFile: join(base, 'variant-english.json'),
+        untaggedFile: join(base, 'variant-untagged.txt'),
         download: async (url, dest) => {
           downloads.push(url);
           mkdirSync(join(dest, '..'), { recursive: true });
           writeFileSync(dest, fileOf(url.split('/').pop()!.replace(/\.csv$/, '')));
         },
       });
-      return { downloads, log, rev: JSON.parse(readFileSync(join(base, 'out', 'rev', '17.json'), 'utf8')) as Chapter, raw };
+      return { downloads, log, rev: JSON.parse(readFileSync(join(base, 'out', 'rev', '17.json'), 'utf8')) as Chapter, raw, untagged: readFileSync(join(base, 'variant-untagged.txt'), 'utf8') };
     } finally {
       rmSync(base, { recursive: true, force: true });
     }
   }
 
   it('fetches each book of the apparatus at the pinned tag into data/raw and writes its units into the chapter file', async () => {
-    const { downloads, log, rev } = await build(fixtureSha);
+    const { downloads, log, rev, untagged } = await build(fixtureSha);
     expect(downloads.filter((u) => u.includes('byztxt'))).toHaveLength(27);
     expect(downloads).toContain(`https://raw.githubusercontent.com/byztxt/byzantine-majority-text/${VARIANTS_TAG}/csv-unicode/ccat/with-variants/REV.csv`);
     expect(VARIANTS_RAW_DIR).toBe(`byztxt-${VARIANTS_TAG}`);
@@ -251,11 +253,13 @@ describe('the build', () => {
       v: 8,
       w: [17],
       base: 'ὑπάγειν',
-      alts: [{ code: 'N', text: 'ὑπάγει' }],
+      alts: [{ code: 'N', text: 'ὑπάγει', g: [{ t: 'ὑπάγει', tr: '', s: '', l: '', p: '' }] }],
       english: { source: 'lampas', base: 'the ὑπάγειν', alts: ['not ὑπάγει'] },
       changesEnglish: true,
       witness: 'na',
     });
+    expect(log.find((l) => l.startsWith('variant words tagged:'))).toMatch(/^variant words tagged: \d+ of \d+$/);
+    expect(untagged).toContain('ὑπάγει\t');
     expect(log).toContain('variant English: 6 units: msb 0, lampas 6');
     expect(log).toContain('variant witness: byz 4, na 2, ecm 0');
     expect(log).toContain(`variants (byztxt ${VARIANTS_TAG}): 8 units: B 4, N 4`);
@@ -266,5 +270,124 @@ describe('the build', () => {
   it('refuses files whose sha256 is not the pinned one', async () => {
     expect(VARIANTS_SHA256).toMatch(/^[0-9a-f]{64}$/);
     await expect(build()).rejects.toThrow(/sha256/);
+  });
+});
+
+// ---------------------------------------------------------------- the words of each reading (mw-9ji6ek0.21)
+
+const word = (t: string, s: string, l: string, p: string): GreekWord => ({ t, tr: '', s, l, p });
+const chapterOf = (code: string, words: GreekWord[]): Chapter => ({
+  book: code, code, chapter: 1, lex: {}, parse: {}, verses: [{ n: 1, g: words, e: [] }],
+});
+// the forms of the whole text, from the few words the readings below need
+const TEXT = [
+  chapterOf('rev', [word('καὶ', 'G2532', 'καί', 'CONJ'), word('ζῇς', 'G2198', 'ζάω', 'V-PAI-2S'), word('Ἐγώ', 'G1473', 'ἐγώ', 'P-1NS'), word('ἐγὼ', 'G1473', 'ἐγώ', 'P-1NS')]),
+  // ὁ is the article three times and the pronoun once: the commonest parsing wins
+  chapterOf('mat', [word('ὁ', 'G3588', 'ὁ', 'T-NSM'), word('ὁ', 'G3588', 'ὁ', 'T-NSM'), word('ὁ', 'G3588', 'ὁ', 'T-NSM'), word('ὁ', 'G3739', 'ὅς', 'R-NSM')]),
+  // λύει is indicative twice in John and subjunctive twice in Matthew: a tie goes to the book nearer the chapter's
+  chapterOf('jhn', [word('λύει', 'G3089', 'λύω', 'V-PAI-3S'), word('λύει', 'G3089', 'λύω', 'V-PAI-3S')]),
+  chapterOf('mat', [word('λύει', 'G3089', 'λύω', 'V-PAS-3S'), word('λύει', 'G3089', 'λύω', 'V-PAS-3S')]),
+  // ἢ (or) and ἡ (the) share their letters once accents and breathings are set aside: a different word, never guessed
+  chapterOf('luk', [word('ἢ', 'G2228', 'ἤ', 'CONJ'), word('ἡ', 'G3588', 'ὁ', 'T-NSF')]),
+  chapterOf('luk', [word('λόγου', 'G3056', 'λόγος', 'N-GSM')]),
+];
+
+describe('the words of a reading', () => {
+  const index = formIndex(TEXT);
+
+  it('tags Revelation 3:1’s καὶ ζῇς: καί is G2532 and ζῇς is ζάω', () => {
+    const { g, apart } = tagReading('καὶ ζῇς', index, 'rev');
+    expect(apart).toBe(false);
+    expect(g).toEqual([word('καὶ', 'G2532', 'καί', 'CONJ'), word('ζῇς', 'G2198', 'ζάω', 'V-PAI-2S')]);
+  });
+
+  it('tags Revelation 3:9’s ἐγώ as G1473, a capital or a grave accent set aside', () => {
+    expect(tagReading('ἐγώ', index, 'rev').g).toEqual([word('ἐγώ', 'G1473', 'ἐγώ', 'P-1NS')]);
+    expect(tagReading('Ἐγὼ', index, 'rev').g[0]).toMatchObject({ t: 'Ἐγὼ', s: 'G1473' });
+  });
+
+  it('leaves a form the text never has with its letters alone', () => {
+    expect(tagReading('ἠμελλες', index, 'rev').g).toEqual([word('ἠμελλες', '', '', '')]);
+    expect(tagReading('ὑπάγω ζῇς', index, 'rev').g.map((w) => w.s)).toEqual(['', 'G2198']);
+  });
+
+  it('takes the commonest parsing of a form, and a tie goes to the nearer book', () => {
+    expect(tagReading('ὁ', index, 'rev').g[0]).toMatchObject({ s: 'G3588', p: 'T-NSM' });
+    expect(tagReading('λύει', index, 'jhn').g[0].p).toBe('V-PAI-3S');
+    expect(tagReading('λύει', index, 'mat').g[0].p).toBe('V-PAS-3S');
+  });
+
+  it('matches by letters alone only where one word has them: ἦ is not guessed from ἡ, ἢ', () => {
+    expect(tagReading('ἦ', index, 'rev').g[0].s).toBe('');
+    expect(tagReading('λογου', index, 'rev').g[0]).toMatchObject({ t: 'λογου', s: 'G3056', l: 'λόγος' });
+  });
+
+  it('drops the apparatus’s brackets, marks and a lone dash, and keeps no word for a reading that leaves the base out', () => {
+    expect(tagReading('[καὶ] ζῇς,', index, 'rev').g.map((w) => w.t)).toEqual(['καὶ', 'ζῇς']);
+    expect(tagReading('', index, 'rev')).toEqual({ g: [], apart: false });
+  });
+
+  it('marks a reading with an ellipsis apart, its words still tagged', () => {
+    const three = tagReading('ὁ... ζῇς... καὶ', index, 'rev');
+    expect(three.apart).toBe(true);
+    expect(three.g.map((w) => w.t)).toEqual(['ὁ', 'ζῇς', 'καὶ']);
+    expect(tagReading('ὁ … ζῇς', index, 'rev').apart).toBe(true);
+  });
+
+  it('tags a chapter’s readings, adds the Strong’s numbers and parsings they use to its lex and parse, and counts the rest', () => {
+    const chapter: Chapter = {
+      ...chapterOf('rev', [word('ζῇς', 'G2198', 'ζάω', 'V-PAI-2S')]),
+      lex: { G2198: { g: 'to live', d: 'live' } },
+      parse: { 'V-PAI-2S': 'verb, present, active, indicative, 2nd person singular' },
+      variants: [
+        { v: 1, w: [0], base: 'ζῇς', alts: [{ code: 'B', text: 'καὶ ζῇς' }, { code: 'B', text: 'ἠμελλες' }], english: { source: 'lampas', base: 'live', alts: ['and live', ''] }, changesEnglish: true, witness: 'byz' },
+      ],
+    };
+    const lex = { get: (s: string) => (s === 'G2532' ? { lemma: 'καί', gloss: 'and', definition: 'and, even' } : undefined) };
+    const tally = tagVariants([chapter], index, lex);
+    expect(chapter.variants![0].alts[0].g!.map((w) => w.s)).toEqual(['G2532', 'G2198']);
+    expect(chapter.variants![0].alts[1].g!.map((w) => w.s)).toEqual(['']);
+    expect(Object.keys(chapter.lex)).toEqual(['G2198', 'G2532']);
+    expect(chapter.lex.G2532).toEqual({ g: 'and', d: 'and, even' });
+    expect(Object.keys(chapter.parse)).toEqual(['CONJ', 'V-PAI-2S']);
+    expect(taggedLine(tally)).toBe('variant words tagged: 2 of 3');
+    expect(untaggedText(tally)).toContain('ἠμελλες');
+  });
+});
+
+describe('the committed chapters’ readings', () => {
+  const chapter = (code: string, n: number): Chapter => JSON.parse(readFileSync(`public/data/${code}/${n}.json`, 'utf8')) as Chapter;
+  const reading = (c: Chapter, v: number, text: string) => c.variants!.filter((u) => u.v === v).flatMap((u) => u.alts).find((a) => a.text === text)!;
+
+  it('carry Revelation 3:1’s καὶ ζῇς as καί (G2532) and ζῇς, with their lex and parse entries', () => {
+    const rev = chapter('rev', 3);
+    const g = reading(rev, 1, 'καὶ ζῇς').g!;
+    expect(g.map((w) => [w.t, w.s, w.l])).toEqual([['καὶ', 'G2532', 'καί'], ['ζῇς', 'G2198', 'ζάω']]);
+    for (const w of g) {
+      expect(rev.lex[w.s]).toBeDefined();
+      expect(rev.parse[w.p]).toBeDefined();
+    }
+  });
+
+  it('carry Revelation 3:9’s ἐγώ as G1473', () => {
+    const rev = chapter('rev', 3);
+    const alts = rev.variants!.filter((u) => u.v === 9).flatMap((u) => u.alts);
+    expect(alts.some((a) => a.g!.some((w) => w.s === 'G1473'))).toBe(true);
+  });
+
+  it('mark Mark 4:8’s “ἓν... ἓν... ἓν” apart', () => {
+    const mrk = chapter('mrk', 4);
+    expect(reading(mrk, 8, 'ἓν... ἓν... ἓν').apart).toBe(true);
+    expect(mrk.variants!.flatMap((u) => u.alts).filter((a) => a.apart).length).toBeGreaterThan(0);
+  });
+
+  it('give every reading a g, and every tagged word a lex and parse entry', () => {
+    for (const code of ['mat', 'act', 'rom', 'rev']) {
+      const c = chapter(code, 1);
+      for (const a of c.variants?.flatMap((u) => u.alts) ?? []) {
+        expect(a.g).toBeDefined();
+        for (const w of a.g!) if (w.s) expect([c.lex[w.s], c.parse[w.p]].every(Boolean)).toBe(true);
+      }
+    }
   });
 });
