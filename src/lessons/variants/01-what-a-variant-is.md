@@ -40,4 +40,4 @@ When you turn variants on, Lampas marks the words of each place and shows the ot
 
 - [The 2005 edition's preface, by Robinson and Pierpont](https://byzantinetext.com/wp-content/uploads/2016/11/editions-rp-01-preface.pdf) (public domain): how the text was copied and how the edition was made.
 - [The 2018 apparatus, as the byztxt project keeps it](https://github.com/byztxt/byzantine-majority-text/tree/v3.3.2/csv-unicode/ccat/with-variants) (public domain): the readings Lampas shows; Revelation 3:1 is in REV.csv.
-- [How Lampas lays the apparatus on the Greek, and the counts](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md) (the section "Variants").
+- [How Lampas lays the apparatus on the Greek, and the counts](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md#variants) (the section "Variants").

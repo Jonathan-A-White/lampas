@@ -36,5 +36,5 @@ Lampas reads the Byzantine text and says so, and shows the other readings so tha
 - [The 2005 edition's preface](https://byzantinetext.com/wp-content/uploads/2016/11/editions-rp-01-preface.pdf), page xix (public domain): Nestle-Aland's double brackets, and the passages they mark.
 - [Robinson, The Case for Byzantine Priority](https://byzantinetext.com/wp-content/uploads/2016/11/editions-rp-11-appendix.pdf) (public domain), also to read in the app.
 - [The Majority Standard Bible](https://majoritybible.com/) (public domain): its "CT" footnotes give the critical text's English.
-- [The 2018 apparatus](https://github.com/byztxt/byzantine-majority-text/tree/v3.3.2/csv-unicode/ccat/with-variants) (public domain) and [how Lampas counts its places](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md).
+- [The 2018 apparatus](https://github.com/byztxt/byzantine-majority-text/tree/v3.3.2/csv-unicode/ccat/with-variants) (public domain) and [how Lampas counts its places](https://github.com/Jonathan-A-White/lampas/blob/main/docs/data.md#variants).
 - Further reading (named, not quoted): Bruce M. Metzger, *A Textual Commentary on the Greek New Testament*.
