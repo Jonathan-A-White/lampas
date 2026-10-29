@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.9
+_2026-10-29_
+- Fixed: Asking the tutor from a verse now opens the same tutor as the Talk button, so it can send your request to the makers too.
+
 ## 0.7.8
 _2026-10-29_
 - New: Settings now lets you choose a different Logos Bible for the New Testament, the Old Testament and the Apocrypha, and Open in Logos uses the one for that part.

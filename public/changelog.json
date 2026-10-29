@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.9",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.842",
+    "kind": "fixed",
+    "text": "Asking the tutor from a verse now opens the same tutor as the Talk button, so it can send your request to the makers too."
+  },
+  {
     "version": "0.7.8",
     "date": "2026-10-29",
     "story": "mw-5r3p30.841",
