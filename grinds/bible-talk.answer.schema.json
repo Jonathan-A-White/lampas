@@ -1486,6 +1486,7 @@
                   "weaveOrder",
                   "variants",
                   "variantWitnesses",
+                  "variantLessonsOffer",
                   "newWordsADay",
                   "pickerGrammar",
                   "grammarMove",
@@ -1728,6 +1729,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "variantWitnesses" }, "value": { "type": "string", "enum": ["byz", "na", "ecm"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "variantLessonsOffer" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

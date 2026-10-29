@@ -12,7 +12,7 @@ import { playToOf, type PlayTo } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
 import { DEFAULT_PRONUNCIATION, isPronunciation, type GreekPronunciation } from '../../speech/pronunciation';
-import { chapterButtonsSetting, immersiveSetting, themeSetting, tipsSetting, variantsSetting, weaveSetting } from '../../settings/definitions';
+import { chapterButtonsSetting, immersiveSetting, themeSetting, tipsSetting, variantLessonsOfferSetting, variantsSetting, weaveSetting } from '../../settings/definitions';
 import type { ChapterButtons } from '../../settings/definitions/chapterButtons';
 import type { Immersive } from '../../settings/definitions/immersive';
 import type { Tips } from '../../settings/definitions/tips';
@@ -65,6 +65,25 @@ export async function toggleVariants(): Promise<void> {
   }
   await db.settings.put({ key: VARIANTS_LAST_ON_KEY, value: now });
   await setSetting(variantsSetting, 'off');
+}
+
+const LESSONS_OFFER_ANSWERED_KEY = 'variantLessonsOfferAnswered';
+
+/** Whether he has answered the card that offers the lessons on variant readings (mw-9ji6ek0.19), by Read the lessons or Not now: it is not drawn again until Offer the lessons is turned On. */
+export async function getVariantLessonsOfferAnswered(): Promise<boolean> {
+  return (await db.settings.get(LESSONS_OFFER_ANSWERED_KEY))?.value === 'yes';
+}
+
+/** Saves Offer the lessons; turning it On brings the card back, so an answer given before is forgotten. */
+export async function setVariantLessonsOffer(value: 'on' | 'off'): Promise<void> {
+  if (value === 'on') await db.settings.delete(LESSONS_OFFER_ANSWERED_KEY);
+  await setSetting(variantLessonsOfferSetting, value);
+}
+
+/** His answer to the card: Read the lessons (`read`) or Not now, which also turns Offer the lessons Off. Either puts the card away. */
+export async function answerVariantLessonsOffer(read: boolean): Promise<void> {
+  await db.settings.put({ key: LESSONS_OFFER_ANSWERED_KEY, value: 'yes' });
+  if (!read) await setSetting(variantLessonsOfferSetting, 'off');
 }
 
 /** The three choices of the Reader's switch: plain English, the woven English, the Greek. */

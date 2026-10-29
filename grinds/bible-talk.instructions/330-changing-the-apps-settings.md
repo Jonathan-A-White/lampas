@@ -43,6 +43,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `weaveOrder` — Order. Lay the woven verse out in the English or in the original word order. Value: "english", "greek" (Original).
 - `variants` — Variants. Where manuscripts differ: Those that change the English keeps readings that change it; All, every one. Value: "off", "english", "all".
 - `variantWitnesses` — Witnesses. Whose readings count: the Byzantine split, Nestle-Aland 27/28, ECM. Value: "byz" (Byzantine splits only), "na" (also Nestle-Aland), "ecm" (also ECM).
+- `variantLessonsOffer` — Offer the lessons. Whether the Reader offers the five short lessons on variant readings, in a card under its chips, the first time Variants is On. Not now on the card turns this Off; turn it On to see the card once more.
 - `newWordsADay` — New words a day. From the chapter you are reading, most common first. Off offers none; the app offers none while many reviews are due or the last round went badly, and one notch more after a clean week. Value: "0", "3", "5", "10".
 - `pickerGrammar` — New words at. Offer only new words whose form in the chapter uses grammar you have at this level. It shows only while New words a day is not Off. Value: "solid" (Solid grammar), "frontier" (Frontier grammar).
 - `grammarMove` — Move it. Whether the app moves New words at by how your grammar reviews go: Ask: offers. Auto: moves and says so. Off: never. It shows only while New words a day is not Off. Value: "ask", "auto", "off".

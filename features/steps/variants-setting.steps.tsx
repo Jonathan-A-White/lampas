@@ -125,4 +125,34 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await waitFor(() => expect(screen.queryByRole('group', { name: 'Witnesses' })).toBeNull());
     });
   });
+  Scenario('Settings offers the lessons whatever Variants is, On to start, with a row that opens them', ({ Given, Then, And }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    Then('Offer the lessons offers {string} and {string} with {string} chosen', async (_, a: string, b: string, chosen: string) => {
+      expect(await labelsOf('Offer the lessons')).toEqual([a, b]);
+      expect(await chosenIn('Offer the lessons')).toEqual([chosen]);
+    });
+    And('there is a row {string} that opens the lessons', async (_, name: string) => {
+      expect(await screen.findByRole('button', { name })).toBeTruthy();
+    });
+  });
+
+  Scenario('Offer the lessons survives a reload', ({ Given, When, Then }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    When('he chooses {string} in the group {string}', choose);
+    Then('the setting {string} is kept as {string}', (_, key: string, value: string) => savedAs(key, value));
+    When('Settings is opened again at Reading', reopen);
+    Then('Offer the lessons has {string} chosen', async (_, choice: string) => {
+      expect(await chosenIn('Offer the lessons')).toEqual([choice]);
+    });
+  });
+
+  Scenario('The Lessons row opens the lessons', ({ Given, When, Then }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    When('he taps the row {string}', async (_, name: string) => {
+      await user.click(await screen.findByRole('button', { name }));
+    });
+    Then('the lessons on variant readings are open', async () => {
+      await waitFor(() => expect(window.location.hash).toBe('#/lessons/variants'));
+    });
+  });
 });

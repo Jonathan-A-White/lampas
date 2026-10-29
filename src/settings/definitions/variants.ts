@@ -1,6 +1,7 @@
 // Variants (Settings > Reading > Variants, mw-9ji6ek0.4): whether the Reader marks the places where the manuscripts differ, and whose readings count. 'english' is the places
 // where the reading changes the English; 'all' every place. Witnesses are cumulative: the Byzantine split alone, with Nestle-Aland, or with ECM too (every witness, the default).
-// The Witnesses row is drawn only while Variants is not Off; nothing in the Reader changes while it is Off.
+// The Witnesses row is drawn only while Variants is not Off; nothing in the Reader changes while it is Off. 'Offer the lessons' (mw-9ji6ek0.19) is drawn always: whether the Reader, the first
+// time Variants goes On, shows a card that offers the five lessons on variant readings (src/reader/VariantLessonsOffer.tsx). PROVISIONAL: it is not gated by Tips.
 import { defineSetting } from '../define';
 
 export type Variants = 'off' | 'english' | 'all';
@@ -39,4 +40,22 @@ export const variantWitnessesSetting = defineSetting<VariantWitnesses>({
   label: 'Witnesses',
   hint: 'Whose readings count.',
   help: 'Whose readings count: the Byzantine split, Nestle-Aland 27/28, ECM.',
+});
+
+export type VariantLessonsOffer = 'on' | 'off';
+
+export const variantLessonsOfferSetting = defineSetting<VariantLessonsOffer>({
+  key: 'variantLessonsOffer',
+  default: 'on',
+  allowed: {
+    kind: 'choice',
+    values: [
+      { value: 'on', label: 'On' },
+      { value: 'off', label: 'Off' },
+    ],
+  },
+  section: 'variants',
+  label: 'Offer the lessons',
+  hint: 'A card that offers the lessons on variant readings the first time Variants is On.',
+  help: 'Whether the Reader offers the five short lessons on variant readings, in a card under its chips, the first time Variants is On. **Not now** on the card turns this Off; turn it On to see the card once more.',
 });
