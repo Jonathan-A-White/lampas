@@ -10,6 +10,7 @@ import { startAppUpdates } from 'pwa-kit/app-update';
 import { fetchChangelog } from 'pwa-kit/whats-new';
 import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';
+import { refreshOfflineCopy, updateChecked } from './data/offlineCopy';
 import { placeInterest } from './data/repositories';
 import { APP_SEMVER } from './config';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -41,6 +42,11 @@ startBookRequests();
 // The wait is bounded (mw-5r3p30.862): a Dexie open that hangs (blocked by another tab, a slow phone) kept his splash up for ~20 s with nothing to say why. After FIRST_PAINT_MS the app
 // renders anyway; placeInterest is not cancelled, so it still places the dials when it ends, and the screens read them live.
 const FIRST_PAINT_MS = 2000;
+let painted = false;
+// An update check that ends before the first render waits: the refresh at the paint follows it.
+const keepCopyCurrent = (): void => {
+  if (painted) void refreshOfflineCopy().catch(() => undefined);
+};
 const render = (): void =>
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -53,12 +59,13 @@ const render = (): void =>
       </ErrorBoundary>
     </StrictMode>,
   );
-let painted = false;
 const paint = (): void => {
   if (painted) return;
   painted = true;
   clearTimeout(paintLate);
   render();
+  // The kept copy is brought up to the index once the app is up, never before it and never awaited (mw-lcv9z3g.3).
+  keepCopyCurrent();
 };
 const paintLate = setTimeout(paint, FIRST_PAINT_MS);
 placeInterest().then(paint, paint);
@@ -71,7 +78,7 @@ registerSW({
   onRegisteredSW(_url, registration) {
     if (registration) {
       startAppUpdates(
-        { container: navigator.serviceWorker, registration, reload: () => window.location.reload() },
+        { container: navigator.serviceWorker, registration: updateChecked(registration, keepCopyCurrent), reload: () => window.location.reload() },
         { version: APP_SEMVER, hasNewsSince: hasNewsSince(() => fetchChangelog(import.meta.env.BASE_URL)) },
       );
     }

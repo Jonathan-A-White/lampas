@@ -9,6 +9,36 @@ committed; the raw downloads are not. `npm run data:build:ot` does the same for 
 **The rule (mw-uqlxea):** a chapter says its source language (`lang`: `'grc'` or `'hbo'`) and its translation (`translation`: `'msb'`); the word and chunk keys are the same for every source language.
 The reader, the word sheet, the voices and the drills read the chapter's `lang` (`sourceLanguage(chapter)`) and never assume Greek; code that says 'greek' where it means 'the source language' is generalised when touched, never in a rename sweep.
 
+<!-- toc -->
+
+- [Building](#building)
+- [Sources and licences](#sources-and-licences)
+- [`index.json`](#indexjson)
+- [`lexicon.json`](#lexiconjson)
+- [`lemma-forms/<lemma>.json` (outside `public/data`)](#lemma-formslemmajson-outside-publicdata)
+- [`frequency.json`](#frequencyjson)
+- [`<book>/<chapter>.json`](#bookchapterjson)
+- [Variants](#variants)
+- [Variant English](#variant-english)
+- [The RP 2026 overlay](#the-rp-2026-overlay)
+- [The RP 2026 English](#the-rp-2026-english)
+- [Changes to the sources](#changes-to-the-sources)
+- [The maps' index (not in `public/data`)](#the-maps-index-not-in-publicdata)
+- [The Logos Atlas's map list (not in `public/data`)](#the-logos-atlass-map-list-not-in-publicdata)
+- [The Old Testament data](#the-old-testament-data)
+  - [Source and licences](#source-and-licences)
+  - [The build](#the-build)
+  - [The keys for a Hebrew word](#the-keys-for-a-hebrew-word)
+  - [`lexicon-hbo.json` and `frequency-hbo.json`](#lexicon-hbojson-and-frequency-hbojson)
+  - [Sizes (2026-10-25)](#sizes-2026-10-25)
+- [The spaced schedule (Dexie v10)](#the-spaced-schedule-dexie-v10)
+- [Grammar levels (Dexie v11)](#grammar-levels-dexie-v11)
+- [Offline](#offline)
+  - [The offline copy (`src/data/offlineCopy.ts`, mw-lcv9z3g.1)](#the-offline-copy-srcdataofflinecopyts-mw-lcv9z3g1)
+- [The places of each book (not in `public/data`)](#the-places-of-each-book-not-in-publicdata)
+
+<!-- /toc -->
+
 ## Building
 
 ```bash
@@ -471,6 +501,7 @@ A chapter is kept under its fingerprinted address (`?v=`), so an update that lea
 A chosen scope keeps chapters ahead of reading, with no screen yet. Three scopes, saved as `offlineCopy` in the settings store (outside the registry, like `dailyDone`; `getOfflineScope` gives `'none'` for anything else): `'none'` (only what he has read, as above), `'nt'` (the 260 chapters of the 27 Greek books, about 34 MB) and `'all'` (the 1,189 chapters of the 66 books and the two Hebrew lists `lexicon-hbo.json` and `frequency-hbo.json`, about 113 MB).
 Every file is fetched by the address the Reader uses (`chapterUrl`, `?v=<fingerprint>` from `index.json`), so the worker's `serveChapter` keeps it in `lampas-data-v3` and drops an older copy: **a kept chapter is the one at `index.json`'s fingerprint**, and after a deploy that changes a chapter the copy runs again and fetches only the changed ones. The Hebrew lists are asked for plain and kept as they first came.
 A run asks the cache from the page (`caches.open(DATA_CACHE).match(url)`, no HEAD) and fetches only what it lacks, at most 3 at once, each under `within()`. A fetch that fails is tried once more and then listed in `failed`, never thrown; `{done, total, bytes, failed, paused}` goes to `onOfflineProgress` listeners and ends at `done === total`. The `offline` event pauses it (no new fetch starts) and `online` goes on. The page's fetch is kept only when the worker controls the page.
+**The copy is refreshed** (mw-lcv9z3g.3) by `refreshOfflineCopy`: once at app start, after the first render (`src/main.tsx` never awaits it and an update check that ends before the render waits for it), and after each update check of pwa-kit's `startAppUpdates` (every 30 minutes and on return to the foreground) that ends, through `updateChecked`, which wraps the registration's `update()` and does nothing when the check fails (offline). It is no network check of its own: it compares the index's addresses with the data cache (`caches.match`), and a changed fingerprint is a missing address, so only the changed chapters are fetched, and `serveChapter` drops each older copy. The index is the bundle's: a new build's `index.json` is read only once the build has taken over and the page has reloaded, so the refresh at the next app start is the one that fetches it. With scope `'none'`, or a copy run already going, nothing is done; otherwise the time of the check is saved as `offlineCopyChecked` (`getOfflineCheckedAt`, ms since 1970), for the settings row that will show it.
 
 ## The places of each book (not in `public/data`)
 
