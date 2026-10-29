@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.21
+_2026-10-29_
+- Fixed: a variant where the English folds the changed word into its neighbour (1 Corinthians 16:7 "I hope") is now dotted, not only the braces.
+
 ## 0.7.20
 _2026-10-29_
 - Fixed: Tapping Open on a verse link now always brings that verse to the top of the chapter, even if you had been reading that chapter earlier.

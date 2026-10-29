@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.21",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.35",
+    "kind": "fixed",
+    "text": "a variant where the English folds the changed word into its neighbour (1 Corinthians 16:7 \"I hope\") is now dotted, not only the braces."
+  },
+  {
     "version": "0.7.20",
     "date": "2026-10-29",
     "story": "mw-5r3p30.857",
