@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { validate, type Schema } from '../support/schema-validate';
+import '../support/grinds-in-graph';
 
 const read = (file: string): Schema => JSON.parse(readFileSync(`grinds/${file}`, 'utf8')) as Schema;
 const files = readdirSync('grinds').filter((file) => file.endsWith('.answer.schema.json'));

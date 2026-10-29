@@ -1,4 +1,5 @@
 import { configDefaults, defineConfig } from 'vitest/config';
+import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -7,8 +8,20 @@ import { buildVersion, shortCommit } from './build-version';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
+// A grinds/ .md file is text the tests read by path, which `vitest related` cannot follow; read as a module it is the file's text,
+// so a test can import it and `vitest related <that file>` selects the test (mw-5r3p30.860; a ?raw import never does, since vitest
+// looks up the dependency's path with the query on it).
+const grindsMarkdownAsText: Plugin = {
+  name: 'grinds-markdown-as-text',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!/[\\/]grinds[\\/].*\.md$/.test(id)) return null;
+    return { code: `export default ${JSON.stringify(code)};`, map: null };
+  },
+};
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), grindsMarkdownAsText],
   // vite-plugin-pwa makes this module only in a real build: src/main.tsx imports it, and tests/unit/main-first-paint.test.ts boots main.
   resolve: { alias: { 'virtual:pwa-register': fileURLToPath(new URL('./tests/support/pwa-register.ts', import.meta.url)) } },
   define: {

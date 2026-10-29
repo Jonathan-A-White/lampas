@@ -7,6 +7,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { instructionParts, instructionsOf, instructionsPath } from '../../scripts/grind-parts';
 import { SETTINGS_BEGIN, SETTINGS_END, joinGrindParts } from '../../src/settings/grindText';
+import '../support/grinds-in-graph';
 
 const SPLIT = ['bible-talk'] as const;
 
