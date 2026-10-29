@@ -57,3 +57,9 @@ Feature: Keep on this phone (mw-lcv9z3g.2)
   Scenario: A phone that kept the New Testament checks it again when Settings opens
     Given Settings is open at Reading with the New Testament chosen and every chapter kept
     Then the row reads "Up to date · checked" and a time
+
+  Scenario: A lesson's passage card opens and reads with the New Testament kept and the browser offline
+    Given the New Testament is kept and the browser says it is offline
+    When he opens the lesson "Byzantine, Nestle-Aland and ECM" and taps "Acts 18:7"
+    Then the card "Acts 18:7" shows the passage
+    And the card says nothing about the passage being offline or not fetched

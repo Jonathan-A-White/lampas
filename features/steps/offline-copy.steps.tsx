@@ -14,6 +14,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 afterAll(() => {
+  vi.restoreAllMocks();
   stopOfflineCopy();
   cleanup();
   clearBus();
@@ -114,6 +115,20 @@ const chosen = async (): Promise<string[]> =>
     .map((b) => b.textContent ?? '');
 const savedAs = (key: string, value: string) => waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
 
+/** The browser says it is offline: a chapter is answered only when the New Testament's copy holds it, as the worker answers from the data cache; anything else is a lost network. */
+function goOffline(): void {
+  vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+  const kept = new Set(offlineUrls('nt'));
+  const answer = globalThis.fetch;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (!kept.has(String(input))) throw new TypeError('Failed to fetch');
+      return answer(input, init);
+    }),
+  );
+}
+
 const feature = await loadFeature('features/offline-copy.feature');
 
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
@@ -206,6 +221,31 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     When('Settings is opened again at Reading', reopen);
     Then('Keep on this phone has <choice> chosen', async () => {
       expect(await chosen()).toEqual([row.choice]);
+    });
+  });
+
+  Scenario("A lesson's passage card opens and reads with the New Testament kept and the browser offline", ({ Given, When, Then, And }) => {
+    Given('the New Testament is kept and the browser says it is offline', async () => {
+      await openReading({ saved: { offlineCopy: 'nt' }, kept: offlineUrls('nt') });
+      stopOfflineCopy();
+      cleanup();
+      stubChapterFetch();
+      goOffline();
+    });
+    When('he opens the lesson {string} and taps {string}', async (_, lesson: string, reference: string) => {
+      window.history.replaceState(null, '', '/#/lessons/variants/3');
+      render(<App />);
+      await screen.findByRole('heading', { name: lesson });
+      await user.click(await screen.findByRole('link', { name: reference }));
+    });
+    Then('the card {string} shows the passage', async (_, heading: string) => {
+      const card = await screen.findByRole('dialog', { name: heading });
+      await waitFor(() => expect(within(card).getByText(/Titius Justus|Titus Justus|Justus/)).toBeInTheDocument());
+    });
+    And('the card says nothing about the passage being offline or not fetched', async () => {
+      const card = await screen.findByRole('dialog', { name: 'Acts 18:7' });
+      expect(card).not.toHaveTextContent(/offline|could not be fetched|not on this phone/);
+      expect(within(card).queryByRole('link', { name: 'Keep the New Testament on this phone' })).toBeNull();
     });
   });
 

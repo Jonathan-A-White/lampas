@@ -11,6 +11,8 @@ import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { TalkHost } from './share/ShareTalk';
 import { firstLine, placeOf } from './share/talkPlace';
+import { KeepOnPhoneLink } from './reader/KeepOnPhoneLink';
+import { notFetched, useOnline } from './reader/offlineWords';
 import { useTalkScope } from './share/talkScope';
 import { TalkRow } from './share/TalkRow';
 import { focusOnMount } from './ui/focus';
@@ -39,15 +41,17 @@ function lineOf(row: TalkListRow<BibleTurnFields>): string {
 /** The Talk sheet over the conversation `open`, or what stands in its place while its chapter loads or when it cannot be had. */
 function OpenConversation({ open, onClose }: { open: string; onClose: () => void }) {
   const scope = useTalkScope(open);
+  const online = useOnline();
   if (scope?.status === 'ready') return <TalkHost scope={scope.scope} talkRef={open} book={scope.book} chapter={scope.chapter} onClose={onClose} />;
   if (scope?.status !== 'failed') return null;
   return (
     <div role="alert" className="fixed inset-0 z-10 flex items-center justify-center bg-black/60 p-6">
       <div className="max-w-sm rounded-xl bg-surface p-4 text-center">
-        <p className="text-lg">{`${scope.title} is not on this phone yet, and you are offline.`}</p>
+        <p className="text-lg">{notFetched(scope.title, online)}</p>
         <button type="button" onClick={scope.retry} className="mt-4 min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg">
           Try again
         </button>
+        <KeepOnPhoneLink onOpen={onClose} />
         <button type="button" ref={focusOnMount} onClick={onClose} className="mt-3 block min-h-12 w-full rounded-xl border border-line text-lg font-medium">
           Close
         </button>

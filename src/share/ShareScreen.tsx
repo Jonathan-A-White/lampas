@@ -19,6 +19,8 @@ import { sharedContentOf, type SharedContent } from './shared';
 import { TalkHost } from './ShareTalk';
 import { importHash, isCsvFile } from './target';
 import { useTalkScope } from './talkScope';
+import { KeepOnPhoneLink } from '../reader/KeepOnPhoneLink';
+import { notFetched, useOnline } from '../reader/offlineWords';
 import { describeShare, hasReadable, leftOutLine, shareTalkHash } from './shareText';
 import { newTalkRef, placeOf, talkLabel, timeAgo } from './talkPlace';
 import { TalkRow } from './TalkRow';
@@ -156,6 +158,7 @@ export function ShareScreen() {
   );
   const scope = useTalkScope(talk);
   const failed = scope?.status === 'failed' ? scope : null;
+  const online = useOnline();
   // The chooser stays up while the talk's chapter is fetched, and the talk takes its place in one commit.
   const chooser = !failed && scope?.status !== 'ready' && row && talks ? <ShareChooser row={row} talks={talks} onPick={pick} onCancel={cancel} /> : null;
   return (
@@ -163,10 +166,11 @@ export function ShareScreen() {
       {scope?.status === 'ready' && talk ? <TalkHost scope={scope.scope} talkRef={talk} book={scope.book} chapter={scope.chapter} shared={content} onClose={goHome} /> : null}
       {failed ? (
         <div role="alert" className="max-w-sm text-center">
-          <p className="text-lg">{`${failed.title} is not on this phone yet, and you are offline.`}</p>
+          <p className="text-lg">{notFetched(failed.title, online)}</p>
           <button type="button" onClick={failed.retry} className="mt-4 min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg">
             Try again
           </button>
+          <KeepOnPhoneLink />
           <button type="button" ref={focusOnMount} onClick={goHome} className="mt-3 block min-h-12 w-full rounded-xl border border-line text-lg font-medium">
             Close
           </button>

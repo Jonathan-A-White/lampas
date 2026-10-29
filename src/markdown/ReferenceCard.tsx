@@ -23,6 +23,8 @@ import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
 import { isOrdered, rowAttrs } from '../reader/sourceText';
 import { textClass } from '../reader/textClass';
+import { KeepOnPhoneLink } from '../reader/KeepOnPhoneLink';
+import { notFetched, useOnline } from '../reader/offlineWords';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
 
 /** The translation the reader's English is, and the edition its Greek follows. */
@@ -189,10 +191,12 @@ function PlayControls({ card }: { card: Card }) {
   );
 }
 
-function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
+/** `onGo` closes the card before a link in it opens Settings. */
+function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onGo }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onGo: () => void }) {
   useSheetBack(onClose);
   const { held } = card;
   const [passage, setPassage] = useState<Passage>(null);
+  const online = useOnline();
   const saved = useViewSettings();
   // the view the passage is drawn in: by the dial of its chapter's language (the Greek one's until the chapter has loaded)
   const view = saved && settingsFor(saved, passage !== null && passage !== 'failed' ? passage : {}).view;
@@ -266,11 +270,14 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
           {!held ? (
-            <ElsewhereLine place={place} onSettings={onSettings} />
+            <ElsewhereLine place={place} onSettings={() => { onGo(); openSettingsSection('resources'); }} />
           ) : passage === null ? (
             <p role="status" className="py-1 text-base text-muted">{stillPassage ? 'Still loading. Close this card and open it again.' : 'Loading…'}</p>
           ) : passage === 'failed' ? (
-            <p role="status" className="py-1 text-base text-muted">This passage is not on this phone yet, and you are offline.</p>
+            <div role="status" className="py-1 text-base text-muted">
+              <p>{notFetched('This passage', online)}</p>
+              <KeepOnPhoneLink onOpen={onGo} />
+            </div>
           ) : (
             <MarkedPassage chapter={passage} held={held} mark={mark} />
           )}
@@ -340,10 +347,9 @@ export function ReferenceLink({ written, onLeave, replacing, old, found, mark, c
             if (replacing) afterSheetEntryGone(() => openAtVerse(held.book, held.chapter, held.first, true));
             else openAtVerse(held.book, held.chapter, held.first);
           }}
-          onSettings={() => {
+          onGo={() => {
             onLeave?.();
             setOpen(false);
-            openSettingsSection('resources');
           }}
         />
       ) : null}
