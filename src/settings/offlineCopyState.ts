@@ -1,55 +1,19 @@
-// src/settings/offlineCopyState.ts — what the Keep on this phone row does with the offline copy (src/data/offlineCopy.ts, mw-lcv9z3g.2): choosing a scope saves it and starts
-// the run (or stops it for Nothing extra, which deletes nothing), a run that keeps every file records the time of the check, and a phone that chose a scope before starts the
-// run again when the row first shows, since nothing else starts it yet (the check at app start is mw-lcv9z3g.3). The time is one text in the settings store, outside the registry.
-import { getOfflineScope, offlineUrls, setOfflineScope, startOfflineCopy, stopOfflineCopy, type OfflineProgress, type OfflineScope } from '../data/offlineCopy';
-import { db } from '../data/db';
-
-const CHECKED_KEY = 'offlineCopyChecked';
-
-/** When a run last kept every file of the scope (epoch ms), or undefined while none has. */
-export async function getOfflineChecked(): Promise<number | undefined> {
-  const value = Number((await db.settings.get(CHECKED_KEY))?.value);
-  return Number.isFinite(value) && value > 0 ? value : undefined;
-}
-
-const checkedListeners = new Set<() => void>();
-
-/** Calls `listener` whenever a run records the time of a check; returns the unsubscribe. */
-export function onOfflineChecked(listener: () => void): () => void {
-  checkedListeners.add(listener);
-  return () => void checkedListeners.delete(listener);
-}
-
-let live = 0;
-
-/** Whether a run started from here is going (a replaced run still winding down does not count). */
-export const offlineRunLive = (): boolean => live > 0;
-
-/** Runs the copy of the saved scope and, if it kept every file, records the time. A run stopped or replaced on the way ends short of its total and records nothing. */
-async function run(): Promise<void> {
-  live++;
-  try {
-    const progress = await startOfflineCopy();
-    if (progress.total > 0 && progress.done === progress.total && progress.failed.length === 0) {
-      await db.settings.put({ key: CHECKED_KEY, value: String(Date.now()) });
-      checkedListeners.forEach((listener) => listener());
-    }
-  } finally {
-    live--;
-  }
-}
+// src/settings/offlineCopyState.ts — what the Keep on this phone row does with the offline copy (src/data/offlineCopy.ts, mw-lcv9z3g.2): choosing a scope saves it and starts the run
+// in place of one going (or stops it for Nothing extra, which deletes nothing), and a phone that chose a scope before checks it again when the row first shows unless a run is going
+// (refreshOfflineCopy, which the app also runs at its start: what is kept is not fetched again). The time of the check is the offline copy's own (getOfflineCheckedAt).
+import { getOfflineScope, offlineUrls, refreshOfflineCopy, setOfflineScope, stopOfflineCopy, type OfflineProgress, type OfflineScope } from '../data/offlineCopy';
 
 /** He chose `scope`: it is saved, and the copy of it starts in place of any run going; Nothing extra stops the run and deletes nothing. */
 export async function chooseOfflineScope(scope: OfflineScope): Promise<void> {
   await setOfflineScope(scope);
   if (scope === 'none') stopOfflineCopy();
-  else void run();
+  else void refreshOfflineCopy({ force: true }).catch(() => undefined);
 }
 
-/** A scope chosen before (a reload): run its copy again unless a run is going. Returns the scope. */
+/** A scope chosen before (a reload): its copy is checked again unless a run is going. Returns the scope. */
 export async function resumeOfflineCopy(): Promise<OfflineScope> {
   const scope = await getOfflineScope();
-  if (scope !== 'none' && !offlineRunLive()) void run();
+  if (scope !== 'none') void refreshOfflineCopy().catch(() => undefined);
   return scope;
 }
 

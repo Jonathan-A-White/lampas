@@ -9,6 +9,7 @@ Settings is a home and pages (mw-3ased2.1). The grouping is the Builder's, PROVI
 - [The languages and their dials (mw-3ased2.2, mw-gdcyf98.2)](#the-languages-and-their-dials-mw-3ased22-mw-gdcyf982)
 - [The home and the groups](#the-home-and-the-groups)
 - [What the Settings screen holds](#what-the-settings-screen-holds)
+- [Keep on this phone (mw-lcv9z3g.2)](#keep-on-this-phone-mw-lcv9z3g2)
 - [Search](#search)
 - [Links into Settings](#links-into-settings)
 - [The Library screens (mw-rfjjzd.4)](#the-library-screens-mw-rfjjzd4)
@@ -55,11 +56,11 @@ Settings (opened by the gear; a setting's details show only while it is on, mw-5
 
 ## Keep on this phone (mw-lcv9z3g.2)
 
-The row `offlineCopy`, **Keep on this phone**, is in the section `reading` (Settings > Reading, `OFFLINE_COPY_ROW` in `rows.ts`, control `controls/offlineCopy.tsx`, the row itself `src/settings/OfflineCopyRow.tsx`). It is a row, not a registry setting: the scope is the offline copy's own key `offlineCopy` in the settings store (`src/data/offlineCopy.ts`, docs/data.md 'The offline copy'), so the tutor neither reads nor changes it (`isTalkable`; its Settings request is full). Three choices (chips, `OFFLINE_CHOICES`): **Nothing extra** (to start), **New Testament (34 MB)**, **Whole Bible (113 MB)**. Choosing one saves it and starts the run (`chooseOfflineScope`, `offlineCopyState.ts`, which also holds `OFFLINE_CHOICES` and `statusOf`); Nothing extra stops the run and deletes nothing; a phone that chose a scope before starts its run again when the row first shows (`resumeOfflineCopy`: what is kept is not fetched again). Under the chips the row says, by the run's progress (`statusOf`, `[data-offline-status]`):
+The row `offlineCopy`, **Keep on this phone**, is in the section `reading` (Settings > Reading, `OFFLINE_COPY_ROW` in `rows.ts`, control `controls/offlineCopy.tsx`, the row itself `src/settings/OfflineCopyRow.tsx`). It is a row, not a registry setting: the scope is the offline copy's own key `offlineCopy` in the settings store (`src/data/offlineCopy.ts`, docs/data.md 'The offline copy'), so the tutor neither reads nor changes it (`isTalkable`; its Settings request is full). Three choices (chips, `OFFLINE_CHOICES`): **Nothing extra** (to start), **New Testament (34 MB)**, **Whole Bible (113 MB)**. Choosing one saves it and starts the run (`chooseOfflineScope`, `offlineCopyState.ts`, which also holds `OFFLINE_CHOICES` and `statusOf`); Nothing extra stops the run and deletes nothing; a phone that chose a scope before checks it again when the row first shows unless a run is going (`resumeOfflineCopy`, which is `refreshOfflineCopy`, the check the app also makes at its start: what is kept is not fetched again). Under the chips the row says, by the run's progress (`statusOf`, `[data-offline-status]`):
 
 1. **Running**: `N of 260 chapters · 12 MB` (chapters kept, megabytes fetched by this run) and the line `Keep the app open`.
 2. **Paused**: `Paused: offline` (above the count, while the phone is offline; the run goes on at 'online').
-3. **Up to date**: `Up to date · checked <time>` once every file is kept (the clock for today, else the day and the clock; the time is the settings key `offlineCopyChecked`, written when a run keeps everything). If a file failed twice the row says `Could not keep N of M.` and `Choose it again to try them again.`
+3. **Up to date**: `Up to date · checked <time>` once every file is kept (the clock for today, else the day and the clock; the time is the offline copy's own, `getOfflineCheckedAt`, written as a check starts). If a file failed twice the row says `Could not keep N of M.` and `Choose it again to try them again.`
 
 Nothing is said under Nothing extra. `features/offline-copy.feature`, `tests/e2e/offline-copy.spec.ts` (the chapter files are 20 KB stand-ins so the run is fast; the 260 addresses are the real ones).
 

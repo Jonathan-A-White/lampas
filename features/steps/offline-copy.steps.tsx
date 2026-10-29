@@ -8,7 +8,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
-import { offlineUrls, stopOfflineCopy } from '../../src/data/offlineCopy';
+import { offlineRunning, offlineUrls, stopOfflineCopy } from '../../src/data/offlineCopy';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -94,6 +94,8 @@ async function openReading(options: { kept?: string[]; saved?: Record<string, st
   await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear(), db.readingSets.clear()]);
   for (const [key, value] of Object.entries(options.saved ?? {})) await db.settings.put({ key, value });
   stubOfflineFetch();
+  // the run the last scenario stopped has ended, so the row's own check can start
+  await waitFor(() => expect(offlineRunning()).toBe(false));
   stubDataCache(options.kept);
   await showReading();
 }
@@ -124,6 +126,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     clearBus();
     forgetTrail();
     stubOfflineFetch();
+    await waitFor(() => expect(offlineRunning()).toBe(false));
     await showReading();
   };
   const rowReads = (_: unknown, text: string) => waitFor(async () => expect(await statusOf()).toContain(text));
@@ -179,6 +182,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     When('he chooses {string} in the group {string}', choose);
     And('he chooses {string} in the group {string}', choose);
     Then('no more chapters are fetched', async () => {
+      // Nothing extra is saved and the run stopped before the fetches held back are let go
+      await savedAs('offlineCopy', 'none');
+      await new Promise((resolve) => setTimeout(resolve, 20));
       await arrive();
       const count = fetched.length;
       await new Promise((resolve) => setTimeout(resolve, 50));
