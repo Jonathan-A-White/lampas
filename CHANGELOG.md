@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.22
+_2026-10-29_
+- New: A setting, English from the 2026 Greek, shows Lampas's own English over the Bible's where the newest Greek text changes the meaning, marked RP 2026, with a tap for the Bible's words, the Greek and where each comes from.
+- Fixed: A variant that only moves the same Greek words around, such as Matthew 3:4, no longer counts as changing the English; it shows under All, with a note that the order changes emphasis, not meaning.
+
 ## 0.7.21
 _2026-10-29_
 - Fixed: a variant where the English folds the changed word into its neighbour (1 Corinthians 16:7 "I hope") is now dotted, not only the braces.
