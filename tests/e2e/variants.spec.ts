@@ -696,3 +696,37 @@ test('Matthew 3:4: a word-order-only unit shows under All and not under Those th
   expect((await line.boundingBox())!.y).toBeLessThan((await ask.boundingBox())!.y);
   await shot(page, 'variants-word-order-sheet');
 });
+
+// A chip woven word by word like the text (mw-9ji6ek0.37): Revelation 3:1 in the Weave, where he has καί solid and not ζάω, reads '{καὶ you live B}': the word he knows in the weave's gold,
+// a tap on it opens its word card, the rest English. The English and Greek views' chips are as before. Shot: shots/variants-weave-brace.png.
+test('Revelation 3:1 in the Weave: the brace stands in Greek for the words he knows and in English for the rest', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=rev&c=3&weave=solid');
+  await expect(page.locator('[data-verse="1"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'Weave').click();
+  await expect(choice(page, 'Weave')).toHaveAttribute('aria-pressed', 'true');
+
+  const brace = page.locator('[data-verse="1"] [data-brace]').first();
+  await expect(brace).toBeVisible();
+  await expect(brace).toHaveAttribute('data-brace-lang', 'english');
+  const woven = brace.locator('[data-brace-word][data-woven]');
+  await expect(woven).toHaveText(['καὶ']);
+  await expect(brace.locator('[data-brace-word]:not([data-woven])')).toHaveText(['you', 'live']);
+  expect(await woven.evaluate((el) => getComputedStyle(el).color)).toBe(await page.locator('[data-verse="1"] [data-woven]:not([data-brace-word])').first().evaluate((el) => getComputedStyle(el).color));
+  await shot(page, 'variants-weave-brace');
+
+  await woven.click();
+  const card = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText(/[Κκ]αὶ/);
+  await expect(card).toContainText('in variant B');
+
+  // the English and Greek views draw it as before
+  await page.keyboard.press('Escape');
+  await choice(page, 'English').click();
+  await expect(page.locator('[data-verse="1"] [data-brace]').first().locator('[data-woven]')).toHaveCount(0);
+  await choice(page, 'Greek').click();
+  await expect(page.locator('[data-verse="1"] [data-brace]').first()).toContainText('καὶ ζῇς');
+});
