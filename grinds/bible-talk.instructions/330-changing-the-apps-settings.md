@@ -17,7 +17,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `languages` — Which languages? The Bible in English, or with its Greek, its Hebrew, or both Value: "english" (English only), "greek", "hebrew", "both" (Greek and Hebrew).
 - `greekInterest` — How much Greek? From none to all in: each step shows more Greek, and nothing more. Value: "0" (Just English), "1" (Curious), "2" (Dipping a toe), "3" (Learning), "4" (Reading in Greek), "5" (All in).
 - `hebrewInterest` — How much Hebrew? From none to all in: each step shows more Hebrew, and nothing more. Value: "4" (Reading in Hebrew), or any value of `greekInterest`.
-- `theme` — Theme. The colours: Phone: follows the phone's own light or dark setting. Sepia: warm paper with dark brown text, for long reading. High contrast: pure white on black with thick outlines, for low vision. Value: "phone", "light", "dark", "sepia", "contrast".
+- `theme` — Theme. The colours: Phone: follows the phone's light or dark setting. Sepia: warm paper with dark brown text, for long reading. High contrast: pure white on black with thick outlines, for low vision. Value: "phone", "light", "dark", "sepia", "contrast".
 - `font` — Font. The face of the English text; the Greek and the Hebrew keep theirs. Value: "phone" (The phone's own), "literata", "atkinson" (Atkinson Hyperlegible), "lexend".
 - `textSize` — Text size. How big the text is, in steps of the phone's own size. Value: "small", "normal", "large", "largest".
 - `layout` — Layout. How the verses are set on the page: Verse by verse: one verse per line. Paragraph: runs the verses of a paragraph together, with small verse numbers. Value: "verse", "paragraph".
@@ -39,14 +39,15 @@ Never claim a change the list does not have. For a setting the app does not have
 - `hebrewDepth` — Hebrew in the tutor. How the tutor writes a Hebrew word: its sound, the letters, or both. Value: "transliteration", "both" (Hebrew and transliteration), "full".
 - `tips` — Tips. Whether Lampas may offer one small tip a day, from what you use, to help you get more from the app. Once a day at most, when you open Lampas and are online. On by default; Off sends nothing.
 - `weave` — Weave. In the English view, whether the Greek or Hebrew of his solid words, and of the words he is learning with their English beneath in small grey, is shown in place of their English: Solid: shows the solid ones. + Learning: shows the ones being learned too, with their English beneath in small grey until they turn solid. Value: "off", "solid", "solid+learning".
-- `weaveGrammar` — Grammar. Of the words that stand in the Greek or Hebrew, keep only the forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off. Value: "any", "solid", "solid+frontier" (+ Frontier).
+- `weaveGrammar` — Grammar. Of the woven Greek or Hebrew, keep only forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off. Value: "any", "solid", "solid+frontier" (+ Frontier).
 - `weaveOrder` — Order. Lay the woven verse out in the English or in the original word order. Value: "english", "greek" (Original).
 - `variants` — Variants. Where manuscripts differ: Those that change the English keeps readings that change it; All, every one. Value: "off", "english", "all".
 - `variantWitnesses` — Witnesses. Whose readings count: the Byzantine split, Nestle-Aland 27/28, ECM. Value: "byz" (Byzantine splits only), "na" (also Nestle-Aland), "ecm" (also ECM).
-- `variantLessonsOffer` — Offer the lessons. Whether the Reader offers the five short lessons on variant readings, in a card under its chips, the first time Variants is On. Not now on the card turns this Off; turn it On to see the card once more.
-- `newWordsADay` — New words a day. From the chapter you are reading, most common first. Off offers none; the app offers none while many reviews are due or the last round went badly, and one notch more after a clean week. Value: "0", "3", "5", "10".
-- `pickerGrammar` — New words at. Offer only new words whose form in the chapter uses grammar you have at this level. It shows only while New words a day is not Off. Value: "solid" (Solid grammar), "frontier" (Frontier grammar).
-- `grammarMove` — Move it. Whether the app moves New words at by how your grammar reviews go: Ask: offers. Auto: moves and says so. Off: never. It shows only while New words a day is not Off. Value: "ask", "auto", "off".
+- `rp2026English` — English from the 2026 Greek. On shows Lampas’s English, marked RP 2026, where the 2026 Greek changes it.
+- `variantLessonsOffer` — Offer the lessons. Whether a card offers the five lessons on variant readings the first time Variants is On. Not now turns this Off; On shows it again.
+- `newWordsADay` — New words a day. From the chapter you are reading, most common first. Off offers none; none while many reviews are due or the last round went badly; a clean week adds a notch. Value: "0", "3", "5", "10".
+- `pickerGrammar` — New words at. Offer only new words whose form uses grammar you have at this level. It shows only while New words a day is not Off. Value: "solid" (Solid grammar), "frontier" (Frontier grammar).
+- `grammarMove` — Move it. Whether New words at moves by how your grammar reviews go: Ask: offers. Auto: moves and says so. Off: never. It shows only while New words a day is not Off. Value: "ask", "auto", "off".
 - `paradigmExtent` — How much of a table. Which forms a paradigm table shows: all of them, yours, or only the solid ones. Value: "any", "solid+frontier" (Solid and frontier), "solid" (Solid only).
 - `goal` — Goal. The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" (a book, a chapter or a verse; "" for none).
 - `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "ladder" (Lampas ladder).

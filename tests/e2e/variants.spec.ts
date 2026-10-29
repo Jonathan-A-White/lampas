@@ -634,3 +634,65 @@ test('Matthew 2:22 dots the English the left-out ἐπὶ is folded into, and th
   await expect(sheet.locator('[data-variant-reading]').nth(1)).not.toHaveText(/^Other reading\s*left out\s*left out$/);
   await shot(page, 'variants-omission-sheet');
 });
+
+// A unit whose reading changes the words marks the text when the English folds them into a neighbour (mw-9ji6ek0.35): 1 Corinthians 16:7 'I hope {for NA} to spend some time', where
+// NA reads γὰρ for δὲ and the MSB gives δὲ no chunk of its own ('I hope' holds ἐλπίζω). The chunk is dotted, the brace follows it, and the NA siglum opens a sheet that names γὰρ.
+test('1 Corinthians 16:7 dots the English the changed δὲ is folded into, and the NA siglum opens a sheet that names γὰρ', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=1co&c=16');
+  await expect(page.locator('[data-verse="7"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'English').click();
+  await expect(choice(page, 'English')).toHaveAttribute('aria-pressed', 'true');
+
+  const verse = page.locator('[data-verse="7"]');
+  const brace = verse.locator('[data-brace]').first();
+  await expect(brace).toBeVisible();
+  const run = verse.locator('[data-variant-run]', { hasText: /I hope/ });
+  await expect(run).toHaveText(/I hope\s*$/);
+  await expect(run.locator('[data-variant]')).not.toHaveCount(0);
+  const dotted = await run.evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(dotted).toContain('linear-gradient');
+  expect(await run.evaluate((el) => el.nextElementSibling?.matches('[data-brace]'))).toBe(true);
+  await verse.scrollIntoViewIfNeeded();
+
+  await brace.locator('[data-witness]').first().click();
+  const sheet = page.getByRole('dialog', { name: 'Variant reading' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet).toContainText('γὰρ');
+  await shot(page, 'variants-folded-sheet');
+});
+
+// A word-order-only unit is not a change of the English (mw-9ji6ek0.31): Matthew 3:4 αὐτοῦ ἦν / ἦν αὐτοῦ ('his was' / 'was his', NA) has no brace under Those that change the English;
+// under All it has one, and its sheet says 'Word order only: emphasis, not meaning' above Ask the tutor. Shot: shots/variants-word-order-sheet.png.
+test('Matthew 3:4: a word-order-only unit shows under All and not under Those that change the English, and its sheet says so', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=mat&c=3');
+  await expect(page.locator('[data-verse="4"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'English').click();
+  const verse = page.locator('[data-verse="4"]');
+  await expect(page.locator('[data-verse="3"] [data-brace]').first()).toBeVisible();
+  await expect(verse.locator('[data-brace]')).toHaveCount(0);
+
+  await holdFor(page, chip(page), 700);
+  const filter = page.getByRole('dialog', { name: 'Variants' });
+  await expect(filter).toBeVisible();
+  await filter.getByRole('button', { name: 'All', exact: true }).click();
+  await filter.getByRole('button', { name: 'Done' }).click();
+  await expect(filter).toHaveCount(0);
+  await expect(verse.locator('[data-brace]')).toHaveCount(1);
+  await verse.scrollIntoViewIfNeeded();
+
+  await verse.locator('[data-brace] [data-witness]').first().click();
+  const sheet = page.getByRole('dialog', { name: 'Variant reading' });
+  await expect(sheet).toBeVisible();
+  const line = sheet.locator('[data-word-order-only]');
+  await expect(line).toHaveText('Word order only: emphasis, not meaning');
+  const ask = sheet.getByRole('button', { name: 'Ask the tutor' });
+  await expect(ask).toBeVisible();
+  expect((await line.boundingBox())!.y).toBeLessThan((await ask.boundingBox())!.y);
+  await shot(page, 'variants-word-order-sheet');
+});

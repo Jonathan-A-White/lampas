@@ -3,6 +3,8 @@
 // (chapterUrl, ?v=<fingerprint> from index.json), so the worker's serveChapter keeps it in the data cache (src/dataCache.ts) and drops an older copy of the chapter;
 // nothing here writes the cache. What the cache already holds under the very address is not fetched again: the check is `caches.match` from the page, no HEAD.
 // A run has at most OFFLINE_CONCURRENCY fetches in flight, pauses on the window's 'offline' event (no new fetch starts) and goes on at 'online'. No screen yet.
+// The copy stays current (mw-lcv9z3g.3): refreshOfflineCopy runs at app start (src/main.tsx, after the first render) and after each update check (updateChecked), and keeps the time of the check.
+import type { UpdateRegistration } from 'pwa-kit/app-update';
 import { CANON_INDEX, greekBooks } from './bookIndex';
 import { chapterUrl, type BookIndex } from './chapter';
 import { db } from './db';
@@ -179,4 +181,48 @@ export async function startOfflineCopy(deps: OfflineDeps = {}): Promise<OfflineP
   } finally {
     if (running === mine) running = undefined;
   }
+}
+
+// The time of the last check, in ms since 1970, beside the scope (settings store, no Dexie version): what the settings row shows.
+const CHECKED_KEY = 'offlineCopyChecked';
+
+/** When the kept copy was last compared with index.json, or undefined if it never was. */
+export async function getOfflineCheckedAt(): Promise<number | undefined> {
+  const at = Number((await db.settings.get(CHECKED_KEY))?.value);
+  return Number.isFinite(at) && at > 0 ? at : undefined;
+}
+
+/**
+ * Brings the kept copy up to the index: what the data cache lacks under the index's addresses (a changed fingerprint is a missing address) is fetched, and the worker's
+ * serveChapter drops the older copy of each. Run at app start and after each update check (updateChecked). `index` is the bundle's unless a test gives one: the worker's
+ * precache and the bundle come from the same build, so a build that has only been found (it waits for his tap) shows its index here once it has taken over and the page reloaded.
+ * No scope kept, or a run already going (it covers the index itself): nothing is done and no time is written. Otherwise the time is written when the check starts.
+ */
+export async function refreshOfflineCopy(deps: OfflineDeps & { now?: () => number } = {}): Promise<OfflineProgress | undefined> {
+  const { now = Date.now, ...run } = deps;
+  if (running || (await getOfflineScope()) === 'none' || running) return undefined;
+  await db.settings.put({ key: CHECKED_KEY, value: String(now()) });
+  return startOfflineCopy(run);
+}
+
+/**
+ * The registration for pwa-kit's update check, which calls `onChecked` once a check has ended (the check goes through registration.update()); a check that fails
+ * (offline, server down) calls nothing and still rejects, as pwa-kit expects. Everything else is the real registration's, read live.
+ */
+export function updateChecked(registration: UpdateRegistration, onChecked: () => void): UpdateRegistration {
+  return {
+    get waiting() {
+      return registration.waiting;
+    },
+    get installing() {
+      return registration.installing;
+    },
+    update: async () => {
+      const answer = await registration.update();
+      onChecked();
+      return answer;
+    },
+    addEventListener: (type, listener) => registration.addEventListener(type, listener),
+    removeEventListener: (type, listener) => registration.removeEventListener(type, listener),
+  };
 }

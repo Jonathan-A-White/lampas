@@ -9,6 +9,36 @@ committed; the raw downloads are not. `npm run data:build:ot` does the same for 
 **The rule (mw-uqlxea):** a chapter says its source language (`lang`: `'grc'` or `'hbo'`) and its translation (`translation`: `'msb'`); the word and chunk keys are the same for every source language.
 The reader, the word sheet, the voices and the drills read the chapter's `lang` (`sourceLanguage(chapter)`) and never assume Greek; code that says 'greek' where it means 'the source language' is generalised when touched, never in a rename sweep.
 
+<!-- toc -->
+
+- [Building](#building)
+- [Sources and licences](#sources-and-licences)
+- [`index.json`](#indexjson)
+- [`lexicon.json`](#lexiconjson)
+- [`lemma-forms/<lemma>.json` (outside `public/data`)](#lemma-formslemmajson-outside-publicdata)
+- [`frequency.json`](#frequencyjson)
+- [`<book>/<chapter>.json`](#bookchapterjson)
+- [Variants](#variants)
+- [Variant English](#variant-english)
+- [The RP 2026 overlay](#the-rp-2026-overlay)
+- [The RP 2026 English](#the-rp-2026-english)
+- [Changes to the sources](#changes-to-the-sources)
+- [The maps' index (not in `public/data`)](#the-maps-index-not-in-publicdata)
+- [The Logos Atlas's map list (not in `public/data`)](#the-logos-atlass-map-list-not-in-publicdata)
+- [The Old Testament data](#the-old-testament-data)
+  - [Source and licences](#source-and-licences)
+  - [The build](#the-build)
+  - [The keys for a Hebrew word](#the-keys-for-a-hebrew-word)
+  - [`lexicon-hbo.json` and `frequency-hbo.json`](#lexicon-hbojson-and-frequency-hbojson)
+  - [Sizes (2026-10-25)](#sizes-2026-10-25)
+- [The spaced schedule (Dexie v10)](#the-spaced-schedule-dexie-v10)
+- [Grammar levels (Dexie v11)](#grammar-levels-dexie-v11)
+- [Offline](#offline)
+  - [The offline copy (`src/data/offlineCopy.ts`, mw-lcv9z3g.1)](#the-offline-copy-srcdataofflinecopyts-mw-lcv9z3g1)
+- [The places of each book (not in `public/data`)](#the-places-of-each-book-not-in-publicdata)
+
+<!-- /toc -->
+
 ## Building
 
 ```bash
@@ -198,7 +228,7 @@ two `B` readings and one `N`).
 | `alts[].g` | the reading's words one by one, each a `g` word as above (`t`, `tr`, `s`, `l`, `p`): `t` is the word with the apparatus's brackets and marks off, `tr` is `""`, and `s`, `l`, `p` are its Strong's number, lemma and parsing where the text has the form ('Tagged words' below); `[]` when the reading leaves the base out. The chapter's `lex` and `parse` hold the entries these words use |
 | `alts[].apart` | `true` when the reading has an ellipsis (`ἓν... ἓν... ἓν`, `ὃ μὲν... ὃ δὲ... ὃ δὲ`): it is in pieces and cannot be laid over the text word for word; absent otherwise (its `g` still holds its words) |
 | `english` | `{"source":"msb"\|"lampas","base":"…","alts":["…"]}`: the base in English and each of `alts` in English, the same order ('Variant English' below) |
-| `changesEnglish` | `true` when the English of the base and of any reading differ once case, punctuation and white space are set aside; `false` when the Greek differs (a spelling, a word order, an article) and the English does not, or when the verse reads the same either way (`src/data/variantVerse.ts`: the verse's chunks of the unit's words replaced by the base's English, and by the reading's, both give the verse itself, so 'that' / 'that I' before 'I love you' changes nothing; mw-9ji6ek0.14). The Reader's English filter (`shownUnits`) judges each reading the same way, with the chapter's verses; `npm run variants:sweep` re-judges the committed chapters (`-- --write` fixes the flag) |
+| `changesEnglish` | `true` when the English of the base and of any reading differ once case, punctuation and white space are set aside; `false` when the Greek differs (a spelling, a word order, an article) and the English does not, or when the verse reads the same either way (`src/data/variantVerse.ts`: the verse's chunks of the unit's words replaced by the base's English, and by the reading's, both give the verse itself, so 'that' / 'that I' before 'I love you' changes nothing; mw-9ji6ek0.14), or when the reading is the base's own Greek words in another order (`wordOrderOnly` in the same file: the same forms, case, punctuation and grave/acute set aside; Matthew 3:4 αὐτοῦ ἦν / ἦν αὐτοῦ; 632 units, mw-9ji6ek0.31; its sheet says 'Word order only: emphasis, not meaning'). The Reader's English filter (`shownUnits`) judges each reading the same way, with the chapter's verses; `npm run variants:sweep` re-judges the committed chapters (`-- --write` fixes the flag) |
 | `witness` | `"byz"` (code `B`), `"na"` (`N`, `C`, `S`, `E`) or `"ecm"` (`M`); a unit with several codes takes the first class in that order |
 
 Units are in verse order, then by their first word.
@@ -259,7 +289,7 @@ new renders nothing and changes nothing.
 
 Units from the files and from the table are never changed by the model: it only writes English beside them. To correct an entry, edit it in the file (the next run keeps it).
 
-**Counts** (2026-10-27): 7,198 units in the chapters: English `msb` 908, `lampas` 6,290 (`data/variant-english.json` holds 6,292 entries: two are for units the RP 2026 overlay then dropped); `changesEnglish` 5,879 of 7,198 (5,901 before the verse-level compare of mw-9ji6ek0.14: 22 units whose verse already says the reading's extra word, such as Revelation 3:9 'that' / 'that I', no longer count); `witness` `byz` 667, `na` 6,527, `ecm` 4 (the 18 `M` units mostly share words with a `C` or `N` unit, which is the first class). The build prints these as `variant English:`, `variants that change the English:` and `variant witness:`. 13 entries that came back over six words (long bases of Mark 3, 4, 6, 9, 13, 1 Corinthians 9:20, Jude 1:23 and 25, Revelation 1:2) were shortened by hand in the file; the script’s check still lists about 130 readings whose English shares no beginning with the lemma’s gloss (irregular verbs, "if" for εἰ, names), which are left as they are.
+**Counts** (2026-10-27): 7,198 units in the chapters: English `msb` 908, `lampas` 6,290 (`data/variant-english.json` holds 6,292 entries: two are for units the RP 2026 overlay then dropped); `changesEnglish` 5,251 of 7,198 on 2026-10-29 (5,879 on 2026-10-27, before the 628 word-order-only units of mw-9ji6ek0.31 stopped counting; 5,901 before the verse-level compare of mw-9ji6ek0.14: 22 units whose verse already says the reading's extra word, such as Revelation 3:9 'that' / 'that I', no longer count); `witness` `byz` 667, `na` 6,527, `ecm` 4 (the 18 `M` units mostly share words with a `C` or `N` unit, which is the first class). The build prints these as `variant English:`, `variants that change the English:` and `variant witness:`. 13 entries that came back over six words (long bases of Mark 3, 4, 6, 9, 13, 1 Corinthians 9:20, Jude 1:23 and 25, Revelation 1:2) were shortened by hand in the file; the script’s check still lists about 130 readings whose English shares no beginning with the lemma’s gloss (irregular verbs, "if" for εἰ, names), which are left as they are.
 
 ## The RP 2026 overlay
 
@@ -304,7 +334,7 @@ changes only a shade the MSB's English never rendered (the article of Revelation
 The build (`runBuild`, after the overlay report) stops, naming the verse, on an overlay change with no entry, an entry for a change no longer in the overlay,
 Lampas English on an entry that does not change the English (or none on one that does), or a missing provenance (`checkRp2026English`,
 `scripts/data/rp2026English.ts`), and prints `RP 2026 English: 5 changes, 1 alters the English, 4 do not` and the verses that alter it with both Englishes.
-Nothing lays this English on the chapters yet: it is the data a setting would read. A new overlay change needs its entry written by hand, with the model that
+`src/data/rp2026English.ts` lays this English on a chapter in the Reader while Settings > Reading > English from the 2026 Greek is On (mw-9ji6ek0.33; `layRp2026English`: the chunks that hold an entry's `msb` words become one chunk of `lampas`, `rp` set to the entry's key, every word's `e` following); the chapter files stay as built. A new overlay change needs its entry written by hand, with the model that
 decided it named in the provenance; there is no script that renders it yet. Entries: Matthew 26:29 (γεννήματος/γενήματος, 'fruit': no), Romans 13:9 (no),
 Philemon 1:1 ('of Christ Jesus' → 'of Jesus Christ': yes), Revelation 11:16 (no) and 13:14 (no).
 
@@ -471,6 +501,7 @@ A chapter is kept under its fingerprinted address (`?v=`), so an update that lea
 A chosen scope keeps chapters ahead of reading, with no screen yet. Three scopes, saved as `offlineCopy` in the settings store (outside the registry, like `dailyDone`; `getOfflineScope` gives `'none'` for anything else): `'none'` (only what he has read, as above), `'nt'` (the 260 chapters of the 27 Greek books, about 34 MB) and `'all'` (the 1,189 chapters of the 66 books and the two Hebrew lists `lexicon-hbo.json` and `frequency-hbo.json`, about 113 MB).
 Every file is fetched by the address the Reader uses (`chapterUrl`, `?v=<fingerprint>` from `index.json`), so the worker's `serveChapter` keeps it in `lampas-data-v3` and drops an older copy: **a kept chapter is the one at `index.json`'s fingerprint**, and after a deploy that changes a chapter the copy runs again and fetches only the changed ones. The Hebrew lists are asked for plain and kept as they first came.
 A run asks the cache from the page (`caches.open(DATA_CACHE).match(url)`, no HEAD) and fetches only what it lacks, at most 3 at once, each under `within()`. A fetch that fails is tried once more and then listed in `failed`, never thrown; `{done, total, bytes, failed, paused}` goes to `onOfflineProgress` listeners and ends at `done === total`. The `offline` event pauses it (no new fetch starts) and `online` goes on. The page's fetch is kept only when the worker controls the page.
+**The copy is refreshed** (mw-lcv9z3g.3) by `refreshOfflineCopy`: once at app start, after the first render (`src/main.tsx` never awaits it and an update check that ends before the render waits for it), and after each update check of pwa-kit's `startAppUpdates` (every 30 minutes and on return to the foreground) that ends, through `updateChecked`, which wraps the registration's `update()` and does nothing when the check fails (offline). It is no network check of its own: it compares the index's addresses with the data cache (`caches.match`), and a changed fingerprint is a missing address, so only the changed chapters are fetched, and `serveChapter` drops each older copy. The index is the bundle's: a new build's `index.json` is read only once the build has taken over and the page has reloaded, so the refresh at the next app start is the one that fetches it. With scope `'none'`, or a copy run already going, nothing is done; otherwise the time of the check is saved as `offlineCopyChecked` (`getOfflineCheckedAt`, ms since 1970), for the settings row that will show it.
 
 ## The places of each book (not in `public/data`)
 

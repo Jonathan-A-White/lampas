@@ -54,9 +54,22 @@ if (typeof document !== 'undefined') {
   });
 }
 
-/** Forgets the offset kept for the box `slot` of the screen at `hash`, so the next time that screen opens it is at the top (or where the app puts it, mw-5r3p30.678). */
+/** Forgets the offset kept for the box `slot` of the screen at `hash`, so the next time that screen opens it is at the top (or where the app puts it, mw-5r3p30.678).
+ * A Reader chapter is kept under an address that has its view and weave in it (`#/?b=rev&c=3&view=english&weave=off`), so for one the place is forgotten in every view and weave
+ * of that chapter, not only under the bare address (mw-5r3p30.857). */
 export function forgetScroll(hash: string, slot: string): void {
-  offsets.delete(`${scrollAddress(hash)}#${slot}`);
+  const address = scrollAddress(hash);
+  const reader = pathOf(address) === '#/' ? readerOf(address) : undefined;
+  for (const key of [...offsets.keys()]) {
+    const at = key.lastIndexOf('#');
+    if (key.slice(at + 1) !== slot) continue;
+    const kept = key.slice(0, at);
+    if (kept === address) offsets.delete(key);
+    else if (reader && pathOf(kept) === '#/') {
+      const own = readerOf(kept);
+      if (own.book === reader.book && own.chapter === reader.chapter) offsets.delete(key);
+    }
+  }
 }
 
 /** Called once before the first render: the offsets kept for the addresses he was at, the one the app opens at last. */

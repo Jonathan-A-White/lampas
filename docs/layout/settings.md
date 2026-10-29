@@ -4,6 +4,19 @@ Which file holds what, for `src/settings/` (the registry, the rows, the links, t
 
 Settings is a home and pages (mw-3ased2.1). The grouping is the Builder's, PROVISIONAL, until the Governor amends it.
 
+<!-- toc -->
+
+- [The languages and their dials (mw-3ased2.2, mw-gdcyf98.2)](#the-languages-and-their-dials-mw-3ased22-mw-gdcyf982)
+- [The home and the groups](#the-home-and-the-groups)
+- [What the Settings screen holds](#what-the-settings-screen-holds)
+- [Search](#search)
+- [Links into Settings](#links-into-settings)
+- [The Library screens (mw-rfjjzd.4)](#the-library-screens-mw-rfjjzd4)
+- [Adding a setting to a group](#adding-a-setting-to-a-group)
+- [Files](#files)
+
+<!-- /toc -->
+
 ## The languages and their dials (mw-3ased2.2, mw-gdcyf98.2)
 
 The first thing on the home, under the search field, is **Which languages?**: English only, Greek, Hebrew or Greek and Hebrew (`controls/languages.tsx`, four 44 px buttons; label and hint PROVISIONAL). It is the setting `languages` (registry.ts `languagesEntry`, section `dial`, **no store of its own**): reading it answers `languagesOf(greek, hebrew)` from the two dials (english while both are 0); writing it moves them (`setLanguages`, `src/data/repositories/greekInterest.ts`): english puts both at 0, greek puts Hebrew at 0 and raises Greek from 0 to the level kept under `greekKept.level` (the level a dial left for 0; else 1), hebrew the mirror (`hebrewKept.level`), both raises each dial at 0 the same way (the higher dial first, so his kept values win over the steps' starting values). The tutor may read and change it like any setting.
@@ -85,6 +98,7 @@ src/settings/definitions/greekInterest.ts  # the Greek dial: GREEK_LEVELS, greek
 src/settings/definitions/maps.ts  # mapSourceSetting(source) (mw-zbjgn3r.6): the On/Off setting 'maps.<source.id>' of a map source (section maps, 'Maps' in Study resources after Bible in Logos; label source.name, hint source.describe, default source.default; dependsOn resource.logos when source.needs is 'logos'); the registry makes one entry per member of SOURCES (src/maps/sources/index.ts), controls/maps.tsx draws each as a plain On | Off, the tutor may flip it by talk, and src/maps/enabled.ts reads them
 src/settings/definitions/variants.ts  # Variants (mw-9ji6ek0.4, section 'variants', 'Variants' in the Reading group after Weave, controls/variants.tsx): `variants` 'off' | 'english' | 'all' (Off | Those that change the English | All, Off to start) and `variantWitnesses` 'byz' | 'na' | 'ecm' (Byzantine splits only | also Nestle-Aland | also ECM, cumulative, ecm = every witness to start, PROVISIONAL, drawn only while `variants` is not Off); both talkable ('screen' in tutor/knows.ts), features/variants-setting.feature, tests/e2e/variants-setting.spec.ts; nothing in the Reader reads them yet (stories .5, .7). mw-9ji6ek0.19 adds `variantLessonsOffer` 'on' | 'off' (On to start, label 'Offer the lessons', drawn always, PROVISIONAL: not gated by Tips, controls/variants.tsx OnOff, clearing the answer in repositories/settings.ts setVariantLessonsOffer when set On) and the link row `link.variantLessons` 'Lessons on variant readings ›' (rows.ts LINKS, controls/links.tsx, section 'variants', always drawn): src/reader/VariantLessonsOffer.tsx is the card under the Reader's chips row (ReaderChips.tsx) while Variants is not Off, Offer the lessons is On and the card is not answered; Read the lessons opens #/lessons/variants, Not now turns the setting Off, either marks it answered (settings key variantLessonsOfferAnswered); tests/e2e/variant-lessons-offer.spec.ts
 src/reader/ReadingSetSheet.tsx # Read as (mw-9ji6ek0.25): the chips of the reading sets in force (Byzantine, NA, ECM, Mine once it exists, then his named sets, setActive), the ECM line, Save as… ('Name this set', Save off while blank, Cancel), Rename and Delete ('Delete this set?', Delete my set) for his own sets only; drawn in the variants chip's sheet (reader/VariantFilterSheet.tsx) and as the row `readingSet` 'Read as' of section 'variants' (rows.ts READING_SET_ROW, controls/variants.tsx ReadingSetControl): a row, not a registry setting, so the tutor neither reads nor changes it (isTalkable); the set in force is db.settings 'readingSet' (repositories/readingSets.ts); features/variants-setting.feature, tests/e2e/reading-sets.spec.ts
+src/settings/definitions/rp2026English.ts  # English from the 2026 Greek (mw-9ji6ek0.33, section 'variants', controls/variants.tsx ChipRow Off | On, Off to start, PROVISIONAL): talkable ('screen' in tutor/knows.ts); Reader.tsx reads it and lays src/data/rp2026English.ts's English on the chapter (layRp2026English) while On: the chunk is marked with src/reader/Rp2026Mark.tsx and its sheet is src/reader/Rp2026Sheet.tsx; tests/unit/rp2026-english-setting.test.ts, tests/e2e/rp2026-english.spec.ts
 src/settings/definitions/greekKeyboard.ts  # Greek keyboard (mw-fu7dqf.9, section daily beside Memorize, 'on' | 'off', Off to start, shown from Curious by greekFrom(1)): whether he has added a Greek keyboard to his phone; Memorize's Type it is offered in Greek only while it is On. Drawn by controls/daily.tsx like the Daily switches. PROVISIONAL
 src/settings/useGreekInterest.ts  # the step, live
 src/data/repositories/greekInterest.ts  # setGreekInterest, setHebrewInterest, setLanguages, placeInterest, raiseGreekInterest, the kept values

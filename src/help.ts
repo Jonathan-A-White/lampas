@@ -27,10 +27,11 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'The Reader',
     line: 'Chapters, words and verses.',
     body: [
-      'The title opens the chapter picker. A tap on a verse number opens the Verse view (Listen, Read it aloud, Ask the tutor, Share, Memorize); a hold copies the verse. A tap on a word opens its sheet.',
-      'An Old Testament chapter opens in English, or Hebrew from How much Hebrew? at Curious. Copy and Share give the verse, passage or chapter as read, with reference and link (Settings > Reading > When you copy).',
+      'The title opens the chapter picker. A tap on a verse number opens the Verse view (Listen, Read it aloud, Ask the tutor, Share, Memorize); a hold copies it. A word opens its sheet.',
+      'An Old Testament chapter can be read in Hebrew (How much Hebrew?). Copy and Share give the text as read, with its link.',
       'Variants in Settings can show where manuscripts differ. Five short lessons explain how to read that, offline.',
       'A variant’s sheet has Go deeper and Read this, which puts it in the text. The tutor explains it without ruling.',
+      'English from the 2026 Greek shows Lampas’s own English, marked RP 2026, where that Greek changes it.',
     ],
     opens: { label: 'Lessons on variant readings', route: 'lessons' },
   },

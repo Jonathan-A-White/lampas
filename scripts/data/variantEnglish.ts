@@ -5,7 +5,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import type { VariantCode, VariantEnglish, VariantEnglishSource, VariantPlace, VariantUnit, VariantWitness, Verse } from '../../src/data/chapter';
-import { plainEnglish, sameInVerse } from '../../src/data/variantVerse';
+import { plainEnglish, sameInVerse, wordOrderOnly } from '../../src/data/variantVerse';
 import type { PlacedUnit } from './rp2026';
 
 export { plainEnglish };
@@ -155,10 +155,11 @@ export function layEnglish(units: VariantPlace[], input: EnglishInput): { units:
 
 /**
  * Whether any reading of a unit changes the English. With the unit's verse and word places the compare is in the verse (src/data/variantVerse.ts): a reading
- * whose snippet differs ('that' / 'that I') but whose verse reads the same ('… that I love you') does not change it; without them, the snippets alone.
+ * whose snippet differs ('that' / 'that I') but whose verse reads the same ('… that I love you') does not change it; without them, the snippets alone. With the unit's Greek (`greek`),
+ * a reading that is the base's words in another order (wordOrderOnly) does not change it either (mw-9ji6ek0.31).
  */
-export function changesEnglish(english: VariantEnglish, verse?: Pick<Verse, 'e'>, unitWords: readonly number[] = []): boolean {
-  return english.alts.some((alt) => !sameInVerse(verse, unitWords, english.base, alt));
+export function changesEnglish(english: VariantEnglish, verse?: Pick<Verse, 'e'>, unitWords: readonly number[] = [], greek?: Pick<VariantUnit, 'base' | 'alts'>): boolean {
+  return english.alts.some((alt, i) => !(greek && greek.alts[i] && wordOrderOnly(greek.base, greek.alts[i].text)) && !sameInVerse(verse, unitWords, english.base, alt));
 }
 
 const WITNESS: Record<VariantCode, VariantWitness> = { B: 'byz', N: 'na', C: 'na', S: 'na', E: 'na', M: 'ecm' };
@@ -172,7 +173,7 @@ export function witnessOf(alts: ReadonlyArray<{ code: VariantCode }>): VariantWi
 
 /** A unit with its English laid, as a chapter file keeps it (`verse` is the unit's, for changesEnglish). */
 export function finishUnit(unit: PlacedUnit & { english: VariantEnglish }, verse?: Pick<Verse, 'e'>): VariantUnit {
-  return { v: unit.v, w: unit.w, base: unit.base, alts: unit.alts, english: unit.english, changesEnglish: changesEnglish(unit.english, verse, unit.w), witness: witnessOf(unit.alts) };
+  return { v: unit.v, w: unit.w, base: unit.base, alts: unit.alts, english: unit.english, changesEnglish: changesEnglish(unit.english, verse, unit.w, unit), witness: witnessOf(unit.alts) };
 }
 
 // ---------------------------------------------------------------- what the build prints

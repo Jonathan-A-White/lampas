@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.22",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.33",
+    "kind": "new",
+    "text": "A setting, English from the 2026 Greek, shows Lampas's own English over the Bible's where the newest Greek text changes the meaning, marked RP 2026, with a tap for the Bible's words, the Greek and where each comes from."
+  },
+  {
+    "version": "0.7.22",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.31",
+    "kind": "fixed",
+    "text": "A variant that only moves the same Greek words around, such as Matthew 3:4, no longer counts as changing the English; it shows under All, with a note that the order changes emphasis, not meaning."
+  },
+  {
+    "version": "0.7.21",
+    "date": "2026-10-29",
+    "story": "mw-9ji6ek0.35",
+    "kind": "fixed",
+    "text": "a variant where the English folds the changed word into its neighbour (1 Corinthians 16:7 \"I hope\") is now dotted, not only the braces."
+  },
+  {
+    "version": "0.7.20",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.857",
+    "kind": "fixed",
+    "text": "Tapping Open on a verse link now always brings that verse to the top of the chapter, even if you had been reading that chapter earlier."
+  },
+  {
     "version": "0.7.19",
     "date": "2026-10-29",
     "story": "mw-9ji6ek0.25",

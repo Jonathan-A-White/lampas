@@ -5,10 +5,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const render = vi.fn();
 const placeInterest = vi.fn<() => Promise<{ greek: number; hebrew: number }>>();
+const refreshOfflineCopy = vi.fn<() => Promise<undefined>>();
+const registerSW = vi.fn<(options: { onRegisteredSW?: (url: string, registration: unknown) => void }) => void>();
+const startAppUpdates = vi.fn<(deps: { registration: { update(): Promise<unknown> } }) => void>();
 
 vi.mock('react-dom/client', () => ({ createRoot: () => ({ render }) }));
-vi.mock('virtual:pwa-register', () => ({ registerSW: vi.fn() }));
-vi.mock('pwa-kit/app-update', () => ({ startAppUpdates: vi.fn() }));
+vi.mock('virtual:pwa-register', () => ({ registerSW: (options: never) => registerSW(options) }));
+vi.mock('pwa-kit/app-update', () => ({ startAppUpdates: (deps: never) => startAppUpdates(deps) }));
 vi.mock('pwa-kit/whats-new', () => ({ fetchChangelog: vi.fn() }));
 vi.mock('pwa-kit/whats-new/styles.css', () => ({}));
 vi.mock('pwa-kit/settings/styles.css', () => ({}));
@@ -27,6 +30,10 @@ vi.mock('../../src/nav/scrollMemory', () => ({ restoreScrolls: vi.fn() }));
 vi.mock('../../src/services/bookRequests', () => ({ startBookRequests: vi.fn() }));
 vi.mock('../../src/ui/scrollGuard', () => ({ installScrollGuard: vi.fn() }));
 vi.mock('../../src/ui/sheetBack', () => ({ leaveStaleSheets: vi.fn() }));
+vi.mock('../../src/data/offlineCopy', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../src/data/offlineCopy')>()),
+  refreshOfflineCopy: () => refreshOfflineCopy(),
+}));
 vi.mock('../../src/data/repositories', () => ({ placeInterest: () => placeInterest() }));
 
 const FIRST_PAINT_MS = 2000;
@@ -41,6 +48,9 @@ describe('the first paint (src/main.tsx)', () => {
     vi.useFakeTimers();
     render.mockClear();
     placeInterest.mockReset();
+    refreshOfflineCopy.mockReset().mockResolvedValue(undefined);
+    registerSW.mockReset();
+    startAppUpdates.mockReset();
     document.body.innerHTML = '<div id="root"></div>';
   });
   afterEach(() => {
@@ -92,5 +102,38 @@ describe('the first paint (src/main.tsx)', () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(placed).toBe(true);
     expect(render).toHaveBeenCalledTimes(1);
+  });
+
+  describe('the kept copy (mw-lcv9z3g.3)', () => {
+    it('is refreshed after the first render, which does not wait for it', async () => {
+      const order: string[] = [];
+      render.mockImplementation(() => void order.push('render'));
+      refreshOfflineCopy.mockImplementation(() => {
+        order.push('refresh');
+        return new Promise(() => undefined);
+      });
+      placeInterest.mockResolvedValue({ greek: 0, hebrew: 0 });
+      await boot();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(order).toEqual(['render', 'refresh']);
+      expect(render).toHaveBeenCalledTimes(1);
+      render.mockReset();
+    });
+
+    it('is refreshed once more after each update check that ends, never before the first render', async () => {
+      placeInterest.mockReturnValue(new Promise(() => undefined));
+      await boot();
+      const registration = { waiting: null, installing: null, update: vi.fn(async () => undefined), addEventListener: vi.fn(), removeEventListener: vi.fn() };
+      registerSW.mock.calls[0][0].onRegisteredSW?.('/sw.js', registration);
+      const wrapped = startAppUpdates.mock.calls[0][0].registration;
+      await wrapped.update();
+      expect(registration.update).toHaveBeenCalledTimes(1);
+      expect(refreshOfflineCopy).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(FIRST_PAINT_MS);
+      expect(refreshOfflineCopy).toHaveBeenCalledTimes(1);
+      await wrapped.update();
+      expect(refreshOfflineCopy).toHaveBeenCalledTimes(2);
+      render.mockReset();
+    });
   });
 });

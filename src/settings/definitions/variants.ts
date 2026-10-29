@@ -57,5 +57,5 @@ export const variantLessonsOfferSetting = defineSetting<VariantLessonsOffer>({
   section: 'variants',
   label: 'Offer the lessons',
   hint: 'A card that offers the lessons on variant readings the first time Variants is On.',
-  help: 'Whether the Reader offers the five short lessons on variant readings, in a card under its chips, the first time Variants is On. **Not now** on the card turns this Off; turn it On to see the card once more.',
+  help: 'Whether a card offers the five lessons on variant readings the first time Variants is On. **Not now** turns this Off; On shows it again.',
 });

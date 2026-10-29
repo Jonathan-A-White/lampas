@@ -232,7 +232,80 @@ describe('every omission unit of the committed chapters has a word to dot (mw-9j
       '1co 8:2 δέ', 'col 1:7 καὶ', 'jhn 1:42 Καὶ', 'luk 15:19 καὶ', 'luk 18:41 λέγων', 'luk 20:34 ἀποκριθεὶς', 'luk 4:34 λέγων',
       'luk 9:37 ἐν', 'mrk 12:6 οὖν', 'mrk 14:19 Οἱ δὲ', 'mrk 14:20 ἀποκριθεὶς', 'mrk 7:6 ἀποκριθεὶς', 'rev 20:5 Καὶ', 'rev 22:7 Καὶ',
     ].sort());
+  }, 120_000);
+});
+
+describe('a unit whose reading changes the words and whose words the English gives no chunk of their own (mw-9ji6ek0.35)', () => {
+  // 1 Corinthians 16:7 'I hope to spend some time': the MSB folds δὲ ('but') into the chunk of ἐλπίζω, so no chunk holds it; NA reads γὰρ ('for')
+  const HOPE: Verse = {
+    n: 7,
+    g: [word('οὐ', 'οὐ', 0), word('θέλω', 'θέλω', 0), word('γὰρ', 'γάρ', 1), word('ὑμᾶς', 'σύ', 2), word('ἐλπίζω', 'ἐλπίζω', 3), word('δὲ', 'δέ'), word('χρόνον', 'χρόνος', 4)],
+    e: [{ t: 'I do not want', g: [0, 1] }, { t: 'for you', g: [2, 3] }, { t: 'I hope', g: [4] }, { t: 'some time', g: [6] }],
+  };
+  const FOR = unit(7, [5], 'δὲ', [['N', 'γὰρ', 'for']], 'but');
+  const show = (view: ReaderView, verse: Verse = HOPE, units: VariantUnit[] = [FOR]) =>
+    render(createElement(VerseText, { verse, view, woven: null, onLook: () => {}, variants: shownUnits(units, ALL) })).container;
+
+  it('dots the chunk the words are folded into, so the brace follows a marked run', () => {
+    const container = show('english');
+    expect(drawn(container)).toEqual(['I hope', '{for NA}']);
+    const run = container.querySelector('[data-variant-run]');
+    expect(run?.textContent?.trim()).toBe('I hope');
+    expect(run?.nextElementSibling?.hasAttribute('data-brace')).toBe(true);
   });
+
+  it('in the Greek view dots the word itself, as before', () => {
+    expect(drawn(show('greek'))).toEqual(['δὲ', '{γὰρ NA}']);
+  });
+
+  it('a unit before the verse’s first English chunk has no chunk to dot: the brace stands first', () => {
+    const verse: Verse = { n: 1, g: [word('δὲ', 'δέ'), word('εἶπεν', 'λέγω', 0)], e: [{ t: 'said', g: [1] }] };
+    expect(drawn(show('english', verse, [unit(1, [0], 'δὲ', [['N', 'γὰρ', 'for']], 'but')]))).toEqual(['{for NA}']);
+  });
+});
+
+describe('every non-omission variant unit of the committed chapters has a word and a chunk to dot (mw-9ji6ek0.35)', () => {
+  const chapters: Chapter[] = readdirSync('public/data', { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .flatMap((d) =>
+      readdirSync(`public/data/${d.name}`)
+        .filter((f) => /^\d+\.json$/.test(f))
+        .map((f) => JSON.parse(readFileSync(`public/data/${d.name}/${f}`, 'utf8')) as Chapter),
+    );
+
+  it('maps each unit to a marked word in the Greek view and a marked chunk in the English one, but for the ones before a verse’s first English chunk', () => {
+    const noGreek: string[] = [];
+    const noChunk: string[] = [];
+    let seen = 0;
+    for (const c of chapters) {
+      for (const u of c.variants ?? []) {
+        if (u.alts.some((a) => a.text === '')) continue;
+        seen += 1;
+        const verse = c.verses.find((v) => v.n === u.v);
+        const at = `${c.code} ${c.chapter}:${u.v} ${u.base}`;
+        if (!verse) {
+          noGreek.push(at);
+          continue;
+        }
+        const [shown] = shownUnits([u], ALL);
+        const marks = (view: ReaderView) => render(createElement(VerseText, { verse, view, woven: null, onLook: () => {}, variants: [shown] })).container.querySelectorAll('[data-variant]').length;
+        if (marks('greek') === 0) noGreek.push(at);
+        if (marks('english') === 0) noChunk.push(at);
+        cleanup();
+      }
+    }
+    expect(seen).toBeGreaterThan(5000);
+    expect(noGreek).toEqual([]);
+    // these stand before the first English chunk of their verse (or have nothing but folded words before them): no chunk to dot, the brace stands first
+    expect([...noChunk].sort()).toEqual([
+      '1co 6:16 Οὐκ', '1co 6:2 Οὐκ', '1ti 1:13 τὸν', 'act 13:39 καὶ',
+      'act 15:9 οὐδὲν', 'act 28:26 λέγον', 'jas 2:4 καὶ οὐ', 'jhn 12:22 Ἔρχεται',
+      'luk 11:42 Ἀλλ’', 'luk 16:9 Κἀγὼ', 'luk 23:34 Ὁ', 'luk 6:4 Ὡς',
+      'luk 8:22 Καὶ ἐγένετο', 'luk 9:57 Ἐγένετο δὲ', 'mat 11:17 καὶ λέγουσιν', 'mat 20:15 Ἢ',
+      'mat 21:44 Καὶ', 'mat 24:38 Ὥσπερ', 'mrk 10:52 Ὁ δὲ', 'mrk 12:14 Οἱ δὲ ἐλθόντες',
+      'mrk 15:33 Γενομένης δὲ', 'php 2:18 δ’',
+    ].sort());
+  }, 120_000);
 });
 
 // Six units: A byz, its English changes; B byz, the same English; C na, changes; D na, the same; E ecm, changes; F a B reading with the same English and an N one that changes.

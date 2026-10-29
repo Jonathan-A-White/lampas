@@ -7,6 +7,7 @@ import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
 import { sourceAttrs, sourceFace, sourceSpeech } from './sourceText';
+import { Rp2026Mark } from './Rp2026Mark';
 import { VariantBrace } from './VariantBrace';
 import { chosenEnglish, chosenWords, OMISSION_MARK, type ChosenUnit } from './chosenReading';
 import { chipOf, type BraceReading, type ShownUnit } from './variants';
@@ -81,6 +82,8 @@ export interface VerseProps {
   onVariant?: (shown: ShownUnit) => void;
   /** the units of this verse with a reading laid in place by the reading set in force (src/reader/chosenReading.ts): their words are the reading's, with a thin solid line under them, whether Variants is on or not */
   chosen?: readonly ChosenUnit[];
+  /** a tap on the 'RP 2026' mark after English Lampas wrote for a place the 2026 Greek changes (src/data/rp2026English.ts, mw-9ji6ek0.33): the key of its entry; absent, the mark is not drawn */
+  onRp?: (key: string) => void;
 }
 
 /** How a variant unit's words are drawn (mw-9ji6ek0.5): a dotted line under them in the accent, which reads in the light and the dark themes and leaves the word's own colour.
@@ -100,7 +103,7 @@ const CHOSEN_RUN =
  * A `run` one is a function of `bare`: the run's last word is drawn without its trailing space, which underRuns puts after the run's span (mw-9ji6ek0.28). */
 interface Drawn {
   node: ReactNode | ((bare: boolean) => ReactNode);
-  run?: 'variant' | 'chosen';
+  run?: 'variant' | 'chosen' | 'rp';
 }
 
 /** The nodes of a row, the consecutive `run` ones of a kind wrapped in one span that draws the unit's one line. The space after the run's last word stands outside the span:
@@ -111,9 +114,10 @@ function underRuns(items: readonly Drawn[]): ReactNode[] {
   const draw = (item: Drawn, bare: boolean): ReactNode => (typeof item.node === 'function' ? item.node(bare) : item.node);
   const close = () => {
     if (run.length) {
-      const chosen = run[0].run === 'chosen';
+      const kind = run[0].run;
+      const solid = kind === 'chosen' || kind === 'rp';
       out.push(
-        <span key={`run${out.length}`} {...(chosen ? { 'data-chosen-run': '' } : { 'data-variant-run': '' })} className={chosen ? CHOSEN_RUN : VARIANT_RUN}>
+        <span key={`run${out.length}`} {...(kind === 'chosen' ? { 'data-chosen-run': '' } : kind === 'rp' ? { 'data-rp2026-run': '' } : { 'data-variant-run': '' })} className={solid ? CHOSEN_RUN : VARIANT_RUN}>
           {run.map((item, k) => draw(item, k === run.length - 1))}
         </span>,
         ' ',
@@ -145,7 +149,7 @@ interface Placement {
 
 /** Where each brace of a verse stands and which words or chunks are marked (VerseText): in the Greek view after the unit's last word; in the English and the weave after
  * the last drawn chunk that holds a word of the unit (or, where the MSB gives the unit's words no English, after the chunk of the word before them, or at the start), in
- * the language the unit's chunks take: Greek when every one is woven, else English. A unit a reading leaves out, whose words have no chunk, marks the chunk of the word before them.
+ * the language the unit's chunks take: Greek when every one is woven, else English. A unit whose words have no chunk (a reading leaves them out or changes them) marks the chunk of the word before them.
  * A reading laid in place (mw-9ji6ek0.24) is not marked dotted: `inPlace` are the words or chunks of the text that stay and carry the solid line (the MSB's English when the reading's is the
  * same), `dropped` the ones its words replace, `replace` the reading drawn instead of the last of them, `tail` and `startPut` a reading drawn where the unit has no chunk of its own. */
 interface VariantPlan {
@@ -202,8 +206,8 @@ function planVariants(verse: Verse, view: ReaderView, woven: WovenVerse | null, 
     if (before === undefined) start.push({ shown, language: 'english' });
     else {
       const chunk = held.get(before) as number;
-      // the words are folded into the English of the word before them ('was reigning in' holds ἐπὶ): when a reading leaves them out, that chunk is the one to dot (mw-9ji6ek0.30)
-      if (!isChosen && shown.readings.some((r) => r.greek === '')) marked.add(chunk);
+      // the words are folded into the English of the word before them ('was reigning in' holds ἐπὶ, 'I hope' holds δὲ): whether a reading leaves them out or changes them, that chunk is the one to dot (mw-9ji6ek0.30, .35)
+      if (!isChosen) marked.add(chunk);
       put(chunk, { shown, language: 'english' });
     }
   }
@@ -239,7 +243,7 @@ const MARKED = 'font-bold underline decoration-2 underline-offset-4';
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
  * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). `marked` are indices into `verse.g` drawn marked (data-marked; in the English view
  * the chunk that stands for one); `still` draws the words as plain text for a verse shown on a card, where a tap has nothing to open. */
-export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp'> & { marked?: ReadonlySet<number>; still?: boolean }) {
   const hebrew = source === 'hbo';
   const own = sourceAttrs(source);
   const face = sourceFace(source);
@@ -274,6 +278,11 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   const bracesAt = (items: readonly { shown: ShownUnit; language: 'greek' | 'english' }[] | undefined): Drawn[] =>
     (items ?? []).map(({ shown, language }) => ({ node: <VariantBrace key={`v${variants?.indexOf(shown) ?? 0}`} shown={shown} language={language} onOpen={onVariant} onWord={(word, reading) => lookVariant(word, reading, language)} onSay={say} /> }));
   const plain = (nodes: ReactNode[]): Drawn[] => nodes.map((node) => ({ node }));
+  // the English Lampas wrote for a place the 2026 Greek changes (mw-9ji6ek0.33): its chunk carries the entry's key, and the mark after it opens the entry's sheet
+  const rpMark = (i: number): Drawn[] => {
+    const key = verse.e[i].rp;
+    return key && onRp && !still ? [{ node: <Rp2026Mark key={`rp${i}`} onOpen={() => onRp(key)} /> }] : [];
+  };
   // a reading laid in place (mw-9ji6ek0.24): its Greek words, each a Tap that opens its card; its English words, each a Tap that opens the Greek of the reading; or the ⸆ of a reading that leaves them out
   const inPlaceOf = (p: Placement, key: string): Drawn => {
     const c = p.chosen;
@@ -351,14 +360,15 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
         : [-2, ...drawnOrder(verse, woven), -1].flatMap((i): Drawn[] => {
             if (i === -2) return [...placements(plan.startPut, 'start'), ...bracesAt(plan.start)];
             if (i < 0) return plain(strays.end.map(strayWord));
-            const braces = [...placements(plan.tail.get(i), `t${i}`), ...bracesAt(plan.after.get(i))];
+            const braces = [...placements(plan.tail.get(i), `t${i}`), ...bracesAt(plan.after.get(i)), ...rpMark(i)];
             const before = plain((strays.before.get(i) ?? []).map(strayWord));
             // a chunk a reading laid in place replaces is not drawn; the last of them is where the reading stands
             if (plan.dropped.has(i)) return [...before, ...braces];
             const placed = plan.replace.get(i);
             if (placed) return [...before, inPlaceOf(placed, `c${i}`), ...braces];
-            const run = plan.marked.has(i) ? ('variant' as const) : plan.inPlace.has(i) ? ('chosen' as const) : undefined;
+            const run = plan.marked.has(i) ? ('variant' as const) : plan.inPlace.has(i) ? ('chosen' as const) : verse.e[i].rp ? ('rp' as const) : undefined;
             const kept = plan.inPlace.has(i) ? '' : undefined;
+            const rp = verse.e[i].rp ? '' : undefined;
             // a Greek-order weave may have moved a sentence's closing mark to the end of its last piece (weave.ts chunkText)
             const text = chunkText(verse, woven, i);
             const c = text === verse.e[i].t ? verse.e[i] : { ...verse.e[i], t: text };
@@ -371,7 +381,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 </Tap>
               ));
               return [...before, { run, node: (bare: boolean) => (
-                <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-learning={weft.learning ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${isMarked(c) ? MARKED : ''}`}>
+                <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} data-learning={weft.learning ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${isMarked(c) ? MARKED : ''}`}>
                   {weft.learning ? (
                     <span className="inline-flex flex-col items-center align-top leading-tight">
                       <span data-greek>{words(bare)}</span>
@@ -395,6 +405,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 data-marked={isMarked(c) ? '' : undefined}
                 data-variant={plan.marked.has(i) ? '' : undefined}
                 data-chosen={kept}
+                data-rp2026={rp}
                 data-learning={weft.learning ? '' : undefined}
                 {...own}
                 dir={ownDir}
@@ -414,7 +425,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 )}
               </Tap>
             ) : (
-              <Tap key={i} bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
+              <Tap key={i} bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
                 {c.s ? <SuppliedText chunk={c} /> : c.t}
               </Tap>
             ) }, ...braces];
