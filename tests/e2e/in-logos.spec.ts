@@ -158,3 +158,42 @@ test('Jonah 1:10 > In another book… lists the commentaries on Jonah from his l
   await expect(sheet.getByRole('group', { name: 'Commentaries on Jonah (1)' }).getByRole('link')).toHaveCount(1);
   await shot(page, 'in-logos-jonah');
 });
+
+test('a Bible in Logos for each part: the Old Testament one picked, Jonah opens in it while Romans 8:31 still opens in the New Testament one, and the choice survives a reload (mw-5r3p30.841)', async ({ page }) => {
+  await openUnlocked(page);
+  await holdAppLinks(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openGroup(page, 'Study resources');
+  const section = page.getByRole('region', { name: 'Study resources' });
+  const logos = section.getByRole('switch', { name: 'Logos', exact: true });
+  if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();
+  await expect(logos).toHaveAttribute('aria-checked', 'true');
+
+  // the three pickers all start at today's one Bible (the Legacy Standard Bible), and only the Old Testament's is moved
+  const picker = (part: string) => page.getByRole('combobox', { name: `${part} Bible in Logos` });
+  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(picker(part)).toHaveValue('LLS:LGCYSTNDRDBBLSB');
+  await picker('Old Testament').selectOption({ label: 'ESV (English Standard Version)' });
+  await expect(picker('Old Testament')).toHaveValue('LLS:1.0.710');
+  await expect(picker('New Testament')).toHaveValue('LLS:LGCYSTNDRDBBLSB');
+  await expect(picker('Apocrypha')).toHaveValue('LLS:LGCYSTNDRDBBLSB');
+  const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+  expect(fits).toBe(true);
+  await picker('Apocrypha').scrollIntoViewIfNeeded();
+  await shot(page, 'settings-bible-in-logos-parts');
+
+  // the choice survives a reload
+  await page.reload();
+  await expect(picker('Old Testament')).toHaveValue('LLS:1.0.710');
+  await expect(picker('New Testament')).toHaveValue('LLS:LGCYSTNDRDBBLSB');
+
+  // Jonah opens in the Old Testament Bible, Romans in the New Testament one
+  await page.goto('/#/?ref=Jonah.1.10');
+  const psalm = page.getByRole('region', { name: 'Verse view' });
+  await expect(psalm.getByRole('group', { name: 'Jonah 1:10 in Logos' }).getByRole('link', { name: 'In Logos' })).toHaveAttribute('href', 'logosres:1.0.710;ref=Bible.Jon1.10');
+  await page.goto('/#/?b=rom&c=8');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  const view = await openVerseView(page, 31);
+  await expect(view.getByRole('group', { name: 'Romans 8:31 in Logos' }).getByRole('link', { name: 'In Logos' })).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ro8.31');
+});

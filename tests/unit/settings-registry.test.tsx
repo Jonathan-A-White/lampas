@@ -24,6 +24,9 @@ beforeEach(async () => {
   await db.settings.clear();
 });
 
+const LOGOS_PICKERS = ['New Testament', 'Old Testament', 'Apocrypha'].map((part) => `${part} Bible in Logos`);
+const isLogosPicker = (el: HTMLElement): boolean => LOGOS_PICKERS.includes(el.closest('label')?.querySelector('span')?.textContent ?? '');
+
 describe('the registry lists every Settings row', () => {
   it('has an entry for each control the Settings screen draws, named as the screen names it', async () => {
     cleanup();
@@ -46,7 +49,8 @@ describe('the registry lists every Settings row', () => {
         ...screen.queryAllByRole('group'),
         ...screen.queryAllByRole('radiogroup'),
         // the Goal group's own Book, Chapter and Verse pickers are parts of that one setting
-        ...screen.queryAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"]')),
+        // (and the three Bible in Logos pickers, one for each part: the group named Bible in Logos holds the New Testament's, the other two have rows of their own)
+        ...screen.queryAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"]') && !isLogosPicker(el)),
         ...screen.queryAllByRole('slider'),
       ].map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '');
     // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);

@@ -3,9 +3,9 @@
 // book is On. Each door is also drawn alone (the tutor's verse chip row, Today, the reference card have the Bible door of their own already and take only the second).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
-import { getLogosBible, getStudyResources } from '../data/repositories';
+import { getLogosBibles, getStudyResources } from '../data/repositories';
 import { CATALOGUE, type CatalogueEntry } from '../resources/catalogue';
-import { verseLink } from '../resources/logosBible';
+import { bibleFor, verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
 import type { StudyPlace } from '../resources/types';
 import { InLogosChooser } from './InLogosChooser';
@@ -40,9 +40,9 @@ export function AnotherBookButton({ place, name, entries = CATALOGUE, label = 'I
 /** 'In Logos' (his Bible at the place) and, beside it, 'In another book…'; nothing at all while Logos is Off. */
 export function InLogosDoors({ place, name, entries, className = '' }: DoorProps & { className?: string }) {
   const logos = useLiveQuery(async () => (await getStudyResources()).on.includes('logos'), []);
-  const bible = useLiveQuery(getLogosBible, []);
-  if (!logos || bible === undefined) return null;
-  const link = verseLink(place.book, place.chapter, place.verse, bible);
+  const bibles = useLiveQuery(getLogosBibles, []);
+  if (!logos || bibles === undefined) return null;
+  const link = verseLink(place.book, place.chapter, place.verse, bibleFor(place.book, bibles));
   return (
     <div role="group" aria-label={`${name} in Logos`} data-in-logos className={`grid grid-cols-2 gap-1 ${className}`}>
       {link ? (

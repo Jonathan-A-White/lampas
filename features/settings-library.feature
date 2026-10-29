@@ -1,7 +1,7 @@
 Feature: Settings after the library
   His Logos library has a screen of its own (#/library), so Settings no longer lists books (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8). Its door is the first row of Study resources, beside Bible in Logos
   (mw-5r3p30.837; mw-5r3p30.752 had put it on the Settings home), drawn whether Logos is On or not. It says "Your Logos library · N books on" and opens the Library; the lexicon list, Grammar books and the Works list
-  are gone from Settings. Bible in Logos is a row that opens Library > Bibles, where the Resource ID can still be typed. Daily's Which devotional is a searchable picker of the devotionals that are on, with Random,
+  are gone from Settings. Bible in Logos is a picker for each part with a door to Library > Bibles, where the Resource ID can still be typed. Daily's Which devotional is a searchable picker of the devotionals that are on, with Random,
   and In the draw follows the shelf. The Settings search finds a book by its title and opens the Library at it.
 
   Scenario: The Settings home has no Your Logos library row; Which languages? is first
@@ -38,14 +38,14 @@ Feature: Settings after the library
 
   Scenario: Bible in Logos opens Library > Bibles, where the Resource ID can be typed
     Given the shelf holds the books "BDAG" and Settings is open at Study resources with Logos On
-    When he taps the row "Bible in Logos: LSB"
+    When he taps the row "One Bible for all three, or type a Resource ID"
     Then the Library opens at Bibles
     When he types the Resource ID "LLS:MYOWNBIBLE.1" on the Bibles page
     Then the setting "logosBible" holds "LLS:MYOWNBIBLE.1"
 
   Scenario: Choosing a Bible in the Library is the Bible in Logos
     Given the shelf holds the books "BDAG" and Settings is open at Study resources with Logos On
-    When he taps the row "Bible in Logos: LSB"
+    When he taps the row "One Bible for all three, or type a Resource ID"
     And he chooses the Bible "ESV" on the Bibles page
     Then the setting "logosBible" holds "LLS:1.0.710"
 

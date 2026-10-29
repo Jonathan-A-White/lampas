@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
-import { getLogosBible, getStudyResources, setResourceOn, setResourceOption } from '../../data/repositories';
+import { getLogosBible, getStudyResources, setLogosBibleFor, setResourceOn, setResourceOption } from '../../data/repositories';
 import { countsOf } from '../../library/kinds';
 import { useShelf } from '../../library/useShelf';
 import { openLibrary } from '../../nav/route';
@@ -9,6 +9,7 @@ import { resourceOf, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { KINDS, entryOf } from '../../resources/catalogue';
+import { COMMON_BIBLES, LOGOS_PARTS } from '../../resources/logosBible';
 import { oneTap } from '../../ui/settle';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
 import { writeSetting } from '../registry';
@@ -120,27 +121,45 @@ export const LibraryControl: Control = ({ row }) => {
   );
 };
 
-/** Bible in Logos: the Bible an Old Testament chapter opens in, named on a row that opens Library > Bibles, where he chooses it (or types the Resource ID of one the catalogue lacks). */
+/** Bible in Logos for one part of the canon (the row's key says which: logosBible is the New Testament's): a picker of the catalogue's Bibles, with his own Resource ID listed too when it is none of them
+ *  (typed on Library > Bibles). Picking one sets this part only (setLogosBibleFor); the Old Testament and the Apocrypha show the New Testament's until each is picked. */
 export const LogosBibleControl: Control = ({ row }) => {
-  const logosBible = useLiveQuery(getLogosBible, []);
-  return (
-    <SettingRow row={row}>
-      {logosBible !== undefined ? (
-        <div role="group" aria-label={row.label}>
+  const { part, label } = LOGOS_PARTS.find((p) => p.key === row.key) ?? LOGOS_PARTS[0];
+  const bible = useLiveQuery(() => getLogosBible(part), [part]);
+  const picker =
+    bible === undefined ? null : (
+      <>
+        <label className="block">
+          <span className="block text-base font-medium">{`${label} Bible in Logos`}</span>
+          <select
+            value={bible}
+            onChange={(e) => void setLogosBibleFor(part, e.target.value)}
+            className="mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
+          >
+            {COMMON_BIBLES.some((b) => b.id === bible) ? null : <option value={bible}>{entryOf(bible)?.short ?? bible}</option>}
+            {COMMON_BIBLES.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        {part === 'nt' ? (
           <button
             type="button"
             onClick={() => openLibrary({ kind: 'bible' })}
-            className="flex min-h-12 w-full items-center justify-between gap-3 text-left text-base font-medium"
+            className="mt-1 flex min-h-12 w-full items-center justify-between gap-3 text-left text-base font-medium text-accent"
           >
-            <span className="title-wrap min-w-0 flex-1">{`${row.label}: ${entryOf(logosBible)?.short ?? logosBible}`}</span>
+            <span className="title-wrap min-w-0 flex-1">One Bible for all three, or type a Resource ID</span>
             <span aria-hidden="true" className="shrink-0 text-muted">
               ›
             </span>
           </button>
-        </div>
-      ) : null}
-    </SettingRow>
-  );
+        ) : null}
+      </>
+    );
+  // the setting's own row (the New Testament's) is the group named Bible in Logos; the other two rows are the pickers alone
+  return <SettingRow row={row}>{part === 'nt' && picker ? <div role="group" aria-label={row.label}>{picker}</div> : picker}</SettingRow>;
 };
 
 /** Audio Bible: Off, or an audio Bible the Verse view links to. Stacked, full-width choices: the names are long. */

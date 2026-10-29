@@ -122,7 +122,8 @@ test('Settings home at 360 px opens with Which languages?, and Your Logos librar
 
   // with Logos On it is still first, above Bible in Logos
   await turnsOnWithApp(page, section, 'Logos');
-  await expect(page.getByRole('button', { name: /^Bible in Logos/ })).toBeVisible();
+  // Bible in Logos is a picker for each part of the canon (mw-5r3p30.841)
+  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toBeVisible();
   const withLogos = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
   expect(withLogos[0]).toBe('library');
 

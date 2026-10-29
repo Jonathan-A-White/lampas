@@ -516,18 +516,22 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   const opensRow = async () => {
-    await user.click(await screen.findByRole('button', { name: /^Bible in Logos:/ }));
+    await user.click(await screen.findByRole('button', { name: /^One Bible for all three/ }));
     await screen.findByRole('heading', { name: 'Bibles', level: 1 });
+    // the field is drawn once it holds the saved Bible
+    await screen.findByRole('textbox', { name: 'Resource ID' });
   };
   const pageSays = async (_: unknown, text: string) => {
     await waitFor(() => expect(screen.getByRole('main')).toHaveTextContent(text));
   };
 
-  Scenario('Settings has Bible in Logos, the Legacy Standard Bible to start, and it opens Library > Bibles', ({ Given, When, Then, And }) => {
+  Scenario('Settings has a Bible in Logos for each part, the Legacy Standard Bible to start, and a door to Library > Bibles', ({ Given, When, Then, And }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
     When("he taps the gear in the reader's header", openSettings);
-    Then('the Bible in Logos row says {string}', async (_, text: string) => {
-      expect(await screen.findByRole('button', { name: new RegExp(`^${text}`) })).toBeInTheDocument();
+    Then('the New Testament, Old Testament and Apocrypha pickers all say {string}', async (_, text: string) => {
+      for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) {
+        expect(await screen.findByRole('combobox', { name: `${part} Bible in Logos` })).toHaveDisplayValue(text);
+      }
     });
     When('he opens the Bible in Logos row', opensRow);
     Then('the Bibles page says {string}', pageSays);

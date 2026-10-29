@@ -39,7 +39,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   const choose = async (entry: CatalogueEntry, to: string): Promise<void> => {
     const result = await setState(entry.resource, to as ShelfState);
     setRefused(result.ok ? null : entry.resource);
-    // the Bible chosen here is the Bible in Logos that Old Testament chapters open in
+    // the Bible chosen here is the Bible in Logos for all three parts (Settings sets each apart)
     if (result.ok && kind === 'bible' && to !== 'off') await setLogosBible(entry.resource);
   };
   const all = async (to: 'on' | 'off'): Promise<void> => {

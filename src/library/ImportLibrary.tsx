@@ -95,7 +95,7 @@ export function ImportLibrary() {
     setStage({ kind: 'saving', plan });
     await applyImport(plan);
     if (shareId) await dropShares();
-    // the Bible chosen here is the Bible in Logos that Old Testament chapters open in (as it is when he chooses one on the Bibles page)
+    // the Bible chosen here is the Bible in Logos for all three parts (as it is when he chooses one on the Bibles page)
     const bible = plan.turning.find((t) => t.entry.kind === 'bible');
     if (bible) await setLogosBible(bible.entry.resource);
     if (alive()) navigate('library', { replace: true });

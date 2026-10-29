@@ -5,7 +5,7 @@ Feature: Lampas reads the Old Testament in English
   opens the word sheet: the Hebrew words of the chunk (features/hebrew-word-sheet.feature) and, under them, the English sheet of its words (each with its Listen and a Webster's 1828 row
   in Logos); at Just English the small English sheet alone; Listen and Read from the top read the English;
   the chapter before Matthew 1 is Malachi 4 and Genesis 1 has no chapter before it. At the foot of the chapter, Read in Logos opens it in the Bible he
-  chose in Settings (Bible in Logos, the Legacy Standard Bible to start; Settings > Bible in Logos opens Library > Bibles, where it is chosen), by the
+  chose in Settings (Bible in Logos, the Legacy Standard Bible to start; Settings > Bible in Logos has a picker for each part and a door to Library > Bibles, where one Bible is chosen for all three), by the
   Logos app's own link, and Listen in Audible opens The Word of Promise at the chapter, each only while its setting is on. Jonah 1 is the copy of the
   built chapter in tests/fixtures/data/jon/1.json (scripts/fixture-chapter.mjs).
 
@@ -153,12 +153,12 @@ Feature: Lampas reads the Old Testament in English
     Given Lampas is opened on Romans 8 with Logos on
     Then there is no "Read in Logos" at the foot of the chapter
 
-  Scenario: Settings has Bible in Logos, the Legacy Standard Bible to start, and it opens Library > Bibles
+  Scenario: Settings has a Bible in Logos for each part, the Legacy Standard Bible to start, and a door to Library > Bibles
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
-    Then the Bible in Logos row says "Bible in Logos: LSB"
+    Then the New Testament, Old Testament and Apocrypha pickers all say "LSB (Legacy Standard Bible)"
     When he opens the Bible in Logos row
-    Then the Bibles page says "Old Testament chapters open in LSB."
+    Then the Bibles page says "New Testament verses open in LSB."
     And the Resource ID field holds "LLS:LGCYSTNDRDBBLSB"
 
   Scenario: A Bible chosen on the Bibles page is kept across a close
@@ -167,7 +167,7 @@ Feature: Lampas reads the Old Testament in English
     And he opens the Bible in Logos row
     And he chooses the Bible "ESV" on the Bibles page
     And the app is closed and opened again
-    Then the Bibles page says "Old Testament chapters open in ESV."
+    Then the Bibles page says "New Testament verses open in ESV."
 
   Scenario: A typed Resource ID is kept across a close, and a malformed one is not
     Given Lampas is opened on Romans 8 with Logos on
@@ -178,7 +178,7 @@ Feature: Lampas reads the Old Testament in English
     And the setting "logosBible" holds nothing
     When he types the Resource ID "LLS:1.0.9991"
     And the app is closed and opened again
-    Then the Bibles page says "Old Testament chapters open in LLS:1.0.9991."
+    Then the Bibles page says "New Testament verses open in LLS:1.0.9991."
     And the Resource ID field holds "LLS:1.0.9991"
 
   Scenario: The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor, Quiz me and Share

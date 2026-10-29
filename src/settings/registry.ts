@@ -40,7 +40,7 @@ import {
   setReadSpan,
   setReadTutor,
   setScriptDepth,
-  setLogosBible,
+  setLogosBibleFor,
   setNewWordsADay,
   setSectionHeadings,
   setSpeechRate,
@@ -295,17 +295,19 @@ const quizGoalEntry: SettingEntry = {
   show: (value) => `Quiz goal: ${String(value).trim() === '' ? 'none' : String(value).trim()}`,
 };
 
+// Bible in Logos (mw-5r3p30.841) is kept for each part of the canon: this setting is the New Testament's, the one `logosBible` always was. The Old Testament's and the Apocrypha's follow it until
+// each is picked and are rows of their own in rows.ts (PART_ROWS), not settings the tutor reads: its Settings request has no room for two more.
 const logosBibleEntry: SettingEntry = {
   section: 'logos',
   dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
   key: 'logosBible',
   label: 'Bible in Logos',
-  hint: 'The Bible that Old Testament chapters open in, in Logos.',
-  help: `The Bible in your Logos library that Old Testament chapters open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible). It shows only while Logos is On. It is chosen on Library > Bibles.`,
+  hint: 'The Bible that New Testament verses open in, in Logos.',
+  help: `The Bible in your Logos library that New Testament verses open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible). It shows only while Logos is On. The Old Testament and the Apocrypha have a Bible of their own below it; Library > Bibles sets all three at once.`,
   allowed: { kind: 'text', valid: isResourceId, example: DEFAULT_LOGOS_BIBLE },
   read: getLogosBible,
   write: async (value) => {
-    await setLogosBible(String(value));
+    await setLogosBibleFor('nt', String(value));
   },
   show: (value) => `Bible in Logos: ${COMMON_BIBLES.find((b) => b.id === value)?.name ?? String(value)}`,
 };

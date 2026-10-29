@@ -65,6 +65,8 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   englishAccent: EnglishAccentControl,
   ipaLesson: IpaLessonControl,
   logosBible: LogosBibleControl,
+  logosBibleOt: LogosBibleControl,
+  logosBibleApocrypha: LogosBibleControl,
   audioBible: AudioBibleControl,
   readingPlan: ReadingPlanControl,
   dailyReview: DailyReviewControl,

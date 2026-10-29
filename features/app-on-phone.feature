@@ -10,7 +10,7 @@ Feature: Turning a study app On never opens it, and Settings offers to get it
     When he turns the switch "Logos" On
     Then nothing was opened: no navigation, no window.open and no app address
     And the switch "Logos" is On
-    And Settings has the row "Bible in Logos"
+    And Settings has the picker "New Testament Bible in Logos"
     And Settings says "Don't have Logos?"
     And Settings has a link "Get Logos"
 
