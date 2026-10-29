@@ -4,6 +4,19 @@ Which file holds what, for `src/settings/` (the registry, the rows, the links, t
 
 Settings is a home and pages (mw-3ased2.1). The grouping is the Builder's, PROVISIONAL, until the Governor amends it.
 
+<!-- toc -->
+
+- [The languages and their dials (mw-3ased2.2, mw-gdcyf98.2)](#the-languages-and-their-dials-mw-3ased22-mw-gdcyf982)
+- [The home and the groups](#the-home-and-the-groups)
+- [What the Settings screen holds](#what-the-settings-screen-holds)
+- [Search](#search)
+- [Links into Settings](#links-into-settings)
+- [The Library screens (mw-rfjjzd.4)](#the-library-screens-mw-rfjjzd4)
+- [Adding a setting to a group](#adding-a-setting-to-a-group)
+- [Files](#files)
+
+<!-- /toc -->
+
 ## The languages and their dials (mw-3ased2.2, mw-gdcyf98.2)
 
 The first thing on the home, under the search field, is **Which languages?**: English only, Greek, Hebrew or Greek and Hebrew (`controls/languages.tsx`, four 44 px buttons; label and hint PROVISIONAL). It is the setting `languages` (registry.ts `languagesEntry`, section `dial`, **no store of its own**): reading it answers `languagesOf(greek, hebrew)` from the two dials (english while both are 0); writing it moves them (`setLanguages`, `src/data/repositories/greekInterest.ts`): english puts both at 0, greek puts Hebrew at 0 and raises Greek from 0 to the level kept under `greekKept.level` (the level a dial left for 0; else 1), hebrew the mirror (`hebrewKept.level`), both raises each dial at 0 the same way (the higher dial first, so his kept values win over the steps' starting values). The tutor may read and change it like any setting.

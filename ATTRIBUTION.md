@@ -7,6 +7,17 @@ Lampas stands on other people's work, so it names every text, lexicon, library, 
 builds on, with a link to each, its licence and what we changed. Credit is owed whether or not a licence asks for it.
 Tap the round Ask the tutor button to ask what any of it gives you, what its licence lets us do, or why we credit it at all. What the app does is on Help, in Settings.
 
+<!-- toc -->
+
+- [Texts and data](#texts-and-data)
+- [Type](#type)
+- [Libraries the app runs on](#libraries-the-app-runs-on)
+- [Services and apps](#services-and-apps)
+- [Ideas and tools we borrowed](#ideas-and-tools-we-borrowed)
+- [What built it](#what-built-it)
+
+<!-- /toc -->
+
 ## Texts and data
 
 - **[Majority Standard Bible (MSB), New Testament tables](https://majoritybible.com).** Public domain. Byzantine Greek word-aligned
