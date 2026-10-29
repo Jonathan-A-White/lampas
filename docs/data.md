@@ -9,6 +9,36 @@ committed; the raw downloads are not. `npm run data:build:ot` does the same for 
 **The rule (mw-uqlxea):** a chapter says its source language (`lang`: `'grc'` or `'hbo'`) and its translation (`translation`: `'msb'`); the word and chunk keys are the same for every source language.
 The reader, the word sheet, the voices and the drills read the chapter's `lang` (`sourceLanguage(chapter)`) and never assume Greek; code that says 'greek' where it means 'the source language' is generalised when touched, never in a rename sweep.
 
+<!-- toc -->
+
+- [Building](#building)
+- [Sources and licences](#sources-and-licences)
+- [`index.json`](#indexjson)
+- [`lexicon.json`](#lexiconjson)
+- [`lemma-forms/<lemma>.json` (outside `public/data`)](#lemma-formslemmajson-outside-publicdata)
+- [`frequency.json`](#frequencyjson)
+- [`<book>/<chapter>.json`](#bookchapterjson)
+- [Variants](#variants)
+- [Variant English](#variant-english)
+- [The RP 2026 overlay](#the-rp-2026-overlay)
+- [The RP 2026 English](#the-rp-2026-english)
+- [Changes to the sources](#changes-to-the-sources)
+- [The maps' index (not in `public/data`)](#the-maps-index-not-in-publicdata)
+- [The Logos Atlas's map list (not in `public/data`)](#the-logos-atlass-map-list-not-in-publicdata)
+- [The Old Testament data](#the-old-testament-data)
+  - [Source and licences](#source-and-licences)
+  - [The build](#the-build)
+  - [The keys for a Hebrew word](#the-keys-for-a-hebrew-word)
+  - [`lexicon-hbo.json` and `frequency-hbo.json`](#lexicon-hbojson-and-frequency-hbojson)
+  - [Sizes (2026-10-25)](#sizes-2026-10-25)
+- [The spaced schedule (Dexie v10)](#the-spaced-schedule-dexie-v10)
+- [Grammar levels (Dexie v11)](#grammar-levels-dexie-v11)
+- [Offline](#offline)
+  - [The offline copy (`src/data/offlineCopy.ts`, mw-lcv9z3g.1)](#the-offline-copy-srcdataofflinecopyts-mw-lcv9z3g1)
+- [The places of each book (not in `public/data`)](#the-places-of-each-book-not-in-publicdata)
+
+<!-- /toc -->
+
 ## Building
 
 ```bash
