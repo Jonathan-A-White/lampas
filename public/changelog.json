@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.20",
+    "date": "2026-10-29",
+    "story": "mw-5r3p30.857",
+    "kind": "fixed",
+    "text": "Tapping Open on a verse link now always brings that verse to the top of the chapter, even if you had been reading that chapter earlier."
+  },
+  {
     "version": "0.7.19",
     "date": "2026-10-29",
     "story": "mw-9ji6ek0.25",

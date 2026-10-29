@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.20
+_2026-10-29_
+- Fixed: Tapping Open on a verse link now always brings that verse to the top of the chapter, even if you had been reading that chapter earlier.
+
 ## 0.7.19
 _2026-10-29_
 - New: You can read the whole New Testament as Nestle-Aland or the Editio Critica Maior, or as a set of your own that you name, save, rename and delete.
