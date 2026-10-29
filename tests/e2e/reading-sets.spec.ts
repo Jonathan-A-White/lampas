@@ -43,13 +43,14 @@ test('Revelation 3: Read as NA lays NA’s readings in 3:2 and 3:7, marked; Save
   await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
   await expect(readAs(page).getByRole('button')).toHaveText(['Byzantine', 'NA', 'ECM']);
   await expect(setButton(page, 'Byzantine')).toHaveAttribute('aria-pressed', 'true');
-  await expect(sheet(page).getByText('ECM where the apparatus gives it (18 places in Acts); elsewhere NA')).toBeVisible();
+  await expect(sheet(page).getByText('The text as it stands')).toBeVisible();
   await expect(sheet(page).getByRole('button', { name: 'Rename', exact: true })).toHaveCount(0);
   await expect(sheet(page).getByRole('button', { name: 'Delete', exact: true })).toHaveCount(0);
 
   // NA: 3:2 and 3:7 read NA, marked, though Variants is Off
   await setButton(page, 'NA').click();
   await expect(setButton(page, 'NA')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).getByText('Nestle-Aland where the apparatus gives it; elsewhere the text as it stands')).toBeVisible();
   await expect(marked(page, 2).first()).toBeAttached();
   await expect(marked(page, 7).first()).toBeAttached();
   expect(await inText(page, 2)).toContain('I was about to die');

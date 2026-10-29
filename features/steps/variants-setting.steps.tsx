@@ -158,7 +158,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   // mw-9ji6ek0.25: Read as
   const buttons = async (name: string) => (await labelsOf(name));
-  Scenario('Settings offers Read as with the three built-in sets, Byzantine chosen, and says what ECM is', ({ Given, Then, And }) => {
+  Scenario('Settings offers Read as with the three built-in sets, Byzantine chosen, and says what Byzantine reads', ({ Given, Then, And }) => {
     Given('Settings is open at Reading with nothing chosen', () => openReading());
     Then('Read as offers {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, chosen: string) => {
       expect(await buttons('Read as')).toEqual([a, b, c]);

@@ -64,10 +64,10 @@ Feature: Variants in Settings (mw-9ji6ek0.4)
     Then the lessons on variant readings are open
 
   # mw-9ji6ek0.25: Read as, the reading set in force, and saving, renaming and deleting his own
-  Scenario: Settings offers Read as with the three built-in sets, Byzantine chosen, and says what ECM is
+  Scenario: Settings offers Read as with the three built-in sets, Byzantine chosen, and says what Byzantine reads
     Given Settings is open at Reading with nothing chosen
     Then Read as offers "Byzantine", "NA" and "ECM" with "Byzantine" chosen
-    And the Reading sets row says "ECM where the apparatus gives it (18 places in Acts); elsewhere NA"
+    And the Reading sets row says "The text as it stands"
 
   Scenario: Choosing NA under Read as is kept across a reload
     Given Settings is open at Reading with nothing chosen

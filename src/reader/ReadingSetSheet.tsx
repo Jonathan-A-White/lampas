@@ -8,10 +8,21 @@ import { deleteSet, getActiveSet, listReadingSets, renameSet, saveSetAs, setActi
 import { Chips } from '../ui/Chips';
 import { focusOnMount } from '../ui/focus';
 import { LimitedInput } from '../ui/LimitedField';
-import { isBuiltIn } from './readingSets';
+import { BYZANTINE_ID, ECM_ID, isBuiltIn, NA_ID, type ReadingSet } from './readingSets';
 
 /** What ECM is, said where it is chosen: the apparatus gives ECM readings only in Acts. */
 export const ECM_LINE = 'ECM where the apparatus gives it (18 places in Acts); elsewhere NA';
+const BYZANTINE_LINE = 'The text as it stands';
+const NA_LINE = 'Nestle-Aland where the apparatus gives it; elsewhere the text as it stands';
+
+/** What `set` reads, said under the chips: the built-in sets by their rule, Mine and his named sets by the number of places he has chosen. */
+function readingSetLine(set: ReadingSet): string {
+  if (set.id === BYZANTINE_ID) return BYZANTINE_LINE;
+  if (set.id === NA_ID) return NA_LINE;
+  if (set.id === ECM_ID) return ECM_LINE;
+  const n = Object.keys(set.choices).length;
+  return `Your own set: ${n === 0 ? 'no places' : n === 1 ? '1 place' : `${n} places`} chosen${n === 0 ? ' yet' : ''}`;
+}
 
 /** The longest name of a set. */
 const NAME_MAX = 40;
@@ -54,7 +65,7 @@ function NameForm({ label, initial, onSave, onCancel }: { label: string; initial
 
 type Asking = 'save' | 'rename' | 'delete' | null;
 
-/** 'Read as': the chips of the sets, the line on ECM, and Save as… / Rename / Delete. `name` is the chips' group name. */
+/** 'Read as': the chips of the sets, the line on what the set in force reads, and Save as… / Rename / Delete. `name` is the chips' group name. */
 export function ReadAs({ name = 'Read as' }: { name?: string }) {
   const sets = useLiveQuery(listReadingSets, []);
   const active = useLiveQuery(getActiveSet, []);
@@ -73,7 +84,7 @@ export function ReadAs({ name = 'Read as' }: { name?: string }) {
           void setActive(id);
         }}
       />
-      <p className="pt-1 text-base text-muted">{ECM_LINE}</p>
+      <p className="pt-1 text-base text-muted">{readingSetLine(active)}</p>
       {asking === 'save' ? (
         <NameForm
           label="Name this set"
