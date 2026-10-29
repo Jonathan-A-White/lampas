@@ -26,6 +26,7 @@ Element.prototype.scrollIntoView = function scrollIntoView() {};
 
 const user = userEvent.setup();
 const NAME = 'Keep on this phone';
+/** the first chapters are 200 KB each (five make the 1 MB the row shows); the rest are small, so the whole run is quick on a loaded host */
 const CHAPTER_BYTES = 200_000;
 /** how many chapters the fake fetch answers at once; the rest wait for `arrive()` */
 const ANSWERED = 5;
@@ -54,7 +55,7 @@ function stubOfflineFetch(): void {
       if (!copy.has(url)) return app(input, init);
       fetched.push(url);
       if (!answered.has(url) && !arrivedAll) await new Promise<void>((release) => held.push(release));
-      return new Response('x'.repeat(CHAPTER_BYTES), { status: 200 });
+      return new Response('x'.repeat(answered.has(url) ? CHAPTER_BYTES : 100), { status: 200 });
     }),
   );
 }
