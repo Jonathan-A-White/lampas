@@ -1,5 +1,7 @@
 # How to read a variant
 
+<!-- toc: none -->
+
 How Lampas draws a variant in the Reader, and how to read it.
 
 ## Turning variants on

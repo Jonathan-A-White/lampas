@@ -6,6 +6,36 @@ files named, with throw-away scripts (not committed) that parsed the real downlo
 The ask (the Governor, Postern general, 2026-10-09 21:27Z): his oldest son likes the King James; can the King James be an option, and
 the Greek behind it, "in the settings", so that the tutor can switch it too. What Lampas has now ("my preference") stays the default.
 
+<!-- toc -->
+
+- [What I found](#what-i-found)
+- [The King James Version text](#the-king-james-version-text)
+  - [Recommended source: CrossWire `KJV` module, version 3.1 (2023-07-19)](#recommended-source-crosswire-kjv-module-version-31-2023-07-19)
+  - [John 1:1 in its native format (OSIS, `kjv.osis.xml`, line 29276)](#john-11-in-its-native-format-osis-kjvosisxml-line-29276)
+  - [Other markup in the module](#other-markup-in-the-module)
+  - [Other KJV sources looked at](#other-kjv-sources-looked-at)
+- [The Greek behind it: Scrivener's 1894 Textus Receptus](#the-greek-behind-it-scriveners-1894-textus-receptus)
+  - [Recommended: the KJV module's own Greek, accented from KJTR then TAGNT](#recommended-the-kjv-modules-own-greek-accented-from-kjtr-then-tagnt)
+  - [John 1:1 in native format](#john-11-in-native-format)
+- [How Lampas loads and aligns text now](#how-lampas-loads-and-aligns-text-now)
+- [Word-by-word alignment for the KJV and TR pair (d)](#word-by-word-alignment-for-the-kjv-and-tr-pair-d)
+- [Size of the data (e)](#size-of-the-data-e)
+- [Risks and decisions for the Governor](#risks-and-decisions-for-the-governor)
+- [Proposed stories (f)](#proposed-stories-f)
+  - [1. Parse the KJV OSIS into aligned chunks (data, pure)](#1-parse-the-kjv-osis-into-aligned-chunks-data-pure)
+  - [2. Accented Greek for the TR words (data, pure)](#2-accented-greek-for-the-tr-words-data-pure)
+  - [3. Build and commit the KJV + TR1894 chapter files](#3-build-and-commit-the-kjv--tr1894-chapter-files)
+  - [4. A text-pair module the loaders ask](#4-a-text-pair-module-the-loaders-ask)
+  - [5. Settings: "Text" with MSB + RP2005 | KJV + TR1894, switchable by the tutor](#5-settings-text-with-msb--rp2005--kjv--tr1894-switchable-by-the-tutor)
+  - [6. Draw chunks that have no Greek, and the other pair's quirks](#6-draw-chunks-that-have-no-greek-and-the-other-pairs-quirks)
+  - [7. Other screens in the other pair](#7-other-screens-in-the-other-pair)
+  - [8. Tell the tutor which text it holds](#8-tell-the-tutor-which-text-it-holds)
+  - [9. About and the Preface for the new pair](#9-about-and-the-preface-for-the-new-pair)
+  - [10. Offline and the deploy](#10-offline-and-the-deploy)
+  - [11. Demo story (closes the epic: "Looks good")](#11-demo-story-closes-the-epic-looks-good)
+
+<!-- /toc -->
+
 ## What I found
 
 * **Both texts exist as free, machine-readable data, and they come already word-aligned.** The CrossWire KJV module tags every English

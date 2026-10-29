@@ -4,6 +4,16 @@ The audit the Governor asked for (mw-irpgqi.2, his words of 2026-10-21 11:51Z: r
 Written before the code of mw-irpgqi.2, kept true by it. Every component named here exists at its path after mw-irpgqi.2 lands; mw-irpgqi.3 and
 mw-irpgqi.4 reuse what the last section says and add nothing this file does not list without adding it here.
 
+<!-- toc -->
+
+- [What the app already had, and the epic uses](#what-the-app-already-had-and-the-epic-uses)
+- [What mw-irpgqi.2 makes, shared](#what-mw-irpgqi2-makes-shared)
+- [Duplicates mw-irpgqi.2 removes](#duplicates-mw-irpgqi2-removes)
+- [What mw-irpgqi.3 must reuse](#what-mw-irpgqi3-must-reuse)
+- [What mw-irpgqi.4 must reuse](#what-mw-irpgqi4-must-reuse)
+
+<!-- /toc -->
+
 ## What the app already had, and the epic uses
 
 | Component | File | Props or shape | Who calls it |

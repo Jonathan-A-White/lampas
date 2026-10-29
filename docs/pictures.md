@@ -8,6 +8,18 @@ it beside the Greek word, and the Quick test shows it beside the word asked. The
 `src/data/pictures.ts` maps a word's headword (the key of the words store, `src/data/lemma.ts`) to its
 file. `src/WordPicture.tsx` draws it, or nothing.
 
+<!-- toc -->
+
+- [The rules for a picture](#the-rules-for-a-picture)
+- [Adding one](#adding-one)
+- [The 63 seed words](#the-63-seed-words)
+- [The picture queue](#the-picture-queue)
+  - [Making the next slice](#making-the-next-slice)
+- [Link pictures](#link-pictures)
+- [Nothing honest to draw](#nothing-honest-to-draw)
+
+<!-- /toc -->
+
 ## The rules for a picture
 
 - `viewBox="0 0 96 96"`, the `xmlns`, nothing else sized; under 2.5 KB (they run about 0.5 KB).

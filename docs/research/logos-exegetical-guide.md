@@ -6,6 +6,16 @@ search-engine excerpts of Logos's own help pages, `curl` against ref.ly on 2026-
 Logos's support and community pages answer 403 to a script, as docs/resources.md says.
 **Nothing here was opened in Logos: the Laptop has none. Every link below is UNVERIFIED on a device until the Governor taps the one link in HOW TO CHECK IT.**
 
+<!-- toc -->
+
+- [The link form, and its source](#the-link-form-and-its-source)
+- [The built links](#the-built-links)
+- [Where the door would sit](#where-the-door-would-sit)
+- [Sweep: every Logos guide and tool the sources name, and whether it takes a reference](#sweep-every-logos-guide-and-tool-the-sources-name-and-whether-it-takes-a-reference)
+- [HOW TO CHECK IT, for the Governor](#how-to-check-it-for-the-governor)
+
+<!-- /toc -->
+
 ## The link form, and its source
 
 * **The Guide scheme, tested.** robrawks/LogosBibleSoftwareMCP, pull request #8 by droza123, 2026-08-26 (https://github.com/robrawks/LogosBibleSoftwareMCP/pull/8 , fetched 2026-10-23), the same pull request docs/resources.md

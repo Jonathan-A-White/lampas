@@ -4,6 +4,23 @@ The Paradigms screen (`#/paradigms`, Settings > More > Paradigms, beside Review)
 (Paradigms, Learn, Drill, Available forms) and which tenses, declensions and pronouns the tables hold are
 PROVISIONAL, the Governor to confirm. The parts this screen shares with the rest of the app, and what the epic's later stories reuse, are in docs/paradigm-components.md.
 
+<!-- toc -->
+
+- [The tables](#the-tables)
+- [The Hebrew tables (mw-gdcyf98.13)](#the-hebrew-tables-mw-gdcyf9813)
+- [What a table says about itself](#what-a-table-says-about-itself)
+- [Where a table is linked (mw-svw421.5)](#where-a-table-is-linked-mw-svw4215)
+- [This word (mw-irpgqi.4)](#this-word-mw-irpgqi4)
+- [What unlocks a form](#what-unlocks-a-form)
+- [Learn and Drill (mw-irpgqi.2)](#learn-and-drill-mw-irpgqi2)
+- [How much of a table (mw-irpgqi.2)](#how-much-of-a-table-mw-irpgqi2)
+- [Drill this table (mw-svw421.6)](#drill-this-table-mw-svw4216)
+- [Ask the tutor](#ask-the-tutor)
+- [Out of scope](#out-of-scope)
+- [The cell and label layout (mw-svw421.40)](#the-cell-and-label-layout-mw-svw42140)
+
+<!-- /toc -->
+
 ## The tables
 
 One file each in `src/data/paradigms/`, listed in `index.ts` (`PARADIGMS`); a new table is one file plus one line.

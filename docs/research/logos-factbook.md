@@ -5,6 +5,16 @@ Read from one Logos support excerpt, one third-party repository's pull request t
 counts of Lampas's own data (`public/data/frequency.json`, `lexicon.json`, the chapter files). The Logos support and community pages answer 403 to a script, as docs/resources.md says.
 **Nothing here was opened in Logos: the Laptop has none. Every link below is UNVERIFIED on a device until the Governor taps the one link in HOW TO CHECK IT.**
 
+<!-- toc -->
+
+- [The link form, and its source](#the-link-form-and-its-source)
+- [The built links](#the-built-links)
+- [How a word sheet would know a proper name](#how-a-word-sheet-would-know-a-proper-name)
+- [Sweep: the proper names of 2 John and Romans 16, the first screens it would show on](#sweep-the-proper-names-of-2-john-and-romans-16-the-first-screens-it-would-show-on)
+- [HOW TO CHECK IT, for the Governor](#how-to-check-it-for-the-governor)
+
+<!-- /toc -->
+
 ## The link form, and its source
 
 * **Logos's own page (a search excerpt, not the page).** Logos Support, "Logos Links Guide" (https://support.logos.com/hc/en-us/articles/46165718176397-Logos-Links-Guide , 403 to a script; read in the

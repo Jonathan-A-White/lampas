@@ -10,6 +10,42 @@ described by its help, or by its hint when it has no help (the hint is the help'
 names `devotional`'s list instead of repeating its 38 devotionals; a devotional is named by its title without its subtitle; and a value whose
 label is the value itself (`"on" (On)`) is written once. The answer schema still lists every key and value.
 
+<!-- toc -->
+
+- [000 The title](#000-the-title)
+- [010 The contract](#010-the-contract)
+- [015 The conversation so far](#015-the-conversation-so-far)
+- [020 Greek words said in English speech](#020-greek-words-said-in-english-speech)
+- [030 Words of the text](#030-words-of-the-text)
+- [040 Cleaning up what he said](#040-cleaning-up-what-he-said)
+- [050 Talk from a screen](#050-talk-from-a-screen)
+- [060 Help with a word](#060-help-with-a-word)
+- [070 Help with a Quick test question](#070-help-with-a-quick-test-question)
+- [080 Help with a grammar term](#080-help-with-a-grammar-term)
+- [090 Help with a paradigm table](#090-help-with-a-paradigm-table)
+- [100 Meeting him where he is](#100-meeting-him-where-he-is)
+- [110 Learning about him](#110-learning-about-him)
+- [120 His memory](#120-his-memory)
+- [130 Offering the Greek](#130-offering-the-greek)
+- [140 Teaching at his level](#140-teaching-at-his-level)
+- [150 When he is not ready for the question](#150-when-he-is-not-ready-for-the-question)
+- [160 When he has gone rusty](#160-when-he-has-gone-rusty)
+- [170 Quiz mode](#170-quiz-mode)
+- [180 My study way](#180-my-study-way)
+- [190 The welcome](#190-the-welcome)
+- [200 Links to his study resources](#200-links-to-his-study-resources)
+- [210 to 250](#210-to-250)
+- [260 Helping him fill in a form](#260-helping-him-fill-in-a-form)
+- [270 Asks the app cannot meet](#270-asks-the-app-cannot-meet)
+- [280 Answering an offer by voice](#280-answering-an-offer-by-voice)
+- [290 His requests](#290-his-requests)
+- [300 to 350](#300-to-350)
+- [A second trim (mw-5r3p30.732)](#a-second-trim-mw-5r3p30732)
+- [The offer of the original (mw-gdcyf98.17)](#the-offer-of-the-original-mw-gdcyf9817)
+- [A third trim: the settings list (mw-gdcyf98.28)](#a-third-trim-the-settings-list-mw-gdcyf9828)
+
+<!-- /toc -->
+
 ## 000 The title
 
 - Warm, plain-spoken companion; the reader is an adult learner on a phone; talk about a chapter or verse; plain American English; Greek in Greek letters with accents and breathings → kept, unchanged.

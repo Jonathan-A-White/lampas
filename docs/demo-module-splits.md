@@ -8,6 +8,15 @@ Governor's check on his phone that everything works and looks exactly as it did.
 Run it on the updated version (reload when the app says "Update ready, tap to reload"). The hold-to-ask step needs a phone that can
 listen; without one, **Type a question** does the same job.
 
+<!-- toc -->
+
+- [The Reader](#the-reader)
+- [Settings](#settings)
+- [Right](#right)
+- [If something is off](#if-something-is-off)
+
+<!-- /toc -->
+
 ## The Reader
 
 1. Open Lampas. It opens the Reader on **Romans 8** (or where you left off). The title at the top is a button with a small arrow;

@@ -5,6 +5,17 @@ Read from his library listing (vault `plans/lampas-logos-library-2026-10-08.csv`
 ref.ly on 2026-10-22, and from search-engine excerpts of the Logos forum (its pages answer 403 to a script, as docs/resources.md says).
 **Nothing here was opened in Logos: the Laptop has none. Every link form below is UNVERIFIED on a device until the Governor taps the one link in HOW TO CHECK IT.**
 
+<!-- toc -->
+
+- [What I found](#what-i-found)
+- [What the export names for each grammar, and the link form](#what-the-export-names-for-each-grammar-and-the-link-form)
+  - [Built links](#built-links)
+- [Sweep: every grammar in his listing](#sweep-every-grammar-in-his-listing)
+- [What the sections tables (src/resources/grammarBooks.ts) would need to change](#what-the-sections-tables-srcresourcesgrammarbooksts-would-need-to-change)
+- [HOW TO CHECK IT, for the Governor](#how-to-check-it-for-the-governor)
+
+<!-- /toc -->
+
 ## What I found
 
 * **Each book carries its own reference type in the export.** `ReferenceSupersets` is the book's own address space, the way a commentary's is

@@ -8,6 +8,26 @@ Modern Greek is the only Greek scheme so far; Erasmian is next. Hebrew (Israeli)
 syllables joined by hyphens, the stressed syllable in capitals (a one-syllable word has no capitals), English
 sound-alikes for the letters.
 
+<!-- toc -->
+
+- [How it is built](#how-it-is-built)
+  - [A word said alone (mw-5r3p30.357)](#a-word-said-alone-mw-5r3p30357)
+- [A standard in the middle (mw-5r3p30.352)](#a-standard-in-the-middle-mw-5r3p30352)
+- [The English accent setting (mw-5r3p30.353)](#the-english-accent-setting-mw-5r3p30353)
+- [Learn the IPA sounds, the optional course (mw-5r3p30.356, mw-gdcyf98.24, PROVISIONAL)](#learn-the-ipa-sounds-the-optional-course-mw-5r3p30356-mw-gdcyf9824-provisional)
+- [One scheme for every sound (mw-5r3p30.268)](#one-scheme-for-every-sound-mw-5r3p30268)
+- [Sounds that change by the next letter (mw-i7xe0n.7)](#sounds-that-change-by-the-next-letter-mw-i7xe0n7)
+- [Sound progress is kept per pronunciation](#sound-progress-is-kept-per-pronunciation)
+- [Modern Greek (`src/speech/schemes/modern.ts`)](#modern-greek-srcspeechschemesmodernts)
+- [Adding a scheme (Erasmian next, not built yet)](#adding-a-scheme-erasmian-next-not-built-yet)
+- [Hebrew (mw-5vvlay.1, mw-gdcyf98.5)](#hebrew-mw-5vvlay1-mw-gdcyf985)
+  - [One setting for both languages (mw-gdcyf98.6)](#one-setting-for-both-languages-mw-gdcyf986)
+  - [The Hebrew respelling](#the-hebrew-respelling)
+  - [The Hebrew sounds and lessons](#the-hebrew-sounds-and-lessons)
+  - [Adding the Academic family (Erasmian and Tiberian)](#adding-the-academic-family-erasmian-and-tiberian)
+
+<!-- /toc -->
+
 ## How it is built
 
 `src/speech/pronunciation.ts` is the registry: a list of `Pronunciation` entries

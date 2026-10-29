@@ -9,6 +9,16 @@ least 44 px tall, in the app's own colours. When all three do, he says "Looks go
 Needs a phone with a voice for English (and, in Lampas, Greek). Run each app's steps on the updated version (reload when the
 app says "Update ready, tap to reload").
 
+<!-- toc -->
+
+- [Postern](#postern)
+- [Lampas](#lampas)
+- [SpellForge](#spellforge)
+- [Right](#right)
+- [Known differences (his word decides which become stories)](#known-differences-his-word-decides-which-become-stories)
+
+<!-- /toc -->
+
 ## Postern
 
 1. Open **Channels**, then **Talk to the Mayor**, hold the button and ask something, so the Mayor's answer is spoken
