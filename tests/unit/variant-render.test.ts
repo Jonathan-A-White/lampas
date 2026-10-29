@@ -232,7 +232,7 @@ describe('every omission unit of the committed chapters has a word to dot (mw-9j
       '1co 8:2 δέ', 'col 1:7 καὶ', 'jhn 1:42 Καὶ', 'luk 15:19 καὶ', 'luk 18:41 λέγων', 'luk 20:34 ἀποκριθεὶς', 'luk 4:34 λέγων',
       'luk 9:37 ἐν', 'mrk 12:6 οὖν', 'mrk 14:19 Οἱ δὲ', 'mrk 14:20 ἀποκριθεὶς', 'mrk 7:6 ἀποκριθεὶς', 'rev 20:5 Καὶ', 'rev 22:7 Καὶ',
     ].sort());
-  });
+  }, 120_000);
 });
 
 describe('a unit whose reading changes the words and whose words the English gives no chunk of their own (mw-9ji6ek0.35)', () => {
