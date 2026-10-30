@@ -26,7 +26,7 @@ Here the scholars part.
 
 Robinson and Pierpont hold that the text most manuscripts share, copied over a wide area for many centuries, is the best guide to what the apostles wrote. They argue that the other groups came from it by the slips and changes above. Robinson sets this out at length in *The Case for Byzantine Priority*, the appendix of their edition, which you can read in the app from the Preface.
 
-Most scholars today weigh the evidence another way. They give the most weight to the oldest surviving copies, many of them from Egypt, and at each place they ask which reading best explains how the others arose. The Nestle-Aland text is made that way, place by place. Bruce Metzger and Bart Ehrman's *The Text of the New Testament*, and Kurt and Barbara Aland's book of the same name, are standard accounts of that method.
+Most scholars today weigh the evidence another way. They give the most weight to the oldest surviving copies, many of them from Egypt, and at each place they ask which reading best explains how the others arose. The Nestle-Aland text is made that way, place by place. Bruce Metzger and Bart Ehrman's *The Text of the New Testament: Its Transmission, Corruption, and Restoration*, and Kurt and Barbara Aland's *The Text of the New Testament*, are standard accounts of that method.
 
 Both sides agree on most of the text and on the kinds of mistakes scribes made. They differ on how to weigh the copies, and Lampas does not settle that.
 

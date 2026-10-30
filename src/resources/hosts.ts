@@ -4,7 +4,8 @@
 import { LINK_ORIGIN } from '../config';
 import { CREDITS } from '../tutor/credits';
 
-export const RESOURCE_HOSTS: readonly string[] = ['www.stepbible.org', 'www.blueletterbible.org', 'ref.ly', new URL(LINK_ORIGIN).host];
+// www.logos.com and www.amazon.com are the book stores bookLinks.ts links a cited book to (data/books.json), so a hand-written link to either is drawn too.
+export const RESOURCE_HOSTS: readonly string[] = ['www.stepbible.org', 'www.blueletterbible.org', 'ref.ly', 'www.logos.com', 'www.amazon.com', new URL(LINK_ORIGIN).host];
 
 /** True when `href` is an https address on a host a resource builds links on. */
 export function isResourceLink(href: string): boolean {

@@ -1,0 +1,79 @@
+[
+  {
+    "title": "A Textual Commentary on the Greek New Testament",
+    "authors": [
+      "Bruce M. Metzger"
+    ],
+    "year": 1994,
+    "logos": "https://www.logos.com/product/2190/a-textual-commentary-on-the-greek-new-testament-second-edition",
+    "amazon": "https://www.amazon.com/s?k=A+Textual+Commentary+on+the+Greek+New+Testament+Metzger"
+  },
+  {
+    "title": "The Text of the New Testament: Its Transmission, Corruption, and Restoration",
+    "authors": [
+      "Bruce M. Metzger",
+      "Bart D. Ehrman"
+    ],
+    "year": 2005,
+    "logos": "https://www.logos.com/product/241761/the-text-of-the-new-testament-its-transmission-corruption-and-restoration-4th-ed",
+    "amazon": "https://www.amazon.com/s?k=The+Text+of+the+New+Testament%3A+Its+Transmission%2C+Corruption%2C+and+Restoration+Metzger+Ehrman"
+  },
+  {
+    "title": "The Text of the New Testament",
+    "authors": [
+      "Kurt Aland",
+      "Barbara Aland"
+    ],
+    "year": 1989,
+    "amazon": "https://www.amazon.com/s?k=The+Text+of+the+New+Testament%3A+An+Introduction+to+the+Critical+Editions+and+to+the+Theory+and+Practice+of+Modern+Textual+Criticism+Aland",
+    "caseSensitive": true
+  },
+  {
+    "title": "A New Approach to Textual Criticism",
+    "authors": [
+      "Tommy Wasserman",
+      "Peter J. Gurry"
+    ],
+    "year": 2017,
+    "logos": "https://www.logos.com/product/175128/a-new-approach-to-textual-criticism-an-introduction-to-the-coherence-based-genealogical-method",
+    "amazon": "https://www.amazon.com/s?k=A+New+Approach+to+Textual+Criticism+Wasserman+Gurry"
+  },
+  {
+    "title": "The Greek New Testament according to the Majority Text",
+    "authors": [
+      "Zane C. Hodges",
+      "Arthur L. Farstad"
+    ],
+    "year": 1985,
+    "logos": "https://www.logos.com/product/179857/the-greek-new-testament-according-to-the-majority-text",
+    "amazon": "https://www.amazon.com/s?k=The+Greek+New+Testament+according+to+the+Majority+Text+Hodges+Farstad"
+  },
+  {
+    "title": "Learn to Read New Testament Greek",
+    "authors": [
+      "David Alan Black"
+    ],
+    "year": 2009,
+    "logos": "https://www.logos.com/product/5196/learn-to-read-new-testament-greek",
+    "amazon": "https://www.amazon.com/s?k=Learn+to+Read+New+Testament+Greek+Black"
+  },
+  {
+    "title": "Novum Testamentum Graece",
+    "authors": [
+      "Barbara Aland",
+      "Kurt Aland"
+    ],
+    "year": 2012,
+    "logos": "https://www.logos.com/product/29980/nestle-aland-greek-new-testament-28th-edition-with-critical-apparatus",
+    "amazon": "https://www.amazon.com/s?k=Novum+Testamentum+Graece+Nestle-Aland+28th+edition"
+  },
+  {
+    "title": "Editio Critica Maior",
+    "authors": [
+      "Institute for New Testament Textual Research"
+    ],
+    "year": 1997,
+    "logos": "https://www.logos.com/product/263862/novum-testamentum-graecum-editio-critica-maior",
+    "amazon": "https://www.amazon.com/s?k=Editio+Critica+Maior+Institute+for+New+Testament+Textual+Research"
+  }
+]

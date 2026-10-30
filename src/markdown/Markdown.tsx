@@ -2,7 +2,7 @@
 // Postern's src/markdown/Markdown.tsx does, with react-markdown and remark-gfm. No rehype-raw: raw HTML in the source is never
 // parsed into elements, so an answer is safe to render as it comes; HTML comments and a generated table of contents are dropped first (comments.ts). The text takes the size of its surroundings. Hebrew in it is set apart as a
 // right-to-left span in its own font (scriptRuns.ts) and is a button that says the word (src/script/HebrewWord.tsx); Greek in it is a button that says the word in the Greek voice (src/script/GreekWord.tsx). A Bible reference the answer names
-// ('Hebrews 7:2', 'Ps. 110') is a link that opens a card with the passage first (verseLinks.ts, ReferenceCard.tsx); a link the model wrote to a host no study resource builds links on is shown as text.
+// ('Hebrews 7:2', 'Ps. 110') is a link that opens a card with the passage first (verseLinks.ts, ReferenceCard.tsx); a link the model wrote to a host no study resource builds links on is shown as text. A book named in the text that data/books.json lists is a link to its Logos store page or its Amazon page (bookLinks.ts).
 import { memo, useEffect, useMemo, useRef } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -10,6 +10,7 @@ import { isKnownLink } from '../resources/hosts';
 import { GreekWord } from '../script/GreekWord';
 import { HebrewWord } from '../script/HebrewWord';
 import { stripComments } from './comments';
+import { remarkBooks } from './bookLinks';
 import { remarkScripts } from './scriptRuns';
 import { ReferenceLink } from './ReferenceCard';
 import { remarkVerses, writtenOf } from './verseLinks';
@@ -54,7 +55,7 @@ export const Markdown = memo(function Markdown({ text, onOpen, trusted = false }
   const components = useMemo(() => componentsFor(() => latest.current?.(), trusted), [trusted]);
   return (
     <div className="markdown">
-      <ReactMarkdown remarkPlugins={[remarkGfm, remarkVerses, remarkScripts]} components={components}>
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkBooks, remarkVerses, remarkScripts]} components={components}>
         {stripComments(text)}
       </ReactMarkdown>
     </div>
