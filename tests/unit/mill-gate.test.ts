@@ -201,9 +201,9 @@ describe('the Hebrew entries of the AI are hidden from a phone with no licence t
   const jonah = JSON.parse(readFileSync('public/data/jon/1.json', 'utf8')) as Chapter;
   const verse10 = jonah.verses.find((v) => v.n === 10);
 
-  it('offers an unlicensed phone only Listen on a verse of an hbo chapter, and a licensed one Ask the tutor and Quiz me but not Diagram', () => {
+  it('offers an unlicensed phone only Listen on a verse of an hbo chapter, and a licensed one Ask the tutor, Quiz me and Diagram', () => {
     expect(actionsFor(false, 'hbo').map((a) => a.id)).toEqual(['listen']);
-    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'quiz']);
+    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'quiz', 'diagram']);
   });
 
   it('refuses the ask about Jonah 1:10, Hebrew and all, with no licence, and nothing leaves the phone', async () => {
