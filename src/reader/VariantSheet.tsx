@@ -328,7 +328,7 @@ function Sheet({ shown, reference, place, verse, lang, onLook, onClose, onAsk, o
             />
           ) : null}
         </div>
-        {wordOrderOnlyUnit(shown.unit) ? (
+        {wordOrderOnlyUnit(shown.unit, verse) ? (
           <p data-word-order-only="" className="pt-2 text-base text-muted">
             {WORD_ORDER_ONLY}
           </p>

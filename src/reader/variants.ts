@@ -6,7 +6,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import type { Chapter, GreekWord, VariantCode, VariantUnit, VariantWitness, Verse } from '../data/chapter';
-import { plainEnglish, sameInVerse, wordOrderOnly } from '../data/variantVerse';
+import { plainEnglish, sameEnglishReading } from '../data/variantVerse';
 import { getVariantsLastOn } from '../data/repositories';
 import { variantsSetting, variantWitnessesSetting } from '../settings/definitions';
 import { getActiveSet } from '../data/repositories';
@@ -67,7 +67,7 @@ export function shownReadings(unit: VariantUnit, filter: VariantFilter, verse?: 
     .map((alt, i): ShownReading => {
       // a reading that leaves the words out has no English of its own, whatever an older chapter file kept there (mw-9ji6ek0.36)
       const english = alt.text === '' ? '' : (unit.english.alts[i] ?? '');
-      return { index: i, greek: alt.text, english, code: alt.code, ...(alt.g ? { g: alt.g } : {}), ...(unit.english.align?.[i]?.length ? { align: unit.english.align[i] } : {}), ...(alt.apart ? { apart: true as const } : {}), sameEnglish: wordOrderOnly(unit.base, alt.text) || sameInVerse(verse, unit.w, unit.english.base, english) };
+      return { index: i, greek: alt.text, english, code: alt.code, ...(alt.g ? { g: alt.g } : {}), ...(unit.english.align?.[i]?.length ? { align: unit.english.align[i] } : {}), ...(alt.apart ? { apart: true as const } : {}), sameEnglish: sameEnglishReading(unit, i, verse) };
     })
     .filter((r) => r.index === keep || (RANK[WITNESS[r.code]] <= RANK[filter.witnesses] && (filter.english === 'all' || !r.sameEnglish)));
 }

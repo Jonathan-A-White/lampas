@@ -2,7 +2,7 @@
 // reads; where it is not the text's own, VerseText (src/reader/VerseText.tsx) draws the reading's words in place of the unit's: its tagged Greek words, or its short English in place of the
 // unit's chunks with their edge marks kept, or a small ⸆ where the reading leaves the words out. Read aloud, Read check and the diagram keep the Byzantine words in this wave (the plan's Q6); Copy with Text 'As you read it' gives the reading as laid (src/reader/variantText.ts, mw-5r3p30.866).
 import type { Chapter, GreekWord, VariantCode, VariantReading, VariantUnit, Verse } from '../data/chapter';
-import { sameInVerse, wordOrderOnly } from '../data/variantVerse';
+import { sameEnglishReading } from '../data/variantVerse';
 import { readingOf, unitKeys, type ReadingSet } from './readingSets';
 import { readingTokens, variantWord } from './variantWords';
 
@@ -41,7 +41,7 @@ export function chosenUnits(chapter: Pick<Chapter, 'code' | 'chapter' | 'variant
     const omitted = alt.text.trim() === '';
     const english = unit.english.alts[index] ?? '';
     // an English the build gave no words for, beside Greek that has words, is no English at all: the MSB's stay
-    const sameEnglish = !omitted && (english.trim() === '' || wordOrderOnly(unit.base, alt.text) || sameInVerse(verse, unit.w, unit.english.base, english));
+    const sameEnglish = !omitted && (english.trim() === '' || sameEnglishReading(unit, index, verse));
     out.push({ unit, key: keys[at], index, alt, code, english, sameEnglish, omitted });
   });
   return out;

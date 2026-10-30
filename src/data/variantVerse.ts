@@ -1,7 +1,7 @@
 // src/data/variantVerse.ts — whether a variant reading changes the English of its VERSE, not just of its own words (mw-9ji6ek0.14). A unit's English is
 // the model's or the MSB footnote's short snippet ('that' / 'that I'); the verse may already say the difference ('that I love you': the verb carries the
 // 'I'), so the reading is compared in place: the verse's English with the unit's words' chunks replaced by the reading's English, against the verse itself. Pure and import-free so the data build (scripts/data/variantEnglish.ts) and the Reader (src/reader/variants.ts) share it.
-import type { Verse, VariantUnit } from './chapter';
+import type { Verse, VariantEnglish } from './chapter';
 
 /** An English reading with case, punctuation and white space set aside, for comparing two. */
 export const plainEnglish = (s: string): string =>
@@ -71,5 +71,20 @@ export function wordOrderOnly(base: string, alt: string): boolean {
   return [...a].sort().join(' ') === [...b].sort().join(' ');
 }
 
-/** True when every other reading of the unit is its words in another order: the unit changes the order and nothing else. */
-export const wordOrderOnlyUnit = (unit: Pick<VariantUnit, 'base' | 'alts'>): boolean => unit.alts.length > 0 && unit.alts.every((alt) => wordOrderOnly(unit.base, alt.text));
+/** What a unit's English is judged by: its Greek, its readings, its English and its word places. */
+export type UnitEnglish = { base: string; alts: readonly { text: string }[]; english: Pick<VariantEnglish, 'source' | 'base' | 'alts'>; w: readonly number[] };
+
+/**
+ * True when reading `index` of the unit leaves the English as the base's does: it agrees in the verse (sameInVerse), or it is the base's words in another order (wordOrderOnly) and
+ * its English is the model's. Where the English is the MSB's own footnote and the verse then reads differently ('neither angels nor principalities…' for Romans 8:38's other order)
+ * the reading changes the English, order only or not (mw-9ji6ek0.42).
+ */
+export function sameEnglishReading(unit: UnitEnglish, index: number, verse?: Pick<Verse, 'e'>): boolean {
+  const alt = unit.alts[index];
+  const same = sameInVerse(verse, unit.w, unit.english.base, alt?.text === '' ? '' : (unit.english.alts[index] ?? ''));
+  return same || (!!alt && wordOrderOnly(unit.base, alt.text) && unit.english.source !== 'msb');
+}
+
+/** True when every other reading of the unit is its words in another order and none of them changes the English: the unit changes the order and nothing else. */
+export const wordOrderOnlyUnit = (unit: UnitEnglish, verse?: Pick<Verse, 'e'>): boolean =>
+  unit.alts.length > 0 && unit.alts.every((alt, i) => wordOrderOnly(unit.base, alt.text) && sameEnglishReading(unit, i, verse));

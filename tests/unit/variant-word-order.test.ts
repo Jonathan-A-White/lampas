@@ -71,3 +71,35 @@ describe('Matthew 3:4, αὐτοῦ ἦν / ἦν αὐτοῦ', () => {
     expect(document.querySelector('[data-word-order-only]')).toBeNull();
   });
 });
+
+// Romans 8:38 δυνάμεις οὔτε ἐνεστῶτα οὔτε μέλλοντα / ἐνεστῶτα οὔτε μέλλοντα οὔτε δυνάμεις: the same words in another order, but the MSB's own footnote gives other English
+// ('neither angels nor principalities…'), so it counts as changing the English (mw-9ji6ek0.42).
+describe('Romans 8:38, word order only with the MSB footnote’s own English', () => {
+  const rom8: Chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8'));
+  const unit = (): VariantUnit => rom8.variants!.find((u) => u.v === 38 && u.base === 'δυνάμεις οὔτε ἐνεστῶτα οὔτε μέλλοντα')!;
+
+  it('is shown under Those that change the English, its reading not sameEnglish', () => {
+    const u = unit();
+    expect(wordOrderOnly(u.base, u.alts[0].text)).toBe(true);
+    const [shown] = shownUnits([u], { english: 'english', witnesses: 'ecm' }, rom8.verses);
+    expect(shown.unit).toBe(u);
+    expect(shown.readings.map((r) => r.sameEnglish)).toEqual([false]);
+  });
+
+  it('read in place under NA it is not sameEnglish: the MSB’s English follows the reading', () => {
+    const [chosen] = chosenUnits({ code: rom8.code, chapter: rom8.chapter, variants: [unit()], verses: rom8.verses }, NA);
+    expect(chosen.sameEnglish).toBe(false);
+  });
+
+  it('its sheet has no Word order only line', () => {
+    const [shown] = shownUnits([unit()], { english: 'all', witnesses: 'ecm' }, rom8.verses);
+    render(createElement(VariantSheet, { shown, reference: 'Romans 8:38', verse: rom8.verses.find((v) => v.n === 38), onClose: () => {}, onAsk: () => {} }));
+    expect(document.querySelector('[data-word-order-only]')).toBeNull();
+  });
+
+  it('yesterday’s cached chapter (changesEnglish false, the same shape) still reads: the Reader judges the reading itself', () => {
+    const cached: VariantUnit = { ...unit(), changesEnglish: false };
+    const [shown] = shownUnits([cached], { english: 'english', witnesses: 'ecm' }, rom8.verses);
+    expect(shown.readings).toHaveLength(1);
+  });
+});

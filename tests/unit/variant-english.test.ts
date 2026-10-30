@@ -157,6 +157,35 @@ describe('the English of a unit changing', () => {
   });
 });
 
+describe('a word-order-only reading whose English is the MSB’s own footnote (mw-9ji6ek0.42)', () => {
+  const rom8: Chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8'));
+  const mat3: Chapter = JSON.parse(readFileSync('public/data/mat/3.json', 'utf8'));
+  const unit38 = rom8.variants!.find((u) => u.v === 38 && u.base === 'δυνάμεις οὔτε ἐνεστῶτα οὔτε μέλλοντα')!;
+  const unit34 = mat3.variants!.find((u) => u.v === 4 && u.base === 'αὐτοῦ ἦν')!;
+  const verseOf = (c: Chapter, v: number) => c.verses.find((x) => x.n === v)!;
+
+  it('Romans 8:38 (other order, the MSB footnote’s English spans more words) changes the English', () => {
+    expect(unit38.english.source).toBe('msb');
+    expect(changesEnglish(unit38.english, verseOf(rom8, 38), unit38.w, unit38)).toBe(true);
+    expect(unit38.changesEnglish).toBe(true);
+  });
+
+  it('Matthew 3:4 (other order, the model’s English) stays false', () => {
+    expect(unit34.english.source).toBe('lampas');
+    expect(changesEnglish(unit34.english, verseOf(mat3, 4), unit34.w, unit34)).toBe(false);
+    expect(unit34.changesEnglish).toBe(false);
+  });
+
+  it('an MSB footnote that reads the same in the verse stays false; one that reads differently is true; the model’s English with a differing verse stays false', () => {
+    const greek = { base: 'αὐτοῦ ἦν', alts: [{ code: 'N' as const, text: 'ἦν αὐτοῦ' }] };
+    const verse = { e: [{ t: 'it was his', g: [0, 1] }] };
+    const msb = (base: string, alt: string) => ({ source: 'msb' as const, base, alts: [alt] });
+    expect(changesEnglish(msb('his was', 'was his'), verse, [0, 1], greek)).toBe(true);
+    expect(changesEnglish(msb('it was his', 'it was his'), verse, [0, 1], greek)).toBe(false);
+    expect(changesEnglish({ source: 'lampas', base: 'his was', alts: ['was his'] }, verse, [0, 1], greek)).toBe(false);
+  });
+});
+
 describe('the English of a unit changing, in its verse (mw-9ji6ek0.14)', () => {
   const rev3 = JSON.parse(readFileSync('public/data/rev/3.json', 'utf8')) as Chapter;
   const unit = (v: number, first: number) => rev3.variants!.find((u) => u.v === v && u.w[0] === first)!;
