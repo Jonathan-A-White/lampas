@@ -11,20 +11,31 @@ export const stepNumber = (strongs: string): string => {
   return number + (STEP_LETTER[number] ?? '');
 };
 
-/** The last number Strong's own list has: Blue Letter Bible answers a higher one with the entry for G1, so those get no link. */
-const STRONGS_LAST = 5624;
+/** The last number Strong's own list has, Greek and Hebrew: Blue Letter Bible answers a higher Greek one with the entry for G1, a higher Hebrew one with a redirect, so those get no link. */
+const STRONGS_LAST = { G: 5624, H: 8674 };
+
+/**
+ * The version a link opens STEP in. Without one STEP searches the visitor's saved primary version, and a version that does not tag the
+ * Strong's number (his LSB) answers 'did not yield any results' (mw-5r3p30.891). The ESV covers both testaments and lists the same verses.
+ */
+export const STEP_VERSION = 'ESV';
+
+const entryUrl = (number: string): string => {
+  const side = number[0] === 'H' ? 'wlc' : 'tr';
+  return `https://www.blueletterbible.org/lexicon/${number.replace(/^([GH])0*/, (_, letter: string) => letter.toLowerCase())}/kjv/${side}/0-1/`;
+};
 
 /**
  * Where to read about a number: STEP's verse list, or, for the few numbers STEP lists no verses for, the lexicon entry on Blue Letter Bible;
- * null for the three TBESG-only numbers (G6029, G6856, G6897) that have neither.
+ * null for the TBESG-only numbers (G6029, G6856, G6897) that have neither.
  */
 export const strongsUrl = (strongs: string): string | null => {
   const number = padded(strongs);
   if (STEP_NO_VERSES.has(number)) {
-    if (Number(number.slice(1)) > STRONGS_LAST) return null;
-    return `https://www.blueletterbible.org/lexicon/${number.replace(/^G0*/, 'g')}/kjv/tr/0-1/`;
+    if (Number(number.slice(1)) > STRONGS_LAST[number[0] as 'G' | 'H']) return null;
+    return entryUrl(number);
   }
-  return `https://www.stepbible.org/?q=strong=${stepNumber(strongs)}`;
+  return `https://www.stepbible.org/?q=version=${STEP_VERSION}|strong=${stepNumber(strongs)}`;
 };
 
 export const strongs: StudyResource = {

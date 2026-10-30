@@ -89,7 +89,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
   const study = page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('group', { name: 'Study', exact: true });
   await expect(study).toBeInViewport();
-  await expect(study.getByRole('link', { name: 'G4903', exact: true })).toHaveAttribute('href', 'https://www.stepbible.org/?q=strong=G4903');
+  await expect(study.getByRole('link', { name: 'G4903', exact: true })).toHaveAttribute('href', 'https://www.stepbible.org/?q=version=ESV|strong=G4903');
   const logos = study.getByRole('link', { name: 'Open in Logos: BDAG', exact: true });
   await expect(logos).toHaveAttribute('href', /^logosres:LLS:46\.30\.18;hw=/);
   await expect(logos).toHaveAttribute('data-fallback', /^https:\/\/ref\.ly\/logosres\/LLS%3A46\.30\.18\?hw=/);

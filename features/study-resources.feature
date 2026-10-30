@@ -17,7 +17,7 @@ Feature: Study resources
     And he switches on the study resource "Strong's"
     And he taps Back on the Settings screen
     And he taps the word "work together" in verse 28
-    Then the Study row has a link "G4903" to "https://www.stepbible.org/?q=strong=G4903"
+    Then the Study row has a link "G4903" to "https://www.stepbible.org/?q=version=ESV|strong=G4903"
 
   Scenario: With Logos on, BDAG is ticked and the word sheet shows Open in Logos: BDAG and Bible Word Study in Logos
     Given Lampas is opened on Romans 8 with no study resources on
