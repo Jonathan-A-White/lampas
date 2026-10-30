@@ -86,6 +86,8 @@ What it plays, each item in every column:
 The page lists the phone's Greek voices by name and lets him pick one, and a status line shows exactly what was handed to the voice and what it
 reported (start, end, error, cut), so a failure on his phone comes back as words. "Play the row" plays every clip of a card in turn.
 
+Credits: the three trial voices (Piper, Coqui TTS, Chatterbox) are credited on the listening page itself (public/sounds-trial.html, section Credits), not on About, which credits only what the app uses (mw-5r3p30.875).
+
 Clips: public/sounds-trial/<voice>/<name>.mp3, 19 a voice, 1 to 8 KB each, about 100 KB a voice, mono 22.05 kHz MP3 at 48 kb/s with no metadata,
 as the app's own clips. `scripts/sounds-trial/make-clips.py` makes them (what each voice needs is in its header); it is research tooling, not in
 the gate. tests/unit/sounds-trial.test.ts holds the page to the items above, every clip to a shipped MP3, the app to linking none of it and the
