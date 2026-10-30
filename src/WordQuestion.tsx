@@ -7,7 +7,7 @@ import { announce } from './ui/live';
 import { useSettled } from './ui/settle';
 import { WordPicture } from './WordPicture';
 import { faceOf, GREEK_LANG } from './script/greekLang';
-import { ReferenceLink } from './markdown/ReferenceCard';
+import { DrillReference } from './markdown/DrillReference';
 import { HeartOfWord } from './HeartOfWord';
 import type { Grade } from './data/schedule';
 import { WORD_GRADES } from './review/kinds';
@@ -66,9 +66,7 @@ export function WordQuestion({ question, index, picked, onPick, onGrade, grade =
           {answered && question.form ? (
             <>
               in{' '}
-              <ReferenceLink written={question.reference ?? ''} mark={question.form} className="inline-flex min-h-11 items-center px-1 text-accent underline underline-offset-4">
-                {question.reference}
-              </ReferenceLink>{' '}
+              <DrillReference reference={question.reference ?? ''} mark={question.form} linked className="inline-flex min-h-11 items-center px-1 text-accent underline underline-offset-4" />{' '}
               as <span {...(question.lang === 'hbo' ? faceOf('hbo', { greek: '', hebrew: '' }) : GREEK_LANG)}>{question.form}</span>
             </>
           ) : (

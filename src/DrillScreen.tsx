@@ -20,7 +20,7 @@ import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
 import { faceOf } from './script/greekLang';
-import { ReferenceLink } from './markdown/ReferenceCard';
+import { DrillReference } from './markdown/DrillReference';
 
 interface Session {
   status: 'loading' | 'offer' | 'failed' | 'ready';
@@ -229,9 +229,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
                   <li key={i} data-missed={s.questions[i].lemma} className="px-3 py-2">
                     <span {...faceOf(s.questions[i].lang, { greek: 'text-2xl', hebrew: 'hebrew-choice' }, 'block break-words')}>{s.questions[i].form}</span>
                     <span className="block break-words text-sm text-muted">
-                      <ReferenceLink written={s.questions[i].reference} mark={s.questions[i].form} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">
-                        {s.questions[i].reference}
-                      </ReferenceLink>
+                      <DrillReference reference={s.questions[i].reference} mark={s.questions[i].form} linked />
                       : {s.questions[i].parsing}
                     </span>
                   </li>
@@ -301,9 +299,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
       <main className="screen min-h-0 flex-1 px-4 pt-4">
         <VerseWithWord q={question} />
         <p className="mt-1 text-sm text-muted">
-          <ReferenceLink written={question.reference} mark={question.form} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">
-            {question.reference}
-          </ReferenceLink>
+          <DrillReference reference={question.reference} mark={question.form} linked />
         </p>
         <p data-testid="drill-step" data-step-id={step.id} className="mt-3 text-center text-xl font-semibold">
           What is the {step.label.toLowerCase()} of{' '}
