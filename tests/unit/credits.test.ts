@@ -139,3 +139,25 @@ describe('parseAttribution reads quotes, sections and links', () => {
     expect(plainText('see [STEPBible](https://www.stepbible.org/) now')).toBe('see STEPBible now');
   });
 });
+
+// A merge that keeps both sides' edits of one line leaves a paragraph twice, and the About draws both (mw-5r3p30.870). Short lines
+// repeat on purpose ("Changes: none.", a licence line), so only a line long enough to be a paragraph is compared.
+describe('ATTRIBUTION.md holds no paragraph twice', () => {
+  const PARAGRAPH_MIN = 200;
+  const lines = md.split('\n');
+  it('has no two long lines that start alike', () => {
+    const seen = new Map<string, number>();
+    const doubled: string[] = [];
+    lines.forEach((line, i) => {
+      if (line.trim().length < PARAGRAPH_MIN) return;
+      const key = line.trim().slice(0, 80);
+      const first = seen.get(key);
+      if (first === undefined) seen.set(key, i + 1);
+      else doubled.push(`line ${i + 1} starts like line ${first}: ${key}`);
+    });
+    expect(doubled, 'a paragraph is in ATTRIBUTION.md twice: merge the two into one').toEqual([]);
+  });
+  it('has the toc: none marker once', () => {
+    expect(lines.filter((l) => l.includes('toc: none'))).toHaveLength(1);
+  });
+});
