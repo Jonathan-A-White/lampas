@@ -97,3 +97,42 @@ for (const { name, size } of SIZES) {
     await shot(page, `weave-switch-off-${name}`);
   });
 }
+
+// Switching the mode keeps the verse that is on top (mw-5r3p30.863): each mode sets a verse at its own height, so a number of pixels is not a place. His Acts 18, Weave at verse 14
+// went to Greek at verse 11. The first verse whose top is at or below the reading box's top is the place; it must be the same verse after each switch, within the 8 px gap
+// useBringVerse leaves.
+test('switching the mode keeps the verse that is on top, Acts 18', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=act&c=18&weave=solid');
+  await expect(page.locator('[data-verse="14"] [data-text]')).toBeVisible();
+
+  // the box is scrolled so verse 14 is the first verse at its top
+  const topOf = (verse: number) =>
+    page.evaluate((n) => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      return document.querySelector(`[data-verse="${n}"]`)!.getBoundingClientRect().top - box.getBoundingClientRect().top;
+    }, verse);
+  const firstVerse = () =>
+    page.evaluate(() => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      const top = box.getBoundingClientRect().top;
+      const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top);
+      return Number(el?.dataset.verse);
+    });
+  await page.evaluate(() => {
+    const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+    const el = document.querySelector('[data-verse="14"]')!;
+    box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+  });
+  expect(await firstVerse()).toBe(14);
+  await shot(page, 'weave-switch-place-weave');
+
+  for (const label of ['Greek', 'Weave', 'English']) {
+    await choice(page, label).click();
+    await expect(choice(page, label)).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(async () => Math.abs((await topOf(14)) - 8)).toBeLessThanOrEqual(8);
+    expect(await firstVerse()).toBe(14);
+    if (label === 'Greek') await shot(page, 'weave-switch-place-greek');
+  }
+});

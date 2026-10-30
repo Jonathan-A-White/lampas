@@ -67,3 +67,30 @@ Feature: The Reader's switch is English | Weave | Greek
     And he sets Weave to Solid words
     When he chooses "Weave" in the language switch
     Then verse 1 begins "Therefore there is now no condemnation"
+
+  # mw-5r3p30.863: the switch keeps his place. Each mode lays a verse out at its own height, so the place is a verse, not a number of pixels.
+  Scenario: Switching the mode keeps the verse that is on top of the Greek chapter
+    Given Lampas is opened with nothing saved
+    And he sets Weave to Solid words
+    And the Reader lays each mode out at a height of its own
+    And he opens Acts 18
+    And he has scrolled so verse 14 is the first verse at the top
+    When he switches in turn to "Greek", "Weave" and "English"
+    Then verse 14 was at the top of the reading box after each
+
+  Scenario: Switching the mode keeps the verse that is on top of the Hebrew chapter
+    Given Lampas is opened with nothing saved
+    And he sets Weave to Solid words
+    And the Reader lays each mode out at a height of its own
+    And his Hebrew dial is at All in
+    And he opens Genesis 1
+    And he has scrolled so verse 20 is the first verse at the top
+    When he switches in turn to "Hebrew", "Weave" and "English"
+    Then verse 20 was at the top of the reading box after each
+
+  Scenario: Switching the mode with the chapter at its top leaves it at its top
+    Given Lampas is opened with nothing saved
+    And he sets Weave to Solid words
+    And the Reader lays each mode out at a height of its own
+    When he chooses "Greek" in the language switch
+    Then the reading box is at its top

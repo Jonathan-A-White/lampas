@@ -10,7 +10,8 @@ import { pathOf, readerHash, readerOf, useAddress } from './route';
 const offsets = new Map<string, number>();
 
 /** The address a scroll offset is kept under: the reader without its selected verse (tapping a verse number does not
- * move the text, and the place is the same whichever verse is selected). */
+ * move the text, and the place is the same whichever verse is selected) and without its view and weave (switching the mode re-lays the same chapter in place, and the
+ * offset the other mode last had is not the place he was reading: the Reader keeps the verse on top instead, src/reader/useKeepTopVerse.ts, mw-5r3p30.863). */
 export function scrollAddress(hash: string): string {
   // a link to a setting (src/settings/link.ts) has a place of its own: Settings opens at that row, not where he last left it
   if (pathOf(hash) === '#/settings') {
@@ -26,7 +27,7 @@ export function scrollAddress(hash: string): string {
     return group ? `#/settings?group=${group}` : '#/settings';
   }
   if (pathOf(hash) !== '#/') return pathOf(hash);
-  return readerHash({ ...readerOf(hash), verse: undefined });
+  return readerHash({ ...readerOf(hash), verse: undefined, view: undefined, weave: undefined });
 }
 
 /** How long after the last scroll event the offsets are written to the phone. */
@@ -55,8 +56,8 @@ if (typeof document !== 'undefined') {
 }
 
 /** Forgets the offset kept for the box `slot` of the screen at `hash`, so the next time that screen opens it is at the top (or where the app puts it, mw-5r3p30.678).
- * A Reader chapter is kept under an address that has its view and weave in it (`#/?b=rev&c=3&view=english&weave=off`), so for one the place is forgotten in every view and weave
- * of that chapter, not only under the bare address (mw-5r3p30.857). */
+ * A Reader chapter was once kept under an address that had its view and weave in it (`#/?b=rev&c=3&view=english&weave=off`, and a phone may still hold such offsets, mw-5r3p30.863),
+ * so for one the place is forgotten in every view and weave of that chapter, not only under the bare address (mw-5r3p30.857). */
 export function forgetScroll(hash: string, slot: string): void {
   const address = scrollAddress(hash);
   const reader = pathOf(address) === '#/' ? readerOf(address) : undefined;
