@@ -59,7 +59,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(link).toHaveAttribute('href', url);
     });
     And('it lists the changes made to the lexicon', () => {
-      expect(credit('TBESG')).toHaveTextContent(/Changes: per Strong's number only the first entry is used/);
+      expect(credit('TBESG')).toHaveTextContent(/Changes: first entry per Strong's number/);
     });
     And('it says the Majority Standard Bible is public domain', () => {
       expect(credit('Majority Standard Bible')).toHaveTextContent('Public domain.');
