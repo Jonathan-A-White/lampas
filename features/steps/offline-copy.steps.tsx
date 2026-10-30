@@ -11,6 +11,7 @@ import { db } from '../../src/data/db';
 import { offlineRunning, offlineUrls, stopOfflineCopy } from '../../src/data/offlineCopy';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { ReferenceLink } from '../../src/markdown/ReferenceCard';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 
 afterAll(() => {
@@ -212,5 +213,44 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('A phone that kept the New Testament checks it again when Settings opens', ({ Given, Then }) => {
     Given('Settings is open at Reading with the New Testament chosen and every chapter kept', () => openReading({ saved: { offlineCopy: 'nt' }, kept: offlineUrls('nt') }));
     Then('the row reads {string} and a time', upToDate);
+  });
+
+  Scenario("With the New Testament kept and the browser offline, a lesson's passage card opens and reads", ({ Given, When, Then, And }) => {
+    Given('the New Testament is kept and the browser is offline', async () => {
+      stopOfflineCopy();
+      cleanup();
+      clearBus();
+      forgetTrail();
+      vi.unstubAllGlobals();
+      window.localStorage.clear();
+      window.history.replaceState(null, '', '/');
+      await db.open();
+      await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear(), db.readingSets.clear()]);
+      stubChapterFetch();
+      // kept chapters are answered from the phone's copy; anything else the app asks for has no network to go to
+      const kept = new Set(offlineUrls('nt'));
+      const app = globalThis.fetch;
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+          if (!kept.has(String(input))) throw new TypeError('Failed to fetch');
+          return app(input, init);
+        }),
+      );
+      vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false);
+    });
+    When('he opens the passage card {string}', async (_, written: string) => {
+      render(<ReferenceLink written={written}>{written}</ReferenceLink>);
+      await user.click(screen.getByRole('link', { name: written }));
+    });
+    Then('the card reads the verse', async () => {
+      const card = await screen.findByRole('dialog', { name: 'Acts 18:7' });
+      await waitFor(() => expect(card.querySelector('[data-reference-text]')?.textContent).toMatch(/Paul left/));
+    });
+    And('the card says nothing about being offline or about a fetch', async () => {
+      const card = await screen.findByRole('dialog', { name: 'Acts 18:7' });
+      expect(card).not.toHaveTextContent(/offline|fetched|not on this phone/i);
+      vi.restoreAllMocks();
+    });
   });
 });

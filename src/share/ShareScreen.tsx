@@ -8,6 +8,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import { dropShares, listConversations, waitingShare, type Conversation, type ShareRow } from '../data/repositories';
 import { navigate, replaceHash, useAddress } from '../nav/route';
 import { focusOnMount } from '../ui/focus';
+import { fetchFailedLine, useOnline } from '../ui/online';
 import { useNeverShrink } from '../ui/neverShrink';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -155,6 +156,7 @@ export function ShareScreen() {
     [row],
   );
   const scope = useTalkScope(talk);
+  const online = useOnline();
   const failed = scope?.status === 'failed' ? scope : null;
   // The chooser stays up while the talk's chapter is fetched, and the talk takes its place in one commit.
   const chooser = !failed && scope?.status !== 'ready' && row && talks ? <ShareChooser row={row} talks={talks} onPick={pick} onCancel={cancel} /> : null;
@@ -163,7 +165,7 @@ export function ShareScreen() {
       {scope?.status === 'ready' && talk ? <TalkHost scope={scope.scope} talkRef={talk} book={scope.book} chapter={scope.chapter} shared={content} onClose={goHome} /> : null}
       {failed ? (
         <div role="alert" className="max-w-sm text-center">
-          <p className="text-lg">{`${failed.title} is not on this phone yet, and you are offline.`}</p>
+          <p className="text-lg">{fetchFailedLine(failed.title, online)}</p>
           <button type="button" onClick={failed.retry} className="mt-4 min-h-12 rounded-xl bg-accent px-6 text-lg font-medium text-accent-fg">
             Try again
           </button>

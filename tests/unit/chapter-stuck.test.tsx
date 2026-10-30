@@ -64,7 +64,7 @@ describe('a chapter that does not load', () => {
     hangOn(/\/data\/mat\/7\.json/);
     render(<App />);
     await screen.findByText('Loading Matthew 7…');
-    expect(await screen.findByRole('alert')).toHaveTextContent('Could not load Matthew 7.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Matthew 7 could not be fetched.');
   });
 });
 
