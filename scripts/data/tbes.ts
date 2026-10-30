@@ -34,11 +34,29 @@ export function cleanDefinition(raw: string): string {
     .replace(/\s+/g, ' ')
     .replace(/([,;])(?:\s*[,;])+/g, '$1') // what a removed reference leaves behind
     .replace(/\s+([,.;:])/g, '$1')
+    .replace(/^:\s*/, '') // a one-word gloss TBES writes as ': male-sibling' (the colon of its 'range: chosen' form, with no range)
     .trim();
   if (text.length <= DEFINITION_MAX) return text;
   const cut = text.slice(0, DEFINITION_MAX);
   const space = cut.lastIndexOf(' ');
   return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:]+$/, '')}…`;
+}
+
+const SAID = (translit: string, word: string, gloss: string): string => `${word.trim()} (${translit.trim()}), ${gloss.replace(/^\s*:\s*/, '').trim()}`;
+
+/**
+ * cleanDefinition for a TBESH definition, which also carries the lexicon's own cross-references (mw-5r3p30.892). A related entry is named as
+ * 'Also means: <i>re.shit</i> (רֵאשִׁית ": best" H7225H)' (the labels are also 'Also named:', 'Another name of', 'Another spelling of', 'Aramaic equivalent:', 'Group of', 'Combined with';
+ * once the parts are the other way round: '": power" (<i>el</i> אֵל H0410L)'), which reads 'Also means: רֵאשִׁית (re.shit), best': the label, the Hebrew, its
+ * transliteration and its gloss. A name's kin are 'son of: Zeror (H6872C)', whose number is no use to a reader and is dropped.
+ */
+export function cleanHebrewDefinition(raw: string): string {
+  return cleanDefinition(
+    raw
+      .replace(/<i>([^<]*)<\/i>\s*\(([^"()]*?)\s*"([^"]*)"\s*[HG]\d{3,4}[A-Za-z]?\)/g, (_all, translit, word, gloss) => SAID(translit, word, gloss))
+      .replace(/"([^"]*)"\s*\(<i>([^<]*)<\/i>\s*([^()]*?)\s*[HG]\d{3,4}[A-Za-z]?\)/g, (_all, gloss, translit, word) => SAID(translit, word, gloss))
+      .replace(/\s*\([HG]\d{4}[A-Za-z]?\)(\(\?\))?/g, (_all, doubt) => (doubt ? ' (?)' : '')),
+  );
 }
 
 /** The part of speech TBESH's morph 'Language:Type-Gender-Extra' names in its Type, in words. */
@@ -149,7 +167,7 @@ export function parseTbes(text: string, { letter, gloss }: TbesOptions): Lexicon
     const entry: LexiconEntry = {
       lemma,
       gloss: gloss(lemma, cleanGloss(f[6].trim().normalize('NFC'))),
-      definition: cleanDefinition(f[7]).normalize('NFC'),
+      definition: (letter === 'H' ? cleanHebrewDefinition(f[7]) : cleanDefinition(f[7])).normalize('NFC'),
     };
     if (letter === 'H') {
       const morph = /^([A-Za-z]):([A-Za-z]*)/.exec(f[5]);

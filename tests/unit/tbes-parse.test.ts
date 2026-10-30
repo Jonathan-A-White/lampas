@@ -98,3 +98,37 @@ describe('the stem senses of a Hebrew verb', () => {
     expect(hebrewStem('N-ms')).toBeUndefined();
   });
 });
+
+describe('a Hebrew definition\'s lexicon markup', () => {
+  it('drops the leading ": " TBESH puts before a one-word gloss (H251)', () => {
+    const lexicon = otLexicon(
+      row('H0251', 'H0251G =', 'H0251G', 'אָח', 'akh', 'H:N-M', 'brother', ': male-sibling<br>1) brother<br>1a) brother of same parents<br>1b) half-brother (same father)'),
+    );
+    const d = lexicon.get('H251')?.definition ?? '';
+    expect(d.startsWith('male-sibling 1) brother')).toBe(true);
+    expect(d).not.toMatch(/^\s*:/);
+  });
+
+  it('turns the "Also means:" tail into the Hebrew word and its gloss (H7225)', () => {
+    const d = tbesh.get('H7225')?.definition ?? '';
+    expect(d.startsWith('beginning 1) first, beginning, best, chief')).toBe(true);
+    expect(d.endsWith('Also means: רֵאשִׁית (re.shit), best')).toBe(true);
+    expect(d).not.toMatch(/H\d{4}[A-Z]?\b/);
+    expect(d).not.toContain('"');
+    expect(d).not.toContain('<');
+  });
+
+  it('reads the tail of a plain number, a named entry and the one with its parts the other way round', () => {
+    const tail = (def: string): string => otLexicon(row('H0001', 'H0001 =', 'H0001', 'אב', 'av', 'H:N-M', 'father', def)).get('H1')?.definition ?? '';
+    expect(tail('father<br>1) father<BR>Also means: <i>av</i> (אַב "father" H0002)')).toBe('father 1) father Also means: אַב (av), father');
+    expect(tail('a man<BR>Also named: <i>a.viy.yah</i> (אֲבִיָּה "Abijah" H0029N) <BR> § Abi = "my father"')).toBe(
+      'a man Also named: אֲבִיָּה (a.viy.yah), Abijah § Abi = "my father"',
+    );
+    expect(tail('God<BR>Also means:  ": power" (<i>el</i>  אֵל   H0410L)')).toBe('God Also means: אֵל (el), power');
+  });
+
+  it('drops the bare Strong\'s numbers a name entry gives its kin', () => {
+    const d = otLexicon(row('H0001', 'H0001 =', 'H0001', 'אב', 'av', 'N:N-M-P', 'Abi', 'a man<br> son of: Zeror (H6872C); father of: Kish (H7027G), David (H1732)(?)')).get('H1')?.definition ?? '';
+    expect(d).toBe('a man son of: Zeror; father of: Kish, David (?)');
+  });
+});

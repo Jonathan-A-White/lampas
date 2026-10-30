@@ -3,8 +3,9 @@
 // chapters are fetched afresh. Raise DATA_CACHE_VERSION in that deploy.
 // A change to ONE chapter's data does not raise it (mw-5r3p30.276): each chapter is kept under /data/<book>/<n>.json?v=<fingerprint>, the
 // fingerprint from index.json, so only a chapter whose fingerprint changed is fetched again (serveChapter). Version 3 is that key layout;
-// the unkeyed copies of version 2 cannot be told from stale ones and are dropped once.
-export const DATA_CACHE_VERSION = 3;
+// the unkeyed copies of version 2 cannot be told from stale ones and are dropped once. Version 4 (mw-5r3p30.892) is the Hebrew lexicon definitions rewritten
+// (no leading colon, no raw cross-reference); the shape is the same, so a reader holding a version 3 chapter still reads it, and the old cache is dropped on activate.
+export const DATA_CACHE_VERSION = 4;
 export const DATA_CACHE = `lampas-data-v${DATA_CACHE_VERSION}`;
 
 /** Deletes every chapter-data cache but the current one (the unversioned 'lampas-data' of the first builds, older versions). */
