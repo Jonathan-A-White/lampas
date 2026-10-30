@@ -227,7 +227,7 @@ two `B` readings and one `N`).
 | `alts[].text` | the reading as the apparatus writes it (NA's `[ ]` and `[[ ]]` kept); `""` when it leaves the base out |
 | `alts[].g` | the reading's words one by one, each a `g` word as above (`t`, `tr`, `s`, `l`, `p`): `t` is the word with the apparatus's brackets and marks off, `tr` is `""`, and `s`, `l`, `p` are its Strong's number, lemma and parsing where the text has the form ('Tagged words' below); `[]` when the reading leaves the base out. The chapter's `lex` and `parse` hold the entries these words use |
 | `alts[].apart` | `true` when the reading has an ellipsis (`ἓν... ἓν... ἓν`, `ὃ μὲν... ὃ δὲ... ὃ δὲ`): it is in pieces and cannot be laid over the text word for word; absent otherwise (its `g` still holds its words) |
-| `english` | `{"source":"msb"\|"lampas","base":"…","alts":["…"]}`: the base in English and each of `alts` in English, the same order ('Variant English' below) |
+| `english` | `{"source":"msb"\|"lampas","base":"…","alts":["…"],"align":[[0,1,null]]}`: the base in English and each of `alts` in English, the same order; `align` pairs each English word of a reading with a Greek word of it ('Variant English' below) |
 | `changesEnglish` | `true` when the English of the base and of any reading differ once case, punctuation and white space are set aside; `false` when the Greek differs (a spelling, a word order, an article) and the English does not, or when the verse reads the same either way (`src/data/variantVerse.ts`: the verse's chunks of the unit's words replaced by the base's English, and by the reading's, both give the verse itself, so 'that' / 'that I' before 'I love you' changes nothing; mw-9ji6ek0.14), or when the reading is the base's own Greek words in another order (`wordOrderOnly` in the same file: the same forms, case, punctuation and grave/acute set aside; Matthew 3:4 αὐτοῦ ἦν / ἦν αὐτοῦ; 632 units, mw-9ji6ek0.31; its sheet says 'Word order only: emphasis, not meaning'). The Reader's English filter (`shownUnits`) judges each reading the same way, with the chapter's verses; `npm run variants:sweep` re-judges the committed chapters (`-- --write` fixes the flag) |
 | `witness` | `"byz"` (code `B`), `"na"` (`N`, `C`, `S`, `E`) or `"ecm"` (`M`); a unit with several codes takes the first class in that order |
 
@@ -289,6 +289,15 @@ is kept and listed when the script ends (the lexicon's gloss can be wrong for a 
 `"mat 1:5 w4-5 6c2914bf": {"source":"lampas","base":"Boaz out of","alts":["Boes out of"]}`. The key is the book code, the verse, the first and last word of the unit and eight hex
 digits of the sha256 of its readings, so an entry for a unit whose readings changed is not found (the unit is rendered again, the old entry dropped). A second run with nothing
 new renders nothing and changes nothing.
+
+**`align`: the words paired (mw-9ji6ek0.37).** For each reading of `alts`, in the same order, `english.align[i]` has one entry per English word of `english.alts[i]` (split at white space, as the brace draws
+them): the index into `alts[i].g` of the Greek word that English word is, or `null`; `[]` for a reading with no English or no tagged Greek. `scripts/data/variantAlign.ts` makes it with no model: an English word is
+a Greek word's when it shares a stem with a word of the Greek word's lexicon gloss (`in` and ἐν, `in/on/among`), else with the verse's own English of the same Greek form (the MSB chunk of a verse word spelled the same,
+its supplied words and its small words left out); each Greek word once, the nearest in position first; neighbouring English words of one chunk ('went up') may share one Greek word (side by side); the one content word
+of English and the one Greek word left over in a reading (a name: Prisca, Πρίσκα) are each other's unless the Greek is a small word (article, conjunction, preposition, particle, adverb). A word left over stays `null` and is drawn
+in English: a wrong pairing would show the wrong Greek. `npm run variants:align [-- --write]` lays it on the committed chapters and re-stamps their fingerprints (the build, `finishUnit`, lays the same).
+The Weave draws a chip by it (`braceTokens` in `src/reader/variants.ts`): a paired word whose lemma the weave shows (`WovenVerse.word`) is the Greek word, the rest English; a reading with no `align` keeps the all-or-nothing rule (`languageOf` in `src/reader/variantPlan.ts`).
+It is a rule, not the tutor's model; the model's own pairing for the words the rule leaves over is not made yet. Readings with English, by the source of the English (2026-10-30): `msb` 125 fully paired, 267 partly, 123 unpaired; `lampas` 2,584 fully, 2,595 partly, 593 unpaired.
 
 Units from the files and from the table are never changed by the model: it only writes English beside them. To correct an entry, edit it in the file (the next run keeps it).
 
