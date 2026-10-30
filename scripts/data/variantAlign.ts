@@ -5,7 +5,7 @@
 //   2. (tier 2) it shares its stem with the verse's own English of that same Greek form (the MSB chunk of a verse word with the same letters), a supplied word of the chunk excepted,
 // each English word and each Greek word once (a neighbour the same gloss or chunk also has joins the word: 'away from' is ἀπό), the nearest in position first (a word of a reading in another order is paired by its words, not by its place). A word left over stays
 // unpaired and is drawn in English: a wrong pairing would put the wrong Greek on the screen, which is worse than none.
-import type { GreekWord, LexEntry, VariantEnglish, VariantUnit, Verse } from '../../src/data/chapter';
+import type { Chapter, GreekWord, LexEntry, VariantEnglish, VariantUnit, Verse } from '../../src/data/chapter';
 import { letterKey } from './variants';
 
 /** The English words of a reading as the brace draws them: split at white space. */
@@ -114,6 +114,18 @@ export function alignReading(english: string, g: readonly GreekWord[], verse: Ve
 /** The pairing of every reading of a unit's English, in the order of `unit.alts` ([] for a reading with no words of its own or no tagged Greek). */
 export function alignUnit(unit: Pick<VariantUnit, 'alts'> & { v: number; english: VariantEnglish }, verse: Verse | undefined, lex: Readonly<Record<string, LexEntry>>): Array<Array<number | null>> {
   return unit.alts.map((alt, i) => (alt.g?.length ? alignReading(unit.english.alts[i] ?? '', alt.g, verse, lex) : []));
+}
+
+/** Lays the pairing on every unit of `chapter` (after the readings' words are tagged); true when a unit's pairing changed. */
+export function layAlign(chapter: Pick<Chapter, 'variants' | 'verses' | 'lex'>): boolean {
+  let changed = false;
+  for (const unit of chapter.variants ?? []) {
+    const align = alignUnit(unit, chapter.verses.find((v) => v.n === unit.v), chapter.lex);
+    if (JSON.stringify(unit.english.align) === JSON.stringify(align)) continue;
+    unit.english.align = align;
+    changed = true;
+  }
+  return changed;
 }
 
 /** How completely the readings of `units` are paired, by the source of their English: `full` every English word paired, `partly` some, `none` none (a reading with no English is not counted). */

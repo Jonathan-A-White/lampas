@@ -254,7 +254,7 @@ describe('the build', () => {
       w: [17],
       base: 'ὑπάγειν',
       alts: [{ code: 'N', text: 'ὑπάγει', g: [{ t: 'ὑπάγει', tr: '', s: '', l: '', p: '' }] }],
-      english: { source: 'lampas', base: 'the ὑπάγειν', alts: ['not ὑπάγει'] },
+      english: { source: 'lampas', base: 'the ὑπάγειν', alts: ['not ὑπάγει'], align: [[null, 0]] },
       changesEnglish: true,
       witness: 'na',
     });

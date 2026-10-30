@@ -4,10 +4,9 @@
 // Also the two things a reader filters units by: whether the English changes, and whose reading the unit is.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import type { LexEntry, VariantCode, VariantEnglish, VariantEnglishSource, VariantPlace, VariantUnit, VariantWitness, Verse } from '../../src/data/chapter';
+import type { VariantCode, VariantEnglish, VariantEnglishSource, VariantPlace, VariantUnit, VariantWitness, Verse } from '../../src/data/chapter';
 import { plainEnglish, sameInVerse, wordOrderOnly } from '../../src/data/variantVerse';
 import type { PlacedUnit } from './rp2026';
-import { alignUnit } from './variantAlign';
 
 export { plainEnglish };
 
@@ -174,10 +173,9 @@ export function witnessOf(alts: ReadonlyArray<{ code: VariantCode }>): VariantWi
   return WITNESS_ORDER.find((w) => classes.has(w)) ?? 'byz';
 }
 
-/** A unit with its English laid, as a chapter file keeps it (`verse` is the unit's, for changesEnglish and the pairing of its words, `lex` the chapter's lexicon for the pairing, mw-9ji6ek0.37). */
-export function finishUnit(unit: PlacedUnit & { english: VariantEnglish }, verse?: Verse, lex: Readonly<Record<string, LexEntry>> = {}): VariantUnit {
-  const english: VariantEnglish = { ...unit.english, align: alignUnit({ ...unit, english: unit.english }, verse, lex) };
-  return { v: unit.v, w: unit.w, base: unit.base, alts: unit.alts, english, changesEnglish: changesEnglish(english, verse, unit.w, unit), witness: witnessOf(unit.alts) };
+/** A unit with its English laid, as a chapter file keeps it (`verse` is the unit's, for changesEnglish). */
+export function finishUnit(unit: PlacedUnit & { english: VariantEnglish }, verse?: Pick<Verse, 'e'>): VariantUnit {
+  return { v: unit.v, w: unit.w, base: unit.base, alts: unit.alts, english: unit.english, changesEnglish: changesEnglish(unit.english, verse, unit.w, unit), witness: witnessOf(unit.alts) };
 }
 
 // ---------------------------------------------------------------- what the build prints

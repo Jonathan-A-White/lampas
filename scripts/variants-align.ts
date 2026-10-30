@@ -4,7 +4,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { BookIndex, Chapter, VariantUnit } from '../src/data/chapter';
 import { chapterFingerprint } from './data/chapterWriter';
-import { alignStats, alignUnit } from './data/variantAlign';
+import { alignStats, layAlign } from './data/variantAlign';
 
 const write = process.argv.includes('--write');
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
@@ -15,15 +15,8 @@ for (const dir of readdirSync('public/data', { withFileTypes: true }).filter((d)
     const path = `public/data/${dir.name}/${file}`;
     const chapter = JSON.parse(readFileSync(path, 'utf8')) as Chapter;
     if (!chapter.variants?.length) continue;
-    let changed = false;
-    for (const unit of chapter.variants) {
-      const align = alignUnit(unit, chapter.verses.find((v) => v.n === unit.v), chapter.lex);
-      if (JSON.stringify(unit.english.align) !== JSON.stringify(align)) {
-        unit.english.align = align;
-        changed = true;
-      }
-      all.push(unit);
-    }
+    const changed = layAlign(chapter);
+    all.push(...chapter.variants);
     if (write && changed) {
       writeFileSync(path, JSON.stringify(chapter));
       files++;

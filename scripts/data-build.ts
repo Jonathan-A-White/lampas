@@ -18,6 +18,7 @@ import { buildVerse, chapterFingerprint, fetchTo, mergeIndex, numeric, readIndex
 import { parseTbes, type Lexicon } from './data/tbes';
 import { OVERLAY_FILE, applyOverlay, diffEdition, loadRp2026, overlayReport, type OverlayEntry, type OverlayResult, type PlacedUnit } from './data/rp2026';
 import { RP2026_ENGLISH_FILE, checkRp2026English, readRp2026English, rp2026EnglishReport } from './data/rp2026English';
+import { layAlign } from './data/variantAlign';
 import { VARIANT_ENGLISH_FILE, englishReport, englishStats, finishUnit, layEnglish, readLampasEnglish, type LampasEnglishFile, type MissingEnglish, type WordNote } from './data/variantEnglish';
 import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
 import { formIndex, tagVariants, taggedLine, untaggedText, type TagTally } from './data/variantWords';
@@ -341,7 +342,7 @@ export function buildData(
         parse: Object.fromEntries(codes.map((c) => [c, decodeParse(c)])),
         verses: built,
       };
-      if (units.length) chapter.variants = units.flatMap((u): VariantUnit[] => (u.english ? [finishUnit({ ...u, english: u.english }, built.find((v) => v.n === u.v), chapter.lex)] : []));
+      if (units.length) chapter.variants = units.flatMap((u): VariantUnit[] => (u.english ? [finishUnit({ ...u, english: u.english }, built.find((v) => v.n === u.v))] : []));
       // The first use of a lemma, in canonical order, names its Strong's number and part of speech.
       for (const w of built.flatMap((v) => v.g)) {
         if (!(w.l in lexicon)) lexicon[w.l] = { g: chapter.lex[w.s].g, s: w.s, c: splitParse(w.p).pos };
@@ -356,6 +357,8 @@ export function buildData(
   }
   // every reading's words are tagged by the forms of the whole text (scripts/data/variantWords.ts), so after the last chapter
   const tagged = apparatus ? tagVariants(chapters.map((c) => c.chapter), formIndex(chapters.map((c) => c.chapter)), lex) : undefined;
+  // the words of each reading's English are paired with its tagged Greek (scripts/data/variantAlign.ts, mw-9ji6ek0.37), which needs the tags
+  if (apparatus) for (const { chapter } of chapters) layAlign(chapter);
   for (const { fingerprints, at, chapter } of unfingerprinted) fingerprints[at] = chapterFingerprint(chapter);
   return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), missingEnglish, lampasUsed, ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}), ...(tagged ? { tagged } : {}) };
 }

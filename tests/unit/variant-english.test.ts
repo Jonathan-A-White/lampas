@@ -233,7 +233,7 @@ describe('the build', () => {
     const rev = units(built.chapters.find((c) => c.path === 'rev/17.json')?.chapter);
     expect(rev).toHaveLength(3);
     const go = rev.find((u) => u.base === 'ὑπάγειν')!;
-    expect(go.english).toEqual({ source: 'msb', base: 'go', alts: ['goes away'], align: [[]] });
+    expect(go.english).toEqual({ source: 'msb', base: 'go', alts: ['goes away'], align: [[null, null]] });
     expect(go).toMatchObject({ changesEnglish: true, witness: 'na' });
     expect(rev.map((u) => u.english.source).sort()).toEqual(['lampas', 'lampas', 'msb']);
     expect(rev.every((u) => typeof u.changesEnglish === 'boolean' && ['byz', 'na', 'ecm'].includes(u.witness))).toBe(true);

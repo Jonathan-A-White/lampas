@@ -2,9 +2,8 @@
 // on a small fixture of Acts 18:18, through finishUnit as the chapter build calls it, and on the committed public/data (every reading, the three chapters read by eye).
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { alignReading, alignStats, englishTokens } from '../../scripts/data/variantAlign';
-import { finishUnit } from '../../scripts/data/variantEnglish';
-import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
+import { alignReading, alignStats, englishTokens, layAlign } from '../../scripts/data/variantAlign';
+import type { Chapter, GreekWord, VariantUnit, Verse } from '../../src/data/chapter';
 
 const w = (t: string, l: string, s: string, e?: number): GreekWord => ({ t, tr: '', s, l, p: 'X', ...(e === undefined ? {} : { e }) });
 const LEX = { G1722: { g: 'in/on/among', d: '' }, G2747: { g: 'Cenchreae', d: '' }, G3588: { g: 'the/this/who', d: '' }, G2776: { g: 'head', d: '' } };
@@ -29,13 +28,20 @@ describe('the pairing of a reading', () => {
     expect(alignReading('in Cenchreae the head', NA_G, V18, LEX)).toEqual([0, 1, 2, 3]);
   });
 
-  it('is laid on the unit by the build’s finishUnit, a list for each reading', () => {
-    const unit = finishUnit(
-      { v: 18, w: [1, 2, 3, 4], base: 'τὴν κεφαλὴν ἐν Κεγχρεαῖς', alts: [{ code: 'N', text: 'ἐν Κεγχρεαῖς τὴν κεφαλήν', g: NA_G }], english: { source: 'lampas', base: 'the head in Cenchreae', alts: ['in Cenchreae the head'] } },
-      V18,
-      LEX,
-    );
+  it('is laid on a chapter’s units by layAlign, which the build calls once the readings’ words are tagged: a list for each reading', () => {
+    const unit: VariantUnit = {
+      v: 18,
+      w: [1, 2, 3, 4],
+      base: 'τὴν κεφαλὴν ἐν Κεγχρεαῖς',
+      alts: [{ code: 'N', text: 'ἐν Κεγχρεαῖς τὴν κεφαλήν', g: NA_G }],
+      english: { source: 'lampas', base: 'the head in Cenchreae', alts: ['in Cenchreae the head'] },
+      changesEnglish: false,
+      witness: 'na',
+    };
+    const chapter = { variants: [unit], verses: [V18], lex: LEX };
+    expect(layAlign(chapter)).toBe(true);
     expect(unit.english.align).toEqual([[0, 1, 2, 3]]);
+    expect(layAlign(chapter)).toBe(false);
   });
 
   it('leaves a word with no Greek unpaired, and pairs a Greek word with one word or a run of neighbours', () => {
@@ -66,7 +72,8 @@ describe('the pairing of a reading', () => {
   });
 
   it('gives [] for a reading with no tagged Greek (it leaves the words out)', () => {
-    const unit = finishUnit({ v: 18, w: [4], base: 'Κεγχρεαῖς', alts: [{ code: 'N', text: '' }], english: { source: 'msb', base: 'Cenchrea', alts: [''] } }, V18, LEX);
+    const unit: VariantUnit = { v: 18, w: [4], base: 'Κεγχρεαῖς', alts: [{ code: 'N', text: '' }], english: { source: 'msb', base: 'Cenchrea', alts: [''] }, changesEnglish: true, witness: 'na' };
+    layAlign({ variants: [unit], verses: [V18], lex: LEX });
     expect(unit.english.align).toEqual([[]]);
   });
 });
