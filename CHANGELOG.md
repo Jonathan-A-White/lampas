@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.29
+_2026-10-30_
+- Fixed: The card for a Bible reference on the Share sheet no longer runs off the bottom of the screen, so Open is always there to tap.
+- Fixed: the About screen no longer shows the Majority Standard Bible and Hebrew text credits twice, with the second copy out of date.
+
 ## 0.7.28
 _2026-10-29_
 - Fixed: The line under "Read as" in Settings now says what the chosen reading set reads, instead of always describing ECM.

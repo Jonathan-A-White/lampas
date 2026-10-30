@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.29",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.872",
+    "kind": "fixed",
+    "text": "The card for a Bible reference on the Share sheet no longer runs off the bottom of the screen, so Open is always there to tap."
+  },
+  {
+    "version": "0.7.29",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.870",
+    "kind": "fixed",
+    "text": "the About screen no longer shows the Majority Standard Bible and Hebrew text credits twice, with the second copy out of date."
+  },
+  {
     "version": "0.7.28",
     "date": "2026-10-29",
     "story": "mw-5r3p30.874",
