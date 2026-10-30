@@ -4,6 +4,15 @@
 This audit asks two questions of it, as the Governor put it: is there anything in the other course (BMA Tutor) or in the grammar
 book he is integrating that the ladder is *missing*, and where in the directed acyclic graph of `needs` would it go?
 
+<!-- toc -->
+
+- [How this was made](#how-this-was-made)
+- [(a) BMA Tutor, lesson by lesson](#a-bma-tutor-lesson-by-lesson)
+- [(b) The grammar book, chapter by chapter](#b-the-grammar-book-chapter-by-chapter)
+- [(c) The gaps: ideas the ladder lacks](#c-the-gaps-ideas-the-ladder-lacks)
+
+<!-- /toc -->
+
 ## How this was made
 
 - **BMA Tutor.** `src/approaches/bma-tutor.ts` is the record of its order: 6 levels of 12 lessons, then two one-lesson stages.

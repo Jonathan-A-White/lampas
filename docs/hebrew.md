@@ -4,6 +4,17 @@ Scope: the tutor's conversations (Ask the tutor, the Talk sheet) and, since mw-5
 names or types: the depth setting, the font and the splitting are per language (`he` for Hebrew), so a Hebrew reader later, or another
 language, reuses them. A language is one more entry in `SCRIPTS` (`src/script/scripts.ts`).
 
+<!-- toc -->
+
+- [The epic's seam (mw-gdcyf98)](#the-epics-seam-mw-gdcyf98)
+- [The depth](#the-depth)
+- [How it is drawn](#how-it-is-drawn)
+- [Speech and the guide (mw-5r3p30.98)](#speech-and-the-guide-mw-5r3p3098)
+- [The Reader's Hebrew view (mw-5vvlay.1)](#the-readers-hebrew-view-mw-5vvlay1)
+- [The tutor and a Hebrew verse (mw-5vvlay.3)](#the-tutor-and-a-hebrew-verse-mw-5vvlay3)
+
+<!-- /toc -->
+
 ## The epic's seam (mw-gdcyf98)
 
 Lampas reads the Bible in its Greek and Hebrew, and the epic mw-gdcyf98 brings the Hebrew to the Greek's level one story at a time. Its shape, which a story of it keeps: **a dial per language**, 'How much Greek?' (`greekInterest`) and 'How much Hebrew?' (`hebrewInterest`), each with the same six steps; the **languages row** (English only, Greek, Hebrew, Greek and Hebrew) is derived from the two dials and never stored, so the tutor changing a dial keeps it honest; a chapter's source language picks the dial that governs it; and **one pronunciation** setting sets both languages (Modern Greek with Israeli Hebrew), with a way to set each on its own. Where each lives: `docs/layout/settings.md` (the registry, the rows, the dials) and `docs/pronunciation.md` (the schemes and the one setting). The names, wording and the stories' order are the epic's; this file describes what is in the code.

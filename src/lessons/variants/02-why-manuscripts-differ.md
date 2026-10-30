@@ -1,5 +1,7 @@
 # Why manuscripts differ
 
+<!-- toc: none -->
+
 Copying a book by hand is slow, and the people who did it were careful. Robinson and Pierpont, in the preface to their 2005 edition, call the scribes' work faithful and accurate on the whole. Even so, no two long handwritten copies agree in every letter. The preface sorts the differences into two kinds: slips that happened without anyone meaning them, and changes a scribe made on purpose.
 
 ## Slips of the eye, the ear and the hand

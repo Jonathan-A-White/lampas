@@ -5,6 +5,16 @@ Read from his library listing (vault `plans/lampas-logos-library-2026-10-08.csv`
 ref.ly on 2026-10-22, and from search-engine excerpts of the Logos forum and blog (the forum answers 403 to a script, as docs/resources.md says).
 **Nothing here was opened in Logos: the Laptop has none. Every link below is UNVERIFIED on a device until the Governor taps the one link in HOW TO CHECK IT.**
 
+<!-- toc -->
+
+- [What I found](#what-i-found)
+- [The built links](#the-built-links)
+- [Where the door would sit](#where-the-door-would-sit)
+- [Sweep: every Logos interactive his listing names](#sweep-every-logos-interactive-his-listing-names)
+- [HOW TO CHECK IT, for the Governor](#how-to-check-it-for-the-governor)
+
+<!-- /toc -->
+
 ## What I found
 
 * **No source documents a link parameter for Morphology Charts, or for any Logos interactive.** Searched: the Logos product page, the Logos forum tips for the chart

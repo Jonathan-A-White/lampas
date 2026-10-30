@@ -8,6 +8,16 @@ test) and ends with a canary: a button that loses its accessible name must make 
 
 `npm run test:e2e` runs the whole e2e suite (`playwright test`; `npm run build` first). `npx playwright test tests/e2e/accessibility.spec.ts` runs this spec alone.
 
+<!-- toc -->
+
+- [What a new screen or control must do](#what-a-new-screen-or-control-must-do)
+- [Under TalkBack (mw-cwf538.3)](#under-talkback-mw-cwf5383)
+- [Gesture-only actions (mw-cwf538.4)](#gesture-only-actions-mw-cwf5384)
+- [Rules left out of the check](#rules-left-out-of-the-check)
+- [Large text (mw-cwf538.5)](#large-text-mw-cwf5385)
+
+<!-- /toc -->
+
 ## What a new screen or control must do
 
 - A control has an accessible name that contains its visible text (a chip that reads `New 3` is named `New 3 words`, not `New words: 3`).

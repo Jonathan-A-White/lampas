@@ -4,6 +4,16 @@ Lampas lets him start right away and helps him grow with it (his words, mw-5r3p3
 of what he uses and offers one small tip. The first half of this file is the data half: the usage log, the summary and the grind. The
 second is the screen half: the Tips setting, when a grist is sent, and the card.
 
+<!-- toc -->
+
+- [The usage log (`src/tips/usageLog.ts`, Dexie `usage`, v12)](#the-usage-log-srctipsusagelogts-dexie-usage-v12)
+- [The summary (`src/tips/summary.ts`)](#the-summary-srctipssummaryts)
+- [The grind (`grinds/tips.*`)](#the-grind-grindstips)
+- [The screen half (mw-5r3p30.70)](#the-screen-half-mw-5r3p3070)
+- [One-time tips written in the app (`src/tips/hints.ts`, mw-5r3p30.80)](#one-time-tips-written-in-the-app-srctipshintsts-mw-5r3p3080)
+
+<!-- /toc -->
+
 ## The usage log (`src/tips/usageLog.ts`, Dexie `usage`, v12)
 
 `startUsageLog()` (started by `App`) listens to every event on the bus (`subscribeAll` in `src/events/bus.ts`) and to the address, and

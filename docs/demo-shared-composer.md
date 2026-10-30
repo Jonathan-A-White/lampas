@@ -9,6 +9,16 @@ Needs a phone with a microphone and a speech recogniser (Chrome on Android). Run
 the app says "Update ready, tap to reload"). Lampas needs a connection to the tutor; Postern needs a conversation with the
 Mayor.
 
+<!-- toc -->
+
+- [Lampas: ask by voice](#lampas-ask-by-voice)
+- [Lampas: Ask by Typing](#lampas-ask-by-typing)
+- [Postern: a tapped attachment](#postern-a-tapped-attachment)
+- [Right](#right)
+- [Known differences (his word decides which become stories)](#known-differences-his-word-decides-which-become-stories)
+
+<!-- /toc -->
+
 ## Lampas: ask by voice
 
 1. Open **Romans 8** and tap a verse number (**Verse 28**). The **Verse view** opens over the reading.

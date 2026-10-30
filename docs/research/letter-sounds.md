@@ -6,6 +6,26 @@ His words (Postern general, 2026-10-15T04:09Z): "so the o Omicron sounds really 
 you use the Greek voice phone and how do you get it to actually say the letter ... sound ... instead of saying Omicron ... it's just a totally
 different voice ... it's not elegant".
 
+<!-- toc -->
+
+- [His pick, and what was built (mw-5r3p30.421)](#his-pick-and-what-was-built-mw-5r3p30421)
+- [The short answer](#the-short-answer)
+- [The listening page](#the-listening-page)
+- [(a) The phone's own voice: can it be coaxed into the bare sound?](#a-the-phones-own-voice-can-it-be-coaxed-into-the-bare-sound)
+- [(b) Clips baked with a free, local, licence-clean neural Greek voice](#b-clips-baked-with-a-free-local-licence-clean-neural-greek-voice)
+  - [What they have in common: a word alone breaks a VITS voice](#what-they-have-in-common-a-word-alone-breaks-a-vits-voice)
+  - [Piper `el_GR-rapunzelina-low`](#piper-el_gr-rapunzelina-low)
+  - [Coqui `tts_models/el/cv/vits`](#coqui-tts_modelselcvvits)
+  - [Chatterbox Multilingual (Resemble AI)](#chatterbox-multilingual-resemble-ai)
+  - [Not tried, and why](#not-tried-and-why)
+- [(c) A paid cloud neural voice, priced, not bought](#c-a-paid-cloud-neural-voice-priced-not-bought)
+- [(d) Keeping the drill and the one-letter words in the winning voice](#d-keeping-the-drill-and-the-one-letter-words-in-the-winning-voice)
+- [Sweep: every place the app speaks Greek with something other than the phone's Greek voice](#sweep-every-place-the-app-speaks-greek-with-something-other-than-the-phones-greek-voice)
+- [Build slices, for the Mayor](#build-slices-for-the-mayor)
+- [What this story did not do](#what-this-story-did-not-do)
+
+<!-- /toc -->
+
 ## His pick, and what was built (mw-5r3p30.421)
 
 He listened on his phone (2026-10-15T22:32Z, in an incognito tab, since the installed app captures the site's links): "so the best sound for the

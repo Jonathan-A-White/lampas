@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+<!-- toc: none -->
+
 Development guide for AI assistants (Builders) working on Lampas: a licence-gated PWA for
 reading the Bible in Koine Greek and Hebrew. Served at https://lampas.allmymind.org from the VPS (Vite `base` is `/`;
 the Laptop's after_landing builds `dist/` and rsyncs it). There is no GitHub Pages workflow; do not

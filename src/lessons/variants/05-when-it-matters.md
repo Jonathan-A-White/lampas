@@ -1,5 +1,7 @@
 # When it matters
 
+<!-- toc: none -->
+
 With variants on, Revelation 3 alone has 29 places marked. It is fair to ask how much of this matters to a reader. The honest answer is: most of it very little, some of it a word, and a few places a great deal.
 
 ## Most change nothing you would see

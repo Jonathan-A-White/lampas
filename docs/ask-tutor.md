@@ -3,6 +3,60 @@
 mw-5r3p30.91, from the Governor's /do of 2026-10-09: "Is there a shortcut that would go to the tutor view from any screen with the useful
 context going in. And his view could vary depending on context." PROVISIONAL: the place of the button, the questions and the facts.
 
+<!-- toc -->
+
+- [The control](#the-control)
+- [What the tutor is told](#what-the-tutor-is-told)
+- [The tutor knows what bears on its answer (mw-5r3p30.242)](#the-tutor-knows-what-bears-on-its-answer-mw-5r3p30242)
+- [The heart of the word (mw-bsf54t.14)](#the-heart-of-the-word-mw-bsf54t14)
+- [The Hebrew word's focus (mw-gdcyf98.20)](#the-hebrew-words-focus-mw-gdcyf9820)
+- [Suggested questions](#suggested-questions)
+- [Kept](#kept)
+- [A long talk remembers (mw-5r3p30.700, PROVISIONAL)](#a-long-talk-remembers-mw-5r3p30700-provisional)
+- [The tutor fetches the text it needs (mw-5r3p30.734, PROVISIONAL)](#the-tutor-fetches-the-text-it-needs-mw-5r3p30734-provisional)
+- [A talk names itself to the mill](#a-talk-names-itself-to-the-mill)
+- [An ask Lampas cannot meet](#an-ask-lampas-cannot-meet)
+  - [Ask for a book (mw-rfjjzd.14, PROVISIONAL; docs/design/library-at-scale.md section 6)](#ask-for-a-book-mw-rfjjzd14-provisional-docsdesignlibrary-at-scalemd-section-6)
+  - [Today's devotional (mw-5r3p30.680, PROVISIONAL)](#todays-devotional-mw-5r3p30680-provisional)
+  - [Your requests](#your-requests)
+- [A wish for the makers comes up in the talk (mw-5r3p30.844)](#a-wish-for-the-makers-comes-up-in-the-talk-mw-5r3p30844)
+  - [Every tutor surface: files, camera, voice, typing, a request to the makers (sweep of src/, mw-5r3p30.760)](#every-tutor-surface-files-camera-voice-typing-a-request-to-the-makers-sweep-of-src-mw-5r3p30760)
+- [Answering an offer by voice (mw-5r3p30.186)](#answering-an-offer-by-voice-mw-5r3p30186)
+- [The bridge: a question he is not ready for (mw-1vuvq6.5, PROVISIONAL)](#the-bridge-a-question-he-is-not-ready-for-mw-1vuvq65-provisional)
+- [Rust: he comes back and is rusty (mw-1vuvq6.6, PROVISIONAL)](#rust-he-comes-back-and-is-rusty-mw-1vuvq66-provisional)
+- [Today: the tutor sees the day's list (mw-5r3p30.731, PROVISIONAL)](#today-the-tutor-sees-the-days-list-mw-5r3p30731-provisional)
+- [Greek words he says aloud (mw-5r3p30.244)](#greek-words-he-says-aloud-mw-5r3p30244)
+- [What he said, cleaned up](#what-he-said-cleaned-up)
+- [Let the tutor do it (mw-5r3p30.117, mw-o7cts8.2, mw-o7cts8.3, mw-o7cts8.4)](#let-the-tutor-do-it-mw-5r3p30117-mw-o7cts82-mw-o7cts83-mw-o7cts84)
+- [Forms with no door, and why (mw-o7cts8.4)](#forms-with-no-door-and-why-mw-o7cts84)
+- [Copy an exchange](#copy-an-exchange)
+- [What the tutor can see (mw-t3xu9a.4, PROVISIONAL)](#what-the-tutor-can-see-mw-t3xu9a4-provisional)
+  - [ScreenContext facts and registry facts](#screencontext-facts-and-registry-facts)
+- [Where the tutor can take you (mw-t3xu9a.4, PROVISIONAL)](#where-the-tutor-can-take-you-mw-t3xu9a4-provisional)
+- [What the tutor can do (mw-t3xu9a.6, PROVISIONAL)](#what-the-tutor-can-do-mw-t3xu9a6-provisional)
+- [The tutor asks back, does, goes and misses (mw-t3xu9a.5, PROVISIONAL)](#the-tutor-asks-back-does-goes-and-misses-mw-t3xu9a5-provisional)
+- [How the tutor learns what to carry (mw-t3xu9a.8, PROVISIONAL)](#how-the-tutor-learns-what-to-carry-mw-t3xu9a8-provisional)
+- [The tutor and memorizing (mw-fu7dqf.12, PROVISIONAL)](#the-tutor-and-memorizing-mw-fu7dqf12-provisional)
+- [What you see when the tutor does something (mw-t3xu9a.7, PROVISIONAL)](#what-you-see-when-the-tutor-does-something-mw-t3xu9a7-provisional)
+- [Taking him to a chapter (mw-5r3p30.172)](#taking-him-to-a-chapter-mw-5r3p30172)
+- [Pictures in a talk](#pictures-in-a-talk)
+- [Conversations](#conversations)
+- [Share to Lampas](#share-to-lampas)
+- [Memory (mw-yrmkdf.1)](#memory-mw-yrmkdf1)
+  - [The tutor reads and writes it (mw-yrmkdf.2)](#the-tutor-reads-and-writes-it-mw-yrmkdf2)
+  - [The Greek offer (mw-yrmkdf.4)](#the-greek-offer-mw-yrmkdf4)
+  - [The welcome (mw-yrmkdf.3)](#the-welcome-mw-yrmkdf3)
+- [About you (mw-1vuvq6.1)](#about-you-mw-1vuvq61)
+  - [Detect first, ask last (mw-1vuvq6.3)](#detect-first-ask-last-mw-1vuvq63)
+- [How long an answer takes (mw-46z0my.5)](#how-long-an-answer-takes-mw-46z0my5)
+- [How the phone hears an answer (mw-46z0my.6)](#how-the-phone-hears-an-answer-mw-46z0my6)
+- [A question is never lost (mw-5r3p30.602)](#a-question-is-never-lost-mw-5r3p30602)
+- [Variants (mw-9ji6ek0.7)](#variants-mw-9ji6ek07)
+- [Tests](#tests)
+- [The tutor knows his Hebrew (mw-gdcyf98.22)](#the-tutor-knows-his-hebrew-mw-gdcyf9822)
+
+<!-- /toc -->
+
 ## The control
 
 One round button, `AskTutorButton` (`src/AskTutor.tsx`), on every full screen: the Reader, Goal, Words, Review, Quick test, Parsing drill,

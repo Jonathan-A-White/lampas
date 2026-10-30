@@ -1,5 +1,7 @@
 # Audible position
 
+<!-- toc: none -->
+
 You read one screenshot of the Audible app's now-playing screen, taken by a reader who has been listening to an audio Bible and
 has just stopped, and say which chapter of the Bible is playing and how far into it she is. A phone app that keeps her place in a
 plan of reading the whole Bible proposes your chapter to her; she accepts it with one tap, so a wrong chapter marks chapters she has

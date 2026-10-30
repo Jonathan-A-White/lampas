@@ -8,6 +8,15 @@ How to read it. Status is `pass` (the rule holds and the evidence shows it), `fa
 
 It is a dated snapshot of base commit 921874d: line numbers move as the code does, so a cited place is true at that commit only (section 4 has the shell loop that checks them there). It holds 31 checklist rows C1 to C31, a status and evidence on every row, a fix and size on every `fail`, and at most ten ranked stories each with an acceptance check.
 
+<!-- toc -->
+
+- [1. The PWA checklist](#1-the-pwa-checklist)
+- [2. The rules added on 2026-10-09 and after](#2-the-rules-added-on-2026-10-09-and-after)
+- [3. Ranked fix stories](#3-ranked-fix-stories)
+- [4. How the citations were checked](#4-how-the-citations-were-checked)
+
+<!-- /toc -->
+
 ## 1. The PWA checklist
 
 | # | Checklist line | Status | Evidence | Fix | Size |

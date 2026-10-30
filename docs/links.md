@@ -2,6 +2,18 @@
 
 Lampas takes links in, as Logos does (logos4:, ref.ly). The https form always works; web+lampas: works only where the browser supports it.
 
+<!-- toc -->
+
+- [The https form](#the-https-form)
+  - [`ref=` — a verse, a chapter or a book](#ref--a-verse-a-chapter-or-a-book)
+  - [`word=` — a word](#word--a-word)
+  - [`setting=` — a setting (Settings)](#setting--a-setting-settings)
+- [Share to Lampas: what the share sheet accepts](#share-to-lampas-what-the-share-sheet-accepts)
+- [web+lampas:](#weblampas)
+- [How it is wired](#how-it-is-wired)
+
+<!-- /toc -->
+
 ## The https form
 
 `https://lampas.allmymind.org/#/?ref=<reference>` opens the reader on a verse. `https://lampas.allmymind.org/#/?word=<word>` opens a word's sheet.

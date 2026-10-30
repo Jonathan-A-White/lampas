@@ -1,5 +1,7 @@
 # Byzantine, Nestle-Aland and ECM
 
+<!-- toc: none -->
+
 Each other reading Lampas shows carries a small sign that says whose reading it is: **B**, **NA** or **ECM**. Each names a different source.
 
 ## The Byzantine text, and B

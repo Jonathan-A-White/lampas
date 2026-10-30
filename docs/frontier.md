@@ -7,6 +7,19 @@ verse where it stands among the most words he already knows.
 Code: `src/data/frontier.ts`. It is pure: no store, no network and no screen yet. The caller hands it the chapter, the lemmas he
 has in each state and the word counts (`loadFrequency`).
 
+<!-- toc -->
+
+- [Which words are new](#which-words-are-new)
+- [Where to meet it](#where-to-meet-it)
+- [Held to his grammar level](#held-to-his-grammar-level)
+  - [Moving the level](#moving-the-level)
+- [Tests](#tests)
+- [The teach sheet (mw-bsf54t.4)](#the-teach-sheet-mw-bsf54t4)
+- [The pace (mw-bsf54t.7)](#the-pace-mw-bsf54t7)
+- [Hebrew words (mw-gdcyf98.19)](#hebrew-words-mw-gdcyf9819)
+
+<!-- /toc -->
+
 ## Which words are new
 
 `pickFrontier(chapter, known, frequency, n)` returns up to `n` candidates, each `{ strongs, lemma, gloss, count, verses }`.

@@ -2,6 +2,15 @@
 
 Read this first (CLAUDE.md is the law, this is the map). Update it only when a story changes what it says. `tests/unit/overview-doc.test.ts` holds it: under 6,000 bytes, and every backticked path must exist.
 
+<!-- toc -->
+
+- [What Lampas is](#what-lampas-is)
+- [Gate command](#gate-command)
+- [Where things live](#where-things-live)
+- [The five rules](#the-five-rules)
+
+<!-- /toc -->
+
 ## What Lampas is
 
 Lampas is a licence-gated PWA for reading the Bible in Koine Greek and Biblical Hebrew, for readers of any mother tongue, with a tutor on the verse; for a reader who never learns the languages it is a good plain-English Bible with the Greek or Hebrew one tap away. It is free to read and a licence unlocks only the AI; the Governor's lines are in `VISION.md`, and a change that crosses one stops and says so.

@@ -10,6 +10,17 @@ npm run ladder     # scripts/ladder-el.ts, ladder-en.ts and ladder-he.ts: read p
 The script is deterministic (a second run changes no byte) and is never run by the app. The generated file is committed;
 `npm run data:build` leaves `public/data/ladder/` alone (and keeps the `ladders` fingerprints in `index.json`).
 
+<!-- toc -->
+
+- [The file](#the-file)
+- [What the score counts](#what-the-score-counts)
+- [English](#english)
+- [Hebrew (mw-gdcyf98.14)](#hebrew-mw-gdcyf9814)
+- [The Reading ladder on the phone (mw-neuq78.4)](#the-reading-ladder-on-the-phone-mw-neuq784)
+- [Drills (mw-neuq78.5)](#drills-mw-neuq785)
+
+<!-- /toc -->
+
 ## The file
 
 `public/data/ladder/el.json` is one compact JSON list, easiest first, ties in canonical order (book, chapter, verse):

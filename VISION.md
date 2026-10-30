@@ -1,5 +1,18 @@
 # Lampas vision (DRAFT: the Governor's to edit)
 
+<!-- toc -->
+
+- [In his words](#in-his-words)
+- [Vision (draft, from his words above)](#vision-draft-from-his-words-above)
+- [Free to read, a licence for the AI](#free-to-read-a-licence-for-the-ai)
+- [The tutor](#the-tutor)
+- [Pronunciation](#pronunciation)
+- [Every age and every ability](#every-age-and-every-ability)
+- [The Preface](#the-preface)
+- [How feedback is weighed](#how-feedback-is-weighed)
+
+<!-- /toc -->
+
 ## In his words
 - "okay I want the app to help people learn of all languages learn how to read the Bible in Greek and of all languages to learn how to read the Bible in English" (Postern, 2026-10-12)
 - "Logos meets BMA" (his /do, 2026-10-08, plans/0082-lampas-first-demo.json:7)

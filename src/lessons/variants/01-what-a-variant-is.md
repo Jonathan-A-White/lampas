@@ -1,5 +1,7 @@
 # What a variant is
 
+<!-- toc: none -->
+
 The books of the New Testament were written in Greek in the first century. For the next fourteen hundred years, until printing, every copy was made by hand, one letter at a time. Thousands of those handwritten copies survive, whole or in pieces. They agree in the great bulk of the text. Where they do not, at one word or a few, the place is called a **variant**, and each different wording found there is a **reading**.
 
 ## A small example

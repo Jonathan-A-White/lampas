@@ -11,6 +11,54 @@ but we want to really take advantage of the depth of the logos library that some
 get just by being in Logos ... Lampas is probably only going to have open source resources ... be able to mostly connect into Logos." Read as:
 value over volume; one Logos link for each thing Logos does better than Lampas, none for decoration; and the UI must stay elegant at 1,000.
 
+<!-- toc -->
+
+- [1. The one idea](#1-the-one-idea)
+- [2. The inventory: every place that grows](#2-the-inventory-every-place-that-grows)
+- [3. The shape at scale: one library, by kind](#3-the-shape-at-scale-one-library-by-kind)
+  - [3.1 The catalogue](#31-the-catalogue)
+  - [3.2 His shelf: Off, On, Pinned](#32-his-shelf-off-on-pinned)
+  - [3.3 The Library screen (`#/library`, 'Your Logos library')](#33-the-library-screen-library-your-logos-library)
+  - [3.4 A kind page (`#/library?kind=lexicon`, 'Lexicons')](#34-a-kind-page-librarykindlexicon-lexicons)
+  - [3.5 The word sheet at scale](#35-the-word-sheet-at-scale)
+  - [3.6 A verse at scale: one door, then a chooser](#36-a-verse-at-scale-one-door-then-a-chooser)
+  - [3.7 The idea sheet at scale](#37-the-idea-sheet-at-scale)
+  - [3.8 Settings after the change](#38-settings-after-the-change)
+- [4. Value over volume: each Logos link and what it adds](#4-value-over-volume-each-logos-link-and-what-it-adds)
+- [5. Import: his list, in one step](#5-import-his-list-in-one-step)
+  - [5.1 Getting the list](#51-getting-the-list)
+  - [5.2 Matching](#52-matching)
+  - [5.3 The result screen](#53-the-result-screen)
+  - [5.4 What Lampas says about the rows it cannot use](#54-what-lampas-says-about-the-rows-it-cannot-use)
+- [6. Asking for more, without flooding him](#6-asking-for-more-without-flooding-him)
+  - [6.1 One ask: 'Ask for a book'](#61-one-ask-ask-for-a-book)
+  - [6.2 The whole list, once](#62-the-whole-list-once)
+  - [6.3 How it comes back](#63-how-it-comes-back)
+- [7. The tutor at scale](#7-the-tutor-at-scale)
+- [8. The rest of the inventory, one line each](#8-the-rest-of-the-inventory-one-line-each)
+- [9. Shared pieces and where they live](#9-shared-pieces-and-where-they-live)
+- [10. Research leads (not built here; each a small docs/research story)](#10-research-leads-not-built-here-each-a-small-docsresearch-story)
+- [11. Alternatives weighed, and why they lost](#11-alternatives-weighed-and-why-they-lost)
+- [12. Grilling Q2 to Q8](#12-grilling-q2-to-q8)
+- [For the Governor](#for-the-governor)
+- [13. Sweep: SpellForge and Legend](#13-sweep-spellforge-and-legend)
+- [14. The plan of build stories](#14-the-plan-of-build-stories)
+  - [S1 The catalogue](#s1-the-catalogue)
+  - [S2 The shelf](#s2-the-shelf)
+  - [S3 The Library screen](#s3-the-library-screen)
+  - [S4 Settings after the change](#s4-settings-after-the-change)
+  - [S5 The library import](#s5-the-library-import)
+  - [S6 Share a CSV to Lampas](#s6-share-a-csv-to-lampas)
+  - [S7 The word sheet at scale](#s7-the-word-sheet-at-scale)
+  - [S8 A verse at scale](#s8-a-verse-at-scale)
+  - [S9 The tutor at scale](#s9-the-tutor-at-scale)
+  - [S10 One ask](#s10-one-ask)
+  - [S11 Your requests at scale](#s11-your-requests-at-scale)
+  - [S12 The idea sheet reads the shelf](#s12-the-idea-sheet-reads-the-shelf)
+  - [S13 Demo (labelled demo)](#s13-demo-labelled-demo)
+
+<!-- /toc -->
+
 ## 1. The one idea
 
 Today Lampas keeps six hand-written lists of Logos things, each with its own store key, its own Settings control and its own ask box:
