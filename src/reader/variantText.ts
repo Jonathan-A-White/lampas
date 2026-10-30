@@ -3,7 +3,7 @@
 // draws by (src/reader/variantPlan.ts planVariants), in the same order, so the two agree on where each brace and each reading goes (tests/unit/copy-variants.test.ts draws both and compares).
 import type { Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
+import { besideOf, chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { chosenEnglish, chosenWords, OMISSION_MARK, type ChosenUnit } from './chosenReading';
 import { NO_PLAN, planVariants, type Placement } from './variantPlan';
 import { braceText, type ShownUnit } from './variants';
@@ -41,7 +41,7 @@ export function textWithVariants(
       const placed = plan.replace.get(i);
       const weft = woven?.[i];
       if (placed) parts.push(placedText(verse, placed));
-      else if (!plan.dropped.has(i)) parts.push(weft ? weft.words.map((w) => w.t).join(' ') : chunkText(verse, woven, i).trim());
+      else if (!plan.dropped.has(i)) parts.push(weft ? weft.words.map((w) => w.t).join(' ') : [...besideOf(woven, i).map((w) => w.t), chunkText(verse, woven, i).trim()].join(' '));
       parts.push(...(plan.tail.get(i) ?? []).map((p) => placedText(verse, p)), ...bracesOf(plan.after.get(i), woven?.word));
     }
   }

@@ -58,7 +58,12 @@ test('a learning word stands in Greek with its English in small grey beneath, th
   expect((await learning.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
 
   // the verse flow is intact: the verse's other English is still there, and nothing runs off the screen
-  const text = (await verse.locator('[data-text]').innerText()).replace(/\s+/g, ' ');
+  // the gold Greek beside a chunk that stays English (mw-5r3p30.878) is not part of the English flow
+  const text = (await verse.locator('[data-text]').evaluate((el) => {
+    const copy = el.cloneNode(true) as HTMLElement;
+    copy.querySelectorAll('[data-beside]').forEach((b) => b.remove());
+    return copy.textContent ?? '';
+  })).replace(/\s+/g, ' ');
   expect(text).toContain('our present sufferings are not comparable');
   const vbox = await verse.boundingBox();
   expect(vbox!.x).toBeGreaterThanOrEqual(0);

@@ -9,7 +9,13 @@ export type Woven = { words: GreekWord[]; learning: boolean } | null;
 
 /** A verse's weave, chunk by chunk in `verse.e`'s own indexes, and the order the chunks are drawn and read in (mw-5r3p30.250): absent, the
  * English order. */
-export type WovenVerse = Woven[] & { readonly order?: readonly number[]; readonly texts?: readonly string[]; readonly word?: (word: GreekWord) => 'solid' | 'learning' | null };
+export type WovenVerse = Woven[] & {
+  readonly order?: readonly number[];
+  readonly texts?: readonly string[];
+  readonly word?: (word: GreekWord) => 'solid' | 'learning' | null;
+  /** per chunk, the Greek words he knows that the chunk stands for while the chunk itself stays English (mw-5r3p30.878); see besideVerse */
+  readonly beside?: readonly (readonly GreekWord[] | undefined)[];
+};
 
 /** The lemmas the weave knows (NFC): the solid ones, and with Weave 'Solid and learning words' the learning ones too. */
 export interface WeaveLemmas {
@@ -54,6 +60,26 @@ export function weaveVerse(verse: Verse, { solid, learning, formPasses }: WeaveL
     return { words, learning: anyLearning };
   });
 }
+
+/**
+ * The known Greek words that an English chunk still hides (mw-5r3p30.878), chunk by chunk in `verse.e`'s own indexes: a chunk the weave leaves English (`woven[i]` is null) because
+ * another word it stands for is not known yet, or because the translators supplied words in it ('While' of Acts 18:12), shows each Greek word of it he does know, in gold, beside its
+ * English; the English goes (the chunk is woven) once every Greek word it stands for is known. A chunk with no known word, a '-' and a chunk with no Greek have none (undefined).
+ */
+export function besideVerse(verse: Verse, woven: readonly Woven[], lemmas: WeaveLemmas): (GreekWord[] | undefined)[] {
+  return verse.e.map((chunk, i) => {
+    if (woven[i] || chunk.t.trim() === '-') return undefined;
+    const words = chunk.g.map((g) => verse.g[g] as GreekWord | undefined).filter((w): w is GreekWord => w !== undefined && weaveWord(w, lemmas) !== null);
+    return words.length ? words : undefined;
+  });
+}
+
+/** The weave `woven` of `verse` knows the Greek words known beside its English chunks (besideVerse). It is not an element of the weave. */
+export const withBeside = <T extends Woven[]>(woven: T, verse: Verse, lemmas: WeaveLemmas): T & Pick<WovenVerse, 'beside'> =>
+  Object.defineProperty(woven, 'beside', { value: besideVerse(verse, woven, lemmas), enumerable: false, configurable: true }) as T & Pick<WovenVerse, 'beside'>;
+
+/** The Greek words drawn in gold before the English of chunk `i` (besideVerse); none when the chunk is woven or knows none. */
+export const besideOf = (woven: WovenVerse | null | undefined, i: number): readonly GreekWord[] => woven?.beside?.[i] ?? [];
 
 /**
  * The verse as the teach sheet shows it (mw-bsf54t.4): woven with his solid words in Greek and the new word `lemma` (NFC) in Greek as well,

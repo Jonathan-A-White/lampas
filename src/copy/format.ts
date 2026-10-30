@@ -3,7 +3,7 @@
 // (src/settings/definitions/copyFormat.ts): Reference (after | before | off), Verse numbers (on | off), Link (on | off).
 import type { Chapter, SourceLanguage, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
+import { besideOf, chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { passageUrl, referenceUrl } from '../nav/links';
 import { textWithVariants } from '../reader/variantText';
 import type { ReaderVariants } from '../reader/variants';
@@ -64,7 +64,7 @@ function shownOf(verse: Verse, view: ReaderView, woven: WovenVerse | null, varia
   return drawnOrder(verse, woven)
     .map((i) => {
       const weft = woven[i];
-      return weft ? weft.words.map((w) => w.t).join(' ') : chunkText(verse, woven, i).trim();
+      return weft ? weft.words.map((w) => w.t).join(' ') : [...besideOf(woven, i).map((w) => w.t), chunkText(verse, woven, i).trim()].join(' ');
     })
     .join(' ')
     .replace(/\s+/g, ' ')
