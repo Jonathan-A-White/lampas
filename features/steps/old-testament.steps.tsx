@@ -525,13 +525,14 @@ describeFeature(feature, ({ Scenario }) => {
     await waitFor(() => expect(screen.getByRole('main')).toHaveTextContent(text));
   };
 
-  Scenario('Settings has a Bible in Logos for each part, the Legacy Standard Bible to start, and a door to Library > Bibles', ({ Given, When, Then, And }) => {
+  Scenario('Settings has a Bible in Logos for each part, the Legacy Standard Bible to start (the NRSV for the Apocrypha), and a door to Library > Bibles', ({ Given, When, Then, And }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
     When("he taps the gear in the reader's header", openSettings);
-    Then('the New Testament, Old Testament and Apocrypha pickers all say {string}', async (_, text: string) => {
-      for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) {
+    Then('the New Testament and Old Testament pickers say {string} and the Apocrypha picker says {string}', async (_, text: string, apocrypha: string) => {
+      for (const part of ['New Testament', 'Old Testament']) {
         expect(await screen.findByRole('combobox', { name: `${part} Bible in Logos` })).toHaveDisplayValue(text);
       }
+      expect(await screen.findByRole('combobox', { name: 'Apocrypha Bible in Logos' })).toHaveDisplayValue(apocrypha);
     });
     When('he opens the Bible in Logos row', opensRow);
     Then('the Bibles page says {string}', pageSays);
