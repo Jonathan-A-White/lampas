@@ -16,6 +16,7 @@ import { NewWordsControl } from './newWords';
 import { OfflineCopyControl } from './offlineCopy';
 import { QuizGoalControl } from './quizGoal';
 import { AudioBibleControl, LibraryControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
+import { HandControl, TutorDoorControl } from './tutorDoor';
 import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
 import type { Control } from './types';
 import { EnglishAccentControl, FamilyControl, IpaLessonControl, PronunciationControl, PronunciationSeparateControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
@@ -91,6 +92,8 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   readTutor: ReadTutorControl,
   readLessons: ReadLessonsControl,
   askBy: AskByControl,
+  tutorDoor: TutorDoorControl,
+  hand: HandControl,
   talk: TalkControl,
   send: SendControl,
   developer: DeveloperControl,

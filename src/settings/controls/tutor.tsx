@@ -49,6 +49,8 @@ export const AskByControl: Control = ({ row }) => {
   const askBy = useSetting(askBySetting);
   return (
     <SettingRow row={row}>
+      {/* named above its chips: Asking the tutor holds the Tutor door too, so the section's title no longer names this row (settings-row-names.test.tsx) */}
+      <RowName row={row} />
       {askBy ? (
         <ChipRow
           name={row.label}
