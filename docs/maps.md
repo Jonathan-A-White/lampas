@@ -122,7 +122,7 @@ including them in an online resource, provide a hyperlink back to biblemapper.co
 All text and maps copyright (c) 2026 by David P. Barrett. All rights reserved."
 
 So every map Lampas shows carries `MapSource.credit` ('Map by David P. Barrett, biblemapper.com') and a link to `MapSource.homepage`; the screens read both from the source, never write them out. `ATTRIBUTION.md`
-has the entry (the About screen's source), `tests/support/credits.ts` the rule that holds a file in `src/maps/data/` to it (the places to STEPBible's TIPNR, credited in the TBESG bullet), and `src/tutor/credits.ts` the tutor's short form. A source's own terms may differ: a
+has the entry (the About screen's source), `tests/support/credits.ts` the rule that holds a file in `src/maps/data/` to it (the places to STEPBible's TIPNR, credited in its own TIPNR entry), and `src/tutor/credits.ts` the tutor's short form. A source's own terms may differ: a
 second source gets its own entry and credit.
 
 Open question for the Governor: Lampas is free to read and a licence unlocks the AI. Maps shown in the free part are non-commercial use; whether the paid part touches them is the Governor's to say before the maps ship.

@@ -121,6 +121,12 @@ describe('the letter-sounds listening page', () => {
     expect(injectManifestOptions.globPatterns.some((g) => g.startsWith('sounds-trial'))).toBe(false);
   });
 
+  it('credits the three trial voices itself, since About credits only what the app uses (mw-5r3p30.875)', () => {
+    const credits = document.getElementById('credits')?.textContent ?? '';
+    for (const word of ['Piper', 'MIT', 'rapunzelina', 'CC0', 'Coqui', 'MPL-2.0', 'BSD-3-Clause', 'Chatterbox', 'Resemble AI']) expect(credits, word).toContain(word);
+    expect(readFileSync('ATTRIBUTION.md', 'utf8')).not.toMatch(/Piper|Coqui|Chatterbox/);
+  });
+
   it('asks no index to list it', () => {
     expect(/<meta name="robots" content="[^"]*noindex/.test(html)).toBe(true);
   });

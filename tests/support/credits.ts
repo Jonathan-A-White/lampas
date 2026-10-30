@@ -76,11 +76,7 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/data/')) return 'Majority Standard Bible';
   if (path.startsWith('public/lemma-forms/')) return 'Majority Standard Bible'; // the forms of each lemma the text uses, made from the chapters (scripts/build-lemma-forms.mjs)
   if (path.startsWith('public/sounds/')) return 'eSpeak NG'; // the clips of a one-letter Greek word's sound, made by eSpeak NG (scripts/sounds-build.sh)
-  if (path.startsWith('public/sounds-trial/')) {
-    // the listening page's clips (docs/research/letter-sounds.md): one folder per voice that made them
-    const voice = path.split('/')[2];
-    return { espeak: 'eSpeak NG', piper: 'Piper', coqui: 'Coqui', chatterbox: 'Chatterbox' }[voice];
-  }
+  if (path.startsWith('public/sounds-trial/')) return null; // trial clips of other voices, credited on the listening page itself (public/sounds-trial.html), not on About: no screen uses them
   if (path.startsWith('public/pictures/')) return 'Claude Code'; // the memory pictures: drawn by Claude Code, credited as a tool
   // the app's own: the lamp icon (also Claude Code's drawing), the changelog mw next writes, and the letter-sounds listening page (its clips are credited above)
   if (/^public\/(icon\.svg|icon-\d+\.png|changelog\.json|sounds-trial\.html)$/.test(path)) return null;
