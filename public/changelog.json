@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.35",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.875",
+    "kind": "new",
+    "text": "Changed: About is now short credits, at most four lines each, with the Hebrew sources beside the Greek and the voice trials left off."
+  },
+  {
     "version": "0.7.34",
     "date": "2026-10-30",
     "story": "mw-5r3p30.884",

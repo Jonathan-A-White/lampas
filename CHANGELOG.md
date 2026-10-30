@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.35
+_2026-10-30_
+- New: Changed: About is now short credits, at most four lines each, with the Hebrew sources beside the Greek and the voice trials left off.
+
 ## 0.7.34
 _2026-10-30_
 - Fixed: A request the factory has finished now shows as adopted in Your requests even when the factory also sent an older "filed" note afterwards.
