@@ -23,6 +23,8 @@ import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
 import { isOrdered, rowAttrs } from '../reader/sourceText';
 import { textClass } from '../reader/textClass';
+import { useOnline } from '../ui/online';
+import { KeepOnPhoneLink } from '../ui/KeepOnPhoneLink';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
 
 /** The translation the reader's English is, and the edition its Greek follows. */
@@ -192,6 +194,7 @@ function PlayControls({ card }: { card: Card }) {
 function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
   useSheetBack(onClose);
   const { held } = card;
+  const online = useOnline();
   const [passage, setPassage] = useState<Passage>(null);
   const saved = useViewSettings();
   // the view the passage is drawn in: by the dial of its chapter's language (the Greek one's until the chapter has loaded)
@@ -270,7 +273,10 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
           ) : passage === null ? (
             <p role="status" className="py-1 text-base text-muted">{stillPassage ? 'Still loading. Close this card and open it again.' : 'Loading…'}</p>
           ) : passage === 'failed' ? (
-            <p role="status" className="py-1 text-base text-muted">This passage is not on this phone yet, and you are offline.</p>
+            <div role="status" className="py-1 text-base text-muted">
+              <p>{online ? 'This passage could not be fetched.' : 'This passage is not on this phone yet, and you are offline.'}</p>
+              <KeepOnPhoneLink onOpen={onClose} className="mt-1 block min-h-11 content-center text-base text-accent underline" />
+            </div>
           ) : (
             <MarkedPassage chapter={passage} held={held} mark={mark} />
           )}

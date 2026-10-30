@@ -31,7 +31,8 @@ const PASSAGE_ID = -7;
 const KEY = 'passage-player';
 
 export const skippedLine = (heading: string): string => `${heading}: skipping, no Old Testament present`;
-const OFFLINE = (heading: string): string => `${heading}: not on this phone yet, and you are offline`;
+/** Offline only on the browser's word; a passage that failed to fetch while online could not be fetched (mw-lcv9z3g.4). */
+const OFFLINE = (heading: string): string => (navigator.onLine === false ? `${heading}: not on this phone yet, and you are offline` : `${heading}: could not be fetched`);
 
 const IDLE: PassagePlayer = { state: 'idle', current: null };
 let player: PassagePlayer = IDLE;

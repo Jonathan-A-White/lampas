@@ -669,7 +669,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
               Finding examples…
             </p>
           ) : loaded === 'failed' ? (
-            <p className="mt-3 text-base text-muted">Could not load the passage, and you may be offline.</p>
+            <p className="mt-3 text-base text-muted">Could not load the passage{navigator.onLine === false ? ', and you are offline' : ''}.</p>
           ) : (
             <div className="mt-3 short:mt-2">
               <p className="text-sm text-muted">Examples from {exampleTitle}</p>
@@ -677,7 +677,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
                 <Examples idea={idea} examples={examples} onWord={onWord} />
               ) : wider?.unreached ? (
                 <p data-testid="idea-unreached" className="pt-1 text-base text-muted">
-                  Examples beyond {loaded.passage.title} could not be looked for: you may be offline.
+                  Examples beyond {loaded.passage.title} could not be looked for{navigator.onLine === false ? ': you are offline' : ''}.
                 </p>
               ) : (
                 <p className="pt-1 text-base text-muted">

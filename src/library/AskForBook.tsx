@@ -22,6 +22,7 @@ import { isTooLong } from '../ui/lengthLimit';
 import { LengthNote } from '../ui/LengthNote';
 import { LimitedInput } from '../ui/LimitedField';
 import { matching } from '../ui/listFilter';
+import { useOnline } from '../ui/online';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose } from '../ui/sheetDrag';
 import { bookCommand } from './bookCommand';
@@ -37,20 +38,6 @@ const FIELD = 'w-full rounded-lg border border-line bg-surface px-3 text-base te
 function kindWord(row: ExportedRow): string {
   const kind = usableKind(row);
   return kind ? infoOf(kind).singular : row.type;
-}
-
-function useOnline(): boolean {
-  const [online, setOnline] = useState(() => navigator.onLine !== false);
-  useEffect(() => {
-    const update = (): void => setOnline(navigator.onLine !== false);
-    window.addEventListener('online', update);
-    window.addEventListener('offline', update);
-    return () => {
-      window.removeEventListener('online', update);
-      window.removeEventListener('offline', update);
-    };
-  }, []);
-  return online;
 }
 
 /** `kind` is the kind of book the place he opened it from asks for (a grammar from the idea sheet, a devotional from Daily); none for the rest. */

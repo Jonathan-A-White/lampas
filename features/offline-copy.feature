@@ -57,3 +57,9 @@ Feature: Keep on this phone (mw-lcv9z3g.2)
   Scenario: A phone that kept the New Testament checks it again when Settings opens
     Given Settings is open at Reading with the New Testament chosen and every chapter kept
     Then the row reads "Up to date · checked" and a time
+
+  Scenario: With the New Testament kept and the browser offline, a lesson's passage card opens and reads
+    Given the New Testament is kept and the browser is offline
+    When he opens the passage card "Acts 18:7"
+    Then the card reads the verse
+    And the card says nothing about being offline or about a fetch
