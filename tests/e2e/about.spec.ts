@@ -70,4 +70,16 @@ test.describe('at 390x844', () => {
     }
     await shot(page, 'about-buttons');
   });
+
+  test('About shows no HTML comment, and its first paragraph begins "Lampas stands on" (mw-5r3p30.883)', async ({ page }) => {
+    await openUnlocked(page);
+    await page.goto('/#/about');
+    await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
+    await expect(page.getByRole('blockquote')).toContainText('Isaac Newton');
+    expect(await page.locator('body').innerText()).not.toContain('<!--');
+    const first = page.locator('main.screen blockquote + p');
+    await expect(first).toBeVisible();
+    expect((await first.innerText()).startsWith('Lampas stands on')).toBe(true);
+    await shot(page, 'about-no-comment');
+  });
 });

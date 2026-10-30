@@ -3,6 +3,7 @@
 // a title, a '> ' quote whose last line begins '— ', an intro paragraph, '## ' sections of '- ' bullets (continued by
 // indented lines), **bold**, `code` and [Name](https://…) links (a link's text is a name, never a web address).
 import attributionMd from '../ATTRIBUTION.md?raw';
+import { stripComments } from './markdown/comments';
 
 export interface Quote {
   text: string;
@@ -32,7 +33,7 @@ export function parseAttribution(md: string): Attribution {
     if (sections.length === 0) sections.push({ title: null, entries: [] });
     return sections[sections.length - 1];
   };
-  for (const line of md.split('\n')) {
+  for (const line of stripComments(md).split('\n')) {
     if (line.startsWith('# ') || line.trim() === '') continue;
     if (line.startsWith('## ')) sections.push({ title: line.slice(3).trim(), entries: [] });
     else if (line.startsWith('> ')) {
