@@ -50,6 +50,11 @@ describe('settingLink', () => {
     expect(settingKeyOf('#/settings')).toBeNull();
     expect(settingKeyOf('#/words?setting=textSize')).toBeNull();
     expect(settingKeyOf('#/settings?setting=noSuchSetting')).toBeNull();
+    // a row the search finds that is no setting has an address too (mw-5r3p30.877), though the tutor's link (settingLink) draws none for it
+    for (const key of ['offlineCopy', 'link.about', 'request.devotional']) {
+      expect(settingKeyOf(`#/settings?setting=${key}`), key).toBe(key);
+      expect(settingLink(key), key).toBeNull();
+    }
   });
 
   it('opens a row with data-setting=<key> for every setting', async () => {

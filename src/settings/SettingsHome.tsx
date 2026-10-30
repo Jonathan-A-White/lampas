@@ -4,7 +4,7 @@
 import { Found as FoundRows, GroupButton as KitGroupButton, SettingsSearch } from 'pwa-kit/settings';
 import { openLibrary } from '../nav/route';
 import { detailOf, infoOf } from '../library/kinds';
-import { openSetting, openSettingsGroup, openSettingsSection, settingLink } from './link';
+import { openFoundRow, openSettingsGroup } from './link';
 import type { searchLibrary } from './librarySearch';
 import { GROUPS, HOME_SECTIONS, type GroupId, type SettingsRow } from './rows';
 
@@ -16,10 +16,9 @@ export function GroupButton({ id, title, hint }: { id: GroupId; title: string; h
   return <KitGroupButton id={id} title={title} hint={hint} onOpen={openSettingsGroup} />;
 }
 
-/** Opens a row found by the search on its page: at the row when it has a link, else at its section. */
+/** Opens a row found by the search on its page, at the row, scrolled to and marked: a setting, the library door and a row that is no setting alike (mw-5r3p30.877). */
 function openFound(row: SettingsRow): void {
-  if (settingLink(row.key)) openSetting(row.key);
-  else openSettingsSection(row.section);
+  openFoundRow(row.key);
 }
 
 /** What the search found among the settings and the books of his library: each setting with the group it is in; choosing one opens its page at that row, and a book opens its kind page at it. */
