@@ -10,6 +10,8 @@ import { setReaderView } from '../../src/data/repositories';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { clearBus } from '../../src/events/bus';
 import { GrammarCard } from '../../src/GrammarCard';
+import { DiagramLesson } from '../../src/diagram/DiagramLesson';
+import { LESSON_STEPS } from '../../src/diagram/lesson';
 import { DrillReference } from '../../src/markdown/DrillReference';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
@@ -98,5 +100,17 @@ describe('DrillReference', () => {
     expect(screen.getByText('Romans 8:1')).toBeTruthy();
     rerender(<DrillReference reference="Romans 8:1" mark="νῦν" linked />);
     expect(screen.getByRole('link', { name: 'Romans 8:1' })).toBeTruthy();
+  });
+});
+
+describe('the reference of a diagram lesson step', () => {
+  it('is plain before he taps a word and a link after', async () => {
+    localStorage.clear();
+    const step = LESSON_STEPS[0];
+    const { container } = render(<DiagramLesson />);
+    expect(screen.queryByRole('link', { name: step.reference })).toBeNull();
+    await userEvent.click(container.querySelector<HTMLElement>(`[data-word="${step.check.answer}"]`)!);
+    await userEvent.click(await screen.findByRole('link', { name: step.reference }));
+    expect(await screen.findByRole('dialog', { name: step.reference })).toBeTruthy();
   });
 });
