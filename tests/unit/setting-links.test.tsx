@@ -51,10 +51,13 @@ describe('settingLink', () => {
     expect(settingKeyOf('#/words?setting=textSize')).toBeNull();
     expect(settingKeyOf('#/settings?setting=noSuchSetting')).toBeNull();
     // a row the search finds that is no setting has an address too (mw-5r3p30.877), though the tutor's link (settingLink) draws none for it
-    for (const key of ['offlineCopy', 'link.about', 'request.devotional']) {
+    for (const key of ['link.about', 'request.devotional']) {
       expect(settingKeyOf(`#/settings?setting=${key}`), key).toBe(key);
       expect(settingLink(key), key).toBeNull();
     }
+    // Keep on this phone is a door row (mw-lcv9z3g.4): the offline messages link to it, and the search finds it, so it has both
+    expect(settingKeyOf('#/settings?setting=offlineCopy')).toBe('offlineCopy');
+    expect(settingLink('offlineCopy')).toBe('#/settings?setting=offlineCopy');
   });
 
   it('opens a row with data-setting=<key> for every setting', async () => {
