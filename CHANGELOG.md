@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.34
+_2026-10-30_
+- Fixed: A request the factory has finished now shows as adopted in Your requests even when the factory also sent an older "filed" note afterwards.
+- Fixed: the variants lesson now says to tap the small B, NA or ECM badge to open the sheet, not the brace.
+
 ## 0.7.33
 _2026-10-30_
 - New: The Logos switch in Study resources now controls everything about Logos: your Logos library, Bible in Logos and the Logos devotionals only show when it is on.

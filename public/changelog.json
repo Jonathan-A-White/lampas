@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.34",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.884",
+    "kind": "fixed",
+    "text": "A request the factory has finished now shows as adopted in Your requests even when the factory also sent an older \"filed\" note afterwards."
+  },
+  {
+    "version": "0.7.34",
+    "date": "2026-10-30",
+    "story": "mw-9ji6ek0.40",
+    "kind": "fixed",
+    "text": "the variants lesson now says to tap the small B, NA or ECM badge to open the sheet, not the brace."
+  },
+  {
     "version": "0.7.33",
     "date": "2026-10-30",
     "story": "mw-rfjjzd.23",
