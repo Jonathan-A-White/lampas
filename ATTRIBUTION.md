@@ -124,6 +124,7 @@ Tap the round Ask the tutor button to ask what any of it gives you, what its lic
   Licence: none needed, it is a service used through the mill; its [terms](https://www.anthropic.com/legal/consumer-terms) apply. Changes: none.
 - **[Logos Bible Software](https://www.logos.com)**. Only if you switch it on in
   Settings: Lampas links to a word or a verse in the app you already own, and offers a link to the app's page in your phone's store if you do not have it yet. No text, image or data is taken from it. Its own licence is yours.
+  Apart from that, a book the lessons, the tutor's answers or a setting's help name (the list is data/books.json) is a link, with no switch needed, to its Logos store page when Logos sells it and else to [Amazon](https://www.amazon.com)'s page or search for it; nothing is taken from either store, and Lampas earns nothing from the links.
   With Logos on, an idea sheet's Read more links to the lesson that teaches the idea in the grammar books you turn on (Settings > Your Logos library > Grammars):
   David Alan Black's Learn to Read New Testament Greek (third edition, B&H, 2009) first, whose lesson titles and starting pages Lampas keeps, read from the book's
   table of contents as [Google Books](https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC) lists it. No text of the book is kept.
