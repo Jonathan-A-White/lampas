@@ -195,6 +195,8 @@ export interface VariantEnglish {
   alts: string[];
   /** on a unit whose one reading leaves the words out: the MSB's own English of the critical text's sentence there, from its 'CT <i>…</i>' footnote ('they all' at Acts 18:17), which reads more than the left-out words; absent otherwise (mw-9ji6ek0.36) */
   ctReads?: string;
+  /** per reading of `alts` (the same order), for each English word of it (split at white space, as the brace draws them) the index of the Greek word of that reading's `g` it is, or null: the Weave draws a word of the chip in Greek by it (scripts/data/variantAlign.ts, mw-9ji6ek0.37). Absent on a unit built before it, and `[]` for a reading with no words or no tagged Greek */
+  align?: Array<Array<number | null>>;
 }
 export type VariantWitness = 'byz' | 'na' | 'ecm';
 

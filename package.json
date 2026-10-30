@@ -26,6 +26,7 @@
     "data:build:ot": "tsx scripts/data-build-ot.ts",
     "variants:english": "tsx scripts/variants-english.ts",
     "variants:sweep": "tsx scripts/variants-sweep.ts",
+    "variants:align": "tsx scripts/variants-align.ts",
     "maps:build": "tsx scripts/maps-build.ts",
     "places:build": "tsx scripts/places-build.ts",
     "fixture:chapter": "node scripts/fixture-chapter.mjs",

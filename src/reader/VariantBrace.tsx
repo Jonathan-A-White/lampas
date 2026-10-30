@@ -6,7 +6,8 @@ import { Fragment, type KeyboardEvent } from 'react';
 import { GREEK_LANG } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
 import { Tap, TAP_PAD } from './Tap';
-import { braceReadings, LEFT_OUT, SAME, type BraceReading, type ShownUnit, type WitnessChip } from './variants';
+import type { GreekWord } from '../data/chapter';
+import { braceReadings, braceTokens, LEFT_OUT, SAME, type BraceReading, type ShownUnit, type WitnessChip } from './variants';
 
 /** Each chip spelled out, for a screen reader. */
 const SPELLED: Record<WitnessChip, string> = { B: 'Byzantine split', NA: 'Nestle-Aland', ECM: 'ECM', RP: 'Robinson-Pierpont text' };
@@ -16,13 +17,15 @@ const JOIN = '\u2060';
 /** a mark of the apparatus with no letter in it ('…', where a reading is in pieces) is drawn, not tapped */
 const HAS_LETTER = /\p{L}/u;
 
-export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
+export function VariantBrace({ shown, language, weaveWord, onOpen, onWord, onSay }: {
   shown: ShownUnit;
   /** the language of the readings: the Greek view's and a woven unit's Greek, else English */
   language: 'greek' | 'english';
+  /** the Weave's rule for one Greek word (WovenVerse.word, set when the weave is on): an English reading the build paired word by word is drawn like the text, the words he knows in Greek and the rest English (mw-9ji6ek0.37) */
+  weaveWord?: (word: GreekWord) => 'solid' | 'learning' | null;
   onOpen?: (shown: ShownUnit) => void;
-  /** a tap on a word of a reading: the word as drawn and the reading it is in */
-  onWord?: (word: string, reading: BraceReading, shown: ShownUnit) => void;
+  /** a tap on a word of a reading: the word as drawn, the reading it is in, and the language it is drawn in (a woven chip has both) */
+  onWord?: (word: string, reading: BraceReading, shown: ShownUnit, language: 'greek' | 'english') => void;
   /** a long press on a word: say it, in the language it is drawn in */
   onSay?: (word: string, language: 'greek' | 'english') => void;
 }) {
@@ -46,13 +49,19 @@ export function VariantBrace({ shown, language, onOpen, onWord, onSay }: {
                 {...(r.text ? {} : { onClick: open })}
                 className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : 'text-fg') : `italic${r.text ? '' : ' cursor-pointer'}`}
               >
-                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : r.text.split(/\s+/).filter(Boolean).map((word, k, all) =>
-                  HAS_LETTER.test(word) ? (
-                    <Tap key={k} glued={k === all.length - 1} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(word, r, shown)} onLongPress={() => onSay?.(word, language)}>
-                      {word}
-                    </Tap>
+                {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : (language === 'english' ? braceTokens(r, weaveWord) : r.text.split(/\s+/).filter(Boolean).map((text) => ({ text, greek: undefined }))).map(({ text, greek }, k, all) =>
+                  HAS_LETTER.test(text) ? (
+                    greek ? (
+                      <Tap key={k} glued={k === all.length - 1} data-brace-word="" data-brace-greek="" data-learning={weaveWord?.(greek) === 'learning' ? '' : undefined} {...GREEK_LANG} className={`font-greek text-accent ${TAP_PAD}`} onTap={() => onWord?.(greek.t, r, shown, 'greek')} onLongPress={() => onSay?.(greek.t, 'greek')}>
+                        {text}
+                      </Tap>
+                    ) : (
+                      <Tap key={k} glued={k === all.length - 1} data-brace-word="" className={TAP_PAD} onTap={() => onWord?.(text, r, shown, language)} onLongPress={() => onSay?.(text, language)}>
+                        {text}
+                      </Tap>
+                    )
                   ) : (
-                    <Fragment key={k}>{k === all.length - 1 ? `${word}${NBSP}` : `${word} `}</Fragment>
+                    <Fragment key={k}>{k === all.length - 1 ? `${text}${NBSP}` : `${text} `}</Fragment>
                   ),
                 )}
               </span>

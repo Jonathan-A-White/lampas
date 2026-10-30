@@ -14,7 +14,7 @@ function placedText(verse: Verse, p: Placement): string {
   return p.kind === 'greek' ? chosenWords(verse, p.chosen).map((w) => w.t).join(' ') : chosenEnglish(p.chosen, p.first, p.last).trim();
 }
 
-const bracesOf = (items: readonly { shown: ShownUnit; language: 'greek' | 'english' }[] | undefined): string[] => (items ?? []).map(({ shown, language }) => braceText(shown, language));
+const bracesOf = (items: readonly { shown: ShownUnit; language: 'greek' | 'english' }[] | undefined, weaveWord?: WovenVerse['word']): string[] => (items ?? []).map(({ shown, language }) => braceText(shown, language, weaveWord));
 
 /** The verse as the Reader draws it in `view` with `variants` (the units shown in it) and `chosen` (the units with a reading laid in place), or null when the Reader draws
  * neither (the caller then has the plain text). A woven chunk is the words of its own language, as shownOf in src/copy/format.ts has it. */
@@ -33,16 +33,16 @@ export function textWithVariants(
       const placed = plan.replace.get(i);
       if (placed) parts.push(placedText(verse, placed));
       else if (!plan.dropped.has(i)) parts.push(w.t);
-      parts.push(...bracesOf(plan.after.get(i)));
+      parts.push(...bracesOf(plan.after.get(i), woven?.word));
     });
   } else {
-    parts.push(...plan.startPut.map((p) => placedText(verse, p)), ...bracesOf(plan.start));
+    parts.push(...plan.startPut.map((p) => placedText(verse, p)), ...bracesOf(plan.start, woven?.word));
     for (const i of drawnOrder(verse, woven)) {
       const placed = plan.replace.get(i);
       const weft = woven?.[i];
       if (placed) parts.push(placedText(verse, placed));
       else if (!plan.dropped.has(i)) parts.push(weft ? weft.words.map((w) => w.t).join(' ') : chunkText(verse, woven, i).trim());
-      parts.push(...(plan.tail.get(i) ?? []).map((p) => placedText(verse, p)), ...bracesOf(plan.after.get(i)));
+      parts.push(...(plan.tail.get(i) ?? []).map((p) => placedText(verse, p)), ...bracesOf(plan.after.get(i), woven?.word));
     }
   }
   return parts.join(' ').replace(/\s+/g, ' ').trim();
