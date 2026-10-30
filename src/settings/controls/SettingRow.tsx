@@ -4,7 +4,7 @@ import { ReadAloud } from '../../speech/ReadAloud';
 import { writeSetting } from '../registry';
 import { Chips } from '../../ui/Chips';
 import { helpPlain } from '../helpText';
-import { HighlightedSetting } from './highlighted';
+import { bringRowIntoView, HighlightedSetting } from './highlighted';
 import type { SettingsRow } from '../rows';
 
 export function Section({ id, title, hint, labelled, children }: { id?: string; title: string; hint?: string; labelled?: boolean; children: ReactNode }) {
@@ -52,7 +52,7 @@ export function SettingRow({ row, children, details, className = 'pb-3' }: { row
   const ref = useRef<HTMLDivElement>(null);
   // the row is drawn after its saved value is read, so it scrolls itself into view when it arrives marked
   useEffect(() => {
-    if (highlighted) ref.current?.scrollIntoView({ block: 'center' });
+    if (highlighted) bringRowIntoView(ref.current);
   }, [highlighted]);
   return (
     <div

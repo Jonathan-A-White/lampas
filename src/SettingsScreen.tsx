@@ -14,7 +14,7 @@ import { backTo, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { CONTROLS } from './settings/controls';
 import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
-import { HighlightedSetting } from './settings/controls/highlighted';
+import { bringRowIntoView, HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
 import { backToSettingsHome, groupIdOf, settingKeyOf } from './settings/link';
 import { searchLibrary } from './settings/librarySearch';
@@ -71,7 +71,7 @@ export function SettingsScreen() {
   useEffect(() => {
     const content = contentRef.current;
     if (highlighted === null || !content || typeof ResizeObserver === 'undefined') return;
-    const bring = () => content.querySelector(`[data-setting="${CSS.escape(highlighted)}"]`)?.scrollIntoView({ block: 'center' });
+    const bring = () => bringRowIntoView(content.querySelector(`[data-setting="${CSS.escape(highlighted)}"]`));
     const observer = new ResizeObserver(bring);
     observer.observe(content);
     const stop = setTimeout(() => observer.disconnect(), KEEP_IN_VIEW_MS);

@@ -5,7 +5,7 @@ import { forgetScrollsAt } from '../nav/scrollMemory';
 import { previousAddress } from '../nav/lastRoute';
 import { openHash, pathOf, replaceHash } from '../nav/route';
 import { settingOf } from './registry';
-import { groupById, type GroupId } from './rows';
+import { groupById, rowOf, type GroupId } from './rows';
 
 /** The rows that are no setting but have a link: the door to Your Logos library, the first row of Study resources (mw-5r3p30.837). */
 const DOOR_ROWS: readonly string[] = ['library'];
@@ -17,12 +17,24 @@ export function settingLink(key: string): string | null {
   return linkable(key) ? `#/settings?setting=${encodeURIComponent(key)}` : null;
 }
 
-/** The setting an address asks for ('#/settings?setting=textSize'), or null when it is not a Settings address or names no setting of the registry. */
+/** A row the Settings search can find that is no setting of the registry: Keep on this phone, the Reading set, a link row such as About, Ask for the devotional. Such a row has an address
+ *  of its own so that choosing it lands on it, marked, as a setting does (mw-5r3p30.877), but the tutor gets none for it (settingLink stays the registry's). */
+const foundRow = (key: string): boolean => rowOf(key) !== undefined;
+
+/** The setting or row an address asks for ('#/settings?setting=textSize'), or null when it is not a Settings address or names no setting of the registry, door row or row of the list. */
 export function settingKeyOf(hash: string): string | null {
   if (pathOf(hash) !== '#/settings') return null;
   const q = hash.indexOf('?');
   const key = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('setting');
-  return key !== null && linkable(key) ? key : null;
+  return key !== null && (linkable(key) || foundRow(key)) ? key : null;
+}
+
+/** Opens Settings at a row the search found (a setting, or a row that is no setting: foundRow) as a new Back step, scrolled to and marked. Nothing for a key that is no row. */
+export function openFoundRow(key: string): void {
+  if (!linkable(key) && !foundRow(key)) return;
+  const link = `#/settings?setting=${encodeURIComponent(key)}`;
+  forgetScrollsAt(link);
+  openHash(link);
 }
 
 /** Opens Settings at the setting `key` as a new Back step, from where he is; it starts at the row, not where he last left Settings. Nothing for a key without a link. */
