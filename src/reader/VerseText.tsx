@@ -2,7 +2,7 @@
 import { Fragment, type MouseEvent, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import { chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
+import { besideOf, chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
@@ -298,6 +298,14 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 </span>
               ) }, ...braces];
             }
+            // a chunk that stays English while a Greek word it stands for is known: that word in gold before it (weave.ts besideVerse, mw-5r3p30.878)
+            const beside = weft ? [] : besideOf(woven, i);
+            const known = () =>
+              beside.map((w, k) => (
+                <Tap key={`b${i}-${k}`} still={still} data-beside={String(verse.g.indexOf(w))} {...own} dir={ownDir} className={`${face} text-accent ${TAP_PAD}`} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, ownSpeech)}>
+                  {w.t}
+                </Tap>
+              ));
             return [...before, { run, node: (bare: boolean) => weft ? (
               <Tap
                 key={i}
@@ -328,9 +336,12 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 )}
               </Tap>
             ) : (
-              <Tap key={i} bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
-                {c.s ? <SuppliedText chunk={c} /> : c.t}
-              </Tap>
+              <Fragment key={i}>
+                {known()}
+                <Tap bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
+                  {c.s ? <SuppliedText chunk={c} /> : c.t}
+                </Tap>
+              </Fragment>
             ) }, ...braces];
           }))}
     </span>

@@ -161,7 +161,7 @@ Compact: short keys, no indentation, each lexicon entry once per file.
 The reader draws only the supplied words in italics (`englishRuns` in `src/data/chapter.ts` cuts a chunk into runs), and the tutor is
 sent them between asterisks, as Markdown italics (`markSupplied`: `*was* king of Salem *and* priest of God`), with a section of its
 instructions saying what the marks mean ('Italic words' in `grinds/bible-talk.instructions/`).
-The Weave still leaves a chunk with any supplied word in English.
+The Weave still leaves a chunk with any supplied word in English, with each known Greek word it stands for in gold before it (`besideVerse`, mw-5r3p30.878).
 The Weave's Order Greek (mw-5r3p30.250, `chunkOrder` in `src/data/weave.ts`) lays the English chunks out by `e[].g`: each chunk where its first Greek word stands, a chunk with no Greek behind the chunk before it in the English; a Greek word with no `e` is drawn in neither order.
 
 Links are mutual: `e[g[i].e].g` contains `i`, and every `g[e[j].g[k]].e` is `j`.

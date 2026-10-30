@@ -28,6 +28,8 @@ export function Tap({ onTap, onLongPress, still, lang, dir, className, children,
   'data-woven'?: string;
   'data-learning'?: string;
   'data-word'?: string;
+  /** a Greek word he knows drawn in gold beside the English chunk that hides it (mw-5r3p30.878): its index in the verse's words */
+  'data-beside'?: string;
   'data-hint'?: string;
   'data-marked'?: string;
   'data-variant'?: string;

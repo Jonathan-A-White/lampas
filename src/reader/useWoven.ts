@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { sourceLanguage, type Chapter, type GreekWord } from '../data/chapter';
 import { formPasses } from '../data/grammar/formLevel';
-import { weaveVerse, withWordRule, wovenInOrder, type WeaveLemmas, type WovenVerse } from '../data/weave';
+import { weaveVerse, withBeside, withWordRule, wovenInOrder, type WeaveLemmas, type WovenVerse } from '../data/weave';
 import type { ReaderSettings } from './useReaderSettings';
 
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
@@ -25,7 +25,11 @@ export function wovenOf(chapter: Chapter | null, settings: Partial<ReaderSetting
         : (w: GreekWord) => formPasses(w.p, levels, weaveGrammar);
   const lemmas: WeaveLemmas = { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk };
   // each verse's weave carries the rule for a single Greek word, which a variant chip follows word by word (mw-9ji6ek0.37)
-  return chapter.verses.map((v) => withWordRule(wovenInOrder(v, weaveVerse(v, lemmas), weaveOrder ?? 'english'), lemmas));
+  // and the Greek words he knows that an English chunk still hides are shown beside it (mw-5r3p30.878)
+  return chapter.verses.map((v) => {
+    const woven = weaveVerse(v, lemmas);
+    return withWordRule(withBeside(wovenInOrder(v, woven, weaveOrder ?? 'english'), v, lemmas), lemmas);
+  });
 }
 
 /** The weave of every verse of `chapter`; `settings` is empty while they load. The grammar dial: with it on, a form stays English unless every idea its parsing needs is at that level.
