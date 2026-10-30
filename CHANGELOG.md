@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.32
+_2026-10-30_
+- New: Changed: Copy and Share always give the words as you read them, so the Copy text choice is gone and Settings says what Copy gives.
+- New: A book named in a lesson or in the tutor's answer, such as a textual-criticism title in Further reading, is now a link to its Logos store page, or to Amazon when Logos does not sell it.
+- Fixed: Variants such as Romans 8:38, where the same Greek words come in another order but the Majority Standard Bible's footnote gives different English, now show when you choose to see only the variants that change the English.
+
 ## 0.7.31
 _2026-10-30_
 - New: In the Weave, the other readings shown in curly braces now put the Greek words you already know in Greek and keep the rest in English, just as the text itself does.
