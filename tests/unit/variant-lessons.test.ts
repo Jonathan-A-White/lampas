@@ -80,4 +80,15 @@ describe('the lessons on variant readings', () => {
     expect(three).toMatch(/Acts/);
     expect(three).toMatch(/\b18 places\b/);
   });
+
+  it('say a badge opens the sheet and a word its card, never that a brace does (mw-9ji6ek0.40)', () => {
+    const four = VARIANT_LESSONS[3].markdown;
+    const sheet = four.slice(four.indexOf('## The sheet'), four.indexOf('## Read this'));
+    const first = sheet.split('\n').find((line, k) => k > 0 && line.trim() !== '') ?? '';
+    expect(first).toMatch(/badge/);
+    expect(first).toMatch(/\*\*B\*\*/);
+    expect(first).toMatch(/word card/);
+    expect(first).toMatch(/left out/);
+    for (const l of VARIANT_LESSONS) expect(l.markdown, l.file).not.toMatch(/\b(tap|tapping) (a|the) brace\b/i);
+  });
 });
