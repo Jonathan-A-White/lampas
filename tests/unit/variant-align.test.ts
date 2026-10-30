@@ -55,6 +55,16 @@ describe('the pairing of a reading', () => {
     expect(alignReading('was', [w('ἦν', 'εἰμί', 'G1510')], verse, { ...lex, G1510: { g: 'exist', d: '' } })).toEqual([null]);
   });
 
+  it('pairs the one word of English and the one Greek word left over only when the lexicon has no gloss for the Greek (a name), never a glossed word', () => {
+    expect(alignReading('Prisca', [w('Πρίσκα', 'Πρίσκα', 'G4252')], undefined, {})).toEqual([0]);
+    expect(alignReading('he sent back', [w('ἡμᾶς', 'ἐγώ', 'G2248')], undefined, { G2248: { g: 'we/us', d: '' } })).toEqual([null, null, null]);
+    expect(alignReading('about', [w('ἐπιστάμενος', 'ἐπίσταμαι', 'G1987')], undefined, {})).toEqual([null]);
+  });
+
+  it('draws a gloss of two words as one: away from is ἀπό', () => {
+    expect(alignReading('away from', [w('ἀπὸ', 'ἀπό', 'G575')], undefined, { G575: { g: 'away from', d: '' } })).toEqual([0, 0]);
+  });
+
   it('gives [] for a reading with no tagged Greek (it leaves the words out)', () => {
     const unit = finishUnit({ v: 18, w: [4], base: 'Κεγχρεαῖς', alts: [{ code: 'N', text: '' }], english: { source: 'msb', base: 'Cenchrea', alts: [''] } }, V18, LEX);
     expect(unit.english.align).toEqual([[]]);

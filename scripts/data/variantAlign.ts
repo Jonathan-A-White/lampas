@@ -3,7 +3,7 @@
 // English word must say which Greek word it is, or none. Deterministic, no model: an English word is paired with a Greek word of the reading when
 //   1. (tier 1) it shares its stem with a word of the Greek word's lexicon gloss ('in' with ἐν, whose gloss is 'in/on/among'), or
 //   2. (tier 2) it shares its stem with the verse's own English of that same Greek form (the MSB chunk of a verse word with the same letters), a supplied word of the chunk excepted,
-// each English word and each Greek word once, the nearest in position first (a word of a reading in another order is paired by its words, not by its place). A word left over stays
+// each English word and each Greek word once (a neighbour the same gloss or chunk also has joins the word: 'away from' is ἀπό), the nearest in position first (a word of a reading in another order is paired by its words, not by its place). A word left over stays
 // unpaired and is drawn in English: a wrong pairing would put the wrong Greek on the screen, which is worse than none.
 import type { GreekWord, LexEntry, VariantEnglish, VariantUnit, Verse } from '../../src/data/chapter';
 import { letterKey } from './variants';
@@ -24,7 +24,7 @@ const IRREGULAR = new Map<string, string>(Object.entries(FORMS).flatMap(([stem, 
 
 /** Small words of English: they are paired only by the gloss of a small word of Greek (the 'the' of ὁ), never by what the verse's chunk says, and they do not count as a word left over. */
 const SMALL = new Set(
-  'the a an of to in on at by for with from and or but nor he she it they we i you his her their our my your its him them us me be am is are was were been being have has had will would shall should may might can could not no that this these who which as if so do did does there then'.split(' '),
+  'the a an of to in on at by for with from and or but nor he she it they we i you his her their our my your its him them us me be am is are was were been being have has had will would shall should may might can could not no that this these who which as if so do did does there then about over under upon into through before after between against around toward towards until among also now even only because when while'.split(' '),
 );
 
 /** Two English words of one stem: the same word (or a listed form of one verb), or the shorter (4 letters or more) the start of the longer by at most three letters ('Cenchrea' and 'Cenchreae', 'brother' and 'brothers'). */
@@ -89,14 +89,14 @@ export function alignReading(english: string, g: readonly GreekWord[], verse: Ve
     out[edge.e] = edge.g;
     taken.add(edge.g);
   }
-  // the words beside a paired word that the verse's chunk for that Greek word also has join it ('went' beside 'up')
+  // the words beside a paired word that its gloss or the verse's chunk for that Greek word also has join it ('went' beside 'up', 'from' beside 'away')
   for (let again = true; again; ) {
     again = false;
     tokens.forEach((token, ei) => {
-      if (out[ei] !== null || !token || SMALL.has(token)) return;
+      if (out[ei] !== null || !token) return;
       for (const near of [ei - 1, ei + 1]) {
         const gi = out[near];
-        if (gi !== null && gi !== undefined && chunk[gi].some((x) => sameStem(token, x))) {
+        if (gi !== null && gi !== undefined && (gloss[gi].some((x) => sameStem(token, x)) || (!SMALL.has(token) && chunk[gi].some((x) => sameStem(token, x))))) {
           out[ei] = gi;
           again = true;
           return;
@@ -107,7 +107,7 @@ export function alignReading(english: string, g: readonly GreekWord[], verse: Ve
   // one content word of English and one Greek word left over, in a reading of any length: they are each other's
   const loose = tokens.flatMap((token, ei) => (out[ei] === null && token && !SMALL.has(token) ? [ei] : []));
   const left = g.flatMap((_, gi) => (greek[gi] && !taken.has(gi) ? [gi] : []));
-  if (loose.length === 1 && left.length === 1 && !FUNCTION_WORD.test(g[left[0]].p)) out[loose[0]] = left[0];
+  if (loose.length === 1 && left.length === 1 && !gloss[left[0]].length && !FUNCTION_WORD.test(g[left[0]].p)) out[loose[0]] = left[0];
   return out;
 }
 

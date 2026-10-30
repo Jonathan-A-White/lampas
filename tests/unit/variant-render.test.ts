@@ -544,3 +544,15 @@ describe('a chip woven word by word (mw-9ji6ek0.37)', () => {
     expect(braceText(shown, 'english')).toBe('{in Cenchreae the head NA}');
   });
 });
+
+describe('the committed Acts 18 (mw-9ji6ek0.37)', () => {
+  it('draws the NA chip of verse 2 as {ἀπὸ NA} when ἀπό is solid: "away from" is one Greek word', () => {
+    const chapter = JSON.parse(readFileSync('public/data/act/18.json', 'utf8')) as Chapter;
+    const verse = chapter.verses.find((v) => v.n === 2)!;
+    const [shown] = shownUnits(chapter.variants!.filter((u) => u.v === 2 && u.base === 'ἐκ'), { english: 'english', witnesses: 'ecm' }, chapter.verses);
+    const lemmas: WeaveLemmas = { solid: new Set(['ἀπό']) };
+    const woven = withWordRule(wovenInOrder(verse, weaveVerse(verse, lemmas), 'english'), lemmas);
+    expect(braceText(shown, 'english', woven.word)).toBe('{ἀπὸ NA}');
+    expect(braceText(shown, 'english')).toBe('{away from NA}');
+  });
+});

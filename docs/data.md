@@ -294,10 +294,10 @@ new renders nothing and changes nothing.
 them): the index into `alts[i].g` of the Greek word that English word is, or `null`; `[]` for a reading with no English or no tagged Greek. `scripts/data/variantAlign.ts` makes it with no model: an English word is
 a Greek word's when it shares a stem with a word of the Greek word's lexicon gloss (`in` and ἐν, `in/on/among`), else with the verse's own English of the same Greek form (the MSB chunk of a verse word spelled the same,
 its supplied words and its small words left out); each Greek word once, the nearest in position first; neighbouring English words of one chunk ('went up') may share one Greek word (side by side); the one content word
-of English and the one Greek word left over in a reading (a name: Prisca, Πρίσκα) are each other's unless the Greek is a small word (article, conjunction, preposition, particle, adverb). A word left over stays `null` and is drawn
+of English and the one Greek word left over in a reading are each other's when the lexicon has no gloss for the Greek (a name or a form the text never has: Prisca, Πρίσκα) and it is not a small word (article, conjunction, preposition, particle, adverb). A word left over stays `null` and is drawn
 in English: a wrong pairing would show the wrong Greek. `npm run variants:align [-- --write]` lays it on the committed chapters and re-stamps their fingerprints (the build, `finishUnit`, lays the same).
 The Weave draws a chip by it (`braceTokens` in `src/reader/variants.ts`): a paired word whose lemma the weave shows (`WovenVerse.word`) is the Greek word, the rest English; a reading with no `align` keeps the all-or-nothing rule (`languageOf` in `src/reader/variantPlan.ts`).
-It is a rule, not the tutor's model; the model's own pairing for the words the rule leaves over is not made yet. Readings with English, by the source of the English (2026-10-30): `msb` 125 fully paired, 267 partly, 123 unpaired; `lampas` 2,584 fully, 2,595 partly, 593 unpaired.
+It is a rule, not the tutor's model; the model's own pairing for the words the rule leaves over is not made yet. Readings with English, by the source of the English (2026-10-30): `msb` 110 fully paired, 253 partly, 152 unpaired; `lampas` 2,501 fully, 2,467 partly, 804 unpaired.
 
 Units from the files and from the table are never changed by the model: it only writes English beside them. To correct an entry, edit it in the file (the next run keeps it).
 
