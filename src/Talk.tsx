@@ -66,6 +66,7 @@ import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet
 import { faceOf } from './script/greekLang';
 import { announce, plainText } from './ui/live';
 import { addWord } from './tutor/registry';
+import { useDoorBusy } from './tutor/door';
 
 /** The bar pinned at the bottom of the reader: voice-kit's hold-to-talk bar (src/talk/Bars.tsx) labelled Talk. A tap opens
  * the sheet; a hold (half a second) opens it and listens, and what he says goes on release. It is the lowest bar, so it alone
@@ -586,6 +587,8 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   const title = scope.welcome ? 'Welcome' : scope.free ? 'Talk with the tutor' : scope.screen ? `Ask the tutor: ${scope.screen.name}` : scope.quiz ? `Quiz on ${scopeTitle(scope)}` : `Talk about ${scopeTitle(scope)}`;
   const titleId = useId();
   const countId = useId();
+  // the tutor is open: the tutor door asks nothing more of it (src/tutor/door.ts)
+  useDoorBusy();
   const turns = useLiveQuery(() => listTurns(ref), [ref]);
   // His unsent words are kept for this conversation, so Back or Done does not lose a long prayer (src/ui/unsentDraft.ts); a send, which empties the box, drops them
   const draftKey = talkDraftKey(ref);

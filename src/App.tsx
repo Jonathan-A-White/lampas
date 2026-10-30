@@ -7,7 +7,7 @@ import { Essay } from './Essay';
 import { VariantLessons } from './lessons/VariantLessons';
 import { HelpScreen } from './HelpScreen';
 import { Preface } from './Preface';
-import { AskTutor } from './AskTutor';
+import { AskTutor, TutorDoor } from './AskTutor';
 import { startAppearanceSync } from './appearance/appearanceSync';
 import { DrillScreen } from './DrillScreen';
 import { ImportScreen } from './ImportScreen';
@@ -183,6 +183,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       <WordReturn />
       {/* the round Ask the tutor control of every screen but the Reader and the Share screen (its sheets are talks), which draws its own beside its Talk bar */}
       {route === 'home' || route === 'share' || route === 'unlock' ? null : <AskTutor route={route} />}
+      {/* the one door to the tutor he chose in Settings (src/tutor/door.ts): the two-finger tap on every screen, or the floating ? at the Hand side; none without a licence */}
+      <TutorDoor />
       {/* the one bar for anything read aloud (voice-kit/speech): drawn into the highest BarSlot on screen, this one at the shell's foot when no screen has its own */}
       <BarSlot level={0} inset />
       <LampasSpeakingBar />

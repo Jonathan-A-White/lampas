@@ -75,6 +75,7 @@ import { readDraft, talkDraftKey, writeDraft } from './ui/unsentDraft';
 import { askAboutVariant, clearVariantAsked, VARIANT_QUESTION } from './tutor/variantFacts';
 import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
+import { useDoorTarget } from './tutor/door';
 import { useTalk } from './useTalk';
 import { HOLD_AFTER_MS, useTalkHold } from './talk/useTalkHold';
 import type { BarHandlers } from 'voice-kit/composer';
@@ -338,6 +339,28 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   });
   // The tutor (the Talk bar and sheet, the round Ask button, Teach's Ask the tutor) is the AI: not drawn without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
+  // The talk about one variant unit, its box holding the question ready to send (words he had typed there are his and stay): the brace sheet's Ask the tutor, and what the tutor door asks on that sheet
+  const askVariant = () => {
+    if (!variantShown) return;
+    stopReading();
+    stopTalking.abort();
+    if (chapter) askAboutVariant(chapter, variantShown.unit);
+    const draftKey = talkDraftKey(talkRef(BOOK, CHAPTER, variantShown.unit.v));
+    if (readDraft(draftKey) === '') writeDraft(draftKey, VARIANT_QUESTION);
+    setVariantShown(null);
+    setTalkAbout(variantShown.unit.v);
+  };
+  // The tutor door (src/tutor/door.ts, a two-finger tap or the floating ?): on the Reader it asks about the verse the Verse view shows or the verse selected, else the chapter; over the brace sheet, about its unit
+  useDoorTarget(
+    ai && chapter && !failed
+      ? () => {
+          stopReading();
+          stopTalking.abort();
+          setTalkAbout(viewUnit?.n ?? selected);
+        }
+      : undefined,
+  );
+  useDoorTarget(ai && variantShown ? askVariant : undefined);
   // The Talk sheet's own close (Done), which the answer's `go` calls before the Reader opens the other chapter.
   useEffect(() => {
     closeTalk.current = () => {
@@ -703,20 +726,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 }
               : undefined
           }
-          onAsk={
-            ai
-              ? () => {
-                  stopReading();
-                  stopTalking.abort();
-                  // the talk is about this one unit, and its box holds the question ready to send (words he had typed there are his and stay)
-                  if (chapter) askAboutVariant(chapter, variantShown.unit);
-                  const draftKey = talkDraftKey(talkRef(BOOK, CHAPTER, variantShown.unit.v));
-                  if (readDraft(draftKey) === '') writeDraft(draftKey, VARIANT_QUESTION);
-                  setVariantShown(null);
-                  setTalkAbout(variantShown.unit.v);
-                }
-              : undefined
-          }
+          onAsk={ai ? askVariant : undefined}
         />
       ) : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}

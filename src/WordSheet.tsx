@@ -12,6 +12,7 @@ import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
 import { useAiAllowed } from './gate/licenceContext';
+import { useDoorTarget } from './tutor/door';
 import { EnglishDictionaryRow, EnglishWordList, EnglishWordSheet, TurnOnLogos } from './EnglishWordSheet';
 import { useLogosOn } from './useLogosOn';
 import { GrammarSheet } from './GrammarSheet';
@@ -538,6 +539,14 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
         onHelp(asked);
       }
     : undefined;
+  // The tutor door (src/tutor/door.ts, a two-finger tap or the floating ?) on this sheet asks about its word, as the word's own Ask the tutor does: the first word, its lemma and its parsing
+  const first = lookup.words[0];
+  const firstVerse = lookup.verse ?? (first ? sheetChapter.verses.find((v) => v.g.includes(first))?.n : undefined);
+  useDoorTarget(
+    help && first && firstVerse !== undefined
+      ? () => help(hebrew ? { kind: 'word', form: hebrewPointedForm(first.t), lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse, language: 'he' } : { kind: 'word', form: first.t, lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse })
+      : undefined,
+  );
   const openTerm = (term: string, word: GreekWord, verse: number | undefined): void => {
     setGrammar({ term, word, verse });
     publish({ kind: 'grammar-term-opened', term });

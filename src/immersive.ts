@@ -2,7 +2,7 @@
 // round Ask button slide away while he scrolls the text down, as a browser's address bar does (not when the Reader puts his saved place back). After that the bars change ONLY on a two-finger tap
 // on the text: shown if away, away if shown (mw-5r3p30.255, his words: "2 fingers on, 2 fingers off"). Nothing else brings them back: not
 // scrolling up (mw-5r3p30.227), not the end of the chapter or scrolling past it, not a sheet closing, not reading aloud stopping. A three-finger tap
-// does nothing. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
+// does nothing. Where the Tutor door is the two-finger tap (mw-5r3p30.880, src/tutor/door.ts) that tap also opens the tutor, and on the text it only brings the bars back, never puts them away. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
 // sliding.
 //
 // With Turn pages nothing scrolls (src/reader/usePages.ts): turning to the next page is what scrolling down is, and puts the bars away (mw-5r3p30.611: the
@@ -28,6 +28,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { getImmersive } from './data/repositories';
 import { isRestoringScroll } from './nav/scrollMemory';
+import { twoFingerOpensTutor } from './tutor/door';
 import type { ReadingMode } from './settings/definitions/readingMode';
 import { holdAwake, releaseAwake } from './speech/wakeLock';
 
@@ -184,8 +185,9 @@ export function useImmersive(
     };
     // two fingers have been down since the last time all were up
     let multi = false;
+    // where the Tutor door is the two-finger tap (src/tutor/door.ts) the same tap opens the tutor, so here it only brings the bars back: leaving immersive reading, never putting the bars away
     const toggle = () => {
-      set(!awayRef.current);
+      set(twoFingerOpensTutor() ? false : !awayRef.current);
     };
     const onScroll = () => {
       const top = el.scrollTop;
