@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.36
+_2026-10-30_
+- Fixed: In the Weave, a Greek word you know now shows in gold beside the English phrase it hides in (Acts 18:12) and the English drops away once you know all the Greek words behind it.
+
 ## 0.7.35
 _2026-10-30_
 - New: Changed: About is now short credits, at most four lines each, with the Hebrew sources beside the Greek and the voice trials left off.
