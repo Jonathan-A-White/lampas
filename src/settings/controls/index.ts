@@ -34,7 +34,6 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   layout: LayoutControl,
   readingMode: ReadingModeControl,
   chapterButtons: ChapterButtonsControl,
-  copyText: CopyFormatControl,
   copyReference: CopyFormatControl,
   copyNumbers: CopyFormatControl,
   copyLink: CopyFormatControl,

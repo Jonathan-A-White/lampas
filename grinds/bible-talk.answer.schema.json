@@ -1467,7 +1467,6 @@
                   "sectionHeadings",
                   "readingMode",
                   "chapterButtons",
-                  "copyText",
                   "copyReference",
                   "copyNumbers",
                   "copyLink",
@@ -1616,12 +1615,6 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "chapterButtons" }, "value": { "type": "string", "enum": ["show", "hide"] } }
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["key", "value"],
-            "properties": { "key": { "const": "copyText" }, "value": { "type": "string", "enum": ["asread", "english", "original", "both"] } }
           },
           {
             "type": "object",

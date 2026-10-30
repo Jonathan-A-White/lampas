@@ -7,7 +7,7 @@ import { TEXT_SIZES } from '../../appearance/textSizes';
 import { FONTS, PHONE_STACK, type FontId } from '../../appearance/fonts';
 import { THEMES, type Theme } from '../../appearance/themes';
 import { getLayout, getSectionHeadings, getTextSize, type ReadingLayout } from '../../data/repositories';
-import { chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
+import { chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, fontSetting, immersiveHintSetting, immersiveSetting, readingModeSetting, themeSetting } from '../definitions';
 import { settingsFor, useViewSettings } from '../../reader/useViewSettings';
 import { wovenOf } from '../../reader/useWoven';
 import { useSetting } from '../store';
@@ -178,7 +178,6 @@ export const HeadingsControl: Control = ({ row }) => {
 };
 
 const COPY_ROWS = {
-  copyText: { setting: copyTextSetting, options: [['asread', 'As you read it'], ['english', 'English'], ['original', 'The original'], ['both', 'Both']] },
   copyReference: { setting: copyReferenceSetting, options: [['after', 'After'], ['before', 'Before'], ['off', 'Off']] },
   copyNumbers: { setting: copyNumbersSetting, options: [['on', 'On'], ['off', 'Off']] },
   copyLink: { setting: copyLinkSetting, options: [['on', 'On'], ['off', 'Off']] },
@@ -212,15 +211,25 @@ function CopyPreview({ format }: { format: CopyFormat }) {
   );
 }
 
-/** The four rows of When you copy: Text, Reference, Verse numbers and Link, each a chip row; the last has the preview under its hint. */
+/** What Copy gives, said once above the first row of When you copy (the Text row is gone, mw-5r3p30.873): the words as he reads them. */
+const COPY_GIVES = 'Copy and Share give the words as you read them on screen: English, Weave or Greek, with the variants you have on.';
+
+/** The three rows of When you copy: Reference, Verse numbers and Link, each a chip row; the first has a line above it saying what Copy gives, the last the preview under its hint. */
 export const CopyFormatControl: Control = ({ row }) => {
   const { setting, options } = COPY_ROWS[row.key as keyof typeof COPY_ROWS];
   const current = useSetting(setting);
   const format = useCopyFormat();
   return (
-    <SettingRow row={row} details={row.key === 'copyLink' && format ? <CopyPreview format={format} /> : undefined}>
-      <RowName row={row} />
-      {current ? <ChipRow name={row.label} current={current} options={options} settingKey={row.key as keyof typeof COPY_ROWS} /> : null}
-    </SettingRow>
+    <>
+      {row.key === 'copyReference' ? (
+        <p data-copy-gives className="pb-3 text-base text-fg">
+          {COPY_GIVES}
+        </p>
+      ) : null}
+      <SettingRow row={row} details={row.key === 'copyLink' && format ? <CopyPreview format={format} /> : undefined}>
+        <RowName row={row} />
+        {current ? <ChipRow name={row.label} current={current} options={options} settingKey={row.key as keyof typeof COPY_ROWS} /> : null}
+      </SettingRow>
+    </>
   );
 };

@@ -24,7 +24,6 @@ Never claim a change the list does not have. For a setting the app does not have
 - `sectionHeadings` — Section headings. The Bible's headings above their verses, shown or not.
 - `readingMode` — Reading. Scroll, or turn the pages like a book. Value: "scroll", "pages" (Turn pages).
 - `chapterButtons` — Chapter buttons. The ‹ and › buttons at the end of each chapter. Swipe left or right to change chapter. Value: "show", "hide".
-- `copyText` — Copy: text. What Copy and Share give: As you read it, the default (the view on now, Weave too); English; The original; or Both, English then the original. Value: "asread", "english", "original", "both".
 - `copyReference` — Copy: reference. Where Copy puts the reference, such as Colossians 3:1 (MSB): After, the default; Before; or Off. Value: "after", "before", "off".
 - `copyNumbers` — Copy: verse numbers. Number each verse of a passage or chapter; a single verse never is.
 - `copyLink` — Copy: link. End with the https link that opens it in Lampas; Share sends the link too.

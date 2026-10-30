@@ -81,7 +81,7 @@ import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
 import { extentChoices, paradigmExtentSetting } from './definitions/grammarExtent';
-import { ANOTHER, askBySetting, audioBibleSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { ANOTHER, askBySetting, audioBibleSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -453,7 +453,6 @@ export const SETTINGS: readonly SettingEntry[] = [
   ),
   fromDefinition(readingModeSetting),
   fromDefinition(chapterButtonsSetting),
-  fromDefinition(copyTextSetting),
   fromDefinition(copyReferenceSetting),
   fromDefinition(copyNumbersSetting),
   fromDefinition(copyLinkSetting),
