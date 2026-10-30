@@ -57,7 +57,9 @@ describe('the registry lists every Settings row', () => {
         // Read as (mw-9ji6ek0.25) is a row of its own (rows.ts READING_SET_ROW), not a registry setting: the sets live in their own table
         .filter((label) => label !== 'Read as')
         // Keep on this phone (mw-lcv9z3g.2) is likewise a row of its own (rows.ts OFFLINE_COPY_ROW): the scope is the offline copy's key, not a registry setting
-        .filter((label) => label !== 'Keep on this phone');
+        .filter((label) => label !== 'Keep on this phone')
+        // Tutor door and Hand (mw-5r3p30.879) are rows of their own too (rows.ts TUTOR_DOOR_ROW, HAND_ROW), kept outside the registry so the tutor does not change them; the hand question is part of Tutor door
+        .filter((label) => label !== 'Tutor door' && label !== 'Hand' && label !== 'Which hand do you hold your phone in?');
     // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);
     // the study-resource switches are checkboxes, not groups: the Settings screen's other tests draw them
     const all: string[] = [];

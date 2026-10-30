@@ -30,6 +30,8 @@ import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
 import { hebrewLevelOf } from './definitions/hebrewInterest';
 import { DEPTH_KEY, depthFrom } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
+import { tutorDoorSetting } from './definitions/tutorDoor';
+import { handSetting } from './hand';
 import { helpPlain } from './helpText';
 import { SETTINGS, settingOf, type SectionId } from './registry';
 
@@ -109,7 +111,7 @@ export type SettingsRow = KitRow<SectionId> & {
 };
 
 /** The settings that only matter to the tutor. A new setting for the tutor is listed here, so an unlicensed phone sees it off with 'Needs a licence'. */
-const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'askBy', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
+const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'askBy', 'quizGoal', tutorDoorSetting.key, ...SCRIPTS.map((s) => s.settingKey)]);
 
 const LINKS: readonly SettingsRow[] = [
   { key: 'link.variantLessons', label: 'Lessons on variant readings', hint: 'Five short lessons on where the manuscripts differ and how to read it.', section: 'variants' },
@@ -203,7 +205,13 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   ai: AI_KEYS.has(s.key) || undefined,
 });
 
-const unordered: readonly SettingsRow[] = [LIBRARY_ROW, ...SETTINGS.map(rowOfSetting), READING_SET_ROW, OFFLINE_COPY_ROW, ...PART_ROWS, ...REQUESTS, DEVELOPER, ...LINKS];
+/** Tutor door and Hand (mw-5r3p30.879): the row of a setting declared once (definitions/tutorDoor.ts, hand.ts) that is kept out of the registry and DEFINITIONS, so the tutor does not read or change it and
+ *  its Settings request (full), src/tutor/knows.ts and the bible-talk instructions do not carry it (isTalkable). Tutor door heads Asking the tutor; Hand is a row of Layout that any screen reads (hand.ts). */
+const rowOfDefinition = (def: typeof tutorDoorSetting | typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, ai: AI_KEYS.has(def.key) || undefined });
+const TUTOR_DOOR_ROW: SettingsRow = rowOfDefinition(tutorDoorSetting);
+const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
+
+const unordered: readonly SettingsRow[] = [LIBRARY_ROW, TUTOR_DOOR_ROW, ...SETTINGS.map(rowOfSetting), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...PART_ROWS, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
@@ -219,8 +227,8 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   return rows.map((r) => (isSwitch(r) ? ordered[next++] : r)).filter((r): r is SettingsRow => r !== undefined);
 }
 
-/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && !PART_ROWS.some((r) => r.key === key);
+/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, Tutor door, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== TUTOR_DOOR_ROW.key && key !== HAND_ROW.key && !PART_ROWS.some((r) => r.key === key);
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 
