@@ -7,7 +7,7 @@ import { openHash, pathOf, replaceHash } from '../nav/route';
 import { settingOf } from './registry';
 import { groupById, rowOf, type GroupId } from './rows';
 
-/** The rows that are no setting but have a link: the door to Your Logos library, the first row of Study resources (mw-5r3p30.837), and Keep on this phone (mw-lcv9z3g.4). */
+/** The rows that are no setting but have a link: the door to Your Logos library, a row of Study resources under the Logos switch (mw-rfjjzd.23), and Keep on this phone (mw-lcv9z3g.4). */
 const DOOR_ROWS: readonly string[] = ['library', 'offlineCopy'];
 
 const linkable = (key: string): boolean => settingOf(key) !== undefined || DOOR_ROWS.includes(key);

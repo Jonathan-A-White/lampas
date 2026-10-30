@@ -6,7 +6,7 @@
 // (src/settings/controls/, one file per section) names for its key. A row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens the
 // page holding that section, scrolled to it (a link from elsewhere, such as the reference card's 'Link Logos in Settings'). An address '#/settings?setting=textSize' (src/settings/link.ts,
 // docs/links.md) opens the page holding that row, at the row: it is drawn whatever its dependency would hide (rowsAt), scrolled to and marked until his next tap, and a row that
-// depends on a setting that is off says to turn that on first. Your Logos library is the first row of Study resources (a link to it, '#/settings?setting=library', opens that page and marks it). docs/layout/settings.md.
+// depends on a setting that is off says to turn that on first. Your Logos library is a row of Study resources under the Logos switch, drawn while Logos is On (a link to it, '#/settings?setting=library', opens that page and marks it). docs/layout/settings.md.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
@@ -46,6 +46,9 @@ function neededText(values: Values, row: SettingsRow | undefined, needed: Settin
   const step = steps.find((l) => visibleRows({ ...both, [key]: level(l.level) }, '').some((r) => r.key === row.key));
   return `“${row.label}” is ${lang}. It is shown from “${step?.name ?? 'All in'}” up: choose ${lang} at the top of Settings, then raise “How much ${lang}?”.`;
 }
+
+/** The books of his Logos library found while Logos is Off: none (the library is under the Logos switch, mw-rfjjzd.23). */
+const NO_BOOKS: ReturnType<typeof searchLibrary> = { books: [], total: 0 };
 
 /** The section id an address asks for ('#/settings?section=resources'), or null. */
 function sectionOf(hash: string): string | null {
@@ -123,7 +126,7 @@ export function SettingsScreen() {
           <div ref={contentRef}>
             <SettingsSearch query={query} onChange={setQuery} />
             {searching ? (
-              values ? <Found rows={found} books={searchLibrary(query)} query={query} /> : null
+              values ? <Found rows={found} books={values['resource.logos'] === 'on' ? searchLibrary(query) : NO_BOOKS} query={query} /> : null
             ) : (
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (
@@ -166,7 +169,15 @@ export function SettingsScreen() {
                   .map((row) => {
                     if (row.ai && !aiAllowed) return <NeedsLicenceRow key={row.key} row={row} />;
                     const Row = CONTROLS[row.key];
-                    return Row ? <Row key={row.key} row={row} /> : null;
+                    if (!Row) return null;
+                    // a row under the Logos switch (Your Logos library, Bible in Logos) is indented beneath it
+                    return section.id === 'resources' && row.dependsOn?.key === 'resource.logos' ? (
+                      <div key={row.key} data-under-logos className="ml-4 border-l-2 border-line pl-3">
+                        <Row row={row} />
+                      </div>
+                    ) : (
+                      <Row key={row.key} row={row} />
+                    );
                   })}
               </Section>
             ))}

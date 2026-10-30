@@ -39,6 +39,7 @@ async function onRandom(): Promise<void> {
   await db.settings.bulkPut([
     { key: 'devotional', value: RANDOM },
     { key: 'devotionalDraw', value: TWO.join(',') },
+    { key: 'resource.logos', value: 'on' },
   ]);
 }
 

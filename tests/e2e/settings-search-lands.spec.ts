@@ -4,6 +4,7 @@ import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 import { talkField } from './talk-field';
+import { turnLogosOn } from './settings-group';
 
 // Tapping a row the Settings search found takes him to it: the page of its group, the row scrolled into view and marked (mw-5r3p30.877; the link of mw-5r3p30.502).
 // The rows that are no setting of the registry (Keep on this phone, the link rows, the devotional) were opened at the top of their section, not marked.
@@ -13,6 +14,7 @@ test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 for (const key of ['textSize', 'greekRate', 'offlineCopy', 'request.devotional', 'link.about', 'link.help']) {
   test(`searching and tapping "${key}" lands on its row, in view and marked`, async ({ page }) => {
     await openUnlocked(page);
+    await turnLogosOn(page);
     await page.goto('/#/settings');
     await page.getByRole('searchbox', { name: 'Search settings' }).fill('e');
     const result = page.locator(`[data-found="${key}"]`);

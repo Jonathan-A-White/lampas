@@ -24,11 +24,11 @@ Feature: A setting's details show only while it is on
 
   Scenario: Bible in Logos is shown only while Logos is On
     Given Lampas is opened on Settings with nothing chosen
-    Then Settings has no section "Bible in Logos"
+    Then Settings has no row "Bible in Logos"
     When he turns the switch "Logos" On
-    Then Settings has the section "Bible in Logos"
+    Then Settings has the row "Bible in Logos"
     When he turns the switch "Logos" Off
-    Then Settings no longer has the section "Bible in Logos"
+    Then Settings no longer has the row "Bible in Logos"
 
   Scenario: The Weave's Grammar row is shown only while the Weave is not Off
     Given Lampas is opened on Settings with nothing chosen

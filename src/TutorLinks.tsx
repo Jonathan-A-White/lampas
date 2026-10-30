@@ -90,7 +90,8 @@ export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLin
       const found = place && mapCards ? mapChip(link.map, mapCards) : null;
       if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
     } else if (link.kind === 'work') {
-      const found = workChip(link.work, link.reference, works, link.place, level, shelf.map((row) => row.id));
+      // a work of his Logos library opens in Logos: nothing while Logos is Off
+      const found = chosen.on.includes('logos') ? workChip(link.work, link.reference, works, link.place, level, shelf.map((row) => row.id)) : null;
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);

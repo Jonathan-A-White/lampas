@@ -61,11 +61,11 @@ Never claim a change the list does not have. For a setting the app does not have
 - `ipaLesson` — IPA lesson. The optional IPA lesson, for Greek and for Hebrew.
 - `resource.strongs` — Strong's. Shows the word's Strong's number, a link to its entry on STEPBible.
 - `resource.logos` — Logos. Adds Open in Logos for each lexicon in Your Logos library, and Bible Word Study.
+- `logosBible` — Bible in Logos. The Bible that New Testament verses open in, in Logos. Value: text, for example "LLS:LGCYSTNDRDBBLSB" (a book, a chapter or a verse; "" for none).
 - `maps.biblemapper` — Bible Mapper. The maps of Bible Mapper, shown in the app.
 - `maps.logosatlas` — Logos Atlas. This source is used, and its row shown, only while Logos is On in Study resources.
 - `audioBible` — Audio Bible. The Word of Promise in Audible: the Verse view links to it. Value: "off", "word-of-promise" (The Word of Promise (NKJV), in Audible).
 - `readingPlan` — Reading plan. Read through the Bible a chapter at a time, with the audio Bible.
-- `logosBible` — Bible in Logos. The Bible that New Testament verses open in, in Logos. Value: text, for example "LLS:LGCYSTNDRDBBLSB" (a book, a chapter or a verse; "" for none).
 - `dailyReview` — Review. Whether Today holds a Review piece: the words and ideas that are due.
 - `dailyMemorize` — Memorize. Whether Today holds the verses due to recall.
 - `dailyPlan` — Plan chapter. Whether Today holds the reading plan's chapter for the day, to read in Logos. With no plan started there is nothing to show.

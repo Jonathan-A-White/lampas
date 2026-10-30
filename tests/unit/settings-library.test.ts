@@ -17,22 +17,23 @@ describe('the rows of Settings after the library', () => {
     expect(row?.section).toBe('resources');
     expect(HOME_SECTIONS).not.toContain('library');
     expect(isHomeRow(row as NonNullable<typeof row>)).toBe(false);
-    expect(row?.dependsOn).toBeUndefined();
+    expect(row?.dependsOn?.key).toBe('resource.logos');
     expect(groupById('study')?.sections).toContain('resources');
     expect(settingOf('library')).toBeUndefined();
     expect(isTalkable('library')).toBe(false);
   });
 
-  it('is the first row of Study resources, beside Bible in Logos, and no row of the Settings home', () => {
-    expect(ROWS.filter((r) => r.section === 'resources').map((r) => r.key)[0]).toBe('library');
+  it('is the row under the Logos switch, before Bible in Logos, and no row of the Settings home', () => {
+    const keys = ROWS.filter((r) => r.section === 'resources').map((r) => r.key);
+    expect(keys.slice(keys.indexOf('resource.logos'), keys.indexOf('resource.logos') + 3)).toEqual(['resource.logos', 'library', 'logosBible']);
     expect(ROWS.filter(isHomeRow).map((r) => r.key)).not.toContain('library');
     expect(groupById('study')?.hint).toBe('Your Logos library, links to the tools you own, Bible in Logos and maps.');
   });
 
-  it('is drawn whether Logos is on or off', () => {
+  it('is drawn only while Logos is on (mw-rfjjzd.23); a search for it finds the Logos switch to turn on first', () => {
     expect(visibleRows({ 'resource.logos': 'on', greekInterest: '5' }, '').map((r) => r.key)).toContain('library');
-    expect(visibleRows({ 'resource.logos': 'off', greekInterest: '5' }, '').map((r) => r.key)).toContain('library');
-    expect(visibleRows({}, 'your logos library').map((r) => r.key)).toContain('library');
+    expect(visibleRows({ 'resource.logos': 'off', greekInterest: '5' }, '').map((r) => r.key)).not.toContain('library');
+    expect(visibleRows({ 'resource.logos': 'on' }, 'your logos library').map((r) => r.key)).toContain('library');
   });
 
   it('has a link, which opens the Study resources page at the row', () => {

@@ -42,6 +42,12 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
     expect(box?.width).toBeGreaterThanOrEqual(43.5);
     expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   }
+  // Logos Off (its start): nothing of Logos hangs under its switch (mw-rfjjzd.23)
+  await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
+  await expect(section.getByRole('group', { name: 'Bible in Logos', exact: true })).toHaveCount(0);
+  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toHaveCount(0);
+  await expect(page.locator('[data-under-logos]')).toHaveCount(0);
+  await shot(page, 'settings-resources-off');
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
   await turnsOnWithApp(page, section, 'Logos');
   // the books are in Your Logos library, not in Settings; its door is the first row here (mw-5r3p30.837); no lexicon list, Grammar books or Works list is left
@@ -54,6 +60,14 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   // the first row of this section: its count is the Library's, and its button opens the Library
   const library = section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ });
   await expect(library).toBeVisible();
+  // indented directly beneath the Logos switch, with the three Bibles in Logos after it
+  const under = await section.locator('[data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
+  expect(under.slice(under.indexOf('resource.logos'), under.indexOf('resource.logos') + 5)).toEqual(['resource.logos', 'library', 'logosBible', 'logosBibleOt', 'logosBibleApocrypha']);
+  const switchBox = await section.getByRole('switch', { name: 'Logos', exact: true }).boundingBox();
+  const libraryBox = await library.boundingBox();
+  // indented: its left edge is well in from the screen's padding
+  expect(libraryBox?.x ?? 0).toBeGreaterThan(30);
+  expect(libraryBox?.y ?? 0).toBeGreaterThan((switchBox?.y ?? 0) + (switchBox?.height ?? 0));
   const row = await library.boundingBox();
   expect(row?.height).toBeGreaterThanOrEqual(43.5);
   expect((row?.x ?? 0) + (row?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
@@ -90,7 +104,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await shot(page, 'word-sheet-study');
 });
 
-test('Settings home at 360 px opens with Which languages?, and Your Logos library is the first row of Study resources, beside Bible in Logos, with Logos Off or On (mw-5r3p30.837)', async ({ page }) => {
+test('Settings home at 360 px opens with Which languages?, and Your Logos library sits under the Logos switch with Bible in Logos, only while Logos is On (mw-rfjjzd.23)', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 860 });
   await openUnlocked(page);
   await holdAppLinks(page);
@@ -105,14 +119,13 @@ test('Settings home at 360 px opens with Which languages?, and Your Logos librar
   expect(order).not.toContain('library');
   await expect(page.getByRole('button', { name: /^Study resources/ })).toContainText('Your Logos library, links to the tools you own, Bible in Logos and maps.');
 
-  // with Logos Off (its start) the row is the first of Study resources, in view with no scroll
+  // with Logos Off (its start) there is no library row in Study resources
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   const libraryLine = section.getByRole('button', { name: /^Your Logos library · \d+ books? on$/ });
+  await expect(libraryLine).toHaveCount(0);
+  await turnsOnWithApp(page, section, 'Logos');
   await expect(libraryLine).toBeVisible();
-  await expect(libraryLine).toBeInViewport();
-  const inGroup = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
-  expect(inGroup[0]).toBe('library');
   const line = await libraryLine.boundingBox();
   expect(line?.height).toBeGreaterThanOrEqual(43.5);
   expect((line?.x ?? 0) + (line?.width ?? 0)).toBeLessThanOrEqual(360);
@@ -120,12 +133,10 @@ test('Settings home at 360 px opens with Which languages?, and Your Logos librar
   expect(fits).toBe(true);
   await shot(page, 'settings-logos-library');
 
-  // with Logos On it is still first, above Bible in Logos
-  await turnsOnWithApp(page, section, 'Logos');
   // Bible in Logos is a picker for each part of the canon (mw-5r3p30.841)
   for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toBeVisible();
   const withLogos = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
-  expect(withLogos[0]).toBe('library');
+  expect(withLogos[withLogos.indexOf('resource.logos') + 1]).toBe('library');
 
   // it opens the Library
   await libraryLine.click();

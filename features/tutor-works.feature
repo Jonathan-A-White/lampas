@@ -28,3 +28,11 @@ Feature: The tutor is told his shelf by the place, and links a book on it
     And the shelf holds "LLS:LRNTOREADNTGRK" pinned
     When he asks the tutor "Is there a variant reading in this verse?" about verse 28
     Then the request named the books "LLS:LRNTOREADNTGRK,calvin-commentaries,LLS:SBLGNT"
+
+  Scenario: With Logos Off the tutor is told no books and a link to a book draws nothing
+    Given Lampas is opened on Romans 8 and the tutor answers with a link to the work "calvin-commentaries" at "Romans 8:28"
+    And the shelf holds "LLS:CALCOM66RO"
+    And Logos is switched Off
+    When he asks the tutor "What does Calvin make of this verse?" about verse 28
+    Then the answer shows no study links
+    And the request named no books

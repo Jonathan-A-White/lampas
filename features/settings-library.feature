@@ -1,6 +1,6 @@
 Feature: Settings after the library
-  His Logos library has a screen of its own (#/library), so Settings no longer lists books (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8). Its door is the first row of Study resources, beside Bible in Logos
-  (mw-5r3p30.837; mw-5r3p30.752 had put it on the Settings home), drawn whether Logos is On or not. It says "Your Logos library · N books on" and opens the Library; the lexicon list, Grammar books and the Works list
+  His Logos library has a screen of its own (#/library), so Settings no longer lists books (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8). Its door is a row of Study resources directly under the Logos switch,
+  indented, with Bible in Logos for each part (mw-rfjjzd.23: the Logos switch governs everything Logos); with Logos Off neither is drawn. It says "Your Logos library · N books on" and opens the Library; the lexicon list, Grammar books and the Works list
   are gone from Settings. Bible in Logos is a picker for each part with a door to Library > Bibles, where the Resource ID can still be typed. Daily's Which devotional is a searchable picker of the devotionals that are on, with Random,
   and In the draw follows the shelf. The Settings search finds a book by its title and opens the Library at it.
 
@@ -9,16 +9,21 @@ Feature: Settings after the library
     Then the first row under the search field is "Which languages?"
     And the Settings home shows no row "Your Logos library"
 
-  Scenario: Study resources open with Your Logos library first
+  Scenario: With Logos On, Study resources show Your Logos library directly under the Logos switch
     Given the shelf holds the books "BDAG, Louw-Nida, LSB" and Settings is open at Study resources with Logos On
-    Then the first row of Study resources is "Your Logos library · 3 books on"
+    Then the row under the Logos switch is "Your Logos library · 3 books on"
     When he taps the row "Your Logos library · 3 books on"
     Then the Library home opens
 
   Scenario: The count follows the shelf
-    Given the shelf holds the books "BDAG" and Settings is open at Study resources with Logos Off
-    Then the first row of Study resources is "Your Logos library · 1 book on"
+    Given the shelf holds the books "BDAG" and Settings is open at Study resources with Logos On
+    Then the row under the Logos switch is "Your Logos library · 1 book on"
     And Study resources show no Logos lexicons, no Grammar books and no Works list
+
+  Scenario: With Logos Off, Study resources show nothing of Logos under the switch
+    Given the shelf holds the books "BDAG" and Settings is open at Study resources with Logos Off
+    Then Study resources show no Your Logos library row and no Bible in Logos
+    And the Settings search for "bdag" shows no book of the library
 
   Scenario: The Study resources group hint names the library
     Given the shelf holds the books "BDAG" and Settings is open at its home
