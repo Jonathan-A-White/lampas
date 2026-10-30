@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.30",
+    "date": "2026-10-30",
+    "story": "mw-lcv9z3g.4",
+    "kind": "fixed",
+    "text": "A passage that cannot be loaded now says you are offline only when the phone really is, and offers to keep the New Testament on the phone."
+  },
+  {
+    "version": "0.7.30",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.877",
+    "kind": "fixed",
+    "text": "Tapping a result in the Settings search now takes you to that setting, scrolled into view and highlighted, for every kind of result."
+  },
+  {
+    "version": "0.7.30",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.863",
+    "kind": "fixed",
+    "text": "Switching between English, Weave and Greek (or Hebrew) in the Reader now keeps the verse you were reading at the top instead of moving you back several verses."
+  },
+  {
     "version": "0.7.29",
     "date": "2026-10-30",
     "story": "mw-5r3p30.872",

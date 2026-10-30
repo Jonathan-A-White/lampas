@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.30
+_2026-10-30_
+- Fixed: A passage that cannot be loaded now says you are offline only when the phone really is, and offers to keep the New Testament on the phone.
+- Fixed: Tapping a result in the Settings search now takes you to that setting, scrolled into view and highlighted, for every kind of result.
+- Fixed: Switching between English, Weave and Greek (or Hebrew) in the Reader now keeps the verse you were reading at the top instead of moving you back several verses.
+
 ## 0.7.29
 _2026-10-30_
 - Fixed: The card for a Bible reference on the Share sheet no longer runs off the bottom of the screen, so Open is always there to tap.
