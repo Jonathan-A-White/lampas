@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.33
+_2026-10-30_
+- New: The Logos switch in Study resources now controls everything about Logos: your Logos library, Bible in Logos and the Logos devotionals only show when it is on.
+
 ## 0.7.32
 _2026-10-30_
 - New: Changed: Copy and Share always give the words as you read them, so the Copy text choice is gone and Settings says what Copy gives.
