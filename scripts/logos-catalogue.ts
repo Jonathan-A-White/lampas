@@ -9,9 +9,9 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { BOOKS, NT_BOOKS } from '../src/data/books.ts';
 import type { CatalogueEntry, Kind, KindFile, Opens, Via, WorkGroup } from '../src/resources/catalogue.ts';
-import type { BookSection, ResourceLang } from '../src/resources/types.ts';
+import type { BookSection, LogosPart, ResourceLang } from '../src/resources/types.ts';
 import { ruleOf } from '../src/library/exportRules.ts';
-import { coversNewTestament, coversOfSupersets, parseCsv, readExport, type ExportRow } from '../src/library/parseExport.ts';
+import { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, readExport, type ExportRow } from '../src/library/parseExport.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const RULES_FILE = join(ROOT, 'data/logos/catalogue-rules.json');
@@ -35,6 +35,8 @@ export interface IdRule {
   opens?: Opens;
   value?: string;
   covers?: string[];
+  /** a Bible: the parts of the canon it holds; a Bible named by id must say, as its export's ranges cannot tell a Bible with the Apocrypha from one without */
+  parts?: LogosPart[];
   sections?: BookSection[];
   starts?: 'on' | 'pinned';
   verified?: string;
@@ -76,7 +78,7 @@ export interface Rules {
 // ---- The export ----
 
 // Read by the phone too (src/library/parseExport.ts): the same parser reads an export in both places.
-export { coversNewTestament, coversOfSupersets, parseCsv, readExport, type ExportRow };
+export { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, readExport, type ExportRow };
 
 // ---- The catalogue ----
 
@@ -85,7 +87,7 @@ const DEFAULT_OPENS: Record<Kind, Opens> = { lexicon: 'word', grammar: 'parsing'
 
 /** The entry with its fields in the one order, and none that is undefined, so the bytes written depend on the data alone. */
 function ordered(e: CatalogueEntry): CatalogueEntry {
-  const order: (keyof CatalogueEntry)[] = ['resource', 'kind', 'title', 'short', 'author', 'series', 'lang', 'opens', 'value', 'covers', 'sections', 'starts', 'verified', 'via', 'id', 'key', 'work', 'source', 'dayOfYear'];
+  const order: (keyof CatalogueEntry)[] = ['resource', 'kind', 'title', 'short', 'author', 'series', 'lang', 'opens', 'value', 'covers', 'parts', 'sections', 'starts', 'verified', 'via', 'id', 'key', 'work', 'source', 'dayOfYear'];
   return Object.fromEntries(order.filter((k) => e[k] !== undefined).map((k) => [k, e[k]])) as unknown as CatalogueEntry;
 }
 
@@ -127,6 +129,7 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
   for (const rule of rules.ids) {
     if (!KIND_LIST.includes(rule.kind)) throw new Error(`${rule.resource}: ${rule.kind} is not a kind`);
     if (taken.has(rule.resource)) throw new Error(`${rule.resource} is named twice in the rules`);
+    if (rule.kind === 'bible' && !rule.parts?.length) throw new Error(`${rule.resource} is a Bible with no "parts": say which of nt, ot and apocrypha it holds`);
     for (const code of rule.covers ?? []) if (!known.has(code)) throw new Error(`${rule.resource} covers ${code}, which is no book`);
     if (rule.work !== undefined && !workIds.has(rule.work)) throw new Error(`${rule.resource} is a volume of ${rule.work}, which the rules do not list under "works"`);
     taken.add(rule.resource);
@@ -134,7 +137,7 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
       resource: rule.resource, kind: rule.kind, title: rule.title, short: rule.short, author: rule.author, series: rule.series,
       lang: rule.lang ?? DEFAULT_LANG[rule.kind],
       opens: rule.opens ?? (rule.kind === 'grammar' && !rule.sections ? 'start' : DEFAULT_OPENS[rule.kind]),
-      value: valueOf(rule, rule.resource), covers: rule.covers, sections: rule.sections, starts: rule.starts ?? 'on', verified: rule.verified,
+      value: valueOf(rule, rule.resource), covers: rule.covers, parts: rule.parts, sections: rule.sections, starts: rule.starts ?? 'on', verified: rule.verified,
       via: 'id', id: rule.id, key: rule.key, work: rule.work, source: rule.source, dayOfYear: rule.dayOfYear,
     });
   }
@@ -147,13 +150,22 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
     if (found.join() !== rule.covers.join()) notes.push(`${rule.resource}: the rules cover ${rule.covers.join(' ')} but the export's ReferenceSupersets read ${found.join(' ') || 'nothing'}`);
   }
 
+  for (const rule of rules.ids) {
+    const row = byResource.get(rule.resource);
+    if (!row || !rule.parts) continue;
+    // the export's ranges cannot say the Apocrypha present when they run across it, so the rules may add it; they may not leave out a part the ranges do reach
+    const missing = partsOfSupersets(row.supersets).filter((p) => !rule.parts?.includes(p));
+    if (missing.length > 0) notes.push(`${rule.resource}: the rules say it holds ${rule.parts.join(' ')} but the export's ReferenceSupersets also reach ${missing.join(' ')}`);
+  }
+
   const add = (row: ExportRow, kind: Kind, via: Via, rule: { value?: string; lang?: ResourceLang; starts?: 'on' | 'pinned' }, what: string): void => {
     // a commentary keeps every book of the Bible it covers (Old Testament too); a Greek book needs only the New Testament's, and none of them when it covers all 27
     const covers = kind === 'commentary' ? coversOfSupersets(row.supersets) : coversNewTestament(row.supersets);
     byKind[kind].push({
       resource: row.resource, kind, title: row.title, short: row.abbreviated || row.title, series: row.series || undefined,
       lang: rule.lang ?? DEFAULT_LANG[kind], opens: DEFAULT_OPENS[kind], value: valueOf({ value: rule.value, kind }, what),
-      covers: covers.length > 0 && (covers.length < NT_BOOKS.length || kind === 'commentary') ? covers : undefined, starts: rule.starts ?? 'on', via,
+      covers: covers.length > 0 && (covers.length < NT_BOOKS.length || kind === 'commentary') ? covers : undefined,
+      parts: kind === 'bible' ? partsOfSupersets(row.supersets) : undefined, starts: rule.starts ?? 'on', via,
       dayOfYear: kind === 'devotional' ? row.supersets.split('\t').some((t) => t.startsWith('dayofyear')) : undefined,
     });
     taken.add(row.resource);

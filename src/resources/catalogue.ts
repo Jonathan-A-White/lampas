@@ -8,7 +8,7 @@ import grammar from './catalogue/grammar.json' with { type: 'json' };
 import greekText from './catalogue/greek-text.json' with { type: 'json' };
 import interlinear from './catalogue/interlinear.json' with { type: 'json' };
 import lexicon from './catalogue/lexicon.json' with { type: 'json' };
-import type { BookSection, ResourceLang } from './types';
+import type { BookSection, LogosPart, ResourceLang } from './types';
 
 export const KINDS = ['lexicon', 'grammar', 'greek-text', 'interlinear', 'commentary', 'bible', 'devotional'] as const;
 export type Kind = (typeof KINDS)[number];
@@ -38,6 +38,8 @@ export interface CatalogueEntry {
   value: string;
   /** a commentary volume or an interlinear: our book codes (src/data/books.ts), read from the export's ReferenceSupersets; absent means the whole New Testament */
   covers?: string[];
+  /** a Bible only: the parts of the canon it holds (New Testament, Old Testament, Apocrypha), from the export's ReferenceSupersets or, where those cannot say, from the rules (scripts/logos-catalogue.ts) */
+  parts?: LogosPart[];
   /** a grammar only: its parts and the ladder ideas each teaches (today's GrammarBook.sections) */
   sections?: BookSection[];
   /** the state an import gives it; Off is never a default */
