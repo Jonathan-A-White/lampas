@@ -1,7 +1,7 @@
 Feature: When you copy
-  Settings > Reading > When you copy chooses what the Verse view's Copy gives for the verse, passage or chapter it shows: Text (as you read it, English, the
-  original or both), Reference (after, before or off), Verse numbers (on or off) and Link (on or off). With the defaults it is the text as he reads it
-  (English, Greek, Hebrew or the Weave, the view on now), then the reference, then the link on a last line of its own.
+  The Verse view's Copy and Share always give the words as he reads them (English, Greek, Hebrew or the Weave, the view on now, with the variants and readings
+  he has on); there is no choice of text (mw-5r3p30.873). Settings > Reading > When you copy chooses Reference (after, before or off), Verse numbers (on or off)
+  and Link (on or off), and says what Copy gives. With the defaults it is the words, then the reference, then the link on a last line of its own.
 
   Scenario: Copy with the defaults gives the verse, its reference after it and its link
     Given Lampas is opened on Romans 8 with When you copy at its defaults
@@ -10,16 +10,16 @@ Feature: When you copy
     Then the phone's clipboard holds the English of verse 11, then the line "— Romans 8:11 (MSB)", then the link of Romans 8:11
     And the Verse view says "Copied"
 
-  Scenario: Copy with Text both and Reference before
-    Given Lampas is opened on Romans 8 with When you copy set to Text "both", Reference "before", Verse numbers "on" and Link "on"
+  Scenario: Copy with Reference before
+    Given Lampas is opened on Romans 8 with When you copy set to Reference "before", Verse numbers "on" and Link "on"
     When he taps the number of verse 11
     And he taps "Copy"
     Then the phone's clipboard starts with the line "Romans 8:11 (MSB)"
-    And the phone's clipboard holds the Greek of verse 11 in a paragraph of its own after the English
+    And the phone's clipboard holds the English of verse 11
     And the phone's clipboard ends with the link of Romans 8:11
 
   Scenario: Copy with Link off ends at the reference
-    Given Lampas is opened on Romans 8 with When you copy set to Text "english", Reference "after", Verse numbers "on" and Link "off"
+    Given Lampas is opened on Romans 8 with When you copy set to Reference "after", Verse numbers "on" and Link "off"
     When he taps the number of verse 11
     And he taps "Copy"
     Then the phone's clipboard ends with the line "— Romans 8:11 (MSB)"
@@ -35,7 +35,7 @@ Feature: When you copy
     And the phone's clipboard ends with the link of Romans 8:1-11
 
   Scenario: Copy on a passage with Verse numbers off leaves the numbers out
-    Given Lampas is opened on Romans 8 with When you copy set to Text "english", Reference "off", Verse numbers "off" and Link "off"
+    Given Lampas is opened on Romans 8 with When you copy set to Reference "off", Verse numbers "off" and Link "off"
     When he taps the heading "Walking by the Spirit"
     And he taps "Copy"
     Then the phone's clipboard starts with "Therefore there is now no condemnation"
@@ -59,11 +59,6 @@ Feature: When you copy
     Given Lampas is opened on Colossians 3:1 in the Greek view with When you copy at its defaults
     When he taps "Copy"
     Then the phone's clipboard starts with "Εἰ οὖν συνηγέρθητε τῷ χριστῷ τὰ ἄνω ζητεῖτε"
-
-  Scenario: Text English copies the English even in the Weave
-    Given Lampas is opened on Colossians 3:1 in the Weave with When you copy set to Text "english"
-    When he taps "Copy"
-    Then the phone's clipboard starts with "Therefore, since you have been raised with Christ,"
 
   Scenario: Holding a verse number copies the verse at once where no tutor is offered
     Given Lampas is opened on Romans 8 on a phone with no licence and When you copy at its defaults
@@ -152,8 +147,23 @@ Feature: When you copy
     Then the phone's clipboard starts with "Therefore, since Christ suffered for us in His body,"
     And the phone's clipboard has no "{"
 
-  Scenario: Text English copies the English with no braces even with Variants shown
-    Given Lampas is opened on 1 Peter 4 with Variants shown and When you copy set to Text "english"
-    When he holds the number of verse 1
-    Then the phone's clipboard starts with "Therefore, since Christ suffered for us in His body,"
-    And the phone's clipboard has no "{"
+  # The Text row is gone (mw-5r3p30.873): a phone that stored one keeps it unread and copies as it reads
+  Scenario: A phone that stored Text "english" copies as it reads, braces and all
+    Given Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "english" stored
+    When he taps "Copy"
+    Then the phone's clipboard starts with "Therefore, since Christ suffered for us {left out NA} in His body,"
+    And the phone's clipboard holds "{left out NA}"
+
+  # The Text row is gone (mw-5r3p30.873): a phone that stored one keeps it unread and copies as it reads
+  Scenario: A phone that stored Text "original" copies as it reads, braces and all
+    Given Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "original" stored
+    When he taps "Copy"
+    Then the phone's clipboard starts with "Therefore, since Christ suffered for us {left out NA} in His body,"
+    And the phone's clipboard holds "{left out NA}"
+
+  # The Text row is gone (mw-5r3p30.873): a phone that stored one keeps it unread and copies as it reads
+  Scenario: A phone that stored Text "both" copies as it reads, braces and all
+    Given Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "both" stored
+    When he taps "Copy"
+    Then the phone's clipboard starts with "Therefore, since Christ suffered for us {left out NA} in His body,"
+    And the phone's clipboard holds "{left out NA}"

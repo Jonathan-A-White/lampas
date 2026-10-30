@@ -37,7 +37,6 @@ let copied: string[] = [];
 
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 const english = (n: number): string => ROMANS_8.verses.find((v) => v.n === n)!.e.map((c) => c.t.trim()).join(' ').replace(/\s+/g, ' ').trim();
-const greek = (n: number): string => ROMANS_8.verses.find((v) => v.n === n)!.g.map((w) => w.t).join(' ');
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const lines = (text: string): string[] => text.split('\n');
 const clip = (): string => {
@@ -90,10 +89,9 @@ const feature = await loadFeature('features/copy-format.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const defaults = () => open({});
-  const chosen = (_: unknown, text: string, reference: string, numbers: string, link: string) =>
-    open({ copyText: text, copyReference: reference, copyNumbers: numbers, copyLink: link });
-  const woven = async (_: unknown, text?: string) => {
-    await open(text === undefined ? {} : { copyText: text }, '#/?ref=Col.3.1', { view: 'english', weave: 'solid' });
+  const chosen = (_: unknown, reference: string, numbers: string, link: string) => open({ copyReference: reference, copyNumbers: numbers, copyLink: link });
+  const woven = async () => {
+    await open({}, '#/?ref=Col.3.1', { view: 'english', weave: 'solid' });
     await screen.findByRole('region', { name: 'Verse view' });
     // the Verse view copies by the defaults (As you read it) until its four settings have been read from the store: let the choice of Text reach it
     await act(async () => {
@@ -140,21 +138,21 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Verse view says {string}', says);
   });
 
-  Scenario('Copy with Text both and Reference before', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with When you copy set to Text {string}, Reference {string}, Verse numbers {string} and Link {string}', chosen);
+  Scenario('Copy with Reference before', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with When you copy set to Reference {string}, Verse numbers {string} and Link {string}', chosen);
     When('he taps the number of verse {int}', tapNumber);
     And('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with the line {string}", (_, line: string) => {
       expect(lines(clip())[0]).toBe(line);
     });
-    And("the phone's clipboard holds the Greek of verse 11 in a paragraph of its own after the English", () => {
-      expect(clip()).toContain(`\n${english(11)}\n\n${greek(11)}\n`);
+    And("the phone's clipboard holds the English of verse 11", () => {
+      expect(clip()).toContain(`\n${english(11)}\n`);
     });
     And("the phone's clipboard ends with the link of Romans 8:11", () => endsWithLink(referenceUrl('rom', 8, 11)));
   });
 
   Scenario('Copy with Link off ends at the reference', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with When you copy set to Text {string}, Reference {string}, Verse numbers {string} and Link {string}', chosen);
+    Given('Lampas is opened on Romans 8 with When you copy set to Reference {string}, Verse numbers {string} and Link {string}', chosen);
     When('he taps the number of verse {int}', tapNumber);
     And('he taps {string}', tapCopy);
     Then("the phone's clipboard ends with the line {string}", (_, line: string) => {
@@ -176,7 +174,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Copy on a passage with Verse numbers off leaves the numbers out', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with When you copy set to Text {string}, Reference {string}, Verse numbers {string} and Link {string}', chosen);
+    Given('Lampas is opened on Romans 8 with When you copy set to Reference {string}, Verse numbers {string} and Link {string}', chosen);
     When('he taps the heading {string}', tapHeading);
     And('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
@@ -201,12 +199,6 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('In the Greek view, Copy pastes the Greek', ({ Given, When, Then }) => {
     Given('Lampas is opened on Colossians 3:1 in the Greek view with When you copy at its defaults', () => open({}, '#/?ref=Col.3.1', { view: 'greek', weave: 'off' }));
-    When('he taps {string}', tapCopy);
-    Then("the phone's clipboard starts with {string}", starts);
-  });
-
-  Scenario('Text English copies the English even in the Weave', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Colossians 3:1 in the Weave with When you copy set to Text {string}', woven);
     When('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
   });
@@ -415,10 +407,45 @@ describeFeature(feature, ({ Scenario }) => {
     And("the phone's clipboard has no {string}", hasNo);
   });
 
-  Scenario('Text English copies the English with no braces even with Variants shown', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on 1 Peter 4 with Variants shown and When you copy set to Text {string}', (_, text: string) => open({ ...VARIANTS, copyText: text }, '#/?b=1pe&c=4&view=english&weave=off'));
-    When('he holds the number of verse {int}', holdVerse);
+  Scenario('A phone that stored Text "english" copies as it reads, braces and all', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "english" stored', async () => {
+      await open({ ...VARIANTS, copyText: 'english' }, '#/?ref=1Pet.4.1');
+      await screen.findByRole('region', { name: 'Verse view' });
+      // the Verse view copies by the defaults until its settings have been read from the store
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
+    });
+    When('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
-    And("the phone's clipboard has no {string}", hasNo);
+    And("the phone's clipboard holds {string}", holds);
+  });
+
+  Scenario('A phone that stored Text "original" copies as it reads, braces and all', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "original" stored', async () => {
+      await open({ ...VARIANTS, copyText: 'original' }, '#/?ref=1Pet.4.1');
+      await screen.findByRole('region', { name: 'Verse view' });
+      // the Verse view copies by the defaults until its settings have been read from the store
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
+    });
+    When('he taps {string}', tapCopy);
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard holds {string}", holds);
+  });
+
+  Scenario('A phone that stored Text "both" copies as it reads, braces and all', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "both" stored', async () => {
+      await open({ ...VARIANTS, copyText: 'both' }, '#/?ref=1Pet.4.1');
+      await screen.findByRole('region', { name: 'Verse view' });
+      // the Verse view copies by the defaults until its settings have been read from the store
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
+    });
+    When('he taps {string}', tapCopy);
+    Then("the phone's clipboard starts with {string}", starts);
+    And("the phone's clipboard holds {string}", holds);
   });
 });

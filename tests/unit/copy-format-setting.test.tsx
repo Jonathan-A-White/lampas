@@ -7,9 +7,10 @@ import { LinkActions } from '../../src/ui/LinkActions';
 import { db } from '../../src/data/db';
 import { setGreekInterest, setReaderView } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting, copyTextSetting } from '../../src/settings/definitions';
+import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting } from '../../src/settings/definitions';
 import { CopyFormatControl } from '../../src/settings/controls/appearance';
-import { rowOf } from '../../src/settings/rows';
+import { readValues, ROWS, rowOf } from '../../src/settings/rows';
+import { DEFINITIONS } from '../../src/settings/definitions';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
 beforeEach(async () => {
@@ -25,23 +26,28 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('the four settings of When you copy', () => {
-  it('are in Settings > Reading with the defaults As you read it, after, on and on', () => {
-    for (const setting of [copyTextSetting, copyReferenceSetting, copyNumbersSetting, copyLinkSetting]) {
+describe('the three settings of When you copy', () => {
+  it('are in Settings > Reading with the defaults after, on and on', () => {
+    for (const setting of [copyReferenceSetting, copyNumbersSetting, copyLinkSetting]) {
       expect(setting.section).toBe('reading');
       expect(setting.hint).toBeTruthy();
       expect(setting.help).toBeTruthy();
     }
-    expect([copyTextSetting.default, copyReferenceSetting.default, copyNumbersSetting.default, copyLinkSetting.default]).toEqual(['asread', 'after', 'on', 'on']);
-    expect(copyTextSetting.allowed).toMatchObject({ kind: 'choice', values: [{ value: 'asread' }, { value: 'english' }, { value: 'original' }, { value: 'both' }] });
+    expect([copyReferenceSetting.default, copyNumbersSetting.default, copyLinkSetting.default]).toEqual(['after', 'on', 'on']);
     expect(copyReferenceSetting.allowed).toMatchObject({ kind: 'choice', values: [{ value: 'after' }, { value: 'before' }, { value: 'off' }] });
   });
 
   it('read back a saved choice, else the default', () => {
-    expect(copyTextSetting.parse('both')).toBe('both');
-    expect(copyTextSetting.parse('nonsense')).toBe('asread');
     expect(copyLinkSetting.parse('off')).toBe('off');
     expect(copyLinkSetting.parse(undefined)).toBe('on');
+  });
+
+  it('have no Copy: text: no definition, no row, and an old stored value is not read as one', async () => {
+    expect(DEFINITIONS.map((d) => d.key)).not.toContain('copyText');
+    expect(ROWS.map((r) => r.key)).not.toContain('copyText');
+    expect(ROWS.map((r) => r.label)).not.toContain('Copy: text');
+    await db.settings.put({ key: 'copyText', value: 'english' });
+    expect(await readValues()).not.toHaveProperty('copyText');
   });
 });
 
@@ -81,11 +87,32 @@ describe('the rows of When you copy', () => {
   });
 
   it('only the last row has the preview', async () => {
-    const row = rowOf('copyText');
-    if (!row) throw new Error('no copyText row');
+    const row = rowOf('copyReference');
+    if (!row) throw new Error('no copyReference row');
     const { container } = render(<CopyFormatControl row={row} />);
     await screen.findByRole('group', { name: row.label });
     expect(container.querySelector('[data-copy-preview]')).toBeNull();
+  });
+
+  it('the first row says what Copy gives: the words as you read them on screen, with the variants you have on', async () => {
+    const row = rowOf('copyReference');
+    if (!row) throw new Error('no copyReference row');
+    const { container } = render(<CopyFormatControl row={row} />);
+    await screen.findByRole('group', { name: row.label });
+    const line = container.querySelector('[data-copy-gives]');
+    expect(line?.textContent).toBe('Copy and Share give the words as you read them on screen: English, Weave or Greek, with the variants you have on.');
+    expect(line?.nextElementSibling?.getAttribute('data-setting')).toBe('copyReference');
+  });
+
+  it('the other rows do not say it again', async () => {
+    for (const key of ['copyNumbers', 'copyLink']) {
+      const row = rowOf(key);
+      if (!row) throw new Error(`no ${key} row`);
+      const { container } = render(<CopyFormatControl row={row} />);
+      await screen.findByRole('group', { name: row.label });
+      expect(container.querySelector('[data-copy-gives]')).toBeNull();
+      cleanup();
+    }
   });
 });
 

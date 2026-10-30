@@ -131,7 +131,7 @@ export function VerseView(props: VerseViewProps) {
   const memorizeRef = `${osisOf(book)}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`;
   const noun = passage ? 'passage' : 'verse';
   const canShare = typeof navigator.share === 'function';
-  // Copy and Share give the unit in the format of Settings > Reading > When you copy (src/copy/format.ts); the defaults until the four rows are read
+  // Copy and Share give the unit in the format of Settings > Reading > When you copy (src/copy/format.ts); the defaults until the three rows are read
   const copyFormat = useCopyFormat() ?? COPY_DEFAULTS;
   // a hold in the Reader that the clipboard refused opens the view with its text shown selected, to copy by hand (src/copy/useCopyHold.ts)
   const [startByHand] = useState(takeByHand);

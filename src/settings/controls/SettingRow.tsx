@@ -78,7 +78,7 @@ export function RowName({ row }: { row: SettingsRow }) {
 
 /** The chips of a weave or New words row (src/ui/Chips.tsx), on one line while they fit (at the phone's largest text they wrap to the next), each tap written to the
  * setting; `name` is the setting's label in the registry. `size` 'header' is the smaller chip of a screen's header (the paradigm table's How much of a table). */
-export function ChipRow({ name, current, options, settingKey, size }: { name: string; current: string; options: readonly (readonly [string, string])[]; settingKey: 'weave' | 'weaveGrammar' | 'weaveOrder' | 'pickerGrammar' | 'paradigmExtent' | 'grammarMove' | 'newWordsADay' | 'askBy' | 'talk' | 'send' | 'handwritingDrills' | 'readingMode' | 'chapterButtons' | 'variants' | 'variantWitnesses' | 'rp2026English' | 'copyText' | 'copyReference' | 'copyNumbers' | 'copyLink'; size?: 'row' | 'header' }) {
+export function ChipRow({ name, current, options, settingKey, size }: { name: string; current: string; options: readonly (readonly [string, string])[]; settingKey: 'weave' | 'weaveGrammar' | 'weaveOrder' | 'pickerGrammar' | 'paradigmExtent' | 'grammarMove' | 'newWordsADay' | 'askBy' | 'talk' | 'send' | 'handwritingDrills' | 'readingMode' | 'chapterButtons' | 'variants' | 'variantWitnesses' | 'rp2026English' | 'copyReference' | 'copyNumbers' | 'copyLink'; size?: 'row' | 'header' }) {
   return <Chips name={name} current={current} options={options} onChoose={(value) => void writeSetting(settingKey, value)} size={size} />;
 }
 

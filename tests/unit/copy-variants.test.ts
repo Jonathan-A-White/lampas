@@ -23,7 +23,7 @@ const on = (chapter: Chapter, set?: ReadingSet): ReaderVariants => readerVariant
 const off = (chapter: Chapter, set?: ReadingSet): ReaderVariants => readerVariants(chapter, { variants: 'off', witnesses: 'ecm', set });
 const copied = (chapter: Chapter, from: number, to: number | undefined, read: ReadView, format: CopyFormat = BARE): string => copyText(copyUnitOf(chapter, { n: from, to }, read), format);
 
-describe("1 Peter 4:1 with Variants shown, Copy: text 'As you read it'", () => {
+describe("1 Peter 4:1 with Variants shown, Copy gives it as you read it", () => {
   it('copies the verse with each unit’s brace after its words, as the Reader draws it', () => {
     expect(copied(PETER, 1, undefined, { view: 'english', woven: null, variants: on(PETER) })).toBe(BRACED_1);
   });
@@ -31,15 +31,6 @@ describe("1 Peter 4:1 with Variants shown, Copy: text 'As you read it'", () => {
   it('copies the plain verse with Variants off', () => {
     expect(copied(PETER, 1, undefined, { view: 'english', woven: null, variants: off(PETER) })).toBe(PLAIN_1);
     expect(copied(PETER, 1, undefined, { view: 'english', woven: null })).toBe(PLAIN_1);
-  });
-
-  it('leaves English, The original and Both as they were, variants on or not', () => {
-    const read: ReadView = { view: 'english', woven: null, variants: on(PETER) };
-    const bare = { view: 'english' as const, woven: null };
-    for (const text of ['english', 'original', 'both'] as const) {
-      expect(copied(PETER, 1, undefined, read, { ...BARE, text })).toBe(copied(PETER, 1, undefined, bare, { ...BARE, text }));
-    }
-    expect(copied(PETER, 1, undefined, read, { ...BARE, text: 'english' })).toBe(PLAIN_1);
   });
 
   it('numbers the verses of a passage and draws each verse’s braces', () => {
