@@ -171,13 +171,14 @@ test('a Bible in Logos for each part: the Old Testament one picked, Jonah opens 
   if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();
   await expect(logos).toHaveAttribute('aria-checked', 'true');
 
-  // the three pickers all start at today's one Bible (the Legacy Standard Bible), and only the Old Testament's is moved
+  // the New and Old Testament pickers start at the Legacy Standard Bible and the Apocrypha's at the NRSV (the LSB has no Apocrypha, mw-5r3p30.889); only the Old Testament's is moved
   const picker = (part: string) => page.getByRole('combobox', { name: `${part} Bible in Logos` });
-  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(picker(part)).toHaveValue('LLS:LGCYSTNDRDBBLSB');
+  for (const part of ['New Testament', 'Old Testament']) await expect(picker(part)).toHaveValue('LLS:LGCYSTNDRDBBLSB');
+  await expect(picker('Apocrypha')).toHaveValue('LLS:1.0.50');
   await picker('Old Testament').selectOption({ label: 'ESV (English Standard Version)' });
   await expect(picker('Old Testament')).toHaveValue('LLS:1.0.710');
   await expect(picker('New Testament')).toHaveValue('LLS:LGCYSTNDRDBBLSB');
-  await expect(picker('Apocrypha')).toHaveValue('LLS:LGCYSTNDRDBBLSB');
+  await expect(picker('Apocrypha')).toHaveValue('LLS:1.0.50');
   const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
   expect(fits).toBe(true);
   await picker('Apocrypha').scrollIntoViewIfNeeded();
