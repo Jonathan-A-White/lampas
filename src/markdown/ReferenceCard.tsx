@@ -23,16 +23,13 @@ import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
 import { isOrdered, rowAttrs } from '../reader/sourceText';
 import { textClass } from '../reader/textClass';
+import { MARGIN, WIDTH, spotFor, type Spot } from './cardSpot';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
 
 /** The translation the reader's English is, and the edition its Greek follows. */
 const TRANSLATION = 'Majority Standard Bible';
 const GREEK_TEXT = 'Robinson-Pierpont Greek';
 const HEBREW_TEXT = 'Westminster Leningrad Codex';
-
-const MARGIN = 8;
-const GAP = 6;
-const WIDTH = 340;
 
 /** `null` while the chapter loads, `'failed'` when it cannot be had. */
 type Passage = Chapter | 'failed' | null;
@@ -130,31 +127,6 @@ export function ElsewhereLine({ place, said = true, onSettings }: { place: Elsew
   );
 }
 
-interface Spot {
-  top: number;
-  left: number;
-  width: number;
-  maxHeight: number;
-}
-
-/** Where the card goes: below the reference when it fits, else above it, else on the roomier side with its text scrolling. `chrome` is the height of what must always show
- * (the heading and the footer). `floor` is the top of the layer it is placed in
- * (the foot of the shell's bars, mw-5r3p30.644): the card does not go above it, and its `top` is counted from it. */
-function spotFor(anchor: DOMRect, natural: number, floor: number, chrome: number): Spot {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const width = Math.min(WIDTH, vw - 2 * MARGIN);
-  const left = Math.min(Math.max(anchor.left, MARGIN), vw - width - MARGIN);
-  const below = vh - anchor.bottom - GAP - MARGIN;
-  const above = anchor.top - floor - GAP - MARGIN;
-  // a window so short that neither side has room for the card's heading and its Play and Open (a third of a phone's height, split-screen, mw-5r3p30.773): the card
-  // takes the whole layer, over the reference, rather than be cut off at the window's foot
-  if (Math.max(below, above) < chrome) return { top: MARGIN, left, width, maxHeight: Math.max(vh - floor - 2 * MARGIN, 0) };
-  if (natural <= below || (natural > above && below >= above)) return { top: anchor.bottom + GAP - floor, left, width, maxHeight: Math.max(below, 0) };
-  const height = Math.min(natural, above);
-  return { top: anchor.top - GAP - height - floor, left, width, maxHeight: Math.max(above, 0) };
-}
-
 /** True when a tap at (x, y) is on the reference that opened the card: the backdrop covers it, but a second tap there is not one outside the card. */
 function onReference(reference: HTMLElement | null, x: number, y: number): boolean {
   return [...(reference?.getClientRects() ?? [])].some((r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
@@ -234,28 +206,36 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   // Placed once drawn, and again when its text arrives or the screen turns (the card's own height is read from its content).
   useLayoutEffect(() => {
     const place = (): void => {
-      if (anchor.current && box.current && layer.current) setSpot(spotFor(anchor.current.getBoundingClientRect(), box.current.scrollHeight, layer.current.getBoundingClientRect().top, (head.current?.offsetHeight ?? 0) + (foot.current?.offsetHeight ?? 0) + 2));
+      if (!anchor.current || !box.current || !layer.current) return;
+      const rect = layer.current.getBoundingClientRect();
+      const inset = Number.parseFloat(getComputedStyle(layer.current).paddingBottom) || 0;
+      const next = spotFor(anchor.current.getBoundingClientRect(), box.current.scrollHeight, rect, (head.current?.offsetHeight ?? 0) + (foot.current?.offsetHeight ?? 0) + 2, inset);
+      setSpot((was) => (was && was.top === next.top && was.bottom === next.bottom && was.left === next.left && was.width === next.width && was.maxHeight === next.maxHeight ? was : next));
     };
     place();
     window.addEventListener('resize', place);
-    // the layer starts below the bars: it is resized when a bar comes or goes
+    // the visible area shrinks and grows under a bar or a keyboard without the window resizing
+    window.visualViewport?.addEventListener('resize', place);
+    // the layer starts below the bars: it is resized when a bar comes or goes; the card itself grows when its text arrives
     const watch = typeof ResizeObserver === 'undefined' || !layer.current ? undefined : new ResizeObserver(place);
     if (watch && layer.current) watch.observe(layer.current);
+    if (watch && box.current) watch.observe(box.current);
     return () => {
       window.removeEventListener('resize', place);
+      window.visualViewport?.removeEventListener('resize', place);
       watch?.disconnect();
     };
   }, [anchor, passage]);
 
   return createPortal(
-    <div ref={layer} data-reference-backdrop className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); if (!onReference(anchor.current, e.clientX, e.clientY)) onClose(); }}>
+    <div ref={layer} data-reference-backdrop style={{ paddingBottom: 'var(--lp-bar-inset)' }} className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); if (!onReference(anchor.current, e.clientX, e.clientY)) onClose(); }}>
       <div
         ref={box}
         role="dialog"
         aria-label={card.heading}
         data-reference-card
         onClick={(e) => e.stopPropagation()}
-        style={spot ? { top: spot.top, left: spot.left, width: spot.width, maxHeight: spot.maxHeight } : { top: 0, left: MARGIN, width: Math.min(WIDTH, window.innerWidth - 2 * MARGIN), visibility: 'hidden' }}
+        style={spot ? { top: spot.top, bottom: spot.bottom, left: spot.left, width: spot.width, maxHeight: spot.maxHeight } : { top: 0, left: MARGIN, width: Math.min(WIDTH, window.innerWidth - 2 * MARGIN), visibility: 'hidden' }}
         className="absolute flex flex-col overflow-hidden rounded-xl border border-line bg-surface text-fg shadow-lg"
       >
         <div ref={head} className="flex items-center justify-between gap-2 px-4 pt-2">
