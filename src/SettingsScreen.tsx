@@ -98,12 +98,12 @@ export function SettingsScreen() {
     if (linked !== null && linkedRow && isHomeRow(linkedRow)) setQuery('');
   }
   const values = useLiveQuery(readValues, []);
-  const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest));
+  // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3); the Tutor door and Hand rows are not drawn at all (mw-5r3p30.880: no tutor door exists)
+  const aiAllowed = useAiAllowed();
+  const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest)).filter((r) => aiAllowed || !r.licenceOnly);
   const needed = values && linked ? neededFor(values, linked) : undefined;
   // a row both languages share depends on no row (the key 'depth' is read, not drawn): it says to raise either dial though there is nothing to turn on first
   const sharedHidden = values && linked && linkedRow && dialOf(linkedRow) === 'depth' && !visibleRows(values, '').some((r) => r.key === linked);
-  // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3)
-  const aiAllowed = useAiAllowed();
   // the tutor is told every setting, shown or not (mw-5r3p30.107): he can say what a setting that is off would give
   const forTutor = useLiveQuery(settingsForTutor, []);
   useReportScreen({ name: 'Settings', facts: [], settings: forTutor ?? [] });
@@ -115,7 +115,7 @@ export function SettingsScreen() {
   }, [wanted, drawn]);
   if (!page) {
     const searching = query.trim() !== '';
-    const found = searching && values ? visibleRows(values, query) : [];
+    const found = searching && values ? visibleRows(values, query).filter((r) => aiAllowed || !r.licenceOnly) : [];
     // 'Which languages?' is the first thing on the home, and under it the dial of each language chosen (mw-3ased2.2, mw-gdcyf98.2); a search lists matching rows instead
     // (a link to a dial whose language is not chosen draws it all the same, marked, as a link does for any row: rowsAt)
     const dialRows = values ? rows.filter((r) => r.section === 'dial') : [];
