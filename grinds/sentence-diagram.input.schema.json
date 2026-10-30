@@ -16,11 +16,12 @@
       "maxLength": 60
     },
     "lang": {
-      "description": "english: the words are the verse's English, split from the translation's chunks. greek: the words are the verse's Greek.",
+      "description": "english: the words are the verse's English, split from the translation's chunks. greek: the words are the verse's Greek. hebrew: the words are the pieces of the verse's Hebrew words.",
       "type": "string",
       "enum": [
         "english",
-        "greek"
+        "greek",
+        "hebrew"
       ]
     },
     "words": {
@@ -55,16 +56,22 @@
             "maximum": 400
           },
           "lemma": {
-            "description": "Greek only: the word's dictionary form.",
+            "description": "Greek and Hebrew: the word's dictionary form (a Hebrew prefix has none).",
             "type": "string",
             "minLength": 1,
             "maxLength": 60
           },
           "parse": {
-            "description": "Greek only: the Robinson-Pierpont parsing code, such as 'N-DSM' (noun, dative singular masculine) or 'V-PAM-2P'.",
+            "description": "Greek: the Robinson-Pierpont parsing code, such as 'N-DSM' (noun, dative singular masculine) or 'V-PAM-2P'. Hebrew: the piece's part of the word's parsing, such as 'Prep-b', 'Art' or 'V-Qal-Perf-3ms'.",
             "type": "string",
             "minLength": 1,
-            "maxLength": 30
+            "maxLength": 60
+          },
+          "gloss": {
+            "description": "Hebrew only: the piece's English gloss, where it has one.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
           },
           "verse": {
             "description": "Only when the request spans several verses: the number of the verse the word is in.",
@@ -76,7 +83,7 @@
       }
     },
     "greek": {
-      "description": "English only: the verse's Greek words in Greek order, as context for placing the English words by function. Each is part of the English chunk named.",
+      "description": "English only: the verse's Greek words in Greek order (an Old Testament verse's Hebrew words in their order), as context for placing the English words by function. Each is part of the English chunk named.",
       "type": "array",
       "minItems": 1,
       "maxItems": 400,
@@ -102,10 +109,10 @@
             "maxLength": 60
           },
           "parse": {
-            "description": "Its Robinson-Pierpont parsing code.",
+            "description": "Its Robinson-Pierpont parsing code (a Hebrew word's: its whole parsing, prefixes and suffix).",
             "type": "string",
             "minLength": 1,
-            "maxLength": 30
+            "maxLength": 60
           },
           "chunk": {
             "description": "The English chunk that renders it, when the translation has one.",

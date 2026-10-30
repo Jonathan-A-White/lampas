@@ -59,14 +59,17 @@ export interface Diagram {
   clauses: ClauseEntry[];
 }
 
-export type DiagramMode = 'english' | 'greek';
+/** The words a diagram draws: the translation's English, the Greek New Testament's own words, or an Old Testament verse's Hebrew (mw-5r3p30.887: its pieces, the article, a prefixed preposition and vav apart from their word). */
+export type DiagramMode = 'english' | 'greek' | 'hebrew';
 
-/** One word the tree indexes: English words are split from the chapter's chunks (`chunk` is the English chunk it came from, whose Greek words a tap opens), Greek words are the verse's own (`word` is the Greek word index); in a passage each also names its `verse`. */
+/** One word the tree indexes: English words are split from the chapter's chunks (`chunk` is the English chunk it came from, whose Greek words a tap opens), Greek words are the verse's own (`word` is the Greek word index); a Hebrew piece is part of a verse word (`word` is that word's index, so the pieces of one word share it); in a passage each also names its `verse`. */
 export type DiagramWord = ({ text: string; chunk: number } | { text: string; word: number }) & {
   /** the verse's number, only on the words of a passage of several verses: `chunk` and `word` count within that verse */
   verse?: number;
   /** only on an English word the Weave shows in Greek (src/diagram/weave.ts): the verse's Greek word indexes drawn in its place (none: the chunk's other words, which the Greek has taken the place of) */
   weft?: number[];
+  /** only on a Hebrew word (mode 'hebrew'): its English gloss, drawn under it ('' where it has none) */
+  gloss?: string;
 };
 
 /** The words of a request, in order: TokenRef {i} is a position in this list. */

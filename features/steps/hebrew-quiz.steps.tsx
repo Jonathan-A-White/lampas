@@ -147,7 +147,7 @@ describeFeature(
     Scenario("Jonah 1:1's Verse view offers Quiz me and the quiz talk carries the Hebrew", ({ Given, When, Then, And }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a quiz behind a fake Postern', () => openQuiz('#/?b=jon&c=1', 'Curious'));
       When('he taps the number of verse {int}', tapVerse);
-      Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => offers(a, b, c, d)());
+      Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => offers(a, b, c, d, e)());
       When('he chooses {string} and taps {string}', quizOn);
       Then('the sheet is titled {string}', titled);
       And('the mill received one grist for the lampas app, kind bible-talk, in quiz mode about {string}', inQuizMode);
@@ -166,7 +166,7 @@ describeFeature(
     Scenario('At Hebrew 0 an Old Testament verse offers no Quiz me', ({ Given, When, Then }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Just English and a quiz behind a fake Postern', () => openQuiz('#/?b=jon&c=1', 'Just English'));
       When('he taps the number of verse {int}', tapVerse);
-      Then('the Verse view offers the actions {string}, {string} and {string}', (_, a: string, b: string, c: string) => offers(a, b, c)());
+      Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => offers(a, b, c, d)());
     });
 
     Scenario("A Greek verse's quiz is as it was", ({ Given, When, Then, And }) => {

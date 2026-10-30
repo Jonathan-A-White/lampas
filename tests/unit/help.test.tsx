@@ -46,7 +46,7 @@ describe('Help is a short list of pages', () => {
     expect(body('licence')).toContain('five devices');
     expect(body('reader')).toContain('Go deeper');
     expect(body('reader')).toContain('explains it without ruling');
-    expect(body('languages')).toContain('The sentence Diagram is Greek and English only.');
+    expect(body('languages')).toContain('The sentence Diagram draws a verse in English, Greek or Hebrew, in the language you are reading it in.');
     expect(body('languages')).toContain('Which languages?');
     expect(body('languages')).toContain('How much Hebrew?');
     expect(body('ladders')).toContain('More questions are on their way');

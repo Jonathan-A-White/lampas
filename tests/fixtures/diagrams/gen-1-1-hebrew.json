@@ -1,0 +1,167 @@
+{
+  "reference": "Genesis 1:1",
+  "mode": "hebrew",
+  "words": [
+    {
+      "text": "בְּ",
+      "word": 0,
+      "gloss": "in"
+    },
+    {
+      "text": "רֵאשִׁ֖ית",
+      "word": 0,
+      "gloss": "first, beginning"
+    },
+    {
+      "text": "בָּרָ֣א",
+      "word": 1,
+      "gloss": "to create"
+    },
+    {
+      "text": "אֱלֹהִ֑ים",
+      "word": 2,
+      "gloss": "God"
+    },
+    {
+      "text": "אֵ֥ת",
+      "word": 3,
+      "gloss": "[Obj.]"
+    },
+    {
+      "text": "הַ",
+      "word": 4,
+      "gloss": "the"
+    },
+    {
+      "text": "שָּׁמַ֖יִם",
+      "word": 4,
+      "gloss": "heaven"
+    },
+    {
+      "text": "וְ",
+      "word": 5,
+      "gloss": "and"
+    },
+    {
+      "text": "אֵ֥ת",
+      "word": 5,
+      "gloss": "[Obj.]"
+    },
+    {
+      "text": "הָ",
+      "word": 6,
+      "gloss": "the"
+    },
+    {
+      "text": "אָֽרֶץ",
+      "word": 6,
+      "gloss": "land, country, planet"
+    }
+  ],
+  "diagram": {
+    "clauses": [
+      {
+        "clause": {
+          "subject": {
+            "words": [
+              {
+                "i": 3
+              }
+            ],
+            "modifiers": []
+          },
+          "verb": {
+            "words": [
+              {
+                "i": 2
+              }
+            ],
+            "modifiers": [
+              {
+                "kind": "prepositional",
+                "preposition": {
+                  "i": 0
+                },
+                "object": {
+                  "words": [
+                    {
+                      "i": 1
+                    }
+                  ],
+                  "modifiers": []
+                }
+              }
+            ]
+          },
+          "complement": {
+            "kind": "direct-object",
+            "slot": {
+              "words": [
+                {
+                  "i": 4
+                },
+                {
+                  "i": 6
+                }
+              ],
+              "modifiers": [
+                {
+                  "kind": "word",
+                  "word": {
+                    "i": 5
+                  },
+                  "modifiers": []
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "joinedBy": {
+          "i": 7
+        },
+        "clause": {
+          "subject": {
+            "words": [
+              {
+                "implied": "אֱלֹהִים"
+              }
+            ],
+            "modifiers": []
+          },
+          "verb": {
+            "words": [
+              {
+                "implied": "בָּרָא"
+              }
+            ],
+            "modifiers": []
+          },
+          "complement": {
+            "kind": "direct-object",
+            "slot": {
+              "words": [
+                {
+                  "i": 8
+                },
+                {
+                  "i": 10
+                }
+              ],
+              "modifiers": [
+                {
+                  "kind": "word",
+                  "word": {
+                    "i": 9
+                  },
+                  "modifiers": []
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

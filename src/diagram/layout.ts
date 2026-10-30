@@ -22,6 +22,8 @@ export const WORD_GAP = 14;
 export const BAR_SPACE = 32;
 export const SLANT_RUN = 22;
 export const PAD = 8;
+/** A Hebrew word's gloss is set smaller than the word's face: its width is the measure of the English face times this (a share of the English size, never less than the real width). */
+export const GLOSS_SCALE = 0.7;
 const BAR_UP = 40;
 const BAR_DOWN = 12;
 const SLASH_RUN = 12;
@@ -68,6 +70,8 @@ export interface LayoutLabel {
   width: number;
   /** the word's index in the request's words; none for an implied word */
   index?: number;
+  /** a Hebrew word's English gloss, set under it (the label is as wide as the wider of the two) */
+  gloss?: string;
   implied?: true;
   role: LabelRole;
   clause: number;
@@ -93,6 +97,8 @@ interface Bounds {
 interface Ctx {
   words: DiagramWords;
   measure: (text: string) => number;
+  /** the words of a slot stand right to left, the first at the right (a Hebrew diagram) */
+  rtl: boolean;
   labels: number;
   clauses: number;
 }
@@ -149,9 +155,12 @@ function fitRight(placed: Scene, next: Scene, least: number): number {
 function labelFor(ctx: Ctx, ref: TokenRef, role: LabelRole, clause: number, x: number, y: number): LayoutLabel {
   const implied = 'implied' in ref;
   const text = implied ? `(${ref.implied})` : (ctx.words[ref.i]?.text ?? '');
-  const label: LayoutLabel = { id: ctx.labels++, text, x, y, width: ctx.measure(text), role, clause };
+  const gloss = implied ? undefined : ctx.words[ref.i]?.gloss;
+  const width = gloss ? Math.max(ctx.measure(text), Math.ceil(ctx.measure(gloss) * GLOSS_SCALE)) : ctx.measure(text);
+  const label: LayoutLabel = { id: ctx.labels++, text, x, y, width, role, clause };
   if (implied) label.implied = true;
   else label.index = ref.i;
+  if (gloss) label.gloss = gloss;
   return label;
 }
 
@@ -230,13 +239,17 @@ interface SlotScene {
 function slotScene(ctx: Ctx, slot: Slot, role: LabelRole, clause: number, extra: Hanger[], bound: number): SlotScene {
   const scene = emptyScene();
   let x = 0;
-  let head: LayoutLabel | null = null;
-  for (const ref of slot.words) {
-    head = labelFor(ctx, ref, role, clause, x, 0);
-    scene.labels.push(head);
-    x += head.width + WORD_GAP;
-  }
-  const wordsRight = head ? head.x + head.width : 0;
+  const placed = slot.words.map((ref) => {
+    const label = labelFor(ctx, ref, role, clause, x, 0);
+    x += label.width + WORD_GAP;
+    return label;
+  });
+  // a Hebrew slot reads right to left: the first word stands at the right end, the last (the one the rest hang from) at the left
+  const total = x - WORD_GAP;
+  if (ctx.rtl) for (const label of placed) label.x = total - label.x - label.width;
+  scene.labels.push(...placed);
+  const head = placed[placed.length - 1] ?? null;
+  const wordsRight = placed.length ? total : 0;
   const span = head ? { l: head.x, r: head.x + head.width } : { l: 0, r: 0 };
   const hung = hang(ctx, scene, [...slot.modifiers, ...extra], head, span, 0, clause, bound);
   return { scene, wordsRight, head, attachMax: hung.attachMax, depth: hung.depth };
@@ -286,9 +299,9 @@ function clauseScene(ctx: Ctx, clause: Clause, parent: number | null): ClauseSce
   return { id, scene, anchor, depth: Math.max(0, boundsOf(scene).maxY) };
 }
 
-/** The picture of `tree`: lines and labels, from `words` (what {i} indexes) and `measure` (a label's width). */
-export function layoutDiagram(tree: Diagram, words: DiagramWords, measure: (text: string) => number): Layout {
-  const ctx: Ctx = { words, measure, labels: 0, clauses: 0 };
+/** The picture of `tree`: lines and labels, from `words` (what {i} indexes) and `measure` (a label's width). `rtl`: a Hebrew diagram, whose slots read right to left. */
+export function layoutDiagram(tree: Diagram, words: DiagramWords, measure: (text: string) => number, { rtl = false }: { rtl?: boolean } = {}): Layout {
+  const ctx: Ctx = { words, measure, rtl, labels: 0, clauses: 0 };
   const scene = emptyScene();
   let previous: { y: number; bottom: number; minX: number } | null = null;
   tree.clauses.forEach((entry: ClauseEntry) => {

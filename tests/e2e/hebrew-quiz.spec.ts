@@ -1,4 +1,4 @@
-// Quiz me on a Hebrew verse (mw-gdcyf98.21) at 390x844: the Verse view of Jonah 1:1 offers Quiz me from the Hebrew dial's Curious up and never Diagram, and a due Hebrew idea is asked in Review as a
+// Quiz me on a Hebrew verse (mw-gdcyf98.21) at 390x844: the Verse view of Jonah 1:1 offers Quiz me from the Hebrew dial's Curious up and Diagram at any dial, and a due Hebrew idea is asked in Review as a
 // question of four Hebrew words, each a thumb-sized tap, right to left in the bundled Hebrew face.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
@@ -30,7 +30,7 @@ async function put(page: Page, store: 'reviews' | 'settings', rows: object[]): P
   );
 }
 
-test('Jonah 1:1 offers Quiz me at Curious and no Diagram, and none at Hebrew 0', async ({ page }) => {
+test('Jonah 1:1 offers Quiz me at Curious and Diagram, and Diagram alone of the two at Hebrew 0', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/?b=jon&c=1');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
@@ -39,7 +39,7 @@ test('Jonah 1:1 offers Quiz me at Curious and no Diagram, and none at Hebrew 0',
   const view = await openVerseView(page, 1);
   const actions = view.getByRole('group', { name: 'Actions' });
   await expect(actions.getByRole('button', { name: 'Quiz me', exact: true })).toBeVisible();
-  await expect(actions.getByRole('button', { name: 'Diagram', exact: true })).toHaveCount(0);
+  await expect(actions.getByRole('button', { name: 'Diagram', exact: true })).toBeVisible();
   expect((await actions.getByRole('button', { name: 'Quiz me', exact: true }).boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
   await actions.getByRole('button', { name: 'Quiz me', exact: true }).click();
   await expect(view.getByRole('button', { name: 'Start the quiz', exact: true })).toBeVisible();
@@ -49,6 +49,7 @@ test('Jonah 1:1 offers Quiz me at Curious and no Diagram, and none at Hebrew 0',
   await page.reload();
   const english = await openVerseView(page, 1);
   await expect(english.getByRole('button', { name: 'Quiz me', exact: true })).toHaveCount(0);
+  await expect(english.getByRole('button', { name: 'Diagram', exact: true })).toBeVisible();
 });
 
 test('a due Hebrew idea is asked in Review as four Hebrew words, right to left', async ({ page }) => {

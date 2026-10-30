@@ -186,13 +186,12 @@ Feature: Lampas reads the Old Testament in English
     When he taps the number of verse 10
     Then the Verse view is headed "Jonah 1:10"
     And the Verse view shows the verse in English
-    And the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Copy" and "Share"
-    And the Verse view has no "Diagram"
+    And the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Diagram", "Copy" and "Share"
 
-  Scenario: Diagram kept from a New Testament verse opens an Old Testament verse on Listen and is kept
+  Scenario: Diagram kept from a New Testament verse opens an Old Testament verse on Diagram and is kept
     Given Lampas is opened on Jonah 1 with a licence and the kept action "diagram"
     When he taps the number of verse 10
-    Then the chosen action of the Verse view is "Listen"
+    Then the chosen action of the Verse view is "Diagram"
     And the kept action is still "diagram"
 
   Scenario: Ask the tutor about Jonah 1:10 sends the English verse and its reference

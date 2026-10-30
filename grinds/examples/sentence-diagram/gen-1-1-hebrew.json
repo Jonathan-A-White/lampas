@@ -1,0 +1,91 @@
+{
+  "description": "Genesis 1:1 in Hebrew: a diagram comes back with the main clause first, and its verb is בָּרָא (word 2); the prefixed preposition בְּ, the articles and the vav are words of their own in the request.",
+  "schemaVersion": "1",
+  "request": {
+    "ref": "Genesis 1:1",
+    "lang": "hebrew",
+    "words": [
+      {
+        "i": 0,
+        "text": "בְּ",
+        "parse": "Prep-b",
+        "gloss": "in"
+      },
+      {
+        "i": 1,
+        "text": "רֵאשִׁ֖ית",
+        "lemma": "רֵאשִׁית",
+        "parse": "N-fs",
+        "gloss": "first, beginning"
+      },
+      {
+        "i": 2,
+        "text": "בָּרָ֣א",
+        "lemma": "בָּרָא",
+        "parse": "V-Qal-Perf-3ms",
+        "gloss": "to create"
+      },
+      {
+        "i": 3,
+        "text": "אֱלֹהִ֑ים",
+        "lemma": "אֱלֹהִים",
+        "parse": "N-mp",
+        "gloss": "God"
+      },
+      {
+        "i": 4,
+        "text": "אֵ֥ת",
+        "lemma": "אֵת",
+        "parse": "DirObjM",
+        "gloss": "[Obj.]"
+      },
+      {
+        "i": 5,
+        "text": "הַ",
+        "parse": "Art",
+        "gloss": "the"
+      },
+      {
+        "i": 6,
+        "text": "שָּׁמַ֖יִם",
+        "lemma": "שָׁמַיִם",
+        "parse": "N-mp",
+        "gloss": "heaven"
+      },
+      {
+        "i": 7,
+        "text": "וְ",
+        "parse": "Conj-w",
+        "gloss": "and"
+      },
+      {
+        "i": 8,
+        "text": "אֵ֥ת",
+        "lemma": "אֵת",
+        "parse": "DirObjM",
+        "gloss": "[Obj.]"
+      },
+      {
+        "i": 9,
+        "text": "הָ",
+        "parse": "Art",
+        "gloss": "the"
+      },
+      {
+        "i": 10,
+        "text": "אָֽרֶץ",
+        "lemma": "אֶ֫רֶץ",
+        "parse": "N-fs",
+        "gloss": "land, country, planet"
+      }
+    ]
+  },
+  "expect": {
+    "clauses": {
+      "present": true
+    },
+    "clauses.0.clause.verb.words.0.i": {
+      "equals": 2
+    }
+  }
+}

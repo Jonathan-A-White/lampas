@@ -22,12 +22,13 @@ describe('the Verse view actions', () => {
 });
 
 describe('the Verse view actions of an Old Testament verse (mw-5vvlay.3)', () => {
-  it('offers Quiz me on an hbo verse, and not Diagram: the diagram epic is Greek and English (mw-gdcyf98.21)', () => {
-    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'quiz']);
+  it('offers Quiz me and Diagram on an hbo verse: the diagram is drawn for Hebrew as for Greek (mw-5r3p30.887)', () => {
+    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'quiz', 'diagram']);
+    expect(actionsFor(true, 'hbo').map((a) => a.id)).toContain('diagram');
   });
 
-  it('offers no Quiz me on an hbo verse at Hebrew 0: the talk then holds the English alone', () => {
-    expect(actionsFor(true, 'hbo', false).map((a) => a.id)).toEqual(['listen', 'read', 'ask']);
+  it('offers no Quiz me on an hbo verse at Hebrew 0, but still Diagram: the talk then holds the English alone', () => {
+    expect(actionsFor(true, 'hbo', false).map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'diagram']);
   });
 
   it('offers a Greek verse every action whatever the Hebrew dial says', () => {

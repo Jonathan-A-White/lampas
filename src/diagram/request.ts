@@ -1,8 +1,9 @@
 // src/diagram/request.ts — what the sentence-diagram grind (grinds/sentence-diagram.json, mw-souyao.2) is sent for a verse or a passage, and the words the renderer indexes. The grind answers with a
 // tree (types.ts) whose {i} point into `words`; the same list is built here for the request and for the picture, so an index means the same word on both sides. Pure: no store, no network.
-import { bareEnglish, type Chapter, type GreekWord, type Verse } from '../data/chapter';
+import { bareEnglish, wordGloss, type Chapter, type GreekWord, type Verse } from '../data/chapter';
 import { titleOf } from '../data/books';
 import { unitReference } from '../data/passage';
+import { hebrewPieces } from './hebrewPieces';
 import type { DiagramMode, DiagramWords } from './types';
 
 /** One word of the request. English: its chunk (its place in the verse's English chunks); Greek: its lemma and parse. `verse` only in a passage of several verses, where `chunk` counts within that verse. */
@@ -12,6 +13,8 @@ export interface DiagramRequestWord {
   chunk?: number;
   lemma?: string;
   parse?: string;
+  /** Hebrew only: the piece's English gloss, where it has one */
+  gloss?: string;
   verse?: number;
 }
 
@@ -70,6 +73,15 @@ export function buildDiagramRequest(chapter: Chapter, verses: readonly Verse[], 
       });
       verse.g.forEach((word) => {
         greek.push({ text: greekText(word), lemma: word.l, parse: word.p, ...(word.e !== undefined ? { chunk: word.e } : {}), ...mark });
+      });
+    } else if (view === 'hebrew') {
+      verse.g.forEach((word, w) => {
+        for (const piece of hebrewPieces(word, wordGloss(chapter, word), greekText(word))) {
+          const gloss = piece.gloss === '' ? {} : { gloss: piece.gloss };
+          words.push({ text: piece.text, word: w, ...gloss, ...mark });
+          // a prefix has no lemma of its own
+          sent.push({ i: sent.length, text: piece.text, ...(piece.prefix ? {} : { lemma: word.l }), parse: piece.parse, ...gloss, ...mark });
+        }
       });
     } else {
       verse.g.forEach((word, w) => {
