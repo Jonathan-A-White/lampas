@@ -60,7 +60,7 @@ a dative. A word agrees with the word it modifies in case, number and gender, an
   modifier of it. One that takes an object of its own ('seated', 'having put off the old self') is a `clause` modifier with no `connector`:
   its `subject` is the word it describes as an implied word (`{"implied": "Χριστός"}` when it describes Christ), its `verb` is the
   participle, and its `complement` (a `direct-object`) is a slot that carries the object and what hangs on it.
-- **A genitive hangs under the noun it qualifies** as a `word` modifier (with the article that agrees with it hanging on it): in 'the right
+- **A genitive hangs under the noun it qualifies** as a `word` modifier (its agreeing article hangs on it): in 'the right
   hand of God', 'God' in the genitive modifies 'hand'. A genitive after a preposition that takes it belongs to the preposition's object.
 - **A conjunction** that joins two clauses is a `joinedBy` or a `connector`; one that joins two words is in their slot's `words`; one
   that only adds ('and', 'also', 'so') to a single clause hangs on its verb as a `word` modifier.
