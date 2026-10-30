@@ -303,8 +303,11 @@ const tutorAsks = createRequests({
   },
 });
 
+/** What he is told when the kit takes his ask for one already filed today: nothing was sent now. */
+export const ALREADY_SENT_MESSAGE = 'You already sent this today. The answer will come back in Your requests.';
+
 /** Sends `request` (with its pictures, if any) with the phone's key, keeps it in the requests table with its grist id once it is sent,
- * waits for the mill's receipt and tells the bus ('feedback-sent'). Throws a TutorError whatever went wrong; nothing is announced then. A `signal` that aborts stops the wait.
+ * waits for the mill's receipt and tells the bus ('feedback-sent'). Throws a TutorError whatever went wrong (the kit's 'refused' or 'duplicate' too: only its 'sent' is a send); nothing is announced then. A `signal` that aborts stops the wait.
  * The tutor's ask (kind 'tutor-ask', from a talk) is filed through pwa-kit/requests (fileFromTalk: who asked is the one reader, the grown-up); the forms' requests
  * carry a link, a credit or pictures the kit's request has no place for, so they are delivered directly. */
 export async function submitFeedback(request: FeedbackRequest, options: SubmitOptions = {}): Promise<void> {
@@ -317,6 +320,8 @@ export async function submitFeedback(request: FeedbackRequest, options: SubmitOp
   try {
     const result = await tutorAsks.fileFromTalk({ talkId: token, words: request.text, who: GROWN_UP, kind: request.kind, summary: request.summary });
     if (result.outcome === 'refused') throw new TutorError('not-sent', result.message);
+    // the kit took it for a twin of one filed today: it sent nothing, so this tap is not a send; he is told the first one is on its way
+    if (result.outcome === 'duplicate') throw new TutorError('not-sent', ALREADY_SENT_MESSAGE);
   } finally {
     waiting.delete(token);
   }
