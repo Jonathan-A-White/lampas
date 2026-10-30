@@ -6,10 +6,10 @@ import { createElement } from 'react';
 import { readdirSync, readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord, Verse, VariantUnit, VariantCode } from '../../src/data/chapter';
-import { weaveVerse, wovenInOrder } from '../../src/data/weave';
+import { weaveVerse, withWordRule, wovenInOrder, type WeaveLemmas } from '../../src/data/weave';
 import { VerseText } from '../../src/reader/VerseText';
 import type { Lookup } from '../../src/WordSheet';
-import { braceReadings, plainEnglish, readerVariants, shownUnits, type VariantFilter } from '../../src/reader/variants';
+import { braceReadings, braceText, plainEnglish, readerVariants, shownUnits, type VariantFilter } from '../../src/reader/variants';
 import type { ReaderView } from '../../src/data/repositories';
 
 afterEach(cleanup);
@@ -80,6 +80,14 @@ describe('a verse with two units', () => {
     const container = draw('english', woven);
     expect(drawn(container)).toEqual(['Jesus', '{the Lord NA ECM}', 'αὐτοῖς', '{αὐτῷ B}']);
     expect([...container.querySelectorAll('[data-brace]')].map((b) => b.getAttribute('data-brace-lang'))).toEqual(['english', 'greek']);
+  });
+
+  it('in the weave a chip with no pairing keeps the all-or-nothing rule: English whenever one chunk under it is not woven', () => {
+    // 'the Lord' and 'to him' carry no align: a woven αὐτοῖς gives its brace Greek, Ἰησοῦς does not
+    const woven = withWordRule(wovenInOrder(VERSE, weaveVerse(VERSE, { solid: new Set(['καί', 'λέγω', 'αὐτός', 'κύριος']) }), 'english'), { solid: new Set(['κύριος']) });
+    const container = draw('english', woven);
+    expect([...container.querySelectorAll('[data-brace]')].map((b) => b.getAttribute('data-brace-lang'))).toEqual(['english', 'greek']);
+    expect(container.querySelectorAll('[data-brace-greek]')).toHaveLength(0);
   });
 
   it('a brace is a label that names the other reading, and its siglum is the button', () => {
@@ -454,5 +462,97 @@ describe('Acts 18:17 οἱ Ἕλληνες: NA leaves the words out (mw-9ji6ek0.
     const again = brace(NOW, 'english', { onVariant: (s: { unit: VariantUnit }) => opened.push(s.unit.base) });
     fireEvent.click(again.querySelector('[data-witness]')!);
     expect(opened).toEqual(['οἱ Ἕλληνες']);
+  });
+});
+
+describe('a chip woven word by word (mw-9ji6ek0.37)', () => {
+  // Acts 18:18 cut to the unit: the MSB pairs ἐν with the supplied 'He had his' (never woven) and τὴν with 'in', so the text's chunk for the unit is not all woven
+  const ACTS: Verse = {
+    n: 18,
+    g: [word('κειράμενος', 'κείρω', 2), word('τὴν', 'ὁ', 3), word('κεφαλὴν', 'κεφαλή', 1), word('ἐν', 'ἐν', 0), word('Κεγχρεαῖς', 'Κεγχρεαί', 4)],
+    e: [
+      { t: 'He had his', g: [3], s: [2] },
+      { t: 'head', g: [2] },
+      { t: 'shaved', g: [0] },
+      { t: 'in', g: [1] },
+      { t: 'Cenchrea', g: [4] },
+    ],
+  };
+  const NA_G: GreekWord[] = [word('ἐν', 'ἐν'), word('Κεγχρεαῖς', 'Κεγχρεαί'), word('τὴν', 'ὁ'), word('κεφαλήν', 'κεφαλή')];
+  // Acts 18:18's NA reading with the base cut to one word: the real unit is the same words in another order, which reads 'same' under All and is hidden by default (mw-9ji6ek0.31), so it never draws a chip
+  const CHIP: VariantUnit = {
+    v: 18,
+    w: [2],
+    base: 'κεφαλὴν',
+    alts: [{ code: 'N', text: 'ἐν Κεγχρεαῖς τὴν κεφαλήν', g: NA_G }],
+    english: { source: 'lampas', base: 'head', alts: ['in Cenchreae the head'], align: [[0, 1, 2, 3]] },
+    changesEnglish: true,
+    witness: 'na',
+  };
+  const wovenWith = (solid: string[]) => {
+    const lemmas: WeaveLemmas = { solid: new Set(solid) };
+    return withWordRule(wovenInOrder(ACTS, weaveVerse(ACTS, lemmas), 'english'), lemmas);
+  };
+  const chip = (u: VariantUnit, woven: ReturnType<typeof wovenWith> | null, looks: Lookup[] = []) =>
+    render(createElement(VerseText, { verse: ACTS, view: 'english', woven, onLook: (l: Lookup) => looks.push(l), variants: shownUnits([u], ALL) })).container;
+  const wordsOf = (container: HTMLElement) => [...container.querySelectorAll<HTMLElement>('[data-brace-word]')].map((el) => (el.textContent ?? '').trim());
+
+  it('draws his solid ἐν in Greek, gold and tappable to its card, and leaves the rest English', () => {
+    const looks: Lookup[] = [];
+    const container = chip(CHIP, wovenWith(['ἐν', 'κείρω']), looks);
+    // not every chunk under the unit is woven (ἐν sits behind the supplied 'He had his'), so today's rule would have made the whole chip English
+    expect(wordsOf(container)).toEqual(['ἐν', 'Cenchreae', 'the', 'head']);
+    const greek = container.querySelectorAll<HTMLElement>('[data-brace-greek]');
+    expect([...greek].map((el) => el.textContent?.trim())).toEqual(['ἐν']);
+    expect(greek[0].className).toMatch(/text-accent/);
+    expect(greek[0].getAttribute('lang')).toBe('el');
+    expect(container.querySelector('[data-brace]')?.getAttribute('data-brace-lang')).toBe('english');
+    fireEvent.click(greek[0]);
+    expect(looks[0].words.map((w) => w.t)).toEqual(['ἐν']);
+    expect(looks[0]).toMatchObject({ fromEnglish: false, verse: 18, variant: 'in variant NA' });
+    // the English words still open the Greek of the reading
+    fireEvent.click([...container.querySelectorAll<HTMLElement>('[data-brace-word]')].find((el) => el.textContent?.trim() === 'Cenchreae')!);
+    expect(looks[1]).toMatchObject({ fromEnglish: true, tapped: 'Cenchreae' });
+  });
+
+  it('draws every paired word he knows in Greek, and the whole chip in English when he knows none', () => {
+    expect(wordsOf(chip(CHIP, wovenWith(['ἐν', 'Κεγχρεαί', 'ὁ', 'κεφαλή'])))).toEqual(['ἐν', 'Κεγχρεαῖς', 'τὴν', 'κεφαλήν']);
+    cleanup();
+    expect(wordsOf(chip(CHIP, wovenWith(['κείρω'])))).toEqual(['in', 'Cenchreae', 'the', 'head']);
+  });
+
+  it('a learning word is Greek too (Weave: solid and learning) and says so; the plain English view and the weave off draw the English', () => {
+    const lemmas: WeaveLemmas = { solid: new Set(), learning: new Set(['ἐν']) };
+    const woven = withWordRule(wovenInOrder(ACTS, weaveVerse(ACTS, lemmas), 'english'), lemmas);
+    const container = chip(CHIP, woven);
+    expect(container.querySelector('[data-brace-greek]')?.getAttribute('data-learning')).toBe('');
+    cleanup();
+    expect(wordsOf(chip(CHIP, null))).toEqual(['in', 'Cenchreae', 'the', 'head']);
+  });
+
+  it('keeps the marks beside an English word and draws a run of English words of one Greek word once', () => {
+    const run: VariantUnit = { ...CHIP, alts: [{ code: 'N', text: 'ἀνέβη', g: [word('ἀνέβη', 'ἀναβαίνω')] }], english: { source: 'lampas', base: 'the head', alts: ['went up,'], align: [[0, 0]] } };
+    expect(wordsOf(chip(run, wovenWith(['ἀναβαίνω'])))).toEqual(['ἀνέβη,']);
+    cleanup();
+    expect(wordsOf(chip(run, wovenWith([])))).toEqual(['went', 'up,']);
+  });
+
+  it('Copy writes the chip as it is drawn', () => {
+    const [shown] = shownUnits([CHIP], ALL);
+    const woven = wovenWith(['ἐν']);
+    expect(braceText(shown, 'english', woven.word)).toBe('{ἐν Cenchreae the head NA}');
+    expect(braceText(shown, 'english')).toBe('{in Cenchreae the head NA}');
+  });
+});
+
+describe('the committed Acts 18 (mw-9ji6ek0.37)', () => {
+  it('draws the NA chip of verse 2 as {ἀπὸ NA} when ἀπό is solid: "away from" is one Greek word', () => {
+    const chapter = JSON.parse(readFileSync('public/data/act/18.json', 'utf8')) as Chapter;
+    const verse = chapter.verses.find((v) => v.n === 2)!;
+    const [shown] = shownUnits(chapter.variants!.filter((u) => u.v === 2 && u.base === 'ἐκ'), { english: 'english', witnesses: 'ecm' }, chapter.verses);
+    const lemmas: WeaveLemmas = { solid: new Set(['ἀπό']) };
+    const woven = withWordRule(wovenInOrder(verse, weaveVerse(verse, lemmas), 'english'), lemmas);
+    expect(braceText(shown, 'english', woven.word)).toBe('{ἀπὸ NA}');
+    expect(braceText(shown, 'english')).toBe('{away from NA}');
   });
 });

@@ -34,6 +34,8 @@ export function Tap({ onTap, onLongPress, still, lang, dir, className, children,
   'data-chosen'?: string;
   'data-rp2026'?: string;
   'data-brace-word'?: string;
+  /** a word of a variant chip the Weave shows in Greek (mw-9ji6ek0.37) */
+  'data-brace-greek'?: string;
   'data-sheet-word'?: string;
   /** the word's trailing space is a no-break space: the next thing (a variant's siglum) stays on the word's line (mw-9ji6ek0.16) */
   glued?: boolean;

@@ -9,7 +9,7 @@ export type Woven = { words: GreekWord[]; learning: boolean } | null;
 
 /** A verse's weave, chunk by chunk in `verse.e`'s own indexes, and the order the chunks are drawn and read in (mw-5r3p30.250): absent, the
  * English order. */
-export type WovenVerse = Woven[] & { readonly order?: readonly number[]; readonly texts?: readonly string[] };
+export type WovenVerse = Woven[] & { readonly order?: readonly number[]; readonly texts?: readonly string[]; readonly word?: (word: GreekWord) => 'solid' | 'learning' | null };
 
 /** The lemmas the weave knows (NFC): the solid ones, and with Weave 'Solid and learning words' the learning ones too. */
 export interface WeaveLemmas {
@@ -18,6 +18,18 @@ export interface WeaveLemmas {
   /** The grammar dial: false for a word whose form's grammar is not at the level asked (src/data/grammar/formLevel.ts). Absent: every form passes. */
   formPasses?: (word: GreekWord) => boolean;
 }
+
+/** Whether one Greek word stands in Greek in the weave: 'solid' or 'learning' by its lemma, null when it stays English (its lemma unknown to him, or its form not at the grammar level asked). weaveVerse's rule
+ * for a word, which a variant chip follows word by word (mw-9ji6ek0.37). */
+export function weaveWord(word: GreekWord, { solid, learning, formPasses }: WeaveLemmas): 'solid' | 'learning' | null {
+  const lemma = wordLemma(word).normalize('NFC');
+  if (!lemma || (formPasses && !formPasses(word))) return null;
+  return solid.has(lemma) ? 'solid' : learning?.has(lemma) ? 'learning' : null;
+}
+
+/** The weave `woven` knows the rule it was made by: `word` says of a Greek word whether the weave would show it in Greek (a variant chip's words are not in the verse's chunks). It is not an element of the weave. */
+export const withWordRule = <T extends Woven[]>(woven: T, lemmas: WeaveLemmas): T & Pick<WovenVerse, 'word'> =>
+  Object.defineProperty(woven, 'word', { value: (word: GreekWord) => weaveWord(word, lemmas), enumerable: false, configurable: true }) as T & Pick<WovenVerse, 'word'>;
 
 /**
  * Weaves one verse: a chunk is woven only when it has Greek words, none of its Greek positions is missing, it is
@@ -34,13 +46,9 @@ export function weaveVerse(verse: Verse, { solid, learning, formPasses }: WeaveL
     for (const i of chunk.g) {
       const word = verse.g[i] as GreekWord | undefined;
       if (!word) return null;
-      const lemma = wordLemma(word).normalize('NFC');
-      if (!lemma) return null;
-      if (formPasses && !formPasses(word)) return null;
-      if (!solid.has(lemma)) {
-        if (!learning?.has(lemma)) return null;
-        anyLearning = true;
-      }
+      const how = weaveWord(word, { solid, learning, formPasses });
+      if (!how) return null;
+      if (how === 'learning') anyLearning = true;
       words.push(word);
     }
     return { words, learning: anyLearning };

@@ -233,7 +233,7 @@ describe('the build', () => {
     const rev = units(built.chapters.find((c) => c.path === 'rev/17.json')?.chapter);
     expect(rev).toHaveLength(3);
     const go = rev.find((u) => u.base === 'ὑπάγειν')!;
-    expect(go.english).toEqual({ source: 'msb', base: 'go', alts: ['goes away'] });
+    expect(go.english).toEqual({ source: 'msb', base: 'go', alts: ['goes away'], align: [[null, null]] });
     expect(go).toMatchObject({ changesEnglish: true, witness: 'na' });
     expect(rev.map((u) => u.english.source).sort()).toEqual(['lampas', 'lampas', 'msb']);
     expect(rev.every((u) => typeof u.changesEnglish === 'boolean' && ['byz', 'na', 'ecm'].includes(u.witness))).toBe(true);
@@ -266,7 +266,7 @@ describe('the committed data', () => {
     for (const { ref, unit } of all) unit.alts.forEach((a, i) => { if (a.text === '' && unit.english.alts[i] !== '') bad.push(`${ref} ${unit.base}`); });
     expect(bad).toEqual([]);
     const acts = all.find(({ ref, unit }) => ref === 'Acts 18:17' && unit.base === 'οἱ Ἕλληνες');
-    expect(acts?.unit.english).toEqual({ source: 'msb', base: 'the Greeks', alts: [''], ctReads: 'they all' });
+    expect(acts?.unit.english).toEqual({ source: 'msb', base: 'the Greeks', alts: [''], ctReads: 'they all', align: [[]] });
   });
 
   it('has changesEnglish on every unit and a witness byz, na or ecm that agrees with its codes', () => {

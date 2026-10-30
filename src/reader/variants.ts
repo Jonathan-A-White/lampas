@@ -44,6 +44,8 @@ export interface ShownReading {
   code: VariantCode;
   /** the reading's words one by one as the build tagged them (VariantReading.g); absent for a reading that leaves the words out or a unit without them */
   g?: readonly GreekWord[];
+  /** for each English word of the reading, the index into `g` of the Greek word it is, or null (VariantEnglish.align); absent when the build did not pair them */
+  align?: readonly (number | null)[];
   /** its English leaves the verse's English as the text's own does: the snippets agree, or (with the verse) the verse reads the same either way, case and punctuation aside, or the reading is the text's own words in another order (wordOrderOnly) */
   sameEnglish: boolean;
   /** the reading is in pieces and cannot be laid over the text: no Read this */
@@ -65,7 +67,7 @@ export function shownReadings(unit: VariantUnit, filter: VariantFilter, verse?: 
     .map((alt, i): ShownReading => {
       // a reading that leaves the words out has no English of its own, whatever an older chapter file kept there (mw-9ji6ek0.36)
       const english = alt.text === '' ? '' : (unit.english.alts[i] ?? '');
-      return { index: i, greek: alt.text, english, code: alt.code, ...(alt.g ? { g: alt.g } : {}), ...(alt.apart ? { apart: true as const } : {}), sameEnglish: wordOrderOnly(unit.base, alt.text) || sameInVerse(verse, unit.w, unit.english.base, english) };
+      return { index: i, greek: alt.text, english, code: alt.code, ...(alt.g ? { g: alt.g } : {}), ...(unit.english.align?.[i]?.length ? { align: unit.english.align[i] } : {}), ...(alt.apart ? { apart: true as const } : {}), sameEnglish: wordOrderOnly(unit.base, alt.text) || sameInVerse(verse, unit.w, unit.english.base, english) };
     })
     .filter((r) => r.index === keep || (RANK[WITNESS[r.code]] <= RANK[filter.witnesses] && (filter.english === 'all' || !r.sameEnglish)));
 }
@@ -92,14 +94,16 @@ export interface BraceReading {
   english: string;
   /** the reading's Greek words as the build tagged them, when it did */
   g?: readonly GreekWord[];
+  /** the pairing of the reading's English words with `g` (ShownReading.align), when the build made one */
+  align?: readonly (number | null)[];
 }
 
 export function braceReadings(shown: ShownUnit, language: 'greek' | 'english'): BraceReading[] {
   const out: (BraceReading & { key: string })[] = [];
-  const add = (text: string, same: boolean, chip: WitnessChip, greek: string, english: string, g?: readonly GreekWord[]) => {
+  const add = (text: string, same: boolean, chip: WitnessChip, greek: string, english: string, g?: readonly GreekWord[], align?: readonly (number | null)[]) => {
     const key = same ? '=' : language === 'greek' ? text.normalize('NFC') : plainEnglish(text);
     const had = out.find((b) => b.key === key);
-    if (!had) out.push({ key, text, same, chips: [chip], greek, english, ...(g ? { g } : {}) });
+    if (!had) out.push({ key, text, same, chips: [chip], greek, english, ...(g ? { g } : {}), ...(align ? { align } : {}) });
     else if (!had.chips.includes(chip)) had.chips = CHIPS.filter((c) => c === chip || had.chips.includes(c));
   };
   const inPlace = shown.chosen === undefined ? undefined : shown.readings.find((r) => r.index === shown.chosen);
@@ -116,9 +120,9 @@ export function braceReadings(shown: ShownUnit, language: 'greek' | 'english'): 
     const text = language === 'greek' ? r.greek : r.english;
     const same = language === 'english' && r.sameEnglish;
     if (inPlace && !same && (language === 'greek' ? text.normalize('NFC') === inPlace.greek.normalize('NFC') : plainEnglish(text) === plainEnglish(inPlace.english) && !inPlace.sameEnglish)) continue;
-    add(text, same, chipOf(r.code), r.greek, r.english, r.g);
+    add(text, same, chipOf(r.code), r.greek, r.english, r.g, language === 'english' ? r.align : undefined);
   }
-  return out.map(({ text, same, chips, greek, english, g }) => ({ text, same, chips, greek, english, ...(g ? { g } : {}) }));
+  return out.map(({ text, same, chips, greek, english, g, align }) => ({ text, same, chips, greek, english, ...(g ? { g } : {}), ...(align ? { align } : {}) }));
 }
 
 /** What a brace says of a reading with no words of its own: the English that reads as the text's own ('same'), or a reading that leaves the words out. */
@@ -128,10 +132,38 @@ export const LEFT_OUT = 'left out';
 /** The words a brace draws for one reading, before its chips. */
 export const braceWords = (r: BraceReading): string => (r.same ? SAME : r.text || LEFT_OUT);
 
+/** One word of a reading as a brace draws it: the English word, or, when the Weave shows its Greek (`weaveWord` says the word is solid or learning), the Greek word in its place with the marks beside the English word kept. */
+export interface BraceToken {
+  text: string;
+  greek?: GreekWord;
+}
+
+const EDGES = /^([^\p{L}\p{N}]*)(.*?)([^\p{L}\p{N}]*)$/su;
+
+/**
+ * The words of an English reading in the order they are drawn, each English or woven. A word the build paired (`BraceReading.align`) with a Greek word the weave shows (`weaveWord`) is drawn as that Greek
+ * word, gold and tappable like the text's woven chunks; a run of neighbouring English words that are one Greek word ('went up') is drawn as that word once; every other word stays English.
+ * A reading with no pairing, or none of whose paired words are woven, comes out as its English split at white space, as before (mw-9ji6ek0.37).
+ */
+export function braceTokens(r: Pick<BraceReading, 'text' | 'g' | 'align'>, weaveWord?: (word: GreekWord) => 'solid' | 'learning' | null): BraceToken[] {
+  const words = r.text.split(/\s+/).filter(Boolean);
+  const out: BraceToken[] = [];
+  words.forEach((text, k) => {
+    const at = r.align?.[k];
+    const greek = at === null || at === undefined ? undefined : r.g?.[at];
+    if (!greek || !weaveWord || !weaveWord(greek) || !/\p{L}/u.test(greek.t)) return void out.push({ text });
+    const [, lead, , trail] = EDGES.exec(text) ?? ['', '', text, ''];
+    const last = out[out.length - 1];
+    if (k > 0 && at === r.align?.[k - 1] && last?.greek === greek) last.text = last.text.replace(/[^\p{L}\p{N}]*$/u, '') + trail;
+    else out.push({ text: `${lead}${greek.t}${trail}`, greek });
+  });
+  return out;
+}
+
 /** A brace as plain text, as VariantBrace draws it (the same readings, separators and sigla) and Copy writes it: '{left out NA}', '{for you B | left out NA}'. */
-export function braceText(shown: ShownUnit, language: 'greek' | 'english'): string {
+export function braceText(shown: ShownUnit, language: 'greek' | 'english', weaveWord?: (word: GreekWord) => 'solid' | 'learning' | null): string {
   return `{${braceReadings(shown, language)
-    .map((r) => [braceWords(r), ...r.chips].join(' '))
+    .map((r) => [r.same || !r.text || language === 'greek' || !weaveWord ? braceWords(r) : braceTokens(r, weaveWord).map((t) => t.text).join(' '), ...r.chips].join(' '))
     .join(' | ')}}`;
 }
 
