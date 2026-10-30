@@ -10,6 +10,7 @@ import { openUnlicensed, openUnlocked } from './unlocked';
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 /** Puts settings in the app's store through raw IndexedDB, as the app wrote them. */
+// the two-finger tap on the text shows and puts away the bars where the Tutor door is Floating ? (mw-5r3p30.880); in the default door the same tap opens the tutor, so these specs choose Floating ?
 async function keep(page: Page, values: Record<string, string>) {
   await page.evaluate(
     (pairs) =>
@@ -19,7 +20,7 @@ async function keep(page: Page, values: Record<string, string>) {
         open.onsuccess = () => {
           const db = open.result;
           const tx = db.transaction('settings', 'readwrite');
-          for (const [key, value] of Object.entries(pairs)) tx.objectStore('settings').put({ key, value });
+          for (const [key, value] of Object.entries({ tutorDoor: 'floating', ...pairs })) tx.objectStore('settings').put({ key, value });
           tx.oncomplete = () => {
             db.close();
             resolve();

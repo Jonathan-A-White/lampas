@@ -35,12 +35,14 @@ async function keep(page: Page, values: Record<string, string>) {
   );
 }
 
-async function openEphesians2(page: Page, immersive: 'on' | 'off') {
+// `door: 'floating'` is for a spec that taps with two fingers: the tap shows and puts away the bars where the Tutor door is Floating ? (mw-5r3p30.880); in the default door the same tap opens the tutor.
+// The other specs swipe from the screen's middle, where the floating button stands, so they keep the default.
+async function openEphesians2(page: Page, immersive: 'on' | 'off', door?: 'floating') {
   await openUnlocked(page);
   await honestMic(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await keep(page, { immersiveReader: immersive, immersiveHint: 'off' });
+  await keep(page, { immersiveReader: immersive, immersiveHint: 'off', ...(door ? { tutorDoor: door } : {}) });
   await page.goto('/#/?b=eph&c=2');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Ephesians 2', level: 1 })).toBeVisible();
@@ -94,7 +96,7 @@ for (const [button, chapter] of [
   ['‹ Ephesians 1', 1],
 ] as const) {
   test(`with the bars away, flipping with '${button}' opens the new chapter with them still away`, async ({ page }) => {
-    await openEphesians2(page, 'on');
+    await openEphesians2(page, 'on', 'floating');
     await scrollText(page, 400);
     await expectAll(page, 'hidden');
 
