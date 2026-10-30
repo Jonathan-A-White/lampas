@@ -99,7 +99,7 @@ export function About() {
           <p data-read-block className="pt-4 text-base">{inline(intro)}</p>
           <div data-bma-note className="mt-4 rounded-xl border border-line bg-surface px-4 py-3">
             <p data-read-block className="text-base">
-              Lampas was inspired by Biblical Mastery Academy. If you want a teacher, a full course and a warm community of people learning Greek together, go to them:
+              Lampas was inspired by Biblical Mastery Academy. For a warm community of people learning Greek together, go to them:
             </p>
             <p data-read-block className="mt-1 break-words text-base">
               <a href={BMA_URL} target="_blank" rel="noreferrer" className="text-accent underline">Biblical Mastery Academy</a>

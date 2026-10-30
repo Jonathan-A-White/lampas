@@ -59,6 +59,17 @@
       <p class="dim">Lampas research (mw-5r3p30.395). Not part of the app: nothing here changes it. Tap, listen, and say which column sounds like the Greek voice you hear elsewhere in Lampas. “Phone voice” is this phone’s own Greek voice through Web Speech, the one the Reader uses.</p>
     </header>
 
+    <section class="card" id="credits">
+      <h2 style="margin-top:0">Credits for these clips</h2>
+      <p class="dim">These voices are only tried here; none is in Lampas, so About does not credit them. Each clip is sound the voice made: no code or model of theirs is in the app. Clips are cut out of carrier sentences by the voice's own alignment, silence trimmed, cut to MP3 with <a href="https://ffmpeg.org">FFmpeg</a> (scripts/sounds-trial/make-clips.py).</p>
+      <ul class="dim">
+        <li><a href="https://github.com/rhasspy/piper">Piper</a>: engine <a href="https://github.com/rhasspy/piper/blob/master/LICENSE.md">MIT</a>; its voice el_GR-rapunzelina-low was trained on a <a href="https://www.kaggle.com/datasets/bryanpark/greek-single-speaker-speech-dataset">Greek single-speaker set</a> released CC0.</li>
+        <li><a href="https://github.com/idiap/coqui-ai-TTS">Coqui TTS</a> (the maintained fork): engine <a href="https://github.com/idiap/coqui-ai-TTS/blob/dev/LICENSE.txt">MPL-2.0</a>; its voice tts_models/el/cv/vits, trained on Common Voice Greek, is released BSD-3-Clause in its model list.</li>
+        <li><a href="https://github.com/resemble-ai/chatterbox">Chatterbox</a> by Resemble AI: <a href="https://github.com/resemble-ai/chatterbox/blob/master/LICENSE">MIT</a>.</li>
+        <li>The eSpeak NG column is credited on Lampas's About screen: it is the sound the app does use.</li>
+      </ul>
+    </section>
+
     <section class="card" id="voice-card">
       <h2 style="margin-top:0">Your phone’s Greek voice</h2>
       <p><label for="voices">Greek voices this phone lists: </label><select id="voices" aria-label="Greek voice"></select></p>

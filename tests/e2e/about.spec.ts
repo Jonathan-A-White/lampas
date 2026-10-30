@@ -17,7 +17,7 @@ test('About credits the data at phone width, reached from Settings', async ({ pa
   await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByRole('blockquote')).toContainText('If I have seen further it is by standing on the shoulders of Giants.');
   await expect(page.getByRole('blockquote')).toContainText('Isaac Newton');
-  const licence = page.getByRole('link', { name: 'CC BY 4.0', exact: true });
+  const licence = page.getByRole('link', { name: 'CC BY 4.0', exact: true }).first();
   await licence.scrollIntoViewIfNeeded();
   await expect(licence).toBeVisible();
   await expect(licence).toHaveAttribute('href', 'https://creativecommons.org/licenses/by/4.0/');
@@ -69,6 +69,26 @@ test.describe('at 390x844', () => {
       expect(box.y + box.height - 1 - (line.y + line.height), `${name} gap below the description`).toBeGreaterThanOrEqual(8);
     }
     await shot(page, 'about-buttons');
+  });
+
+  test('About: every credit and the intro take at most four lines, but the named licence notices (mw-5r3p30.875)', async ({ page }) => {
+    await openUnlocked(page);
+    await page.goto('/#/about');
+    await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
+    const lines = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll<HTMLElement>('main.screen section[aria-label="Texts and data"] li, main.screen section[aria-label="Type"] li, main.screen section[aria-label="Libraries the app runs on"] li, main.screen section[aria-label="Services and apps"] li, main.screen section[aria-label="Ideas and tools we borrowed"] li, main.screen section[aria-label="What built it"] li, main.screen blockquote + p, main.screen [data-bma-note] p')];
+      return rows.map((el) => {
+        const style = getComputedStyle(el);
+        const content = el.getBoundingClientRect().height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+        return { text: el.innerText.slice(0, 40), lines: Math.round(content / parseFloat(style.lineHeight)) };
+      });
+    });
+    expect(lines.length).toBe(42);
+    // the licence notices that must stay whole (CC BY 4.0, the maps' citation, the font copyrights) may take a line or two more
+    const LONG = /^(Tyndale House|TIPNR|Bible Mapper|Literata)/;
+    const tooLong = lines.filter((l) => l.lines > (LONG.test(l.text) ? 9 : 4)).map((l) => `${l.lines} lines: ${l.text}`);
+    expect(tooLong).toEqual([]);
+    await shot(page, 'about-short-credits');
   });
 
   test('About shows no HTML comment, and its first paragraph begins "Lampas stands on" (mw-5r3p30.883)', async ({ page }) => {
