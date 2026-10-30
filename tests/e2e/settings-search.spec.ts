@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { turnLogosOn } from './settings-group';
 
 // A Pixel-class phone: 412 px wide.
 test.use({ viewport: { width: 412, height: 915 } });
@@ -38,6 +39,7 @@ test('Settings search at phone width: a 48 px field at the top, "logos" lists th
 
 test('a search for "library" finds Your Logos library under Study resources, and opens that page at the row (mw-5r3p30.837)', async ({ page }) => {
   await openUnlocked(page);
+  await turnLogosOn(page);
   await page.goto('/#/settings');
   await page.getByRole('searchbox', { name: 'Search settings' }).fill('library');
   const answer = page.getByRole('button', { name: /^Your Logos library/ }).first();
@@ -52,6 +54,7 @@ test('a search for "library" finds Your Logos library under Study resources, and
 
 test('a book\'s title answers a row "BDAG · Your Logos library" that opens its kind page at the book (mw-rfjjzd.5)', async ({ page }) => {
   await openUnlocked(page);
+  await turnLogosOn(page);
   await page.goto('/#/settings');
   const search = page.getByRole('searchbox', { name: 'Search settings' });
   await search.fill('bdag');

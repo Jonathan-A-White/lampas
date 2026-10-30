@@ -1509,11 +1509,11 @@
                   "ipaLesson",
                   "resource.strongs",
                   "resource.logos",
+                  "logosBible",
                   "maps.biblemapper",
                   "maps.logosatlas",
                   "audioBible",
                   "readingPlan",
-                  "logosBible",
                   "dailyReview",
                   "dailyMemorize",
                   "dailyPlan",
@@ -1873,6 +1873,12 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "value"],
+            "properties": { "key": { "const": "logosBible" }, "value": { "type": "string", "maxLength": 80 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
             "properties": { "key": { "const": "maps.biblemapper" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
@@ -1892,12 +1898,6 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "readingPlan" }, "value": { "type": "string", "enum": ["off", "on"] } }
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["key", "value"],
-            "properties": { "key": { "const": "logosBible" }, "value": { "type": "string", "maxLength": 80 } }
           },
           {
             "type": "object",

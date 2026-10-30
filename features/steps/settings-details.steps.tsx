@@ -119,19 +119,17 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Bible in Logos is shown only while Logos is On', ({ Given, When, Then }) => {
     Given('Lampas is opened on Settings with nothing chosen', () => openSettings('study'));
-    Then('Settings has no section {string}', async (_, name: string) => {
+    Then('Settings has no row {string}', async (_, name: string) => {
       await settled();
-      expect(screen.queryByRole('heading', { name })).toBeNull();
       noGroup(name);
     });
     When('he turns the switch {string} On', turnsOn);
-    Then('Settings has the section {string}', async (_, name: string) => {
-      expect(await screen.findByRole('heading', { name, level: 2 })).toBeInTheDocument();
+    Then('Settings has the row {string}', async (_, name: string) => {
       expect(await screen.findByRole('group', { name })).toBeInTheDocument();
     });
     When('he turns the switch {string} Off', turnsOn);
-    Then('Settings no longer has the section {string}', async (_, name: string) => {
-      await waitFor(() => expect(screen.queryByRole('heading', { name })).toBeNull());
+    Then('Settings no longer has the row {string}', async (_, name: string) => {
+      await waitFor(() => expect(screen.queryByRole('group', { name })).toBeNull());
       noGroup(name);
     });
   });

@@ -299,7 +299,7 @@ const quizGoalEntry: SettingEntry = {
 // Bible in Logos (mw-5r3p30.841) is kept for each part of the canon: this setting is the New Testament's, the one `logosBible` always was. The Old Testament's and the Apocrypha's follow it until
 // each is picked and are rows of their own in rows.ts (PART_ROWS), not settings the tutor reads: its Settings request has no room for two more.
 const logosBibleEntry: SettingEntry = {
-  section: 'logos',
+  section: 'resources',
   dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
   key: 'logosBible',
   label: 'Bible in Logos',
@@ -602,10 +602,10 @@ export const SETTINGS: readonly SettingEntry[] = [
   englishAccentEntry,
   fromDefinition(ipaCourseSetting),
   ...resourceEntries,
+  logosBibleEntry,
   ...mapEntries,
   fromDefinition(audioBibleSetting),
   fromDefinition(readingPlanSetting),
-  logosBibleEntry,
   fromDefinition(dailyReviewSetting),
   fromDefinition(dailyMemorizeSetting),
   fromDefinition(dailyPlanSetting),

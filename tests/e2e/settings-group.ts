@@ -15,3 +15,11 @@ export async function leaveSettings(page: Page): Promise<void> {
   if (await back.isVisible()) await back.click();
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
 }
+
+/** Turns the Logos switch On in Study resources (a page of Settings), leaving the page open there: what hangs from it (Your Logos library, Bible in Logos, the Daily devotional) shows only while it is On (mw-rfjjzd.23). */
+export async function turnLogosOn(page: Page): Promise<void> {
+  await page.goto('/#/settings?group=study');
+  const logos = page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true });
+  if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();
+  await expect(logos).toHaveAttribute('aria-checked', 'true');
+}

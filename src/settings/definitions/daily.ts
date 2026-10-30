@@ -15,8 +15,11 @@ const ON_OFF = {
   ],
 } as const;
 
-const piece = (key: string, label: string, hint: string, help: string) =>
-  defineSetting<DailySwitch>({ key, default: 'on', allowed: ON_OFF, section: 'daily', label, hint, help });
+/** A piece that exists only to open Logos (the day's Psalms and Proverbs, the devotional) is drawn, and shown on Today, only while Logos is On (mw-rfjjzd.23). */
+const LOGOS_ON: Dependency = { key: 'resource.logos', shown: (value) => value === 'on' };
+
+const piece = (key: string, label: string, hint: string, help: string, dependsOn?: Dependency) =>
+  defineSetting<DailySwitch>({ key, default: 'on', allowed: ON_OFF, section: 'daily', label, hint, help, dependsOn });
 
 export const dailyReviewSetting = piece(
   'dailyReview',
@@ -44,6 +47,7 @@ export const dailyPsalmsSetting = piece(
   'Psalms and Proverbs',
   "Today holds the day's Psalms and Proverbs.",
   "Whether Today holds the day's Psalms and Proverbs: on day N, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N.",
+  LOGOS_ON,
 );
 
 export const dailyDevotionalSetting = piece(
@@ -51,6 +55,7 @@ export const dailyDevotionalSetting = piece(
   'Devotional',
   'Today holds one devotional for the day.',
   'Whether Today holds a devotional, opened in Logos at the day.',
+  LOGOS_ON,
 );
 
 export const devotionalSetting = defineSetting<string>({
@@ -64,6 +69,7 @@ export const devotionalSetting = defineSetting<string>({
   label: 'Which devotional',
   hint: 'The one Today shows, or Random: a different one each day.',
   help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library, named by its Logos resource id; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start. Random shows a different one each day, drawn from those On in Your Logos library; the same one all day.`,
+  dependsOn: LOGOS_ON,
 });
 
 export const devotionalDrawSetting = defineSetting<string>({

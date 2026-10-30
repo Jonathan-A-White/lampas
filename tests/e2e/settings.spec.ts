@@ -1,6 +1,6 @@
 import { expect, test, type Locator } from '@playwright/test';
 import { shot } from './shot';
-import { leaveSettings, openGroup } from './settings-group';
+import { leaveSettings, openGroup, turnLogosOn } from './settings-group';
 import { openUnlocked } from './unlocked';
 
 // These specs measure a 390 px phone screen, so they pin it themselves: run under the 'chromium' project (a bare
@@ -197,6 +197,8 @@ test('Settings > Quiz goal at phone width: an off Save looks as off as an off Cl
 
 test('Settings > Daily: a switch per piece, the devotional picker and Tick boxes; a change survives a reload', async ({ page }) => {
   await openUnlocked(page);
+  // the Psalms and the devotional rows show only while Logos is On (mw-rfjjzd.23)
+  await turnLogosOn(page);
   await page.goto('/#/settings?group=daily');
   const daily = page.locator('section[data-section="daily"]');
   await expect(daily.getByRole('heading', { name: 'Daily', exact: true, level: 2 })).toBeVisible();

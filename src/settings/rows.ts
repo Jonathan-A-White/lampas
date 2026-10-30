@@ -64,7 +64,6 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'speed', title: 'Reading speed' },
   { id: 'pronunciation', title: 'Pronunciation' },
   { id: 'resources', title: 'Study resources', hint: 'Links from a word to the tools you own. Only links are added; no lexicon text is kept in Lampas. All start off.' },
-  { id: 'logos', title: 'Bible in Logos' },
   { id: 'maps', title: 'Maps', hint: 'Which atlases the Maps door and the tutor draw on.' },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.' },
   { id: 'tips', title: 'Tips' },
@@ -94,7 +93,7 @@ export const GROUPS: readonly SettingsGroup[] = [
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
-  { id: 'study', title: 'Study resources', hint: 'Your Logos library, links to the tools you own, Bible in Logos and maps.', sections: ['resources', 'logos', 'maps'] },
+  { id: 'study', title: 'Study resources', hint: 'Your Logos library, links to the tools you own, Bible in Logos and maps.', sections: ['resources', 'maps'] },
   { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests, Help and About.', sections: ['aboutYou', 'memory', 'more'] },
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
 ];
@@ -137,18 +136,20 @@ const REQUESTS: readonly SettingsRow[] = [
     hint: 'Ask for another devotional to be added to Which devotional.',
     help: 'Search your Logos list for the devotional, or type its title, and Send. The makers add it to the list when they find its Logos id; Your requests follows it. It goes to the factory through the tutor\'s mill, so it needs a licence.',
     section: 'daily',
+    dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
   },
 ];
 
 /** Your Logos library (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8): the one line that says how many books are on and opens the Library, where the lexicons, grammar books, commentaries and
- *  the rest are chosen, and his Verse lists are reached. The first row of Study resources, beside Bible in Logos (mw-5r3p30.837; mw-5r3p30.752 had put it on the Settings home), drawn
- *  whether Logos is On or not (the Library holds more than Logos books). A door, not a setting: the tutor does not read or change it (isTalkable) and learns the shelf as `works`, never as settings. */
+ *  the rest are chosen, and his Verse lists are reached. A row of Study resources directly under the Logos switch with Bible in Logos (mw-5r3p30.837; mw-5r3p30.752 had put it on the Settings home),
+ *  drawn only while Logos is On (mw-rfjjzd.23: the Logos switch governs everything Logos), no licence needed. A door, not a setting: the tutor does not read or change it (isTalkable) and learns the shelf as `works`, never as settings. */
 const LIBRARY_ROW: SettingsRow = {
   key: 'library',
   label: 'Your Logos library',
   hint: 'The books of your Logos library that Lampas opens, and which are on.',
-  help: 'Lampas cannot see your Logos library, so you say which books to use. Open it to tick them by hand or to import your list. The word sheet, the idea sheet and the tutor use the ones that are on; the devotionals that are on are the ones Daily draws from.',
+  help: 'Lampas cannot see your Logos library, so you say which books to use. Open it to tick them by hand or to import your list. The word sheet, the idea sheet and the tutor use the ones that are on; the devotionals that are on are the ones Daily draws from. It shows only while Logos is On.',
   section: 'resources',
+  dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
 };
 
 /** Bible in Logos for the Old Testament and for the Apocrypha (mw-5r3p30.841): the New Testament's is the setting `logosBible` (registry.ts), these two are rows of the same section drawn after it. Each follows
@@ -161,7 +162,7 @@ const PART_ROWS: readonly SettingsRow[] = [
   label: `${part} Bible in Logos`,
   hint: `The Bible that ${part} verses open in, in Logos.`,
   help: `The Bible in your Logos library that ${part} verses open in. It is the New Testament's Bible until you pick one. It shows only while Logos is On. Library > Bibles sets all three at once.`,
-  section: 'logos',
+  section: 'resources',
   dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
 }));
 
@@ -211,7 +212,8 @@ const rowOfDefinition = (def: typeof tutorDoorSetting | typeof handSetting): Set
 const TUTOR_DOOR_ROW: SettingsRow = rowOfDefinition(tutorDoorSetting);
 const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
 
-const unordered: readonly SettingsRow[] = [LIBRARY_ROW, TUTOR_DOOR_ROW, ...SETTINGS.map(rowOfSetting), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...PART_ROWS, ...REQUESTS, DEVELOPER, ...LINKS];
+// the library's door is listed just before Bible in Logos, so Study resources reads: the switches, Your Logos library, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
+const unordered: readonly SettingsRow[] = [TUTOR_DOOR_ROW, ...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [LIBRARY_ROW, rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
@@ -223,8 +225,16 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   const langOf = (r: SettingsRow) => resourceOf(r.key.slice('resource.'.length))?.lang ?? 'both';
   // ordered only: a switch the dial hides is already not among the rows (dependsOn), and one a link forces into view stays
   const ordered = resourcesForLevel(rows.filter(isSwitch), Math.max(level, 1) as GreekLevel, langOf);
+  // the rows that hang from a switch (Your Logos library and Bible in Logos from Logos) stay directly beneath it, wherever the dial puts it
+  const under = (sw: SettingsRow): SettingsRow[] => rows.filter((r) => r.section === sw.section && r.dependsOn?.key === sw.key);
+  const hung = new Set(rows.filter(isSwitch).flatMap(under));
   let next = 0;
-  return rows.map((r) => (isSwitch(r) ? ordered[next++] : r)).filter((r): r is SettingsRow => r !== undefined);
+  return rows.flatMap((r) => {
+    if (hung.has(r)) return [];
+    if (!isSwitch(r)) return [r];
+    const sw = ordered[next++];
+    return sw ? [sw, ...under(sw)] : [];
+  });
 }
 
 /** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, Tutor door, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */

@@ -4,6 +4,7 @@ import { expect, test } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
+import { turnLogosOn } from './settings-group';
 import { openUnlocked } from './unlocked';
 
 const PHONE = { width: 390, height: 844 };
@@ -69,6 +70,8 @@ test('Ask for a devotional on Settings > Daily opens the sheet with the kind a d
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.setViewportSize(PHONE);
+  // Ask for a devotional shows only while Logos is On (mw-rfjjzd.23)
+  await turnLogosOn(page);
   await page.goto('/#/settings?group=daily');
 
   const open = page.getByRole('button', { name: 'Ask for a devotional' });
