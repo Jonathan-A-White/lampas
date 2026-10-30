@@ -161,7 +161,7 @@ export function useTalk(
             learnerSummary(),
             learnerGrammar().catch(() => undefined),
             scope.quiz ? listStudyWay() : Promise.resolve([]),
-            getStudyResources().catch(() => ({ on: [], options: {} })),
+            getStudyResources().catch(() => ({ on: [] as string[], options: {} })),
             scope.quiz ? getQuizGoal() : Promise.resolve(''),
             requestsForTutor().catch(() => []),
             learnerProfile().catch(() => undefined),
@@ -197,7 +197,7 @@ export function useTalk(
           // the tutor's resources and works follow the higher of the two dials (mw-gdcyf98.3); the Greek offer, below, the Greek one
           const greekLevel = higherInterest(settings);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
-          const request = fitHistory(await withTutorFacts(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel), kept && { text: kept.summary, covered: kept.covered }, today, chapterMaps, readingSet), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
+          const request = fitHistory(await withTutorFacts(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, chosen.on.includes('logos') ? worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel) : [], kept && { text: kept.summary, covered: kept.covered }, today, chapterMaps, readingSet), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const options = {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,

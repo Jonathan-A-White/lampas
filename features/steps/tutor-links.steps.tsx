@@ -99,6 +99,8 @@ describeFeature(feature, ({ Scenario }) => {
   const ask = () => askAboutVerse28();
   const work = (_: unknown, id: string, reference?: string) => open([{ kind: 'work', work: id, ...(reference ? { reference } : {}) }]);
   const switchOnWork = async (_: unknown, id: string) => {
+    // a work of his library opens in Logos, so it needs the Logos switch (mw-rfjjzd.23)
+    await setResourceOn('logos', true);
     await setWorks([id]);
   };
   const quietly = async () => {

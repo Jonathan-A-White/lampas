@@ -8,7 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { setReaderView, setState, setWeave } from '../../src/data/repositories';
+import { setReaderView, setResourceOn, setState, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
@@ -47,6 +47,8 @@ async function open(work: string, reference: string): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.answers.clear(), db.library.clear()]);
   await setReaderView('english');
   await setWeave('off');
+  // the shelf's links and digest need the Logos switch (mw-rfjjzd.23)
+  await setResourceOn('logos', true);
   await seedHisWords();
 }
 
@@ -107,6 +109,18 @@ describeFeature(feature, ({ Scenario }) => {
     And('the shelf holds {string}', holds);
     When('he asks the tutor {string} about verse 28', ask);
     Then('the answer shows the study link {string} to {string}', shows);
+  });
+
+  Scenario('With Logos Off the tutor is told no books and a link to a book draws nothing', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 and the tutor answers with a link to the work {string} at {string}', opened);
+    And('the shelf holds {string}', holds);
+    And('Logos is switched Off', () => setResourceOn('logos', false));
+    When('he asks the tutor {string} about verse 28', ask);
+    Then('the answer shows no study links', quietly);
+    And('the request named no books', () => {
+      const input = fake.received.at(-1)?.input as { works?: unknown[] };
+      expect(input.works ?? []).toEqual([]);
+    });
   });
 
   Scenario('The request carries the pinned book first and the books that fit the place, and no lexicon', ({ Given, And, When, Then }) => {

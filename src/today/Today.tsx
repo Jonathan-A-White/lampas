@@ -23,6 +23,7 @@ import { usePlan } from '../plan/usePlan';
 import { useMovePlace } from '../plan/useMovePlace';
 import { useSendOff } from '../plan/useSendOff';
 import { AnotherBookButton } from '../library/InLogosDoors';
+import { useLogosOn } from '../useLogosOn';
 import { devotionalLink } from '../resources/logosDevotional';
 import { bibleFor, chapterLink, verseLink } from '../resources/logosBible';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from '../resources/audioBible';
@@ -322,8 +323,11 @@ const COULD_HOLD: readonly { key: string; name: string; text: string }[] = [
   { key: 'dailyDevotional', name: 'Devotional', text: 'one devotional for the day, opened in Logos' },
 ];
 
+/** The pieces that exist to open Logos: drawn only while it is On. */
+const LOGOS_PIECES: readonly string[] = ['dailyPsalms', 'dailyDevotional'];
+
 /** With nothing switched on: the first time, a kind explanation of what Today could hold; once he has changed a Daily row, only where to choose. */
-function Nothing() {
+function Nothing({ logosOn }: { logosOn: boolean }) {
   const explained = useLiveQuery(async () => ({ at: await getExplained() }), []);
   useEffect(() => {
     if (explained && explained.at === undefined) void noteExplained();
@@ -344,7 +348,7 @@ function Nothing() {
       <p className="text-lg font-medium">Today is empty for now.</p>
       <p className="pt-1 text-base text-muted">It can gather the day in one place, and you choose what goes on it. Turn on any of these:</p>
       <ul className="divide-y divide-line pt-3">
-        {COULD_HOLD.map((piece) => (
+        {COULD_HOLD.filter((piece) => logosOn || !LOGOS_PIECES.includes(piece.key)).map((piece) => (
           <li key={piece.key} className="py-2">
             <p className="text-base font-medium">{piece.name}</p>
             <p className="text-base text-muted">{piece.text}</p>
@@ -364,8 +368,11 @@ export function Today() {
   const review = useSetting(dailyReviewSetting);
   const memorize = useSetting(dailyMemorizeSetting);
   const plan = useSetting(dailyPlanSetting);
-  const psalms = useSetting(dailyPsalmsSetting);
-  const devotional = useSetting(dailyDevotionalSetting);
+  const kept = { psalms: useSetting(dailyPsalmsSetting), devotional: useSetting(dailyDevotionalSetting) };
+  const logosOn = useLogosOn();
+  // the Psalms and the devotional exist to open Logos: while it is Off they are not drawn and not told to the tutor (what he set is kept; mw-rfjjzd.23)
+  const psalms = kept.psalms === undefined || logosOn === undefined ? undefined : logosOn ? kept.psalms : 'off';
+  const devotional = kept.devotional === undefined || logosOn === undefined ? undefined : logosOn ? kept.devotional : 'off';
   const tickBoxes = useSetting(dailyTicksSetting);
   const day = useLiveQuery(() => getDay(date), [date]);
   const scrollRef = useScrollMemory('today');
@@ -393,7 +400,7 @@ export function Today() {
       <ScreenHeader title="Today" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} action={<HeaderButton onClick={() => openSetting('dailyReview')}>Settings</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-3">
         <div>
-          {!ready ? null : none ? <Nothing /> : null}
+          {!ready ? null : none ? <Nothing logosOn={logosOn === true} /> : null}
           {ready && review === 'on' ? <ReviewPiece ticks={ticks} /> : null}
           {ready && memorize === 'on' ? <MemorizePiece ticks={ticks} /> : null}
           {ready && plan === 'on' ? <PlanPiece ticks={ticks} date={date} /> : null}

@@ -131,7 +131,8 @@ async function openToday(page: Page, rows: { key: string; value: string }[] = []
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  if (rows.length > 0) await putSettings(page, rows);
+  // Psalms and Proverbs and the devotional are drawn only while Logos is On (mw-rfjjzd.23): it is On here unless a test says otherwise
+  await putSettings(page, rows.some((r) => r.key === 'resource.logos') ? rows : [...rows, { key: 'resource.logos', value: 'on' }]);
   if (options.fixed) await page.clock.setFixedTime(FIXED);
   await page.goto('/#/today');
   await page.reload();
@@ -231,7 +232,7 @@ const STATE = 'readingPlanState';
 const planAt = (code: string, chapter: number) => ({ key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: { code, chapter }, done: [] }) });
 
 test('the plan row offers Read in Logos only with Logos on and Listen in Audible only with an Audio Bible', async ({ page }) => {
-  await openToday(page, [{ key: 'readingPlan', value: 'on' }, planAt('gen', 1)]);
+  await openToday(page, [{ key: 'readingPlan', value: 'on' }, { key: 'resource.logos', value: 'off' }, planAt('gen', 1)]);
   const plan = piece(page, 'Reading plan');
   await expect(plan).toContainText('Next: Genesis 1');
   // neither is on: no link to open; an Old Testament chapter is read in Lampas (mw-gdcyf98.4), so it has no 'Turn on Logos to read it' either
