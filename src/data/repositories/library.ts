@@ -17,8 +17,11 @@ import { db, type ExportedRow, type LibraryRow } from '../db';
 
 export type ShelfState = 'off' | 'on' | 'pinned';
 
-/** How many books of one kind may be Pinned (a tile row on the word sheet, the lines of the idea sheet). */
+/** How many books of one kind and language may be Pinned (a tile row on the word sheet, which is one language, the lines of the idea sheet). */
 export const MAX_PINS = 3;
+
+/** The pins a book counts against: its kind and its language, so three Greek lexicons and three Hebrew ones can be Pinned together. */
+export const pinGroup = (entry: Pick<CatalogueEntry, 'kind' | 'lang'>): string => `${entry.kind}:${entry.lang}`;
 
 /** Why the shelf did not do what it was asked: the catalogue has no such book, a kind has its pins, a Devotional cannot be Pinned, a kind holds one at a time. */
 export type ShelfRefusal = 'no-such-book' | 'too-many-pins' | 'no-pin-for-devotionals' | 'one-at-a-time';
@@ -198,7 +201,7 @@ export async function stateOf(resource: string): Promise<ShelfState> {
   return (await rowsNow()).find((r) => r.id === resource)?.state ?? 'off';
 }
 
-/** Puts one book in a state. Refused when the catalogue has no such book, when it would be a kind's fourth pin, when it is a Devotional being Pinned, and a Bible going On
+/** Puts one book in a state. Refused when the catalogue has no such book, when it would be the fourth pin of a kind and language, when it is a Devotional being Pinned, and a Bible going On
  *  takes the place of the one On (Bibles are one at a time). Off removes the row. */
 export async function setState(resource: string, state: ShelfState, now = Date.now()): Promise<ShelfResult> {
   await ensureShelf();
@@ -206,6 +209,11 @@ export async function setState(resource: string, state: ShelfState, now = Date.n
   if (!entry) return refused('no-such-book');
   return db.transaction('rw', db.library, async () => put(entry, state, now));
 }
+
+const pinGroupOf = (resource: string): string | undefined => {
+  const entry = entryOf(resource);
+  return entry ? pinGroup(entry) : undefined;
+};
 
 /** setState inside a transaction. */
 async function put(entry: CatalogueEntry, state: ShelfState, now: number): Promise<ShelfResult> {
@@ -216,8 +224,10 @@ async function put(entry: CatalogueEntry, state: ShelfState, now: number): Promi
   }
   if (state === 'pinned') {
     if (entry.kind === 'devotional') return refused('no-pin-for-devotionals');
-    if (entry.kind !== 'bible' && was?.state !== 'pinned' && (await db.library.where('kind').equals(entry.kind).filter((r) => r.state === 'pinned').count()) >= MAX_PINS) {
-      return refused('too-many-pins');
+    if (entry.kind !== 'bible' && was?.state !== 'pinned') {
+      const group = pinGroup(entry);
+      const same = await db.library.where('kind').equals(entry.kind).filter((r) => r.state === 'pinned' && pinGroupOf(r.id) === group).count();
+      if (same >= MAX_PINS) return refused('too-many-pins');
     }
   }
   if (entry.kind === 'bible') await db.library.where('kind').equals('bible').filter((r) => r.id !== entry.resource).delete();
@@ -422,7 +432,10 @@ export async function planImport(rows: readonly ExportRow[]): Promise<ImportPlan
   const earlier = new Set(before.filter((r) => r.matched).map((r) => r.resource));
   const listed = result.matched.filter(isListed).sort((a, b) => (catalogueOrder.get(a.entry.resource) ?? 1e6) - (catalogueOrder.get(b.entry.resource) ?? 1e6));
   const pins = new Map<string, number>();
-  for (const r of shelf) if (r.state === 'pinned') pins.set(r.kind, (pins.get(r.kind) ?? 0) + 1);
+  for (const r of shelf) {
+    const group = r.state === 'pinned' ? pinGroupOf(r.id) : undefined;
+    if (group) pins.set(group, (pins.get(group) ?? 0) + 1);
+  }
   let bible = shelf.some((r) => r.kind === 'bible');
   const turning: Turning[] = [];
   for (const m of listed) {
@@ -432,8 +445,8 @@ export async function planImport(rows: readonly ExportRow[]): Promise<ImportPlan
       if (bible) continue;
       bible = true;
     }
-    const pinned = entry.starts === 'pinned' && entry.kind !== 'devotional' && entry.kind !== 'bible' && (pins.get(entry.kind) ?? 0) < MAX_PINS;
-    if (pinned) pins.set(entry.kind, (pins.get(entry.kind) ?? 0) + 1);
+    const pinned = entry.starts === 'pinned' && entry.kind !== 'devotional' && entry.kind !== 'bible' && (pins.get(pinGroup(entry)) ?? 0) < MAX_PINS;
+    if (pinned) pins.set(pinGroup(entry), (pins.get(pinGroup(entry)) ?? 0) + 1);
     turning.push({ entry, state: pinned ? 'pinned' : 'on' });
   }
   return { rows: [...rows], result, turning, kept: listed.length - turning.length, waiting: result.matched.length - listed.length };

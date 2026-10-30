@@ -1,7 +1,7 @@
 // src/library/kinds.ts — what the Library screen says of each of the seven kinds (docs/design/library-at-scale.md 3.3 and 3.4): their names, the help line of a kind's page, what Pin means for
 // them, and the count line a row reads ('19 on · 2 pinned'). Pure: the screens read the shelf and hand the rows here.
 import { MAX_PINS, type LibraryRow, type ShelfState } from '../data/repositories';
-import { entryOf, KINDS, type CatalogueEntry, type Kind } from '../resources/catalogue';
+import { entriesOf, entryOf, KINDS, type CatalogueEntry, type Kind } from '../resources/catalogue';
 
 /** How a kind's rows are set: Off | On | Pin; Off | On (Devotionals have no Pin, the Daily page chooses among them); Off | Chosen (Bibles, one at a time). */
 export type Steps = 'pin' | 'on' | 'chosen';
@@ -73,8 +73,16 @@ export const STATE_LABEL = { off: 'Off', on: 'On', pinned: 'Pinned' } as const;
 
 const NUMBER_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five'];
 
-/** The line a refused pin gives: 'Three pinned already: unpin one first'. */
-export const pinRefusal = (): string => `${NUMBER_WORDS[MAX_PINS] ?? MAX_PINS} pinned already: unpin one first`;
+const LANGUAGE_WORDS: Partial<Record<CatalogueEntry['lang'], string>> = { grc: 'Greek', he: 'Hebrew' };
+
+/** The line a refused pin gives: 'Three pinned already: unpin one first'; for a kind that holds books of two languages (the lexicons) the pins are counted in the book's language,
+ *  and the line names it: 'Three Hebrew lexicons pinned already: unpin one first'. */
+export function pinRefusal(entry: CatalogueEntry): string {
+  const count = NUMBER_WORDS[MAX_PINS] ?? MAX_PINS;
+  const language = LANGUAGE_WORDS[entry.lang];
+  const mixed = new Set(entriesOf(entry.kind).map((e) => e.lang)).size > 1;
+  return mixed && language ? `${count} ${language} ${infoOf(entry.kind).plural.toLowerCase()} pinned already: unpin one first` : `${count} pinned already: unpin one first`;
+}
 
 /** The rows of the shelf that are books of the catalogue, by Resource ID. */
 export function shelfStates(rows: readonly LibraryRow[] | undefined): Map<string, ShelfState> {
