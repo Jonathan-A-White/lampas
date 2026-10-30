@@ -2,7 +2,7 @@
 // so a status that comes back can be matched to it. A row is written when the mill has the grist, with status 'sent'; a request-status record
 // from the mill (Postern's docs/protocol.md section 19, pulled by src/services/requestStatus.ts) moves it on (pwa-kit/requests' applyUpdates decides how; this file is Dexie as its store). The cursor of the pulling is kept
 // in the settings store ('requestsCursor': a number, no table).
-import { applyUpdates, dayOf, GROWN_UP, REQUEST_STATUSES as KIT_STATUSES, type RequestRecord, type RequestStatus as KitStatus, type RequestStore, type StatusUpdate } from 'pwa-kit/requests';
+import { applyUpdates, dayOf, FINAL_STATUSES, GROWN_UP, REQUEST_STATUSES as KIT_STATUSES, type RequestRecord, type RequestStatus as KitStatus, type RequestStore, type StatusUpdate } from 'pwa-kit/requests';
 import { db, type RequestRow } from '../db';
 
 export type { RequestRow };
@@ -62,13 +62,24 @@ function rowOf(row: RequestRow, moved: RequestRecord): RequestRow {
   return kept;
 }
 
-/** Applies a status record to the request it names. A request this phone does not hold, or a record no newer than the one the row already took,
- * changes nothing (a status per change, the newest by `ts` shown: the kit's applyUpdates). Returns whether the row changed. */
+const isFinalStatus = (status: string): boolean => (FINAL_STATUSES as readonly string[]).includes(status);
+/** The statuses that come before an answer: a record of one is a step on the way, never what a request that was answered goes back to. */
+const ON_THE_WAY = ['filed', 'building'];
+
+/** Applies a status record to the request it names. A request this phone does not hold changes nothing. The kit's applyUpdates shows the newest by `ts`, and this
+ * adds what `ts` alone gets wrong (mw-5r3p30.884): an answer (landed, declined, adopted as a setting, built another way) is never taken back by a filed or building
+ * record, however late the mill stamped it (the mill sends 'filed' again when `mw grist request` is run again), and an answer a row has not taken yet is taken
+ * over a filed or building record that is stamped later. Two answers, or any other pair, go by `ts`. Returns whether the row changed. */
 export function applyRequestStatus(record: StatusRecord): Promise<boolean> {
   return db.transaction('rw', db.requests, async () => {
     const row = await db.requests.get(record.request);
     if (!row) return false;
-    const { records, changed } = applyUpdates([recordOf(row)], [record]);
+    const held = isFinalStatus(row.status);
+    const answer = isFinalStatus(record.status);
+    if (held && ON_THE_WAY.includes(record.status)) return false;
+    const base = recordOf(row);
+    if (answer && !held && ON_THE_WAY.includes(row.status)) delete base.statusAt;
+    const { records, changed } = applyUpdates([base], [record]);
     if (changed.length === 0) return false;
     await db.requests.put(rowOf(row, records[0]));
     return true;
