@@ -7,6 +7,28 @@ The switches and the names he types are kept in the settings store (`resource.<i
 `resourceOption.<id>` the typed text; `src/data/repositories/resources.ts`) and survive a close. They are not in the
 settings registry (`src/settings/registry.ts`), so the Bible talk cannot change them.
 
+<!-- toc -->
+
+- [The two that ship](#the-two-that-ship)
+- [Logos: his lexicons, the scheme and the fallback](#logos-his-lexicons-the-scheme-and-the-fallback)
+- [A Hebrew word in Logos (mw-5vvlay.2, PROVISIONAL, UNVERIFIED on a device)](#a-hebrew-word-in-logos-mw-5vvlay2-provisional-unverified-on-a-device)
+- [Grammar books in Logos: Read more on an idea sheet (mw-5r3p30.381, PROVISIONAL, Governor to confirm)](#grammar-books-in-logos-read-more-on-an-idea-sheet-mw-5r3p30381-provisional-governor-to-confirm)
+- [An Old Testament verse's actions and resources in this epic (mw-uqlxea.3)](#an-old-testament-verses-actions-and-resources-in-this-epic-mw-uqlxea3)
+- [Old Testament chapters in Logos (mw-5r3p30.71)](#old-testament-chapters-in-logos-mw-5r3p3071)
+- [Devotionals: a Logos devotional at a date (mw-1fwagb.2, PROVISIONAL, Governor to confirm)](#devotionals-a-logos-devotional-at-a-date-mw-1fwagb2-provisional-governor-to-confirm)
+- [Bible Word Study's lemma](#bible-word-studys-lemma)
+- [Works he holds in Logos (mw-5r3p30.675, PROVISIONAL, Governor to confirm)](#works-he-holds-in-logos-mw-5r3p30675-provisional-governor-to-confirm)
+  - [A place inside a book (mw-5r3p30.708, PROVISIONAL, UNVERIFIED on a device)](#a-place-inside-a-book-mw-5r3p30708-provisional-unverified-on-a-device)
+- [Greek or English: the dial and the lists (mw-5r3p30.710, PROVISIONAL, Governor to confirm)](#greek-or-english-the-dial-and-the-lists-mw-5r3p30710-provisional-governor-to-confirm)
+- [The catalogue (mw-rfjjzd.2, PROVISIONAL; docs/design/library-at-scale.md 3.1)](#the-catalogue-mw-rfjjzd2-provisional-docsdesignlibrary-at-scalemd-31)
+- [Share his Logos list to Lampas (mw-rfjjzd.7, PROVISIONAL, UNVERIFIED on a device; docs/design/library-at-scale.md 5.1)](#share-his-logos-list-to-lampas-mw-rfjjzd7-provisional-unverified-on-a-device-docsdesignlibrary-at-scalemd-51)
+- [The Logos Atlas and the Lexham Geographic Commentary on the Maps sheet (mw-zbjgn3r.7, PROVISIONAL, UNVERIFIED on a device)](#the-logos-atlas-and-the-lexham-geographic-commentary-on-the-maps-sheet-mw-zbjgn3r7-provisional-unverified-on-a-device)
+- [How to add a resource](#how-to-add-a-resource)
+- [The tutor's links (mw-5r3p30.75, PROVISIONAL, Governor to confirm)](#the-tutors-links-mw-5r3p3075-provisional-governor-to-confirm)
+- [Audio Bible: Listen in Audible (mw-5r3p30.390, mw-5r3p30.451)](#audio-bible-listen-in-audible-mw-5r3p30390-mw-5r3p30451)
+
+<!-- /toc -->
+
 ## The two that ship
 
 Accordance is built but **not listed** (mw-5r3p30.738: the Governor had not tested it, so a reader is not offered it). `src/resources/accordance.ts` and its store ids in `appStore.ts` stay, and `tests/unit/resources.test.ts` keeps a test that it still builds its link. To list it again, add `import { accordance } from './accordance';` to `src/resources/index.ts` and put `accordance` after `logos` in `RESOURCES`, then `npm run grind:build`; its switch, its Study row and the tutor's knowledge of it return with that one line. A saved `resource.accordance` choice on a phone is ignored while it is unlisted. Asked about it, the tutor says Lampas does not link to it today and points to Settings > More > Ask for more. A spec that needs an app link with no https fallback lists `tests/support/sample-app.ts`'s made-up app.

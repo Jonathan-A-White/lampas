@@ -23,6 +23,20 @@ A shorter reading comes from what he tapped, never from the setting. Each reads 
 The other readings are not a span of the Bible: *Read it aloud* on a tutor's answer or a page of prose (About, My study way, the Preface) reads that text, a Talk answer likewise (below).
 The section heading is read from the data whether or not Settings > Section headings shows it.
 
+<!-- toc -->
+
+- [Crossing into another chapter](#crossing-into-another-chapter)
+- [The speaking bar (mw-m7v5kc.3)](#the-speaking-bar-mw-m7v5kc3)
+- [Pages of prose (mw-5r3p30.128)](#pages-of-prose-mw-5r3p30128)
+- [The tutor's responses (mw-5r3p30.93)](#the-tutors-responses-mw-5r3p3093)
+- [Hebrew in the tutor's text (mw-5r3p30.97)](#hebrew-in-the-tutors-text-mw-5r3p3097)
+- [A respelling of a Greek sound (mw-5r3p30.272)](#a-respelling-of-a-greek-sound-mw-5r3p30272)
+- [A speaker on any text he may want heard (mw-5r3p30.238)](#a-speaker-on-any-text-he-may-want-heard-mw-5r3p30238)
+- [Read lessons to me (mw-5r3p30.366)](#read-lessons-to-me-mw-5r3p30366)
+- [A Hebrew reading (mw-gdcyf98.14)](#a-hebrew-reading-mw-gdcyf9814)
+
+<!-- /toc -->
+
 ## Crossing into another chapter
 
 Either Play to goes on into the next chapter of the same book, and End of the Bible goes on from a book's last chapter into the first chapter of the next book (Romans 16 into 1 Corinthians 1). The reading (`src/speech/readAloud.ts`):

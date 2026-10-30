@@ -8,6 +8,17 @@ Needs the installed Lampas on an Android phone with Chrome, on the updated versi
 tap to reload"), a connection to the tutor, and Logos with a lexicon entry (BDAG **δακρύω** is the example). Have at least one
 earlier talk in Lampas, so there is a latest talk to continue.
 
+<!-- toc -->
+
+- [Share a Logos screenshot into your latest talk](#share-a-logos-screenshot-into-your-latest-talk)
+- [Share a second screenshot to a new talk](#share-a-second-screenshot-to-a-new-talk)
+- [Paste a copied picture in a talk](#paste-a-copied-picture-in-a-talk)
+- [If Lampas is missing from the share list](#if-lampas-is-missing-from-the-share-list)
+- [Right](#right)
+- [Known differences (his word decides which become stories)](#known-differences-his-word-decides-which-become-stories)
+
+<!-- /toc -->
+
 ## Share a Logos screenshot into your latest talk
 
 1. In Logos open the entry for **δακρύω** (BDAG) and take a screenshot.

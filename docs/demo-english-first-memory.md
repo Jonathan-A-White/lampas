@@ -10,6 +10,16 @@ behaves as written, he says "Looks good".
 Needs the installed Lampas on an Android phone with Chrome, on the updated version (reload when the app says "Update ready,
 tap to reload"), a licence (the AI is part of what is checked) and a connection to the tutor.
 
+<!-- toc -->
+
+- [Start as a new reader](#start-as-a-new-reader)
+- [One gentle offer, and a remembered no](#one-gentle-offer-and-a-remembered-no)
+- [Greek, when you ask for it](#greek-when-you-ask-for-it)
+- [Memory in Settings](#memory-in-settings)
+- [The notes the tutor wished he had](#the-notes-the-tutor-wished-he-had)
+
+<!-- /toc -->
+
 ## Start as a new reader
 
 1. Clean start: open **Settings** (the gear), then **About**, and tap the version number seven times: a note says

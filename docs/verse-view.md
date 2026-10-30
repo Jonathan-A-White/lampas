@@ -39,6 +39,19 @@ The row is one line while each label has room for two lines of its own (a contai
   `Talk about verse N` under Ask the tutor, and a long press on a verse number still talks about it.
 * The view is under the sheets (z-5): the word sheet, the Grammar sheet and the Talk sheet open over it.
 
+<!-- toc -->
+
+- [Listen is a player (mw-5r3p30.130)](#listen-is-a-player-mw-5r3p30130)
+- [A passage (mw-5r3p30.73)](#a-passage-mw-5r3p3073)
+- [A lesson's range (mw-z370x5.2)](#a-lessons-range-mw-z370x52)
+- [Maps (mw-zbjgn3r.2)](#maps-mw-zbjgn3r2)
+- [In Logos and In another book… (mw-rfjjzd.9)](#in-logos-and-in-another-book-mw-rfjjzd9)
+- [Quiz me (mw-5r3p30.74)](#quiz-me-mw-5r3p3074)
+- [My study way (mw-5r3p30.76)](#my-study-way-mw-5r3p3076)
+- [Quiz goal (mw-5r3p30.185)](#quiz-goal-mw-5r3p30185)
+
+<!-- /toc -->
+
 ## Listen is a player (mw-5r3p30.130)
 
 The Governor, Postern general (2026-10-09): holding a bar to listen to a long passage "doesn't feel right"; push to talk is fine, push to listen is not. Listen is

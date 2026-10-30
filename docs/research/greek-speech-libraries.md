@@ -7,6 +7,17 @@ claim could not be checked it says so.
 The ask (the Governor, Postern general, 2026-10-12 ~22:58Z, about the 'pnev' screenshot, mw-5r3p30.272): "are there open source libraries
 that already do all this ... good ones ... are we reinventing the wheel or is this something key for us to build."
 
+<!-- toc -->
+
+- [The short answer](#the-short-answer)
+- [What Lampas built](#what-lampas-built)
+- [Candidates](#candidates)
+- [What the two bugs actually need](#what-the-two-bugs-actually-need)
+- [Recommendation](#recommendation)
+- [What this story did not do](#what-this-story-did-not-do)
+
+<!-- /toc -->
+
 ## The short answer
 
 * **Partly reinventing, mostly not.** Good open source exists for one slice of this: *Greek spelling to IPA* (espeak-ng) and, for a

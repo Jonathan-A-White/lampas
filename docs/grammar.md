@@ -10,6 +10,42 @@ the placement, the drills, the levels and the weave's grammar dial all key on.
 
 Code: `src/data/grammar/ladder.ts`. It is pure: no store and no screen.
 
+<!-- toc -->
+
+- [What an idea is](#what-an-idea-is)
+- [Functions](#functions)
+- [Marks that change the word, and enclitics](#marks-that-change-the-word-and-enclitics)
+- [The sound rules, and words that sound alike](#the-sound-rules-and-words-that-sound-alike)
+- [The prepositions one by one, and compound verbs](#the-prepositions-one-by-one-and-compound-verbs)
+- [Patterns](#patterns)
+- [Sentences](#sentences)
+- [What a passage needs](#what-a-passage-needs)
+- [Questions that drill an idea](#questions-that-drill-an-idea)
+- [Drill it, the engine](#drill-it-the-engine)
+- [The idea sheet](#the-idea-sheet)
+- [Placement](#placement)
+- [What his right answers show](#what-his-right-answers-show)
+- [The Goal screen](#the-goal-screen)
+- [Graded verses](#graded-verses)
+- [One idea at a time](#one-idea-at-a-time)
+- [One choice to know](#one-choice-to-know)
+- [The ladder](#the-ladder)
+- [The Hebrew ladder](#the-hebrew-ladder)
+- [Approaches](#approaches)
+  - [Passage lessons and where they are kept (mw-z370x5.1)](#passage-lessons-and-where-they-are-kept-mw-z370x51)
+  - [Passage lessons: the Lesson strip and Check (mw-z370x5.2, PROVISIONAL)](#passage-lessons-the-lesson-strip-and-check-mw-z370x52-provisional)
+  - [BMA Tutor (not listed)](#bma-tutor-not-listed)
+  - [Adding an approach (a second path)](#adding-an-approach-a-second-path)
+  - [Drill it, the runs kept](#drill-it-the-runs-kept)
+  - [Drill it on the idea sheet](#drill-it-on-the-idea-sheet)
+  - [The letter drill](#the-letter-drill)
+  - [Write it](#write-it)
+  - [Your drill plan](#your-drill-plan)
+  - [More items from the mill](#more-items-from-the-mill)
+  - [Confirming a missed idea](#confirming-a-missed-idea)
+
+<!-- /toc -->
+
 ## What an idea is
 
 `GrammarIdea` is `{ id, title, tier, rung, terms, text, needs }` and, for a letter, `glyphs` (small, capital). How a letter, a pair or a breathing SOUNDS is not in the ladder: it is the chosen pronunciation's lesson (`Pronunciation.lessons`, keyed by idea id; `src/data/grammar/lessons.ts` `ideaText` / `ideaSound`), so the idea sheet and every question that states a sound follow the scheme he chose (Modern Greek: the breathings are silent, ὁ is 'o'); a scheme with no lesson for an idea gets the ladder's neutral `text`, which names no sound, never another scheme's.

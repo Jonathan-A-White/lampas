@@ -11,6 +11,23 @@ awk '/^```/{f=!f; next} !f' docs/module-map.md | grep -o '`[^`]*`' | tr -d '`' \
   | grep -E '/|\.(tsx?|md|json|css|toml)$' | sort -u | while read -r p; do test -e "$p" || echo "missing: $p"; done
 ```
 
+<!-- toc -->
+
+- [1. Modules](#1-modules)
+- [2. Collisions](#2-collisions)
+- [3. Proposed refactors](#3-proposed-refactors)
+  - [R1. Split `src/Reader.tsx` into a reader module](#r1-split-srcreadertsx-into-a-reader-module)
+  - [R2. Declare a setting once](#r2-declare-a-setting-once)
+  - [R3. Move the Settings controls out of `src/SettingsScreen.tsx`](#r3-move-the-settings-controls-out-of-srcsettingsscreentsx)
+  - [R4. One grist client with a default key, and one in-flight tracker](#r4-one-grist-client-with-a-default-key-and-one-in-flight-tracker)
+  - [R5. Talk topics as plug-ins: `src/services/talk.ts` and `src/Talk.tsx` by topic](#r5-talk-topics-as-plug-ins-srcservicestalkts-and-srctalktsx-by-topic)
+  - [R6. One entry file per repository, not one name per function](#r6-one-entry-file-per-repository-not-one-name-per-function)
+  - [R7. A speech engine that is not named for Greek](#r7-a-speech-engine-that-is-not-named-for-greek)
+- [4. Rule breaks](#4-rule-breaks)
+- [5. Library candidates](#5-library-candidates)
+
+<!-- /toc -->
+
 ## 1. Modules
 
 Lampas has no `package.json` workspaces: a module is a folder under `src/` (or a group of files beside them). Only four folders have an entry file (`src/approaches/index.ts`, `src/resources/index.ts`, `src/data/repositories/index.ts`, `src/data/paradigms/index.ts`); every other module is imported file by file, so its API is whatever its files export. "Imports" lists the other Lampas modules a module reaches into (vendors in parentheses), counted over the import statements.

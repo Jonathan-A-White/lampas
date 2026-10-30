@@ -7,6 +7,18 @@ is the page `#/unlock`. A test that needs a licensed phone answers the licence l
 reader with no licence does nothing (`openUnlicensed(page)` in `tests/e2e/unlocked.ts` only quiets the network and the tip). This page names
 the one place the key lives and how a test seeds it.
 
+<!-- toc -->
+
+- [The device key's storage (the test seam)](#the-device-keys-storage-the-test-seam)
+  - [Seeding a known key in Playwright](#seeding-a-known-key-in-playwright)
+  - [Seeding a key in a Gherkin step](#seeding-a-key-in-a-gherkin-step)
+- [A new question card's settling moment](#a-new-question-cards-settling-moment)
+- [The tutor's tests](#the-tutors-tests)
+- [Settings (`src/config.ts`)](#settings-srcconfigts)
+- [The Greek dial's start level (the test seam, mw-3ased2.2)](#the-greek-dials-start-level-the-test-seam-mw-3ased22)
+
+<!-- /toc -->
+
 ## The device key's storage (the test seam)
 
 - Place: `window.localStorage`, under the key **`lampas.deviceKey`** (`DEVICE_KEY_STORAGE_KEY` in `src/config.ts`).

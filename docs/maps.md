@@ -3,6 +3,21 @@
 Lampas shows a chapter's maps beside its text: a quiet door, the Maps sheet and the map opened in the app (mw-zbjgn3r.2, 'The screens' below), over the module and the data under them (mw-zbjgn3r.1).
 A map is a `MapCard`; where it comes from is a `MapSource`. Reading the maps needs no licence.
 
+<!-- toc -->
+
+- [The module: `src/maps/`](#the-module-srcmaps)
+- [The screens (mw-zbjgn3r.2)](#the-screens-mw-zbjgn3r2)
+- [Bible Mapper's data](#bible-mappers-data)
+- [Which maps are for this verse (mw-zbjgn3r.3)](#which-maps-are-for-this-verse-mw-zbjgn3r3)
+- [The places: STEPBible's TIPNR](#the-places-stepbibles-tipnr)
+- [The site's terms, and the credit](#the-sites-terms-and-the-credit)
+- [Choosing the sources, and several at once (mw-zbjgn3r.6)](#choosing-the-sources-and-several-at-once-mw-zbjgn3r6)
+- [Adding a second source](#adding-a-second-source)
+- [The Logos Atlas (mw-zbjgn3r.7, PROVISIONAL, Governor to confirm; every link UNVERIFIED on a device until he taps it)](#the-logos-atlas-mw-zbjgn3r7-provisional-governor-to-confirm-every-link-unverified-on-a-device-until-he-taps-it)
+- [The tutor brings up maps (mw-zbjgn3r.4)](#the-tutor-brings-up-maps-mw-zbjgn3r4)
+
+<!-- /toc -->
+
 ## The module: `src/maps/`
 
 | File | Holds |

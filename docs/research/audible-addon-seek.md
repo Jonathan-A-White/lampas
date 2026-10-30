@@ -12,6 +12,19 @@ a different way through Chrome [or] Firefox".
 What Lampas does today (mw-5r3p30.390, `src/resources/audioBible.ts`): 'Listen in Audible' opens The Word of Promise in the Audible app
 and says which chapter to pick ('In Audible: Chapters > Luke 15'). It cannot seek, because Audible publishes no link that does.
 
+<!-- toc -->
+
+- [The short answer](#the-short-answer)
+- [(a) Can a self-made add-on be installed, and which Android browsers run Chrome extensions?](#a-can-a-self-made-add-on-be-installed-and-which-android-browsers-run-chrome-extensions)
+  - [Firefox for Android (Release): yes, signed, from a file](#firefox-for-android-release-yes-signed-from-a-file)
+  - [Android browsers that run Chrome extensions, October 2026](#android-browsers-that-run-chrome-extensions-october-2026)
+- [(b) Does audible.com/webplayer play the book on a phone, and can a content script seek it?](#b-does-audiblecomwebplayer-play-the-book-on-a-phone-and-can-a-content-script-seek-it)
+- [(c) Does it keep playing with the screen off?](#c-does-it-keep-playing-with-the-screen-off)
+- [Recommendation, beside mw-5r3p30.390's way](#recommendation-beside-mw-5r3p30390s-way)
+- [What was run (2026-10-16, cloud2, signed out)](#what-was-run-2026-10-16-cloud2-signed-out)
+
+<!-- /toc -->
+
 ## The short answer
 
 * **An add-on would work on Firefox for Android, and on nothing else that suits him.** Firefox for Android Release installs a self-made add-on
