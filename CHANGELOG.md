@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.31
+_2026-10-30_
+- New: In the Weave, the other readings shown in curly braces now put the Greek words you already know in Greek and keep the rest in English, just as the text itself does.
+- Fixed: the variants chip (⁑ and a number) was missing from the Reader's row on a chapter with variants when the Immersive reader was on; it is there now.
+- Fixed: the Sources links in the variant lessons now open the section they name in the data notes, not the top of the page.
+- Fixed: About and the variant lessons no longer show a stray table-of-contents marker as a line of text.
+- New: After you answer a grammar question, the Bible reference under it becomes a link that opens the verse with the word marked.
+
 ## 0.7.30
 _2026-10-30_
 - Fixed: A passage that cannot be loaded now says you are offline only when the phone really is, and offers to keep the New Testament on the phone.

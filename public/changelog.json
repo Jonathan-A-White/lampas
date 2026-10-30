@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.31",
+    "date": "2026-10-30",
+    "story": "mw-9ji6ek0.37",
+    "kind": "new",
+    "text": "In the Weave, the other readings shown in curly braces now put the Greek words you already know in Greek and keep the rest in English, just as the text itself does."
+  },
+  {
+    "version": "0.7.31",
+    "date": "2026-10-30",
+    "story": "mw-9ji6ek0.39",
+    "kind": "fixed",
+    "text": "the variants chip (⁑ and a number) was missing from the Reader's row on a chapter with variants when the Immersive reader was on; it is there now."
+  },
+  {
+    "version": "0.7.31",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.856",
+    "kind": "fixed",
+    "text": "the Sources links in the variant lessons now open the section they name in the data notes, not the top of the page."
+  },
+  {
+    "version": "0.7.31",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.883",
+    "kind": "fixed",
+    "text": "About and the variant lessons no longer show a stray table-of-contents marker as a line of text."
+  },
+  {
+    "version": "0.7.31",
+    "date": "2026-10-30",
+    "story": "mw-5r3p30.876",
+    "kind": "new",
+    "text": "After you answer a grammar question, the Bible reference under it becomes a link that opens the verse with the word marked."
+  },
+  {
     "version": "0.7.30",
     "date": "2026-10-30",
     "story": "mw-lcv9z3g.4",
