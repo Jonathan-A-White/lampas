@@ -113,3 +113,14 @@ describe('the Apocrypha Bible he keeps', () => {
     expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: NRSV });
   });
 });
+
+describe('In another book at a place', () => {
+  it('offers a Bible that holds the place’s part: the Lexham Hebrew Bible at Jonah, not at Romans', async () => {
+    const { inLogosRows } = await import('../../src/library/inLogos');
+    const { entriesOf } = await import('../../src/resources/catalogue');
+    const on = new Map(entriesOf('bible').map((e) => [e.resource, 'on' as const]));
+    const at = (book: string): string[] => inLogosRows(entriesOf('bible'), on, { book, chapter: 1, verse: 1 }).map((r) => r.entry.resource);
+    expect(at('jon')).toContain('LLS:LHB');
+    expect(at('rom')).not.toContain('LLS:LHB');
+  });
+});
