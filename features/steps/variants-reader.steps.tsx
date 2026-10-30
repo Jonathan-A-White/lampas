@@ -195,15 +195,21 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The Immersive reader draws the braces and marks the words, and has no chip', ({ Given, Then, And }) => {
+  Scenario('The Immersive reader draws the braces and marks the words, and the chip while the bars show', ({ Given, Then, And }) => {
     Given('Lampas is opened on Revelation 3 with Variants {string} and the Immersive reader on', (_, value: string) => open('Revelation 3', { variants: value, immersiveReader: 'on' }));
     Then('a brace is drawn for every unit of the chapter', async () => {
       await screen.findByRole('group', { name: 'Language' });
       await waitFor(() => expect(braces()).toHaveLength(UNITS.length));
       expect(document.querySelectorAll('[data-variant]').length).toBeGreaterThan(0);
     });
-    And('the header has no variants chip', () => {
-      expect(screen.queryByRole('button', { name: /^Variants,/ })).toBeNull();
+    And('the chips row, shown, has the variants chip pressed', async () => {
+      // his picture of 2026-10-29: the braces were drawn and the chip was not, the Immersive setting On with the bars at the top (mw-9ji6ek0.39)
+      await waitFor(() => expect(chip()).toHaveAttribute('aria-pressed', 'true'));
+      expect(chip().closest('[data-away]')).toBeNull();
+      expect(chip().closest('[data-testid="reader-chips"]')).not.toBeNull();
+    });
+    And('the chip is the same as in the plain reader: it counts every unit', () => {
+      expect(chipCount()).toBe(UNITS.length);
     });
   });
 });

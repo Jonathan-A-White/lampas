@@ -179,7 +179,7 @@ async function keep(page: Page, values: Record<string, string>) {
 }
 
 // The Immersive reader shows the variants too (mw-9ji6ek0.12): with Variants 'english' the words of 3:2's unit are marked and its brace is drawn, a tap on the brace opens the sheet,
-// and there is no chip (the bars slide away). With Variants Off there is neither mark nor brace in either reader. Shot: shots/variants-immersive.png.
+// and the chip is in the row while the bars show (mw-9ji6ek0.39) and slides away with them. With Variants Off there is neither mark nor brace in either reader. Shot: shots/variants-immersive.png.
 test('the Immersive reader marks the variant words and draws the braces; a brace tap opens the sheet; Variants Off draws none', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/?b=rev&c=3');
@@ -190,7 +190,8 @@ test('the Immersive reader marks the variant words and draws the braces; a brace
   const brace = page.locator('[data-verse="2"] [data-brace]').first();
   await expect(brace).toBeVisible();
   await expect(page.locator('[data-verse="2"] [data-variant]').first()).toBeVisible();
-  await expect(chip(page)).toHaveCount(0);
+  await expect(chip(page)).toBeVisible();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
   await shot(page, 'variants-immersive');
   await brace.locator('[data-witness]').first().click();
   const sheet = page.getByRole('dialog', { name: 'Variant reading' });

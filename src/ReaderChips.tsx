@@ -35,7 +35,7 @@ export function ReaderChips({
   wovenCount: number | null;
   /** the language the woven words are in: 'Greek', or 'Hebrew' on an Old Testament chapter */
   source?: SourceLanguage;
-  /** the variants chip (src/reader/VariantChip.tsx): how many units the filter shows and whether Variants is on; null on a chapter with no variants and in the Immersive reader */
+  /** the variants chip (src/reader/VariantChip.tsx): how many units the filter shows and whether Variants is on; null on a chapter with no variants (the Immersive reader has it too: it slides away with the row, src/Away.tsx) */
   variants?: { count: number; on: boolean } | null;
 }) {
   const goal = useGoalProgress();

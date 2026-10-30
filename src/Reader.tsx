@@ -490,7 +490,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         onTip={() => setTipOpen((open) => !open)}
         wovenCount={woven ? wovenCount : null}
         source={source}
-        variants={variants.any && !immersive ? { count: variants.count, on: variants.on } : null}
+        variants={variants.any ? { count: variants.count, on: variants.on } : null}
       />
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
       </div>
