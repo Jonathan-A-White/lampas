@@ -16,6 +16,7 @@ import { useSettled } from './ui/settle';
 import { SelfGrade } from './ui/SelfGrade';
 import { GREEK_LANG, greekLang } from './script/greekLang';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
+import { DrillReference } from './markdown/DrillReference';
 
 const LOOK = {
   idle: 'border-line bg-surface',
@@ -94,7 +95,17 @@ function SeeTable({ question, onSeeTable }: { question: GrammarQuestion; onSeeTa
 /** What Show reveals: the whole form for an ending, else the right answer. */
 const answerOf = (q: GrammarQuestion): string => (q.kind === 'ending' && q.form ? q.form.replace('_', q.right) : q.right);
 
-function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: QuestionMode; hint?: string }) {
+/** The word the verse card marks for a question's reference: the word tapped for, the whole form of an ending, the word parsed, else the chunk's first word; none when the question names no word. */
+const markOf = (q: GrammarQuestion): string | undefined => {
+  if (q.kind === 'tap-form' || q.kind === 'roles' || q.kind === 'tap-use') return q.right;
+  if (q.kind === 'ending') return q.word;
+  if (q.kind === 'parse') return q.form;
+  if (q.kind === 'meaning') return q.marked?.[0];
+  return undefined;
+};
+
+/** `answered`: the reference becomes a link to the verse card once he has answered (src/markdown/DrillReference.tsx); before, plain text, which gives nothing away. */
+function Heading({ question, mode, hint, answered }: { question: GrammarQuestion; mode: QuestionMode; hint?: string; answered: boolean }) {
   return (
     <>
       <div className="text-center">
@@ -112,7 +123,7 @@ function Heading({ question, mode, hint }: { question: GrammarQuestion; mode: Qu
         ) : null}
         <UseVerse question={question} />
         <p data-testid="grammar-ref" className="mt-1 min-h-6 text-base text-muted">
-          {question.ref ?? ''}
+          {question.ref ? <DrillReference reference={question.ref} mark={markOf(question)} linked={answered} className="inline-flex min-h-11 items-center px-1 text-accent underline underline-offset-4" /> : ''}
         </p>
         {hint ? (
           <p data-testid="hint-line" className="mt-1 text-base font-medium text-accent">
@@ -134,7 +145,7 @@ function Flash({ question, picked, onPick, onSeeTable }: Omit<Props, 'mode'>) {
   const graded = picked !== null;
   return (
     <>
-      <Heading question={question} mode="flashcard" />
+      <Heading question={question} mode="flashcard" answered={graded} />
       {showsVerse(question) ? (
         <p
           data-testid="verse-words"
@@ -228,7 +239,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
   if (!sideBySide) {
     return (
       <>
-        <Heading question={question} mode="choice" hint={hint} />
+        <Heading question={question} mode="choice" hint={hint} answered={answered} />
         {answers}
       </>
     );
@@ -236,7 +247,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
   return (
     <div className="short:grid short:grid-cols-2 short:items-start short:gap-x-6">
       <div>
-        <Heading question={question} mode="choice" hint={hint} />
+        <Heading question={question} mode="choice" hint={hint} answered={answered} />
       </div>
       <div>{answers}</div>
     </div>
@@ -276,7 +287,7 @@ function Parse({ question, picked, onPick, onStep }: Pick<Props, 'question' | 'p
   };
   return (
     <>
-      <Heading question={question} mode="choice" />
+      <Heading question={question} mode="choice" answered={answered} />
       <p data-testid="parse-step" data-step-id={step.id} className="mt-4 text-center text-lg font-medium">
         {at + 1} of {steps.length}: {step.label.toLowerCase()}
       </p>

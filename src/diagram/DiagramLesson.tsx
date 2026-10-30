@@ -4,6 +4,7 @@
 // The tenth step lists each line by its Greek term, each term a button that opens that idea's lesson in the idea sheet over the step (closing it comes back to the step).
 // Leaving early keeps the step he reached, and the lesson opens there next time. Optional: only the Verse view's Diagram pane points to it ('How to read this', and an invitation until he has finished or dismissed it); no other screen names it, nudges toward it or counts it.
 import { useState } from 'react';
+import { DrillReference } from '../markdown/DrillReference';
 import { IdeaSheetWithWord } from '../IdeaSheetWithWord';
 import { navigate } from '../nav/route';
 import { previousAddress } from '../nav/lastRoute';
@@ -57,7 +58,9 @@ export function DiagramLesson() {
       <main className="screen min-h-0 flex-1 px-4 pt-4 pb-[var(--lp-end-inset)]" data-testid="diagram-lesson">
         <h2 className="text-2xl font-semibold">{step.title}</h2>
         <p className="mt-2 text-lg">{step.text}</p>
-        <p className="mt-1 text-base text-muted">{step.reference}</p>
+        <p className="mt-1 text-base text-muted">
+          <DrillReference reference={step.reference} linked={tapped !== null} />
+        </p>
         {/* the check is above the diagram: a tall diagram never pushes the question, or the answer, out of sight */}
         <p className="mt-3 text-lg font-medium" data-testid="diagram-lesson-check">
           {checkPrompt(step)}
