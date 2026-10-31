@@ -229,17 +229,20 @@ test('from the keyboard: Tab brings each idea into the graph', async ({ page }) 
   await page.keyboard.press('Tab');
   await expect(ideas.first()).toBeFocused();
 
-  // every idea, the first to the last, is wholly in the graph's box when Tab reaches it
+  // every idea, the first to the last, is wholly in the graph's box when Tab reaches it. One round trip to the page per idea (133 of them): five made
+  // this test outrun its 60 s on a loaded host (mw-5r3p30.919). The page answers where the focused idea is once focus has pan it into view.
+  const order = await ideas.evaluateAll((nodes) => nodes.map((n) => n.getAttribute('data-idea')));
+  expect(order).toHaveLength(LADDER.length);
   const box = (await frame.boundingBox())!;
+  const reached = (edge: { x: number; y: number; right: number; bottom: number }) => {
+    const focused = [...document.querySelectorAll('[data-idea]')].filter((n) => n === document.activeElement);
+    if (focused.length !== 1) return { id: null, inside: false };
+    const at = focused[0].getBoundingClientRect();
+    return { id: focused[0].getAttribute('data-idea'), inside: at.left >= edge.x && at.right <= edge.right && at.top >= edge.y && at.bottom <= edge.bottom };
+  };
+  const edge = { x: box.x, y: box.y, right: box.x + box.width, bottom: box.y + box.height };
   for (let i = 0; i < LADDER.length; i += 1) {
-    const focused = page.locator('[data-idea]:focus');
-    await expect(focused).toHaveCount(1);
-    const at = (await focused.boundingBox())!;
-    const id = await focused.getAttribute('data-idea');
-    expect(at.x, `${id} (${i}) left`).toBeGreaterThanOrEqual(box.x);
-    expect(at.x + at.width, `${id} (${i}) right`).toBeLessThanOrEqual(box.x + box.width);
-    expect(at.y, `${id} (${i}) top`).toBeGreaterThanOrEqual(box.y);
-    expect(at.y + at.height, `${id} (${i}) bottom`).toBeLessThanOrEqual(box.y + box.height);
+    await expect.poll(() => page.evaluate(reached, edge), { message: `${order[i]} (${i}) wholly in the graph's box`, intervals: [10, 25, 50, 100] }).toEqual({ id: order[i], inside: true });
     await page.keyboard.press('Tab');
   }
 
