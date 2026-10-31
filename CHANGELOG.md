@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.48
+_2026-10-31_
+- New: Under a tutor's answer that names Bible passages you can save them all as a verse list, or ask the tutor to.
+
 ## 0.7.47
 _2026-10-31_
 - Fixed: A long Talk can now be captured in one scroll screenshot, a swipe across Hold to talk no longer starts the microphone, and a new button copies the whole talk.
