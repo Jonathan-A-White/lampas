@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.45
+_2026-10-31_
+- Fixed: The hand you chose for the round tutor button now shows, and can be changed, right under Tutor door in the tutor's settings while that button is on.
+- Fixed: on a Review flashcard the verse reference now becomes a tappable link as soon as you tap Show, instead of staying plain until after you grade the card.
+
 ## 0.7.44
 _2026-10-31_
 - New: A Hebrew lesson's "Read more" now links to Biblical Hebrew Step by Step (the alphabet lesson so far), and your Hebrew grammars are listed in the Library beside the Greek ones.
