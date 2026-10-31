@@ -1,5 +1,5 @@
 {
-  "description": "He asks in words to save the references of the answer before as a verse list, and the catalogue lists the save-answer-references command: the answer does it by `do` with the command's name and no args (he gave no name), says in `said` where the list is, and uses no asks and no go.",
+  "description": "He asks in words to save the references of the answer before as a verse list, and the catalogue lists the save-answer-references command: the answer does it by `do` with the command's name and no args (he gave no name), says in `said` where the list is, and uses no asks, no go and no setting offer.",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
@@ -237,6 +237,9 @@
       "present": false
     },
     "misses": {
+      "present": false
+    },
+    "setting_offer": {
       "present": false
     }
   }
