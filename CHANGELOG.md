@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.44
+_2026-10-31_
+- New: A Hebrew lesson's "Read more" now links to Biblical Hebrew Step by Step (the alphabet lesson so far), and your Hebrew grammars are listed in the Library beside the Greek ones.
+- Fixed: Bible references in the tutor's answers now link when they lean on a book already named ("chapters 2, 7 and 10 to 12" after Daniel), and a book's name followed by a full stop no longer links by mistake.
+- New: In the Verse view the things you do with a verse are now one calm stack: the text, a line of plain words (Copy, Share, Memorize, Logos, Maps), the row of actions with only the chosen one marked, and one gold control at the foot, so the verse stays in view while you ask the tutor.
+
 ## 0.7.43
 _2026-10-31_
 - Fixed: the Copy note in Settings no longer mentions Weave or Greek when you read English only.

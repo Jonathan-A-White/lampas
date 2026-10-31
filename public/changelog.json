@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.44",
+    "date": "2026-10-31",
+    "story": "mw-5r3p30.890",
+    "kind": "new",
+    "text": "A Hebrew lesson's \"Read more\" now links to Biblical Hebrew Step by Step (the alphabet lesson so far), and your Hebrew grammars are listed in the Library beside the Greek ones."
+  },
+  {
+    "version": "0.7.44",
+    "date": "2026-10-31",
+    "story": "mw-5r3p30.927",
+    "kind": "fixed",
+    "text": "Bible references in the tutor's answers now link when they lean on a book already named (\"chapters 2, 7 and 10 to 12\" after Daniel), and a book's name followed by a full stop no longer links by mistake."
+  },
+  {
+    "version": "0.7.44",
+    "date": "2026-10-31",
+    "story": "mw-5r3p30.896",
+    "kind": "new",
+    "text": "In the Verse view the things you do with a verse are now one calm stack: the text, a line of plain words (Copy, Share, Memorize, Logos, Maps), the row of actions with only the chosen one marked, and one gold control at the foot, so the verse stays in view while you ask the tutor."
+  },
+  {
     "version": "0.7.43",
     "date": "2026-10-31",
     "story": "mw-5r3p30.916",
