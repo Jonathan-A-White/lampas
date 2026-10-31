@@ -1,3 +1,4 @@
+@uc-diagram @greek
 Feature: How to read a sentence diagram, an optional lesson
   An optional screen at #/diagram-lesson (mw-q6t5tvn.1, src/diagram/DiagramLesson.tsx) teaches the Reed-Kellogg lines in ten steps, one convention each: the base line and the
   bar, a word that describes another, a direct object, an understood subject, a word that says what the subject is, an indirect object, a prepositional phrase, two clauses

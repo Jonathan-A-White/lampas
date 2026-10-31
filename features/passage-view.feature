@@ -1,3 +1,4 @@
+@uc-verse-view @greek
 Feature: A section heading opens the Verse view for its passage
   Tapping a section heading in the Reader opens the same Verse view a verse number opens (mw-5r3p30.73), for the passage under the
   heading (the heading to the next heading): the heading and its verse range at the top, the passage's verses set as the Reader sets its text, the same one row of

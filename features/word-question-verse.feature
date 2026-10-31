@@ -1,3 +1,4 @@
+@uc-word-sheet @greek
 Feature: A word question's 'in Hebrews 8:9 as ἐκ' line opens the verse with the word marked
   After he answers a word question (the Quick test and Review draw it the same way) the line under the Greek word says where the form stands: 'in Hebrews 8:9 as ἐκ'.
   The reference is a link: a tap opens the verse card the tutor's references open (ReferenceCard), showing that verse in the view he reads in, the Greek

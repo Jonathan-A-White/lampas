@@ -1,3 +1,4 @@
+@uc-memorize @greek
 Feature: The tutor knows his memorizing and works the Memorize screen
   Memorizing is in the tutor's registry (mw-fu7dqf.12, his Q8 A): the tutor reads his verses (the fact `memorizing`, and `verseText` and `memorizeEvidence` to quiz him and judge how it goes),
   memorizes, unmemorizes, moves a verse between his lists and starts a session through the same functions the buttons call, and opens Memorize. 'Help me memorize Romans 8:28' puts

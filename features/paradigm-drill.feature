@@ -1,3 +1,4 @@
+@uc-paradigms @greek
 Feature: A table can be drilled in Review
   A table he is learning by heart has a 'Drill this table' button at its foot. It puts the table on the back-off schedule as the kind
   'paradigm'. Review then asks a few of its available cells (at most three a round) by their name, 'Genitive singular masculine of the

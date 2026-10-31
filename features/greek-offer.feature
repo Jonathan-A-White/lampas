@@ -5,6 +5,7 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
   "said no to the Greek offer <date>", and nothing more is offered until he asks for Greek himself (`greek_asked`), which clears the line. At most one offer a talk. These
   scenarios run against a fake Postern whose mill answers each talk with the answer the scenario names.
 
+  @uc-language-offer @greek
   Scenario: The offer is a button that opens the Greek word
     Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek word
     When he opens the talk and asks "What does love really mean here?"
@@ -15,6 +16,7 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
     Then the Greek dial is Curious
     And the word sheet for "ἀγαπάω" is open over the talk
 
+  @uc-language-offer @greek
   Scenario: The offer raises the Greek dial one step and nothing more
     Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek view
     When he opens the talk and asks "What does the original say here?"
@@ -23,6 +25,7 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
     Then the Greek dial is Curious
     And the Reader still shows English with the Weave off
 
+  @uc-language-offer @greek
   Scenario: A tap on the view offer is confirmed in the Talk sheet
     Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek view
     When he opens the talk and asks "What does the original say here?"
@@ -31,12 +34,14 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
     When he taps "Want to raise the Greek to Curious?"
     Then the talk confirms "The Greek dial is now Curious."
 
+  @uc-language-offer @greek
   Scenario: A tap on the word offer is confirmed in the Talk sheet
     Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek word
     When he opens the talk and asks "What does love really mean here?"
     And he taps "Want to try Curious: see this Greek word?"
     Then the talk confirms "The Greek dial is now Curious. Opened the Greek word."
 
+  @uc-language-offer @greek
   Scenario: A no is remembered and nothing more is offered
     Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek view
     When he opens the talk and asks "What does the original say here?"
@@ -51,6 +56,7 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
     Then the third bible-talk grist carries the memory line "said no to the Greek offer"
     And the talk still shows no button "Want to raise the Greek to Curious?"
 
+  @uc-language-offer @greek
   Scenario: Only one offer is kept in a talk
     Given Lampas is opened on Romans 8 in English behind a fake Postern whose tutor offers the Greek view
     When he opens the talk and asks "What does the original say here?"
@@ -58,6 +64,7 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
     When he says "and what about the next word?"
     Then the talk shows exactly 1 button "Want to raise the Greek to Curious?"
 
+  @uc-language-offer @uc-example-words @greek
   Scenario: A phone that holds only the example words is offered the Greek
     Given Lampas is opened on Romans 8 in English on a phone that still holds only the 63 example words, behind a fake Postern whose tutor offers the Greek word
     When he opens the talk and asks "What does love really mean in Romans 8:28?"
@@ -65,6 +72,7 @@ Feature: The tutor offers the Greek gently to a reader who is not learning it
     And the request told the tutor he has no solid words and is learning none
     And the talk shows the button "Want to try Curious: see this Greek word?"
 
+  @uc-language-offer @uc-example-words @greek
   Scenario: Example words he has answered make him a Greek learner
     Given Lampas is opened on Romans 8 in English on a phone that still holds only the 63 example words, behind a fake Postern whose tutor offers the Greek word
     When he opens the talk and asks "What does love really mean in Romans 8:28?"

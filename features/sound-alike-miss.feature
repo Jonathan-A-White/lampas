@@ -1,3 +1,4 @@
+@uc-drill-it @greek
 Feature: A missed 'Words that sound alike' question says the words sound alike
   A question of 'Words that sound alike' (mw-86e9r1.7) asks him to hear a word and tap how it is spelt, where the pronunciation says the word and its twin
   the same (ἡμεῖς and ὑμεῖς are both ee-MEES). Missing it used to say only 'Not quite. It is λύομεν.', the line of any grammar question, when the one

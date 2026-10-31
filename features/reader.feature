@@ -1,3 +1,4 @@
+@uc-english-text @uc-source-view @greek
 Feature: Read Romans 8
   Lampas opens on Romans 8, verse by verse in large, clear type. The header switches between the
   English (the MSB) and the Greek (Byzantine); every word is tappable and opens a sheet from the

@@ -1,3 +1,4 @@
+@uc-tutor-ask @greek
 Feature: Ask the tutor from any screen
   One round button, the same on every full screen, bottom right (mw-5r3p30.91, docs/ask-tutor.md), opens the Talk sheet with
   what that screen shows: its name and its useful facts ride in the bible-talk request's `screen` field. The sheet opens

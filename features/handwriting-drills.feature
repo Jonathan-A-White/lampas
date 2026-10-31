@@ -1,3 +1,4 @@
+@uc-handwriting @greek
 Feature: Write it: writing a letter by hand, as a memory aid
   His want (Postern general 2026-10-14, mw-86e9r1.51): a reader with a stylus is offered handwriting in the letter lessons and drills, "as a memory
   aid, not as if they will ever actually hand write something". A web page sees a pen only once it touches the screen (a pointer event whose

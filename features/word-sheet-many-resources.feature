@@ -1,3 +1,4 @@
+@uc-word-sheet @uc-resources @greek
 Feature: The word sheet with many study resources
   With every Logos lexicon On the Study row draws the three lexicons he pinned, Bible Word Study and the door to the rest (features/word-sheet-study.feature), and, with Strong's
   switched on too, it still has 6 tiles. Each tile names its book in words (two lines are allowed, nothing is cut off), all of them sit in the sheet's own scroll

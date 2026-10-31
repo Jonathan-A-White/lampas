@@ -1,3 +1,4 @@
+@uc-source-view @greek
 Feature: Immersive reader hint card
   With Immersive reader On, a small card sits over the top of the Reader's text and says how it works: "Scroll down and the bars slide away.",
   "Tap with two fingers to bring them back or put them away." and "To leave immersive reading: Settings > Immersive reader." It has two buttons, 'Got it' (closes

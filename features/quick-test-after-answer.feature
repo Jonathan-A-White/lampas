@@ -1,3 +1,4 @@
+@uc-quick-test @greek
 Feature: After an answer on the Quick test the word says itself, a wrong answer waits for Next, and the tutor is one tap away
   The moment he taps a gloss, right or wrong, the Greek word is spoken by itself, once, with the same
   voice as the reader's Read and the Tap to hear bar. Nothing moves on by itself: a wrong answer waits

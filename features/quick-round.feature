@@ -1,3 +1,4 @@
+@uc-placement @greek
 Feature: The placement probes the letters and sounds one by one
   The Governor: "The test should have probed more to where it knows what I know and what not. And can fill in specific gaps (maybe some letter sounds
   are hard for me, or letter combinations...)". When the placement walk reaches the letters, sounds and marks (or has nothing above to ask, as when he

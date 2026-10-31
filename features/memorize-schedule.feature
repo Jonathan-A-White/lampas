@@ -1,3 +1,4 @@
+@uc-memorize @greek
 Feature: A verse I memorize comes back on the schedule
   A memorized verse is on the same back-off schedule as a word (1, 3, 7, 14, 30, 60 days), one row for each language he learns it in. He recalls it and it comes back
   later; he misses it and it comes back tomorrow. Review does not count his verses: Memorize asks for them by themselves.

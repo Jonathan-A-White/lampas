@@ -1,3 +1,4 @@
+@uc-new-words @greek
 Feature: Lampas offers new words at a pace I can keep
   Settings says how many new words a day Lampas may offer: Off, 3, 5 or 10, 3 until I choose. When more than 20 words are
   due, or my last review round went under 60 percent right, the header offers no new words and Settings says to clear my

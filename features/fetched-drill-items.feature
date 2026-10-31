@@ -1,3 +1,4 @@
+@uc-drill-it @greek
 Feature: More drill items from the mill, in the background
   After a Review round that shows a gap in an idea, Lampas asks the mill, without making him wait, for more short items on his weakest ideas, made from
   verses of the passage he reads. They are kept on the phone and the next round starts with one of them on that idea. The round and its end card never depend on the mill.

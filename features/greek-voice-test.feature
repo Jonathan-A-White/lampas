@@ -1,3 +1,4 @@
+@uc-voice-test @uc-voice-settings @greek
 Feature: Hear and switch the Greek voice from Settings
   His phone said πατήρ alone as 'PA-teer' (mw-5r3p30.357). Settings > Reading voices names the Greek voice the Greek is said in now, the one he
   picked or the phone's own pick, and its Test says πατήρ, then ἀγάπη, as Tap to hear says a word: stressed on the last syllable, then on the one

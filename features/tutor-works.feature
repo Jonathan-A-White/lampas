@@ -1,3 +1,4 @@
+@uc-logos-links @greek
 Feature: The tutor is told his shelf by the place, and links a book on it
   The tutor is told a digest of his Logos shelf chosen by the place he is on (mw-rfjjzd.10, docs/design/library-at-scale.md section 7): the pinned books first,
   then the commentaries that cover the chapter, then, for a question about a form or a reading, the grammars and the Greek texts, never a lexicon. An answer

@@ -1,3 +1,4 @@
+@uc-grammar-ladder @greek
 Feature: Pattern ideas: how a form is built
   The ladder has ideas for how a Greek form is built (src/data/grammar/ladder.ts: a word as a stem and an ending, a dictionary entry,
   the three declensions, the augment, tense signs, reduplication, principal parts, contract verbs, -μι verbs, εἰμί and οἶδα). A word's

@@ -7,12 +7,14 @@ Feature: The Hebrew paradigm tables
   Background:
     Given Hebrew is the only language chosen and his Hebrew grammar levels are the root, the qal stem, the perfect, the number and the person, gender and number solid, the gender at the frontier, the imperfect and the imperative not yet
 
+  @uc-paradigms @hebrew
   Scenario: With Hebrew chosen the Paradigms list shows the four Hebrew tables
     When he opens the Paradigms screen
     Then the list holds "The qal verb", "Hebrew personal pronouns", "Pronominal suffixes" and "The Hebrew article"
     And the list holds no Greek table
     And the list reads "The qal verb: Available forms: 10 of 24"
 
+  @uc-paradigms @hebrew
   Scenario: The qal perfect opens filled in, right to left, in Hebrew type
     When he opens the table "he-qal-strong" to Learn
     Then the table is drawn right to left
@@ -20,12 +22,14 @@ Feature: The Hebrew paradigm tables
     And the cell "Perfect 1st common Plural" also shows "קָטַלְנוּ" in Hebrew type
     And the cell "Imperfect 3rd masculine Singular" is locked
 
+  @uc-paradigms @hebrew
   Scenario: A locked cell says which Hebrew ideas it still needs
     When he opens the table "he-qal-strong" to Learn
     And he taps the cell "Imperfect 3rd masculine Singular"
     Then the lock says "Needs the imperfect"
     And the lock offers "Go to The imperfect"
 
+  @uc-paradigms @hebrew
   Scenario: Drill blanks the qal perfect and a tap shows a form
     When he opens the table "he-qal-strong" to Drill
     Then the cell "Perfect 3rd masculine Singular" is blank
@@ -38,6 +42,7 @@ Feature: The Hebrew paradigm tables
     Then that cell is graded "missed"
     And the table is not put in Review
 
+  @uc-paradigms @hebrew
   Scenario: How much of a table at its smallest shows the first persons only, at its largest the whole table
     When he opens the table "he-qal-strong" to Learn
     And he taps "Solid only" under How much of a table
@@ -45,6 +50,7 @@ Feature: The Hebrew paradigm tables
     When he taps "Any" under How much of a table
     Then all 24 cells of the table show their forms
 
+  @uc-paradigms @hebrew
   Scenario: The sheet of וַיְהִי names the qal verb and a tap opens its cell
     Given Jonah 1 is open
     When he taps the Hebrew word "וַֽיְהִי֙" of verse 1
@@ -52,11 +58,13 @@ Feature: The Hebrew paradigm tables
     When he taps the Paradigm row
     Then the table "The qal verb" opens with "Imperfect 3rd masculine Singular" outlined
 
+  @uc-paradigms @hebrew
   Scenario: A Hebrew word no table holds has no Paradigm row
     Given Jonah 1 is open
     When he taps the Hebrew word "יוֹנָ֥ה" of verse 1
     Then the Hebrew word sheet has no Paradigm row
 
+  @uc-paradigms @hebrew
   Scenario: With both languages chosen the segment chooses the tables
     Given both languages are chosen
     When he opens the Paradigms screen
@@ -64,6 +72,7 @@ Feature: The Hebrew paradigm tables
     When he taps "Hebrew" in the segment
     Then the list holds "The qal verb", "Hebrew personal pronouns", "Pronominal suffixes" and "The Hebrew article"
 
+  @uc-paradigms @greek @hebrew
   Scenario: With Greek only no Hebrew table is listed and the Greek tables are as they were
     Given Greek is the only language chosen
     When he opens the Paradigms screen

@@ -1,3 +1,4 @@
+@uc-word-sheet @greek
 Feature: A gloss reads as plain English
   The dictionary Lampas draws its glosses from (STEPBible's TBESG) writes some of them in its own source form, a range of
   senses and then the one chosen ('spirit/breath: spirit'), and the Governor's own word list writes the case a preposition

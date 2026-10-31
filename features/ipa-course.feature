@@ -1,3 +1,4 @@
+@uc-ipa-course @greek
 Feature: Learn the IPA sounds, an optional course
   The Goal screen has an Optional heading with one entry, "Learn the IPA sounds" (src/ipa/OptionalEntry.tsx, mw-5r3p30.356, PROVISIONAL until the Governor confirms), below
   the main path. The course is never needed, counted or prompted for: nothing but that entry opens it. It opens on "Why learn it?", which says first that Lampas and

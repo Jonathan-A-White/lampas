@@ -1,3 +1,4 @@
+@uc-sound-lessons @greek
 Feature: Record yourself on a Hard sounds lesson's Try it step
   The 'Try it' step of a Hard sounds lesson (mw-5r3p30.363, PROVISIONAL until the Governor confirms) lets him hear himself next to the Greek voice. He holds a bar
   to say the sound or word, and on letting go hears his try, then the Greek voice, with Again to hear both once more. The recording is made by the one recorder

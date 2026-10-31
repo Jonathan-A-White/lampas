@@ -1,3 +1,4 @@
+@uc-reading-ladder @greek
 Feature: Reading check, in English and in Greek
   In the Verse view's Read it aloud action (features/verse-view.feature) he holds the bar and reads the verse aloud. The recording goes to the mill as a verse-read grist
   (bsv-kit/grist, through Postern); the mill scores it and the verse comes back with the words to fix marked, each broken

@@ -1,3 +1,4 @@
+@uc-learner-summary @greek
 Feature: Welcome back after a break
   After a break of a week or more (the last day he used Lampas is 7 or more days ago), opening the app offers a short 'Welcome back' refresher of the most overdue solid
   words and ideas (mw-1vuvq6.6). Refresh opens a Review round of just those; Not now puts the card away for the day. Nothing is asked of him unless he taps.

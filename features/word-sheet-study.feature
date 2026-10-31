@@ -1,3 +1,4 @@
+@uc-word-sheet @uc-resources @greek
 Feature: The word sheet's Study row at scale
   With a long Logos library the Study row does not draw a tile for every lexicon (docs/design/library-at-scale.md 3.5). It draws the lexicons he pinned,
   Bible Word Study and a door, "All 21 lexicons ›", to a sheet that has a search field and lists the pinned ones first and then every one that is On,

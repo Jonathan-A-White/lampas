@@ -1,3 +1,4 @@
+@uc-resources @greek
 Feature: Study resources
   Settings has a Study resources section that lists every resource registered in src/resources/ with an on/off switch,
   all off to start with. A word's sheet shows a Study row with the links of every resource switched on (Strong's: its

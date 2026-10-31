@@ -1,3 +1,4 @@
+@uc-logos-links @greek
 Feature: The idea sheet reads the shelf
   Read more on an idea sheet draws the grammars of his shelf (docs/design/library-at-scale.md 3.7, mw-rfjjzd.16, PROVISIONAL): the grammars he Pinned first,
   then the On ones, each group in the catalogue's order, three lines in view and the rest under More books. A grammar with no sections table in the

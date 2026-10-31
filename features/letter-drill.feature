@@ -1,3 +1,4 @@
+@uc-letter-drill @greek
 Feature: The letter drill after Got it
   Moving "Your level" on The Greek alphabet to "Learning" (Got it) starts a letter drill at once (src/LetterDrillScreen.tsx, mw-86e9r1.11): all 24
   letters, each in its small form and its capital, asked by ear ("Tap to hear a letter, then tap it") or by name ("Which letter is Beta?"), eight

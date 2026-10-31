@@ -1,3 +1,4 @@
+@uc-variants @greek
 Feature: Variants in Settings (mw-9ji6ek0.4)
   Settings > Reading > Variants says whether the Reader shows where the manuscripts differ: Off (the default), Those that change the English, or All. A second row, Witnesses, says
   whose readings count: Byzantine splits only, also Nestle-Aland, or also ECM (every witness, the default). The Witnesses row is drawn only while Variants is not Off. Both are kept

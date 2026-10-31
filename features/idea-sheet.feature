@@ -1,3 +1,4 @@
+@uc-grammar-ladder @greek
 Feature: The idea sheet
   A bottom sheet teaches one grammar idea of the ladder (src/data/grammar/ladder.ts) to a total beginner (mw-5r3p30.234,
   src/data/grammar/teach/): its title, What it is (plain English with an English example), How to spot it (the Greek form, and a

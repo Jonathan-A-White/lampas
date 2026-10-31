@@ -37,6 +37,7 @@
     "essay:build": "tsx scripts/essay-build.ts",
     "grind:build": "tsx scripts/grind-build.ts",
     "ladder:docs": "tsx scripts/ladder-docs.ts",
+    "parity:docs": "tsx scripts/language-parity-docs.ts",
     "logos:catalogue": "tsx scripts/logos-catalogue.ts",
     "logos:fit": "tsx scripts/logos-fit.ts",
     "check:licence": "tsx scripts/check-licence.ts"

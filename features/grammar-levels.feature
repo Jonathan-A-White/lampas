@@ -1,3 +1,4 @@
+@uc-grammar-ladder @greek
 Feature: An idea I keep getting right turns solid
   Each grammar idea has a level: solid (he has it), frontier (he is working on it) or not yet. An idea he answers
   on the schedule moves between them by itself: one he keeps getting right turns solid, and one he slips on

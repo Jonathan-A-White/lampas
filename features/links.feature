@@ -1,3 +1,4 @@
+@uc-links @greek
 Feature: Lampas takes links in
   A verse or a word can be named in a link, the way Logos names one: https://lampas.allmymind.org/#/?ref=Rom.8.28 opens the
   reader on that verse, and #/?word=G3551 opens the word sheet of νόμος. A reference may be written as OSIS or in English

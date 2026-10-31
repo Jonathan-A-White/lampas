@@ -5,12 +5,14 @@ Feature: Learning to read Hebrew: the grammar tiers
   (src/GrammarSheet.tsx) explains it, shows Hebrew examples from the chapter right to left and, under In Hebrew, how it shows in Biblical Hebrew. The word sheet's parsing links are story j2's,
   so these scenarios open the Grammar sheet over a chapter directly. A Greek term's sheet is as it was.
 
+  @uc-grammar-ladder @hebrew
   Scenario: With Hebrew chosen the Goal lists the article after the letters
     Given Hebrew is the only language chosen and the Goal screen is open
     Then the Goal lists "The Hebrew article" as Not yet
     And the Goal lists "The Hebrew article" after "Tav" and "Ketiv and qere"
     And the Goal lists the grammar ideas from "Gender: masculine and feminine" to "Word order" in order
 
+  @uc-grammar-ladder @hebrew
   Scenario: The article's card teaches with the earth of Genesis 1:1
     Given Hebrew is the only language chosen and the Goal screen is open
     When he opens "The Hebrew article"
@@ -18,6 +20,7 @@ Feature: Learning to read Hebrew: the grammar tiers
     And the card's table shows "הָאָרֶץ" in Hebrew type
     And the sheet offers no Drill it
 
+  @uc-grammar-ladder @hebrew
   Scenario: The Grammar sheet for Qal shows the concept with a Hebrew example
     Given Genesis 1 is open and the Grammar sheet of "Qal" is open
     Then the Grammar sheet is titled "Qal" and explains it in plain words
@@ -25,6 +28,7 @@ Feature: Learning to read Hebrew: the grammar tiers
     And the Grammar sheet shows 3 examples from Genesis 1, each a Hebrew word in lang he whose parsing has Qal
     And the term "Qal" belongs to the idea "he-qal"
 
+  @uc-grammar-ladder @hebrew
   Scenario: A related term opens its own sheet and Learn this idea names the term
     Given Genesis 1 is open and the Grammar sheet of "Qal" is open
     When he taps the related term "Piel"
@@ -32,6 +36,7 @@ Feature: Learning to read Hebrew: the grammar tiers
     When he taps Learn this idea
     Then the sheet was asked to teach the term "Qal"
 
+  @uc-grammar-ladder @greek
   Scenario: A Greek grammar term's sheet is as it was
     Given Romans 8 is open and the Grammar sheet of "conjunction" is open
     Then the Grammar sheet is titled "conjunction" and explains it in plain words

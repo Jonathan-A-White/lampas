@@ -1,3 +1,4 @@
+@uc-placement @greek
 Feature: Test me on the grammar, and meet me where I am
   The Governor: "Test me on the grammar required (in a wise way) to see where I'm at. If I'm struggling on easy things, no need to test
   harder things. In fact, keep going easier (all the way down to alphabet and it's pronunciation)." The placement (#/placement, opened

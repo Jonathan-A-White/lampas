@@ -1,3 +1,4 @@
+@uc-new-words @greek
 Feature: One frontier idea at a time
   He learns one grammar idea at a time (mw-i7xe0n.6, PROVISIONAL, docs/grammar.md 'One idea at a time'). The idea at the frontier is the one he is
   learning now; the Goal screen names it ("Learning now: ..."). A new idea becomes Learning only when the one before is proved, or when he switches

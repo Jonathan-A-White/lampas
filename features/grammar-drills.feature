@@ -1,3 +1,4 @@
+@uc-drill-it @greek
 Feature: Review asks grammar ideas, and asks them before words
   A grammar idea he is drilling comes back on the same back-off schedule as a word. Review draws the due ideas first,
   from the passage of his goal (or the chapter he has open), and asks each one as a question about that passage: the

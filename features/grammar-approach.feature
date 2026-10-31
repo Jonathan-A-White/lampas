@@ -1,3 +1,4 @@
+@uc-grammar-approach @greek
 Feature: Grammar approach
   Lampas teaches grammar by ONE path, its own ladder, for everyone. Approaches are still data, one file each (src/approaches/), so a
   second path is one file and one line away; Settings draws the choice again as soon as two are listed. Settings > Grammar approach

@@ -1,3 +1,4 @@
+@uc-sound-lessons @greek
 Feature: Hard sounds, optional lessons on the sounds his English makes hard
   The Goal screen (Learn) has a section "Hard sounds (optional)" below the main path (mw-5r3p30.361, PROVISIONAL until the Governor confirms). It lists the lessons
   written for his English accent (American or British; IPA reads the American ones), each marked Done or Not yet. Nothing else pushes them: they never block a

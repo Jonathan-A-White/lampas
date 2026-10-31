@@ -1,3 +1,4 @@
+@uc-words @greek
 Feature: Words he knows
   Lampas keeps the Greek words he has learned, shows them by lesson, lets him change what he knows with a tap, and
   takes more from a pasted list. A new install has none of them (features/fresh-install.feature); these scenarios

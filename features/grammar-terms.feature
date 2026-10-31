@@ -1,3 +1,4 @@
+@uc-grammar-ladder @greek
 Feature: Grammar terms
   Every grammar word in the Parsing of a word's sheet (conjunction, aorist, genitive ...) is a link. A tap opens a Grammar sheet
   over the word sheet: a plain explanation, how it shows in Koine Greek, up to three examples from the chapter (each opens its

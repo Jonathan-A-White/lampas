@@ -1,3 +1,4 @@
+@uc-sound-lessons @greek
 Feature: Which did you hear? A minimal-pair drill in a Hard sounds lesson
   The 'Tell them apart' step of a Hard sounds lesson (mw-5r3p30.361) is now headed "Which did you hear?" (mw-5r3p30.362, PROVISIONAL until the Governor confirms). Below the
   pairs to hear it has a drill made from the lesson's own pairs of Greek words: the Greek voice says one word of a pair, he taps which of the two it was. Ten rounds in

@@ -1,3 +1,4 @@
+@uc-word-sheet @greek
 Feature: The heart of the word is shown where he learns a word and where he can go back to it
   A word that has a note on its heart (src/data/wordHeart.ts: the one thread behind senses that look unrelated, the English trap, the irregular form) shows it in four places: a row
   on the word's sheet he can always go back to, under the gloss on the card that first teaches the word, under the answer after a miss in Review, and the tutor is told it so its

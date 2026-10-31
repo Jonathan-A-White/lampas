@@ -5,6 +5,7 @@ Feature: A Hebrew word in the tutor's answer is tappable like a Greek one
   each one a button that says it. With no Hebrew voice on the phone nothing is spoken and a line says so; it never falls back to an English
   voice. speechSynthesis is the recording fake of tests/support/fake-speech.ts and the Postern is tests/support/fake-postern.ts.
 
+  @uc-tutor-word @hebrew
   Scenario: Tapping a Hebrew word says it in the Hebrew voice and opens the guide
     Given Lampas is opened on a phone with a Hebrew voice, and the tutor's answer has the Hebrew word "צֶדֶק" in it
     When he taps the Hebrew word "צֶדֶק"
@@ -12,12 +13,14 @@ Feature: A Hebrew word in the tutor's answer is tappable like a Greek one
     And the phone speaks it with its Hebrew voice
     And the pronunciation guide is open on "צֶדֶק"
 
+  @uc-tutor-word @hebrew
   Scenario: With no Hebrew voice nothing is spoken and the phone says so
     Given Lampas is opened on a phone with no Hebrew voice, and the tutor's answer has the Hebrew word "צֶדֶק" in it
     When he taps the Hebrew word "צֶדֶק"
     Then the line "No Hebrew voice on this phone" is shown
     And nothing is spoken
 
+  @uc-tutor-word @hebrew
   Scenario: The guide shows the syllables and their transliteration
     Given Lampas is opened on a phone with a Hebrew voice, and the tutor's answer has the Hebrew word "צֶדֶק" in it
     When he taps the Hebrew word "צֶדֶק"
@@ -26,11 +29,13 @@ Feature: A Hebrew word in the tutor's answer is tappable like a Greek one
     And the answer carries a guide with the syllables "צֶ" and "דֶק" over "TSE" and "dek"
     And tapping the syllable "דֶק" speaks it in "he-IL"
 
+  @uc-tutor-word @hebrew
   Scenario: A Hebrew word in the tutor's answer is said at the Hebrew speed in the Hebrew voice he chose
     Given Lampas is opened on a phone with two Hebrew voices, "Carmit" chosen as the Hebrew voice and "0.7" as the Hebrew speed, and the tutor's answer has the Hebrew word "צֶדֶק" in it
     When he taps the Hebrew word "צֶדֶק"
     Then the phone speaks "צֶדֶק" in "he-IL" at the speed "0.7" with the voice "Carmit"
 
+  @uc-hear-word @hebrew
   Scenario: A long press on a Hebrew word in the Reader is said at the Hebrew speed in the Hebrew voice he chose
     Given Genesis 1 is opened in its Hebrew on a phone with two Hebrew voices, "Carmit" chosen as the Hebrew voice and "0.7" as the Hebrew speed
     When he long presses the Hebrew word "הַשָּׁמַ֖יִם" of verse 1

@@ -1,3 +1,4 @@
+@uc-word-sheet @greek
 Feature: Word help
   The word sheet of a Greek word has a Help with this word row, Grammar and Sound it out. Each opens the Talk sheet on the
   verse the word stands in, with a first turn already sent: the question names the word as it stands, its lemma, its parsing

@@ -1,3 +1,4 @@
+@uc-memorize @greek
 Feature: The text a verse is memorized in
   Lampas helps him memorize verses. Before anything is asked of him, the app knows exactly which words make up a verse in the language he chooses:
   English, Greek, or the weave as it stands for him now, with the Greek of the words he has learned. An Old Testament verse is learned in its English only, whatever language is asked for.

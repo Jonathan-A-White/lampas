@@ -1,3 +1,4 @@
+@uc-tutor-ask @greek
 Feature: Ask the tutor about a word, holding what the app knows
   A word's sheet has an Ask the tutor button, and so does a Quick test question once it is answered. Each opens the Talk sheet on
   the word's verse with a first turn already sent, so that he need not type it: from the sheet the grist carries the focus

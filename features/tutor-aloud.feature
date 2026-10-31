@@ -1,3 +1,4 @@
+@uc-tutor-aloud @greek
 Feature: The tutor's responses are read aloud
   With Settings > Read the tutor's responses aloud On (the default) the tutor's response is spoken as soon as it arrives, with no tap: the
   reading check's verdict after Hold to read verse N, and the answer to Ask the tutor. The verdict is read whole: its heading, its paragraph and

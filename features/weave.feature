@@ -1,3 +1,4 @@
+@uc-weave @greek
 Feature: The diglot weave
   In the English view, a Weave switch swaps the English words he already knows for the Greek word as it
   stands in the verse. A chunk is woven only when every Greek word behind it is one of his solid words;

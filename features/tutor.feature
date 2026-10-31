@@ -1,3 +1,4 @@
+@uc-tutor-ask @greek
 Feature: Ask the tutor about a verse
   The Verse view's Ask the tutor action is the shared composer (features/ask-composer.feature). He types a question (or holds Hold to ask and says it); the question goes to the Talk
   sheet's one tutor (the bible-talk grind, mw-5r3p30.842), the sheet opens over the Verse view on that verse and the answer shows in it. The Ask box has no cards of its own: the wait, the

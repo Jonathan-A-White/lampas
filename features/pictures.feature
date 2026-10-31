@@ -1,3 +1,4 @@
+@uc-pictures @greek
 Feature: Memory pictures
   A word that has a small picture shows it on its card in Words and beside the word in the quick test, to
   help it stick. A word with no picture shows none, and nothing else changes.

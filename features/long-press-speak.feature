@@ -1,3 +1,4 @@
+@uc-hear-word @greek
 Feature: A long press on a word speaks it
   Holding a finger on any word of the reader for half a second says that word alone, in the word's own
   language: Greek in a Greek voice (el-GR), English in English. It does not open the word sheet, does not

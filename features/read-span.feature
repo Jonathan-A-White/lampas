@@ -1,3 +1,4 @@
+@uc-read-aloud @greek
 Feature: How far Lampas reads aloud
   Settings has Play to: End of the book (the default) or End of the Bible. The header's Play always goes on from the verse he is at to
   there, and the Reader turns to each next chapter just as the voice reaches its first verse (into the next book too for End of the

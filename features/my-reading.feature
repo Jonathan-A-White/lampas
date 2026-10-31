@@ -1,3 +1,4 @@
+@uc-reading-ladder @greek
 Feature: Play my reading back, and Developer mode
   After a reading check (features/reading-check.feature) the clip he recorded is kept with its result, so the result has 'Play my
   reading' to hear himself again. Download is a debugging option: 'Download my recording' stays hidden until Developer mode is on.

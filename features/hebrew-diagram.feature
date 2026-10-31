@@ -1,3 +1,4 @@
+@uc-diagram @hebrew
 Feature: Lampas draws a Hebrew verse as a Reed-Kellogg diagram
   Diagram on an Old Testament verse (mw-5r3p30.887): the Verse view of Genesis 1:1 in the Hebrew view offers Diagram as a Greek verse does. The request the tutor is sent
   cuts each Hebrew word into its pieces, the article, a prefixed preposition and vav apart from the word they are written on; the answer is drawn with the Hebrew

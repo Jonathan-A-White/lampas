@@ -1,3 +1,4 @@
+@uc-source-view @greek
 Feature: The Reader's top is one slim row of chips
   Today, the goal, the tip and New words used to be three or four full-width strips between the header and the text, and the
   reading text started a third of the way down the screen. They are now compact chips in ONE slim row under the header (src/ReaderChips.tsx):

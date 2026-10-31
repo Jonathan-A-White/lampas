@@ -1,3 +1,4 @@
+@uc-new-words @greek
 Feature: The next new words, with the easiest verse for each
   As I read a chapter, Lampas picks the few new words worth learning next: the ones the New Testament uses most, never a
   word I already have, a name only after the ordinary words. For each it names the verse where the new word has the most

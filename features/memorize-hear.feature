@@ -1,3 +1,4 @@
+@uc-memorize @greek
 Feature: Lampas hears me recall a verse
   The phone writes down what I say from memory, in the language of the verse. Greek is heard as Greek or not at all, never as English words. A phone that cannot hear Greek lets me
   grade myself. A verse in the Weave, which mixes the two languages, is recorded and checked by the mill.
