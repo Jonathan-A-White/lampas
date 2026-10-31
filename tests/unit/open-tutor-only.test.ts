@@ -88,6 +88,7 @@ export const OLD_CONTROL_UNDER_TEST: Record<string, string> = {
   'tests/e2e/tutor-waiting-bar.spec.ts',
   'tests/e2e/tutor.spec.ts',
   'tests/e2e/verse-ask-voice.spec.ts',
+  'tests/e2e/verse-makeover.spec.ts',
   'tests/e2e/verse-view.spec.ts',
   'tests/e2e/verse-view.ts',
   'tests/unit/talk-through-pause.test.tsx',
