@@ -6,6 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
+import { swipe } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
@@ -46,6 +47,8 @@ async function seedTurns(page: Page): Promise<void> {
 }
 
 async function openLongTalk(page: Page) {
+  // a swipe is timed on the page's clock (tests/support/gesture.ts)
+  await page.clock.install();
   const fake = makeFakePostern();
   await routePostern(page, fake);
   await honestMic(page);
@@ -111,14 +114,8 @@ test('a swipe that starts on Hold to talk scrolls nothing into a hold: the micro
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
   // a touch that goes down on the bar and moves up the screen at once, as a scroll capture's synthetic swipe does
-  const client = await page.context().newCDPSession(page);
-  await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
-  for (let step = 1; step <= 10; step += 1) {
-    await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y - step * 20 }] });
-    await page.waitForTimeout(20);
-  }
-  await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await page.waitForTimeout(400);
+  await swipe(page, [x, y], [x, y - 200], { with: 'touch', steps: 10 });
+  await page.clock.runFor(400);
   await expect(sheet.getByTestId('live-transcript')).toHaveCount(0);
   await expect(sheet.getByText('Listening… let go to send, slide away to cancel')).toHaveCount(0);
   expect(await page.evaluate(() => (window as unknown as { __bsvKitTesting: { mic: { recognitions: unknown[] } } }).__bsvKitTesting.mic.recognitions.length)).toBe(0);
@@ -132,6 +129,7 @@ test('a touch that stays on Hold to talk still holds', async ({ page }) => {
   const y = box.y + box.height / 2;
   const client = await page.context().newCDPSession(page);
   await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+  await page.clock.runFor(400);
   await expect(sheet.getByTestId('live-transcript')).toBeVisible();
   await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 });
