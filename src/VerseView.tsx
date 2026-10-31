@@ -6,13 +6,13 @@
 // (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar with his words above it, and Type a question beneath). Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
 // Quiz me (mw-5r3p30.74) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
-// Diagram (mw-souyao.3) has no foot: its pane (src/diagram/DiagramPane.tsx) is drawn under the row, and a tapped word of it opens the Reader's WordSheet through `onLook`.
+// Diagram (mw-souyao.3, offered only for one verse, mw-5r3p30.895) has no foot: its pane (src/diagram/DiagramPane.tsx) is drawn under the row, and a tapped word of it opens the Reader's WordSheet through `onLook`.
 // The Reader's Talk bar is not drawn while the view is open, so two bars never stack. The chosen action is kept (src/verse/action.ts); the
 // arrows go to the verse before and the verse after, across a chapter's end. The action bodies draw their bar into `slot`, the foot of the view.
 // A section heading opens the same view for its passage (mw-5r3p30.73): `verse` is then the passage as one Verse (src/data/passage.ts: `n` its
-// first verse, `to` its last), the title is the heading and its range, every action works on the whole passage, and the arrows go to the passage
+// first verse, `to` its last), the title is the heading and its range, every action but Diagram (a diagram is of one verse) works on the whole passage, and the arrows go to the passage
 // before and after in the chapter. Nothing else differs, so there is one view engine.
-import { type ReactNode, useMemo, useState } from 'react';
+import { type CSSProperties, type ReactNode, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AskComposer } from './Ask';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
@@ -23,7 +23,7 @@ import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import { sourceLanguage, type Chapter, type Verse } from './data/chapter';
 import { DiagramPane } from './diagram/DiagramPane';
 import type { Lookup } from './WordSheet';
-import { unitId, unitName, unitReference } from './data/passage';
+import { isOneVerse, unitId, unitName, unitReference } from './data/passage';
 import { MemorizeControl } from './memorize/MemorizeControl';
 import { ProgressMarks } from './memorize/ProgressMark';
 import { osisOf } from './nav/links';
@@ -112,11 +112,14 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 }
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
+  const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
   const [checking, setChecking] = useState<string | null>(null);
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
+  // A diagram is of one verse: a passage or a range has no Diagram, and a phone left on it by a verse opens the passage on Listen (the kept action is not changed)
+  const oneVerse = isOneVerse(verse);
+  const action = !oneVerse && chosen === 'diagram' ? 'listen' : chosen;
   // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
   const hebrewOn = useHebrewOn();
@@ -142,6 +145,9 @@ export function VerseView(props: VerseViewProps) {
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
   // A Hebrew verse is set as big as the Greek one, in the app's Hebrew face (.script-he, whose .reader-hebrew gives the Greek size and the Reader's leading), right to left; the English view is English whatever the chapter.
   const source = sourceLanguage(chapterText);
+  const offeredActions = actionsFor(ai, source, hebrewOn, oneVerse);
+  // the cells of the row: the actions and Copy link (Share sits beside it)
+  const cells = offeredActions.length + 1;
   const hebrewView = view === 'greek' && source === 'hbo';
   const big = hebrewView ? 'script-he reader-hebrew [--lp-greek-size:2.25rem]' : view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
   const size = hebrewView ? '' : view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
@@ -193,9 +199,11 @@ export function VerseView(props: VerseViewProps) {
           <div
             role="group"
             aria-label="Actions"
+            // the last cell (Copy link, with Share beside it) takes what the stacked rows leave of its row, so a short last row has no hole: in three columns and, at 15 rem or less, in two
+            style={{ '--lp-fill3': cells % 3 === 0 ? 1 : 4 - (cells % 3), '--lp-fill2': cells % 2 === 0 ? 1 : 2 } as CSSProperties}
             className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 @max-[15rem]:grid-cols-2 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
           >
-            {actionsFor(ai, source, hebrewOn).map((a) => (
+            {offeredActions.map((a) => (
               <button
                 key={a.id}
                 type="button"
@@ -213,7 +221,7 @@ export function VerseView(props: VerseViewProps) {
               startByHand={startByHand}
               shareText={copyText(copyUnit, { ...copyFormat, link: 'off' })}
               shareUrl={copyFormat.link === 'on' ? copyLink(copyUnit) : undefined}
-              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_:is(input,textarea)]:col-span-3 [&_:is(input,textarea)]:col-start-1 [&_:is(input,textarea)]:row-start-3 [&_:is(input,textarea)]:@max-[15rem]:col-span-2 [&_:is(input,textarea)]:@max-[15rem]:row-start-4 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_:is(input,textarea)]:@[29rem]:col-span-7 [&_:is(input,textarea)]:@[29rem]:row-start-2' : '[&>div]:contents [&_:is(input,textarea)]:@[25rem]:col-span-6 [&_:is(input,textarea)]:@[25rem]:row-start-2'}`}
+              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_:is(input,textarea)]:col-span-3 [&_:is(input,textarea)]:col-start-1 [&_:is(input,textarea)]:row-start-3 [&_:is(input,textarea)]:@max-[15rem]:col-span-2 [&_:is(input,textarea)]:@max-[15rem]:row-start-4 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:col-span-(--lp-fill3) [&>div]:@max-[15rem]:col-span-(--lp-fill2) [&>div]:@[29rem]:col-span-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_:is(input,textarea)]:@[29rem]:col-span-7 [&_:is(input,textarea)]:@[29rem]:row-start-2' : '[&>div]:contents [&_button]:col-span-(--lp-fill3) [&_button]:@max-[15rem]:col-span-(--lp-fill2) [&_button]:@[25rem]:col-span-1 [&_:is(input,textarea)]:@[25rem]:col-span-6 [&_:is(input,textarea)]:@[25rem]:row-start-2'}`}
               statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
             />
           </div>

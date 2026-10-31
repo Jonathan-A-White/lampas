@@ -29,9 +29,9 @@ const SOURCE_ACTIONS: readonly VerseAction[] = ['quiz'];
 const offered = (id: VerseAction, lang: SourceLanguage, hebrewOn: boolean): boolean => lang === 'grc' || !SOURCE_ACTIONS.includes(id) || (id === 'quiz' && hebrewOn);
 
 /** The actions the Verse view offers: all of them with a licence, only Listen without; Quiz me for an Old Testament chapter only
- * with the Hebrew dial above 0 (`hebrewOn`, true by default). Read it aloud is offered in the Hebrew view of an Old Testament verse as in the English one (mw-gdcyf98.14: its reading check is scored in Hebrew). */
-export const actionsFor = (ai: boolean, lang: SourceLanguage = 'grc', hebrewOn = true): typeof VERSE_ACTIONS[number][] =>
-  VERSE_ACTIONS.filter((a) => (ai || !AI_ACTIONS.includes(a.id)) && offered(a.id, lang, hebrewOn));
+ * with the Hebrew dial above 0 (`hebrewOn`, true by default); Diagram only when the view holds one verse (`oneVerse`, true by default: a sentence diagram is of one verse, mw-5r3p30.895). Read it aloud is offered in the Hebrew view of an Old Testament verse as in the English one (mw-gdcyf98.14: its reading check is scored in Hebrew). */
+export const actionsFor = (ai: boolean, lang: SourceLanguage = 'grc', hebrewOn = true, oneVerse = true): typeof VERSE_ACTIONS[number][] =>
+  VERSE_ACTIONS.filter((a) => (ai || !AI_ACTIONS.includes(a.id)) && offered(a.id, lang, hebrewOn) && (oneVerse || a.id !== 'diagram'));
 
 /** Whether the Hebrew dial is above 0 (some Hebrew is wanted): the tutor's quiz on an Old Testament verse is in its Hebrew from there. */
 export const useHebrewOn = (): boolean => hebrewLevelOf(useSetting(hebrewInterestSetting)) >= 1;
