@@ -104,7 +104,7 @@ const markOf = (q: GrammarQuestion): string | undefined => {
   return undefined;
 };
 
-/** `answered`: the reference becomes a link to the verse card once he has answered (src/markdown/DrillReference.tsx); before, plain text, which gives nothing away. */
+/** `answered`: the reference becomes a link to the verse card once he has answered, or on a flashcard once Show has shown the answer, since grading moves on to the next card (src/markdown/DrillReference.tsx); before, plain text, which gives nothing away. */
 function Heading({ question, mode, hint, answered }: { question: GrammarQuestion; mode: QuestionMode; hint?: string; answered: boolean }) {
   return (
     <>
@@ -145,7 +145,7 @@ function Flash({ question, picked, onPick, onSeeTable }: Omit<Props, 'mode'>) {
   const graded = picked !== null;
   return (
     <>
-      <Heading question={question} mode="flashcard" answered={graded} />
+      <Heading question={question} mode="flashcard" answered={shown || graded} />
       {showsVerse(question) ? (
         <p
           data-testid="verse-words"
