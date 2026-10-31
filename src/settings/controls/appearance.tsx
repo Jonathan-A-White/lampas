@@ -212,7 +212,7 @@ function CopyPreview({ format }: { format: CopyFormat }) {
 }
 
 /** What Copy gives, said once above the first row of When you copy (the Text row is gone, mw-5r3p30.873): the words as he reads them. */
-const COPY_GIVES = 'Copy and Share give the words as you read them on screen: English, Weave or Greek, with the variants you have on.';
+const COPY_GIVES = 'Copy and Share give the words as you read them on screen, with the variants you have on.';
 
 /** The three rows of When you copy: Reference, Verse numbers and Link, each a chip row; the first has a line above it saying what Copy gives, the last the preview under its hint. */
 export const CopyFormatControl: Control = ({ row }) => {
