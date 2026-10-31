@@ -1,13 +1,16 @@
 // A paradigm table and the ideas and forms it belongs to (mw-svw421.5, docs/paradigms.md 'Where a table is linked'): paradigmsOf(idea), tableFor(code),
 // and an ending is asked only once its table has been opened.
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { LADDER, ideaOf } from '../../src/data/grammar/ladder';
 import { buildEnding, buildIdeaQuestion } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
 import { patternsOf } from '../../src/data/grammar/patterns';
 import { PARADIGMS, cellsOf, paradigmsOf, tableFor } from '../../src/data/paradigms';
+
+// The every-chapter sweep reads all of public/data (about 11 s alone); a loaded host (a full-suite run) outruns the 20 s default.
+vi.setConfig({ testTimeout: 90_000 });
 
 const jn1 = JSON.parse(readFileSync('public/data/1jn/1.json', 'utf8')) as Chapter;
 const EVERY = new Set(PARADIGMS.map((p) => p.id));
