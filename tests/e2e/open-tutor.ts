@@ -34,7 +34,7 @@ export async function openTutor(page: Page, { sheet = TALK_SHEET, at }: { sheet?
       await twoFingers(page, at);
       tappedAt = await page.evaluate(() => performance.now());
     }
-    await expect(dialog.first()).toBeVisible({ timeout: 1500 });
+    await expect(dialog.first()).toBeVisible({ timeout: 1500 }); // a short window on purpose: a tap that came before the door read its setting did nothing, and toPass taps again
   }).toPass();
   const wait = guardLeftMs(tappedAt, await page.evaluate(() => performance.now()));
   if (wait > 0) await page.waitForTimeout(wait);
