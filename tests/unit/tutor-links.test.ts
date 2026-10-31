@@ -208,7 +208,7 @@ describe('a word link to a Hebrew lemma (mw-gdcyf98.20)', () => {
     const chosen: StudyResources = { on: ['strongs', 'logos'], options: { logos: JSON.stringify(['bdag', 'bdb']) } };
     const chips = wordChips(lemma, 'H7225', chosen);
     expect(chips.map((c) => c.label)).toEqual([`H7225 for ${lemma}`, `Open in Logos: Enhanced Brown-Driver-Briggs Hebrew and English Lexicon for ${lemma}`]);
-    expect(chips[0].url).toBe('https://www.stepbible.org/?q=strong=H7225');
+    expect(chips[0].url).toBe('https://www.stepbible.org/?q=version=ESV|strong=H7225G');
     expect(chips[1].url).toBe('logosres:LLS:46.30.16;hw=%D7%A8%D7%90%D7%A9%D7%99%D7%AA');
   });
 });

@@ -18,7 +18,7 @@ Feature: The tutor links the reader's study resources
     And the study resource "Strong's" is switched on
     And the study resource "Logos" is also switched on
     When he asks the tutor about verse 28
-    Then the answer shows the study link "G26 for ἀγάπη" to "https://www.stepbible.org/?q=strong=G0026"
+    Then the answer shows the study link "G26 for ἀγάπη" to "https://www.stepbible.org/?q=version=ESV|strong=G0026"
     And the answer also shows the study link "Open in Logos: BDAG for ἀγάπη" to "logosres:LLS:46.30.18;hw=%E1%BC%80%CE%B3%CE%AC%CF%80%CE%B7"
 
   Scenario: A verse link opens the verse in the Reader
@@ -39,7 +39,7 @@ Feature: The tutor links the reader's study resources
     Given Lampas is opened on Romans 8 and the tutor answers with a link to the word "ἀγάπη"
     And the study resource "Strong's" is switched on
     When he asks the tutor about verse 28
-    Then the answer shows the study link "G26 for ἀγάπη" to "https://www.stepbible.org/?q=strong=G0026"
+    Then the answer shows the study link "G26 for ἀγάπη" to "https://www.stepbible.org/?q=version=ESV|strong=G0026"
     And the answer shows no Logos link
 
   Scenario: With no study resource on, a word link shows nothing and the answer is still there

@@ -46,18 +46,18 @@ describe('the registry', () => {
   });
 
   it('builds the Strong\'s link to the STEPBible entry with the number padded to four digits', () => {
-    expect(resourceOf('strongs')?.linksFor(WORD)).toEqual([{ label: 'G4903', url: 'https://www.stepbible.org/?q=strong=G4903' }]);
-    expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G25' })[0].url).toBe('https://www.stepbible.org/?q=strong=G0025');
+    expect(resourceOf('strongs')?.linksFor(WORD)).toEqual([{ label: 'G4903', url: 'https://www.stepbible.org/?q=version=ESV|strong=G4903' }]);
+    expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G25' })[0].url).toBe('https://www.stepbible.org/?q=version=ESV|strong=G0025');
   });
 
   it('links the Strong\'s numbers STEPBible writes with a letter (G2424 is Jesus: STEP finds only G2424G) and leaves the others bare', () => {
     const url = (strongs: string) => resourceOf('strongs')?.linksFor({ ...WORD, strongs })[0].url;
-    expect(url('G1722')).toBe('https://www.stepbible.org/?q=strong=G1722');
-    expect(url('G3361')).toBe('https://www.stepbible.org/?q=strong=G3361');
-    expect(url('G2424')).toBe('https://www.stepbible.org/?q=strong=G2424G');
+    expect(url('G1722')).toBe('https://www.stepbible.org/?q=version=ESV|strong=G1722');
+    expect(url('G3361')).toBe('https://www.stepbible.org/?q=version=ESV|strong=G3361');
+    expect(url('G2424')).toBe('https://www.stepbible.org/?q=version=ESV|strong=G2424G');
     expect(resourceOf('strongs')?.linksFor({ ...WORD, strongs: 'G2424' })[0].label).toBe('G2424');
-    expect(url('G129')).toBe('https://www.stepbible.org/?q=strong=G0129G');
-    expect(url('G68')).toBe('https://www.stepbible.org/?q=strong=G0068G');
+    expect(url('G129')).toBe('https://www.stepbible.org/?q=version=ESV|strong=G0129G');
+    expect(url('G68')).toBe('https://www.stepbible.org/?q=version=ESV|strong=G0068G');
   });
 
   it('links a number STEPBible lists no verses for (G1228, the devil) to its lexicon entry instead', () => {
