@@ -10,7 +10,7 @@ export interface DiagramFixture {
 }
 
 export function loadFixture(mode: DiagramMode): DiagramFixture {
-  return JSON.parse(readFileSync(`tests/fixtures/diagrams/col-3-1-${mode}.json`, 'utf8')) as DiagramFixture;
+  return JSON.parse(readFileSync(`tests/fixtures/diagrams/${mode === 'hebrew' ? 'gen-1-1' : 'col-3-1'}-${mode}.json`, 'utf8')) as DiagramFixture;
 }
 
 /** A slot of real words (their indices) and no modifiers. */

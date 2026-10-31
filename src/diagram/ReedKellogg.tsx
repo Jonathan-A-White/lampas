@@ -4,7 +4,7 @@
 // (overflow-x-auto: src/reader/useChapterSwipe.ts skips a press inside a box that scrolls sideways, so a swipe along the diagram never turns the chapter); the type is never shrunk to fit.
 // The SVG is the image (role img, named by the reference and the mode) and the buttons stand beside it, not in it: an image's children are presentational to a screen reader.
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { langOf } from '../script/greekLang';
+import { langOf, langOfSource } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
 import { LABEL_H, layoutDiagram, type LayoutLabel } from './layout';
 import type { Diagram, DiagramMode, DiagramWords } from './types';
@@ -20,10 +20,14 @@ const estimate: Measure = (text) => text.length * ESTIMATE_EM * ESTIMATE_PX;
 
 const ENGLISH_FACE = 'font-sans text-[length:var(--lp-english-size)]';
 const GREEK_FACE = 'font-greek text-[length:var(--lp-greek-size)]';
-const MODE_NAME: Record<DiagramMode, string> = { english: 'English', greek: 'Greek' };
+const MODE_NAME: Record<DiagramMode, string> = { english: 'English', greek: 'Greek', hebrew: 'Hebrew' };
+/** A Hebrew label: the Hebrew face (.script-he) at the Greek size the text-size setting scales, its leading tight enough for the gloss to stand under it in the 44 px a label has. */
+const HEBREW_STYLE = { fontSize: 'var(--lp-greek-size)', lineHeight: 1.1 } as const;
+const GLOSS_FACE = 'font-sans text-[0.6875rem] leading-none text-muted';
 
 /** Text with a Greek letter in it: set in the Greek face (a word of the Weave in an English diagram is Greek, the rest of that diagram is not). */
 const GREEK_LETTER = /[\u0370-\u03FF\u1F00-\u1FFF]/;
+const HEBREW_LETTER = /[\u0590-\u05FF]/;
 
 /** The width of text in the face of `probe` (a hidden span carrying the classes of the labels), by canvas; null where there is no canvas (jsdom). */
 function measureIn(probe: HTMLElement): Measure | null {
@@ -54,17 +58,20 @@ export interface ReedKelloggProps {
 
 export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, lit }: ReedKelloggProps) {
   const greek = mode === 'greek';
+  const hebrew = mode === 'hebrew';
   const face = greek ? GREEK_FACE : ENGLISH_FACE;
+  const hebrewAttrs = langOfSource('hbo');
   const probe = useRef<HTMLSpanElement>(null);
   const greekProbe = useRef<HTMLSpanElement>(null);
-  const [measured, setMeasured] = useState<{ english: Measure; greek: Measure } | null>(null);
+  const [measured, setMeasured] = useState<{ english: Measure; greek: Measure; hebrew: Measure } | null>(null);
+  const hebrewProbe = useRef<HTMLSpanElement>(null);
   // The face is read once the probe is on the page, before it is painted, and again when the web font has loaded (the labels' widths follow it).
   useLayoutEffect(() => {
-    if (measure || !probe.current || !greekProbe.current) return;
-    const [english, greekNode] = [probe.current, greekProbe.current];
+    if (measure || !probe.current || !greekProbe.current || !hebrewProbe.current) return;
+    const [english, greekNode, hebrewNode] = [probe.current, greekProbe.current, hebrewProbe.current];
     const read = () => {
-      const [en, el] = [measureIn(english), measureIn(greekNode)];
-      setMeasured(en && el ? { english: en, greek: el } : null);
+      const [en, el, he] = [measureIn(english), measureIn(greekNode), measureIn(hebrewNode)];
+      setMeasured(en && el && he ? { english: en, greek: el, hebrew: he } : null);
     };
     read();
     let live = true;
@@ -76,9 +83,9 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
   const width = useMemo<Measure>(() => {
     if (measure) return measure;
     if (!measured) return estimate;
-    return (text) => (GREEK_LETTER.test(text) ? measured.greek(text) : measured.english(text));
+    return (text) => (HEBREW_LETTER.test(text) ? measured.hebrew(text) : GREEK_LETTER.test(text) ? measured.greek(text) : measured.english(text));
   }, [measure, measured]);
-  const layout = useMemo(() => layoutDiagram(diagram, words, width), [diagram, words, width]);
+  const layout = useMemo(() => layoutDiagram(diagram, words, width, { rtl: hebrew }), [diagram, words, width, hebrew]);
   const isLit = (index: number): boolean => (typeof lit === 'number' ? lit === index : (lit?.includes(index) ?? false));
 
   const label = (l: LayoutLabel) => {
@@ -86,6 +93,13 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
     const text = 'absolute flex items-center justify-center whitespace-nowrap leading-none text-fg';
     if (l.index !== undefined && l.text === '') return null; // a word the Weave's Greek has taken the place of
     if (l.index === undefined) {
+      if (hebrew) {
+        return (
+          <span key={l.id} data-implied="" {...hebrewAttrs} className={`${text} ${hebrewAttrs.className} text-muted`} style={{ ...place, ...HEBREW_STYLE }}>
+            {l.text}
+          </span>
+        );
+      }
       return (
         <span key={l.id} data-implied="" {...langOf(greek)} style={place} className={`${text} ${face} text-muted`}>
           {l.text}
@@ -95,6 +109,20 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
     const index = l.index;
     const woven = words[index]?.weft !== undefined;
     const shown = isLit(index);
+    if (hebrew) {
+      return (
+        <button key={l.id} type="button" data-word={String(index)} data-lit={shown ? '' : undefined} style={place} onClick={() => onWord(index)} className={`${text} flex-col gap-0.5 ${NO_SELECT} cursor-pointer rounded active:bg-line ${shown ? 'bg-line ring-2 ring-accent' : ''}`}>
+          <span {...hebrewAttrs} style={HEBREW_STYLE}>
+            {l.text}
+          </span>
+          {l.gloss ? (
+            <span data-gloss="" lang="en" className={GLOSS_FACE}>
+              {l.gloss}
+            </span>
+          ) : null}
+        </button>
+      );
+    }
     return (
       <button key={l.id} type="button" data-word={String(index)} data-woven={woven ? '' : undefined} data-lit={shown ? '' : undefined} {...langOf(greek || woven)} style={place} onClick={() => onWord(index)} className={`${text} ${woven ? GREEK_FACE : face} ${NO_SELECT} cursor-pointer rounded active:bg-line ${shown ? 'bg-line ring-2 ring-accent' : ''}`}>
         {l.text}
@@ -126,6 +154,9 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
           Hg
         </span>
         <span ref={greekProbe} aria-hidden="true" className={`pointer-events-none invisible absolute left-0 top-0 ${GREEK_FACE}`}>
+          Hg
+        </span>
+        <span ref={hebrewProbe} aria-hidden="true" className="script-he pointer-events-none invisible absolute left-0 top-0" style={HEBREW_STYLE}>
           Hg
         </span>
       </div>

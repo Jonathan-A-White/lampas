@@ -573,8 +573,8 @@ export interface RecallRow {
 export interface DiagramRow {
   /** the unit as the screen names it: 'Colossians 3:1', 'Colossians 3:1-2' */
   ref: string;
-  /** the mode it is diagrammed in: its words are the English chunks' or the Greek words */
-  lang: 'english' | 'greek';
+  /** the mode it is diagrammed in: its words are the English chunks', the Greek words or the pieces of the Hebrew words */
+  lang: 'english' | 'greek' | 'hebrew';
   /** the sentence-diagram grind's version (grinds/sentence-diagram.json versions): a later grind's diagrams are another row */
   version: string;
   /** the tree (src/diagram/types.ts Diagram), checked by validateDiagram before it was kept */

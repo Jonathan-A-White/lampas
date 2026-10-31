@@ -74,6 +74,8 @@ export interface DiagramPaneProps {
 export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPaneProps) {
   // keyed by the unit's numbers, not the object, so a Reader that rebuilds the Verse does not ask again
   const { n, to } = verse;
+  // an Old Testament chapter read in its source language (the Reader's 'greek' view) is diagrammed in its Hebrew (mw-5r3p30.887)
+  const mode: DiagramMode = chapter.lang === 'hbo' && view === 'greek' ? 'hebrew' : view;
   const verses = useMemo(() => unitVerses(chapter, { n, to }), [chapter, n, to]);
   // each ask is one run: Redraw and Try again start another
   const [run, setRun] = useState({ n: 0, redraw: false });
@@ -89,7 +91,7 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
   };
   useEffect(() => {
     const stop = new AbortController();
-    fetchDiagram(chapter, verses, view, { redraw: run.redraw, signal: stop.signal }).then(
+    fetchDiagram(chapter, verses, mode, { redraw: run.redraw, signal: stop.signal }).then(
       (result) => {
         if (stop.signal.aborted) return;
         if (result.ok) setDrawn(result);
@@ -103,12 +105,12 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
       },
     );
     return () => stop.abort();
-  }, [chapter, verses, view, run]);
+  }, [chapter, verses, mode, run]);
 
   // the words as the Weave shows them: the tree is the English one, so a change of Weave redraws with no new ask
   const words = useMemo(
-    () => (drawn && view === 'english' && woven ? weaveDiagramWords(drawn.words, verses, (v) => woven[chapter.verses.indexOf(v)] ?? null) : drawn?.words),
-    [drawn, view, woven, verses, chapter],
+    () => (drawn && mode === 'english' && woven && chapter.lang !== 'hbo' ? weaveDiagramWords(drawn.words, verses, (v) => woven[chapter.verses.indexOf(v)] ?? null) : drawn?.words),
+    [drawn, mode, woven, verses, chapter],
   );
 
   return (
@@ -139,7 +141,7 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
           <ReedKellogg
             diagram={drawn.diagram}
             words={words}
-            mode={view}
+            mode={mode}
             reference={diagramReference(chapter, verses)}
             onWord={(index) => {
               const look = lookupOfWord(verses, words[index]);

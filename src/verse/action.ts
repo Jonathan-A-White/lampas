@@ -20,15 +20,15 @@ export type VerseAction = (typeof VERSE_ACTIONS)[number]['id'];
  * sent to the mill (the verse-read grist). */
 const AI_ACTIONS: readonly VerseAction[] = ['read', 'ask', 'quiz', 'diagram'];
 
-/** The actions of a verse's source language alone (mw-uqlxea.3, mw-gdcyf98.21). Diagram draws a Greek sentence (the diagram epic, src/diagram/, is Greek and English): it is not offered for an Old Testament ('hbo')
- * verse. Quiz me is, once there is Hebrew to quiz on: it opens the Talk sheet's quiz, whose request carries the verse's `hebrew` and `hebrew_words` from the Hebrew dial's Curious up (src/services/talk.ts), so at
+/** The actions an Old Testament ('hbo') verse is offered on a condition (mw-uqlxea.3, mw-gdcyf98.21). Diagram is offered for Hebrew as for Greek (mw-5r3p30.887: the diagram epic, src/diagram/, draws the Hebrew
+ * words in pieces, right to left). Quiz me is, once there is Hebrew to quiz on: it opens the Talk sheet's quiz, whose request carries the verse's `hebrew` and `hebrew_words` from the Hebrew dial's Curious up (src/services/talk.ts), so at
  * Hebrew 0, where the talk holds the English alone, it is not offered. The others (Listen, Read it aloud, Ask the tutor) work on the English, and Ask the tutor also sends the Hebrew (src/services/hebrewWords.ts). */
-const SOURCE_ACTIONS: readonly VerseAction[] = ['quiz', 'diagram'];
+const SOURCE_ACTIONS: readonly VerseAction[] = ['quiz'];
 
-/** Whether an action is offered on a verse of this source language: every action on a Greek verse; on an Old Testament verse Quiz me with any Hebrew (`hebrewOn`), and never Diagram. */
+/** Whether an action is offered on a verse of this source language: every action on a Greek verse; on an Old Testament verse every action, Quiz me only with some Hebrew (`hebrewOn`). */
 const offered = (id: VerseAction, lang: SourceLanguage, hebrewOn: boolean): boolean => lang === 'grc' || !SOURCE_ACTIONS.includes(id) || (id === 'quiz' && hebrewOn);
 
-/** The actions the Verse view offers: all of them with a licence, only Listen without; Diagram only for a chapter read in Greek, chosen by `lang`, not by the view, and Quiz me for an Old Testament chapter only
+/** The actions the Verse view offers: all of them with a licence, only Listen without; Quiz me for an Old Testament chapter only
  * with the Hebrew dial above 0 (`hebrewOn`, true by default). Read it aloud is offered in the Hebrew view of an Old Testament verse as in the English one (mw-gdcyf98.14: its reading check is scored in Hebrew). */
 export const actionsFor = (ai: boolean, lang: SourceLanguage = 'grc', hebrewOn = true): typeof VERSE_ACTIONS[number][] =>
   VERSE_ACTIONS.filter((a) => (ai || !AI_ACTIONS.includes(a.id)) && offered(a.id, lang, hebrewOn));
@@ -66,6 +66,6 @@ export function useVerseAction(lang: SourceLanguage = 'grc'): [VerseAction, (act
     set(next);
   }, []);
   // Left on Read it aloud, Ask the tutor, Quiz me or Diagram by a licensed phone, an unlicensed one opens on Listen (what is kept stays, for when the licence is back);
-  // left on Diagram (or on Quiz me at Hebrew 0), an Old Testament verse opens on Listen too (the kept action is not changed, so the next verse opens on it).
+  // left on Quiz me at Hebrew 0, an Old Testament verse opens on Listen too (the kept action is not changed, so the next verse opens on it).
   return [(!ai && AI_ACTIONS.includes(action)) || !offered(action, lang, hebrewOn) ? 'listen' : action, choose];
 }

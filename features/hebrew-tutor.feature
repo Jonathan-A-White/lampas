@@ -20,11 +20,11 @@ Feature: The tutor and a Hebrew verse
     Then the answer shows in the Talk sheet about Jonah 1:10
     And the answer draws the Hebrew word "יָרֵא" right to left
 
-  Scenario: Quiz me is not offered on Jonah 1:10, and Ask the tutor is
+  Scenario: Quiz me is not offered on Jonah 1:10, and Ask the tutor and Diagram are
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor" and "Copy"
-    And the Verse view has no "Quiz me" and no "Diagram"
+    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Diagram" and "Copy"
+    And the Verse view has no "Quiz me"
 
   Scenario: The tutor on Genesis 1 is told his Hebrew words and his place on the Hebrew ladder
     Given Lampas is opened on Genesis 1 with a licence, a tutor behind a fake Postern, and a reader of Hebrew with three Hebrew words and two ideas

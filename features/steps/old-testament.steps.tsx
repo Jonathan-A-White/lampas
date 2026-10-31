@@ -601,15 +601,12 @@ describeFeature(feature, ({ Scenario }) => {
       const verse = viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
       expect(squash(verse.textContent)).toContain('The men knew that he was fleeing from the presence of the LORD');
     });
-    And('the Verse view offers the actions {string}, {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string, f: string) => {
-      expect(actionNames()).toEqual([a, b, c, d, e, f]);
-    });
-    And('the Verse view has no {string}', (_, name: string) => {
-      expect(within(viewEl()).queryByRole('button', { name, exact: true }), name).toBeNull();
+    And('the Verse view offers the actions {string}, {string}, {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string, f: string, g: string) => {
+      expect(actionNames()).toEqual([a, b, c, d, e, f, g]);
     });
   });
 
-  Scenario('Diagram kept from a New Testament verse opens an Old Testament verse on Listen and is kept', ({ Given, When, Then, And }) => {
+  Scenario('Diagram kept from a New Testament verse opens an Old Testament verse on Diagram and is kept', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with a licence and the kept action {string}', (_, kept: string) => openOn('Jonah 1', {}, false, { licensed: true, kept }));
     When('he taps the number of verse {int}', tapVerseNumber);
     Then('the chosen action of the Verse view is {string}', (_, name: string) => {

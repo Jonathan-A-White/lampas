@@ -216,3 +216,30 @@ describe('a negative before one member of a contrast (Colossians 3:2, mw-5r3p30.
     expect(checkExpect(example.expect, workedColossians32(text))).toEqual([]);
   });
 });
+
+// Hebrew (mw-5r3p30.887): the instructions have a section on it, the fixture is an answer the schema takes, and the example asks what buildDiagramRequest makes for Genesis 1:1.
+describe('the Genesis 1:1 diagram in Hebrew', () => {
+  const text = instructionsOf('sentence-diagram');
+  const gen1 = read<Chapter>('public/data/gen/1.json');
+  const fixture = loadFixture('hebrew');
+  const example = read<GrindExample>('grinds/examples/sentence-diagram/gen-1-1-hebrew.json');
+
+  it('has instructions that say how the article, a prefixed preposition and vav are pieces of their own', () => {
+    expect(text).toContain('## Hebrew');
+    expect(text).toMatch(/cut into pieces/);
+    expect(text).toMatch(/\(`Art`\)/);
+    expect(text).toMatch(/`Prep-b`/);
+    expect(text).toMatch(/vav \(`Conj-w`\)/);
+  });
+
+  it('is an answer the schema takes, and keeps THE RULE', () => {
+    expect(validate(fixture.diagram, answerSchema)).toEqual([]);
+    expect(validateDiagram(fixture.diagram, fixture.words.length)).toEqual({ ok: true });
+  });
+
+  it('has an example that is what buildDiagramRequest makes, and the hand-written diagram meets it', () => {
+    expect(example.request).toEqual(buildDiagramRequest(gen1, [gen1.verses[0]], 'hebrew').request);
+    expect(example.expect['clauses.0.clause.verb.words.0.i']).toEqual({ equals: 2 });
+    expect(checkExpect(example.expect, fixture.diagram)).toEqual([]);
+  });
+});

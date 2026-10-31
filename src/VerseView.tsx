@@ -1,7 +1,7 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable); under it one row of actions (Listen, Read it aloud,
-// Ask the tutor, Quiz me, Diagram and Copy link; an Old Testament verse has no Quiz me or Diagram, mw-uqlxea.3, and no Read it aloud in the Hebrew view, mw-gdcyf98.4; its Ask the tutor sends the Hebrew, mw-5vvlay.3; the verse is drawn in the Reader's view, the Hebrew big and right to left); then what the chosen action shows; and at the foot ONE control
+// Ask the tutor, Quiz me, Diagram and Copy link; an Old Testament verse has Quiz me only with some Hebrew, mw-uqlxea.3, and Diagram in its Hebrew, mw-5r3p30.887, and no Read it aloud in the Hebrew view, mw-gdcyf98.4; its Ask the tutor sends the Hebrew, mw-5vvlay.3; the verse is drawn in the Reader's view, the Hebrew big and right to left); then what the chosen action shows; and at the foot ONE control
 // that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar), or for Ask the tutor voice-kit's Composer
 // (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar with his words above it, and Type a question beneath). Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.

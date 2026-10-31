@@ -168,15 +168,15 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Quiz me is not offered on Jonah 1:10, and Ask the tutor is', ({ Given, When, Then, And }) => {
+  Scenario('Quiz me is not offered on Jonah 1:10, and Ask the tutor and Diagram are', ({ Given, When, Then, And }) => {
     Given(phone, openJonah);
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
-    Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+    Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
       const names = within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button').map((x) => x.textContent?.trim() ?? '');
-      expect(names).toEqual([a, b, c, d]);
+      expect(names).toEqual([a, b, c, d, e]);
     });
-    And('the Verse view has no {string} and no {string}', (_, a: string, b: string) => {
-      for (const name of [a, b]) expect(within(viewEl()).queryByRole('button', { name, exact: true }), name).toBeNull();
+    And('the Verse view has no {string}', (_, name: string) => {
+      expect(within(viewEl()).queryByRole('button', { name, exact: true }), name).toBeNull();
     });
   });
 
