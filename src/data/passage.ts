@@ -56,6 +56,9 @@ export function passageVerse(passage: Passage): Verse {
 /** The key of a verse or a passage in a state keyed by it: '11', '1-11'. */
 export const unitId = (unit: Pick<Verse, 'n' | 'to'>): string => (unit.to === undefined || unit.to === unit.n ? String(unit.n) : `${unit.n}-${unit.to}`);
 
+/** True when the unit is one verse (no `to`, or a `to` that is its own number): a sentence diagram is of one verse (mw-5r3p30.895). */
+export const isOneVerse = (unit: Pick<Verse, 'n' | 'to'>): boolean => unit.to === undefined || unit.to === unit.n;
+
 /** 'verse 11' or 'verses 1-11': how the view's words name what it shows. */
 export const unitName = (unit: Pick<Verse, 'n' | 'to'>): string => (unit.to === undefined || unit.to === unit.n ? `verse ${unit.n}` : `verses ${unit.n}-${unit.to}`);
 
