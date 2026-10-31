@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.47
+_2026-10-31_
+- Fixed: A long Talk can now be captured in one scroll screenshot, a swipe across Hold to talk no longer starts the microphone, and a new button copies the whole talk.
+
 ## 0.7.46
 _2026-10-31_
 - New: A quiet key under the Reader's header explains the marks of a variant reading (dotted English is Lampas's own, plain is the Bible's footnote, NA and B say which Greek text reads it), and tapping a variant's opening brace shows it again at any time.

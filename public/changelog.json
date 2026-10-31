@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.47",
+    "date": "2026-10-31",
+    "story": "mw-5r3p30.930",
+    "kind": "fixed",
+    "text": "A long Talk can now be captured in one scroll screenshot, a swipe across Hold to talk no longer starts the microphone, and a new button copies the whole talk."
+  },
+  {
     "version": "0.7.46",
     "date": "2026-10-31",
     "story": "mw-9ji6ek0.43",
