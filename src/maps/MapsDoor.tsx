@@ -5,12 +5,14 @@ import type { MapRef } from './types';
 import { useMaps } from './useMaps';
 
 const DOOR = 'inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-base font-medium text-accent active:bg-line';
+/** The quiet look of the Verse view's tools line (mw-5r3p30.896): accent words with no border. */
+const QUIET_DOOR = 'inline-flex min-h-11 items-center justify-center rounded-lg px-2.5 text-sm font-medium text-accent active:bg-line';
 
-export function MapsDoor({ mapRef, className = '' }: { mapRef: MapRef; className?: string }) {
+export function MapsDoor({ mapRef, className = '', quiet = false }: { mapRef: MapRef; className?: string; quiet?: boolean }) {
   const cards = useMaps(mapRef);
   if (!cards || cards.length === 0) return null;
   return (
-    <button type="button" aria-haspopup="dialog" data-maps-door onClick={() => openMaps(mapRef)} className={`${DOOR} ${className}`}>
+    <button type="button" aria-haspopup="dialog" data-maps-door onClick={() => openMaps(mapRef)} className={`${quiet ? QUIET_DOOR : DOOR} ${className}`}>
       {`Maps · ${cards.length}`}
     </button>
   );

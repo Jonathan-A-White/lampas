@@ -602,8 +602,11 @@ describeFeature(feature, ({ Scenario }) => {
       const verse = viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
       expect(squash(verse.textContent)).toContain('The men knew that he was fleeing from the presence of the LORD');
     });
-    And('the Verse view offers the actions {string}, {string}, {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string, f: string, g: string) => {
-      expect(actionNames()).toEqual([a, b, c, d, e, f, g]);
+    And('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}, and the tools {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string, f: string, g: string) => {
+      expect(actionNames()).toEqual([a, b, c, d, e]);
+      // Copy and Share are tools in the quiet line under the text, not cells of the row of actions (mw-5r3p30.896)
+      const tools = within(screen.getByRole('group', { name: 'Tools' })).getAllByRole('button').map((b) => b.textContent?.trim() ?? '');
+      expect(tools).toEqual(expect.arrayContaining([f, g]));
     });
   });
 

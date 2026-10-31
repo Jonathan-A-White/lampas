@@ -28,11 +28,11 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
   const view = page.getByRole('region', { name: 'Verse view' });
   await expect(view).toBeVisible();
 
-  // five actions and Copy link in two rows of three, each inside the phone and a thumb tall
+  // the passage's four actions (no Diagram, mw-5r3p30.895; Copy is a tool under the text, mw-5r3p30.896) in two rows, each inside the phone and a thumb tall
   const row = view.getByRole('group', { name: 'Actions', exact: true });
   const tops = new Set<number>();
   const buttons = await row.getByRole('button').all();
-  expect(buttons).toHaveLength(6);
+  expect(buttons).toHaveLength(4);
   for (const button of buttons) {
     const b = await button.boundingBox();
     if (!b) throw new Error('no button box');

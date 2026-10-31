@@ -1,8 +1,8 @@
 @uc-verse-view @greek
 Feature: A section heading opens the Verse view for its passage
   Tapping a section heading in the Reader opens the same Verse view a verse number opens (mw-5r3p30.73), for the passage under the
-  heading (the heading to the next heading): the heading and its verse range at the top, the passage's verses set as the Reader sets its text, the same one row of
-  actions (Listen, Read it aloud, Ask the tutor, Quiz me, Copy) and the same ONE control at the foot, each doing its action for the whole passage.
+  heading (the heading to the next heading): the heading and its verse range at the top, the passage's verses set as the Reader sets its text, the same tools under the text (Copy and the rest), the same row of
+  actions (Listen, Read it aloud, Ask the tutor, Quiz me) and the same ONE control at the foot, each doing its action for the whole passage.
   Romans 8 has five headings: 8:1-11, 8:12-17, 8:18-27, 8:28-34 and 8:35-39. The phone's Back returns to the Reader.
 
   Scenario: Tapping the heading of Romans 8:1-11 opens the Verse view headed with the heading and its range
@@ -32,7 +32,8 @@ Feature: A section heading opens the Verse view for its passage
   Scenario: The passage has one row of actions, without Diagram, and exactly one control at the foot
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Copy"
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor" and "Quiz me"
+    And "Copy" is one of the tools under the text, not an action
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
 
   Scenario: Listen reads the whole passage aloud to its end by itself

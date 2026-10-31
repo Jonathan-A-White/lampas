@@ -1,6 +1,6 @@
-// tests/e2e/verse-actions.spec.ts — the Verse view's row of actions on the phones' narrow widths (mw-5r3p30.105): no label wraps past two lines, every
-// button keeps a 44x44 target, and the page never scrolls sideways, with and without Share (a phone that has navigator.share draws seven buttons, Share beside Copy link in the sixth cell: two rows of three, mw-souyao.3).
-// jsdom has no layout, so every size is measured here.
+// tests/e2e/verse-actions.spec.ts — the Verse view's row of actions on the phones' narrow widths (mw-5r3p30.105): no label wraps, every
+// button keeps a 44x44 target, and the page never scrolls sideways, with and without Share (mw-5r3p30.896: the row is the five actions, three over two, and Copy, with Share
+// on a phone that has navigator.share, is a word of the tools line under the text). jsdom has no layout, so every size is measured here.
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
@@ -23,13 +23,16 @@ async function start(page: Page, viewport: { width: number; height: number }, sh
 
 for (const phone of PHONES) {
   for (const share of [false, true]) {
-    test(`${phone.name}${share ? ' with Share' : ''}: every action is a 44 px target, no label is past two lines, nothing scrolls sideways`, async ({ page }) => {
+    test(`${phone.name}${share ? ' with Share' : ''}: every action is a 44 px target, no label wraps, nothing scrolls sideways`, async ({ page }) => {
       await start(page, phone, share);
       const view = await openVerseView(page, 1);
       const row = view.getByRole('group', { name: 'Actions', exact: true });
       const buttons = await row.getByRole('button').all();
-      expect(buttons).toHaveLength(share ? 7 : 6);
-      for (const button of buttons) {
+      expect(buttons).toHaveLength(5);
+      const tools = view.getByRole('group', { name: 'Tools', exact: true });
+      await expect(tools.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
+      await expect(tools.getByRole('button', { name: 'Share', exact: true })).toHaveCount(share ? 1 : 0);
+      for (const button of [...buttons, ...(await tools.getByRole('button').all())]) {
         const name = (await button.textContent()) ?? '';
         const b = await button.boundingBox();
         if (!b) throw new Error(`no box for ${name}`);
@@ -43,7 +46,7 @@ for (const phone of PHONES) {
           range.selectNodeContents(el);
           return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
         });
-        expect(lines, `${name} lines`).toBeLessThanOrEqual(2);
+        expect(lines, `${name} lines`).toBe(1);
       }
       const page2 = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
       expect(page2.scrollWidth).toBeLessThanOrEqual(page2.clientWidth);

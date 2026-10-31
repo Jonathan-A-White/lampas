@@ -1,5 +1,5 @@
 // tests/e2e/passage-view.spec.ts — a section heading opens the Verse view for its passage (mw-5r3p30.73), at phone width: the heading and range at
-// the top, the passage big, the same one row of actions on one line, the one hold bar at the foot, a heading that is one 44 px target and still looks
+// the top, the passage big, the same row of actions, the one hold bar at the foot, a heading that is one 44 px target and still looks
 // as it did. jsdom has no layout, so every size and place is proven here.
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
@@ -71,11 +71,10 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
   }
   expect(tops.size).toBe(2);
 
-  // the passage is longer than the screen: it scrolls in a box of its own, and the row of actions is in sight under it
+  // the passage is longer than the screen: it scrolls in a box of its own, which takes what the tools, the row and the foot leave (mw-5r3p30.896), and the row of actions is in sight under it
   const box = view.locator('[data-passage-box]');
   const boxSize = await box.evaluate((el) => ({ client: el.clientHeight, scroll: el.scrollHeight }));
   expect(boxSize.scroll).toBeGreaterThan(boxSize.client);
-  expect(boxSize.client).toBeLessThanOrEqual(VIEWPORT.height * 0.4 + 1);
   const rowBox = await row.boundingBox();
   if (!rowBox) throw new Error('no row box');
   expect(rowBox.y + rowBox.height).toBeLessThanOrEqual(VIEWPORT.height - BAR_HEIGHT);

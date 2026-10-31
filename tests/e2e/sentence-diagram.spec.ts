@@ -25,7 +25,7 @@ async function start(page: Page, options: { share?: boolean; weave?: 'off' | 'so
 
 const diagramAsks = (fake: FakePostern): number => fake.received.filter((r) => r.grist.kind === 'sentence-diagram').length;
 
-/** The tops of the row's buttons (rounded): each inside the phone and a thumb tall; the Share-and-Copy pair shares a cell, so its two buttons are half as wide. */
+/** The tops of the row's buttons (rounded): each inside the phone and a thumb tall (Copy and Share are words of the tools line, not cells, mw-5r3p30.896). */
 async function rowTops(page: Page): Promise<{ count: number; tops: Set<number> }> {
   const row = page.getByRole('region', { name: 'Verse view' }).getByRole('group', { name: 'Actions', exact: true });
   const buttons = await row.getByRole('button').all();
@@ -48,9 +48,9 @@ test('Diagram draws Colossians 3:1 in a box that scrolls sideways, a word opens 
   const view = await openVerseView(page, 1);
   await expect(view.getByRole('heading', { name: 'Colossians 3:1' })).toBeVisible();
 
-  // the five actions and Copy link: two rows of three
+  // the five actions: three over two
   const row = await rowTops(page);
-  expect(row.count).toBe(6);
+  expect(row.count).toBe(5);
   expect(row.tops.size).toBe(2);
 
   await view.getByRole('button', { name: 'Diagram', exact: true }).click();
@@ -100,12 +100,12 @@ test('Diagram draws Colossians 3:1 in a box that scrolls sideways, a word opens 
   await expect(again.getByRole('button', { name: 'Redraw', exact: true })).toBeEnabled();
 });
 
-test('On a phone with Share, the five actions, Copy link and Share still fit two rows of three', async ({ page }) => {
+test('On a phone with Share, the five actions are still three over two, and Share is a tool under the text', async ({ page }) => {
   await start(page, { share: true });
   const view = await openVerseView(page, 1);
-  await expect(view.getByRole('button', { name: 'Share', exact: true })).toBeVisible();
+  await expect(view.getByRole('group', { name: 'Tools', exact: true }).getByRole('button', { name: 'Share', exact: true })).toBeVisible();
   const row = await rowTops(page);
-  expect(row.count).toBe(7);
+  expect(row.count).toBe(5);
   expect(row.tops.size).toBe(2);
   await shot(page, 'sentence-diagram-share-row');
 });

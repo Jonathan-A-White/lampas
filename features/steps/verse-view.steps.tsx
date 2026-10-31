@@ -190,15 +190,20 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('One row of actions and exactly one control at the foot, and no Talk bar', ({ Given, When, Then, And }) => {
+  Scenario('One row of actions, the tools under the text, exactly one control at the foot, and no Talk bar', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    Then('the row of actions is {string}, {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string, f: string) => {
+    Then('the row of actions is {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
       const row = within(viewEl()).getByRole('group', { name: 'Actions' });
       const names = within(row)
         .getAllByRole('button')
         .map((button) => button.textContent);
-      expect(names).toEqual([a, b, c, d, e, f]);
+      expect(names).toEqual([a, b, c, d, e]);
+    });
+    And('{string} is one of the tools under the text, not an action', (_, name: string) => {
+      // the quiet line under the text (Copy, Share, Memorize, the Logos doors, Maps) is a group of its own, apart from the row of actions (mw-5r3p30.896)
+      expect(within(within(viewEl()).getByRole('group', { name: 'Tools' })).getByRole('button', { name, exact: true })).toBeInTheDocument();
+      expect(within(within(viewEl()).getByRole('group', { name: 'Actions' })).queryByRole('button', { name, exact: true })).toBeNull();
     });
     And('exactly one control sits at the foot, the Play button of Listen, and there is no hold bar', () => {
       expect(bars()).toHaveLength(0);

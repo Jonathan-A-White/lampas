@@ -219,9 +219,13 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The passage has one row of actions, without Diagram, and exactly one control at the foot', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);
-    Then('the row of actions is {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
+    Then('the row of actions is {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
       const row = within(viewEl()).getByRole('group', { name: 'Actions' });
-      expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c, d, e]);
+      expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c, d]);
+    });
+    And('{string} is one of the tools under the text, not an action', (_, name: string) => {
+      expect(within(within(viewEl()).getByRole('group', { name: 'Tools' })).getByRole('button', { name, exact: true })).toBeInTheDocument();
+      expect(within(within(viewEl()).getByRole('group', { name: 'Actions' })).queryByRole('button', { name, exact: true })).toBeNull();
     });
     And('exactly one control sits at the foot, the Play button of Listen, and there is no hold bar', () => {
       expect(bars()).toHaveLength(0);
