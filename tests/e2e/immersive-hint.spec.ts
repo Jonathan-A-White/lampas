@@ -167,8 +167,13 @@ for (const size of [
   });
 }
 
+// The default Tutor door makes a two-finger tap on the text open the tutor (and only bring the bars back), and its sheet then covers the card; this test
+// taps with two fingers to bring the bars back, so it sets the door to the floating ? first (as immersive-reader.spec.ts does).
 test('the card comes back with the bars, and Got it then closes it', async ({ page }) => {
   await openReader(page, 'on');
+  await keep(page, 'tutorDoor', 'floating');
+  await page.reload();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await scrollText(page, 400);
   await expect(card(page)).toBeHidden();
   const cdp = await page.context().newCDPSession(page);
