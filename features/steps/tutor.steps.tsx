@@ -144,7 +144,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:28' });
       await waitFor(() => expect(within(dialog).getByText(/^Waiting for the tutor… \d+ s$/)).toBeInTheDocument());
       expect(within(dialog).getByRole('button', { name: 'Attach a picture' })).toBeDisabled();
-      expect(within(dialog).getByText(QUESTION)).toBeInTheDocument();
+      expect(await within(dialog).findByText(QUESTION)).toBeInTheDocument();
     });
     When('the tutor answers', async () => {
       await waitFor(() => expect(fake.received).toHaveLength(1));
