@@ -17,7 +17,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Tyndale House's TBESH (Translators Brief lexicon of Extended Strongs for Hebrew), from STEPBible](https://www.stepbible.org).** Licensed
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House, Cambridge. Hebrew headwords, glosses and definitions.
   Changes: first sense per number; definitions cleaned and cut near 300 characters.
-- **[byztxt Byzantine text](https://github.com/byztxt/byzantine-majority-text)** and the [Robinson-Pierpont 2026 release](https://byzantinetext.com/study/editions/robinson-pierpont/). Public domain. Where manuscripts divide: variant readings; where a sentence ends: its full stops and Greek question marks, for Diagram. Changes: laid on the words; of the punctuation only the sentence ends are kept.
+- **[byztxt Byzantine text](https://github.com/byztxt/byzantine-majority-text)** and the [Robinson-Pierpont 2026 release](https://byzantinetext.com/study/editions/robinson-pierpont/). Public domain. Variant readings and sentence ends. Changes: laid on the words.
 - **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. The 2005 appendix, read on the Preface. Changes: Greek in Greek letters.
 - **[TIPNR, from STEPBible](https://www.stepbible.org)** (Translators Individualised Proper Names with all References), Tyndale House Cambridge.
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The places for the maps, with coordinates from [OpenBible.info](https://www.openbible.info/geo/). Changes: places only.
