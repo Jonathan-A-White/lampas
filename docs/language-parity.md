@@ -50,7 +50,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `voice-settings` | The language's voice and speed rows in Settings, shown from its dial's Curious | greek-voice-test, pronunciation | pronunciation | gap |
 | `voice-test` | Hear and switch the voice from Settings: the name of the voice in use and Test | greek-voice-test | gap | gap |
 | `pronunciation` | The respelling of a word in the chosen pronunciation, the one family setting and each language on its own | pronunciation-progress, pronunciation, voice-respelling-agree | pronunciation | gap |
-| `ipa-course` | Learn the IPA sounds, the optional course, behind a setting | ipa-course | hebrew-ipa-course | gap |
+| `ipa-course` | The IPA course: the optional lesson on the symbols of the sounds, behind a setting | ipa-course | hebrew-ipa-course | gap |
 | `sound-lessons` | Hard sounds: optional lessons on the sounds his English makes hard, with Try it and the pair drill | hard-sounds, pair-drill, roll-r, try-it | gap | gap |
 | `letter-drill` | The letters: each taught from its sheet with Hear it, the letter drill and Say it | hebrew-letters, letter-drill, say-it | hebrew-letters | gap |
 | `handwriting` | Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills | handwriting-drills | gap | gap |

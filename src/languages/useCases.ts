@@ -145,7 +145,7 @@ export const USE_CASES: readonly UseCase[] = [
   },
   {
     id: 'ipa-course',
-    title: 'Learn the IPA sounds, the optional course, behind a setting',
+    title: 'The IPA course: the optional lesson on the symbols of the sounds, behind a setting',
     status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
   },
   {
