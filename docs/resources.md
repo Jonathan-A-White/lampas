@@ -446,6 +446,13 @@ read by `nav/links.ts` and `resources/tutorLinks.ts` `placeOf` (no second parser
 book or a chapter or verse the book lacks is plain text. The instructions of both talk grinds say to answer a question about another passage there and then
 and to name its verse this way, never to send him to ask elsewhere.
 
+**A reference that leans on what the answer named before it** (mw-5r3p30.927) is a link too: `referencesIn(text, context)` carries a `ReferenceContext` (the nearest book, chapter and
+kind, per answer: `remarkVerses` makes one per tree) so `Daniel, above all chapters 2, 7 and 10 to 12` links `2`, `7` and `10 to 12` (Daniel 2, 7, 10-12), `Ezekiel 10 ... verse 21 ...
+and 22` links Ezekiel 10:21 and 10:22, and a bare number in a clause about the book links when a connector (in, see, from...) leads it and a word that goes on, or punctuation, follows
+(never `3 times`, a year, or a list's `1.`). The link text stays as written; `FoundReference.as` is the whole reference the address carries. A name with a full stop is a reference only as an
+abbreviation (`Rev. 1`): `Revelation. 1. Daniel` links nothing. `Daniel 10-12` is a range of chapters: the card is headed by it and opens chapter 10. Other finders (`nav/refsInText.ts`,
+`share/findRefs.ts`) read a whole page of printed references and take no context.
+
 ## Audio Bible: Listen in Audible (mw-5r3p30.390, mw-5r3p30.451)
 
 Settings > Study resources > Audio Bible is `Off` or `The Word of Promise (NKJV), in Audible` (the setting `audioBible`, `src/settings/definitions/audioBible.ts`;
