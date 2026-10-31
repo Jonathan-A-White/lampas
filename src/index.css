@@ -374,6 +374,12 @@ body,
   overscroll-behavior: none;
 }
 
+/* While the Talk sheet is open the page scrolls its conversation, so the phone's scroll capture has something to scroll (src/talk/documentScroll.ts, mw-5r3p30.930). */
+html.lp-talk-scroll {
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
 html,
 body {
   background: var(--lp-canvas);
