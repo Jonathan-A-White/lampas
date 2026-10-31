@@ -211,7 +211,7 @@ export const USE_CASES: readonly UseCase[] = [
     title: 'The example words a new phone holds (docs/example-words.md), which the offers and the tests draw on',
     status: {
       greek: 'has',
-      hebrew: { gap: 'scenario "A new phone’s Hebrew Quick test draws its wrong answers from the Hebrew example words" in features/hebrew-words.feature; src/data/seed-words-hbo.ts is built (npm run seed:build) and src/data/quiz.ts reads it, so only the scenario and features/steps/hebrew-words.steps.tsx; XS' },
+      hebrew: 'has',
       latin: LATIN_LATER,
     },
   },

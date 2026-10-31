@@ -226,7 +226,30 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Review lists the Hebrew word due and asks it in Hebrew', ({ Given, And, When, Then }) => {
+  Scenario('A new phone’s Hebrew Quick test draws its wrong answers from the Hebrew example words', ({ Given, And, When, Then }) => {
+    Given(learning, () => openOn('Genesis 1', HEBREW_LEARNING));
+    And(taken, takeWithGotIt);
+    And('{string} is the only Hebrew word the phone holds', async (_, lemma: string) => {
+      const held = (await db.words.toArray()).filter((w) => w.lang === 'hbo');
+      expect(held.map((w) => nfc(w.lemma))).toEqual([nfc(lemma)]);
+    });
+    When('he opens the Quick test', () => goTo('#/test', 'Quick test'));
+    Then('the Quick test asks {string} among four glosses, the right {string} and three wrong ones that are each the gloss of a Hebrew example word', async (_, lemma: string, gloss: string) => {
+      const prompt = await screen.findByTestId('prompt');
+      expect(nfc(prompt.textContent ?? '')).toBe(nfc(lemma));
+      const options = [...document.querySelectorAll<HTMLElement>('[data-option]')].map((o) => squash(o.textContent));
+      expect(options).toHaveLength(4);
+      expect(options).toContain(gloss);
+      // he holds no other Hebrew word, so a wrong gloss can only be a Hebrew example word's (src/data/seed-words-hbo.ts)
+      const hebrewSeed = new Map(SEED_WORDS_HBO.map((s) => [s.gloss, s.lemma]));
+      for (const wrong of options.filter((o) => o !== gloss)) {
+        expect(hebrewSeed.has(wrong), wrong).toBe(true);
+        expect(nfc(hebrewSeed.get(wrong) ?? ''), wrong).not.toBe(nfc(lemma));
+      }
+    });
+  });
+
+  Scenario('Review lists the Hebrew word due and asks it in Hebrew',({ Given, And, When, Then }) => {
     Given(learning, () => openOn('Genesis 1', HEBREW_LEARNING));
     And(taken, takeWithGotIt);
     When('he opens Review', () => goTo('#/review', 'Review'));
