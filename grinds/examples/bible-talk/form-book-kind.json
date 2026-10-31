@@ -1,5 +1,5 @@
 {
-  "description": "The title is held and the tutor said the form is ready, naming the kind and the reason as things he may add; he says it is a grammar: the tutor puts Grammar (one of the options, exactly) in the kind field, asks nothing more and never sends.",
+  "description": "The title is held and the tutor said the form is ready, naming no optional field; he volunteers that it is a grammar: the tutor puts Grammar (one of the options, exactly) in the kind field, asks nothing more and never sends.",
   "schemaVersion": "1",
   "request": {
     "reference": "Ask for a book",
@@ -11,7 +11,7 @@
       },
       {
         "q": "Mounce, Basics of Biblical Greek",
-        "a": "That is everything I need. You can tell me the kind of book or why it would help, or read it and tap Send yourself."
+        "a": "That is everything I need. Tap Send when you are ready."
       }
     ],
     "solid_words": [],
