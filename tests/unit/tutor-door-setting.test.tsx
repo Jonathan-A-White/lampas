@@ -30,7 +30,8 @@ beforeEach(async () => {
 
 describe('the Tutor door and Hand rows', () => {
   it('are rows of Asking the tutor and Layout that the tutor neither reads nor changes', async () => {
-    expect(rowOf('tutorDoor')).toMatchObject({ label: 'Tutor door', section: 'askBy', ai: true });
+    expect(rowOf('tutorDoor')).toMatchObject({ label: 'Tutor door', section: 'askBy', licenceOnly: true })
+    expect(rowOf('tutorDoor')?.ai).toBeUndefined();
     expect(rowOf('hand')).toMatchObject({ label: 'Hand', section: 'layout' });
     expect(isTalkable('tutorDoor')).toBe(false);
     expect(isTalkable('hand')).toBe(false);

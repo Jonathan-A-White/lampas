@@ -116,6 +116,8 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.talks.clear(), db.tips.clear()]);
   if (options.immersive === 'on') await db.settings.put({ key: 'immersiveReader', value: 'on' });
+  // these scenarios are about the two-finger tap that shows and puts away the bars, which it does where the Tutor door is Floating ?; in the default door the same tap opens the tutor (mw-5r3p30.880)
+  await db.settings.put({ key: 'tutorDoor', value: 'floating' });
   // the Reader's box can be drawn, and its place restored, well before the saved setting is read: a loaded host does that on its own, this does it on purpose
   const realGet = db.settings.get;
   if (options.slowSetting) {

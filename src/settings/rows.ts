@@ -107,10 +107,12 @@ export const groupOf = (section: SectionId): SettingsGroup => groupIn(GROUPS, se
 export type SettingsRow = KitRow<SectionId> & {
   /** the row sets how the tutor works (the AI: what is sent to the mill): with no licence it is drawn off and greyed, with 'Needs a licence' (mw-8m9dyu.3) */
   ai?: boolean;
+  /** the row is not drawn at all without a licence, not even greyed: the Tutor door and Hand rows (mw-5r3p30.880: with no licence no tutor door exists, "none of it should show up") */
+  licenceOnly?: boolean;
 };
 
 /** The settings that only matter to the tutor. A new setting for the tutor is listed here, so an unlicensed phone sees it off with 'Needs a licence'. */
-const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'askBy', 'quizGoal', tutorDoorSetting.key, ...SCRIPTS.map((s) => s.settingKey)]);
+const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'askBy', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
 
 const LINKS: readonly SettingsRow[] = [
   { key: 'link.variantLessons', label: 'Lessons on variant readings', hint: 'Five short lessons on where the manuscripts differ and how to read it.', section: 'variants' },
@@ -220,7 +222,7 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
 
 /** Tutor door and Hand (mw-5r3p30.879): the row of a setting declared once (definitions/tutorDoor.ts, hand.ts) that is kept out of the registry and DEFINITIONS, so the tutor does not read or change it and
  *  its Settings request (full), src/tutor/knows.ts and the bible-talk instructions do not carry it (isTalkable). Tutor door heads Asking the tutor; Hand is a row of Layout that any screen reads (hand.ts). */
-const rowOfDefinition = (def: typeof tutorDoorSetting | typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, ai: AI_KEYS.has(def.key) || undefined });
+const rowOfDefinition = (def: typeof tutorDoorSetting | typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, licenceOnly: true });
 const TUTOR_DOOR_ROW: SettingsRow = rowOfDefinition(tutorDoorSetting);
 const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
 

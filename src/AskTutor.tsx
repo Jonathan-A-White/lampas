@@ -19,12 +19,25 @@ import { libraryOf, useAddress, type Route } from './nav/route';
 import { useSheetOpen } from './ui/sheetBack';
 import { useTalk } from './useTalk';
 import { isHolding } from './talk/holding';
+import { openDoorTarget, setDoorMode, useDoorMode, useDoorTarget, useHasDoorTarget, useTalkOpen, useTwoFingerDoor } from './tutor/door';
+import { useHand } from './settings/hand';
 
 /** The button's name for a screen reader and the tests; it starts with the words on the control. */
 export const ASK_TUTOR_LABEL = 'Ask the tutor about this screen';
 
 /** How far the speaking bar (voice-kit/speech) raises the button while something is read aloud: a button's height, and the bar's padding and border. */
 const SPEAKING_BAR_LIFT = 'var(--lp-tap) + 1.25rem';
+
+/** The speech bubble with a ? that is the tutor's mark on both of its buttons. */
+function TutorIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" />
+      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.6" />
+      <path d="M12 16.5h.01" />
+    </svg>
+  );
+}
 
 /** The round button. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar); it also clears the
  * speaking bar while one is up. `away` (the Reader's Immersive reader, src/immersive.ts) slides it out of view: true or false makes the button slide,
@@ -50,11 +63,7 @@ export function AskTutorButton({ onClick, lift = '0px', away, inDialog }: { onCl
       style={{ bottom: `calc(var(--lp-bar-inset) + var(--spacing) * 3 + ${lift}${speaking ? ` + ${SPEAKING_BAR_LIFT}` : ''})` }}
       className="fixed right-3 z-4 flex size-14 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg active:opacity-80"
     >
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" />
-        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.6" />
-        <path d="M12 16.5h.01" />
-      </svg>
+      <TutorIcon />
     </button>
   );
 }
@@ -156,16 +165,16 @@ export function AskTutor({ route }: { route: Route }) {
     // a request is met once, when it arrives (`met`): the scope and the talk it is met with are the ones of that render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asked]);
+  const openSheet = () => {
+    stopReading();
+    setOpenOn(route);
+  };
+  // what the tutor door (src/tutor/door.ts) opens the tutor about on this screen: the screen itself
+  useDoorTarget(name && scope && talk.ref && ai ? openSheet : undefined);
   if (!name || !scope || !talk.ref || !ai) return null;
   return (
     <>
-      <AskTutorButton
-        lift={lift}
-        onClick={() => {
-          stopReading();
-          setOpenOn(route);
-        }}
-      />
+      <AskTutorButton lift={lift} onClick={openSheet} />
       {open ? (
         <TalkSheet
           scope={scope}
@@ -194,18 +203,16 @@ export function DialogAskTutor({ screen, kept, suggestions }: { screen: ScreenCo
   const fitted = fitScreen(screen);
   const scope: TalkScope = { title: fitted.name, chapter: NO_CHAPTER, verse: null, screen: fitted, kept };
   const talk = useScreenTalk(scope, open, useCallback(() => setOpen(false), []));
+  const openSheet = () => {
+    stopReading();
+    setOpen(true);
+  };
+  // the dialog is on top of its screen: the tutor door asks about the dialog (the results of a drill)
+  useDoorTarget(ai && talk.ref ? openSheet : undefined);
   if (!ai || !talk.ref) return null;
   return (
     <>
-      {open ? null : (
-        <AskTutorButton
-          inDialog
-          onClick={() => {
-            stopReading();
-            setOpen(true);
-          }}
-        />
-      )}
+      {open ? null : <AskTutorButton inDialog onClick={openSheet} />}
       {open ? (
         <TalkSheet
           scope={scope}
@@ -247,4 +254,48 @@ export function LessonTalk({ screen, kept, suggestions, open, onClose }: { scree
       onClose={talk.close}
     />
   );
+}
+
+/** The floating button's name for a screen reader and the tests. */
+export const FLOATING_TUTOR_LABEL = 'Ask the tutor about what is on screen';
+
+/**
+ * The Tutor door 'Floating ?' (mw-5r3p30.880): a round tutor button at the Hand side's edge, drawn over every screen that has something to ask about, the Verse view and open sheets too (z-50: over the
+ * sheets at z-35 and the full-screen dialogs at z-40, under the shell's bars). A tap opens the tutor about the newest target a screen or sheet registered (src/tutor/door.ts). Not drawn while a Talk sheet
+ * is open (it has its own composer at the foot), where nothing is registered, or on any door but this one: with no licence the door mode is none and nothing shows. It sits at 17 rem above the phone's bar,
+ * a thumb's reach up the edge and clear of the older round button (bottom right, above the Talk bar) that stays until part C2 of mw-5r3p30.843.
+ */
+export function FloatingTutor() {
+  const mode = useDoorMode();
+  const hand = useHand();
+  const anything = useHasDoorTarget();
+  const talking = useTalkOpen();
+  if (mode !== 'floating' || !hand || !anything || talking) return null;
+  return (
+    <button
+      type="button"
+      data-floating-tutor
+      data-hand={hand}
+      aria-label={FLOATING_TUTOR_LABEL}
+      onClick={() => {
+        stopReading();
+        openDoorTarget();
+      }}
+      style={{ bottom: 'calc(var(--lp-bar-inset) + 17rem)' }}
+      className={`fixed ${hand === 'left' ? 'left-3' : 'right-3'} z-50 flex size-14 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg active:opacity-80`}
+    >
+      <TutorIcon />
+    </button>
+  );
+}
+
+/** The tutor door, drawn once by the app (src/App.tsx): keeps the door mode current for code outside React, hears the two-finger tap where that is the door, and draws the floating ? where that is. */
+export function TutorDoor() {
+  const mode = useDoorMode();
+  useLayoutEffect(() => {
+    setDoorMode(mode);
+    return () => setDoorMode('none');
+  }, [mode]);
+  useTwoFingerDoor();
+  return <FloatingTutor />;
 }

@@ -29,6 +29,7 @@ import { paradigmsOf } from './data/paradigms';
 import { getStudyChapter } from './data/readerChapter';
 import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, shelfOf, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
+import { useDoorTarget } from './tutor/door';
 import { AskForBook } from './library/AskForBook';
 import { ReedKellogg } from './diagram/ReedKellogg';
 import { LessonTalk } from './AskTutor';
@@ -530,6 +531,18 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   const ai = useAiAllowed();
   const [talking, setTalking] = useState(false);
   const closeTalk = useCallback(() => setTalking(false), []);
+  // The tutor door (src/tutor/door.ts, a two-finger tap or the floating ?) on this sheet asks about its lesson, as the sheet's own Ask the tutor does
+  useDoorTarget(
+    ai
+      ? () => {
+          if (onAsk) onAsk(idea.terms[0] ?? idea.title);
+          else {
+            stopReading();
+            setTalking(true);
+          }
+        }
+      : undefined,
+  );
   // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
   const levels = useLiveQuery(listLevels, []);
   const ranking = useRanking();

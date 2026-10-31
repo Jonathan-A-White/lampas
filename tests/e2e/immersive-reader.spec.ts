@@ -11,6 +11,7 @@ import { leaveSettings, openGroup } from './settings-group';
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 /** Puts the Immersive reader setting in the app's store through raw IndexedDB, as the app wrote it. */
+// the two-finger tap on the text shows and puts away the bars where the Tutor door is Floating ? (mw-5r3p30.880); in the default door the same tap opens the tutor, so these specs choose Floating ?
 async function keepImmersive(page: Page, value: 'on' | 'off') {
   await page.evaluate(
     (v) =>
@@ -21,6 +22,7 @@ async function keepImmersive(page: Page, value: 'on' | 'off') {
           const db = open.result;
           const tx = db.transaction('settings', 'readwrite');
           tx.objectStore('settings').put({ key: 'immersiveReader', value: v });
+          tx.objectStore('settings').put({ key: 'tutorDoor', value: 'floating' });
           tx.oncomplete = () => {
             db.close();
             resolve();

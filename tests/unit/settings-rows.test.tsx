@@ -58,7 +58,11 @@ describe('the rows', () => {
   });
 
   it('marks the settings that only matter to the tutor as AI, and no other row', () => {
-    expect(keys(ROWS.filter((r) => r.ai))).toEqual(['readTutor', 'tutorDoor', 'askBy', 'hebrewDepth', 'tips', 'quizGoal']);
+    expect(keys(ROWS.filter((r) => r.ai))).toEqual(['readTutor', 'askBy', 'hebrewDepth', 'tips', 'quizGoal']);
+  });
+
+  it('marks Tutor door and Hand as drawn only with a licence, not greyed (mw-5r3p30.880)', () => {
+    expect(keys(ROWS.filter((r) => r.licenceOnly))).toEqual(['hand', 'tutorDoor']);
   });
 
   it('hides every Greek row by the dial: the settings that depend on it, or on a setting that does', () => {
