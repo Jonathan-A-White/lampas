@@ -49,6 +49,9 @@ test('Play my reading plays the clip he recorded, and Download my recording is n
   const play = panel.getByRole('button', { name: 'Play my reading', exact: true });
   expect((await play.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   await expect(panel.getByRole('button', { name: 'Download my recording' })).toHaveCount(0);
+  // The fake sound card ends a clip by the page's clock (fake-media.ts) within a fraction of a second, so on a slow host the clip was over before
+  // Playwright looked for Stop: hold the clock while the test looks at it playing.
+  await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 100);
   await play.click();
   await expect(panel.getByRole('button', { name: 'Stop my reading', exact: true })).toBeVisible();
 
