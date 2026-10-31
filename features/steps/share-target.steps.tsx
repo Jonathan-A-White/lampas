@@ -152,7 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', async (_, label: string) => user.click(within(chooser()).getByRole('button', { name: label })));
     Then('the talk sheet {string} is open with nothing said yet', async (_, name: string) => {
       const sheet = await screen.findByRole('dialog', { name });
-      expect(within(sheet).getByText(/^Nothing said yet/)).toBeInTheDocument();
+      expect(await within(sheet).findByText(/^Nothing said yet/)).toBeInTheDocument();
     });
     And('the composer shows {word} thumbnails and the field holds {string}', composer);
     And('the mill received no message of the talk and no share is waiting', nothingSent);
