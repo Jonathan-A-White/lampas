@@ -31,7 +31,7 @@ describe('answerRuns', () => {
   it('never speaks Markdown marks: bold, italics, headings, lists, code and links read as their words', () => {
     expect(answerRuns('The word is **parsing**, a *grammar* habit.')).toEqual([{ text: 'The word is parsing, a grammar habit.', language: 'english' }]);
     expect(answerRuns('## Steps\n\n- find the verb\n- name `tense`\n\n1. read [the Greek](https://x.org)')).toEqual([
-      { text: 'Steps. find the verb. name tense. read the Greek.', language: 'english' },
+      { text: 'Steps. find the verb. name tense. First, read the Greek.', language: 'english' },
     ]);
   });
 

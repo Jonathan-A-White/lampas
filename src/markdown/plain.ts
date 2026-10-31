@@ -1,9 +1,12 @@
 // src/markdown/plain.ts — the tutor's Markdown as plain text, for speech: the marks (stars, hashes, list bullets, backticks,
 // link addresses) are never spoken. A port of Postern's src/markdown/plain.ts (its mermaid case dropped). A line that ends
-// without a stop gets one, so the voice pauses between list items and headings.
+// without a stop gets one, so the voice pauses between list items and headings. A numbered item opens with its ordinal word ('First, Daniel...'), never 'one dot'
+// (mw-5r3p30.928).
 
 const FENCE = /^\s*(`{3,}|~{3,})\s*([^\s`]*)/;
 const LINE_PREFIX = /^\s*(?:>\s*)*(?:#{1,6}\s+|[-*+]\s+|\d+[.)]\s+)?/;
+const NUMBERED = /^\s*(?:>\s*)*(\d+)[.)]\s+/;
+const ORDINALS = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
 const RULE = /^\s*(?:[-*_]\s*){3,}$/;
 const CODE_SPAN = /(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/g;
 const IMAGE = /!\[([^\]]*)\]\((?:[^()\s]|\([^()\s]*\))*(?:\s+"[^"]*")?\)/g;
@@ -46,7 +49,12 @@ export function markdownToSpeech(text: string): string {
       continue;
     }
     if (RULE.test(line)) continue;
-    add(line.replace(LINE_PREFIX, ''));
+    const numbered = NUMBERED.exec(line);
+    if (numbered) {
+      const place = Number(numbered[1]);
+      const rest = line.slice(numbered[0].length);
+      add(rest.trim() ? `${ORDINALS[place - 1] ?? `Number ${place}`}, ${rest}` : '');
+    } else add(line.replace(LINE_PREFIX, ''));
   }
   return pieces.join(' ').replace(/\s+/g, ' ').trim();
 }

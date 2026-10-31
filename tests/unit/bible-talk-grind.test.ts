@@ -1124,3 +1124,25 @@ describe('the learner facts are told per language (mw-gdcyf98.31)', () => {
     expect(contract).toMatch(/`words` lists only Greek words he asked about or that the answer teaches \(a Hebrew one[^\n]*`language` `he`\)/);
   });
 });
+
+describe('answers for the ear and the eye (mw-5r3p30.928)', () => {
+  const answerPart = instructionParts('bible-talk').find((p) => p.file.endsWith('340-how-to-answer.md'))!.text.replace(/\s+/g, ' ');
+
+  it('keeps prose the default and allows a short list: numbered for a ranked answer, bulleted for a set, at most 7 items, bold only lead words, no headings', () => {
+    expect(answerPart).not.toMatch(/No headings, lists or markdown/);
+    expect(answerPart).toMatch(/Prose is the default; no headings/);
+    expect(answerPart).toMatch(/numbered for a ranked or ordered answer[^.]*bulleted for a set[^.]*at most 7 items, each one sentence that sounds right read aloud/);
+    expect(answerPart).toMatch(/Bold only an item's lead words/);
+  });
+
+  it('names a book in full at its first mention and never leaves a reference he cannot tap', () => {
+    expect(answerPart).toMatch(/Name a book in full at its first mention, then short forms that lean on it \('chapters 2 and 7', 'verse 22'\)/);
+    expect(answerPart).toMatch(/never a reference he cannot tap/);
+  });
+
+  it('has an example of the top five books for Revelation that asks for a numbered list', () => {
+    const example = readJson('grinds/examples/bible-talk/top-five-books-for-revelation.json');
+    expect(JSON.stringify(example.expect)).toContain('1\\\\. ');
+    expect((example.request as { question: string }).question).toMatch(/top five books/);
+  });
+});

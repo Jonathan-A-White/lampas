@@ -33,7 +33,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `readLessons` — Read lessons to me. A lesson reads itself aloud when it opens; the words stay on screen.
 - `readTutor` — Read the tutor's responses aloud. The tutor's answers and reading verdicts are spoken as they arrive.
 - `askBy` — Ask by. How Ask the tutor opens: Speaking: shows the big Hold to ask bar, with Type a question beneath it. Typing: shows the text box and Send first, with a small mic beside them to speak instead. Speaking by default. You can also ask the tutor to switch it: say "let me type" or "switch back to speaking". Value: "speaking", "typing".
-- `talk` — Talk. How the talk bars are worked: Hold: keep your finger on the bar while you speak, and let go when you are done. Tap: tap the bar to keep the microphone on and tap it again to stop (holding still works too). Hold by default. Value: "hold", "tap".
+- `talk` — Talk. Hold the bar to speak, or tap to start and stop. Value: "hold", "tap".
 - `send` — Send. Sent when you let go, or kept in the box to fix. Value: "release" (On release), "button" (By button).
 - `hebrewDepth` — Hebrew in the tutor. How the tutor writes a Hebrew word: its sound, the letters, or both. Value: "transliteration", "both" (Hebrew and transliteration), "full".
 - `tips` — Tips. Whether Lampas may offer one small tip a day, from what you use, to help you get more from the app. Once a day at most, when you open Lampas and are online. On by default; Off sends nothing.
@@ -75,7 +75,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `devotionalDraw` — In the draw. Random draws from the devotionals On in Your Logos library, all to start. With none On, it shows Morning and Evening. It shows only while Which devotional is Random. Value: text, for example "LLS:20.10.1,LLS:20.10.2" ('all' for every devotional, 'none' for none, or the Logos resource ids of the ones in the draw joined by commas (at most 80 characters, so a talked change can name only a few)).
 - `todaysDevotional` — Today's devotional. Change only today's devotional; Which devotional stays Random. Value: "another", or any value of `devotional` but "random".
 - `dailyTicks` — Tick boxes. Whether each piece on Today has a box you tick yourself when you have done it. Off makes Today a plain list of links. On by default.
-- `greekKeyboard` — Greek keyboard. On once you have added a Greek keyboard to your phone, so Memorize offers Type it for a verse in Greek. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Greek.
+- `greekKeyboard` — Greek keyboard. You have added a Greek keyboard to your phone
 - `hebrewKeyboard` — Hebrew keyboard. On once you have added a Hebrew keyboard to your phone. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Hebrew.
 - `quizGoal` — Quiz goal. Why you want Quiz me; the tutor quizzes to match. Empty: it asks. Value: text, for example "understanding the passage" (a short phrase in his words, at most 80 characters; "" for none).
 <!-- settings:end -->
