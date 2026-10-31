@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.43
+_2026-10-31_
+- Fixed: the Copy note in Settings no longer mentions Weave or Greek when you read English only.
+
 ## 0.7.41
 _2026-10-31_
 - New: A variant's English now shows where it comes from: plain type for the Majority Standard Bible's footnote, italics in a dotted ring for Lampas's own wording.

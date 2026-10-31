@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.43",
+    "date": "2026-10-31",
+    "story": "mw-5r3p30.916",
+    "kind": "fixed",
+    "text": "the Copy note in Settings no longer mentions Weave or Greek when you read English only."
+  },
+  {
     "version": "0.7.41",
     "date": "2026-10-31",
     "story": "mw-9ji6ek0.41",
