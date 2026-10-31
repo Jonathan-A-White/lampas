@@ -67,12 +67,19 @@ async function expectWholeTitle(page: Page, title: string) {
   expect(cut).toEqual({ missing: false, over: 0, ellipsis: false });
   const header = await page.locator('header').first().evaluate((el) => ({ right: el.getBoundingClientRect().right, wide: el.scrollWidth > el.clientWidth }));
   expect(header.wide).toBe(false);
-  const box = await heading.boundingBox();
-  const switchBox = await page.getByRole('group', { name: 'Language', exact: true }).boundingBox();
   // Beside the switch on a line the title shares with it, the title ends before the switch begins; under 390 px (mw-5r3p30.768) the switch has a line of
-  // its own below the title, and the title is then wholly above it.
-  const below = (switchBox?.y ?? 0) >= (box?.y ?? 0) + (box?.height ?? 0) - 0.5;
-  if (!below) expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual((switchBox?.x ?? 0) + 0.5);
+  // its own below the title, and the title is then wholly above it. Both rectangles are read in ONE evaluate: the Play button arrives when the chapter's
+  // plan does (after the title), and it moves the switch, so two separate boundingBox calls could see the title before it and the switch after (mw-5r3p30.923).
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const h = document.querySelector('header h1')?.getBoundingClientRect();
+        const s = document.querySelector('header [role="group"][aria-label="Language"]')?.getBoundingClientRect();
+        if (!h || !s) return false;
+        return s.y >= h.y + h.height - 0.5 || h.x + h.width <= s.x + 0.5;
+      }),
+    )
+    .toBe(true);
 }
 
 for (const viewport of [
@@ -105,6 +112,25 @@ for (const viewport of [
         await page.goto(`/#/?${hash}&view=english`);
         await expectWholeTitle(page, title);
       }
+    });
+
+    // mw-5r3p30.923: the Play button comes with the chapter's plan, after the title, and moves the switch; the title is whole before it and after it.
+    test('the title is whole before and after the Play button arrives with the chapter', async ({ page }) => {
+      await routePostern(page, makeFakePostern());
+      await openUnlocked(page);
+      await page.goto('/#/?b=rom&c=1&view=english');
+      let release: () => void = () => {};
+      const held = new Promise<void>((resolve) => (release = resolve));
+      await page.route(/\/data\/2th\/3\.json/, async (route) => {
+        await held;
+        await route.continue();
+      });
+      await page.goto('/#/?b=2th&c=3&view=english');
+      await expectWholeTitle(page, '2 Thessalonians 3');
+      expect(await page.getByRole('button', { name: /^(Play|Read)/ }).count()).toBe(0);
+      release();
+      await expect(page.getByRole('button', { name: /^(Play|Read)/ }).first()).toBeVisible();
+      await expectWholeTitle(page, '2 Thessalonians 3');
     });
   });
 }
