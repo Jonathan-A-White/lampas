@@ -46,6 +46,14 @@ Feature: Hebrew words taught while he reads
     When he picks "[Obj.]"
     Then the answer is right and the phone says "אֵת" in "he-IL"
 
+  @uc-example-words @hebrew
+  Scenario: A new phone’s Hebrew Quick test draws its wrong answers from the Hebrew example words
+    Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day
+    And he has taken "אֵת" on the teach sheet with Got it
+    And "אֵת" is the only Hebrew word the phone holds
+    When he opens the Quick test
+    Then the Quick test asks "אֵת" among four glosses, the right "[Obj.]" and three wrong ones that are each the gloss of a Hebrew example word
+
   @uc-review @hebrew
   Scenario: Review lists the Hebrew word due and asks it in Hebrew
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day
