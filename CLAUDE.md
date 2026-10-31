@@ -68,7 +68,7 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
   plays). Feature steps use `tests/support/fake-speech.ts` (`stubSpeech`: `finish()`, `finishAll()`, `advance(ms)`, `calls`, `spoken`, on a manual clock,
   `tests/support/manual-clock.ts`) and `tests/support/fake-mic.ts` (`stubMic()`, `advance(ms)`); Playwright specs use `tests/support/honest-fakes.ts`
   (`honestSpeech(page, {langs, msPerWord})`, `spoken(page)`, `honestMic(page)`). A screen that holds on a verse being spoken or a clip being recorded needs a slow reader
-  (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip (and gives the recorded PCM a WAV header). `tests/support/fake-recognizer.ts` stays for unit tests that drive a recogniser result by result.
+  (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip (and gives the recorded PCM a WAV header).
 - Every jsdom `findBy*`/`waitFor` waits `ASYNC_WAIT_MS` (`tests/support/timeouts.ts`, 10 s, set in `tests/setup.ts`; a loaded host outruns the library's 1 s): never pass a shorter `timeout:` and give `vi.waitFor` one (`tests/unit/async-wait.test.ts` greps for both).
 - A step that checks what the bus heard waits for it (`tests/support/published.ts`: `expectPublished(() => list, expected)` for a list a step file fills, `expectLatest(kind, check)` for the newest event of a kind): a screen writes, publishes, awaits and publishes again, so the write a step waited for can come before the event (mw-5r3p30.389; `tests/unit/published-wait.test.ts` fails on an `expect(list)` or `expect(latest(...))` with no wait).
 - Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (`fake-registration.ts` fakes a
@@ -82,7 +82,7 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
 
 ## Layout
 
-Which file holds what is in `docs/layout/`, one file per area (listed under Read by need). **A new layout note goes in the docs/layout/ file for its area, never in CLAUDE.md**, which stays under 16,000 bytes (`tests/unit/claude-md.test.ts`).
+Which file holds what is in `docs/layout/`, one file per area. **A new layout note goes in the docs/layout/ file for its area, never in CLAUDE.md**, which stays under 16,000 bytes (`tests/unit/claude-md.test.ts`).
 
 ## What the tutor is told
 
@@ -141,6 +141,7 @@ docs/links.md # every link form Lampas takes in, with an example; where web+lamp
 docs/data.md # the data's JSON shape, its two sources and licences, and what the build changes
 docs/maps.md # the maps: src/maps/, Bible Mapper's data and terms, adding an atlas
 docs/hebrew.md # Hebrew in the tutor: the depth setting, the font, how a Hebrew word is drawn
+docs/language-parity.md # the golden list of use cases per language, the Hebrew gaps, what a new language plugs in
 docs/ask-tutor.md # the tutor: what it is told, offers, the bridge, profile, memory, welcome, pictures, sharing, requests, timings
 docs/verse-view.md # the Verse view: its actions, passages, Listen as a player, Quiz me, study way, quiz goal
 docs/read-aloud.md # read aloud: the span, the speaking bar, the tutor's responses, pages of prose
