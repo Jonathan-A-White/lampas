@@ -3,7 +3,8 @@
 // (mw-9ji6ek0.15): each word of a reading is a Tap like a word of the text and opens the word popup (VerseText's onWord), and the siglum (the chip, B or NA) is the target of
 // the unit's sheet (mw-9ji6ek0.6), a 44 px square of its own that takes its own room in the line, so a finger a few pixels off still lands on it and never on a word beside it.
 import { Fragment, type KeyboardEvent } from 'react';
-import { KEY_OPEN, useOpenVariantKey } from './VariantKey';
+import { KEY_OPEN } from './VariantKey';
+import { useOpenVariantKey } from './variantKeyContext';
 import { GREEK_LANG } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
 import { Tap, TAP_PAD } from './Tap';

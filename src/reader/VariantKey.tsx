@@ -3,7 +3,7 @@
 // in full, one tap from any brace (its opening '{' opens it, through VariantKeyContext, which the Reader provides; a brace on a card has none) and from the line's own 'What the marks mean'.
 // The samples take their class from variantEnglishClass (src/reader/englishSource.ts), the text's own, so a later change of look changes the key. PROVISIONAL (the Governor confirms the wording).
 import { useLiveQuery } from 'dexie-react-hooks';
-import { createContext, useContext, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { dismissVariantKey, getVariantKeyDismissed, getVariantLessonsOfferAnswered } from '../data/repositories';
 import { openVariantLesson } from '../nav/route';
@@ -13,10 +13,6 @@ import { focusOnMount } from '../ui/focus';
 import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { variantEnglishClass, type EnglishSource } from './englishSource';
-
-/** Opens the key's sheet. The Reader provides it; without it (a brace on a card) the brace draws no button. */
-export const VariantKeyContext = createContext<(() => void) | undefined>(undefined);
-export const useOpenVariantKey = () => useContext(VariantKeyContext);
 
 /** The accessible name of the button that opens the key, on a brace and on the line. */
 export const KEY_OPEN = 'What the marks mean';

@@ -9,7 +9,8 @@ import type { GreekWord, VariantUnit } from '../../src/data/chapter';
 import { dismissVariantKey, getVariantKeyDismissed } from '../../src/data/repositories';
 import { variantEnglishClass } from '../../src/reader/englishSource';
 import { VariantBrace } from '../../src/reader/VariantBrace';
-import { VariantKeyLine, VariantKeySheet, VariantKeyContext, KEY_LINK } from '../../src/reader/VariantKey';
+import { VariantKeyLine, VariantKeySheet, KEY_LINK } from '../../src/reader/VariantKey';
+import { VariantKeyContext } from '../../src/reader/variantKeyContext';
 import { shownUnits } from '../../src/reader/variants';
 
 afterAll(() => db.close());
