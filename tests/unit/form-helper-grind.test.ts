@@ -96,4 +96,25 @@ describe('the choice field and the Send button (mw-o7cts8.2)', () => {
       expect(example.request.form.fields.find((f) => f.kind === 'choice')?.options).toContain('Grammar');
     });
   }
+
+  // mw-5r3p30.932: form-book-kind flaked three times because its earlier tutor turn named "the kind of book or why it would help", which pulls the
+  // model to ask the optional field the expect says to leave out. A history turn must not name an empty optional field of a form whose expect says
+  // form_ask is absent.
+  type FormExample = {
+    request: { history?: { q: string; a: string }[]; form: { fields: { name: string; label: string; required: boolean; value: string }[] } };
+    expect: Record<string, { present?: boolean }>;
+  };
+  for (const name of ['form-approach-credit', 'form-approach-first-question', 'form-book-first-question', 'form-book-kind']) {
+    const example = JSON.parse(readFileSync(`grinds/examples/bible-talk/${name}.json`, 'utf8')) as FormExample;
+    if (example.expect.form_ask?.present !== false) continue;
+    it(`${name}: no tutor turn of its history names an empty optional field`, () => {
+      const empty = example.request.form.fields.filter((f) => !f.required && f.value === '');
+      const said = (example.request.history ?? []).map((h) => h.a.toLowerCase()).join(' ');
+      for (const f of empty) {
+        const words = [f.name, f.label.toLowerCase().replace(/[?]/g, '')];
+        for (const w of words) expect(said, `history names "${w}"`).not.toContain(w.toLowerCase());
+      }
+      expect(said).not.toMatch(/\bkind of book\b|\bwhy (it|that)\b/);
+    });
+  }
 });
