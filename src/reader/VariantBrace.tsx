@@ -3,6 +3,7 @@
 // (mw-9ji6ek0.15): each word of a reading is a Tap like a word of the text and opens the word popup (VerseText's onWord), and the siglum (the chip, B or NA) is the target of
 // the unit's sheet (mw-9ji6ek0.6), a 44 px square of its own that takes its own room in the line, so a finger a few pixels off still lands on it and never on a word beside it.
 import { Fragment, type KeyboardEvent } from 'react';
+import { KEY_OPEN, useOpenVariantKey } from './VariantKey';
 import { GREEK_LANG } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
 import { Tap, TAP_PAD } from './Tap';
@@ -35,10 +36,18 @@ export function VariantBrace({ shown, language, weaveWord, onOpen, onWord, onSay
     .map((r) => `${r.same ? 'the same in English' : r.text || LEFT_OUT} (${r.chips.map((c) => SPELLED[c]).join(', ')})`)
     .join('; ')}`;
   const open = () => onOpen?.(shown);
+  // the brace's opening mark opens the key to the marks (mw-9ji6ek0.43) where the Reader gives a way to; a brace on a card has none and draws a plain '{'
+  const openKey = useOpenVariantKey();
   return (
     <>
       <span role="group" data-brace="" data-brace-lang={language} aria-label={label} className="font-sans text-[0.85em] font-normal text-muted">
-        <span aria-hidden="true" className="text-accent">{'{'}</span>
+        {openKey ? (
+          <button type="button" data-brace-key="" aria-label={KEY_OPEN} onClick={openKey} className={`inline-flex min-h-(--lp-tap) cursor-pointer items-center justify-center rounded px-1 align-middle text-accent ${NO_SELECT} active:bg-line`}>
+            <span aria-hidden="true">{'{'}</span>
+          </button>
+        ) : (
+          <span aria-hidden="true" className="text-accent">{'{'}</span>
+        )}
         {readings.map((r, i) => (
           <Fragment key={i}>
             {i > 0 ? <span aria-hidden="true" className="px-0.5 text-accent">|</span> : null}

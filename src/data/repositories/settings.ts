@@ -86,6 +86,18 @@ export async function answerVariantLessonsOffer(read: boolean): Promise<void> {
   if (!read) await setSetting(variantLessonsOfferSetting, 'off');
 }
 
+const VARIANT_KEY_DISMISSED = 'variantKeyDismissed';
+
+/** Whether he has put away the key line under the Reader's first variant braces (mw-9ji6ek0.43, src/reader/VariantKey.tsx): it is not drawn again on any chapter; the key stays one tap away from a brace. */
+export async function getVariantKeyDismissed(): Promise<boolean> {
+  return (await db.settings.get(VARIANT_KEY_DISMISSED))?.value === 'yes';
+}
+
+/** Puts the key line away for good. */
+export async function dismissVariantKey(): Promise<void> {
+  await db.settings.put({ key: VARIANT_KEY_DISMISSED, value: 'yes' });
+}
+
 /** The three choices of the Reader's switch: plain English, the woven English, the Greek. */
 export type ReaderLanguage = 'english' | 'weave' | 'greek';
 

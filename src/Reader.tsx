@@ -70,6 +70,7 @@ import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
 import { useReaderVariants, type ShownUnit } from './reader/variants';
 import { VariantSheet } from './reader/VariantSheet';
+import { VariantKeyBar, VariantKeyContext, VariantKeySheet } from './reader/VariantKey';
 import { sharingKeys, unitKey } from './reader/readingSets';
 import { readDraft, talkDraftKey, writeDraft } from './ui/unsentDraft';
 import { askAboutVariant, clearVariantAsked, VARIANT_QUESTION } from './tutor/variantFacts';
@@ -284,6 +285,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const chosenOf = useCallback((n: number) => variants.chosenByVerse.get(n), [variants]);
   // the unit whose brace he tapped: its sheet (src/reader/VariantSheet.tsx, mw-9ji6ek0.6)
   const [variantShown, setVariantShown] = useState<ShownUnit | null>(null);
+  // the key to the marks of a brace (mw-9ji6ek0.43, src/reader/VariantKey.tsx): its sheet, opened by a brace's '{' or by the key line under the chips
+  const [keyOpen, setKeyOpen] = useState(false);
+  const openKey = useCallback(() => setKeyOpen(true), []);
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
   const copyHold = useCopyHold(chapter, view ? { view, woven, variants } : undefined, openChapter);
   // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
@@ -487,7 +491,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, [readingVerse, paging, showPage]);
 
   return (
-    <>
+    <VariantKeyContext.Provider value={openKey}>
       <Away enabled={immersive} away={away}>
       <div data-reader-top className="reader-top">
       <ReaderHeader
@@ -516,6 +520,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         variants={variants.any ? { count: variants.count, on: variants.on } : null}
       />
       {chapterReading || !tipOpen ? null : <TipCard onClose={() => setTipOpen(false)} />}
+      <VariantKeyBar braces={!chapterReading && variants.byVerse !== null && variants.count > 0} onMore={openKey} />
       </div>
       </Away>
       {/* what a two-finger tap, a tap on the outer thirds and a swipe do, as buttons that show while focused (src/ReaderControls.tsx) */}
@@ -729,11 +734,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onAsk={ai ? askVariant : undefined}
         />
       ) : null}
+      {keyOpen ? <VariantKeySheet onClose={() => setKeyOpen(false)} /> : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
       {linked ? <WordSheet chapter={linked.chapter} lookup={linked.lookup} onClose={() => setLinked(null)} /> : null}
       {chapter && lookup ? (
         <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={tutor.helpWithWord} onAskTerm={tutor.askAboutTerm} />
       ) : null}
-    </>
+    </VariantKeyContext.Provider>
   );
 }
