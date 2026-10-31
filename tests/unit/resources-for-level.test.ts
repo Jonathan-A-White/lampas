@@ -86,8 +86,8 @@ describe('resourcesForLevel by language (mw-gdcyf98.3)', () => {
 });
 
 describe('every entry says which language it is', () => {
-  it('marks each of RESOURCES, WORKS and GRAMMAR_BOOKS grc, en or both', () => {
-    for (const entry of [...RESOURCES, ...WORKS, ...GRAMMAR_BOOKS]) expect(['grc', 'en', 'both'], entry.id).toContain(entry.lang);
+  it('marks each of RESOURCES, WORKS and GRAMMAR_BOOKS grc, he, en or both', () => {
+    for (const entry of [...RESOURCES, ...WORKS, ...GRAMMAR_BOOKS]) expect(['grc', 'he', 'en', 'both'], entry.id).toContain(entry.lang);
   });
 
   it("marks Strong's and Black grc, Calvin's works en, and the app that opens both, Logos, both", () => {
@@ -95,6 +95,7 @@ describe('every entry says which language it is', () => {
     expect(lang(RESOURCES, 'strongs')).toBe('grc');
     expect(lang(RESOURCES, 'logos')).toBe('both');
     expect(lang(GRAMMAR_BOOKS, 'black')).toBe('grc');
+    expect(lang(GRAMMAR_BOOKS, 'step-by-step')).toBe('he');
     for (const work of WORKS) expect(work.lang, work.id).toBe('en');
   });
 

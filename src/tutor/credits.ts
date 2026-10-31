@@ -16,6 +16,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'TBESG', use: 'Each Greek word\'s lemma, gloss, definition', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'TBESH', use: 'Each Hebrew word\'s headword, gloss, definition', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'Learn to Read New Testament Greek', use: 'Its lesson titles and pages, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC' },
+  { name: 'Biblical Hebrew Step by Step', use: 'Its lesson titles and pages, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ' },
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
   { name: 'eSpeak NG', use: 'The sound of ὁ and of δ\'', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },
   { name: 'IPA', use: 'The symbols of the IPA course', licence: 'none needed; a standard', link: 'https://www.internationalphoneticassociation.org' },

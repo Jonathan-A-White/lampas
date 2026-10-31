@@ -169,7 +169,9 @@ export function worksForTutor(shelf: readonly LibraryRow[], place: StudyPlace | 
   const byResource = new Map(catalogue.map((e, i) => [e.resource, { entry: e, order: i }]));
   const held = shelf.flatMap((row) => {
     const found = byResource.get(row.id);
-    return found && TUTOR_KINDS.includes(found.entry.kind) && (row.state === 'on' || row.state === 'pinned') ? [{ ...found, row }] : [];
+    // a Hebrew grammar is on the shelf for the idea sheet's Read more; the answer schema's `work` enum names only Greek grammars, so the tutor is not told of one it could not link (mw-5r3p30.890)
+    const linkable = found !== undefined && !(found.entry.kind === 'grammar' && found.entry.lang === 'he');
+    return linkable && TUTOR_KINDS.includes(found.entry.kind) && (row.state === 'on' || row.state === 'pinned') ? [{ ...found, row }] : [];
   });
   const shown = new Set(resourcesForLevel(held.map((h) => h.entry), level));
   const rows = held.filter((h) => shown.has(h.entry)).sort((a, b) => b.row.since - a.row.since || a.order - b.order);

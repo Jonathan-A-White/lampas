@@ -14,6 +14,19 @@ Feature: Grammar books in Logos on the idea sheet
     And the line of "Black, Learn to Read NT Greek" links "Lesson 4: Nouns of the Second Declension" to "logosres:LLS:LRNTOREADNTGRK;ref=Page.p_26"
     And that link falls back to "https://ref.ly/logosres/LLS%3ALRNTOREADNTGRK?ref=Page.p+26"
 
+  Scenario: A Hebrew lesson's idea shows Read more with Step by Step, not Black
+    Given Lampas has Logos on and the grammar books "black, step-by-step" ticked
+    When he opens the Hebrew idea sheet of "he-alphabet"
+    Then the idea sheet shows Read more with 1 book line
+    And the line of "Step by Step, vol. 1" links "The Hebrew Alphabet" to "logosres:LLS:BIBHEBSBS;ref=Page.p_14"
+    And that link falls back to "https://ref.ly/logosres/LLS%3ABIBHEBSBS?ref=Page.p+14"
+
+  Scenario: Pinning a Hebrew grammar with no lesson table leaves Read more on Step by Step
+    Given Lampas has Logos on and the grammar books "black, step-by-step" ticked, with "A Biblical Hebrew Reference Grammar" Pinned on his shelf
+    When he opens the Hebrew idea sheet of "he-alphabet"
+    Then the idea sheet shows Read more with 1 book line
+    And the line of "Step by Step, vol. 1" links "The Hebrew Alphabet" to "logosres:LLS:BIBHEBSBS;ref=Page.p_14"
+
   Scenario: With four books ticked and mapped, three lines show and More books unfolds the fourth
     Given Lampas has Logos on and the four test books "one, two, three, four" ticked, each mapping "noun"
     When he opens the idea sheet of "noun" with the four test books
@@ -31,14 +44,14 @@ Feature: Grammar books in Logos on the idea sheet
     When he opens the idea sheet of "noun"
     Then the idea sheet shows no Read more
 
-  Scenario: Black is on among the grammar books of Your Logos library once Logos is on, and turning it Off there is kept
+  Scenario: Black and Step by Step are on among the grammar books of Your Logos library once Logos is on, and turning Black Off there is kept
     Given Lampas is opened on Romans 8 with no study resources on
     When he turns Logos on in Settings
     And he opens Your Logos library from Settings
     And he opens its Grammars page
     Then the library shows the grammar book "Black, Learn to Read NT Greek" as "Pin"
     When he turns the grammar book "Black, Learn to Read NT Greek" Off
-    Then the grammar books kept are none
+    Then the grammar books kept are "step-by-step"
 
   Scenario: An idea from a lesson of the BMA Tutor order shows the same Read more lines
     Given Lampas has Logos on and the grammar books "black" ticked

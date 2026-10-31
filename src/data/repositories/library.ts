@@ -80,10 +80,10 @@ const PARTS: readonly Part[] = [
   },
 ];
 
-/** The books that start Pinned when the old ticks are taken: the first lexicon ticked, and Black among the grammar books. */
+/** The books that start Pinned when the old ticks are taken: the first lexicon ticked, and the grammar books the catalogue starts Pinned (Black for Greek, Step by Step for Hebrew). */
 const startsPinned = (part: Part, resources: readonly string[]): string[] => {
   if (part.kind === 'lexicon') return resources.slice(0, 1);
-  if (part.kind === 'grammar') return GRAMMAR_BOOKS.filter((b) => b.id === 'black' && resources.includes(b.resource)).map((b) => b.resource);
+  if (part.kind === 'grammar') return GRAMMAR_BOOKS.filter((b) => entryOf(b.resource)?.starts === 'pinned' && resources.includes(b.resource)).map((b) => b.resource);
   return [];
 };
 
