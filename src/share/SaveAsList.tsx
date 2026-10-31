@@ -153,10 +153,14 @@ export function SaveAsList({ refs, text, label = 'Save as a list', quiet = false
         <div ref={status} role="status" data-testid="saved-as-list" className="flex min-h-12 items-center gap-2 rounded-xl border border-line bg-surface pl-4">
           <p className="min-w-0 flex-1 text-base">{saved.line}</p>
           {saved.id === null ? null : (
-            <button type="button" onClick={() => {
+            <button
+              type="button"
+              onClick={() => {
                 onOpen?.();
                 openVerseList(saved.id);
-              }} className="min-h-12 min-w-12 shrink-0 rounded-lg px-4 text-base font-medium text-accent">
+              }}
+              className="min-h-12 min-w-12 shrink-0 rounded-lg px-4 text-base font-medium text-accent"
+            >
               Open
             </button>
           )}
