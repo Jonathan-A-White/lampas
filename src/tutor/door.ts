@@ -118,7 +118,7 @@ export const talkOpenNow = (): boolean => talks > 0;
 export const TAP_MS = 500;
 export const TAP_SLOP_PX = 16;
 /** A click the phone sends after a two-finger tap (it should not) is dropped if it comes within this; performance.now(), which a clock adjustment cannot move. */
-const CLICK_GUARD_MS = 600;
+export const CLICK_GUARD_MS = 600;
 
 /**
  * Hears a two-finger tap anywhere on `doc` and calls `onTap` with it; returns how to stop. `onTap` says whether it did something with the tap: only then is the click the phone may

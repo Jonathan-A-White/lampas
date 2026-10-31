@@ -14,6 +14,7 @@ import { navigate } from '../../src/nav/route';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -300,7 +301,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('Back on the Talk sheet closes it', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8', () => open('', false, false));
     And('he opens the Talk sheet', async () => {
-      await user.click(await screen.findByRole('button', { name: 'Talk' }));
+      await openTutor();
       await screen.findByRole('dialog', { name: /^Talk about / });
     });
     When('he goes back', back);

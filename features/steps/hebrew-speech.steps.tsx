@@ -17,6 +17,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../../tests/support/fake-speech';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -67,7 +68,7 @@ async function open(voices: FakeVoice[], saved: Record<string, string> = {}): Pr
   await db.settings.bulkPut(Object.entries(saved).map(([key, value]) => ({ key, value })));
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-  await user.click(await screen.findByRole('button', { name: 'Talk' }));
+  await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
   await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), 'Where does righteousness come from?');
   await user.click(within(sheet()).getByRole('button', { name: 'Send' }));

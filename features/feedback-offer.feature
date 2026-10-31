@@ -8,7 +8,7 @@ Feature: An ask Lampas cannot meet is offered to the makers
 
   Scenario: From a screen, an answer with an offer shows Send this to the makers and a tap sends one feedback grist
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     And the mill received 1 grists for the lampas app, kind bible-talk
@@ -22,7 +22,7 @@ Feature: An ask Lampas cannot meet is offered to the makers
 
   Scenario: An answer without an offer has no such button and nothing is sent by itself
     Given Lampas is opened on #/goal behind a fake Postern whose tutor does not offer feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Where am I?"
     Then the answer shows no button "Send this to the makers"
     And the mill received 1 grists for the lampas app, kind bible-talk
@@ -45,7 +45,7 @@ Feature: An ask Lampas cannot meet is offered to the makers
 
   Scenario: A mill that is down shows Could not reach the tutor and Retry, and Sent stays after the sheet is reopened
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     And the mill goes down and he taps Send this to the makers
     Then the turn shows "Could not reach the tutor" and a Retry button

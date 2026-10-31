@@ -4,6 +4,7 @@
 // phone's key, and Your requests shows each stage; at the end he asks the tutor 'What happened to my idea?' and the request goes out carrying what became
 // of each. A shot after every stage: your-requests-demo-1-sent ... -6-tutor. The statuses are pulled when the screen opens (a reload stands for opening it).
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -35,7 +36,7 @@ const WHAT_HAPPENED = {
 async function sendFromTutor(page: Page, fake: FakePostern): Promise<void> {
   fake.kindReplies['bible-talk'] = { status: 'answered', answer: OFFER };
   await page.goto('/#/words');
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await (await talkField(sheet)).fill('Can this work with Olive Tree?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
@@ -143,7 +144,7 @@ test('the feedback loop end to end: sent, filed, building, adopted with its link
 
   // 6. He asks the tutor 'What happened to my idea?' from the screen: the request carries what became of each, the answer says it.
   fake.kindReplies['bible-talk'] = { status: 'answered', answer: WHAT_HAPPENED };
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Your requests' });
   await sheet.locator('[data-suggestion]', { hasText: 'What happened to my idea?' }).click();
   await expect(sheet.getByText('adopted in version 0.1.109', { exact: false })).toBeVisible();

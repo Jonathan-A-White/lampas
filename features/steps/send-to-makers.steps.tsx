@@ -24,6 +24,7 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { seedHisWords } from '../../tests/support/his-words';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import '../../tests/support/grinds-in-graph';
+import { openTutor } from './open-tutor';
 
 const realSeam = { ...imageSeam };
 
@@ -93,7 +94,7 @@ const feedbackGrist = () => {
 };
 
 async function openSheet(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Talk' }));
+  await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
 }
 async function typeInSheet(words: string): Promise<void> {

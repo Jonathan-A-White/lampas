@@ -17,6 +17,7 @@ import { messageBox } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -74,7 +75,7 @@ async function sendMessage(text: string): Promise<void> {
 
 async function openAnswerBeingRead(): Promise<void> {
   await reset();
-  await user.click(await screen.findByRole('button', { name: 'Talk' }));
+  await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
   await sendMessage('Where does righteousness come from?');
   await waitFor(() => expect(sheet().querySelector('[data-turn] [lang="he"]')).not.toBeNull());

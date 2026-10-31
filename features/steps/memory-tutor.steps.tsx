@@ -18,6 +18,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -71,9 +72,8 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const talk = async (_: unknown, said: string) => {
     await user.click(await screen.findByRole('button', { name: 'Verse 11' }));
-    const view = await screen.findByRole('region', { name: 'Verse view' });
-    await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
-    await user.click(within(view).getByRole('button', { name: 'Talk about verse 11', exact: true }));
+    await screen.findByRole('region', { name: 'Verse view' });
+    await openTutor();
     const sheet = await screen.findByRole('dialog', { name: 'Talk about Romans 8:11' });
     await user.type(within(sheet).getByRole('textbox', { name: 'Your message' }), said);
     await user.click(within(sheet).getByRole('button', { name: 'Send' }));

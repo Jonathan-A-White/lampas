@@ -11,6 +11,7 @@ import { db } from '../../src/data/db';
 import { hebrewPointedForm } from '../../src/speech/hebrewPronunciation';
 import { TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { endScenario, fake, open, received, send, sheet, user } from './bible-talk/support';
+import { openTutor } from './open-tutor';
 
 const load = (rel: string) => JSON.parse(readFileSync(rel, 'utf8')) as Chapter;
 const jonah = load('tests/fixtures/data/jon/1.json');
@@ -48,11 +49,10 @@ describeFeature(
   ({ Scenario, AfterEachScenario }) => {
     AfterEachScenario(endScenario);
 
-    const talkAbout = async (_: unknown, n: number, name: string): Promise<void> => {
+    const talkAbout = async (_: unknown, n: number): Promise<void> => {
       await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
-      const view = await screen.findByRole('region', { name: 'Verse view' });
-      await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
-      await user.click(await within(view).findByRole('button', { name, exact: true }));
+      await screen.findByRole('region', { name: 'Verse view' });
+      await openTutor();
       await within(await screen.findByRole('dialog', { name: /^Talk about / })).findByRole('textbox', { name: 'Your message' });
     };
     const sends = (_: unknown, question: string) => send(question);
@@ -68,7 +68,7 @@ describeFeature(
       expect(input().hebrew_interest).toMatchObject({ level, name });
     };
 
-    Scenario('Talk about verse 1 on Jonah 1 sends the Hebrew and its words and no Greek', ({ Given, When, Then, And }) => {
+    Scenario('The talk about verse 1 on Jonah 1 sends the Hebrew and its words and no Greek', ({ Given, When, Then, And }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk behind a fake Postern', opened('Jonah 1', 'Curious'));
       When('he taps the number of verse {int} and chooses {string}', talkAbout);
       Then('the sheet is titled {string}', titled);
@@ -94,12 +94,7 @@ describeFeature(
     Scenario("The chapter talk on Genesis 1 sends the first verses' Hebrew and its words", ({ Given, When, And, Then }) => {
       Given('Lampas is opened on Genesis 1 with the Hebrew dial at Curious and a talk behind a fake Postern', opened('Genesis 1', 'Curious'));
       When('he opens Talk from the Talk bar', async () => {
-        const bar = await waitFor(() => {
-          const found = document.querySelector<HTMLElement>('[data-talk-bar]');
-          if (!found) throw new Error('the Talk bar is not drawn yet');
-          return found;
-        });
-        await user.click(await within(bar).findByRole('button', { name: 'Talk' }));
+        await openTutor();
         await within(await screen.findByRole('dialog', { name: 'Talk about Genesis 1' })).findByRole('textbox', { name: 'Your message' });
       });
       And('he sends {string}', sends);

@@ -3,13 +3,14 @@
 // composer on a phone held sideways; and a long question sent in Talk leaves the first line of the answer on screen, not his own words. mw-5r3p30.434 (the phone
 // goes offline mid-wait) is in tutor-offline.spec.ts.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern, TALK_ANSWER, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { longQuestion } from '../support/long-text';
 import { shot } from './shot';
 import { expectInList } from './talk-list';
 import { openUnlocked } from './unlocked';
-import { chooseAction, openTalkAbout } from './verse-view';
+import { openTalkAbout } from './verse-view';
 import { talkField } from './talk-field';
 
 const QUESTION = 'What is this verse about?';
@@ -22,17 +23,6 @@ async function start(page: Page, fake: FakePostern, size = UPRIGHT): Promise<voi
   await openUnlocked(page);
   await page.goto('/#/?c=8&view=english&weave=off');
   await expect(page.locator('[data-verse="28"]')).toBeAttached();
-}
-
-/** The Verse view's Ask the tutor action, whether the page still has the view open (the address names the verse, so a reload keeps it) or not. */
-async function reopenAsk(page: Page): Promise<Locator> {
-  await expect(page.locator('[data-verse="28"]')).toBeAttached();
-  const view = page.getByRole('region', { name: 'Verse view' });
-  if (!(await view.isVisible())) return chooseAction(page, 28, 'Ask the tutor');
-  // the view comes back on the action it was on (src/verse/action.ts)
-  const action = view.getByRole('button', { name: 'Ask the tutor', exact: true });
-  if ((await action.getAttribute('aria-pressed')) !== 'true') await action.click();
-  return view;
 }
 
 const talkSheet = (page: Page): Locator => page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
@@ -53,7 +43,9 @@ test.describe('a question that failed or waits is kept (mw-5r3p30.439, mw-5r3p30
 
     await page.reload();
     await expect(page.locator('[data-verse="28"]')).toBeAttached();
-    await (await reopenAsk(page)).getByRole('button', { name: 'Talk about verse 28', exact: true }).click();
+    // the address names the verse, so the Verse view is back after the reload: a two-finger tap opens the talk about it
+    await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+    await openTutor(page, { sheet: 'Talk about Romans 8:28' });
     const sheet = talkSheet(page);
     await expect(sheet.locator('[data-talk-pending]')).toContainText(QUESTION);
     await expect(sheet.getByText(/Waiting for the tutor…/)).toBeVisible();
@@ -91,7 +83,7 @@ test.describe('after Send, what was sent and its wait or failure are in view, si
     await routePostern(page, fake);
     await openUnlocked(page);
     await page.goto('/#/about');
-    await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+    await openTutor(page);
     const sheet = page.getByRole('dialog', { name: 'Ask the tutor: About' });
     await sayInTalk(sheet, QUESTION);
     const pending = sheet.locator('[data-talk-pending]');

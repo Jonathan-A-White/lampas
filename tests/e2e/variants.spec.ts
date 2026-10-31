@@ -3,6 +3,7 @@
 // line is full at 390 px). A tap on the chip turns Variants on; a long press opens the filter sheet. Shots: shots/variants-<view>-<off|on>.png (verses 1 to 3, in a
 // window made tall enough to hold them), variants-header-<off|on>.png (the header and the chips row), variants-sheet.png, variants-on-dark.png, and the whole page last.
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { holdFor } from '../support/hold';
 import { shot } from './shot';
 import { talkField } from './talk-field';
@@ -148,7 +149,7 @@ test('a tap on the siglum of the brace at Revelation 3:2 opens the sheet with bo
   // Ask the tutor opens the verse's talk, as the Verse view's Ask does
   await brace.locator('[data-witness]').first().click();
   await expect(sheet).toBeVisible();
-  await sheet.getByRole('button', { name: 'Ask the tutor' }).click();
+  await openTutor(page, { sheet: 'Talk about Revelation 3:2' });
   await expect(sheet).toHaveCount(0);
   const talk = page.getByRole('dialog', { name: 'Talk about Revelation 3:2' });
   await expect(talk).toBeVisible();

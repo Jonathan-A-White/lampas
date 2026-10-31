@@ -18,6 +18,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { findStatusLine } from '../../tests/support/status';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -68,7 +69,7 @@ const sheetGone = () => waitFor(() => expect(screen.queryByRole('dialog', { name
 const here = () => readerOf(window.location.hash);
 
 async function openTalk(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Talk' }));
+  await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
 }
 
@@ -241,7 +242,7 @@ describeFeature(feature, ({ Scenario }) => {
         window.location.hash = '#/settings';
       });
       await screen.findByRole('heading', { name: 'Settings', level: 1 });
-      await user.click(await screen.findByRole('button', { name: 'Ask the tutor about this screen' }));
+      await openTutor();
       await screen.findByRole('dialog', { name: 'Ask the tutor: Settings' });
     });
     When('he sends {string} from the screen', async (_, question: string) => {

@@ -89,6 +89,12 @@ elsewhere) and waits for a new screen with `pageTime`; a screen that waits on it
 - `tests/unit/tutor-wait.test.ts` holds the wait to a phone on mobile data: its `overLink` gives a page's headers at once and its
   body at a set rate, or never (a stall), and `history()` gives the phone old records, so a wait that read from `since=0` or let one
   stalled page hold it up fails there (mw-5r3p30.269). The fake's POST names the grist's own `seq`, as Postern does.
+- A test opens the tutor through `openTutor()`, never by a click on a button the tutor door replaces (mw-5r3p30.881; `tests/unit/open-tutor-only.test.ts`
+  names the files that still assert an old button itself, and part C2 of mw-5r3p30.843 deletes them with it). It is a two-finger tap, as the app's door
+  hears it (`src/tutor/door.ts`): `features/steps/open-tutor.ts` sends the touch events to the document and finds the Talk sheet beside its own markup;
+  `tests/e2e/open-tutor.ts` sends them through CDP, with or without `hasTouch`. Both send the fingers of `tests/support/two-finger.ts`, and both wait out the
+  600 ms in which the app drops a click after a tap that opened the tutor, so the next click in the test lands. What the tap asks about is the app's choice
+  (the newest thing a screen or sheet registered with `useDoorTarget`): open the Verse view first (`openVerseView`, or `openTalkAbout(page, n)`) for a verse, a word sheet for a word.
 - `tests/e2e/tutor.spec.ts` (in `npm run shots`, shots `ask.png` and `answer.png`) routes Postern's origin to the same fake
   from Playwright (`tests/support/playwright-postern.ts`); the app's real signing and sealing run.
 - `tests/e2e/tutor-live.spec.ts` is the true end-to-end test, Playwright project `live`, run by `npm run e2e:live` only. It

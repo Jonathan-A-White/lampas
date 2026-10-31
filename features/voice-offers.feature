@@ -9,7 +9,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A spoken yes sends the feedback offer exactly as the tap does
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the tutor will take his next words as a yes
@@ -21,7 +21,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: Read it back speaks the exact text, keeps the offer, and a following yes sends it
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the tutor will take his next words as a request to read it back
@@ -38,7 +38,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A spoken no withdraws the offer and sends nothing
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the tutor will take his next words as a no
@@ -50,7 +50,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: An ordinary question with an offer waiting keeps the offer
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the tutor will take his next words as an ordinary question
@@ -65,7 +65,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A spoken yes makes the setting change the tap would make
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Make it dark"
     Then the answer shows the button "Change Theme: Dark"
     And the Theme is not Dark
@@ -78,7 +78,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: The button still does what a yes does for a setting change
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Make it dark"
     And he taps Change Theme: Dark
     Then the Theme is Dark
@@ -86,7 +86,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A tapped setting offer shows its change once, and after Undo only that it was put back
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Make it dark"
     And he taps Change Theme: Dark
     Then the first turn shows the change "Changed: Theme: Dark" with an Undo button and no bare "Changed" line
@@ -95,7 +95,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A tapped setting offer and a spoken yes whose answer comes late show the change once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Make it dark"
     Then the answer shows the button "Change Theme: Dark"
     When the tutor is slow to answer his next words
@@ -109,7 +109,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A tap and a spoken yes send once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the mill is slow to take the feedback
@@ -124,7 +124,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A spoken yes and a tap send once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the mill is slow to take the feedback
@@ -139,7 +139,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A tap, then a spoken yes whose answer comes after the send finished, send once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the mill is slow to take the feedback
@@ -156,7 +156,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A spoken yes whose answer is slow, then a tap, send once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the tutor is slow to answer his next words
@@ -170,7 +170,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: A second offer after a tapped one and a slow yes reaches the makers once each
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the mill is slow to take the feedback
@@ -187,7 +187,7 @@ Feature: He can answer an offer by voice instead of tapping
 
   Scenario: Two taps in a row on the button send once
     Given Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback
-    When he taps the Ask the tutor control
+    When he opens the tutor with a two-finger tap
     And he sends "Can this work with Olive Tree?"
     Then the answer shows the button "Send this to the makers"
     When the mill is slow to take the feedback

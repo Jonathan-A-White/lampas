@@ -1,6 +1,7 @@
 // tests/e2e/talk-fetch.spec.ts — the passages the tutor asks for reach its next turn (mw-5r3p30.825). In his Revelation 6 talk the tutor asked for 6:2-17 and every later request held verse 1
 // only. The mill is stubbed: its first answer asks to fetch Revelation 6:2-17; the sheet says so under the reply, and the next request it receives holds the text of 6:2.
 import { expect, test } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
@@ -26,7 +27,7 @@ test('a talk on Revelation 6: the fetch of 6:2-17 is shown under the reply and t
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/#/?b=rev&c=6&view=english&weave=off');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Revelation 6' });
   await expect(sheet).toBeVisible();
 
@@ -58,7 +59,7 @@ test('a talk whose fetch reads nothing says so under the reply: Could not read I
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/#/?b=rev&c=6&view=english&weave=off');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Revelation 6' });
   await (await talkField(sheet)).fill('Where is the suffering servant?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();

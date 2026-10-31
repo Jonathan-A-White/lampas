@@ -2,6 +2,7 @@
 // speaking bar (Pause, Restart, Stop) and the composer leave the sheet's scroll box about 190 px, and the confirmation line (Changed: ..., Undo, Copy) that
 // the tap draws sat partly under the bar until he scrolled to it. The box now scrolls to the confirmation, and the bar stays whole. jsdom has no layout.
 import { expect, test } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech } from '../support/honest-fakes';
@@ -29,7 +30,7 @@ test('while the answer is read aloud, taking a setting offer shows the whole con
   await honestSpeech(page, { msPerWord: 400 });
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
   await (await talkField(sheet)).fill('Can the Greek be slower?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();

@@ -27,6 +27,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openTutor } from './open-tutor';
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
@@ -200,7 +201,7 @@ describeFeature(feature, ({ Scenario }) => {
       openTalkApp([{ key: 'grammarApproach', value: 'ladder' }]),
     );
     And('he opens Talk', async () => {
-      await user.click(await screen.findByRole('button', { name: 'Talk' }));
+      await openTutor();
       await screen.findByRole('dialog', { name: /^Talk about / });
     });
     When('he sends {string}', async (_, question: string) => {

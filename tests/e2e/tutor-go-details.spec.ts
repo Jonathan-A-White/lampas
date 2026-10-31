@@ -1,6 +1,7 @@
 // The tutor's `go` (mw-5r3p30.172), three taste fixes (mw-5r3p30.199): the Reader's header shows the whole chapter title at 390 and 360 px, a go to the chapter he is
 // already on moves nothing and says so, and an answer that comes after he closed Talk says that is why it did not move him, with a tap that opens the chapter then.
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern, TALK_ANSWER, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -14,7 +15,7 @@ async function openTalk(page: Page, hash: string, sheetName: string, go: { book:
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto(hash);
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   await expect(page.getByRole('dialog', { name: sheetName })).toBeVisible();
   return fake;
 }
@@ -141,7 +142,7 @@ test.describe('at 390 x 844', () => {
     await expect.poll(() => keptTurns(page), { timeout: 15_000 }).toBe(1);
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Talk', exact: true }).click();
+    await openTutor(page);
     const again = page.getByRole('dialog', { name: 'Talk about Romans 8' });
     await expect(again.locator('[data-turn]')).toContainText('Taking you to John 3.');
     await expect(again.getByText('You closed Talk before this came, so John 3 was not opened')).toBeVisible();
@@ -156,7 +157,7 @@ test.describe('at 390 x 844', () => {
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
 
     // once opened, the turn no longer says it was not (mw-5r3p30.216)
-    await page.getByRole('button', { name: 'Talk', exact: true }).click();
+    await openTutor(page);
     const last = page.getByRole('dialog', { name: 'Talk about Romans 8' });
     await expect(last.getByText('Opened John 3')).toBeVisible();
     await expect(last.getByText(/was not opened/)).toHaveCount(0);

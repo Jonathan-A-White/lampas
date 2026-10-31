@@ -17,6 +17,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -118,8 +119,8 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the word sheet has an Ask the tutor button', () => {
       expect(within(wordSheet()).getAllByRole('button', { name: 'Ask the tutor' })).toHaveLength(1);
     });
-    When('he taps Ask the tutor on the word sheet', async () => {
-      await user.click(within(wordSheet()).getByRole('button', { name: 'Ask the tutor' }));
+    When('he opens the tutor with a two-finger tap on the word sheet', async () => {
+      await openTutor();
     });
     Then('the word sheet is gone and the sheet is titled {string}', async (_, title: string) => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
@@ -217,8 +218,8 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Ask the tutor on the sheet of a Hebrew word sends the word with its language', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Jonah 1 in the Hebrew view behind a fake Postern', openHebrew);
     And('he taps the Hebrew word {string} in verse {int}', tapsHebrewWord);
-    When('he taps Ask the tutor on the word sheet', async () => {
-      await user.click(within(wordSheet()).getByRole('button', { name: 'Ask the tutor' }));
+    When('he opens the tutor with a two-finger tap on the word sheet', async () => {
+      await openTutor();
     });
     Then('the word sheet is gone and the sheet is titled {string}', sheetTitled);
     And('the mill received {int} grist for the lampas app, kind bible-talk', (_, count: number) => grists(count));

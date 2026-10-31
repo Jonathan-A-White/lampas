@@ -75,7 +75,7 @@ Feature: The idea sheet
   Scenario: Ask the tutor opens the Talk sheet with the term in focus
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     And he opens the idea sheet from the Grammar sheet of "genitive" on the word "of the" in verse 2
-    When he taps Ask the tutor on the idea sheet
+    When he opens the tutor with a two-finger tap on the idea sheet
     Then the idea, Grammar and word sheets are gone and the sheet is titled "Talk about Romans 8:2"
     And the grist carries the focus term "genitive" and kind grammar-term
 
@@ -84,7 +84,7 @@ Feature: The idea sheet
   Scenario: Ask the tutor on a lesson opened from the Goal screen talks about that lesson
     Given Lampas is opened on Romans 8 with the goal "1 John 2:1", no idea level and a fake Postern
     When he opens the idea sheet of "enclitics" from the Goal screen
-    And he taps Ask the tutor on the idea sheet
+    And he opens the tutor with a two-finger tap on the idea sheet
     Then the Talk sheet is titled "Ask the tutor: Lesson" and the idea sheet is still under it
     When he sends "Why has μου no accent?" in the Talk sheet
     Then the grist is for the screen "Lesson" and has no verse text

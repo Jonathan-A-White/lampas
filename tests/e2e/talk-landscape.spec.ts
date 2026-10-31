@@ -1,6 +1,7 @@
 // The Ask the tutor sheet on a phone held sideways (mw-vtjxh4.44): at 844x390 the conversation box keeps room to read in, the three suggested
 // questions can be seen and tapped, and an answer shows at least three lines without scrolling the sheet. The same checks at 390x844 (portrait).
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { honestSpeech } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
@@ -35,7 +36,7 @@ async function openAbout(page: Page) {
   await openUnlocked(page);
   await page.goto('/#/about');
   await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: About' });
   await expect(sheet).toBeVisible();
   return sheet;

@@ -7,7 +7,7 @@ Feature: The Bible talk on a verse of the Old Testament
   instruction part for the Old Testament (grinds/bible-talk.instructions) waits for room under the byte ceiling, so nothing here runs the live mill.
 
   @uc-talk @hebrew
-  Scenario: Talk about verse 1 on Jonah 1 sends the Hebrew and its words and no Greek
+  Scenario: The talk about verse 1 on Jonah 1 sends the Hebrew and its words and no Greek
     Given Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk behind a fake Postern
     When he taps the number of verse 1 and chooses "Talk about verse 1"
     Then the sheet is titled "Talk about Jonah 1:1"

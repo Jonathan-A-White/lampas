@@ -2,6 +2,7 @@
 // as an utterance of its own with lang he-IL, in order with the English around it in en-US; a Greek word in the same answer goes to el-GR. The engine is voice-kit's
 // honest fake (tests/support/honest-fakes.ts; headless Chromium has no Hebrew voice); how a real voice sounds is only a phone check.
 import { expect, test } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
@@ -20,7 +21,7 @@ test('an Old Testament answer with a Hebrew word is read with the Hebrew voice f
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=3');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Genesis 3' });
   await (await talkField(sheet)).fill('What is the breeze of the day?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();

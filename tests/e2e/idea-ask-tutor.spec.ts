@@ -2,6 +2,7 @@
 // over the sheet with the lesson as its subject, a question typed there reaches the mill with the lesson's id, title, worked example and steps, and Back brings him to the sheet as he left it.
 // Ends with a shot of the sheet's foot and of the tutor over it.
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { MAX_REQUEST_BYTES } from '../../src/services/requestBudget';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
@@ -63,7 +64,7 @@ test('the idea sheet has Ask the tutor; the question reaches the mill with the l
   expect(box.y + box.height).toBeLessThanOrEqual(844);
   await shot(page, 'idea-ask-tutor');
 
-  await ask.click();
+  await openTutor(page, { sheet: 'Ask the tutor: Lesson' });
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Lesson', exact: true });
   await expect(sheet).toBeVisible();
   await expect(sheet.locator('[data-suggestion]')).toHaveCount(2);

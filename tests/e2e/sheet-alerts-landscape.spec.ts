@@ -122,7 +122,7 @@ for (const size of SIZES) {
       const fake = await putPostern(page);
       await openUnlocked(page);
       await page.goto('/');
-      await chooseAction(page, 28, 'Ask the tutor').then((view) => view.getByRole('button', { name: 'Talk about verse 28', exact: true }).click());
+      await openTalkAbout(page, 28);
       const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
       await expect(sheet).toBeVisible();
       fake.licensed = false;

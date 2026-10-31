@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern, READING_ANSWER, TALK_ANSWER } from '../support/fake-postern';
 import { honestMic } from '../support/honest-fakes';
 import { holdFor } from '../support/hold';
@@ -70,7 +71,7 @@ test('a tutor answer is announced once through the live region, and not again wh
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog');
   const live = page.locator('[data-live-region]');
   await expect(live).toHaveAttribute('role', 'status');

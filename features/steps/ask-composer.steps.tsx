@@ -20,6 +20,7 @@ import { composerIn, holdBarIn, holdBarsIn, messageBox as talkMessageBox } from 
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -178,7 +179,7 @@ describeFeature(feature, ({ Scenario }) => {
     const mic = () => within(talkSheet()).getByRole('button', { name: 'Speak a message', exact: true });
     Given(opened, openIt);
     When('he opens the Talk sheet', async () => {
-      await user.click(await screen.findByRole('button', { name: 'Talk' }));
+      await openTutor();
       await screen.findByRole('dialog', { name: /^Talk about / });
     });
     Then("the Talk sheet's Hold to talk bar is the wide bar", () => expect(talkBar()).toHaveClass('bk-composer__bar'));

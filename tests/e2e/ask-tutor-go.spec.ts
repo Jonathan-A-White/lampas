@@ -1,6 +1,7 @@
 // The tutor's `go` (mw-5r3p30.172) answered to the round Ask button of any screen but the Reader (mw-5r3p30.198): the Reader opens on the chapter with the
 // notice 'Opened <chapter>' and Back returns to the screen he asked from; a go the app cannot open moves nothing and the answer says so.
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -9,7 +10,6 @@ import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const CONTROL = 'Ask the tutor about this screen';
 
 /** Opens `path` unlocked, with the fake mill answering every talk with `go`; asks `question` from the round button's sheet. */
 async function askFrom(page: Page, path: string, screen: string, go: { book: string; chapter: number }, question: string) {
@@ -19,7 +19,7 @@ async function askFrom(page: Page, path: string, screen: string, go: { book: str
   await openUnlocked(page);
   await page.goto(path);
   await expect(page.getByRole('heading', { name: screen, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: CONTROL }).click();
+  await openTutor(page, { sheet: `Ask the tutor: ${screen}` });
   const sheet = page.getByRole('dialog', { name: `Ask the tutor: ${screen}` });
   await expect(sheet).toBeVisible();
   await (await talkField(sheet)).fill(question);

@@ -1,6 +1,7 @@
 // The bridge (mw-1vuvq6.5) at phone width: asked about the genitive with no grammar yet, the tutor's answer lists the ideas it rests on and a thumb-sized
 // 'Take me there: <title>'; the tap opens that idea's sheet over the talk and Done brings the talk back. Ends with a shot of each.
 import { expect, test } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { honestSpeech } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
@@ -24,7 +25,7 @@ test('a question he is not ready for is bridged to the idea he lacks and Take me
   await openUnlocked(page);
   await page.goto('/#/words');
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await (await talkField(sheet)).fill('Why is the genitive used here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
@@ -58,7 +59,7 @@ test('right after a bridged answer draws in a 1 John 1 talk, Take me there is in
   await honestSpeech(page, { msPerWord: 400 });
   await openUnlocked(page);
   await page.goto('/#/?b=1jn&c=1&view=english&weave=off');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about 1 John 1' });
   await (await talkField(sheet)).fill('Why is the genitive used here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();

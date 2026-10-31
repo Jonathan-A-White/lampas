@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { drag, swipe } from '../support/gesture';
 import { pauseNow } from '../support/hold';
 import { afterLastVerse } from './reader-foot';
@@ -986,7 +987,7 @@ test('with Turn pages, Words, Review, Paradigms, About and the Talk sheet each k
     await backOnPage(page, 6, verses);
   }
 
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Mark 12' });
   await expect(sheet).toBeVisible();
   await sheet.getByRole('button', { name: 'Done', exact: true }).click();

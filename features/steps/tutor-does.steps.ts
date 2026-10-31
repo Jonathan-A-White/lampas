@@ -20,6 +20,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type Reply } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   watcher?.disconnect();
@@ -84,7 +85,7 @@ const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const sheetGone = () => waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
 
 async function openTalk(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Talk' }));
+  await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
 }
 

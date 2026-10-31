@@ -33,6 +33,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import { asSpoken, isOneLetter } from '../../tests/support/lone-word';
 import '../../tests/support/grinds-in-graph';
+import { openTutor } from './open-tutor';
 
 let unregisterTestish: (() => void) | undefined;
 
@@ -330,8 +331,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('Ask the tutor opens the Talk sheet with the term in focus', ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     And(GIVEN_OPEN, opensTheIdea);
-    When('he taps Ask the tutor on the idea sheet', async () => {
-      await user.click(within(ideaSheet()).getByRole('button', { name: 'Ask the tutor' }));
+    When('he opens the tutor with a two-finger tap on the idea sheet', async () => {
+      await openTutor();
     });
     Then('the idea, Grammar and word sheets are gone and the sheet is titled {string}', async (_, title: string) => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
@@ -355,8 +356,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     };
     Given(GIVEN_GOAL, opensWithGoal);
     When('he opens the idea sheet of {string} from the Goal screen', (_, id: string) => opensIdeaFromGoal(id));
-    And('he taps Ask the tutor on the idea sheet', async () => {
-      await user.click(within(ideaSheet()).getByRole('button', { name: 'Ask the tutor' }));
+    And('he opens the tutor with a two-finger tap on the idea sheet', async () => {
+      await openTutor();
     });
     Then('the Talk sheet is titled {string} and the idea sheet is still under it', async (_, title: string) => {
       expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();

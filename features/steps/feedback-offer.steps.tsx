@@ -19,6 +19,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import '../../tests/support/grinds-in-graph';
+import { openTutor } from './open-tutor';
 
 const realSeam = { ...imageSeam };
 
@@ -33,7 +34,6 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
-const CONTROL = 'Ask the tutor about this screen';
 const BUTTON = 'Send this to the makers';
 const SUMMARY = 'He wants Lampas to work with the Olive Tree app.';
 const OFFER_ANSWER = {
@@ -72,7 +72,7 @@ async function openAt(address: string, offers: boolean): Promise<void> {
 const sheet = () => screen.getByRole('dialog', { name: /^(Ask the tutor: |Talk about )/ });
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 const taps = async () => {
-  await user.click(await screen.findByRole('button', { name: CONTROL }));
+  await openTutor();
 };
 async function send(question: string): Promise<void> {
   await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), question);
@@ -105,7 +105,7 @@ const feature = await loadFeature('features/feedback-offer.feature');
 describeFeature(feature, ({ Scenario }) => {
   Scenario('From a screen, an answer with an offer shows Send this to the makers and a tap sends one feedback grist', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', () => openAt('#/goal', true));
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', (_, question: string) => send(question));
     Then('the answer shows the button {string}', async (_, name: string) => {
       expect(name).toBe(BUTTON);
@@ -142,7 +142,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('An answer without an offer has no such button and nothing is sent by itself', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor does not offer feedback', () => openAt('#/goal', false));
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', (_, question: string) => send(question));
     Then('the answer shows no button {string}', async () => {
       await waitFor(() => expect(turns()).toHaveLength(1));
@@ -207,7 +207,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A mill that is down shows Could not reach the tutor and Retry, and Sent stays after the sheet is reopened', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', () => openAt('#/goal', true));
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', (_, question: string) => send(question));
     And('the mill goes down and he taps Send this to the makers', async () => {
       await within(sheet()).findByRole('button', { name: BUTTON });

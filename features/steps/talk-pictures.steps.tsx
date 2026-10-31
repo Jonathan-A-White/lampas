@@ -19,6 +19,7 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
 import '../../tests/support/grinds-in-graph';
+import { openTutor } from './open-tutor';
 
 const realSeam = { ...imageSeam };
 
@@ -56,7 +57,7 @@ const composerThumbs = (): HTMLElement[] => {
 const turnThumbs = (): HTMLElement[] => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn] [data-turn-pictures] button'));
 
 async function openTalk(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Talk' }));
+  await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
 }
 
