@@ -105,4 +105,23 @@ describeFeature(feature, ({ Scenario }) => {
       expect(screen.queryByRole('switch', { name: 'Greek' })).toBeNull();
     });
   });
+
+  Scenario('I go straight from the Verse view to practising it', ({ Given, When, Then }) => {
+    Given('my Greek setting is step {int} and the Verse view is open on Romans 8:28', async (_, step: number) => {
+      await start(step, () => VIEW_HASH);
+      await verseView();
+    });
+    When('I tap Memorize', async () => {
+      await user.click(await within(await verseView()).findByRole('button', { name: 'Memorize' }));
+    });
+    Then('the Verse view offers Practise', async () => {
+      expect(await within(await verseView()).findByRole('button', { name: 'Practise' })).toBeInTheDocument();
+    });
+    When('I tap Practise', async () => {
+      await user.click(await within(await verseView()).findByRole('button', { name: 'Practise' }));
+    });
+    Then('a memorize session opens on Romans 8:28', async () => {
+      await waitFor(() => expect(window.location.hash).toBe('#/memorize/Rom.8.28/en'));
+    });
+  });
 });

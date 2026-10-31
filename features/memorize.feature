@@ -21,3 +21,10 @@ Feature: I choose which verses to memorize
     Then the Verse view reads "Memorizing · English"
     When I tap the Verse view's Memorizing · English
     Then no sheet opens and nothing is memorized
+
+  Scenario: I go straight from the Verse view to practising it
+    Given my Greek setting is step 3 and the Verse view is open on Romans 8:28
+    When I tap Memorize
+    Then the Verse view offers Practise
+    When I tap Practise
+    Then a memorize session opens on Romans 8:28

@@ -62,3 +62,29 @@ test('turn Memorize this list on, then see the verse as memorized in the Verse v
   await expect(view.getByRole('button', { name: 'Memorizing · English' })).toBeVisible();
   await shot(page, 'memorize-enter');
 });
+
+test('in the Verse view Memorize is followed by Practise, which opens a session on that reference; Back returns (360x740)', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=rom&c=8&view=english&weave=off&p=12');
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(view.getByRole('button', { name: 'Memorize', exact: true })).toBeVisible();
+  await expect(view.getByRole('button', { name: 'Practise' })).toHaveCount(0);
+  await shot(page, 'memorize-practise-before');
+
+  await view.getByRole('button', { name: 'Memorize', exact: true }).click();
+  const practise = view.getByRole('button', { name: 'Practise' });
+  await expect(practise).toBeVisible();
+  // no label wraps: each tools-line button is one line of text
+  for (const name of ['Memorizing · English', 'Practise']) {
+    const box = await view.getByRole('button', { name }).boundingBox();
+    expect(box!.height).toBeLessThan(50);
+  }
+  await shot(page, 'memorize-practise-after');
+
+  await practise.click();
+  await expect(page).toHaveURL(/#\/memorize\/Rom\.8\.12-\d+\/en$/);
+  await page.goBack();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await expect(page).toHaveURL(/p=12/);
+});
