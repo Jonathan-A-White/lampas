@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.37",
+    "date": "2026-10-31",
+    "story": "mw-5r3p30.887",
+    "kind": "new",
+    "text": "Diagram now works on Old Testament verses, drawing the Hebrew words right to left with the English under each."
+  },
+  {
+    "version": "0.7.37",
+    "date": "2026-10-31",
+    "story": "mw-5r3p30.894",
+    "kind": "fixed",
+    "text": "you can now pin three Greek lexicons and three Hebrew lexicons at the same time, and the \"pinned already\" line says which language is full."
+  },
+  {
+    "version": "0.7.37",
+    "date": "2026-10-31",
+    "story": "mw-5r3p30.891",
+    "kind": "fixed",
+    "text": "the Strong's number link on a word sheet now opens STEP with verses listed, for Hebrew words as well as Greek."
+  },
+  {
     "version": "0.7.36",
     "date": "2026-10-30",
     "story": "mw-5r3p30.878",

@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.37
+_2026-10-31_
+- New: Diagram now works on Old Testament verses, drawing the Hebrew words right to left with the English under each.
+- Fixed: you can now pin three Greek lexicons and three Hebrew lexicons at the same time, and the "pinned already" line says which language is full.
+- Fixed: the Strong's number link on a word sheet now opens STEP with verses listed, for Hebrew words as well as Greek.
+
 ## 0.7.36
 _2026-10-30_
 - Fixed: In the Weave, a Greek word you know now shows in gold beside the English phrase it hides in (Acts 18:12) and the English drops away once you know all the Greek words behind it.
