@@ -60,12 +60,12 @@ Feature: Your Logos library, a screen of its own
     Given his shelf holds the lexicons "BDAG, Louw-Nida, DBL Greek" On and pinned
     When he opens the Library at the kind "lexicon"
     And he sets "EDNT" to "Pin"
-    Then the line "Three pinned already: unpin one first" is shown
+    Then the line "Three Greek lexicons pinned already: unpin one first" is shown
     And "EDNT" is set to "Off"
     When he then sets "DBL Greek" to "On"
     And he pins "EDNT" again
     Then "EDNT" now shows "Pin"
-    And the line "Three pinned already: unpin one first" is not shown
+    And the line "Three Greek lexicons pinned already: unpin one first" is not shown
 
   Scenario: Bibles hold one
     Given his shelf holds the Bible "LSB" chosen

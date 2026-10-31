@@ -130,7 +130,7 @@ test('a fourth pin is refused with its line under the book', async ({ page }) =>
   const edntGroup = page.getByRole('radiogroup', { name: 'EDNT', exact: true });
   await edntGroup.scrollIntoViewIfNeeded();
   await edntGroup.getByRole('radio', { name: 'Pin', exact: true }).click();
-  const line = page.getByRole('alert').filter({ hasText: 'Three pinned already: unpin one first' });
+  const line = page.getByRole('alert').filter({ hasText: 'Three Greek lexicons pinned already: unpin one first' });
   await expect(line).toBeVisible();
   await expect(edntGroup.getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'false');
 });

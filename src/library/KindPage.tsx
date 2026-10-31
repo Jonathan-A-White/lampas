@@ -101,7 +101,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
                       </div>
                       {refused === entry.resource ? (
                         <p role="alert" className="px-3 pb-2 text-base text-bad">
-                          {pinRefusal()}
+                          {pinRefusal(entry)}
                         </p>
                       ) : null}
                     </>
