@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { clips, honestMic } from '../support/honest-fakes';
@@ -98,7 +99,7 @@ test('a setting asked for in the talk is applied at once, shown as Changed with 
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
   await (await talkField(sheet)).fill('Make the Greek slower, and dark');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
@@ -139,7 +140,7 @@ test('Add to my words under an explained word is thumb-sized, fits the phone and
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
   await (await talkField(sheet)).fill('Explain these words');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
@@ -166,7 +167,7 @@ test("the tutor's Markdown shows bold and a list in the Talk sheet, with no mark
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
   await (await talkField(sheet)).fill('what is parsing?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
@@ -183,8 +184,8 @@ test("the tutor's Markdown shows bold and a list in the Talk sheet, with no mark
 
 // The sheet's title is read whole beside New talk and Done (mw-5r3p30.214): it wraps to a second line rather than end in '…'.
 for (const place of [
-  { name: 'Settings', path: '/#/settings', title: 'Ask the tutor: Settings', open: (page: Page) => page.getByRole('button', { name: 'Ask the tutor about this screen' }).click() },
-  { name: 'the Reader', path: '/', title: 'Talk about Romans 8', open: (page: Page) => page.getByRole('button', { name: 'Talk', exact: true }).click() },
+  { name: 'Settings', path: '/#/settings', title: 'Ask the tutor: Settings', open: (page: Page) => openTutor(page) },
+  { name: 'the Reader', path: '/', title: 'Talk about Romans 8', open: (page: Page) => openTutor(page) },
 ]) {
   test(`on ${place.name} at 390x844 the Talk sheet's title is whole beside New talk and Done`, async ({ page }) => {
     await page.setViewportSize(VIEWPORT);

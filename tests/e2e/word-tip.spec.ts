@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
@@ -89,7 +90,7 @@ test('the first tap on a word shows the tip once; Got it keeps it away; the shee
   await expect(page.locator('[data-reader] [data-hint-card="swipe-chapters"]')).toHaveCount(1);
   await expect(sheet.locator('[data-hint-card="swipe-chapters"]')).toHaveCount(0);
 
-  await page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('button', { name: 'Ask the tutor' }).tap();
+  await openTutor(page);
   const talk = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
   await expect(talk).toBeVisible();
   await expect(talk.locator('[data-turn]')).toContainText(GRAMMAR_HELP_ANSWER.answer);

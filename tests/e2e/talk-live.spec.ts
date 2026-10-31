@@ -7,6 +7,7 @@
 // (tests/e2e/live.ts). With no key, or with a backend that cannot be reached, the test reports a SKIP naming what was missing,
 // never a pass.
 import { expect, test, type Locator } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { liveKeyOrSkip, plain } from './live';
 import { shot } from './shot';
 import { seedDeviceKey } from './unlocked';
@@ -27,7 +28,7 @@ test('the live Bible talk refuses code, answers a question about πνεῦμα i
   await seedDeviceKey(page, key);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 }), 'the gate opened (the test key holds a lampas licence)').toBeVisible({ timeout: 60_000 });
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
   await expect(sheet).toBeVisible();
 

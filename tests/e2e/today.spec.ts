@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { readFileSync } from 'node:fs';
 import { planOf } from '../../src/data/plans';
 import { EXCLUDED_RULES } from '../support/axe-excluded';
@@ -287,7 +288,7 @@ test('the tutor from Today knows the psalm he opened, and a screenshot is one ta
   await piece(page, 'Psalms and Proverbs').getByRole('link', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
   expect(await opened(page)).toHaveLength(1);
 
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Today' });
   await expect(sheet).toBeVisible();
   // the picture buttons are there from the first turn, and the suggestions offer to talk about the reading and to send a screenshot
@@ -404,7 +405,7 @@ test('the tutor from Today is told the chapters read today', async ({ page }) =>
   await openToday(page, [{ key: 'readingPlan', value: 'on' }, { key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: { code: '1jn', chapter: 1 }, done: PLAN_CHAPTERS.slice(0, INDEX_1PE_1 + 8).map(keyOf) }) }]);
   await piece(page, 'Reading plan').getByRole('checkbox', { name: 'Mark 1 John 1 read', exact: true }).click();
   await expect(readToday(page)).toHaveText(['1 John 1']);
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Today' });
   await sheet.locator('[data-suggestion]').filter({ hasText: 'Talk about what I read' }).click();
   await expect(sheet.locator('[data-turn]')).toHaveCount(1);
@@ -476,7 +477,7 @@ test('the tutor\'s "pick a different devotional" with Which devotional on Random
   const titleOf = async () => (await link.innerText()).split('\n')[0];
   const before = await titleOf();
 
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Today' });
   await expect(sheet).toBeVisible();
   await sheet.locator('[data-suggestion]').filter({ hasText: 'Talk about what I read' }).click();

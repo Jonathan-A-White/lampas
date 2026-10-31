@@ -20,6 +20,7 @@
 //   mw-5r3p30.487  the round Ask the tutor button, sideways: the second tap started Hold to talk
 //   mw-s1dc0n.8    Share to Lampas: a reference, or Cancel: the second tap opened a sheet over the Reader
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
@@ -354,7 +355,7 @@ test('mw-1vuvq6.10: a double tap on the bridge idea sheet\'s Done leaves the tal
   };
   await routePostern(page, fake);
   await open(page, '#/words', {}, () => page.getByRole('heading', { name: 'Words', exact: true, level: 1 }).first().waitFor());
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const talk = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await reads(page);
   await (await talkField(talk)).fill('Why is the genitive used here?');

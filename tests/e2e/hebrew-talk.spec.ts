@@ -36,7 +36,7 @@ async function hebrewAtCurious(page: Page): Promise<void> {
   );
 }
 
-test('Talk about verse 1 on Jonah 1 sends the Hebrew and its words, and draws the answer\'s Hebrew word right to left', async ({ page }) => {
+test('The talk about verse 1 on Jonah 1 sends the Hebrew and its words, and draws the answer\'s Hebrew word right to left', async ({ page }) => {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: ANSWER };
   await routePostern(page, fake);

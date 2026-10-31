@@ -2,6 +2,7 @@
 // so no screen's z-index covers it: from the Reader's Ask the tutor, and from Drill it (a full-screen dialog at z-40) with the tutor's sheet open over it. The proof is a real hit
 // test: the element at the viewport's centre is the viewer's picture. Back closes the viewer and leaves the Talk sheet and Drill it as they were.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { readFileSync } from 'node:fs';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
@@ -121,7 +122,7 @@ async function openDrillTalk(page: Page): Promise<{ drill: Locator; sheet: Locat
     if (last) break;
   }
   await expect(drill.getByTestId('drill-result')).toBeVisible();
-  await drill.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page, { sheet: 'Ask the tutor: Drill it' });
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Drill it', exact: true });
   await expect(sheet).toBeVisible();
   return { drill, sheet };

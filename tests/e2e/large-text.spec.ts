@@ -4,6 +4,7 @@
 // the whole path, and the word, Grammar and Talk sheets (mw-cwf538.7). On each, no control, heading or label is clipped (its scrollWidth within its
 // clientWidth) or pushed off the screen, and a shot of the screen is attached. The whole path's SVG labels are drawn at twice their 100% size.
 import { chromium, expect, test as base, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -100,7 +101,7 @@ const SCREENS: readonly Screen[] = [
       await routePostern(page, fake);
       await openUnlocked(page);
       await page.goto('/');
-      await page.getByRole('button', { name: 'Talk', exact: true }).click();
+      await openTutor(page);
       await expect((await talkField(page.getByRole('dialog')))).toBeAttached();
     },
   },
@@ -224,7 +225,7 @@ const MORE_SCREENS: readonly Screen[] = [
       await routePostern(page, fake);
       await openUnlocked(page);
       await page.goto('/');
-      await page.getByRole('button', { name: 'Talk', exact: true }).click();
+      await openTutor(page);
       const sheet = page.getByRole('dialog');
       await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
       await sheet.getByRole('button', { name: 'Send', exact: true }).click();
@@ -350,7 +351,7 @@ test('the Talk sheet while the speaking bar is up keeps the conversation at leas
   await honestSpeech(page, { msPerWord: 2000 });
   await openUnlocked(page);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog');
   await (await talkField(sheet)).fill('What does συνεργεῖ mean here?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();

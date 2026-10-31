@@ -2,6 +2,7 @@
 // on the first answer and the newest turn (his words and the tutor's reply) are both inside the answers box at 390x844, without a scroll by him.
 // jsdom has no layout, so it is proven here. The words go through the sheet's field: the app sends them the same way as a held, spoken message.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -25,7 +26,7 @@ async function askAndGetOffer(page: Page, reply: Record<string, unknown>) {
   await openUnlocked(page);
   await page.goto('/#/words');
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await (await talkField(sheet)).fill('Can this work with Olive Tree?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();

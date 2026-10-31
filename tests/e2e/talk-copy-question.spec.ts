@@ -1,6 +1,7 @@
 // tests/e2e/talk-copy-question.spec.ts — a Copy under his own question in the Talk sheet (mw-5r3p30.341): when a long question cannot be sent, the
 // Copy is in view at the foot of the failure (beside Retry), without scrolling the sheet, and a tap puts the whole question on the clipboard.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { honestSpeech } from '../support/honest-fakes';
 import { longQuestion } from '../support/long-text';
@@ -86,7 +87,7 @@ async function answeredTalk(page: Page, url: string, n: number | null, title: st
   await honestSpeech(page, { msPerWord: 400 });
   await openUnlocked(page);
   await page.goto(url);
-  if (n === null) await page.getByRole('button', { name: 'Talk', exact: true }).click();
+  if (n === null) await openTutor(page);
   else await openTalkAbout(page, n);
   const sheet = page.getByRole('dialog', { name: title });
   await (await talkField(sheet)).fill('What does it mean here?');

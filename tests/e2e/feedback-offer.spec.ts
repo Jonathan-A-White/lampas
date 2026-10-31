@@ -1,6 +1,7 @@
 // The tutor's offer to the makers (mw-5r3p30.109) at phone width: an answer that carries a feedback_offer shows its summary and 'Send this to the
 // makers' as a thumb-sized button inside the sheet; the tap sends the feedback grist and the turn reads Sent. Ends with a shot of the sent turn.
 import { expect, test } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -23,7 +24,7 @@ test('an ask Lampas cannot meet is offered to the makers and one tap sends it', 
   await openUnlocked(page);
   await page.goto('/#/words');
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await (await talkField(sheet)).fill('Can this work with Olive Tree?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
@@ -58,7 +59,7 @@ test('the link beside the answer opens Your requests with its heading in view', 
   await openUnlocked(page);
   await page.goto('/#/words');
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
-  await page.getByRole('button', { name: 'Ask the tutor about this screen' }).click();
+  await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Words' });
   await (await talkField(sheet)).fill('Can this work with Olive Tree?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { EXCLUDED_RULES } from '../support/axe-excluded';
 import { makeFakePostern, READING_ANSWER, TALK_ANSWER } from '../support/fake-postern';
 import { honestMic } from '../support/honest-fakes';
@@ -125,7 +126,7 @@ const SCREENS: readonly Screen[] = [
       await routePostern(page, fake);
       await openUnlocked(page);
       await page.goto('/');
-      await page.getByRole('button', { name: 'Talk', exact: true }).click();
+      await openTutor(page);
       await expect((await talkField(page.getByRole('dialog')))).toBeVisible();
     },
   },

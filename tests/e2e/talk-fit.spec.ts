@@ -1,6 +1,7 @@
 // tests/e2e/talk-fit.spec.ts — the Reader's Talk bar fits the phone (mw-5r3p30.182): at 844 x 390 (held sideways) the whole bar and the Talk sheet's
 // 'Hold to talk' bar are inside the window, at 390 x 844 they are as they were, and every control of them is a 44 px target. jsdom has no layout, so it is proven here.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openTutor } from './open-tutor';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -51,7 +52,7 @@ for (const viewport of [{ width: 844, height: 390 }, { width: 390, height: 844 }
 
   test(`${name}: the Talk sheet's 'Hold to talk' bar is whole inside the window and a 44 px target`, async ({ page }) => {
     await openReader(page, viewport);
-    await page.getByRole('button', { name: 'Talk', exact: true }).click();
+    await openTutor(page);
     const sheet = page.getByRole('dialog');
     const hold = sheet.getByRole('button', { name: 'Hold to talk' });
     await expect(hold).toBeVisible();
