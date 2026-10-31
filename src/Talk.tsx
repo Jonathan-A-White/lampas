@@ -56,6 +56,9 @@ import type { TalkHold } from './talk/useTalkHold';
 import { PendingQuestion } from './ui/PendingQuestion';
 import { CopyExchange } from './share/CopyExchange';
 import { CopyText } from './share/CopyText';
+import { useDocumentScroll } from './talk/documentScroll';
+import { CopyTalk } from './talk/CopyTalk';
+import { holdBackSwipes } from './talk/steadyPress';
 import { QuestionRow } from './talk/QuestionRow';
 import { YouSaid } from './ui/YouSaid';
 import type { SharedContent } from './share/shared';
@@ -640,6 +643,8 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   const asked = new Set([...(turns ?? []).map((t) => t.q), ...(state ? [state.question] : [])]);
   const more = (suggestions ?? []).filter((q) => !asked.has(q));
   const list = useRef<HTMLDivElement>(null);
+  // the page scrolls the conversation, so the phone's scroll capture can (mw-5r3p30.930)
+  useDocumentScroll(list);
   // The newest turn is kept in view by moving this box and nothing else: a question still waiting shows at the foot; an answer is read from its
   // top (question first), so in a short window the suggestions left under it do not push its first lines out of the box (mw-vtjxh4.44).
   const turnCount = turns?.length ?? 0;
@@ -767,6 +772,8 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   useEffect(() => () => stopAnswerSpeech(), []);
   // The words of a hold that did not end in a release (a slide off the Talk bar, the recogniser failing) wait in the field, unsent (src/talk/keptWords.ts).
   const composer = useRef<HTMLDivElement>(null);
+  // a swipe that starts on Hold to talk is no hold (mw-5r3p30.930)
+  useEffect(() => (composer.current ? holdBackSwipes(composer.current) : undefined), []);
   useEffect(
     () =>
       registerKeeper((words) =>
@@ -917,6 +924,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
               </div>
             ) : null}
             {turns && !busy && (turns.length > 0 || state) && more.length > 0 ? <Suggestions questions={more} onAsk={ask} label="Ask something else" /> : null}
+            {turns && turns.length > 0 && !state ? <CopyTalk talkRef={ref} turns={turns} /> : null}
           </div>
           <BarSlot level={3} />
           <div ref={composer} data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 short:pt-0 pb-[calc(0.75rem+var(--lp-bar-inset))]">
