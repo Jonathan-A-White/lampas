@@ -121,12 +121,22 @@ describe('Read more follows the grammar he pinned', () => {
 });
 
 describe('the tutor’s digest', () => {
-  it('does not list a Hebrew grammar, which the answer schema’s work enum cannot name yet, but still lists a Greek one', () => {
-    const row = (id: string, state: 'on' | 'pinned') => ({ id, kind: 'grammar' as const, state, since: 1 });
-    const shelf = [row('LLS:BIBHEBSBS', 'pinned'), row('LLS:BHRG2ED', 'on'), row('LLS:BDF', 'on'), row('LLS:LRNTOREADNTGRK', 'pinned')];
-    const ids = worksForTutor(shelf, undefined, 'why is this the aorist, parse it').flatMap((w) => ('id' in w ? [w.id] : []));
-    expect(ids).toEqual(expect.arrayContaining(['LLS:LRNTOREADNTGRK', 'LLS:BDF']));
-    expect(ids).not.toContain('LLS:BIBHEBSBS');
-    expect(ids).not.toContain('LLS:BHRG2ED');
+  const row = (id: string, state: 'on' | 'pinned') => ({ id, kind: 'grammar' as const, state, since: 1 });
+  const shelf = [row('LLS:BIBHEBSBS', 'pinned'), row('LLS:BHRG2ED', 'on'), row('LLS:BDF', 'on'), row('LLS:LRNTOREADNTGRK', 'pinned')];
+  const idsAt = (place: { book: string; chapter: number } | undefined) => worksForTutor(shelf, place, 'why is this the aorist, parse it').flatMap((w) => ('id' in w ? [w.id] : []));
+
+  it('lists the Greek grammars at a New Testament place or none, and not the Hebrew ones', () => {
+    for (const place of [undefined, { book: 'rom', chapter: 8 }]) {
+      expect(idsAt(place)).toEqual(expect.arrayContaining(['LLS:LRNTOREADNTGRK', 'LLS:BDF']));
+      expect(idsAt(place)).not.toContain('LLS:BIBHEBSBS');
+      expect(idsAt(place)).not.toContain('LLS:BHRG2ED');
+    }
+  });
+
+  it('lists the Hebrew grammars at an Old Testament place, and not the Greek ones', () => {
+    const ids = idsAt({ book: 'gen', chapter: 1 });
+    expect(ids).toEqual(expect.arrayContaining(['LLS:BIBHEBSBS', 'LLS:BHRG2ED']));
+    expect(ids).not.toContain('LLS:LRNTOREADNTGRK');
+    expect(ids).not.toContain('LLS:BDF');
   });
 });

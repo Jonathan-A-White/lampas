@@ -154,6 +154,9 @@ function lineOf(entry: CatalogueEntry): TutorWorkLine {
   };
 }
 
+/** Whether a grammar is of the place's language: a Hebrew one for a book of the Old Testament, a Greek one otherwise (no place: Greek, the New Testament's). Other kinds fit everywhere. */
+const grammarFits = (entry: CatalogueEntry, place: StudyPlace | undefined): boolean => entry.kind !== 'grammar' || (entry.lang === 'he') === (place !== undefined && otBookOf(place.book) !== undefined);
+
 /** Whether a commentary or an interlinear opens at this place: the volume covers the book. A book (the Institutes) covers none and is not tied to a place. */
 const coversPlace = (entry: CatalogueEntry, place: StudyPlace | undefined): boolean => {
   if (entry.kind === 'interlinear') return place === undefined ? false : !entry.covers || entry.covers.includes(place.book);
@@ -169,12 +172,10 @@ export function worksForTutor(shelf: readonly LibraryRow[], place: StudyPlace | 
   const byResource = new Map(catalogue.map((e, i) => [e.resource, { entry: e, order: i }]));
   const held = shelf.flatMap((row) => {
     const found = byResource.get(row.id);
-    // a Hebrew grammar is on the shelf for the idea sheet's Read more; the answer schema's `work` enum names only Greek grammars, so the tutor is not told of one it could not link (mw-5r3p30.890)
-    const linkable = found !== undefined && !(found.entry.kind === 'grammar' && found.entry.lang === 'he');
-    return linkable && TUTOR_KINDS.includes(found.entry.kind) && (row.state === 'on' || row.state === 'pinned') ? [{ ...found, row }] : [];
+    return found && TUTOR_KINDS.includes(found.entry.kind) && (row.state === 'on' || row.state === 'pinned') ? [{ ...found, row }] : [];
   });
   const shown = new Set(resourcesForLevel(held.map((h) => h.entry), level));
-  const rows = held.filter((h) => shown.has(h.entry)).sort((a, b) => b.row.since - a.row.since || a.order - b.order);
+  const rows = held.filter((h) => shown.has(h.entry) && grammarFits(h.entry, place)).sort((a, b) => b.row.since - a.row.since || a.order - b.order);
   const isBookGroup = (e: CatalogueEntry): boolean => group(e)?.kind === 'book';
   const chosen: CatalogueEntry[] = [];
   const take = (entries: CatalogueEntry[], most: number): void => {
