@@ -115,14 +115,13 @@
         "name": "save-answer-references",
         "is": "command",
         "kind": "undoable",
-        "tell": "Saves the Bible references (verses, ranges, whole chapters) of the answer before as a new verse list in Verse lists; name is optional; undoable",
+        "tell": "Saves the Bible references of the answer before as a new verse list; undoable",
         "args": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
             "name": {
               "type": "string",
-              "minLength": 1,
               "maxLength": 60
             }
           }

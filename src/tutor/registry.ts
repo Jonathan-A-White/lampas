@@ -423,8 +423,8 @@ export async function withPreviousAnswer<T>(previous: { answer: string; question
  *  Share sheet's own command (saveAsListCommand) as a new verse list; named `name`, else from his question. The undo takes the list away again. */
 const saveAnswerReferencesCommand: Command = {
   name: 'save-answer-references',
-  tell: "Saves the Bible references (verses, ranges, whole chapters) of the answer before as a new verse list in Verse lists; name is optional; undoable",
-  args: { type: 'object', additionalProperties: false, properties: { name: { type: 'string', minLength: 1, maxLength: LIST_NAME_MAX } } },
+  tell: 'Saves the Bible references of the answer before as a new verse list; undoable',
+  args: { type: 'object', additionalProperties: false, properties: { name: { type: 'string', maxLength: LIST_NAME_MAX } } },
   kind: 'undoable',
   run: async (args): Promise<CommandResult> => {
     if (!previousAnswer) throw new Error('There is no earlier answer in this talk to save from');
