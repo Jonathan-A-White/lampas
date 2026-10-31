@@ -113,11 +113,11 @@ for (const { name, size } of VIEWPORTS) {
 }
 
 /** An idea sheet (The noun unless named) at phone width, with a new card ignoring taps for its moment (src/ui/settle.ts) as on his phone: openUnlocked turns that moment off. */
-async function openIdea(page: Page, name = 'The noun') {
+async function openIdea(page: Page, name = 'The noun', settleMs = SETTLE_MS) {
   await page.setViewportSize({ width: 390, height: 844 });
   await openUnlocked(page);
   // init scripts run in order: this one puts the moment back after openUnlocked's '0'
-  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(settleMs));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
@@ -273,26 +273,40 @@ test('a double tap on Finish leaves the result of a short drill on screen', asyn
   await expect(short).toHaveCount(0);
 });
 
-// The sweep (mw-5r3p30.430): in the letter drill, Done stands where Finish the round was, so a double tap on it ended the sitting unread.
-test('a double tap on Finish the round leaves the round result of the letter drill on screen', async ({ page }) => {
-  const idea = await openIdea(page, 'The Greek alphabet');
-  // Learning on The Greek alphabet opens the letter drill; the slider is disabled until the sheet has found its examples, and a disabled control takes no focus or key (mw-5r3p30.567)
+/** Learning on The Greek alphabet opens the letter drill; he answers every question of its first round, to the one whose button says Finish the round. */
+async function playLetterRoundToItsEnd(page: Page, settleMs = SETTLE_MS) {
+  const idea = await openIdea(page, 'The Greek alphabet', settleMs);
+  // the slider is disabled until the sheet has found its examples, and a disabled control takes no focus or key (mw-5r3p30.567)
   await expect(idea.getByRole('slider', { name: 'Your level' })).toBeEnabled();
   await idea.getByRole('slider', { name: 'Your level' }).focus();
   await page.keyboard.press('ArrowRight');
   const drill = page.getByRole('dialog', { name: 'Letter drill' });
+  const next = drill.getByTestId('letter-next');
+  const skip = drill.getByRole('button', { name: 'Skip this one' });
   for (;;) {
     await page.waitForTimeout(SETTLE_MS + 100);
     // a phone that can hear him is asked Say it as the third question (mw-86e9r1.12): it has no answers to tap, so he skips it, which costs him nothing
-    const skip = drill.getByRole('button', { name: 'Skip this one' });
-    if (await skip.count()) {
-      await skip.click();
-      continue;
-    }
-    await drill.locator('[data-option]').first().click();
-    if ((await drill.getByTestId('letter-next').textContent()) === 'Finish the round') break;
-    await drill.getByTestId('letter-next').click();
+    let skipped = false;
+    // a tap in a card's settling moment does nothing (src/ui/settle.ts), and on a loaded host the card can mount after the wait above is over: tap again until the answer shows
+    await expect(async () => {
+      if (await skip.count()) {
+        await skip.click({ timeout: 2000 });
+        skipped = true;
+        return;
+      }
+      if (!(await next.count())) await drill.locator('[data-option]').first().click({ timeout: 2000 });
+      await expect(next).toBeVisible({ timeout: 500 });
+    }).toPass({ timeout: 30_000, intervals: [100, 200, 400] });
+    if (skipped) continue;
+    if ((await next.textContent()) === 'Finish the round') break;
+    await next.click();
   }
+  return drill;
+}
+
+// The sweep (mw-5r3p30.430): in the letter drill, Done stands where Finish the round was, so a double tap on it ended the sitting unread.
+test('a double tap on Finish the round leaves the round result of the letter drill on screen', async ({ page }) => {
+  const drill = await playLetterRoundToItsEnd(page);
   await tapTwice(page, drill.getByTestId('letter-next'), 120);
   await expect(drill.getByTestId('letter-round-result')).toBeVisible();
   await expect(drill.getByTestId('letter-drill-step')).toHaveText('Round 1 done');
@@ -300,4 +314,11 @@ test('a double tap on Finish the round leaves the round result of the letter dri
   await page.waitForTimeout(SETTLE_MS + 100);
   await drill.getByRole('button', { name: 'Another round', exact: true }).click();
   await expect(drill.getByTestId('letter-drill-step')).toHaveText(/^Round 2 · Question 1 of \d+$/);
+});
+
+// mw-5r3p30.917: on a loaded host a card mounts after the test's wait is over, so the tap lands in the card's settling moment and is dropped (src/ui/settle.ts);
+// a settling moment of 1.5 s (longer than the test's wait) is that host, made certain
+test('on a slow host the letter drill round still reaches Finish the round', async ({ page }) => {
+  const drill = await playLetterRoundToItsEnd(page, 1500);
+  await expect(drill.getByTestId('letter-next')).toHaveText('Finish the round');
 });
