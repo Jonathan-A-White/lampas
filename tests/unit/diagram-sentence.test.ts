@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
+import { instructionsOf } from '../../scripts/grind-parts';
 import { MAX_REQUEST_BYTES, buildDiagramRequest, fitRequest, sentenceReference, sentenceVerses } from '../../src/diagram/request';
 import { MAX_SENTENCE_WORDS, isWholeVerses, sentenceEnds, sentencesAt, sentencesOf, type Sentence } from '../../src/diagram/sentence';
 import { SENTENCE_ENDS } from '../../src/diagram/sentenceEnds';
@@ -176,6 +177,6 @@ describe('the grind\'s example for Ephesians 1:3-14', () => {
     const sentence = at('eph', 1, 5)[0];
     const example = JSON.parse(readFileSync('grinds/examples/sentence-diagram/eph-1-3-14-greek.json', 'utf8')) as { request: unknown };
     expect(example.request).toEqual(buildDiagramRequest(eph1, sentenceVerses(eph1, sentence), 'greek', sentence).request);
-    expect(readFileSync('grinds/sentence-diagram.instructions.md').length).toBeLessThanOrEqual(12_000);
+    expect(new TextEncoder().encode(instructionsOf('sentence-diagram')).length).toBeLessThanOrEqual(12_000);
   });
 });
