@@ -8,9 +8,10 @@ import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { getGreekInterest, getHebrewInterest } from '../../src/data/repositories';
 import { hebrewPointedForm } from '../../src/speech/hebrewPronunciation';
 import { TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
-import { endScenario, fake, open, received, send, sheet, user } from './bible-talk/support';
+import { endScenario, fake, open, openTalk, received, send, sheet, user } from './bible-talk/support';
 import { openTutor } from './open-tutor';
 
 const load = (rel: string) => JSON.parse(readFileSync(rel, 'utf8')) as Chapter;
@@ -31,6 +32,8 @@ const WORD_ANSWER = {
 };
 
 const ADD_ANSWER = { answer: 'Adding דָּבָר.', words: [], words_to_add: ['דָּבָר'] };
+const HEBREW_OFFER_BUTTON = 'Want to raise the Hebrew to Curious?';
+const HEBREW_OFFER = { answer: 'The Hebrew word is בָּרָא, "created"; only God is its subject.', words: [], greek_offer: { kind: 'view', lang: 'he', text: HEBREW_OFFER_BUTTON } };
 const LINK_ANSWER = { answer: 'The word for word is דָּבָר.', words: [], links: [{ kind: 'word', lemma: 'דָּבָר' }] };
 
 const opened = (place: string, level: string, answer: unknown = TALK_ANSWER) => async (): Promise<void> => {
@@ -248,6 +251,39 @@ describeFeature(
         expect('hebrew' in input() || 'hebrew_words' in input()).toBe(false);
       });
       And('its input tells the tutor the Hebrew dial is at {string}', dial);
+    });
+    Scenario('The tutor offers the Hebrew gently on Genesis 1 to a reader who is not learning it', ({ Given, When, And, Then }) => {
+      Given('Lampas is opened on Genesis 1 in English behind a fake Postern whose tutor offers the Hebrew view', async () => {
+        await open((f: FakePostern) => void (f.autoReply = { status: 'answered', answer: HEBREW_OFFER }), false, PLACES['Genesis 1']);
+        // a phone placed at Just English, as the app places a new one
+        await db.settings.put({ key: 'greekInterest', value: '0' });
+        await db.settings.put({ key: 'hebrewInterest', value: '0' });
+      });
+      When('he opens the talk and asks {string}', async (_, question: string) => {
+        await openTalk();
+        await send(question);
+        await waitFor(() => expect(sheet().querySelectorAll('[data-turn]')).toHaveLength(1));
+      });
+      Then('the request told the tutor the Hebrew dial is Just English, with Curious next', () => {
+        expect(input().hebrew_interest).toEqual({ level: 0, name: 'Just English', next: { level: 1, name: 'Curious' } });
+        expect(input().reader_view).toBe('english');
+        expect('hebrew' in input() || 'hebrew_words' in input()).toBe(false);
+      });
+      And('the talk shows the button {string}', async (_, name: string) => {
+        expect(await within(sheet()).findByRole('button', { name })).toBeInTheDocument();
+      });
+      When('he taps {string}', async (_, name: string) => {
+        await user.click(await within(sheet()).findByRole('button', { name }));
+      });
+      Then('the Hebrew dial is Curious', async () => {
+        await waitFor(async () => expect(await getHebrewInterest()).toBe(1));
+      });
+      And('the talk confirms {string}', async (_, line: string) => {
+        await waitFor(() => expect(sheet()).toHaveTextContent(line));
+      });
+      And('the Greek dial is still Just English', async () => {
+        expect(await getGreekInterest()).toBe(0);
+      });
     });
   },
 );

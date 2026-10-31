@@ -75,3 +75,14 @@ Feature: The Bible talk on a verse of the Old Testament
     Then the mill received one bible-talk grist whose input carries the reference "Jonah 1:1", the English of verse 1 and no Greek
     And its input has no Hebrew and no Hebrew words
     And its input tells the tutor the Hebrew dial is at "Just English"
+
+  @uc-language-offer @hebrew
+  Scenario: The tutor offers the Hebrew gently on Genesis 1 to a reader who is not learning it
+    Given Lampas is opened on Genesis 1 in English behind a fake Postern whose tutor offers the Hebrew view
+    When he opens the talk and asks "What does the original say for 'created' here?"
+    Then the request told the tutor the Hebrew dial is Just English, with Curious next
+    And the talk shows the button "Want to raise the Hebrew to Curious?"
+    When he taps "Want to raise the Hebrew to Curious?"
+    Then the Hebrew dial is Curious
+    And the talk confirms "The Hebrew dial is now Curious."
+    And the Greek dial is still Just English

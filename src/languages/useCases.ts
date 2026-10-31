@@ -300,7 +300,7 @@ export const USE_CASES: readonly UseCase[] = [
     title: 'The tutor offers the language gently to a reader who is not learning it',
     status: {
       greek: 'has',
-      hebrew: { gap: 'scenario "The tutor offers the Hebrew gently on Genesis 1 to a reader who is not learning it" in features/hebrew-talk.feature; the grind example grinds/examples/bible-talk/hebrew-offer-on-genesis.json already exists and src/talk/greekOffer.ts has chapterOfferLang, so the scenario and features/steps/hebrew-talk.steps.tsx; XS' },
+      hebrew: 'has',
       latin: LATIN_LATER,
     },
   },
