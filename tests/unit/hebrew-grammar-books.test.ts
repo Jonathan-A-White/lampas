@@ -10,6 +10,7 @@ import { worksForTutor } from '../../src/resources/tutorLinks';
 import type { GrammarBook } from '../../src/resources/types';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
+const timeout = ASYNC_WAIT_MS;
 const HEBREW_IDS = new Set(HEBREW_LADDER.map((i) => i.id));
 const stepByStep = GRAMMAR_BOOKS.find((b) => b.id === 'step-by-step');
 
@@ -100,7 +101,7 @@ describe('Read more follows the grammar he pinned', () => {
       { key: 'devotionalDraw', value: 'none' },
     ]);
     await shelfOf();
-    await vi.waitFor(async () => expect(await db.library.get('#taken')).toBeDefined(), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(async () => expect(await db.library.get('#taken')).toBeDefined(), { timeout });
   });
 
   it('stays on Step by Step when he pins BHRG, which has no table', async () => {
