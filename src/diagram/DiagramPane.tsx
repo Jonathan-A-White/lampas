@@ -4,17 +4,21 @@
 // (Learn, Not now) until he has finished it or dismissed it. A tap on a word reports the Lookup the Reader's own WordSheet opens (English: the word's chunk, fromEnglish;
 // Greek: that Greek word). When the tutor could not (no answer, or a tree that broke THE RULE twice) it says so and why and offers Try again. The pane is keyed by the
 // unit and the mode (src/VerseView.tsx), so a switch of the Reader's view is a new pane that asks for the new mode; a Redraw keeps the picture beneath it until the new one comes.
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useState } from 'react';
 import type { Chapter, Verse } from '../data/chapter';
+import { getStudyResources } from '../data/repositories';
 import type { WovenVerse } from '../data/weave';
 import type { Lookup } from '../WordSheet';
 import { navigate } from '../nav/route';
+import { armFallback } from '../resources/openApp';
 import { TutorError } from '../services/tutor';
 import { useElapsed } from '../ui/useElapsed';
 import { ReedKellogg } from './ReedKellogg';
 import { diagramReference } from './request';
 import { fetchDiagram, type DiagramResult } from './fetchDiagram';
 import { keepInviteDismissed, lessonInvited } from './lesson';
+import { diagramLogosLinks } from './logosLinks';
 import type { DiagramMode, DiagramWord } from './types';
 import { weaveDiagramWords } from './weave';
 
@@ -47,6 +51,27 @@ function lookupOfWord(verses: readonly Verse[], word: DiagramWord): Lookup | und
 function whyOf(result: Extract<DiagramResult, { ok: false }>): string {
   const n = result.faults.length;
   return `Its drawing did not use every word of the verse exactly once (${n} ${n === 1 ? 'thing' : 'things'} wrong), twice over.`;
+}
+
+const LOGOS_LINK = 'inline-flex min-h-12 items-center rounded-lg border border-line px-3 text-base font-medium text-accent active:bg-line';
+
+/** 'See it in Logos': the books of his library that show this verse's syntax (logosLinks.ts), for the unit's first verse; nothing while Logos is Off in Settings > Study resources. */
+function SeeItInLogos({ chapter, n }: { chapter: Chapter; n: number }) {
+  const logos = useLiveQuery(async () => (await getStudyResources()).on.includes('logos'), []);
+  if (!logos) return null;
+  const links = diagramLogosLinks({ book: chapter.code, chapter: chapter.chapter, verse: n }, chapter.lang === 'hbo' ? 'hbo' : 'grc');
+  return (
+    <div role="group" aria-label="See it in Logos" data-diagram-logos className="flex flex-col gap-1 px-1">
+      <p className="text-sm text-muted">See it in Logos</p>
+      <div className="flex flex-wrap gap-2">
+        {links.map((link) => (
+          <a key={link.label} href={link.url} data-fallback={link.fallback} onClick={() => armFallback(link.fallback)} className={LOGOS_LINK}>
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function Working() {
@@ -179,6 +204,7 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
               How to read this
             </button>
           </div>
+          <SeeItInLogos chapter={chapter} n={n} />
         </>
       ) : null}
     </section>
