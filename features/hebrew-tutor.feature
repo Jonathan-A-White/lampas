@@ -5,6 +5,7 @@ Feature: The tutor and a Hebrew verse
   word right to left in the Hebrew face (src/markdown/scriptRuns.ts). Quiz me stays out of an Old Testament verse's row: it is the Talk sheet's quiz, written
   in the Greek ladder's terms, and the drill-items grind takes Greek grammar ideas (docs/hebrew.md). These scenarios run against a fake Postern whose mill answers.
 
+  @uc-tutor-ask @hebrew
   Scenario: Ask the tutor on Jonah 1:10 sends the Hebrew words with the English
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
@@ -13,6 +14,7 @@ Feature: The tutor and a Hebrew verse
     And its input carries the verse in Hebrew, pointed
     And its input carries the Hebrew word "וַיִּירְאוּ" with the lemma "יָרֵא", the gloss "to fear" and its parsing in plain words
 
+  @uc-tutor-ask @hebrew
   Scenario: The tutor's answer draws its Hebrew right to left
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
@@ -20,12 +22,14 @@ Feature: The tutor and a Hebrew verse
     Then the answer shows in the Talk sheet about Jonah 1:10
     And the answer draws the Hebrew word "יָרֵא" right to left
 
+  @uc-tutor-ask @hebrew
   Scenario: Quiz me is not offered on Jonah 1:10, and Ask the tutor and Diagram are
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
     Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Diagram" and "Copy"
     And the Verse view has no "Quiz me"
 
+  @uc-learner-summary @hebrew
   Scenario: The tutor on Genesis 1 is told his Hebrew words and his place on the Hebrew ladder
     Given Lampas is opened on Genesis 1 with a licence, a tutor behind a fake Postern, and a reader of Hebrew with three Hebrew words and two ideas
     When he taps the number of verse 1
@@ -34,6 +38,7 @@ Feature: The tutor and a Hebrew verse
     And its learner line puts him on the Hebrew ladder with 2 ideas known, "The Hebrew article" being learned and a next idea
     And its solid words are the Hebrew lemmas "אֶרֶץ" and "בָּרָא"
 
+  @uc-learner-summary @greek
   Scenario: A Greek-only reader's request carries no Hebrew summary
     Given Lampas is opened on Genesis 1 with a licence, a tutor behind a fake Postern, and a Greek-only reader who has kept three Hebrew words
     When he taps the number of verse 1
@@ -41,6 +46,7 @@ Feature: The tutor and a Hebrew verse
     Then the mill received one bible-talk grist whose learner line is the Greek line "solid 1 word; learning: none; new today: none; due now: 0"
     And its learner line says nothing of Hebrew or of a ladder
 
+  @uc-tutor-word @hebrew
   Scenario: The ask's Hebrew word is drawn in the Hebrew face and opens its word sheet
     Given Lampas is opened on Genesis 1 with a licence and a tutor behind a fake Postern whose answer lists the Hebrew word "בָּרָא"
     When he taps the number of verse 1

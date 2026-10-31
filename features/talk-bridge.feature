@@ -1,3 +1,4 @@
+@uc-talk @greek
 Feature: The tutor bridges a question he is not ready for
   Asked about something that rests on grammar he has not learned, the tutor still answers briefly at his level, then names up to three of the
   ideas it rests on (`bridge.missing`, most important first) and offers to take him to the one that is his next step (`bridge.next`, mw-1vuvq6.5).

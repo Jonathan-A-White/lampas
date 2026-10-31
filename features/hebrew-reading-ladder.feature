@@ -1,3 +1,4 @@
+@uc-reading-ladder @hebrew
 Feature: Reading the Old Testament aloud in Hebrew, on the Reading ladder
   Every Old Testament verse is ranked from the easiest to say to the hardest (public/data/ladder/he.json, docs/reading-ladder.md 'Hebrew'). With Hebrew chosen the
   Goal screen has a "Reading ladder: Hebrew" entry that opens the easiest verse in the Hebrew view on Read it aloud; the place is kept for Hebrew apart from Greek and

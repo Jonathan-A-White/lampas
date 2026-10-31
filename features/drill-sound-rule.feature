@@ -1,3 +1,4 @@
+@uc-drill-it @greek
 Feature: Drill it on a sound that changes by the next letter
   His Chi drill (mw-i7xe0n.7, 2026-10-14): "the drill should catch whether I didn't really get that distinction and help me make that
   distinction". A letter or pair whose sound the chosen pronunciation changes by the letter after it (χ is kh before α and hy before ε) is

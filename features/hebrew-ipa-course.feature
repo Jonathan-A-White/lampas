@@ -1,3 +1,4 @@
+@uc-ipa-course @hebrew
 Feature: Learn the IPA sounds of Hebrew, an optional lesson behind a setting
   The Goal screen's Optional section (src/ipa/OptionalEntry.tsx, mw-gdcyf98.24, PROVISIONAL until the Governor confirms) offers "Learn the IPA sounds" for Greek, as it always has, and
   "Learn the IPA sounds of Hebrew" while his Hebrew dial is above 0. The setting "IPA lesson" (Settings > Listening > Pronunciation, On to start) takes both away while it is Off. The

@@ -1,3 +1,4 @@
+@uc-paradigms @greek
 Feature: A word's own paradigm
   A table opened from a word's sheet has a switch, This word | The pattern (mw-irpgqi.4; the names PROVISIONAL, the Governor to confirm). The pattern is the table as it
   is, the model words' forms. This word lays the table with the forms of the word's own lemma that the New Testament text uses (ἀγαπάω's, not the model verb's): each

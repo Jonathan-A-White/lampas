@@ -1,3 +1,4 @@
+@uc-memorize @greek
 Feature: I can type a verse from memory
   Besides saying it, I can type a verse I am learning. English can always be typed. Greek can be typed once I have told Lampas that my phone has a Greek keyboard (the Settings
   switch "Greek keyboard"). The Weave mixes the two languages, so it is only spoken. What I type is checked the way what I say is: capitals, punctuation, accents and breathings do not count.

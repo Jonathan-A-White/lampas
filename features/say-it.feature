@@ -1,3 +1,4 @@
+@uc-letter-drill @greek
 Feature: Say it in the letter drill
   The letter drill (features/letter-drill.feature) mixes Say it into its rounds on a phone that can hear him (mw-86e9r1.12): a letter is shown large, he
   holds the bar and says its name or its sound, and the phone's speech recognition checks it against the chosen pronunciation (src/data/grammar/sayIt.ts).

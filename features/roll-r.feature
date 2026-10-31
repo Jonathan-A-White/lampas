@@ -1,3 +1,4 @@
+@uc-sound-lessons @greek
 Feature: Rolling your r, an optional lesson on the Greek r for an English speaker
   The Rho sheet (a letter card) offers "Learn to roll your r (optional)" when the pronunciation is Modern Greek (mw-5r3p30.359, PROVISIONAL until the Governor confirms). It
   opens "Rolling your r", a lesson of the Hard sounds engine: why the English r differs, the tap of "butter" and "ladder", the Greek tapped r between vowels, the pairs

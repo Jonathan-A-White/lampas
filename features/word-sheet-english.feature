@@ -1,3 +1,4 @@
+@uc-word-sheet @greek
 Feature: The word sheet's English is the words alone
   The English a word stands for is a chunk of its verse, and a chunk carries the verse's punctuation ('at all times.').
   The word sheet shows the words without the marks at their ends; a mark inside them (an apostrophe, a hyphen) stays,

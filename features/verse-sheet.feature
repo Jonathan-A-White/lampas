@@ -1,3 +1,4 @@
+@uc-verse-view @greek
 Feature: The Verse view shows the verse
   Tapping a verse number opens the Verse view (mw-5r3p30.79, features/verse-view.feature). It is headed by the verse's
   reference, and it shows the verse's whole text in the view's language, big, above the actions and the control at the foot (the Play button of Listen), so

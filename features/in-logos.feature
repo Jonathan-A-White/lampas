@@ -1,3 +1,4 @@
+@uc-logos-links @greek
 Feature: A verse in his Logos library: In Logos, and In another book…
   Where a verse is shown with an Open in Logos (docs/design/library-at-scale.md 3.6, mw-rfjjzd.9) the one button keeps opening it in his Bible; beside it, when a Greek text, an interlinear or a
   commentary that covers the book is On, a second button "In another book…" opens a chooser: Pinned, Commentaries on the book, Greek texts and Interlinears, each folded to its first three with

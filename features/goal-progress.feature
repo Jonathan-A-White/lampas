@@ -1,3 +1,4 @@
+@uc-grammar-ladder @greek
 Feature: See my goal move
   The Governor's goal ("Read 1 John 1:1") must be seen moving: "help me move frontier to solid and the next low hanging fruit to
   frontier". A strip under the Reader's header says where he stands on it; the Goal screen (#/goal) shows two bars, words and

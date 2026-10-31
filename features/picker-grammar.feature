@@ -1,3 +1,4 @@
+@uc-new-words @greek
 Feature: New words are chosen at my grammar level, and the level moves with how I do
   Lampas offers new words to learn. Settings > New words says at which grammar level they are offered: Solid grammar (only
   words with a form whose grammar I have solid) or Frontier grammar (also the grammar I am working on). When my last 20 grammar

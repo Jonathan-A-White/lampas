@@ -1,3 +1,4 @@
+@uc-parsing-drill @greek
 Feature: A parsing drill on the chapter
   From Romans 8, the chapter he reads, the Parsing drill asks ten words whose lemma he knows (solid or
   learning, the learning ones first). Each word is asked step by step: its part of speech first, then

@@ -1,3 +1,4 @@
+@uc-pronunciation @greek
 Feature: Sound progress is kept for each pronunciation
   The letters, sounds and marks are learned in a pronunciation (Modern Greek today, Erasmian next): what he proved in one he has not proved in the other,
   so switching in Settings starts the sounds again in the new one and keeps the old one's progress. The grammar ideas are one level for all

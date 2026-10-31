@@ -1,3 +1,4 @@
+@uc-listen @greek
 Feature: Listen is a player: tap Play and the passage reads on by itself
   The Verse view's Listen action (mw-5r3p30.130) is not a hold: a tap on "Play verses 1-11" starts the passage, no thumb held down, and it reads
   on to the end of the passage and stops, showing "Play again". While it plays or waits the one speaking bar (voice-kit/speech) has Pause or Resume,

@@ -1,3 +1,4 @@
+@uc-verse-quiz @greek
 Feature: Quiz me in the Verse view
   The Verse view has a fourth action, Quiz me (mw-5r3p30.74), for a verse or for a passage under a heading. Its button starts the
   read, quiz, map cycle with the tutor: the Talk sheet opens on a conversation of its own, 'Quiz on Romans 8:1-11', and the

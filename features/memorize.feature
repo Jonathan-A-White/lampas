@@ -1,3 +1,4 @@
+@uc-memorize @greek
 Feature: I choose which verses to memorize
   A verse list is the unit I own, and a single verse can still be picked on its own. A tap memorizes in English; the languages beyond follow my Greek setting. An Old Testament verse is learned in English too, and only in English.
 

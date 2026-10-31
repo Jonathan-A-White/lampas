@@ -1,3 +1,4 @@
+@uc-source-view @uc-weave @greek
 Feature: The Reader's switch is English | Weave | Greek
   While the Weave is on, the header switch has three choices: English (plain English, no Greek words), Weave (the English
   woven with the Greek of his words) and Greek. A long press on Weave flips the woven text between the English and the Greek

@@ -1,3 +1,4 @@
+@uc-reading-ladder @greek
 Feature: A sound or word he keeps missing gets a drill, and review on the schedule
   The reading check tallies the sounds (Greek) or words (English) among the words he misread in his last five readings in that language
   (features/reading-history.feature). When one is missed in two of those readings, the reading panel offers 'Drill this sound' (Greek) or

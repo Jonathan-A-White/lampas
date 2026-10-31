@@ -1,3 +1,4 @@
+@uc-reading-ladder @greek
 Feature: Every reading is kept, and the sounds or words he misreads are tallied
   The reading check keeps his last result of a verse (src/data/repositories/readings.ts). It also keeps every reading in a
   history and tallies where he slips, so the ladder can see where he struggles: in the Greek view, the diphthongs and consonant

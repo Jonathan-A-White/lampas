@@ -1,3 +1,4 @@
+@uc-verse-view @greek
 Feature: The Verse view
   Tapping a verse number opens the verse on a screen of its own (mw-5r3p30.79): the verse big at the top, woven as the Reader
   weaves it, one row of actions under it (Listen, Read it aloud, Ask the tutor, Quiz me, Copy) and ONE control at the bottom that

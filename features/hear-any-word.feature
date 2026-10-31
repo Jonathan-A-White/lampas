@@ -1,3 +1,4 @@
+@uc-hear-word @greek
 Feature: A long press on any word says it aloud
   Holding a finger half a second on a word of prose anywhere in the app says that word alone in its own language,
   worked out from its letters: Greek in a Greek voice, Hebrew in a Hebrew voice, Latin letters in English. A press that is

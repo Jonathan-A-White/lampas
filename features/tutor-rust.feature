@@ -5,6 +5,7 @@ Feature: The tutor notices rust
   A tap, or a spoken yes, moves those items to Frontier and opens their practice in Review; nothing moves without it. These scenarios run against a fake Postern whose mill
   answers each talk with the answer the scenario names.
 
+  @uc-learner-summary @greek
   Scenario: The tutor notices rust
     Given he has a solid word he slipped on and a solid idea he has not met for 3 weeks, and Lampas is opened on Romans 8 behind a fake Postern whose tutor says he is rusty
     When he opens the talk and asks "What should I work on?"
@@ -15,6 +16,7 @@ Feature: The tutor notices rust
     Then the word "λόγος" and the idea "case-genitive" are on the Frontier
     And Review is open with a round that asks "λόγος" and "The genitive case"
 
+  @uc-learner-summary @greek
   Scenario: A spoken yes moves them as the tap does
     Given he has a solid word he slipped on and a solid idea he has not met for 3 weeks, and Lampas is opened on Romans 8 behind a fake Postern whose tutor says he is rusty
     When he opens the talk and asks "What should I work on?"
@@ -25,6 +27,7 @@ Feature: The tutor notices rust
     And the word "λόγος" and the idea "case-genitive" are on the Frontier
     And Review is open with a round that asks "λόγος" and "The genitive case"
 
+  @uc-learner-summary @greek
   Scenario: A no leaves them where they are
     Given he has a solid word he slipped on and a solid idea he has not met for 3 weeks, and Lampas is opened on Romans 8 behind a fake Postern whose tutor says he is rusty
     When he opens the talk and asks "What should I work on?"
@@ -34,12 +37,14 @@ Feature: The tutor notices rust
     Then the talk shows no button "Move back to Frontier and practise"
     And nothing has moved yet
 
+  @uc-learner-summary @greek
   Scenario: Nothing rusty, nothing sent
     Given he has only a solid word he reviewed yesterday, and Lampas is opened on Romans 8 behind a fake Postern whose tutor says he is rusty
     When he opens the talk and asks "What should I work on?"
     Then the request carried no rusty items
     And the talk shows no button "Move back to Frontier and practise"
 
+  @uc-learner-summary @hebrew
   Scenario: The tutor notices rust in his Hebrew
     Given he has a solid Hebrew word he slipped on and a solid Hebrew idea he has not met for 3 weeks, and Lampas is opened on Genesis 1 behind a fake Postern whose tutor says he is rusty
     When he opens the talk and asks "What should I work on?"

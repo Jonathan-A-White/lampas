@@ -1,3 +1,4 @@
+@uc-read-aloud @greek
 Feature: Everything read aloud has the same Pause, Resume, Restart and Stop bar
   Whatever Lampas reads aloud (a verse by its play button, the chapter, the tutor's answer) goes through voice-kit's speech package, a sentence at a
   time, and shows the one bar Postern has: Pause (Resume while paused), Restart and Stop. Pause keeps the sentence reached; Resume goes on from it.

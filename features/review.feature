@@ -1,3 +1,4 @@
+@uc-review @greek
 Feature: Review brings back the words that are due
   The words he has met come back on the back-off schedule. Today (opened by the Reader's Today chip) shows how many are due, Review asks
   them first (then other words, up to ten), each answer moves the word along the schedule, and the end card

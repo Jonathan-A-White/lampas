@@ -1,3 +1,4 @@
+@uc-review @greek
 Feature: A word I get wrong comes back sooner
   Every word he answers in the Quick test goes on a back-off schedule: a word he gets right twice in a row
   comes back after a longer gap (1, 3, 7, 14, 30, 60 days), and a word he gets wrong comes back tomorrow and

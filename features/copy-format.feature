@@ -1,3 +1,4 @@
+@uc-copy @greek
 Feature: When you copy
   The Verse view's Copy and Share always give the words as he reads them (English, Greek, Hebrew or the Weave, the view on now, with the variants and readings
   he has on); there is no choice of text (mw-5r3p30.873). Settings > Reading > When you copy chooses Reference (after, before or off), Verse numbers (on or off)

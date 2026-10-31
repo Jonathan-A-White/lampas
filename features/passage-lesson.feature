@@ -1,3 +1,4 @@
+@uc-lessons @greek
 Feature: A passage lesson opens its verses in the Verse view and Check passes it by reading
   A passage lesson of the approach ('Read 1 John 1:1-4', mw-z370x5.1) opens the Verse view on its range, headed with the range, with a Lesson strip under
   the heading: the lesson's title, its ideas as chips and 'Read it, then Check' (mw-z370x5.2, src/LessonStrip.tsx). Check asks up to eight of Lampas's own

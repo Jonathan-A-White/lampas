@@ -1,3 +1,4 @@
+@uc-diagram @greek
 Feature: Lampas draws a verse as a Reed-Kellogg diagram
   The renderer of the sentence diagram (mw-souyao.1): a diagram the tutor has worked out is drawn as the classic school diagram, a base line
   carrying the subject, the verb and what completes it, modifiers on slanted lines beneath, a subordinate clause on a base line below joined

@@ -1,3 +1,4 @@
+@uc-grammar-ladder @greek
 Feature: What a passage needs
   The Governor wants a goal such as "Read 1 John", "Read 1 John 1" or "Read 1 John 1:1", and to be tested "on the grammar
   required". A goal names a book, a chapter or a verse; from the chapter files alone the app works out which words and

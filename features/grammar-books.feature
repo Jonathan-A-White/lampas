@@ -1,3 +1,4 @@
+@uc-logos-links @greek
 Feature: Grammar books in Logos on the idea sheet
   An idea sheet links the section that teaches its idea in the grammar books of his Logos library that he ticked (mw-5r3p30.381,
   PROVISIONAL): one data entry a book in src/resources/grammarBooks.ts, David Alan Black's Learn to Read New Testament Greek first.

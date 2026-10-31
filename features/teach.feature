@@ -1,3 +1,4 @@
+@uc-new-words @greek
 Feature: Teaching a new word on the spot
   As I read a chapter, the header tells me how many new words are waiting there. A tap teaches me the first one with a lot of
   help around it: the Greek large, how it sounds, what it means, the form it takes where it first stands, its picture if it

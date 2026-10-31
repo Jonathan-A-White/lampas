@@ -1,3 +1,4 @@
+@uc-read-aloud @greek
 Feature: A small speaker reads any text he may want heard
   Wherever Lampas shows a block of prose a learner may want to hear (the Grammar sheet of a term, the idea sheet of a letter or of any idea, a
   new word's sheet, each answer of the tutor, each version in About's What's new and in the sheet shown after an update, each Settings row's More help) a small, quiet speaker at the top right of the block reads it

@@ -4,6 +4,7 @@ Feature: Respelling a Greek word
   are a registry, one file each, so another (Erasmian next) is added without touching the screens. The
   data's beta-code transliteration ("cristw") is not shown anywhere.
 
+  @uc-pronunciation @greek
   Scenario: The word sheet respells the word in Modern Greek and shows no beta-code
     Given Lampas is opened on a phone with a Greek voice
     And he switches the reader to Greek
@@ -11,6 +12,7 @@ Feature: Respelling a Greek word
     Then the word sheet shows the respelling "PNEV-ma"
     And the word sheet shows no transliteration
 
+  @uc-pronunciation @greek
   Scenario: A scheme added to the registry is listed in Settings and respells the word sheet
     Given Lampas is opened on a phone with a Greek voice
     And a second pronunciation "Shouting" is registered that respells every word as its capitals
@@ -23,6 +25,7 @@ Feature: Respelling a Greek word
     And he taps the Greek word "πνεῦμα" in verse 1
     Then the word sheet shows the respelling "ΠΝΕΥΜΑ"
 
+  @uc-pronunciation @greek
   Scenario: The family row sets both languages
     Given Lampas is opened with the Greek dial at 5 and the Hebrew dial at 1, Greek pronunciation "other" and Hebrew pronunciation "other" saved
     When he taps the gear in the reader's header
@@ -30,6 +33,7 @@ Feature: Respelling a Greek word
     When he chooses the pronunciation family "Modern"
     Then Greek pronunciation is saved as "modern" and Hebrew pronunciation as "israeli"
 
+  @uc-pronunciation @greek @hebrew
   Scenario: Set each language on its own shows the Greek and the Hebrew row, and the family goes
     Given Lampas is opened with the Greek dial at 5 and the Hebrew dial at 1
     When he taps the gear in the reader's header
@@ -37,6 +41,7 @@ Feature: Respelling a Greek word
     Then Listening shows the Greek pronunciation and the Hebrew pronunciation rows, and no Pronunciation row
     And "Modern Greek" is the Greek pronunciation and "Israeli" is the Hebrew pronunciation
 
+  @uc-pronunciation @greek
   Scenario: Turning it off puts the family back and both languages follow it
     Given Lampas is opened with the Greek dial at 5 and the Hebrew dial at 1, Greek pronunciation "other" and Hebrew pronunciation "other" saved
     When he taps the gear in the reader's header
@@ -45,12 +50,14 @@ Feature: Respelling a Greek word
     Then Listening shows the Pronunciation row with the choice "Modern", and neither the Greek nor the Hebrew pronunciation row
     And Greek pronunciation is saved as "modern" and Hebrew pronunciation as "israeli"
 
+  @uc-voice-settings @hebrew @greek
   Scenario: The Hebrew voice, speed and keyboard rows show while Hebrew is at Curious or above
     Given Lampas is opened with the Greek dial at 0 and the Hebrew dial at 1
     When he taps the gear in the reader's header
     Then Listening has the Hebrew voice and the Hebrew speed, and no Greek voice or Greek speed
     And Daily has the Hebrew keyboard, and no Greek keyboard
 
+  @uc-pronunciation @greek
   Scenario: Neither language's voice, speed or keyboard rows show at English only
     Given Lampas is opened with the Greek dial at 0 and the Hebrew dial at 0
     When he taps the gear in the reader's header

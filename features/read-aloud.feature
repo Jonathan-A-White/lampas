@@ -1,3 +1,4 @@
+@uc-read-aloud @greek
 Feature: Lampas reads aloud what is shown
   A play button on each verse reads that verse; Read from the top (Read from here when a verse is selected) in the
   header reads on to the chapter's end. What is read is what is shown: the English view in an English voice, the Greek

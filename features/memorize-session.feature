@@ -1,3 +1,4 @@
+@uc-memorize @greek
 Feature: A Memorize session takes me from reading a verse to saying it from nothing
   Where a verse is on its schedule picks how much of it I see: a new verse starts with read and say, a verse I know has more words gone each time, and the long check is
   from nothing. I hear it, hold the bar and say it from memory, and Lampas shows me what I missed and when it comes back.

@@ -1,3 +1,4 @@
+@uc-drill-it @greek
 Feature: Drill it on the idea sheet
   The idea sheet (features/idea-sheet.feature) says where he stands on an idea with a slider named "Your level" and three stops:
   "Not yet", "Learning" and "I know it". It rests on the idea's level and has no Got it or I know this button. Sliding to

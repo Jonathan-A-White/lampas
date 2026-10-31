@@ -1,3 +1,4 @@
+@uc-pronunciation @greek
 Feature: The Greek voice and the respelling say the same sounds
   The word sheet shows how to say a word (the respelling) and its speaker hands the word to the phone's Greek voice. They must
   agree. A Modern Greek voice drops the n of ντ inside a word (Πάντοτε heard as 'PA-do-te') while the respelling, and the

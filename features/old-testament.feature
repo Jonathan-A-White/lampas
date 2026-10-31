@@ -1,3 +1,4 @@
+@uc-english-text @hebrew
 Feature: Lampas reads the Old Testament in English
   The Reader's chapter picker lists the 66 books of the Bible in canon order, Genesis to Revelation. An Old Testament chapter opens in the Reader like any
   other: the header's switch reads English | Hebrew (the Hebrew view and the weave are features/hebrew-reader.feature's), and the view he saved ('greek' in code, the
@@ -55,6 +56,7 @@ Feature: Lampas reads the Old Testament in English
     And it lists the words "of" and "Amittai", each with its Listen
     And it has the links "Look it up in Logos: of" and "Look it up in Logos: amittai"
 
+  @uc-logos-links @hebrew
   Scenario: With Logos off the word sheet offers to turn it on
     Given Lampas is opened on Jonah 1 with Logos off
     When he taps the chunk "fish" of verse 17
@@ -112,6 +114,7 @@ Feature: Lampas reads the Old Testament in English
     Given Lampas is opened on Genesis 1 with Logos on
     Then the foot of the chapter has a button "Genesis 2 ›" and no button before it
 
+  @uc-logos-links @hebrew
   Scenario: Read in Logos is at the foot of an opened chapter in his default Bible and the chapter stays open
     Given Lampas is opened on Jonah 1 with Logos on
     Then "Read in Logos" is at the foot of the chapter with the link "logosres:lgcystndrdbblsb;ref=Bible.Jon1"
@@ -130,6 +133,7 @@ Feature: Lampas reads the Old Testament in English
     When he taps "Read in Logos"
     Then Logos is asked for "logosres:nasb95;ref=Bible.Mal4"
 
+  @uc-logos-links @hebrew
   Scenario: With Logos on and the Audio Bible on the chapter offers both, and Listen in Audible names the chapter to pick
     Given Lampas is opened on Judges 3 with Logos on and the Audio Bible on
     Then the foot of Judges 3 offers "Read in Logos" and "Listen in Audible"
@@ -137,6 +141,7 @@ Feature: Lampas reads the Old Testament in English
     And "Read in Logos" is the chapter's Logos link
     And "Listen in Audible" is Audible's link at the start of Judges 3
 
+  @uc-logos-links @hebrew
   Scenario: With only Logos on the foot offers the one action
     Given Lampas is opened on Judges 3 with Logos on and the Audio Bible off
     Then the foot of Judges 3 offers only "Read in Logos"
@@ -149,10 +154,12 @@ Feature: Lampas reads the Old Testament in English
     Given Lampas is opened on Judges 3 with Logos off and the Audio Bible off
     Then the foot of Judges 3 offers nothing outside Lampas
 
+  @uc-logos-links @hebrew
   Scenario: A New Testament chapter has no Read in Logos at its foot
     Given Lampas is opened on Romans 8 with Logos on
     Then there is no "Read in Logos" at the foot of the chapter
 
+  @uc-logos-links @hebrew
   Scenario: Settings has a Bible in Logos for each part, the Legacy Standard Bible to start, and a door to Library > Bibles
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
@@ -161,6 +168,7 @@ Feature: Lampas reads the Old Testament in English
     Then the Bibles page says "New Testament verses open in LSB."
     And the Resource ID field holds "LLS:LGCYSTNDRDBBLSB"
 
+  @uc-logos-links @hebrew
   Scenario: A Bible chosen on the Bibles page is kept across a close
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
@@ -169,6 +177,7 @@ Feature: Lampas reads the Old Testament in English
     And the app is closed and opened again
     Then the Bibles page says "New Testament verses open in ESV."
 
+  @uc-logos-links @hebrew
   Scenario: A typed Resource ID is kept across a close, and a malformed one is not
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
@@ -201,6 +210,7 @@ Feature: Lampas reads the Old Testament in English
     And he types the question "Why did he flee?" and sends it
     Then the mill received one bible-talk grist about "Jonah 1:10" with the English "The men knew that he was fleeing from the presence of the LORD" and no Greek
 
+  @uc-logos-links @hebrew
   Scenario: The Verse view of Jonah 1:10 opens the verse in his Bible in Logos
     Given Lampas is opened on Jonah 1 with Logos on
     When he taps the number of verse 10

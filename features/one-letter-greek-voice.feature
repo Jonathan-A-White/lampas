@@ -1,3 +1,4 @@
+@uc-hear-word @greek
 Feature: A one-letter Greek word is said by the phone's own Greek voice, handed the vowel doubled
   A Greek word of one letter (Ὃ, ὁ, ἡ, ὦ, ἤ, ὅ) is never handed to the phone's voice as it is: a Greek voice handed one
   letter names it ('omicron'), whatever accent it carries (mw-5r3p30.226, .256 and .262 each handed it another form, and

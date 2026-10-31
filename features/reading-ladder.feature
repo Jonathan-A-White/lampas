@@ -1,3 +1,4 @@
+@uc-reading-ladder @greek
 Feature: The reading ladder, in Greek and in English
   In the Verse view's Read it aloud action (features/reading-check.feature) a 'Reading ladder' button starts at the easiest verse to pronounce on
   public/data/ladder/<lang>.json (docs/reading-ladder.md) and walks him up it: the reading panel says 'Number N of M on the ladder', and after a good reading it

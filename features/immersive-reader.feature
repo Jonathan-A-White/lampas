@@ -1,3 +1,4 @@
+@uc-source-view @greek
 Feature: Immersive reader
   Settings has a switch, Immersive reader (Off by default). With it On, scrolling the Reader's text down slides the header, the row of chips,
   the Talk bar and the round Ask button out of view, so the text has the whole screen (src/immersive.ts, src/Away.tsx). After that the bars

@@ -1,3 +1,4 @@
+@uc-hear-word @greek
 Feature: Hear it in modern Greek
   A speaker button on each word (the Words screen, and the word sheet a tapped word opens) and a play
   button on each verse are spoken by the phone's own Greek voice (Web Speech, el-GR). No server.

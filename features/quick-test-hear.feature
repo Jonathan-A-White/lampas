@@ -1,3 +1,4 @@
+@uc-quick-test @greek
 Feature: Tap to hear the word on the Quick test
   Under the Greek word of a Quick test question sits a wide bar, "Tap to hear". One tap says the word in Greek, the
   way a tap or a long press on a word of the reader does, and it plays to its end with no finger kept down. A second

@@ -1,3 +1,4 @@
+@uc-paradigms @greek
 Feature: Paradigms
   The Paradigms screen (#/paradigms, reached from Settings > More, beside Review) lists twenty tables: The article, Noun endings, εἰμί,
   Verb endings, The third declension, Adjective endings, Personal pronouns, Demonstrative and relative pronouns, Interrogative

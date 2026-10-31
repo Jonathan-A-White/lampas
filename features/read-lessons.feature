@@ -1,3 +1,4 @@
+@uc-lessons @greek
 Feature: Read lessons to me
   A reader who reads English slowly (the Governor's son, eight) can ask Lampas to read its lessons to him. Settings > Read aloud > Read lessons to me,
   Off to start. With it On, an idea sheet, a Grammar sheet and a new word's sheet start the shared Read aloud (src/speech/ReadAloud.tsx) by

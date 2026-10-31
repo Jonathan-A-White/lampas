@@ -1,3 +1,4 @@
+@uc-quick-test @greek
 Feature: The Quick test asks the dictionary form
   A word is learned and quizzed in its dictionary form (the lemma). The big Greek word of every Quick test question
   is the lemma, never the inflected form the open chapter happens to use. Once he has answered, the chapter's form

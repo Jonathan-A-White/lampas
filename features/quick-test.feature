@@ -1,3 +1,4 @@
+@uc-quick-test @greek
 Feature: A quick test on his words
   A round asks ten of his solid and learning words, favouring the learning ones. Each question shows the
   Greek word in its dictionary form (the lemma) and four English glosses to tap; right or wrong shows at once,

@@ -1,3 +1,4 @@
+@uc-logos-links @greek
 Feature: The tutor links the reader's study resources
   A Bible talk answer may carry up to three links (mw-5r3p30.75): a word (its lemma) or a verse (its reference). Each shows under the
   answer as a group of chips that open in the study resources he switched on in Settings (Strong's, Logos): a word

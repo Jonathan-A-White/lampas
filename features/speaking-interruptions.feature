@@ -1,3 +1,4 @@
+@uc-read-aloud @greek
 Feature: Whatever is read aloud can be paused, resumed, restarted and stopped, and an interruption only pauses it
   While the tutor's answer (or a chapter) is read aloud the one speaking bar offers Pause, Restart and Stop; Resume replaces Pause while it waits. Pause
   keeps the sentence reached and Resume goes on from it; Restart speaks from the first sentence; Stop ends it and the bar goes. A word he taps (Hebrew or

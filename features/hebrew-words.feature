@@ -4,6 +4,7 @@ Feature: Hebrew words taught while he reads
   large, right to left, with its respelling and Hear it in the Hebrew voice; Got it puts it in Words as a Hebrew word. Words and Review have a Greek | Hebrew segment where both
   languages are chosen; the Quick test, Review and the Parsing drill ask a Hebrew word in Hebrew, among Hebrew words. The pace, New words a day, is one setting for both languages.
 
+  @uc-new-words @hebrew
   Scenario: Genesis 1 at Hebrew Learning with 3 new words a day shows the chip and the teach sheet of the first word
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day
     Then the chip under the Reader's header reads "New 3"
@@ -11,12 +12,14 @@ Feature: Hebrew words taught while he reads
     Then the teach sheet shows "אֵת" large in Hebrew, right to left, with its respelling, its meaning "[Obj.]" and Hear it
     And the teach sheet shows verse 1 with "אֵת" in Hebrew and its English in small grey beneath it
 
+  @uc-new-words @uc-hear-word @hebrew
   Scenario: Hear it on the teach sheet says the word in the Hebrew voice
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day on a phone with a Hebrew voice
     When he taps New words
     And he taps Hear it on the teach sheet
     Then the phone says "אֵת" in "he-IL"
 
+  @uc-words @hebrew
   Scenario: Got it puts the word in Words under Hebrew and the next one is offered
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day
     When he taps New words
@@ -26,6 +29,7 @@ Feature: Hebrew words taught while he reads
     When he opens Words
     Then Words lists "אֵת" in Hebrew, right to left
 
+  @uc-words @hebrew
   Scenario: Words has a Greek | Hebrew segment where both languages are chosen
     Given Lampas is opened on Genesis 1 with both languages chosen and a Greek and a Hebrew word he is learning
     When he opens Words
@@ -33,6 +37,7 @@ Feature: Hebrew words taught while he reads
     When he taps Hebrew on the segment
     Then Words lists "אֵת" and not "λόγος"
 
+  @uc-quick-test @hebrew
   Scenario: A Quick test asks the Hebrew word among Hebrew words
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day on a phone with a Hebrew voice
     And he has taken "אֵת" on the teach sheet with Got it
@@ -41,6 +46,7 @@ Feature: Hebrew words taught while he reads
     When he picks "[Obj.]"
     Then the answer is right and the phone says "אֵת" in "he-IL"
 
+  @uc-review @hebrew
   Scenario: Review lists the Hebrew word due and asks it in Hebrew
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day
     And he has taken "אֵת" on the teach sheet with Got it
@@ -49,6 +55,7 @@ Feature: Hebrew words taught while he reads
     When he starts the round
     Then Review asks "אֵת" in Hebrew, right to left
 
+  @uc-review @hebrew
   Scenario: Review has the Greek | Hebrew segment where both languages are chosen
     Given Lampas is opened on Genesis 1 with both languages chosen and a Greek and a Hebrew word he is learning
     When he opens Review
@@ -57,20 +64,24 @@ Feature: Hebrew words taught while he reads
     And he starts the round
     Then Review asks "אֵת" in Hebrew, right to left
 
+  @uc-parsing-drill @hebrew
   Scenario: The Parsing drill on a Hebrew word asks its terms with the verse in Hebrew
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and a Hebrew verb he is learning
     When he opens the Parsing drill
     Then the Parsing drill shows the verse in Hebrew, right to left, with a form of "בָּרָא" marked
     And its first step is "Part of speech" and the next is "Stem"
 
+  @uc-new-words @hebrew
   Scenario: Greek only offers no Hebrew new words on Genesis 1
     Given Lampas is opened on Genesis 1 with Greek chosen alone and 3 new words a day
     Then the Reader shows no New words chip
 
+  @uc-new-words @hebrew
   Scenario: At English only there is no chip on Genesis 1
     Given Lampas is opened on Genesis 1 with English only and 3 new words a day
     Then the Reader shows no New words chip
 
+  @uc-new-words @greek
   Scenario: A Greek chapter still teaches Greek words with both languages chosen
     Given Lampas is opened on Romans 8 with both languages chosen at Learning, 3 new words a day and no Hebrew words
     Then the chip under the Reader's header reads "New 3"

@@ -1,3 +1,4 @@
+@uc-verse-quiz @greek
 Feature: Quiz me asks what he wants from the quiz
   People come to Lampas for different reasons: to understand a passage, to learn Greek, to learn English, to read the Bible, or
   something else (mw-5r3p30.185). When no quiz goal is kept, Quiz me opens with the tutor asking, in one short plain question and

@@ -1,3 +1,4 @@
+@uc-variants @greek
 Feature: The Reader shows the variants inline, and a chip in its header turns them on and off
   With Settings > Variants on, the words of each variant unit are marked in the text and a brace right after them holds the other reading(s)
   with a small witness chip (B, NA, ECM). A chip in the Reader's header, beside English | Weave | Greek, is drawn only on a chapter that has
