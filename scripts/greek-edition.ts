@@ -56,13 +56,13 @@ export function rpWords(text: string): RpWord[] {
 
 // ---------------------------------------------------------------- aligning
 
-interface Pair {
+export interface Pair {
   a: number | null;
   b: number | null;
 }
 
 /** Words with equal keys are matched by longest common subsequence; the unmatched words between two matches pair up in order. */
-function align(a: RpWord[], b: RpWord[]): Pair[] {
+export function align(a: RpWord[], b: RpWord[]): Pair[] {
   const ka = a.map((w) => keyOf(w.word));
   const kb = b.map((w) => keyOf(w.word));
   const n = ka.length;
@@ -221,7 +221,7 @@ async function download(url: string, cacheFile: string): Promise<string> {
   return text;
 }
 
-async function loadEdition(edition: Edition, rawDir: string): Promise<Map<string, Map<string, string>>> {
+export async function loadEdition(edition: Edition, rawDir: string): Promise<Map<string, Map<string, string>>> {
   const source = RP_SOURCES[edition];
   const books = new Map<string, Map<string, string>>();
   for (const [code, file] of Object.entries(source.files)) {

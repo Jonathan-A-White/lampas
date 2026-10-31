@@ -7,6 +7,7 @@ import { DIAGRAM_VERSION, getDiagram, keepDiagram } from '../data/repositories';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askGrind, type AskOptions } from '../services/tutor';
 import { buildDiagramRequest, type DiagramRequest } from './request';
+import type { Sentence } from './sentence';
 import type { Clause, Diagram, DiagramMode, DiagramWords, Modifier, Slot, TokenRef } from './types';
 import { validateDiagram, type Fault } from './validate';
 
@@ -58,6 +59,8 @@ export type AskDiagram = (request: DiagramRequest, options: AskOptions) => Promi
 const askMill: AskDiagram = (request, options) => askGrind(DIAGRAM_KIND, request, isDiagramAnswer, options);
 
 export interface FetchDiagramOptions {
+  /** draw this sentence of `verses` (their words from its parts) rather than the verses whole; kept under its own reference (request.ts sentenceReference) */
+  sentence?: Sentence;
   /** draw it again: ask the tutor past a kept diagram, and keep the new one in its place if it is good */
   redraw?: boolean;
   /** the device key's bytes; the phone's own by default */
@@ -78,7 +81,7 @@ export type DiagramResult =
  * The diagram of `verses` (one verse, or a passage's in order) in `view`: the kept one unless `redraw`, else the tutor's, asked for up to twice. Throws only what askGrind throws.
  */
 export async function fetchDiagram(chapter: Chapter, verses: readonly Verse[], view: DiagramMode, options: FetchDiagramOptions = {}): Promise<DiagramResult> {
-  const { request, words } = buildDiagramRequest(chapter, verses, view);
+  const { request, words } = buildDiagramRequest(chapter, verses, view, options.sentence);
   if (!options.redraw) {
     const kept = await getDiagram(request.ref, view);
     // a kept diagram the words no longer fit (the text changed under it) is drawn again, not shown wrong
