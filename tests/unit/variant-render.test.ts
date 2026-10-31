@@ -9,6 +9,9 @@ import type { Chapter, GreekWord, Verse, VariantUnit, VariantCode } from '../../
 import { weaveVerse, withWordRule, wovenInOrder, type WeaveLemmas } from '../../src/data/weave';
 import { VerseText } from '../../src/reader/VerseText';
 import type { Lookup } from '../../src/WordSheet';
+import { variantEnglishClass } from '../../src/reader/englishSource';
+import { chosenUnits } from '../../src/reader/chosenReading';
+import { NA } from '../../src/reader/readingSets';
 import { braceReadings, braceText, plainEnglish, readerVariants, shownUnits, type VariantFilter } from '../../src/reader/variants';
 import type { ReaderView } from '../../src/data/repositories';
 
@@ -554,5 +557,42 @@ describe('the committed Acts 18 (mw-9ji6ek0.37)', () => {
     const woven = withWordRule(wovenInOrder(verse, weaveVerse(verse, lemmas), 'english'), lemmas);
     expect(braceText(shown, 'english', woven.word)).toBe('{ἀπὸ NA}');
     expect(braceText(shown, 'english')).toBe('{away from NA}');
+  });
+});
+
+// Where the English comes from (mw-9ji6ek0.41): the MSB's own footnote English is drawn plain, the model's italic with a dotted ring; one helper says which, for the brace and for a reading laid in place.
+describe('the look of a chip says where its English comes from', () => {
+  const MSB_UNIT: VariantUnit = { ...HIM, alts: [{ code: 'N', text: 'αὐτῷ' }], english: { ...HIM.english, source: 'msb' } };
+  const classOf = (el: Element | null | undefined) => [...(el?.classList ?? [])].filter((c) => c.startsWith('variant-english--'));
+
+  it('one helper: the model’s English is variant-english--lampas, the MSB’s variant-english--msb', () => {
+    expect(variantEnglishClass(LORD)).toBe('variant-english--lampas');
+    expect(variantEnglishClass(MSB_UNIT)).toBe('variant-english--msb');
+  });
+
+  it('the English brace of a lampas unit carries the lampas class on its English, an msb unit the msb class, and a Greek brace neither', () => {
+    const variants = shownUnits([LORD, MSB_UNIT], ALL);
+    const { container } = render(createElement(VerseText, { verse: VERSE, view: 'english', woven: null, onLook: () => {}, variants }));
+    const texts = [...container.querySelectorAll('[data-brace-text]')];
+    expect(texts.map((t) => classOf(t))).toEqual([['variant-english--lampas'], ['variant-english--msb']]);
+    cleanup();
+    const greek = render(createElement(VerseText, { verse: VERSE, view: 'greek', woven: null, onLook: () => {}, variants })).container;
+    expect([...greek.querySelectorAll('[data-brace-text]')].map((t) => classOf(t))).toEqual([[], []]);
+  });
+
+  it('a "left out" or "same" reading is not English from a source and carries neither class', () => {
+    const left: VariantUnit = { ...LORD, alts: [{ code: 'N', text: '' }], english: { source: 'lampas', base: 'Jesus', alts: [''] } };
+    const { container } = render(createElement(VerseText, { verse: VERSE, view: 'english', woven: null, onLook: () => {}, variants: shownUnits([left], ALL) }));
+    expect(container.querySelector('[data-brace-text]')?.textContent?.trim()).toBe('left out');
+    expect(classOf(container.querySelector('[data-brace-text]'))).toEqual([]);
+  });
+
+  it('a reading laid in place in English wears the same class as its brace would', () => {
+    const chapter = { code: 'xx', chapter: 1, verses: [VERSE], variants: [LORD, MSB_UNIT] } as Chapter;
+    const chosen = chosenUnits(chapter, NA);
+    const { container } = render(createElement(VerseText, { verse: VERSE, view: 'english', woven: null, onLook: () => {}, chosen }));
+    const placed = [...container.querySelectorAll('[data-chosen]')].map((t) => t.closest('[class*="variant-english--"]')?.className.match(/variant-english--\w+/)?.[0]);
+    expect(placed.filter(Boolean).length).toBeGreaterThan(0);
+    expect(new Set(placed.filter(Boolean))).toEqual(new Set(['variant-english--lampas', 'variant-english--msb']));
   });
 });

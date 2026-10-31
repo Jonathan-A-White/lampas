@@ -697,3 +697,34 @@ test('Matthew 3:4: a word-order-only unit shows under All and not under Those th
   expect((await line.boundingBox())!.y).toBeLessThan((await ask.boundingBox())!.y);
   await shot(page, 'variants-word-order-sheet');
 });
+
+// Where the English of a chip comes from (mw-9ji6ek0.41): 1 Corinthians 16:19 'Priscilla {Prisca NA}' is the MSB's own footnote English (english.source 'msb') and is drawn in plain type;
+// 1 Corinthians 16:7 'I hope {for NA}' is the English Lampas's model wrote (english.source 'lampas') and is drawn in italics with a dotted ring. Shot: shots/variants-english-source.png.
+test('1 Corinthians 16: a chip with the MSB footnote English is plain, one with the model’s English is italic in a dotted ring', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=1co&c=16');
+  await expect(page.locator('[data-verse="7"] [data-text]')).toBeVisible();
+  await chip(page).click();
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true');
+  await choice(page, 'English').click();
+  await expect(choice(page, 'English')).toHaveAttribute('aria-pressed', 'true');
+
+  const look = (text: ReturnType<Page['locator']>) =>
+    text.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { fontStyle: s.fontStyle, ring: s.borderTopWidth === '0px' ? 'none' : s.borderTopStyle };
+    });
+
+  const model = page.locator('[data-verse="7"] [data-brace-text]').first();
+  await expect(model).toHaveText(/\bfor\b/);
+  await expect(model).toHaveClass(/variant-english--lampas/);
+  await model.scrollIntoViewIfNeeded();
+  expect(await look(model)).toEqual({ fontStyle: 'italic', ring: 'dotted' });
+  await shot(page, 'variants-english-source-lampas');
+
+  const footnote = page.locator('[data-verse="19"] [data-brace-text]', { hasText: 'Prisca' });
+  await expect(footnote).toHaveClass(/variant-english--msb/);
+  await footnote.scrollIntoViewIfNeeded();
+  expect(await look(footnote)).toEqual({ fontStyle: 'normal', ring: 'none' });
+  await shot(page, 'variants-english-source-msb');
+});

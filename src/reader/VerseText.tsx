@@ -9,6 +9,7 @@ import type { Lookup } from '../WordSheet';
 import { sourceAttrs, sourceFace, sourceSpeech } from './sourceText';
 import { Rp2026Mark } from './Rp2026Mark';
 import { VariantBrace } from './VariantBrace';
+import { variantEnglishClass } from './englishSource';
 import { chosenEnglish, chosenWords, OMISSION_MARK, type ChosenUnit } from './chosenReading';
 import { chipOf, type BraceReading, type ShownUnit } from './variants';
 import { NO_PLAN, planVariants, type Placement } from './variantPlan';
@@ -221,20 +222,22 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
       run: 'chosen',
       node: (bare: boolean) => (
         <Fragment key={key}>
-          {tokens.map((token, k) => (
-            <Tap
-              key={k}
-              bare={bare && k === tokens.length - 1}
-              still={still}
-              dir={chunkDir}
-              data-chosen=""
-              className={TAP_PAD}
-              onTap={() => { const lookup = variantLookup(verse, token.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''), reading, 'english', label); if (lookup) onLook(lookup); }}
-              onLongPress={() => say(token, 'english')}
-            >
-              {token}
-            </Tap>
-          ))}
+          <span className={variantEnglishClass(c.unit)}>
+            {tokens.map((token, k) => (
+              <Tap
+                key={k}
+                bare={bare && k === tokens.length - 1}
+                still={still}
+                dir={chunkDir}
+                data-chosen=""
+                className={TAP_PAD}
+                onTap={() => { const lookup = variantLookup(verse, token.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''), reading, 'english', label); if (lookup) onLook(lookup); }}
+                onLongPress={() => say(token, 'english')}
+              >
+                {token}
+              </Tap>
+            ))}
+          </span>
         </Fragment>
       ),
     };

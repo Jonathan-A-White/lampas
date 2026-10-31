@@ -6,6 +6,7 @@ import { Fragment, type KeyboardEvent } from 'react';
 import { GREEK_LANG } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
 import { Tap, TAP_PAD } from './Tap';
+import { variantEnglishClass } from './englishSource';
 import type { GreekWord } from '../data/chapter';
 import { braceReadings, braceTokens, LEFT_OUT, SAME, type BraceReading, type ShownUnit, type WitnessChip } from './variants';
 
@@ -47,7 +48,7 @@ export function VariantBrace({ shown, language, weaveWord, onOpen, onWord, onSay
                 data-brace-text=""
                 {...(language === 'greek' && r.text ? GREEK_LANG : { lang: 'en' })}
                 {...(r.text ? {} : { onClick: open })}
-                className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : 'text-fg') : `italic${r.text ? '' : ' cursor-pointer'}`}
+                className={r.text && !r.same ? (language === 'greek' ? 'font-greek text-fg' : `text-fg ${variantEnglishClass(shown.unit)}`) : `italic${r.text ? '' : ' cursor-pointer'}`}
               >
                 {r.same || !r.text ? (r.same ? SAME : LEFT_OUT) : (language === 'english' ? braceTokens(r, weaveWord) : r.text.split(/\s+/).filter(Boolean).map((text) => ({ text, greek: undefined }))).map(({ text, greek }, k, all) =>
                   HAS_LETTER.test(text) ? (

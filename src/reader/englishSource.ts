@@ -27,6 +27,10 @@ export interface EnglishLine {
   verse?: true;
 }
 
+/** How the English of a chip looks, by where it comes from (mw-9ji6ek0.41): the MSB's own footnote English is plain type (`variant-english--msb`), the model's is italic with a dotted ring
+ * (`variant-english--lampas`; src/index.css). Every place the Reader draws a unit's English in the text (the brace, a reading laid in place) takes its class from here; the card names the source in words. */
+export const variantEnglishClass = (unit: Pick<VariantUnit, 'english'>): string => (unit.english.source === 'lampas' ? 'variant-english--lampas' : 'variant-english--msb');
+
 /** The translation a chapter's English is from: the Old Testament's is the Berean Standard Bible's, the New Testament's the Majority Standard Bible's. */
 export const translationOf = (lang: SourceLanguage | undefined): 'msb' | 'bsb' => (lang === 'hbo' ? 'bsb' : 'msb');
 

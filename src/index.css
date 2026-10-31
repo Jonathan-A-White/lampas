@@ -176,6 +176,20 @@
   scrollbar-width: none;
 }
 
+/* Where the English of a variant chip comes from (mw-9ji6ek0.41, src/reader/englishSource.ts variantEnglishClass): the MSB's own footnote English is plain type, the English
+ * Lampas's model wrote at build time is italic with a dotted ring (a ring that follows the line when it wraps). A Greek word woven into the chip stays upright. */
+.variant-english--lampas {
+  font-style: italic;
+  border: 1px dotted var(--lp-muted);
+  border-radius: 0.35em;
+  padding: 0 0.2em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.variant-english--lampas [data-brace-greek] {
+  font-style: normal;
+}
+
 /* The Reader's header and chips row in one box (src/Reader.tsx): no box of its own upright, one row in a short window (below). */
 .reader-top {
   display: contents;
