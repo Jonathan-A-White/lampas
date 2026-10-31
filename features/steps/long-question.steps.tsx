@@ -18,6 +18,7 @@ import { composerIn, messageBox, questionField } from '../../tests/support/compo
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -80,12 +81,7 @@ const feature = await loadFeature('features/long-question.feature');
 describeFeature(feature, ({ Scenario }) => {
   const opened = 'Lampas is opened on Romans 8 with a tutor behind a fake Postern';
   const openTalk = async () => {
-    const bar = await waitFor(() => {
-      const found = document.querySelector<HTMLElement>('[data-talk-bar]');
-      if (!found) throw new Error('the Talk bar is not drawn yet');
-      return found;
-    });
-    await user.click(await within(bar).findByRole('button', { name: 'Talk' }));
+    await openTutor();
     await screen.findByRole('dialog', { name: /^Talk about / });
     await messageBox(user, sheet());
   };

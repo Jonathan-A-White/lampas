@@ -48,9 +48,10 @@ describe(`${SUPPORT} opens the Talk sheet without walking the whole Reader`, () 
   const source = readFileSync(SUPPORT, 'utf8');
   const openTalk = source.slice(source.indexOf('async function openTalk()'), source.indexOf('const sheet = '));
 
-  it('finds the Talk bar button inside the bar, never by a role query on the whole screen', () => {
+  it('opens the tutor with openTutor() (a two-finger tap, which looks for the sheet beside its own markup), never by a role query on the whole screen', () => {
     expect(openTalk).not.toMatch(/screen\.(?:find|get|query)ByRole\('button', \{ name: 'Talk' \}\)/);
-    expect(openTalk).toMatch(/data-talk-bar/);
+    expect(openTalk).toMatch(/await openTutor\(\)/);
+    expect(readFileSync('features/steps/open-tutor.ts', 'utf8')).toMatch(/querySelectorAll<HTMLElement>\('\[role="dialog"\]'\)/);
   });
 
   it('waits for the sheet\'s field before the next step types', () => {

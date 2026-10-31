@@ -16,6 +16,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -27,7 +28,6 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
-const CONTROL = 'Ask the tutor about this screen';
 const SEND = 'Send this to the makers';
 const FIRST_WORDS = 'Can this work with Olive Tree?';
 const SUMMARY = 'He wants Lampas to work with the Olive Tree app.';
@@ -96,7 +96,7 @@ const feature = await loadFeature('features/voice-offers.feature');
 describeFeature(feature, ({ Scenario }) => {
   const opensFeedback = () => openWith(FEEDBACK_OFFER);
   const taps = async () => {
-    await user.click(await screen.findByRole('button', { name: CONTROL }));
+    await openTutor();
   };
   const sends = (_: unknown, question: string) => send(question);
   const offerShown = async (_: unknown, name: string) => {
@@ -119,7 +119,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A spoken yes sends the feedback offer exactly as the tap does', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the tutor will take his next words as a yes', nextIsYes);
@@ -160,7 +160,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A tap and a spoken yes send once', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the mill is slow to take the feedback', slowMill);
@@ -181,7 +181,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A spoken yes and a tap send once', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the mill is slow to take the feedback', slowMill);
@@ -210,7 +210,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A tap, then a spoken yes whose answer comes after the send finished, send once', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the mill is slow to take the feedback', slowMill);
@@ -228,7 +228,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A spoken yes whose answer is slow, then a tap, send once', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the tutor is slow to answer his next words', slowTutor);
@@ -243,7 +243,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A second offer after a tapped one and a slow yes reaches the makers once each', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the mill is slow to take the feedback', slowMill);
@@ -268,7 +268,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Two taps in a row on the button send once', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the mill is slow to take the feedback', slowMill);
@@ -283,7 +283,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Read it back speaks the exact text, keeps the offer, and a following yes sends it', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the tutor will take his next words as a request to read it back', () => answerNext({ answer: READ_BACK_REPLY, words: [], offer_reply: 'read_back' }));
@@ -317,7 +317,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A spoken no withdraws the offer and sends nothing', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the tutor will take his next words as a no', () => answerNext({ answer: 'Alright, I will not send it.', words: [], offer_reply: 'decline' }));
@@ -344,7 +344,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('An ordinary question with an offer waiting keeps the offer', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', opensFeedback);
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the tutor will take his next words as an ordinary question', () => answerNext({ answer: 'You are on the Goal screen.', words: [] }));
@@ -371,7 +371,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A spoken yes makes the setting change the tap would make', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark', () => openWith(SETTING_OFFER));
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     And('the Theme is not Dark', async () => {
@@ -405,7 +405,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The button still does what a yes does for a setting change', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark', () => openWith(SETTING_OFFER));
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     And('he taps Change Theme: Dark', async () => {
       await user.click(await within(sheet()).findByRole('button', { name: 'Change Theme: Dark' }));
@@ -423,7 +423,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A tapped setting offer and a spoken yes whose answer comes late show the change once', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark', () => openWith(SETTING_OFFER));
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     Then('the answer shows the button {string}', offerShown);
     When('the tutor is slow to answer his next words', slowTutor);
@@ -460,7 +460,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A tapped setting offer shows its change once, and after Undo only that it was put back', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers to change the Theme to Dark', () => openWith(SETTING_OFFER));
-    When('he taps the Ask the tutor control', taps);
+    When('he opens the tutor with a two-finger tap', taps);
     And('he sends {string}', sends);
     And('he taps Change Theme: Dark', async () => {
       await user.click(await within(sheet()).findByRole('button', { name: 'Change Theme: Dark' }));

@@ -17,6 +17,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { BOOKS } from '../../src/data/books';
+import { openTutor } from './open-tutor';
 
 
 afterAll(() => {
@@ -156,7 +157,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
     });
     And('he opens the Talk sheet', async () => {
-      await user.click(await screen.findByRole('button', { name: 'Talk' }));
+      await openTutor();
     });
     Then('the Talk sheet is headed {string}', async (_, title: string) => {
       await screen.findByRole('dialog', { name: title });

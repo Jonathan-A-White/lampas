@@ -19,6 +19,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { messageBox, typeQuestion } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -30,7 +31,6 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
-const CONTROL = 'Ask the tutor about this screen';
 let fake: FakePostern;
 
 const txidOf = (summary: string): string => `direct:${Array.from(summary, (c) => c.charCodeAt(0).toString(16).padStart(2, '0')).join('').padEnd(64, '0').slice(0, 64)}`;
@@ -76,7 +76,7 @@ async function keepWith(summary: string, status: string, detail: string, sentAt:
 
 async function openGoal(): Promise<void> {
   render(<App />);
-  await screen.findByRole('button', { name: CONTROL });
+  await screen.findByRole('heading', { name: 'Goal', level: 1 });
 }
 
 const sheet = () => screen.getByRole('dialog', { name: /^(Ask the tutor: |Talk about )/ });
@@ -84,7 +84,7 @@ const sheet = () => screen.getByRole('dialog', { name: /^(Ask the tutor: |Talk a
 async function askFromGoal(question: string, answer: Record<string, unknown>): Promise<void> {
   fake.received.length = 0;
   fake.autoReply = { status: 'answered', answer: { ...TALK_ANSWER, words: [], ...answer } };
-  await user.click(await screen.findByRole('button', { name: CONTROL }));
+  await openTutor();
   await user.type(await messageBox(user, sheet()), question);
   await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
 }

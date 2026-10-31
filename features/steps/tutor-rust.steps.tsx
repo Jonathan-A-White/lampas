@@ -16,6 +16,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -106,12 +107,7 @@ const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn
 const talkGrists = (): ReceivedGrist[] => fake.received.filter((g) => g.grist.kind === 'bible-talk');
 
 async function openTalk(): Promise<void> {
-  const bar = await waitFor(() => {
-    const found = document.querySelector<HTMLElement>('[data-talk-bar]');
-    if (!found) throw new Error('the Talk bar is not drawn yet');
-    return found;
-  });
-  await user.click(await within(bar).findByRole('button', { name: 'Talk' }));
+  await openTutor();
   await within(await screen.findByRole('dialog', { name: /^Talk about / })).findByRole('textbox', { name: 'Your message' });
 }
 async function send(question: string): Promise<void> {

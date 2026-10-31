@@ -19,6 +19,7 @@ import { stubClipboard } from '../../../tests/support/exchange';
 import { type FakePostern, POSTERN_ORIGIN, TALK_ANSWER, makeFakePostern } from '../../../tests/support/fake-postern';
 import { ENGLISH_VOICE, type FakeSynth, GREEK_VOICE, stubSpeech } from '../../../tests/support/fake-speech';
 import { seedHisWords } from '../../../tests/support/his-words';
+import { openTutor } from '../open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -92,21 +93,9 @@ export async function selectVerse28(): Promise<void> {
   await waitFor(() => expect(numberOf()).toHaveAttribute('aria-pressed', 'true'));
 }
 
-/** Opens the Talk sheet: from the Talk bar, or, with a verse's view open, from its Ask the tutor action ('Talk about verse N'). */
+/** Opens the Talk sheet with a two-finger tap (openTutor): about the chapter, or, with a verse's view open, about that verse. */
 export async function openTalk(): Promise<void> {
-  const view = screen.queryByRole('region', { name: 'Verse view' });
-  if (view) {
-    await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
-    await user.click(await within(view).findByRole('button', { name: 'Talk about verse 28' }));
-  } else {
-    // beside the Talk bar, not through the whole Reader: a role query on `screen` for buttons walks every word of the chapter
-    const bar = await waitFor(() => {
-      const found = document.querySelector<HTMLElement>('[data-talk-bar]');
-      if (!found) throw new Error('the Talk bar is not drawn yet');
-      return found;
-    });
-    await user.click(await within(bar).findByRole('button', { name: 'Talk' }));
-  }
+  await openTutor();
   const dialog = await screen.findByRole('dialog', { name: /^Talk about / });
   // the sheet's field is drawn a moment after the sheet: wait for it here, so the next step types into it at once
   await within(dialog).findByRole('textbox', { name: 'Your message' });

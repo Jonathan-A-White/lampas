@@ -15,6 +15,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openTutor } from './open-tutor';
 
 afterAll(() => {
   cleanup();
@@ -60,9 +61,8 @@ async function askAboutVerse28(text: string): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
   await user.click(await screen.findByRole('button', { name: 'Verse 28' }));
-  const view = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
-  await user.click(await within(view).findByRole('button', { name: 'Talk about verse 28' }));
+  await screen.findByRole('region', { name: 'Verse view' });
+  await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
   await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), text);
   await user.click(within(sheet()).getByRole('button', { name: 'Send' }));

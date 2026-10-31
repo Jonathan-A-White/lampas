@@ -20,6 +20,7 @@ import { applyChanges } from '../../src/settings/registry';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openTutor } from './open-tutor';
 
 const user = userEvent.setup();
 
@@ -333,12 +334,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A talk on Genesis 1 carries hebrew_interest beside greek_interest', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} behind a fake Postern with Greek at {string} and Hebrew at {string}', (_: unknown, title: string, greek: string, hebrew: string) => openChapter(title, greek, hebrew, true));
     When('he opens the talk and asks {string}', async (_: unknown, question: string) => {
-      const bar = await waitFor(() => {
-        const found = document.querySelector<HTMLElement>('[data-talk-bar]');
-        if (!found) throw new Error('the Talk bar is not drawn yet');
-        return found;
-      });
-      await user.click(await within(bar).findByRole('button', { name: 'Talk' }));
+      await openTutor();
       const sheet = await screen.findByRole('dialog', { name: /^Talk about / });
       await user.type(await within(sheet).findByRole('textbox', { name: 'Your message' }), question);
       await user.click(within(sheet).getByRole('button', { name: 'Send' }));
