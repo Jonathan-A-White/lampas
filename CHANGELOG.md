@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.38
+_2026-10-31_
+- Fixed: A sentence diagram is only offered for one verse at a time, no longer on a passage.
+- New: Under a verse's diagram, a "See it in Logos" row opens your Lexham Syntactic Greek New Testament at that verse, or your two Hebrew syntax books, and the how-to on diagramming.
+- New: The tutor can now be reached from any screen by touching it with two fingers, or by a round ? button on the side of the hand you hold your phone in; without a licence neither shows.
+- Fixed: the definition of a Hebrew word no longer begins with a stray colon or ends in garbled lexicon codes.
+- Fixed: The Apocrypha's Bible in Logos now offers only Bibles that have the Apocrypha and starts as your NRSV, and each other part lists only Bibles that hold it.
+
 ## 0.7.37
 _2026-10-31_
 - New: Diagram now works on Old Testament verses, drawing the Hebrew words right to left with the English under each.
