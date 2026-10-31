@@ -18,8 +18,8 @@ import { armFallback } from '../resources/openApp';
 import { TutorError } from '../services/tutor';
 import { useElapsed } from '../ui/useElapsed';
 import { ReedKellogg } from './ReedKellogg';
-import { diagramReference, sentenceVerses } from './request';
-import { isWholeVerses, loadSentenceTable, sentenceEnds, sentencesAt, type Sentence } from './sentence';
+import { diagramReference, sentenceCaption, sentenceVerses } from './request';
+import { loadSentenceTable, sentenceEnds, sentencesAt, type Sentence } from './sentence';
 import { fetchDiagram, type DiagramResult } from './fetchDiagram';
 import { keepInviteDismissed, lessonInvited } from './lesson';
 import { diagramLogosLinks } from './logosLinks';
@@ -98,13 +98,6 @@ export interface DiagramPaneProps {
   woven?: readonly WovenVerse[] | null;
   /** a tapped word's Lookup: the Reader opens its WordSheet on it */
   onLook: (lookup: Lookup) => void;
-}
-
-/** The line that names a sentence: its verses and that it is one sentence, and, in a verse of several, which it is ('John 2:4, one sentence (1 of 2 in verse 4)'). Nothing for a sentence that is one whole verse. */
-export function sentenceCaption(chapter: Chapter, sentence: Sentence, index: number, count: number, verse: number): string | null {
-  const verses = sentenceVerses(chapter, sentence);
-  if (verses.length === 1 && isWholeVerses(chapter, sentence)) return null;
-  return `${diagramReference(chapter, verses)}, one sentence${count > 1 ? ` (${index + 1} of ${count} in verse ${verse})` : ''}`;
 }
 
 /** The pane: the sentence(s) the Verse view's verse belongs to, one diagram each, stacked. */

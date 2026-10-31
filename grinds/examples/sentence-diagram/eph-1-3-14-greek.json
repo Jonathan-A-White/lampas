@@ -1238,8 +1238,11 @@
     ]
   },
   "expect": {
-    "clauses.0.clause.verb.words.0": {
-      "present": true
+    "clauses.0.clause.subject.words.0.i": {
+      "equals": 2
+    },
+    "clauses.0.clause.complement.slot.words.0.i": {
+      "equals": 0
     }
   }
 }

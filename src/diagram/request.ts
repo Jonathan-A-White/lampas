@@ -47,11 +47,14 @@ const jsonBytes = (value: unknown): number => new TextEncoder().encode(JSON.stri
 
 /** A word with its `verse` kept only where a new verse begins (the words after it are of that verse until the next mark). */
 const markVerseStarts = <T extends { verse?: number }>(list: T[]): T[] =>
-  list.map((word, k) => {
-    if (word.verse === undefined || k === 0 || list[k - 1].verse !== word.verse) return word;
-    const { verse: _verse, ...rest } = word;
-    return rest as T;
-  });
+  list.map((word, k) => (word.verse === undefined || k === 0 || list[k - 1].verse !== word.verse ? word : without(word, 'verse')));
+
+/** `value` without its `key`. */
+function without<T extends object, K extends keyof T>(value: T, key: K): T {
+  const copy = { ...value };
+  delete copy[key];
+  return copy;
+}
 
 /**
  * The request made to fit the grist's size (MAX_REQUEST_BYTES), by giving up the least first: (1) `verse` only on the first word of each verse; (2) the lemmas (the parse says what a word is);
@@ -63,12 +66,10 @@ export function fitRequest(request: DiagramRequest): DiagramRequest {
   if (jsonBytes(fitted) <= MAX_REQUEST_BYTES) return fitted;
   fitted = {
     ...fitted,
-    words: fitted.words.map(({ lemma: _lemma, ...rest }) => rest),
-    ...(fitted.greek ? { greek: fitted.greek.map(({ lemma: _lemma, ...rest }) => rest) } : {}),
+    words: fitted.words.map((word) => without(word, 'lemma')),
+    ...(fitted.greek ? { greek: fitted.greek.map((word) => without(word, 'lemma')) } : {}),
   };
-  if (jsonBytes(fitted) <= MAX_REQUEST_BYTES) return fitted;
-  const { greek: _greek, ...withoutGreek } = fitted;
-  return withoutGreek;
+  return jsonBytes(fitted) <= MAX_REQUEST_BYTES ? fitted : without(fitted, 'greek');
 }
 
 /** The marks at a Greek word's ends (a stop, a question mark, a comma) go; an elision's apostrophe stays: ἀφ'. */
@@ -86,6 +87,13 @@ export function diagramReference(chapter: Chapter, verses: readonly Verse[]): st
   const last = verses[verses.length - 1];
   const unit = { n: first.n, to: last.to ?? last.n };
   return unitReference(titleOf(chapter.code, chapter.chapter), unit);
+}
+
+/** The line that names a sentence on the pane: its verses and that it is one sentence, and, in a verse of several, which it is ('John 2:4, one sentence (1 of 2 in verse 4)'); nothing for a sentence that is one whole verse. */
+export function sentenceCaption(chapter: Chapter, sentence: Sentence, index: number, count: number, verse: number): string | null {
+  const verses = sentenceVerses(chapter, sentence);
+  if (verses.length === 1 && isWholeVerses(chapter, sentence)) return null;
+  return `${diagramReference(chapter, verses)}, one sentence${count > 1 ? ` (${index + 1} of ${count} in verse ${verse})` : ''}`;
 }
 
 /** The verses of `chapter` that a sentence touches, in order. */

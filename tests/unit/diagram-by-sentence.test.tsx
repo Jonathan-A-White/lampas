@@ -100,7 +100,7 @@ describe('Diagram draws the sentence', () => {
   it('Genesis 1:1 is one Hebrew sentence', async () => {
     window.history.replaceState(null, '', '/#/?b=gen&c=1');
     render(<App />);
-    await userEvent.click(await screen.findByRole('button', { name: 'Verse 1', exact: true }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Verse 1' }));
     const pane = await within(await screen.findByRole('region', { name: 'Verse view' })).findByRole('region', { name: 'Diagram' });
     expect(await within(pane).findByRole('img', { name: 'Sentence diagram of Genesis 1:1, Hebrew' })).toBeInTheDocument();
     expect(asked().map((a) => [a.ref, a.lang])).toEqual([['Genesis 1:1', 'hebrew']]);
