@@ -29,10 +29,7 @@
           "matches": "Daniel"
         },
         {
-          "matches": "Ezekiel"
-        },
-        {
-          "matches": "Isaiah"
+          "matches": "Daniel|Ezekiel|Isaiah|Zechariah|Exodus"
         }
       ]
     },
