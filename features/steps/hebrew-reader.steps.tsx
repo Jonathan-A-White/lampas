@@ -22,6 +22,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, type FakeVoic
 const genesis1 = JSON.parse(readFileSync('tests/fixtures/data/gen/1.json', 'utf8')) as Chapter;
 const user = userEvent.setup();
 let synth: FakeSynth | undefined;
+let copied: string[] = [];
 
 afterAll(() => {
   cleanup();
@@ -43,6 +44,8 @@ async function openOn(title: string, settings: Record<string, string> = {}, soli
   vi.unstubAllGlobals();
   document.documentElement.removeAttribute('data-theme');
   stubChapterFetch();
+  copied = [];
+  Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText: (text: string) => (copied.push(text), Promise.resolve()) } });
   synth = voices ? stubSpeech(voices) : undefined;
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
@@ -309,6 +312,27 @@ describeFeature(feature, ({ Scenario }) => {
       expect(synth?.spoken).toEqual([]);
     });
     And('the reader is still showing Genesis 1', stillShowing);
+  });
+
+  Scenario('In the Hebrew view, Copy pastes the Hebrew', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 in the Hebrew view with When you copy at its defaults', () => openOn('Genesis 1', { readerView: 'greek' }));
+    When('he taps the number of verse {int}', async (_, n: number) => {
+      await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+      await screen.findByRole('region', { name: 'Verse view' });
+    });
+    And('he taps {string}', async (_, name: string) => {
+      await user.click(within(screen.getByRole('region', { name: 'Verse view' })).getByRole('button', { name, exact: true }));
+      await waitFor(() => expect(copied).toHaveLength(1));
+    });
+    Then("the phone's clipboard starts with {string}", (_, words: string) => {
+      expect(copied[0].startsWith(words)).toBe(true);
+    });
+    And("the phone's clipboard holds the line {string}", (_, line: string) => {
+      expect(copied[0].split('\n')).toContain(line);
+    });
+    And("the phone's clipboard has no {string}", (_, words: string) => {
+      expect(copied[0]).not.toContain(words);
+    });
   });
 
   Scenario('A Greek chapter still reads English | Greek and the saved view opens it in Greek', ({ Given, Then, And }) => {

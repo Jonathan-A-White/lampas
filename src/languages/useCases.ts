@@ -73,7 +73,7 @@ export const USE_CASES: readonly UseCase[] = [
     title: 'Copy and Share give the words as he reads them, the source text in the source view',
     status: {
       greek: 'has',
-      hebrew: { gap: 'scenario "In the Hebrew view, Copy pastes the Hebrew" in features/hebrew-reader.feature; src/copy/format.ts already takes the chapter lang, so the step file features/steps/hebrew-reader.steps.tsx and a check of the pasted text; XS' },
+      hebrew: 'has',
       latin: LATIN_LATER,
     },
   },

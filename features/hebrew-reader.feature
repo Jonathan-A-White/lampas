@@ -118,6 +118,15 @@ Feature: The Reader reads an Old Testament chapter in the Hebrew
     Then the phone is asked to say nothing
     And the reader is still showing Genesis 1
 
+  @uc-copy @hebrew
+  Scenario: In the Hebrew view, Copy pastes the Hebrew
+    Given Lampas is opened on Genesis 1 in the Hebrew view with When you copy at its defaults
+    When he taps the number of verse 1
+    And he taps "Copy"
+    Then the phone's clipboard starts with "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃"
+    And the phone's clipboard holds the line "— Genesis 1:1 (MSB)"
+    And the phone's clipboard has no "In the beginning"
+
   @uc-source-view @greek
   Scenario: A Greek chapter still reads English | Greek and the saved view opens it in Greek
     Given Lampas is opened on Romans 8 with the saved view "greek"
