@@ -5,6 +5,9 @@ import { CANON } from '../data/canon';
 import { otBookOf } from '../data/books';
 import { entriesOf } from './catalogue';
 import { resourceLink } from './logosRes';
+import type { LogosPart } from './types';
+
+export type { LogosPart };
 
 /** The short list in Settings: `id` is the Resource ID Logos prints (the library listing); the order is the order shown. A view over the catalogue's Bibles named by id (catalogue.ts), each as 'LSB (Legacy Standard Bible)'. */
 export const COMMON_BIBLES: readonly { id: string; name: string }[] = entriesOf('bible')
@@ -17,6 +20,22 @@ export const DEFAULT_LOGOS_BIBLE: string = (() => {
   if (!pinned) throw new Error('The catalogue pins no Bible: one Bible named by id in data/logos/catalogue-rules.json has starts "pinned"');
   return pinned.resource;
 })();
+
+/** The Bible the Apocrypha starts in: his New Revised Standard Version, the widest-used scholarly English Bible with the Apocrypha in his library (PROVISIONAL, the Governor to confirm; mw-5r3p30.889).
+ *  The Legacy Standard Bible, the New Testament's start, has none. */
+export const DEFAULT_APOCRYPHA_BIBLE = 'LLS:1.0.50';
+
+/** The Bibles a part's picker offers: those of the catalogue that hold the part (their `parts`), in the catalogue's order. */
+export const biblesFor = (part: LogosPart): readonly { id: string; name: string }[] =>
+  entriesOf('bible')
+    .filter((e) => e.via === 'id' && e.parts?.includes(part))
+    .map((e) => ({ id: e.resource, name: `${e.short} (${e.title})` }));
+
+/** Whether the Bible holds the part: what the catalogue says of a Bible it lists; true for a Resource ID it does not list (he typed it, so it is as he typed it). */
+export const bibleHolds = (resourceId: string, part: LogosPart): boolean => {
+  const entry = entriesOf('bible').find((e) => e.resource === resourceId);
+  return entry?.parts === undefined || entry.parts.includes(part);
+};
 
 /** What a typed Resource ID may be: `LLS:` and then letters, digits, dots, dashes or underscores (as in the library listing). */
 export const isResourceId = (text: string): boolean => /^LLS:[A-Za-z0-9._-]+$/.test(text.trim());
@@ -47,9 +66,6 @@ const APOCRYPHA_LOGOS: Readonly<Record<string, string>> = {
   '2es': '2Es',
   man: 'PrMan',
 };
-
-/** The three parts of the canon he keeps a Bible in Logos for. */
-export type LogosPart = 'nt' | 'ot' | 'apocrypha';
 
 /** His Bible in Logos for each part (Settings > Bible in Logos). */
 export type LogosBibles = Record<LogosPart, string>;

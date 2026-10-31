@@ -153,10 +153,10 @@ Feature: Lampas reads the Old Testament in English
     Given Lampas is opened on Romans 8 with Logos on
     Then there is no "Read in Logos" at the foot of the chapter
 
-  Scenario: Settings has a Bible in Logos for each part, the Legacy Standard Bible to start, and a door to Library > Bibles
+  Scenario: Settings has a Bible in Logos for each part, the Legacy Standard Bible to start (the NRSV for the Apocrypha), and a door to Library > Bibles
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
-    Then the New Testament, Old Testament and Apocrypha pickers all say "LSB (Legacy Standard Bible)"
+    Then the New Testament and Old Testament pickers say "LSB (Legacy Standard Bible)" and the Apocrypha picker says "NRSV (The New Revised Standard Version)"
     When he opens the Bible in Logos row
     Then the Bibles page says "New Testament verses open in LSB."
     And the Resource ID field holds "LLS:LGCYSTNDRDBBLSB"

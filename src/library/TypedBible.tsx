@@ -21,7 +21,7 @@ export function TypedBible() {
   return (
     <div className="mt-3">
       <p className="text-base">
-        New Testament verses open in <span className="font-medium">{entryOf(saved)?.short ?? saved}</span>. A Bible chosen or typed here is set for the Old Testament and the Apocrypha too; Settings sets each part apart.
+        New Testament verses open in <span className="font-medium">{entryOf(saved)?.short ?? saved}</span>. A Bible chosen or typed here is set for the Old Testament too, and for the Apocrypha when it has one; Settings sets each part apart.
       </p>
       <label className="mt-2 block">
         <span className="block text-base font-medium">Resource ID</span>

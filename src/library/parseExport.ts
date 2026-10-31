@@ -2,6 +2,7 @@
 // (CRLF or LF line ends, quoted cells with commas, doubled quotes and newlines inside, a BOM dropped) and takes a raw tab as cell text, because the export's last cell,
 // ReferenceSupersets, holds tabs unquoted; `readExport` turns the rows into `ExportRow`s by the header. scripts/logos-catalogue.ts reads exports with these same functions.
 import { BOOKS, NT_BOOKS, OT_BOOKS, ntBookOf } from '../data/books.ts';
+import type { LogosPart } from '../resources/types.ts';
 
 /** RFC 4180: CRLF or LF line ends, quoted cells with commas, doubled quotes and newlines inside. A raw tab is cell text (the export's last cell holds them, unquoted), and a BOM is dropped. */
 export function parseCsv(text: string): string[][] {
@@ -82,6 +83,9 @@ export function readExport(text: string): ExportRow[] {
  *  so the Old Testament's are the first 39 and the New's the 27 after them. */
 const FIRST_OT_BOOK = 1;
 const FIRST_NT_BOOK = 61;
+const FIRST_APOCRYPHA_BOOK = 40;
+const LAST_APOCRYPHA_BOOK = FIRST_NT_BOOK - 1;
+const PART_ORDER: readonly LogosPart[] = ['nt', 'ot', 'apocrypha'];
 const LAST_NT_BOOK = FIRST_NT_BOOK + NT_BOOKS.length - 1;
 
 /** The code of the book Logos numbers `n`: undefined for the Apocrypha, which Lampas does not hold. */
@@ -105,6 +109,24 @@ export function coversOfSupersets(supersets: string): string[] {
     }
   }
   return BOOKS.filter((b) => covered.has(b.code)).map((b) => b.code);
+}
+
+/** The parts of the canon a ReferenceSupersets cell holds a Bible in, in the order New Testament, Old Testament, Apocrypha (Logos numbers the Apocrypha 40 to 60). A range that begins or ends inside the Apocrypha
+ *  holds it (`bible+lxx2.1.1.1-58.14.46`: Old Testament and Apocrypha); a range that runs from the Old Testament across to the New says nothing of the Apocrypha, as a Bible without it and a Bible with it
+ *  are written alike (`bible+nrsv.1.1.1-87.22.21`, `bible+niv.1.1.1-87.22.21`), so the rules file says it. A range that ends before it begins (`52` to `51`) stands for the book it begins at. */
+export function partsOfSupersets(supersets: string): LogosPart[] {
+  const parts = new Set<LogosPart>();
+  for (const token of supersets.split('\t')) {
+    const m = /^bible(?:\+[a-z0-9]+)?\.(\d+)[^-]*(?:-(\d+).*)?$/.exec(token.trim());
+    if (!m) continue;
+    const from = Number(m[1]);
+    const to = m[2] === undefined || Number(m[2]) < from ? from : Number(m[2]);
+    if (from < FIRST_APOCRYPHA_BOOK) parts.add('ot');
+    if (to >= FIRST_NT_BOOK) parts.add('nt');
+    const spansTheGap = from < FIRST_APOCRYPHA_BOOK && to >= FIRST_NT_BOOK;
+    if (!spansTheGap && from <= LAST_APOCRYPHA_BOOK && to >= FIRST_APOCRYPHA_BOOK) parts.add('apocrypha');
+  }
+  return PART_ORDER.filter((p) => parts.has(p));
 }
 
 /** The books of the New Testament alone that a ReferenceSupersets cell covers: what a Greek book (an interlinear, a lexicon) needs to be of use. */

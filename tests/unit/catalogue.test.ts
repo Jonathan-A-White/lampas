@@ -283,7 +283,9 @@ describe('the five old exports as views over the catalogue', () => {
   });
 
   it('COMMON_BIBLES is the catalogue’s Bibles named by id, and DEFAULT_LOGOS_BIBLE the one it pins, as they were', () => {
-    expect(COMMON_BIBLES).toEqual(OLD.COMMON_BIBLES);
+    // the nine it began with come first, as they were; the Bibles with the Apocrypha and his Hebrew Bible follow (mw-5r3p30.889)
+    expect(COMMON_BIBLES.slice(0, OLD.COMMON_BIBLES.length)).toEqual(OLD.COMMON_BIBLES);
+    expect(COMMON_BIBLES.length).toBeGreaterThan(OLD.COMMON_BIBLES.length);
     expect(DEFAULT_LOGOS_BIBLE).toBe(OLD.DEFAULT_LOGOS_BIBLE);
     expect(entriesOf('bible').filter((e) => e.starts === 'pinned').map((e) => e.resource)).toEqual([DEFAULT_LOGOS_BIBLE]);
   });

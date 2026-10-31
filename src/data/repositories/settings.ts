@@ -7,7 +7,7 @@ import { MOVE_WINDOW, type GrammarMove } from '../grammar/move';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
 import type { Theme } from '../../appearance/themes';
-import { DEFAULT_LOGOS_BIBLE, LOGOS_PARTS, isResourceId, type LogosBibles, type LogosPart } from '../../resources/logosBible';
+import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, LOGOS_PARTS, bibleHolds, isResourceId, type LogosBibles, type LogosPart } from '../../resources/logosBible';
 import { playToOf, type PlayTo } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
@@ -339,11 +339,34 @@ async function savedBibles(): Promise<Record<LogosPart, string | undefined>> {
 }
 
 /** The Resource ID of his Bible in Logos for each part of the canon. The New Testament's is the default (the Legacy Standard Bible) while none was chosen or the saved one is malformed; the
- *  Old Testament and the Apocrypha follow the New Testament's until each is picked. */
+ *  Old Testament follows the New Testament's until it is picked. The Apocrypha starts in the NRSV (DEFAULT_APOCRYPHA_BIBLE), and a saved Bible the catalogue knows to have no Apocrypha is read as the
+ *  NRSV too (a typed Resource ID is kept as typed); moveApocryphaBible writes that move down once. */
 export async function getLogosBibles(): Promise<LogosBibles> {
   const saved = await savedBibles();
   const nt = saved.nt ?? DEFAULT_LOGOS_BIBLE;
-  return { nt, ot: saved.ot ?? nt, apocrypha: saved.apocrypha ?? nt };
+  const apocrypha = saved.apocrypha ?? DEFAULT_APOCRYPHA_BIBLE;
+  return { nt, ot: saved.ot ?? nt, apocrypha: bibleHolds(apocrypha, 'apocrypha') ? apocrypha : DEFAULT_APOCRYPHA_BIBLE };
+}
+
+const APOCRYPHA_MOVED_KEY = 'logosBibleApocryphaMoved';
+
+/** Moves the Apocrypha's Bible to the NRSV when the one it was in (saved for it, or the New Testament's it followed) is a Bible the catalogue knows to have no Apocrypha, and keeps that Bible's Resource ID
+ *  for the note under the row. True when it moved; false when there was nothing to move, so it happens once. */
+export async function moveApocryphaBible(): Promise<boolean> {
+  const saved = await savedBibles();
+  const was = saved.apocrypha ?? saved.nt;
+  if (was === undefined || bibleHolds(was, 'apocrypha')) return false;
+  await db.settings.bulkPut([
+    { key: LOGOS_BIBLE_KEYS.apocrypha, value: DEFAULT_APOCRYPHA_BIBLE },
+    { key: APOCRYPHA_MOVED_KEY, value: was },
+  ]);
+  return true;
+}
+
+/** The Resource ID of the Bible the Apocrypha moved from (moveApocryphaBible), until he picks an Apocrypha Bible himself; undefined when it has not moved. */
+export async function getApocryphaMovedFrom(): Promise<string | undefined> {
+  const row = await db.settings.get(APOCRYPHA_MOVED_KEY);
+  return typeof row?.value === 'string' ? row.value : undefined;
 }
 
 /** His Bible in Logos for one part (the New Testament's when none is named). */
@@ -355,12 +378,14 @@ export async function getLogosBible(part: LogosPart = 'nt'): Promise<string> {
 export async function setLogosBible(resourceId: string): Promise<void> {
   const id = resourceId.trim();
   await db.settings.bulkPut(Object.values(LOGOS_BIBLE_KEYS).map((key) => ({ key, value: id })));
+  await db.settings.delete(APOCRYPHA_MOVED_KEY);
 }
 
 /** The Bible in Logos of one part. The other two are kept as they are now, so a part that was following another does not move with it. */
 export async function setLogosBibleFor(part: LogosPart, resourceId: string): Promise<void> {
   const bibles = { ...(await getLogosBibles()), [part]: resourceId.trim() };
   await db.settings.bulkPut((Object.keys(LOGOS_BIBLE_KEYS) as LogosPart[]).map((p) => ({ key: LOGOS_BIBLE_KEYS[p], value: bibles[p] })));
+  if (part === 'apocrypha') await db.settings.delete(APOCRYPHA_MOVED_KEY);
 }
 
 const APPROACH_KEY = 'grammarApproach';

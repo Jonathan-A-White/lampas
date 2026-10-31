@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
-import { getLogosBible, getStudyResources, setLogosBibleFor, setResourceOn, setResourceOption } from '../../data/repositories';
+import { useEffect, useState } from 'react';
+import { getApocryphaMovedFrom, getLogosBible, getStudyResources, moveApocryphaBible, setLogosBibleFor, setResourceOn, setResourceOption } from '../../data/repositories';
 import { countsOf } from '../../library/kinds';
 import { useShelf } from '../../library/useShelf';
 import { openLibrary } from '../../nav/route';
@@ -9,7 +9,7 @@ import { resourceOf, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { KINDS, entryOf } from '../../resources/catalogue';
-import { COMMON_BIBLES, LOGOS_PARTS } from '../../resources/logosBible';
+import { DEFAULT_APOCRYPHA_BIBLE, LOGOS_PARTS, biblesFor } from '../../resources/logosBible';
 import { oneTap } from '../../ui/settle';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
 import { writeSetting } from '../registry';
@@ -121,11 +121,17 @@ export const LibraryControl: Control = ({ row }) => {
   );
 };
 
-/** Bible in Logos for one part of the canon (the row's key says which: logosBible is the New Testament's): a picker of the catalogue's Bibles, with his own Resource ID listed too when it is none of them
- *  (typed on Library > Bibles). Picking one sets this part only (setLogosBibleFor); the Old Testament and the Apocrypha show the New Testament's until each is picked. */
+/** Bible in Logos for one part of the canon (the row's key says which: logosBible is the New Testament's): a picker of the catalogue's Bibles that hold the part (biblesFor), with his own Resource ID listed too when it is none
+ *  of them (typed on Library > Bibles). Picking one sets this part only (setLogosBibleFor); the Old Testament shows the New Testament's until it is picked, and the Apocrypha starts in the NRSV. The Apocrypha's row moves a
+ *  saved Bible that has no Apocrypha to the NRSV once (moveApocryphaBible) and says so in a line under the picker. */
 export const LogosBibleControl: Control = ({ row }) => {
   const { part, label } = LOGOS_PARTS.find((p) => p.key === row.key) ?? LOGOS_PARTS[0];
   const bible = useLiveQuery(() => getLogosBible(part), [part]);
+  const movedFrom = useLiveQuery(getApocryphaMovedFrom, []);
+  useEffect(() => {
+    if (part === 'apocrypha') void moveApocryphaBible();
+  }, [part]);
+  const bibles = biblesFor(part);
   const picker =
     bible === undefined ? null : (
       <>
@@ -136,14 +142,19 @@ export const LogosBibleControl: Control = ({ row }) => {
             onChange={(e) => void setLogosBibleFor(part, e.target.value)}
             className="mt-1 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
           >
-            {COMMON_BIBLES.some((b) => b.id === bible) ? null : <option value={bible}>{entryOf(bible)?.short ?? bible}</option>}
-            {COMMON_BIBLES.map((b) => (
+            {bibles.some((b) => b.id === bible) ? null : <option value={bible}>{entryOf(bible)?.short ?? bible}</option>}
+            {bibles.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
               </option>
             ))}
           </select>
         </label>
+        {part === 'apocrypha' && movedFrom !== undefined ? (
+          <p data-apocrypha-moved className="pt-1 text-sm text-muted">
+            {`${entryOf(movedFrom)?.title ?? movedFrom} has no Apocrypha, so Tobit and the rest open in ${entryOf(DEFAULT_APOCRYPHA_BIBLE)?.short ?? 'NRSV'}.`}
+          </p>
+        ) : null}
         {part === 'nt' ? (
           <button
             type="button"

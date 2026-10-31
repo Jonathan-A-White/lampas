@@ -5,7 +5,7 @@ import { bookOf, otBookOf } from '../data/books';
 import type { ShelfState } from '../data/repositories';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import type { CatalogueEntry, Kind } from '../resources/catalogue';
-import { bibleRef, verseLink } from '../resources/logosBible';
+import { bibleRef, partOf, verseLink } from '../resources/logosBible';
 import { resourceLink, type LogosLink } from '../resources/logosRes';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
 import type { StudyPlace } from '../resources/types';
@@ -36,9 +36,10 @@ const OT_KINDS: readonly Kind[] = ['bible', 'commentary', 'interlinear'];
 
 export const isOldTestament = (place: StudyPlace): boolean => otBookOf(place.book) !== undefined;
 
-/** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book); a Bible holds the whole of it. */
+/** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book); a Bible holds the part of the canon the book is in
+ *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one. */
 const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
-  entry.kind === 'bible' || (entry.covers ? entry.covers.includes(place.book) : !isOldTestament(place));
+  entry.kind === 'bible' ? entry.parts === undefined || entry.parts.includes(partOf(place.book)) : entry.covers ? entry.covers.includes(place.book) : !isOldTestament(place);
 
 /** The link that opens `entry` at the place: a Bible as the Old Testament chapter links are made (logosBible.ts), any other book at the Bible reference, the way a work is (works.ts). */
 function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | undefined {
