@@ -10,7 +10,7 @@
 // The Reader's Talk bar is not drawn while the view is open, so two bars never stack. The chosen action is kept (src/verse/action.ts); the
 // arrows go to the verse before and the verse after, across a chapter's end. The action bodies draw their bar into `slot`, the foot of the view.
 // A section heading opens the same view for its passage (mw-5r3p30.73): `verse` is then the passage as one Verse (src/data/passage.ts: `n` its
-// first verse, `to` its last), the title is the heading and its range, every action works on the whole passage, and the arrows go to the passage
+// first verse, `to` its last), the title is the heading and its range, every action but Diagram (a diagram is of one verse) works on the whole passage, and the arrows go to the passage
 // before and after in the chapter. Nothing else differs, so there is one view engine.
 import { type CSSProperties, type ReactNode, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -117,10 +117,10 @@ export function VerseView(props: VerseViewProps) {
   const [checking, setChecking] = useState<string | null>(null);
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
-  // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
   // A diagram is of one verse: a passage or a range has no Diagram, and a phone left on it by a verse opens the passage on Listen (the kept action is not changed)
   const oneVerse = isOneVerse(verse);
   const action = !oneVerse && chosen === 'diagram' ? 'listen' : chosen;
+  // Read it aloud, Ask the tutor and Quiz me are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
   const hebrewOn = useHebrewOn();
   const reference = unitReference(title, verse);
