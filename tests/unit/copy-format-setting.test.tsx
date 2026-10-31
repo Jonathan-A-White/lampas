@@ -100,7 +100,7 @@ describe('the rows of When you copy', () => {
     const { container } = render(<CopyFormatControl row={row} />);
     await screen.findByRole('group', { name: row.label });
     const line = container.querySelector('[data-copy-gives]');
-    expect(line?.textContent).toBe('Copy and Share give the words as you read them on screen: English, Weave or Greek, with the variants you have on.');
+    expect(line?.textContent).toBe('Copy and Share give the words as you read them on screen, with the variants you have on.');
     expect(line?.nextElementSibling?.getAttribute('data-setting')).toBe('copyReference');
   });
 
