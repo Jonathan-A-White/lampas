@@ -21,7 +21,11 @@ import type { MemorizeLang } from '../memorize/languages';
 import { memorizingNow } from '../memorize/memorizing';
 import { verseTextsOf } from '../memorize/verseText';
 import { listMemorized } from '../data/repositories/memorize';
-import { getVerseList, listVerseLists } from '../data/repositories/verseLists';
+import { getVerseList, listVerseLists, removeVerseList } from '../data/repositories/verseLists';
+import { answerReferences } from '../lists/answerRefs';
+import { saveAsListCommand, type ListSaved } from '../services/formCommands';
+import { LIST_NAME_MAX, suggestedListName } from '../share/listName';
+import { NEW_LIST_CHOICE } from '../share/saveListForm';
 import { openedByTutor } from '../nav/readerRequest';
 import { memorizeSessionOf, navigate, openVerseList, ROUTES, readerOf, routeOf, type Route } from '../nav/route';
 import { CATALOGUE } from '../resources/catalogue';
@@ -45,7 +49,7 @@ import { variantFactsOf } from './variantFacts';
 const FACT_NAMES: readonly string[] = ['where-he-is', 'today-drill', 'settings', 'progress', 'rusty-words', 'works', 'memorizing', 'verseText', 'memorizeEvidence', 'verse-lists', 'variants'];
 
 /** The commands' names, kept from the screens' the same way: the command memorize is the tutor's to call, so the screen Memorize is the place 'memorize-screen'. */
-const COMMAND_NAMES: readonly string[] = ['set-setting', 'tick-today', 'start-review', 'add-word', 'memorize', 'unmemorize', 'moveVerse', 'startSession'];
+const COMMAND_NAMES: readonly string[] = ['set-setting', 'tick-today', 'start-review', 'add-word', 'save-answer-references', 'memorize', 'unmemorize', 'moveVerse', 'startSession'];
 
 /** The name of the place that opens a screen: the route's own, the Reader's being 'reader', the Settings screen 'settings-screen' (its name is the fact's) and Memorize 'memorize-screen' (its name is the command's). */
 export const placeNameOf = (route: Route): string => {
@@ -401,9 +405,43 @@ export async function addWord(scope: TalkScope, lemma: string): Promise<AddWordR
   }
 }
 
-/** The Bible talk's registry: eleven facts (three core), the eight commands, a place for every screen, for a chapter and for a book of his shelf. */
+// The answer before the one being taken, and the question it answered: set only around one takeAnswer, by withPreviousAnswer.
+let previousAnswer: { answer: string; question: string } | undefined;
+
+/** Runs `run` (the client taking an answer's `do`) with `previous`, the newest answer of the talk so far, for save-answer-references to read. */
+export async function withPreviousAnswer<T>(previous: { answer: string; question: string } | undefined, run: () => Promise<T>): Promise<T> {
+  const kept = previousAnswer;
+  previousAnswer = previous;
+  try {
+    return await run();
+  } finally {
+    previousAnswer = kept;
+  }
+}
+
+/** Saves the Bible references the answer before names, as the tap under that answer does (mw-5r3p30.929): every reference its links stand for, in answer order, a run of chapters as its chapters, through the
+ *  Share sheet's own command (saveAsListCommand) as a new verse list; named `name`, else from his question. The undo takes the list away again. */
+const saveAnswerReferencesCommand: Command = {
+  name: 'save-answer-references',
+  tell: "Saves the Bible references (verses, ranges, whole chapters) of the answer before as a new verse list in Verse lists; name is optional; undoable",
+  args: { type: 'object', additionalProperties: false, properties: { name: { type: 'string', minLength: 1, maxLength: LIST_NAME_MAX } } },
+  kind: 'undoable',
+  run: async (args): Promise<CommandResult> => {
+    if (!previousAnswer) throw new Error('There is no earlier answer in this talk to save from');
+    const refs = answerReferences(previousAnswer.answer);
+    if (refs.length === 0) throw new Error('The answer before names no Bible reference');
+    const { name } = args as { name?: string };
+    let saved: ListSaved | undefined;
+    const made = saveAsListCommand(refs, (await listVerseLists()).map((l) => l.name), { onSaved: (result) => (saved = result) });
+    const ran = await made.run({ where: NEW_LIST_CHOICE, name: name?.trim() || suggestedListName(previousAnswer.question) });
+    const listId = saved?.id;
+    return { said: `${ran.said}, in Verse lists`, ...(listId == null ? {} : { undo: async () => void (await removeVerseList(listId)) }) };
+  },
+};
+
+/** The Bible talk's registry: eleven facts (three core), the nine commands, a place for every screen, for a chapter and for a book of his shelf. */
 export const lampasRegistry = (): Registry =>
-  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
+  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, saveAnswerReferencesCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
 
 /** The tutor's record (the ask-backs and misses of each screen) and the up-front list of each screen are kept on the phone, in a database of their own (the kit's Dexie store; its talks table is not used: the Bible talks are Lampas's own,
  * src/data/repositories/talks.ts), so that the counts last from one launch to the next and the nightly run (src/tutor/weightsRun.ts) has a week of them to read. The clients of both grinds and the nightly one write to it. */

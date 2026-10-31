@@ -17,8 +17,10 @@ import { NAME_LABEL, NEW_LIST_CHOICE, saveListForm, WHERE_LABEL } from './saveLi
 const NEW_LIST = 'new';
 const ACTION = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
-/** `refs`: the canonical strings (src/lists/canonical.ts) of the references showing, in the order showing; `text`: the shared words, for the name. */
-export function SaveAsList({ refs, text }: { refs: readonly string[]; text?: string }) {
+/** `refs`: the canonical strings (src/lists/canonical.ts) of the references showing, in the order showing; `text`: the shared words, for the name. The Talk sheet draws it under an answer
+ *  (src/talk/SaveReferences.tsx, mw-5r3p30.929): `label` is then its quiet button's words, `quiet` draws that button without the Share sheet's width, `helper` false leaves out 'Let the tutor do it' (the talk is the tutor)
+ *  and `onOpen` is called before Open opens the list (the Talk sheet closes there). */
+export function SaveAsList({ refs, text, label = 'Save as a list', quiet = false, helper = true, onOpen }: { refs: readonly string[]; text?: string; label?: string; quiet?: boolean; helper?: boolean; onOpen?: () => void }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [target, setTarget] = useState(NEW_LIST);
@@ -87,7 +89,7 @@ export function SaveAsList({ refs, text }: { refs: readonly string[]; text?: str
     <div data-save-as-list className="space-y-2">
       {open ? (
         <div className="space-y-2 rounded-xl border border-line">
-          {ai ? <FormHelper form={saveListForm((lists ?? []).map((l) => l.name))} values={values} onFill={fill} command={command} /> : null}
+          {ai && helper ? <FormHelper form={saveListForm((lists ?? []).map((l) => l.name))} values={values} onFill={fill} command={command} /> : null}
           <form onSubmit={save} className="space-y-2 p-3">
             <label className="block text-base font-medium">
               {WHERE_LABEL}
@@ -130,15 +132,22 @@ export function SaveAsList({ refs, text }: { refs: readonly string[]; text?: str
           </form>
         </div>
       ) : (
-        <button type="button" onClick={start} className="min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line">
-          Save as a list
+        <button
+          type="button"
+          onClick={start}
+          className={quiet ? 'min-h-11 rounded-lg border border-line px-3 text-base font-medium text-accent active:bg-line' : 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line'}
+        >
+          {label}
         </button>
       )}
       {saved ? (
         <div role="status" data-testid="saved-as-list" className="flex min-h-12 items-center gap-2 rounded-xl border border-line bg-surface pl-4">
           <p className="min-w-0 flex-1 text-base">{saved.line}</p>
           {saved.id === null ? null : (
-            <button type="button" onClick={() => openVerseList(saved.id)} className="min-h-12 min-w-12 shrink-0 rounded-lg px-4 text-base font-medium text-accent">
+            <button type="button" onClick={() => {
+                onOpen?.();
+                openVerseList(saved.id);
+              }} className="min-h-12 min-w-12 shrink-0 rounded-lg px-4 text-base font-medium text-accent">
               Open
             </button>
           )}

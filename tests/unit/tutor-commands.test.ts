@@ -44,7 +44,7 @@ describe('the registry lists the commands and the work place', () => {
       ['start-review', 'free'],
       ['add-word', 'undoable'],
     ]);
-    expect(registry.commands).toHaveLength(8);
+    expect(registry.commands).toHaveLength(9);
     expect(registry.place('open-work')).toBeDefined();
     for (const command of registry.commands) expect(command.tell.length).toBeGreaterThan(10);
   });
