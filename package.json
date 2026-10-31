@@ -55,6 +55,8 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
     "voice-kit": "github:Jonathan-A-White/voice-kit#d87188227886ec15e7c34f674992f4a63ea69215",
     "workbox-precaching": "7.4.1",
     "workbox-routing": "^7.4.1",

@@ -3,7 +3,7 @@
 // them). The form is a name (offered from the shared title, else the date) and where to save it ('New list' or a list he has); once saved, 'Saved N references to <name>' with Open,
 // which goes to #/lists/<id>. The share stays waiting, so Back from the list returns to the sheet.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { listVerseLists, UNTITLED_LIST } from '../data/repositories';
 import { FormHelper } from '../formHelper/FormHelper';
 import { useAiAllowed } from '../gate/licenceContext';
@@ -17,14 +17,17 @@ import { NAME_LABEL, NEW_LIST_CHOICE, saveListForm, WHERE_LABEL } from './saveLi
 const NEW_LIST = 'new';
 const ACTION = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
-/** `refs`: the canonical strings (src/lists/canonical.ts) of the references showing, in the order showing; `text`: the shared words, for the name. */
-export function SaveAsList({ refs, text }: { refs: readonly string[]; text?: string }) {
+/** `refs`: the canonical strings (src/lists/canonical.ts) of the references showing, in the order showing; `text`: the shared words, for the name. The Talk sheet draws it under an answer
+ *  (src/talk/SaveReferences.tsx, mw-5r3p30.929): `label` is then its quiet button's words, `quiet` draws that button without the Share sheet's width, `helper` false leaves out 'Let the tutor do it' (the talk is the tutor)
+ *  and `onOpen` is called before Open opens the list (the Talk sheet closes there). */
+export function SaveAsList({ refs, text, label = 'Save as a list', quiet = false, helper = true, onOpen }: { refs: readonly string[]; text?: string; label?: string; quiet?: boolean; helper?: boolean; onOpen?: () => void }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [target, setTarget] = useState(NEW_LIST);
   const [saved, setSaved] = useState<ListSaved | null>(null);
   const [filled, setFilled] = useState<string | null>(null);
   const field = useRef<HTMLInputElement>(null);
+  const status = useRef<HTMLDivElement>(null);
   const ai = useAiAllowed();
   const lists = useLiveQuery(listVerseLists, []);
   const start = () => {
@@ -32,8 +35,16 @@ export function SaveAsList({ refs, text }: { refs: readonly string[]; text?: str
     setTarget(NEW_LIST);
     setFilled(null);
     setOpen(true);
-    setTimeout(() => focusQuietly(field.current), 0);
+    setTimeout(() => {
+      focusQuietly(field.current);
+      // under an answer in the Talk sheet's scroll box the form can start below the fold: bring it into view
+      field.current?.scrollIntoView?.({ block: 'nearest' });
+    }, 0);
   };
+  // the line that says what was saved, with its Open, is brought into view too
+  useEffect(() => {
+    if (saved) status.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [saved]);
   // the one command both Saves run (the form's own and the helper's Send): it tells the sheet what it did; a list that went away is said and the choice goes back to New list
   const made = saveAsListCommand(
     refs,
@@ -87,7 +98,7 @@ export function SaveAsList({ refs, text }: { refs: readonly string[]; text?: str
     <div data-save-as-list className="space-y-2">
       {open ? (
         <div className="space-y-2 rounded-xl border border-line">
-          {ai ? <FormHelper form={saveListForm((lists ?? []).map((l) => l.name))} values={values} onFill={fill} command={command} /> : null}
+          {ai && helper ? <FormHelper form={saveListForm((lists ?? []).map((l) => l.name))} values={values} onFill={fill} command={command} /> : null}
           <form onSubmit={save} className="space-y-2 p-3">
             <label className="block text-base font-medium">
               {WHERE_LABEL}
@@ -130,15 +141,26 @@ export function SaveAsList({ refs, text }: { refs: readonly string[]; text?: str
           </form>
         </div>
       ) : (
-        <button type="button" onClick={start} className="min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line">
-          Save as a list
+        <button
+          type="button"
+          onClick={start}
+          className={quiet ? 'min-h-11 rounded-lg border border-line px-3 text-base font-medium text-accent active:bg-line' : 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line'}
+        >
+          {label}
         </button>
       )}
       {saved ? (
-        <div role="status" data-testid="saved-as-list" className="flex min-h-12 items-center gap-2 rounded-xl border border-line bg-surface pl-4">
+        <div ref={status} role="status" data-testid="saved-as-list" className="flex min-h-12 items-center gap-2 rounded-xl border border-line bg-surface pl-4">
           <p className="min-w-0 flex-1 text-base">{saved.line}</p>
           {saved.id === null ? null : (
-            <button type="button" onClick={() => openVerseList(saved.id)} className="min-h-12 min-w-12 shrink-0 rounded-lg px-4 text-base font-medium text-accent">
+            <button
+              type="button"
+              onClick={() => {
+                onOpen?.();
+                openVerseList(saved.id);
+              }}
+              className="min-h-12 min-w-12 shrink-0 rounded-lg px-4 text-base font-medium text-accent"
+            >
               Open
             </button>
           )}

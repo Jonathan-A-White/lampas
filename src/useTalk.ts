@@ -21,7 +21,7 @@ import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
 import { readTarget, type GoPlace } from './talk/go';
-import { addWord, askBack, askedNames, bibleTalkClient, bibleTalkRegistry, changeSettings, lookingLine, noteLateAsks, withTutorFacts } from './tutor/registry';
+import { addWord, askBack, askedNames, bibleTalkClient, bibleTalkRegistry, changeSettings, lookingLine, noteLateAsks, withPreviousAnswer, withTutorFacts } from './tutor/registry';
 import { doneLinesOf } from './talk/doneLines';
 import { holdUndo } from './talk/doneUndo';
 import { leaveSheetForTutor } from './ui/sheetBack';
@@ -260,7 +260,7 @@ export function useTalk(
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
           // The commands the answer names (`do`), run by the tutor client in order through the registry; a refused name or args is recorded as a miss, as are the misses the answer names. What each did is a line of the turn:
           // the app's own words for it, with its Undo when it can be undone, or for a command that needs his yes the question and a button (src/talk/DoneLine.tsx). It never fails the talk.
-          const taken = answer.do?.length || answer.misses?.length ? await bibleTalkClient().takeAnswer({ do: answer.do, misses: answer.misses }, turns.length).catch(() => undefined) : undefined;
+          const taken = answer.do?.length || answer.misses?.length ? await withPreviousAnswer(turns.at(-1) && { answer: turns[turns.length - 1].a, question: turns[turns.length - 1].cleanQ ?? turns[turns.length - 1].q }, () => bibleTalkClient().takeAnswer({ do: answer.do, misses: answer.misses }, turns.length)).catch(() => undefined) : undefined;
           const ranDo = taken ? doneLinesOf(answer.do ?? [], taken, bibleTalkRegistry()) : undefined;
           if (ranDo) refused.push(...ranDo.refused);
           // A place he asked to be taken to (a chapter, or a screen the registry names): opened only while this talk's sheet is open. The chapter he is on stays (said so); a chapter that came after he closed the

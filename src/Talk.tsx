@@ -16,6 +16,7 @@ import type { GreekWord } from './data/chapter';
 import type { AnswerWord } from './data/db';
 import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
+import { SaveReferences } from './talk/SaveReferences';
 import { openedByTutor } from './nav/readerRequest';
 import { openRequests } from './nav/route';
 import { TutorLinks } from './TutorLinks';
@@ -430,6 +431,7 @@ function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} onOpen={onLeave} />
         </div>
+        <SaveReferences answer={turn.a} question={turn.cleanQ ?? turn.q} onLeave={onLeave} />
         {turn.changes?.length || turn.done?.length || turn.refused?.length || turn.opened || turn.stayed || turn.unopened || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
             {turn.changes?.map((c, i) => (
