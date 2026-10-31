@@ -10,7 +10,7 @@ import type { StudyResources } from '../data/repositories';
 import { isHebrewText } from '../data/lemma';
 import { parseCanonReference } from '../nav/links';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
-import { optionOf, resourceOf, RESOURCES, type StudyPlace, type StudyResource } from './index';
+import { optionOf, resourceOf, RESOURCES, type StudyPlace, type StudyResource, type StudyWord } from './index';
 import { CATALOGUE, WORK_GROUPS, type CatalogueEntry, type Kind, type WorkGroup } from './catalogue';
 import { TUTOR_KINDS } from './workIds';
 import type { LibraryRow } from '../data/db';
@@ -63,6 +63,10 @@ const switchedOn = (chosen: StudyResources, level: GreekLevel): StudyResource[] 
 
 /** Whether a word link names a Hebrew lemma (Hebrew letters or points, the Hebrew block): it is then drawn in the Hebrew face, looked up in the Hebrew lexicon and opens the Hebrew word's sheet (mw-gdcyf98.20). */
 export const hebrewLinkLemma = (lemma: string): boolean => isHebrewText(lemma);
+
+/** The word a Study tile is built for, from a word of the text. A word with no lemma (a form of a variant reading that the text never has, βιβλαρίδιον at Revelation 10:2, or a Hebrew suffix)
+ *  is looked up by its form: a tile that names nothing opens an app's home page (mw-5r3p30.926). */
+export const studyWordOf = (word: { t: string; l: string; s: string }, extra: Pick<StudyWord, 'topic' | 'ref'> = {}): StudyWord => ({ form: word.t, lemma: word.l || word.t, strongs: word.s, ...extra });
 
 /** The chips of a word link: the first link of every resource that is on. `strongs` is the lemma's number from the lexicon; without it a resource of
  *  kind 'number' (Strong's) gives no chip, as it has nothing to link. */

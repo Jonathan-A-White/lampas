@@ -26,6 +26,7 @@ import { resourcesForLevel } from './resources/resourcesForLevel';
 import { optionOf, RESOURCES, type StudyLink, type StudyRef, type StudyResource } from './resources';
 import { storeUrl } from './resources/appStore';
 import { logos, logosStudy, type LogosStudy } from './resources/logos';
+import { studyWordOf } from './resources/tutorLinks';
 import { armFallback } from './resources/openApp';
 import { topicOf } from './resources/topic';
 import { hebrewPronunciationOf, pronunciationOf, type GreekPronunciation } from './speech/pronunciation';
@@ -134,7 +135,7 @@ interface StudyGroup {
 /** The links of every study resource he switched on (Settings > Study resources) that the dials show, for this word, a group per resource, English resources first (resourcesForLevel). */
 function studyGroups(chosen: StudyResources | undefined, levels: InterestLevels | undefined, word: GreekWord, ref: StudyRef | undefined, gloss: string): StudyGroup[] {
   if (!chosen || levels === undefined) return [];
-  const study = { form: word.t, lemma: wordLemma(word), strongs: word.s, topic: topicOf(gloss), ref };
+  const study = studyWordOf(word, { topic: topicOf(gloss), ref });
   return resourcesForLevel(RESOURCES, levels.grc, undefined, levels)
     .filter((r) => chosen.on.includes(r.id))
     .map((resource): StudyGroup => {

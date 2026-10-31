@@ -75,6 +75,7 @@ const keyQuery = (key: Key, word: StudyWord): string | undefined => {
     const topic = word.topic?.trim();
     return topic && `hw=${encodeURIComponent(topic.charAt(0).toLocaleUpperCase('en') + topic.slice(1))}`;
   }
+  if (word.lemma.trim() === '') return undefined; // no headword to ask for: the link would open the lexicon at its start (mw-5r3p30.926)
   if (key === 'commonLemma' && isProperName(word.lemma)) return undefined;
   return `hw=${encodeURIComponent(wordLanguage(word) === 'hbo' ? consonants(word.lemma) : word.lemma)}`;
 };
@@ -122,10 +123,11 @@ export interface LogosStudy {
 /** The Logos group of the word sheet: the lexicons he pinned, then Bible Word Study, then 'All N lexicons' when more than LEXICON_FOLD are On; else every one On and Bible Word Study.
  *  `ticked` is the ids On, `pinned` the ids Pinned. N counts the lexicons that have an entry for this word. */
 export const logosStudy = (word: StudyWord, ticked: readonly string[], pinned: readonly string[]): LogosStudy => {
-  const guide = bibleWordStudy(study(word));
+  const guide = word.lemma.trim() === '' ? undefined : bibleWordStudy(study(word));
   const entries = lexiconLinks(word, pinnedFirst(ticked.join(','), pinned).split(',')).map((e) => ({ ...e, pinned: pinned.includes(e.id) }));
-  if (entries.length <= LEXICON_FOLD) return { links: [...entries.map((e) => e.link), guide] };
-  return { links: [...entries.filter((e) => e.pinned).map((e) => e.link), guide], door: { count: entries.length, entries } };
+  const rest = guide ? [guide] : [];
+  if (entries.length <= LEXICON_FOLD) return { links: [...entries.map((e) => e.link), ...rest] };
+  return { links: [...entries.filter((e) => e.pinned).map((e) => e.link), ...rest], door: { count: entries.length, entries } };
 };
 
 export const logos: StudyResource = {
@@ -141,8 +143,7 @@ export const logos: StudyResource = {
     default: ['bdag'],
   },
   linksFor: (word, option) => {
-    const guide = study(word);
-    return [...lexiconLinks(word, (option ?? '').split(',')).map((e) => e.link), bibleWordStudy(guide)];
+    return [...lexiconLinks(word, (option ?? '').split(',')).map((e) => e.link), ...(word.lemma.trim() === '' ? [] : [bibleWordStudy(study(word))])];
   },
   versesFor: (place, bible) => {
     const link = verseLink(place.book, place.chapter, place.verse, bible);
