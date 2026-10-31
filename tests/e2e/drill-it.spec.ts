@@ -290,12 +290,12 @@ async function playLetterRoundToItsEnd(page: Page, settleMs = SETTLE_MS) {
     // a tap in a card's settling moment does nothing (src/ui/settle.ts), and on a loaded host the card can mount after the wait above is over: tap again until the answer shows
     await expect(async () => {
       if (await skip.count()) {
-        await skip.click({ timeout: 2000 });
+        await skip.click({ timeout: 2000 }); // a short window: toPass below taps again
         skipped = true;
         return;
       }
-      if (!(await next.count())) await drill.locator('[data-option]').first().click({ timeout: 2000 });
-      await expect(next).toBeVisible({ timeout: 500 });
+      if (!(await next.count())) await drill.locator('[data-option]').first().click({ timeout: 2000 }); // a short window: toPass below taps again
+      await expect(next).toBeVisible({ timeout: 500 }); // a tap that did nothing shows no answer: a short window, then tap again
     }).toPass({ timeout: 30_000, intervals: [100, 200, 400] });
     if (skipped) continue;
     if ((await next.textContent()) === 'Finish the round') break;
