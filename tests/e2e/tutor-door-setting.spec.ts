@@ -51,3 +51,44 @@ test('Tutor door and Hand: Floating ? asks the hand once, both are kept after a 
   await page.reload();
   await expect(page.getByRole('group', { name: 'Hand', exact: true }).getByRole('button', { name: 'Right', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
+
+// mw-5r3p30.925: the hand he chose once is seen and changed under Tutor door while the door is Floating ?, and is the same Hand as Layout's
+test('Hand shows directly under Tutor door at Floating ?, moves the floating ?, and is the same as Layout', async ({ page }) => {
+  await page.setViewportSize(VIEWPORT);
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  await openGroup(page, 'The tutor');
+
+  const door = page.getByRole('group', { name: 'Tutor door', exact: true });
+  await door.scrollIntoViewIfNeeded();
+  // Two-finger tap: no Hand on this page
+  await expect(page.getByRole('group', { name: 'Hand', exact: true })).toHaveCount(0);
+
+  await door.getByRole('button', { name: 'Floating ?', exact: true }).click();
+  const hand = page.getByRole('group', { name: 'Hand', exact: true });
+  await expect(hand).toBeVisible();
+  // directly under Tutor door: below it, and nothing but the one-time question (also the hand) between
+  const doorBox = await door.boundingBox();
+  const handBox = await hand.boundingBox();
+  expect(handBox?.y ?? 0).toBeGreaterThan((doorBox?.y ?? 0) + (doorBox?.height ?? 0));
+  for (const name of ['Left', 'Right']) {
+    const box = await hand.getByRole('button', { name, exact: true }).boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(43.5);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  }
+  await hand.getByRole('button', { name: 'Left', exact: true }).click();
+  await expect(hand.getByRole('button', { name: 'Left', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await shot(page, 'hand-under-tutor-door');
+
+  // the floating ? goes to that side at once
+  await page.goto('/');
+  const ask = page.getByRole('button', { name: 'Ask the tutor about what is on screen', exact: true });
+  await expect(ask).toBeVisible();
+  const left = await ask.boundingBox();
+  expect((left?.x ?? 999) + (left?.width ?? 0) / 2).toBeLessThan(VIEWPORT.width / 2);
+
+  // the same value shows in Layout
+  await page.goto('/#/settings');
+  await openGroup(page, 'Reading');
+  await expect(page.getByRole('group', { name: 'Hand', exact: true }).getByRole('button', { name: 'Left', exact: true })).toHaveAttribute('aria-pressed', 'true');
+});
