@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.46
+_2026-10-31_
+- New: A quiet key under the Reader's header explains the marks of a variant reading (dotted English is Lampas's own, plain is the Bible's footnote, NA and B say which Greek text reads it), and tapping a variant's opening brace shows it again at any time.
+
 ## 0.7.45
 _2026-10-31_
 - Fixed: The hand you chose for the round tutor button now shows, and can be changed, right under Tutor door in the tutor's settings while that button is on.
