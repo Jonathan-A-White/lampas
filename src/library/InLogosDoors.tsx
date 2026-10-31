@@ -13,6 +13,8 @@ import { hasAnotherBook } from './inLogos';
 import { useInLogosRows } from './useInLogosRows';
 
 const DOOR = 'inline-flex min-h-12 items-center justify-center rounded-xl border border-line px-4 text-base font-medium text-accent active:bg-line';
+/** The quiet look of the Verse view's tools line (mw-5r3p30.896): accent words with no border, each door a word of the line. */
+const QUIET_DOOR = 'inline-flex min-h-11 items-center justify-center rounded-lg px-2.5 text-sm font-medium text-accent active:bg-line';
 
 interface DoorProps {
   place: StudyPlace;
@@ -37,20 +39,22 @@ export function AnotherBookButton({ place, name, entries = CATALOGUE, label = 'I
   );
 }
 
-/** 'In Logos' (his Bible at the place) and, beside it, 'In another book…'; nothing at all while Logos is Off. */
-export function InLogosDoors({ place, name, entries, className = '' }: DoorProps & { className?: string }) {
+/** 'In Logos' (his Bible at the place) and, beside it, 'In another book…'; nothing at all while Logos is Off. Two equal cells, or with `quiet` (the Verse view's tools line) two
+ * quiet words laid in the line they are drawn in (the group has no box of its own). */
+export function InLogosDoors({ place, name, entries, className = '', quiet = false }: DoorProps & { className?: string; quiet?: boolean }) {
   const logos = useLiveQuery(async () => (await getStudyResources()).on.includes('logos'), []);
   const bibles = useLiveQuery(getLogosBibles, []);
   if (!logos || bibles === undefined) return null;
   const link = verseLink(place.book, place.chapter, place.verse, bibleFor(place.book, bibles));
+  const door = quiet ? QUIET_DOOR : DOOR;
   return (
-    <div role="group" aria-label={`${name} in Logos`} data-in-logos className={`grid grid-cols-2 gap-1 ${className}`}>
+    <div role="group" aria-label={`${name} in Logos`} data-in-logos className={quiet ? `contents ${className}` : `grid grid-cols-2 gap-1 ${className}`}>
       {link ? (
-        <a href={link.url} data-fallback={link.fallback} onClick={() => armFallback(link.fallback)} className={DOOR}>
+        <a href={link.url} data-fallback={link.fallback} onClick={() => armFallback(link.fallback)} className={door}>
           In Logos<span aria-hidden="true">&nbsp;↗</span>
         </a>
       ) : null}
-      <AnotherBookButton place={place} name={name} entries={entries} className={`${DOOR} ${link ? '' : 'col-span-2'}`} />
+      <AnotherBookButton place={place} name={name} entries={entries} className={`${door} ${link || quiet ? '' : 'col-span-2'}`} />
     </div>
   );
 }

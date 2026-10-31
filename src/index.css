@@ -1031,12 +1031,18 @@ textarea,
   background: transparent;
 }
 [data-verse-bar] .bk-composer__speak {
-  padding: 0.25rem 0 0;
+  padding: 0;
+  gap: 0.25rem;
+}
+/* The Verse view's composer draws no hint line at rest (mw-5r3p30.896: the bar says Hold to ask, and the line's 44 px, with 'unsent.' alone on a second line at 360 px, went to the
+ * text instead; the bar's own words say what a slide off does). His live words, and a notice, still have their line while he holds or after a failed hold. */
+[data-verse-bar] .bk-composer__status:has(.bk-composer__hint:not(.bk-composer__error)) {
+  display: none;
 }
 /* The Verse view's foot is its own bar and the round Ask button is not drawn over it, so its scrolling box keeps no room at the end for either: in a short
  * window (landscape) that padding alone would push the composer below the screen's edge (mw-5r3p30.170). Type a question is a 44 px thumb target. */
 [data-verse-view] .screen {
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
 }
 /* In a window under 300 px tall with the Ask open (a third of a phone's height, split-screen) the header, the speaking bar and the composer's 169 px left the text no room
  * at all and pushed the composer past the window's foot (mw-5r3p30.773). The header and the text scroll together in one box above the pinned composer and the speaking

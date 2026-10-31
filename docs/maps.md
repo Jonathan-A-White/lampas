@@ -41,7 +41,7 @@ every map of the source; `imageUrl` answers null where the source has no picture
 
 ## The screens (mw-zbjgn3r.2)
 
-- **The door**, `src/maps/MapsDoor.tsx`: a 44 px button `Maps · N` (`useMaps`, which calls `mapsFor`), drawn only while N is above 0. On the Verse view it sits in the doors line with In Logos and In another book…, for a verse (`from` its number) and for a passage (`from`, `to`);
+- **The door**, `src/maps/MapsDoor.tsx`: a 44 px button `Maps · N` (`useMaps`, which calls `mapsFor`), drawn only while N is above 0. On the Verse view it is a word of the tools line under the text (`quiet`, mw-5r3p30.896) after In Logos and In another book…, for a verse (`from` its number) and for a passage (`from`, `to`);
   at the foot of every chapter, Old and New Testament, `src/reader/ChapterActions.tsx` draws it before the chapter buttons. Nothing is drawn inside `VerseText`, and with Immersive reader On the Reader draws no door (the Verse view keeps it).
 - **The sheet**, `src/maps/MapsSheet.tsx`: a bottom sheet with `useSheetBack`, opened by `openMaps(ref)` (`src/maps/openMaps.ts`; the tutor story will call it too) and drawn by `<MapsHost />`, mounted once in `App.tsx`. Titled `Maps for Genesis 10:19`, `Maps for Genesis 10:1-19` or
   `Maps for Genesis 10`; the cards grouped as Events, Regions and Videos (a group absent when empty), each row 44 px with the title and its period on a second line. On a verse or a passage whose places some map shows, the sheet leads with

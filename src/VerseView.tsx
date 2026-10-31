@@ -1,9 +1,11 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
-// VerseText (so the view and the weave follow the Reader, and its words are tappable); under it one row of actions (Listen, Read it aloud,
-// Ask the tutor, Quiz me, Diagram and Copy link; an Old Testament verse has Quiz me only with some Hebrew, mw-uqlxea.3, and Diagram in its Hebrew, mw-5r3p30.887, and no Read it aloud in the Hebrew view, mw-gdcyf98.4; its Ask the tutor sends the Hebrew, mw-5vvlay.3; the verse is drawn in the Reader's view, the Hebrew big and right to left); then what the chosen action shows; and at the foot ONE control
+// VerseText (so the view and the weave follow the Reader, and its words are tappable), in a box that takes what the controls under it leave and scrolls;
+// under it what the chosen action shows (the reading check, the diagram, Listen's help line, a verse's Talk about verse N); under that a quiet line of TOOLS that act on the text (Copy and Share, Memorize, In Logos and In another book…, Maps: plain accent words, no border, mw-5r3p30.896);
+// under that the row of ACTIONS that choose what the foot does (Listen, Read it aloud, Ask the tutor, Quiz me and Diagram; an Old Testament verse has Quiz me only with some Hebrew, mw-uqlxea.3, and Diagram in its Hebrew, mw-5r3p30.887, and no Read it aloud in the Hebrew view, mw-gdcyf98.4; its Ask the tutor sends the Hebrew, mw-5vvlay.3; the verse is drawn in the Reader's view, the Hebrew big and right to left),
+// the chosen one marked with the accent's border and a tint, never filled; and at the foot ONE control, the one thing on the screen filled in the accent,
 // that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar), or for Ask the tutor voice-kit's Composer
-// (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar with his words above it, and Type a question beneath). Listen is not a hold
+// (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar, Type a question beneath, no hint line at rest: src/index.css). Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
 // Quiz me (mw-5r3p30.74) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
 // Diagram (mw-souyao.3, offered only for one verse, mw-5r3p30.895) has no foot: its pane (src/diagram/DiagramPane.tsx) is drawn under the row, and a tapped word of it opens the Reader's WordSheet through `onLook`.
@@ -12,7 +14,15 @@
 // A section heading opens the same view for its passage (mw-5r3p30.73): `verse` is then the passage as one Verse (src/data/passage.ts: `n` its
 // first verse, `to` its last), the title is the heading and its range, every action but Diagram (a diagram is of one verse) works on the whole passage, and the arrows go to the passage
 // before and after in the chapter. Nothing else differs, so there is one view engine.
-import { type CSSProperties, type ReactNode, useMemo, useState } from 'react';
+//
+// The layout (mw-5r3p30.896, his "this UI needs a makeover"): upright the text box is the flexible part (flex-1 with a floor of 8 rem), so the tools, the row and the foot are
+// always on screen and the text takes the rest; what the action shows sits under the text, in the scroll box, and the tools and the row stand OUTSIDE that box (data-verse-controls,
+// between it and the foot), so a result or a drawn diagram only shortens the text and never moves the controls under his finger; in a window of 20 rem or less (a 360 px phone at
+// 130 % text or more, src/ui/useNarrow.ts) they end the scrolling flow instead, the text's box at most 40 % of the window; a passage scrolls inside its box ([data-passage-box], which the lit verse of a Listen is kept in view in). Sideways (`short:`)
+// the box is its content, at most 40 % of the window, and the screen scrolls as it did, so the Audio Bible row keeps its place above the Play bar (tests/e2e/audio-bible-landscape.spec.ts).
+// The row is three cells to a row, the last row's cells stretched over it so no row has a hole; two to a row under 15 rem of room (a phone at 200 % text, where a third of
+// the row is too narrow for 'Read it aloud'), and one row from 30 rem (a phone sideways), where five labels have a line each.
+import { type ReactNode, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AskComposer } from './Ask';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
@@ -29,6 +39,7 @@ import { ProgressMarks } from './memorize/ProgressMark';
 import { osisOf } from './nav/links';
 import { SHORT_BAR } from './ui/barClass';
 import { focusOnMount } from './ui/focus';
+import { useNarrow } from './ui/useNarrow';
 import { Icon as PlayIcon } from './speech/ReadControls';
 import { LinkActions } from './ui/LinkActions';
 import { COPY_DEFAULTS, copyLink, copyText, copyUnitOf } from './copy/format';
@@ -38,6 +49,7 @@ import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import type { AskState } from './pending/pendingAsks';
 import { actionsFor, useHebrewOn, type VerseAction } from './verse/action';
+import { cellSpan } from './verse/cells';
 import { useAiAllowed } from './gate/licenceContext';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from './resources/audioBible';
 import { SendOff } from './plan/SendOff';
@@ -101,7 +113,7 @@ export interface VerseViewProps {
   lesson?: CheckLesson & { title: string };
 }
 
-const ARROW = 'flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-2xl text-accent active:bg-line disabled:opacity-30';
+const ARROW = 'flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-2xl text-accent active:bg-line disabled:opacity-30';
 
 function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string; glyph: string }) {
   return (
@@ -110,6 +122,11 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
     </button>
   );
 }
+
+/** The look of a cell of the row: the chosen action has the accent's border and a tint of it, the rest a quiet line; nothing in the row is filled (the foot's one control is). */
+const CELL = 'min-h-11 rounded-xl border px-1 text-sm font-medium leading-tight';
+const CELL_CHOSEN = 'border-accent bg-accent/15 text-fg';
+const CELL_REST = 'border-line text-fg active:bg-line';
 
 export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
@@ -129,11 +146,12 @@ export function VerseView(props: VerseViewProps) {
   const audibleChapter = view === 'greek' ? undefined : audibleChapterLabel(book, chapter);
   const audioListen = action === 'listen' && !!audioBible && !!audibleChapter;
   const sendOff = useSendOff();
+  // 20 rem of window or less (a 360 px phone at 130 % text or more): the controls cannot stand under the text's box, so they join the scrolling flow, the text's box at most 40 % of the window (src/ui/useNarrow.ts)
+  const narrow = useNarrow();
   const passage = verse.to !== undefined;
   const name = unitName(verse);
   const memorizeRef = `${osisOf(book)}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`;
   const noun = passage ? 'passage' : 'verse';
-  const canShare = typeof navigator.share === 'function';
   // Copy and Share give the unit in the format of Settings > Reading > When you copy (src/copy/format.ts); the defaults until the three rows are read
   const copyFormat = useCopyFormat() ?? COPY_DEFAULTS;
   // a hold in the Reader that the clipboard refused opens the view with its text shown selected, to copy by hand (src/copy/useCopyHold.ts)
@@ -146,21 +164,63 @@ export function VerseView(props: VerseViewProps) {
   // A Hebrew verse is set as big as the Greek one, in the app's Hebrew face (.script-he, whose .reader-hebrew gives the Greek size and the Reader's leading), right to left; the English view is English whatever the chapter.
   const source = sourceLanguage(chapterText);
   const offeredActions = actionsFor(ai, source, hebrewOn, oneVerse);
-  // the cells of the row: the actions and Copy link (Share sits beside it)
-  const cells = offeredActions.length + 1;
   const hebrewView = view === 'greek' && source === 'hbo';
   const big = hebrewView ? 'script-he reader-hebrew [--lp-greek-size:2.25rem]' : view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
   const size = hebrewView ? '' : view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
   const typeClass = `leading-(--lp-leading) ${big} ${size}`;
+  // The controls: the tools, the marks of a memorized verse and the row of actions. They stand outside the scroll box, above the foot, so they never move whatever the text and the
+  // action's body do (mw-5r3p30.896); sideways the tools and the row share one line where the window is wide enough (short:flex-row), so the Audio Bible row of Listen stays above the
+  // Play bar at rest (tests/e2e/audio-bible-landscape.spec.ts). In a narrow window they are the end of the scrolling flow instead.
+  const controls = (
+    <div data-verse-controls className={narrow ? 'shrink-0' : 'flex shrink-0 flex-col px-3 pb-1 short:flex-row short:items-start short:gap-x-2'}>
+      {/* The tools: what acts on the text itself, plain accent words that wrap as a line of words does (mw-5r3p30.896). Copy and Share (Copied says so above the line; the text to copy by hand
+          takes a line of its own), Memorize (mw-fu7dqf.5: the verse, or the passage's range as one reference; an Old Testament verse is learned in the languages its Hebrew dial allows, no licence),
+          his Bible in Logos at the verse (a passage: at its first verse) and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6), and the Maps door
+          (mw-zbjgn3r.2: the maps of the verse, or of the passage's range). The Audio Bible row of Listen is in the scroll box above, so the line is under it at every size (mw-5r3p30.746, .775). */}
+      <div role="group" aria-label="Tools" data-verse-tools className="relative mt-0.5 flex shrink-0 flex-wrap items-center gap-x-1 short:min-w-0 short:max-w-[40%]">
+        <LinkActions
+          url={copyLink(copyUnit)}
+          title={reference}
+          text={copyText(copyUnit, copyFormat)}
+          startByHand={startByHand}
+          shareText={copyText(copyUnit, { ...copyFormat, link: 'off' })}
+          shareUrl={copyFormat.link === 'on' ? copyLink(copyUnit) : undefined}
+          className="contents [&_button]:min-h-11 [&_button]:px-2.5 [&_button]:text-sm [&_:is(input,textarea)]:basis-full"
+          statusClassName="absolute right-0 bottom-full mb-1 rounded-lg border border-line bg-surface px-2 py-0.5 text-sm text-muted"
+        />
+        <MemorizeControl canonical={memorizeRef} quiet />
+        <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} quiet />
+        <MapsDoor mapRef={{ book, chapter, from: verse.n, ...(verse.to === undefined ? {} : { to: verse.to }) }} quiet />
+      </div>
+      <ProgressMarks canonical={memorizeRef} className="mt-1 shrink-0 px-2" />
+      {/* The row of actions: the chosen one is marked, not filled (the one filled control is at the foot). Three to a row, two under 15 rem of room, one row from 30 rem; the last row's
+          cells stretch over it (cellSpan), so a short last row has no hole. */}
+      <div className="@container mt-1 shrink-0 short:min-w-0 short:flex-1">
+        <div role="group" aria-label="Actions" className="grid grid-cols-6 items-stretch gap-1 @[30rem]:grid-flow-col @[30rem]:auto-cols-fr @[30rem]:grid-cols-none">
+          {offeredActions.map((a, i) => (
+            <button
+              key={a.id}
+              type="button"
+              aria-pressed={action === a.id}
+              onClick={() => onAction(a.id)}
+              className={`${CELL} ${cellSpan(i, offeredActions.length)} ${action === a.id ? CELL_CHOSEN : CELL_REST}`}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   return (
     <section aria-label="Verse view" data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
       {/* No box of its own, except in a window under 300 px tall with the Ask open (src/index.css): there the header and the text scroll together above the composer (mw-5r3p30.773). */}
       <div data-verse-scroll className="contents">
       {/* At 20 rem or less of the phone's own text (390 px at 200%) the title takes a row of its own under ‹ Reader and the arrows, so a passage's heading has the whole width and is not clamped (mw-cwf538.9). */}
       <div className="@container shrink-0 border-b border-line">
-      <header className="flex flex-wrap items-center gap-1 px-2 py-2">
+      <header className="flex flex-wrap items-center gap-1 px-2 py-1.5">
         {/* The Reader beneath is inert, so focus starts here and a keyboard or screen reader finds the view first. */}
-        <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-12 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line @max-[20rem]:mr-auto">
+        <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-11 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line @max-[20rem]:mr-auto">
           ‹ Reader
         </button>
         {passage ? (
@@ -178,11 +238,17 @@ export function VerseView(props: VerseViewProps) {
         <Arrow move={next} name={`Next ${noun}`} glyph="›" />
       </header>
       </div>
-      <div className="screen min-h-0 flex-1 px-3 pt-3">
+      {/* The scroll box: the text's box, the flexible part upright, and what the chosen action shows; the controls stand under it, or in a narrow window end it. */}
+      <div className="screen flex min-h-0 flex-1 flex-col px-3 pt-2">
         {lesson ? <LessonStrip title={lesson.title} ideas={lesson.ideas} onCheck={() => setChecking(lesson.key)} /> : null}
-        {/* A passage is long: its text scrolls in a box of its own so the row of actions stays in reach under it. Its blocks (PassageText) are the Reader's own,
-            each a [data-passage-text] with the type of its own; a verse is one big [data-size='big'] paragraph. */}
-        <div {...(passage ? { 'data-passage-box': '' } : {})} className={passage ? 'max-h-[40dvh] overflow-y-auto overscroll-contain px-2' : undefined}>
+        {/* The text's box: a verse is one big [data-size='big'] paragraph; a passage's blocks (PassageText) are the Reader's own, each a [data-passage-text] with the type of its own, and
+            the verse being read is kept in view by moving this box ([data-passage-box], src/reader/ChapterText.tsx). Upright it is the flexible part of the screen, never under 8 rem;
+            sideways it is its content, at most 40 % of the window, and the screen scrolls. */}
+        <div
+          data-verse-text
+          {...(passage ? { 'data-passage-box': '' } : {})}
+          className={narrow ? 'max-h-[40dvh] shrink-0 overflow-y-auto overscroll-contain px-2' : 'min-h-[8rem] flex-1 overflow-y-auto overscroll-contain px-2 short:max-h-[40dvh] short:min-h-0 short:flex-none'}
+        >
           {passage ? (
             <div data-sheet-verse>{text}</div>
           ) : (
@@ -191,55 +257,10 @@ export function VerseView(props: VerseViewProps) {
             </p>
           )}
         </div>
-        {/* One line while every label has room for two lines of its own (a container query in rem, so a larger text size wraps sooner), else
-            three to a row over two rows (two to a row at 15 rem of room or less, where a three-column cell is too narrow for 'Diagram' at 200 % text): the five actions and Copy link are six cells. A phone with Share keeps two rows by putting Share beside Copy link in the sixth cell
-            (mw-souyao.3); only a wide row spreads them into seven. */}
-        <div className="flex flex-col">
-        <div className="@container">
-          <div
-            role="group"
-            aria-label="Actions"
-            // the last cell (Copy link, with Share beside it) takes what the stacked rows leave of its row, so a short last row has no hole: in three columns and, at 15 rem or less, in two
-            style={{ '--lp-fill3': cells % 3 === 0 ? 1 : 4 - (cells % 3), '--lp-fill2': cells % 2 === 0 ? 1 : 2 } as CSSProperties}
-            className={`relative mt-3 grid grid-cols-3 items-stretch gap-1 @max-[15rem]:grid-cols-2 ${canShare ? '@[29rem]:grid-flow-col @[29rem]:grid-cols-none @[29rem]:auto-cols-fr' : '@[25rem]:grid-flow-col @[25rem]:grid-cols-none @[25rem]:auto-cols-fr'}`}
-          >
-            {offeredActions.map((a) => (
-              <button
-                key={a.id}
-                type="button"
-                aria-pressed={action === a.id}
-                onClick={() => onAction(a.id)}
-                className={`min-h-12 rounded-xl border px-1 text-sm font-medium leading-tight ${action === a.id ? 'border-accent bg-accent text-accent-fg' : 'border-line text-fg active:bg-line'}`}
-              >
-                {a.label}
-              </button>
-            ))}
-            <LinkActions
-              url={copyLink(copyUnit)}
-              title={reference}
-              text={copyText(copyUnit, copyFormat)}
-              startByHand={startByHand}
-              shareText={copyText(copyUnit, { ...copyFormat, link: 'off' })}
-              shareUrl={copyFormat.link === 'on' ? copyLink(copyUnit) : undefined}
-              className={`contents [&_button]:min-h-12 [&_button]:rounded-xl [&_button]:border [&_button]:border-line [&_button]:px-1 [&_button]:text-sm [&_button]:leading-tight [&_button]:text-fg [&_:is(input,textarea)]:col-span-3 [&_:is(input,textarea)]:col-start-1 [&_:is(input,textarea)]:row-start-3 [&_:is(input,textarea)]:@max-[15rem]:col-span-2 [&_:is(input,textarea)]:@max-[15rem]:row-start-4 ${canShare ? '[&>div]:flex [&>div]:flex-nowrap [&>div]:gap-1 [&>div]:col-span-(--lp-fill3) [&>div]:@max-[15rem]:col-span-(--lp-fill2) [&>div]:@[29rem]:col-span-1 [&>div]:@[29rem]:contents [&_button]:flex-1 [&_:is(input,textarea)]:@[29rem]:col-span-7 [&_:is(input,textarea)]:@[29rem]:row-start-2' : '[&>div]:contents [&_button]:col-span-(--lp-fill3) [&_button]:@max-[15rem]:col-span-(--lp-fill2) [&_button]:@[25rem]:col-span-1 [&_:is(input,textarea)]:@[25rem]:col-span-6 [&_:is(input,textarea)]:@[25rem]:row-start-2'}`}
-              statusClassName="absolute right-0 top-full mt-0.5 rounded-lg bg-surface px-2 py-0.5 text-sm text-muted"
-            />
-          </div>
-        </div>
-        {/* On Listen with the Audio Bible row, the row has no room under Memorize and the Logos doors (sideways, and upright at the largest text), so they go under it
-            at every size, and the link is above the Play bar at rest (mw-5r3p30.746, .775). */}
-        <div className={audioListen ? 'order-last' : undefined}>
-          {/* Memorize (mw-fu7dqf.5): the verse, or the passage's range as one reference; an Old Testament verse is learned in the languages its Hebrew dial allows, no licence */}
-          <MemorizeControl canonical={memorizeRef} className="mt-1 w-full" />
-          <ProgressMarks canonical={memorizeRef} className="mt-1 px-1" />
-          {/* His Bible in Logos at the verse (a passage: at its first verse), and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6) */}
-          {/* with the quiet Maps door (mw-zbjgn3r.2): the maps of the verse, or of the passage's range; it wraps to a line of its own where the two Logos doors leave it no room */}
-          <div className="mt-1 flex flex-wrap items-start gap-1">
-            <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} className="min-w-[14rem] flex-1" />
-            <MapsDoor mapRef={{ book, chapter, from: verse.n, ...(verse.to === undefined ? {} : { to: verse.to }) }} />
-          </div>
-        </div>
-        <div className="mt-3">
+        {/* What the chosen action shows, under the text it is about (the reading check marks its words, the diagram draws them, Listen's help line, the verse's talk door): nothing at all
+            (no room taken) when it shows nothing. It comes before the tools and the row, so what arrives in it (a reading's result, a drawn diagram) only shortens the text's box: the
+            controls under it keep their place above the foot and never move under his finger (mw-5r3p30.896). */}
+        <div className="mt-1 shrink-0 empty:hidden">
           {action === 'listen' ? (
             // sideways the Play bar says it, and the line's room goes to the Audio Bible row under it (mw-5r3p30.468)
             <p data-action-help className={`px-1 text-sm text-muted ${audioListen ? 'short:hidden' : ''}`}>
@@ -264,14 +285,11 @@ export function VerseView(props: VerseViewProps) {
           {action === 'read' && ai ? (
             <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} weave={weave} onRetry={onRetryRead} slot={slot} />
           ) : null}
-          {action === 'ask' && ai ? (
-            <>
-              {passage ? null : (
-                <button type="button" onClick={onTalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
-                  Talk about verse {verse.n}
-                </button>
-              )}
-            </>
+          {action === 'ask' && ai && !passage ? (
+            // the Bible talk with history on this verse, a quiet line like the tools (the composer below asks the same tutor); a passage has none (the Talk sheet is about a verse or a chapter)
+            <button type="button" onClick={onTalk} className="min-h-11 w-full rounded-lg px-2.5 text-left text-sm font-medium text-accent active:bg-line">
+              Talk about verse {verse.n}
+            </button>
           ) : null}
           {action === 'quiz' && ai ? (
             <p data-action-help className="px-1 text-sm text-muted">
@@ -280,8 +298,9 @@ export function VerseView(props: VerseViewProps) {
           ) : null}
           {action === 'diagram' && ai ? <DiagramPane key={`${book}.${chapter}.${unitId(verse)}:${view}`} chapter={chapterText} verse={verse} view={view} woven={wovenChapter} onLook={onLook} /> : null}
         </div>
-        </div>
+        {narrow ? controls : null}
       </div>
+      {narrow ? null : controls}
       </div>
       {lesson && checking === lesson.key ? (
         <CheckSheet
@@ -299,7 +318,7 @@ export function VerseView(props: VerseViewProps) {
         />
       ) : null}
       <BarSlot level={2} />
-      <div ref={setSlot} data-verse-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))] empty:hidden">
+      <div ref={setSlot} data-verse-bar className="shrink-0 border-t border-line bg-surface px-3 pt-1 pb-[calc(0.25rem+var(--lp-bar-inset))] empty:hidden">
         {slot && action === 'listen' && !listen.playing ? (
           createPortal(
             // Not a hold: a tap starts it and it runs on by itself. Same size and place as the hold bars.
@@ -316,7 +335,7 @@ export function VerseView(props: VerseViewProps) {
         ) : null}
         {slot && action === 'ask' && ai ? (
           createPortal(
-            // voice-kit's Composer (mw-jtzpw0.3): the one Hold to ask bar with his words above it, and Type a question beneath
+            // voice-kit's Composer (mw-jtzpw0.3): the one Hold to ask bar, and Type a question beneath; his words show above it while he holds
             <AskComposer book={book} chapter={chapter} verse={verse} state={ask} onAsk={onAsk} prefill={prefill} />,
             slot,
           )

@@ -13,6 +13,8 @@ import { languagesFor, langName, MEMORIZE_LANGS, type MemorizeLang } from './lan
 import { sourceOf } from './source';
 
 const BUTTON = 'min-h-12 shrink-0 rounded-xl border px-3 font-medium leading-tight';
+/** The quiet look of the Verse view's tools line (mw-5r3p30.896): accent words with no border; on, a tint of the accent, never filled. */
+const QUIET = 'min-h-11 shrink-0 rounded-lg px-2.5 text-sm font-medium leading-tight';
 
 /** Says what a command did to a screen reader. */
 const tell = (done: Promise<CommandResult>): void => void done.then(({ said }) => announce(said)).catch((error) => console.error('could not change what is memorized', error));
@@ -69,8 +71,8 @@ function LanguageSheet({ canonical, offered, memorized, onClose }: { canonical: 
 }
 
 /** `canonical` is the reference the verse list holds: 'Rom.8.28', or a range 'Rom.8.28-30'. `compact` is for a list's row, where it shares the line with the reference: a smaller, narrower
- *  button whose label wraps. Draws nothing until it has read what is memorized and where his Greek dial is. */
-export function MemorizeControl({ canonical, compact = false, className = '' }: { canonical: string; compact?: boolean; className?: string }) {
+ *  button whose label wraps; `quiet` is the Verse view's tools line (QUIET). Draws nothing until it has read what is memorized and where his Greek dial is. */
+export function MemorizeControl({ canonical, compact = false, quiet = false, className = '' }: { canonical: string; compact?: boolean; quiet?: boolean; className?: string }) {
   const found = useLiveQuery(() => memorizedOf([canonical]), [canonical]);
   const levels = useInterestLevels();
   const [sheet, setSheet] = useState(false);
@@ -94,7 +96,11 @@ export function MemorizeControl({ canonical, compact = false, className = '' }: 
         data-memorize={canonical}
         aria-haspopup={on && offered.length > 1 ? 'dialog' : undefined}
         onClick={tap}
-        className={`${BUTTON} ${compact ? 'w-36 text-sm' : 'text-base'} ${on ? 'border-accent bg-accent text-accent-fg' : 'border-line text-accent active:bg-line'} ${className}`}
+        className={
+          quiet
+            ? `${QUIET} ${on ? 'bg-accent/15 text-fg' : 'text-accent active:bg-line'} ${className}`
+            : `${BUTTON} ${compact ? 'w-36 text-sm' : 'text-base'} ${on ? 'border-accent bg-accent text-accent-fg' : 'border-line text-accent active:bg-line'} ${className}`
+        }
       >
         {on ? `Memorizing · ${memorized.map(langName).join(', ')}` : 'Memorize'}
       </button>
