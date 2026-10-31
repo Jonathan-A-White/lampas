@@ -28,10 +28,10 @@ Feature: A section heading opens the Verse view for its passage
     When he taps the first Greek word of the passage
     Then the word sheet opens
 
-  Scenario: The passage has the same one row of actions and exactly one control at the foot
+  Scenario: The passage has one row of actions, without Diagram, and exactly one control at the foot
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me", "Diagram" and "Copy"
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Copy"
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
 
   Scenario: Listen reads the whole passage aloud to its end by itself
