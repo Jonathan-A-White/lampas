@@ -1,6 +1,6 @@
 // The five lessons on variant readings (mw-9ji6ek0.17): in order, each short (350 to 700 words), each ending in its Sources with a link, every link
 // https and one of the sources index.ts lists (each fetched once and answering 200 before it went in), and never a ruling on which reading is right.
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { VARIANT_LESSONS, VARIANT_LESSON_SOURCES } from '../../src/lessons/variants';
 
@@ -73,6 +73,16 @@ describe('the lessons on variant readings', () => {
       expect(text, l.file).not.toContain('is the correct reading');
       expect(text, l.file).not.toContain('the original reading is');
     }
+  });
+
+  it('name each look of the English on page 4, matching the CSS (mw-9ji6ek0.41): plain type for the MSB footnote, italics in a dotted ring for the model’s', () => {
+    const four = VARIANT_LESSONS[3].markdown;
+    const section = four.slice(four.indexOf('## Where the English comes from'), four.indexOf('## Sources'));
+    expect(section).toMatch(/^- Plain type: .*Majority Standard Bible.*footnote/m);
+    expect(section).toMatch(/^- \*Italics in a dotted ring\*: .*tutor's model/m);
+    const css = readFileSync('src/index.css', 'utf8');
+    expect(css).toMatch(/\.variant-english--lampas \{[^}]*font-style: italic;[^}]*border: 1px dotted/);
+    expect(css).not.toMatch(/\.variant-english--msb \{/);
   });
 
   it('say on page 3 that ECM readings are in Acts only, at 18 places', () => {
