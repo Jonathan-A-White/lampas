@@ -93,6 +93,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   askBy: AskByControl,
   tutorDoor: TutorDoorControl,
   hand: HandControl,
+  handAtDoor: HandControl,
   talk: TalkControl,
   send: SendControl,
   developer: DeveloperControl,

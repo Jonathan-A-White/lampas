@@ -30,7 +30,7 @@ import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
 import { hebrewLevelOf } from './definitions/hebrewInterest';
 import { DEPTH_KEY, depthFrom } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
-import { tutorDoorSetting } from './definitions/tutorDoor';
+import { getTutorDoor, tutorDoorSetting } from './definitions/tutorDoor';
 import { handSetting } from './hand';
 import { helpPlain } from './helpText';
 import { SETTINGS, settingOf, type SectionId } from './registry';
@@ -225,9 +225,12 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
 const rowOfDefinition = (def: typeof tutorDoorSetting | typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, licenceOnly: true });
 const TUTOR_DOOR_ROW: SettingsRow = rowOfDefinition(tutorDoorSetting);
 const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
+/** Hand again, directly under Tutor door while the door is Floating ? (mw-5r3p30.925): the hand he chose once is seen and changed where the floating ? is chosen. The same saved value as HAND_ROW (HandControl),
+ *  a row of its own so each page draws it once; the Tutor door's value is read by readValues (it is no registry setting). */
+const HAND_AT_DOOR_ROW: SettingsRow = { ...HAND_ROW, key: 'handAtDoor', section: tutorDoorSetting.section, dependsOn: { key: tutorDoorSetting.key, shown: (value) => value === 'floating' } };
 
 // the library's door is listed just before Bible in Logos, so Study resources reads: the switches, Your Logos library, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
-const unordered: readonly SettingsRow[] = [TUTOR_DOOR_ROW, ...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [LIBRARY_ROW, rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [TUTOR_DOOR_ROW, HAND_AT_DOOR_ROW, ...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [LIBRARY_ROW, rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
@@ -252,7 +255,7 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
 }
 
 /** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, Tutor door, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== TUTOR_DOOR_ROW.key && key !== HAND_ROW.key && !PART_ROWS.some((r) => r.key === key);
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== TUTOR_DOOR_ROW.key && key !== HAND_ROW.key && key !== HAND_AT_DOOR_ROW.key && !PART_ROWS.some((r) => r.key === key);
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 
@@ -263,6 +266,8 @@ export async function readValues(): Promise<Values> {
   const entries = await Promise.all(
     DEPENDED_ON.map(async (key) => {
       if (key === 'developerMode') return [key, await getDeveloper()] as const;
+      // the Tutor door is no registry setting (tutorDoor.ts): Hand under it shows while it is Floating ?
+      if (key === tutorDoorSetting.key) return [key, await getTutorDoor()] as const;
       // the key of a row both languages share: the higher of the two dials (no setting of its own)
       if (key === DEPTH_KEY) {
         const [greek, hebrew] = await Promise.all([settingOf('greekInterest')?.read(), settingOf('hebrewInterest')?.read()]);

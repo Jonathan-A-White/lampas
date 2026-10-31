@@ -21,7 +21,7 @@ export const handSetting = defineSetting<Hand>({
   section: 'layout',
   label: 'Hand',
   hint: 'The hand you hold your phone in, so what sits at your thumb goes to that side.',
-  help: 'Left or Right: the hand you hold your phone in. The floating ? button of the Tutor door sits on that side, within reach of your thumb. Right by default. Lampas cannot tell how you hold the phone, so it asks once, the first time you choose Floating ?, and here you can change the answer.',
+  help: 'Left or Right: the hand you hold your phone in. The floating ? button of the Tutor door sits on that side, within reach of your thumb. Right by default. Lampas cannot tell how you hold the phone, so it asks once, the first time you choose Floating ?, and here, or under Tutor door while it is Floating ?, you can change the answer.',
 });
 
 /** The hand he holds the phone in: Right until he has said. */
