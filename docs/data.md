@@ -279,6 +279,8 @@ A footnote that is a reading (`CT <i>they all</i>`) on a unit whose one reading 
 critical text's *sentence*, not of a reading of the unit: the alt stays `""` and the footnote's English is kept beside it as `english.ctReads` (`"ctReads":"they all"`; 73 units,
 mw-9ji6ek0.36). The brace shows `left out` and a tap on it opens the sheet, which says `NA leaves out “the Greeks” (οἱ Ἕλληνες)` and, as the MSB's, `The MSB reads the NA text: “they all”`.
 
+**How `source` is drawn** (mw-9ji6ek0.41). `variantEnglishClass(unit)` (`src/reader/englishSource.ts`) is the one place a unit's `english.source` becomes a look: `msb` is `variant-english--msb` (plain type, no rule in `src/index.css`), `lampas` is `variant-english--lampas` (italic, a dotted ring). The brace's English (`VariantBrace`) and a reading laid in place in English (`VerseText`) take their class from it; the card names the source in words instead (`englishSource.ts`, mw-9ji6ek0.29); the lesson 'How to read a variant' says what each look means.
+
 **`lampas`: made by the tutor's model.** `npm run variants:english` (`scripts/variants-english.ts`, on the home host, where `claude` runs; `--raw <dir>` where the downloads are)
 asks sonnet, the tutor's model, for each unit the footnotes do not speak for: the verse in Greek and in the MSB's English, the base and the other readings with the lemma
 and gloss of each of their words (from the lexicon of the whole text), 25 units a request. The answer is the English of the base and of each reading, 1-6 words

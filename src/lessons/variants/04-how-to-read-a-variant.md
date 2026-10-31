@@ -6,12 +6,12 @@ How Lampas draws a variant in the Reader, and how to read it.
 
 ## Turning variants on
 
-Variants are off until you turn them on. In a chapter that has any, the chips under the Reader's header include one that starts with ⁑ and a number: how many places it would mark. Tap it to turn variants on or off; press and hold it to choose which ones you see.
+Variants are off until you turn them on. In a chapter that has any, the chips under the Reader's header include one that starts with ⁑ and a number: how many places it marks. Tap it to turn variants on or off; press and hold it to choose which you see.
 
 The same choices are in Settings > Reading > Variants:
 
-- **Variants**: Off; Those that change the English (where another reading would change the English); or All (every place, even a spelling).
-- **Witnesses**: Byzantine splits only; also Nestle-Aland; or also ECM. This says whose readings count.
+- **Variants**: Off; Those that change the English (where another reading would change it); or All (every place, even a spelling).
+- **Witnesses**: Byzantine splits only; also Nestle-Aland; or also ECM.
 
 ## The mark and the brace
 
@@ -21,7 +21,7 @@ With variants on, the words of each place are underlined with a light dotted lin
 
 The underlined words are your text; the brace holds the other reading, here καὶ ζῇς where the text has ὅτι ζῇς. Its English renders the other Greek word for word; it may not fit. The sign **B** says it is a reading on which the Byzantine manuscripts are split. **NA** is the Nestle-Aland text's reading and **ECM** the *Editio Critica Maior*'s.
 
-The brace holds the reading in the view you read in. Inside it you may also see:
+Inside a brace you may also see:
 
 - **left out**: the other reading does not have these words at all.
 - **same**: with All chosen, Greek that differs where the English does not.
@@ -29,22 +29,27 @@ The brace holds the reading in the view you read in. Inside it you may also see:
 
 ## The sheet
 
-Tap the small badge (**B**, **NA** or **ECM**) and a sheet opens from the bottom, titled as in "Revelation 3:2: where the manuscripts differ". A word of the other reading opens its word card; a brace that says **left out** opens the sheet from anywhere. It lists:
+Tap the small badge (**B**, **NA** or **ECM**) and a sheet opens from the bottom, titled as in "Revelation 3:2: where the manuscripts differ". A word of the other reading opens its word card; **left out** opens the sheet from anywhere. It lists:
 
 - **The text reads**: the words of the text you are reading, in Greek and in English.
 - **Other reading**: each other reading, in Greek and in English, with a line for each edition that reads it, such as "NA27/NA28: Nestle-Aland reads this". Nestle-Aland's square brackets are kept.
 
-With a licence, **Ask the tutor** at the foot opens a talk about the verse: it explains each reading and what each side holds, not which is right. **Done**, a swipe down or a tap outside closes the sheet.
+With a licence, **Ask the tutor** at the foot opens a talk about the verse: it explains each reading, not which is right. **Done**, a swipe down or a tap outside closes the sheet.
 
 ## Read this, and reading sets
 
 Each reading on the sheet has **Read this**: it lays that reading into the text in place of the text's own, marked with a thin solid line, and the text's own then stands in the brace under **RP**. It is kept on this phone; reading aloud, Read check and the diagram keep the Byzantine words; Copy gives your reading.
 
-What you read is a **reading set**. **Read as**, in the sheet that press and hold opens and in Settings > Reading > Variants, switches the whole text at once: **Byzantine**; **NA** (Nestle-Aland's reading at every place); **ECM** (the *Editio Critica Maior*'s where its apparatus gives it, 18 places in Acts, else NA); **Mine**, which Read this starts from the set you were reading; and sets you name. **Save as…** keeps a copy of the set you are reading under a name; **Rename** and **Delete** change your own sets, never the three built-in ones.
+What you read is a **reading set**. **Read as**, in the sheet that press and hold opens and in Settings > Reading > Variants, switches the whole text at once: **Byzantine**; **NA** (Nestle-Aland's reading at every place); **ECM** (the *Editio Critica Maior*'s where its apparatus gives it, 18 places in Acts, else NA); **Mine**, which Read this starts from the set you were reading; and sets you name. **Save as…** keeps a copy of the set you are reading under a name; **Rename** and **Delete** change only your own sets.
 
 ## Where the English comes from
 
-Where the Majority Standard Bible's own footnotes give the critical text's reading (its notes that begin "CT"), Lampas uses that English. For the rest, the tutor's model wrote it when the app was built, from the Greek of each reading and the dictionary meanings of its words. Treat it as a guide to the Greek, not a translation.
+The look of the English in a brace says where it comes from:
+
+- Plain type: the Majority Standard Bible's own footnote gives the critical text's reading (its notes that begin "CT"), and Lampas uses that English.
+- *Italics in a dotted ring*: the tutor's model wrote it when the app was built, from the Greek of each reading and the dictionary meanings of its words. Treat it as a guide to the Greek, not a translation.
+
+The sheet names the source in words under each English line.
 
 ## Sources
 
