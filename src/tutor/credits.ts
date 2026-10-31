@@ -31,7 +31,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'pwa-kit', use: 'Updates, tips, settings; learn-kit\'s learning graph', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/pwa-kit' },
   { name: 'voice-kit', use: 'Read aloud, hold to talk', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/voice-kit' },
   { name: 'audible-kit', use: 'The Audible app link and its chapter list', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/audible-kit' },
-  { name: 'react-markdown', use: 'Draws the tutor\'s answers, with remark-gfm', licence: 'MIT', link: 'https://github.com/remarkjs/react-markdown' },
+  { name: 'react-markdown', use: 'Draws the tutor\'s answers, with remark-gfm, remark-parse and unified', licence: 'MIT', link: 'https://github.com/remarkjs/react-markdown' },
   { name: 'node-qrcode', use: 'The key as a QR code', licence: 'MIT', link: 'https://github.com/soldair/node-qrcode' },
   { name: 'Workbox', use: 'Lets Lampas open offline', licence: 'MIT', link: 'https://developer.chrome.com/docs/workbox' },
   { name: 'WhatsOnChain', use: 'Checks your key holds a licence', licence: 'none needed; public API', link: 'https://whatsonchain.com' },
