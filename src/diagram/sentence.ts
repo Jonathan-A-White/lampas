@@ -25,8 +25,19 @@ export const MAX_SENTENCE_WORDS = 300;
 /** The sof pasuq, the Hebrew full stop. */
 const SOF_PASUQ = '׃';
 
-/** The table of the Greek ends, loaded when a diagram is first asked for (a chunk of its own). */
-export const loadSentenceTable = (): Promise<Record<string, Record<number, string>>> => import('./sentenceEnds').then((m) => m.SENTENCE_ENDS);
+export type SentenceTable = Record<string, Record<number, string>>;
+
+let loaded: SentenceTable | null = null;
+let loading: Promise<SentenceTable> | null = null;
+
+/** The table of the Greek ends, in a chunk of its own; loaded once. */
+export function loadSentenceTable(): Promise<SentenceTable> {
+  loading ??= import('./sentenceEnds').then((m) => (loaded = m.SENTENCE_ENDS));
+  return loading;
+}
+
+/** The table if it has been loaded already, else null (a pane opened after the first draws at once, with no wait). */
+export const loadedSentenceTable = (): SentenceTable | null => loaded;
 
 /** A chapter's ends from the table's 'verse:word' places: '2:11 14:14' is word 11 of verse 2 and word 14 of verse 14. */
 function endsFromTable(places: string | undefined): Map<number, number[]> {

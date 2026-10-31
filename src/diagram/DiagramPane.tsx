@@ -19,12 +19,15 @@ import { TutorError } from '../services/tutor';
 import { useElapsed } from '../ui/useElapsed';
 import { ReedKellogg } from './ReedKellogg';
 import { diagramReference, sentenceCaption, sentenceVerses } from './request';
-import { loadSentenceTable, sentenceEnds, sentencesAt, type Sentence } from './sentence';
+import { loadSentenceTable, loadedSentenceTable, sentenceEnds, sentencesAt, type Sentence } from './sentence';
 import { fetchDiagram, type DiagramResult } from './fetchDiagram';
 import { keepInviteDismissed, lessonInvited } from './lesson';
 import { diagramLogosLinks } from './logosLinks';
 import type { DiagramMode, DiagramWord } from './types';
 import { weaveDiagramWords } from './weave';
+
+// the table of sentence ends is fetched as the app starts, so the first Diagram does not wait for it
+void loadSentenceTable();
 
 const WORKING_LINE = 'Working it out…';
 const FAILED_LINE = 'The tutor could not diagram this verse';
@@ -103,14 +106,15 @@ export interface DiagramPaneProps {
 /** The pane: the sentence(s) the Verse view's verse belongs to, one diagram each, stacked. */
 export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPaneProps) {
   const { n, to } = verse;
-  const [table, setTable] = useState<Awaited<ReturnType<typeof loadSentenceTable>> | null>(null);
+  const [table, setTable] = useState(loadedSentenceTable);
   useEffect(() => {
+    if (table) return;
     let live = true;
     void loadSentenceTable().then((t) => live && setTable(t));
     return () => {
       live = false;
     };
-  }, []);
+  }, [table]);
   // a passage (nothing offers Diagram on one) is drawn whole, as it was before sentences
   const sentences = useMemo<Sentence[] | null>(() => {
     if (!table) return null;
