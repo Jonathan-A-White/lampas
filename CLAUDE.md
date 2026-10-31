@@ -108,21 +108,21 @@ VISION.md 'The tutor': the tutor is told, on every ask, each app setting and eac
 One line per file under `docs/`: open the ones your story touches. `tests/unit/claude-md.test.ts` fails when a docs/ file is missing here.
 
 ```
-docs/layout/app.md # Layout: the shell, build, manifest, worker, updates and What's new, the bus, appearance, src/ui/, public/
+docs/layout/app.md # Layout: the shell, build, manifest, worker, updates and What's new, bus, appearance, src/ui/, public/
 docs/layout/reader.md # Layout: the Reader: nav, swipe, src/nav/ and links in, chips, Immersive, weave, Old Testament
 docs/layout/word-sheet.md # Layout: the word sheet, Greek and Hebrew, and a word by link
-docs/layout/chapter-picker.md # Layout: the chapter picker, the 66 books
-docs/layout/verse-and-reading.md # Layout: the Verse view (Listen, Quiz me, passages) and Read it aloud, the Reading ladder and drill
-docs/layout/tutor.md # Layout: asking the tutor: the round button, Ask, services/tutor.ts, grinds/, tips, links, Markdown, Hebrew
-docs/layout/talk.md # Layout: the Bible talk: Talk bar and sheet, services/talk.ts, Add to my words, pictures, the bridge, study way
-docs/layout/learner.md # Layout: what the tutor knows of him: About you, Memory, the welcome, learner and learner_grammar
-docs/layout/settings.md # Layout: src/settings/ (registry, rows, search, defineSetting) and src/resources/ (study resources)
-docs/layout/speech.md # Layout: src/speech/: voices, pronunciation schemes, accents, the speaking bar, read aloud; Tap to hear
-docs/layout/words.md # Layout: Words, Quick test, Review, the schedule, Parsing drill, glosses, pictures, frontier, pace, New words
-docs/layout/diagram.md # Layout: the sentence diagram, src/diagram/ (Reed-Kellogg)
+docs/layout/chapter-picker.md # Layout: the chapter picker, 66 books
+docs/layout/verse-and-reading.md # Layout: the Verse view (Listen, Quiz me, passages), Read it aloud, the Reading ladder and drill
+docs/layout/tutor.md # Layout: asking the tutor: round button, Ask, services/tutor.ts, grinds/, tips, links, Markdown, Hebrew
+docs/layout/talk.md # Layout: Bible talk: Talk bar and sheet, services/talk.ts, Add to my words, pictures, bridge, study way
+docs/layout/learner.md # Layout: what the tutor knows of him: About you, Memory, welcome, learner and learner_grammar
+docs/layout/settings.md # Layout: src/settings/ (registry, rows, search, defineSetting), src/resources/ (study resources)
+docs/layout/speech.md # Layout: src/speech/: voices, pronunciation schemes, accents, speaking bar, read aloud; Tap to hear
+docs/layout/words.md # Layout: Words, Quick test, Review, schedule, Parsing drill, glosses, pictures, frontier, pace, New words
+docs/layout/diagram.md # Layout: sentence diagram, src/diagram/ (Reed-Kellogg)
 docs/layout/memorize.md # Layout: Memorize: src/memorize/, the text a verse is learned in (English, Greek, the weave)
-docs/layout/grammar.md # Layout: grammar terms, the ladder, inference, Drill it, letter drill, idea sheet, placement, Goal, Paradigms
-docs/layout/data.md # Layout: Dexie and its versions, the repositories, books, chapters, parsing codes, the data build
+docs/layout/grammar.md # Layout: grammar terms, ladder, inference, Drill it, letter drill, idea sheet, placement, Goal, Paradigms
+docs/layout/data.md # Layout: Dexie and its versions, repositories, books, chapters, parsing codes, the data build
 docs/layout/licence.md # Layout: the licence gate, the one gated mill client, the device key
 docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another approach, Ask for more and feedback
 docs/overview.md # the one-screen overview: read first
@@ -141,10 +141,10 @@ docs/links.md # every link form Lampas takes in, with an example; where web+lamp
 docs/data.md # the data's JSON shape, its two sources and licences, and what the build changes
 docs/maps.md # the maps: src/maps/, Bible Mapper's data and terms, adding an atlas
 docs/hebrew.md # Hebrew in the tutor: the depth setting, the font, how a Hebrew word is drawn
-docs/ask-tutor.md # the tutor: what it is told, offers, the bridge, profile, memory, welcome, pictures, sharing, requests, timings
-docs/verse-view.md # the Verse view: its actions, passages, Listen as a player, Quiz me, study way, quiz goal
-docs/read-aloud.md # read aloud: the span, the speaking bar, the tutor's responses, pages of prose
-docs/reading-ladder.md # the reading ladder: verses scored by how hard they are to pronounce, the drills
+docs/ask-tutor.md # the tutor: what it is told, offers, bridge, profile, memory, welcome, pictures, sharing, requests, timings
+docs/verse-view.md # the Verse view: actions, passages, Listen as a player, Quiz me, study way, quiz goal
+docs/read-aloud.md # read aloud: the span, speaking bar, the tutor's responses, pages of prose
+docs/reading-ladder.md # the reading ladder: verses scored by how hard they are to pronounce, drills
 docs/grammar.md # the grammar ladder, placement, Drill it, the idea sheet, the Goal screen (PROVISIONAL)
 docs/frontier.md # the frontier picker, the pace and the teach sheet for new words
 docs/paradigms.md # the Paradigms tables and when a form is available
@@ -168,10 +168,11 @@ docs/research/greek-speech-libraries.md # open-source libraries for Greek sound
 docs/research/kjv-tr.md # the KJV and the Greek behind it as a text pair
 docs/research/logos-section-refs.md # grammar sections by a book's own Logos data type
 docs/research/logos-morph-charts.md # Logos's Morphology Charts at a lemma from a link
-docs/research/logos-factbook.md # Factbook at a proper name from a word sheet: the link form, its source, how a name is known
-docs/research/logos-exegetical-guide.md # the Exegetical Guide at a verse: link form, source, where the door sits, a sweep of guides
+docs/research/logos-factbook.md # Factbook at a proper name from a word sheet: link form, source, how a name is known
+docs/research/logos-exegetical-guide.md # the Exegetical Guide at a verse: link form, source, the door, a sweep of guides
 docs/research/letter-sounds.md # lone vowels and letter sounds in a voice like the phone's
+docs/sources/latin-bible.md # Latin Bible sources: licences, word data, versification, audio
 docs/design/library-at-scale.md # the Logos library at scale, mockups, build plan
-docs/design/bible-talk-trim-map.md # the bible-talk rules before the 100,000-byte trim, and where each lives now
-docs/sources/septuagint-and-webster.md # the Septuagint and Webster 1828 sources probe: licences, word data, versification
+docs/design/bible-talk-trim-map.md # the bible-talk rules before the 100,000-byte trim, where each lives now
+docs/sources/septuagint-and-webster.md # Septuagint and Webster 1828 sources: licences, word data, versification
 ```
