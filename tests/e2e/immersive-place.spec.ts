@@ -56,6 +56,9 @@ const percentOf = async (page: Page) => {
   return Number(match[1]);
 };
 
+/** The Reader's scroll offset, or -1 while the Reader is not drawn: right after a reload the page has no [data-reader] yet, and a poll must not throw there (mw-5r3p30.920). */
+const readerTop = (page: Page) => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement | null)?.scrollTop ?? -1);
+
 /** Two fingers on the text at once, lifted together: a two-finger tap. */
 async function twoFingerTap(page: Page, y = 450) {
   const cdp = await page.context().newCDPSession(page);
@@ -67,6 +70,14 @@ async function twoFingerTap(page: Page, y = 450) {
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await cdp.detach();
 }
+
+// mw-5r3p30.920: the first read of the Reader's offset after a reload came before the Reader was drawn and threw 'reading scrollTop' of null.
+test('the Reader offset can be read before the Reader is drawn after a reload', async ({ page }) => {
+  await openMark12(page, 'on');
+  await page.reload({ waitUntil: 'commit' });
+  await page.evaluate(() => document.querySelector('[data-reader]')?.remove());
+  expect(await readerTop(page)).toBe(-1);
+});
 
 test('the place line is there only with Immersive reader On and the bars away', async ({ page }) => {
   await openMark12(page, 'on');
@@ -250,7 +261,7 @@ for (const licensed of [true, false]) {
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
     await expect(page.locator('[data-verse="1"]')).toBeVisible();
-    const top = () => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).scrollTop);
+    const top = () => readerTop(page);
     const settle = () => page.waitForTimeout(700);
 
     // the end first: it is where the bug was seen
@@ -294,7 +305,7 @@ for (const licensed of [true, false]) {
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
     await expect(page.locator('[data-verse="1"]')).toBeVisible();
-    const top = () => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).scrollTop);
+    const top = () => readerTop(page);
     const shown = async (what: string) => {
       await expect(place(page), `${what}: no place line`).toHaveCount(0);
       await expect(page.locator('header').first(), `${what}: the header`).toBeVisible();
