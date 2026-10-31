@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { BOOKS, NT_BOOKS, OT_BOOKS } from '../../src/data/books';
 import { DEVOTIONALS } from '../../src/data/daily/devotionals';
 import { LADDER } from '../../src/data/grammar/ladder';
+import { HEBREW_LADDER } from '../../src/data/grammar/hebrew/ladder';
 import { CATALOGUE, CATALOGUE_VERSION, KINDS, WORK_GROUPS, entriesOf, type CatalogueEntry, type Kind, type KindFile } from '../../src/resources/catalogue';
 import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS } from '../../src/resources/grammarBooks';
 import { LEXICONS, lexiconLinks } from '../../src/resources/logos';
@@ -32,7 +33,7 @@ const OLD = JSON.parse(readFileSync(join(root, 'tests/fixtures/old-resource-expo
   DEVOTIONALS: { id: string }[];
 };
 
-const LADDER_IDS = new Set(LADDER.map((i) => i.id));
+const LADDER_IDS = new Set([...LADDER, ...HEBREW_LADDER].map((i) => i.id));
 const BOOK_CODES = new Set(BOOKS.map((b) => b.code));
 
 /** What is wrong with a list of entries, in words: a duplicate Resource ID, an entry with no value, a covers code that is no book, a grammar section idea that is not on the ladder. */
@@ -270,9 +271,12 @@ describe('the five old exports as views over the catalogue', () => {
   });
 
   it('GRAMMAR_BOOKS is the catalogue’s grammars that have a sections table, as it was; the rest are listed for the tutor only', () => {
-    expect(GRAMMAR_BOOKS).toEqual(OLD.GRAMMAR_BOOKS);
-    expect(DEFAULT_GRAMMAR_BOOKS).toEqual(OLD.DEFAULT_GRAMMAR_BOOKS);
-    expect(entriesOf('grammar').filter((e) => e.sections).map((e) => e.resource)).toEqual(OLD.GRAMMAR_BOOKS.map((g) => g.resource));
+    // the Greek books are what they were; the Hebrew ones (mw-5r3p30.890) come after them
+    const greek = GRAMMAR_BOOKS.filter((b) => b.lang !== 'he');
+    expect(greek).toEqual(OLD.GRAMMAR_BOOKS);
+    expect(DEFAULT_GRAMMAR_BOOKS.filter((id) => greek.some((b) => b.id === id))).toEqual(OLD.DEFAULT_GRAMMAR_BOOKS);
+    expect(entriesOf('grammar').filter((e) => e.sections && e.lang !== 'he').map((e) => e.resource)).toEqual(OLD.GRAMMAR_BOOKS.map((g) => g.resource));
+    expect(GRAMMAR_BOOKS.slice(greek.length).every((b) => b.lang === 'he')).toBe(true);
     expect(entriesOf('grammar').length).toBeGreaterThan(GRAMMAR_BOOKS.length);
   });
 

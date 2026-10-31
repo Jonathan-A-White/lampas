@@ -3,11 +3,13 @@
 import { describe, expect, it } from 'vitest';
 import { APPROACHES } from '../../src/approaches';
 import { LADDER } from '../../src/data/grammar/ladder';
+import { HEBREW_LADDER } from '../../src/data/grammar/hebrew/ladder';
 import { settingOf } from '../../src/settings/registry';
 import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS, bookLink, readMoreFor, sectionsFor } from '../../src/resources/grammarBooks';
 import type { GrammarBook } from '../../src/resources/types';
 
 const LADDER_IDS = new Set(LADDER.map((i) => i.id));
+const HEBREW_IDS = new Set(HEBREW_LADDER.map((i) => i.id));
 const black = GRAMMAR_BOOKS.find((b) => b.id === 'black');
 
 /** The ideas Black's table of contents names (Google Books, the third edition: lesson titles and pages; docs/resources.md): each must open a lesson. */
@@ -27,15 +29,15 @@ describe('grammar books', () => {
     expect(black).toBeDefined();
     expect(black?.resource).toBe('LLS:LRNTOREADNTGRK');
     expect(black?.startsTicked).toBe(true);
-    expect(DEFAULT_GRAMMAR_BOOKS).toEqual(['black']);
+    expect(DEFAULT_GRAMMAR_BOOKS).toEqual(['black', 'step-by-step']); // one for each language: Step by Step is the Hebrew peer (tests/unit/hebrew-grammar-books.test.ts)
   });
 
   it('every ladder idea Black teaches has at least one section mapped', () => {
     for (const id of BLACK_TEACHES) expect(sectionsFor(black!, id).length, id).toBeGreaterThan(0);
   });
 
-  it('every mapped idea id exists in ladder.ts, in every book', () => {
-    for (const book of GRAMMAR_BOOKS) for (const section of book.sections) for (const id of section.ideas) expect(LADDER_IDS.has(id), `${book.id}: ${id}`).toBe(true);
+  it('every mapped idea id exists in the ladder of the book’s language, in every book', () => {
+    for (const book of GRAMMAR_BOOKS) for (const section of book.sections) for (const id of section.ideas) expect((book.lang === 'he' ? HEBREW_IDS : LADDER_IDS).has(id), `${book.id}: ${id}`).toBe(true);
   });
 
   it('book ids are unique and every section has a title and a reference', () => {

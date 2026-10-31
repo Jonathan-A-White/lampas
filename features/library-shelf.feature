@@ -27,7 +27,7 @@ Feature: His shelf, kept in the library table
     Given the old keys hold nothing
     When the shelf is first opened
     Then the Logos lexicons ticked are "bdag"
-    And getGrammarBooks answers "black"
+    And getGrammarBooks answers "black, step-by-step"
     And getWorks answers nothing
     And the devotional draw is every devotional
 

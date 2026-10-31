@@ -8,11 +8,12 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { APPROACHES } from '../../src/approaches';
 import { db } from '../../src/data/db';
-import { ideaOf } from '../../src/data/grammar/ladder';
-import { getGrammarBooks, getStudyResources } from '../../src/data/repositories';
+import { ideaOfAny } from '../../src/data/grammar/ladders';
+import { getGrammarBooks, getStudyResources, setState } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { IdeaSheet } from '../../src/IdeaSheet';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { entriesOf } from '../../src/resources/catalogue';
 import { GRAMMAR_BOOKS, readMoreFor } from '../../src/resources/grammarBooks';
 import { browserEnv } from '../../src/resources/openApp';
 import type { GrammarBook } from '../../src/resources/types';
@@ -64,7 +65,7 @@ const readMore = (): HTMLElement | null => within(ideaSheet()).queryByRole('regi
 const lines = (): HTMLElement[] => within(readMore()!).queryAllByRole('group');
 
 async function opens(id: string, books?: readonly GrammarBook[]): Promise<void> {
-  render(<IdeaSheet idea={ideaOf(id)} onClose={() => undefined} onWord={() => undefined} books={books} />);
+  render(<IdeaSheet idea={ideaOfAny(id)} onClose={() => undefined} onWord={() => undefined} books={books} />);
   await screen.findByRole('dialog', { name: 'Idea' });
   await waitFor(() => expect(within(ideaSheet()).queryByTestId('idea-loading')).toBeNull());
 }
@@ -83,6 +84,7 @@ describeFeature(feature, ({ Scenario }) => {
   const KEEP = 'Lampas has Logos on and the grammar books {string} ticked';
   const keepTicked = (_: unknown, ids: string) => keep(true, ids.split(',').map((s) => s.trim()));
   const OPEN = 'he opens the idea sheet of {string}';
+  const OPEN_HEBREW = 'he opens the Hebrew idea sheet of {string}';
   const opensIdea = (_: unknown, id: string) => opens(id);
   const opensQuiet = (_: unknown, id: string) => opensAndSettles(id);
 
@@ -113,6 +115,43 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(link);
       Object.assign(browserEnv, was);
       expect(opened).toEqual([fallback]);
+    });
+  });
+
+  Scenario("A Hebrew lesson's idea shows Read more with Step by Step, not Black", ({ Given, When, Then, And }) => {
+    let link: HTMLElement;
+    Given(KEEP, keepTicked);
+    When(OPEN_HEBREW, opensIdea);
+    Then('the idea sheet shows Read more with {int} book line', async (_, n: number) => {
+      await within(ideaSheet()).findByRole('region', { name: 'Read more' });
+      expect(lines()).toHaveLength(n);
+    });
+    And('the line of {string} links {string} to {string}', (_, book: string, section: string, href: string) => {
+      const line = within(readMore()!).getByRole('group', { name: book });
+      link = within(line).getByRole('link', { name: `Open in Logos: ${book}, ${section}` });
+      expect(link).toHaveAttribute('href', href);
+    });
+    And('that link falls back to {string}', (_, fallback: string) => {
+      expect(link).toHaveAttribute('data-fallback', fallback);
+    });
+  });
+
+  Scenario('Pinning a Hebrew grammar with no lesson table leaves Read more on Step by Step', ({ Given, When, Then, And }) => {
+    Given('Lampas has Logos on and the grammar books {string} ticked, with {string} Pinned on his shelf', async (_, ids: string, name: string) => {
+      await keep(true, ids.split(',').map((s) => s.trim()));
+      await db.library.clear();
+      const entry = entriesOf('grammar').find((e) => e.title.startsWith(name))!;
+      expect(entry.sections).toBeUndefined();
+      expect(await setState(entry.resource, 'pinned')).toEqual({ ok: true });
+    });
+    When(OPEN_HEBREW, opensIdea);
+    Then('the idea sheet shows Read more with {int} book line', async (_, n: number) => {
+      await within(ideaSheet()).findByRole('region', { name: 'Read more' });
+      expect(lines()).toHaveLength(n);
+    });
+    And('the line of {string} links {string} to {string}', (_, book: string, section: string, href: string) => {
+      const line = within(readMore()!).getByRole('group', { name: book });
+      expect(within(line).getByRole('link', { name: `Open in Logos: ${book}, ${section}` })).toHaveAttribute('href', href);
     });
   });
 
@@ -152,7 +191,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Black is on among the grammar books of Your Logos library once Logos is on, and turning it Off there is kept', ({ Given, When, And, Then }) => {
+  Scenario('Black and Step by Step are on among the grammar books of Your Logos library once Logos is on, and turning Black Off there is kept', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', async () => {
       cleanup();
       clearBus();
@@ -192,8 +231,8 @@ describeFeature(feature, ({ Scenario }) => {
       const group = screen.getByRole('radiogroup', { name });
       await user.click(within(group).getByRole('radio', { name: 'Off' }));
     });
-    Then('the grammar books kept are none', async () => {
-      await waitFor(async () => expect(await getGrammarBooks()).toEqual([]));
+    Then('the grammar books kept are {string}', async (_, ids: string) => {
+      await waitFor(async () => expect(await getGrammarBooks()).toEqual(ids.split(',').map((id) => id.trim()).filter(Boolean)));
     });
   });
 

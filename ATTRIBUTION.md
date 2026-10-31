@@ -22,6 +22,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[TIPNR, from STEPBible](https://www.stepbible.org)** (Translators Individualised Proper Names with all References), Tyndale House Cambridge.
   [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The places for the maps, with coordinates from [OpenBible.info](https://www.openbible.info/geo/). Changes: places only.
 - **[Learn to Read New Testament Greek](https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC)** by David Alan Black. Only lesson titles and pages, so a link finds the lesson.
+- **[Biblical Hebrew Step by Step](https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ)** by Menahem Mansoor. Only lesson titles and pages, so a link finds the lesson.
 - **[Bible Mapper](https://biblemapper.com)**, maps by David P. Barrett. Free for non-commercial use with a credit: "Map by David P. Barrett, biblemapper.com". Shown from his site, not copied.
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.
 - **[Biblical Mastery Academy](https://biblicalmastery.academy/)** inspired the grammar ladder, ordered beside the sequence of their Greek path; no course text, image or exercise is copied.

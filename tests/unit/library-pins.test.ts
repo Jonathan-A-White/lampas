@@ -41,11 +41,17 @@ describe('the pin cap per kind and language', () => {
     expect(pinRefusal(HEBREW[MAX_PINS])).toBe('Three Hebrew lexicons pinned already: unpin one first');
   });
 
-  it('keeps one cap for a kind with no language: the fourth grammar pin is refused in the old words', async () => {
-    const grammars = entriesOf('grammar');
-    for (const e of grammars.slice(0, MAX_PINS)) expect(await setState(e.resource, 'pinned')).toEqual({ ok: true });
-    expect(await setState(grammars[MAX_PINS].resource, 'pinned')).toEqual({ ok: false, reason: 'too-many-pins' });
-    expect(pinRefusal(grammars[MAX_PINS])).toBe('Three pinned already: unpin one first');
+  it('counts the grammars per language too, now that he has Greek and Hebrew ones: the fourth Greek pin is refused naming Greek, with Hebrew pins untouched', async () => {
+    const greek = entriesOf('grammar').filter((e) => e.lang === 'grc');
+    const hebrew = entriesOf('grammar').filter((e) => e.lang === 'he');
+    for (const e of greek.slice(0, MAX_PINS)) expect(await setState(e.resource, 'pinned')).toEqual({ ok: true });
+    expect(await setState(greek[MAX_PINS].resource, 'pinned')).toEqual({ ok: false, reason: 'too-many-pins' });
+    expect(pinRefusal(greek[MAX_PINS])).toBe('Three Greek grammars pinned already: unpin one first');
+    expect(await setState(hebrew[0].resource, 'pinned')).toEqual({ ok: true });
+  });
+
+  it('keeps one cap, in the old words, for a kind with books of no second language', () => {
+    expect(pinRefusal(entriesOf('greek-text')[0])).toBe('Three pinned already: unpin one first');
   });
 
   it('an import that starts more than three lexicons pinned pins up to three of each language', async () => {

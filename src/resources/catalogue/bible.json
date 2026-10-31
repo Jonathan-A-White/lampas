@@ -1,6 +1,6 @@
 {
   "kind": "bible",
-  "version": "3546cae27d65",
+  "version": "f19e6f32be5b",
   "entries": [
     {"resource":"LLS:LGCYSTNDRDBBLSB","kind":"bible","title":"Legacy Standard Bible","short":"LSB","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","parts":["nt","ot"],"starts":"pinned","via":"id"},
     {"resource":"LLS:1.0.710","kind":"bible","title":"English Standard Version","short":"ESV","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","parts":["nt","ot"],"starts":"on","via":"id"},
