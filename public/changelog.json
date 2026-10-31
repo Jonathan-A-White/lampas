@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.41",
+    "date": "2026-10-31",
+    "story": "mw-9ji6ek0.41",
+    "kind": "new",
+    "text": "A variant's English now shows where it comes from: plain type for the Majority Standard Bible's footnote, italics in a dotted ring for Lampas's own wording."
+  },
+  {
     "version": "0.7.38",
     "date": "2026-10-31",
     "story": "mw-5r3p30.895",

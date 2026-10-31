@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.41
+_2026-10-31_
+- New: A variant's English now shows where it comes from: plain type for the Majority Standard Bible's footnote, italics in a dotted ring for Lampas's own wording.
+
 ## 0.7.38
 _2026-10-31_
 - Fixed: A sentence diagram is only offered for one verse at a time, no longer on a passage.
