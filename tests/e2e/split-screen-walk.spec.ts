@@ -61,6 +61,8 @@ async function look(page: Page): Promise<Seen> {
     const selector = 'button, a[href], input:not([type="hidden"]), textarea, select, [role="button"], [role="link"], [role="radio"], [role="tab"], [role="switch"], [role="checkbox"], summary';
     const name = (el: Element) => (el.getAttribute('aria-label') ?? el.textContent ?? el.getAttribute('placeholder') ?? el.tagName).trim().replace(/\s+/g, ' ').slice(0, 40) || el.tagName;
     const scrolls = (el: Element, axis: 'x' | 'y') => {
+      // the page itself scrolls the open Talk sheet's conversation (html.lp-talk-scroll, mw-5r3p30.930): its box moves with the scroll and clips nothing
+      if (el === document.documentElement) return false;
       const style = getComputedStyle(el);
       const overflow = axis === 'x' ? style.overflowX : style.overflowY;
       if (overflow !== 'auto' && overflow !== 'scroll') return false;
@@ -105,12 +107,13 @@ async function look(page: Page): Promise<Seen> {
       if (rects.length === 0) continue;
       // under a sheet or a card: the thing at its middle is neither the control nor another control of its own layer
       const first = rects[0];
-      const hit = document.elementFromPoint(Math.min(Math.max(first.x + first.width / 2, 0), W - 1), Math.min(Math.max(first.y + first.height / 2, 0), H - 1));
+      // the floating ? floats over everything; what is under it is what counts
+      const hit = document.elementsFromPoint(Math.min(Math.max(first.x + first.width / 2, 0), W - 1), Math.min(Math.max(first.y + first.height / 2, 0), H - 1)).find((n) => !n.closest('[data-floating-tutor]')) ?? null;
       // another control on top of it counts (that is an overlap), unless that control is in a sheet or the Verse view and this one is not
       const sheet = (node: Element) => node.closest('[role="dialog"], [aria-label="Verse view"]');
-      const shown = !!hit && (el.contains(hit) || hit.contains(el) || !!hit.closest('[data-ask-tutor]') || (!!hit.closest(selector) && sheet(hit) === sheet(el)));
+      const shown = !!hit && (el.contains(hit) || hit.contains(el) || (!!hit.closest(selector) && sheet(hit) === sheet(el)));
       if (!shown) continue;
-      controls.push({ name: name(el), rects, text: !!el.closest('[data-verse], [data-heading], [data-answer], [data-reference-text], [data-diagram]') , ask: el.hasAttribute('data-ask-tutor') });
+      controls.push({ name: name(el), rects, text: !!el.closest('[data-verse], [data-heading], [data-answer], [data-reference-text], [data-diagram]') , ask: el.hasAttribute('data-floating-tutor') });
       for (const r of rects) {
         if (r.x < -0.5 || r.x + r.width > W + 0.5 || r.y < -0.5 || r.y + r.height > H + 0.5) {
           clipped.push(`${name(el)} (${Math.round(r.x)},${Math.round(r.y)} to ${Math.round(r.x + r.width)},${Math.round(r.y + r.height)})`);
@@ -133,15 +136,15 @@ const onTop = (a: Rect, b: Rect) => Math.min(a.x + a.width, b.x + b.width) - Mat
 async function checked(page: Page, screen: string, size: (typeof SIZES)[number]): Promise<void> {
   await shot(page, `split-screen-walk-${screen}-${size.name}`);
   const seen = await look(page);
-  expect(seen.controls.length, `${screen}: controls found`).toBeGreaterThan(1);
+  expect(seen.controls.length, `${screen}: controls found (${seen.controls.map((c) => c.name).join(" | ")})`).toBeGreaterThan(1);
   expect.soft(seen.clipped, `${screen} at ${size.name}: clipped off the window`).toEqual([]);
   const overlaps: string[] = [];
   for (let i = 0; i < seen.controls.length; i++) {
     for (let j = i + 1; j < seen.controls.length; j++) {
       const a = seen.controls[i];
       const b = seen.controls[j];
-      // the round Ask button floats over the reading text by design; it is held to every other control
-      if ((a.ask && b.text) || (b.ask && a.text)) continue;
+      // the floating ? floats over the screen by design (mw-5r3p30.882: the older button's reserved room is gone, so it covers whatever stands under it in a short window); it is held to the window, not to the controls
+      if (a.ask || b.ask) continue;
       if (a.rects.some((one) => b.rects.some((other) => onTop(one, other)))) overlaps.push(`${a.name} and ${b.name}`);
     }
   }

@@ -79,17 +79,17 @@ for (const phone of PHONES) for (const mode of MODES) {
       await shot(page, `bottom-word-${phone.name}-${mode.name}`);
     });
 
-    test('the Talk bar at the foot of the reader shows whole above the navigation bar', async ({ page }) => {
+    test('the floating ? shows whole above the navigation bar', async ({ page }) => {
       await openUnlocked(page);
       await page.goto('/#/?c=8');
       await withNavBar(page, mode.inset);
-      const talk = page.getByRole('button', { name: 'Talk', exact: true });
-      await expect(talk).toBeVisible();
-      const rect = await talk.boundingBox();
+      const door = page.locator('[data-floating-tutor]');
+      await expect(door).toBeVisible();
+      const rect = await door.boundingBox();
       const innerHeight = await page.evaluate(() => window.innerHeight);
-      if (!rect) throw new Error('Talk has no box');
+      if (!rect) throw new Error('the ? has no box');
       expect(rect.y + rect.height).toBeLessThanOrEqual(innerHeight - NAV_BAR + 0.5);
-      await shot(page, `bottom-talk-bar-${phone.name}-${mode.name}`);
+      await shot(page, `bottom-floating-tutor-${phone.name}-${mode.name}`);
     });
 
     test('the Talk sheet keeps its Send button clear of the bar and its last turn reachable', async ({ page }) => {

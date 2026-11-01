@@ -373,11 +373,11 @@ test('mw-1vuvq6.10: a double tap on the bridge idea sheet\'s Done leaves the tal
 test.describe('sideways', () => {
   test.use({ viewport: { width: 844, height: 390 }, hasTouch: true });
 
-  test('mw-5r3p30.487: a double tap on the round Ask the tutor button opens the talk and does not start Hold to talk', async ({ page }) => {
+  test('mw-5r3p30.487: a double tap on the floating ? opens the talk and does not start Hold to talk', async ({ page }) => {
     await honestMic(page);
     await open(page, '#/about', {}, () => page.getByRole('heading', { name: 'About', exact: true, level: 1 }).first().waitFor());
     const talk = page.getByRole('dialog', { name: /^Ask the tutor/ });
-    await thumbDoubleTap(page, page.getByRole('button', { name: 'Ask the tutor about this screen' }), () => talk.first().waitFor(), { selector: '[name="Hold to talk"], button' });
+    await thumbDoubleTap(page, page.getByRole('button', { name: 'Ask the tutor about what is on screen' }), () => talk.first().waitFor(), { selector: '[name="Hold to talk"], button' });
     await expect(talk).toBeVisible();
     await pageTime(page, 1000);
     await expect(talk.getByText(/No speech was heard|speech service failed/)).toHaveCount(0);

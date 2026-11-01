@@ -151,7 +151,7 @@ test('a sheet takes focus to its heading when it opens and gives it back to what
   await expect(word).toHaveCount(0);
   await expect(opener).toBeFocused();
   // the Talk sheet
-  const talk = page.getByRole('button', { name: 'Talk', exact: true });
+  const talk = page.locator('[data-floating-tutor]');
   await talk.click();
   const sheet = page.getByRole('dialog');
   await expect(sheet.getByRole('heading', { level: 2 }).first()).toBeFocused();

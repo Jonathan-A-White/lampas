@@ -195,7 +195,7 @@ export function FloatingTutor() {
         stopReading();
         openDoorTarget();
       }}
-      style={{ bottom: 'calc(var(--lp-bar-inset) + 17rem)' }}
+      style={{ bottom: 'calc(var(--lp-bar-inset) + min(17rem, 35dvh))' }}
       className={`fixed ${hand === 'left' ? 'left-3' : 'right-3'} z-50 flex size-14 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg active:opacity-80`}
     >
       <TutorIcon />

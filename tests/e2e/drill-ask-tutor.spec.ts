@@ -9,7 +9,7 @@ import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const CONTROL = 'Ask the tutor about this screen';
+const CONTROL = 'Ask the tutor about what is on screen';
 
 // A walk's questions follow from its seed (src/data/grammar/drillSeed.ts), its answers and the questions the idea has already asked him, so a fixed Math.random gives the same
 // questions each time he opens Drill it with that list empty: the spec learns what is right by answering, forgets what was asked before each walk, then walks the same path with the

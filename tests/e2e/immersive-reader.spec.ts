@@ -2,16 +2,16 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestMic, honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openTutor } from './open-tutor';
 import { openVerseView } from './verse-view';
 import { leaveSettings, openGroup } from './settings-group';
 
-// The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header, the chips, the Talk bar and the Ask button away;
+// The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header and the chips away;
 // scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
 // (mw-5r3p30.255). A phone-width layout claim: it runs under --project=shots.
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 /** Puts the Immersive reader setting in the app's store through raw IndexedDB, as the app wrote it. */
-// the two-finger tap on the text shows and puts away the bars where the Tutor door is Floating ? (mw-5r3p30.880); in the default door the same tap opens the tutor, so these specs choose Floating ?
 async function keepImmersive(page: Page, value: 'on' | 'off') {
   await page.evaluate(
     (v) =>
@@ -22,7 +22,6 @@ async function keepImmersive(page: Page, value: 'on' | 'off') {
           const db = open.result;
           const tx = db.transaction('settings', 'readwrite');
           tx.objectStore('settings').put({ key: 'immersiveReader', value: v });
-          tx.objectStore('settings').put({ key: 'tutorDoor', value: 'floating' });
           tx.oncomplete = () => {
             db.close();
             resolve();
@@ -49,9 +48,8 @@ async function openReader(page: Page, immersive: 'on' | 'off') {
 
 const header = (page: Page) => page.locator('header').first();
 const chips = (page: Page) => page.getByTestId('reader-chips');
-const talkBar = (page: Page) => page.locator('[data-talk-bar]');
-// the specs here choose the floating ? to get the two-finger tap that shows the bars; the older round Ask button is not drawn beside it (mw-5r3p30.935), so it is not among the bars
-const all = (page: Page) => [header(page), chips(page), talkBar(page)];
+// the bars are the header and the chips row; the floating ? stays where it is (mw-5r3p30.882)
+const all = (page: Page) => [header(page), chips(page)];
 
 const scrollText = (page: Page, by: number) =>
   page.evaluate((px) => {
@@ -105,7 +103,6 @@ test('scrolling down slides the bars away, scrolling up leaves them away', async
   await expectAll(page, 'hidden');
   // out of the tab order too
   await expect(page.getByRole('button', { name: 'Settings', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Talk', exact: true })).toHaveCount(0);
   expect(await textHeight(page)).toBeGreaterThan(before + 150);
   // the text has the whole screen: its box ends in the foot's last 100 px of the window, above the place line and the phone's 48 px floor under it (mw-5r3p30.473)
   const box = await page.locator('[data-reader]').boundingBox();
@@ -170,21 +167,15 @@ test('a two-finger tap opens no word sheet; a one-finger tap on a word still ope
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
-test('with the bars away, a two-finger tap and then holding Talk starts listening', async ({ page }) => {
+test('with the bars away, a two-finger tap brings the bars back and the floating ? still opens the tutor', async ({ page }) => {
   await openReader(page, 'on');
   await scrollText(page, 200);
   await expectAll(page, 'hidden');
   await twoFingerTap(page);
   await expectAll(page, 'visible');
 
-  const talk = page.getByRole('button', { name: 'Talk', exact: true });
-  const at = await talk.boundingBox();
-  if (!at) throw new Error('no Talk button');
-  await page.mouse.move(at.x + at.width / 2, at.y + at.height / 2);
-  await page.mouse.down();
-  const live = page.getByRole('dialog', { name: 'Talk about Romans 8' }).locator('[data-talk-live]');
-  await expect(live).toContainText('Listening');
-  await page.mouse.up();
+  // the floating ? stays whole while the bars are away, and opens the tutor (mw-5r3p30.882: the Talk bar is gone)
+  await openTutor(page, { sheet: 'Talk about Romans 8' });
 });
 
 test('scrolling to the chapter\'s end and past the bottom leaves the bars away', async ({ page }) => {
@@ -354,10 +345,10 @@ test('with the bars shown, Read from the top moves the text to follow the voice 
   await page.waitForTimeout(400);
   await expect(page.locator('[data-verse][data-reading="true"]')).toHaveCount(1);
   // the chips row is not drawn while a chapter is read aloud (ReaderChips hidden), so it is the other two that stay
-  for (const el of [header(page), talkBar(page)]) await expect(el).toBeVisible();
+  for (const el of [header(page)]) await expect(el).toBeVisible();
   await shot(page, 'immersive-reading-aloud-shown');
 
   // his own scrolling down still slides them away
   await scrollText(page, 300);
-  for (const el of [header(page), talkBar(page)]) await expect(el).toBeHidden();
+  for (const el of [header(page)]) await expect(el).toBeHidden();
 });

@@ -142,32 +142,6 @@ for (const size of SIZES) {
   });
 }
 
-test("a hold that began on the Reader's Talk bar shows its live words in a bounded box too, and the sheet's bar does not move", async ({ page }) => {
-  const size = SIZES[0];
-  await prepare(page, size);
-  await openUnlocked(page);
-  await page.goto('/');
-  await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await press(page, page.getByRole('button', { name: 'Talk', exact: true }));
-  await watchHold(page);
-  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
-  const live = sheet.locator('[data-talk-live]');
-  await expect(live).toContainText('chapter');
-  const bar = sheet.locator('.bk-composer__bar');
-  await hear(page, words(3));
-  const before = await box(bar);
-  await hear(page, LONG);
-  await expect(live).toContainText('word240');
-  const now = await box(bar);
-  expect(Math.abs(now.y - before.y)).toBeLessThanOrEqual(1);
-  const view = await viewOf(live.locator('p').last());
-  expect(view.box).toBeLessThanOrEqual(view.line * 4.5);
-  expect(view.newestInView).toBe(true);
-  expect(now.y + now.height).toBeLessThanOrEqual(size.height);
-  expect(await holdLost(page)).toEqual([]);
-  await page.mouse.up();
-});
-
 test("the Verse view's Hold to ask stays still while 40 lines are dictated", async ({ page }) => {
   const size = SIZES[0];
   await prepare(page, size);
