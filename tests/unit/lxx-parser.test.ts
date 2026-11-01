@@ -10,6 +10,7 @@
 // tbesg-slice.txt is the rows of the pinned TBESG (cut to its first seven columns, the definitions dropped) of every lemma a rule reaches for those words.
 // tagnt-jhn-1.tsv is TAGNT's rows for John 1 in NA28 (829 words), cut as the slice is; swete-jhn-1.csv is the same words in the shape of Swete's two files,
 // so lxx:derive reads John 1 as a book, and the rows say what each word is (the known answer).
+// The agreement check (mw-u2w5klk.3, tests/unit/lxx-agreement.test.ts) runs after layers 1 and 2, so what they settle is read before it (`beforeCheck`).
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -26,6 +27,7 @@ import {
   type BookResult,
   type DeriveInput,
   type DerivedWord,
+  type Layer,
   type PendingWord,
 } from '../../scripts/lxx/derive';
 import { PARSER_DOMINANT, parse, ruleOf, settleParsed, unaugment, type Candidate } from '../../scripts/lxx/parser';
@@ -62,7 +64,7 @@ function wordOf(result: BookResult, display: string): { ref: string; form: strin
   if (!word) throw new Error(`no word ${display}`);
   return { ...word, out: outOf(result, word.ref) };
 }
-const layerOf = (w: DerivedWord | PendingWord): number | undefined => (isDerived(w) ? w.layer : undefined);
+const layerOf = (w: DerivedWord | PendingWord): Layer | undefined => (isDerived(w) ? w.layer : undefined);
 const has = (cs: readonly Candidate[] | readonly { lemma: string; morph: string }[], lemma: string, morph: string): boolean =>
   cs.some((c) => c.lemma === lemma && c.morph === morph);
 
@@ -71,11 +73,11 @@ describe("layer 2 on Swete's Gen 1 and Ps 22 (npm run lxx:derive -- --book gen)"
   const psa = await run(PSA_22, ['--book', 'psa']);
 
   it('settles 28 words in layer 2 and leaves 178 pending, each within two of the probe', () => {
-    expect(gen.derived.filter((w) => w.layer === 1)).toHaveLength(545);
-    expect(Math.abs(gen.derived.filter((w) => w.layer === 2).length - 28)).toBeLessThanOrEqual(2);
-    expect(Math.abs(gen.pending.length - 178)).toBeLessThanOrEqual(2);
-    expect(psa.derived.filter((w) => w.layer === 2)).toHaveLength(2);
-    expect(psa.pending).toHaveLength(24);
+    expect(gen.beforeCheck.derived.filter((w) => w.layer === 1)).toHaveLength(545);
+    expect(Math.abs(gen.beforeCheck.derived.filter((w) => w.layer === 2).length - 28)).toBeLessThanOrEqual(2);
+    expect(Math.abs(gen.beforeCheck.pending.length - 178)).toBeLessThanOrEqual(2);
+    expect(psa.beforeCheck.derived.filter((w) => w.layer === 2)).toHaveLength(2);
+    expect(psa.beforeCheck.pending).toHaveLength(24);
   });
 
   it('gives ἕρπον[τι both the masculine and the neuter participle (the agreement check, B2, will pick)', () => {
@@ -136,13 +138,13 @@ describe("layer 2 on Swete's Gen 1 and Ps 22 (npm run lxx:derive -- --book gen)"
   });
 
   it('settles a parsed word in layer 2 only on one candidate or one with 90% of the support, at 0.75 x its share', () => {
-    const layer2 = gen.derived.filter((w) => w.layer === 2);
+    const layer2 = gen.beforeCheck.derived.filter((w) => w.layer === 2);
     for (const w of layer2) {
       expect(w.candidates.length === 1 || w.candidates[0].share >= PARSER_DOMINANT).toBe(true);
       expect(w.confidence).toBe(Math.round(75 * w.candidates[0].share) / 100);
       expect([w.lemma, w.morph]).toEqual([w.candidates[0].lemma, w.candidates[0].morph]);
     }
-    const pendingParsed = gen.pending.filter((w) => w.candidates.length > 1 && w.notes.includes(NOTE_NOT_IN_NT));
+    const pendingParsed = gen.beforeCheck.pending.filter((w) => w.candidates.length > 1 && w.notes.includes(NOTE_NOT_IN_NT));
     expect(pendingParsed.length).toBeGreaterThan(0);
     for (const w of pendingParsed) expect(w.candidates[0].share).toBeLessThan(PARSER_DOMINANT);
   });
@@ -229,10 +231,10 @@ describe('the known answer: John 1 with John hidden (npm run lxx:derive -- --boo
   });
 
   it('settles 25 words in layer 2, every one right', () => {
-    const layer2 = jhn.derived.filter((w) => w.layer === 2);
+    const layer2 = jhn.beforeCheck.derived.filter((w) => w.layer === 2);
     expect(layer2).toHaveLength(25);
     for (const w of layer2) expect([w.lemma, w.morph]).toEqual([answer.get(w.ref)!.lemma, answer.get(w.ref)!.morph]);
-    expect(jhn.derived.filter((w) => w.layer === 1)).toHaveLength(673);
+    expect(jhn.beforeCheck.derived.filter((w) => w.layer === 1)).toHaveLength(673);
   });
 });
 

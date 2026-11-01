@@ -7,7 +7,8 @@
 // except where that would change layer 1's answer, its candidates or its notes for any word of the two chapters, with John hidden or not (checked against
 // the whole of TAGNT when the slice was made). So the supports in a fixture run's candidates are not the New Testament's counts; the answers are.
 // Those are its first 3,683 rows; the rows after them are the parser's (layer 2, mw-u2w5klk.2: tests/unit/lxx-parser.test.ts says how they were cut), and
-// tbesg-slice.txt is its lemmas. Layer 2 now runs in these tests too, so a count of layer 1's words filters on the layer.
+// tbesg-slice.txt is its lemmas. Layer 2 now runs in these tests too, so a count of layer 1's words filters on the layer; and the agreement check
+// (mw-u2w5klk.3, tests/unit/lxx-agreement.test.ts) runs after them, so a count of what layers 1 and 2 settle reads the result before it (`beforeCheck`).
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -53,9 +54,10 @@ describe("layer 1 on Swete's Gen 1 (npm run lxx:derive -- --book gen)", async ()
 
   it('settles 545 of the 751 words, the probe’s count to within one, and leaves the rest to the parser (layer 2) or pending', () => {
     expect(gen.words).toHaveLength(751);
-    expect(Math.abs(gen.derived.filter((w) => w.layer === 1).length - 545)).toBeLessThanOrEqual(1);
+    expect(Math.abs(gen.beforeCheck.derived.filter((w) => w.layer === 1).length - 545)).toBeLessThanOrEqual(1);
+    expect(gen.beforeCheck.derived.length + gen.beforeCheck.pending.length).toBe(751);
+    expect(gen.beforeCheck.derived.every((w) => w.layer === 1 || w.layer === 2)).toBe(true);
     expect(gen.derived.length + gen.pending.length).toBe(751);
-    expect(gen.derived.every((w) => w.layer === 1 || w.layer === 2)).toBe(true);
   });
 
   it('matches ΕΝ ΑΡΧΗ without accents, and leaves ΑΡΧΗ pending between nominative and dative', () => {
@@ -125,7 +127,7 @@ describe("layer 1 on Swete's Greek Ps 22", async () => {
 
   it('settles the probe’s 78 of the 104 words', () => {
     expect(psa.words).toHaveLength(104);
-    expect(psa.derived.filter((w) => w.layer === 1)).toHaveLength(78);
+    expect(psa.beforeCheck.derived.filter((w) => w.layer === 1)).toHaveLength(78);
   });
 
   it('looks ἐξέθρεψέν (before the enclitic με) up as ἐξέθρεψεν', () => {
