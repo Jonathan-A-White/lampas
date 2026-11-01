@@ -37,6 +37,14 @@ export interface GreekWord {
   gl?: string;
   /** position in this verse's `e` array of the English chunk this word is part of; absent: no English */
   e?: number;
+  /**
+   * PROVISIONAL, the Septuagint only (public/data-lxx, docs/data.md 'The Septuagint data'; nothing reads it yet): the layer of Lampas's derivation that gave this word its lemma
+   * and parsing: '1' (the word's form in the New Testament), '2' (the parser), '2a' (the agreement check), '3' (a model session's choice), or 'g' when the confidence is below 0.5
+   * (a guess). Absent in the New Testament and the Old Testament.
+   */
+  y?: string;
+  /** PROVISIONAL, the Septuagint only: the derivation's confidence in `l` and `p`, 0 to 1 with two decimals. Absent elsewhere. */
+  c?: number;
 }
 
 export interface EnglishChunk {
@@ -129,8 +137,23 @@ export function ownEnglish(chunk: EnglishChunk): string {
 export const markSupplied = (chunk: EnglishChunk): string =>
   chunk.s && (!Array.isArray(chunk.s) || chunk.s.length) ? englishRuns(chunk).map((r) => (r.supplied ? `*${r.text}*` : r.text)).join(' ') : chunk.t.trim();
 
+/** A verse of Lampas's own Old Testament (public/data), by the numbers the Berean tables use. */
+export interface VerseRef {
+  book: string;
+  chapter: number;
+  verse: number;
+}
+
 export interface Verse {
   n: number;
+  /**
+   * PROVISIONAL, the Septuagint only (nothing reads it yet): the verse of Lampas's Old Testament this Greek verse is, from STEPBible's TVTMS, since the Septuagint's chapters and verses
+   * are not always the Hebrew's (the Psalms one number lower from Ps 10). 'none' when Lampas has no verse for it (an Addition, a Psalm's extra title). When it is several Lampas
+   * verses this is the first and `refs` lists them all. Absent in the New Testament and the Old Testament.
+   */
+  ref?: VerseRef | 'none';
+  /** PROVISIONAL, the Septuagint only: every Lampas verse the Greek verse answers, when that is more than one (`ref` is the first); absent otherwise */
+  refs?: VerseRef[];
   /** the MSB's section heading that comes before this verse (English); absent when none */
   h?: string;
   /** 1 when the MSB starts a paragraph at this verse; absent otherwise */
@@ -157,8 +180,10 @@ export interface Chapter {
   chapter: number;
   /** the language the words of `verses` are in; absent means 'grc': the New Testament's files carry neither this nor `translation`, and loadChapter fills them (sourceLanguage reads it) */
   lang?: SourceLanguage;
-  /** the translation the English chunks are from: 'msb', the Majority Standard Bible (its Old Testament is the Berean Standard Bible's); absent means 'msb' */
+  /** the translation the English chunks are from: 'msb', the Majority Standard Bible (its Old Testament is the Berean Standard Bible's); absent means 'msb'; 'lxx2012' in the Septuagint (Brenton's, one chunk a verse) */
   translation?: string;
+  /** PROVISIONAL, the Septuagint only (nothing reads it yet): the edition of the Greek the words are from, 'swete' (Swete's The Old Testament in Greek); absent in the New Testament and the Old Testament */
+  edition?: string;
   /** every Strong's number used in this file -> its gloss and definition, once */
   lex: Record<string, LexEntry>;
   /** every parsing code used in this file -> plain words, once */

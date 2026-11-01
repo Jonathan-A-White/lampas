@@ -19,6 +19,15 @@ export const SWETE: PinnedSource = {
 };
 export const SWETE_VERSIFICATION = SWETE.files[0];
 export const SWETE_WORDS = SWETE.files[1];
+export const SWETE_LICENCE = SWETE.files[2];
+export const SWETE_README = SWETE.files[3];
+
+/**
+ * The same commit's SBL transliteration, one line to a word line of SWETE_WORDS (the derivation never reads it; the data build for the app does,
+ * scripts/data-build-lxx.ts): a source of its own so that fetching the derivation's files stays as it was.
+ */
+export const SWETE_TRANSLIT_FILE = '03-Swete_SBL_transliterations.csv';
+export const SWETE_TRANSLIT: PinnedSource = { repo: SWETE.repo, commit: SWETE.commit, files: [SWETE_TRANSLIT_FILE] };
 
 /** STEPBible's TAGNT (the New Testament's forms, lemmas and parsing), TBESG (the Greek lemmas) and TVTMS (versification), all CC BY 4.0. */
 export const STEP: PinnedSource = {

@@ -1,0 +1,752 @@
+ref	lemma	parsing	layer	confidence	notes
+Gen.1:1#1	ἐν	PREP	1	0.92	unaccented: matched without accents; capitals
+Gen.1:1#2	ἀρχή	N-DSF	3	0.80	unaccented: matched without accents; capitals; several analyses: for the model
+Gen.1:1#3	ποιέω	V-AAI-3S	1	0.97	
+Gen.1:1#4	ὁ	T-NSM	1	0.95	
+Gen.1:1#5	θεός	N-NSM	1	0.93	
+Gen.1:1#6	ὁ	T-ASM	1	0.95	
+Gen.1:1#7	οὐρανός	N-ASM	1	0.97	
+Gen.1:1#8	καί	CONJ	1	0.97	
+Gen.1:1#9	ὁ	T-ASF	1	0.97	
+Gen.1:1#10	γῆ	N-ASF	1	0.97	
+Gen.1:2#1	ὁ	T-NSF	1	0.95	
+Gen.1:2#2	δέ	CONJ	1	0.97	
+Gen.1:2#3	γῆ	N-NSF	1	0.93	
+Gen.1:2#4	εἰμί	V-IAI-3S	1	0.97	
+Gen.1:2#5	ἀόρατος	A-NSM	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:2#6	καί	CONJ	1	0.97	
+Gen.1:2#7	ἀκατασκεύαστος	A-NSM	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:2#8	καί	CONJ	1	0.97	
+Gen.1:2#9	σκότος	N-ASN	3	0.80	several analyses: for the model
+Gen.1:2#10	ἐπάνω	PREP	1	0.97	
+Gen.1:2#11	ὁ	T-GSF	1	0.97	
+Gen.1:2#12	ἄβυσσος	N-GSF	1	0.97	
+Gen.1:2#13	καί	CONJ	1	0.97	
+Gen.1:2#14	πνεῦμα	N-ASN	3	0.80	several analyses: for the model
+Gen.1:2#15	θεός	N-GSM	1	0.97	
+Gen.1:2#16	ἐπιφέρω	V-IPI-3S	3	0.50	not in the New Testament: for the parser; several candidates: for the model; model: unsure
+Gen.1:2#17	ἐπάνω	PREP	1	0.97	
+Gen.1:2#18	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:2#19
+Gen.1:2#19	ὕδωρ, ὕδατος	N-GSN	1	0.97	
+Gen.1:3#1	καί	CONJ	1	0.97	
+Gen.1:3#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:3#3	ὁ	T-NSM	1	0.95	
+Gen.1:3#4	θεός	N-NSM	1	0.93	
+Gen.1:3#5	γίνομαι	V-AOM-3S	1	0.97	
+Gen.1:3#6	φῶς	N-ASN	3	0.80	several analyses: for the model
+Gen.1:3#7	καί	CONJ	1	0.97	
+Gen.1:3#8	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:3#9	φῶς	N-ASN	3	0.80	several analyses: for the model
+Gen.1:4#1	καί	CONJ	1	0.97	
+Gen.1:4#2	εἴδω	V-2AAI-3S	1	0.97	spelling: ei written i
+Gen.1:4#3	ὁ	T-NSM	1	0.95	
+Gen.1:4#4	θεός	N-NSM	1	0.93	
+Gen.1:4#5	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:4#6	φῶς	N-ASN	3	0.80	several analyses: for the model
+Gen.1:4#7	ὅτι	CONJ	1	0.97	
+Gen.1:4#8	καλός	A-ASM	3	0.80	several analyses: for the model
+Gen.1:4#9	καί	CONJ	1	0.97	
+Gen.1:4#10	διαχωρίζω	V-AAI-3S	2	0.70	not in the New Testament: for the parser
+Gen.1:4#11	ὁ	T-NSM	1	0.95	
+Gen.1:4#12	θεός	N-NSM	1	0.93	
+Gen.1:4#13	ἀνά	PREP	1	0.97	
+Gen.1:4#14	μέσος	A-ASN	3	0.80	shared ending: masculine accusative and neuter in -on: for the agreement check or the model
+Gen.1:4#15	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:4#16
+Gen.1:4#16	φῶς	N-GSN	1	0.97	
+Gen.1:4#17	καί	CONJ	1	0.97	
+Gen.1:4#18	ἀνά	PREP	1	0.97	
+Gen.1:4#19	μέσος	A-ASN	3	0.80	shared ending: masculine accusative and neuter in -on: for the agreement check or the model
+Gen.1:4#20	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:4#21
+Gen.1:4#21	σκότος	N-GSN	1	0.97	
+Gen.1:5#1	καί	CONJ	1	0.97	
+Gen.1:5#2	καλέω	V-AAI-3S	1	0.97	
+Gen.1:5#3	ὁ	T-NSM	1	0.95	
+Gen.1:5#4	θεός	N-NSM	1	0.93	
+Gen.1:5#5	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:5#6	φῶς	N-ASN	3	0.80	several analyses: for the model
+Gen.1:5#7	ἡμέρα	N-ASF	1	0.97	
+Gen.1:5#8	καί	CONJ	1	0.97	
+Gen.1:5#9	ὁ	T-ASN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:5#10	σκότος	N-ASN	3	0.80	several analyses: for the model
+Gen.1:5#11	καλέω	V-AAI-3S	1	0.97	
+Gen.1:5#12	νύξ	N-ASF	1	0.97	
+Gen.1:5#13	καί	CONJ	1	0.97	
+Gen.1:5#14	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:5#15	ἑσπέρα	N-NSF	1	0.90	
+Gen.1:5#16	καί	CONJ	1	0.97	
+Gen.1:5#17	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:5#18	πρωΐ	ADV	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:5#19	ἡμέρα	N-NSF	1	0.97	
+Gen.1:5#20	εἷς	A-NSF	1	0.97	
+Gen.1:6#1	καί	CONJ	1	0.97	
+Gen.1:6#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:6#3	ὁ	T-NSM	1	0.95	
+Gen.1:6#4	θεός	N-NSM	1	0.93	
+Gen.1:6#5	γίνομαι	V-AOM-3S	1	0.97	
+Gen.1:6#6	στερέωμα	N-ASN	3	0.80	shared ending: neuter nominative and accusative: for the agreement check or the model
+Gen.1:6#7	ἐν	PREP	1	0.97	
+Gen.1:6#8	μέσος	A-DSN	3	0.80	shared ending: masculine and neuter genitive and dative singular: for the agreement check or the model
+Gen.1:6#9	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:6#10
+Gen.1:6#10	ὕδωρ, ὕδατος	N-GSN	1	0.97	
+Gen.1:6#11	καί	CONJ	1	0.97	
+Gen.1:6#12	εἰμί	V-PAM-3S	1	0.97	
+Gen.1:6#13	διαχωρίζω	V-PAP-NSN	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:6#14	ἀνά	PREP	1	0.97	
+Gen.1:6#15	μέσος	A-ASN	3	0.80	shared ending: masculine accusative and neuter in -on: for the agreement check or the model
+Gen.1:6#16	ὕδωρ, ὕδατος	N-GSN	1	0.97	
+Gen.1:6#17	καί	CONJ	1	0.97	
+Gen.1:6#18	ὕδωρ, ὕδατος	N-GSN	1	0.97	
+Gen.1:6#19	καί	CONJ	1	0.97	
+Gen.1:6#20	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:6#21	οὕτω, οὕτως	ADV	1	0.97	
+Gen.1:7#1	καί	CONJ	1	0.97	
+Gen.1:7#2	ποιέω	V-AAI-3S	1	0.97	
+Gen.1:7#3	ὁ	T-NSM	1	0.95	
+Gen.1:7#4	θεός	N-NSM	1	0.93	
+Gen.1:7#5	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:7#6	στερέωμα	N-ASN	3	0.80	shared ending: neuter nominative and accusative: for the agreement check or the model
+Gen.1:7#7	καί	CONJ	1	0.97	
+Gen.1:7#8	διαχωρίζω	V-AAI-3S	2	0.70	not in the New Testament: for the parser
+Gen.1:7#9	ὁ	T-NSM	1	0.95	
+Gen.1:7#10	θεός	N-NSM	1	0.93	
+Gen.1:7#11	ἀνά	PREP	1	0.97	
+Gen.1:7#12	μέσος	A-ASN	3	0.80	shared ending: masculine accusative and neuter in -on: for the agreement check or the model
+Gen.1:7#13	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:7#14
+Gen.1:7#14	ὕδωρ, ὕδατος	N-GSN	1	0.97	
+Gen.1:7#15	ὅς, ἥ	R-ASN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:7#16	εἰμί	V-IAI-3S	1	0.97	
+Gen.1:7#17	ὑποκάτω	PREP	1	0.97	
+Gen.1:7#18	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:7#19
+Gen.1:7#19	στερέωμα	N-GSN	2	0.75	not in the New Testament: for the parser
+Gen.1:7#20	καί	CONJ	1	0.97	
+Gen.1:7#21	ἀνά	PREP	1	0.97	
+Gen.1:7#22	μέσος	A-ASN	3	0.80	shared ending: masculine accusative and neuter in -on: for the agreement check or the model
+Gen.1:7#23	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:7#24
+Gen.1:7#24	ὕδωρ, ὕδατος	N-GSN	1	0.97	
+Gen.1:7#25	ὁ	T-GSM	3	0.80	several analyses: for the model
+Gen.1:7#26	ἐπάνω	PREP	1	0.97	
+Gen.1:7#27	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:7#28
+Gen.1:7#28	στερέωμα	N-GSN	2	0.75	not in the New Testament: for the parser
+Gen.1:8#1	καί	CONJ	1	0.97	
+Gen.1:8#2	καλέω	V-AAI-3S	1	0.97	
+Gen.1:8#3	ὁ	T-NSM	1	0.95	
+Gen.1:8#4	θεός	N-NSM	1	0.93	
+Gen.1:8#5	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:8#6	στερέωμα	N-ASN	3	0.80	shared ending: neuter nominative and accusative: for the agreement check or the model
+Gen.1:8#7	οὐρανός	N-ASM	1	0.97	
+Gen.1:8#8	καί	CONJ	1	0.97	
+Gen.1:8#9	εἴδω	V-2AAI-3S	1	0.97	spelling: ei written i
+Gen.1:8#10	ὁ	T-NSM	1	0.95	
+Gen.1:8#11	θεός	N-NSM	1	0.93	
+Gen.1:8#12	ὅτι	CONJ	1	0.97	
+Gen.1:8#13	καλός	A-ASM	3	0.80	several analyses: for the model
+Gen.1:8#14	καί	CONJ	1	0.97	
+Gen.1:8#15	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:8#16	ἑσπέρα	N-NSF	1	0.90	
+Gen.1:8#17	καί	CONJ	1	0.97	
+Gen.1:8#18	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:8#19	πρωΐ	ADV	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:8#20	ἡμέρα	N-NSF	1	0.97	
+Gen.1:8#21	δεύτερος	A-NSF	1	0.97	
+Gen.1:9#1	καί	CONJ	1	0.97	
+Gen.1:9#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:9#3	ὁ	T-NSM	1	0.95	
+Gen.1:9#4	θεός	N-NSM	1	0.93	
+Gen.1:9#5	συνάγω	V-APM-3S	2	0.75	not in the New Testament: for the parser; analogy: a sibling form in the New Testament
+Gen.1:9#6	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:9#7	ὕδωρ, ὕδατος	N-ASN	3	0.80	several analyses: for the model
+Gen.1:9#8	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:9#9	ὑποκάτω	PREP	1	0.97	
+Gen.1:9#10	ὁ	T-GSM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:9#11
+Gen.1:9#11	οὐρανός	N-GSM	1	0.97	
+Gen.1:9#12	εἰς	PREP	1	0.97	
+Gen.1:9#13	συναγωγή	N-ASF	1	0.97	
+Gen.1:9#14	εἷς	A-ASF	1	0.97	
+Gen.1:9#15	καί	CONJ	1	0.97	
+Gen.1:9#16	ὁράω	V-APM-3S	2	0.75	not in the New Testament: for the parser; analogy: a sibling form in the New Testament
+Gen.1:9#17	ὁ	T-NSF	1	0.95	
+Gen.1:9#18	ξηρός	A-NSF	1	0.90	
+Gen.1:9#19	καί	CONJ	1	0.97	
+Gen.1:9#20	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:9#21	οὕτω, οὕτως	ADV	1	0.97	
+Gen.1:9#22	καί	CONJ	1	0.97	
+Gen.1:9#23	συνάγω	V-API-3S	1	0.97	
+Gen.1:9#24	ὁ	T-ASN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:9#25	ὕδωρ, ὕδατος	N-ASN	3	0.80	several analyses: for the model
+Gen.1:9#26	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:9#27	ὑποκάτω	PREP	1	0.97	
+Gen.1:9#28	ὁ	T-GSM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:9#29
+Gen.1:9#29	οὐρανός	N-GSM	1	0.97	
+Gen.1:9#30	εἰς	PREP	1	0.97	
+Gen.1:9#31	ὁ	T-APF	1	0.97	
+Gen.1:9#32	συναγωγή	N-APF	1	0.97	
+Gen.1:9#33	αὐτός	P-GPM	3	0.80	several analyses: for the model
+Gen.1:9#34	καί	CONJ	1	0.97	
+Gen.1:9#35	ὁράω	V-API-3S	3	0.40	several analyses: for the model; guess: marked by the model
+Gen.1:9#36	ὁ	T-NSF	1	0.95	
+Gen.1:9#37	ξηρός	A-NSF	1	0.90	
+Gen.1:10#1	καί	CONJ	1	0.97	
+Gen.1:10#2	καλέω	V-AAI-3S	1	0.97	
+Gen.1:10#3	ὁ	T-NSM	1	0.95	
+Gen.1:10#4	θεός	N-NSM	1	0.93	
+Gen.1:10#5	ὁ	T-ASF	1	0.97	
+Gen.1:10#6	ξηρός	A-ASF	1	0.97	
+Gen.1:10#7	γῆ	N-ASF	1	0.97	
+Gen.1:10#8	καί	CONJ	1	0.97	
+Gen.1:10#9	ὁ	T-APN	3	0.80	several analyses: for the model
+Gen.1:10#10	σύστεμα	N-APN	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:10#11	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:10#12
+Gen.1:10#12	ὕδωρ, ὕδατος	N-GPN	1	0.97	
+Gen.1:10#13	καλέω	V-AAI-3S	1	0.97	
+Gen.1:10#14	θάλασσα	N-GSF	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:10#15	καί	CONJ	1	0.97	
+Gen.1:10#16	εἴδω	V-2AAI-3S	1	0.97	spelling: ei written i
+Gen.1:10#17	ὁ	T-NSM	1	0.95	
+Gen.1:10#18	θεός	N-NSM	1	0.93	
+Gen.1:10#19	ὅτι	CONJ	1	0.97	
+Gen.1:10#20	καλός	A-ASM	3	0.80	several analyses: for the model
+Gen.1:11#1	καί	CONJ	1	0.97	
+Gen.1:11#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:11#3	ὁ	T-NSM	1	0.95	
+Gen.1:11#4	θεός	N-NSM	1	0.93	
+Gen.1:11#5	βλαστάνω	V-AAM-3S	2	0.75	not in the New Testament: for the parser; analogy: a sibling form in the New Testament
+Gen.1:11#6	ὁ	T-NSF	1	0.95	
+Gen.1:11#7	γῆ	N-NSF	1	0.93	
+Gen.1:11#8	βοτάνη	N-ASF	1	0.90	
+Gen.1:11#9	χόρτος	N-GSM	1	0.97	
+Gen.1:11#10	σπείρω	V-PAP-NSN	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:11#11	σπέρμα	N-NSN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:11#12	κατά	PREP	1	0.97	
+Gen.1:11#13	γένος	N-NSN	3	0.80	several analyses: for the model
+Gen.1:11#14	καί	CONJ	1	0.97	
+Gen.1:11#15	κατά	PREP	1	0.97	
+Gen.1:11#16	ὁμοιότης	N-ASF	1	0.90	
+Gen.1:11#17	καί	CONJ	1	0.97	
+Gen.1:11#18	ξύλον	N-ASN	3	0.80	several analyses: for the model
+Gen.1:11#19	κάρπιμος	A-ASM	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:11#20	ποιέω	V-PAP-NSN	3	0.80	shared ending: neuter nominative and accusative: for the agreement check or the model
+Gen.1:11#21	καρπός	N-ASM	1	0.97	
+Gen.1:11#22	ὅς, ἥ	R-GSM	3	0.80	several analyses: for the model
+Gen.1:11#23	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:11#24	σπέρμα	N-NSN	3	0.80	several analyses: for the model
+Gen.1:11#25	αὐτός	P-GSM	3	0.80	shared ending: masculine and neuter genitive and dative singular: for the agreement check or the model
+Gen.1:11#26	ἐν	PREP	1	0.97	
+Gen.1:11#27	αὐτός	P-DSM	3	0.80	shared ending: masculine and neuter genitive and dative singular: for the agreement check or the model
+Gen.1:11#28	κατά	PREP	1	0.97	
+Gen.1:11#29	γένος	N-NSN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:11#30	εἰς	PREP	1	0.97	
+Gen.1:11#31	ὁμοιότης	N-ASF	1	0.90	
+Gen.1:11#32	ἐπί	PREP	1	0.97	
+Gen.1:11#33	ὁ	T-GSF	1	0.97	
+Gen.1:11#34	γῆ	N-GSF	1	0.97	
+Gen.1:11#35	καί	CONJ	1	0.97	
+Gen.1:11#36	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:11#37	οὕτω, οὕτως	ADV	1	0.97	
+Gen.1:12#1	καί	CONJ	1	0.97	
+Gen.1:12#2	ἐκφέρω	V-AAI-3S	1	0.90	
+Gen.1:12#3	ὁ	T-NSF	1	0.95	
+Gen.1:12#4	γῆ	N-NSF	1	0.93	
+Gen.1:12#5	βοτάνη	N-ASF	1	0.90	
+Gen.1:12#6	χόρτος	N-GSM	1	0.97	
+Gen.1:12#7	σπείρω	V-PAP-NSN	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:12#8	σπέρμα	N-NSN	3	0.80	several analyses: for the model
+Gen.1:12#9	κατά	PREP	1	0.97	
+Gen.1:12#10	γένος	N-NSN	3	0.80	several analyses: for the model
+Gen.1:12#11	καί	CONJ	1	0.97	
+Gen.1:12#12	κατά	PREP	1	0.97	
+Gen.1:12#13	ὁμοιότης	N-ASF	1	0.90	
+Gen.1:12#14	καί	CONJ	1	0.97	
+Gen.1:12#15	ξύλον	N-ASN	3	0.80	several analyses: for the model
+Gen.1:12#16	κάρπιμος	A-ASM	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:12#17	ποιέω	V-PAP-NSN	3	0.80	shared ending: neuter nominative and accusative: for the agreement check or the model
+Gen.1:12#18	καρπός	N-ASM	1	0.97	
+Gen.1:12#19	ὅς, ἥ	R-GSM	3	0.80	several analyses: for the model
+Gen.1:12#20	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:12#21	σπέρμα	N-NSN	3	0.80	several analyses: for the model
+Gen.1:12#22	αὐτός	P-GSM	3	0.50	shared ending: masculine and neuter genitive and dative singular: for the agreement check or the model; model: unsure
+Gen.1:12#23	ἐν	PREP	1	0.97	
+Gen.1:12#24	αὐτός	P-DSM	3	0.80	shared ending: masculine and neuter genitive and dative singular: for the agreement check or the model
+Gen.1:12#25	κατά	PREP	1	0.97	
+Gen.1:12#26	γένος	N-NSN	3	0.80	several analyses: for the model
+Gen.1:12#27	ἐπί	PREP	1	0.97	
+Gen.1:12#28	ὁ	T-GSF	1	0.97	
+Gen.1:12#29	γῆ	N-GSF	1	0.97	
+Gen.1:12#30	καί	CONJ	1	0.97	
+Gen.1:12#31	εἴδω	V-2AAI-3S	1	0.97	spelling: ei written i
+Gen.1:12#32	ὁ	T-NSM	1	0.95	
+Gen.1:12#33	θεός	N-NSM	1	0.93	
+Gen.1:12#34	ὅτι	CONJ	1	0.97	
+Gen.1:12#35	καλός	A-ASM	3	0.80	several analyses: for the model
+Gen.1:13#1	καί	CONJ	1	0.97	
+Gen.1:13#2	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:13#3	ἑσπέρα	N-NSF	1	0.90	
+Gen.1:13#4	καί	CONJ	1	0.97	
+Gen.1:13#5	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:13#6	πρωΐ	ADV	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:13#7	ἡμέρα	N-NSF	1	0.97	
+Gen.1:13#8	τρίτος	A-NSF	1	0.97	
+Gen.1:14#1	καί	CONJ	1	0.97	
+Gen.1:14#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:14#3	ὁ	T-NSM	1	0.95	
+Gen.1:14#4	θεός	N-NSM	1	0.93	
+Gen.1:14#5	γίνομαι	V-APM-3P	3	0.40	not in the New Testament: for the parser; no candidate: for the model to guess; guess: the model answered with no candidates
+Gen.1:14#6	φωστήρ	N-NPM	1	0.90	
+Gen.1:14#7	ἐν	PREP	1	0.97	
+Gen.1:14#8	ὁ	T-DSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:14#9
+Gen.1:14#9	στερέωμα	N-DSN	2	0.75	not in the New Testament: for the parser
+Gen.1:14#10	ὁ	T-GSM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:14#11
+Gen.1:14#11	οὐρανός	N-GSM	1	0.97	
+Gen.1:14#12	εἰς	PREP	1	0.97	
+Gen.1:14#13	φαῦσις	N-ASF	2	0.75	not in the New Testament: for the parser
+Gen.1:14#14	ὁ	T-GSF	1	0.97	
+Gen.1:14#15	γῆ	N-GSF	1	0.97	
+Gen.1:14#16	καί	CONJ	1	0.97	
+Gen.1:14#17	ἄρχω	V-PAN	1	0.90	
+Gen.1:14#18	ὁ	T-GSF	1	0.97	
+Gen.1:14#19	ἡμέρα	N-GSF	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:14#18
+Gen.1:14#20	καί	CONJ	1	0.97	
+Gen.1:14#21	ὁ	T-GSF	1	0.97	
+Gen.1:14#22	νύξ	N-GSF	1	0.97	
+Gen.1:14#23	καί	CONJ	1	0.97	
+Gen.1:14#24	διαχωρίζω	V-PAN	2	0.73	not in the New Testament: for the parser
+Gen.1:14#25	ἀνά	PREP	1	0.97	
+Gen.1:14#26	μέσος	A-ASN	3	0.80	shared ending: masculine accusative and neuter in -on: for the agreement check or the model
+Gen.1:14#27	ὁ	T-GSF	1	0.97	
+Gen.1:14#28	ἡμέρα	N-GSF	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:14#27
+Gen.1:14#29	καί	CONJ	1	0.97	
+Gen.1:14#30	ἀνά	PREP	1	0.97	
+Gen.1:14#31	μέσος	A-ASN	3	0.80	shared ending: masculine accusative and neuter in -on: for the agreement check or the model
+Gen.1:14#32	ὁ	T-GSF	1	0.97	
+Gen.1:14#33	νύξ	N-GSF	1	0.97	
+Gen.1:14#34	καί	CONJ	1	0.97	
+Gen.1:14#35	εἰμί	V-PAM-3P	1	0.90	
+Gen.1:14#36	εἰς	PREP	1	0.97	
+Gen.1:14#37	σημεῖον	N-APN	3	0.80	several analyses: for the model
+Gen.1:14#38	καί	CONJ	1	0.97	
+Gen.1:14#39	εἰς	PREP	1	0.97	
+Gen.1:14#40	καιρός	N-APM	1	0.97	
+Gen.1:14#41	καί	CONJ	1	0.97	
+Gen.1:14#42	εἰς	PREP	1	0.97	
+Gen.1:14#43	ἡμέρα	N-APF	3	0.80	several analyses: for the model
+Gen.1:14#44	καί	CONJ	1	0.97	
+Gen.1:14#45	εἰς	PREP	1	0.97	
+Gen.1:14#46	ἐνιαυτός	N-APM	1	0.90	
+Gen.1:15#1	καί	CONJ	1	0.97	
+Gen.1:15#2	εἰμί	V-PAM-3P	1	0.90	
+Gen.1:15#3	εἰς	PREP	1	0.97	
+Gen.1:15#4	φαῦσις	N-ASF	2	0.75	not in the New Testament: for the parser
+Gen.1:15#5	ἐν	PREP	1	0.97	
+Gen.1:15#6	ὁ	T-DSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:15#7
+Gen.1:15#7	στερέωμα	N-DSN	2	0.75	not in the New Testament: for the parser
+Gen.1:15#8	ὁ	T-GSM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:15#9
+Gen.1:15#9	οὐρανός	N-GSM	1	0.97	
+Gen.1:15#10	ὥστε	CONJ	1	0.97	
+Gen.1:15#11	φαίνω	V-PAN	2	0.73	not in the New Testament: for the parser
+Gen.1:15#12	ἐπί	PREP	1	0.97	
+Gen.1:15#13	ὁ	T-GSF	1	0.97	
+Gen.1:15#14	γῆ	N-GSF	1	0.97	
+Gen.1:15#15	καί	CONJ	1	0.97	
+Gen.1:15#16	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:15#17	οὕτω, οὕτως	ADV	1	0.97	
+Gen.1:16#1	καί	CONJ	1	0.97	
+Gen.1:16#2	ποιέω	V-AAI-3S	1	0.97	
+Gen.1:16#3	ὁ	T-NSM	1	0.95	
+Gen.1:16#4	θεός	N-NSM	1	0.93	
+Gen.1:16#5	ὁ	T-APM	1	0.97	
+Gen.1:16#6	δύο	A-NUI	1	0.97	
+Gen.1:16#7	φωστήρ	N-APM	2	0.75	not in the New Testament: for the parser
+Gen.1:16#8	ὁ	T-APM	1	0.97	
+Gen.1:16#9	μέγας	A-APM	1	0.97	
+Gen.1:16#10	ὁ	T-ASM	1	0.95	
+Gen.1:16#11	φωστήρ	N-ASM	2	0.75	not in the New Testament: for the parser
+Gen.1:16#12	ὁ	T-ASM	1	0.95	
+Gen.1:16#13	μέγας	A-ASM	1	0.97	
+Gen.1:16#14	εἰς	PREP	1	0.97	
+Gen.1:16#15	ἀρχή	N-APF	1	0.97	
+Gen.1:16#16	ὁ	T-GSF	1	0.97	
+Gen.1:16#17	ἡμέρα	N-GSF	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:16#16
+Gen.1:16#18	καί	CONJ	1	0.97	
+Gen.1:16#19	ὁ	T-ASM	1	0.95	
+Gen.1:16#20	φωστήρ	N-ASM	2	0.75	not in the New Testament: for the parser
+Gen.1:16#21	ὁ	T-ASM	1	0.95	
+Gen.1:16#22	ἐλάσσων	A-ASM-C	1	0.90	
+Gen.1:16#23	εἰς	PREP	1	0.97	
+Gen.1:16#24	ἀρχή	N-APF	1	0.97	
+Gen.1:16#25	ὁ	T-GSF	1	0.97	
+Gen.1:16#26	νύξ	N-GSF	1	0.97	
+Gen.1:16#27	καί	CONJ	1	0.97	
+Gen.1:16#28	ὁ	T-APM	1	0.97	
+Gen.1:16#29	ἀστήρ	N-APM	1	0.97	
+Gen.1:17#1	καί	CONJ	1	0.97	
+Gen.1:17#2	τίθημι	V-2AMI-3S	1	0.97	
+Gen.1:17#3	αὐτός	P-APM	1	0.97	
+Gen.1:17#4	ὁ	T-NSM	1	0.95	
+Gen.1:17#5	θεός	N-NSM	1	0.93	
+Gen.1:17#6	ἐν	PREP	1	0.97	
+Gen.1:17#7	ὁ	T-DSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:17#8
+Gen.1:17#8	στερέωμα	N-DSN	2	0.75	not in the New Testament: for the parser
+Gen.1:17#9	ὁ	T-GSM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:17#10
+Gen.1:17#10	οὐρανός	N-GSM	1	0.97	
+Gen.1:17#11	ὥστε	CONJ	1	0.97	
+Gen.1:17#12	φαίνω	V-PAN	2	0.73	not in the New Testament: for the parser
+Gen.1:17#13	ἐπί	PREP	1	0.97	
+Gen.1:17#14	ὁ	T-GSF	1	0.97	
+Gen.1:17#15	γῆ	N-GSF	1	0.97	
+Gen.1:18#1	καί	CONJ	1	0.97	
+Gen.1:18#2	ἄρχω	V-PAN	1	0.90	
+Gen.1:18#3	ὁ	T-GSF	1	0.97	
+Gen.1:18#4	ἡμέρα	N-GSF	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:18#3
+Gen.1:18#5	καί	CONJ	1	0.97	
+Gen.1:18#6	ὁ	T-GSF	1	0.97	
+Gen.1:18#7	νύξ	N-GSF	1	0.97	
+Gen.1:18#8	καί	CONJ	1	0.97	
+Gen.1:18#9	διαχωρίζω	V-PAN	2	0.73	not in the New Testament: for the parser
+Gen.1:18#10	ἀνά	PREP	1	0.97	
+Gen.1:18#11	μέσος	A-ASN	3	0.50	shared ending: masculine accusative and neuter in -on: for the agreement check or the model; model: unsure
+Gen.1:18#12	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:18#13
+Gen.1:18#13	φῶς	N-GSN	1	0.97	
+Gen.1:18#14	καί	CONJ	1	0.97	
+Gen.1:18#15	ἀνά	PREP	1	0.97	
+Gen.1:18#16	μέσος	A-ASN	3	0.80	shared ending: masculine accusative and neuter in -on: for the agreement check or the model
+Gen.1:18#17	ὁ	T-GSN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:18#18
+Gen.1:18#18	σκότος	N-GSN	1	0.97	
+Gen.1:18#19	καί	CONJ	1	0.97	
+Gen.1:18#20	εἴδω	V-2AAI-3S	1	0.97	spelling: ei written i
+Gen.1:18#21	ὁ	T-NSM	1	0.95	
+Gen.1:18#22	θεός	N-NSM	1	0.93	
+Gen.1:18#23	ὅτι	CONJ	1	0.97	
+Gen.1:18#24	καλός	A-ASM	3	0.80	several analyses: for the model
+Gen.1:19#1	καί	CONJ	1	0.97	
+Gen.1:19#2	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:19#3	ἑσπέρα	N-NSF	1	0.90	
+Gen.1:19#4	καί	CONJ	1	0.97	
+Gen.1:19#5	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:19#6	πρωΐ	ADV	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:19#7	ἡμέρα	N-NSF	1	0.97	
+Gen.1:19#8	τέταρτος	A-NSF	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:20#1	καί	CONJ	1	0.97	
+Gen.1:20#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:20#3	ὁ	T-NSM	1	0.95	
+Gen.1:20#4	θεός	N-NSM	1	0.93	
+Gen.1:20#5	ἐξάγω	V-2AAM-3S	2	0.75	not in the New Testament: for the parser; analogy: a sibling form in the New Testament
+Gen.1:20#6	ὁ	T-APN	3	0.80	several analyses: for the model
+Gen.1:20#7	ὕδωρ, ὕδατος	N-APN	3	0.80	several analyses: for the model
+Gen.1:20#8	ἑρπετόν	N-APN	3	0.80	several analyses: for the model
+Gen.1:20#9	ψυχή	N-GPF	1	0.97	
+Gen.1:20#10	ζάω	V-PAP-GPF	3	0.40	not in the New Testament: for the parser; no candidate: for the model to guess; guess: the model answered with no candidates
+Gen.1:20#11	καί	CONJ	1	0.97	
+Gen.1:20#12	πετεινός	N-APN	3	0.80	several analyses: for the model
+Gen.1:20#13	πέτομαι	V-PNP-APN	3	0.50	brackets: letters Swete supplied; not in the New Testament: for the parser; several candidates: for the model; model: unsure
+Gen.1:20#14	ἐπί	PREP	1	0.97	
+Gen.1:20#15	ὁ	T-GSF	1	0.97	
+Gen.1:20#16	γῆ	N-GSF	1	0.97	
+Gen.1:20#17	κατά	PREP	1	0.97	
+Gen.1:20#18	ὁ	T-ASN	3	0.80	several analyses: for the model
+Gen.1:20#19	στερέωμα	N-ASN	3	0.80	brackets: letters Swete supplied; shared ending: neuter nominative and accusative: for the agreement check or the model
+Gen.1:20#20	ὁ	T-GSM	2a	0.85	brackets: letters Swete supplied; several analyses: for the model; agreement: an article and the word after it with Gen.1:20#21
+Gen.1:20#21	οὐρανός	N-GSM	1	0.97	
+Gen.1:20#22	καί	CONJ	1	0.97	
+Gen.1:20#23	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:20#24	οὕτω, οὕτως	ADV	1	0.97	
+Gen.1:21#1	καί	CONJ	1	0.97	
+Gen.1:21#2	ποιέω	V-AAI-3S	1	0.97	
+Gen.1:21#3	ὁ	T-NSM	1	0.95	
+Gen.1:21#4	θεός	N-NSM	1	0.93	
+Gen.1:21#5	ὁ	T-APN	3	0.80	several analyses: for the model
+Gen.1:21#6	κῆτος	N-APN	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:21#7	ὁ	T-APN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:21#8	μέγας	A-APN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:21#9	καί	CONJ	1	0.97	
+Gen.1:21#10	πᾶς	A-ASF	1	0.97	
+Gen.1:21#11	ψυχή	N-ASF	1	0.97	
+Gen.1:21#12	ζῷον	N-GPN	1	0.97	brackets: letters Swete supplied
+Gen.1:21#13	ἑρπετόν	N-GPN	1	0.90	brackets: letters Swete supplied
+Gen.1:21#14	ὅς, ἥ	R-NPN	3	0.80	several analyses: for the model
+Gen.1:21#15	ἐξάγω	V-2AAI-3S	1	0.97	
+Gen.1:21#16	ὁ	T-APN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:21#17	ὕδωρ, ὕδατος	N-APN	3	0.80	several analyses: for the model
+Gen.1:21#18	κατά	PREP	1	0.97	
+Gen.1:21#19	γένος	N-NPN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:21#20	αὐτός	P-GPM	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:21#21	καί	CONJ	1	0.97	
+Gen.1:21#22	πᾶς	A-ASN	3	0.80	several analyses: for the model
+Gen.1:21#23	πετεινός	N-ASN	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:21#24	πτερωτός	A-ASM	3	0.80	brackets: letters Swete supplied; not in the New Testament: for the parser; several candidates: for the model
+Gen.1:21#25	κατά	PREP	1	0.97	
+Gen.1:21#26	γένος	N-NSN	3	0.80	several analyses: for the model
+Gen.1:21#27	καί	CONJ	1	0.97	
+Gen.1:21#28	εἴδω	V-2AAI-3S	1	0.97	spelling: ei written i
+Gen.1:21#29	ὁ	T-NSM	1	0.95	
+Gen.1:21#30	θεός	N-NSM	1	0.93	brackets: letters Swete supplied
+Gen.1:21#31	ὅτι	CONJ	1	0.97	
+Gen.1:21#32	καλός	A-APN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:22#1	καί	CONJ	1	0.97	
+Gen.1:22#2	εὐλογέω	V-AAI-3S	2	0.75	not in the New Testament: for the parser
+Gen.1:22#3	αὐτός	P-APN	3	0.80	shared ending: neuter nominative and accusative: for the agreement check or the model
+Gen.1:22#4	ὁ	T-NSM	1	0.95	
+Gen.1:22#5	θεός	N-NSM	1	0.93	brackets: letters Swete supplied
+Gen.1:22#6	λέγω	V-PAP-NSM	1	0.93	brackets: letters Swete supplied
+Gen.1:22#7	αὐξάνω	V-PPM-2P	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:22#8	καί	CONJ	1	0.97	
+Gen.1:22#9	πληθύνω	V-PPM-2P	3	0.80	brackets: letters Swete supplied; not in the New Testament: for the parser; several candidates: for the model
+Gen.1:22#10	καί	CONJ	1	0.97	brackets: letters Swete supplied
+Gen.1:22#11	πληρόω	V-AAM-2P	1	0.90	
+Gen.1:22#12	ὁ	T-APN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:22#13	ὕδωρ, ὕδατος	N-APN	3	0.80	several analyses: for the model
+Gen.1:22#14	ἐν	PREP	1	0.97	brackets: letters Swete supplied
+Gen.1:22#15	ὁ	T-DPF	1	0.97	
+Gen.1:22#16	θάλασσα	N-DPF	2	0.75	brackets: letters Swete supplied; not in the New Testament: for the parser
+Gen.1:22#17	καί	CONJ	1	0.97	
+Gen.1:22#18	ὁ	T-APN	3	0.80	several analyses: for the model
+Gen.1:22#19	πετεινός	N-APN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:22#20	πληθύνω	V-PPM-3P	2	0.75	brackets: letters Swete supplied; not in the New Testament: for the parser
+Gen.1:22#21	ἐπί	PREP	1	0.97	
+Gen.1:22#22	ὁ	T-GSF	1	0.97	
+Gen.1:22#23	γῆ	N-GSF	1	0.97	brackets: letters Swete supplied
+Gen.1:23#1	καί	CONJ	1	0.97	
+Gen.1:23#2	γίνομαι	V-2ADI-3S	1	0.97	brackets: letters Swete supplied
+Gen.1:23#3	ἑσπέρα	N-NSF	1	0.90	
+Gen.1:23#4	καί	CONJ	1	0.97	
+Gen.1:23#5	γίνομαι	V-2ADI-3S	1	0.97	brackets: letters Swete supplied
+Gen.1:23#6	πρωΐ	ADV	3	0.80	brackets: letters Swete supplied; not in the New Testament: for the parser; several candidates: for the model
+Gen.1:23#7	ἡμέρα	N-NSF	1	0.97	
+Gen.1:23#8	πέμπτος	A-NSF	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:24#1	καί	CONJ	1	0.97	
+Gen.1:24#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:24#3	ὁ	T-NSM	1	0.95	
+Gen.1:24#4	θεός	N-NSM	1	0.93	
+Gen.1:24#5	ἐξάγω	V-2AAM-3S	2	0.75	brackets: letters Swete supplied; not in the New Testament: for the parser; analogy: a sibling form in the New Testament
+Gen.1:24#6	ὁ	T-NSF	1	0.95	
+Gen.1:24#7	γῆ	N-NSF	1	0.93	
+Gen.1:24#8	ψυχή	N-ASF	1	0.97	brackets: letters Swete supplied
+Gen.1:24#9	ζάω	V-PAP-ASF	1	0.97	
+Gen.1:24#10	κατά	PREP	1	0.97	
+Gen.1:24#11	γένος	N-NSN	3	0.80	several analyses: for the model
+Gen.1:24#12	τετράπους	A-APN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:24#13	καί	CONJ	1	0.97	
+Gen.1:24#14	ἑρπετόν	N-APN	3	0.80	several analyses: for the model
+Gen.1:24#15	καί	CONJ	1	0.97	
+Gen.1:24#16	θηρίον	N-NPN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:24#17	ὁ	T-GSF	1	0.97	
+Gen.1:24#18	γῆ	N-GSF	1	0.97	
+Gen.1:24#19	κατά	PREP	1	0.97	brackets: letters Swete supplied
+Gen.1:24#20	γένος	N-NSN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:24#21	καί	CONJ	1	0.97	
+Gen.1:24#22	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:24#23	οὕτω, οὕτως	ADV	1	0.97	brackets: letters Swete supplied
+Gen.1:25#1	καί	CONJ	1	0.97	
+Gen.1:25#2	ποιέω	V-AAI-3S	1	0.97	
+Gen.1:25#3	ὁ	T-NSM	1	0.95	
+Gen.1:25#4	θεός	N-NSM	1	0.93	
+Gen.1:25#5	ὁ	T-APN	3	0.80	several analyses: for the model
+Gen.1:25#6	θηρίον	N-NPN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:25#7	ὁ	T-GSF	1	0.97	
+Gen.1:25#8	γῆ	N-GSF	1	0.97	brackets: letters Swete supplied
+Gen.1:25#9	κατά	PREP	1	0.97	
+Gen.1:25#10	γένος	N-NSN	3	0.80	several analyses: for the model
+Gen.1:25#11	καί	CONJ	1	0.97	
+Gen.1:25#12	ὁ	T-APN	3	0.80	several analyses: for the model
+Gen.1:25#13	κτῆνος	N-APN	3	0.80	brackets: letters Swete supplied; shared ending: neuter nominative and accusative: for the agreement check or the model
+Gen.1:25#14	κατά	PREP	1	0.97	
+Gen.1:25#15	γένος	N-NSN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:25#16	καί	CONJ	1	0.97	
+Gen.1:25#17	πᾶς	A-APN	3	0.80	several analyses: for the model
+Gen.1:25#18	ὁ	T-APN	3	0.80	several analyses: for the model
+Gen.1:25#19	ἑρπετόν	N-APN	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:25#20	ὁ	T-GSF	1	0.97	
+Gen.1:25#21	γῆ	N-GSF	1	0.97	brackets: letters Swete supplied
+Gen.1:25#22	κατά	PREP	1	0.97	
+Gen.1:25#23	γένος	N-NSN	3	0.50	several analyses: for the model; model: unsure
+Gen.1:25#24	αὐτός	P-GPM	3	0.80	several analyses: for the model
+Gen.1:25#25	καί	CONJ	1	0.97	
+Gen.1:25#26	εἴδω	V-2AAI-3S	1	0.97	spelling: ei written i
+Gen.1:25#27	ὁ	T-NSM	1	0.95	
+Gen.1:25#28	θεός	N-NSM	1	0.93	
+Gen.1:25#29	ὅτι	CONJ	1	0.97	
+Gen.1:25#30	καλός	A-APN	3	0.80	several analyses: for the model
+Gen.1:26#1	καί	CONJ	1	0.97	
+Gen.1:26#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:26#3	ὁ	T-NSM	1	0.95	
+Gen.1:26#4	θεός	N-NSM	1	0.93	
+Gen.1:26#5	ποιέω	V-AAS-1P	1	0.97	
+Gen.1:26#6	ἄνθρωπος	N-ASM	1	0.97	
+Gen.1:26#7	κατά	PREP	1	0.97	
+Gen.1:26#8	εἰκών	N-ASF	1	0.97	
+Gen.1:26#9	ἡμέτερος	S-1PASF	1	0.90	
+Gen.1:26#10	καί	CONJ	1	0.97	
+Gen.1:26#11	κατά	PREP	1	0.97	
+Gen.1:26#12	ὁμοίωσις	N-ASF	1	0.90	
+Gen.1:26#13	καί	CONJ	1	0.97	
+Gen.1:26#14	ἄρχω	V-PAM-3P	2	0.75	not in the New Testament: for the parser
+Gen.1:26#15	ὁ	T-GPM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:26#16
+Gen.1:26#16	ἰχθύς	N-GPM	1	0.97	
+Gen.1:26#17	ὁ	T-GSF	1	0.97	
+Gen.1:26#18	θάλασσα	N-GSF	1	0.97	
+Gen.1:26#19	καί	CONJ	1	0.97	
+Gen.1:26#20	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:26#21
+Gen.1:26#21	πετεινός	N-GPN	1	0.97	
+Gen.1:26#22	ὁ	T-GSM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:26#23
+Gen.1:26#23	οὐρανός	N-GSM	1	0.97	
+Gen.1:26#24	καί	CONJ	1	0.97	
+Gen.1:26#25	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:26#26
+Gen.1:26#26	κτῆνος	N-GPN	1	0.90	
+Gen.1:26#27	καί	CONJ	1	0.97	
+Gen.1:26#28	πᾶς	A-GSF	1	0.97	
+Gen.1:26#29	ὁ	T-GSF	1	0.97	
+Gen.1:26#30	γῆ	N-GSF	1	0.97	
+Gen.1:26#31	καί	CONJ	1	0.97	
+Gen.1:26#32	πᾶς	A-GPM	3	0.80	several analyses: for the model
+Gen.1:26#33	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:26#34
+Gen.1:26#34	ἑρπετόν	N-GPN	1	0.90	
+Gen.1:26#35	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: a noun, then an article and adjective or participle with Gen.1:26#34
+Gen.1:26#36	ἕρπω	V-PAP-GPN	2a	0.85	not in the New Testament: for the parser; several candidates: for the model; agreement: an article and the word after it with Gen.1:26#35; agreement: a noun, then an article and adjective or participle with Gen.1:26#34
+Gen.1:26#37	ἐπί	PREP	1	0.97	
+Gen.1:26#38	ὁ	T-GSF	1	0.97	
+Gen.1:26#39	γῆ	N-GSF	1	0.97	
+Gen.1:27#1	καί	CONJ	1	0.97	
+Gen.1:27#2	ποιέω	V-AAI-3S	1	0.97	
+Gen.1:27#3	ὁ	T-NSM	1	0.95	
+Gen.1:27#4	θεός	N-NSM	1	0.93	
+Gen.1:27#5	ὁ	T-ASM	1	0.95	
+Gen.1:27#6	ἄνθρωπος	N-ASM	1	0.97	
+Gen.1:27#7	κατά	PREP	1	0.97	
+Gen.1:27#8	εἰκών	N-ASF	1	0.97	
+Gen.1:27#9	θεός	N-GSM	1	0.97	
+Gen.1:27#10	ποιέω	V-AAI-3S	1	0.97	
+Gen.1:27#11	αὐτός	P-ASM	1	0.97	
+Gen.1:27#12	ἄρρην, ἄρσην	A-ASN	3	0.80	several analyses: for the model
+Gen.1:27#13	καί	CONJ	1	0.97	
+Gen.1:27#14	θῆλυς	A-ASN	3	0.80	several analyses: for the model
+Gen.1:27#15	ποιέω	V-AAI-3S	1	0.97	
+Gen.1:27#16	αὐτός	P-APM	1	0.97	
+Gen.1:28#1	καί	CONJ	1	0.97	
+Gen.1:28#2	εὐλογέω	V-AAI-3S	2	0.75	not in the New Testament: for the parser
+Gen.1:28#3	αὐτός	P-APM	1	0.97	
+Gen.1:28#4	ὁ	T-NSM	1	0.95	
+Gen.1:28#5	θεός	N-NSM	1	0.93	
+Gen.1:28#6	λέγω	V-PAP-NSM	1	0.93	
+Gen.1:28#7	αὐξάνω	V-PPM-2P	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:28#8	καί	CONJ	1	0.97	
+Gen.1:28#9	πληθύνω	V-PPM-2P	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:28#10	καί	CONJ	1	0.97	
+Gen.1:28#11	πληρόω	V-AAM-2P	1	0.90	
+Gen.1:28#12	ὁ	T-ASF	1	0.97	
+Gen.1:28#13	γῆ	N-ASF	1	0.97	
+Gen.1:28#14	καί	CONJ	1	0.97	
+Gen.1:28#15	κατακυριεύω	V-AAM-2P	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:28#16	αὐτός	P-GSF	1	0.97	
+Gen.1:28#17	καί	CONJ	1	0.97	
+Gen.1:28#18	ἄρχω	V-PAM-2P	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:28#19	ὁ	T-GPM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:28#20
+Gen.1:28#20	ἰχθύς	N-GPM	1	0.97	
+Gen.1:28#21	ὁ	T-GSF	1	0.97	
+Gen.1:28#22	θάλασσα	N-GSF	1	0.97	
+Gen.1:28#23	καί	CONJ	1	0.97	
+Gen.1:28#24	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:28#25
+Gen.1:28#25	πετεινός	N-GPN	1	0.97	
+Gen.1:28#26	ὁ	T-GSM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:28#27
+Gen.1:28#27	οὐρανός	N-GSM	1	0.97	
+Gen.1:28#28	καί	CONJ	1	0.97	
+Gen.1:28#29	πᾶς	A-GPM	3	0.50	several analyses: for the model; model: unsure
+Gen.1:28#30	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:28#31
+Gen.1:28#31	κτῆνος	N-GPN	1	0.90	
+Gen.1:28#32	καί	CONJ	1	0.97	
+Gen.1:28#33	πᾶς	A-GSF	1	0.97	
+Gen.1:28#34	ὁ	T-GSF	1	0.97	
+Gen.1:28#35	γῆ	N-GSF	1	0.97	
+Gen.1:28#36	καί	CONJ	1	0.97	
+Gen.1:28#37	πᾶς	A-GPM	3	0.80	several analyses: for the model
+Gen.1:28#38	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:28#39
+Gen.1:28#39	ἑρπετόν	N-GPN	1	0.90	
+Gen.1:28#40	ὁ	T-GPN	2a	0.85	several analyses: for the model; agreement: a noun, then an article and adjective or participle with Gen.1:28#39
+Gen.1:28#41	ἕρπω	V-PAP-GPN	2a	0.85	not in the New Testament: for the parser; several candidates: for the model; agreement: an article and the word after it with Gen.1:28#40; agreement: a noun, then an article and adjective or participle with Gen.1:28#39
+Gen.1:28#42	ἐπί	PREP	1	0.97	
+Gen.1:28#43	ὁ	T-GSF	1	0.97	
+Gen.1:28#44	γῆ	N-GSF	1	0.97	
+Gen.1:29#1	καί	CONJ	1	0.97	
+Gen.1:29#2	ἔπω, ἐρῶ, εἶπον	V-2AAI-3S	1	0.97	
+Gen.1:29#3	ὁ	T-NSM	1	0.95	
+Gen.1:29#4	θεός	N-NSM	1	0.93	
+Gen.1:29#5	ἰδού	INJ	1	0.97	
+Gen.1:29#6	δίδωμι	V-RAI-1S	1	0.97	
+Gen.1:29#7	σύ	P-2DP	1	0.97	
+Gen.1:29#8	πᾶς	A-ASN	3	0.80	several analyses: for the model
+Gen.1:29#9	χόρτος	N-ASM	1	0.97	
+Gen.1:29#10	σπόριμος	A-ASM	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:29#11	σπείρω	V-PAP-NSN	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:29#12	σπέρμα	N-NSN	3	0.80	several analyses: for the model
+Gen.1:29#13	ὅς, ἥ	R-ASN	3	0.80	several analyses: for the model
+Gen.1:29#14	εἰμί	V-PAI-3S	1	0.97	
+Gen.1:29#15	ἐπάνω	PREP	1	0.97	
+Gen.1:29#16	πᾶς	A-GSF	1	0.97	
+Gen.1:29#17	ὁ	T-GSF	1	0.97	
+Gen.1:29#18	γῆ	N-GSF	1	0.97	
+Gen.1:29#19	καί	CONJ	1	0.97	
+Gen.1:29#20	πᾶς	A-ASN	3	0.80	several analyses: for the model
+Gen.1:29#21	ξύλον	N-ASN	3	0.80	several analyses: for the model
+Gen.1:29#22	ὅς, ἥ	R-ASN	3	0.80	several analyses: for the model
+Gen.1:29#23	ἔχω	V-PAI-3S	1	0.97	
+Gen.1:29#24	ἐν	PREP	1	0.97	
+Gen.1:29#25	ἑαυτοῦ	F-3DSM	3	0.50	shared ending: masculine and neuter genitive and dative singular: for the agreement check or the model; model: unsure
+Gen.1:29#26	καρπός	N-ASM	1	0.97	
+Gen.1:29#27	σπέρμα	N-GSN	1	0.97	
+Gen.1:29#28	σπόριμος	A-GSN	2a	0.85	not in the New Testament: for the parser; several candidates: for the model; agreement: an adjective or participle beside a noun with Gen.1:29#27
+Gen.1:29#29	σύ	P-2DP	1	0.97	brackets: letters Swete supplied
+Gen.1:29#30	εἰμί	V-FDI-3S	1	0.97	
+Gen.1:29#31	εἰς	PREP	1	0.97	
+Gen.1:29#32	βρῶσις	N-ASF	1	0.97	
+Gen.1:30#1	καί	CONJ	1	0.97	
+Gen.1:30#2	πᾶς	A-DPM	3	0.80	spelling: movable nu added; several analyses: for the model
+Gen.1:30#3	ὁ	T-DPN	2a	0.85	brackets: letters Swete supplied; several analyses: for the model; agreement: an article and the word after it with Gen.1:30#4
+Gen.1:30#4	θηρίον	N-DPN	2	0.75	not in the New Testament: for the parser
+Gen.1:30#5	ὁ	T-GSF	1	0.97	
+Gen.1:30#6	γῆ	N-GSF	1	0.97	
+Gen.1:30#7	καί	CONJ	1	0.97	
+Gen.1:30#8	πᾶς	A-DPM	3	0.80	spelling: movable nu added; several analyses: for the model
+Gen.1:30#9	ὁ	T-DPM	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:30#10	πετεινός	N-DPN	3	0.80	not in the New Testament: for the parser; analogy: a sibling form in the New Testament; several candidates: for the model
+Gen.1:30#11	ὁ	T-GSM	2a	0.85	several analyses: for the model; agreement: an article and the word after it with Gen.1:30#12
+Gen.1:30#12	οὐρανός	N-GSM	1	0.97	
+Gen.1:30#13	καί	CONJ	1	0.97	brackets: letters Swete supplied
+Gen.1:30#14	πᾶς	A-DSM	3	0.80	brackets: letters Swete supplied; several analyses: for the model
+Gen.1:30#15	ἑρπετόν	N-DSN	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:30#16	ὁ	T-DSM	3	0.80	several analyses: for the model
+Gen.1:30#17	ἕρπω	V-PAP-DSM	3	0.80	brackets: letters Swete supplied; not in the New Testament: for the parser; shared ending: masculine and neuter genitive and dative singular: for the agreement check or the model
+Gen.1:30#18	ἐπί	PREP	1	0.97	
+Gen.1:30#19	ὁ	T-GSF	1	0.97	brackets: letters Swete supplied
+Gen.1:30#20	γῆ	N-GSF	1	0.97	
+Gen.1:30#21	ὅς, ἥ	R-ASN	3	0.80	several analyses: for the model
+Gen.1:30#22	ἔχω	V-PAI-3S	1	0.97	
+Gen.1:30#23	ἐν	PREP	1	0.97	
+Gen.1:30#24	ἑαυτοῦ	F-3DSM	3	0.50	shared ending: masculine and neuter genitive and dative singular: for the agreement check or the model; model: unsure
+Gen.1:30#25	ψυχή	N-ASF	1	0.97	brackets: letters Swete supplied
+Gen.1:30#26	ζωή	N-GSF	1	0.97	
+Gen.1:30#27	καί	CONJ	1	0.97	
+Gen.1:30#28	πᾶς	A-ASM	2a	0.85	several analyses: for the model; agreement: an adjective or participle beside a noun with Gen.1:30#29
+Gen.1:30#29	χόρτος	N-ASM	1	0.97	brackets: letters Swete supplied
+Gen.1:30#30	χλωρός	A-ASM	2a	0.85	brackets: letters Swete supplied; shared ending: masculine accusative and neuter in -on: for the agreement check or the model; agreement: an adjective or participle beside a noun with Gen.1:30#29
+Gen.1:30#31	εἰς	PREP	1	0.97	
+Gen.1:30#32	βρῶσις	N-ASF	1	0.97	
+Gen.1:30#33	καί	CONJ	1	0.97	
+Gen.1:30#34	γίνομαι	V-2ADI-3S	1	0.97	brackets: letters Swete supplied
+Gen.1:30#35	οὕτω, οὕτως	ADV	1	0.97	
+Gen.1:31#1	καί	CONJ	1	0.97	brackets: letters Swete supplied
+Gen.1:31#2	εἴδω	V-2AAI-3S	1	0.97	spelling: ei written i
+Gen.1:31#3	ὁ	T-NSM	1	0.95	brackets: letters Swete supplied
+Gen.1:31#4	θεός	N-NSM	1	0.93	
+Gen.1:31#5	ὁ	T-APN	3	0.80	several analyses: for the model
+Gen.1:31#6	πᾶς	A-APN	3	0.80	several analyses: for the model
+Gen.1:31#7	ὅσος	K-APN	3	0.80	several analyses: for the model
+Gen.1:31#8	ποιέω	V-AAI-3S	1	0.97	brackets: letters Swete supplied
+Gen.1:31#9	καί	CONJ	1	0.97	brackets: letters Swete supplied
+Gen.1:31#10	ἰδού	INJ	1	0.97	
+Gen.1:31#11	καλός	A-APN	3	0.80	several analyses: for the model
+Gen.1:31#12	λίαν	ADV	1	0.97	
+Gen.1:31#13	καί	CONJ	1	0.97	
+Gen.1:31#14	γίνομαι	V-2ADI-3S	1	0.97	brackets: letters Swete supplied
+Gen.1:31#15	ἑσπέρα	N-NSF	1	0.90	brackets: letters Swete supplied
+Gen.1:31#16	καί	CONJ	1	0.97	
+Gen.1:31#17	γίνομαι	V-2ADI-3S	1	0.97	
+Gen.1:31#18	πρωΐ	ADV	3	0.80	not in the New Testament: for the parser; several candidates: for the model
+Gen.1:31#19	ἡμέρα	N-NSF	1	0.97	brackets: letters Swete supplied
+Gen.1:31#20	ἕκτος	A-NSF	1	0.97	brackets: letters Swete supplied
