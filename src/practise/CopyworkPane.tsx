@@ -2,7 +2,8 @@
 // and, at the foot, the one filled control: 'Take a photo' (the phone's camera), which after a result or a failure says 'Try again'. The picture is judged against the verse's words by the copywork grind and
 // what comes back is drawn as the verse with each word marked (JudgedPage.tsx, which Dictation shares).
 import { buildCopyworkRequest, COPY_LANGUAGE_NAMES, type CopyLanguage, MAX_COPY_WORDS } from './copywork';
-import { JudgedView, PhotoControls, useJudgedPage } from './JudgedPage';
+import { JudgedView, PhotoControls } from './JudgedPage';
+import { useJudgedPage } from './useJudgedPage';
 
 const TOO_LONG_LINE = 'That is a long passage to copy by hand. Open a verse or a shorter passage to practise copywork.';
 

@@ -2,13 +2,14 @@
 // (VerseView draws a line in its text box instead, until the page is judged); the app reads it aloud a phrase at a time in the language's voice (dictation.ts cuts the phrases, speech/greek.ts speakPhrase says one
 // and waits): the foot's 'Start dictation' says the first, 'Next' the next, and 'Again' (in the pane) says this one again. After the last phrase the foot is 'Take a photo' as in Copywork (the page is judged by the
 // copywork grind with `mode: 'dictation'`, JudgedPage.tsx); after the result the verse is shown beside the marks (`onRevealed`) and the foot's 'Try again' starts over, the verse hidden again.
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { noVoiceHelp, speakPhrase, stopPhrase } from '../speech/greek';
 import type { SpeechLanguage } from '../speech/languages';
 import { buildCopyworkRequest, type CopyLanguage, MAX_COPY_WORDS } from './copywork';
 import { phrasesOf } from './dictation';
-import { FOOT, JudgedView, PhotoControls, QUIET, useJudgedPage } from './JudgedPage';
+import { FOOT, JudgedView, PhotoControls, QUIET } from './JudgedPage';
+import { useJudgedPage } from './useJudgedPage';
 
 const TOO_LONG_LINE = 'That is a long passage to write from hearing. Open a verse or a shorter passage to practise dictation.';
 
@@ -40,11 +41,10 @@ export function DictationPane({ reference, language, text, slot, onRevealed }: D
   const heardAll = at >= phrases.length - 1 && at >= 0;
   const writing = heardAll && !done;
 
-  const reveal = useRef(onRevealed);
-  reveal.current = onRevealed;
+  // tell the Verse view when the page is judged (it ignores what it already knows)
   useEffect(() => {
-    reveal.current(done);
-  }, [done]);
+    onRevealed(done);
+  }, [done, onRevealed]);
   useEffect(() => stopPhrase, []);
 
   const say = (n: number) => {

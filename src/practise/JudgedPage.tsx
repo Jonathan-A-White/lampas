@@ -1,19 +1,15 @@
 // src/practise/JudgedPage.tsx — what Copywork and Dictation share (mw-5r3p30.899, .900): a photographed page is cut down on the phone as a talk's are (src/talk/pictures.ts), sent with the verse's words to the
 // copywork grind (copywork.ts) and what comes back is drawn as the verse with each word marked: right, missing or wrong (with what is wrong, and for a dictated page whether it sounds like the verse's word), and
 // the one line on what to fix first. A mark is never colour alone: a wrong word has a cross and a line under it, a missing one is struck out and dashed. A page the tutor cannot read says so and marks nothing.
-// useJudgedPage is the asking, JudgedView the drawing, PhotoControls the buttons that bring the picture (Attach a picture in the pane, the foot's camera).
-import { type ChangeEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+// useJudgedPage (useJudgedPage.ts) is the asking, JudgedView the drawing, PhotoControls the buttons that bring the picture (Attach a picture in the pane, the foot's camera).
+import { type ChangeEvent, type ReactNode, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { getDeviceKeyBytes } from '../services/deviceKey';
-import { askGrind, TutorError } from '../services/tutor';
-import { filesOf, isTalkPicture, NOT_A_PICTURE_LINE, preparePicture, TALK_PICTURE_MIMES } from '../talk/pictures';
-import { copyAttrs, COPYWORK_KIND, type CopyLanguage, type CopyworkAnswer, type CopyworkRequest, isCopyworkAnswer, markedWords, type MarkedWord } from './copywork';
+import { TALK_PICTURE_MIMES } from '../talk/pictures';
+import { copyAttrs, type CopyLanguage, type MarkedWord } from './copywork';
+import type { Judged } from './useJudgedPage';
 
 const WORKING_LINE = 'Reading your page…';
 const UNREADABLE_LINE = 'The tutor could not read your page.';
-const MISFIT_LINE = 'The tutor’s answer did not fit this verse. Try again.';
-
-export type Judged = { status: 'idle' } | { status: 'working' } | { status: 'failed'; line: string } | { status: 'unreadable'; fix: string } | { status: 'done'; words: MarkedWord[]; fix: string };
 
 const WORD: Record<MarkedWord['mark'], string> = {
   right: 'border-line',
@@ -67,44 +63,6 @@ function Result({ words, fix, language }: { words: MarkedWord[]; fix: string; la
       ) : null}
     </div>
   );
-}
-
-/** Asks the copywork grind to judge a picture of a page against `request`'s words; `state` is where it is. A new ask, or leaving, stops the one in flight. */
-export function useJudgedPage(): { state: Judged; judge: (file: File, asked: CopyworkRequest) => Promise<void>; reset: () => void } {
-  const [state, setState] = useState<Judged>({ status: 'idle' });
-  const stop = useRef<AbortController | null>(null);
-  useEffect(() => () => stop.current?.abort(), []);
-
-  async function judge(file: File, asked: CopyworkRequest) {
-    if (!isTalkPicture(file)) {
-      setState({ status: 'failed', line: NOT_A_PICTURE_LINE });
-      return;
-    }
-    stop.current?.abort();
-    const controller = new AbortController();
-    stop.current = controller;
-    setState({ status: 'working' });
-    try {
-      const picture = await preparePicture(file, 0);
-      const answer: CopyworkAnswer = await askGrind(COPYWORK_KIND, asked, isCopyworkAnswer, { key: getDeviceKeyBytes(), files: filesOf([picture]), signal: controller.signal, untimed: true });
-      if (controller.signal.aborted) return;
-      if (!answer.readable) {
-        setState({ status: 'unreadable', fix: answer.fix_first });
-        return;
-      }
-      const words = markedWords(asked, answer);
-      setState(words ? { status: 'done', words, fix: answer.fix_first } : { status: 'failed', line: MISFIT_LINE });
-    } catch (err) {
-      if (controller.signal.aborted) return;
-      setState({ status: 'failed', line: err instanceof TutorError ? err.message : err instanceof Error ? err.message : 'Something went wrong. Try again.' });
-    }
-  }
-
-  const reset = () => {
-    stop.current?.abort();
-    setState({ status: 'idle' });
-  };
-  return { state, judge, reset };
 }
 
 /** The working line, a failure, a page that could not be read, or the marked result. */
