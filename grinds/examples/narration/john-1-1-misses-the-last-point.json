@@ -1,0 +1,32 @@
+{
+  "description": "John 1:1 told back as \"the Word was in the beginning and was with God\": the first two points are caught, in the passage's order, that the Word was God is missed, and one question leads him to it.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1",
+    "passage": "In the beginning was the Word, and the Word was with God, and the Word was God.",
+    "narration": "In the beginning was the word and the word was with god."
+  },
+  "expect": {
+    "caught.0": {
+      "present": true
+    },
+    "caught.1": {
+      "present": true
+    },
+    "caught.2": {
+      "present": false
+    },
+    "missed.0": {
+      "matches": "God|divine"
+    },
+    "missed.1": {
+      "present": false
+    },
+    "in_order": {
+      "equals": true
+    },
+    "question": {
+      "matches": "^[^?]+\\?$"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Narration Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reference", "passage", "narration"],
+  "properties": {
+    "reference": {
+      "description": "The verse or passage he told back, as the app names it: 'John 1:1', 'Genesis 1:1-5', 'Romans 8:1-4'.",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80
+    },
+    "passage": {
+      "description": "The verse or passage in English, as the translation has it (verses in order, one space between words), exactly as the app showed it to him to read before he told it back.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000
+    },
+    "narration": {
+      "description": "What he told back, written down by the app from his voice (the phone's English dictation): it begins with a capital letter and ends with a full stop the app added, and has no other punctuation or paragraphing, and a name or a word may be misheard.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 3000
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "description": "Genesis 1:3-5 told back in full and in order, in his own words: nothing is missed, and the question goes a little deeper.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 1:3-5",
+    "passage": "And God said, “Let there be light,” and there was light. And God saw that the light was good, and He separated the light from the darkness. God called the light “day,” and the darkness He called “night.” And there was evening, and there was morning — the first day.",
+    "narration": "God said let there be light and there was light. he saw that the light was good so he split the light from the dark. then he named the light day and the dark night and that was the end of the first day."
+  },
+  "expect": {
+    "caught.0": {
+      "present": true
+    },
+    "missed.0": {
+      "present": false
+    },
+    "in_order": {
+      "equals": true
+    },
+    "question": {
+      "matches": "^[^?]+\\?$"
+    }
+  }
+}

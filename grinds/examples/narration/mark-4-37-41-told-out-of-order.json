@@ -1,0 +1,23 @@
+{
+  "description": "Mark 4:37-41 told back with every point but the storm told last: the points are caught and not missed, and in_order is false.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Mark 4:37-41",
+    "passage": "Soon a violent windstorm came up, and the waves were breaking over the boat, so that it was being swamped. But Jesus was in the stern, sleeping on the cushion. So they woke Him and said, “Teacher, don’t You care that we are perishing?” Then Jesus got up and rebuked the wind and the sea. “Silence!” He commanded. “Be still!” And the wind died down, and it was perfectly calm. “Why are you so afraid?” He asked. “How do you still have no faith?” Overwhelmed with fear, they asked one another, “Who then is this, that even the wind and the sea obey Him?”",
+    "narration": "The disciples were so scared and asked each other who this man is that even the wind and the sea obey him. Jesus told the wind to be still and it went calm and he asked them why they had no faith. They woke him up in the boat and said teacher do you not care that we are going to die. There was a big storm and the waves were filling the boat while Jesus slept on a cushion."
+  },
+  "expect": {
+    "caught.0": {
+      "present": true
+    },
+    "caught.3": {
+      "present": true
+    },
+    "in_order": {
+      "equals": false
+    },
+    "question": {
+      "matches": "^[^?]+\\?$"
+    }
+  }
+}
