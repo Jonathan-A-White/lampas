@@ -51,7 +51,7 @@ test('the idea sheet of the genitive fits the phone, its slider and buttons clea
   const sheet = await idea.boundingBox();
   expect((sheet?.x ?? 0) + (sheet?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   expect((sheet?.y ?? 0) + (sheet?.height ?? 0)).toBeLessThanOrEqual(VIEWPORT.height);
-  for (const name of ['Drill it', 'Ask the tutor']) {
+  for (const name of ['Drill it']) {
     const box = await idea.getByRole('button', { name, exact: true }).boundingBox();
     expect(box?.height, name).toBeGreaterThanOrEqual(47.5);
     expect((box?.y ?? 0) + (box?.height ?? 0), name).toBeLessThanOrEqual(VIEWPORT.height);

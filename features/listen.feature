@@ -75,17 +75,6 @@ Feature: Listen is a player: tap Play and the passage reads on by itself
     Then the phone is reading verse 3 aloud
     And the speaking bar shows Pause, Restart and Stop
 
-  Scenario: Hold to ask pauses Listen and it goes on after the question is sent
-    Given Lampas is opened on Romans 8 in the English view and a phone that speaks and a tutor and a recogniser behind a fake Postern
-    When he taps the heading "Walking by the Spirit"
-    And he taps "Play verses 1-11"
-    And the phone finishes speaking until verse 3 is being read
-    And he chooses "Ask the tutor"
-    And he holds the hold bar
-    Then the passage is paused at verse 3
-    When he says "What is the Spirit's work here?" and lets go
-    Then the phone is reading verse 3 aloud
-
   Scenario: The reading check's recording pauses Listen and it goes on when he lets go
     Given Lampas is opened on Romans 8 in the English view and a phone that speaks and a reading check behind a fake Postern
     When he taps the heading "Walking by the Spirit"

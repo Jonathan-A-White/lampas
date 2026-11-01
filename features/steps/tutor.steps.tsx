@@ -15,7 +15,7 @@ import { readerOf } from '../../src/nav/route';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
-import { composerIn, holdBarIn, questionField, typeQuestion } from '../../tests/support/composer';
+import { typeQuestion } from '../../tests/support/composer';
 import { expectKeepsItShort, expectLearnerField, expectTeachesNewWord, instructionsOf } from '../../tests/support/learner';
 import { stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -64,14 +64,11 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
 async function selectVerse28(): Promise<void> {
   const number = await screen.findByRole('button', { name: 'Verse 28' });
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
-  const view = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
-  await screen.findByRole('region', { name: 'Ask the tutor' });
+  await screen.findByRole('region', { name: 'Verse view' });
 }
 
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
-const sendButton = () => within(composerIn(viewEl())).getByRole('button', { name: 'Send' });
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 
 async function ask(question: string): Promise<void> {
@@ -128,12 +125,6 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(within(list).getByText(lemma, { selector: '[lang="el"]' })).toBeInTheDocument();
       expect(turns()[0]).toHaveTextContent('third person singular');
     });
-    And('the Ask box is ready for the next question', () =>
-      waitFor(() => {
-        expect(holdBarIn(viewEl())).toBeEnabled();
-        expect(within(composerIn(viewEl())).queryByRole('textbox', { name: 'Your question' })).toBeNull();
-      }),
-    );
   });
 
   Scenario('While the tutor has not answered the Talk sheet says Waiting', ({ Given, And, When, Then }) => {
@@ -183,31 +174,6 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await user.click(within(sheet()).getByRole('button', { name: 'Retry' }));
     });
     Then('the Talk sheet about Romans 8:28 opens and the answer shows in it under his question', answerShowsInSheet);
-  });
-
-  Scenario('Send is not offered with nothing typed', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
-    When('he selects verse 28 and taps Type a question', async () => {
-      await selectVerse28();
-      await questionField(user, viewEl());
-    });
-    Then('there is no Send button', () => {
-      expect(within(composerIn(viewEl())).queryByRole('button', { name: 'Send' })).toBeNull();
-    });
-    When('he types {string}', async (_, text: string) => {
-      await user.type(await questionField(user, viewEl()), text);
-    });
-    Then('there is still no Send button', () => {
-      expect(within(composerIn(viewEl())).queryByRole('button', { name: 'Send' })).toBeNull();
-    });
-    When('he types {string} instead', async (_, text: string) => {
-      const field = await questionField(user, viewEl());
-      await user.clear(field);
-      await user.type(field, text);
-    });
-    Then('the Send button is on', () => {
-      expect(sendButton()).toBeEnabled();
-    });
   });
 
   Scenario('An answer in the wrong shape is not kept', ({ Given, And, When, Then }) => {

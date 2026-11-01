@@ -30,7 +30,6 @@ import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
 import { hebrewLevelOf } from './definitions/hebrewInterest';
 import { DEPTH_KEY, depthFrom } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
-import { getTutorDoor, tutorDoorSetting } from './definitions/tutorDoor';
 import { handSetting } from './hand';
 import { helpPlain } from './helpText';
 import { SETTINGS, settingOf, type SectionId } from './registry';
@@ -57,7 +56,6 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'handwriting', title: 'Handwriting' },
   { id: 'readAloud', title: 'Read aloud' },
   { id: 'readTutor', title: "The tutor's responses" },
-  { id: 'askBy', title: 'Asking the tutor' },
   { id: 'talk', title: 'Talk' },
   { id: 'hebrew', title: 'Hebrew in the tutor' },
   { id: 'voices', title: 'Reading voices' },
@@ -90,7 +88,7 @@ export type SettingsGroup = KitGroup<SectionId, GroupId>;
 export const GROUPS: readonly SettingsGroup[] = [
   { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave', 'variants'] },
   { id: 'greek', title: 'Learning', hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting and Hebrew in the tutor.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'hebrew'] },
-  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'tips', 'studyWay'] },
+  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how the talk bars work, tips and your study way.', sections: ['readTutor', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
   { id: 'study', title: 'Study resources', hint: 'Your Logos library, links to the tools you own, Bible in Logos and maps.', sections: ['resources', 'maps'] },
@@ -107,12 +105,12 @@ export const groupOf = (section: SectionId): SettingsGroup => groupIn(GROUPS, se
 export type SettingsRow = KitRow<SectionId> & {
   /** the row sets how the tutor works (the AI: what is sent to the mill): with no licence it is drawn off and greyed, with 'Needs a licence' (mw-8m9dyu.3) */
   ai?: boolean;
-  /** the row is not drawn at all without a licence, not even greyed: the Tutor door and Hand rows (mw-5r3p30.880: with no licence no tutor door exists, "none of it should show up") */
+  /** the row is not drawn at all without a licence, not even greyed: the Hand row (mw-5r3p30.880: with no licence no tutor door exists, "none of it should show up") */
   licenceOnly?: boolean;
 };
 
 /** The settings that only matter to the tutor. A new setting for the tutor is listed here, so an unlicensed phone sees it off with 'Needs a licence'. */
-const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'askBy', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
+const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
 
 const LINKS: readonly SettingsRow[] = [
   { key: 'link.variantLessons', label: 'Lessons on variant readings', hint: 'Five short lessons on where the manuscripts differ and how to read it.', section: 'variants' },
@@ -220,17 +218,12 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   ai: AI_KEYS.has(s.key) || undefined,
 });
 
-/** Tutor door and Hand (mw-5r3p30.879): the row of a setting declared once (definitions/tutorDoor.ts, hand.ts) that is kept out of the registry and DEFINITIONS, so the tutor does not read or change it and
- *  its Settings request (full), src/tutor/knows.ts and the bible-talk instructions do not carry it (isTalkable). Tutor door heads Asking the tutor; Hand is a row of Layout that any screen reads (hand.ts). */
-const rowOfDefinition = (def: typeof tutorDoorSetting | typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, licenceOnly: true });
-const TUTOR_DOOR_ROW: SettingsRow = rowOfDefinition(tutorDoorSetting);
+/** Hand (mw-5r3p30.879): the row of a setting declared once (hand.ts) that is kept out of the registry and DEFINITIONS, so the tutor does not read or change it and its Settings request (full),
+ *  src/tutor/knows.ts and the bible-talk instructions do not carry it (isTalkable). Hand is a row of Layout that any screen reads (hand.ts); the floating ? sits on its side. The Tutor door row is gone (mw-5r3p30.882): the floating ? is the one door. */
+const rowOfDefinition = (def: typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, licenceOnly: true });
 const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
-/** Hand again, directly under Tutor door while the door is Floating ? (mw-5r3p30.925): the hand he chose once is seen and changed where the floating ? is chosen. The same saved value as HAND_ROW (HandControl),
- *  a row of its own so each page draws it once; the Tutor door's value is read by readValues (it is no registry setting). */
-const HAND_AT_DOOR_ROW: SettingsRow = { ...HAND_ROW, key: 'handAtDoor', section: tutorDoorSetting.section, dependsOn: { key: tutorDoorSetting.key, shown: (value) => value === 'floating' } };
-
 // the library's door is listed just before Bible in Logos, so Study resources reads: the switches, Your Logos library, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
-const unordered: readonly SettingsRow[] = [TUTOR_DOOR_ROW, HAND_AT_DOOR_ROW, ...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [LIBRARY_ROW, rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [LIBRARY_ROW, rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
@@ -254,8 +247,8 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   });
 }
 
-/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, Tutor door, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== TUTOR_DOOR_ROW.key && key !== HAND_ROW.key && key !== HAND_AT_DOOR_ROW.key && !PART_ROWS.some((r) => r.key === key);
+/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && !PART_ROWS.some((r) => r.key === key);
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 
@@ -266,8 +259,6 @@ export async function readValues(): Promise<Values> {
   const entries = await Promise.all(
     DEPENDED_ON.map(async (key) => {
       if (key === 'developerMode') return [key, await getDeveloper()] as const;
-      // the Tutor door is no registry setting (tutorDoor.ts): Hand under it shows while it is Floating ?
-      if (key === tutorDoorSetting.key) return [key, await getTutorDoor()] as const;
       // the key of a row both languages share: the higher of the two dials (no setting of its own)
       if (key === DEPTH_KEY) {
         const [greek, hebrew] = await Promise.all([settingOf('greekInterest')?.read(), settingOf('hebrewInterest')?.read()]);

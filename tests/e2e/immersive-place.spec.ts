@@ -10,7 +10,6 @@ import { openUnlicensed, openUnlocked } from './unlocked';
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 /** Puts settings in the app's store through raw IndexedDB, as the app wrote them. */
-// the two-finger tap on the text shows and puts away the bars where the Tutor door is Floating ? (mw-5r3p30.880); in the default door the same tap opens the tutor, so these specs choose Floating ?
 async function keep(page: Page, values: Record<string, string>) {
   await page.evaluate(
     (pairs) =>
@@ -20,7 +19,7 @@ async function keep(page: Page, values: Record<string, string>) {
         open.onsuccess = () => {
           const db = open.result;
           const tx = db.transaction('settings', 'readwrite');
-          for (const [key, value] of Object.entries({ tutorDoor: 'floating', ...pairs })) tx.objectStore('settings').put({ key, value });
+          for (const [key, value] of Object.entries(pairs)) tx.objectStore('settings').put({ key, value });
           tx.oncomplete = () => {
             db.close();
             resolve();
@@ -181,7 +180,7 @@ test('it is small and dim, and covers none of the text', async ({ page }) => {
 
 // The foot of the Reader with the bars away (mw-5r3p30.473): the place line, the reading bar (Pause, Restart, Stop) and the round Ask button all keep the floor
 // of a three-button bar (48 px, src/index.css --lp-bar-inset), because Android Chrome does not always report the navigation bar. Upright and sideways,
-// with the Talk bar drawn (a licensed phone) and without it.
+// licensed and not (the Reader's Talk bar went, mw-5r3p30.882).
 const FLOOR = 48;
 const VIEWPORTS = [
   { name: '390x844', width: 390, height: 844 },
@@ -219,41 +218,37 @@ for (const licensed of [true, false]) {
           range.selectNodeContents(line);
           out.push({ name: 'the place line', bottom: range.getBoundingClientRect().bottom });
         }
-        // the round Ask button slides off the screen with the bars: it is a row at the foot only while they are shown
-        const ask = document.querySelector<HTMLElement>('[data-ask-tutor]:not([data-away])');
-        if (ask) out.push({ name: 'the Ask button', bottom: ask.getBoundingClientRect().bottom });
         return { rows: out, height: window.innerHeight };
       });
       expect(rows.rows.length).toBeGreaterThanOrEqual(4);
       for (const row of rows.rows) expect(rows.height - row.bottom, row.name).toBeGreaterThanOrEqual(FLOOR - 0.5);
-      // the door is the floating ? here, so the older round Ask button is not drawn at all (mw-5r3p30.935)
       await expect(page.locator('[data-ask-tutor]')).toHaveCount(0);
       await shot(page, `immersive-place-floor-${licensed ? 'licensed' : 'free'}-${size.name}`);
 
-      // the bars back: the speaking bar, the Talk bar's round Ask button and the rows under them keep the floor too. Upright only: sideways, with the bars
-      // shown and a chapter read, the stack of rows is taller than the window (the box is squeezed to 136 px, mw-5r3p30.212) and the Talk bar ends 12 px short of it.
+      // the bars back: the speaking bar and the rows under it keep the floor too. Upright only: sideways, with the bars
+      // shown and a chapter read, the stack of rows is taller than the window (the box is squeezed to 136 px, mw-5r3p30.212).
       if (size.height < size.width) return;
       await twoFingerTap(page, size.height / 2);
       await expect(place(page)).toHaveCount(0);
       await page.waitForTimeout(400);
       const shown = await page.evaluate(() => {
         const out: Array<{ name: string; bottom: number }> = [];
-        for (const el of document.querySelectorAll<HTMLElement>('[data-speaking-slot] button, [data-ask-tutor], [data-talk-bar] button')) {
+        for (const el of document.querySelectorAll<HTMLElement>('[data-speaking-slot] button')) {
           if (el.closest('[data-away]') || el.hasAttribute('data-away')) continue;
           out.push({ name: `shown ${el.getAttribute('aria-label') ?? el.textContent}`, bottom: el.getBoundingClientRect().bottom });
         }
         return { rows: out, height: window.innerHeight };
       });
-      expect(shown.rows.length).toBeGreaterThanOrEqual(3);
+      expect(shown.rows.length).toBeGreaterThanOrEqual(1);
       for (const row of shown.rows) expect(shown.height - row.bottom, row.name).toBeGreaterThanOrEqual(FLOOR - 0.5);
     });
   }
 }
 
 // A two-finger cycle must not move the text (mw-5r3p30.472): the box changes size when the bars come and go, and the text stays where it is, so the end of
-// the chapter still reads 100% (it read 99% after a cycle, 22 px short). At the top, the middle and the end of Mark 12, with the Talk bar drawn and without.
+// the chapter still reads 100% (it read 99% after a cycle, 22 px short). At the top, the middle and the end of Mark 12, licensed and not.
 for (const licensed of [true, false]) {
-  test(`two two-finger cycles leave the text where it was and the end of Mark 12 at 100%, ${licensed ? 'with' : 'without'} the Talk bar`, async ({ page }) => {
+  test(`two two-finger cycles leave the text where it was and the end of Mark 12 at 100%, ${licensed ? 'licensed' : 'free'}`, async ({ page }) => {
     await (licensed ? openUnlocked(page) : openUnlicensed(page));
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
@@ -295,7 +290,7 @@ for (const licensed of [true, false]) {
 
 // Coming back to the Reader at a scrolled place keeps the bars as he left them (mw-5r3p30.471): the Reader puts the saved place back, and that is not
 // him scrolling down, so with the bars shown (a two-finger tap) Settings and then '‹ Reader' leaves them shown and draws no place line; the same
-// place after a reload keeps them shown. Licensed (with the Talk bar) and not.
+// place after a reload keeps them shown. Licensed and not.
 for (const licensed of [true, false]) {
   test(`with the bars shown on a scrolled Mark 12, Settings and then ‹ Reader and a reload keep them shown, ${licensed ? 'licensed' : 'free'}`, async ({ page }) => {
     await (licensed ? openUnlocked(page) : openUnlicensed(page));
@@ -311,7 +306,6 @@ for (const licensed of [true, false]) {
       await expect(place(page), `${what}: no place line`).toHaveCount(0);
       await expect(page.locator('header').first(), `${what}: the header`).toBeVisible();
       await expect(page.getByTestId('reader-chips'), `${what}: the chips`).toBeVisible();
-      if (licensed) await expect(page.locator('[data-talk-bar]'), `${what}: the Talk bar`).toBeVisible();
     };
 
     await scrollText(page, 1000);

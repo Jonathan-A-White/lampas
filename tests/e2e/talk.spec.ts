@@ -21,7 +21,7 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the Talk bar sits at the bottom of the reader and opens a sheet that fits the phone', async ({ page }) => {
+test('the floating ? is on screen at the reader and opens a sheet that fits the phone', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
@@ -29,17 +29,15 @@ test('the Talk bar sits at the bottom of the reader and opens a sheet that fits 
   await openUnlocked(page);
   await page.goto('/');
 
-  // The bar is the lowest thing on the screen, a thumb-sized button across its width.
-  const talk = page.getByRole('button', { name: 'Talk', exact: true });
+  // The floating ? is the door: a thumb-sized button on screen (the Reader's Talk bar is gone, mw-5r3p30.882).
+  const talk = page.locator('[data-floating-tutor]');
   await expect(talk).toBeInViewport();
-  const bar = await talk.boundingBox();
-  expect(bar?.height).toBeGreaterThanOrEqual(43.5);
-  expect(bar?.width).toBeGreaterThan(300);
-  // It rests just above the 48 px the navigation bar may cover (mw-5r3p30.42).
-  expect((bar?.y ?? 0) + (bar?.height ?? 0)).toBeGreaterThan(VIEWPORT.height - 70);
+  const door = await talk.boundingBox();
+  expect(door?.height).toBeGreaterThanOrEqual(43.5);
+  expect(door?.width).toBeGreaterThanOrEqual(43.5);
   await expectFitsPhone(page);
 
-  // With a verse tapped the Verse view takes the screen and the Talk bar is gone (one hold bar at a time); the verse's talk is under Ask the tutor.
+  // With a verse tapped the Verse view takes the screen; the ? opens the verse's talk, and it puts itself away while the sheet is up.
   await openTalkAbout(page, 28);
   await expect(talk).toBeHidden();
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });

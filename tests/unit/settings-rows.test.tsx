@@ -23,8 +23,7 @@ beforeEach(async () => {
 });
 
 const keys = (rows: readonly { key: string }[]) => rows.map((r) => r.key);
-const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', weave: 'solid', variants: 'all', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', devotional: 'random', developerMode: 'on', tutorDoor: 'floating', pronunciationSeparate: 'on', 'pronunciationSeparate.grc': 'on', 'pronunciationSeparate.he': 'on' };
-// Tutor door is no setting of the list but a row of its own (rows.ts); Hand under it (handAtDoor) shows while it is Floating ?
+const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', weave: 'solid', variants: 'all', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', devotional: 'random', developerMode: 'on', pronunciationSeparate: 'on', 'pronunciationSeparate.grc': 'on', 'pronunciationSeparate.he': 'on' };
 /** Every row ALL_ON shows: all but the Pronunciation family, which gives way to the Greek and the Hebrew row while Set each language on its own is On (the one pair of rows that exclude each other). */
 const ALL_SHOWN = (): string[] => keys(ROWS).filter((k) => k !== 'pronunciation');
 /** Values a row may read that are not rows of their own: Developer mode is found on About, and `depth` is the higher of the two dials (readValues); neither is a setting of the list; the last two say Set each language on its own is On and that language's dial is at Curious or above (readValues). */
@@ -59,11 +58,11 @@ describe('the rows', () => {
   });
 
   it('marks the settings that only matter to the tutor as AI, and no other row', () => {
-    expect(keys(ROWS.filter((r) => r.ai))).toEqual(['readTutor', 'askBy', 'hebrewDepth', 'tips', 'quizGoal']);
+    expect(keys(ROWS.filter((r) => r.ai))).toEqual(['readTutor', 'hebrewDepth', 'tips', 'quizGoal']);
   });
 
-  it('marks Tutor door and Hand as drawn only with a licence, not greyed (mw-5r3p30.880)', () => {
-    expect(keys(ROWS.filter((r) => r.licenceOnly))).toEqual(['hand', 'tutorDoor', 'handAtDoor']);
+  it('marks Hand as drawn only with a licence, not greyed (mw-5r3p30.880); the Tutor door row is gone with its choice, the floating ? being the one door (mw-5r3p30.882)', () => {
+    expect(keys(ROWS.filter((r) => r.licenceOnly))).toEqual(['hand']);
   });
 
   it('hides every Greek row by the dial: the settings that depend on it, or on a setting that does', () => {
@@ -133,7 +132,6 @@ describe('the Settings screen', () => {
       { key: 'resource.logos', value: 'on' },
       { key: 'devotional', value: 'random' },
       { key: 'developerMode', value: 'on' },
-      { key: 'tutorDoor', value: 'floating' },
       { key: 'pronunciationSeparate', value: 'on' },
     ]);
     render(<SettingsScreen />);

@@ -59,7 +59,7 @@ differ (each app's own). Then: "Looks good."
 
 ## Known differences (his word decides which become stories)
 
-- Lampas: a long press on a word says it at once and shows no bar; the Talk bar stops a chapter reading outright (no Resume),
+- Lampas: a long press on a word says it at once and shows no bar; holding the Talk sheet's bar to talk stops a chapter reading outright (no Resume; the Reader's own Talk bar went in mw-5r3p30.882),
   where leaving for Settings pauses it.
 - Lampas: a double tap on a verse's small play button starts and stops it at once.
-- Lampas on its side (844x390): the reading box is short and the Talk bar's bottom edge is cut off.
+- Lampas on its side (844x390): the reading box is short (a past finding, when the Reader had a Talk bar, since removed).

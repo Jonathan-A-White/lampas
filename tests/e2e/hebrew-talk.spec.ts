@@ -1,4 +1,4 @@
-// The Bible talk on Jonah 1:1 (mw-gdcyf98.18) at 390x844: Talk about verse 1 is offered on an Old Testament verse; the request carries the verse's Hebrew and its words and no Greek; a Hebrew word of the
+// The Bible talk on Jonah 1:1 (mw-gdcyf98.18) at 390x844: the floating ? over the Verse view of an Old Testament verse opens the talk about verse 1; the request carries the verse's Hebrew and its words and no Greek; a Hebrew word of the
 // answer is drawn right to left in the bundled Hebrew face as a thumb-sized tap that opens its word sheet.
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';

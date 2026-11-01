@@ -19,7 +19,7 @@ export type SettingsEvent =
   | { kind: 'weave-grammar-changed'; grammar: WeaveGrammar }
   | { kind: 'layout-changed'; layout: ReadingLayout }
   | { kind: 'headings-changed'; headings: SectionHeadings }
-  /** the Immersive reader choice: whether the Reader's top and Talk bar slide away while he reads */
+  /** the Immersive reader choice: whether the Reader's top slides away while he reads */
   | { kind: 'immersive-changed'; immersive: Immersive }
   /** Play to: how far the header's Play goes (the end of the book or of the Bible) */
   | { kind: 'read-span-changed'; span: PlayTo }

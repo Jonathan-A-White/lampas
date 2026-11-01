@@ -1,5 +1,5 @@
 // src/talkSettings.ts — the one settings object of every hold-to-talk control in Lampas (voice-kit/composer ComposerSettings, mw-06ggew.7): the Talk
-// sheet's bar, the Reader's Talk bar and verse numbers, Welcome, the letter drill and Ask the tutor's Composer all work the same way. Settings > Talk
+// sheet's bar, Welcome, the letter drill and Ask the tutor's Composer all work the same way. Settings > Talk
 // (mw-06ggew.8) chooses it: Talk Hold | Tap and Send On release | By button, kept on the device. A talk control calls `useTalkSettings()` and passes
 // that and nothing of its own; LAMPAS_TALK_SETTINGS is what it holds until he has chosen (and while the choice is being read).
 import { useMemo } from 'react';

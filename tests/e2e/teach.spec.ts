@@ -51,7 +51,7 @@ test('the teach sheet fits the phone, its four buttons clear 48 px, and the vers
   const box = await sheet.boundingBox();
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
   expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(VIEWPORT.height);
-  for (const name of ['Got it', 'I know this', 'Not now', 'Ask the tutor']) {
+  for (const name of ['Got it', 'I know this', 'Not now']) {
     const b = await sheet.getByRole('button', { name, exact: true }).boundingBox();
     expect(b?.height, name).toBeGreaterThanOrEqual(47.5);
     expect((b?.y ?? 0) + (b?.height ?? 0), name).toBeLessThanOrEqual(VIEWPORT.height);

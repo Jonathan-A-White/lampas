@@ -10,7 +10,6 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY, LINK_ORIGIN } from '../../src/config';
-import { markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
@@ -19,7 +18,7 @@ import { getReading, stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { holdBarsIn } from '../../tests/support/composer';
-import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
+import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -48,11 +47,6 @@ const ROMANS_8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as {
 /** The text the app sends for verses `from` to `to`: each verse's chunks trimmed and joined by a space, the verses joined by a space. */
 const englishOf = (from: number, to: number): string =>
   ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.e.map((c) => c.t.trim()).join(' ')).join(' ');
-/** what the tutor is sent: the supplied words between asterisks */
-const markedEnglishOf = (from: number, to: number): string =>
-  ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.e.map(markSupplied).join(' ')).join(' ');
-const greekOf = (from: number, to: number): string =>
-  ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.g.map((w) => w.t).join(' ')).join(' ');
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 interface Options {
@@ -146,12 +140,6 @@ describeFeature(feature, ({ Scenario }) => {
   const arrowOff = (name: 'next' | 'previous') => () => {
     expect(within(viewEl()).getByRole('button', { name: `${name === 'next' ? 'Next' : 'Previous'} passage` })).toBeDisabled();
   };
-  const holdBar = async () => {
-    await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
-  };
-  const letGo = async () => {
-    await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
-  };
   Scenario('Tapping the heading of Romans 8:1-11 opens the Verse view headed with the heading and its range', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     And('the Reader is scrolled a little down', () => {
@@ -219,9 +207,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The passage has one row of actions, without Diagram, and exactly one control at the foot', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);
-    Then('the row of actions is {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+    Then('the row of actions is {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
       const row = within(viewEl()).getByRole('group', { name: 'Actions' });
-      expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c, d]);
+      expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c]);
     });
     And('{string} is one of the tools under the text, not an action', (_, name: string) => {
       expect(within(within(viewEl()).getByRole('group', { name: 'Tools' })).getByRole('button', { name, exact: true })).toBeInTheDocument();
@@ -297,43 +285,6 @@ describeFeature(feature, ({ Scenario }) => {
     And('the reading of the passage is kept under {string} and not under verse 1', async (_, ref: string) => {
       await waitFor(async () => expect(await db.readings.get(ref)).toBeDefined());
       expect(await db.readings.get('rom.8.1')).toBeUndefined();
-    });
-  });
-
-  Scenario('Ask the tutor about the passage carries its reference and text', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern', () =>
-      open({ tutor: true }),
-    );
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    Then('the hold bar is labelled {string}', labelled);
-    When('he holds the hold bar and says {string} and lets go', async (_, words: string) => {
-      await holdBar();
-      await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(0));
-      act(() => {
-        FakeRecognizer.last().open();
-        FakeRecognizer.last().say([result(words, false)]);
-      });
-      await letGo();
-    });
-    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question {string}', async (_, reference: string, question: string) => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
-      expect(fake.received[0].input.reference).toBe(reference);
-      expect(fake.received[0].input.question).toBe(question);
-    });
-    And('that grist carries the Greek and the English of verses 1 to 11 and no other', () => {
-      expect(fake.received[0].input.greek).toBe(greekOf(1, 11));
-      expect(fake.received[0].input.english).toBe(markedEnglishOf(1, 11));
-    });
-    And('the answer shows in the Talk sheet about Romans 8:1-11', async () => {
-      const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:1-11' });
-      await waitFor(() => expect(dialog.querySelectorAll('[data-turn]')).toHaveLength(1));
-      expect(dialog.querySelector('[data-turn]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
-    });
-    And('the talk is kept under {string} and not under verse 1', async (_, ref: string) => {
-      const refs = (await db.talks.toArray()).map((t) => t.ref);
-      expect(refs).toEqual([ref]);
     });
   });
 

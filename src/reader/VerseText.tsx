@@ -39,7 +39,7 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
 
 /** The button with a verse's number: a tap selects the verse (it opens its Verse view), a hold (half a second) copies the verse at once, licence or not, as a hold on a section heading
  * or the place line copies its passage or the chapter (`onCopy`, src/copy/useCopyHold.ts: useLongPress, the app's one hold). Talking about the verse is one tap away in the Verse view;
- * the Talk bar's own hold is the hold-to-talk (mw-5r3p30.835). */
+ * the Talk sheet's own bar is the hold-to-talk (mw-5r3p30.835). */
 export function VerseNumber({ n, selected, onSelect, onCopy, className, children }: {
   n: number;
   selected: boolean;

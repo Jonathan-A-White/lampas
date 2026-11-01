@@ -1,8 +1,7 @@
-// src/Talk.tsx — Bible talk: the Talk bar at the bottom of the reader and the bottom sheet it opens, a conversation about the
+// src/Talk.tsx — Bible talk: the bottom sheet the floating ? opens (the Reader's Talk bar is gone, mw-5r3p30.882), a conversation about the
 // chapter or the selected verse. The sheet shows the turns so far (kept per chapter and per verse, src/data/repositories/talks.ts),
 // and, last at the foot, voice-kit's Composer (Postern's compose button, as in Ask the tutor: Hold to talk, Type a message, Attach a picture, Take a photo, mw-06ggew.15);
-// what a message is doing is src/useTalk.ts's. He can talk instead of typing: the Composer's own bar, or (src/talk/useTalkHold.ts over voice-kit's TalkBar) the Talk bar held
-// for half a second; his words show live while he holds and go on release. Each answer can be heard (read aloud through
+// what a message is doing is src/useTalk.ts's. He can talk instead of typing: the Composer's own bar, his words shown live while he holds and sent on release. Each answer can be heard (read aloud through
 // src/speech/readAloud.ts, a Stop while it plays) and its Greek words open the word sheet.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
@@ -50,10 +49,7 @@ import { SEND_A_SCREENSHOT } from './tutor/screen';
 import { ReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { answerRuns } from './speech/answerRuns';
-import { focusQuietly } from './ui/focus';
 import { readDraft, talkDraftKey, writeDraft } from './ui/unsentDraft';
-import { HeldTalkBar } from './talk/Bars';
-import type { TalkHold } from './talk/useTalkHold';
 import { PendingQuestion } from './ui/PendingQuestion';
 import { CopyExchange } from './share/CopyExchange';
 import { CopyText } from './share/CopyText';
@@ -71,20 +67,6 @@ import { faceOf } from './script/greekLang';
 import { announce, plainText } from './ui/live';
 import { addWord } from './tutor/registry';
 import { useDoorBusy } from './tutor/door';
-
-/** The bar pinned at the bottom of the reader: voice-kit's hold-to-talk bar (src/talk/Bars.tsx) labelled Talk. A tap opens
- * the sheet; a hold (half a second) opens it and listens, and what he says goes on release. It is the lowest bar, so it alone
- * keeps the safe-area inset. In a short window (a phone held sideways) the bar is a 56 px row (mw-5r3p30.182). */
-export function ReaderTalkBar({ hold, onPress, onTap }: { hold: TalkHold; onPress: () => void; onTap: () => void }) {
-  return (
-    <div data-talk-bar className="shrink-0 border-t border-line bg-surface px-3 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
-      <HeldTalkBar hold={hold} onPress={onPress} onTap={onTap} labels={TALK_BAR_LABELS} fit="compact" />
-    </div>
-  );
-}
-
-/** The Reader's bar says Talk whatever it is doing, a finger slid off it too (it is the colour that changes, and the sheet over it says what to do). */
-const TALK_BAR_LABELS = { hold: 'Talk', release: 'Talk', starting: 'Talk', tryAgain: 'Talk', stop: 'Talk', drop: 'Talk' };
 
 /** A picture in flight: what draws it under his question. */
 interface InFlight {
@@ -566,14 +548,12 @@ function Suggestions({ questions, onAsk, label }: { questions: string[]; onAsk: 
 }
 
 /** The sheet: the conversation `scope` names, the field, Send, and what the last message is doing. */
-export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, shared, onSay, onResume, onHelp, onAskTerm, onSkip, onClose }: {
+export function TalkSheet({ scope, talkRef: ref, state, suggestions, shared, onSay, onResume, onHelp, onAskTerm, onSkip, onClose }: {
   scope: TalkScope;
   /** the key the conversation is kept under (src/data/repositories/talks.ts talkRef) */
   talkRef: string;
   /** what the last message of this conversation is doing; undefined when it is done */
   state: AskState | undefined;
-  /** the hold that opened the sheet (the Reader's Talk bar): its words show live too, and what went wrong with it */
-  opened?: TalkHold;
   /** questions fitted to where he asks from (src/tutor/screen.ts): shown as buttons while nothing has been said, a tap sends one */
   suggestions?: string[];
   /** what came in through Share > Lampas (mw-y3qno5.2): its pictures wait in the composer and its words in the field, as he opened the sheet, NOT sent */
@@ -636,9 +616,6 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   }, []);
   useEscapeToClose(onClose, lookup === null && linkedWord === null);
   useSheetBack(onClose);
-  // the hold that opened the sheet (the Talk bar) is drawn here; the sheet's own hold is the Composer's, which draws its own words and notice
-  const live = opened?.listening ? opened : undefined;
-  const notice = opened?.notice;
   const talkSettings = useTalkSettings();
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   // Once there is a talk the suggestions he has not used are still offered, under the last answer (or the failure of the first question).
@@ -772,7 +749,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
   }, [turns]);
   // Closing the sheet takes its answer's speech with it; an answer that waits for his return keeps its bar (mw-5r3p30.323).
   useEffect(() => () => stopAnswerSpeech(), []);
-  // The words of a hold that did not end in a release (a slide off the Talk bar, the recogniser failing) wait in the field, unsent (src/talk/keptWords.ts).
+  // The words of a hold that did not end in a release (a slide off the Talk sheet's bar, the recogniser failing) wait in the field, unsent (src/talk/keptWords.ts).
   const composer = useRef<HTMLDivElement>(null);
   // a swipe that starts on Hold to talk is no hold (mw-5r3p30.930)
   useEffect(() => (composer.current ? holdBackSwipes(composer.current) : undefined), []);
@@ -786,10 +763,6 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
       ),
     [],
   );
-  // A phone with no recogniser sends a hold to the typed field.
-  useEffect(() => {
-    if ((opened?.typing ?? 0) > 0) focusQuietly(composer.current?.querySelector('textarea') ?? null);
-  }, [opened?.typing]);
 
   // The pictures in flight, from Send until the answer, shown under his question. The ones waiting to go are the Composer's: it adds a picked, taken or pasted file to its
   // row; each is cut down on the phone as Send is pressed (src/talk/pictures.ts preparePictures), and a message that cannot go keeps them in the row.
@@ -930,17 +903,6 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
           </div>
           <BarSlot level={3} />
           <div ref={composer} data-composer className="shrink-0 space-y-2 border-t border-line px-4 pt-2 short:pt-0 pb-[calc(0.75rem+var(--lp-bar-inset))]">
-            {live?.listening ? (
-              <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">
-                <p className="text-sm font-medium text-bad">{live.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
-                <p className="lp-live min-h-7 break-words text-lg">{live.transcript}</p>
-              </div>
-            ) : null}
-            {notice ? (
-              <p role="alert" className="break-words text-base text-bad">
-                {notice}
-              </p>
-            ) : null}
             <LengthNote id={countId} text={text} max={MAX_TALK_CHARS} what="question" />
             {/* The kit's Composer, as Ask the tutor draws it: Hold to talk (or Tap to talk, Settings > Talk), Type a message, Attach a picture, Take a photo. Anything playing aloud is paused
                 while he holds (src/speech/askTranscriber.ts), and an answer that arrives meanwhile waits (src/talk/holding.ts). A question over the cap is kept, not sent (sendBlocked). */}

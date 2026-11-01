@@ -35,12 +35,14 @@ test('About credits the data at phone width, reached from Settings', async ({ pa
   const sideways = await page.evaluate(() => [...document.querySelectorAll('main a')].filter((a) => a.getBoundingClientRect().right > innerWidth).length);
   expect(sideways).toBe(0);
 
-  // the round tutor button must not cover the last line
+  // the floating ? must not cover the last line
   const main = page.locator('main.screen');
   await main.evaluate((el) => el.scrollTo(0, el.scrollHeight));
   const last = await page.locator('main li').last().boundingBox();
-  const button = await page.locator('[data-ask-tutor]').boundingBox();
-  expect(last && button && last.y + last.height).toBeLessThanOrEqual(button?.y ?? 0);
+  const button = await page.locator('[data-floating-tutor]').boundingBox();
+  expect(last && button).toBeTruthy();
+  // the floating ? covers none of the last line (it sits a thumb's reach up the edge, so the line may be under it only if it is clear of it)
+  expect(last!.y + last!.height <= button!.y || button!.y + button!.height <= last!.y || last!.x + last!.width <= button!.x || button!.x + button!.width <= last!.x).toBe(true);
   await main.evaluate((el) => el.scrollTo(0, 0));
 
   await shot(page, 'about');
@@ -83,7 +85,7 @@ test.describe('at 390x844', () => {
         return { text: el.innerText.slice(0, 40), lines: Math.round(content / parseFloat(style.lineHeight)) };
       });
     });
-    expect(lines.length).toBe(43);
+    expect(lines.length).toBe(45); // the intro, the credits and the licence notices of ATTRIBUTION.md; main's Morpheus credit (ef57c08c) took it from 43
     // the licence notices that must stay whole (CC BY 4.0, the maps' citation, the font copyrights) may take a line or two more
     const LONG = /^(Tyndale House|TIPNR|Bible Mapper|Literata)/;
     const tooLong = lines.filter((l) => l.lines > (LONG.test(l.text) ? 9 : 4)).map((l) => `${l.lines} lines: ${l.text}`);

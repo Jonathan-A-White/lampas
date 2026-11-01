@@ -1,6 +1,6 @@
 // src/TapToHear.tsx — the wide bar under a Quick test word, a flashcard or a grammar question: one tap says the word, a second tap while it speaks stops it.
 // Hearing is always a tap, even one word (docs/pwa-best-practices.md section 12; nothing needs a finger kept down). The shared tap bar (src/ui/TapBar.tsx, the
-// look of the Talk bar), the same engine as a long press on a word of the reader (speakWord in speech/greek.ts). The bar follows its word, whoever said it: the
+// look of the kit's Talk bar), the same engine as a long press on a word of the reader (speakWord in speech/greek.ts). The bar follows its word, whoever said it: the
 // Quick test's answer says it by itself, and the bar still shows the stop square and stops it on a tap (useWordSaid; mw-5r3p30.324).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { hasVoice, noVoiceHelp, speakSound, speakWord, stopSpeaking, useWordSaid, warmVoices } from './speech/greek';

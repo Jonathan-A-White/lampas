@@ -132,9 +132,6 @@ test('the graph has no arrow or zoom buttons; one small Where I am sits below th
     { l: at.x, t: at.y, r: at.x + at.width, b: at.y + at.height, bottom: box.y + box.height },
   );
   expect(covered).toEqual([]);
-  // and it is clear of the tutor's round button
-  const ask = (await page.getByRole('button', { name: 'Ask the tutor about this screen' }).boundingBox())!;
-  expect(at.x + at.width <= ask.x || ask.x + ask.width <= at.x || at.y + at.height <= ask.y || ask.y + ask.height <= at.y).toBe(true);
 });
 
 test('the wheel zooms the graph, and the page does not scroll', async ({ page }) => {

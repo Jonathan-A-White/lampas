@@ -105,7 +105,7 @@ const feature = await loadFeature('features/feedback-offer.feature');
 describeFeature(feature, ({ Scenario }) => {
   Scenario('From a screen, an answer with an offer shows Send this to the makers and a tap sends one feedback grist', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', () => openAt('#/goal', true));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he sends {string}', (_, question: string) => send(question));
     Then('the answer shows the button {string}', async (_, name: string) => {
       expect(name).toBe(BUTTON);
@@ -142,7 +142,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('An answer without an offer has no such button and nothing is sent by itself', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor does not offer feedback', () => openAt('#/goal', false));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he sends {string}', (_, question: string) => send(question));
     Then('the answer shows no button {string}', async () => {
       await waitFor(() => expect(turns()).toHaveLength(1));
@@ -207,7 +207,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A mill that is down shows Could not reach the tutor and Retry, and Sent stays after the sheet is reopened', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal behind a fake Postern whose tutor offers feedback', () => openAt('#/goal', true));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he sends {string}', (_, question: string) => send(question));
     And('the mill goes down and he taps Send this to the makers', async () => {
       await within(sheet()).findByRole('button', { name: BUTTON });

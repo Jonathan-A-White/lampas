@@ -1,4 +1,4 @@
-// features/steps/tutor-door-setting.steps.tsx — runs features/tutor-door-setting.feature: the Tutor door and Hand rows of Settings (src/settings/controls/tutorDoor.tsx), their one-time hand question, and that both are kept.
+// features/steps/hand-setting.steps.tsx — runs features/hand-setting.feature: the Hand row of Settings (src/settings/controls/hand.tsx), kept across a reload.
 import '@testing-library/react/dont-cleanup-after-each';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -23,10 +23,9 @@ afterAll(() => {
 Element.prototype.scrollIntoView = function scrollIntoView() {};
 
 const user = userEvent.setup();
-const GROUPS: Record<string, GroupId> = { 'The tutor': 'tutor', Reading: 'reading' };
-const QUESTION = 'Which hand do you hold your phone in?';
+const GROUPS: Record<string, GroupId> = { Reading: 'reading' };
 
-let page = 'The tutor';
+let page = 'Reading';
 
 /** Opens Settings on its home and then the page of a group, keeping what the settings store holds (a reload keeps it). */
 async function openPage(title: string): Promise<void> {
@@ -48,7 +47,7 @@ const chosen = async (name: string): Promise<string[]> =>
     .filter((b) => b.getAttribute('aria-pressed') === 'true')
     .map((b) => b.textContent ?? '');
 
-const feature = await loadFeature('features/tutor-door-setting.feature');
+const feature = await loadFeature('features/hand-setting.feature');
 
 describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
   BeforeEachScenario(async () => {
@@ -69,34 +68,6 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
     await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
   };
   const reopened = async () => openPage(page);
-
-  Scenario('The Tutor door starts at Two-finger tap', ({ Given, Then }) => {
-    Given('Settings is open at the page of {string}', opened);
-    Then('the {string} row shows {string} chosen', shows);
-  });
-
-  Scenario('Floating ? asks the hand once and is kept across a reload', ({ Given, When, Then, And }) => {
-    Given('Settings is open at the page of {string}', opened);
-    When('he chooses {string} for the {string}', chooses);
-    Then('the app asks {string}', async (_, question: string) => {
-      expect(question).toBe(QUESTION);
-      await screen.findByRole('group', { name: question });
-    });
-    When('he answers {string}', async (_, value: string) => {
-      await user.click(within(await screen.findByRole('group', { name: QUESTION })).getByRole('button', { name: value }));
-    });
-    Then('the app no longer asks', async () => {
-      await waitFor(() => expect(screen.queryByRole('group', { name: QUESTION })).toBeNull());
-    });
-    And('the setting {string} is kept as {string}', kept);
-    And('his hand is kept as {string}', (_, value: string) => kept(_, 'hand', value));
-    When('Settings is opened again after a reload', reopened);
-    Then('the {string} row shows {string} chosen', shows);
-    And('the app does not ask which hand', async () => {
-      await row('Tutor door');
-      expect(screen.queryByRole('group', { name: QUESTION })).toBeNull();
-    });
-  });
 
   Scenario('Hand starts at Right and is kept across a reload', ({ Given, When, Then }) => {
     Given('Settings is open at the page of {string}', opened);

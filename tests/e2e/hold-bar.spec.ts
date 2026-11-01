@@ -1,5 +1,5 @@
 // tests/e2e/hold-bar.spec.ts — Postern's hold-to-talk bar (src/cockpit/TalkLineScreen.tsx: h-24 w-full max-w-xl rounded-3xl,
-// a mic over the label) is the one hold control of the Talk sheet, the reader's foot Talk bar and the Verse view's foot bar. Layout is only provable in a browser; phone width 360 x 740.
+// a mic over the label) is the one hold control of the Talk sheet, and the Verse view's foot bar (the reader's foot Talk bar went, mw-5r3p30.882). Layout is only provable in a browser; phone width 360 x 740.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { GREEK_READING_ANSWER, makeFakePostern, READING_ANSWER, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
@@ -58,21 +58,6 @@ test("the Talk sheet's hold-to-talk bar is the last control at the foot, the she
   const field = await talkField(sheet);
   expect((await box(field)).height).toBeGreaterThan(30);
   await shot(page, 'talk-sheet-hold-bar');
-});
-
-test("the reader's foot Talk bar is Postern's bar", async ({ page }) => {
-  await page.setViewportSize(VIEWPORT);
-  await routePostern(page, makeFakePostern());
-  await openUnlocked(page);
-  await page.goto('/');
-  const talk = page.getByRole('button', { name: 'Talk', exact: true });
-  await expect(talk).toBeInViewport();
-  await expect(talk).toHaveClass(/(^|\s)lp-bar(\s|$)/);
-  const b = await box(talk);
-  expect(b.height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
-  expect(b.width).toBeGreaterThan(300);
-  expect(b.y + b.height).toBeGreaterThan(VIEWPORT.height - 70);
-  await shot(page, 'reader-talk-bar');
 });
 
 for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READING_ANSWER]] as const) {

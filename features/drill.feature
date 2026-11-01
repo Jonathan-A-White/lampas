@@ -37,14 +37,6 @@ Feature: A parsing drill on the chapter
     When he answers the case rightly and goes on
     Then the noun is asked its number and gender
 
-  Scenario: Ask the tutor opens the Ask box on that verse with the question prefilled
-    Given Lampas is opened for the first time
-    When he opens the Parsing drill from the Test screen
-    And he taps Ask the tutor
-    Then the Reader opens on the verse of that word with the Ask box holding the question about the word
-    When he goes Back
-    Then the drill is on the same question again
-
   Scenario: Talk about it opens the Talk sheet on that verse
     Given Lampas is opened for the first time
     When he opens the Parsing drill from the Test screen

@@ -27,7 +27,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'The Reader',
     line: 'Chapters, words and verses.',
     body: [
-      'The title opens the chapter picker. A tap on a verse number opens the Verse view (Listen, Read it aloud, Ask the tutor, Share, Memorize); a hold copies it. A word opens its sheet.',
+      'The title opens the chapter picker. A tap on a verse number opens the Verse view (Listen, Read it aloud, Practise, Share, Memorize); a hold copies it. A word opens its sheet.',
       'An Old Testament chapter can be read in Hebrew (How much Hebrew?). Copy and Share give the text as read, with its link.',
       'Variants in Settings can show where manuscripts differ. Five short lessons explain how to read that, offline.',
       'A variant’s sheet has Go deeper and Read this, which puts it in the text. The tutor explains it without ruling.',
@@ -61,7 +61,7 @@ export const HELP_PAGES: HelpPage[] = [
     body: [
       'Grammar is a ladder of ideas, each with a lesson card. Drill it proves an idea only on questions you have not been asked before; when too few are left it says More questions are on their way, and proves nothing meanwhile.',
       'An idea you missed and then answer right is marked to confirm, and counts as known only when a new question on it is right; a miss returns it to missed.',
-      'On a lesson’s sheet, Ask the tutor opens a talk about that lesson. When a drill ends, the tutor is told every question and answer.',
+      'On a lesson’s sheet, the floating ? opens a talk about that lesson. When a drill ends, the tutor is told every question and answer.',
     ],
   },
   {
@@ -105,8 +105,8 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'The tutor',
     line: 'Ask about a verse, a word or a screen.',
     body: [
-      'The round Ask the tutor button opens a talk about the screen you are on; hold to talk, type, or send a picture. The tutor can look things up in the app and do what you ask: a change shows what it did with an Undo, a step that needs your yes waits for your tap, and a screen it takes you to is a step of Back.',
-      'Every talk is kept on the phone: Settings > Conversations lists them, newest first, with a search. Under Talk in Settings you choose whether the bars are held or tapped, and when your words are sent.',
+      'The floating ? on the side of the hand you hold your phone in (Settings > Hand) is the one way to the tutor. It opens a talk about what is in front of you: hold to talk, type, or send a picture. The tutor can look things up and do what you ask: a change comes with an Undo, a step that needs your yes waits for your tap.',
+      'Every talk is kept on the phone: Settings > Conversations lists them, newest first, with a search. Under Talk in Settings you choose whether the bars are held or tapped.',
     ],
   },
   {

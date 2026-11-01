@@ -15,8 +15,8 @@ import { stubChapterFetch } from '../support/chapter-fetch';
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as BookIndex;
 
 describe('the actions of an Old Testament verse', () => {
-  it('are the five of a Greek verse: Diagram is offered for Hebrew as for Greek (mw-5r3p30.887)', () => {
-    expect(actionsFor(true).map((a) => a.label)).toEqual(['Listen', 'Read it aloud', 'Ask the tutor', 'Practise', 'Diagram']);
+  it('are the four of a Greek verse: Diagram is offered for Hebrew as for Greek (mw-5r3p30.887); no Ask the tutor of its own, the floating ? is the one door (mw-5r3p30.882)', () => {
+    expect(actionsFor(true).map((a) => a.label)).toEqual(['Listen', 'Read it aloud', 'Practise', 'Diagram']);
     expect(actionsFor(true).map((a) => a.id)).toContain('practise');
   });
 
