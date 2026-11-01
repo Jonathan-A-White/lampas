@@ -15,6 +15,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [The bar](#the-bar)
 - [The known-answer run](#the-known-answer-run)
 - [The choices file](#the-choices-file)
+- [A model session](#a-model-session)
 - [The annotation file](#the-annotation-file)
 - [The report](#the-report)
 - [The files](#the-files)
@@ -34,7 +35,7 @@ Each word is looked up in three layers, in order. A word keeps the layer that ga
 | Layer 1, TAGNT form | The word's form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis, or one with at least 95% of 20 or more words | built (`scripts/lxx/tagnt.ts`, `derive.ts`) |
 | Layer 2, parser | For a form the New Testament lacks: ending rules learned from TAGNT's (form, lemma, parsing) triples, proposing only lemmas in TBESG; then Swete's other spellings; then analogy. Taken when one candidate is left, or one with 90% of the support | built (`scripts/lxx/parser.ts`, `tbesg.ts`, `derive.ts`) |
 | The agreement check, layer 2a | Before the model: an answer whose ending two cases or genders share is demoted to its candidates; a name the New Testament has, written here in lower case, goes to the model; within a verse an article, adjective or participle must agree with its noun, a settled pair that does not is a break (both to the model), and a word left with exactly one candidate that agrees with its settled neighbours takes it as layer 2a | built (`scripts/lxx/agreement.ts`, `derive.ts`) |
-| Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none | the choices file is read, scored and joined (`scripts/lxx/choices.ts`, 'The choices file'); the runner that lists a book's pending words in batches is B4's (mw-u2w5klk.5); no paid API: a Builder's own session |
+| Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none | the choices file is read, scored and joined (`scripts/lxx/choices.ts`, 'The choices file'); the runner that lists a book's pending words in batches and takes the choices back is built (`scripts/lxx/batches.ts`, `pending.ts`, `choose.ts`, 'A model session'); no paid API: a Builder's own session |
 
 A word that layers 1 and 2 and the agreement check do not settle, and that no choice has settled, is **pending**, with its candidates. A book's annotation file is written only when none is pending and the rest of the bar is met ('The bar').
 
@@ -213,8 +214,64 @@ Layer 3 is a model's choice, made by a Builder's own session reading a pending w
 - A reference twice in a file or in two files of a book is an error. A choice for a word that is not pending (settled by layers 1, 2 or 2a) is ignored.
 
 Where the files live: `data/lxx/choices/<book>-<batch>.tsv` for a Swete book (`gen-01.tsv`), all of a book's files joined by `lxx:release` and `lxx:report`; `data/lxx/known/<book>-<chapter>.tsv` for a known-answer chapter (`jhn-1.tsv`);
-`data/lxx/recheck/<book>-<batch>.tsv` for the second pass's choices on a sample, in the same shape. The runner that lists a book's pending words in batches and writes these files is B4's (mw-u2w5klk.5); this file's reader (`scripts/lxx/choices.ts`)
-is the shape B4 writes.
+`data/lxx/recheck/<book>.tsv` for the second pass's choices on a sample (`lxx:choose --recheck`; `lxx:report` reads this and any `<book>-*.tsv` there). `lxx:choose` writes the file in the reader's shape, `ref`, `parsing`, `lemma`, `mark`
+(`scripts/lxx/choices.ts`), with two columns after them that the reader leaves be: `confidence` (0.80, 0.50 or 0.40) and `note` (`model: unsure`, `guess: ...`).
+
+## A model session
+
+A model story gives a Builder one batch of one book. **The Builder's own session is the model of layer 3**: no script calls a paid API, and the Builder reads each verse itself. A batch is about 700 pending words, cut at a chapter
+boundary (a chapter that would take a batch past 700 is taken in when it overshoots by less than the batch falls short without it; a chapter of 700 or more is a batch alone). A batch has one choices file, so the stories of
+one book never touch the same file and different books run in parallel.
+
+**The Mayor**, to file the stories:
+
+```bash
+npm run lxx:batches -- --book gen     # batch, chapters, pending, no candidate: a row a batch, then the total
+```
+
+**The Builder**, for its batch `n` of book `b` (`gen`, batch 1; the files are `gen-01`):
+
+```bash
+npm run lxx:pending -- --book gen --batch 1                 # prints the batch and writes data/lxx/pending/gen-01.md (git-ignored: it holds Swete's Greek)
+npm run lxx:choose -- --book gen --batch 1 --from <file>    # checks the choices and writes data/lxx/choices/gen-01.tsv
+```
+
+1. Run `lxx:pending` and read it. Each verse is printed whole with the words to choose marked ⟦like this⟧; under it, a line for each of them: its reference, its form, and its candidates as `lemma parsing (support)`, most frequent first, or `no candidate`.
+2. Write the choices in a file outside the repo (`/tmp/gen-01.txt`), one line a word, in the order of the listing: `ref parsing`, then the lemma when two candidates share that parsing, then `?` when unsure or `guess`:
+   `Gen.1:2#16 V-IPI-3S ?` · `Gen.1:7#15 R-ASN ὅς, ἥ` · `Gen.1:14#5 V-APM-3P γίνομαι guess`. A line starting `#` is a comment.
+3. Run `lxx:choose`. It refuses, naming each reference, a line whose lemma and parsing are not among the word's candidates and that does not say `guess`; a reference that is not in the batch; a reference twice; a word of the batch with no line; a word
+   with several lemmas for the parsing you chose and none named; a word with no candidate answered without `guess`; a guess that names no lemma. Nothing is written until none is left: fix the file and run it again.
+4. Commit the one file, `data/lxx/choices/gen-01.tsv`, and nothing else. (The confidence is 0.8 for a plain line, 0.5 for `?`, 0.4 for `guess`.)
+
+**The rules:**
+
+- **Only from the candidates.** Choose the candidate the verse supports. Do not reach outside the list because another reading seems nicer.
+- **Read the verse.** The candidates are not ranked by the verse: the support is a New Testament count. Check the word's neighbours: an article, adjective or participle agrees with its noun in case, number and gender; a verb agrees with its subject.
+- **Mark unsure.** When the verse does not settle it between two candidates, choose the likelier and add `?`.
+- **A guess only when there is no candidate.** A word with `no candidate` takes `guess` and names its lemma (look it up; a rare word is checked against TBESG or any lexicon). Mark `guess` on a choice outside the candidates only when none of them can be right, and say why in the closing comment.
+  A book is released only with at most 3% guesses ('The bar').
+- **Name the lemma** only when two candidates have the same parsing under different lemmas; otherwise leave it out.
+- **No paid API.** Nothing in this session calls one. Anything that is wrong with the listing (a candidate that seems missing, a word that is not Greek) goes in the closing comment with its reference, for the Mayor; it is not fixed in passing.
+
+**The recheck**, one story a book after its batches are in: a second session, which must not read `data/lxx/choices/`, lists a blind 5% of the book's chosen words (at least one; seeded by the book, so it is the same words each time, in the text's order, with nothing of the first choices)
+and chooses them again the same way:
+
+```bash
+npm run lxx:pending -- --recheck --book gen                 # prints the sample and writes data/lxx/pending/gen-recheck.md
+npm run lxx:choose -- --recheck --book gen --from <file>    # writes data/lxx/recheck/gen.tsv, committed
+npm run lxx:report                                          # the book's row now shows the second pass's disagreement rate
+```
+
+The rate (the share of the second pass's choices that differ from the first's in the parsing, or in the lemma when both name one) is the book's error check: the story reports it, and a book whose rate is high is reread before it is released.
+
+**The story template** (M1 and the model stories after it follow it):
+
+- *Title:* `Lampas Septuagint, <Book> batch <n> (chapters <a>-<b>): the model's choices for <N> pending words`
+- *Path:* rig `lampas`; files: `data/lxx/choices/<book>-<nn>.tsv` and nothing else; size M.
+- *What:* run `npm run lxx:pending -- --book <book> --batch <n>`, read every verse, write the choices, run `npm run lxx:choose -- --book <book> --batch <n> --from <file>`, commit `data/lxx/choices/<book>-<nn>.tsv`. The rules of 'A model session' apply.
+- *Acceptance:* (1) `data/lxx/choices/<book>-<nn>.tsv` exists, was written by `lxx:choose`, and has a row for each of the <N> pending words of the batch (`lxx:batches` gives the count); (2) the diff touches that file only; (3) the closing comment gives the counts chosen, unsure and guessed,
+  lists the guesses with their lemma, and says what the session left in doubt; (4) `npm run lxx:report` still runs and the book's pending count has fallen by <N>.
+- *Recheck story:* the same, with `--recheck`, the file `data/lxx/recheck/<book>.tsv`, and the disagreement rate from `lxx:report` in the closing comment.
 
 ## The annotation file
 
@@ -268,6 +325,9 @@ npm run lxx:derive -- --book gen --hide jhn    # John's rows left out of the for
 npm run lxx:derive -- --word Gen.1:20#13       # one word: its candidates, their support, the rule or analogy behind each; writes nothing
 npm run lxx:derive -- --all                    # every book of the file, trained once: each book's two files, and one line a book
 npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT ('The known-answer run')
+npm run lxx:batches -- --book gen              # the book's pending words in batches of about 700: the table the model stories are filed from ('A model session')
+npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with their verses and candidates: for a model session
+npm run lxx:choose -- --book gen --batch 1 --from <file>  # a model session's choices, checked, as data/lxx/choices/gen-01.tsv
 npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv, only when the book passes the bar ('The bar')
 npm run lxx:report                             # docs/lxx-report.md: where every book of the Old Testament stands
 ```
