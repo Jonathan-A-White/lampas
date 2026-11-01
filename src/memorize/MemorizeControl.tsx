@@ -1,5 +1,5 @@
 // src/memorize/MemorizeControl.tsx — the one control that puts a verse into memorizing (mw-fu7dqf.5, the epic mw-fu7dqf), drawn on a verse list's row and in the Verse view. 'Memorize' while the verse
-// is not memorized: a tap memorizes it in English. 'Memorizing · English' once it is: a tap opens a small sheet with a switch for each language the dial of the verse's own language allows (English, Greek or Hebrew, the Weave)
+// is not memorized: a tap memorizes it in English. 'Memorizing · English' once it is, with 'Practise' beside it (a session on this reference): a tap opens a small sheet with a switch for each language the dial of the verse's own language allows (English, Greek or Hebrew, the Weave)
 // and 'Stop memorizing'; at 'Just English' there is no sheet, the tap stops it. It never writes anything itself: every tap goes through src/memorize/commands.ts, which the tutor calls too.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
@@ -10,6 +10,7 @@ import { useEscapeToClose } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
 import { memorizeVerse, printedRef, unmemorizeVerse, type CommandResult } from './commands';
 import { languagesFor, langName, MEMORIZE_LANGS, type MemorizeLang } from './languages';
+import { openMemorizeSession } from '../nav/route';
 import { sourceOf } from './source';
 
 const BUTTON = 'min-h-12 shrink-0 rounded-xl border px-3 font-medium leading-tight';
@@ -89,21 +90,47 @@ export function MemorizeControl({ canonical, compact = false, quiet = false, cla
     else if (offered.length === 1) tell(unmemorizeVerse({ ref: canonical }));
     else setSheet(true);
   };
+  const button = (
+    <button
+      type="button"
+      data-memorize={canonical}
+      aria-haspopup={on && offered.length > 1 ? 'dialog' : undefined}
+      onClick={tap}
+      className={
+        quiet
+          ? `${QUIET} ${on ? 'bg-accent/15 text-fg' : 'text-accent active:bg-line'} ${className}`
+          : `${BUTTON} ${compact ? 'w-36 text-sm' : 'text-base'} ${on ? 'border-accent bg-accent text-accent-fg' : 'border-line text-accent active:bg-line'} ${className}`
+      }
+    >
+      {on ? `Memorizing · ${memorized.map(langName).join(', ')}` : 'Memorize'}
+    </button>
+  );
+  // Practise (mw-fu7dqf.15, PROVISIONAL wording): once it is memorized, one tap opens a session on exactly this reference, in the first language it is memorized in. It stands beside the
+  // control, so the first tap on Memorize only marks (a tap on a button never leaves the screen by surprise) and the way to practise appears right after.
+  const practise = on ? (
+    <button
+      type="button"
+      data-practise={canonical}
+      aria-label={compact ? `Practise ${printedRef(canonical)}` : undefined}
+      onClick={() => openMemorizeSession(canonical, memorized[0])}
+      className={quiet ? `${QUIET} text-accent active:bg-line` : `${BUTTON} ${compact ? 'w-36 text-sm' : 'text-base'} border-line text-accent active:bg-line`}
+    >
+      Practise
+    </button>
+  ) : null;
   return (
     <>
-      <button
-        type="button"
-        data-memorize={canonical}
-        aria-haspopup={on && offered.length > 1 ? 'dialog' : undefined}
-        onClick={tap}
-        className={
-          quiet
-            ? `${QUIET} ${on ? 'bg-accent/15 text-fg' : 'text-accent active:bg-line'} ${className}`
-            : `${BUTTON} ${compact ? 'w-36 text-sm' : 'text-base'} ${on ? 'border-accent bg-accent text-accent-fg' : 'border-line text-accent active:bg-line'} ${className}`
-        }
-      >
-        {on ? `Memorizing · ${memorized.map(langName).join(', ')}` : 'Memorize'}
-      </button>
+      {compact ? (
+        <div className="flex shrink-0 flex-col gap-1">
+          {button}
+          {practise}
+        </div>
+      ) : (
+        <>
+          {button}
+          {practise}
+        </>
+      )}
       {sheet && on ? <LanguageSheet canonical={canonical} offered={offered} memorized={memorized} onClose={() => setSheet(false)} /> : null}
     </>
   );

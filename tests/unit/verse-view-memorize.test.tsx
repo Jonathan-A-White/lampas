@@ -8,6 +8,7 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { setGreekInterest } from '../../src/data/repositories';
 import { listMemorized } from '../../src/data/repositories/memorize';
+import { memorizeSessionOf } from '../../src/nav/route';
 import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
@@ -69,5 +70,31 @@ describe('Memorize in the Verse view', () => {
     await userEvent.click(control);
     const mark = await within(region).findByRole('img', { name: 'Step 1 of 7 · due today' });
     expect(mark.compareDocumentPosition(await within(region).findByRole('button', { name: 'Memorizing · English' })) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+  });
+
+  it('offers Practise right after Memorize, without leaving the screen, and not before', async () => {
+    window.history.replaceState(null, '', '/#/?b=rom&c=8&view=english&weave=off&v=28');
+    render(<App />);
+    const region = await view();
+    const control = await within(region).findByRole('button', { name: 'Memorize' });
+    expect(within(region).queryByRole('button', { name: 'Practise' })).toBeNull();
+    await userEvent.click(control);
+    await within(region).findByRole('button', { name: 'Practise' });
+    expect(within(region).getByRole('button', { name: 'Memorizing · English' })).toBeTruthy();
+  });
+
+  it('Practise on a memorized passage opens a session on that same reference, and Back returns to the Verse view on it', async () => {
+    window.history.replaceState(null, '', '/#/?b=rom&c=8&view=english&weave=off&p=12');
+    render(<App />);
+    let region = await view();
+    const range = (await within(region).findByRole('button', { name: 'Memorize' })).getAttribute('data-memorize') as string;
+    await userEvent.click(await within(region).findByRole('button', { name: 'Memorize' }));
+    await userEvent.click(await within(region).findByRole('button', { name: 'Practise' }));
+    await waitFor(() => expect(memorizeSessionOf(window.location.hash)).toEqual({ ref: range, lang: 'en' }));
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
+    window.history.back();
+    region = await view();
+    expect(window.location.hash).toContain('p=12');
+    expect(await within(region).findByRole('button', { name: 'Practise' })).toBeTruthy();
   });
 });

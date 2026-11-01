@@ -56,6 +56,18 @@ async function openRefuge(dial: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
 const memorized = async (): Promise<string[]> => (await listMemorized()).map((r) => `${r.lang}:${r.ref}`).sort();
 const rowOf = (name: string): HTMLElement => screen.getByRole('link', { name }).closest('li') as HTMLElement;
 
+describe('Practise on a list row', () => {
+  it('appears on a memorized row only, and opens a session on that row\'s reference', async () => {
+    await openRefuge(3);
+    expect(screen.queryByRole('button', { name: /^Practise/ })).toBeNull();
+    await userEvent.click(within(rowOf('Romans 8:28')).getByRole('button', { name: 'Memorize' }));
+    const practise = await within(rowOf('Romans 8:28')).findByRole('button', { name: 'Practise Rom 8:28' });
+    expect(screen.getAllByRole('button', { name: /^Practise/ })).toHaveLength(1);
+    await userEvent.click(practise);
+    await waitFor(() => expect(window.location.hash).toBe('#/memorize/Rom.8.28/en'));
+  });
+});
+
 describe('Memorize this list', () => {
   it('is Off to start, and On memorizes the references of both testaments in English', async () => {
     await openRefuge(3);

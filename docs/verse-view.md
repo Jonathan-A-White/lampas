@@ -7,7 +7,7 @@ number or not, mw-5r3p30.609: a number opens its verse there only from the middl
 ```
 ‹ Reader     Romans 8:11            ‹   ›      header: close, the reference, the verse before and after
 And if the Spirit of Him who ...              the verse, big, woven as the Reader weaves it (words tappable), in a box that takes what the controls leave and scrolls
- Copy  Share  Memorize  In Logos ↗  In another book…  Maps · 3     the TOOLS: quiet accent words that act on the text (wrap as a line of words does)
+ Copy  Share  Memorize [Practise, once memorized]  In Logos ↗  In another book…  Maps · 3     the TOOLS: quiet accent words that act on the text (wrap as a line of words does)
 [Listen] [Read it aloud] [Ask the tutor]      the ACTIONS: three to a row, the last row stretched; the chosen one has the accent's border and a tint, never a fill
 [Quiz me        ] [Diagram          ]
   what the action shows                       Listen: a line; Read it aloud: the reading check; Ask the tutor: `Talk about verse 11` as a quiet line (the answer is the Talk sheet's)
