@@ -3,6 +3,15 @@
 STEPBible's **Translators Amalgamated Greek New Testament** (TAGNT) is the second source of a variant word's Strong's number (mw-9ji6ek0.44). The first is the Greek text and the
 lexicon; the third is a marked guess. `scripts/data/tagnt.ts` reads it, `scripts/data/variantWords.ts` lays it on the words of every reading.
 
+<!-- toc -->
+
+- [The source](#the-source)
+- [What we take](#what-we-take)
+- [The order of the sources](#the-order-of-the-sources)
+- [The guess](#the-guess)
+
+<!-- /toc -->
+
 ## The source
 
 - Two files, <https://github.com/STEPBible/STEPBible-Data> `Translators Amalgamated OT+NT/TAGNT Mat-Jhn …CC-BY.txt` and `TAGNT Act-Rev …CC-BY.txt` (about 30 MB), fetched by
