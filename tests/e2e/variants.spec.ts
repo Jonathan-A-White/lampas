@@ -449,13 +449,12 @@ test.describe('a variant unit is opened by its siglum, and its words open the wo
     await expect(wordSheet(page).getByTestId('sheet-parse')).toHaveText(/\S/);
     await wordSheet(page).getByRole('button', { name: 'Done' }).click();
     await expect(wordSheet(page)).toHaveCount(0);
-    // 3:18's other reading "ἔγχρισον" is a form no text of the New Testament has: the build leaves it untagged, so the card is the form alone
+    // 3:18's other reading "ἔγχρισον" is a form no text of the New Testament has, but STEPBible's TAGNT does (mw-9ji6ek0.44): the build gives it ἐγχρίω and G1472, with no 'guess' mark
     const two = page.locator('[data-verse="18"] [data-brace]').filter({ hasText: 'ἔγχρισον' }).first();
     await two.locator('[data-brace-word]', { hasText: 'ἔγχρισον' }).click();
     await expect(wordSheet(page).getByTestId('sheet-word')).toHaveText('ἔγχρισον');
-    await expect(wordSheet(page).getByTestId('sheet-lemma')).toHaveCount(0);
-    await expect(wordSheet(page).getByTestId('sheet-gloss')).toHaveCount(0);
-    await expect(wordSheet(page).getByTestId('sheet-strongs')).toHaveCount(0);
+    await expect(wordSheet(page).getByTestId('sheet-lemma')).toHaveText('ἐγχρίω');
+    await expect(wordSheet(page).getByRole('button', { name: 'guess' })).toHaveCount(0);
     await expect(wordSheet(page).getByRole('button', { name: 'Ask the tutor' })).toBeVisible();
     await wordSheet(page).getByRole('button', { name: 'Done' }).click();
     // a form the verse does not carry but the build tagged (mw-9ji6ek0.22): "ἀποθανεῖν" in the NA reading opens its card, which says "die"; the siglum still opens the sheet

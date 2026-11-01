@@ -1,0 +1,20 @@
+# Forms of the variant readings whose Strong's number is a guess (the nearest lemma: guessLemma in scripts/data/variantWords.ts), marked as one on the word sheet (npm run data:build).
+# form<TAB>times read<TAB>read as<TAB>first read at
+Γερασηνῶν	3	G1086 Γερασηνός	Mark 5:1
+κἀκείνους	2	G2548 κἀκεῖνος	Acts 18:19
+Βαρϊησοῦν	1	G919 Βαριησοῦς	Acts 13:6
+Κολοσσαῖς	1	G2857 Κολοσσαί	Colossians 1:2
+γρηγοροῦμεν	1	G1127 γρηγορέω	1 Thessalonians 5:10
+δεικνύντος	1	G1166 δεικνύω	Revelation 22:8
+κατακύψας	1	G2609 κατάγω	John 8:8
+κραββάτου	1	G2895 κράββατος	Acts 9:33
+παραθῆναι	1	G3866 παραθήκη	Mark 8:7
+ποιήσαιεν	1	G4162 ποίησις	Luke 6:11
+ποιησόμεθα	1	G4162 ποίησις	John 14:23
+στρατοπεδάρχῳ	1	G4759 στρατοπεδάρχης	Acts 28:16
+τηρήσετε	1	G5084 τήρησις	John 14:15
+φυλάξῃ	1	G5438 φυλακή	John 12:47
+ἀπολύει	1	G630 ἀπολύω	Mark 6:45
+ἀπολύσασα	1	G630 ἀπολύω	Mark 10:12
+ἐπείραζεν	1	G3985 πειράζω	Acts 9:26
+ὁμοιώσομεν	1	G3669 ὁμοίωσις	Mark 4:30

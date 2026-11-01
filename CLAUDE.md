@@ -35,16 +35,16 @@ npm run typecheck    # tsc -b --noEmit, strict
 npm run lint         # eslint (no explicit any)
 npm test             # vitest run: unit tests and feature specs
 npm run test:bdd     # vitest run, features/steps only
-npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (build first, or `npm run gate:shots`); writes shots/<name>.png
-npm run icons        # re-render public/icon-192.png and icon-512.png from public/icon.svg
-npm run seed:build   # rebuild src/data/seed-words.ts (docs/example-words.md) and seed-words-hbo.ts (plain node, 22.18+)
-npm run check:licence -- <pubkey>  # live testnet licence check, opt-in, not in the gate
+npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (build first, or `npm run gate:shots`); writes shots/
+npm run icons        # re-render public/icon-192.png, icon-512.png from icon.svg
+npm run seed:build   # rebuild src/data/seed-words.ts and seed-words-hbo.ts from docs/example-words.md (node 22.18+)
+npm run check:licence -- <pubkey>  # live testnet licence check, opt-in
 npx playwright test  # (npm run test:e2e) all e2e (use --workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
-npm run e2e:live     # the live tests against the DEPLOYED app; not in the gate (docs/commands.md)
+npm run e2e:live     # live tests against the DEPLOYED app; not in the gate (docs/commands.md)
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
-npm run ladder:docs  # writes the ladder table of docs/grammar.md and the rows of docs/card-audit.md (docs/commands.md)
-npm run logos:catalogue -- <csv>  # writes src/resources/catalogue/ from a Logos export; logos:fit prints what is left (docs/commands.md)
-npm run data:build   # also check:step, greek:edition, ladder, fixture:chapter: data tools, not in the gate (docs/commands.md)
+npm run ladder:docs  # writes the ladder table of docs/grammar.md, rows of docs/card-audit.md
+npm run logos:catalogue -- <csv>  # writes src/resources/catalogue/ from a Logos export; logos:fit prints the rest (docs/commands.md)
+npm run data:build   # also check:step, greek:edition, ladder, fixture:chapter: data tools, not in the gate
 ```
 
 ## Adding a grammar idea
@@ -173,6 +173,7 @@ docs/research/logos-factbook.md # Factbook at a proper name: link form, source
 docs/research/logos-exegetical-guide.md # the Exegetical Guide at a verse: link form, source
 docs/research/letter-sounds.md # lone vowels and letter sounds in a voice like the phone's
 docs/sources/latin-bible.md # Latin Bible sources: licences, word data, versification, audio
+docs/sources/tagnt.md # STEPBible's TAGNT: variant words' Strong's numbers and the guess
 docs/sources/public-domain-works.md # Spurgeon and other public-domain works: sources, terms, coverage
 docs/design/library-at-scale.md # the Logos library at scale, mockups, build plan
 docs/design/bible-talk-trim-map.md # the bible-talk rules before the 100,000-byte trim, where each lives

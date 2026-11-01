@@ -17,6 +17,7 @@ import {
   variantsReport,
 } from '../../scripts/data/variants';
 import type { Chapter, GreekWord } from '../../src/data/chapter';
+import { TAGNT_SHA256 } from '../../scripts/data/tagnt';
 import { formIndex, tagReading, tagVariants, taggedLine, untaggedText } from '../../scripts/data/variantWords';
 
 // Revelation 3:1-3 as REV.csv has it, and the same verses' words in the MSB table, in Greek order.
@@ -213,7 +214,11 @@ describe('the build', () => {
     ]),
   );
 
-  async function build(checksum?: string) {
+  // TAGNT's rows for the test (mw-9ji6ek0.44): one row, a number the fixture's lexicon has; the test is of the wiring, not of the Greek
+  const TAGNT_ROWS = 'Rev.17.8#01=N(k)O\tὑπάγει (hupagei)\the goes\tG0863=V-PAI-3S\tἀφίημι=to send\tNA28\t\t\t\tgoes\t#01\tG0863\n';
+  const tagntSha = createHash('sha256').update(TAGNT_ROWS).update(TAGNT_ROWS).digest('hex');
+
+  async function build(checksum?: string, withTagnt: boolean | 'wrong-sha' = false) {
     const base = mkdtempSync(join(tmpdir(), 'lampas-variants-'));
     const raw = join(base, 'raw');
     mkdirSync(raw, { recursive: true });
@@ -231,13 +236,15 @@ describe('the build', () => {
         rp2026: false,
         englishFile: join(base, 'variant-english.json'),
         untaggedFile: join(base, 'variant-untagged.txt'),
+        tagnt: withTagnt !== false,
+        tagntSha256: withTagnt === 'wrong-sha' ? '0'.repeat(64) : tagntSha,
         download: async (url, dest) => {
           downloads.push(url);
           mkdirSync(join(dest, '..'), { recursive: true });
-          writeFileSync(dest, fileOf(url.split('/').pop()!.replace(/\.csv$/, '')));
+          writeFileSync(dest, url.includes('STEPBible-Data') ? TAGNT_ROWS : fileOf(url.split('/').pop()!.replace(/\.csv$/, '')));
         },
       });
-      return { downloads, log, rev: JSON.parse(readFileSync(join(base, 'out', 'rev', '17.json'), 'utf8')) as Chapter, raw, untagged: readFileSync(join(base, 'variant-untagged.txt'), 'utf8') };
+      return { downloads, log, rev: JSON.parse(readFileSync(join(base, 'out', 'rev', '17.json'), 'utf8')) as Chapter, raw, untagged: readFileSync(join(base, 'variant-untagged.txt'), 'utf8'), guessed: readFileSync(join(base, 'variant-guessed.txt'), 'utf8') };
     } finally {
       rmSync(base, { recursive: true, force: true });
     }
@@ -258,13 +265,28 @@ describe('the build', () => {
       changesEnglish: true,
       witness: 'na',
     });
-    expect(log.find((l) => l.startsWith('variant words tagged:'))).toMatch(/^variant words tagged: \d+ of \d+$/);
+    expect(log.find((l) => l.startsWith('variant words tagged:'))).toMatch(/^variant words tagged: \d+ of \d+ \(lexicon \d+, tagnt 0, guess \d+\)$/);
     expect(untagged).toContain('ὑπάγει\t');
     expect(log).toContain('variant English: 6 units: msb 0, lampas 6');
     expect(log).toContain('variant witness: byz 4, na 2, ecm 0');
     expect(log).toContain(`variants (byztxt ${VARIANTS_TAG}): 8 units: B 4, N 4`);
     expect(log).toContain('variants aligned: 8 of 8 (100.0%), 0 not aligned');
     expect(log).toContain('  Revelation: B 4, N 4');
+  });
+
+  it('fetches TAGNT’s two files into data/raw/tagnt and tags a form the text never has from it, counting the source (mw-9ji6ek0.44)', async () => {
+    const { downloads, log, rev, untagged, guessed } = await build(fixtureSha, true);
+    expect(downloads.filter((u) => u.includes('STEPBible-Data'))).toHaveLength(2);
+    expect(downloads.some((u) => u.endsWith('TAGNT%20Act-Rev%20-%20Translators%20Amalgamated%20Greek%20NT%20-%20STEPBible.org%20CC-BY.txt'))).toBe(true);
+    expect(rev.variants![0].alts[0].g).toEqual([{ t: 'ὑπάγει', tr: '', s: 'G863', l: 'ἀφίημι', p: 'V-PAI-3S', src: 'tagnt' }]);
+    expect(log.find((l) => l.startsWith('variant words tagged:'))).toMatch(/\(lexicon \d+, tagnt [1-9]\d*, guess \d+\)$/);
+    expect(untagged).not.toContain('ὑπάγει\t');
+    expect(guessed).toMatch(/^# Forms/);
+  });
+
+  it('refuses TAGNT files whose sha256 is not the pinned one', async () => {
+    expect(TAGNT_SHA256).toMatch(/^[0-9a-f]{64}$/);
+    await expect(build(fixtureSha, 'wrong-sha')).rejects.toThrow(/TAGNT.*sha256/);
   });
 
   it('refuses files whose sha256 is not the pinned one', async () => {
@@ -276,6 +298,8 @@ describe('the build', () => {
 // ---------------------------------------------------------------- the words of each reading (mw-9ji6ek0.21)
 
 const word = (t: string, s: string, l: string, p: string): GreekWord => ({ t, tr: '', s, l, p });
+/** a word tagged from the text's own forms (mw-9ji6ek0.44: it says where its number came from) */
+const exact = (t: string, s: string, l: string, p: string): GreekWord => ({ ...word(t, s, l, p), src: 'lexicon' });
 const chapterOf = (code: string, words: GreekWord[]): Chapter => ({
   book: code, code, chapter: 1, lex: {}, parse: {}, verses: [{ n: 1, g: words, e: [] }],
 });
@@ -298,11 +322,11 @@ describe('the words of a reading', () => {
   it('tags Revelation 3:1’s καὶ ζῇς: καί is G2532 and ζῇς is ζάω', () => {
     const { g, apart } = tagReading('καὶ ζῇς', index, 'rev');
     expect(apart).toBe(false);
-    expect(g).toEqual([word('καὶ', 'G2532', 'καί', 'CONJ'), word('ζῇς', 'G2198', 'ζάω', 'V-PAI-2S')]);
+    expect(g).toEqual([exact('καὶ', 'G2532', 'καί', 'CONJ'), exact('ζῇς', 'G2198', 'ζάω', 'V-PAI-2S')]);
   });
 
   it('tags Revelation 3:9’s ἐγώ as G1473, a capital or a grave accent set aside', () => {
-    expect(tagReading('ἐγώ', index, 'rev').g).toEqual([word('ἐγώ', 'G1473', 'ἐγώ', 'P-1NS')]);
+    expect(tagReading('ἐγώ', index, 'rev').g).toEqual([exact('ἐγώ', 'G1473', 'ἐγώ', 'P-1NS')]);
     expect(tagReading('Ἐγὼ', index, 'rev').g[0]).toMatchObject({ t: 'Ἐγὼ', s: 'G1473' });
   });
 
@@ -350,7 +374,7 @@ describe('the words of a reading', () => {
     expect(Object.keys(chapter.lex)).toEqual(['G2198', 'G2532']);
     expect(chapter.lex.G2532).toEqual({ g: 'and', d: 'and, even' });
     expect(Object.keys(chapter.parse)).toEqual(['CONJ', 'V-PAI-2S']);
-    expect(taggedLine(tally)).toBe('variant words tagged: 2 of 3');
+    expect(taggedLine(tally)).toBe('variant words tagged: 2 of 3 (lexicon 2, tagnt 0, guess 0)');
     expect(untaggedText(tally)).toContain('ἠμελλες');
   });
 });
@@ -386,7 +410,7 @@ describe('the committed chapters’ readings', () => {
       const c = chapter(code, 1);
       for (const a of c.variants?.flatMap((u) => u.alts) ?? []) {
         expect(a.g).toBeDefined();
-        for (const w of a.g!) if (w.s) expect([c.lex[w.s], c.parse[w.p]].every(Boolean)).toBe(true);
+        for (const w of a.g!) if (w.s) expect([c.lex[w.s], w.p === '' || c.parse[w.p]].every(Boolean)).toBe(true);
       }
     }
   });

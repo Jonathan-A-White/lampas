@@ -230,7 +230,7 @@ async function main(): Promise<void> {
   const model = argOf('model', 'sonnet');
   const inputs = await loadInputs({ rawDir: raw, log: console.log });
   const existing = readLampasEnglish();
-  const built = buildData(inputs.msbTsv, inputs.lex, inputs.apparatus, inputs.overlay, { lampas: existing, strict: false });
+  const built = buildData(inputs.msbTsv, inputs.lex, inputs.apparatus, inputs.overlay, { lampas: existing, strict: false }, inputs.tagnt);
   const keep = new Set(built.lampasUsed.map((u) => u.key));
   const entries: LampasEnglishFile = Object.fromEntries(Object.entries(existing).filter(([k]) => keep.has(k)));
   console.log(`${built.missingEnglish.length} units without English; ${Object.keys(existing).length - keep.size} stale entries dropped`);
