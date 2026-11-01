@@ -15,7 +15,7 @@ import { groupIdeas, groupWords, learnNext, learningNow, LEVELS, levelsOf, nextW
 import type { GrammarIdea } from './data/grammar/ladder';
 import { ideaOfAny as ideaOf, ladderFor } from './data/grammar/ladders';
 import type { Counts, Level } from './data/grammar/needs';
-import { addWordToLearn, drillPlanCounts, getGrammarApproach, listLevels, takePronunciationSwitch } from './data/repositories';
+import { addWordToLearn, drillPlanCounts, getGrammarApproach, listLevels, listPassageLessons, takePronunciationSwitch } from './data/repositories';
 import type { PronunciationSwitch } from './data/repositories/settings';
 import { IdeaSheet } from './IdeaSheet';
 import { HardSoundsSection } from './hardSounds/HardSoundsSection';
@@ -278,9 +278,10 @@ function HebrewGoalBody() {
   const [ideaId, setIdeaId] = useState<string | null>(null);
   const approachId = useLiveQuery(getGrammarApproach, []);
   const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
+  const passages = useLiveQuery(listPassageLessons, []);
   const known = levels ?? new Map<string, Level>();
   const needs = { ideas: ladder.ideas.map((i) => ({ id: i.id, count: 0, example: { form: '', code: '', ref: '' } })) };
-  const next = learnNext(needs, approach, known, undefined, 'hbo');
+  const next = learnNext(needs, approach, known, { goal: undefined, states: passages ?? new Map() }, 'hbo');
   const learning = learningNow(known, 'hbo');
   const counts: Counts = {
     solid: ladder.ideas.filter((i) => known.get(i.id) === 'solid').length,
@@ -298,7 +299,7 @@ function HebrewGoalBody() {
       { label: 'Learn next', value: next ? learnNextText(next) : 'Every Hebrew idea is on the frontier or solid.' },
     ],
   });
-  if (!levels) return <main className="screen min-h-0 flex-1" aria-busy="true" />;
+  if (!levels || !passages) return <main className="screen min-h-0 flex-1" aria-busy="true" />;
   return (
     <>
       <main className="screen min-h-0 flex-1 px-4 pt-4">
@@ -325,7 +326,7 @@ function HebrewGoalBody() {
         </section>
         <section className="mt-5 space-y-2">
           {learning ? <LearningNowButton idea={learning} onOpen={() => setIdeaId(learning.id)} /> : null}
-          {next && !learning ? <LearnNextButton next={next} onOpen={() => setIdeaId(next.idea.id)} /> : null}
+          {next && (!learning || next.passage) ? <LearnNextButton next={next} onOpen={() => (next.passage ? openVerseRange({ ...next.passage.passage, view: 'greek' }) : setIdeaId(next.idea.id))} /> : null}
           {!next && !learning ? (
             <p data-testid="learn-next-none" className="text-base text-muted">
               Every Hebrew idea is on the frontier or solid.

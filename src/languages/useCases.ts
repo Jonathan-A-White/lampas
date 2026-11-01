@@ -246,7 +246,7 @@ export const USE_CASES: readonly UseCase[] = [
     title: 'Lessons read to him: Read lessons to me, a passage lesson that opens its verses and Check passes it by reading',
     status: {
       greek: 'has',
-      hebrew: { gap: 'scenario "A Hebrew passage lesson opens its verses in Hebrew and Check passes it by reading" in features/hebrew-ladder.feature; a passage step in the Hebrew ladder (src/data/grammar/hebrew/ladder.ts), src/data/grammar/lessons.ts and the Verse view’s Check for an hbo chapter; S' },
+      hebrew: 'has',
       latin: LATIN_LATER,
     },
   },

@@ -2,24 +2,40 @@
 // or the Greek | Hebrew segment with both chosen), the Hebrew alphabet idea taught and marked known on the Goal, the placement at the Hebrew foundation, the Goal link in
 // Settings' Learning group and the Goal at English only. Languages are chosen the way Settings chooses them (setLanguages moves the two dials).
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { loadChapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { usageWritesSettled } from '../../src/tips/usageLog';
+import { drillSeed } from '../../src/data/grammar/drillSeed';
+import { HEBREW_LADDER, HEBREW_PASSAGE_LESSONS } from '../../src/data/grammar/hebrew/ladder';
+import { buildHebrewCheck } from '../../src/data/grammar/hebrew/passageCheck';
+import type { GrammarQuestion } from '../../src/data/grammar/questions';
+import { mulberry32 } from '../../src/data/quiz';
+import { IDEA_KIND } from '../../src/data/grammar/ladder';
+import { ideaOfAny as ideaOf } from '../../src/data/grammar/ladders';
 import { setGreekInterest, setHebrewInterest, setLanguages } from '../../src/data/repositories';
 import { setGoal } from '../../src/data/repositories/settings';
 import type { Languages } from '../../src/settings/definitions/interest';
 import { clearBus } from '../../src/events/bus';
+import { IdeaSheet } from '../../src/IdeaSheet';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { stopReading } from '../../src/speech/readAloud';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { ENGLISH_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 
-afterAll(() => {
+const realSeed = drillSeed.next;
+afterAll(async () => {
   cleanup();
+  await usageWritesSettled();
+  stopReading();
   clearBus();
+  drillSeed.next = realSeed;
   db.close();
   vi.unstubAllGlobals();
 });
@@ -233,6 +249,207 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await screen.findByText(text)).toBeInTheDocument();
       expect(screen.queryByTestId('hebrew-ideas')).toBeNull();
       expect(screen.queryByTestId('ideas-bar')).toBeNull();
+    });
+  });
+
+  // ---- the Hebrew passage lesson and Read lessons to me (use case 'lessons', mw-5r3p30.911) ----
+  const LESSON = HEBREW_PASSAGE_LESSONS[0];
+  const CHECK_SEED = 1;
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
+  const checkSheet = () => screen.getByRole('dialog', { name: 'Check' });
+  let expected: GrammarQuestion[] = [];
+  let asked = 0;
+
+  /** Hebrew only, every idea of its ladder solid (so the lesson is the next thing), and the Check's questions fixed. */
+  const solidHebrew = async () => {
+    await fresh('hebrew');
+    drillSeed.next = () => CHECK_SEED;
+    await db.grammarLevels.bulkPut(HEBREW_LADDER.map((i) => ({ id: i.id, level: 'solid' as const, since: Date.now(), how: 'marked' as const })));
+  };
+  const opensGoalScreen = async () => {
+    cleanup();
+    clearBus();
+    forgetTrail();
+    await openGoal();
+  };
+  const optionIn = async (dialog: HTMLElement, text: string): Promise<HTMLElement> => {
+    let found: HTMLElement | undefined;
+    await waitFor(() => {
+      found = Array.from(dialog.querySelectorAll<HTMLElement>('[data-option]')).find((o) => o.textContent === text && !(o as HTMLButtonElement).disabled);
+      expect(found, `option ${text}`).toBeDefined();
+    });
+    return found as HTMLElement;
+  };
+  /** Answers the question on screen right, or wrong, and moves on. */
+  async function answer(right: boolean): Promise<void> {
+    const question = expected[asked];
+    const dialog = checkSheet();
+    await user.click(await optionIn(dialog, right ? question.right : (question.options.find((o) => o !== question.right) as string)));
+    asked += 1;
+    await user.click(await within(dialog).findByTestId('check-next'));
+  }
+  const openSheet = async () => {
+    expected = buildHebrewCheck(await loadChapter('jon', 1), LESSON.passage!.from, LESSON.passage!.to, LESSON.ideas, mulberry32(CHECK_SEED));
+    asked = 0;
+    await screen.findByRole('dialog', { name: 'Check' });
+  };
+  const tapsInStrip = async (_: unknown, name: string) => {
+    await user.click(await within(await screen.findByRole('region', { name: 'Verse view' })).findByRole('button', { name, exact: true }));
+  };
+  const opensHebrewView = async () => {
+    cleanup();
+    clearBus();
+    forgetTrail();
+    window.history.replaceState(null, '', '/#/?b=jon&c=1&view=greek&p=1&pt=3');
+    await seedHisWords();
+    render(<App />);
+    await screen.findByRole('region', { name: 'Verse view' });
+  };
+
+  Scenario('A Hebrew passage lesson opens its verses in Hebrew and Check passes it by reading', ({ Given, When, Then, And }) => {
+    Given('Hebrew is the only language chosen and every Hebrew idea is solid', solidHebrew);
+    When('he opens the Goal screen', opensGoalScreen);
+    Then('Learn next says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
+    When('he taps Learn next', async () => {
+      await user.click(await screen.findByTestId('learn-next'));
+    });
+    Then('the Verse view is open, headed {string}', async (_, heading: string) => {
+      await screen.findByRole('region', { name: 'Verse view' });
+      expect(within(viewEl()).getByRole('heading', { name: heading, level: 2 })).toBeInTheDocument();
+    });
+    And('the Verse view shows verses 1 to 3 of Jonah 1 and no other, in Hebrew', async () => {
+      const verses = Array.from(viewEl().querySelectorAll('[data-passage-verse]'));
+      expect(verses.map((el) => el.getAttribute('data-passage-verse'))).toEqual(['1', '2', '3']);
+      await waitFor(() => expect(viewEl().textContent).toMatch(/[\u0590-\u05ff]/));
+      expect(viewEl().textContent).not.toMatch(/[\u0370-\u03ff]/);
+    });
+    And("the Lesson strip names the lesson's ideas as chips and offers {string}", (_, name: string) => {
+      const strip = within(viewEl()).getByRole('region', { name: 'Lesson strip' });
+      expect(strip).toHaveTextContent(LESSON.title);
+      const chips = Array.from(strip.querySelectorAll<HTMLElement>('[data-idea]'));
+      expect(chips.map((c) => c.getAttribute('data-idea'))).toEqual(LESSON.ideas);
+      expect(chips.map((c) => c.textContent)).toEqual(LESSON.ideas.map((id) => ideaOf(id).title));
+      expect(within(strip).getByRole('button', { name })).toBeInTheDocument();
+    });
+    And('no lesson is marked read or passed', async () => {
+      expect(await db.passageLessons.count()).toBe(0);
+    });
+    When('he taps {string} in the Lesson strip', tapsInStrip);
+    Then('the sheet {string} asks a tap-the-word question on each verse', async (_, title: string) => {
+      await openSheet();
+      expect(await within(checkSheet()).findByTestId('check-title')).toHaveTextContent(title);
+      expect(await within(checkSheet()).findByTestId('check-step')).toHaveTextContent(`Question 1 of ${expected.length}`);
+      expect(expected.length).toBeGreaterThanOrEqual(3);
+      for (const verse of [1, 2, 3]) expect(expected.some((q) => q.ref === `Jonah 1:${verse}` && q.kind === 'tap-form' && q.lang === 'hbo'), `verse ${verse}`).toBe(true);
+    });
+    When('he answers all of them right but the last', async () => {
+      for (let i = 0; i < expected.length - 1; i += 1) await answer(true);
+      await answer(false);
+    });
+    Then('the end card says it is passed', async () => {
+      expect(await within(checkSheet()).findByRole('heading', { name: `Passed: ${expected.length - 1} of ${expected.length}` })).toBeInTheDocument();
+    });
+    And('the lesson {string} is passed in the table', async () => {
+      await waitFor(async () => expect(await db.passageLessons.get('passage:jon.1.1-3')).toMatchObject({ state: 'passed', score: (expected.length - 1) / expected.length }));
+    });
+    And('each idea asked has a review recorded', async () => {
+      const ideas = [...new Set(expected.map((q) => q.ideaId))];
+      expect(ideas.length).toBeGreaterThan(0);
+      for (const id of ideas) expect(await db.reviews.get([IDEA_KIND, id]), id).toBeDefined();
+    });
+    When('he opens the Goal screen again', opensGoalScreen);
+    Then('the Goal is learning the idea he missed and offers no lesson to read', async () => {
+      // the one question he missed puts its idea back at the frontier (Learning now), so the Goal has no Learn next at all
+      expect(await screen.findByTestId('learning-now')).toBeInTheDocument();
+      expect(screen.queryByTestId('learn-next')).toBeNull();
+      expect(document.body.textContent).not.toContain('Read Jonah');
+    });
+  });
+
+  Scenario('A Hebrew passage lesson missed stays read and the Goal still offers it', ({ Given, And, When, Then }) => {
+    Given('Hebrew is the only language chosen and every Hebrew idea is solid', solidHebrew);
+    And('the Verse view is open on the Hebrew lesson {string}', opensHebrewView);
+    When('he taps {string} in the Lesson strip', tapsInStrip);
+    And('he answers every question wrong', async () => {
+      await openSheet();
+      for (let i = 0; i < expected.length; i += 1) await answer(false);
+    });
+    Then('the end card says it is read, not passed', async () => {
+      expect(await within(checkSheet()).findByRole('heading', { name: `Read: 0 of ${expected.length}` })).toBeInTheDocument();
+      await sleep(50);
+    });
+    And('the lesson {string} is read in the table', async () => {
+      await waitFor(async () => expect(await db.passageLessons.get('passage:jon.1.1-3')).toMatchObject({ state: 'read', score: null }));
+    });
+    When('he opens the Goal screen', opensGoalScreen);
+    Then('Learn next says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(await screen.findByTestId('learn-next')).toHaveTextContent(`Learn next: ${text}`));
+    });
+  });
+
+  // Read lessons to me: a Hebrew idea sheet is read by the shared Read aloud, Hebrew in the Hebrew voice
+  let synth: FakeSynth | undefined;
+  const engine = (): FakeSynth => {
+    if (!synth) throw new Error('the phone has no speech engine');
+    return synth;
+  };
+  const spokenIn = (lang: string): string[] => engine().spoken.filter((s) => s.lang === lang).map((s) => s.text);
+  const speaker = (name: string): HTMLElement => screen.getByRole('button', { name, exact: true });
+  const hebrewPhone = async () => {
+    cleanup();
+    stopReading();
+    clearBus();
+    forgetTrail();
+    vi.unstubAllGlobals();
+    localStorage.clear();
+    localStorage.setItem('lampas.welcome', 'done');
+    window.history.replaceState(null, '', '/');
+    stubChapterFetch();
+    await db.open();
+    await Promise.all([db.settings.clear(), db.grammarLevels.clear(), db.reviews.clear(), db.words.clear()]);
+    synth = stubSpeech([ENGLISH_VOICE, HEBREW_VOICE]);
+  };
+  const readLessons = (value: 'on' | 'off') => () => db.settings.put({ key: 'readLessons', value });
+  const opensIdeaSheet = (_: unknown, id: string) => {
+    render(<IdeaSheet idea={ideaOf(id)} onClose={() => undefined} onWord={() => undefined} />);
+  };
+
+  Scenario('With Read lessons to me On a Hebrew idea sheet reads itself, Hebrew in the Hebrew voice', ({ Given, And, When, Then }) => {
+    Given('a phone with an English and a Hebrew voice', hebrewPhone);
+    And('Read lessons to me is On', readLessons('on'));
+    When('the idea sheet of {string} is opened', opensIdeaSheet);
+    Then('the phone speaks the title {string} in {string}', async (_, title: string, lang: string) => {
+      await waitFor(() => expect(spokenIn(lang)[0]).toContain(title));
+    });
+    And('the phone speaks some Hebrew in {string}', async (_, lang: string) => {
+      await waitFor(() => expect(spokenIn(lang).length).toBeGreaterThan(0));
+    });
+    And('the text of the lesson is still on screen', () => {
+      expect(screen.getByTestId('idea-what')).toBeVisible();
+      expect(screen.getByTestId('idea-spot')).toBeVisible();
+    });
+    And('the speaker is named Stop reading', () => {
+      expect(speaker('Stop reading')).toHaveAttribute('aria-pressed', 'true');
+    });
+  });
+
+  Scenario('With Read lessons to me Off a Hebrew idea sheet stays silent until the speaker is tapped', ({ Given, And, When, Then }) => {
+    Given('a phone with an English and a Hebrew voice', hebrewPhone);
+    And('Read lessons to me is Off', readLessons('off'));
+    When('the idea sheet of {string} is opened', opensIdeaSheet);
+    Then('the phone has spoken nothing', async () => {
+      await screen.findByTestId('idea-what');
+      await act(async () => {
+        await sleep(100);
+      });
+      expect(engine().spoken).toEqual([]);
+    });
+    When('he taps Read aloud', () => user.click(speaker('Read aloud')));
+    Then('the phone speaks the title {string} in {string}', async (_, title: string, lang: string) => {
+      await waitFor(() => expect(spokenIn(lang)[0]).toContain(title));
     });
   });
 });

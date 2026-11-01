@@ -61,3 +61,52 @@ Feature: The Hebrew ladder on the Goal and Placement screens
   Scenario: At English only the Goal screen has no ladder
     Given English only is chosen and the Goal screen is open
     Then the Goal says "No language chosen" and lists no idea
+
+  @uc-lessons @hebrew
+  Scenario: A Hebrew passage lesson opens its verses in Hebrew and Check passes it by reading
+    Given Hebrew is the only language chosen and every Hebrew idea is solid
+    When he opens the Goal screen
+    Then Learn next says "Read Jonah 1:1-3"
+    When he taps Learn next
+    Then the Verse view is open, headed "Jonah 1:1-3"
+    And the Verse view shows verses 1 to 3 of Jonah 1 and no other, in Hebrew
+    And the Lesson strip names the lesson's ideas as chips and offers "Check"
+    And no lesson is marked read or passed
+    When he taps "Check" in the Lesson strip
+    Then the sheet "Check: Jonah 1:1-3" asks a tap-the-word question on each verse
+    When he answers all of them right but the last
+    Then the end card says it is passed
+    And the lesson "Jonah 1:1-3" is passed in the table
+    And each idea asked has a review recorded
+    When he opens the Goal screen again
+    Then the Goal is learning the idea he missed and offers no lesson to read
+
+  @uc-lessons @hebrew
+  Scenario: A Hebrew passage lesson missed stays read and the Goal still offers it
+    Given Hebrew is the only language chosen and every Hebrew idea is solid
+    And the Verse view is open on the Hebrew lesson "Jonah 1:1-3"
+    When he taps "Check" in the Lesson strip
+    And he answers every question wrong
+    Then the end card says it is read, not passed
+    And the lesson "Jonah 1:1-3" is read in the table
+    When he opens the Goal screen
+    Then Learn next says "Read Jonah 1:1-3"
+
+  @uc-lessons @hebrew
+  Scenario: With Read lessons to me On a Hebrew idea sheet reads itself, Hebrew in the Hebrew voice
+    Given a phone with an English and a Hebrew voice
+    And Read lessons to me is On
+    When the idea sheet of "he-alphabet" is opened
+    Then the phone speaks the title "The Hebrew alphabet" in "en-US"
+    And the phone speaks some Hebrew in "he-IL"
+    And the text of the lesson is still on screen
+    And the speaker is named Stop reading
+
+  @uc-lessons @hebrew
+  Scenario: With Read lessons to me Off a Hebrew idea sheet stays silent until the speaker is tapped
+    Given a phone with an English and a Hebrew voice
+    And Read lessons to me is Off
+    When the idea sheet of "he-alphabet" is opened
+    Then the phone has spoken nothing
+    When he taps Read aloud
+    Then the phone speaks the title "The Hebrew alphabet" in "en-US"

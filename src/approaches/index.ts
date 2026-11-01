@@ -4,6 +4,7 @@
 import type { GrammarLevelName } from '../data/db';
 import { bookOf } from '../data/books';
 import { LADDER } from '../data/grammar/ladder';
+import { HEBREW_PASSAGE_LESSONS } from '../data/grammar/hebrew/ladder';
 import { ladder } from './ladder';
 import type { ApproachLesson, ApproachLevel, ApproachStage, GrammarApproach, Passage } from './types';
 
@@ -111,8 +112,20 @@ export function nextLessonOf(approach: GrammarApproach, levelOf: (id: string) =>
   return id === undefined ? undefined : lessonOf(approach, id);
 }
 
-/** The passage lesson of `approach` that reads exactly verses `from` to `to` of the chapter (the Verse view's Lesson strip, mw-z370x5.2); undefined when none does. */
+/** The Hebrew ladder's reading, as the stage and level its passage lessons stand in (the Greek ones are the ladder approach's last stage): not an approach Settings lists, a place for lessonForRange to find them. */
+const HEBREW_READING: { stage: ApproachStage; level: ApproachLevel } = (() => {
+  const level: ApproachLevel = { title: 'Reading the Hebrew Bible', lessons: [...HEBREW_PASSAGE_LESSONS] };
+  return { stage: { title: 'Reading Hebrew', levels: [level] }, level };
+})();
+
+/** The steps of the Hebrew ladder's passage lessons, in order (src/data/grammar/hebrew/ladder.ts HEBREW_PASSAGE_LESSONS). */
+export const hebrewPassageSteps = (): Extract<Step, { kind: 'passage' }>[] =>
+  HEBREW_READING.level.lessons.flatMap((lesson) =>
+    lesson.passage ? [{ kind: 'passage' as const, key: passageKey(lesson.passage), lesson: { ...HEBREW_READING, lesson }, passage: lesson.passage }] : [],
+  );
+
+/** The passage lesson of `approach` that reads exactly verses `from` to `to` of the chapter (the Verse view's Lesson strip, mw-z370x5.2); the Hebrew ladder's passage lessons are found too (mw-5r3p30.911); undefined when none does. */
 export function lessonForRange(approach: GrammarApproach, book: string, chapter: number, from: number, to: number): Extract<Step, { kind: 'passage' }> | undefined {
   const key = passageKey({ book, chapter, from, to });
-  return stepsOf(approach).find((s): s is Extract<Step, { kind: 'passage' }> => s.kind === 'passage' && s.key === key);
+  return [...stepsOf(approach), ...hebrewPassageSteps()].find((s): s is Extract<Step, { kind: 'passage' }> => s.kind === 'passage' && s.key === key);
 }

@@ -93,7 +93,8 @@ export function CheckSheet({ lesson, onClose, onQuiz }: { lesson: CheckLesson; o
       .then(async () => {
         await recordGrammarAnswer(question.ideaId, wasRight);
         // a form read right shows its letters, sounds and marks; a miss on a letter or sound counts against it
-        await noteAnswer(question, wasRight);
+        // (a Hebrew question shows no Greek letter: Review leaves it out too)
+        if (question.lang !== 'hbo') await noteAnswer(question, wasRight);
       })
       .catch((error: unknown) => console.error('could not record the answer', error));
   };

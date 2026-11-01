@@ -665,7 +665,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
         <div ref={textBox} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{titled(idea.title)}</h2>
-            {hebrew ? null : <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={loaded !== null} />}
+            <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={hebrew || loaded !== null} />
           </div>
           {level ? (
             <p data-testid="idea-level" className="mt-1 inline-block rounded-full border border-line px-3 py-1 text-sm text-muted">
