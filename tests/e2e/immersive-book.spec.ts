@@ -219,15 +219,12 @@ test('Off in the dark theme keeps the usual dark', async ({ page }) => {
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgb(0, 0, 0)');
 });
 
-// The page is pure black in Dark with Immersive reader On, so the phone's bar and the Talk band around it are black too (mw-5r3p30.595); Settings and Off keep the navy.
+// The page is pure black in Dark with Immersive reader On, so the phone's bar is black too (mw-5r3p30.595); Settings and Off keep the navy.
 const barColour = (page: Page) => page.evaluate(() => document.querySelector('meta[name="theme-color"]')?.getAttribute('content')?.replace('#', ''));
-const talkBand = (page: Page) => page.locator('[data-talk-bar]').evaluate((el) => getComputedStyle(el).backgroundColor);
 
-test('Mark 12 in Dark with Immersive reader On: the phone\'s bar and the Talk band are black; Settings and Off keep the navy', async ({ page }) => {
+test('Mark 12 in Dark with Immersive reader On: the phone\'s bar is black; Settings and Off keep the navy', async ({ page }) => {
   await openReader(page, 'on', { hash: '#/?b=mrk&c=12', heading: 'Mark 12', settings: { theme: 'dark' } });
-  await expect(page.locator('[data-talk-bar]')).toBeVisible();
   await expect.poll(() => barColour(page)).toBe('000000');
-  expect(await talkBand(page)).toBe('rgb(0, 0, 0)');
   await shot(page, 'immersive-black-bars');
   // Settings keeps its usual dark blue, bar included
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -241,7 +238,6 @@ test('Mark 12 in Dark with Immersive reader On: the phone\'s bar and the Talk ba
   await page.reload();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'off');
   await expect.poll(() => barColour(page)).toBe('0a0e17');
-  expect(await talkBand(page)).toBe('rgb(17, 23, 37)');
 });
 
 test('Mark 12 with Immersive reader On, in the dark theme', async ({ page }) => {

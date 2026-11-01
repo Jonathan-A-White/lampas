@@ -150,10 +150,6 @@ test('a strong word is a flashcard: the lemma large, Show reveals the meaning, t
   await expectFitsPhone(page);
 });
 
-// A box overlaps another when they share any area.
-type Box = { x: number; y: number; width: number; height: number };
-const overlaps = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-
 test('the end card labels its score, so it is not read as the question counter', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/review');
@@ -180,38 +176,4 @@ test('the end card labels its score, so it is not read as the question counter',
   // the label sits right above the number
   const [labelBox, scoreBox] = [await label.boundingBox(), await page.getByTestId('score').boundingBox()];
   expect(labelBox && scoreBox && labelBox.y + labelBox.height <= scoreBox.y + 1).toBe(true);
-});
-
-test('sideways (844x390) the round Ask button keeps clear of every answer option', async ({ browser }) => {
-  const context = await browser.newContext({ viewport: { width: 844, height: 390 } });
-  await startAtAllIn(context);
-  const page = await context.newPage();
-  await openUnlocked(page);
-  await page.goto('/#/review');
-  await page.getByRole('button', { name: 'Start', exact: true }).click();
-  await expect(page.getByTestId('prompt')).toBeVisible();
-  const ask = page.locator('[data-ask-tutor]');
-  await expect(ask).toBeVisible();
-  let checked = 0;
-  for (let i = 0; i < 10; i += 1) {
-    const show = page.getByRole('button', { name: 'Show', exact: true });
-    if (await show.isVisible()) {
-      await show.click();
-      await page.getByRole('button', { name: /^(I knew it|Kind of)$/ }).click();
-    } else {
-      // the options scroll: bring each into view, then measure it against the (fixed) button
-      const options = page.locator('[data-option]');
-      const askBox = await ask.boundingBox();
-      for (let o = 0; o < (await options.count()); o += 1) {
-        await options.nth(o).scrollIntoViewIfNeeded();
-        const box = await options.nth(o).boundingBox();
-        expect(box && askBox && !overlaps(box, askBox)).toBe(true);
-        checked += 1;
-      }
-      await options.first().click();
-    }
-    await page.getByTestId('next').click();
-  }
-  expect(checked).toBeGreaterThan(0);
-  await context.close();
 });

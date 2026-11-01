@@ -6,7 +6,6 @@
 // The selection, the view and the weave are told to the rest of the app on the event bus (src/events/bus.ts, docs/events.md). The chapter comes from
 // /data/<book>/<n>.json; which chapter is open is the address's (b and c), else the one last open (src/data/readerChapter.ts); a chapter is a
 // ReaderBody keyed by it, so choosing another starts the screen afresh.
-import { scopeRef } from './services/talk';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReadHold } from './ReadCheck';
@@ -19,10 +18,9 @@ import { PlaceLine } from './PlaceLine';
 import { useCopyHold } from './copy/useCopyHold';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ReaderControls } from './ReaderControls';
-import { ASK_BUTTON_GUTTER, ASK_BUTTON_ROOM, AskTutorButton, TALK_BAR_LIFT } from './AskTutor';
 import { useAiAllowed } from './gate/licenceContext';
 import { LicenceTip } from './gate/LicenceTip';
-import { ReaderTalkBar, TalkSheet } from './Talk';
+import { TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import { sourceLanguage, type SourceLanguage, type Verse } from './data/chapter';
 import { chooseReading, getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
@@ -79,8 +77,6 @@ import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useDoorTarget } from './tutor/door';
 import { useTalk } from './useTalk';
-import { HOLD_AFTER_MS, useTalkHold } from './talk/useTalkHold';
-import type { BarHandlers } from 'voice-kit/composer';
 import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
@@ -240,20 +236,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // English, Weave and Greek (Hebrew) lay a verse out at different heights: the verse on top before a switch is on top after it (mw-5r3p30.863)
   useKeepTopVerse(main, inner, view ? `${view}|${weave}|${weaveShown}|${weaveOrder}` : null, paging);
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
-  const [prefill, setPrefill] = useState(() => (request?.action === 'ask' ? { verse: request.verse, text: request.question } : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   // the reading check follows the view; in an Old Testament chapter the Hebrew view is read in Hebrew (useReadChecks turns the source view into 'hebrew' by the book, mw-gdcyf98.14)
   const checks = useReadChecks(BOOK, CHAPTER, TITLE, view ?? 'english', pronunciation, undefined, chapter);
   // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
   const openTalkRef = useRef<string | null>(null);
-  // Push-to-talk (voice-kit's TalkBar through src/talk/useTalkHold.ts): what he says goes as the turn of the conversation the sheet is open on. `onBar` is the Talk bar
-  // (a press under half a second is a tap there); the sheet's own hold is the Composer's (src/Talk.tsx), which sends through the sheet's onSay.
-  const sayAbout = useRef<(message: string) => void>(() => {});
-  const send = useCallback((message: string) => sayAbout.current(message), []);
-  // what the finger that began a hold on the Talk bar is on: the sheet opens on it as the hold begins
-  const [holdAbout, setHoldAbout] = useState<number | null>(null);
-  const holdTalkRef = useRef<(about: number | null) => void>(() => {});
-  const onBar = useTalkHold(send, { holdDelayMs: HOLD_AFTER_MS, onBegin: () => holdTalkRef.current(holdAbout) });
   const closeTalk = useRef<() => void>(() => {});
   const leaveTalk = useRef<() => () => void>(() => () => {});
   const talk = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
@@ -291,10 +278,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const openKey = useCallback(() => setKeyOpen(true), []);
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
   const copyHold = useCopyHold(chapter, view ? { view, woven, variants } : undefined, openChapter);
-  // The Parsing drill's Ask the tutor opens the view on the Ask action, holding the question.
-  useEffect(() => {
-    if (request?.action === 'ask') chooseAction('ask');
-  }, [request, chooseAction]);
   const closeSheet = useCallback(() => setLookup(null), []);
   const viewVerse = chapter && selected !== null ? chapter.verses.find((v) => v.n === selected) : undefined;
   // A heading's passage (the address `p`) opens the same view, with the passage as one Verse; a verse in the address wins.
@@ -323,44 +306,31 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, [chapter, viewPassage, approach, BOOK, CHAPTER]);
   const viewUnit = useMemo(() => viewVerse ?? (viewPassage ? passageVerse(viewPassage) : undefined), [viewVerse, viewPassage]);
   // whichever hold is going on is dropped as one: the sheet closed, or another screen asked
-  const stopTalking = { abort: () => onBar.abort() };
-  const tutor = useReaderTutor(open, chapter, talk, stopTalking, { request, viewUnit, openTalkRef });
-  const { talkScope, talkKey, talkAbout, setTalkAbout, holdTalk } = tutor;
-  useEffect(() => {
-    holdTalkRef.current = holdTalk;
+  // The Parsing drill's Ask the tutor opens the Talk sheet on its verse (useReaderTutor) with the question in the box, ready to send: he sends it himself; words he had typed there stay
+  useState(() => {
+    if (request?.action !== 'ask') return;
+    const draftKey = talkDraftKey(talkRef(BOOK, CHAPTER, request.verse));
+    if (readDraft(draftKey) === '') writeDraft(draftKey, request.question);
   });
-  // The handlers of a press on the Talk bar (about = the selected verse): a press longer than the hold's delay is the hold of the kit's bar, which opens
-  // the sheet on `about` as it begins; one that is let go sooner is the tap. A conversation still waiting for its answer is not listened to: the press only opens the sheet.
-  const pressOn = (about: number | null): BarHandlers => ({
-    ...onBar.bar,
-    onPointerDown: (e) => {
-      setHoldAbout(about);
-      if (!tutor.talkWaiting(about)) onBar.bar.onPointerDown(e);
-    },
-    onKeyDown: (e) => {
-      setHoldAbout(about);
-      if (!tutor.talkWaiting(about)) onBar.bar.onKeyDown(e);
-    },
-  });
-  // The tutor (the Talk bar and sheet, the round Ask button, Teach's Ask the tutor) is the AI: not drawn without a licence (mw-8m9dyu.2).
+  const tutor = useReaderTutor(open, chapter, talk, { request, viewUnit, openTalkRef });
+  const { talkScope, talkKey, talkAbout, setTalkAbout } = tutor;
+  // The tutor (the Talk sheet and the floating ?) is the AI: not drawn without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
   // The talk about one variant unit, its box holding the question ready to send (words he had typed there are his and stay): the brace sheet's Ask the tutor, and what the tutor door asks on that sheet
   const askVariant = () => {
     if (!variantShown) return;
     stopReading();
-    stopTalking.abort();
     if (chapter) askAboutVariant(chapter, variantShown.unit);
     const draftKey = talkDraftKey(talkRef(BOOK, CHAPTER, variantShown.unit.v));
     if (readDraft(draftKey) === '') writeDraft(draftKey, VARIANT_QUESTION);
     setVariantShown(null);
     setTalkAbout(variantShown.unit.v);
   };
-  // The tutor door (src/tutor/door.ts, a two-finger tap or the floating ?): on the Reader it asks about the verse the Verse view shows or the verse selected, else the chapter; over the brace sheet, about its unit
+  // The tutor door (src/tutor/door.ts, the floating ?): on the Reader it asks about the verse the Verse view shows or the verse selected, else the chapter; over the brace sheet, about its unit
   useDoorTarget(
     ai && chapter && !failed
       ? () => {
           stopReading();
-          stopTalking.abort();
           setTalkAbout(viewUnit?.n ?? selected);
         }
       : undefined,
@@ -369,8 +339,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The Talk sheet's own close (Done), which the answer's `go` calls before the Reader opens the other chapter.
   useEffect(() => {
     closeTalk.current = () => {
-      stopTalking.abort();
-      onBar.clearNotice();
       setTalkAbout(undefined);
     };
     // the tutor takes him elsewhere: the sheet closes as Done does and gives the way to open it again on what it was about, for Back from where he is taken
@@ -384,12 +352,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useEffect(() => {
     if (talkAbout === undefined) clearVariantAsked();
   }, [talkAbout]);
-  // What he says goes to the open Talk sheet (the Verse view's Ask the tutor has its own composer, src/Ask.tsx).
-  useEffect(() => {
-    sayAbout.current = (message) => {
-      if (talkScope) talk.say(talkScope, message);
-    };
-  });
   // The verse number on the teach sheet: the reading box is scrolled so that verse stands at its top. The verse is not selected: that
   // would open its Verse view over the Reader.
   const showVerse = useCallback((n: number) => {
@@ -543,7 +505,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
       {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} mode={paging ? 'pages' : 'scroll'} /> : null}
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} style={chapter ? { marginBottom: away || !ai || paging ? 0 : `calc(${ASK_BUTTON_ROOM})`, marginRight: ai ? ASK_BUTTON_GUTTER : undefined, transition: immersive ? 'margin-bottom 200ms ease' : undefined } : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
         <div ref={inner} data-reader-text data-pages={paging ? '' : undefined}>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
@@ -607,41 +569,16 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
-      {/* with Turn pages the round button's room is under the place line, beside the button, so the page reaches down to the line (mw-5r3p30.610) */}
-      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={footBare && !barUp} room={away || !ai ? '0px' : `calc(${ASK_BUTTON_ROOM})`} /> : null}
+      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={footBare && !barUp} /> : null}
       <BarSlot level={1} inset={footBare && !(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
-      {chapter && !viewUnit && ai ? (
-        <Away enabled={immersive} away={away}>
-          <ReaderTalkBar
-            hold={{ ...onBar, bar: pressOn(selected) }}
-            onPress={pauseReading}
-            onTap={() => {
-              pauseReading();
-              setTalkAbout(selected);
-            }}
-          />
-        </Away>
-      ) : null}
       {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} visible={away} floor /> : null}
-      {chapter && !viewUnit ? (
-        <AskTutorButton
-          away={immersive ? away : undefined}
-          lift={TALK_BAR_LIFT}
-          onClick={() => {
-            stopReading();
-            stopTalking.abort();
-            setTalkAbout(null);
-          }}
-        />
-      ) : null}
       {ai && talkScope && talkAbout !== undefined ? (
         <TalkSheet
           scope={talkScope}
           suggestions={talkScope.verse === null && !talkScope.quiz ? READER_SUGGESTIONS : undefined}
           talkRef={talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)}
           state={talk.states[talkKey ?? talkRef(BOOK, CHAPTER, talkAbout)]}
-          opened={onBar}
           onSay={(message, focus, pictures) => talk.say(talkScope, message, focus, pictures)}
           onResume={() => talk.resume(talkScope)}
           onHelp={tutor.helpWithWord}
@@ -657,7 +594,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           solid={solid ?? EMPTY_LEMMAS}
           onClose={closeTeach}
           onShowVerse={showVerse}
-          onAsk={ai ? tutor.askAboutNewWord : undefined}
         />
       ) : null}
       {chapter && viewUnit && sheetView ? (
@@ -701,13 +637,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           weave={viewWeave}
           wovenChapter={sheetWoven}
           onRetryRead={() => checks.retry(viewUnit)}
-          ask={talk.states[scopeRef(BOOK, CHAPTER, { verse: viewUnit })]}
-          onAsk={(verse, question, pictures) => {
-            setPrefill(null);
-            tutor.askUnit(verse, question, pictures);
-          }}
-          prefill={prefill}
-          onTalk={() => setTalkAbout(viewUnit.n)}
           quiz={{ started: tutor.quizStarted, onOpen: tutor.openQuiz }}
           lesson={viewLesson}
         />
@@ -732,7 +661,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 }
               : undefined
           }
-          onAsk={ai ? askVariant : undefined}
         />
       ) : null}
       {keyOpen ? <VariantKeySheet onClose={() => setKeyOpen(false)} /> : null}

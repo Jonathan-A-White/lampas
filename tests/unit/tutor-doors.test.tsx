@@ -1,14 +1,13 @@
-// tests/unit/tutor-doors.test.tsx — every door to the tutor opens the one Talk session with the same tools (mw-5r3p30.842). His report: the tutor he reaches with a
-// two-finger tap (the Reader's Talk bar) can send to the makers, and from other doors it answers "I can't do that". The Verse view's Ask the tutor was a second tutor (the verse-ask
-// grind, which had no feedback_offer, no `go`, no `do`, only Ask by in settings_changes); it sent to the Talk session as every other door does, and the grind is gone (mw-5r3p30.850). Each door below asks 'send this to the makers: test' and is checked three ways: the grist
-// is the Talk session's (kind bible-talk), the Talk sheet it opens shows the tutor's offer, Send this to the makers, and the tap files a tutor-ask request.
+// tests/unit/tutor-doors.test.tsx — the tutor's door opens the one Talk session with the same tools (mw-5r3p30.842). His report: the tutor he reached with a two-finger tap (the Reader's Talk bar) could send to the
+// makers, and from other doors it answered "I can't do that". The Verse view's Ask the tutor was a second tutor (the verse-ask grind, which had no feedback_offer, no `go`, no `do`, only Ask by in settings_changes);
+// the grind is gone (mw-5r3p30.850), and so are the Talk bar, the round button and the Verse view's buttons (mw-5r3p30.882): the floating ? is the one door. It opens the chapter's talk, or the verse's with the
+// Verse view open. Each is the Talk session's (kind bible-talk), the Talk sheet it opens shows the tutor's offer, Send this to the makers, and the tap files a tutor-ask request.
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/App';
-import { ASK_TUTOR_LABEL } from '../../src/AskTutor';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
@@ -17,7 +16,8 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
-import { composerIn, messageBox, typeQuestion } from '../support/composer';
+import { composerIn, messageBox } from '../support/composer';
+import { openTutor } from '../../features/steps/open-tutor';
 import { stubRecognizer } from '../support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../support/fake-postern';
 import { seedHisWords } from '../support/his-words';
@@ -70,15 +70,13 @@ beforeEach(async () => {
 });
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
-const view = () => screen.getByRole('region', { name: 'Verse view' });
 const questionsAsked = () => fake.received.filter((g) => g.grist.kind === 'bible-talk');
 
-/** Selects verse 28: its Verse view opens, on the action named. */
-async function openVerse28(action: string): Promise<void> {
+/** Selects verse 28: its Verse view opens. */
+async function openVerse28(): Promise<void> {
   const number = await screen.findByRole('button', { name: 'Verse 28' });
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
   await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(view()).getByRole('button', { name: action }));
 }
 
 /** Types into the Talk sheet's own Composer and sends. */
@@ -89,31 +87,20 @@ async function sayInSheet(words: string): Promise<void> {
   await user.click(within(composerIn(sheet())).getByRole('button', { name: 'Send' }));
 }
 
-/** The doors, each by what he does to reach the tutor and ask. */
+/** The door, by what he does to reach the tutor and ask. */
 const DOORS: Record<string, () => Promise<void>> = {
-  "the Reader's Talk bar (the two-finger tap's tutor)": async () => {
-    await user.click(await screen.findByRole('button', { name: 'Talk' }));
-    await screen.findByRole('dialog', { name: /^Talk about / });
+  'the floating ? on the chapter': async () => {
+    await openTutor({ sheet: /^Talk about / });
     await sayInSheet(ASK);
   },
-  'the round Ask the tutor button': async () => {
-    await user.click(await screen.findByRole('button', { name: ASK_TUTOR_LABEL }));
-    await screen.findByRole('dialog', { name: /^Talk about / });
+  'the floating ? over the Verse view': async () => {
+    await openVerse28();
+    await openTutor({ sheet: /^Talk about / });
     await sayInSheet(ASK);
-  },
-  "the Verse view's Talk about verse": async () => {
-    await openVerse28('Ask the tutor');
-    await user.click(await within(view()).findByRole('button', { name: 'Talk about verse 28' }));
-    await screen.findByRole('dialog', { name: /^Talk about / });
-    await sayInSheet(ASK);
-  },
-  "the Verse view's Ask the tutor": async () => {
-    await openVerse28('Ask the tutor');
-    await typeQuestion(user, view(), ASK);
   },
 };
 
-describe('every door opens the one Talk session, with its tools', () => {
+describe('the door opens the one Talk session, with its tools', () => {
   for (const [door, open] of Object.entries(DOORS)) {
     it(`${door}: the question goes to the Talk session, whose offer sends to the makers`, async () => {
       await open();

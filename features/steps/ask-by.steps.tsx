@@ -15,7 +15,6 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { composerIn, holdBarsIn } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { validate, type Schema } from '../../tests/support/schema-validate';
@@ -36,19 +35,6 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern;
 
-const TYPE_REPLY = {
-  ...SYNERGEI_ANSWER,
-  answer: 'I have switched Ask by to Typing.',
-  words: [],
-  settings_changes: [{ key: 'askBy', value: 'typing' }],
-};
-const SPEAK_REPLY = {
-  ...SYNERGEI_ANSWER,
-  answer: 'I have switched Ask by back to Speaking.',
-  words: [],
-  settings_changes: [{ key: 'askBy', value: 'speaking' }],
-};
-const REPLIES: Record<string, unknown> = { 'Let me type instead': TYPE_REPLY, 'Switch back to speaking': SPEAK_REPLY };
 
 async function start(): Promise<void> {
   cleanup();
@@ -90,36 +76,9 @@ async function openSettings(): Promise<void> {
   await screen.findByRole('group', { name: 'Tips' });
 }
 
-const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 
-async function openAsk(): Promise<void> {
-  await renderApp();
-  const heading = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => h.textContent?.includes('Walking by the Spirit'));
-  if (!heading) throw new Error('no heading');
-  await user.click(within(heading).getByRole('button'));
-  await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(viewEl()).getByRole('button', { name: 'Ask the tutor', exact: true }));
-  await within(viewEl()).findByTestId('composer');
-}
-
-/** The reply, its change and its failures are the Talk sheet's (mw-5r3p30.842): the sheet the Verse view's Ask opens. */
-const sheetEl = () => screen.findByRole('dialog', { name: /^Talk about / });
 const askByGroup = async (): Promise<HTMLElement> => screen.findByRole('group', { name: 'Ask by' });
-const askBySaved = async (): Promise<string | undefined> => (await db.settings.get('askBy'))?.value;
 
-const typeFirst = async () => {
-  const composer = composerIn(viewEl());
-  expect(await within(composer).findByRole('textbox', { name: 'Your question' })).toBeInTheDocument();
-  expect(within(composer).getByRole('button', { name: 'Send' })).toBeInTheDocument();
-  expect(within(composer).getByRole('button', { name: 'Ask by speaking' })).toBeInTheDocument();
-  expect(holdBarsIn(viewEl())).toHaveLength(0);
-};
-const speakFirst = async () => {
-  const composer = composerIn(viewEl());
-  await waitFor(() => expect(holdBarsIn(viewEl())).toHaveLength(1));
-  expect(within(composer).getByRole('button', { name: 'Type a question' })).toBeInTheDocument();
-  expect(within(composer).queryByRole('textbox', { name: 'Your question' })).toBeNull();
-};
 
 const feature = await loadFeature('features/ask-by.feature');
 
@@ -129,96 +88,10 @@ describeFeature(feature, ({ Scenario }) => {
     expect(within(group).getByRole('button', { name: 'Speaking' })).toHaveAttribute('aria-pressed', 'true');
     expect(within(group).getByRole('button', { name: 'Typing' })).toHaveAttribute('aria-pressed', 'false');
   };
-  const savedAs = async (_: unknown, value: string) => {
-    await waitFor(async () => expect(await askBySaved()).toBe(value));
-  };
-  const openAskView = async () => {
-    await start();
-    await openAsk();
-  };
 
   Scenario('Settings shows Ask by with Speaking and Typing', ({ Given, Then }) => {
     Given('Lampas is opened on Settings with nothing chosen', openSettings);
     Then('Settings shows the group {string} with Speaking chosen', settingsAskBy);
-  });
-
-  Scenario('Choosing Typing makes Ask the tutor type-first and it survives a reload', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Settings with nothing chosen', openSettings);
-    When('he chooses {string} in the group {string}', async (_, choice: string, name: string) => {
-      await user.click(within(await screen.findByRole('group', { name })).getByRole('button', { name: choice }));
-    });
-    Then('Ask by is saved as {string}', savedAs);
-    When('Lampas is opened again on the Verse view of Romans 8 with Ask the tutor chosen', async () => {
-      cleanup();
-      clearBus();
-      forgetTrail();
-      window.history.replaceState(null, '', '/');
-      await openAsk();
-    });
-    Then('Ask the tutor shows the text box, Send and a small mic and no Hold to ask bar', typeFirst);
-  });
-
-  Scenario('Speaking is the default and Ask the tutor shows the Hold to ask bar', ({ Given, Then }) => {
-    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
-    Then('Ask the tutor shows the Hold to ask bar and a Type a question button and no text box', speakFirst);
-  });
-
-  Scenario('Asking to type switches Ask by to Typing, the reply says so, and asking to speak switches it back', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
-    const ask = async (_: unknown, question: string) => {
-      fake.received.length = 0;
-      fake.autoReply = { status: 'answered', answer: REPLIES[question] };
-      const composer = composerIn(viewEl());
-      if (!within(composer).queryByRole('textbox', { name: 'Your question' })) await user.click(within(composer).getByRole('button', { name: 'Type a question' }));
-      await user.type(within(composerIn(viewEl())).getByRole('textbox', { name: 'Your question' }), question);
-      await user.click(within(composerIn(viewEl())).getByRole('button', { name: 'Send' }));
-    };
-    When('he asks {string} by the composer', ask);
-    Then('the grist carried Ask by as {string}', async (_, value: string) => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ kind: 'bible-talk' });
-      expect(fake.received[0].input.settings).toMatchObject({ askBy: value });
-    });
-    And('the reply says {string}', async (_, text: string) => {
-      await waitFor(async () => expect(within(await sheetEl()).getAllByText(text).length).toBeGreaterThan(0));
-    });
-    And('the answer says {string}', async (_, text: string) => {
-      expect(await within(await sheetEl()).findByText(text)).toBeInTheDocument();
-    });
-    And('Ask by is saved as {string}', savedAs);
-    And('Ask the tutor shows the text box, Send and a small mic and no Hold to ask bar', typeFirst);
-    When('he then asks {string} by the composer', ask);
-    Then('the next grist carried Ask by as {string}', async (_, value: string) => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].input.settings).toMatchObject({ askBy: value });
-    });
-    And('the next reply says {string}', async (_, text: string) => {
-      await waitFor(async () => expect(within(await sheetEl()).getAllByText(text).length).toBeGreaterThan(0));
-    });
-    And('Ask by is now saved as {string}', savedAs);
-    And('Ask the tutor shows the Hold to ask bar and a Type a question button and no text box', speakFirst);
-  });
-
-  const tutorAnswers = async (text: string, changes: unknown) => {
-    fake.received.length = 0;
-    fake.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, answer: text, words: [], settings_changes: changes } };
-    const composer = composerIn(viewEl());
-    if (!within(composer).queryByRole('textbox', { name: 'Your question' })) await user.click(within(composer).getByRole('button', { name: 'Type a question' }));
-    await user.type(within(composerIn(viewEl())).getByRole('textbox', { name: 'Your question' }), 'What does it mean?');
-    await user.click(within(composerIn(viewEl())).getByRole('button', { name: 'Send' }));
-  };
-  const answerShows = async (_: unknown, text: string) => {
-    expect(await within(await sheetEl()).findByText(text)).toBeInTheDocument();
-  };
-  Scenario("Ask by Typing after a change the app ignores still switches it, and the reply's card says so", ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen', openAskView);
-    When('the tutor answers {string} with a theme change first and then Ask by Typing', (_, text: string) => tutorAnswers(text, [{ key: 'theme', value: 'dark' }, { key: 'askBy', value: 'typing' }]));
-    Then('the answer shows {string}', answerShows);
-    And('the answer says {string}', async (_, text: string) => {
-      expect(await within(await sheetEl()).findByText(text)).toBeInTheDocument();
-    });
-    And('Ask by is saved as {string}', savedAs);
-    And('Ask the tutor shows the text box, Send and a small mic and no Hold to ask bar', typeFirst);
   });
 
   Scenario("The tutor's instructions say to switch Ask by only when he asks", ({ Given, Then }) => {

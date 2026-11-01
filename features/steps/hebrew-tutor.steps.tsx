@@ -4,6 +4,7 @@ import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
+import { typeQuestion } from '../../tests/support/composer';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
@@ -119,11 +120,7 @@ describeFeature(feature, ({ Scenario }) => {
   const asks = async (_: unknown, question: string): Promise<void> => {
     // the Talk sheet holds the Hebrew from the Hebrew dial's Curious up (mw-gdcyf98.3); a reader who chose a dial keeps it
     if (!(await db.settings.get('hebrewInterest'))) await db.settings.put({ key: 'hebrewInterest', value: '1' });
-    await user.click(within(viewEl()).getByRole('button', { name: 'Ask the tutor', exact: true }));
-    await screen.findByRole('region', { name: 'Ask the tutor' });
-    await user.click(await within(viewEl()).findByRole('button', { name: 'Type a question' }));
-    await user.type(await within(viewEl()).findByRole('textbox', { name: 'Your question' }), question);
-    await user.click(within(viewEl()).getByRole('button', { name: 'Send' }));
+    await typeQuestion(user, viewEl(), question);
   };
   const phone = 'Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern';
 
@@ -171,9 +168,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The Quiz door is not offered on Jonah 1:10, and Ask the tutor and Diagram are', ({ Given, When, Then }) => {
     Given(phone, openJonah);
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
-    Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
+    Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
       const names = within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button').map((x) => x.textContent?.trim() ?? '');
-      expect(names).toEqual([a, b, c, d, e]);
+      expect(names).toEqual([a, b, c, d]);
     });
     When('he chooses {string}', async (_, name: string) => {
       await user.click(within(viewEl()).getByRole('button', { name, exact: true }));

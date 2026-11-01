@@ -14,7 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { composerIn, messageBox, questionField } from '../../tests/support/composer';
+import { messageBox } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -65,16 +65,9 @@ async function open(): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
 }
 
-const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const talkField = () => within(sheet()).getByRole('textbox', { name: 'Your message' }) as HTMLTextAreaElement;
 const talkSend = () => within(sheet()).getByRole('button', { name: 'Send' });
-const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
-const headingEl = (text: string): HTMLElement => {
-  const found = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => squash(h.textContent) === text);
-  if (!found) throw new Error(`no heading ${text}`);
-  return found;
-};
 
 const feature = await loadFeature('features/long-question.feature');
 
@@ -90,21 +83,6 @@ describeFeature(feature, ({ Scenario }) => {
     await user.paste(prayer(length));
   };
   const talkHolds = (_: unknown, length: number) => expect(talkField().value).toBe(prayer(length));
-  const tapHeading = async (_: unknown, text: string) => {
-    await user.click(within(headingEl(text)).getByRole('button'));
-    await screen.findByRole('region', { name: 'Verse view' });
-  };
-  const choose = async (_: unknown, action: string) => {
-    await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
-  };
-  const pasteIntoAsk = async (_: unknown, length: number) => {
-    const box = await questionField(user, viewEl());
-    await user.click(box);
-    await user.paste(prayer(length));
-    await user.click(within(composerIn(viewEl())).getByRole('button', { name: 'Send' }));
-  };
-  const askHolds = (_: unknown, length: number) =>
-    expect((within(composerIn(viewEl())).getByRole('textbox', { name: 'Your question' }) as HTMLTextAreaElement).value).toBe(prayer(length));
   const receivedWhole = async (kind: string, length: number) => {
     await waitFor(() => expect(fake.received).toHaveLength(1));
     expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind });
@@ -147,25 +125,4 @@ describeFeature(feature, ({ Scenario }) => {
     And('the mill received no grist', nothingSent);
   });
 
-  Scenario('A 3000-character prayer pasted into Ask the tutor is sent whole', ({ Given, When, Then, And }) => {
-    Given(opened, open);
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    And('he pastes a prayer of {number} characters into the Ask the tutor box and taps Send', pasteIntoAsk);
-    Then('the mill received one bible-talk grist whose question is the whole prayer of {number} characters', (_, length: number) => receivedWhole('bible-talk', length));
-  });
-
-  Scenario('A 4500-character prayer pasted into Ask the tutor is kept and not sent', ({ Given, When, Then, And }) => {
-    Given(opened, open);
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    And('he pastes a prayer of {number} characters into the Ask the tutor box and taps Send', pasteIntoAsk);
-    Then('the Ask the tutor box holds all {number} characters', askHolds);
-    And('Ask the tutor says {string} and that the question is too long', async (_, count: string) => {
-      const note = await within(composerIn(viewEl())).findByRole('alert');
-      expect(note).toHaveTextContent(count);
-      expect(note).toHaveTextContent(/too long/i);
-    });
-    And('the mill received no grist', nothingSent);
-  });
 });

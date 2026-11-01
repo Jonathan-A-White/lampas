@@ -331,7 +331,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('Ask the tutor opens the Talk sheet with the term in focus', ({ Given, And, When, Then }) => {
     Given(GIVEN_GOAL, opensWithGoal);
     And(GIVEN_OPEN, opensTheIdea);
-    When('he opens the tutor with a two-finger tap on the idea sheet', async () => {
+    When('he opens the tutor with the floating ? on the idea sheet', async () => {
       await openTutor();
     });
     Then('the idea, Grammar and word sheets are gone and the sheet is titled {string}', async (_, title: string) => {
@@ -356,7 +356,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     };
     Given(GIVEN_GOAL, opensWithGoal);
     When('he opens the idea sheet of {string} from the Goal screen', (_, id: string) => opensIdeaFromGoal(id));
-    And('he opens the tutor with a two-finger tap on the idea sheet', async () => {
+    And('he opens the tutor with the floating ? on the idea sheet', async () => {
       await openTutor();
     });
     Then('the Talk sheet is titled {string} and the idea sheet is still under it', async (_, title: string) => {

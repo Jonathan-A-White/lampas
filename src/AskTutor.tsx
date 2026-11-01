@@ -1,34 +1,26 @@
-// src/AskTutor.tsx — the round Ask the tutor control of every full screen (mw-5r3p30.91, docs/ask-tutor.md), and the Talk sheet it opens on the
-// screens that have no chapter of their own. The button is the same everywhere: bottom right, above the phone's bar, 56 px, hidden while a
-// sheet is open. The sheet is the Talk sheet over a TalkScope with a `screen` (name and facts, src/tutor/screen.ts), kept under 'screen.<name>';
-// it opens with the questions fitted to the screen. The Reader draws the same button but opens its own chapter talk (src/Reader.tsx).
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+// src/AskTutor.tsx — the tutor's door and the Talk sheet it opens on the screens that have no chapter of their own (mw-5r3p30.91, docs/ask-tutor.md). The one door is the floating ? (FloatingTutor):
+// a round button at the Hand side's edge, over every screen and sheet that registered something to ask about (src/tutor/door.ts), on a phone with a licence. The round button of each screen, the Reader's
+// Talk bar and every sheet's own Ask the tutor are gone (mw-5r3p30.882). The sheet is the Talk sheet over a TalkScope with a `screen` (name and facts, src/tutor/screen.ts), kept under 'screen.<name>';
+// it opens with the questions fitted to the screen. The Reader opens its own chapter talk (src/Reader.tsx).
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { listTurns } from './data/repositories';
 import { NO_CHAPTER } from './data/chapter';
 import { useAiAllowed } from './gate/licenceContext';
 import { TalkSheet } from './Talk';
 import { stopReading } from './speech/readAloud';
-import { useBarShown } from './speech/barShown';
 import { speakTutor } from './speech/tutorVoice';
 import { answerRuns } from './speech/answerRuns';
 import { scopeRef, type TalkScope } from './services/talk';
 import { fitScreen, SCREEN_NAMES, suggestionsFor, type ScreenContext } from './tutor/screen';
 import { askRequestNow, useAskRequest } from './tutor/askNow';
 import { useScreenContext } from './tutor/screenContext';
-import { libraryOf, useAddress, type Route } from './nav/route';
-import { useSheetOpen } from './ui/sheetBack';
+import { type Route } from './nav/route';
 import { useTalk } from './useTalk';
 import { isHolding } from './talk/holding';
-import { openDoorTarget, setDoorMode, useDoorMode, useDoorTarget, useHasDoorTarget, useTalkOpen, useTwoFingerDoor } from './tutor/door';
+import { openDoorTarget, useDoorTarget, useHasDoorTarget, useTalkOpen } from './tutor/door';
 import { useHand } from './settings/hand';
 
-/** The button's name for a screen reader and the tests; it starts with the words on the control. */
-export const ASK_TUTOR_LABEL = 'Ask the tutor about this screen';
-
-/** How far the speaking bar (voice-kit/speech) raises the button while something is read aloud: a button's height, and the bar's padding and border. */
-const SPEAKING_BAR_LIFT = 'var(--lp-tap) + 1.25rem';
-
-/** The speech bubble with a ? that is the tutor's mark on both of its buttons. */
+/** The speech bubble with a ? that is the tutor's mark on the floating button. */
 function TutorIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -37,80 +29,6 @@ function TutorIcon() {
       <path d="M12 16.5h.01" />
     </svg>
   );
-}
-
-/** The round button, the older door; it gives way to the floating ? (FloatingTutor) when that is the Tutor door. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar); it also clears the
- * speaking bar while one is up. `away` (the Reader's Immersive reader, src/immersive.ts) slides it out of view: true or false makes the button slide,
- * and while it is true it is not in the tab order or the accessibility tree; undefined (every other screen) is the button as ever. `inDialog` is the button a
- * full-screen dialog draws itself (DialogAskTutor): the dialog's own sheet does not hide it. */
-export function AskTutorButton({ onClick, lift = '0px', away, inDialog }: { onClick: () => void; lift?: string; away?: boolean; inDialog?: boolean }) {
-  // a full-screen dialog that draws its own button (the results of a drill) is itself a sheet that is open: it does not hide the button it carries
-  const sheetOpen = useSheetOpen();
-  const hidden = sheetOpen && !inDialog;
-  const speaking = useBarShown();
-  const allowed = useAiAllowed();
-  // one door, drawn once (mw-5r3p30.935): where the door is the floating ? (FloatingTutor, over every screen and sheet) this older round button is not drawn beside it
-  const floatingDoor = useDoorMode() === 'floating';
-  if (hidden || !allowed || floatingDoor) return null;
-  return (
-    <button
-      type="button"
-      data-ask-tutor
-      data-slides={away === undefined ? undefined : ''}
-      data-away={away ? '' : undefined}
-      aria-hidden={away ? true : undefined}
-      tabIndex={away ? -1 : undefined}
-      aria-label={ASK_TUTOR_LABEL}
-      onClick={onClick}
-      style={{ bottom: `calc(var(--lp-bar-inset) + var(--spacing) * 3 + ${lift}${speaking ? ` + ${SPEAKING_BAR_LIFT}` : ''})` }}
-      className="fixed right-3 z-4 flex size-14 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg active:opacity-80"
-    >
-      <TutorIcon />
-    </button>
-  );
-}
-
-/** How far a screen's pinned bottom bar raises the button: Import's Add bar (a summary line over a 48 px button, padded) and the diagram lesson's Back and Next (a 48 px row, 8 px above it and a 1 px border). */
-const LIFT: Partial<Record<Route, string>> = { import: 'var(--spacing) * 20 + 3rem', 'diagram-lesson': 'var(--spacing) * 14 + 1px' };
-
-/** Import your library (#/library?import, src/library/ImportLibrary.tsx) pins one 48 px button at its foot, padded: the button rises above it. */
-const IMPORT_LIBRARY_LIFT = 'var(--spacing) * 18';
-
-/** How far the screen's pinned bottom bar raises the button: by route, and for the Library by its address (the import page has a bar, the rest of the Library none). */
-const liftFor = (route: Route, address: string): string | undefined => (route === 'library' && libraryOf(address).import ? IMPORT_LIBRARY_LIFT : LIFT[route]);
-
-/** The Reader's Talk bar: its border, 96 px of bar (56 in a short window) and 8 px above and below (src/Talk.tsx TalkBar); src/index.css --lp-talk-lift. */
-export const TALK_BAR_LIFT = 'var(--lp-talk-lift)';
-
-/** The room the Reader leaves under its reading box, above the Talk bar, for the round button (mw-5r3p30.115): its 56 px, the 12 px gap
- * below it and 4 px of air. The box ends where the button begins, so no line of text is ever behind it. In a short window (a phone held sideways) the
- * room is 0 and the button has a gutter beside the text instead (ASK_BUTTON_GUTTER; mw-5r3p30.194 had cut the room to 42 px, src/index.css --lp-ask-room). */
-export const ASK_BUTTON_ROOM = 'var(--lp-ask-room)';
-
-/** The strip the Reader leaves at the right of its reading box for the round button in a short window (a phone held sideways, mw-5r3p30.195): the
- * button sits beside the text, not in a row of its own under it, so the box gets the 42 px back and no line is ever behind the button. 0 upright. */
-export const ASK_BUTTON_GUTTER = 'var(--lp-ask-gutter)';
-
-/** The room every screen but the Reader keeps beside or under its scroll box while it shows the round button, so no line, answer or control is ever behind it, at
- * any scroll (mw-5r3p30.279: the Reader's rule of mw-5r3p30.115 for the rest). Upright the box ends above the button: its 56 px, 12 px gap and 4 px of air, and the
- * phone's bar under it, unless a pinned bar or the speaking bar sits there already (the button is lifted above it and the bar carries the inset). In a short window
- * (sideways) the box gives the button a gutter at its right instead, as the Reader does. The button's owner writes them on the root and src/index.css `.screen`
- * reads them: --lp-ask-clear (upright, the bottom margin) with --lp-ask-end (the end padding that margin makes unneeded), --lp-ask-side (sideways, the right margin) with --lp-ask-end-short (the end padding there: the phone's bar only). */
-const ROOM = 'calc(var(--spacing) * 18)';
-
-/** Reserves the room for the round button for as long as the owner shows it (sheet open or not, so the screen does not jump). */
-function useAskRoom(reserve: boolean, over: boolean) {
-  useLayoutEffect(() => {
-    if (!reserve) return undefined;
-    const root = document.documentElement.style;
-    root.setProperty('--lp-ask-clear', over ? ROOM : `calc(var(--lp-bar-inset) + ${ROOM})`);
-    root.setProperty('--lp-ask-end', '0px');
-    root.setProperty('--lp-ask-side', ROOM);
-    root.setProperty('--lp-ask-end-short', 'var(--lp-end-inset)');
-    return () => {
-      for (const name of ['--lp-ask-clear', '--lp-ask-end', '--lp-ask-side', '--lp-ask-end-short']) root.removeProperty(name);
-    };
-  }, [reserve, over]);
 }
 
 /** The context the sheet sends: the facts the screen reported, if they are the screen's own, else its name alone. */
@@ -136,14 +54,11 @@ function useScreenTalk(scope: TalkScope | null, open: boolean, onClosed: () => v
   return { ref, state: ref ? states[ref] : undefined, say, resume, close: onClosed };
 }
 
-/** The button and the sheet for the screens but the Reader. */
+/** The sheet for the screens but the Reader, and what the floating ? asks on them. */
 export function AskTutor({ route }: { route: Route }) {
   // the route the sheet was opened on: it is closed once the screen changes
   const [openOn, setOpenOn] = useState<Route | null>(null);
   const ai = useAiAllowed();
-  const speaking = useBarShown();
-  const lift = liftFor(route, useAddress());
-  useAskRoom(ai && route !== 'home' && route !== 'share' && route !== 'unlock', speaking || lift !== undefined);
   const open = openOn === route;
   const reported = useScreenContext();
   const name = route === 'home' || route === 'share' || route === 'unlock' ? undefined : SCREEN_NAMES[route];
@@ -176,7 +91,6 @@ export function AskTutor({ route }: { route: Route }) {
   if (!name || !scope || !talk.ref || !ai) return null;
   return (
     <>
-      <AskTutorButton lift={lift} onClick={openSheet} />
       {open ? (
         <TalkSheet
           scope={scope}
@@ -195,9 +109,9 @@ export function AskTutor({ route }: { route: Route }) {
 }
 
 /**
- * The button and the sheet for a full-screen dialog that is no route (the results of a drill, mw-5r3p30.649): the dialog draws this inside itself, so the button and the sheet stand
- * over it (a sheet drawn outside would be under the dialog). `screen` is what the dialog reports, `kept` the key the talk is kept under, one for each drill, so a drill's talk
- * is never the last drill's. Drawn only where a licence allows the tutor; the button sits at the right end of the dialog's foot (FootBar `beside`), above the phone's bar.
+ * The sheet for a full-screen dialog that is no route (the results of a drill, mw-5r3p30.649): the dialog draws this inside itself, so the sheet stands
+ * over it (a sheet drawn outside would be under the dialog), and the floating ? asks about the dialog. `screen` is what the dialog reports, `kept` the key the talk is kept under, one for each drill, so a drill's talk
+ * is never the last drill's. Drawn only where a licence allows the tutor.
  */
 export function DialogAskTutor({ screen, kept, suggestions }: { screen: ScreenContext; kept: string; suggestions: string[] }) {
   const [open, setOpen] = useState(false);
@@ -214,7 +128,6 @@ export function DialogAskTutor({ screen, kept, suggestions }: { screen: ScreenCo
   if (!ai || !talk.ref) return null;
   return (
     <>
-      {open ? null : <AskTutorButton inDialog onClick={openSheet} />}
       {open ? (
         <TalkSheet
           scope={scope}
@@ -262,17 +175,16 @@ export function LessonTalk({ screen, kept, suggestions, open, onClose }: { scree
 export const FLOATING_TUTOR_LABEL = 'Ask the tutor about what is on screen';
 
 /**
- * The Tutor door 'Floating ?' (mw-5r3p30.880): a round tutor button at the Hand side's edge, drawn over every screen that has something to ask about, the Verse view and open sheets too (z-50: over the
+ * The tutor's one door (mw-5r3p30.880, mw-5r3p30.882): a round tutor button at the Hand side's edge, drawn over every screen that has something to ask about, the Verse view and open sheets too (z-50: over the
  * sheets at z-35 and the full-screen dialogs at z-40, under the shell's bars). A tap opens the tutor about the newest target a screen or sheet registered (src/tutor/door.ts). Not drawn while a Talk sheet
- * is open (it has its own composer at the foot), where nothing is registered, or on any door but this one: with no licence the door mode is none and nothing shows. It sits at 17 rem above the phone's bar,
- * a thumb's reach up the edge. The older round button (bottom right, above the Talk bar) stays until part C2 of mw-5r3p30.843, but is not drawn beside this one (AskTutorButton): one door, drawn once.
+ * is open (it has its own composer at the foot), where nothing is registered, or on a phone with no licence: then no tutor door exists. It sits at 17 rem above the phone's bar, a thumb's reach up the edge.
  */
 export function FloatingTutor() {
-  const mode = useDoorMode();
+  const licensed = useAiAllowed();
   const hand = useHand();
   const anything = useHasDoorTarget();
   const talking = useTalkOpen();
-  if (mode !== 'floating' || !hand || !anything || talking) return null;
+  if (!licensed || !hand || !anything || talking) return null;
   return (
     <button
       type="button"
@@ -283,21 +195,10 @@ export function FloatingTutor() {
         stopReading();
         openDoorTarget();
       }}
-      style={{ bottom: 'calc(var(--lp-bar-inset) + 17rem)' }}
+      style={{ bottom: 'calc(var(--lp-bar-inset) + min(17rem, 35dvh))' }}
       className={`fixed ${hand === 'left' ? 'left-3' : 'right-3'} z-50 flex size-14 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg active:opacity-80`}
     >
       <TutorIcon />
     </button>
   );
-}
-
-/** The tutor door, drawn once by the app (src/App.tsx): keeps the door mode current for code outside React, hears the two-finger tap where that is the door, and draws the floating ? where that is. */
-export function TutorDoor() {
-  const mode = useDoorMode();
-  useLayoutEffect(() => {
-    setDoorMode(mode);
-    return () => setDoorMode('none');
-  }, [mode]);
-  useTwoFingerDoor();
-  return <FloatingTutor />;
 }

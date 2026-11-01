@@ -34,14 +34,14 @@ Feature: The Hebrew word sheet
     When he taps the Hebrew word "נִֽינְוֵ֛ה" of verse 2
     Then it shows the parsing "Noun - proper - feminine singular"
     And the terms of the parsing are links: "Noun", "proper", "feminine" and "singular"
-    And the Help with this word row has Grammar, Syllables and sounds and Ask the tutor
+    And the Help with this word row has Grammar and Syllables and sounds
 
   @uc-paradigms @hebrew
   Scenario: The sheet of a verb with a table has the Paradigm row and Help with this word under it
     Given Lampas is opened on Jonah 1 with the saved view "greek"
     When he taps the Hebrew word "וַֽיְהִי֙" of verse 1
     Then the Hebrew word sheet has a Paradigm row
-    And the Help with this word row has Grammar, Syllables and sounds and Ask the tutor
+    And the Help with this word row has Grammar and Syllables and sounds
 
   @uc-grammar-ladder @hebrew
   Scenario: A tap on Noun in the parsing opens the Grammar sheet of Noun, with its examples in Hebrew

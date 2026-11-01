@@ -1,4 +1,4 @@
-// A lesson has an Ask the tutor (mw-5r3p30.818): the idea sheet (Enclitics: the worked example μου in 1 John 2:1) opened from the Goal screen carries it among its buttons, a tap opens the tutor
+// A lesson's talk (mw-5r3p30.818; the sheet's own Ask the tutor went in mw-5r3p30.882): the floating ? over the idea sheet (Enclitics: the worked example μου in 1 John 2:1) opens the tutor
 // over the sheet with the lesson as its subject, a question typed there reaches the mill with the lesson's id, title, worked example and steps, and Back brings him to the sheet as he left it.
 // Ends with a shot of the sheet's foot and of the tutor over it.
 import { expect, test, type Page } from '@playwright/test';
@@ -36,7 +36,7 @@ async function put(page: Page, store: 'settings', rows: object[]) {
   );
 }
 
-test('the idea sheet has Ask the tutor; the question reaches the mill with the lesson, and Back returns to the sheet where he was', async ({ page }) => {
+test('the floating ? over the idea sheet opens the talk about the lesson; the question reaches the mill with the lesson, and Back returns to the sheet where he was', async ({ page }) => {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
   await routePostern(page, fake);
@@ -56,12 +56,9 @@ test('the idea sheet has Ask the tutor; the question reaches the mill with the l
   const text = idea.locator('div.min-h-0.overflow-y-auto').first();
   await idea.getByTestId('idea-worked').scrollIntoViewIfNeeded();
   const scrolled = await text.evaluate((el) => el.scrollTop);
-  const ask = idea.getByRole('button', { name: 'Ask the tutor', exact: true });
-  await expect(ask).toBeVisible();
-  const box = (await ask.boundingBox())!;
-  expect(box.height).toBeGreaterThanOrEqual(47.5);
-  expect(box.x + box.width).toBeLessThanOrEqual(390);
-  expect(box.y + box.height).toBeLessThanOrEqual(844);
+  // the sheet has no Ask the tutor of its own (mw-5r3p30.882): the floating ? over it is the door
+  await expect(idea.getByRole('button', { name: 'Ask the tutor', exact: true })).toHaveCount(0);
+  await expect(page.locator('[data-floating-tutor]')).toBeVisible();
   await shot(page, 'idea-ask-tutor');
 
   await openTutor(page, { sheet: 'Ask the tutor: Lesson' });

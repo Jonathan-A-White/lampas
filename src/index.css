@@ -159,15 +159,6 @@
   --lp-bar-inset: max(env(safe-area-inset-bottom), 48px);
   --lp-end-inset: max(env(safe-area-inset-bottom), 48px);
 
-  /* How far the Reader's Talk bar raises the round Ask button: its border, the bar's 96 px and 8 px above and below (mw-5r3p30.182: in a short window the bar
-   * is a 56 px row, see below). */
-  --lp-talk-lift: calc(var(--spacing) * 28 + 1px);
-
-  /* The room the Reader leaves under its reading box for the round Ask button (src/AskTutor.tsx ASK_BUTTON_ROOM). */
-  --lp-ask-room: calc(var(--spacing) * 18);
-
-  /* Upright the button has its room under the box; sideways it has this gutter at the box's right instead (src/AskTutor.tsx ASK_BUTTON_GUTTER). */
-  --lp-ask-gutter: 0px;
 }
 
 /* The Reader's reading box draws no scroll indicator: a chapter is long, so the phone's overlay thumb was a small grey square that sat on the line under the
@@ -196,14 +187,6 @@
 }
 
 @media (max-height: 500px) {
-  :root {
-    --lp-talk-lift: calc(var(--spacing) * 18 + 1px);
-    /* Sideways the round button sits in a gutter beside the text, not in a row under it: header, chips row, the box, a 72 px room and the 121 px Talk bar
-     * left a 136 px box in a 390 px window (mw-5r3p30.194, mw-5r3p30.195). Its 56 px, the 12 px at the screen's edge and 4 px of air. */
-    --lp-ask-room: 0px;
-    --lp-ask-gutter: calc(var(--spacing) * 18);
-  }
-
   /* Sideways the chips row joins the header's row (src/Reader.tsx .reader-top): 40 px more for the text. The row's border is the wrapper's, so one
    * line runs under both; a tip opened from the Tip chip takes a full row of its own under them. Both are sized by their content, so the chips row
    * joins the header's line only when the header's controls and the chips fit side by side, and drops to a line of its own, the full width and
@@ -250,20 +233,6 @@
   }
   .reader-top > :not(header):not([data-testid="reader-chips"]) {
     order: 3;
-  }
-}
-
-/* In a window under 300 px tall the round Ask button, raised over the Talk bar, reaches up to the chips row: the row stops short of the gutter the button
- * keeps beside the text (mw-5r3p30.768). */
-@media (max-height: 299px) {
-  .reader-top > [data-testid="reader-chips"] {
-    margin-inline-end: var(--lp-ask-gutter);
-  }
-
-  /* The Reader's box above a Talk bar ends 8 px short of the bar, not 128 px: the bar already carries the phone's bar under it, and the box's end padding
-   * (a scroll box's padding cannot shrink) was 136 px of the 260 left under the header, so the bar was pushed past the window's foot (mw-5r3p30.773). */
-  [data-reader]:has(~ * [data-talk-bar]) {
-    padding-bottom: 0.5rem;
   }
 }
 
@@ -441,33 +410,14 @@ html {
 .screen {
   overflow-y: auto;
   overscroll-behavior: contain;
-  /* A screen that shows the round Ask the tutor button ends its box above the button, or leaves it a gutter in a short window (below), so nothing is ever
-   * behind it (src/AskTutor.tsx useAskRoom sets --lp-ask-clear, --lp-ask-end and --lp-ask-side; mw-5r3p30.279). Without them (the Reader keeps its own room)
-   * the last row clears the button (56 px and its gap) as well as the phone's bar. */
-  margin-bottom: var(--lp-ask-clear, 0px);
-  padding-bottom: calc(1rem + var(--lp-ask-end, calc(var(--lp-end-inset) + var(--spacing) * 16)));
+  /* The last row clears the phone's bar (the round Ask button that once had its room here is gone, mw-5r3p30.882: the floating ? floats over the screen). */
+  padding-bottom: calc(1rem + var(--lp-end-inset));
 }
 
-/* A question screen whose Next bar leaves the round Ask button its place at the bar's right end (src/ui/NextBar.tsx, mw-5r3p30.377) has no room for the button
- * under it: the box ends at the phone's bar, and the button, which stands 12 px above that, is in the bar. Upright only: sideways the box already has a gutter. */
 /* A sticky bar stops short of the box's end by the box's own padding, so a box with a Next bar has none: the bar ends where the box does and nothing shows
  * under it (what follows the bar keeps its own room). Doubled so it also wins over `[data-verse-view] .screen`. */
 .screen.screen:has([data-next-bar]) {
   padding-bottom: 0;
-}
-@media (min-height: 501px) {
-  .screen:has([data-ask-beside]) {
-    margin-bottom: var(--lp-bar-inset);
-  }
-}
-
-/* Sideways the round button sits in a gutter beside the text, not in a row under it (as on the Reader, mw-5r3p30.195). */
-@media (max-height: 500px) {
-  .screen {
-    margin-bottom: 0;
-    margin-right: var(--lp-ask-side, 0px);
-    padding-bottom: calc(1rem + var(--lp-ask-end-short, calc(var(--lp-end-inset) + var(--spacing) * 16)));
-  }
 }
 
 button,
@@ -663,14 +613,6 @@ textarea,
   display: block;
   width: calc(100% + 1rem);
 }
-[data-ask-tutor][data-slides] {
-  transition: transform 200ms ease, visibility 0s;
-}
-[data-ask-tutor][data-away] {
-  transform: translateY(calc(100% + 14rem));
-  visibility: hidden;
-  transition: transform 200ms ease, visibility 0s 200ms;
-}
 /* The Immersive reader sets the text like a book (mw-5r3p30.297): tight lines wherever no line sits under a word (a verse with a [data-hint]
  * keeps its roomy spacing), the English in the Font he chose (the Greek face is already a serif), justified and hyphenated in the text's own language
  * (the lang on the verse or paragraph), small dim verse numbers, and pure black behind it in the dark theme. Type size is untouched. The verse
@@ -765,18 +707,11 @@ textarea,
   }
 }
 
-/* The Talk band at the foot is the page's black too while the bars are shown (mw-5r3p30.595); --lp-reader-bg is set only in the two scopes above. */
-[data-talk-bar] {
-  background-color: var(--lp-reader-bg, var(--lp-surface));
-}
-
 @media (prefers-reduced-motion: reduce) {
   .away-box,
   .away-box[data-away],
   .place-box,
-  .place-box[data-closed],
-  [data-ask-tutor][data-slides],
-  [data-ask-tutor][data-away] {
+  .place-box[data-closed] {
     transition: none !important;
   }
 }
@@ -986,7 +921,7 @@ textarea,
   padding-bottom: var(--lp-bar-inset);
 }
 
-/* voice-kit's composer (Ask the tutor, src/Ask.tsx; voice-kit/composer) takes its colours from the palette in force, keeps the gold bar and the phone's
+/* voice-kit's composer (the Talk sheet's foot, src/Talk.tsx; voice-kit/composer) takes its colours from the palette in force, keeps the gold bar and the phone's
  * own size, like the header; the Verse view's foot already has the border and the bar inset, so the composer draws neither of its own. */
 .bk-composer {
   --bk-composer-surface: var(--lp-surface);
@@ -1061,40 +996,11 @@ textarea,
     max-height: 2lh;
   }
 }
-[data-verse-bar] .bk-composer {
-  border-top: 0;
-  background: transparent;
-}
-[data-verse-bar] .bk-composer__speak {
-  padding: 0;
-  gap: 0.25rem;
-}
-/* The Verse view's composer draws no hint line at rest (mw-5r3p30.896: the bar says Hold to ask, and the line's 44 px, with 'unsent.' alone on a second line at 360 px, went to the
- * text instead; the bar's own words say what a slide off does). His live words, and a notice, still have their line while he holds or after a failed hold. */
-[data-verse-bar] .bk-composer__status:has(.bk-composer__hint:not(.bk-composer__error)) {
-  display: none;
-}
-/* The Verse view's foot is its own bar and the round Ask button is not drawn over it, so its scrolling box keeps no room at the end for either: in a short
- * window (landscape) that padding alone would push the composer below the screen's edge (mw-5r3p30.170). Type a question is a 44 px thumb target. */
+/* The Verse view's foot is its own bar, so its scrolling box keeps no room at the end under it. */
 [data-verse-view] .screen {
   padding-bottom: 0.5rem;
 }
-/* In a window under 300 px tall with the Ask open (a third of a phone's height, split-screen) the header, the speaking bar and the composer's 169 px left the text no room
- * at all and pushed the composer past the window's foot (mw-5r3p30.773). The header and the text scroll together in one box above the pinned composer and the speaking
- * bar, which never give way (src/ui/reveal.ts scrollBoxOf finds that box). */
-@media (max-height: 299px) {
-  [data-verse-view]:has([data-ask]) > [data-verse-scroll] {
-    display: block;
-    flex: 1 1 0;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-  [data-verse-view]:has([data-ask]) > [data-verse-scroll] > .screen {
-    overflow: visible;
-  }
-}
-/* Unlock has no round Ask button either, so it keeps no 140 px floor under its last row, and it keeps room above its icon (mw-5r3p30.183): the content
+/* Unlock keeps room above its icon (mw-5r3p30.183): the content
  * centres in what is left and scrolls from its top when it does not fit. */
 [data-gate] .screen {
   padding-top: 1.5rem;

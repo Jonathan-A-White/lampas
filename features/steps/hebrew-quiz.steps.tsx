@@ -148,7 +148,7 @@ describeFeature(
     Scenario("Jonah 1:1's Practise door offers the Quiz and the quiz talk carries the Hebrew", ({ Given, When, Then, And }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a quiz behind a fake Postern', () => openQuiz('#/?b=jon&c=1', 'Curious'));
       When('he taps the number of verse {int}', tapVerse);
-      Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => offers(a, b, c, d, e)());
+      Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => offers(a, b, c, d)());
       When('he chooses {string}, opens {string} and taps {string}', quizOn);
       Then('the sheet is titled {string}', titled);
       And('the mill received one grist for the lampas app, kind bible-talk, in quiz mode about {string}', inQuizMode);
@@ -167,7 +167,7 @@ describeFeature(
     Scenario("At Hebrew 0 an Old Testament verse's Practise door has no Quiz", ({ Given, When, Then }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Just English and a quiz behind a fake Postern', () => openQuiz('#/?b=jon&c=1', 'Just English'));
       When('he taps the number of verse {int}', tapVerse);
-      Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => offers(a, b, c, d, e)());
+      Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => offers(a, b, c, d)());
       When('he chooses {string}', async (_, name: string) => {
         await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
       });
@@ -180,7 +180,7 @@ describeFeature(
     Scenario("A Greek verse's quiz is as it was", ({ Given, When, Then, And }) => {
       Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern', () => openQuiz('', 'Curious'));
       When('he taps the number of verse {int}', tapVerse);
-      Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => offers(a, b, c, d, e)());
+      Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => offers(a, b, c, d)());
       When('he chooses {string}, opens {string} and taps {string}', quizOn);
       Then('the mill received one grist for the lampas app, kind bible-talk, in quiz mode about {string}', inQuizMode);
       And('that grist carries the Greek of verse 11 and the English, and no Hebrew', () => {

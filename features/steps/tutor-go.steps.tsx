@@ -178,7 +178,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the sheet says {string} and nothing was opened', saysNothingOpened);
     And('the Reader is open on {string}', onThe);
     When('he taps {string} in the sheet', async (_, name: string) => {
-      await user.click(within(sheet()).getByRole('button', { name }));
+      await user.click(await within(sheet()).findByRole('button', { name }));
     });
     Then('the Reader is open on {string}', onThe);
     And('the Talk sheet is closed', sheetGone);
@@ -203,7 +203,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('he opens Talk again', openTalk);
     And('he taps {string} in the sheet', async (_, name: string) => {
-      await user.click(within(sheet()).getByRole('button', { name }));
+      await user.click(await within(sheet()).findByRole('button', { name }));
     });
     Then('the Reader is open on {string}', onThe);
     When("he taps the phone's Back", async () => {

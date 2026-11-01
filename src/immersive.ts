@@ -28,7 +28,6 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { getImmersive } from './data/repositories';
 import { isRestoringScroll } from './nav/scrollMemory';
-import { twoFingerOpensTutor } from './tutor/door';
 import type { ReadingMode } from './settings/definitions/readingMode';
 import { holdAwake, releaseAwake } from './speech/wakeLock';
 
@@ -185,9 +184,9 @@ export function useImmersive(
     };
     // two fingers have been down since the last time all were up
     let multi = false;
-    // where the Tutor door is the two-finger tap (src/tutor/door.ts) the same tap opens the tutor, so here it only brings the bars back: leaving immersive reading, never putting the bars away
+    // a two-finger tap goes in and out of immersive reading; it never opens the tutor (the floating ? is the one door, src/tutor/door.ts)
     const toggle = () => {
-      set(twoFingerOpensTutor() ? false : !awayRef.current);
+      set(!awayRef.current);
     };
     const onScroll = () => {
       const top = el.scrollTop;

@@ -10,7 +10,7 @@ import { openUnlocked } from './unlocked';
 const VIEWPORT = { width: 390, height: 844 };
 test.use({ viewport: VIEWPORT });
 
-const CONTROL = 'Ask the tutor about this screen';
+const CONTROL = 'Ask the tutor about what is on screen';
 
 type Rect = { x: number; y: number; width: number; height: number };
 
@@ -77,30 +77,6 @@ const rectOf = async (target: Locator): Promise<Rect> => {
   return box;
 };
 
-const overlaps = (a: Rect, b: Rect): boolean => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-
-/** Scrolls the screen's own scroll box to its end. */
-async function scrollToEnd(page: Page) {
-  await page.evaluate(() => {
-    for (const box of document.querySelectorAll<HTMLElement>('.screen')) box.scrollTop = box.scrollHeight;
-  });
-}
-
-/** The visible buttons, links and fields of the page other than the control, as boxes. */
-async function controlsOnPage(page: Page): Promise<{ name: string; rect: Rect }[]> {
-  return page.evaluate((label) => {
-    const out: { name: string; rect: { x: number; y: number; width: number; height: number } }[] = [];
-    for (const el of document.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea, [role="button"]')) {
-      if (el.getAttribute('aria-label') === label) continue;
-      const r = el.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0) continue;
-      if (getComputedStyle(el).visibility === 'hidden') continue;
-      out.push({ name: el.getAttribute('aria-label') ?? (el.textContent ?? '').trim().slice(0, 30), rect: { x: r.x, y: r.y, width: r.width, height: r.height } });
-    }
-    return out;
-  }, CONTROL);
-}
-
 const SCREENS: { name: string; path: string; ready: (page: Page) => Locator }[] = [
   { name: 'Goal', path: '/#/goal', ready: (p) => p.getByTestId('goal-title') },
   { name: 'Words', path: '/#/words', ready: (p) => p.getByRole('heading', { name: 'Words', exact: true, level: 1 }) },
@@ -135,26 +111,20 @@ test('the control is in the same place on every full screen, thumb-sized, inside
     expect(box.y + box.height, name).toBeLessThanOrEqual(VIEWPORT.height - 48 + 0.5);
     rights.add(Math.round(box.x + box.width));
     bottoms.set(name, Math.round(box.y + box.height));
-    await scrollToEnd(page);
-    for (const other of await controlsOnPage(page)) expect(overlaps(box, other.rect), `${name}: the control is over "${other.name}"`).toBe(false);
   }
-  // one right edge everywhere; one bottom edge everywhere but where the screen pins a bar of its own
+  // one right edge and one bottom edge everywhere: the floating ? floats over a screen's list as any such button does (mw-5r3p30.882)
   expect([...rights]).toHaveLength(1);
-  const plain = [...bottoms.entries()].filter(([name]) => name !== 'Import').map(([, bottom]) => bottom);
-  expect(new Set(plain).size).toBe(1);
-  expect(bottoms.get('Import')).toBeLessThan(plain[0]);
+  expect(new Set(bottoms.values()).size).toBe(1);
 });
 
-test('on the Reader the control sits above the Talk bar, in the same corner', async ({ page }) => {
+test('on the Reader the control sits in the same corner as on Goal, and opens the chapter talk', async ({ page }) => {
   await openWithGoal(page);
   await page.goto('/#/?b=rom&c=8');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   const control = page.getByRole('button', { name: CONTROL });
   await expect(control).toBeVisible();
   const box = await rectOf(control);
-  const bar = await rectOf(page.getByRole('button', { name: 'Talk', exact: true }));
   expect(box.width).toBeGreaterThanOrEqual(44);
-  expect(box.y + box.height).toBeLessThanOrEqual(bar.y);
   expect(box.x + box.width).toBeLessThanOrEqual(VIEWPORT.width);
   const goal = await (async () => {
     await page.goto('/#/goal');
@@ -164,12 +134,6 @@ test('on the Reader the control sits above the Talk bar, in the same corner', as
   expect(Math.round(box.x + box.width)).toBe(Math.round(goal.x + goal.width));
   await page.goto('/#/?b=rom&c=8');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await scrollToEnd(page);
-  await page.evaluate(() => {
-    const reader = document.querySelector<HTMLElement>('[data-reader]');
-    if (reader) reader.scrollTop = reader.scrollHeight;
-  });
-  for (const other of await controlsOnPage(page)) expect(overlaps(box, other.rect), `the control is over "${other.name}"`).toBe(false);
   await shot(page, 'ask-tutor-reader');
 
   // it opens the chapter talk, with questions fitted to it
@@ -191,11 +155,6 @@ test('from Goal: the control, the sheet that fits the phone with its questions, 
   const control = page.getByRole('button', { name: CONTROL });
   await expect(control).toBeVisible();
   await shot(page, 'ask-tutor-goal');
-
-  // the control is not over Read it, once the screen is scrolled to its end
-  await scrollToEnd(page);
-  const read = await rectOf(page.getByRole('button', { name: 'Read it', exact: true }));
-  expect(overlaps(await rectOf(control), read)).toBe(false);
 
   await control.click();
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Goal' });

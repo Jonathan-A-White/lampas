@@ -262,7 +262,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
           />
         ) : null}
       </div>
-      <FootBar beside={result !== null}>
+      <FootBar>
         {result || walk === null ? (
           <button type="button" ref={focusOnMount} onClick={() => settled() && onClose()} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done

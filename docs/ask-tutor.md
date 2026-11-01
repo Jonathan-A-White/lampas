@@ -59,19 +59,16 @@ context going in. And his view could vary depending on context." PROVISIONAL: th
 
 ## The control
 
-One round button, `AskTutorButton` (`src/AskTutor.tsx`), on every full screen: the Reader, Goal, Words, Review, Quick test, Parsing drill,
-Paradigms, Placement, Settings, My study way, Import and About.
+One round button, the floating ? (`FloatingTutor`, `src/AskTutor.tsx`, mw-5r3p30.880 and .882: the tutor's ONE door, `src/tutor/door.ts`), drawn once by `App.tsx` on a licensed phone, over every screen
+and sheet that registers something to ask about: the Reader, Goal, Words, Review, Quick test, Parsing drill, Paradigms, Placement, Settings, My study way, Import and About.
 
-- 56 px, bottom right (`right-3`), above the phone's bar (`--lp-bar-inset`, 12 px of air). Its accessible name is `Ask the tutor about this
-  screen`. Playwright matches a name as a substring: a spec that means the Quick test's or the Verse view's own `Ask the tutor` button passes `exact: true`.
-- Where a screen pins a bar of its own the button rises above it (`lift`): the Reader above its Talk bar (`TALK_BAR_LIFT`), Import above its Add bar.
-  The right edge is the same everywhere.
-- `.screen` (src/index.css) ends 64 px lower than it did, so the last row of any screen scrolls clear of the button; a button floats over a
-  list in the middle of a scroll, as any such button does.
-- Hidden while a sheet is on screen (`useSheetOpen` in `src/ui/sheetBack.ts`: every sheet calls `useSheetBack`, which counts it) and, on the Reader,
-  while the Verse view is up; it comes back when the sheet goes. Words' Drop confirm is not a sheet: its backdrop covers the button. One tap opens the Talk sheet.
+- 56 px, at the Hand side's edge (Settings > Reading > Layout > Hand; right to start), 17 rem up, over the sheets. Its accessible name is `Ask the tutor about what is on screen`. Playwright matches a name as a
+  substring: a spec that means a screen's own `Ask the tutor` button (the Quick test's) passes `exact: true`.
+- The older round button of each screen, the Reader's Talk bar, the Verse view's Ask the tutor action and its composer (`Hold to ask`, `Type a question`, `src/Ask.tsx`) and the `Ask the tutor` button of
+  the word, lesson (idea), variant and New words sheets are gone (mw-5r3p30.882): one door. A two-finger tap opens no tutor; it goes in and out of immersive reading.
+- `.screen` (src/index.css) ends at the phone's bar (`--lp-end-inset`); the ? floats over a list as any such button does. It is not drawn while a Talk sheet is open. One tap opens the Talk sheet.
 
-The Reader draws the button itself and opens its own chapter talk (`Talk about Romans 8`, kept under 'rom.8', the Talk bar's sheet). Every other
+The Reader registers its chapter or its selected verse (`Talk about Romans 8`, kept under 'rom.8') with `useDoorTarget`; the word sheet its word, the lesson sheet its lesson, the brace sheet its unit. Every other
 screen gets `<AskTutor route>` from `App.tsx`, which opens the Talk sheet over a screen scope.
 
 ## What the tutor is told
@@ -99,7 +96,7 @@ is kept under, never sent): each paradigm table is `screen.paradigms.<id>` (mw-i
 | the rest | the name |
 
 A request also carries `resources` (mw-5r3p30.123): the study resources he has switched on, so the tutor links one only when it truly helps (docs/resources.md "The tutor's links"). It carries `works` (mw-5r3p30.675, mw-rfjjzd.10) when any commentary, grammar, Greek text, interlinear or book of his Logos shelf is on: a digest chosen by the place he is on (the pinned books, the commentaries that cover the chapter, grammars and Greek texts for a question about a form or a reading, a `more` count), at most 1,200 bytes, to the Verse view ask as well, so the tutor links a work only when it is listed (docs/resources.md "Works he holds in Logos"). `knows.ts` classifies it as `works`: sent by place to the Bible talk and the Verse view ask, a written reason for the verdict on a reading and the tips.
-A New Testament verse the tutor names in an answer ('Hebrews 7:2') is a link to that verse's Verse view, in the Talk sheet, which the Verse view's Ask opens too.
+A New Testament verse the tutor names in an answer ('Hebrews 7:2') is a link to that verse's Verse view, in the Talk sheet.
 A request in the Bible talk also carries `maps` (mw-zbjgn3r.4): the maps of the chapter of the passage it holds, and the answer's `links` take `{kind: 'map', map: <id>}`, drawn as the chip `Map: <title>` that opens that map in the app (docs/maps.md 'The tutor brings up maps').
 The answer's `links` (at most three, `MAX_LINKS`) take a third kind (mw-5r3p30.502): `{kind: 'setting', key}`, `key` one of the registry's setting keys (the schema's enum is made from the registry by `npm run grind:build`; the instructions' "Links to a setting" say when to use it and list the keys under "Changing the app's settings"). `TutorLinks.tsx` draws it as one chip, `Open <setting's name> in Settings`, which closes the sheet and opens `#/settings?setting=<key>` (docs/links.md); it needs no study resource, and a key the registry lacks draws no chip and no empty group (the phone still takes the answer: `isTalkAnswer` checks the shape only). It changes nothing: a change is still `settings_changes` or `setting_offer`.
 
@@ -157,9 +154,9 @@ Which tutor conversations keep history and get the summary (the sweep of mw-5r3p
 | Conversation | Grind | Keeps history | Gets the summary |
 | --- | --- | --- | --- |
 | Talk sheet (chapter, verse, passage), its quiz (Quiz me), a word's Help, a grammar term's, a paradigm table's, a Quick test question's Ask the tutor | bible-talk | yes, last 10 turns | yes |
-| The round Ask the tutor on a screen (`screen.<slug>`), a drill's results (`screen.drill-it.<ms>`), a shared talk (`talk.<ms>`), Ask for more | bible-talk | yes | yes |
+| The floating ? on a screen (`screen.<slug>`), a drill's results (`screen.drill-it.<ms>`), a shared talk (`talk.<ms>`), Ask for more | bible-talk | yes | yes |
 | The welcome interview | bible-talk (mode welcome) | yes (a few turns, never past the window) | yes in code, none kept in practice |
-| The Verse view's Ask the tutor (mw-5r3p30.842: the Talk sheet's tutor; the `answers` table keeps the answers of the old Ask box, no longer shown) | bible-talk | yes: the verse's or passage's talk | yes |
+| The Verse view's talk (the floating ? over the view, mw-5r3p30.882; the Ask box is gone; the `answers` table keeps the answers of the old Ask box, no longer shown) | bible-talk | yes: the verse's or passage's talk | yes |
 | Reading check, Reading drill | verse-read | no | no |
 | Tips, find-refs (a shared picture), audible-position, drill-items (more questions), feedback | tips, find-refs, audible-position, drill-items, feedback | no, one request each | no |
 
@@ -191,11 +188,11 @@ Which tutor conversations name a talk (the sweep of mw-pxji7y.3):
 | --- | --- | --- |
 | Talk sheet on a chapter, a verse or a passage; a word's, a grammar term's, a paradigm table's, a Quick test question's Ask the tutor | `rom.8`, `rom.8.28`, `rom.8.1-11` (`talkRef`) | yes: `<ref>@<first turn's when>` |
 | Quiz me | `<ref>:quiz` | yes, its own talk beside the talk about the same verses |
-| The round Ask the tutor on a screen | `screen.<slug>` (`screenRef`) | yes |
+| The floating ? on a screen | `screen.<slug>` (`screenRef`) | yes |
 | A drill's results | `screen.drill-it.<ms>`, one talk for each drill | yes |
 | A shared talk, Ask for more | `talk.<ms>` (free) | yes |
 | The welcome interview | `screen.welcome` | yes in code (the interview is a few turns) |
-| The Verse view's Ask the tutor (the Talk sheet's bible-talk, since mw-5r3p30.842; the verse-ask grind was retired in mw-5r3p30.850) | the talk's turns | yes |
+| The Verse view's talk (the floating ?; the Ask box is gone, mw-5r3p30.882; the verse-ask grind was retired in mw-5r3p30.850) | the talk's turns | yes |
 | FormHelper (Let the tutor do it) | none: its turns live in the component, not in Dexie, so there is no first-turn time | no (a name would be made per opening of the helper; a story of its own) |
 | Reading check, Reading drill, Tips, find-refs, audible-position, drill-items, feedback | none: one request each | no |
 
@@ -308,17 +305,16 @@ His words (Postern general, 2026-10-28): "I feel like send to the makers you sho
 - **The offer is the tutor's.** When he asks for what Lampas does not do, or cannot be told, the bible-talk answer carries `feedback_offer` (`grinds/bible-talk.instructions/270-asks-the-app-cannot-meet.md`, 'An ask Lampas cannot meet' above) and the turn shows **Send this to the makers** under the answer, a thumb-sized button. Nothing is sent until he taps it or says yes. The Verse view's Ask sends to the Talk sheet's tutor (mw-5r3p30.842), so its answer has the same offer.
 - **A yes does what the tap does.** A spoken or a typed 'yes please do' reaches the grind as `pending_offer`; its `offer_reply: confirm` makes `sendMakersOffer` send once ('Answering an offer by voice' below). Checks: `features/send-to-makers.feature` (a scenario each for the tap, a typed yes and a spoken yes), `tests/e2e/send-to-makers.spec.ts`.
 - **One function.** `sendToMakers` (`src/talk/makers.ts`) is `submitFeedback` with a `tutor-ask` request and the pictures as the grist's files; the offer (`sendMakersOffer`) is its only caller in the talk (`tests/unit/send-to-makers.test.ts` asserts that, and that neither `Talk.tsx` nor `Ask.tsx` draws a button). The request: `text` his question, `summary` the offer's line, `screen` the screen's name (`Reader` for a talk about the text), `reference` the talk's title, `facts` the screen's, and the pictures the turn kept (`listTurnPictures`). Your requests lists it with "1 picture".
-- **Attach a picture and Take a photo stay in the Verse view's Ask**; the picture goes to the Talk tutor with the question and, if the tutor offers the makers, with that offer.
+- **Attach a picture and Take a photo are the Talk sheet's Composer's**; the picture goes to the Talk tutor with the question and, if the tutor offers the makers, with that offer.
 - The forms (Settings > Ask for more, Ask for another approach, Ask for a book, **Ask the makers about these** on a Logos list's page) are requests in their own context and stay.
 
 ### Every tutor surface: files, camera, voice, typing, a request to the makers (sweep of src/, mw-5r3p30.760)
 
 | Surface | Files and camera | Voice | Typing | A request to the makers |
 |---|---|---|---|---|
-| Talk sheet (`TalkSheet`, `src/Talk.tsx`: the Reader's Talk bar, the round Ask the tutor button of any other screen (`AskTutor.tsx`, `DialogAskTutor` of the drills), Welcome, Share to Lampas' `ShareTalk`) | yes: Attach a picture, Take a photo, paste | yes: Hold to talk (Tap and By button as Settings > Talk) | yes: Type a message | the tutor's offer, taken by a tap or a yes (mw-5r3p30.844) |
-| Verse view's Ask (`AskComposer`, `src/Ask.tsx`) | yes: they go with the question to the Talk tutor | yes: Hold to ask | yes: Type a question | the Talk tutor's offer, as the Talk sheet (the question goes to the bible-talk grind, mw-5r3p30.842) |
-| Word help (the word sheet's Grammar, Sound it out, Ask the tutor; `useReaderTutor.ts` helpWithWord / askAboutTerm) | opens the Talk sheet: as the Talk sheet | as the Talk sheet | as the Talk sheet | as the Talk sheet |
-| Drill and quiz results (`QuizScreen` Ask the tutor, Drill it, the Plan drill, the Parsing drill's link) | open the Talk sheet (or the Verse view's Ask with the question in the field): as that surface | same | same | same |
+| Talk sheet (`TalkSheet`, `src/Talk.tsx`: the floating ? on any screen (`AskTutor.tsx`, `DialogAskTutor` of the drills), Welcome, Share to Lampas' `ShareTalk`) | yes: Attach a picture, Take a photo, paste | yes: Hold to talk (Tap and By button as Settings > Talk) | yes: Type a message | the tutor's offer, taken by a tap or a yes (mw-5r3p30.844) |
+| Word help (the word sheet's Grammar, Sound it out; `useReaderTutor.ts` helpWithWord / askAboutTerm) | opens the Talk sheet: as the Talk sheet | as the Talk sheet | as the Talk sheet | as the Talk sheet |
+| Drill and quiz results (`QuizScreen` Ask the tutor, Drill it, the Plan drill, the Parsing drill's link) | open the Talk sheet: as that surface | same | same | same |
 | Welcome interview (`Welcome.tsx`) | the Talk sheet's, so yes | yes | yes | the tutor's offer, as the Talk sheet |
 | The FormHelper (`src/formHelper/FormHelper.tsx`: Ask for another approach, Ask for more, Ask for a book, Save as list) | no (mw-5r3p30.761, the door epic) | no (mw-5r3p30.761) | yes: its own field | the forms are themselves requests to the makers; the helper itself has no action (mw-5r3p30.761) |
 | Reading check (`ReadCheck.tsx`, Read it aloud) and Memorize (`MemorizeSession.tsx`) | no | yes: it records or listens | Memorize: yes (Type it) | no: they are not a talk with the tutor; nothing to say to the makers there |
