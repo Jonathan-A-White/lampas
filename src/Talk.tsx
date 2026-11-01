@@ -933,7 +933,7 @@ export function TalkSheet({ scope, talkRef: ref, state, opened, suggestions, sha
             {live?.listening ? (
               <div data-talk-live role="status" className="rounded-2xl border border-bad px-3 py-2">
                 <p className="text-sm font-medium text-bad">{live.ready ? 'Listening… let go to send, slide away to cancel' : 'Starting the microphone…'}</p>
-                <p className="min-h-7 break-words text-lg">{live.transcript}</p>
+                <p className="lp-live min-h-7 break-words text-lg">{live.transcript}</p>
               </div>
             ) : null}
             {notice ? (

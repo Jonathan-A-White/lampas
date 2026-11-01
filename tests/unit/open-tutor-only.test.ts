@@ -58,6 +58,7 @@ export const OLD_CONTROL_UNDER_TEST: Record<string, string> = {
   'tests/e2e/split-screen-header.spec.ts',
   'tests/e2e/talk-fit.spec.ts',
   'tests/e2e/talk-hold.spec.ts',
+  'tests/e2e/talk-live-growth.spec.ts',
   'tests/e2e/talk.spec.ts',
   'tests/e2e/talkback-reading.spec.ts',
   'tests/e2e/turn-pages.spec.ts',
