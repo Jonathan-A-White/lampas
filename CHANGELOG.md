@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.49
+_2026-11-01_
+- Fixed: with the floating ? chosen, only one round tutor button is drawn on a screen, not two.
+- New: The tutor now answers some questions, such as a top five, as a short numbered list, and the voice reads it as "First, ... Second, ...".
+- Fixed: a word that is only in a variant reading, such as βιβλαρίδιον in Revelation 10:2, no longer shows an empty tile under Study that opened STEP at Genesis 1.
+- New: Diagram now draws the whole sentence a verse belongs to, even across verse breaks (all of Ephesians 1:3-14 at once), and a verse with two sentences gets two diagrams.
+- New: In the Verse view, once a verse or passage is memorized, a Practise button starts practising it right away.
+
 ## 0.7.48
 _2026-10-31_
 - New: Under a tutor's answer that names Bible passages you can save them all as a verse list, or ask the tutor to.
