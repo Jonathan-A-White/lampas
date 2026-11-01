@@ -380,6 +380,15 @@ html.lp-talk-scroll {
   scrollbar-width: none;
 }
 
+/* The page's scroll there is the conversation's, so the app must not scroll with it: #root (the shell's bars in its flow, the screen under the sheet) stays at the top
+ * of the window while scrollY runs, or sideways, where the conversation overflows, the bars scroll off the top (mw-5r3p30.943). */
+html.lp-talk-scroll #root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
 html,
 body {
   background: var(--lp-canvas);
