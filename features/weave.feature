@@ -167,3 +167,9 @@ Feature: The diglot weave
     When he long presses the woven Greek word "γράφω" in verse 1
     Then the phone is told to speak only "γράφω"
     And no word sheet is open
+
+  Scenario: A known word whose one-word English carries a supplied word replaces the whole chunk
+    Given Lampas is opened on 1 John 1 with the Weave on and the words "ἀπό" and "ἀρχή" solid
+    Then verse 1 reads "ἀπ' ἀρχῆς" in Greek
+    And verse 1 does not show "beginning"
+    And ἀρχῆς is not drawn in gold beside any English in verse 1

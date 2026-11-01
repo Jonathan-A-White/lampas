@@ -1,6 +1,6 @@
 // src/data/weave.ts — the diglot weave: which English chunks of a verse are shown as their Greek instead.
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
-import { type GreekWord, type Verse, wordLemma } from './chapter';
+import { type GreekWord, ownEnglish, type Verse, wordLemma } from './chapter';
 
 /** The Greek words to show in place of English chunk `i` (in the chunk's own order), or null when it stays English.
  * `learning` is true when at least one of them is a word he is still learning: the Reader sets the chunk's English
@@ -39,14 +39,15 @@ export const withWordRule = <T extends Woven[]>(woven: T, lemmas: WeaveLemmas): 
 
 /**
  * Weaves one verse: a chunk is woven only when it has Greek words, none of its Greek positions is missing, it is
- * not a '-' or a chunk with supplied words, and every one of its Greek words has a lemma in `solid` or `learning`.
+ * not a '-' or a chunk with supplied words (unless it is one Greek word with English of its own, mw-5r3p30.947), and every one of its Greek words has a lemma in `solid` or `learning`.
  * A chunk with any word whose form `formPasses` refuses stays English whole, never half a chunk.
  * A chunk with any learning word is marked `learning`. A chunk that cannot be read is left English on its own; it
  * never changes its neighbours.
  */
 export function weaveVerse(verse: Verse, { solid, learning, formPasses }: WeaveLemmas): Woven[] {
   return verse.e.map((chunk) => {
-    if (chunk.s || chunk.t.trim() === '-' || chunk.g.length === 0) return null;
+    // a chunk of one Greek word with English of its own is that word's even when the translators supplied words in it ('[the] beginning,'); a chunk of supplied words only ('While') stays English (mw-5r3p30.947)
+    if ((chunk.s && !(chunk.g.length === 1 && ownEnglish(chunk))) || chunk.t.trim() === '-' || chunk.g.length === 0) return null;
     const words: GreekWord[] = [];
     let anyLearning = false;
     for (const i of chunk.g) {
@@ -63,7 +64,7 @@ export function weaveVerse(verse: Verse, { solid, learning, formPasses }: WeaveL
 
 /**
  * The known Greek words that an English chunk still hides (mw-5r3p30.878), chunk by chunk in `verse.e`'s own indexes: a chunk the weave leaves English (`woven[i]` is null) because
- * another word it stands for is not known yet, or because the translators supplied words in it ('While' of Acts 18:12), shows each Greek word of it he does know, in gold, beside its
+ * another word it stands for is not known yet, or because it is made of supplied words ('While' of Acts 18:12, no English of its own) or holds more than one Greek word, shows each Greek word of it he does know, in gold, beside its
  * English; the English goes (the chunk is woven) once every Greek word it stands for is known. A chunk with no known word, a '-' and a chunk with no Greek have none (undefined).
  */
 export function besideVerse(verse: Verse, woven: readonly Woven[], lemmas: WeaveLemmas): (GreekWord[] | undefined)[] {

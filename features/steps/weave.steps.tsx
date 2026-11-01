@@ -8,7 +8,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
-import { type Chapter, type GreekWord, type Verse, wordLemma } from '../../src/data/chapter';
+import { type Chapter, type GreekWord, ownEnglish, type Verse, wordLemma } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { getWeave, getWeaveGrammar, recordAnswer, setLevel, setWeave as saveWeave } from '../../src/data/repositories';
@@ -142,18 +142,21 @@ const countLine = (): HTMLElement | null => screen.queryByTestId('weave-count');
 
 
 /** 2 Peter 3:1 puts ὑμῖν γράφω in one English chunk, "to you." (mw-5r3p30.614). */
-async function openSecondPeter(solid: string[]): Promise<void> {
+const openSecondPeter = (solid: string[]): Promise<void> => openChapter('2pe', 3, '2 Peter 3', solid);
+
+/** A chapter of the Reader with the Weave on and the words `solid` solid (a word the seed lacks is put in). */
+async function openChapter(code: string, n: number, title: string, solid: string[]): Promise<void> {
   cleanup();
   stubChapterFetch();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.grammarLevels.clear()]);
   window.localStorage.clear();
   await seedHisWords();
-  await Promise.all(solid.map((lemma) => db.words.update(lemma, { state: 'solid' })));
+  await Promise.all(solid.map(async (lemma) => (await db.words.update(lemma, { state: 'solid' })) || db.words.put({ lemma, lang: 'grc', lemmas: [lemma], gloss: '', lesson: 0, state: 'solid', since: Date.now() })));
   await saveWeave('solid');
-  window.history.replaceState(null, '', '/#/?b=2pe&c=3');
+  window.history.replaceState(null, '', `/#/?b=${code}&c=${n}`);
   render(<App />);
-  await screen.findByRole('heading', { name: '2 Peter 3', level: 1 });
+  await screen.findByRole('heading', { name: title, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(() => expect(verseEl(1).querySelectorAll('[data-woven]').length).toBeGreaterThan(0));
 }
@@ -198,7 +201,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('every woven chunk of verse 1 is a chunk whose Greek words are all solid', async () => {
       const solid = await solidLemmas();
       verse1.e.forEach((c, i) => {
-        const allSolid = !c.s && c.t !== '-' && c.g.length > 0 && c.g.every((g) => solid.has(nfc(wordLemma(verse1.g[g]))));
+        const allSolid = (!c.s || (c.g.length === 1 && ownEnglish(c) !== '')) && c.t !== '-' && c.g.length > 0 && c.g.every((g) => solid.has(nfc(wordLemma(verse1.g[g]))));
         expect(chunkEl(1, i).hasAttribute('data-woven'), `chunk ${i} "${c.t}"`).toBe(allSolid);
       });
     });
@@ -460,7 +463,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('every woven chunk of verse 1 is a chunk whose Greek words are all solid', async () => {
       const solid = await solidLemmas();
       verse1.e.forEach((c, i) => {
-        const allSolid = !c.s && c.t !== '-' && c.g.length > 0 && c.g.every((g) => solid.has(nfc(wordLemma(verse1.g[g]))));
+        const allSolid = (!c.s || (c.g.length === 1 && ownEnglish(c) !== '')) && c.t !== '-' && c.g.length > 0 && c.g.every((g) => solid.has(nfc(wordLemma(verse1.g[g]))));
         expect(chunkEl(1, i).hasAttribute('data-woven'), `chunk ${i} "${c.t}"`).toBe(allSolid);
       });
     });
@@ -586,6 +589,17 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the word sheet then shows only the Greek word {string}', async (_, form: string) => {
       await screen.findByRole('dialog');
       expect(sheetWords()).toEqual([form]);
+    });
+  });
+
+  Scenario('A known word whose one-word English carries a supplied word replaces the whole chunk', ({ Given, Then, And }) => {
+    Given('Lampas is opened on 1 John 1 with the Weave on and the words {string} and {string} solid', async (_, a: string, b: string) => openChapter('1jn', 1, '1 John 1', [a, b]));
+    Then('verse 1 reads {string} in Greek', async (_, shown: string) => {
+      await waitFor(() => expect(verseText(1)).toContain(shown));
+    });
+    And('verse 1 does not show {string}', (_, english: string) => expect(verseText(1)).not.toContain(english));
+    And('ἀρχῆς is not drawn in gold beside any English in verse 1', () => {
+      expect([...verseEl(1).querySelectorAll('[data-beside]')].map((e) => squash(e.textContent))).not.toContain('ἀρχῆς');
     });
   });
 

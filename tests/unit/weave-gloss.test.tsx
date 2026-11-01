@@ -59,6 +59,18 @@ describe('Acts 18:12 in Weave, δέ known', () => {
   });
 });
 
+describe("1 John 1:1 in Weave, ἀπό and ἀρχή known: '[the] beginning,' is ἀρχῆς's own English (mw-5r3p30.947)", () => {
+  const john = chapterOf('1jn', 1);
+
+  it("shows ἀπ' ἀρχῆς with no 'beginning' after it and no gold word beside", () => {
+    const el = draw(john, 1, ['ἀπό', 'ἀρχή']);
+    expect(textOf(el)).toMatch(/^That which was ἀπ' ἀρχῆς which we have heard,/);
+    expect(textOf(el)).not.toContain('beginning');
+    expect(el.querySelectorAll('[data-beside]')).toHaveLength(0);
+    expect(el.querySelectorAll('[data-woven]').length).toBeGreaterThanOrEqual(2);
+  });
+});
+
 describe('a chunk that stands for two Greek words', () => {
   const word = (t: string, l: string) => ({ t, tr: '', s: 'G1', l, p: 'X' });
   const verse: Verse = {
