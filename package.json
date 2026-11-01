@@ -24,6 +24,7 @@
     "pictures:sheet": "tsx scripts/pictures-sheet.ts",
     "data:build": "tsx scripts/data-build.ts",
     "data:build:ot": "tsx scripts/data-build-ot.ts",
+    "lxx:derive": "tsx scripts/lxx/derive.ts",
     "variants:english": "tsx scripts/variants-english.ts",
     "variants:sweep": "tsx scripts/variants-sweep.ts",
     "variants:align": "tsx scripts/variants-align.ts",

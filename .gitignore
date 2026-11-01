@@ -10,6 +10,9 @@ dist-ssr
 
 # Raw text downloads (the generated JSON per chapter is committed)
 data/raw
+# The Septuagint derivation's output (npm run lxx:derive; docs/lxx-derivation.md)
+data/lxx/derived
+data/lxx/pending
 # The lemma form files, made from the chapters by npm run build (scripts/build-lemma-forms.mjs)
 public/lemma-forms
 
