@@ -10,9 +10,14 @@
 // data (MIT, data/lxx/LICENSE): a word is named by its reference in the pinned Swete file and no column holds Swete's Greek. A second run writes
 // the same bytes. `--hide jhn` leaves John's rows out of the form index and the parser's training, for a known-answer run. `--word Gen.1:20#13`
 // prints one word's candidates, their support and what produced each, and writes nothing. `--all` runs every book and prints one line a book.
+// The second method (morpheus.ts, 'Morpheus' in docs/lxx-derivation.md): from the command line, when Docker and the Morpheus image are there, the forms with no
+// candidate and the guesses in data/lxx/choices are run through Morpheus, its analyses (mapped to TAGNT's codes) are kept in data/lxx/morpheus/<book>.tsv, and
+// a word with no candidate takes them as candidates (support 'morpheus'); with the cache absent nothing changes. `--no-morpheus` leaves the step off.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { readChoiceDir } from './choices';
+import { NOTE_MORPHEUS, dockerEngine, ensureCache, morpheusKey, type MorpheusCache, type MorpheusEngine, type MorpheusState } from './morpheus';
 import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fetchPinned, readPinned, type Fetcher } from './sources';
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
 import { bareOf, bookOf, hasAccent, hasLower, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
@@ -39,7 +44,10 @@ export const NOTE_CANDIDATES = 'several candidates: for the model';
 export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
 
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
-export type WordCandidate = Analysis & { via?: string[] };
+export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' };
+
+/** What a candidate's support column says: the New Testament's count, or the second method's name (a Morpheus candidate has no count). */
+export const supportOf = (c: WordCandidate): string => (c.source === 'morpheus' ? 'morpheus' : String(c.support));
 
 /** 1 the New Testament's form, 2 the parser, '2a' the agreement check, 3 the model's choice (choices.ts joins it to the pending words; derive.ts never makes one) */
 export type Layer = 1 | 2 | typeof AGREEMENT_LAYER | 3;
@@ -76,7 +84,13 @@ function parsedOnce(form: string, parser: Parser, cache: ParseCache): Candidate[
  * 95%-of-20 rule. A form the New Testament lacks goes to the parser; when the parser finds nothing, Swete's other spellings are tried in turn (an
  * alternative the New Testament has is a layer-1 answer, otherwise it is parsed), and last analogy. Layer 2 settles by the 90% rule.
  */
-export function deriveWord(word: Pick<SweteWord, 'ref' | 'form' | 'display'>, index: FormIndex, parser: Parser, cache: ParseCache = new Map()): DerivedWord | PendingWord {
+export function deriveWord(
+  word: Pick<SweteWord, 'ref' | 'form' | 'display'>,
+  index: FormIndex,
+  parser: Parser,
+  cache: ParseCache = new Map(),
+  morpheus?: MorpheusCache,
+): DerivedWord | PendingWord {
   const notes: string[] = [];
   const parsed = (form: string): Candidate[] => parsedOnce(form, parser, cache);
   let counts = index.byKey.get(keyOf(word.form));
@@ -112,8 +126,18 @@ export function deriveWord(word: Pick<SweteWord, 'ref' | 'form' | 'display'>, in
     if (fromParser.length) notes.push(NOTE_ANALOGY);
   }
   const settled = settleParsed(fromParser);
-  if (!settled) return { ref: word.ref, candidates: fromParser, notes: [...notes, fromParser.length ? NOTE_CANDIDATES : NOTE_NO_CANDIDATE] };
+  if (!settled) {
+    const given = fromParser.length === 0 ? morpheusCandidates(word.form, morpheus) : [];
+    if (given.length) return { ref: word.ref, candidates: given, notes: [...notes, NOTE_MORPHEUS] };
+    return { ref: word.ref, candidates: fromParser, notes: [...notes, fromParser.length ? NOTE_CANDIDATES : NOTE_NO_CANDIDATE] };
+  }
   return { ref: word.ref, lemma: settled.analysis.lemma, morph: settled.analysis.morph, layer: 2, confidence: settled.confidence, candidates: fromParser, notes };
+}
+
+/** Morpheus's analyses of a form, as candidates with no count: a second method's, for the model to choose among. */
+function morpheusCandidates(form: string, morpheus: MorpheusCache | undefined): WordCandidate[] {
+  const known = morpheus?.get(morpheusKey(form));
+  return (known?.analyses ?? []).map((m) => ({ lemma: m.lemma, morph: m.code, support: 0, share: 0, via: ['Morpheus: the second method, a build tool'], source: 'morpheus' as const }));
 }
 
 export const isDerived = (w: DerivedWord | PendingWord): w is DerivedWord => 'layer' in w;
@@ -142,6 +166,8 @@ export interface BookResult {
   agreement: AgreementStats;
   /** the parser as trained for this run (a hidden book left out), for a second look at a word */
   parser: Parser;
+  /** how many words took Morpheus's analyses as candidates; set only when a cache was given */
+  morpheusWords?: number;
 }
 
 /** The form index and the parser, trained once for a run (a hidden book left out of both). */
@@ -161,18 +187,25 @@ const split = (outs: ReadonlyArray<DerivedWord | PendingWord>): { derived: Deriv
 });
 
 /** One book's words through layers 1 and 2, then the agreement check. `tokens` are the book's, when the caller has read them already. */
-export function deriveBook(input: DeriveInput, book: string, hide?: string, trained: Trained = train(input, hide), tokens?: { words: SweteWord[]; signs: EditorSign[] }): BookResult {
+export function deriveBook(
+  input: DeriveInput,
+  book: string,
+  hide?: string,
+  trained: Trained = train(input, hide),
+  tokens?: { words: SweteWord[]; signs: EditorSign[] },
+  morpheus?: MorpheusCache,
+): BookResult {
   const { words, signs } = tokens ?? sweteTokens(input.versification, input.words, book);
   if (words.length === 0) throw new Error(`no book '${book}' in Swete's file`);
   const { index, parser } = trained;
   const cache: ParseCache = new Map();
-  const layers = words.map((word) => deriveWord(word, index, parser, cache));
+  const layers = words.map((word) => deriveWord(word, index, parser, cache, morpheus));
   const checked = checkAgreement(words, layers, { names: index.names, parse: (form) => parsedOnce(form, parser, cache) });
-  return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser };
+  return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.includes(NOTE_MORPHEUS)).length } : {}) };
 }
 
 /** 'ἀρχή/N-NSF/8 | ἀρχή/N-DSF/5': a lemma may hold spaces and commas ('ὅς, ἥ') but never '/' or '|'. */
-const candidatesOf = (cs: readonly Analysis[]): string => cs.map((c) => `${c.lemma}/${c.morph}/${c.support}`).join(' | ');
+const candidatesOf = (cs: readonly WordCandidate[]): string => cs.map((c) => `${c.lemma}/${c.morph}/${supportOf(c)}`).join(' | ');
 
 export const DERIVED_HEADER = ['ref', 'lemma', 'parsing', 'layer', 'confidence', 'candidates', 'notes'];
 export const PENDING_HEADER = ['ref', 'candidates', 'notes'];
@@ -238,6 +271,7 @@ export function summary(result: BookResult): string[] {
     `agreement breaks: ${a.breaks} in ${a.brokenWords} words, ${perThousand(a.breaks, n)} breaks per 1,000 words`,
     `pending before the agreement check: ${a.pendingBefore}; after it: ${result.pending.length}`,
     `pending: ${result.pending.length} (${pct(result.pending.length)}), of which no candidate: ${none}`,
+    ...(result.morpheusWords === undefined ? [] : [`Morpheus gave ${result.morpheusWords} words candidates`]),
     ...[...notes].sort(([a], [b]) => (a < b ? -1 : 1)).map(([note, k]) => `note '${note}': ${k}`),
   ];
 }
@@ -252,7 +286,7 @@ export function wordReport(result: BookResult, ref: string): string[] {
   if (out.notes.length) lines.push(`notes: ${out.notes.join('; ')}`);
   if (out.candidates.length === 0) lines.push('no candidate');
   for (const c of out.candidates) {
-    lines.push(`  ${c.lemma} ${c.morph}: support ${c.support} (${(100 * c.share).toFixed(1)}%)`);
+    lines.push(c.source === 'morpheus' ? `  ${c.lemma} ${c.morph}: support morpheus` : `  ${c.lemma} ${c.morph}: support ${c.support} (${(100 * c.share).toFixed(1)}%)`);
     for (const why of c.via ?? ["layer 1: the New Testament's form"]) lines.push(`    ${why}`);
   }
   return lines;
@@ -266,9 +300,11 @@ export interface DeriveArgs {
   hide?: string;
   /** one word's reference, 'Gen.1:20#13': print its candidates, write nothing */
   word?: string;
+  /** leave the second method off */
+  noMorpheus?: boolean;
 }
 
-const USAGE = 'usage: npm run lxx:derive -- --book <code> | --all [--hide <book>] [--word <ref>]';
+const USAGE = 'usage: npm run lxx:derive -- --book <code> | --all [--hide <book>] [--word <ref>] [--no-morpheus]';
 
 export function parseArgs(argv: readonly string[]): DeriveArgs {
   const value = (flag: string): string | undefined => {
@@ -280,11 +316,11 @@ export function parseArgs(argv: readonly string[]): DeriveArgs {
   if (argv.includes('--word') && !word) throw new Error(USAGE);
   if (argv.includes('--all')) {
     if (word || argv.includes('--book')) throw new Error(USAGE);
-    return { book: 'all', all: true, hide: value('--hide') };
+    return { book: 'all', all: true, hide: value('--hide'), noMorpheus: argv.includes('--no-morpheus') };
   }
   const book = value('--book') ?? (word ? bookOf(word).toLowerCase() : undefined);
   if (!book) throw new Error(USAGE);
-  return { book, hide: value('--hide'), word };
+  return { book, hide: value('--hide'), word, noMorpheus: argv.includes('--no-morpheus') };
 }
 
 export interface RunOptions {
@@ -294,6 +330,10 @@ export interface RunOptions {
   fetcher?: Fetcher;
   /** the sources' text, when a test gives them; otherwise the pinned files under rawDir, fetched if absent */
   input?: DeriveInput;
+  /** the second method: Morpheus as the run reaches it (the command line gives dockerEngine()); none leaves the step off, and nothing about it is said */
+  morpheus?: MorpheusEngine;
+  /** where the choices files are, for the guesses Morpheus is asked about; default <outDir>/choices */
+  choicesDir?: string;
 }
 
 /** Swete's tokens of every book of the file, by Swete's book code ('Gen'), in the file's order. */
@@ -310,15 +350,36 @@ export function splitBooks(input: Pick<DeriveInput, 'versification' | 'words'>):
   return books;
 }
 
+/** The second method as one run uses it: the engine, where the choices files are, and whether it has said it was skipped. */
+interface MorpheusStep extends MorpheusState {
+  engine: MorpheusEngine;
+  choicesDir: string;
+}
+
+/**
+ * A book with Morpheus's analyses: its forms with no candidate and its guessed words (the choices files' `guess` marks) are asked of Morpheus unless the cache
+ * under <outDir>/morpheus has them, and the book is derived again with the cache. A step that is skipped, or a cache with nothing in it, leaves `result` as it was.
+ */
+function withMorpheus(result: BookResult, again: (cache: MorpheusCache) => BookResult, outDir: string, step: MorpheusStep | undefined, log: (line: string) => void): BookResult {
+  if (!step) return result;
+  const formOf = new Map(result.words.map((w) => [w.ref, w.form]));
+  const noCandidate = result.pending.filter((w) => w.candidates.length === 0).map((w) => w.ref);
+  const guessed = [...readChoiceDir(step.choicesDir, `${result.book}-`).choices.values()].filter((c) => c.mark === 'guess').map((c) => c.ref);
+  const forms = [...noCandidate, ...guessed].flatMap((ref) => (formOf.has(ref) ? [morpheusKey(formOf.get(ref)!)] : []));
+  const cache = ensureCache(step.engine, join(outDir, 'morpheus', `${result.book}.tsv`), forms, log, step);
+  return cache.size === 0 ? result : again(cache);
+}
+
 /** Every book of the file in its order, trained once: each book's files written, and one line a book (ALL_HEADER). */
-export function deriveAll(input: DeriveInput, outDir: string, log: (line: string) => void, hide?: string): BookResult[] {
+export function deriveAll(input: DeriveInput, outDir: string, log: (line: string) => void, hide?: string, step?: MorpheusStep): BookResult[] {
   const trained = train(input, hide);
   const books = splitBooks(input);
   log(ALL_HEADER.join('\t'));
   const results: BookResult[] = [];
   for (const [code, tokens] of books) {
     if (tokens.words.length === 0) continue;
-    const result = deriveBook(input, code, hide, trained, tokens);
+    const first = deriveBook(input, code, hide, trained, tokens);
+    const result = withMorpheus(first, (cache) => deriveBook(input, code, hide, trained, tokens, cache), outDir, step, log);
     writeBook(outDir, result);
     log(bookLine(result));
     results.push(result);
@@ -341,15 +402,18 @@ export async function runDerive(argv: readonly string[], options: RunOptions = {
   const { rawDir = RAW_DIR, outDir = OUT_DIR, log = () => {}, fetcher } = options;
   const args = parseArgs(argv);
   const input = options.input ?? (await loadInput(rawDir, fetcher, log));
+  const step: MorpheusStep | undefined = options.morpheus && !args.noMorpheus ? { engine: options.morpheus, choicesDir: options.choicesDir ?? join(outDir, 'choices'), said: false } : undefined;
   if (args.all) {
     if (args.hide) log(`hidden from the form index and the parser: ${args.hide}`);
-    const results = deriveAll(input, outDir, log, args.hide);
+    const results = deriveAll(input, outDir, log, args.hide, step);
     const last = results.at(-1);
     if (!last) throw new Error("no book in Swete's file");
     log(`wrote ${results.length} books under ${outDir}`);
     return last;
   }
-  const result = deriveBook(input, args.book, args.hide);
+  const trained = train(input, args.hide);
+  const first = deriveBook(input, args.book, args.hide, trained);
+  const result = withMorpheus(first, (cache) => deriveBook(input, args.book, args.hide, trained, undefined, cache), outDir, step, log);
   if (args.hide) log(`hidden from the form index and the parser: ${args.hide}`);
   if (args.word) {
     for (const line of wordReport(result, args.word)) log(line);
@@ -362,7 +426,7 @@ export async function runDerive(argv: readonly string[], options: RunOptions = {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  runDerive(process.argv.slice(2), { log: console.log }).catch((error: unknown) => {
+  runDerive(process.argv.slice(2), { log: console.log, morpheus: dockerEngine() }).catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);
   });

@@ -9,7 +9,7 @@ import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { batchName, batchesOf, derivedBook, parseBookArgs, type RunOptions } from './batches';
 import { applyChoices, readChoiceDir } from './choices';
-import { OUT_DIR, type BookResult, type PendingWord } from './derive';
+import { OUT_DIR, supportOf, type BookResult, type PendingWord } from './derive';
 import type { SweteWord } from './swete';
 
 /** The share of a book's chosen words the second pass reads again (at least one word). */
@@ -20,7 +20,7 @@ export const MARK_OPEN = '⟦';
 export const MARK_CLOSE = '⟧';
 
 const candidatesText = (word: PendingWord): string =>
-  word.candidates.length === 0 ? 'no candidate' : word.candidates.map((c) => `${c.lemma} ${c.morph} (${c.support})`).join(' | ');
+  word.candidates.length === 0 ? 'no candidate' : word.candidates.map((c) => `${c.lemma} ${c.morph} (${supportOf(c)})`).join(' | ');
 
 /** The words under their verses: a line for the verse with the pending words marked, then a line for each pending word. */
 export function listingLines(words: readonly SweteWord[], target: readonly PendingWord[]): string[] {

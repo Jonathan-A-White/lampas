@@ -3,9 +3,10 @@
 // cut at a chapter boundary, so the stories of one book never share a choices file. Prints the table the Mayor files the model stories from: the batch, its
 // chapters, its pending words and how many of them have no candidate. A pure reading of the derivation (derive.ts); no paid API, and the network only to
 // fetch the pinned sources into data/raw (skipped when present).
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { deriveBook, loadInput, type BookResult, type DeriveInput, type PendingWord } from './derive';
+import { OUT_DIR, deriveBook, loadInput, type BookResult, type DeriveInput, type PendingWord } from './derive';
+import { readMorpheusCache } from './morpheus';
 import { RAW_DIR, type Fetcher } from './sources';
 
 /** About how many pending words a batch holds; the cut falls at the chapter boundary nearest to it. */
@@ -125,7 +126,7 @@ export interface RunOptions {
 /** A book derived, as every command of the runner starts. */
 export async function derivedBook(book: string, options: RunOptions): Promise<BookResult> {
   const { rawDir = RAW_DIR, log = () => {}, fetcher } = options;
-  return deriveBook(options.input ?? (await loadInput(rawDir, fetcher, log)), book);
+  return deriveBook(options.input ?? (await loadInput(rawDir, fetcher, log)), book, undefined, undefined, undefined, readMorpheusCache(join(options.outDir ?? OUT_DIR, 'morpheus'), book));
 }
 
 export const BATCHES_USAGE = 'usage: npm run lxx:batches -- --book <code>';

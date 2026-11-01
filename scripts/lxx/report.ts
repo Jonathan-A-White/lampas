@@ -4,6 +4,8 @@
 // words, the second pass's disagreement rate (from B4's recheck files, when there are any), and SHIPPABLE or NOT with the failing bar lines named
 // (bar.ts). It is the build's one place to see a book fall short. A second run on the same inputs writes the same bytes.
 // Network only to fetch the pinned sources into data/raw (skipped when present); no paid API is called.
+// A book with a Morpheus cache (data/lxx/morpheus/<book>.tsv, morpheus.ts) also shows how many of its guesses Morpheus agreed with, differed from and did not
+// know (release.ts, morpheusCounts); a book with none shows a dash.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -11,8 +13,10 @@ import { BAR, chaptersOf, verdict, type Failure } from './bar';
 import { readChoiceDir, readRecheckDir, type Choice } from './choices';
 import { deriveBook, loadInput, splitBooks, train, type DeriveInput } from './derive';
 import { KNOWN_DIR, knownScores, type KnownScore } from './known';
-import { RECHECK_DIR, CHOICES_DIR, currentBuild, figuresOf, joinChoices } from './release';
+import { readMorpheusCache } from './morpheus';
+import { RECHECK_DIR, CHOICES_DIR, currentBuild, figuresOf, joinChoices, morpheusOf, type MorpheusCounts } from './release';
 import { RAW_DIR, type Fetcher } from './sources';
+import { OUT_DIR } from './derive';
 
 export const REPORT_DOC = join('docs', 'lxx-report.md');
 export const REPORT_START = '<!-- lxx-report:start -->';
@@ -84,6 +88,8 @@ export interface BookRow {
   guesses: number;
   breaks: number;
   secondPass: { sample: number; differ: number };
+  /** the guesses against Morpheus; undefined when the book has no cache */
+  morpheus?: MorpheusCounts;
   shippable: boolean;
   failures: Failure[];
 }
@@ -107,14 +113,15 @@ export function reportBlock(build: number, known: readonly KnownScore[], rows: r
   }
   out.push('', '### The books', '');
   out.push(
-    '| Book | Words | Layer 1 | Layer 2 | Layer 2a | Layer 3 | Pending | Guesses | Breaks per 1,000 | Second pass differs | Bar |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Book | Words | Layer 1 | Layer 2 | Layer 2a | Layer 3 | Pending | Guesses | Breaks per 1,000 | Second pass differs | Morpheus agreed / differed / unknown | Bar |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   for (const r of rows) {
     const second = r.secondPass.sample ? `${pct(r.secondPass.differ, r.secondPass.sample)} of ${r.secondPass.sample}` : '—';
+    const morpheus = r.morpheus ? `${r.morpheus.agreed} / ${r.morpheus.disagreed} / ${r.morpheus.unknown}` : '—';
     const ships = r.shippable ? 'SHIPPABLE' : `NOT: ${shortLines(r.failures)}`;
     out.push(
-      `| ${r.name} (${r.code}) | ${num(r.words)} | ${pct(r.layers['1'], r.words)} | ${pct(r.layers['2'], r.words)} | ${pct(r.layers['2a'], r.words)} | ${pct(r.layers['3'], r.words)} | ${num(r.pending)} | ${pct(r.guesses, r.words)} | ${per1000(r.breaks, r.words)} | ${second} | ${ships} |`,
+      `| ${r.name} (${r.code}) | ${num(r.words)} | ${pct(r.layers['1'], r.words)} | ${pct(r.layers['2'], r.words)} | ${pct(r.layers['2a'], r.words)} | ${pct(r.layers['3'], r.words)} | ${num(r.pending)} | ${pct(r.guesses, r.words)} | ${per1000(r.breaks, r.words)} | ${second} | ${morpheus} | ${ships} |`,
     );
   }
   const total = rows.reduce((s, r) => s + r.words, 0);
@@ -159,6 +166,8 @@ export interface ReportOptions {
   choicesDir?: string;
   recheckDir?: string;
   knownDir?: string;
+  /** where the Morpheus caches are; default data/lxx/morpheus */
+  morpheusDir?: string;
   log?: (line: string) => void;
   fetcher?: Fetcher;
   input?: DeriveInput;
@@ -169,7 +178,7 @@ export interface ReportOptions {
 }
 
 export async function runReport(argv: readonly string[], options: ReportOptions = {}): Promise<{ rows: BookRow[]; known: KnownScore[]; text: string }> {
-  const { rawDir = RAW_DIR, doc = REPORT_DOC, choicesDir = CHOICES_DIR, recheckDir = RECHECK_DIR, knownDir = KNOWN_DIR, log = () => {}, fetcher, books = OLD_TESTAMENT } = options;
+  const { rawDir = RAW_DIR, doc = REPORT_DOC, choicesDir = CHOICES_DIR, recheckDir = RECHECK_DIR, knownDir = KNOWN_DIR, morpheusDir = join(OUT_DIR, 'morpheus'), log = () => {}, fetcher, books = OLD_TESTAMENT } = options;
   const args = parseArgs(argv);
   const input = options.input ?? (await loadInput(rawDir, fetcher, log));
   const build = args.build ?? currentBuild();
@@ -180,7 +189,8 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
   for (const [code, name] of books) {
     const book = tokens.get(code);
     if (!book || book.words.length === 0) throw new Error(`no book '${code}' in Swete's file`);
-    const result = deriveBook(input, code, undefined, trained, book);
+    const cache = readMorpheusCache(morpheusDir, code);
+    const result = deriveBook(input, code, undefined, trained, book, cache);
     const { choices } = readChoiceDir(choicesDir, `${result.book}-`);
     const joined = joinChoices(result, choices);
     const figures = figuresOf(result, joined);
@@ -195,6 +205,7 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
       guesses: figures.guesses,
       breaks: figures.breaks,
       secondPass: disagreement(choices, readRecheckDir(recheckDir, result.book).choices),
+      morpheus: morpheusOf(result, joined, cache),
       shippable: v.shippable,
       failures: v.failures,
     });
