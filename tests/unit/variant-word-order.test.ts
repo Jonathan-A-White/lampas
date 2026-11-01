@@ -54,14 +54,13 @@ describe('Matthew 3:4, αὐτοῦ ἦν / ἦν αὐτοῦ', () => {
     expect(chosen.sameEnglish).toBe(true);
   });
 
-  it("its sheet says 'Word order only: emphasis, not meaning' above Ask the tutor", () => {
+  it("its sheet says 'Word order only: emphasis, not meaning', and has no Ask the tutor of its own (the floating ? is the one door)", () => {
     const [shown] = shownUnits([unit34()], { english: 'all', witnesses: 'ecm' }, mat3.verses);
-    render(createElement(VariantSheet, { shown, reference: 'Matthew 3:4', onClose: () => {}, onAsk: () => {} }));
+    render(createElement(VariantSheet, { shown, reference: 'Matthew 3:4', onClose: () => {} }));
     const line = document.querySelector('[data-word-order-only]');
     expect(WORD_ORDER_ONLY).toBe('Word order only: emphasis, not meaning');
     expect(line?.textContent).toBe(WORD_ORDER_ONLY);
-    const ask = [...document.querySelectorAll('button')].find((b) => b.textContent === 'Ask the tutor')!;
-    expect(line!.compareDocumentPosition(ask) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect([...document.querySelectorAll('button')].some((b) => b.textContent === 'Ask the tutor')).toBe(false);
   });
 
   it('a unit that changes the words has no such line', () => {
@@ -93,7 +92,7 @@ describe('Romans 8:38, word order only with the MSB footnote’s own English', (
 
   it('its sheet has no Word order only line', () => {
     const [shown] = shownUnits([unit()], { english: 'all', witnesses: 'ecm' }, rom8.verses);
-    render(createElement(VariantSheet, { shown, reference: 'Romans 8:38', verse: rom8.verses.find((v) => v.n === 38), onClose: () => {}, onAsk: () => {} }));
+    render(createElement(VariantSheet, { shown, reference: 'Romans 8:38', verse: rom8.verses.find((v) => v.n === 38), onClose: () => {} }));
     expect(document.querySelector('[data-word-order-only]')).toBeNull();
   });
 

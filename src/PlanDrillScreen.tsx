@@ -106,7 +106,7 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
           </div>
         )}
       </div>
-      <FootBar beside={over}>
+      <FootBar>
         {over ? (
           <button type="button" data-testid="plan-drill-done" ref={focusOnMount} onClick={() => settled() && onFinish(passed)} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done

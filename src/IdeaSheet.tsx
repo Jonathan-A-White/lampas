@@ -481,7 +481,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   covered?: boolean;
   /** an example was tapped: its chapter, so the word's parsing and meaning can be read */
   onWord: (chapter: Chapter, word: GreekWord) => void;
-  /** Ask the tutor, with the idea's first term (its title when it covers none); the button is left out when the screen cannot send it */
+  /** what the floating ? asks over this sheet, with the idea's first term (its title when it covers none); without it the sheet keeps its own lesson talk (LessonTalk) */
   onAsk?: (term: string) => void;
   /** the grammar books Read more may name (GRAMMAR_BOOKS); a test hands it its own */
   books?: readonly GrammarBook[];
@@ -527,11 +527,11 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     sounds ? 'How it sounds' : null, sounds,
     'Worked example', worked.word, worked.gloss, ...stepsOf(worked, scheme),
   ]);
-  // Ask the tutor, when no word asks it (onAsk): the talk is about this lesson, its card and worked example (mw-5r3p30.818)
+  // The talk of the floating ? over this sheet, when no word asks it (onAsk): the talk is about this lesson, its card and worked example (mw-5r3p30.818)
   const ai = useAiAllowed();
   const [talking, setTalking] = useState(false);
   const closeTalk = useCallback(() => setTalking(false), []);
-  // The tutor door (src/tutor/door.ts, a two-finger tap or the floating ?) on this sheet asks about its lesson, as the sheet's own Ask the tutor does
+  // The tutor door (src/tutor/door.ts, the floating ?) on this sheet asks about its lesson
   useDoorTarget(
     ai
       ? () => {
@@ -810,11 +810,6 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
             {passage && hasFormOf(idea.id, passage.chapters, passage.verse) ? (
               <button type="button" onClick={() => setTrying(true)} className={`${BUTTON} border-line text-accent active:bg-line`}>
                 Try it on a verse
-              </button>
-            ) : null}
-            {onAsk || ai ? (
-              <button type="button" onClick={onAsk ? () => onAsk(idea.terms[0] ?? idea.title) : () => { stopReading(); setTalking(true); }} className={`${BUTTON} border-line text-accent active:bg-line`}>
-                Ask the tutor
               </button>
             ) : null}
           </div>

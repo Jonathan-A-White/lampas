@@ -1,11 +1,10 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable), in a box that takes what the controls under it leave and scrolls;
-// under it what the chosen action shows (the reading check, the diagram, Listen's help line, a verse's Talk about verse N); under that a quiet line of TOOLS that act on the text (Copy and Share, Memorize, In Logos and In another book…, Maps: plain accent words, no border, mw-5r3p30.896);
-// under that the row of ACTIONS that choose what the foot does (Listen, Read it aloud, Ask the tutor, Practise and Diagram; an Old Testament verse has the quiz door of Practise only with some Hebrew, mw-uqlxea.3, and Diagram in its Hebrew, mw-5r3p30.887, and no Read it aloud in the Hebrew view, mw-gdcyf98.4; its Ask the tutor sends the Hebrew, mw-5vvlay.3; the verse is drawn in the Reader's view, the Hebrew big and right to left),
+// under it what the chosen action shows (the reading check, the diagram, Listen's help line); under that a quiet line of TOOLS that act on the text (Copy and Share, Memorize, In Logos and In another book…, Maps: plain accent words, no border, mw-5r3p30.896);
+// under that the row of ACTIONS that choose what the foot does (Listen, Read it aloud, Practise and Diagram; an Old Testament verse has the quiz door of Practise only with some Hebrew, mw-uqlxea.3, and Diagram in its Hebrew, mw-5r3p30.887, and no Read it aloud in the Hebrew view, mw-gdcyf98.4; its Ask the tutor sends the Hebrew, mw-5vvlay.3; the verse is drawn in the Reader's view, the Hebrew big and right to left),
 // the chosen one marked with the accent's border and a tint, never filled; and at the foot ONE control, the one thing on the screen filled in the accent,
-// that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar), or for Ask the tutor voice-kit's Composer
-// (src/Ask.tsx AskComposer, mw-jtzpw0.3: the Hold to ask bar, Type a question beneath, no hint line at rest: src/index.css). Listen is not a hold
+// that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar). The Ask the tutor action and its composer are gone (mw-5r3p30.882): the floating ? is the one door. Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
 // Practise (mw-5r3p30.899, src/practise/) is a door: Copywork, Narration, Dictation, Summary and Quiz, in Susan Wise Bauer's order. Copywork shows the verse to copy in the script he picks, in this view's text box
 // in place of the Reader's text, and its foot is Take a photo / Try again; the Quiz (mw-5r3p30.74, once the action Quiz me) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
@@ -25,7 +24,6 @@
 // the row is too narrow for 'Read it aloud'), and one row from 30 rem (a phone sideways), where five labels have a line each.
 import { type ReactNode, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AskComposer } from './Ask';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
 import { InLogosDoors } from './library/InLogosDoors';
@@ -48,7 +46,6 @@ import { useCopyFormat } from './copy/useCopyFormat';
 import { takeByHand } from './copy/useCopyHold';
 import type { UseReadChecks } from './useReadChecks';
 import { BarSlot } from './speech/SpeakingBarSlot';
-import type { AskState } from './pending/pendingAsks';
 import { actionsFor, quizOffered, useHebrewOn, type VerseAction } from './verse/action';
 import { PractisePane } from './practise/PractisePane';
 import { freshPractice, type PracticeState } from './practise/practiceState';
@@ -64,7 +61,6 @@ import { isOrdered, rowAttrs } from './reader/sourceText';
 import { useReaderVariants } from './reader/variants';
 import type { WovenVerse } from './data/weave';
 import type { WovenReading } from './services/reading';
-import type { OutgoingPicture } from './talk/pictures';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
 export interface ListenPlayer {
@@ -105,12 +101,6 @@ export interface VerseViewProps {
   /** the Reader's Weave of each verse of the chapter (in step with `chapterText.verses`), or null when it is not woven: the English Diagram draws the words it shows in Greek in Greek */
   wovenChapter?: readonly WovenVerse[] | null;
   onRetryRead: () => void;
-  /** the Talk session's state for this verse or passage (a question in flight keeps the composer from sending another), and the way to send one to that Talk sheet (the composer at the foot, by voice or by hand) */
-  ask: AskState | undefined;
-  onAsk: (verse: Verse, question: string, pictures?: OutgoingPicture[]) => void;
-  prefill: { verse: number; text: string } | null;
-  /** Talk about this verse: the Bible talk's sheet (src/Talk.tsx) on the verse, for a talk with history */
-  onTalk: () => void;
   /** the Quiz door of Practise: opens the Talk sheet in quiz mode on this verse or passage (src/Talk.tsx, the bible-talk grind's `mode` quiz); `started` once the quiz has a turn or one on its way */
   quiz: { started: boolean; onOpen: () => void };
   /** the view shows a passage lesson's range (src/approaches): the Lesson strip draws under the heading and its Check passes the lesson by reading it (src/CheckSheet.tsx) */
@@ -133,7 +123,7 @@ const CELL_CHOSEN = 'border-accent bg-accent/15 text-fg';
 const CELL_REST = 'border-line text-fg active:bg-line';
 
 export function VerseView(props: VerseViewProps) {
-  const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, ask, onAsk, prefill, onTalk, quiz, lesson } = props;
+  const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, quiz, lesson } = props;
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
   const [checking, setChecking] = useState<string | null>(null);
   // The foot of the view, where the chosen action draws its bar.
@@ -141,7 +131,7 @@ export function VerseView(props: VerseViewProps) {
   // A diagram is of one verse: a passage or a range has no Diagram, and a phone left on it by a verse opens the passage on Listen (the kept action is not changed)
   const oneVerse = isOneVerse(verse);
   const action = !oneVerse && chosen === 'diagram' ? 'listen' : chosen;
-  // Read it aloud, Ask the tutor, Practise and Diagram are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
+  // Read it aloud, Practise and Diagram are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
   const hebrewOn = useHebrewOn();
   const reference = unitReference(title, verse);
@@ -311,12 +301,6 @@ export function VerseView(props: VerseViewProps) {
           {action === 'read' && ai ? (
             <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} weave={weave} onRetry={onRetryRead} slot={slot} />
           ) : null}
-          {action === 'ask' && ai && !passage ? (
-            // the Bible talk with history on this verse, a quiet line like the tools (the composer below asks the same tutor); a passage has none (the Talk sheet is about a verse or a chapter)
-            <button type="button" onClick={onTalk} className="min-h-11 w-full rounded-lg px-2.5 text-left text-sm font-medium text-accent active:bg-line">
-              Talk about verse {verse.n}
-            </button>
-          ) : null}
           {action === 'practise' && ai ? (
             <PractisePane
               state={{ ...practice, language: copyLanguage }}
@@ -364,13 +348,6 @@ export function VerseView(props: VerseViewProps) {
               <PlayIcon kind="play" />
               <span>{listen.again ? 'Play again' : `Play ${name}`}</span>
             </button>,
-            slot,
-          )
-        ) : null}
-        {slot && action === 'ask' && ai ? (
-          createPortal(
-            // voice-kit's Composer (mw-jtzpw0.3): the one Hold to ask bar, and Type a question beneath; his words show above it while he holds
-            <AskComposer book={book} chapter={chapter} verse={verse} state={ask} onAsk={onAsk} prefill={prefill} />,
             slot,
           )
         ) : null}

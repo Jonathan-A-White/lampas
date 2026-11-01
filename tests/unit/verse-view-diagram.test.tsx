@@ -52,7 +52,7 @@ describe('the Diagram action is of one verse', () => {
   it('is not in the row of a passage, Revelation 10:1-11', async () => {
     const region = await open('/#/?ref=Rev.10.1-11');
     expect(region.getAttribute('data-verse-view')).toBe('1-11');
-    expect(labels(region)).toEqual(expect.arrayContaining(['Listen', 'Ask the tutor', 'Practise']));
+    expect(labels(region)).toEqual(expect.arrayContaining(['Listen', 'Read it aloud', 'Practise']));
     expect(within(region).queryByRole('button', { name: 'Diagram' })).toBeNull();
   });
 
@@ -77,7 +77,7 @@ describe('the Diagram action is of one verse', () => {
   });
 
   it('leaves actionsFor as it was for one verse and drops only Diagram for many', () => {
-    expect(actionsFor(true, true).map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'practise', 'diagram']);
-    expect(actionsFor(true, false).map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'practise']);
+    expect(actionsFor(true, true).map((a) => a.id)).toEqual(['listen', 'read', 'practise', 'diagram']);
+    expect(actionsFor(true, false).map((a) => a.id)).toEqual(['listen', 'read', 'practise']);
   });
 });

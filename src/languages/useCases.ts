@@ -402,7 +402,7 @@ export const NEUTRAL_FEATURES: Readonly<Record<string, string>> = {
   'tap-guard': 'a double tap that changes the screen: the shell',
   tips: 'the one-time tips: the shell',
   'tutor-does': 'what the tutor does shows on the sheet: the tutor’s mechanics',
-  'tutor-door-setting': 'the Tutor door and Hand settings: the shell',
+  'hand-setting': 'the Hand setting: the shell',
   'tutor-go': 'the tutor takes him to a chapter: navigation',
   'tutor-live-stream': 'an answer the moment it is ready: the tutor’s mechanics',
   'tutor-requests': 'the tutor knows his requests: the request flow',
