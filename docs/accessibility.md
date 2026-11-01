@@ -52,7 +52,7 @@ row at the top of the screen, so a sighted reader on a touch screen sees nothing
 
 | The gesture | Where | The control |
 | --- | --- | --- |
-| Tap with two fingers: shows the Immersive reader's bars, or puts them away (`src/immersive.ts`) | the Reader's text, Immersive reader On | `Put the bars away` / `Show the bars` (`ReaderControls`; it says the result to the live region) |
+| Tap with two fingers: shows the Immersive reader's bars, or puts them away (`src/immersive.ts`) | the Reader's text (with Immersive reader Off the same tap switches it On; the bars button needs it On) | `Put the bars away` / `Show the bars` (`ReaderControls`; it says the result to the live region) |
 | Going into and out of the Immersive reader (the card's own line says Settings > Immersive reader) | the Reader | `Leave immersive reading` / `Start immersive reading` (`ReaderControls`; the same setting as Settings > Immersive reader, which stays) |
 | Tap on the outer thirds of the text, or swipe left or right: turns a page (`src/reader/usePages.ts`) | the Reader, Settings > Reading > Turn pages | `Next page` / `Previous page` (`ReaderControls`; `aria-disabled` on the first page of Matthew 1 and the last of Revelation 22 only; elsewhere they open the chapter before or after); the page is said by the place line |
 | Swipe left or right: the next or previous chapter (`src/reader/useChapterSwipe.ts`) | the Reader, Scroll | `‹ <chapter>` and `<chapter> ›` in the `Chapters` navigation at the foot of the text (`src/ChapterNav.tsx`), and the title's chapter picker |

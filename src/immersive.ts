@@ -2,7 +2,8 @@
 // foot bars slide away while he scrolls the text down, as a browser's address bar does (not when the Reader puts his saved place back). After that the bars change ONLY on a two-finger tap
 // on the text: shown if away, away if shown (mw-5r3p30.255, his words: "2 fingers on, 2 fingers off"). Nothing else brings them back: not
 // scrolling up (mw-5r3p30.227), not the end of the chapter or scrolling past it, not a sheet closing, not reading aloud stopping. A three-finger tap
-// does nothing. The two-finger tap opens no tutor (mw-5r3p30.882: the floating ? is the one door, src/tutor/door.ts). No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
+// does nothing. With the setting Off the same tap goes INTO immersive reading: it switches the setting On and the bars go away (mw-5r3p30.934, his words: "the two finger tap bringing you into immersive
+// reading, bringing you out"). The two-finger tap opens no tutor (mw-5r3p30.882: the floating ? is the one door, src/tutor/door.ts, and it is not drawn while the bars are away). No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
 // sliding.
 //
 // With Turn pages nothing scrolls (src/reader/usePages.ts): turning to the next page is what scrolling down is, and puts the bars away (mw-5r3p30.611: the
@@ -26,7 +27,7 @@
 // for again when the page is visible again. A phone without the API reads on.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
-import { getImmersive } from './data/repositories';
+import { getImmersive, setImmersive } from './data/repositories';
 import { isRestoringScroll } from './nav/scrollMemory';
 import type { ReadingMode } from './settings/definitions/readingMode';
 import { holdAwake, releaseAwake } from './speech/wakeLock';
@@ -121,6 +122,75 @@ export function useImmersiveSetting(): boolean {
   return stored === undefined ? onNow : stored === 'on';
 }
 
+/**
+ * Listens on `el` for a two-finger tap: the fingers land together (a touchstart each), go up again soon, none moved. `onTap` is called for each; a click the phone sends after one is dropped (a
+ * two-finger tap never taps a word). `onOther` is called for a one-finger tap and for a click that is not that stray one (the gestures that may ask for full screen). Returns how to stop listening.
+ */
+function watchTwoFingerTaps(el: HTMLElement, onTap: () => void, onOther: () => void): () => void {
+  // two fingers have been down since the last time all were up
+  let multi = false;
+  let tap: { at: number; from: Array<{ x: number; y: number }> } | null = null;
+  let guardUntil = 0;
+  const onTouchStart = (e: TouchEvent) => {
+    const n = e.touches.length;
+    if (n < 2) return;
+    multi = true;
+    if (n > 2) {
+      // a third finger makes it a gesture of its own
+      tap = null;
+      return;
+    }
+    // one finger is no tap yet; the second starts the clock
+    tap = { at: performance.now(), from: Array.from(e.touches, (t) => ({ x: t.clientX, y: t.clientY })) };
+  };
+  const onTouchMove = (e: TouchEvent) => {
+    if (!tap) return;
+    const start = tap.from;
+    const moved = Array.from(e.touches).some((t, i) => start[i] && Math.hypot(t.clientX - start[i].x, t.clientY - start[i].y) > TAP_SLOP_PX);
+    if (moved) tap = null;
+  };
+  const onTouchEnd = (e: TouchEvent) => {
+    if (e.touches.length > 0) return;
+    const wasMulti = multi;
+    multi = false;
+    // one finger lifted: a tap, or the end of a scroll
+    if (!wasMulti) {
+      onOther();
+      return;
+    }
+    if (!tap) return;
+    const { at } = tap;
+    tap = null;
+    if (performance.now() - at > TAP_MS) return;
+    guardUntil = performance.now() + CLICK_GUARD_MS;
+    onTap();
+  };
+  const onTouchCancel = () => {
+    tap = null;
+    multi = false;
+  };
+  const onClick = (e: MouseEvent) => {
+    if (performance.now() > guardUntil) {
+      onOther();
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  el.addEventListener('touchstart', onTouchStart, { passive: true });
+  el.addEventListener('touchmove', onTouchMove, { passive: true });
+  el.addEventListener('touchend', onTouchEnd, { passive: true });
+  el.addEventListener('touchcancel', onTouchCancel, { passive: true });
+  el.addEventListener('click', onClick, true);
+  return () => {
+    el.removeEventListener('touchstart', onTouchStart);
+    el.removeEventListener('touchmove', onTouchMove);
+    el.removeEventListener('touchend', onTouchEnd);
+    el.removeEventListener('touchcancel', onTouchCancel);
+    el.removeEventListener('click', onClick, true);
+  };
+}
+
 export interface Immersive {
   /** the bars are out of view */
   away: boolean;
@@ -147,6 +217,22 @@ export function useImmersive(
   const hide = useCallback(() => {
     if (enabled && !awayRef.current) set(true);
   }, [enabled, set]);
+
+  // With the setting Off a two-finger tap goes INTO immersive reading: the setting is switched On and the Reader that the new setting makes (the same one, now enabled) starts with the bars away
+  useEffect(() => {
+    const el = box.current;
+    if (enabled || !el) return undefined;
+    return watchTwoFingerTaps(
+      el,
+      () => {
+        awayNow = true;
+        setImmersive('on').catch(() => {
+          awayNow = false;
+        });
+      },
+      () => {},
+    );
+  }, [enabled, box]);
 
   useEffect(() => {
     const el = box.current;
@@ -182,8 +268,6 @@ export function useImmersive(
       entered = false;
       scrollTried = false;
     };
-    // two fingers have been down since the last time all were up
-    let multi = false;
     // a two-finger tap goes in and out of immersive reading; it never opens the tutor (the floating ? is the one door, src/tutor/door.ts)
     const toggle = () => {
       set(!awayRef.current);
@@ -217,65 +301,13 @@ export function useImmersive(
       enter(true);
     };
 
-    // a two-finger tap: the fingers land together (a touchstart each), go up again soon, none moved
-    let tap: { at: number; from: Array<{ x: number; y: number }> } | null = null;
-    let guardUntil = 0;
-    const onTouchStart = (e: TouchEvent) => {
-      const n = e.touches.length;
-      if (n < 2) return;
-      multi = true;
-      if (n > 2) {
-        // a third finger makes it a gesture of its own
-        tap = null;
-        return;
-      }
-      // one finger is no tap yet; the second starts the clock
-      tap = { at: performance.now(), from: Array.from(e.touches, (t) => ({ x: t.clientX, y: t.clientY })) };
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      if (!tap) return;
-      const start = tap.from;
-      const moved = Array.from(e.touches).some((t, i) => start[i] && Math.hypot(t.clientX - start[i].x, t.clientY - start[i].y) > TAP_SLOP_PX);
-      if (moved) tap = null;
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      if (e.touches.length > 0) return;
-      const wasMulti = multi;
-      multi = false;
-      // one finger lifted: a tap, or the end of a scroll
-      if (!wasMulti) {
-        enter(false);
-        return;
-      }
-      if (!tap) return;
-      const { at } = tap;
-      tap = null;
-      if (performance.now() - at > TAP_MS) return;
-      guardUntil = performance.now() + CLICK_GUARD_MS;
+    el.addEventListener('scroll', onScroll, { passive: true });
+    // a two-finger tap goes in and out of immersive reading; any other tap or click is a gesture that asks for full screen
+    const stopTaps = watchTwoFingerTaps(el, () => {
       toggle();
       // a two-finger tap is a gesture too: if the browser has left full screen since (mw-5r3p30.578), this asks again; in full screen it asks nothing
       enter(false);
-    };
-    const onTouchCancel = () => {
-      tap = null;
-      multi = false;
-    };
-    // a two-finger tap never taps a word
-    const onClick = (e: MouseEvent) => {
-      if (performance.now() > guardUntil) {
-        enter(false);
-        return;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    el.addEventListener('scroll', onScroll, { passive: true });
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchmove', onTouchMove, { passive: true });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
-    el.addEventListener('touchcancel', onTouchCancel, { passive: true });
-    el.addEventListener('click', onClick, true);
+    }, () => enter(false));
     document.addEventListener('fullscreenchange', onFullScreenChange);
     return () => {
       // switched Off (or the box gone): the bars are shown again if he switches it back On. A Reader that replaces this one at once reads awayNow
@@ -290,11 +322,7 @@ export function useImmersive(
         leaveFullScreen();
       }, LEAVE_DELAY_MS);
       el.removeEventListener('scroll', onScroll);
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-      el.removeEventListener('touchend', onTouchEnd);
-      el.removeEventListener('touchcancel', onTouchCancel);
-      el.removeEventListener('click', onClick, true);
+      stopTaps();
       document.removeEventListener('fullscreenchange', onFullScreenChange);
     };
   }, [enabled, box, set]);

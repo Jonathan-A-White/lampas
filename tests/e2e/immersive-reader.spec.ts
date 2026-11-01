@@ -167,14 +167,17 @@ test('a two-finger tap opens no word sheet; a one-finger tap on a word still ope
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
-test('with the bars away, a two-finger tap brings the bars back and the floating ? still opens the tutor', async ({ page }) => {
+test('with the bars away there is no floating ?; a two-finger tap brings the bars and the ? back, and the ? opens the tutor', async ({ page }) => {
   await openReader(page, 'on');
+  // the bars shown: the ? is the one door
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(1);
   await scrollText(page, 200);
   await expectAll(page, 'hidden');
+  // the immersive reader is the one screen without the tutor (mw-5r3p30.934)
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
   await twoFingerTap(page);
   await expectAll(page, 'visible');
-
-  // the floating ? stays whole while the bars are away, and opens the tutor (mw-5r3p30.882: the Talk bar is gone)
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(1);
   await openTutor(page, { sheet: 'Talk about Romans 8' });
 });
 

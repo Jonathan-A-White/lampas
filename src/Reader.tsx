@@ -326,16 +326,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     setVariantShown(null);
     setTalkAbout(variantShown.unit.v);
   };
-  // The tutor door (src/tutor/door.ts, the floating ?): on the Reader it asks about the verse the Verse view shows or the verse selected, else the chapter; over the brace sheet, about its unit
-  useDoorTarget(
-    ai && chapter && !failed
-      ? () => {
-          stopReading();
-          setTalkAbout(viewUnit?.n ?? selected);
-        }
-      : undefined,
-  );
-  useDoorTarget(ai && variantShown ? askVariant : undefined);
   // The Talk sheet's own close (Done), which the answer's `go` calls before the Reader opens the other chapter.
   useEffect(() => {
     closeTalk.current = () => {
@@ -384,6 +374,18 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The bars change only on a two-finger tap (src/immersive.ts); a sheet closing or reading aloud stopping does not bring them back. They stay out
   // of view only while the header holds no reading control.
   const away = bars.away && !headerButtons;
+  // The tutor door (src/tutor/door.ts, the floating ?): on the Reader it asks about the verse the Verse view shows or the verse selected, else the chapter; over the brace sheet, about its unit
+  useDoorTarget(
+    ai && chapter && !failed
+      ? () => {
+          stopReading();
+          setTalkAbout(viewUnit?.n ?? selected);
+        }
+      : undefined,
+    // the immersive reader (the bars away, no sheet over it) is the one screen with no tutor door
+    away && viewUnit === undefined,
+  );
+  useDoorTarget(ai && variantShown ? askVariant : undefined);
   // The foot of the screen keeps the phone's bottom floor on its lowest row (mw-5r3p30.473): the place line of the Immersive reader (under everything), else the
   // speaking bar's slot or the Turn pages line above it. No bar of the tutor's sits under them any more (the Talk bar is gone, mw-5r3p30.882), licensed or not.
   const barUp = useBarShown();

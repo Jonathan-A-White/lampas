@@ -214,6 +214,22 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('With Immersive reader Off a two-finger tap goes into immersive reading, and a second brings the bars back', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Romans 8 with Immersive reader Off', () => open({ immersive: 'off' }));
+    When('he taps the text with two fingers', twoFingerTap);
+    Then(`${bars} out of view`, outOfView);
+    And('Immersive reader is now On', async () => {
+      await waitFor(async () => expect((await db.settings.get('immersiveReader'))?.value).toBe('on'));
+      await waitFor(() => expect(reader()).toHaveAttribute('data-immersive', 'on'));
+    });
+    When('he taps the text with two fingers again', async () => {
+      // past the guard that drops the click after a tap
+      await sleep(650);
+      twoFingerTap();
+    });
+    Then(`${bars} in view`, inView);
+  });
+
   Scenario('Scrolling down slides the bars away and scrolling up leaves them away', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));

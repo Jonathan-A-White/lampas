@@ -71,17 +71,47 @@ async function put(page: Page, store: string, rows: object[]) {
   );
 }
 
-test('Revelation 1 has no Talk bar and no round Ask button, the ? is its one door, and a two-finger tap on the text opens no tutor', async ({ page }) => {
+test('Revelation 1 has no Talk bar and no round Ask button, and the ? is its one door', async ({ page }) => {
   await openRevelation(page);
   await expectNoOldControls(page);
   await expectOneDoor(page);
-
-  await twoFingersOnText(page);
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.getByText(/^Talk about /)).toHaveCount(0);
   await shot(page, 'tutor-door-absent-reader');
 
   // the ? is the way in, and the only one
+  const sheet = await openTutor(page, { sheet: 'Talk about Revelation 1' });
+  await expect(sheet).toBeVisible();
+});
+
+/** Buttons drawn in the lower part of the window outside the text, but the place line and the ?: what a bottom button (an exit, a Talk bar) would be. */
+const bottomButtons = (page: Page) =>
+  page.evaluate(() =>
+    Array.from(document.querySelectorAll('button'))
+      .filter((b) => {
+        const r = b.getBoundingClientRect();
+        return r.width > 2 && r.height > 2 && r.top > window.innerHeight * 0.6 && !b.closest('[data-reader], [data-place-line], [data-floating-tutor]');
+      })
+      .map((b) => b.textContent?.trim() ?? ''),
+  );
+
+test('a two-finger tap on the text goes into immersive reading and the next one comes out; neither opens the tutor, the ? is not drawn in it, and no button sits at the bottom', async ({ page }) => {
+  await openRevelation(page);
+  await expectOneDoor(page);
+
+  await twoFingersOnText(page);
+  // into immersive reading: the bars are away and the ? with them (the one screen without the tutor)
+  await expect(page.locator('header').first()).toBeHidden();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'on');
+  await expect(page.locator(FLOATING)).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(await bottomButtons(page)).toEqual([]);
+  await shot(page, 'tutor-door-absent-immersive');
+
+  await twoFingersOnText(page);
+  // out of it: the bars are back and the ? is the door again
+  await expect(page.locator('header').first()).toBeVisible();
+  await expectOneDoor(page);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByText(/^Talk about /)).toHaveCount(0);
   const sheet = await openTutor(page, { sheet: 'Talk about Revelation 1' });
   await expect(sheet).toBeVisible();
 });

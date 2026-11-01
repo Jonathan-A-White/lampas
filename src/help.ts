@@ -106,6 +106,7 @@ export const HELP_PAGES: HelpPage[] = [
     line: 'Ask about a verse, a word or a screen.',
     body: [
       'The floating ? on the side of the hand you hold your phone in (Settings > Hand) is the one way to the tutor. It opens a talk about what is in front of you: hold to talk, type, or send a picture. The tutor can look things up and do what you ask: a change comes with an Undo, a step that needs your yes waits for your tap.',
+      'Immersive reading is the one screen without the ?: tap the text with two fingers to bring the bars back, and the ? comes back with them. The same tap goes into immersive reading.',
       'Every talk is kept on the phone: Settings > Conversations lists them, newest first, with a search. Under Talk in Settings you choose whether the bars are held or tapped.',
     ],
   },
