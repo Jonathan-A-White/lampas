@@ -39,7 +39,7 @@ function TutorIcon() {
   );
 }
 
-/** The round button. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar); it also clears the
+/** The round button, the older door; it gives way to the floating ? (FloatingTutor) when that is the Tutor door. `lift` raises it above a pinned bar the screen has at its foot (the Reader's Talk bar, Import's Add bar); it also clears the
  * speaking bar while one is up. `away` (the Reader's Immersive reader, src/immersive.ts) slides it out of view: true or false makes the button slide,
  * and while it is true it is not in the tab order or the accessibility tree; undefined (every other screen) is the button as ever. `inDialog` is the button a
  * full-screen dialog draws itself (DialogAskTutor): the dialog's own sheet does not hide it. */
@@ -49,7 +49,9 @@ export function AskTutorButton({ onClick, lift = '0px', away, inDialog }: { onCl
   const hidden = sheetOpen && !inDialog;
   const speaking = useBarShown();
   const allowed = useAiAllowed();
-  if (hidden || !allowed) return null;
+  // one door, drawn once (mw-5r3p30.935): where the door is the floating ? (FloatingTutor, over every screen and sheet) this older round button is not drawn beside it
+  const floatingDoor = useDoorMode() === 'floating';
+  if (hidden || !allowed || floatingDoor) return null;
   return (
     <button
       type="button"
@@ -263,7 +265,7 @@ export const FLOATING_TUTOR_LABEL = 'Ask the tutor about what is on screen';
  * The Tutor door 'Floating ?' (mw-5r3p30.880): a round tutor button at the Hand side's edge, drawn over every screen that has something to ask about, the Verse view and open sheets too (z-50: over the
  * sheets at z-35 and the full-screen dialogs at z-40, under the shell's bars). A tap opens the tutor about the newest target a screen or sheet registered (src/tutor/door.ts). Not drawn while a Talk sheet
  * is open (it has its own composer at the foot), where nothing is registered, or on any door but this one: with no licence the door mode is none and nothing shows. It sits at 17 rem above the phone's bar,
- * a thumb's reach up the edge and clear of the older round button (bottom right, above the Talk bar) that stays until part C2 of mw-5r3p30.843.
+ * a thumb's reach up the edge. The older round button (bottom right, above the Talk bar) stays until part C2 of mw-5r3p30.843, but is not drawn beside this one (AskTutorButton): one door, drawn once.
  */
 export function FloatingTutor() {
   const mode = useDoorMode();
