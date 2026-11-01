@@ -193,7 +193,7 @@ export const USE_CASES: readonly UseCase[] = [
     title: 'Memory pictures on the teach sheet and in the talk',
     status: {
       greek: 'has',
-      hebrew: { gap: 'scenario "The teach sheet of a Hebrew word with a picture shows it" in features/hebrew-words.feature; a picture per Hebrew seed lemma under public/pictures/ and its row in the pictures index (docs/pictures.md says where), credited in ATTRIBUTION.md; S' },
+      hebrew: 'has',
       latin: LATIN_LATER,
     },
   },

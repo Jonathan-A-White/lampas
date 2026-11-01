@@ -63,7 +63,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[$P recognizer](https://depts.washington.edu/acelab/proj/dollar/pdollar.html)** by Radu-Daniel Vatavu, Lisa Anthony and Jacob O. Wobbrock: a letter you write is matched by its shape. Licence: none; a method.
 - **[The Well-Trained Mind](https://welltrainedmind.com/)** by Susan Wise Bauer and Jessie Wise: copywork, narration, dictation, summary. Licence: none needed; a method.
 - **[IPA](https://www.internationalphoneticassociation.org)**, the International Phonetic Alphabet: symbols for Greek and Israeli Hebrew sounds. Licence: none; a standard, its [chart](https://www.internationalphoneticassociation.org/content/full-ipa-chart) CC BY-SA 3.0.
-- **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of Lampas's code and icons, under Jonathan's direction. Licence: none needed; its [terms](https://www.anthropic.com/legal/commercial-terms) apply.
+- **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of the code, icons and word pictures, under Jonathan's direction. Licence: none needed; its [terms](https://www.anthropic.com/legal/commercial-terms) apply.
 
 ## What built it
 

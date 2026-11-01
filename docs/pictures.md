@@ -1,6 +1,6 @@
 # Memory pictures
 
-A small hand-drawn picture helps a Greek word stick. Each is an SVG in `public/pictures/<name>.svg`,
+A small hand-drawn picture helps a Greek or Hebrew word stick. Each is an SVG in `public/pictures/<name>.svg`,
 drawn by hand (the way `public/icon.svg` was; no image model, no key, no raster). The Words card shows
 it beside the Greek word, and the Quick test shows it beside the word asked. The picture is decorative
 (`alt=""`): the Greek and the gloss are always on screen next to it. A word with no picture shows none.
@@ -16,6 +16,7 @@ file. `src/WordPicture.tsx` draws it, or nothing.
 - [The picture queue](#the-picture-queue)
   - [Making the next slice](#making-the-next-slice)
 - [Link pictures](#link-pictures)
+- [Hebrew pictures](#hebrew-pictures)
 - [Nothing honest to draw](#nothing-honest-to-draw)
 
 <!-- /toc -->
@@ -112,6 +113,18 @@ new scene. A broken line (dots or dashes) is ἄν's "maybe, -ever" wherever it 
 - **ὅτε** — "when": both thoughts on one blue line that drops to a point on a grey time line. Not ὡς: the line is time, not likeness.
 - **ὅταν** — "whenever": ὅτε's picture with the blue line in ἄν's dots and more ticks on the time line (at any such time).
 - **ἕως** — "until": the first runs on, above the time line, into a blue wall, the second just after it. Not εἰ or ἵνα: a stop, not a choice or an aim.
+
+## Hebrew pictures
+
+The Hebrew seed words (`SEED_WORDS_HBO`, the 100 commonest Old Testament lemmas) have pictures too (mw-5r3p30.910), in `PICTURES_HBO` of
+`src/data/pictures.ts`, keyed by the seed lemma as the words store keeps it (NFC, pointed, a maqaf kept: `מִן־`); `pictureFile` looks
+in `PICTURES` and then `PICTURES_HBO`, so the teach sheet, Words and the Quick test draw a Hebrew word's picture like a Greek one.
+A Hebrew word whose idea a Greek word already draws (אֱלֹהִים is θεός, אָמַר is λέγω, אֶל is πρός) has the same drawing under its own file name;
+the body parts and things Greek lacked (עַ֫יִן eye, פֶּה mouth, לֵב heart, רֹאשׁ head, הַר mountain, מַי water, מֶ֫לֶךְ king) are drawn new, by the rules above.
+File names are the transliteration, a-z only (`al.svg` is עַל, `alneg.svg` is אַל, `imif.svg` is אִם). 51 of the 100 have one. Left without, with no honest
+thing to draw: אֵת and the other function words (אֲשֶׁר, כִּי, הִנֵּה, גַּם, כֵּן, כֹּה, מָה, עַד, אַחַר, אַ֫יִן), the names with no figure to hold (יְהֹוָה, מֹשֶׁה,
+יְהוּדָה, יְרוּשָׁלִַ֫ם, מִצְרַ֫יִם, אֱנוֹשׁ, קָמָי), the numbers above two and the rest of the verbs and nouns not yet drawn. A word he imports himself has a picture only if its
+lemma is added to `PICTURES_HBO` this way. The Hebrew picture queue (the commonest Old Testament forms with none) is not built yet.
 
 ## Nothing honest to draw
 
