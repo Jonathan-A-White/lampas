@@ -143,6 +143,25 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('The teach sheet of a Hebrew word with a picture shows it', ({ Given, When, Then, And }) => {
+    Given(learning, () => openOn('Genesis 1', HEBREW_LEARNING));
+    When('he taps New words', openSheet);
+    Then('the teach sheet of {string} shows no picture', async (_, lemma: string) => {
+      await shows(lemma);
+      expect(within(sheet()).queryByTestId('teach-picture')).toBeNull();
+    });
+    When('he taps Got it', async () => {
+      await user.click(within(sheet()).getByRole('button', { name: 'Got it', exact: true }));
+    });
+    Then('the teach sheet now shows {string}', (_, lemma: string) => shows(lemma));
+    And('the teach sheet shows a picture, with no alt text, the meaning {string} being on it already', async (_, gloss: string) => {
+      const picture = await within(sheet()).findByTestId('teach-picture');
+      expect(picture).toHaveAttribute('src', '/pictures/al.svg');
+      expect(picture).toHaveAttribute('alt', '');
+      expect(within(sheet()).getByTestId('teach-gloss')).toHaveTextContent(gloss);
+    });
+  });
+
   Scenario('Hear it on the teach sheet says the word in the Hebrew voice', ({ Given, When, And, Then }) => {
     Given(learningWithVoice, () => openOn('Genesis 1', { ...HEBREW_LEARNING, speaks: true }));
     When('he taps New words', openSheet);

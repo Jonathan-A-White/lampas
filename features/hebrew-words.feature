@@ -12,6 +12,15 @@ Feature: Hebrew words taught while he reads
     Then the teach sheet shows "אֵת" large in Hebrew, right to left, with its respelling, its meaning "[Obj.]" and Hear it
     And the teach sheet shows verse 1 with "אֵת" in Hebrew and its English in small grey beneath it
 
+  @uc-pictures @hebrew
+  Scenario: The teach sheet of a Hebrew word with a picture shows it
+    Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day
+    When he taps New words
+    Then the teach sheet of "אֵת" shows no picture
+    When he taps Got it
+    Then the teach sheet now shows "עַל"
+    And the teach sheet shows a picture, with no alt text, the meaning "upon" being on it already
+
   @uc-new-words @uc-hear-word @hebrew
   Scenario: Hear it on the teach sheet says the word in the Hebrew voice
     Given Lampas is opened on Genesis 1 with Hebrew chosen at Learning and 3 new words a day on a phone with a Hebrew voice

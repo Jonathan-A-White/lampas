@@ -129,6 +129,65 @@ export const PICTURES: Readonly<Record<string, string>> = {
 };
 
 /**
+ * The Hebrew seed words' pictures (mw-5r3p30.910): the key is the seed lemma as the words store keeps it (NFC, pointed, a maqaf kept).
+ * A word whose idea Greek already draws shares that picture's drawing under its own file name; the rest are drawn new
+ * (docs/pictures.md 'Hebrew pictures').
+ */
+export const PICTURES_HBO: Readonly<Record<string, string>> = {
+  "אֱלֹהִים": "elohim.svg",
+  "אָמַר": "amar.svg",
+  "לֹא": "lo.svg",
+  "אַל": "alneg.svg",
+  "בֵּן": "ben.svg",
+  "עַל": "al.svg",
+  "אֶל": "el.svg",
+  "מִן־": "min.svg",
+  "עִם": "im.svg",
+  "תַּחַת": "tachat.svg",
+  "יוֹם": "yom.svg",
+  "רָאָה": "raah.svg",
+  "שָׁמַע": "shama.svg",
+  "דָּבָר": "davar.svg",
+  "דָבַר": "dibber.svg",
+  "יָד": "yad.svg",
+  "אִישׁ": "ish.svg",
+  "אִשָּׁה": "ishah.svg",
+  "אָדָם": "adam.svg",
+  "אָב": "av.svg",
+  "אָח": "ach.svg",
+  "אֶ֫רֶץ": "erets.svg",
+  "שֵׁם": "shem.svg",
+  "עֶ֫בֶד": "eved.svg",
+  "עַם": "am.svg",
+  "יִשְׂרָאֵל": "yisrael.svg",
+  "דָּוִד": "david.svg",
+  "אֶחָד": "echad.svg",
+  "גָּדוֹל": "gadol.svg",
+  "טוֹב": "tov.svg",
+  "בּוֹא": "bo.svg",
+  "יָצָא": "yatsa.svg",
+  "יָדַע": "yada.svg",
+  "לָקַח": "laqach.svg",
+  "נָתַן": "natan.svg",
+  "עָשָׂה": "asah.svg",
+  "קָרָא": "qara.svg",
+  "אֲנִי": "ani.svg",
+  "אַתָּ֫ה": "atah.svg",
+  "זֶה": "zeh.svg",
+  "זֹאת": "zot.svg",
+  "אִם": "imif.svg",
+  "כֹּל": "kol.svg",
+  "הָלַךְ": "halakh.svg",
+  "עַ֫יִן": "ayin.svg",
+  "פֶּה": "peh.svg",
+  "לֵב": "lev.svg",
+  "רֹאשׁ": "rosh.svg",
+  "הַר": "har.svg",
+  "מַי": "mayim.svg",
+  "מֶ֫לֶךְ": "melek.svg",
+};
+
+/**
  * The link pictures: one family for the small link words, two thought-blocks (the first white, above; the second amber, below)
  * and the link between them, drawn differently for each so they can be told apart (docs/pictures.md 'Link pictures').
  * `npm run pictures:sheet` draws them side by side in docs/pictures/link-words.svg.
@@ -139,7 +198,8 @@ export const LINK_WORDS: readonly string[] = [
 
 /** The picture file for a headword (or a BMA lemma line), or undefined when the word has none. */
 export function pictureFile(lemma: string): string | undefined {
-  return PICTURES[normaliseHeadword(lemma)];
+  const key = normaliseHeadword(lemma);
+  return PICTURES[key] ?? PICTURES_HBO[key];
 }
 
 /** Where the app serves the picture from, or undefined when the word has none. */

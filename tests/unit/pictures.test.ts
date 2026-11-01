@@ -16,11 +16,14 @@ import {
 } from '../../scripts/pictures-queue';
 import { normaliseHeadword } from '../../src/data/lemma';
 import { LINK_GLOSSES, linkSheet, SHEET_PATH } from '../../scripts/pictures-sheet';
-import { LINK_WORDS, pictureFile, pictureUrl, PICTURES } from '../../src/data/pictures';
+import { LINK_WORDS, pictureFile, pictureUrl, PICTURES, PICTURES_HBO } from '../../src/data/pictures';
+import { SEED_WORDS_HBO } from '../../src/data/seed-words-hbo';
 import { SEED_WORDS } from '../../src/data/seed-words';
 
 const headwords = SEED_WORDS.map((w) => normaliseHeadword(w.lemma));
 const entries = Object.entries(PICTURES);
+const hebrewEntries = Object.entries(PICTURES_HBO);
+const allEntries = [...entries, ...hebrewEntries];
 const frequency = JSON.parse(readFileSync('public/data/frequency.json', 'utf8')) as FrequencyRow[];
 const ntHeadwords = new Set(frequency.map((e) => normaliseHeadword(e.lemma)));
 const picturesDoc = readFileSync('docs/pictures.md', 'utf8');
@@ -39,10 +42,10 @@ describe('the memory pictures', () => {
   });
 
   it('keeps every file in the folder in the map, each used once', () => {
-    expect(readdirSync('public/pictures').sort()).toEqual(entries.map(([, f]) => f).sort());
+    expect(readdirSync('public/pictures').sort()).toEqual(allEntries.map(([, f]) => f).sort());
   });
 
-  it.each(entries)('%s: a flat SVG on the 96 x 96 grid with no text and no raster, under 2.5 KB', (_lemma, file) => {
+  it.each(allEntries)('%s: a flat SVG on the 96 x 96 grid with no text and no raster, under 2.5 KB', (_lemma, file) => {
     const path = `public/pictures/${file}`;
     const source = readFileSync(path, 'utf8');
     expect(statSync(path).size).toBeLessThan(2.5 * 1024);
@@ -61,6 +64,16 @@ describe('the memory pictures', () => {
   it('gives at least 45 of the 63 seed lemmas a picture', () => {
     expect(headwords).toHaveLength(63);
     expect(headwords.filter((h) => pictureFile(h) !== undefined).length).toBeGreaterThanOrEqual(45);
+  });
+
+  it('gives the Hebrew seed lemmas their pictures: each key a seed lemma, none a Greek key, a picture for at least 40 of the 100', () => {
+    const seed = SEED_WORDS_HBO.map((w) => normaliseHeadword(w.lemma));
+    expect(seed).toHaveLength(100);
+    for (const [lemma] of hebrewEntries) expect(seed, `${lemma} is not a Hebrew seed lemma`).toContain(lemma);
+    for (const [lemma] of hebrewEntries) expect(Object.keys(PICTURES), `${lemma} is also a Greek key`).not.toContain(lemma);
+    expect(seed.filter((h) => pictureFile(h) !== undefined).length).toBeGreaterThanOrEqual(40);
+    expect(pictureUrl('עַל')).toBe('/pictures/al.svg');
+    expect(pictureUrl('אֵת')).toBeUndefined();
   });
 
   it('answers a word with no picture with nothing', () => {
