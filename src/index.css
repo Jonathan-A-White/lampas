@@ -1032,6 +1032,26 @@ textarea,
     font-size: 0;
   }
 }
+/* His live words while he holds (mw-5r3p30.931): the kit's .bk-composer__live, the Talk sheet's [data-talk-live] words and the letter drill's say-live sit in a box of about four lines
+ * (two in a short window) instead of growing with the dictation, so a minute of talk cannot push Hold to talk down under the navigation bar. column-reverse keeps the box at its
+ * end as words arrive (the newest are in view, the oldest scroll off above), and a hand can still scroll back. The box takes the hold's pointer events no differently: it is not
+ * the pressed button, so nothing here can end the hold. */
+.bk-composer__live,
+.lp-live {
+  display: flex;
+  flex-direction: column-reverse;
+  max-height: 7rem;
+  max-height: 4lh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-height: 500px) {
+  .bk-composer__live,
+  .lp-live {
+    max-height: 3.5rem;
+    max-height: 2lh;
+  }
+}
 [data-verse-bar] .bk-composer {
   border-top: 0;
   background: transparent;

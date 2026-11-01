@@ -231,7 +231,7 @@ function SayFoot({ onHeard, onSkip, onNoMicrophone }: { onHeard: (text: string) 
         </p>
       ) : null}
       {voice.listening && voice.transcript ? (
-        <p data-testid="say-live" className="text-center text-lg">
+        <p data-testid="say-live" className="lp-live text-center text-lg">
           {voice.transcript}
         </p>
       ) : null}
