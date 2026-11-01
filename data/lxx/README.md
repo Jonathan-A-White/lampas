@@ -16,6 +16,7 @@ these files is Lampas's own derived data: the lemma and the candidate analyses.
 | `README.md` | this file | yes |
 | `annotations/<book>.tsv` | **the release**: the words of a book that passed the bar, `ref`, `lemma`, `parsing`, `layer`, `confidence`, `notes`, one row a word; written by `npm run lxx:release -- --book <code>` only when the book meets the bar | yes, a book at a time (none yet) |
 | `choices/<book>-<batch>.tsv`, `known/<book>-<chapter>.tsv`, `recheck/<book>-<batch>.tsv` | the model's choices (layer 3): for a book's pending words, for a New Testament chapter's known-answer run, and the second pass on a sample; `ref`, `parsing`, `lemma`, `mark` | yes |
+| `morpheus/<book>.tsv` | Morpheus's analyses (mapped to TAGNT's codes) of the book's forms with no candidate and of its guesses: `form`, `analyses`; made by `npm run lxx:derive` when Docker and the Morpheus image are there | no (git-ignored cache; it holds the forms, so it is never released) |
 | `derived/<book>.tsv` | the words of a book that are settled: `ref`, `lemma`, `parsing`, `layer`, `confidence`, `candidates`, `notes` | no (git-ignored working file) |
 | `pending/<book>.tsv` | the words still waiting for a later layer: `ref`, `candidates`, `notes` | no (git-ignored working file) |
 
@@ -54,5 +55,10 @@ the same bytes.
   [eliranwong/LXX-Swete-1930](https://github.com/eliranwong/LXX-Swete-1930) (GPL-3.0), commit `1d3efc3c63bd384a4f3f07ed37eef54b0d45ac33`. The
   references here count its tokens. Its text is not in these files; where Lampas ships Swete's Greek it ships in files of its own with eliranwong's
   `LICENSE` and `README.md` beside them.
+
+- **Morpheus** ([perseids-tools/morpheus](https://github.com/perseids-tools/morpheus), the Perseus Project's analyzer), commit `ab6898ffed335fc6169fa02c9940657a9b5a78e0`, **MPL-2.0**. A build tool: `npm run lxx:derive` runs it from
+  its Docker image over a book's forms with no candidate and its guesses, and its analyses become candidates in `morpheus/<book>.tsv` (a git-ignored cache) and in the words' candidate columns. Only what it prints about a
+  word reaches this data, never its code or its tables, and MPL-2.0 is a file-level copyleft on Morpheus's own files, which Lampas does not copy or ship. With no Docker the step is skipped and nothing else changes
+  ([docs/lxx-derivation.md](../../docs/lxx-derivation.md), 'Morpheus, the second method').
 
 MIT on Lampas's part does not stop anyone meeting CC BY 4.0 for what was derived from STEPBible's data: keep the credit above with the data.

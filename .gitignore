@@ -13,6 +13,8 @@ data/raw
 # The Septuagint derivation's output (npm run lxx:derive; docs/lxx-derivation.md)
 data/lxx/derived
 data/lxx/pending
+# Morpheus's analyses of a book's no-candidate forms and guesses, a derived cache (scripts/lxx/morpheus.ts)
+data/lxx/morpheus
 # The lemma form files, made from the chapters by npm run build (scripts/build-lemma-forms.mjs)
 public/lemma-forms
 
