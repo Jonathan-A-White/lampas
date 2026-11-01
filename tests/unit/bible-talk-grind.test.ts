@@ -931,6 +931,11 @@ describe('two rules the trim of mw-5r3p30.732 left too weak (mw-5r3p30.737)', ()
     const bridgeRule = section.slice(section.indexOf('Put ONE `bridge`'), section.indexOf('Name the ideas'));
     expect(bridgeRule.indexOf('most important first')).toBeLessThan(bridgeRule.indexOf('`next`'));
   });
+
+  // mw-5r3p30.936: with a `direct` idea last in `ideas` the tutor listed it first in `missing` and copied `missing[0]` to `next` (case-nominative, not diphthongs); say `next` is not `missing[0]`.
+  it('"When he is not ready" says `next` is `ideas[0].id` and not `missing[0]`, the `direct` idea listed first in `missing`', () => {
+    expect(part('## When he is not ready')).toMatch(/`next` is always `ideas\[0\]\.id` \(not `missing\[0\]`\)/);
+  });
 });
 
 // mw-t3xu9a.5: the tutor client's words and answer fields are the kit's (voice-kit/talks/grind), included by `npm run grind:build`; the catalogue is request DATA.
