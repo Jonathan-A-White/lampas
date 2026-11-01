@@ -47,6 +47,7 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { HintCard } from './tips/HintCard';
 import { WORD_SHEET_OPENED } from './tips/hints';
 import { GREEK_LANG, greekLang } from './script/greekLang';
+import { GuessedNumber } from './GuessedNumber';
 import { HeartOfWord } from './HeartOfWord';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 import { hebrewPointedForm } from './speech/hebrewPronunciation';
@@ -443,7 +444,12 @@ function WordCard({ chapter, word, verseOf, english, pronunciation, known, study
             {wordGloss(chapter, word)}
           </Fact>
         )}
-        {strongsOn || formOnly ? null : (
+        {word.src === 'guess' ? (
+          // a variant word whose number the data guessed (the nearest lemma): the number with its mark, even while the Strong's resource shows it as a link
+          <Fact label="Strong's" testId="sheet-strongs">
+            <GuessedNumber number={word.s} />
+          </Fact>
+        ) : strongsOn || formOnly ? null : (
           <Fact label="Strong's" testId="sheet-strongs">
             {word.s}
           </Fact>
