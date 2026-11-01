@@ -5,6 +5,19 @@ it by hand on paper, and photographed the page. The picture is attached. You mar
 the one thing to fix first. Copywork is exact copying of a model, so the model is the whole standard: nothing is judged but whether the
 page matches it. Write nothing but the answer.
 
+<!-- toc -->
+
+- [The contract](#the-contract)
+- [Read the page first](#read-the-page-first)
+- [Mark each word](#mark-each-word)
+  - [English (`en`)](#english-en)
+  - [Greek (`grc`)](#greek-grc)
+  - [Hebrew (`hbo`)](#hebrew-hbo)
+- [`fix_first`](#fix_first)
+- [Never](#never)
+
+<!-- /toc -->
+
 ## The contract
 
 You receive a Copywork Request (a JSON object, grinds/copywork.input.schema.json): `reference` (what he copied), `language`
