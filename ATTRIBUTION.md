@@ -13,6 +13,8 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Berean Standard Bible tables](https://berean.bible/licensing.htm).** Public domain. The Old Testament: Westminster Leningrad Codex Hebrew aligned to English. Changes: split by chapter.
 - **[Tyndale House's TBESG, TBESH, TIPNR and TVTMS, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House,
   Cambridge. Greek and Hebrew words, variant numbers (TAGNT), the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 characters.
+  TAGNT, the Translators Amalgamated Greek New Testament: the New Testament forms and parsings Lampas's Septuagint derivation starts from; TBESG gives its parser
+  the only lemmas it may propose ([the method](https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md)). Changes: applied to the Septuagint by Lampas's derivation.
 - **[LXX2012, from eBible](https://ebible.org/eng-lxx2012/)**: Brenton's Septuagint in English (1851), American spelling by M. P. Johnson. Public domain. Changes: footnotes dropped.
 - **[byztxt Byzantine text](https://github.com/byztxt/byzantine-majority-text)** and the [Robinson-Pierpont 2026 release](https://byzantinetext.com/study/editions/robinson-pierpont/). Public domain. Variant readings and sentence ends. Changes: laid on the words.
 - **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. The 2005 appendix, read on the Preface. Changes: Greek in Greek letters.

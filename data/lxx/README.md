@@ -19,9 +19,11 @@ these files is Lampas's own derived data: the lemma and the candidate analyses.
 
 `<book>` is Swete's book code in lower case (`gen`, `psa`). The columns are described in docs/lxx-derivation.md, 'The files'.
 
-**What there is so far, and what is to come.** Layer 1 only: a word whose form the New Testament has with one analysis (or one with at least 95% of 20 or
-more words) is settled; every other word is pending. The parser (layer 2) and the model's choice among the candidates (layer 3) come in later stories, and
-then the files are committed book by book, each once it meets the bar in docs/sources/lxx-derivation-probe.md, 'Error checks for the full run'.
+**What there is so far, and what is to come.** Layers 1 and 2: a word whose form the New Testament has with one analysis (or one with at least 95% of 20
+or more words) is settled in layer 1; a form it lacks is parsed by ending rules learned from the New Testament, with lemmas only from TBESG, and settled in
+layer 2 when one candidate has at least 90% of the support; every other word is pending with its candidates. The model's choice among them (layer 3)
+comes in a later story, and then the files are committed book by book, each once it meets the bar in docs/sources/lxx-derivation-probe.md, 'Error checks
+for the full run'.
 
 ## How they are made
 
