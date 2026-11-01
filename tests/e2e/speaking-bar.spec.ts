@@ -84,9 +84,13 @@ test('Leaving the reader pauses the reading; the bar offers Resume on Settings a
   expect(await isSpeaking(page)).toBe(false);
   const box = await bar(page).boundingBox();
   expect(box && box.x >= 0 && box.x + box.width <= PHONE.width && box.y + box.height <= PHONE.height).toBe(true);
-  // the round Ask the tutor button rides above it here too
-  const ask = await page.locator('[data-ask-tutor]').boundingBox();
-  expect(ask && box && ask.y + ask.height <= box.y + 1).toBe(true);
+  // the floating ? is on this screen too and covers none of the bar's buttons
+  const ask = await page.locator('[data-floating-tutor]').boundingBox();
+  expect(ask).not.toBeNull();
+  for (const name of ['Resume', 'Restart', 'Stop']) {
+    const b = await bar(page).getByRole('button', { name, exact: true }).boundingBox();
+    expect(!ask || !b || ask.x + ask.width <= b.x || b.x + b.width <= ask.x || ask.y + ask.height <= b.y || b.y + b.height <= ask.y).toBe(true);
+  }
   await shot(page, 'speaking-bar-settings');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await expect(page.locator('[data-verse="3"]')).toBeVisible();

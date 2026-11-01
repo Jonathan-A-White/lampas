@@ -35,11 +35,11 @@ test('About credits the data at phone width, reached from Settings', async ({ pa
   const sideways = await page.evaluate(() => [...document.querySelectorAll('main a')].filter((a) => a.getBoundingClientRect().right > innerWidth).length);
   expect(sideways).toBe(0);
 
-  // the round tutor button must not cover the last line
+  // the floating ? must not cover the last line
   const main = page.locator('main.screen');
   await main.evaluate((el) => el.scrollTo(0, el.scrollHeight));
   const last = await page.locator('main li').last().boundingBox();
-  const button = await page.locator('[data-ask-tutor]').boundingBox();
+  const button = await page.locator('[data-floating-tutor]').boundingBox();
   expect(last && button && last.y + last.height).toBeLessThanOrEqual(button?.y ?? 0);
   await main.evaluate((el) => el.scrollTo(0, 0));
 
