@@ -12,6 +12,11 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [Layer 2 in detail](#layer-2-in-detail)
 - [The agreement check](#the-agreement-check)
 - [Swete's tokens](#swetes-tokens)
+- [The bar](#the-bar)
+- [The known-answer run](#the-known-answer-run)
+- [The choices file](#the-choices-file)
+- [The annotation file](#the-annotation-file)
+- [The report](#the-report)
 - [The files](#the-files)
 - [The commands](#the-commands)
 - [The sources](#the-sources)
@@ -29,9 +34,9 @@ Each word is looked up in three layers, in order. A word keeps the layer that ga
 | Layer 1, TAGNT form | The word's form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis, or one with at least 95% of 20 or more words | built (`scripts/lxx/tagnt.ts`, `derive.ts`) |
 | Layer 2, parser | For a form the New Testament lacks: ending rules learned from TAGNT's (form, lemma, parsing) triples, proposing only lemmas in TBESG; then Swete's other spellings; then analogy. Taken when one candidate is left, or one with 90% of the support | built (`scripts/lxx/parser.ts`, `tbesg.ts`, `derive.ts`) |
 | The agreement check, layer 2a | Before the model: an answer whose ending two cases or genders share is demoted to its candidates; a name the New Testament has, written here in lower case, goes to the model; within a verse an article, adjective or participle must agree with its noun, a settled pair that does not is a break (both to the model), and a word left with exactly one candidate that agrees with its settled neighbours takes it as layer 2a | built (`scripts/lxx/agreement.ts`, `derive.ts`) |
-| Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none | to come; no paid API: a Builder's own session |
+| Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none | the choices file is read, scored and joined (`scripts/lxx/choices.ts`, 'The choices file'); the runner that lists a book's pending words in batches is B4's (mw-u2w5klk.5); no paid API: a Builder's own session |
 
-Until layer 3 exists, every word that layers 1 and 2 and the agreement check do not settle is **pending**, with its candidates.
+A word that layers 1 and 2 and the agreement check do not settle, and that no choice has settled, is **pending**, with its candidates. A book's annotation file is written only when none is pending and the rest of the bar is met ('The bar').
 
 ## Layer 1 in detail
 
@@ -156,9 +161,78 @@ above 5 per 1,000 in any book (Susanna 3.4, the Letter of Jeremiah 3.1); read in
   and kept in the token's display text; the word's row notes them. One bracket can open in one word and close several words later.
 - Swete writes accents as oxia (U+1F71), not tonos; the key's NFC makes them one.
 
+## The bar
+
+A book's annotation file is written only when the book passes the bar of the probe (`docs/sources/lxx-derivation-probe.md`, 'Error checks for the full run', 1). The bar is data in
+`scripts/lxx/bar.ts` (`BAR`), and `verdict` in the same file is the one place a book is held against it, for `npm run lxx:release` (which writes the file or refuses) and
+`npm run lxx:report` (which says where every book stands). Five lines, each with its number and why:
+
+| Line | The number | Why |
+| --- | --- | --- |
+| Known-answer lemma | at least 99% of the words of each known-answer chapter | The probe's John 1 scored 99.9%. A model that misses one word in a hundred makes a mistake a reader meets in every few verses |
+| Known-answer full parsing | at least 98% of the same words (lemma and the whole parsing) | The probe's John 1 scored 99.5%. Parsing is where two cases share an ending, which is where the probe found its errors |
+| Pending | none: no word of the book left without an answer | A word with no answer is not an annotation; the build fails while any waits for a choice (probe, check 4) |
+| Guesses | at most 3% of the book's words | A guess is the model's own lemma and parsing where the candidates held none, or none of them fit. A guessed lemma is not a dictionary form until checked; the app draws it with a mark and never quizzes it (probe, check 3) |
+| Agreement breaks | at most 5 per 1,000 words of the book | The agreement check finds a settled article, adjective or participle that does not agree with its settled noun. Genesis has 1.2 (probe, check 2) |
+
+**The known-answer chapters of a build** are two: John 1, and one other New Testament chapter that changes with the build. The other chapter is taken from `SECOND_CHAPTERS` in
+`bar.ts` by the build number (`secondChapter(build)`: the build number counts round the list), so no build is held to the same second chapter as the last and a model cannot be tuned to it.
+The list is Rom.8 (the chapter the first model story, M0, measures), Mat.5, Mrk.4, Luk.15, Act.2, 1Co.13, Eph.2, Php.2, Heb.11, Jas.2, 1Pe.1 and Rev.21: none of John. The build number is the patch of
+`package.json`'s version (0.7.55 is build 55), which each landed batch raises by one; `--build <n>` names another. Each chapter's book is hidden from layers 1 and 2 as John is, and each
+needs a choices file of its own in `data/lxx/known/` made by a model session without TAGNT's answers: a chapter with none scores its pending words as wrong, the build falls short on the
+known-answer lines, and no book is SHIPPABLE until it has one. Adding a chapter to the list means someone has to make that file.
+
+## The known-answer run
+
+`npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8` runs each chapter through layers 1, 2 and 2a with its whole book hidden from the form index and the parser (TBESG stays as the lemma list: a lexicon is not an answer key),
+and scores the result against TAGNT's own rows for the same words. The words are TAGNT's NA28 words of the chapter (an `N` in the row's edition code), read as a book of Swete's would be, so the references are
+the derivation's own (`Jhn.1:33#23`). **Lemma** is right when it equals TAGNT's exactly, in NFC, so accents count; **full** is right when the lemma and the whole parsing are, a noun's semantic tags (`-T`, `-P`, `-L`) dropped.
+
+The run prints, for each chapter: layers 1 and 2 alone before the agreement check (the probe's table: on John 1 layer 1 settles 673 words, 672 right on the lemma and 670 on full parsing, layer 2 25 of 25); then the
+words each layer answers after the check (1, 2, 2a); then layer 3, the words a choices file settled; and the whole chapter. A word still pending with no choice has no answer and is counted wrong. Flags:
+
+```bash
+npm run lxx:known -- --chapter Jhn.1                                # the choices file data/lxx/known/jhn-1.tsv when there is one
+npm run lxx:known -- --chapter Jhn.1 --choices <file>               # a model session's choices, scored the same way
+npm run lxx:known -- --chapter Jhn.1 --choices-dir <dir>            # another directory of known-answer choices
+npm run lxx:known -- --chapter Jhn.1 --choices <file> --keep-demoted  # the probe's reading
+```
+
+`--keep-demoted` is for comparing with the probe, whose choices were made before the agreement check existed: a pending word with no choice scores as the answer layer 1 or 2 gave it before the check demoted it.
+On John 1 with the probe's choices (`tests/fixtures/lxx/choices-jhn-1.tsv`, copied from the probe's `MODEL_CHOICES_JOHN`) that reading scores 828 of 829 on the lemma and 825 on full parsing, the probe's
+numbers; the check demotes 48 words the probe's choices do not cover, which a model session now chooses, and scored without the flag (as the bar scores) they count wrong. The bar never uses the flag.
+
+## The choices file
+
+Layer 3 is a model's choice, made by a Builder's own session reading a pending word in its verse (no paid API). A choices file has a header and one line per word, tab-separated: `ref`, `parsing` (TAGNT's code),
+`lemma` (left empty when the candidates have one lemma for that parsing) and `mark` (empty, `unsure` or `guess`). A line starting with `#` is a comment.
+
+- A choice among the word's candidates takes confidence 0.8, an `unsure` one 0.5; layer 3.
+- A choice outside the candidates is refused unless it is marked `guess`, and a word left with no candidate takes any choice as a guess; a guess is 0.4 sure, names its lemma (or the candidates have one lemma between them), carries the note `guess: ...`, and is
+  counted against the guesses line of the bar. A refused choice leaves its word pending.
+- A reference twice in a file or in two files of a book is an error. A choice for a word that is not pending (settled by layers 1, 2 or 2a) is ignored.
+
+Where the files live: `data/lxx/choices/<book>-<batch>.tsv` for a Swete book (`gen-01.tsv`), all of a book's files joined by `lxx:release` and `lxx:report`; `data/lxx/known/<book>-<chapter>.tsv` for a known-answer chapter (`jhn-1.tsv`);
+`data/lxx/recheck/<book>-<batch>.tsv` for the second pass's choices on a sample, in the same shape. The runner that lists a book's pending words in batches and writes these files is B4's (mw-u2w5klk.5); this file's reader (`scripts/lxx/choices.ts`)
+is the shape B4 writes.
+
+## The annotation file
+
+`npm run lxx:release -- --book gen` derives the book, joins its rows with every choices file of the book, runs the known-answer chapters of the build, and holds the book against the bar. If it passes, it writes
+`data/lxx/annotations/gen.tsv`; otherwise it refuses, names each failing line (`pending: 1 word left without an answer (the bar: none)`), and writes nothing. **The annotation file is the MIT release**
+(`data/lxx/LICENSE`) and is committed: a header row and one row a word in the text's order, tab-separated, with `ref`, `lemma`, `parsing`, `layer` (1, 2, 2a or 3), `confidence` (two decimals) and `notes` (in words, `; `-separated).
+**It never holds Swete's own words**: a word is named by its reference, and the only Greek in it is the lemma, which is Lampas's own derived data. A second run writes the same bytes.
+The files of `derived/` and `pending/` stay git-ignored; they are working files.
+
+## The report
+
+`npm run lxx:report` writes `docs/lxx-report.md` between its markers: this build's known-answer scores, and one row for each of the 39 books of Swete's Old Testament (the other 21 books of his file are not assessed): its words, the share each layer settled, the words still
+pending, guesses, agreement breaks per 1,000 words, the second pass's disagreement rate (the share of the recheck files' choices that differ from the first pass's on the same word, a dash when there are none), and
+SHIPPABLE or NOT with the failing lines named. It is the build's one place to see a book fall short. A second run on the same inputs changes nothing. No book is SHIPPABLE yet: the model's choices (B4, then the model stories) are what is missing.
+
 ## The files
 
-Written under `data/lxx/` (both git-ignored until a book is committed whole; `.gitignore`). Tab-separated, a header row, one row a word in the
+Written under `data/lxx/` (`derived/` and `pending/` are git-ignored working files; `.gitignore`). Tab-separated, a header row, one row a word in the
 text's order, a newline at the end. A word is named by its `ref` alone: **no column holds Swete's Greek**. The lemma and the candidates are Lampas's
 own derived data, and Greek.
 
@@ -179,6 +253,8 @@ own derived data, and Greek.
 check's: `a name in the New Testament: lower case here, for the model`, `shared ending: <class>: for the agreement check or the model`,
 `agreement break: <link> with <ref>: for the model`. A candidate the shared-ending rule added has support 0.
 
+`data/lxx/annotations/<book>.tsv`, the MIT release: `ref`, `lemma`, `parsing`, `layer`, `confidence`, `notes`, committed, written by `lxx:release` only when the book passes the bar ('The annotation file'). `data/lxx/choices/`, `data/lxx/known/` and `data/lxx/recheck/` hold the choices files ('The choices file'); they are committed too.
+
 `<book>` is Swete's book code in lower case: `gen`, `exo`, … `psa`, … (Swete's file has 60 books; Tobit and Daniel come in two forms each).
 
 ## The commands
@@ -191,6 +267,9 @@ npm run lxx:derive -- --book gen               # data/lxx/derived/gen.tsv and da
 npm run lxx:derive -- --book gen --hide jhn    # John's rows left out of the form index and the parser: a known-answer run
 npm run lxx:derive -- --word Gen.1:20#13       # one word: its candidates, their support, the rule or analogy behind each; writes nothing
 npm run lxx:derive -- --all                    # every book of the file, trained once: each book's two files, and one line a book
+npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT ('The known-answer run')
+npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv, only when the book passes the bar ('The bar')
+npm run lxx:report                             # docs/lxx-report.md: where every book of the Old Testament stands
 ```
 
 The run fetches the pinned sources into `data/raw/lxx/<repo>/<commit>/<path>` (git-ignored) unless they are there (`scripts/lxx/sources.ts`), and prints
@@ -229,7 +308,9 @@ the candidates are ordered by support, then lemma, then parsing, never by the or
 - **The known answer.** `--hide jhn` leaves John's rows out of the form index and the parser's training. On John 1 (its 829 words in NA28, from TAGNT,
   read as a book: `tests/fixtures/lxx/swete-jhn-1.csv`) layer 1 settles 673, layer 2 25, all 25 right; the parser alone, its first candidate with no
   context, is right on the lemma for 80.9% and on lemma and parsing for 69.3% of the 681 words it analyses (the probe: 80.8% and 69.2%, one tie ordered
-  differently). The per-book bar comes with layer 3.
+  differently).
+- **The bar's tests** (`tests/unit/lxx-bar.test.ts`) hold `BAR` to the probe's numbers, run John 1 with the probe's choices to its 828 of 829 and 825, and check that `lxx:release` refuses a book with a word pending or guesses at 4%
+  and writes the same bytes twice when every line is met, and that `lxx:report` has a row for each of the 39 books and names another second chapter for another build.
 
 ## What the move from the probe changed
 

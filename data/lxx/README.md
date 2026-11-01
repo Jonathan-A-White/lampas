@@ -14,16 +14,19 @@ these files is Lampas's own derived data: the lemma and the candidate analyses.
 | --- | --- | --- |
 | `LICENSE` | MIT, for Lampas's derived data in this directory | yes |
 | `README.md` | this file | yes |
-| `derived/<book>.tsv` | the words of a book that are settled: `ref`, `lemma`, `parsing`, `layer`, `confidence`, `candidates`, `notes` | not yet (git-ignored while the derivation is being built) |
-| `pending/<book>.tsv` | the words still waiting for a later layer: `ref`, `candidates`, `notes` | not yet (git-ignored) |
+| `annotations/<book>.tsv` | **the release**: the words of a book that passed the bar, `ref`, `lemma`, `parsing`, `layer`, `confidence`, `notes`, one row a word; written by `npm run lxx:release -- --book <code>` only when the book meets the bar | yes, a book at a time (none yet) |
+| `choices/<book>-<batch>.tsv`, `known/<book>-<chapter>.tsv`, `recheck/<book>-<batch>.tsv` | the model's choices (layer 3): for a book's pending words, for a New Testament chapter's known-answer run, and the second pass on a sample; `ref`, `parsing`, `lemma`, `mark` | yes |
+| `derived/<book>.tsv` | the words of a book that are settled: `ref`, `lemma`, `parsing`, `layer`, `confidence`, `candidates`, `notes` | no (git-ignored working file) |
+| `pending/<book>.tsv` | the words still waiting for a later layer: `ref`, `candidates`, `notes` | no (git-ignored working file) |
 
 `<book>` is Swete's book code in lower case (`gen`, `psa`). The columns are described in docs/lxx-derivation.md, 'The files'.
 
 **What there is so far, and what is to come.** Layers 1 and 2: a word whose form the New Testament has with one analysis (or one with at least 95% of 20
 or more words) is settled in layer 1; a form it lacks is parsed by ending rules learned from the New Testament, with lemmas only from TBESG, and settled in
-layer 2 when one candidate has at least 90% of the support; every other word is pending with its candidates. The model's choice among them (layer 3)
-comes in a later story, and then the files are committed book by book, each once it meets the bar in docs/sources/lxx-derivation-probe.md, 'Error checks
-for the full run'.
+layer 2 when one candidate has at least 90% of the support; every other word is pending with its candidates. The model's choice among them (layer 3) is
+read from a choices file (docs/lxx-derivation.md, 'The choices file'). A book's `annotations/<book>.tsv` is committed once the book meets the bar in
+docs/lxx-derivation.md, 'The bar' (the probe's numbers): known-answer lemma at least 99% and full parsing at least 98% on John 1 and one other New Testament chapter that changes with the build,
+no word pending, guesses at most 3% of the book's words, agreement breaks at most 5 per 1,000. `docs/lxx-report.md` says where every book stands.
 
 ## How they are made
 
@@ -31,10 +34,13 @@ for the full run'.
 npm ci
 npm run lxx:derive -- --book gen               # writes data/lxx/derived/gen.tsv and data/lxx/pending/gen.tsv
 npm run lxx:derive -- --book gen --hide jhn    # the same with John left out of the New Testament's forms, for a known-answer run
+npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT
+npm run lxx:release -- --book gen              # annotations/gen.tsv, only if the book meets the bar; otherwise it names each failing line and writes nothing
+npm run lxx:report                             # docs/lxx-report.md
 ```
 
 The first run fetches the pinned sources into `data/raw/lxx/<repo>/<commit>/` (git-ignored; a file already there is not fetched again). Nothing else
-touches the network, and no paid service is called: the model of layer 3 will be a Lampas Builder's own session. Two runs on the same sources write
+touches the network, and no paid service is called: the model of layer 3 is a Lampas Builder's own session. Two runs on the same sources write
 the same bytes.
 
 ## Sources and credit
