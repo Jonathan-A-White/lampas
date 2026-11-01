@@ -1,0 +1,42 @@
+{
+  "description": "John 1:1 summarised as \"The Word was with God and the Word was God.\": the second and third points are present, in the passage's order, that the Word was in the beginning is missing, the length is right and a model summary and advice come back.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1",
+    "passage": "In the beginning was the Word, and the Word was with God, and the Word was God.",
+    "how": "typed",
+    "summary": "The Word was with God and the Word was God."
+  },
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "present.0": {
+      "present": true
+    },
+    "present.1": {
+      "present": true
+    },
+    "present.2": {
+      "present": false
+    },
+    "missing.0": {
+      "matches": "beginning|first|always|before"
+    },
+    "missing.1": {
+      "present": false
+    },
+    "in_order": {
+      "equals": true
+    },
+    "length": {
+      "equals": "right"
+    },
+    "model_summary": {
+      "present": true
+    },
+    "advice": {
+      "present": true
+    }
+  }
+}

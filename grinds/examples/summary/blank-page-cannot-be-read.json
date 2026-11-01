@@ -1,0 +1,32 @@
+{
+  "description": "A photograph of an empty lined page, sent as a summary of John 1:1: there is no handwriting to read, so the page is not readable, nothing is judged and the advice says how to photograph the page.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1",
+    "passage": "In the beginning was the Word, and the Word was with God, and the Word was God.",
+    "how": "photo"
+  },
+  "photos": [
+    "blank-page-cannot-be-read.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": false
+    },
+    "read_as": {
+      "equals": ""
+    },
+    "present.0": {
+      "present": false
+    },
+    "missing.0": {
+      "present": false
+    },
+    "model_summary": {
+      "equals": ""
+    },
+    "advice": {
+      "present": true
+    }
+  }
+}
