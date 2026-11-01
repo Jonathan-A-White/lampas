@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.59
+_2026-11-01_
+- New: Practise now has Narration: hold a button and tell a verse back in your own words, and the tutor writes it down and says what you caught and what you missed, in order, with one question; you can then copy it by hand or write it from dictation.
+
 ## 0.7.57
 _2026-11-01_
 - Fixed: In the tutor's answers, a second chapter written after a book ("4 and 5") and ranges like "4 to 5" are now links.
