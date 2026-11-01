@@ -23,7 +23,7 @@ const WAYS: readonly Way[] = [
   { id: 'copywork', label: 'Copywork', hint: 'Copy it by hand, then photograph your page' },
   { id: 'narration', label: 'Narration', hint: 'Tell it back in your own words, aloud' },
   { id: 'dictation', label: 'Dictation', hint: 'Write it as you hear it read' },
-  { id: 'summary', label: 'Summary', hint: 'Give the main points in a few sentences' },
+  { id: 'summary', label: 'Summary', hint: 'Give the main points in a few sentences, in English' },
   { id: 'quiz', label: 'Quiz', hint: 'The tutor asks, one question at a time' },
 ];
 

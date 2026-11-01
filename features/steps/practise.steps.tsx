@@ -111,6 +111,9 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       for (const name of ['Copywork', 'Narration', 'Dictation', 'Summary', 'Quiz']) expect(within(doorEl()).getByRole('button', { name, exact: true })).toBeEnabled();
       expect(doorEl().querySelector('[data-soon]')).toBeNull();
     });
+    And('the Summary way on the door says it is in English', () => {
+      expect(doorEl().querySelector('#practise-hint-summary')).toHaveTextContent('in English');
+    });
   });
 
   Scenario('Copywork on John 1:1 in Greek: the page is photographed and each word is marked', ({ Given, When, And, Then }) => {

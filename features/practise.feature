@@ -18,6 +18,7 @@ Feature: Practise a verse
     And he chooses "Practise"
     Then the Practise door lists "Copywork", "Narration", "Dictation", "Summary" and "Quiz" in that order
     And every way on the door can be opened and none says soon
+    And the Summary way on the door says it is in English
 
   @uc-practise @greek
   Scenario: Copywork on John 1:1 in Greek: the page is photographed and each word is marked
