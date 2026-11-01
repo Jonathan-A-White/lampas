@@ -114,11 +114,11 @@ describeFeature(feature, ({ Scenario }) => {
     When('I tap Memorize', async () => {
       await user.click(await within(await verseView()).findByRole('button', { name: 'Memorize' }));
     });
-    Then('the Verse view offers Practise', async () => {
-      expect(await within(await verseView()).findByRole('button', { name: 'Practise' })).toBeInTheDocument();
+    Then('the Verse view offers Rehearse', async () => {
+      expect(await within(await verseView()).findByRole('button', { name: 'Rehearse' })).toBeInTheDocument();
     });
-    When('I tap Practise', async () => {
-      await user.click(await within(await verseView()).findByRole('button', { name: 'Practise' }));
+    When('I tap Rehearse', async () => {
+      await user.click(await within(await verseView()).findByRole('button', { name: 'Rehearse' }));
     });
     Then('a memorize session opens on Romans 8:28', async () => {
       await waitFor(() => expect(window.location.hash).toBe('#/memorize/Rom.8.28/en'));

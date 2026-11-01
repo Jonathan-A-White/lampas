@@ -153,6 +153,7 @@ const KINDS: Record<GristKind, { hidden: string[]; feature: string }> = {
   'audible-position': { hidden: ['Send a screenshot'], feature: 'features/reading-plan-screenshot.feature' },
   'tutor-weights': { hidden: ['Tutor tuned'], feature: 'features/ai-needs-licence.feature' },
   'sentence-diagram': { hidden: ['Diagram'], feature: 'features/ai-needs-licence.feature' },
+  copywork: { hidden: ['Practise'], feature: 'features/ai-needs-licence.feature' },
 };
 
 /** The kinds the app's code sends: the first argument of each askGrind call, a literal or a constant (`export const X = '...'`) found in any file. */
@@ -201,9 +202,9 @@ describe('the Hebrew entries of the AI are hidden from a phone with no licence t
   const jonah = JSON.parse(readFileSync('public/data/jon/1.json', 'utf8')) as Chapter;
   const verse10 = jonah.verses.find((v) => v.n === 10);
 
-  it('offers an unlicensed phone only Listen on a verse of an hbo chapter, and a licensed one Ask the tutor, Quiz me and Diagram', () => {
-    expect(actionsFor(false, 'hbo').map((a) => a.id)).toEqual(['listen']);
-    expect(actionsFor(true, 'hbo').map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'quiz', 'diagram']);
+  it('offers an unlicensed phone only Listen on a verse of an hbo chapter, and a licensed one Ask the tutor, Practise and Diagram', () => {
+    expect(actionsFor(false).map((a) => a.id)).toEqual(['listen']);
+    expect(actionsFor(true).map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'practise', 'diagram']);
   });
 
   it('refuses the ask about Jonah 1:10, Hebrew and all, with no licence, and nothing leaves the phone', async () => {

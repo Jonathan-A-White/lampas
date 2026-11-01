@@ -83,7 +83,7 @@ test('Listen: the verse big, the row of actions in two rows of three, and the on
     tops.add(Math.round(b.y));
   }
   expect(tops.size).toBe(2);
-  await expect(view.getByRole('button', { name: 'Quiz me', exact: true })).toHaveCount(1);
+  await expect(view.getByRole('button', { name: 'Practise', exact: true })).toHaveCount(1);
 
   await expect(view.getByRole('button', { name: 'Listen', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expectPlay(page, 'Play verse 11');

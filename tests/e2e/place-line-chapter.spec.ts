@@ -119,7 +119,7 @@ async function openFromLine(page: Page) {
   await expect(view.getByRole('heading', { name: `Mark 12, Mark 12:1-${LAST}` })).toBeVisible();
   await expect(view.locator('[data-passage-verse]')).toHaveCount(LAST);
   const row = view.getByRole('group', { name: 'Actions', exact: true });
-  for (const name of ['Listen', 'Read it aloud', 'Ask the tutor', 'Quiz me']) {
+  for (const name of ['Listen', 'Read it aloud', 'Ask the tutor', 'Practise']) {
     await expect(row.getByRole('button', { name, exact: true })).toBeVisible();
   }
   // Copy and Share are words of the tools line under the text (mw-5r3p30.896)
@@ -154,7 +154,8 @@ test('Immersive reader: a tap on the place line opens the whole chapter, Back re
   const view = await openFromLine(page);
   await shot(page, 'place-line-chapter');
 
-  await view.getByRole('button', { name: 'Quiz me', exact: true }).click();
+  await view.getByRole('button', { name: 'Practise', exact: true }).click();
+  await view.getByRole('button', { name: 'Quiz', exact: true }).click();
   await view.getByRole('button', { name: 'Start the quiz', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: `Quiz on Mark 12:1-${LAST}` });
   await expect(sheet).toContainText(`Quiz me on Mark 12:1-${LAST}.`);
@@ -226,7 +227,8 @@ for (const { code, title, verses } of [
     const others = ['2 John', '3 John', '1 John'].filter((n) => !title.startsWith(n));
     for (const other of others) expect(await view.innerText()).not.toContain(other);
 
-    await view.getByRole('button', { name: 'Quiz me', exact: true }).click();
+    await view.getByRole('button', { name: 'Practise', exact: true }).click();
+    await view.getByRole('button', { name: 'Quiz', exact: true }).click();
     await view.getByRole('button', { name: 'Start the quiz', exact: true }).click();
     const sheet = page.getByRole('dialog', { name: `Quiz on ${title}:1-${verses}` });
     await expect(sheet).toContainText(`Quiz me on ${title}:1-${verses}.`);

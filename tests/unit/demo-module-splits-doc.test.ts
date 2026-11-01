@@ -12,7 +12,7 @@ function section(name: string): string {
 
 describe('docs/demo-module-splits.md', () => {
   it.each([
-    ['The Reader', ['Romans 8', 'Greek', 'English', 'Verse 3', 'Done', 'Listen', 'Ask the tutor', 'Hold to ask', 'Quiz me', 'Start the quiz', '‹ Reader']],
+    ['The Reader', ['Romans 8', 'Greek', 'English', 'Verse 3', 'Done', 'Listen', 'Ask the tutor', 'Hold to ask', 'Practise', 'Quiz', 'Start the quiz', '‹ Reader']],
     ['Settings', ['Settings', 'Search settings', 'Theme', 'Dark', 'Light', 'Phone', 'Text size', 'Largest', 'Normal', '‹ Reader']],
   ])('has numbered steps for %s with its exact labels', (name, labels) => {
     const text = section(name);

@@ -43,8 +43,9 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
   }
   expect(tops.size).toBe(2);
 
-  await view.getByRole('button', { name: 'Quiz me', exact: true }).click();
-  await expect(view.getByRole('button', { name: 'Quiz me', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await view.getByRole('button', { name: 'Practise', exact: true }).click();
+  await expect(view.getByRole('button', { name: 'Practise', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await view.getByRole('button', { name: 'Quiz', exact: true }).click();
   const begin = view.getByRole('button', { name: 'Start the quiz', exact: true });
   await expect(begin).toBeVisible();
   const box = await begin.boundingBox();

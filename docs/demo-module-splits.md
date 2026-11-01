@@ -28,11 +28,11 @@ listen; without one, **Type a question** does the same job.
 4. Tap a Greek word (in the Greek view). Right: a sheet slides up with the word, **Hear it**, its parsing, **Grammar**, **Sound it
    out**, **Ask the tutor** and **Done**. Tap **Grammar**: a Grammar sheet opens over it. Tap **Done**: the sheet closes.
 5. Tap a verse number (**Verse 3**). Right: the Verse view fills the screen with the verse big at the top, **‹ Reader** at the left,
-   arrows to the neighbouring verses, and a row of actions: **Listen**, **Read it aloud**, **Ask the tutor**, **Quiz me**.
+   arrows to the neighbouring verses, and a row of actions: **Listen**, **Read it aloud**, **Ask the tutor**, **Practise**.
 6. Choose **Ask the tutor**. Right: the foot of the screen shows the big **Hold to ask** bar with **Type a question** under it. Hold
    the bar and ask something short about the verse, such as "What does the first word mean?", and let go. Right: your question
    shows above **Waiting for the tutor…** and then the answer is drawn under the verse.
-7. Choose **Quiz me**, then tap **Start the quiz**. Right: the Talk sheet opens, titled "Quiz on Romans 8:3" (or the verse you
+7. Choose **Practise**, then **Quiz**, then tap **Start the quiz**. Right: the Talk sheet opens, titled "Quiz on Romans 8:3" (or the verse you
    chose), and the tutor asks its first question. Press **Back** to close the sheet, then **‹ Reader** to leave the Verse view.
 8. Open the Quick test: tap the gear, **Words** (under **More**), then **Test**. Right: **Quick test** shows a Greek word with
    four meanings to tap; after you tap one it says right or wrong, says the word aloud, and offers **Next** and **Ask the tutor**.

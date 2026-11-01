@@ -190,12 +190,12 @@ Feature: Lampas reads the Old Testament in English
     Then the Bibles page says "New Testament verses open in LLS:1.0.9991."
     And the Resource ID field holds "LLS:1.0.9991"
 
-  Scenario: The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor, Quiz me and Share
+  Scenario: The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor, Practise and Share
     Given Lampas is opened on Jonah 1 with a licence and a phone that can share
     When he taps the number of verse 10
     Then the Verse view is headed "Jonah 1:10"
     And the Verse view shows the verse in English
-    And the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Diagram", and the tools "Copy" and "Share"
+    And the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram", and the tools "Copy" and "Share"
 
   Scenario: Diagram kept from a New Testament verse opens an Old Testament verse on Diagram and is kept
     Given Lampas is opened on Jonah 1 with a licence and the kept action "diagram"

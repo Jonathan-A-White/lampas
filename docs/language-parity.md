@@ -71,7 +71,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `memorize` | Memorize a verse: the target text, the session, hearing and typing it, the schedule, the tutor on it | hebrew-memorize, memorize-hear, memorize-schedule, memorize-session, memorize-target, memorize-tutor, memorize-type, memorize | hebrew-memorize | gap |
 | `diagram` | The sentence diagram of a verse (Reed-Kellogg) and the lesson on reading one | diagram-lesson, sentence-diagram | hebrew-diagram | gap |
 | `verse-quiz` | Quiz me on a verse, with the quiz goal, in the Talk sheet | hebrew-quiz, quiz-goal, quiz-me | hebrew-quiz | gap |
-| `practise` | The Practise door on a verse: copywork, narration, dictation, summary and the quiz (Susan Wise Bauer’s order) | gap | gap | gap |
+| `practise` | The Practise door on a verse: copywork, narration, dictation, summary and the quiz (Susan Wise Bauer’s order) | practise | practise | gap |
 | `tutor-ask` | Ask the tutor about a verse or a word, holding what the app knows of it in its language | ask-tutor, tutor, word-ask-tutor | hebrew-tutor | gap |
 | `talk` | The Bible talk on a chapter or a verse: the request carries the source text and its words, the bridge | bible-talk, hebrew-talk, talk-bridge | hebrew-talk | gap |
 | `language-offer` | The tutor offers the language gently to a reader who is not learning it | greek-offer | hebrew-talk | gap |
@@ -93,7 +93,6 @@ Each line is one backfill story: its acceptance criterion is the named `@hebrew`
 - `pictures` (Memory pictures on the teach sheet and in the talk): scenario "The teach sheet of a Hebrew word with a picture shows it" in features/hebrew-words.feature; a picture per Hebrew seed lemma under public/pictures/ and its row in the pictures index (docs/pictures.md says where), credited in ATTRIBUTION.md; S
 - `grammar-approach` (Grammar approach: the order and voice the ladder is taught in): scenario "A Hebrew approach orders the Hebrew ladder" in features/hebrew-grammar.feature; an approach for the Hebrew ladder in src/approaches/, src/settings/registry.ts Grammar approach shown by either dial (today greekFrom, docs/layout/settings.md), and the Hebrew ladder’s path reads it; M
 - `lessons` (Lessons read to him: Read lessons to me, a passage lesson that opens its verses and Check passes it by reading): scenario "A Hebrew passage lesson opens its verses in Hebrew and Check passes it by reading" in features/hebrew-ladder.feature; a passage step in the Hebrew ladder (src/data/grammar/hebrew/ladder.ts), src/data/grammar/lessons.ts and the Verse view’s Check for an hbo chapter; S
-- `practise` (The Practise door on a verse: copywork, narration, dictation, summary and the quiz (Susan Wise Bauer’s order)): lands with the Practise stories mw-5r3p30.899 (copywork) and mw-5r3p30.900 (dictation), both live in Hebrew from the start; narration .901 and summary .902 are English only in their first slice
 <!-- /hebrew-gaps -->
 
 Two rows the Governor may want to reopen: `variants` is `n/a` for Hebrew because the WLC data carries no apparatus (a Qere/Ketiv story would add one); `script-depth` is `n/a` for Greek because the Greek is written in its letters wherever it is drawn (`src/script/scripts.ts`: Greek is not a `SCRIPTS` entry).
