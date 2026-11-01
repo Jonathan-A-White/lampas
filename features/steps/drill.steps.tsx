@@ -2,7 +2,7 @@
 // steps and choices, the two links to the tutor, and the results kept in Dexie. The chapter comes from disk; the right
 // choice of a step is found from the word's RP code with the same builder the app uses.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';

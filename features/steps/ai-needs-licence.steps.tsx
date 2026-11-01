@@ -20,7 +20,6 @@ import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { setVerseAction, type VerseAction } from '../../src/verse/action';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { holdBarIn } from '../../tests/support/composer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { LicenceProbe } from '../../tests/support/licence-probe';

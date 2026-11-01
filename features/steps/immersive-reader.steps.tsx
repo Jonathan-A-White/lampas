@@ -32,10 +32,7 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-/** past the app's 500 ms hold */
-const HOLD_MS = 650;
 const PHONE_KEY = '00'.repeat(31) + '02';
-const AT = { clientX: 100, clientY: 700 };
 const SCROLL_HEIGHT = 5000;
 const CLIENT_HEIGHT = 700;
 
@@ -139,7 +136,6 @@ async function open(options: { immersive: 'on' | 'off'; recogniser?: boolean; sp
 }
 
 const reader = () => document.querySelector<HTMLElement>('[data-reader]') as HTMLElement;
-const talkButton = () => screen.getByRole('button', { name: 'Talk', exact: true });
 
 /** jsdom has no layout: the box is 700 px of a 5000 px text, and `top` is where it is scrolled to. The last verse ends where the text does (the percent is of
  * the text up to the end of its last verse, mw-5r3p30.479), so its bottom sits at 5000 - top below the box's top. */

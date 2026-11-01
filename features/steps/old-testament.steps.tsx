@@ -589,8 +589,6 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
     await screen.findByRole('region', { name: 'Verse view' });
   };
-  const actionNames = (): string[] =>
-    [...within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button')].map((b) => b.textContent?.trim() ?? '');
   const phoneLicensed = 'Lampas is opened on Jonah 1 with a licence';
 
   Scenario('Diagram kept from a New Testament verse opens an Old Testament verse on Diagram and is kept', ({ Given, When, Then, And }) => {

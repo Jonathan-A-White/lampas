@@ -159,20 +159,6 @@ async function expectedProgress() {
 
 const counts = (c: { solid: number; frontier: number; notYet: number }) => `Solid ${c.solid} · Frontier ${c.frontier} · Not yet ${c.notYet}`;
 
-const FULL_SCREENS: [string, string][] = [
-  ['Goal', '#/goal'],
-  ['Words', '#/words'],
-  ['Review', '#/review'],
-  ['Quick test', '#/test'],
-  ['Parsing drill', '#/drill'],
-  ['Paradigms', '#/paradigms'],
-  ['Placement', '#/placement'],
-  ['Settings', '#/settings'],
-  ['My study way', '#/studyway'],
-  ['Import', '#/import'],
-  ['About', '#/about'],
-  ['Preface', '#/preface'],
-];
 
 const feature = await loadFeature('features/ask-tutor.feature');
 

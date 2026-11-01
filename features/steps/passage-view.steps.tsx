@@ -10,7 +10,6 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY, LINK_ORIGIN } from '../../src/config';
-import { markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
@@ -19,7 +18,7 @@ import { getReading, stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { holdBarsIn } from '../../tests/support/composer';
-import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
+import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -48,11 +47,6 @@ const ROMANS_8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as {
 /** The text the app sends for verses `from` to `to`: each verse's chunks trimmed and joined by a space, the verses joined by a space. */
 const englishOf = (from: number, to: number): string =>
   ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.e.map((c) => c.t.trim()).join(' ')).join(' ');
-/** what the tutor is sent: the supplied words between asterisks */
-const markedEnglishOf = (from: number, to: number): string =>
-  ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.e.map(markSupplied).join(' ')).join(' ');
-const greekOf = (from: number, to: number): string =>
-  ROMANS_8.verses.filter((v) => v.n >= from && v.n <= to).map((v) => v.g.map((w) => w.t).join(' ')).join(' ');
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 interface Options {
@@ -145,12 +139,6 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const arrowOff = (name: 'next' | 'previous') => () => {
     expect(within(viewEl()).getByRole('button', { name: `${name === 'next' ? 'Next' : 'Previous'} passage` })).toBeDisabled();
-  };
-  const holdBar = async () => {
-    await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
-  };
-  const letGo = async () => {
-    await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
   };
   Scenario('Tapping the heading of Romans 8:1-11 opens the Verse view headed with the heading and its range', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);

@@ -73,7 +73,6 @@ async function open(): Promise<void> {
 const FIRST = 'αὐτός';
 const strip = () => screen.getByTestId('new-words');
 const sheet = () => screen.getByRole('dialog', { name: 'New word' });
-const talkSheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const nfc = (s: string): string => s.normalize('NFC');
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 

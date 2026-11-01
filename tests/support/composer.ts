@@ -20,11 +20,6 @@ async function talkSheet(): Promise<HTMLElement> {
   return openTutor({ sheet: /^Talk about / });
 }
 
-/** The text box a question is typed in. The Verse view's own Ask box is gone (mw-5r3p30.882): a question goes to the Talk sheet the floating ? opens, whose box this is (Type a message when the bar is showing). */
-export async function questionField(user: UserEvent, _root?: HTMLElement): Promise<HTMLElement> {
-  return messageBox(user, await talkSheet());
-}
-
 /** Types a question the way he does: the floating ?, Type a message, the words, Send. */
 export async function typeQuestion(user: UserEvent, _root: HTMLElement, question: string): Promise<void> {
   const sheet = await talkSheet();

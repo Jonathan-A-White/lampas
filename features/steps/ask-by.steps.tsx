@@ -15,7 +15,6 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { composerIn, holdBarsIn } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { validate, type Schema } from '../../tests/support/schema-validate';
@@ -36,19 +35,6 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern;
 
-const TYPE_REPLY = {
-  ...SYNERGEI_ANSWER,
-  answer: 'I have switched Ask by to Typing.',
-  words: [],
-  settings_changes: [{ key: 'askBy', value: 'typing' }],
-};
-const SPEAK_REPLY = {
-  ...SYNERGEI_ANSWER,
-  answer: 'I have switched Ask by back to Speaking.',
-  words: [],
-  settings_changes: [{ key: 'askBy', value: 'speaking' }],
-};
-const REPLIES: Record<string, unknown> = { 'Let me type instead': TYPE_REPLY, 'Switch back to speaking': SPEAK_REPLY };
 
 async function start(): Promise<void> {
   cleanup();
@@ -90,36 +76,9 @@ async function openSettings(): Promise<void> {
   await screen.findByRole('group', { name: 'Tips' });
 }
 
-const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 
-async function openAsk(): Promise<void> {
-  await renderApp();
-  const heading = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => h.textContent?.includes('Walking by the Spirit'));
-  if (!heading) throw new Error('no heading');
-  await user.click(within(heading).getByRole('button'));
-  await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(viewEl()).getByRole('button', { name: 'Ask the tutor', exact: true }));
-  await within(viewEl()).findByTestId('composer');
-}
-
-/** The reply, its change and its failures are the Talk sheet's (mw-5r3p30.842): the sheet the Verse view's Ask opens. */
-const sheetEl = () => screen.findByRole('dialog', { name: /^Talk about / });
 const askByGroup = async (): Promise<HTMLElement> => screen.findByRole('group', { name: 'Ask by' });
-const askBySaved = async (): Promise<string | undefined> => (await db.settings.get('askBy'))?.value;
 
-const typeFirst = async () => {
-  const composer = composerIn(viewEl());
-  expect(await within(composer).findByRole('textbox', { name: 'Your question' })).toBeInTheDocument();
-  expect(within(composer).getByRole('button', { name: 'Send' })).toBeInTheDocument();
-  expect(within(composer).getByRole('button', { name: 'Ask by speaking' })).toBeInTheDocument();
-  expect(holdBarsIn(viewEl())).toHaveLength(0);
-};
-const speakFirst = async () => {
-  const composer = composerIn(viewEl());
-  await waitFor(() => expect(holdBarsIn(viewEl())).toHaveLength(1));
-  expect(within(composer).getByRole('button', { name: 'Type a question' })).toBeInTheDocument();
-  expect(within(composer).queryByRole('textbox', { name: 'Your question' })).toBeNull();
-};
 
 const feature = await loadFeature('features/ask-by.feature');
 
@@ -128,13 +87,6 @@ describeFeature(feature, ({ Scenario }) => {
     const group = await askByGroup();
     expect(within(group).getByRole('button', { name: 'Speaking' })).toHaveAttribute('aria-pressed', 'true');
     expect(within(group).getByRole('button', { name: 'Typing' })).toHaveAttribute('aria-pressed', 'false');
-  };
-  const savedAs = async (_: unknown, value: string) => {
-    await waitFor(async () => expect(await askBySaved()).toBe(value));
-  };
-  const openAskView = async () => {
-    await start();
-    await openAsk();
   };
 
   Scenario('Settings shows Ask by with Speaking and Typing', ({ Given, Then }) => {

@@ -16,7 +16,7 @@ import { getReading, startAnswer, stopReading } from '../../src/speech/readAloud
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { holdBarsIn } from '../../tests/support/composer';
-import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
+import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';

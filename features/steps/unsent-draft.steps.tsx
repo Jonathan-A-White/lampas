@@ -14,7 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { composerIn, messageBox, questionField } from '../../tests/support/composer';
+import { messageBox } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -65,16 +65,9 @@ async function open(): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
 }
 
-const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const talkField = () => within(sheet()).getByRole('textbox', { name: 'Your message' }) as HTMLTextAreaElement;
 const talkSend = () => within(sheet()).getByRole('button', { name: 'Send' });
-const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
-const headingEl = (text: string): HTMLElement => {
-  const found = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => squash(h.textContent) === text);
-  if (!found) throw new Error(`no heading ${text}`);
-  return found;
-};
 
 const feature = await loadFeature('features/unsent-draft.feature');
 
@@ -96,26 +89,6 @@ describeFeature(feature, ({ Scenario }) => {
       await new Promise((resolve) => setTimeout(resolve, 30));
     });
   };
-  const tapHeading = async (_: unknown, text: string) => {
-    await user.click(within(headingEl(text)).getByRole('button'));
-    await screen.findByRole('region', { name: 'Verse view' });
-  };
-  const choose = async (_: unknown, action: string) => {
-    await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
-  };
-  const pasteIntoAsk = async (_: unknown, length: number) => {
-    const box = await questionField(user, viewEl());
-    await user.click(box);
-    await user.paste(prayer(length));
-  };
-  const pasteIntoAskAndSend = async (_: unknown, length: number) => {
-    await pasteIntoAsk(_, length);
-    await user.click(within(composerIn(viewEl())).getByRole('button', { name: 'Send' }));
-  };
-  const askBox = () => within(composerIn(viewEl())).getByRole('textbox', { name: 'Your question' }) as HTMLTextAreaElement;
-  const askHolds = async (_: unknown, length: number) => {
-    await waitFor(() => expect(askBox().value).toBe(prayer(length)));
-  };
   const receivedWhole = async (kind: string, length: number) => {
     await waitFor(() => expect(fake.received).toHaveLength(1));
     expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind });
@@ -128,9 +101,6 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const talkClosed = async () => {
     await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
-  };
-  const verseViewClosed = async () => {
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
   };
   const tapDone = async () => {
     await user.click(within(sheet()).getByRole('button', { name: 'Done' }));

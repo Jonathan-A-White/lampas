@@ -18,7 +18,6 @@ import { openRequests } from '../../src/nav/route';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { composerIn, questionField } from '../../tests/support/composer';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -82,8 +81,6 @@ async function openReader(): Promise<void> {
 }
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
-const view = () => screen.getByRole('region', { name: 'Verse view' });
-const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 const pictureFile = (): File => new File([new Uint8Array(2_000)], 'shot-1.png', { type: 'image/png' });
 const picker = (root: HTMLElement): HTMLInputElement => root.querySelector<HTMLInputElement>('input[type="file"]:not([capture])') as HTMLInputElement;
 const feedbackGrists = () => fake.received.filter((g) => g.grist.kind === 'feedback');
@@ -109,13 +106,6 @@ async function typeInSheet(words: string): Promise<void> {
   await user.click(box);
   await user.paste(words);
 }
-async function openAsk(): Promise<void> {
-  const heading = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => squash(h.textContent) === 'Walking by the Spirit');
-  if (!heading) throw new Error('no heading');
-  await user.click(within(heading).getByRole('button'));
-  await screen.findByRole('region', { name: 'Verse view' });
-}
-
 const feature = await loadFeature('features/send-to-makers.feature');
 
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
@@ -123,7 +113,6 @@ const talkGrists = () => fake.received.filter((g) => g.grist.kind === 'bible-tal
 const FAILING_OPEN = 'Lampas is opened on the Reader behind a fake Postern whose tutor cannot do what he asks';
 
 describeFeature(feature, ({ Scenario }) => {
-  const openedAsk = "Lampas is opened on Romans 8 with the Verse view's Ask open behind a fake Postern whose tutor cannot do what he asks";
   const grists = (_: unknown, count: number) => waitFor(() => expect(feedbackGrists()).toHaveLength(count));
   const tutorAsk = (_: unknown, words: string, summary: string, screenName: string, reference: string) =>
     waitFor(() => expect(feedbackGrist().input).toMatchObject({ kind: 'tutor-ask', text: words, summary, screen: screenName, reference, app_version: __APP_VERSION__ }));
