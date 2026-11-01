@@ -36,9 +36,10 @@ const NOT_HA_PASS = [
   '',
 ];
 
-// mw-5r3p30.740: the fetch must reach Smyrna (Revelation 2:8-11) but may start where he quoted (2:4) or run a little past it; one that misses Smyrna fails.
+// mw-5r3p30.740: the fetch must reach Smyrna (Revelation 2:8-11) but may start earlier or run a little past it; one that misses Smyrna fails.
+// mw-5r3p30.937: the request now holds 2:1-7, so 2:4 is never fetched at all (tests/unit/fetch-where-the-talk-heads.test.ts).
 const REACHES_SMYRNA_FAIL = ['Revelation 2:1-3', 'Revelation 3:1', 'Revelation 3:1-6', 'Revelation 2:4-7', 'Revelation 2:4', 'Revelation 2:12-17', 'John 2:8-11', 'Revelation 12:8-11'];
-const REACHES_SMYRNA_PASS = ['Revelation 2:8-11', 'Revelation 2:4-11', 'Revelation 2:8', 'Revelation 2:9-11', 'Revelation 2:4-17', 'Revelation 2:1-11', 'Revelation 2:7-12'];
+const REACHES_SMYRNA_PASS = ['Revelation 2:8-11', 'Revelation 2:4-11', 'Revelation 2:8', 'Revelation 2:9-11', 'Revelation 2:4-17', 'Revelation 2:1-11', 'Revelation 2:7-12', 'Revelation 2:10-11'];
 
 // mw-5r3p30.858: the request holds Revelation 2:1-3; the answer may name that range any way a reader would, and must name it (not Smyrna's 2:8-11).
 const NAMES_HELD_RANGE_PASS = [
