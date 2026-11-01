@@ -384,10 +384,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The bars change only on a two-finger tap (src/immersive.ts); a sheet closing or reading aloud stopping does not bring them back. They stay out
   // of view only while the header holds no reading control.
   const away = bars.away && !headerButtons;
-  // The foot of the screen keeps the phone's bottom floor on its lowest row (mw-5r3p30.473): the Talk bar, when it is drawn, and otherwise the place line of
-  // the Immersive reader (under everything), else the speaking bar's slot or the Turn pages line above it.
+  // The foot of the screen keeps the phone's bottom floor on its lowest row (mw-5r3p30.473): the place line of the Immersive reader (under everything), else the
+  // speaking bar's slot or the Turn pages line above it. No bar of the tutor's sits under them any more (the Talk bar is gone, mw-5r3p30.882), licensed or not.
   const barUp = useBarShown();
-  const footBare = !ai || away;
   const percentLine = !paging && immersive && chapter && !failed && !viewUnit;
   const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
@@ -569,8 +568,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
-      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={footBare && !barUp} /> : null}
-      <BarSlot level={1} inset={footBare && !(percentLine && away)} />
+      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
+      <BarSlot level={1} inset={!(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} visible={away} floor /> : null}
       {ai && talkScope && talkAbout !== undefined ? (
