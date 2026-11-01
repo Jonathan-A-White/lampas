@@ -1,0 +1,40 @@
+{
+  "description": "A page that copies Genesis 1:1 in pointed Hebrew exactly, right to left: it is readable and every word is right.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 1:1",
+    "language": "hbo",
+    "words": [
+      "בְּרֵאשִׁית",
+      "בָּרָא",
+      "אֱלֹהִים",
+      "אֵת",
+      "הַשָּׁמַיִם",
+      "וְאֵת",
+      "הָאָרֶץ"
+    ]
+  },
+  "photos": [
+    "hbo-perfect-genesis-1-1.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.3.mark": {
+      "equals": "right"
+    },
+    "words.6.mark": {
+      "equals": "right"
+    },
+    "words.7": {
+      "present": false
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}

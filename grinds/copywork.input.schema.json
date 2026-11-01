@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Copywork Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reference", "language", "words"],
+  "properties": {
+    "reference": {
+      "description": "The verse or passage he was copying, as the app names it: 'John 1:1', 'Genesis 1:1', 'Romans 8:1-4'.",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80
+    },
+    "language": {
+      "description": "The language of the text he copied: 'en' English, 'grc' Koine Greek (with its accents and breathings), 'hbo' Biblical Hebrew (pointed: letters and vowel points, no cantillation marks).",
+      "type": "string",
+      "enum": ["en", "grc", "hbo"]
+    },
+    "words": {
+      "description": "The model text, split on spaces into its words, exactly as the app showed it to him to copy: English words keep their punctuation and capital letters; Greek words are NFC with their accents and breathings; Hebrew words are pointed. The answer marks these words one for one, in this order.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 400,
+      "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+    }
+  }
+}

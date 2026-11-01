@@ -1,0 +1,40 @@
+{
+  "description": "A page that copies Genesis 1:1 in Hebrew with the second word בָּרָא written without its vowel points and the sixth word וְאֵת left out: the second is wrong and names the vowel points, the sixth is missing, the first is right.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 1:1",
+    "language": "hbo",
+    "words": [
+      "בְּרֵאשִׁית",
+      "בָּרָא",
+      "אֱלֹהִים",
+      "אֵת",
+      "הַשָּׁמַיִם",
+      "וְאֵת",
+      "הָאָרֶץ"
+    ]
+  },
+  "photos": [
+    "hbo-errors-genesis-1-1.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.1.mark": {
+      "equals": "wrong"
+    },
+    "words.1.problem": {
+      "matches": "point|vowel|qamets|kamatz|niqqud"
+    },
+    "words.5.mark": {
+      "equals": "missing"
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}

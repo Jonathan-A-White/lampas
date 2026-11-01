@@ -1,0 +1,59 @@
+{
+  "description": "A page that copies John 1:1 in Greek with ἀρχή for ἀρχῇ (the iota subscript and the circumflex are missing) and πρός for πρὸς (acute for grave): both are wrong and name the accent or the subscript, the words around them are right.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1",
+    "language": "grc",
+    "words": [
+      "Ἐν",
+      "ἀρχῇ",
+      "ἦν",
+      "ὁ",
+      "λόγος",
+      "καὶ",
+      "ὁ",
+      "λόγος",
+      "ἦν",
+      "πρὸς",
+      "τὸν",
+      "θεόν",
+      "καὶ",
+      "θεὸς",
+      "ἦν",
+      "ὁ",
+      "λόγος"
+    ]
+  },
+  "photos": [
+    "grc-errors-john-1-1.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.1.mark": {
+      "equals": "wrong"
+    },
+    "words.1.problem": {
+      "matches": "iota|subscript|accent|circumflex|acute"
+    },
+    "words.2.mark": {
+      "equals": "right"
+    },
+    "words.9.mark": {
+      "equals": "wrong"
+    },
+    "words.9.problem": {
+      "matches": "accent|grave|acute"
+    },
+    "words.16.mark": {
+      "equals": "right"
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}

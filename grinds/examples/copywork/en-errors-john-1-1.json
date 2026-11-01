@@ -1,0 +1,53 @@
+{
+  "description": "A page that copies John 1:1 in English with 'begining' for 'beginning' and stops before the last word: 'beginning' is wrong and says which letter, 'God.' is missing, the first words are right.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1",
+    "language": "en",
+    "words": [
+      "In",
+      "the",
+      "beginning",
+      "was",
+      "the",
+      "Word,",
+      "and",
+      "the",
+      "Word",
+      "was",
+      "with",
+      "God,",
+      "and",
+      "the",
+      "Word",
+      "was",
+      "God."
+    ]
+  },
+  "photos": [
+    "en-errors-john-1-1.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.1.mark": {
+      "equals": "right"
+    },
+    "words.2.mark": {
+      "equals": "wrong"
+    },
+    "words.2.problem": {
+      "matches": "begin|\\bn\\b|letter|spell|second|double"
+    },
+    "words.16.mark": {
+      "equals": "missing"
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}
