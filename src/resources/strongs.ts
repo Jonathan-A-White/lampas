@@ -30,6 +30,7 @@ const entryUrl = (number: string): string => {
  * null for the TBESG-only numbers (G6029, G6856, G6897) that have neither.
  */
 export const strongsUrl = (strongs: string): string | null => {
+  if (!/^[GH]\d+/.test(strongs)) return null; // a word with no number has nothing to open: an empty strong= opens STEP's home page (mw-5r3p30.926)
   const number = padded(strongs);
   if (STEP_NO_VERSES.has(number)) {
     if (Number(number.slice(1)) > STRONGS_LAST[number[0] as 'G' | 'H']) return null;
