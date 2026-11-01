@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.54",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.943",
+    "kind": "fixed",
+    "text": "Sideways, the update bar and the tutor's answer bar no longer scroll off the top while you scroll a talk."
+  },
+  {
     "version": "0.7.52",
     "date": "2026-11-01",
     "story": "mw-5r3p30.899",

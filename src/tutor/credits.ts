@@ -13,7 +13,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Berean Standard Bible', use: 'The Old Testament\'s Hebrew (WLC), aligned to the English', licence: 'Public domain', link: 'https://berean.bible/licensing.htm' },
   { name: 'byztxt', use: 'The variant readings and sentence ends', licence: 'Public domain', link: 'https://github.com/byztxt/byzantine-majority-text' },
   { name: 'Byzantine Priority', use: 'Robinson\'s essay, read on the Preface', licence: 'Public domain', link: 'https://byzantinetext.com/study/editions/robinson-pierpont/' },
-  { name: 'TBESG', use: 'Greek lemmas, glosses; variant numbers (TAGNT); TBESH: Hebrew', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
+  { name: 'TBESG', use: 'Greek lemmas, glosses; TAGNT: variants, the Septuagint\'s parsing; TBESH: Hebrew', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'LXX2012', use: 'The Septuagint\'s English (Brenton)', licence: 'Public domain', link: 'https://ebible.org/eng-lxx2012/' },
   { name: 'Learn to Read New Testament Greek', use: 'Its lesson titles and pages, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC' },
   { name: 'Biblical Hebrew Step by Step', use: 'Its lesson titles and pages, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ' },

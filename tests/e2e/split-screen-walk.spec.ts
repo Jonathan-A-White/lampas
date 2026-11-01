@@ -78,8 +78,10 @@ async function look(page: Page): Promise<Seen> {
         const there = getComputedStyle(up);
         const small = up.getBoundingClientRect();
         if (there.clipPath !== 'none' || ((there.overflowX !== 'visible' || there.overflowY !== 'visible') && (small.width <= 1 || small.height <= 1))) hidden = true;
-        if (scrolls(up, 'x')) scrollers.push({ axis: 'x', box: up.getBoundingClientRect() });
-        if (scrolls(up, 'y')) scrollers.push({ axis: 'y', box: up.getBoundingClientRect() });
+        // the page itself scrolls while the Talk sheet is open (html.lp-talk-scroll): its box has moved up by scrollY, but what it shows is the window, and a fixed card is not carried by it
+        const box = up === document.documentElement ? new DOMRect(0, 0, W, H) : up.getBoundingClientRect();
+        if (scrolls(up, 'x')) scrollers.push({ axis: 'x', box });
+        if (scrolls(up, 'y')) scrollers.push({ axis: 'y', box });
       }
       if (hidden) continue;
       const rects: Rect[] = [];

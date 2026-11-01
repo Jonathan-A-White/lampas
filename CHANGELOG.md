@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.54
+_2026-11-01_
+- Fixed: Sideways, the update bar and the tutor's answer bar no longer scroll off the top while you scroll a talk.
+
 ## 0.7.52
 _2026-11-01_
 - New: A Practise door on a verse starts with copywork: write the verse by hand in English, Greek or Hebrew, photograph the page, and the tutor marks each word.
