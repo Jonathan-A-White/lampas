@@ -321,7 +321,7 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
         <p data-testid="sheet-respelling" className="min-w-0 break-words text-xl text-muted">
           {hebrewPronunciationOf(scheme).respell(word.t, word.tr)}
         </p>
-        <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" />
+        {word.s ? <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" /> : null}
       </div>
       <dl className="mt-2">
         <Fact label="Lemma" testId="sheet-lemma" hebrew>
@@ -412,7 +412,7 @@ function WordCard({ chapter, word, verseOf, english, pronunciation, known, study
         <p data-testid="sheet-respelling" className="min-w-0 break-words text-xl text-muted">
           {pronunciationOf(pronunciation).respell(word.t)}
         </p>
-        <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" />
+        {word.s ? <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" /> : null}
       </div>
       <dl className="mt-2">
         {formOnly ? null : (
