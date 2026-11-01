@@ -1,4 +1,4 @@
-// tests/e2e/practise.spec.ts — the Verse view's Practise door and Copywork (mw-5r3p30.899) at 390x844: the door lists its five ways in her order with the two that are not there yet saying soon, Copywork shows
+// tests/e2e/practise.spec.ts — the Verse view's Practise door and Copywork (mw-5r3p30.899) at 390x844: the door lists its five ways in her order, every one open, Copywork shows
 // John 1:1 in Greek where the Reader's text was, a photographed page is judged by a stubbed copywork tutor, and the result (each word marked, the problems, the one thing to fix first) and the foot's Try again fit the phone.
 // jsdom has no layout, so every size and place is proven here.
 import { expect, test, type Page } from '@playwright/test';
@@ -19,6 +19,21 @@ async function start(page: Page, speaks = false, hears = false): Promise<void> {
   fake.autoReply = { status: 'answered', answer: {} };
   fake.replyFor = (input, kind) => {
     if (kind === 'narration') return { status: 'answered', answer: { caught: ['In the beginning was the Word', 'The Word was with God'], missed: ['The Word was God'], in_order: true, question: 'What do you think the last part says about who the Word is?' } };
+    if (kind === 'summary') {
+      return {
+        status: 'answered',
+        answer: {
+          readable: true,
+          read_as: input.how === 'photo' ? 'The Word was with God and was God.' : '',
+          present: ['The Word was with God', 'The Word was God'],
+          missing: ['The Word was in the beginning'],
+          in_order: true,
+          length: 'right',
+          model_summary: 'In the beginning the Word was with God, and the Word was God.',
+          advice: 'Add that the Word was there in the beginning.',
+        },
+      };
+    }
     if (kind !== 'copywork') return undefined;
     const words = input.words as string[];
     return {
@@ -43,7 +58,7 @@ const fitsPhone = async (page: Page) => {
 
 test.use({ viewport: VIEWPORT });
 
-test('the Practise door lists its five ways, one of them soon, and each is a thumb tall', async ({ page }) => {
+test('the Practise door lists its five ways, every one open, and each is a thumb tall', async ({ page }) => {
   await start(page);
   const view = page.getByRole('region', { name: 'Verse view' });
   await view.getByRole('button', { name: 'Practise', exact: true }).click();
@@ -51,7 +66,8 @@ test('the Practise door lists its five ways, one of them soon, and each is a thu
   const door = view.getByRole('list', { name: 'Ways to practise' });
   const names = await door.getByRole('button').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')));
   expect(names).toEqual(['Copywork', 'Narration', 'Dictation', 'Summary', 'Quiz']);
-  await expect(door.locator('[data-soon]')).toHaveCount(1);
+  await expect(door.locator('[data-soon]')).toHaveCount(0);
+  for (const button of await door.getByRole('button').all()) await expect(button).toBeEnabled();
   for (const button of await door.getByRole('button').all()) {
     const b = await button.boundingBox();
     if (!b) throw new Error('no button box');
@@ -187,4 +203,50 @@ test('Narration: the verse in English, a hold at the foot tells it back, it is w
   await view.getByRole('button', { name: 'Back to Practise', exact: true }).click();
   await expect(view.locator('[data-narration-written]')).toHaveText(told);
   await expect(view.locator('[data-narration-question]')).toBeVisible();
+});
+
+test('Summary: the verse in English, a box to type the main points in, Check my summary at the foot, and the points present and missing, the order, the length and a model summary fit the phone', async ({ page }) => {
+  await start(page);
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await view.getByRole('button', { name: 'Practise', exact: true }).click();
+  await view.getByRole('button', { name: 'Summary', exact: true }).click();
+  await expect(view.locator('[data-summary-scope]')).toHaveText('Summary is in English. A summary in Greek or Hebrew is not offered yet.');
+  await expect(view.locator('[data-summary-text]')).toContainText('In the beginning was the Word');
+  await expect(view.locator('[data-summary-text]')).toHaveAttribute('lang', 'en');
+
+  // before he types, the foot is the camera; the box is 16 px or more so the phone does not zoom on it
+  const foot = view.locator('[data-verse-bar]');
+  await expect(foot.getByRole('button', { name: 'Take a photo', exact: true })).toBeVisible();
+  const field = view.getByRole('textbox', { name: 'Your summary' });
+  expect(await field.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+  await field.fill('The Word was with God and was God.');
+  const check = foot.getByRole('button', { name: 'Check my summary', exact: true });
+  const box = await check.boundingBox();
+  if (!box) throw new Error('no foot box');
+  expect(box.height).toBeGreaterThanOrEqual(95.5);
+  expect(box.y + box.height).toBeLessThanOrEqual(VIEWPORT.height);
+  expect(box.x + box.width).toBeLessThanOrEqual(VIEWPORT.width);
+  await check.click();
+
+  const result = view.locator('[data-summary-result]');
+  await expect(result.locator('[data-summary-present] li')).toHaveText(['The Word was with God', 'The Word was God']);
+  await expect(result.locator('[data-summary-missing] li')).toHaveText(['The Word was in the beginning']);
+  await expect(result.locator('[data-summary-order]')).toContainText("kept the passage's order");
+  await expect(result.locator('[data-summary-length]')).toContainText('The length is right');
+  await expect(result.locator('[data-summary-model]')).toContainText('the Word was God');
+  // the screen scrolls under the text's box: the model summary and the advice are reached by a scroll, inside the window
+  await result.locator('[data-summary-advice]').scrollIntoViewIfNeeded();
+  await expect(result.locator('[data-summary-advice]')).toBeInViewport({ ratio: 1 });
+  // once the answer is in, the foot is the camera again (nothing new to check)
+  await expect(foot.getByRole('button', { name: 'Take a photo', exact: true })).toBeVisible();
+  await fitsPhone(page);
+  await shot(page, 'practise-summary');
+
+  // a photographed page is read by the tutor and its reading goes into the box
+  await field.fill('');
+  await view.locator('input[type="file"]:not([capture])').setInputFiles(PAGE);
+  await expect(field).toHaveValue('The Word was with God and was God.');
+  await expect(view.locator('[data-summary-read]')).toBeVisible();
+  await expect(foot.getByRole('button', { name: 'Try again', exact: true })).toBeVisible();
+  await fitsPhone(page);
 });
