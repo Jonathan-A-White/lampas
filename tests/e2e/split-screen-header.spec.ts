@@ -46,11 +46,11 @@ async function controls(page: Page): Promise<Box[]> {
         if (right - x > 0) boxes.push({ name: `chip: ${name(el)}`, x, y: r.y, width: right - x, height: r.height });
       }
     }
-    // the floating ? floats over the screen and must not cover the chips either
-    const ask = document.querySelector('[data-floating-tutor]');
+    // the round Ask button floats over the screen and must not cover the chips either
+    const ask = document.querySelector('[data-ask-tutor]');
     if (ask) {
       const r = rect(ask);
-      boxes.push({ name: 'the floating ?', x: r.x, y: r.y, width: r.width, height: r.height });
+      boxes.push({ name: 'the round Ask button', x: r.x, y: r.y, width: r.width, height: r.height });
     }
     return boxes;
   });

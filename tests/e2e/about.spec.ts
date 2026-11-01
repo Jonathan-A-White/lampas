@@ -40,7 +40,9 @@ test('About credits the data at phone width, reached from Settings', async ({ pa
   await main.evaluate((el) => el.scrollTo(0, el.scrollHeight));
   const last = await page.locator('main li').last().boundingBox();
   const button = await page.locator('[data-floating-tutor]').boundingBox();
-  expect(last && button && last.y + last.height).toBeLessThanOrEqual(button?.y ?? 0);
+  expect(last && button).toBeTruthy();
+  // the floating ? covers none of the last line (it sits a thumb's reach up the edge, so the line may be under it only if it is clear of it)
+  expect(last!.y + last!.height <= button!.y || button!.y + button!.height <= last!.y || last!.x + last!.width <= button!.x || button!.x + button!.width <= last!.x).toBe(true);
   await main.evaluate((el) => el.scrollTo(0, 0));
 
   await shot(page, 'about');

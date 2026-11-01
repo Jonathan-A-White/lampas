@@ -34,9 +34,9 @@ export async function expectInView(page: Page, button: Locator, where: string): 
     expect(box.y, `${where}: above the scroll box`).toBeGreaterThanOrEqual(scroller.top - 0.5);
     expect(box.y + box.height, `${where}: below the scroll box (its bottom ${scroller.bottom})`).toBeLessThanOrEqual(scroller.bottom + 0.5);
   }
-  // the floating ? (hidden while a Talk sheet is up)
-  const ask = (await page.locator('[data-floating-tutor]').count()) > 0 ? await page.locator('[data-floating-tutor]').boundingBox() : null;
-  if (ask) expect(meets(box, ask), `${where}: the floating ? is over it`).toBe(false);
+  // the round Ask button is hidden while a sheet is up
+  const ask = (await page.locator('button[data-ask-tutor]').count()) > 0 ? await page.locator('button[data-ask-tutor]').boundingBox() : null;
+  if (ask) expect(meets(box, ask), `${where}: the Ask button is over it`).toBe(false);
 }
 
 /** Opens `hash` on a phone whose text is set to `percent` of its own size (Settings > Text size writes the same row, which the app reads as it starts). */

@@ -27,7 +27,7 @@ async function measure(page: Page, group: string) {
       return { x: r.left, y: r.top, right: r.right, bottom: r.bottom };
     };
     const segment = document.querySelector(`[role="group"][aria-label="${label}"]`)!;
-    const ask = document.querySelector('[data-floating-tutor]');
+    const ask = document.querySelector('[data-ask-tutor]');
     const buttons = [...segment.querySelectorAll('button')].map((b) => ({ name: b.textContent ?? '', box: box(b), whole: b.scrollWidth <= b.clientWidth }));
     return {
       window: { w: document.documentElement.clientWidth, h: document.documentElement.clientHeight },
