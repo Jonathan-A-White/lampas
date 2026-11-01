@@ -85,7 +85,7 @@ test.describe('at 390x844', () => {
         return { text: el.innerText.slice(0, 40), lines: Math.round(content / parseFloat(style.lineHeight)) };
       });
     });
-    expect(lines.length).toBe(43);
+    expect(lines.length).toBe(45); // the intro, the credits and the licence notices of ATTRIBUTION.md; main's Morpheus credit (ef57c08c) took it from 43
     // the licence notices that must stay whole (CC BY 4.0, the maps' citation, the font copyrights) may take a line or two more
     const LONG = /^(Tyndale House|TIPNR|Bible Mapper|Literata)/;
     const tooLong = lines.filter((l) => l.lines > (LONG.test(l.text) ? 9 : 4)).map((l) => `${l.lines} lines: ${l.text}`);
