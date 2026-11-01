@@ -169,13 +169,14 @@ docs/research/greek-speech-libraries.md # open-source libraries for Greek sound
 docs/research/kjv-tr.md # the KJV and the Greek behind it as a text pair
 docs/research/logos-section-refs.md # grammar sections by a book's own Logos data type
 docs/research/logos-morph-charts.md # Logos's Morphology Charts at a lemma from a link
-docs/research/logos-factbook.md # Factbook at a proper name from a word sheet: link form, source
-docs/research/logos-exegetical-guide.md # the Exegetical Guide at a verse: link form, source, the door, a sweep
+docs/research/logos-factbook.md # Factbook at a proper name: link form, source
+docs/research/logos-exegetical-guide.md # the Exegetical Guide at a verse: link form, source
 docs/research/letter-sounds.md # lone vowels and letter sounds in a voice like the phone's
 docs/sources/latin-bible.md # Latin Bible sources: licences, word data, versification, audio
 docs/sources/public-domain-works.md # Spurgeon and other public-domain works: sources, terms, coverage
 docs/design/library-at-scale.md # the Logos library at scale, mockups, build plan
 docs/design/bible-talk-trim-map.md # the bible-talk rules before the 100,000-byte trim, where each lives
-docs/sources/septuagint-and-webster.md # Septuagint and Webster 1828 sources: licences, word data, versification
-docs/sources/lxx-derivation-probe.md # deriving LXX lemma and parsing: accuracy, cost, licence, rerun
+docs/sources/septuagint-and-webster.md # Septuagint and Webster 1828 sources and licences
+docs/sources/lxx-derivation-probe.md # the LXX derivation probe: accuracy, cost, licence
+docs/lxx-derivation.md # the LXX derivation: layers, files, commands
 ```
