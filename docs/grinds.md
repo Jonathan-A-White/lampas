@@ -12,6 +12,15 @@ Every grind's instructions stay under 100,000 bytes, as `cat grinds/<kind>.instr
 
 **Bible talk, maps (mw-zbjgn3r.4).** The request may carry `maps` (the maps of the passage's chapter, `{id, source, title, period, places}`, at most 12, Bible Mapper's first and at most two Logos rows last, titled '(opens in Logos)'; docs/maps.md 'The tutor brings up maps') and the answer's `links` may carry `{kind: 'map', map: <id>}`, an id of a line of `maps`. The rule is the `### Links to a map` paragraph of part 200, and the examples are `map-of-the-passage`, `map-in-logos` and `no-map-listed`; verse-ask has neither the field nor the link.
 
+<!-- toc -->
+
+- [copywork (mw-5r3p30.899, dictation mw-5r3p30.900)](#copywork-mw-5r3p30899-dictation-mw-5r3p30900)
+- [narration (mw-5r3p30.901)](#narration-mw-5r3p30901)
+- [summary (mw-5r3p30.902)](#summary-mw-5r3p30902)
+- [drill-items: a Hebrew request (mw-gdcyf98.21)](#drill-items-a-hebrew-request-mw-gdcyf9821)
+
+<!-- /toc -->
+
 ## copywork (mw-5r3p30.899, dictation mw-5r3p30.900)
 
 `copywork` judges a photographed page of copywork against the verse (the Verse view's Practise > Copywork, docs/verse-view.md 'Practise'). The request is `{reference, language: 'en'|'grc'|'hbo', words}` with one picture (up to 1 MB, jpeg, png or webp); the answer marks each word `right`, `missing` or `wrong` (with a `problem` naming the letter, accent, breathing or vowel point), says whether the page was `readable`, and gives `fix_first`. Its examples are `grinds/examples/copywork/`: a perfect copy and one with errors in each language, John 1:1 in English and Greek, Genesis 1:1 in Hebrew.
@@ -21,6 +30,10 @@ Every grind's instructions stay under 100,000 bytes, as `cat grinds/<kind>.instr
 ## narration (mw-5r3p30.901)
 
 `narration` answers a retelling (the Verse view's Practise > Narration, docs/verse-view.md 'Practise'). The request is `{reference, passage, narration}`: the passage in English and what he told back, written down by the app from the phone's English dictation (a capital to begin, a full stop to end, nothing else). No picture. The answer is `{caught[], missed[], in_order, question}`: the passage's main points he told and those he left out (each a short phrase, both in the passage's order, every point in exactly one list), whether he told them in that order, and one gentle question that leads to the first missed point without saying it (deeper into the passage when nothing was missed). The instructions say a point told in other words is caught (narration is in his own words), that a misheard name is read for what he means, and never to grade him in a field. Its examples are `grinds/examples/narration/`: John 1:1 missing its last point, Genesis 1:3-5 told in full, Mark 4:37-41 told out of order (`in_order` false), John 3:16 told as a story about bread (nothing caught) and Luke 15:11-24 missing its middle. A change of the instructions is proved with `mw grist eval lampas narration --example <name> --ref <branch>`.
+
+## summary (mw-5r3p30.902)
+
+`summary` judges a summary (the Verse view's Practise > Summary, docs/verse-view.md 'Practise'). The request is `{reference, passage, how: 'typed'|'photo', summary?}`: the verse, passage or chapter in English (up to 20,000 characters, a whole chapter) and either what he typed (`how: 'typed'`) or one picture of his handwriting (`how: 'photo'`, up to 1 MB, jpeg, png or webp, and no `summary`). The answer is `{readable, read_as, present[], missing[], in_order, length, model_summary, advice}`: the passage's main points he gave and those he left out (each a short phrase, in the passage's order, every point in exactly one list; a point told in other words is present), whether he gave them in that order, whether the length is `right`, `too_long` (it retells the passage with its details: the usual fault of a summary) or `too_short` (too thin to carry a point), one sentence of a model summary and one piece of advice. For a photo `read_as` is the page as the tutor read it (the app puts it in the box so he can correct it); an unreadable page is `readable: false` with `present` and `missing` empty, `model_summary` empty and the advice saying how to photograph it. Its examples are `grinds/examples/summary/`: John 1:1 with two of three points, Mark 4:35-41 told out of order (`in_order` false), Genesis 1:1-5 retold line by line (`too_long`), Luke 15:11-24 as "A son." (`too_short`), the whole of Genesis 1 in two sentences, a rendered handwritten page of John 1:1-5 and a blank page. A change of the instructions is proved with `mw grist eval lampas summary --example <name> --ref <branch>`.
 
 ## drill-items: a Hebrew request (mw-gdcyf98.21)
 

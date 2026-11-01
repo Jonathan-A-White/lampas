@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Summary Request 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reference", "passage", "how"],
+  "properties": {
+    "reference": {
+      "description": "The verse, passage or chapter he summarised, as the app names it: 'John 1:1', 'Genesis 1:1-5', 'Romans 8:1-4', 'John 1:1-51' (a whole chapter).",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80
+    },
+    "passage": {
+      "description": "The verse, passage or chapter in English, as the translation has it (verses in order, one space between words), exactly as the app showed it to him to read before he summarised it.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "how": {
+      "description": "'typed' when he typed his summary (it is `summary`, with no picture); 'photo' when he wrote it by hand and the one attached picture is a photograph of his page (`summary` is left out).",
+      "type": "string",
+      "enum": ["typed", "photo"]
+    },
+    "summary": {
+      "description": "What he typed, when `how` is 'typed': his own words, with the spaces and lines collapsed to single spaces. Left out when `how` is 'photo'.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 3000
+    }
+  }
+}

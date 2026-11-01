@@ -1,0 +1,16 @@
+{
+  "grind": 1,
+  "app": "lampas",
+  "kind": "summary",
+  "versions": ["1"],
+  "model": "sonnet",
+  "effort": "medium",
+  "instructions": "grinds/summary.instructions.md",
+  "answerSchema": "grinds/summary.answer.schema.json",
+  "attachments": {
+    "min": 0,
+    "max": 1,
+    "mime": ["image/jpeg", "image/png", "image/webp"],
+    "maxBytes": 1048576
+  }
+}

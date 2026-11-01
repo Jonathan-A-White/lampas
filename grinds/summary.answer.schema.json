@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Summary Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["readable", "read_as", "present", "missing", "in_order", "length", "model_summary", "advice"],
+  "properties": {
+    "readable": {
+      "description": "False only when `how` is 'photo' and the handwriting on the page cannot be read at all (too dark, blurred, cut off, not a page of writing); then nothing else is judged. True for every typed summary.",
+      "type": "boolean"
+    },
+    "read_as": {
+      "description": "When `how` is 'photo' and the page is readable: his summary exactly as you read it from the page, spelled and punctuated as he wrote it, so he can see what you read. An empty string when `how` is 'typed' or the page cannot be read.",
+      "type": "string",
+      "maxLength": 3000
+    },
+    "present": {
+      "description": "The main points of the passage that his summary gives, one short plain phrase each, in the order the PASSAGE has them (not the order he gave them). Empty when he gave none of them or the page cannot be read.",
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+    },
+    "missing": {
+      "description": "The main points of the passage that his summary leaves out, one short plain phrase each, in the passage's order. Empty when he gave every main point or the page cannot be read.",
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+    },
+    "in_order": {
+      "description": "True when the points he gave came in the order the passage has them (or he gave one point or none, or the page cannot be read); false when he gave two or more of them in a different order.",
+      "type": "boolean"
+    },
+    "length": {
+      "description": "'right' when his summary is a few sentences that carry the main points and leave out the detail; 'too_long' when it retells details, repeats the passage or is nearly as long as it; 'too_short' when it is so thin (a phrase, a few words) that it cannot carry the main points. 'right' when the page cannot be read.",
+      "type": "string",
+      "enum": ["too_short", "right", "too_long"]
+    },
+    "model_summary": {
+      "description": "One sentence that sums up the passage's main points, in plain English, for him to compare his own with. An empty string only when the page cannot be read.",
+      "type": "string",
+      "maxLength": 400
+    },
+    "advice": {
+      "description": "One plain, kind sentence on the one thing to do next to make his summary better; when the page cannot be read, how to photograph it so that it can be (more light, flatter, closer, the whole page in view).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    }
+  }
+}

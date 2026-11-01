@@ -6,15 +6,19 @@ Feature: Practise a verse
   time (Start dictation, Again, Next), he writes it by hand, photographs the page, and the tutor judges what he heard and wrote; then the verse is shown
   beside the marks and Try again restarts. Narration is live (mw-5r3p30.901) in English only: he holds the bar and tells the verse or passage back in his own words,
   the app writes down what the phone heard, and the tutor (the narration grind) lists what he caught, in the passage's order, what he missed, and one gentle
-  question; the written-down narration can be taken to Copywork or Dictation. Summary says "soon" until its story lands. The quiz is the existing Verse quiz.
+  question; the written-down narration can be taken to Copywork or Dictation. Summary is live (mw-5r3p30.902), in English only: he types the main points in a few
+  sentences, or photographs his handwriting, and the tutor (the summary grind) lists the main points present and missing, says whether they came in the
+  passage's order and whether the length is right, and gives one sentence of a model summary to compare; it works on a verse, a passage or a whole chapter.
+  The quiz is the existing Verse quiz.
 
   @uc-practise @greek
-  Scenario: The Practise door lists copywork, narration, dictation, summary and the quiz, and summary says soon
+  Scenario: The Practise door lists copywork, narration, dictation, summary and the quiz, and every one can be opened
     Given Lampas is opened on John 1 with a copywork tutor behind a fake Postern
     When he taps the number of verse 1
     And he chooses "Practise"
     Then the Practise door lists "Copywork", "Narration", "Dictation", "Summary" and "Quiz" in that order
-    And "Summary" says soon and cannot be opened
+    And every way on the door can be opened and none says soon
+    And the Summary way on the door says it is in English
 
   @uc-practise @greek
   Scenario: Copywork on John 1:1 in Greek: the page is photographed and each word is marked
@@ -213,3 +217,114 @@ Feature: Practise a verse
     And he holds the bar and says "in the beginning was the word and the word was with god"
     Then his narration is written down as "In the beginning was the word and the word was with god."
     And the result says the tutor could not be asked, and a "Try again" button is offered
+
+  @uc-practise @greek
+  Scenario: Summary on John 1:1 is in English: the verse is shown and a summary in Greek or Hebrew is said to be out of reach
+    Given Lampas is opened on John 1 with a summary tutor behind a fake Postern
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Summary"
+    Then summary says it is in English and that a summary in Greek or Hebrew is not offered yet
+    And the passage is shown in English for him to read first
+    And he can type in "Your summary"
+    And the foot offers "Take a photo" and not "Check my summary"
+    And nothing has been sent to the tutor
+
+  @uc-practise @greek
+  Scenario: He types a summary of John 1:1; the tutor says which main points are present and missing, the order, the length, and a model summary
+    Given Lampas is opened on John 1 with a summary tutor behind a fake Postern
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Summary"
+    And he types "The Word was with God and the Word was God." in "Your summary"
+    Then the foot offers "Check my summary" and not "Take a photo"
+    When he sends it with "Check my summary"
+    Then the mill received one grist for the lampas app, kind summary, typed, about "John 1:1"
+    And that grist carries the passage in English and his summary as he typed it, and no picture
+    And the result lists the main points present: "The Word was with God" and "The Word was God"
+    And the result lists the main points missing: "The Word was in the beginning"
+    And the result says he gave the points in a different order from the passage
+    And the result says the length is right
+    And the result shows a model summary to compare
+    And the result gives one piece of advice
+
+  @uc-practise @hebrew
+  Scenario: Summary on Genesis 1:1 is in English too, with the English text sent
+    Given Lampas is opened on Genesis 1 with a summary tutor behind a fake Postern
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Summary"
+    Then summary says it is in English and that a summary in Greek or Hebrew is not offered yet
+    When he types "God made heaven and earth." in "Your summary"
+    And he sends it with "Check my summary"
+    Then the mill received one grist for the lampas app, kind summary, typed, about "Genesis 1:1"
+    And that grist carries the passage in English and his summary as he typed it, and no picture
+
+  @uc-practise @greek
+  Scenario: A summary too long is told so, and one in the passage's order says the order was kept
+    Given Lampas is opened on John 1 with a summary tutor that finds it too long and in order
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Summary"
+    And he types "In the beginning was the Word and the Word was with God and the Word was God." in "Your summary"
+    And he sends it with "Check my summary"
+    Then the result says the length is too long, and that a summary keeps only the main points
+    And the result says he kept the passage's order
+    And the result lists nothing missing
+
+  @uc-practise @greek
+  Scenario: He photographs his handwriting; the page is sent as a picture, the tutor's reading of it is shown and can be corrected
+    Given Lampas is opened on John 1 with a summary tutor behind a fake Postern
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Summary"
+    And he attaches a picture of the page
+    Then the mill received one grist for the lampas app, kind summary, photo, about "John 1:1"
+    And that grist carries the passage in English, no typed summary and one picture
+    And the result shows what the tutor read on the page
+    And the result lists the main points present: "The Word was with God" and "The Word was God"
+    And the result lists the main points missing: "The Word was in the beginning"
+    And a "Try again" button is offered
+
+  @uc-practise @greek
+  Scenario: A page of handwriting the tutor cannot read says so and judges nothing
+    Given Lampas is opened on John 1 with a summary tutor that cannot read the page
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Summary"
+    And he attaches a picture of the page
+    Then the result says the page could not be read, with no main point judged
+    And a "Try again" button is offered
+
+  @uc-practise @greek
+  Scenario: A summary of a passage sends the whole passage in English
+    Given Lampas is opened on John 1:1-5 with a summary tutor behind a fake Postern
+    Then the Verse view is open on the passage "John 1:1-5"
+    When he chooses "Practise"
+    And he opens "Summary"
+    And he types "The Word was God and made all things, and in him was life and light." in "Your summary"
+    And he sends it with "Check my summary"
+    Then the mill received one grist for the lampas app, kind summary, typed, about "John 1:1-5"
+    And that grist carries the English of verses 1 to 5 as one passage
+
+  @uc-practise @greek
+  Scenario: A summary of a whole chapter sends the whole chapter in English
+    Given Lampas is opened on the whole of John 1 as a passage with a summary tutor behind a fake Postern
+    Then the Verse view is open on the passage "John 1:1-51"
+    When he chooses "Practise"
+    And he opens "Summary"
+    And he types "John tells of the Word, who became flesh, and of the people who followed him." in "Your summary"
+    And he sends it with "Check my summary"
+    Then the mill received one grist for the lampas app, kind summary, typed, about "John 1:1-51"
+    And that grist carries the English of every verse of the chapter as one passage
+
+  @uc-practise @greek
+  Scenario: When the tutor cannot answer, what he typed stays and he can ask again
+    Given Lampas is opened on John 1 with a summary tutor that cannot answer
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Summary"
+    And he types "The Word was with God." in "Your summary"
+    And he sends it with "Check my summary"
+    Then the result says the tutor could not be asked, and a "Try again" button is offered
+    And "Your summary" still holds "The Word was with God."

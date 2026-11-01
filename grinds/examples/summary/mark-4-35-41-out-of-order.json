@@ -1,0 +1,30 @@
+{
+  "description": "Mark 4:35-41 summarised as \"The disciples marvelled at Jesus, who calmed the storm that threatened their boat.\": the points are given but the wonder, which comes last in the passage, comes first, so in_order is false; the length is right.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Mark 4:35-41",
+    "passage": "When that evening came, He said to His disciples, “Let us cross to the other side.” After they had dismissed the crowd, they took Jesus with them, since He was already in the boat. And there were other little boats with Him. Soon a violent windstorm came up, and the waves were breaking over the boat, so that it was being swamped. But Jesus was in the stern, sleeping on the cushion. So they woke Him and said, “Teacher, don’t You care that we are perishing?” Then Jesus got up and rebuked the wind and the sea. “Silence!” He commanded. “Be still!” And the wind died down, and it was perfectly calm. “Why are you so afraid?” He asked. “How do you still have no faith?” Overwhelmed with fear, they asked one another, “Who then is this, that even the wind and the sea obey Him?”",
+    "how": "typed",
+    "summary": "The disciples marvelled at Jesus, who calmed the storm that threatened their boat."
+  },
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "present.0": {
+      "present": true
+    },
+    "present.1": {
+      "present": true
+    },
+    "in_order": {
+      "equals": false
+    },
+    "length": {
+      "equals": "right"
+    },
+    "model_summary": {
+      "present": true
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "description": "A photographed page of handwriting that summarises John 1:1-5 (\"The Word was there before anything else. He was with God and he was God. Everything was made through him, and in him was life.\"): the tutor reads it, puts the reading in read_as, and the points are present, in the passage's order, at the right length.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1-5",
+    "passage": "In the beginning was the Word, and the Word was with God, and the Word was God. He was with God in the beginning. Through Him all things were made, and without Him nothing was made that has been made. In Him was life, and that life was the light of men. The Light shines in the darkness, and the darkness has not overcome it.",
+    "how": "photo"
+  },
+  "photos": [
+    "john-1-1-5-handwritten-page.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "read_as": {
+      "matches": "Word.*God|God.*Word"
+    },
+    "present.0": {
+      "present": true
+    },
+    "present.1": {
+      "present": true
+    },
+    "in_order": {
+      "equals": true
+    },
+    "length": {
+      "equals": "right"
+    },
+    "model_summary": {
+      "present": true
+    }
+  }
+}

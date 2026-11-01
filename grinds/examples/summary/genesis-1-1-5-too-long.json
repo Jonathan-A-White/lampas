@@ -1,0 +1,33 @@
+{
+  "description": "Genesis 1:1-5 \"summarised\" by retelling it line by line, with every detail: it gives every main point in the passage's order, so nothing is missing and the order is kept, but it is too long to be a summary.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 1:1-5",
+    "passage": "In the beginning God created the heavens and the earth. Now the earth was formless and void, and darkness was over the surface of the deep. And the Spirit of God was hovering over the surface of the waters. And God said, “Let there be light,” and there was light. And God saw that the light was good, and He separated the light from the darkness. God called the light “day,” and the darkness He called “night.” And there was evening, and there was morning — the first day.",
+    "how": "typed",
+    "summary": "In the beginning God created the heavens and the earth. The earth was a formless empty place and it was dark over the deep, and the Spirit of God was moving over the waters. Then God said let there be light, and there was light. God looked at the light and saw that it was good. Then God separated the light from the darkness. God called the light day and he called the darkness night. There was evening and there was morning, and that was the first day."
+  },
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "present.0": {
+      "present": true
+    },
+    "missing.0": {
+      "present": false
+    },
+    "in_order": {
+      "equals": true
+    },
+    "length": {
+      "equals": "too_long"
+    },
+    "model_summary": {
+      "present": true
+    },
+    "advice": {
+      "present": true
+    }
+  }
+}
