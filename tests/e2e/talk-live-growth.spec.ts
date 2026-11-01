@@ -1,6 +1,6 @@
 // tests/e2e/talk-live-growth.spec.ts — a long dictation must not move Hold to talk (mw-5r3p30.931). His words (Postern general, 2026-10-31): "if I talk for a long time ... the button that I'm
-// holding ... can move ... it would start scrolling or whatever but the button should stay still". The live words (the kit's .bk-composer__live, and the sheet's own [data-talk-live]
-// when the hold began on the Reader's Talk bar) sat in the flow above the bar, so 40 lines of them pushed the bar down under the phone's navigation bar. Now they sit in a bounded
+// holding ... can move ... it would start scrolling or whatever but the button should stay still". The live words (the kit's .bk-composer__live; the sheet's own [data-talk-live]
+// went with the Reader's Talk bar, mw-5r3p30.882) sat in the flow above the bar, so 40 lines of them pushed the bar down under the phone's navigation bar. Now they sit in a bounded
 // box that keeps his newest words in view (src/ui/liveFollow.ts, src/index.css). The recogniser is voice-kit's honest fake (tests/support/honest-fakes.ts); a growing transcript is
 // fed to its last recognition the way a phone's would arrive, as one interim result that gets longer.
 import { expect, test, type Locator, type Page } from '@playwright/test';
@@ -8,6 +8,7 @@ import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
+import { openTutor } from './open-tutor';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 
@@ -142,19 +143,20 @@ for (const size of SIZES) {
   });
 }
 
-test("the Verse view's Hold to ask stays still while 40 lines are dictated", async ({ page }) => {
+// The Verse view has no Hold to ask of its own (mw-5r3p30.882): the floating ? over it opens the Talk sheet on the passage, and its Hold to talk must stay as still
+test("over the Verse view, the Talk sheet's Hold to talk stays still while 40 lines are dictated", async ({ page }) => {
   const size = SIZES[0];
   await prepare(page, size);
   await openUnlocked(page);
   await page.goto('/#/?c=8&view=english&weave=off');
   await page.locator('[data-heading]', { hasText: 'Walking by the Spirit' }).getByRole('button').click();
-  const view = page.getByRole('region', { name: 'Verse view' });
-  await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
-  const bar = view.locator('[data-verse-bar] .bk-composer__bar');
+  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  const sheet = await openTutor(page);
+  const bar = sheet.locator('.bk-composer__bar');
   await expect(bar).toBeVisible();
   await press(page, bar);
   await watchHold(page);
-  const live = view.getByTestId('live-transcript');
+  const live = sheet.getByTestId('live-transcript');
   await expect(live).toContainText('chapter');
   await hear(page, words(3));
   const before = await box(bar);

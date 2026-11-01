@@ -31,7 +31,7 @@ test('an 885-character spoken question from verse 28 is sent whole, waits and is
   if (!bar) throw new Error('no bar');
   await page.mouse.move(bar.x + bar.width / 2, bar.y + bar.height / 2);
   await page.mouse.down();
-  await expect(talkSheetOf(page).locator('[data-talk-live]')).toContainText(QUESTION.slice(0, 80), { timeout: 20_000 });
+  await expect(talkSheetOf(page).getByTestId('live-transcript')).toHaveText(QUESTION, { timeout: 20_000 });
   await page.mouse.up();
 
   await expect(talkSheetOf(page).getByText(/Waiting for the tutor…/)).toBeVisible();

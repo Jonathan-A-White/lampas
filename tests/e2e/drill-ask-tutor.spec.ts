@@ -1,9 +1,10 @@
-// The results of a drill carry the round Ask the tutor button (mw-5r3p30.649): at the right end of the foot beside Done, inside the phone and over nothing; a tap opens the tutor with the
-// drill as its subject, its first suggested question is about the misses, and the request the mill receives holds every question of the run: the idea, what was asked, his answer, the
+// The results of a drill are asked about through the one door (mw-5r3p30.649; mw-5r3p30.882: the drill's own round button is gone): the floating ?, drawn once over the Drill it dialog,
+// inside the phone and over none of its foot's buttons; a tap opens the tutor with the drill as its subject, its first suggested question is about the misses, and the request the mill receives holds every question of the run: the idea, what was asked, his answer, the
 // right answer and right or wrong. Ends with a shot of the results with the button and of the sheet.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { FLOATING } from './open-tutor';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -117,7 +118,7 @@ const stop = async (page: Page, drill: Locator) => {
   await expect(drillOf(page)).toHaveCount(0);
 };
 
-test('the results of a drill have the Ask the tutor button, and the tutor is given the questions, his answers and which were wrong', async ({ page }) => {
+test('the floating ? over the results of a drill asks about them, and the tutor is given the questions, his answers and which were wrong', async ({ page }) => {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
   await routePostern(page, fake);
@@ -154,21 +155,26 @@ test('the results of a drill have the Ask the tutor button, and the tutor is giv
   expect(asked[1].picked).toBe(miss.picked);
   await expect(drill.getByTestId('drill-next')).toHaveText('Finish');
 
-  // no button while the questions are asked; on the results it stands in the foot's right end, beside Done
+  // the drill draws no tutor button of its own, while the questions are asked or on the results; on the results the floating ? is the one door, drawn once over the dialog
   await expect(drill.getByRole('button', { name: CONTROL })).toHaveCount(0);
   await next(drill);
   await expect(drill.getByTestId('drill-result')).toBeVisible();
-  const control = drill.getByRole('button', { name: CONTROL });
+  await expect(drill.getByRole('button', { name: CONTROL })).toHaveCount(0);
+  const control = page.locator(FLOATING);
+  await expect(control).toHaveCount(1);
   await expect(control).toBeVisible();
+  await expect(control).toHaveAccessibleName(CONTROL);
   const box = (await control.boundingBox())!;
   const done = (await drill.getByRole('button', { name: 'Done', exact: true }).boundingBox())!;
   expect(box.width).toBeGreaterThanOrEqual(44);
+  expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(390);
   expect(box.y + box.height).toBeLessThanOrEqual(844);
-  expect(box.x, 'the button is beside Done, not over it').toBeGreaterThanOrEqual(done.x + done.width - 0.5);
-  const foot = (await drill.locator('[data-ask-beside]').boundingBox())!;
-  expect(box.y, 'the button is inside the foot, not over the results').toBeGreaterThanOrEqual(foot.y - 0.5);
+  expect(box.y + box.height, 'the ? is over none of the foot: it stands above Done').toBeLessThanOrEqual(done.y + 0.5);
   expect(done.height).toBeGreaterThanOrEqual(47.5);
+  // nothing of the dialog covers it: the point at its middle is the ? itself
+  const onTop = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('[data-floating-tutor]') !== null, { x: box.x + box.width / 2, y: box.y + box.height / 2 });
+  expect(onTop, 'the ? is on top of the dialog').toBe(true);
   const wide = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
   expect(wide).toBe(true);
   await shot(page, 'drill-results-ask-tutor');

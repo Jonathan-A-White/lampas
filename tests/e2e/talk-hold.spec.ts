@@ -74,7 +74,7 @@ test('a hold in the sheet whose recogniser drops after words were heard leaves t
   expect(fake.received).toHaveLength(0);
 });
 
-test('a hold of the sheet bar whose recogniser drops after words were heard keeps them in the sheet, unsent', async ({ page }) => {
+test('a hold of the sheet opened by the floating ? whose recogniser drops after words were heard keeps them in the sheet, unsent', async ({ page }) => {
   const fake = await prepare(page);
   await honestMic(page);
   await openUnlocked(page);
@@ -82,7 +82,7 @@ test('a hold of the sheet bar whose recogniser drops after words were heard keep
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   const sheet = await openTutor(page, { sheet: 'Talk about Romans 8' });
   await press(page, sheet.getByRole('button', { name: 'Hold to talk' }));
-  await expect(sheet.locator('[data-talk-live]')).toContainText('Please read');
+  await expect(sheet.getByTestId('live-transcript')).toContainText('Please read');
   await dropRecogniser(page);
   await page.mouse.up();
   await expect(await talkField(sheet)).toHaveValue(/^Please read/);
