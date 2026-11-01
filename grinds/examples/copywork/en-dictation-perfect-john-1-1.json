@@ -1,0 +1,57 @@
+{
+  "description": "A dictated page of John 1:1 in English written exactly as the verse reads, capitals and punctuation too: it is readable, every word is right, none sounds alike, and the one line is praise.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1",
+    "language": "en",
+    "mode": "dictation",
+    "words": [
+      "In",
+      "the",
+      "beginning",
+      "was",
+      "the",
+      "Word,",
+      "and",
+      "the",
+      "Word",
+      "was",
+      "with",
+      "God,",
+      "and",
+      "the",
+      "Word",
+      "was",
+      "God."
+    ]
+  },
+  "photos": [
+    "en-dictation-perfect-john-1-1.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.2.mark": {
+      "equals": "right"
+    },
+    "words.5.mark": {
+      "equals": "right"
+    },
+    "words.16.mark": {
+      "equals": "right"
+    },
+    "words.17": {
+      "present": false
+    },
+    "words.2.sounds_alike": {
+      "present": false
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}

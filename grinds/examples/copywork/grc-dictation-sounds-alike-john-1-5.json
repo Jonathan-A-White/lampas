@@ -1,0 +1,71 @@
+{
+  "description": "A dictated page of John 1:5 in Greek where he heard it right and spelled the sound another way: σκοτεία for σκοτίᾳ and φένει for φαίνει. Both are wrong and say they sound alike, the words around them are right.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:5",
+    "language": "grc",
+    "mode": "dictation",
+    "words": [
+      "καὶ",
+      "τὸ",
+      "φῶς",
+      "ἐν",
+      "τῇ",
+      "σκοτίᾳ",
+      "φαίνει",
+      "καὶ",
+      "ἡ",
+      "σκοτία",
+      "αὐτὸ",
+      "οὐ",
+      "κατέλαβεν"
+    ]
+  },
+  "photos": [
+    "grc-dictation-sounds-alike-john-1-5.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.1.mark": {
+      "equals": "right"
+    },
+    "words.2.mark": {
+      "equals": "right"
+    },
+    "words.3.mark": {
+      "equals": "right"
+    },
+    "words.4.mark": {
+      "equals": "right"
+    },
+    "words.5.mark": {
+      "equals": "wrong"
+    },
+    "words.5.sounds_alike": {
+      "equals": true
+    },
+    "words.6.mark": {
+      "equals": "wrong"
+    },
+    "words.6.sounds_alike": {
+      "equals": true
+    },
+    "words.6.problem": {
+      "matches": "αι|ε|φένει|φαίνει"
+    },
+    "words.7.mark": {
+      "equals": "right"
+    },
+    "words.12.mark": {
+      "equals": "right"
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}

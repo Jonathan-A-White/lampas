@@ -300,6 +300,23 @@ export function speak(text: string, key: string, language: SpeechLanguage = 'gre
   return speakText(said.text, key, { language: said.language }) ? 'speaking' : 'no-voice';
 }
 
+/** The key a dictated phrase speaks under (src/practise/DictationPane.tsx). */
+export const DICTATION_KEY = 'dictation';
+
+/** Says one phrase of a dictation (mw-5r3p30.900) in `language`, at that language's speed and in his voice, and then WAITS: it says nothing after it, so the next phrase is his to ask for (Next) and the
+ * same one again is Again. Saying it cancels what is being said (the phrase before, still going), and a reading under way is paused beside it, as a word said is. `onEnd` is called when the phrase has been
+ * said to its end. 'no-voice' for a Greek or Hebrew phrase on a phone with no voice for it (the help line is noVoiceHelp), as speak() says. */
+export function speakPhrase(text: string, language: SpeechLanguage, onEnd?: () => void): SpeakOutcome {
+  const synth = synthesis();
+  if (!synth || ((language === 'greek' || language === 'hebrew') && hasVoice(language) === false)) return 'no-voice';
+  stopIfSpeaking(DICTATION_KEY);
+  const said = wordSpeech(text, language);
+  return speakText(said.text, DICTATION_KEY, { language: said.language, onEnd }) ? 'speaking' : 'no-voice';
+}
+
+/** Stops a dictated phrase being said, when one is. */
+export const stopPhrase = (): void => stopIfSpeaking(DICTATION_KEY);
+
 /** Says one word in `language`, now: what is playing is cancelled first, and it never toggles (pressing the same word
  * again says it again). With no Greek voice it still speaks, to the phone's default voice with lang set, as a reading
  * does; the speaker buttons carry the help line. Returns false when the phone cannot speak at all. */

@@ -1,0 +1,57 @@
+{
+  "description": "A dictated page of John 1:1 in Greek written exactly as the verse reads, accents and breathings too: it is readable, every word is right, none sounds alike, and the one line is praise.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1",
+    "language": "grc",
+    "mode": "dictation",
+    "words": [
+      "Ἐν",
+      "ἀρχῇ",
+      "ἦν",
+      "ὁ",
+      "λόγος",
+      "καὶ",
+      "ὁ",
+      "λόγος",
+      "ἦν",
+      "πρὸς",
+      "τὸν",
+      "θεόν",
+      "καὶ",
+      "θεὸς",
+      "ἦν",
+      "ὁ",
+      "λόγος"
+    ]
+  },
+  "photos": [
+    "grc-dictation-perfect-john-1-1.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.1.mark": {
+      "equals": "right"
+    },
+    "words.9.mark": {
+      "equals": "right"
+    },
+    "words.16.mark": {
+      "equals": "right"
+    },
+    "words.17": {
+      "present": false
+    },
+    "words.1.sounds_alike": {
+      "present": false
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}

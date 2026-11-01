@@ -16,8 +16,13 @@
       "type": "string",
       "enum": ["en", "grc", "hbo"]
     },
+    "mode": {
+      "description": "'copywork' (the default, left out) when he copied the text from sight; 'dictation' when the app read the text to him a phrase at a time with the text hidden and he wrote it from hearing it. The page is judged against `words` in both; a dictated page also has words that sound like the model's written wrongly.",
+      "type": "string",
+      "enum": ["copywork", "dictation"]
+    },
     "words": {
-      "description": "The model text, split on spaces into its words, exactly as the app showed it to him to copy: English words keep their punctuation and capital letters; Greek words are NFC with their accents and breathings; Hebrew words are pointed. The answer marks these words one for one, in this order.",
+      "description": "The model text, split on spaces into its words, exactly as the app showed it to him to copy (or, in a dictation, as the app read it to him and now shows it): English words keep their punctuation and capital letters; Greek words are NFC with their accents and breathings; Hebrew words are pointed. The answer marks these words one for one, in this order.",
       "type": "array",
       "minItems": 1,
       "maxItems": 400,

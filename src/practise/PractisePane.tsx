@@ -1,10 +1,11 @@
 // src/practise/PractisePane.tsx — the Verse view's Practise action (mw-5r3p30.899, his grilling mw-6ww.146): ONE door on a verse or a passage for the ways of working it, in Susan Wise Bauer's order:
-// Copywork, Narration, Dictation, Summary, then the Quiz (the Talk sheet's, which was the Verse view's own Quiz me action until this door held it). Copywork works (CopyworkPane.tsx); Narration, Dictation and Summary
-// say 'soon' until their stories land (mw-5r3p30.900, .901, .902); the Quiz is offered as before (on an Old Testament verse only with some Hebrew, quizOffered). VerseView keeps which door is open
+// Copywork, Narration, Dictation, Summary, then the Quiz (the Talk sheet's, which was the Verse view's own Quiz me action until this door held it). Copywork works (CopyworkPane.tsx) and so does Dictation
+// (DictationPane.tsx, mw-5r3p30.900); Narration and Summary say 'soon' until their stories land (mw-5r3p30.901, .902); the Quiz is offered as before (on an Old Testament verse only with some Hebrew, quizOffered). VerseView keeps which door is open
 // (PracticeState, per verse or passage, so a move to the next one starts at the door) and draws the verse to copy in its text box.
 import { createPortal } from 'react-dom';
 import { CopyworkPane } from './CopyworkPane';
 import { COPY_LANGUAGE_NAMES, type CopyLanguage } from './copywork';
+import { DictationPane } from './DictationPane';
 import type { PracticeState } from './practiceState';
 import { SHORT_BAR } from '../ui/barClass';
 
@@ -20,7 +21,7 @@ interface Way {
 const WAYS: readonly Way[] = [
   { id: 'copywork', label: 'Copywork', hint: 'Copy it by hand, then photograph your page' },
   { id: 'narration', label: 'Narration', hint: 'Tell it back in your own words', soon: true },
-  { id: 'dictation', label: 'Dictation', hint: 'Write it as you hear it read', soon: true },
+  { id: 'dictation', label: 'Dictation', hint: 'Write it as you hear it read' },
   { id: 'summary', label: 'Summary', hint: 'Say the main points in a few sentences', soon: true },
   { id: 'quiz', label: 'Quiz', hint: 'The tutor asks, one question at a time' },
 ];
@@ -48,22 +49,23 @@ export interface PractisePaneProps {
 
 export function PractisePane({ state, onState, reference, name, languages, copyText, quizOffered, quiz, slot }: PractisePaneProps) {
   const back = (
-    <button type="button" aria-label="Back to Practise" onClick={() => onState({ ...state, door: 'door' })} className={BACK}>
+    <button type="button" aria-label="Back to Practise" onClick={() => onState({ ...state, door: 'door', revealed: false })} className={BACK}>
       ‹ Practise
     </button>
   );
-  if (state.door === 'copywork') {
+  if (state.door === 'copywork' || state.door === 'dictation') {
+    const dictation = state.door === 'dictation';
     return (
-      <div data-practise-pane="copywork" className="flex flex-col gap-1">
+      <div data-practise-pane={state.door} className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center gap-2">
           {back}
-          <div role="group" aria-label="Copy in" className="flex flex-wrap gap-1">
+          <div role="group" aria-label={dictation ? 'Dictate in' : 'Copy in'} className="flex flex-wrap gap-1">
             {languages.map((language) => (
               <button
                 key={language}
                 type="button"
                 aria-pressed={state.language === language}
-                onClick={() => onState({ ...state, language })}
+                onClick={() => onState({ ...state, language, revealed: false })}
                 className={`${CELL} ${state.language === language ? 'border-accent bg-accent/15 text-fg' : 'border-line text-fg active:bg-line'}`}
               >
                 {COPY_LANGUAGE_NAMES[language]}
@@ -71,7 +73,18 @@ export function PractisePane({ state, onState, reference, name, languages, copyT
             ))}
           </div>
         </div>
-        <CopyworkPane key={`${state.key}:${state.language}`} reference={reference} language={state.language} text={copyText} slot={slot} />
+        {dictation ? (
+          <DictationPane
+            key={`${state.key}:${state.language}`}
+            reference={reference}
+            language={state.language}
+            text={copyText}
+            slot={slot}
+            onRevealed={(revealed) => (state.revealed ?? false) !== revealed && onState({ ...state, revealed })}
+          />
+        ) : (
+          <CopyworkPane key={`${state.key}:${state.language}`} reference={reference} language={state.language} text={copyText} slot={slot} />
+        )}
       </div>
     );
   }
@@ -107,7 +120,7 @@ export function PractisePane({ state, onState, reference, name, languages, copyT
             aria-label={way.label}
             aria-describedby={`practise-hint-${way.id}`}
             disabled={way.soon}
-            onClick={() => (way.id === 'copywork' || way.id === 'quiz') && onState({ ...state, door: way.id })}
+            onClick={() => !way.soon && (way.id === 'copywork' || way.id === 'dictation' || way.id === 'quiz') && onState({ ...state, door: way.id })}
             className={ITEM}
           >
             <span className="flex flex-col">

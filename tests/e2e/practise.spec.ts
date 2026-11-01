@@ -1,7 +1,8 @@
-// tests/e2e/practise.spec.ts — the Verse view's Practise door and Copywork (mw-5r3p30.899) at 390x844: the door lists its five ways in her order with the three that are not there yet saying soon, Copywork shows
+// tests/e2e/practise.spec.ts — the Verse view's Practise door and Copywork (mw-5r3p30.899) at 390x844: the door lists its five ways in her order with the two that are not there yet saying soon, Copywork shows
 // John 1:1 in Greek where the Reader's text was, a photographed page is judged by a stubbed copywork tutor, and the result (each word marked, the problems, the one thing to fix first) and the foot's Try again fit the phone.
 // jsdom has no layout, so every size and place is proven here.
 import { expect, test, type Page } from '@playwright/test';
+import { honestSpeech, spoken } from '../support/honest-fakes';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
@@ -10,8 +11,9 @@ import { openUnlocked } from './unlocked';
 const VIEWPORT = { width: 390, height: 844 };
 const PAGE = 'grinds/examples/copywork/grc-errors-john-1-1.jpg';
 
-async function start(page: Page): Promise<void> {
+async function start(page: Page, speaks = false): Promise<void> {
   await page.setViewportSize(VIEWPORT);
+  if (speaks) await honestSpeech(page, { langs: ['en-US', 'el-GR'], msPerWord: 40 });
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: {} };
   fake.replyFor = (input, kind) => {
@@ -21,7 +23,7 @@ async function start(page: Page): Promise<void> {
       status: 'answered',
       answer: {
         readable: true,
-        words: words.map((word, i) => ({ word, mark: i === 1 || i === 9 ? 'wrong' : i === 12 ? 'missing' : 'right', ...(i === 1 ? { problem: 'the iota subscript and the circumflex are missing: you wrote ἀρχή' } : i === 9 ? { problem: 'grave accent, not acute: you wrote πρός' } : {}) })),
+        words: words.map((word, i) => ({ word, mark: i === 1 || i === 9 ? 'wrong' : i === 12 ? 'missing' : 'right', ...(i === 1 ? { problem: 'the iota subscript and the circumflex are missing: you wrote ἀρχή', ...(input.mode === 'dictation' ? { sounds_alike: true } : {}) } : i === 9 ? { problem: 'grave accent, not acute: you wrote πρός' } : {}) })),
         fix_first: 'Put the iota subscript and the circumflex back on ἀρχῇ.',
       },
     };
@@ -39,7 +41,7 @@ const fitsPhone = async (page: Page) => {
 
 test.use({ viewport: VIEWPORT });
 
-test('the Practise door lists its five ways, three of them soon, and each is a thumb tall', async ({ page }) => {
+test('the Practise door lists its five ways, two of them soon, and each is a thumb tall', async ({ page }) => {
   await start(page);
   const view = page.getByRole('region', { name: 'Verse view' });
   await view.getByRole('button', { name: 'Practise', exact: true }).click();
@@ -47,7 +49,7 @@ test('the Practise door lists its five ways, three of them soon, and each is a t
   const door = view.getByRole('list', { name: 'Ways to practise' });
   const names = await door.getByRole('button').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')));
   expect(names).toEqual(['Copywork', 'Narration', 'Dictation', 'Summary', 'Quiz']);
-  await expect(door.locator('[data-soon]')).toHaveCount(3);
+  await expect(door.locator('[data-soon]')).toHaveCount(2);
   for (const button of await door.getByRole('button').all()) {
     const b = await button.boundingBox();
     if (!b) throw new Error('no button box');
@@ -86,4 +88,50 @@ test('Copywork in Greek: the verse to copy, a photographed page judged word by w
   await expect(view.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
   await fitsPhone(page);
   await shot(page, 'practise-copywork-greek');
+});
+
+test('Dictation in Greek: the verse is hidden, read a phrase at a time, the foot is Next then Take a photo, and the verse is shown beside the marks', async ({ page }) => {
+  await start(page, true);
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await view.getByRole('button', { name: 'Practise', exact: true }).click();
+  await view.getByRole('button', { name: 'Dictation', exact: true }).click();
+  const group = view.getByRole('group', { name: 'Dictate in' });
+  await expect(group.getByRole('button')).toHaveText(['English', 'Greek']);
+  await group.getByRole('button', { name: 'Greek', exact: true }).click();
+  await expect(view.locator('[data-dictation-hidden]')).toBeVisible();
+  await expect(view.locator('[data-verse-text]')).not.toContainText('λόγος');
+
+  const bar = view.locator('[data-verse-bar]');
+  const begin = bar.getByRole('button', { name: 'Start dictation', exact: true });
+  const box = await begin.boundingBox();
+  if (!box) throw new Error('no foot box');
+  expect(box.height).toBeGreaterThanOrEqual(95.5);
+  expect(box.y + box.height).toBeLessThanOrEqual(VIEWPORT.height);
+  await begin.click();
+  await expect(view.locator('[data-phrase-count]')).toHaveText('Phrase 1 of 4');
+  await expect.poll(async () => (await spoken(page)).length).toBeGreaterThan(0);
+  const again = view.getByRole('button', { name: 'Again', exact: true });
+  const a = await again.boundingBox();
+  if (!a) throw new Error('no Again box');
+  expect(a.height).toBeGreaterThanOrEqual(43.5);
+  for (let n = 2; n <= 4; n++) {
+    await bar.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(view.locator('[data-phrase-count]')).toHaveText(`Phrase ${n} of 4`);
+  }
+  await expect(bar.getByRole('button', { name: 'Take a photo', exact: true })).toBeVisible();
+  await expect(view.locator('[data-verse-text]')).not.toContainText('λόγος');
+  await fitsPhone(page);
+
+  await view.locator('input[type="file"]:not([capture])').setInputFiles(PAGE);
+  const result = view.locator('[data-copywork-result]');
+  await expect(result).toBeVisible();
+  await expect(result.locator('[data-copy-word]')).toHaveCount(17);
+  await expect(view.locator('[data-dictation-text]')).toContainText('Ἐν ἀρχῇ ἦν ὁ λόγος');
+  await expect(result.locator('[data-sounds-alike]')).toHaveCount(1);
+  await expect(bar.getByRole('button', { name: 'Try again', exact: true })).toBeVisible();
+  await fitsPhone(page);
+  await shot(page, 'practise-dictation-greek');
+  await bar.getByRole('button', { name: 'Try again', exact: true }).click();
+  await expect(view.locator('[data-dictation-hidden]')).toBeVisible();
+  await expect(bar.getByRole('button', { name: 'Start dictation', exact: true })).toBeVisible();
 });

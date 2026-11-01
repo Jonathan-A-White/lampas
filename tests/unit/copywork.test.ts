@@ -44,6 +44,13 @@ describe('the request', () => {
   });
 });
 
+describe('the request of a dictation (mw-5r3p30.900)', () => {
+  it('says mode dictation, and a copywork request has no mode', () => {
+    expect(buildCopyworkRequest('John 1:1', 'en', 'In the', 'dictation')).toEqual({ reference: 'John 1:1', language: 'en', words: ['In', 'the'], mode: 'dictation' });
+    expect('mode' in buildCopyworkRequest('John 1:1', 'en', 'In the')).toBe(false);
+  });
+});
+
 describe('the answer', () => {
   const answer: CopyworkAnswer = {
     readable: true,
@@ -67,6 +74,21 @@ describe('the answer', () => {
   it('marks the request\'s words one for one, showing the model\'s own word whatever the answer copied', () => {
     const marked = markedWords({ words: ['In', 'the', 'beginning'] }, { ...answer, words: answer.words.map((w) => ({ ...w, word: 'x' })) });
     expect(marked).toEqual([{ word: 'In', mark: 'right' }, { word: 'the', mark: 'wrong', problem: 'you wrote teh' }, { word: 'beginning', mark: 'missing' }]);
+  });
+
+  it('keeps sounds_alike on a wrong word as soundsAlike, and nowhere else', () => {
+    const heard: CopyworkAnswer = {
+      readable: true,
+      words: [
+        { word: 'said', mark: 'wrong', problem: 'you wrote sed', sounds_alike: true },
+        { word: 'light', mark: 'right', sounds_alike: true },
+        { word: 'there', mark: 'wrong', sounds_alike: false },
+      ],
+      fix_first: 'Check said.',
+    };
+    expect(isCopyworkAnswer(heard)).toBe(true);
+    expect(isCopyworkAnswer({ ...heard, words: [{ word: 'a', mark: 'wrong', sounds_alike: 'yes' }] })).toBe(false);
+    expect(markedWords({ words: ['said', 'light', 'there'] }, heard)).toEqual([{ word: 'said', mark: 'wrong', problem: 'you wrote sed', soundsAlike: true }, { word: 'light', mark: 'right' }, { word: 'there', mark: 'wrong' }]);
   });
 
   it('is refused when it does not mark every word of the request', () => {
