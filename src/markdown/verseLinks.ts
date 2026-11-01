@@ -6,6 +6,7 @@
 // A name followed by a full stop is a reference only when it is an abbreviation ('Ps. 110', 'Rev. 1'): 'Revelation. 1. Daniel' is a sentence ending and a list's '1.' (mw-5r3p30.927).
 // A reference that leans on what the answer named before it is linked too, by a ReferenceContext carried down the answer: 'Daniel, above all chapters 2, 7 and 10 to 12' is Daniel 2,
 // Daniel 7 and Daniel 10-12, 'Ezekiel 10 ... verse 21 ... and 22' is Ezekiel 10:21 and 10:22. The link text stays as written; `as` is the whole reference its address carries.
+// A chapter range after a full reference ('1 Thessalonians 4 to 5') is one link; 'In 1 Thessalonians 4' keeps the book's number although 'In 1' reads as a name and a chapter (mw-5r3p30.940).
 import { CANON_INDEX } from '../data/bookIndex';
 import { bookOf } from '../data/books';
 import { parseCanonReference } from '../nav/links';
@@ -36,10 +37,11 @@ export interface FoundReference {
   as?: string;
 }
 
-// name, chapter, then optionally ':verse' and a range's end, or a range of chapters ('Daniel 10-12')
-const PATTERN = String.raw`\b((?:[1-3]\s?)?[A-Z][a-z]+\.?)\s?(\d{1,3})(?::(\d{1,3})(?:\s?[-–]\s?(\d{1,3}))?|\s?[-–]\s?(\d{1,3}))?`;
-const REFERENCE = new RegExp(PATTERN, 'g');
+// name, chapter, then optionally ':verse' and a range's end, or a range of chapters ('Daniel 10-12', 'Daniel 10 to 12')
+const PATTERN = String.raw`\b((?:[1-3]\s?)?[A-Z][a-z]+\.?)\s?(\d{1,3})(?::(\d{1,3})(?:\s?[-–]\s?(\d{1,3}))?|(?:\s?[-–]\s?|\s(?:to|through)\s)(\d{1,3}))?`;
 const WHOLE = new RegExp(`^${PATTERN}$`);
+
+const RANGE_TAIL = /(?:\s?[-–]\s?|\s(?:to|through)\s)\d{1,3}$/;
 
 /** Whether `name chapterEnd` runs on from `chapter` to a chapter the book has ('Daniel 10-12'); a dash that does not is no range. */
 const runsOn = (name: string, chapter: string, chapterEnd: string): boolean => Number(chapterEnd) > Number(chapter) && placeOf(`${name} ${chapterEnd}`) !== null;
@@ -120,12 +122,20 @@ function leaning(text: string, start: number, end: number, as: string): FoundRef
  *  A book Lampas does not know, a chapter or verse the book lacks, or no book is not one. */
 export function referencesIn(text: string, context: ReferenceContext = newReferenceContext()): FoundReference[] {
   const events: { start: number; end: number; explicit?: FoundReference; m?: RegExpExecArray }[] = [];
-  for (const m of text.matchAll(REFERENCE)) {
+  const reference = new RegExp(PATTERN, 'g');
+  for (let m = reference.exec(text); m; m = reference.exec(text)) {
     if (fullNameWithStop(m[1])) continue;
-    // A dash that runs on to no chapter is not part of the reference.
-    const end = m[5] !== undefined && !runsOn(m[1], m[2], m[5]) ? m.index + m[0].search(/\s?[-–]\s?\d{1,3}$/) : m.index + m[0].length;
+    // A dash or 'to' that runs on to no chapter is not part of the reference.
+    const end = m[5] !== undefined && !runsOn(m[1], m[2], m[5]) ? m.index + m[0].search(RANGE_TAIL) : m.index + m[0].length;
     const card = cardFrom(end === m.index + m[0].length ? m : ([m[0], m[1], m[2], m[3], m[4]] as unknown as RegExpMatchArray));
-    if (card) events.push({ start: m.index, end, explicit: { start: m.index, end, written: text.slice(m.index, end), card }, m });
+    if (card) {
+      const written = text.slice(m.index, end);
+      const whole = m[5] !== undefined && end === m.index + m[0].length ? `${m[1]} ${m[2]}-${m[5]}` : undefined;
+      events.push({ start: m.index, end, explicit: { start: m.index, end, written, card, ...(whole && whole !== written ? { as: whole } : {}) }, m });
+    } else if (m[3] === undefined && m[5] === undefined && Number(m[2]) <= 3 && /^\s?[A-Z]/.test(text.slice(m.index + m[0].length))) {
+      // 'In 1 Thessalonians 4': the word 'In' took the book's number; read on from that number so the book keeps it.
+      reference.lastIndex = m.index + m[0].length - m[2].length;
+    }
   }
   const spans = events.map((e) => [e.start, e.end]);
   for (const m of text.matchAll(CONTEXT)) {
