@@ -4,14 +4,18 @@
 // only when it passes is data/lxx/annotations/<book>.tsv written, and otherwise nothing is, and each failing line is named. The file is the MIT release:
 // ref, lemma, parsing, layer, confidence, notes, one row a word in the text's order, never Swete's own words. Two runs on the same inputs write the same bytes.
 // Network only to fetch the pinned sources into data/raw (skipped when present); no paid API is called.
+// When the book has a Morpheus cache (data/lxx/morpheus/<book>.tsv, morpheus.ts) its analyses are candidates, and the run counts the book's guesses Morpheus
+// agreed with, disagreed with and did not know (`morpheusCounts`), a line of the run and a column of `lxx:report`. Docker is never needed here: the cache is read.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { BAR, buildNumber, chaptersOf, verdict, type BookFigures, type Verdict } from './bar';
 import { applyChoices, isGuess, readChoiceDir, type Choice, type Chosen } from './choices';
 import { OUT_DIR, deriveBook, loadInput, type BookResult, type DeriveInput, type DerivedWord, type PendingWord } from './derive';
+import { morpheusKey, readMorpheusCache, type MorpheusCache } from './morpheus';
 import { KNOWN_DIR, knownScores, type KnownScore } from './known';
 import { RAW_DIR, type Fetcher } from './sources';
+import { bareOf } from './swete';
 
 /** Where the choices for Swete's books are kept: data/lxx/choices/<book>-<batch>.tsv (B4's batches: gen-01.tsv). */
 export const CHOICES_DIR = join(OUT_DIR, 'choices');
@@ -44,6 +48,41 @@ export const figuresOf = (result: BookResult, joined: Joined): BookFigures => ({
   guesses: joined.rows.filter(isGuess).length,
   breaks: result.agreement.breaks,
 });
+
+/** The guesses of a book against Morpheus: how many it agreed with, disagreed with, and did not know. */
+export interface MorpheusCounts {
+  agreed: number;
+  disagreed: number;
+  unknown: number;
+}
+
+/**
+ * Each guess (a word's form, and the lemma and parsing the model gave it) against the cache. Agreed: a reading of Morpheus's has the guess's parsing and the
+ * lemma's letters (accents and breathings aside). Disagreed: Morpheus has mapped readings and none is the guess. Unknown: the form is not in the cache, or
+ * Morpheus gave it no reading the mapping covers.
+ */
+export function morpheusCounts(guesses: ReadonlyArray<{ form: string; lemma: string; morph: string }>, cache: MorpheusCache): MorpheusCounts {
+  const counts: MorpheusCounts = { agreed: 0, disagreed: 0, unknown: 0 };
+  for (const g of guesses) {
+    const known = cache.get(morpheusKey(g.form))?.analyses ?? [];
+    if (known.length === 0) counts.unknown++;
+    else if (known.some((m) => m.code === g.morph && bareOf(m.lemma) === bareOf(g.lemma))) counts.agreed++;
+    else counts.disagreed++;
+  }
+  return counts;
+}
+
+/** A book's guesses (the joined rows of layer 3 marked `guess:`) against its cache; undefined when the book has no cache. */
+export function morpheusOf(result: BookResult, joined: Joined, cache: MorpheusCache | undefined): MorpheusCounts | undefined {
+  if (!cache) return undefined;
+  const forms = new Map(result.words.map((w) => [w.ref, w.form]));
+  return morpheusCounts(
+    joined.rows.filter(isGuess).map((w) => ({ form: forms.get(w.ref) ?? '', lemma: w.lemma, morph: w.morph })),
+    cache,
+  );
+}
+
+export const morpheusLine = (c: MorpheusCounts): string => `Morpheus: ${c.agreed} agreed, ${c.disagreed} disagreed, ${c.unknown} unknown (the guesses)`;
 
 /** The annotation file's text: tab-separated, a header row, one row a word in the text's order, a newline at the end. */
 export function annotationsTsv(rows: readonly DerivedWord[]): string {
@@ -92,6 +131,8 @@ export interface ReleaseOptions {
   choicesDir?: string;
   /** where the known-answer chapters' choices files are; default data/lxx/known */
   knownDir?: string;
+  /** where the Morpheus caches are; default <outDir>/morpheus */
+  morpheusDir?: string;
   log?: (line: string) => void;
   fetcher?: Fetcher;
   /** the sources' text, when a test gives them */
@@ -106,13 +147,16 @@ export interface Released {
   verdict: Verdict;
   /** where the file was written */
   path: string;
+  /** the guesses against Morpheus, when the book has a cache */
+  morpheus?: MorpheusCounts;
 }
 
 export async function runRelease(argv: readonly string[], options: ReleaseOptions = {}): Promise<Released> {
   const { rawDir = RAW_DIR, outDir = OUT_DIR, choicesDir = CHOICES_DIR, knownDir = KNOWN_DIR, log = () => {}, fetcher } = options;
   const args = parseArgs(argv);
   const input = options.input ?? (await loadInput(rawDir, fetcher, log));
-  const result = deriveBook(input, args.book);
+  const cache = readMorpheusCache(options.morpheusDir ?? join(outDir, 'morpheus'), args.book);
+  const result = deriveBook(input, args.book, undefined, undefined, undefined, cache);
   const { files, choices } = readChoiceDir(choicesDir, `${args.book}-`);
   const joined = joinChoices(result, choices);
   for (const r of joined.chosen.refused) log(`refused choice ${r.ref}: ${r.why}`);
@@ -121,12 +165,14 @@ export async function runRelease(argv: readonly string[], options: ReleaseOption
   const figures = figuresOf(result, joined);
   const verdict_ = verdict(figures, known);
   log(`${result.book}: ${figures.words} words; ${joined.rows.length} answered, ${figures.pending} pending, ${figures.guesses} guesses, ${figures.breaks} breaks; ${files.length} choices files; build ${build}`);
+  const morpheus = morpheusOf(result, joined, cache);
+  if (morpheus) log(morpheusLine(morpheus));
   if (!verdict_.shippable) throw new ReleaseRefused(result.book, verdict_);
   const path = join(outDir, 'annotations', `${result.book}.tsv`);
   mkdirSync(join(outDir, 'annotations'), { recursive: true });
   writeFileSync(path, annotationsTsv(joined.rows));
   log(`wrote ${path}: the bar is met (known answer at least ${BAR.knownLemma}% lemma and ${BAR.knownParsing}% full parsing, no word pending, guesses at most ${BAR.guesses}%, breaks at most ${BAR.breaks} per 1,000)`);
-  return { book: result.book, words: figures.words, verdict: verdict_, path };
+  return { book: result.book, words: figures.words, verdict: verdict_, path, morpheus };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

@@ -16,6 +16,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [The known-answer run](#the-known-answer-run)
 - [The choices file](#the-choices-file)
 - [A model session](#a-model-session)
+- [Morpheus, the second method](#morpheus-the-second-method)
 - [The annotation file](#the-annotation-file)
 - [The report](#the-report)
 - [The files](#the-files)
@@ -35,7 +36,7 @@ Each word is looked up in three layers, in order. A word keeps the layer that ga
 | Layer 1, TAGNT form | The word's form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis, or one with at least 95% of 20 or more words | built (`scripts/lxx/tagnt.ts`, `derive.ts`) |
 | Layer 2, parser | For a form the New Testament lacks: ending rules learned from TAGNT's (form, lemma, parsing) triples, proposing only lemmas in TBESG; then Swete's other spellings; then analogy. Taken when one candidate is left, or one with 90% of the support | built (`scripts/lxx/parser.ts`, `tbesg.ts`, `derive.ts`) |
 | The agreement check, layer 2a | Before the model: an answer whose ending two cases or genders share is demoted to its candidates; a name the New Testament has, written here in lower case, goes to the model; within a verse an article, adjective or participle must agree with its noun, a settled pair that does not is a break (both to the model), and a word left with exactly one candidate that agrees with its settled neighbours takes it as layer 2a | built (`scripts/lxx/agreement.ts`, `derive.ts`) |
-| Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none | the choices file is read, scored and joined (`scripts/lxx/choices.ts`, 'The choices file'); the runner that lists a book's pending words in batches and takes the choices back is built (`scripts/lxx/batches.ts`, `pending.ts`, `choose.ts`, 'A model session'); no paid API: a Builder's own session |
+| Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none; where Morpheus (below) knows a form that has no candidate, its analyses are the candidates | the choices file is read, scored and joined (`scripts/lxx/choices.ts`, 'The choices file'); the runner that lists a book's pending words in batches and takes the choices back is built (`scripts/lxx/batches.ts`, `pending.ts`, `choose.ts`, 'A model session'); no paid API: a Builder's own session |
 
 A word that layers 1 and 2 and the agreement check do not settle, and that no choice has settled, is **pending**, with its candidates. A book's annotation file is written only when none is pending and the rest of the bar is met ('The bar').
 
@@ -273,6 +274,51 @@ The rate (the share of the second pass's choices that differ from the first's in
   lists the guesses with their lemma, and says what the session left in doubt; (4) `npm run lxx:report` still runs and the book's pending count has fallen by <N>.
 - *Recheck story:* the same, with `--recheck`, the file `data/lxx/recheck/<book>.tsv`, and the disagreement rate from `lxx:report` in the closing comment.
 
+## Morpheus, the second method
+
+From the probe's 'Lampas's paradigm data, or an open analyzer?' and 'Error checks', 2(d) (story mw-u2w5klk.6). [Morpheus](https://github.com/perseids-tools/morpheus)
+is the Perseus Project's analyzer of Greek and Latin, pinned at commit `ab6898ffed335fc6169fa02c9940657a9b5a78e0` and licensed **MPL-2.0**. It is a **build tool**, run from its Docker image at
+derive time; **nothing of it is in the app**. MPL-2.0 is a file-level copyleft: it reaches Morpheus's own files, which Lampas does not copy, change or ship, and not what
+the analyzer prints about a word (the probe's reading). What reaches Lampas's data is **its analyses as candidates (`morpheus` in the support column), never its code or its tables**.
+`ATTRIBUTION.md` credits it as a build tool, not an app dependency. No paid API is called; Docker is never needed by the gate or the tests.
+
+**What `scripts/lxx/morpheus.ts` does.** `npm run lxx:derive -- --book <code>` (or `--all`), when `docker` is in PATH and the image is there:
+
+1. derives the book (layers 1 and 2 and the agreement check) as always, and takes its **forms with no candidate** and the forms of its **guesses** (the rows marked `guess` in `data/lxx/choices/<book>-*.tsv`);
+2. asks Morpheus about each form the cache does not hold yet: `docker run --rm -i -e MORPHLIB=stemlib lampas-morpheus bin/cruncher -S`, the forms in Perseus beta code, one to a line
+   (`LAMPAS_MORPHEUS_IMAGE` names another image). The image is the pinned commit built from the repository's own Dockerfile, once:
+   `docker build -t lampas-morpheus https://github.com/perseids-tools/morpheus.git#ab6898ffed335fc6169fa02c9940657a9b5a78e0`;
+3. maps what it prints to TAGNT's codes and writes `data/lxx/morpheus/<book>.tsv` (git-ignored, a derived cache; unlike the other files it holds the forms, in Greek, so it is never released): `form`, then `lemma/code` readings joined by ` | `,
+   and one `unmapped` for each reading the mapping leaves out. A form Morpheus does not know has an empty second column. The cache is asked only for forms it lacks, and rewritten in a fixed order;
+4. derives the book again: a word that had **no candidate** takes Morpheus's mapped readings as its candidates (`ἐκτρέφω/V-AAI-3S/morpheus`, the note `morpheus: candidates from the second method, for the model`), so a guess becomes a choice among candidates
+   where Morpheus knows the form. The word stays pending: Morpheus settles nothing by itself, the model still chooses. (The agreement check may settle it as layer 2a when exactly one of Morpheus's candidates agrees with the settled words around it, as with any pending word.) A word where Morpheus gave nothing, or only readings the mapping leaves out, keeps `no candidate`.
+
+**When Docker or the image is absent** the step prints one line, `Morpheus skipped: <why>` (for a whole `--all` run, once), and the output is byte-identical to a run with `--no-morpheus`. A cache from an earlier run is still read.
+`lxx:release`, `lxx:report`, `lxx:batches`, `lxx:pending` and `lxx:choose` never run Docker: they read the cache that is there.
+
+**The mapping** (`mapAnalysis`; the tests are `tests/unit/lxx-morpheus.test.ts`, one for each line). One Morpheus reading is one TAGNT code, or a code for each gender or case it lists together (`masc/neut gen sg` is `GSM` and `GSN`; at most six), or `unmapped`:
+
+| Part of speech | Morpheus prints | TAGNT code | Left unmapped |
+| --- | --- | --- | --- |
+| verb, finite | tense, mood, voice, person, number (`pres ind mp 3rd pl`) | `V-` tense (`P` present, `I` imperfect, `F` future, `A` aorist) voice (`A`, `M`, `P`, `E` for `mp`) mood (`I`, `S`, `O`, `M` imperative), `-3P` | a perfect, pluperfect or future perfect; an imperfect that is not indicative; the dual |
+| verb, aorist | the same | `A` for the ending table `aor1` or `aor_pass`, `2A` for `aor2` or `aor2_pass` (`V-2AAI-3S`) | any other table (`ath_secondary`) |
+| infinitive | `pres inf act` | `V-PAN` | |
+| participle | `pres part act fem gen pl` | `V-PAP-GPF` (case, number, gender) | |
+| noun | gender, case, number (`fem acc sg`) | `N-ASF` | the dual; a comparative; a form with a flag beyond `contr` and `enclitic` (`irreg_comp`, `indeclform`) |
+| adjective | the same, from an adjective's ending table (`os_h_on`, `hs_es`, …: `ADJECTIVE_TABLES`) | `A-GSM` | |
+| article | `indeclform`, class `article` | `T-GSM`, `T-GSN` | |
+| indeclinable | `indeclform`, class `conj`, `particle`, `adverb`, `prep` | `CONJ`, `PRT`, `ADV`, `PREP` | a pronoun, a numeral, any other class |
+
+Always unmapped: a reading in a dialect without Attic (`doric aeolic`, `epic`), an unaugmented form, an English gloss (`E`, which is not another reading and is not counted). A Morpheus lemma is Morpheus's headword in beta code read back as Greek
+(`gi/gnomai` is `γίγνομαι`, where TAGNT writes `γίνομαι`): lemmas are compared by their letters without accents, not by spelling, and a spelling difference shows as 'differed'. Deponents are not told apart: the passive of a deponent verb maps to `P`
+where TAGNT writes `O` (`γενηθήτωσαν`), and that too shows as 'differed'. These are the mapping's known weak spots, and the count below is how to see their size.
+
+**The count.** `lxx:release` and `lxx:report` read the cache and count, for each book, its guesses (layer 3 rows marked `guess:`) that Morpheus **agreed with** (a reading has the guess's parsing and the lemma's letters), **differed from**
+(it has mapped readings and none is the guess) or **did not know** (no cache row, or no reading the mapping covers). `lxx:release` prints `Morpheus: A agreed, D disagreed, U unknown (the guesses)`; the report has a column, `Morpheus agreed / differed / unknown`, with a dash for a book that has no cache. A guess it differs from is looked at, in the second pass's way.
+
+**Checking it.** The tests give Morpheus's output as a fixture (`tests/fixtures/lxx/morpheus-sample.tsv`, for the 7 forms of Gen 1 and Ps 22 that layers 1 and 2 leave with no candidate: `Γενηθήτωσαν`, `ζωσῶν`, `ἐξέθρεψεν`, `αὐταί`, `ἐλίπανας`, `καταδιώξεται`, `μακρότητα`), never the image or the network.
+The fixture is written in the shape of Morpheus's own `test/fixture.json`, not captured from a run: the builder's host had no Docker. To see the real thing, build the image and run `npm run lxx:derive -- --book gen`, then `cat data/lxx/morpheus/gen.tsv`.
+
 ## The annotation file
 
 `npm run lxx:release -- --book gen` derives the book, joins its rows with every choices file of the book, runs the known-answer chapters of the build, and holds the book against the bar. If it passes, it writes
@@ -310,6 +356,8 @@ own derived data, and Greek.
 check's: `a name in the New Testament: lower case here, for the model`, `shared ending: <class>: for the agreement check or the model`,
 `agreement break: <link> with <ref>: for the model`. A candidate the shared-ending rule added has support 0.
 
+`data/lxx/morpheus/<book>.tsv` (git-ignored, a derived cache), Morpheus's analyses of a book's no-candidate forms and guesses: `form`, `analyses` ('Morpheus, the second method'). A candidate it gave has `morpheus` in the support column.
+
 `data/lxx/annotations/<book>.tsv`, the MIT release: `ref`, `lemma`, `parsing`, `layer`, `confidence`, `notes`, committed, written by `lxx:release` only when the book passes the bar ('The annotation file'). `data/lxx/choices/`, `data/lxx/known/` and `data/lxx/recheck/` hold the choices files ('The choices file'); they are committed too.
 
 `<book>` is Swete's book code in lower case: `gen`, `exo`, … `psa`, … (Swete's file has 60 books; Tobit and Daniel come in two forms each).
@@ -324,6 +372,7 @@ npm run lxx:derive -- --book gen               # data/lxx/derived/gen.tsv and da
 npm run lxx:derive -- --book gen --hide jhn    # John's rows left out of the form index and the parser: a known-answer run
 npm run lxx:derive -- --word Gen.1:20#13       # one word: its candidates, their support, the rule or analogy behind each; writes nothing
 npm run lxx:derive -- --all                    # every book of the file, trained once: each book's two files, and one line a book
+npm run lxx:derive -- --book gen --no-morpheus # the same with the second method off (with no Docker it prints "Morpheus skipped: ..." and does the same)
 npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT ('The known-answer run')
 npm run lxx:batches -- --book gen              # the book's pending words in batches of about 700: the table the model stories are filed from ('A model session')
 npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with their verses and candidates: for a model session
@@ -349,6 +398,7 @@ the candidates are ordered by support, then lemma, then parsing, never by the or
 | TAGNT, `Translators Amalgamated OT+NT/TAGNT Mat-Jhn …` and `… Act-Rev …` | https://github.com/STEPBible/STEPBible-Data commit `be4191f0082aeedddb0eff0c02c966292b2bd641` | CC BY 4.0 | layer 1; the parser's rules |
 | TBESG, `Lexicons/TBESG - Translators Brief lexicon of Extended Strongs for Greek …` | same commit | CC BY 4.0 | the parser's lemmas, a lemma's part of speech and a noun's gender |
 | TVTMS (fetched, not read here) | same commit | CC BY 4.0 | English Ps 23 = Greek Ps 22 (`npm run lxx:english`) |
+| Morpheus, a build tool run from its Docker image (not fetched by the scripts) | https://github.com/perseids-tools/morpheus commit `ab6898ffed335fc6169fa02c9940657a9b5a78e0` | MPL-2.0 | its analyses of the forms with no candidate, as candidates ('Morpheus, the second method') |
 
 ## Checking it
 

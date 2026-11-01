@@ -1,0 +1,12 @@
+# What Morpheus (perseids-tools/morpheus, commit ab6898ffed335fc6169fa02c9940657a9b5a78e0, MPL-2.0) is taken to print for the seven forms of Gen 1 and Ps 22 that
+# layers 1 and 2 leave with no candidate (tests/unit/lxx-morpheus.test.ts): form, then the <NL> segments of its Perseus-format output in beta code, one after another.
+# NOT captured from the image (no Docker on the Builder's host): written in the shape of the examples in the pinned repository's test/fixture.json, with ⇥
+# standing for the tab Morpheus prints inside a segment. ζωσῶν has no segment (Morpheus does not know it); αὐταί has a class the mapping does not cover;
+# καταδιώξεται has a second, epic-only reading that is left unmapped.
+Γενηθήτωσαν	<NL>V gi/gnomai  aor imperat pass 3rd pl⇥⇥⇥w_stem,aor_pass</NL>
+ζωσῶν	
+ἐξέθρεψεν	<NL>V e)ktre/fw  aor ind act 3rd sg⇥⇥⇥w_stem,aor1</NL>
+αὐταί	<NL>N au)to/s  fem nom pl⇥⇥indeclform⇥demonstr</NL>
+ἐλίπανας	<NL>V lipai/nw  aor ind act 2nd sg⇥⇥⇥w_stem,aor1</NL>
+καταδιώξεται	<NL>V katadiw/kw  fut ind mid 3rd sg⇥⇥⇥w_stem,fut</NL><NL>V katadiw/kw  fut ind pass 3rd sg⇥epic⇥⇥w_stem,fut</NL>
+μακρότητα	<NL>N makro/ths  fem acc sg⇥⇥⇥hs_htos</NL>
