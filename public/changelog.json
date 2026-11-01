@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.62",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.944",
+    "kind": "fixed",
+    "text": "The tutor now has one door, the round ? button; the Talk bar at the bottom of the reader, and the \"Ask the tutor\" buttons on the verse and word screens, are gone."
+  },
+  {
     "version": "0.7.59",
     "date": "2026-11-01",
     "story": "mw-5r3p30.901",

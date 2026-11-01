@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.62
+_2026-11-01_
+- Fixed: The tutor now has one door, the round ? button; the Talk bar at the bottom of the reader, and the "Ask the tutor" buttons on the verse and word screens, are gone.
+
 ## 0.7.59
 _2026-11-01_
 - New: Practise now has Narration: hold a button and tell a verse back in your own words, and the tutor writes it down and says what you caught and what you missed, in order, with one question; you can then copy it by hand or write it from dictation.
