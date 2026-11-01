@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.65
+_2026-11-01_
+- New: Practise now has Summary: type the main points of a verse, passage or chapter, or photograph your handwriting, and the tutor says which main points you gave and which you left out, whether they came in order, whether the length is right, and shows a model summary.
+
 ## 0.7.64
 _2026-11-01_
 - New: In immersive reading the tutor's ? is out of the way; tap with two fingers to bring the bars and the ? back, and the same tap now starts immersive reading from the normal Reader.
