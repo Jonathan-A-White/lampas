@@ -247,7 +247,7 @@ Each tagged word has `src` (`GreekWord.src`): `lexicon` (the text's forms and th
 guessed ones to `data/variant-guessed.txt` (both committed for review; one line a form: the form, how often the readings read it, [for a guess the number and lemma it was read as,] and the verse of its first reading).
 Because a chapter's fingerprint is its file's, the fingerprints in `index.json` are taken after the tagging.
 
-**Tagged counts** (2026-11-01): 11,000 of 11,078 words of the readings tagged (99.3%): 9,529 `lexicon`, 1,445 `tagnt`, 26 `guess` (23 distinct forms); 58 distinct forms are left (numeral letters `ΙΒ`, `ΚΔ`, and forms whose
+**Tagged counts** (2026-11-01): 10,995 of 11,078 words of the readings tagged (99.3%): 9,529 `lexicon`, 1,445 `tagnt`, 21 `guess` (18 distinct forms); 63 distinct forms are left (numeral letters `ΙΒ`, `ΚΔ`, and forms whose
 lemma the stem rule cannot reach: `κέκληται`, `ἀφῆκες`). Before TAGNT (2026-10-28) 9,595 were tagged (86.6%), 1,053 distinct forms left. Three readings are `apart`. Hebrew has no variant words: an Old Testament chapter has no `variants`.
 
 **Counts** (the build prints them; tag v3.3.2, 2026-10-27): 7,522 units in the files read, B 669, N 6,746, C 46, S 29, E 14, M 18

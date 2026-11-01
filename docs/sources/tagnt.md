@@ -26,7 +26,7 @@ the lexicon's lemmas (the form is a lemma: no parsing), then the guess. `GreekWo
 ## The guess
 
 `guessLemma` (scripts/data/variantWords.ts): the lemma whose **stem** the form begins with, the stem being the lemma's letters but its last two, four or more of them; letters only (no accents,
-breathings or case); at most five letters beyond the stem; an augment (ε, η) may stand in front; a name (a capital) is guessed from a name only and a word from a word. The longest stem wins, then
+breathings or case); at most five letters beyond the stem; an augment (ε, η) may stand in front of a stem of five or more; only lemmas the New Testament text uses (the lexicon also holds the Septuagint's and classical Greek's); a name (a capital) is guessed from a name only and a word from a word. The longest stem wins, then
 the lemma the text uses most, then the lower number. The word sheet marks such a number with a small `guess` and a tap says why (`src/GuessedNumber.tsx`). The build prints
 `variant words tagged: N of M (lexicon A, tagnt B, guess C)` and lists the guesses in `data/variant-guessed.txt` and the forms no source and no lemma is near enough for (numeral letters, a few
 verb forms) in `data/variant-untagged.txt`, both for review.

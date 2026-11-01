@@ -94,6 +94,8 @@ const chapterOf = (code: string, words: GreekWord[]): Chapter => ({ book: code, 
 const TEXT = [
   chapterOf('rev', [word('βιβλιδάριον', 'G974', 'βιβλαρίδιον', 'N-ASN'), word('ζῇς', 'G2198', 'ζάω', 'V-PAI-2S'), word('λόγος', 'G3056', 'λόγος', 'N-NSM'), word('λόγον', 'G3056', 'λόγος', 'N-ASM')]),
   chapterOf('rev', [word('λόγου', 'G3056', 'λόγος', 'N-GSM'), word('λόγῳ', 'G3056', 'λόγος', 'N-DSM'), word('πειρασμοῦ', 'G3986', 'πειρασμός', 'N-GSM')]),
+  // the lemmas a guess may name are those the text uses
+  chapterOf('rev', [word('ἀπολύει', 'G630', 'ἀπολύω', 'V-PAI-3S'), word('ἐπείραζεν', 'G3985', 'πειράζω', 'V-IAI-3S'), word('Γερασηνοί', 'G1086', 'Γερασηνός', 'A-NPM')]),
 ];
 // a lexicon of a few entries, made by parseLexicon from TBESG's rows (number, disambiguated, unified, headword, translit, morph, gloss, meaning)
 const TBESG = [
@@ -160,6 +162,10 @@ describe('the number of a variant word', () => {
     expect(tagReading('Γερασηνῶν', index, 'rev', sources).g[0]).toMatchObject({ s: 'G1086', src: 'guess' });
     expect(tagReading('γερασηνῶν', index, 'rev', sources).g[0]).toMatchObject({ s: '' });
     expect(tagReading('Ἀπολύσασα', index, 'rev', sources).g[0]).toMatchObject({ s: '' });
+  });
+
+  it('is guessed only from a lemma the text uses: ἀπολύτρωσις is in the lexicon and not in the text, so ἀπολυτρώσεως is not read as it', () => {
+    expect(tagReading('ἀπολυτρώσεως', index, 'rev', sources).g[0]).toMatchObject({ s: '' });
   });
 
   it('is not guessed from a stem under four letters, nor from a form far longer than its stem, nor for a numeral letter', () => {

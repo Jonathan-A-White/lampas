@@ -149,12 +149,15 @@ const STEM_MIN = 4;
 const STEM_EXTRA = 5;
 /** A verb's augment, which a form may begin with and the lemma does not (ἐπείραζεν, ἠμελλες). */
 const AUGMENT = /^[εη]/;
+/** Only a stem of five letters or more is matched past an augment: ἐπίστασις is not πίστις with an ε in front. */
+const AUGMENT_STEM_MIN = 5;
 
 const isCapital = (word: string): boolean => /^\p{Lu}/u.test(word.normalize('NFD'));
 
 /**
- * The best guess for a form neither the text, TAGNT nor the lexicon's lemmas has: the lemma whose stem the form begins with. Letters only (no accents, breathings or
- * case); a stem is the lemma without its last two letters and has four or more; the form has at most five letters more, and may have an augment (ε, η) in front. A name
+ * The best guess for a form neither the text, TAGNT nor the lexicon's lemmas has: the lemma whose stem the form begins with, among the lemmas the text uses (the lexicon also
+ * holds lemmas of the Septuagint and of Greek outside the Bible, which a New Testament variant is not likely to be). Letters only (no accents, breathings or
+ * case); a stem is the lemma without its last two letters and has four or more; the form has at most five letters more, and may have an augment (ε, η) in front when the stem has five or more. A name
  * (a capital) is guessed from a name and a word from a word. The longest stem is the nearest lemma; among equal stems the lemma the text uses most, then the lower
  * Strong's number. A form no lemma's stem begins (a numeral letter, a foreign name, a verb whose forms share no stem: εἶδαν for ὁράω) has no guess.
  */
@@ -166,9 +169,9 @@ export function guessLemma(index: LemmaIndex, form: string): { s: string; l: str
   let bestStem = 0;
   for (const c of index.lemmas) {
     const stem = c.key.length - STEM_DROP;
-    if (stem < STEM_MIN || isCapital(c.l) !== capital) continue;
+    if (c.uses === 0 || stem < STEM_MIN || isCapital(c.l) !== capital) continue;
     const start = c.key.slice(0, stem);
-    const from = key.startsWith(start) ? key : augmentless?.startsWith(start) ? augmentless : undefined;
+    const from = key.startsWith(start) ? key : stem >= AUGMENT_STEM_MIN && augmentless?.startsWith(start) ? augmentless : undefined;
     if (!from || from.length > stem + STEM_EXTRA) continue;
     if (!best || stem > bestStem || (stem === bestStem && (c.uses > best.uses || (c.uses === best.uses && numeric(c.s, best.s) < 0)))) {
       best = c;
