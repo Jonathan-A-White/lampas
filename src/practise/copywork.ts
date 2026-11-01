@@ -33,14 +33,21 @@ export function copyTextOf(unit: Pick<Verse, 'g' | 'e'>, language: CopyLanguage)
 /** The words of a text to copy: what the grind marks one for one. */
 export const copyWordsOf = (text: string): string[] => text.split(/\s+/).filter(Boolean);
 
-/** The request the copywork grind is sent beside the photo (grinds/copywork.input.schema.json). */
+/** The request the copywork grind is sent beside the photo (grinds/copywork.input.schema.json). `mode` is left out for copywork; a dictated page (Dictation, mw-5r3p30.900) says 'dictation':
+ * the page was written from hearing the verse read, and the words are the verse as heard. */
 export interface CopyworkRequest {
   reference: string;
   language: CopyLanguage;
   words: string[];
+  mode?: 'dictation';
 }
 
-export const buildCopyworkRequest = (reference: string, language: CopyLanguage, text: string): CopyworkRequest => ({ reference, language, words: copyWordsOf(text) });
+export const buildCopyworkRequest = (reference: string, language: CopyLanguage, text: string, mode?: 'dictation'): CopyworkRequest => ({
+  reference,
+  language,
+  words: copyWordsOf(text),
+  ...(mode ? { mode } : {}),
+});
 
 export type CopyMark = 'right' | 'missing' | 'wrong';
 
@@ -49,12 +56,17 @@ export interface MarkedWord {
   word: string;
   mark: CopyMark;
   problem?: string;
+  /** a wrong word of a dictated page that sounds like the verse's word: he heard it right and spelled it as another word or another way (the grind's `sounds_alike`) */
+  soundsAlike?: boolean;
 }
+
+/** A word as the grind sends it: `sounds_alike` is the snake-case of `soundsAlike`. */
+type AnswerWord = Omit<MarkedWord, 'soundsAlike'> & { sounds_alike?: boolean };
 
 /** The grind's answer (grinds/copywork.answer.schema.json). */
 export interface CopyworkAnswer {
   readable: boolean;
-  words: MarkedWord[];
+  words: AnswerWord[];
   fix_first: string;
 }
 
@@ -68,7 +80,15 @@ export function isCopyworkAnswer(value: unknown): value is CopyworkAnswer {
     typeof readable === 'boolean' &&
     typeof fix_first === 'string' &&
     Array.isArray(words) &&
-    words.every((w) => typeof w === 'object' && w !== null && typeof (w as MarkedWord).word === 'string' && MARKS.includes((w as MarkedWord).mark) && (w.problem === undefined || typeof w.problem === 'string'))
+    words.every(
+      (w) =>
+        typeof w === 'object' &&
+        w !== null &&
+        typeof (w as AnswerWord).word === 'string' &&
+        MARKS.includes((w as AnswerWord).mark) &&
+        (w.problem === undefined || typeof w.problem === 'string') &&
+        (w.sounds_alike === undefined || typeof w.sounds_alike === 'boolean'),
+    )
   );
 }
 
@@ -77,7 +97,8 @@ export function isCopyworkAnswer(value: unknown): value is CopyworkAnswer {
 export function markedWords(request: Pick<CopyworkRequest, 'words'>, answer: CopyworkAnswer): MarkedWord[] | null {
   if (answer.words.length !== request.words.length) return null;
   return request.words.map((word, i) => {
-    const { mark, problem } = answer.words[i];
-    return problem !== undefined && mark === 'wrong' ? { word, mark, problem } : { word, mark };
+    const { mark, problem, sounds_alike } = answer.words[i];
+    if (mark !== 'wrong') return { word, mark };
+    return { word, mark, ...(problem !== undefined ? { problem } : {}), ...(sounds_alike === true ? { soundsAlike: true } : {}) };
   });
 }

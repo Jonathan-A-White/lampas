@@ -17,7 +17,7 @@ import { stubChapterFetch } from '../../../tests/support/chapter-fetch';
 import { messageBox } from '../../../tests/support/composer';
 import { stubClipboard } from '../../../tests/support/exchange';
 import { type FakePostern, POSTERN_ORIGIN, TALK_ANSWER, makeFakePostern } from '../../../tests/support/fake-postern';
-import { ENGLISH_VOICE, type FakeSynth, GREEK_VOICE, stubSpeech } from '../../../tests/support/fake-speech';
+import { ENGLISH_VOICE, type FakeSynth, type FakeVoice, GREEK_VOICE, stubSpeech } from '../../../tests/support/fake-speech';
 import { seedHisWords } from '../../../tests/support/his-words';
 import { openTutor } from '../open-tutor';
 
@@ -55,10 +55,10 @@ export async function endScenario(): Promise<void> {
   synth = undefined;
 }
 
-/** `place` is the address to open on ('' for the Reader where it opens: Romans 8). */
-export async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: TALK_ANSWER }), speaks = false, place = ''): Promise<void> {
+/** `place` is the address to open on ('' for the Reader where it opens: Romans 8). `speaks` puts a fake phone voice in place: true for Greek and English, or the voices to have. */
+export async function open(configure: (f: FakePostern) => void = (f) => void (f.autoReply = { status: 'answered', answer: TALK_ANSWER }), speaks: boolean | FakeVoice[] = false, place = ''): Promise<void> {
   await endScenario();
-  synth = speaks ? stubSpeech([GREEK_VOICE, ENGLISH_VOICE]) : undefined;
+  synth = speaks ? stubSpeech(Array.isArray(speaks) ? speaks : [GREEK_VOICE, ENGLISH_VOICE]) : undefined;
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = place;

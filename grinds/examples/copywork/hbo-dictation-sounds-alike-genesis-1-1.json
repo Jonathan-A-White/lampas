@@ -1,0 +1,56 @@
+{
+  "description": "A dictated page of Genesis 1:1 in Hebrew where he heard it right and spelled it as it sounds: ע for א in בָּרָא and a segol for the tsere in אֵת. Both are wrong and say they sound alike, the words around them are right.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Genesis 1:1",
+    "language": "hbo",
+    "mode": "dictation",
+    "words": [
+      "בְּרֵאשִׁית",
+      "בָּרָא",
+      "אֱלֹהִים",
+      "אֵת",
+      "הַשָּׁמַיִם",
+      "וְאֵת",
+      "הָאָרֶץ"
+    ]
+  },
+  "photos": [
+    "hbo-dictation-sounds-alike-genesis-1-1.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.1.mark": {
+      "equals": "wrong"
+    },
+    "words.1.sounds_alike": {
+      "equals": true
+    },
+    "words.2.mark": {
+      "equals": "right"
+    },
+    "words.3.mark": {
+      "equals": "wrong"
+    },
+    "words.3.sounds_alike": {
+      "equals": true
+    },
+    "words.4.mark": {
+      "equals": "right"
+    },
+    "words.5.mark": {
+      "equals": "right"
+    },
+    "words.6.mark": {
+      "equals": "right"
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}

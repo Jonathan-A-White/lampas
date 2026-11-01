@@ -34,6 +34,10 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 160
+          },
+          "sounds_alike": {
+            "description": "For a 'wrong' word of a dictated page only: true when what he wrote sounds like the model word when read aloud (another word that sounds the same, or the sound spelled another way): he heard it right and wrote it wrongly. Left out otherwise.",
+            "type": "boolean"
           }
         }
       }
