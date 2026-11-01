@@ -483,6 +483,18 @@ textarea,
   overflow: hidden;
 }
 /* The place line's row slides with the bars (src/PlaceLine.tsx), as `.away-box` does for them: shut it is no height and not in the tab order. */
+/* The tutor's one door, the floating ? (src/AskTutor.tsx FloatingTutor): 17 rem above the phone's bar, but never more than 35 % of the window, so a window a third tall
+ * keeps it (tests/e2e/split-screen-walk.spec.ts). In a short window (a phone sideways) 'Welcome back' or 'Update ready' pushes the screen's header down to where the ? is, so
+ * while one is up the ? sits at the foot instead, 12 px above the phone's bar, clear of the header's buttons (tests/e2e/shell-bars-over-views.spec.ts at 844 x 390). */
+[data-floating-tutor] {
+  bottom: calc(var(--lp-bar-inset) + min(17rem, 35dvh));
+}
+@media (max-height: 500px) {
+  :root:has([data-welcome-back], [data-update-banner]) [data-floating-tutor] {
+    bottom: calc(var(--lp-bar-inset) + 0.75rem);
+  }
+}
+
 .place-box {
   display: grid;
   grid-template-rows: 1fr;

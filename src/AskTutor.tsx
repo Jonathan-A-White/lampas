@@ -188,7 +188,8 @@ const takeFocusBack = (button: HTMLButtonElement | null): void => {
 /**
  * The tutor's one door (mw-5r3p30.880, mw-5r3p30.882): a round tutor button at the Hand side's edge, drawn over every screen that has something to ask about, the Verse view and open sheets too (z-50: over the
  * sheets at z-35 and the full-screen dialogs at z-40, under the shell's bars). A tap opens the tutor about the newest target a screen or sheet registered (src/tutor/door.ts). Not drawn while a Talk sheet
- * is open (it has its own composer at the foot), where nothing is registered, or on a phone with no licence: then no tutor door exists. It sits at 17 rem above the phone's bar, a thumb's reach up the edge.
+ * is open (it has its own composer at the foot), where nothing is registered, or on a phone with no licence: then no tutor door exists. It sits 17 rem above the phone's bar, a thumb's reach up the edge (src/index.css
+ * [data-floating-tutor]: at the foot in a short window while the shell's bars push the header down to it).
  */
 export function FloatingTutor() {
   const licensed = useAiAllowed();
@@ -207,7 +208,6 @@ export function FloatingTutor() {
         stopReading();
         if (openDoorTarget()) focusWhenBack = true;
       }}
-      style={{ bottom: 'calc(var(--lp-bar-inset) + min(17rem, 35dvh))' }}
       className={`fixed ${hand === 'left' ? 'left-3' : 'right-3'} z-50 flex size-14 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg active:opacity-80`}
     >
       <TutorIcon />
