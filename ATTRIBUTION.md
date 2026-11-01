@@ -12,7 +12,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Majority Standard Bible (MSB), New Testament tables](https://majoritybible.com).** Public domain. The Byzantine Greek aligned to English: the text you read. Changes: per chapter.
 - **[Berean Standard Bible tables](https://berean.bible/licensing.htm).** Public domain. The Old Testament: Westminster Leningrad Codex Hebrew aligned to English. Changes: split by chapter.
 - **[Tyndale House's TBESG, TBESH, TIPNR and TVTMS, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House,
-  Cambridge. Greek and Hebrew words, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the Greek-to-English verse map. Changes: first entry per number; cut near 300 characters.
+  Cambridge. Greek and Hebrew words, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the Greek-to-English verse map. Changes: first entry per Strong's number; cut near 300 characters.
 - **[LXX2012, from eBible](https://ebible.org/eng-lxx2012/)**: Brenton's Septuagint in English (1851), American spelling by M. P. Johnson. Public domain. Changes: footnotes dropped.
 - **[byztxt Byzantine text](https://github.com/byztxt/byzantine-majority-text)** and the [Robinson-Pierpont 2026 release](https://byzantinetext.com/study/editions/robinson-pierpont/). Public domain. Variant readings and sentence ends. Changes: laid on the words.
 - **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. The 2005 appendix, read on the Preface. Changes: Greek in Greek letters.
