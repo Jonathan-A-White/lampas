@@ -274,11 +274,8 @@ export const USE_CASES: readonly UseCase[] = [
   {
     id: 'practise',
     title: 'The Practise door on a verse: copywork, narration, dictation, summary and the quiz (Susan Wise Bauer’s order)',
-    status: {
-      greek: { gap: 'lands with the Practise stories: copywork mw-5r3p30.899 (English, Greek and Hebrew), dictation mw-5r3p30.900 (English, Greek and Hebrew), narration mw-5r3p30.901 and summary mw-5r3p30.902 (English only in their first slice); each tags its scenarios @uc-practise @greek @hebrew' },
-      hebrew: { gap: 'lands with the Practise stories mw-5r3p30.899 (copywork) and mw-5r3p30.900 (dictation), both live in Hebrew from the start; narration .901 and summary .902 are English only in their first slice' },
-      latin: LATIN_LATER,
-    },
+    // copywork (mw-5r3p30.899) is live in English, Greek and Hebrew; dictation (.900), narration (.901) and summary (.902) say 'soon' in the door and add their scenarios, tagged @uc-practise @greek @hebrew, as they land
+    status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
   },
   // The tutor
   {

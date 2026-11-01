@@ -59,6 +59,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Beads](https://github.com/steveyegge/beads)** and **[Gas Town](https://github.com/steveyegge/gastown)** by [Steve Yegge](https://github.com/steveyegge). How the factory that builds Lampas keeps its work. Licence: [MIT](https://github.com/steveyegge/beads/blob/main/LICENSE). Changes: our own code.
 - **[Logos Bible Software](https://www.logos.com)**'s verse pop-up. The idea of the card a Bible reference opens. Licence: none needed; an idea. Changes: the card is our own.
 - **[$P recognizer](https://depts.washington.edu/acelab/proj/dollar/pdollar.html)** by Radu-Daniel Vatavu, Lisa Anthony and Jacob O. Wobbrock: a letter you write is matched by its shape. Licence: none; a method.
+- **[The Well-Trained Mind](https://welltrainedmind.com/)** by Susan Wise Bauer and Jessie Wise: copywork, narration, dictation, summary. Licence: none needed; a method.
 - **[IPA](https://www.internationalphoneticassociation.org)**, the International Phonetic Alphabet: symbols for Greek and Israeli Hebrew sounds. Licence: none; a standard, its [chart](https://www.internationalphoneticassociation.org/content/full-ipa-chart) CC BY-SA 3.0.
 - **[Claude Code](https://www.anthropic.com/claude-code)** by Anthropic. Writes most of Lampas's code and icons, under Jonathan's direction. Licence: none needed; its [terms](https://www.anthropic.com/legal/commercial-terms) apply.
 
