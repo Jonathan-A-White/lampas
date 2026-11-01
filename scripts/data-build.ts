@@ -4,7 +4,7 @@
 // and one public/data/<book>/<chapter>.json per chapter (with the Robinson-Pierpont 2018 apparatus laid on its words, scripts/data/variants.ts), public/data/lexicon.json (every lemma of the text with its gloss) and public/data/frequency.json (every Strong's number with its count). The raw downloads go to data/raw (git-ignored,
 // skipped when present); the JSON is committed. The shape is in docs/data.md and src/data/chapter.ts.
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { withAoristNote } from '../src/data/irregular-aorists';
 import { decodeParse, splitParse } from '../src/data/parseCode';
@@ -21,7 +21,8 @@ import { RP2026_ENGLISH_FILE, checkRp2026English, readRp2026English, rp2026Engli
 import { layAlign } from './data/variantAlign';
 import { VARIANT_ENGLISH_FILE, englishReport, englishStats, finishUnit, layEnglish, readLampasEnglish, type LampasEnglishFile, type MissingEnglish, type WordNote } from './data/variantEnglish';
 import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
-import { formIndex, tagVariants, taggedLine, untaggedText, type TagTally } from './data/variantWords';
+import { formIndex, tagVariants, taggedLine, tagntIndex, guessedText, untaggedText, type TagTally } from './data/variantWords';
+import { loadTagnt, type TagntWord } from './data/tagnt';
 
 export { suppliedWords } from './data/bereanTable';
 export { chapterFingerprint } from './data/chapterWriter';
@@ -29,6 +30,8 @@ export { cleanDefinition, type Lexicon } from './data/tbes';
 
 /** The forms of the variant readings the text never has (scripts/data/variantWords.ts), committed for review. */
 export const UNTAGGED_FILE = 'data/variant-untagged.txt';
+/** The forms whose Strong's number is a guess, committed for review beside it. */
+export const GUESSED_FILE = 'data/variant-guessed.txt';
 
 export const MSB_URL = 'https://majoritybible.com/msb_nt_tables.tsv';
 export const TBESG_URL =
@@ -250,6 +253,7 @@ const notesOf = (v: TableVerse): WordNote[] =>
  * `apparatus`: the Robinson-Pierpont 2018 apparatus of each book by its code, 'chapter:verse' -> text (loadApparatus); without it no chapter has `variants`.
  * `overlay`: the RP 2026 wording changes (scripts/data/rp2026.ts) laid on the Greek of the chapters they name, after the apparatus is laid on it.
  * `english`: the English made for the units the MSB's footnotes do not speak for; a strict build (the default) fails on a unit with no English.
+ * `tagnt`: STEPBible's TAGNT words (loadTagnt), the second source of the number of a variant word (scripts/data/variantWords.ts).
  */
 export function buildData(
   msbTsv: string,
@@ -257,6 +261,7 @@ export function buildData(
   apparatus?: Map<string, Map<string, string>>,
   overlay?: OverlayEntry[],
   english: EnglishOptions = { lampas: {}, strict: true },
+  tagnt?: readonly TagntWord[],
 ): BuiltData {
   const byBook = new Map<string, Map<number, TableVerse[]>>();
   for (const v of parseMsb(msbTsv)) {
@@ -356,7 +361,7 @@ export function buildData(
     if (apparatus?.has(code)) variants.books.push({ name, counts: bookCounts });
   }
   // every reading's words are tagged by the forms of the whole text (scripts/data/variantWords.ts), so after the last chapter
-  const tagged = apparatus ? tagVariants(chapters.map((c) => c.chapter), formIndex(chapters.map((c) => c.chapter)), lex) : undefined;
+  const tagged = apparatus ? tagVariants(chapters.map((c) => c.chapter), formIndex(chapters.map((c) => c.chapter)), lex, tagnt && tagntIndex(tagnt, lex)) : undefined;
   // the words of each reading's English are paired with its tagged Greek (scripts/data/variantAlign.ts, mw-9ji6ek0.37), which needs the tags
   if (apparatus) for (const { chapter } of chapters) layAlign(chapter);
   for (const { fingerprints, at, chapter } of unfingerprinted) fingerprints[at] = chapterFingerprint(chapter);
@@ -387,13 +392,19 @@ export interface BuildOptions {
   rp2026EnglishFile?: string;
   /** where the forms of the readings that stay untagged are listed; default UNTAGGED_FILE */
   untaggedFile?: string;
+  /** where the forms given a guessed number are listed; default GUESSED_FILE, or variant-guessed.txt beside `untaggedFile` when that is given */
+  guessedFile?: string;
+  /** read STEPBible's TAGNT (fetched into rawDir/tagnt) for the number of a variant word; default: when `variants` is on */
+  tagnt?: boolean;
+  /** the sha256 the two TAGNT files must have together; default TAGNT_SHA256 (a test's own files have their own) */
+  tagntSha256?: string;
 }
 
 /** What a build reads: the MSB table and TBESG (fetched into rawDir unless they are there), the apparatus and the RP 2026 overlay (written to overlayFile). Also read by `npm run variants:english`. */
 export async function loadInputs(
-  options: Pick<BuildOptions, 'rawDir' | 'download' | 'log' | 'variants' | 'variantsSha256' | 'rp2026' | 'rp2026Sha256' | 'overlayFile'>,
-): Promise<{ msbTsv: string; lex: Lexicon; apparatus?: Map<string, Map<string, string>>; overlay?: OverlayEntry[] }> {
-  const { rawDir, download = fetchTo, log = () => undefined, variants = true, rp2026 = variants, overlayFile = OVERLAY_FILE } = options;
+  options: Pick<BuildOptions, 'rawDir' | 'download' | 'log' | 'variants' | 'variantsSha256' | 'rp2026' | 'rp2026Sha256' | 'overlayFile' | 'tagnt' | 'tagntSha256'>,
+): Promise<{ msbTsv: string; lex: Lexicon; apparatus?: Map<string, Map<string, string>>; overlay?: OverlayEntry[]; tagnt?: TagntWord[] }> {
+  const { rawDir, download = fetchTo, log = () => undefined, variants = true, rp2026 = variants, tagnt = variants, overlayFile = OVERLAY_FILE } = options;
   const msbPath = join(rawDir, MSB_FILE);
   const tbesgPath = join(rawDir, TBESG_FILE);
   for (const [url, path] of [[MSB_URL, msbPath], [TBESG_URL, tbesgPath]] as const) {
@@ -408,14 +419,15 @@ export async function loadInputs(
     overlay = diffEdition(apparatus, await loadRp2026(rawDir, download, log, options.rp2026Sha256));
     writeIfChanged(overlayFile, `${JSON.stringify(overlay, null, 1)}\n`);
   }
-  return { msbTsv: readFileSync(msbPath, 'utf8'), lex: parseLexicon(readFileSync(tbesgPath, 'utf8')), apparatus, overlay };
+  const tagntWords = tagnt ? await loadTagnt(rawDir, download, log, options.tagntSha256) : undefined;
+  return { msbTsv: readFileSync(msbPath, 'utf8'), lex: parseLexicon(readFileSync(tbesgPath, 'utf8')), apparatus, overlay, tagnt: tagntWords };
 }
 
 export async function runBuild(options: BuildOptions): Promise<{ chapters: number; written: number; bytes: number }> {
   const { outDir, log = () => undefined } = options;
-  const { msbTsv, lex, apparatus, overlay } = await loadInputs(options);
+  const { msbTsv, lex, apparatus, overlay, tagnt } = await loadInputs(options);
   const lampas = readLampasEnglish(options.englishFile ?? VARIANT_ENGLISH_FILE);
-  const built = buildData(msbTsv, lex, apparatus, overlay, { lampas, strict: true });
+  const built = buildData(msbTsv, lex, apparatus, overlay, { lampas, strict: true }, tagnt);
   if (built.variants) for (const line of variantsReport(built.variants)) log(line);
   if (built.variants) for (const line of englishReport(englishStats(built.chapters.flatMap((c) => c.chapter.variants ?? [])))) log(line);
   if (overlay && built.overlay) for (const line of overlayReport(overlay, built.overlay)) log(line);
@@ -427,6 +439,7 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
   if (built.tagged) {
     log(taggedLine(built.tagged));
     writeIfChanged(options.untaggedFile ?? UNTAGGED_FILE, untaggedText(built.tagged));
+    writeIfChanged(options.guessedFile ?? (options.untaggedFile ? join(dirname(options.untaggedFile), 'variant-guessed.txt') : GUESSED_FILE), guessedText(built.tagged));
   }
 
   // index.json lists the 66 books: this build writes the 27 read in Greek and keeps the Old Testament's from the index on disk (scripts/data-build-ot.ts writes those)

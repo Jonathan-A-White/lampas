@@ -19,6 +19,8 @@ export interface LexiconEntry {
 
 export interface Lexicon {
   get(strongs: string): LexiconEntry | undefined;
+  /** Every entry, by its number ('G686'); absent on a lexicon made by hand in a test. The variant words are matched to the lemmas by it (scripts/data/variantWords.ts). */
+  entries?(): Iterable<[string, LexiconEntry]>;
 }
 
 /** Removes markup, scripture references, daggers and source tags; cuts at a word boundary near 300 characters. */
@@ -181,5 +183,5 @@ export function parseTbes(text: string, { letter, gloss }: TbesOptions): Lexicon
     }
     entries.set(key, entry);
   }
-  return { get: (strongs) => entries.get(strongs) };
+  return { get: (strongs) => entries.get(strongs), entries: () => entries.entries() };
 }

@@ -13,7 +13,7 @@ export const PREFACE_EDITION_LINE =
 
 /** Where the variant readings come from (docs/greek-edition.md, mw-9ji6ek0.4): the 2018 edition's apparatus, laid on the Greek. */
 export const PREFACE_VARIANTS_LINE =
-  'The variant readings that can be shown beside the Greek are those of the Robinson-Pierpont 2018 edition with its apparatus, which records where the Byzantine manuscripts divide and where the Nestle-Aland text and the Editio Critica Maior read otherwise. Any one of those readings can be read in the Greek in place of the text’s own, or the whole text can be read as the Byzantine text, Nestle-Aland or the Editio Critica Maior (where its apparatus gives it) reads. The short English beside a reading is the Majority Standard Bible’s own footnote where it gives one, and where it gives none, a word-for-word rendering made for Lampas by an AI model (Claude, by Anthropic); that rendering is no published translation, and it is marked wherever it appears: in italics within a dotted ring beside the text, and by name on a reading’s card. The Greek of Lampas carries no punctuation, so where a sentence ends, which Diagram uses to draw a whole sentence across verse breaks, is read from the full stops and question marks of that same 2018 edition.';
+  'The variant readings that can be shown beside the Greek are those of the Robinson-Pierpont 2018 edition with its apparatus, which records where the Byzantine manuscripts divide and where the Nestle-Aland text and the Editio Critica Maior read otherwise. Any one of those readings can be read in the Greek in place of the text’s own, or the whole text can be read as the Byzantine text, Nestle-Aland or the Editio Critica Maior (where its apparatus gives it) reads. The short English beside a reading is the Majority Standard Bible’s own footnote where it gives one, and where it gives none, a word-for-word rendering made for Lampas by an AI model (Claude, by Anthropic); that rendering is no published translation, and it is marked wherever it appears: in italics within a dotted ring beside the text, and by name on a reading’s card. The Strong’s number of each word of a reading is the one the Greek text or the lexicon gives that form or lemma, or, for a form they lack, the one STEPBible’s Translators Amalgamated Greek New Testament (TAGNT, Tyndale House, CC BY 4.0) gives it; where none has the form, the nearest lemma’s number is given and marked as a guess. The Greek of Lampas carries no punctuation, so where a sentence ends, which Diagram uses to draw a whole sentence across verse breaks, is read from the full stops and question marks of that same 2018 edition.';
 
 /** The paragraphs: what the text is and who stands behind it, not an argument. Nothing of the app (docs/PREFACE.md; tests/unit/preface-rule.test.ts). */
 export const PREFACE_PARAGRAPHS: string[] = [
@@ -74,6 +74,11 @@ export const PREFACE_LINKS: PrefaceLink[] = [
     name: 'The 2018 edition and both texts, on GitHub',
     about: 'Robinson’s files as the byztxt project keeps them (public domain): the 2018 text and its apparatus of variant readings, which Lampas carries, and the release closest to the 2005 text that we compared the Greek with.',
     url: 'https://github.com/byztxt/byzantine-majority-text',
+  },
+  {
+    name: 'TAGNT, on GitHub',
+    about: 'STEPBible’s Translators Amalgamated Greek New Testament (CC BY 4.0), which gives the words of the other editions’ readings their Strong’s numbers where the Greek of Lampas does not have the form.',
+    url: 'https://github.com/STEPBible/STEPBible-Data',
   },
   {
     name: 'The 2026 changes to the Greek, listed',
