@@ -14,12 +14,24 @@ export interface TagntRow {
   lemma: string;
   /** TAGNT's code, a noun's semantic tags dropped (N-NSM-T -> N-NSM) */
   morph: string;
+  /** TAGNT tags the word a proper name: a person or a place (N-NSM-P, N-GSF-L), or a title whose lemma it writes with a capital (Χριστός, N-NSM-T) */
+  name: boolean;
 }
 
 /** Strips TAGNT's semantic tags from a noun (N-NSM-T -> N-NSM, N-GSF-L -> N-GSF): they say what a name refers to, not how it is inflected. */
 export function normMorph(morph: string): string {
   return morph.startsWith('N-') ? morph.split('-').slice(0, 2).join('-') : morph;
 }
+
+/**
+ * Whether TAGNT's row makes the word a proper name (the agreement check's name rule, agreement.ts): a person or a place (-P, -L), or a title (-T) whose
+ * lemma is written with a capital. TAGNT tags every θεός and κύριος a title too: those are common nouns Swete writes in lower case, and stay in layer 1.
+ */
+export const isName = (morph: string, lemma: string): boolean => {
+  if (!morph.startsWith('N-')) return false;
+  const tag = morph.split('-')[2] ?? '';
+  return tag === 'P' || tag === 'L' || (tag === 'T' && lemma !== lemma.toLowerCase());
+};
 
 const ROW = /^([1-3A-Z][A-Za-z]{2})\.(\d+)\.(\d+)#(\d+)=(\S+)\t/;
 
@@ -37,7 +49,7 @@ export function readTagnt(texts: readonly string[], hide?: string): TagntRow[] {
       const grammar = (c[3] ?? '').split('=')[1]?.trim();
       const lemma = (c[4] ?? '').split('=')[0].trim();
       if (!form || !grammar || !lemma) continue;
-      rows.push({ book: m[1], chapter: Number(m[2]), verse: Number(m[3]), form, lemma: lemma.normalize('NFC'), morph: normMorph(grammar) });
+      rows.push({ book: m[1], chapter: Number(m[2]), verse: Number(m[3]), form, lemma: lemma.normalize('NFC'), morph: normMorph(grammar), name: isName(grammar, lemma) });
     }
   }
   return rows;
@@ -58,6 +70,8 @@ export interface FormIndex {
   byKey: Map<string, Counts>;
   /** bareOf(form) -> 'lemma|morph' -> count */
   byBare: Map<string, Counts>;
+  /** every keyOf(form) whose New Testament words are all tagged proper names (Χλόης, 1 Cor 1:11) */
+  names: Set<string>;
   /** how many rows went in */
   rows: number;
 }
@@ -70,12 +84,17 @@ export function formIndex(rows: readonly TagntRow[]): FormIndex {
     if (!counts) map.set(key, (counts = new Map()));
     counts.set(analysis, (counts.get(analysis) ?? 0) + 1);
   };
+  const names = new Set<string>();
+  const common = new Set<string>();
   for (const row of rows) {
     const analysis = `${row.lemma}|${row.morph}`;
-    add(byKey, keyOf(row.form), analysis);
+    const key = keyOf(row.form);
+    add(byKey, key, analysis);
     add(byBare, bareOf(row.form), analysis);
+    (row.name ? names : common).add(key);
   }
-  return { byKey, byBare, rows: rows.length };
+  for (const key of common) names.delete(key);
+  return { byKey, byBare, names, rows: rows.length };
 }
 
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
