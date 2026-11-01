@@ -2,7 +2,7 @@
 Feature: Whatever is read aloud can be paused, resumed, restarted and stopped, and an interruption only pauses it
   While the tutor's answer (or a chapter) is read aloud the one speaking bar offers Pause, Restart and Stop; Resume replaces Pause while it waits. Pause
   keeps the sentence reached and Resume goes on from it; Restart speaks from the first sentence; Stop ends it and the bar goes. A word he taps (Hebrew or
-  Greek), a speaker beside a word or a hold on the Talk bar INTERRUPTS the answer: it is paused where it was, not ended, and the bar shows Resume. A page
+  Greek), a speaker beside a word or a hold on the Talk sheet's Hold to talk INTERRUPTS the answer: it is paused where it was, not ended, and the bar shows Resume. A page
   that hides pauses it too. A new question still ends it. speechSynthesis is the honest fake of tests/support/fake-speech.ts and the Postern is the fake
   of tests/support/fake-postern.ts.
 
@@ -67,7 +67,7 @@ Feature: Whatever is read aloud can be paused, resumed, restarted and stopped, a
       | 150 |
       | 400 |
 
-  Scenario: Holding the Talk bar to speak pauses the answer
+  Scenario: Holding the sheet's Hold to talk bar pauses the answer
     Given Lampas is opened on a phone with a Hebrew voice, and the tutor's answer of three sentences is being read aloud
     When he holds the sheet's Hold to talk bar
     Then the answer is paused, not ended

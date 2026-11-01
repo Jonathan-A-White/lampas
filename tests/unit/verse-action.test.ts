@@ -5,9 +5,9 @@ import { actionsFor, getVerseAction, quizOffered, setVerseAction, VERSE_ACTIONS 
 beforeEach(() => window.localStorage.clear());
 
 describe('the Verse view actions', () => {
-  it('lists Practise after Ask the tutor and Diagram after Practise: the quiz is a door of Practise, not an action', () => {
-    expect(VERSE_ACTIONS.map((a) => a.label)).toEqual(['Listen', 'Read it aloud', 'Ask the tutor', 'Practise', 'Diagram']);
-    expect(VERSE_ACTIONS[4]).toEqual({ id: 'diagram', label: 'Diagram' });
+  it('lists Practise after Read it aloud and Diagram after Practise: the quiz is a door of Practise, not an action', () => {
+    expect(VERSE_ACTIONS.map((a) => a.label)).toEqual(['Listen', 'Read it aloud', 'Practise', 'Diagram']);
+    expect(VERSE_ACTIONS[3]).toEqual({ id: 'diagram', label: 'Diagram' });
   });
 
   it('offers Diagram with a licence and only Listen without', () => {
@@ -28,11 +28,11 @@ describe('the Verse view actions', () => {
 
 describe('the Verse view actions of an Old Testament verse (mw-5vvlay.3)', () => {
   it('offers every action on any verse: Practise holds copywork in the verse\'s own script, and the Diagram is drawn for Hebrew as for Greek (mw-5r3p30.887)', () => {
-    expect(actionsFor(true).map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'practise', 'diagram']);
+    expect(actionsFor(true).map((a) => a.id)).toEqual(['listen', 'read', 'practise', 'diagram']);
   });
 
   it('leaves Diagram out of a passage and keeps Practise', () => {
-    expect(actionsFor(true, false).map((a) => a.id)).toEqual(['listen', 'read', 'ask', 'practise']);
+    expect(actionsFor(true, false).map((a) => a.id)).toEqual(['listen', 'read', 'practise']);
   });
 
   it('offers the quiz door on a Greek verse always, and on an hbo verse only with some Hebrew: the talk then holds the English alone', () => {

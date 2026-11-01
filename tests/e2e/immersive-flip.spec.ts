@@ -35,14 +35,12 @@ async function keep(page: Page, values: Record<string, string>) {
   );
 }
 
-// `door: 'floating'` is for a spec that taps with two fingers: the tap shows and puts away the bars where the Tutor door is Floating ? (mw-5r3p30.880); in the default door the same tap opens the tutor.
-// The other specs swipe from the screen's middle, where the floating button stands, so they keep the default.
-async function openEphesians2(page: Page, immersive: 'on' | 'off', door?: 'floating') {
+async function openEphesians2(page: Page, immersive: 'on' | 'off') {
   await openUnlocked(page);
   await honestMic(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await keep(page, { immersiveReader: immersive, immersiveHint: 'off', ...(door ? { tutorDoor: door } : {}) });
+  await keep(page, { immersiveReader: immersive, immersiveHint: 'off' });
   await page.goto('/#/?b=eph&c=2');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Ephesians 2', level: 1 })).toBeVisible();
@@ -52,9 +50,8 @@ async function openEphesians2(page: Page, immersive: 'on' | 'off', door?: 'float
 
 const header = (page: Page) => page.locator('header').first();
 const chips = (page: Page) => page.getByTestId('reader-chips');
-const talkBar = (page: Page) => page.locator('[data-talk-bar]');
-// the specs here choose the floating ? to get the two-finger tap that shows the bars; the older round Ask button is not drawn beside it (mw-5r3p30.935), so it is not among the bars
-const all = (page: Page) => [header(page), chips(page), talkBar(page)];
+// the bars are the header and the chips row; the floating ? stays (mw-5r3p30.882)
+const all = (page: Page) => [header(page), chips(page)];
 
 const scrollText = (page: Page, by: number) =>
   page.evaluate((px) => {
@@ -96,7 +93,7 @@ for (const [button, chapter] of [
   ['‹ Ephesians 1', 1],
 ] as const) {
   test(`with the bars away, flipping with '${button}' opens the new chapter with them still away`, async ({ page }) => {
-    await openEphesians2(page, 'on', 'floating');
+    await openEphesians2(page, 'on');
     await scrollText(page, 400);
     await expectAll(page, 'hidden');
 
@@ -161,9 +158,11 @@ async function watchFrames(page: Page, bars: 'away' | 'shown') {
 
 const frames = (page: Page) => page.evaluate(() => (window as unknown as { __frames: string[] }).__frames);
 
+// The swipes run at y 620, under the floating ? (src/AskTutor.tsx FloatingTutor: at the Hand side's edge, 17 rem above the bar, y 468 to 524 here), which takes a touch that starts on it
+// (mw-5r3p30.882 made it the one door; whether it shows in the immersive reader at all is mw-5r3p30.934's).
 for (const [name, from, to, chapter] of [
-  ['left to the next chapter', [330, 500], [90, 500], 3],
-  ['right to the previous chapter', [90, 500], [330, 500], 1],
+  ['left to the next chapter', [330, 620], [90, 620], 3],
+  ['right to the previous chapter', [90, 620], [330, 620], 1],
 ] as const) {
   test(`with the bars away, a swipe ${name} never draws the bars or the Reader without Immersive`, async ({ page }) => {
     await openEphesians2(page, 'on');

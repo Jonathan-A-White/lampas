@@ -20,7 +20,6 @@ import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { setVerseAction, type VerseAction } from '../../src/verse/action';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { holdBarIn } from '../../tests/support/composer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { LicenceProbe } from '../../tests/support/licence-probe';
@@ -133,14 +132,6 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Reader has no Ask the tutor button', () => expect(askButton()).toBeNull());
   });
 
-  Scenario('With a licence the Reader has the Talk bar and the Ask the tutor button', ({ Given, Then, And }) => {
-    Given('this phone has a licence and Romans 8 is open', () => openReader(true));
-    Then('the Reader has a Talk bar', async () => {
-      await waitFor(() => expect(document.querySelector('[data-talk-bar]')).not.toBeNull());
-    });
-    And('the Reader has an Ask the tutor button', () => expect(askButton()).not.toBeNull());
-  });
-
   Scenario('With no licence the Verse view offers neither Ask the tutor nor Practise, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
     Given('this phone has no licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(false, 'ask'));
     Then('the Verse view offers only the action {string}, with Copy', offersOnlyListen);
@@ -199,16 +190,6 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('With a licence the Verse view offers Ask the tutor and Practise and the Hold to ask bar', ({ Given, Then, And }) => {
-    Given('this phone has a licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(true, 'ask'));
-    Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
-      expect(actionNames().slice(0, 4)).toEqual([a, b, c, d]);
-    });
-    And('the Verse view has a Hold to ask bar', async () => {
-      await waitFor(() => expect(holdBarIn(verseView())).toBeInTheDocument());
-    });
-  });
-
   Scenario('With a licence the Verse view has Read it aloud, its Hold to read bar and the Reading ladder', ({ Given, Then }) => {
     Given('this phone has a licence and the Verse view of verse 28 is open, last left on Read it aloud', () => openVerseView(true, 'read'));
     Then('the Verse view has Read it aloud, a Hold to read bar and a Reading ladder', async () => {
@@ -228,24 +209,9 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('With a licence the word sheet has Help with this word, with Ask the tutor', ({ Given, When, Then, And }) => {
-    Given('this phone has a licence and Romans 8 is open', () => openReader(true));
-    When('he taps a word in verse {int}', tapWord);
-    Then('the word sheet opens', wordSheetOpens);
-    And('the word sheet has Help with this word with Ask the tutor', () => {
-      const help = screen.getByRole('group', { name: 'Help with this word' });
-      expect(within(help).getByRole('button', { name: 'Ask the tutor' })).toBeInTheDocument();
-    });
-  });
-
   Scenario('With no licence the Goal screen has no Ask the tutor button', ({ Given, Then }) => {
     Given('this phone has no licence and the Goal screen is open', () => openGoal(false));
     Then('the Goal screen has no Ask the tutor button', () => expect(askButton()).toBeNull());
-  });
-
-  Scenario('With a licence the Goal screen has the Ask the tutor button', ({ Given, Then }) => {
-    Given('this phone has a licence and the Goal screen is open', () => openGoal(true));
-    Then('the Goal screen has an Ask the tutor button', () => expect(askButton()).not.toBeNull());
   });
 
   Scenario('With no licence the Goal screen has no Reading ladder', ({ Given, Then }) => {

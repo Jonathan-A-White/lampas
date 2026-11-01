@@ -11,11 +11,10 @@ import { expect, test, type BrowserContext, type Locator, type Page, type Reques
 import { makeFakePostern, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../support/fake-postern';
 import { honestMic, honestSpeech } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
-import { typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { openCheck, openDrillIt, openIdea, openShare, openTryIt } from './large-text-titles';
 import { openUnlocked } from './unlocked';
-import { chooseAction, openTalkAbout, openVerseView } from './verse-view';
+import { askAboutVerse, openTalkAbout, openVerseView } from './verse-view';
 import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, serviceWorkers: 'allow' });
@@ -251,9 +250,7 @@ for (const size of SIZES) {
     await honestMic(page);
     await honestSpeech(page);
     const { banner } = await openWithUpdateWaiting(page, context);
-    await chooseAction(page, 28, 'Ask the tutor');
-    await typeQuestion(page, 'What does συνεργεῖ mean here?');
-    // the question goes to the Talk sheet, the one tutor (mw-5r3p30.842)
+    await askAboutVerse(page, 28, 'What does συνεργεῖ mean here?');
     const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
     await expect(sheet).toBeVisible();
     await expect.poll(() => fake.received.length).toBe(1);

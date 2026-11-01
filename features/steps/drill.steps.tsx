@@ -2,7 +2,7 @@
 // steps and choices, the two links to the tutor, and the results kept in Dexie. The chapter comes from disk; the right
 // choice of a step is found from the word's RP code with the same builder the app uses.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
@@ -202,35 +202,6 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the noun is asked its case', () => expectStep('case'));
     When('he answers the case rightly and goes on', answerRightlyAndGoOn);
     Then('the noun is asked its number and gender', () => expectStep('number+gender'));
-  });
-
-  Scenario('Ask the tutor opens the Ask box on that verse with the question prefilled', ({ Given, When, And, Then }) => {
-    let verse = 0;
-    let question = '';
-    Given('Lampas is opened for the first time', openLampasFresh);
-    When('he opens the Parsing drill from the Test screen', openDrill);
-    And('he taps Ask the tutor', async () => {
-      verse = Number(wordOnScreen().dataset.verse);
-      question = `Parse ${wordOnScreen().textContent} in Romans 8:${verse}: why is it ${parsingOf()}?`;
-      await user.click(screen.getByRole('button', { name: 'Ask the tutor' }));
-    });
-    Then('the Reader opens on the verse of that word with the Ask box holding the question about the word', async () => {
-      const box = await waitFor(() => {
-        const found = document.querySelector<HTMLElement>(`[data-ask="${verse}"]`);
-        expect(found).not.toBeNull();
-        return found as HTMLElement;
-      });
-      expect(within(box).getByRole('textbox', { name: 'Your question' })).toHaveValue(question);
-      expect(screen.getByRole('button', { name: `Verse ${verse}` })).toHaveAttribute('aria-pressed', 'true');
-    });
-    When('he goes Back', () => {
-      window.history.back();
-    });
-    Then('the drill is on the same question again', async () => {
-      await screen.findByRole('heading', { name: 'Parsing drill' });
-      expect(Number((await screen.findByTestId('drill-word')).dataset.verse)).toBe(verse);
-      expectStep('pos');
-    });
   });
 
   Scenario('Talk about it opens the Talk sheet on that verse', ({ Given, When, And, Then }) => {

@@ -181,7 +181,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   const helpRowHas = async (): Promise<void> => {
     const row = await within(await sheet()).findByRole('group', { name: 'Help with this word' });
-    expect(within(row).getAllByRole('button').map((b) => squash(b.textContent))).toEqual(['Grammar', 'Syllables and sounds', 'Ask the tutor']);
+    expect(within(row).getAllByRole('button').map((b) => squash(b.textContent))).toEqual(['Grammar', 'Syllables and sounds']);
   };
 
   Scenario('The sheet of נִינְוֵה has Help with this word with its three rows and the parsing as links', ({ Given, When, Then, And }) => {
@@ -189,7 +189,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the Hebrew word {string} of verse {int}', tapsHebrew);
     Then('it shows the parsing {string}', showsParsing);
     And('the terms of the parsing are links: {string}, {string}, {string} and {string}', termsAreLinks);
-    And('the Help with this word row has Grammar, Syllables and sounds and Ask the tutor', helpRowHas);
+    And('the Help with this word row has Grammar and Syllables and sounds', helpRowHas);
   });
 
   Scenario('The sheet of a verb with a table has the Paradigm row and Help with this word under it', ({ Given, When, Then, And }) => {
@@ -198,7 +198,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Hebrew word sheet has a Paradigm row', async () => {
       expect(await fact('sheet-paradigm')).toBeInTheDocument();
     });
-    And('the Help with this word row has Grammar, Syllables and sounds and Ask the tutor', helpRowHas);
+    And('the Help with this word row has Grammar and Syllables and sounds', helpRowHas);
   });
 
   const tapsTerm = async (_: unknown, term: string): Promise<void> => {

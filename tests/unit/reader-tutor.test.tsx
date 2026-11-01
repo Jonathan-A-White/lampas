@@ -8,7 +8,7 @@ import { loadChapter, type Chapter } from '../../src/data/chapter';
 import { chapterOf } from '../../src/data/readerChapter';
 import { clearBus, subscribe, type AppEvent } from '../../src/events/bus';
 import { useReaderTutor } from '../../src/reader/useReaderTutor';
-import { helpQuestion, newWordQuestion, quizMeQuestion, scopeTitle, termQuestion } from '../../src/services/talk';
+import { helpQuestion, quizMeQuestion, scopeTitle, termQuestion } from '../../src/services/talk';
 import type { UseTalk } from '../../src/useTalk';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { stubSpeech } from '../support/fake-speech';
@@ -24,19 +24,15 @@ beforeAll(async () => {
 
 beforeEach(() => clearBus());
 
-function fakeVoice() {
-  return { abort: vi.fn() };
-}
-
 function fakeTalk(states: UseTalk['states'] = {}) {
   const say = vi.fn<UseTalk['say']>();
   return { states, say, resume: vi.fn<UseTalk['resume']>() };
 }
 
-function setup(talk = fakeTalk(), voice = fakeVoice(), request?: Parameters<typeof useReaderTutor>[4]['request']) {
+function setup(talk = fakeTalk(), request?: Parameters<typeof useReaderTutor>[3]['request']) {
   const openTalk = { current: null as string | null };
-  const tutor = renderHook(() => useReaderTutor(open, romans, talk, voice, { request, viewUnit: undefined, openTalkRef: openTalk }));
-  return { tutor, talk, voice, openTalkRef: openTalk };
+  const tutor = renderHook(() => useReaderTutor(open, romans, talk, { request, viewUnit: undefined, openTalkRef: openTalk }));
+  return { tutor, talk, openTalkRef: openTalk };
 }
 
 const verse28 = () => romans.verses.find((v) => v.n === 28)!;
@@ -45,14 +41,13 @@ describe('helpWithWord', () => {
   const help = { kind: 'grammar' as const, form: 'συνεργεῖ', lemma: 'συνεργέω', parse: 'verb, present active indicative, 3rd person singular', verse: 28 };
 
   it('opens the Talk sheet on the verse, publishes word-help and sends the help question with its focus', () => {
-    const { tutor, talk, voice } = setup();
+    const { tutor, talk } = setup();
     const seen: AppEvent[] = [];
     subscribe('word-help', (e) => seen.push(e));
     act(() => tutor.result.current.helpWithWord(help));
     const scope = { title: 'Romans 8', chapter: romans, verse: verse28() };
     const focus = { form: help.form, lemma: help.lemma, parse: help.parse, kind: 'grammar' };
     expect(talk.say).toHaveBeenCalledWith(scope, helpQuestion(focus as never, scopeTitle(scope)), focus);
-    expect(voice.abort).toHaveBeenCalled();
     expect(tutor.result.current.talkScope?.verse?.n).toBe(28);
     expect(seen).toEqual([{ kind: 'word-help', help: 'grammar', form: help.form, lemma: help.lemma, parse: help.parse, chapter: 8, verse: 28 }]);
   });
@@ -75,66 +70,28 @@ describe('helpWithWord', () => {
 
 describe('askAboutTerm', () => {
   it('sends the term question with a grammar-term focus on the verse of the word', () => {
-    const { tutor, talk, voice } = setup();
+    const { tutor, talk } = setup();
     act(() => tutor.result.current.askAboutTerm({ term: 'genitive', verse: 28 }));
     const scope = { title: 'Romans 8', chapter: romans, verse: verse28() };
     expect(talk.say).toHaveBeenCalledWith(scope, termQuestion('genitive', scopeTitle(scope)), { term: 'genitive', kind: 'grammar-term' });
-    expect(voice.abort).toHaveBeenCalled();
     expect(tutor.result.current.talkScope?.verse?.n).toBe(28);
   });
 });
 
-describe('askAboutNewWord', () => {
-  it('sends the new-word question with no focus on the verse the word was shown in', () => {
-    const { tutor, talk, voice } = setup();
-    act(() => tutor.result.current.askAboutNewWord({ lemma: 'ἀγάπη', gloss: 'love', verse: 28 }));
-    const scope = { title: 'Romans 8', chapter: romans, verse: verse28() };
-    expect(talk.say).toHaveBeenCalledWith(scope, newWordQuestion('ἀγάπη', 'love', scopeTitle(scope)), undefined);
-    expect(voice.abort).toHaveBeenCalled();
-  });
-
-  it('does nothing before the chapter is here', () => {
-    const talk = fakeTalk();
-    const { result } = renderHook(() => useReaderTutor(open, null, talk, fakeVoice(), { request: undefined, viewUnit: undefined, openTalkRef: { current: null } }));
-    act(() => result.current.askAboutNewWord({ lemma: 'ἀγάπη', gloss: 'love', verse: 28 }));
-    expect(talk.say).not.toHaveBeenCalled();
-    expect(result.current.talkScope).toBeNull();
-  });
-});
-
 describe('openQuiz', () => {
-  it('opens the sheet on the unit as a quiz and sends Quiz me once, with the voice dropped', async () => {
+  it('opens the sheet on the unit as a quiz and sends Quiz me once', async () => {
     const talk = fakeTalk();
-    const voice = fakeVoice();
     const unit = verse28();
     const openTalk = { current: null as string | null };
-    const { result } = renderHook(() => useReaderTutor(open, romans, talk, voice, { request: undefined, viewUnit: unit, openTalkRef: openTalk }));
+    const { result } = renderHook(() => useReaderTutor(open, romans, talk, { request: undefined, viewUnit: unit, openTalkRef: openTalk }));
     // Quiz me waits for the kept turns to be read: it presses until the question goes
     const pressed = () => {
       act(() => result.current.openQuiz());
       expect(talk.say).toHaveBeenCalled();
     };
     await waitFor(pressed);
-    expect(voice.abort).toHaveBeenCalled();
     expect(result.current.talkScope).toEqual({ title: 'Romans 8', chapter: romans, verse: unit, quiz: true });
     expect(talk.say).toHaveBeenCalledWith({ title: 'Romans 8', chapter: romans, verse: unit, quiz: true }, quizMeQuestion(scopeTitle({ title: 'Romans 8', verse: unit })));
     expect(openTalk.current).toBe('rom.8.28:quiz');
-  });
-});
-
-describe('holdTalk', () => {
-  it('opens the sheet on the verse (the kit\'s bar listens)', () => {
-    const { tutor, openTalkRef: openTalk } = setup();
-    act(() => tutor.result.current.holdTalk(28));
-    expect(tutor.result.current.talkScope?.verse?.n).toBe(28);
-    expect(openTalk.current).toBe('rom.8.28');
-    expect(tutor.result.current.talkWaiting(28)).toBe(false);
-  });
-
-  it('opens the sheet on the chapter for null, and says that conversation is waiting for its answer, so the press does not listen', () => {
-    const { tutor } = setup(fakeTalk({ 'rom.8': { phase: 'sending' } as never }));
-    act(() => tutor.result.current.holdTalk(null));
-    expect(tutor.result.current.talkScope?.verse).toBeNull();
-    expect(tutor.result.current.talkWaiting(null)).toBe(true);
   });
 });

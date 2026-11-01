@@ -1,8 +1,12 @@
-// tests/e2e/open-tutor.ts — opens the tutor the way the app's door does (src/tutor/door.ts, mw-5r3p30.880): a two-finger tap. WHAT it opens the tutor about is the app's choice, not the spec's: the newest
+// tests/e2e/open-tutor.ts — opens the tutor the way the app's one door does (src/tutor/door.ts, mw-5r3p30.880): a tap on the floating ?. WHAT it opens the tutor about is the app's choice, not the spec's: the newest
 // thing a screen or sheet registered, so it is the verse when the Verse view is open, the word when a word sheet is, the lesson when an idea sheet is, else the chapter or the screen. A spec that wants a verse
-// opens the Verse view first (openVerseView, tests/e2e/verse-view.ts) and then calls this. The features' twin is features/steps/open-tutor.ts; both send the fingers of tests/support/two-finger.ts.
+// opens the Verse view first (openVerseView, tests/e2e/verse-view.ts) and then calls this. The features' twin is features/steps/open-tutor.ts. A two-finger tap opens nothing (mw-5r3p30.882: it goes in and out
+// of immersive reading); twoFingers is here for the specs that prove it.
 import { expect, type Locator, type Page } from '@playwright/test';
-import { guardLeftMs, TWO_FINGERS } from '../support/two-finger';
+import { TWO_FINGERS } from '../support/two-finger';
+
+/** The floating ? (src/AskTutor.tsx FloatingTutor), the tutor's one door. */
+export const FLOATING = '[data-floating-tutor]';
 
 /** The sheet every tutor talk is: 'Talk about Romans 8', 'Talk about verse 28' and 'Ask the tutor: Words' (src/Talk.tsx). */
 export const TALK_SHEET = /^(Talk about |Ask the tutor: |Talk with the tutor)/;
@@ -22,21 +26,11 @@ export async function twoFingers(page: Page, at: { x: number; y: number } = TWO_
 }
 
 /**
- * Opens the tutor with a two-finger tap and waits for its Talk sheet (`sheet`, by default any talk). Returns the sheet. The app drops a click that comes within 600 ms of the tap that opened the tutor
- * (the click a phone may send after it), so this also waits that out: the next thing a spec clicks is a click.
+ * Opens the tutor with a tap on the floating ? and waits for its Talk sheet (`sheet`, by default any talk). Returns the sheet.
  */
-export async function openTutor(page: Page, { sheet = TALK_SHEET, at }: { sheet?: string | RegExp; at?: { x: number; y: number } } = {}): Promise<Locator> {
+export async function openTutor(page: Page, { sheet = TALK_SHEET }: { sheet?: string | RegExp; at?: { x: number; y: number } } = {}): Promise<Locator> {
   const dialog = page.getByRole('dialog', { name: sheet });
-  // the Tutor door setting is read a moment after the app opens: tap again until the tap takes
-  let tappedAt = 0;
-  await expect(async () => {
-    if (!(await dialog.first().isVisible())) {
-      await twoFingers(page, at);
-      tappedAt = await page.evaluate(() => performance.now());
-    }
-    await expect(dialog.first()).toBeVisible({ timeout: 1500 }); // a short window on purpose: a tap that came before the door read its setting did nothing, and toPass taps again
-  }).toPass();
-  const wait = guardLeftMs(tappedAt, await page.evaluate(() => performance.now()));
-  if (wait > 0) await page.waitForTimeout(wait);
+  await page.locator(FLOATING).click();
+  await expect(dialog.first()).toBeVisible();
   return dialog.first();
 }

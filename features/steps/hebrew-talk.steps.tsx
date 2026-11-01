@@ -52,6 +52,7 @@ describeFeature(
   ({ Scenario, AfterEachScenario }) => {
     AfterEachScenario(endScenario);
 
+    // the Verse view of the verse, then the floating ? over it: the one door (mw-5r3p30.882)
     const talkAbout = async (_: unknown, n: number): Promise<void> => {
       await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
       await screen.findByRole('region', { name: 'Verse view' });
@@ -73,7 +74,7 @@ describeFeature(
 
     Scenario('The talk about verse 1 on Jonah 1 sends the Hebrew and its words and no Greek', ({ Given, When, Then, And }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk behind a fake Postern', opened('Jonah 1', 'Curious'));
-      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      When('he taps the number of verse {int} and taps the floating ?', talkAbout);
       Then('the sheet is titled {string}', titled);
       When('he sends {string}', sends);
       Then('the mill received one bible-talk grist whose input carries the reference {string}, the English of verse 1 and no Greek', async (_, reference: string) => {
@@ -96,7 +97,7 @@ describeFeature(
 
     Scenario("The chapter talk on Genesis 1 sends the first verses' Hebrew and its words", ({ Given, When, And, Then }) => {
       Given('Lampas is opened on Genesis 1 with the Hebrew dial at Curious and a talk behind a fake Postern', opened('Genesis 1', 'Curious'));
-      When('he opens Talk from the Talk bar', async () => {
+      When('he opens the talk with the floating ? over the chapter', async () => {
         await openTutor();
         await within(await screen.findByRole('dialog', { name: 'Talk about Genesis 1' })).findByRole('textbox', { name: 'Your message' });
       });
@@ -116,7 +117,7 @@ describeFeature(
 
     Scenario("The answer's Hebrew word is drawn right to left and opens its word sheet", ({ Given, When, And, Then }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer explains the Hebrew word {string}', () => opened('Jonah 1', 'Curious', WORD_ANSWER)());
-      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      When('he taps the number of verse {int} and taps the floating ?', talkAbout);
       And('he sends {string}', sends);
       Then('the answer lists the Hebrew word {string} with the lemma {string}, right to left in the Hebrew face', async (_, form: string, lemma: string) => {
         const list = await waitFor(() => {
@@ -155,7 +156,7 @@ describeFeature(
 
     Scenario("Add to my words on the answer's Hebrew word lists the lemma as a Hebrew word with the lexicon's gloss", ({ Given, When, And, Then }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer explains the Hebrew word {string}', () => opened('Jonah 1', 'Curious', WORD_ANSWER)());
-      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      When('he taps the number of verse {int} and taps the floating ?', talkAbout);
       And('he sends {string}', sends);
       And('he taps Add to my words on the answer\'s word {string}', async (_, lemma: string) => {
         const list = await waitFor(() => {
@@ -179,7 +180,7 @@ describeFeature(
 
     Scenario('An answer that asks to add a Hebrew lemma to his words says so in the Hebrew face', ({ Given, When, And, Then }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer adds the Hebrew word {string} to his words', () => opened('Jonah 1', 'Curious', ADD_ANSWER)());
-      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      When('he taps the number of verse {int} and taps the floating ?', talkAbout);
       And('he sends {string}', sends);
       Then('the answer says {string}, the lemma right to left in the Hebrew face', async (_, line: string) => {
         const turn = await answered();
@@ -200,7 +201,7 @@ describeFeature(
 
     Scenario("A word link to a Hebrew lemma is drawn in Hebrew and opens the Hebrew word's sheet", ({ Given, When, And, Then }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a talk whose answer links the Hebrew word {string}', () => opened('Jonah 1', 'Curious', LINK_ANSWER)());
-      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      When('he taps the number of verse {int} and taps the floating ?', talkAbout);
       And('he sends {string}', sends);
       Then("the answer's study links name {string} right to left in the Hebrew face and not in Greek type", async (_, lemma: string) => {
         const links = await waitFor(() => {
@@ -228,7 +229,7 @@ describeFeature(
 
     Scenario('A talk on a Greek chapter is as it was', ({ Given, When, And, Then }) => {
       Given('Lampas is opened on Romans 8 with the Hebrew dial at Curious and a talk behind a fake Postern', opened('Romans 8', 'Curious'));
-      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      When('he taps the number of verse {int} and taps the floating ?', talkAbout);
       And('he sends {string}', sends);
       Then('the mill received one bible-talk grist whose input carries the Greek of verse 28 with Greek words and no Hebrew', async () => {
         await waitFor(() => expect(fake.received).toHaveLength(1));
@@ -240,7 +241,7 @@ describeFeature(
 
     Scenario('At Hebrew 0 the talk on Jonah 1 sends the English alone and tells the tutor the dial', ({ Given, When, And, Then }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Just English and a talk behind a fake Postern', opened('Jonah 1', 'Just English'));
-      When('he taps the number of verse {int} and chooses {string}', talkAbout);
+      When('he taps the number of verse {int} and taps the floating ?', talkAbout);
       And('he sends {string}', sends);
       Then('the mill received one bible-talk grist whose input carries the reference {string}, the English of verse 1 and no Greek', async (_, reference: string) => {
         await hasGrist(_, reference);

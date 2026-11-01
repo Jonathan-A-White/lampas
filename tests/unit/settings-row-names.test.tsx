@@ -33,7 +33,6 @@ describe('the names Settings draws', () => {
       { key: 'resource.logos', value: 'on' },
       { key: 'devotional', value: 'random' },
       { key: 'developerMode', value: 'on' },
-      { key: 'tutorDoor', value: 'floating' },
       { key: 'pronunciationSeparate', value: 'on' },
     ]);
     render(<SettingsScreen />);

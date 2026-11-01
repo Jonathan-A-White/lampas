@@ -60,21 +60,6 @@ test("the Talk sheet's hold-to-talk bar is the last control at the foot, the she
   await shot(page, 'talk-sheet-hold-bar');
 });
 
-test("the reader's foot Talk bar is Postern's bar", async ({ page }) => {
-  await page.setViewportSize(VIEWPORT);
-  await routePostern(page, makeFakePostern());
-  await openUnlocked(page);
-  await page.goto('/');
-  const talk = page.getByRole('button', { name: 'Talk', exact: true });
-  await expect(talk).toBeInViewport();
-  await expect(talk).toHaveClass(/(^|\s)lp-bar(\s|$)/);
-  const b = await box(talk);
-  expect(b.height).toBeGreaterThanOrEqual(POSTERN_BAR_HEIGHT - 0.5);
-  expect(b.width).toBeGreaterThan(300);
-  expect(b.y + b.height).toBeGreaterThan(VIEWPORT.height - 70);
-  await shot(page, 'reader-talk-bar');
-});
-
 for (const [view, answer] of [['english', READING_ANSWER], ['greek', GREEK_READING_ANSWER]] as const) {
   test(`the Verse view's one hold bar is Postern's bar, in Read it aloud and in 'Read the whole verse again' (${view})`, async ({ page }) => {
     await page.clock.install();

@@ -1,4 +1,4 @@
-// What the Ask the tutor box says when the question cannot be answered (mw-5r3p30.340): his phone offline is his connection;
+// What the Talk sheet says when the question cannot be answered (mw-5r3p30.340): his phone offline is his connection;
 // the backend answering with a gateway error (the factory's home off) is the tutor, and never blames his connection.
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -6,15 +6,15 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
-import { composerOf, questionField, talkSheetOf, talkTurnsOf } from './ask-composer';
+import { talkSheetOf, talkTurnsOf } from './ask-composer';
 import { honestMic } from '../support/honest-fakes';
-import { chooseAction, openTalkAbout } from './verse-view';
+import { openTalkAbout } from './verse-view';
 import { talkField } from './talk-field';
 
 async function askAbout28(page: Page): Promise<void> {
-  const field = await questionField(page);
-  await field.fill('What is this verse about?');
-  await composerOf(page).getByRole('button', { name: 'Send', exact: true }).click();
+  const sheet = talkSheetOf(page);
+  await (await talkField(sheet)).fill('What is this verse about?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 }
 
 test('the backend answering 503 says the tutor is offline right now, not his connection, and keeps Retry', async ({ page }) => {
@@ -24,7 +24,7 @@ test('the backend answering 503 says the tutor is offline right now, not his con
   await honestMic(page);
   await openUnlocked(page);
   await page.goto('/');
-  await chooseAction(page, 28, 'Ask the tutor');
+  await openTalkAbout(page, 28);
   await askAbout28(page);
   const box = talkSheetOf(page);
   await expect(box.getByText('Could not reach the tutor')).toBeVisible();
@@ -39,7 +39,7 @@ test('a phone with no network says he is offline', async ({ page, context }) => 
   await honestMic(page);
   await openUnlocked(page);
   await page.goto('/');
-  await chooseAction(page, 28, 'Ask the tutor');
+  await openTalkAbout(page, 28);
   // offline: the browser says so and every call to the backend fails to connect (the later route wins over the fake's)
   await context.setOffline(true);
   await page.route(`${POSTERN_ORIGIN}/**`, (route) => route.abort('internetdisconnected'));
@@ -80,7 +80,7 @@ test('a gateway 502 with no CORS headers and the phone online says the tutor is 
   await honestMic(page);
   await openUnlocked(page);
   await page.goto('/');
-  await chooseAction(page, 28, 'Ask the tutor');
+  await openTalkAbout(page, 28);
   await askAbout28(page);
   const box = talkSheetOf(page);
   await expect(box.getByText('Could not reach the tutor')).toBeVisible();
@@ -113,7 +113,7 @@ test('the phone going offline while the tutor is still thinking says he is offli
   await honestMic(page);
   await openUnlocked(page);
   await page.goto('/');
-  await chooseAction(page, 28, 'Ask the tutor');
+  await openTalkAbout(page, 28);
   await askAbout28(page);
   // the question has gone and the tutor has not answered: the box counts the wait
   await expect(talkSheetOf(page).getByText(/Waiting for the tutor…/)).toBeVisible();

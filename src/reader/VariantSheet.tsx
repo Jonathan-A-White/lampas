@@ -1,6 +1,5 @@
 // src/reader/VariantSheet.tsx — the sheet a tap on a variant's brace opens (mw-9ji6ek0.6, src/reader/VariantBrace.tsx): the text's own reading and the other reading(s) of the
-// unit, each in Greek and in English, the witness of each spelled out one line apiece (src/reader/witness.ts), and Ask the tutor, which opens the verse's talk as the Verse view's
-// Ask does (the tutor's own variant story comes later), and under the readings 'Go deeper' (src/reader/goDeeper.ts, mw-9ji6ek0.20): the lessons, the apparatus, the 2005 edition and his Logos
+// unit, each in Greek and in English, the witness of each spelled out one line apiece (src/reader/witness.ts); its own Ask the tutor is gone (mw-5r3p30.882): the floating ? asks the tutor about this unit (src/Reader.tsx askVariant). Under the readings 'Go deeper' (src/reader/goDeeper.ts, mw-9ji6ek0.20): the lessons, the apparatus, the 2005 edition and his Logos
 // Greek texts at the verse. Each reading has 'Read this' (mw-9ji6ek0.24): it lays that reading into the text in place and closes the sheet; the one in place says 'Reading this'. Each word of a reading's Greek and English lines is a Tap like a word of the text and opens the word card over the sheet (mw-9ji6ek0.22). Done, Back, Escape, a swipe down or a tap outside close it. A portal: the brace is in the Reader's scrolling text.
 import { Fragment, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -25,7 +24,7 @@ import { readingsOf } from './witness';
 const LEFT_OUT = 'left out';
 export const READ_THIS = 'Read this';
 export const READING_THIS = 'Reading this';
-/** The line over Ask the tutor on a unit whose other readings are the text's own words in another order (mw-9ji6ek0.31). */
+/** The line at the foot of the sheet on a unit whose other readings are the text's own words in another order (mw-9ji6ek0.31). */
 export const WORD_ORDER_ONLY = 'Word order only: emphasis, not meaning';
 /** The one line under the readings that says what Read this does not change in this wave (the plan's Q6). */
 export const READ_THIS_NOTE = 'Read aloud, Read check and the diagram keep the Byzantine words; Copy, as you read it, gives your reading.';
@@ -240,14 +239,13 @@ interface SheetProps {
   verse?: Verse;
   onLook?: (lookup: Lookup) => void;
   onClose: () => void;
-  onAsk?: () => void;
   /** the language the unit's chapter is in: an Old Testament card (Hebrew) names the Berean Standard Bible as the English's source, the New Testament's the Majority Standard Bible */
   lang?: SourceLanguage;
   /** lays a reading into the text in place: the index of the alternative in the unit's `alts`, BASE (-1) for the text's own; without it no reading has Read this */
   onRead?: (index: number) => void;
 }
 
-function Sheet({ shown, reference, place, verse, lang, onLook, onClose, onAsk, onRead }: SheetProps) {
+function Sheet({ shown, reference, place, verse, lang, onLook, onClose, onRead }: SheetProps) {
   const { drag, handle } = useSheetDrag(onClose);
   const [openSource, setOpenSource] = useState<string | null>(null);
   useEscapeToClose(onClose);
@@ -333,17 +331,12 @@ function Sheet({ shown, reference, place, verse, lang, onLook, onClose, onAsk, o
             {WORD_ORDER_ONLY}
           </p>
         ) : null}
-        {onAsk ? (
-          <button type="button" onClick={onAsk} className="mt-2 min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium active:bg-line">
-            Ask the tutor
-          </button>
-        ) : null}
       </div>
     </div>
   );
 }
 
-/** The sheet, drawn over everything. `place` is the unit's book, chapter and verse (Go deeper is left out without it). `verse` and `onLook` make the words of the readings Taps. `onAsk` is left out when the tutor is not allowed (no licence): the button is then not drawn. */
+/** The sheet, drawn over everything. `place` is the unit's book, chapter and verse (Go deeper is left out without it). `verse` and `onLook` make the words of the readings Taps. */
 export function VariantSheet(props: SheetProps) {
   return createPortal(<Sheet {...props} />, document.body);
 }

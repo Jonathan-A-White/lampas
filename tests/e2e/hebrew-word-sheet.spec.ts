@@ -95,9 +95,9 @@ test('the sheet of וַיְהִי in Jonah 1:1 has the Paradigm row, Help with t
   const term = sheet.getByTestId('sheet-parse').getByRole('button', { name: 'Verb', exact: true });
   await expect(term).toBeVisible();
 
-  // Help with this word: Grammar, Syllables and sounds, Ask the tutor
+  // Help with this word: Grammar, Syllables and sounds
   const help = sheet.getByRole('group', { name: 'Help with this word', exact: true });
-  for (const name of ['Grammar', 'Syllables and sounds', 'Ask the tutor']) {
+  for (const name of ['Grammar', 'Syllables and sounds']) {
     const button = help.getByRole('button', { name });
     await button.scrollIntoViewIfNeeded();
     await expect(button).toBeVisible();

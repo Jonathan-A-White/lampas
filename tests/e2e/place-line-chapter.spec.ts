@@ -119,7 +119,7 @@ async function openFromLine(page: Page) {
   await expect(view.getByRole('heading', { name: `Mark 12, Mark 12:1-${LAST}` })).toBeVisible();
   await expect(view.locator('[data-passage-verse]')).toHaveCount(LAST);
   const row = view.getByRole('group', { name: 'Actions', exact: true });
-  for (const name of ['Listen', 'Read it aloud', 'Ask the tutor', 'Practise']) {
+  for (const name of ['Listen', 'Read it aloud', 'Practise']) {
     await expect(row.getByRole('button', { name, exact: true })).toBeVisible();
   }
   // Copy and Share are words of the tools line under the text (mw-5r3p30.896)

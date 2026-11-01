@@ -27,12 +27,11 @@ Never claim a change the list does not have. For a setting the app does not have
 - `copyReference` — Copy: reference. Where Copy puts the reference, such as Colossians 3:1 (MSB): After, the default; Before; or Off. Value: "after", "before", "off".
 - `copyNumbers` — Copy: verse numbers. Number each verse of a passage or chapter; a single verse never is.
 - `copyLink` — Copy: link. End with the https link that opens it in Lampas; Share sends the link too.
-- `immersiveReader` — Immersive reader. While you read, the top and the Talk bar slide away.
+- `immersiveReader` — Immersive reader. While you read, the top slides away.
 - `immersiveHint` — Immersive reader card. A small card on the text that says how to bring the bars back.
 - `readSpan` — Play to. Play goes on from here. To hear less, tap a verse, a section heading or the place line. Value: "book" (End of the book), "bible" (End of the Bible).
 - `readLessons` — Read lessons to me. A lesson reads itself aloud when it opens; the words stay on screen.
 - `readTutor` — Read the tutor's responses aloud. The tutor's answers and reading verdicts are spoken as they arrive.
-- `askBy` — Ask by. How Ask the tutor opens: Speaking: shows the big Hold to ask bar, with Type a question beneath it. Typing: shows the text box and Send first, with a small mic beside them to speak instead. Speaking by default. You can also ask the tutor to switch it: say "let me type" or "switch back to speaking". Value: "speaking", "typing".
 - `talk` — Talk. Hold the bar to speak, or tap to start and stop. Value: "hold", "tap".
 - `send` — Send. Sent when you let go, or kept in the box to fix. Value: "release" (On release), "button" (By button).
 - `hebrewDepth` — Hebrew in the tutor. How the tutor writes a Hebrew word: its sound, the letters, or both. Value: "transliteration", "both" (Hebrew and transliteration), "full".

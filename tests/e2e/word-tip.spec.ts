@@ -53,7 +53,7 @@ test('a touch long-press on a word says it, selects no text and raises no menu o
   expect(style.select).toBe('none');
 });
 
-test('the first tap on a word shows the tip once; Got it keeps it away; the sheet has Ask the tutor, and it opens the tutor holding the word', async ({ page }) => {
+test('the first tap on a word shows the tip once; Got it keeps it away; the floating ? over the sheet opens the tutor holding the word', async ({ page }) => {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: GRAMMAR_HELP_ANSWER };
   await routePostern(page, fake);
@@ -66,14 +66,9 @@ test('the first tap on a word shows the tip once; Got it keeps it away; the shee
   await expect(tip).toContainText('Long-press a word to hear it');
   const got = tip.getByRole('button', { name: 'Got it' });
   expect((await got.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
-  const ask = sheet.getByRole('button', { name: 'Ask the tutor' });
-  // the tip is wholly in view and the Ask the tutor button is in reach without scrolling the sheet (with the tip up, the facts' box is
-  // a little shorter, so the button's last pixels wait under the fold until he scrolls or dismisses the tip)
+  // the tip is wholly in view; the sheet has no Ask the tutor of its own (the floating ? is the one door, mw-5r3p30.882)
   await expect(tip).toBeInViewport({ ratio: 1 });
-  await expect(ask).toBeInViewport({ ratio: 0.7 });
-  const box = await ask.boundingBox();
-  expect(box?.height).toBeGreaterThanOrEqual(43.5);
-  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
+  await expect(sheet.getByRole('button', { name: 'Ask the tutor', exact: true })).toHaveCount(0);
   const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
   expect(fits.w).toBeLessThanOrEqual(fits.c);
   await shot(page, 'word-tip');

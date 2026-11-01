@@ -73,7 +73,6 @@ async function open(): Promise<void> {
 const FIRST = 'αὐτός';
 const strip = () => screen.getByTestId('new-words');
 const sheet = () => screen.getByRole('dialog', { name: 'New word' });
-const talkSheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const nfc = (s: string): string => s.normalize('NFC');
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
@@ -139,8 +138,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
         expect(within(sheet()).getByTestId('teach-form')).toHaveTextContent(parse);
       },
     );
-    And('the teach sheet has the buttons Got it, I know this, Not now and Ask the tutor, each at least 48 px tall', () => {
-      for (const name of ['Got it', 'I know this', 'Not now', 'Ask the tutor']) {
+    And('the teach sheet has the buttons Got it, I know this and Not now, each at least 48 px tall', () => {
+      for (const name of ['Got it', 'I know this', 'Not now']) {
         const button = within(sheet()).getByRole('button', { name, exact: true });
         expect(button.className, name).toContain('min-h-12');
       }
@@ -259,18 +258,4 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
-  Scenario('Ask the tutor opens the Talk sheet on that word', ({ When, And, Then }) => {
-    When('he taps New words', openSheet);
-    And('he taps Ask the tutor on the teach sheet', async () => {
-      await user.click(within(sheet()).getByRole('button', { name: 'Ask the tutor', exact: true }));
-    });
-    Then('the teach sheet is gone and the Talk sheet is titled {string}', async (_, title: string) => {
-      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'New word' })).toBeNull());
-      expect(talkSheet()).toHaveAccessibleName(title);
-    });
-    And('the grist carries a question that names {string}', async (_, lemma: string) => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(nfc(String(fake.received[0].input.question))).toContain(nfc(lemma));
-    });
-  });
 });

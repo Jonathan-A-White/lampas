@@ -1,4 +1,4 @@
-// tests/unit/talk-through-pause.test.tsx — a hold with a pause in it yields the whole sentence, on the Talk sheet's bar and in Ask the tutor (mw-06ggew.7, replacing
+// tests/unit/talk-through-pause.test.tsx — a hold with a pause in it yields the whole sentence, on the Talk sheet's bar (mw-06ggew.7, replacing
 // talk-pause-no-restart.test.tsx, which asserted the old path: Lampas's own copy did not start the recogniser again after Android ended it on a pause and recorded the rest).
 // Every bar is voice-kit's now (TalkBar through src/talk/useTalkHold.ts, and the Composer), listening through voice-kit's throughPauses default: the recogniser Android ends
 // on a 3 s silence is started again at once, the words heard before it are kept, and the words after it follow, all in the turn that is sent. The recogniser is
@@ -6,8 +6,6 @@
 import 'fake-indexeddb/auto';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AskComposer } from '../../src/Ask';
-import type { Verse } from '../../src/data/chapter';
 import { forgetSpoken, wasSpoken } from '../../src/speech/spoken';
 import { HeldTalkBar } from '../../src/talk/Bars';
 import { useTalkHold } from '../../src/talk/useTalkHold';
@@ -128,19 +126,8 @@ describe('the Talk sheet\'s bar (voice-kit TalkBar over useTalkHold) through a 3
   });
 });
 
-describe('Ask the tutor (voice-kit Composer with LAMPAS_TALK_SETTINGS) through a 3 s pause in one hold', () => {
+describe('the Talk sheet\'s Composer (voice-kit, LAMPAS_TALK_SETTINGS)', () => {
   it('uses the same settings as the Talk bar: hold to talk, the words go on release', () => {
     expect(LAMPAS_TALK_SETTINGS).toEqual({ talk: 'hold', send: 'release' });
-  });
-
-  it('starts the recogniser again after it ends and asks the whole sentence', async () => {
-    const verse = { n: 1, g: [{ t: 'Τεκνία' }], e: [{ t: 'My little children' }] } as unknown as Verse;
-    const asked: string[] = [];
-    render(<AskComposer book="1jn" chapter={2} verse={verse} state={undefined} onAsk={(_verse, question) => asked.push(question)} />);
-    await pass(100);
-    const held = await holdThroughPause(screen.getByRole('button', { name: 'Hold to ask' }), 'why does Paul say', 'all things to all people');
-    expect(FakeRecognizer.instances).toHaveLength(1);
-    expect(held.startFn).toHaveBeenCalledTimes(2);
-    expect(asked).toEqual(['why does Paul say all things to all people']);
   });
 });

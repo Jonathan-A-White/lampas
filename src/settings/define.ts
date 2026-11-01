@@ -24,7 +24,6 @@ export type SectionId =
   | 'handwriting'
   | 'readAloud'
   | 'readTutor'
-  | 'askBy'
   | 'talk'
   | 'hebrew'
   | 'voices'

@@ -57,10 +57,3 @@ Feature: Quiz me in the Verse view
     And the sheet shows 1 turn
     And the mill received one grist for the lampas app, kind bible-talk, in quiz mode about "Romans 8:1-11"
 
-  Scenario: An ordinary talk about a verse is not in quiz mode
-    Given Lampas is opened on Romans 8 with a quiz behind a fake Postern
-    When he taps the number of verse 11
-    And he chooses "Ask the tutor"
-    And he taps "Talk about verse 11"
-    And he sends "Why this word?"
-    Then the mill received one grist for the lampas app, kind bible-talk, not in quiz mode

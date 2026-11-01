@@ -60,8 +60,9 @@ describe('the tutor offer goes through sendToMakers', () => {
     });
   });
 
-  it('is the only way to the makers from the Talk sheet and the Verse view\'s Ask: neither calls it, and neither draws a Send to the makers button', () => {
-    for (const file of ['src/Talk.tsx', 'src/Ask.tsx', 'src/VerseView.tsx']) {
+  it('is the only way to the makers from the Talk sheet, the one place the tutor is asked (the Verse view\'s Ask is gone, mw-5r3p30.882): neither it nor the Verse view calls it or draws a Send to the makers button', () => {
+    expect(existsSync('src/Ask.tsx'), 'src/Ask.tsx').toBe(false);
+    for (const file of ['src/Talk.tsx', 'src/VerseView.tsx']) {
       const text = readFileSync(file, 'utf8');
       expect(text, file).not.toMatch(/\bsendToMakers\b|Send to the makers|SendToMakers/);
     }
