@@ -48,7 +48,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `tutor-aloud` | The tutor's answers read aloud, the source words in their own voice | tutor-aloud | hebrew-speech | gap |
 | `tutor-word` | A source word in the tutor's answer: drawn in its face, tappable, said, its guide, Add to my words | bible-talk | hebrew-speech, hebrew-talk, hebrew-tutor | gap |
 | `voice-settings` | The language's voice and speed rows in Settings, shown from its dial's Curious | greek-voice-test, pronunciation | pronunciation | gap |
-| `voice-test` | Hear and switch the voice from Settings: the name of the voice in use and Test | greek-voice-test | gap | gap |
+| `voice-test` | Hear and switch the voice from Settings: the name of the voice in use and Test | greek-voice-test | hebrew-voice-test | gap |
 | `pronunciation` | The respelling of a word in the chosen pronunciation, the one family setting and each language on its own | pronunciation-progress, pronunciation, voice-respelling-agree | pronunciation | gap |
 | `ipa-course` | The IPA course: the optional lesson on the symbols of the sounds, behind a setting | ipa-course | hebrew-ipa-course | gap |
 | `sound-lessons` | Hard sounds: optional lessons on the sounds his English makes hard, with Try it and the pair drill | hard-sounds, pair-drill, roll-r, try-it | gap | gap |
@@ -88,7 +88,6 @@ The table names, for each use case and language, the feature files with a scenar
 Each line is one backfill story: its acceptance criterion is the named `@hebrew` scenario passing (and the registry row turned to `has`). Sizes: XS a scenario over code that already does it, S a scenario and one module, M new content or a new module.
 
 <!-- hebrew-gaps -->
-- `voice-test` (Hear and switch the voice from Settings: the name of the voice in use and Test): scenario "Test under the Hebrew voice says a Hebrew word in the voice in use" in a new features/hebrew-voice-test.feature; src/settings/controls/voice.tsx (GreekVoiceInUse drawn for one language: take the language), src/speech/greek.ts voiceInUse/testGreekVoice by language; S
 - `sound-lessons` (Hard sounds: optional lessons on the sounds his English makes hard, with Try it and the pair drill): scenario "The Goal lists the Hebrew hard sounds for his accent and opens one" in a new features/hebrew-hard-sounds.feature; a lesson file per sound (het, ayin, resh, tsade) in src/hardSounds/lessons.ts keyed by the Israeli scheme’s sound ids, src/hardSounds/ and the Goal’s Optional section by the Hebrew dial (src/GoalScreen.tsx); M
 - `handwriting` (Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills): scenario "Write it on Alef traces its strokes" in features/hebrew-letters.feature; stroke data for the 27 glyphs beside the Greek ones in src/handwriting/, the Write it part of a Hebrew letter sheet and the drill’s Write it questions (src/data/grammar/hebrew/letterQuestions.ts), Settings > Handwriting drills shown by either dial (src/settings/registry.ts); M
 - `pictures` (Memory pictures on the teach sheet and in the talk): scenario "The teach sheet of a Hebrew word with a picture shows it" in features/hebrew-words.feature; a picture per Hebrew seed lemma under public/pictures/ and its row in the pictures index (docs/pictures.md says where), credited in ATTRIBUTION.md; S

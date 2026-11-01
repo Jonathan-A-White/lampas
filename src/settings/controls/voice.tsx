@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type PlayTo, type VoiceLanguage } from '../../data/repositories';
-import { hasVoice, noVoiceHelp, speaksLanguage, testGreekVoice, useSpeakingKey, useVoices, voiceInUse, voiceKey, VOICE_TEST_KEY, warmVoices } from '../../speech/greek';
+import { hasVoice, noVoiceHelp, speaksLanguage, testVoice, useSpeakingKey, useVoices, voiceInUse, voiceKey, VOICE_TEST_KEY, warmVoices } from '../../speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP, type SettableLanguage } from '../../speech/languages';
 import { ACCENTS } from '../../speech/accents';
 import { pronunciationOf, pronunciationsOf, type GreekPronunciation, type PronunciationLanguage } from '../../speech/pronunciation';
@@ -58,34 +58,36 @@ function VoicePicker({ language, label, lang, saved }: { language: VoiceLanguage
   );
 }
 
-/** Under the Greek voice picker (mw-5r3p30.357): the name of the voice the Greek is said in now (the one he picked, or the phone's own pick) and Test, which
- * says πατήρ then ἀγάπη in it, as Tap to hear says a word, so he hears whether the stress falls where the respelling puts it; a second tap stops it. */
-function GreekVoiceInUse({ saved }: { saved: string | null }) {
+/** Under the Greek and the Hebrew voice picker (mw-5r3p30.357, .909): the name of the voice the language is said in now (the one he picked, or the phone's own
+ * pick) and Test, which says πατήρ then ἀγάπη in Greek, or שָׁלוֹם in Hebrew, as Tap to hear says a word, so he hears whether the stress falls where the
+ * respelling puts it; a second tap stops it. */
+function VoiceInUse({ language, saved }: { language: 'greek' | 'hebrew'; saved: string | null }) {
+  const name = language === 'greek' ? 'Greek' : 'Hebrew';
   const listed = useVoices();
   const speaking = useSpeakingKey() === VOICE_TEST_KEY;
   const [help, setHelp] = useState<string | null>(null);
   useEffect(() => void warmVoices(), []);
-  const voice = voiceInUse(listed, 'greek', saved);
+  const voice = voiceInUse(listed, language, saved);
   const none = listed.length > 0 && !voice;
-  const test = () => setHelp(testGreekVoice() === 'no-voice' ? noVoiceHelp() : null);
+  const test = () => setHelp(testVoice(language) === 'no-voice' ? noVoiceHelp(language) : null);
   return (
-    <div data-testid="greek-voice-in-use" className="mt-2">
+    <div data-testid={`${language}-voice-in-use`} className="mt-2">
       <p role="status" className="text-base">
         {voice ? (
           <>
             In use: <span className="font-medium">{voice.name}</span>
           </>
-        ) : none || hasVoice('greek') === false ? (
-          noVoiceHelp()
+        ) : none || hasVoice(language) === false ? (
+          noVoiceHelp(language)
         ) : (
-          'In use: the phone’s own Greek voice'
+          `In use: the phone’s own ${name} voice`
         )}
       </p>
       {none ? null : (
         <button
           type="button"
           onClick={test}
-          aria-label={speaking ? 'Stop the test' : 'Test the Greek voice'}
+          aria-label={speaking ? 'Stop the test' : `Test the ${name} voice`}
           className="mt-2 min-h-12 min-w-24 rounded-xl border border-line px-4 text-base font-medium text-fg"
         >
           {speaking ? 'Stop' : 'Test'}
@@ -212,7 +214,7 @@ export const VoiceControl: Control = ({ row }) => {
   return (
     <SettingRow row={row}>
       {saved !== undefined ? <VoicePicker language={language} label={row.label} lang={lang} saved={saved} /> : null}
-      {saved !== undefined && language === 'greek' ? <GreekVoiceInUse saved={saved} /> : null}
+      {saved !== undefined && (language === 'greek' || language === 'hebrew') ? <VoiceInUse language={language} saved={saved} /> : null}
     </SettingRow>
   );
 };
