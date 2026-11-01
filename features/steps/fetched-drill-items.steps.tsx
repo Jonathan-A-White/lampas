@@ -52,6 +52,7 @@ const IDEA = 'declension-2';
 /** The prompt the scenarios give the item the mill writes. */
 const MILL_PROMPT = 'Tap the second declension noun';
 const romans8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+const oneJohn1 = JSON.parse(readFileSync('public/data/1jn/1.json', 'utf8')) as Chapter;
 const genesis1 = JSON.parse(readFileSync('public/data/gen/1.json', 'utf8')) as Chapter;
 
 let fake: FakePostern;
@@ -473,6 +474,32 @@ describeFeature(feature, ({ Scenario }) => {
     And('Prove it asked no question he had been asked before', () => {
       expect(shown.length).toBeGreaterThan(0);
       expect(shown.filter((sig) => seenBefore.has(sig))).toEqual([]);
+    });
+  });
+
+  Scenario('Prove it does not prove an idea whose built top step holds one question', ({ Given, When, Then, And }) => {
+    const CONJUNCTION = 'conjunction';
+    let result: unknown;
+    Given('he has never drilled the conjunction and 1 John 1 has one verse with a single conjunction', async () => {
+      await freshPhone();
+      const steps = drillSteps(CONJUNCTION, { passage: [oneJohn1], seed: PROVE_SEED });
+      expect(steps[steps.length - 1].questions).toHaveLength(1);
+      expect(await listSeen(CONJUNCTION)).toEqual([]);
+    });
+    When('he starts Prove it on the conjunction over 1 John 1', () => {
+      cleanup();
+      drillSeed.next = () => PROVE_SEED;
+      result = undefined;
+      render(<DrillItScreen ideaId={CONJUNCTION} mode="prove" passage={[oneJohn1]} onResult={(r) => (result = r)} onClose={() => undefined} />);
+    });
+    Then('Prove it tells him that fresh questions are not there yet', async () => {
+      expect(await screen.findByTestId('drill-more-on-the-way')).toHaveTextContent('More questions are on their way');
+      expect(screen.queryByTestId('grammar-prompt')).toBeNull();
+      expect(screen.queryByTestId('drill-result')).toBeNull();
+    });
+    And('the conjunction is not proved on the one question it has', async () => {
+      expect(result).toBeUndefined();
+      expect(await db.grammarLevels.get(CONJUNCTION)).toBeUndefined();
     });
   });
 

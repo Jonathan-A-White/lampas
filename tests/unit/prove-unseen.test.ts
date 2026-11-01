@@ -5,6 +5,7 @@ import '@testing-library/react/dont-cleanup-after-each';
 import { Utils } from '@bsv/sdk';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { createElement } from 'react';
+import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { Chapter } from '../../src/data/chapter';
@@ -169,6 +170,62 @@ describe('Prove it', () => {
     await screen.findByTestId('grammar-prompt');
     expect(screen.queryByTestId('drill-more-on-the-way')).toBeNull();
   });
+});
+
+// The conjunction over 1 John 1 has one verse with a single conjunction, so its built top step holds ONE question: a proof needs PROVED_STREAK (2), and the walk asked that one twice and proved on it
+// (his feedback 2026-11-01, mw-indx1x6.5). The rule of 'the steps hold too few' holds whether or not he has been asked anything yet.
+describe('Prove it on an idea whose built top step holds one question', () => {
+  const SHORT = 'conjunction';
+  const noop = () => undefined;
+  const walkSteps = () => drillSteps(SHORT, { passage: [chapter], seed: SEED });
+  const sig = (prompt: string, options: readonly string[]) => `${prompt}|${options.join('|')}`;
+  const open = (onResult: (r: unknown) => void = noop) => render(createElement(DrillItScreen, { ideaId: SHORT, mode: 'prove', passage: [chapter], onResult, onClose: noop }));
+  const keptOnShort = (): GrammarQuestion[] => [
+    { kind: 'tap-form', ideaId: SHORT, prompt: 'Which word joins the two halves of this verse?', options: ['καὶ', 'ἡμῶν', 'τῆς', 'ζωῆς'], right: 'καὶ', ref: '1 John 1:2' },
+    { kind: 'tap-form', ideaId: SHORT, prompt: 'Which word is the conjunction here?', options: ['καὶ', 'Θεὸς', 'φῶς', 'ἐστιν'], right: 'καὶ', ref: '1 John 1:5' },
+  ];
+
+  it('has a built top step of one question, which is too few to prove on', () => {
+    const steps = walkSteps();
+    expect(steps[steps.length - 1].questions).toHaveLength(1);
+    expect(enoughToProve(steps)).toBe(false);
+  });
+
+  it('says more questions are on their way and ends no walk when nothing is kept, the first time he drills it', async () => {
+    const onResult = vi.fn();
+    open(onResult);
+    expect(await screen.findByTestId('drill-more-on-the-way')).toHaveTextContent('More questions are on their way');
+    expect(screen.queryByTestId('grammar-prompt')).toBeNull();
+    expect(screen.queryByTestId('drill-result')).toBeNull();
+    expect(onResult).not.toHaveBeenCalled();
+  });
+
+  it('makes up the number from the kept questions: no question is asked twice and the idea is proved on two different ones', async () => {
+    await saveFetchedItems(keptOnShort());
+    const onResult = vi.fn();
+    open(onResult);
+    const all = [...walkSteps().flatMap((s) => s.questions), ...keptOnShort()];
+    const user = userEvent.setup();
+    const shownKeys: string[] = [];
+    for (let guard = 0; guard < 20 && !screen.queryByTestId('drill-result'); guard += 1) {
+      await screen.findByTestId('grammar-prompt');
+      const prompt = prompt_();
+      const options = [...document.querySelectorAll<HTMLElement>('[data-option]')].map((o) => o.textContent ?? '');
+      shownKeys.push(sig(prompt, options));
+      const right = all.find((q) => sig(q.prompt, q.options) === sig(prompt, options))?.right;
+      expect(right, `the right option of ${prompt}`).toBeDefined();
+      await user.click([...document.querySelectorAll<HTMLElement>('[data-option]')].find((o) => o.textContent === right) as HTMLElement);
+      await user.click(await screen.findByTestId('drill-next'));
+    }
+    expect(await screen.findByTestId('drill-result')).toBeInTheDocument();
+    expect(onResult).toHaveBeenCalledWith(expect.objectContaining({ proved: true }));
+    expect(new Set(shownKeys).size).toBe(shownKeys.length);
+    expect(await countFetchedItems(SHORT)).toBe(0);
+  });
+
+  function prompt_(): string {
+    return document.querySelector('[data-testid="grammar-prompt"]')?.textContent ?? '';
+  }
 });
 
 describe('asking ahead', () => {

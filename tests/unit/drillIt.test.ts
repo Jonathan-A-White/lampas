@@ -7,6 +7,7 @@ import {
   answer,
   currentQuestion,
   drillSteps,
+  enoughToProve,
   resultOf,
   start,
   type DrillQuestion,
@@ -95,6 +96,17 @@ describe('the steps of an idea', () => {
     for (const id of ['noun', 'case-genitive', 'article', 'preposition-dia']) {
       for (const q of drillSteps(id, { passage: PASSAGE, seed: 4 }).flatMap((s) => s.questions)) expect(q.ideaId).toBe(id);
     }
+  });
+});
+
+describe('an idea whose passage holds one question for its top step (mw-indx1x6.5)', () => {
+  it('has a top step of one question over 1 John 1 for the conjunction, which is not enough to prove on, and the walk would ask it again', () => {
+    const steps = drillSteps('conjunction', { passage: [jn1], seed: 1 });
+    expect(steps[steps.length - 1].questions).toHaveLength(1);
+    expect(enoughToProve(steps)).toBe(false);
+    // the kit takes the same card again when none is left: the engine alone repeats it, which is why Drill it refuses to start on such a step
+    const { asked } = run(begin('conjunction', 1, [jn1]), () => ({ right: true }));
+    expect(new Set(asked.map((q) => q.key)).size).toBeLessThan(asked.length);
   });
 });
 
