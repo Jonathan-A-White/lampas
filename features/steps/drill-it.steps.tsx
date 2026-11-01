@@ -11,7 +11,8 @@ import { loadChapter, type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { drillSteps, type DrillQuestion } from '../../src/data/grammar/drillIt';
 import { PLAN_KIND, PROVE_ID, rowId } from '../../src/data/grammar/drillPlan';
-import { getDrillPlan } from '../../src/data/repositories';
+import { getDrillPlan, saveFetchedItems } from '../../src/data/repositories';
+import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { LADDER, ideaOf } from '../../src/data/grammar/ladder';
 import { DAY, STEP_DAYS } from '../../src/data/schedule';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
@@ -64,6 +65,7 @@ async function open(goal: string, levels: Record<string, Start>): Promise<void> 
   clearBus();
   vi.unstubAllGlobals();
   taught = [];
+  kept = [];
   firstMissed = undefined;
   randomSpy?.mockRestore();
   randomSpy = undefined;
@@ -91,7 +93,8 @@ async function open(goal: string, levels: Record<string, Start>): Promise<void> 
   for (const [title, start] of Object.entries(levels)) {
     if (start !== 'none') await db.grammarLevels.put({ id: idOfTitle(title), level: start, since: now, how: 'placement' });
   }
-  passage = [await loadChapter('1jn', 1)];
+  // 1 John 2: the noun's top step holds three questions there, so Drill it can prove it; over 1 John 1 it holds one (mw-indx1x6.5)
+  passage = [await loadChapter('1jn', 2)];
   await seedHisWords();
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -122,8 +125,8 @@ function questionOnScreen(ideaId: string, dialog: HTMLElement = drillDialog(), s
   const prompt = within(dialog).getByTestId('grammar-prompt').textContent ?? '';
   const form = within(dialog).queryByTestId('grammar-form')?.textContent ?? '';
   const options = Array.from(dialog.querySelectorAll('[data-option]')).map((o) => o.textContent ?? '');
-  let found: DrillQuestion | undefined;
-  for (const seed of [seeds].flat()) {
+  let found: DrillQuestion | undefined = kept.find((q) => q.prompt === prompt && q.options.join('|') === options.join('|'));
+  for (const seed of found ? [] : [seeds].flat()) {
     found = drillSteps(ideaId, { passage, seed })
       .flatMap((s) => s.questions)
       .find((q) => q.prompt === prompt && (q.form ?? '') === form && q.options.join('|') === options.join('|'));
@@ -169,6 +172,8 @@ let randomSpy: { mockRestore: () => void } | undefined;
 let randomSeen: number[] = [];
 const reviewSeeds = (): number[] => randomSeen.slice(0, 6).map((v) => Math.floor(v * 0x100000000));
 let matchedSeed = SEED;
+/** The questions the mill kept for the noun in a scenario (the step that keeps them): Drill it asks them, so they are found among what is on screen. */
+let kept: DrillQuestion[] = [];
 const shortDialog = () => screen.getByRole('dialog', { name: 'Short drill' });
 
 /** Answers the short drill on screen until its result shows: every question right or every one wrong. `seeds` are the ones its questions may have been drawn from. */
@@ -696,6 +701,12 @@ describeFeature(feature, ({ Scenario }) => {
     Then(GOAL_SAYS, goalSays);
     When('another day passes and he starts a Review round', startsReview);
     Then("Review's first card is now the plan step {string} of {string}", firstCard);
+    And('the mill has kept two fresh questions on {string}, for the drills he has done have used up the built ones he has not seen', async (_, id: string) => {
+      const options = ['ἀρχῆς', 'λόγου', 'ζωῆς', 'ὀφθαλμοῖς'];
+      const made = ['Which word is the first noun, fresh?', 'Which word is the second noun, fresh?'].map((prompt, i): GrammarQuestion => ({ kind: 'tap-form', ideaId: id, prompt, options, right: options[i + 1], ref: '1 John 2:1' }));
+      await saveFetchedItems(made);
+      kept = made.map((q) => ({ ...q, facet: { id, label: ideaOf(id).title }, step: 1, key: q.prompt }) as DrillQuestion);
+    });
     When('he starts the drill on the card and answers every question right until Drill it ends', async () => {
       await user.click(screen.getByRole('button', { name: 'Start Prove it', exact: true }));
       await screen.findByRole('dialog', { name: 'Drill it' });
