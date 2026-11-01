@@ -20,6 +20,7 @@ const WHY = {
   LICENCE: "asserts that a phone with no licence draws none of the old controls (and that one with a licence does); the door's own licence tests are tests/unit/tutor-door.test.tsx and tests/e2e/tutor-door.spec.ts",
   TEXT: "names a label only (a doc or label test), clicks nothing",
   DOORS: "compares every old door of the tutor (the Talk bar, the round ?, the Verse view's two buttons) with the others; C2 reshapes it to the two doors that remain",
+  ONCE: "counts the older round button beside the floating ? and finds none where the floating ? is the Tutor door (mw-5r3p30.935); C2 deletes the older button and these assertions with it",
 } as const;
 
 const files = (why: keyof typeof WHY, names: string[]): Record<string, string> => Object.fromEntries(names.map((name) => [name, WHY[why]]));
@@ -125,6 +126,10 @@ export const OLD_CONTROL_UNDER_TEST: Record<string, string> = {
   'tests/unit/demo-module-splits-doc.test.ts',
   'tests/unit/demo-shared-composer-doc.test.ts',
   'tests/unit/talk-settings.test.tsx',
+  ]),
+  ...files('ONCE', [
+  'tests/e2e/floating-tutor-once.spec.ts',
+  'tests/unit/tutor-door-once.test.tsx',
   ]),
   ...files('DOORS', [
   'tests/unit/tutor-doors.test.tsx',
