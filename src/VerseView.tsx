@@ -9,7 +9,7 @@
 // Practise (mw-5r3p30.899, src/practise/) is a door: Copywork, Narration, Dictation, Summary and Quiz, in Susan Wise Bauer's order. Dictation (mw-5r3p30.900) hides the verse in this view's text box until his page is judged. Narration (mw-5r3p30.901) shows the verse in English there and its foot is a hold bar he tells it back into; Copywork and Dictation can then work on his written-down narration in its place. Copywork shows the verse to copy in the script he picks, in this view's text box
 // in place of the Reader's text, and its foot is Take a photo / Try again; the Quiz (mw-5r3p30.74, once the action Quiz me) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
 // Diagram (mw-souyao.3, offered only for one verse, mw-5r3p30.895) has no foot: its pane (src/diagram/DiagramPane.tsx) is drawn under the row, and a tapped word of it opens the Reader's WordSheet through `onLook`.
-// The Reader's Talk bar is not drawn while the view is open, so two bars never stack. The chosen action is kept (src/verse/action.ts); the
+// The Reader has no Talk bar (mw-5r3p30.882); the floating ? is the one tutor door, over the view. The chosen action is kept (src/verse/action.ts); the
 // arrows go to the verse before and the verse after, across a chapter's end. The action bodies draw their bar into `slot`, the foot of the view.
 // A section heading opens the same view for its passage (mw-5r3p30.73): `verse` is then the passage as one Verse (src/data/passage.ts: `n` its
 // first verse, `to` its last), the title is the heading and its range, every action but Diagram (a diagram is of one verse) works on the whole passage, and the arrows go to the passage

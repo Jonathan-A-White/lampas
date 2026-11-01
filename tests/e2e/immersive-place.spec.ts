@@ -180,7 +180,7 @@ test('it is small and dim, and covers none of the text', async ({ page }) => {
 
 // The foot of the Reader with the bars away (mw-5r3p30.473): the place line, the reading bar (Pause, Restart, Stop) and the round Ask button all keep the floor
 // of a three-button bar (48 px, src/index.css --lp-bar-inset), because Android Chrome does not always report the navigation bar. Upright and sideways,
-// with the Talk bar drawn (a licensed phone) and without it.
+// licensed and not (the Reader's Talk bar went, mw-5r3p30.882).
 const FLOOR = 48;
 const VIEWPORTS = [
   { name: '390x844', width: 390, height: 844 },
@@ -246,9 +246,9 @@ for (const licensed of [true, false]) {
 }
 
 // A two-finger cycle must not move the text (mw-5r3p30.472): the box changes size when the bars come and go, and the text stays where it is, so the end of
-// the chapter still reads 100% (it read 99% after a cycle, 22 px short). At the top, the middle and the end of Mark 12, with the Talk bar drawn and without.
+// the chapter still reads 100% (it read 99% after a cycle, 22 px short). At the top, the middle and the end of Mark 12, licensed and not.
 for (const licensed of [true, false]) {
-  test(`two two-finger cycles leave the text where it was and the end of Mark 12 at 100%, ${licensed ? 'with' : 'without'} the Talk bar`, async ({ page }) => {
+  test(`two two-finger cycles leave the text where it was and the end of Mark 12 at 100%, ${licensed ? 'licensed' : 'free'}`, async ({ page }) => {
     await (licensed ? openUnlocked(page) : openUnlicensed(page));
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
@@ -290,7 +290,7 @@ for (const licensed of [true, false]) {
 
 // Coming back to the Reader at a scrolled place keeps the bars as he left them (mw-5r3p30.471): the Reader puts the saved place back, and that is not
 // him scrolling down, so with the bars shown (a two-finger tap) Settings and then '‹ Reader' leaves them shown and draws no place line; the same
-// place after a reload keeps them shown. Licensed (with the Talk bar) and not.
+// place after a reload keeps them shown. Licensed and not.
 for (const licensed of [true, false]) {
   test(`with the bars shown on a scrolled Mark 12, Settings and then ‹ Reader and a reload keep them shown, ${licensed ? 'licensed' : 'free'}`, async ({ page }) => {
     await (licensed ? openUnlocked(page) : openUnlicensed(page));

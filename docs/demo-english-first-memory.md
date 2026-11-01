@@ -39,7 +39,7 @@ tap to reload"), a licence (the AI is part of what is checked) and a connection 
 
 ## One gentle offer, and a remembered no
 
-1. In the Reader tap a verse number, choose **Ask the tutor** in the verse sheet, then tap **Talk about verse N**.
+1. In the Reader tap a verse number, then tap the floating **?** (the tutor's one door): the Talk sheet opens on the verse (**Talk about verse N**).
 2. Ask what a word really means, for example "What does the word for 'love' really mean here?". The answer comes in plain
    English with no Greek words in it and, under it, ONE line as a button, such as "Show me the Greek word" (it is the only
    offer in this talk).

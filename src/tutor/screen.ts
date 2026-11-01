@@ -191,7 +191,7 @@ const SUGGESTIONS: Record<string, string[]> = {
 /** The two or three questions the sheet opens with on the screen `name`; none for a name it does not know. */
 export const suggestionsFor = (name: string): string[] => SUGGESTIONS[name] ?? SUGGESTIONS[Object.values(SCREEN_NAMES).find((n) => n.toLowerCase() === name) ?? ''] ?? [];
 
-/** The questions for the Reader's chapter talk (the Reader's own button and Talk bar). */
+/** The questions for the Reader's chapter talk (the floating ? over the Reader). */
 export const READER_SUGGESTIONS: string[] = [
   'What is this chapter about?',
   "What's the simplest verse in this chapter for me to learn first, given where I am?",

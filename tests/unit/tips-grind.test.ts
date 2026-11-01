@@ -59,7 +59,7 @@ describe('the input schema', () => {
 });
 
 describe('the answer schema and isTipAnswer', () => {
-  const tip = { id: 'try-talk', title: 'Ask about a verse', body: 'Hold the Talk bar and say what puzzles you about the verse.' };
+  const tip = { id: 'try-talk', title: 'Ask about a verse', body: 'Tap the ? and say what puzzles you about the verse.' };
   const good: unknown[] = [
     { tip: null },
     { tip },

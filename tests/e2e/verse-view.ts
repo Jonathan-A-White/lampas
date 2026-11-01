@@ -18,7 +18,7 @@ export async function chooseAction(page: Page, n: number, action: 'Listen' | 'Re
   return view;
 }
 
-/** Opens the Bible talk about verse `n`: its Verse view open, a two-finger tap (openTutor, tests/e2e/open-tutor.ts) opens the tutor about the verse the view shows. */
+/** Opens the Bible talk about verse `n`: its Verse view open, a tap on the floating ? (openTutor, tests/e2e/open-tutor.ts) opens the tutor about the verse the view shows. */
 export async function openTalkAbout(page: Page, n: number): Promise<void> {
   await openVerseView(page, n);
   await openTutor(page, { sheet: /^Talk about / });

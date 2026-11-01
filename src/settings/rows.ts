@@ -105,7 +105,7 @@ export const groupOf = (section: SectionId): SettingsGroup => groupIn(GROUPS, se
 export type SettingsRow = KitRow<SectionId> & {
   /** the row sets how the tutor works (the AI: what is sent to the mill): with no licence it is drawn off and greyed, with 'Needs a licence' (mw-8m9dyu.3) */
   ai?: boolean;
-  /** the row is not drawn at all without a licence, not even greyed: the Tutor door and Hand rows (mw-5r3p30.880: with no licence no tutor door exists, "none of it should show up") */
+  /** the row is not drawn at all without a licence, not even greyed: the Hand row (mw-5r3p30.880: with no licence no tutor door exists, "none of it should show up") */
   licenceOnly?: boolean;
 };
 

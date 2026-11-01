@@ -1,8 +1,8 @@
-// src/immersive.ts — the Immersive reader (Settings > Immersive reader, mw-5r3p30.120). With it On, the Reader's header, row of chips, Talk bar and
-// round Ask button slide away while he scrolls the text down, as a browser's address bar does (not when the Reader puts his saved place back). After that the bars change ONLY on a two-finger tap
+// src/immersive.ts — the Immersive reader (Settings > Immersive reader, mw-5r3p30.120). With it On, the Reader's header, row of chips and
+// foot bars slide away while he scrolls the text down, as a browser's address bar does (not when the Reader puts his saved place back). After that the bars change ONLY on a two-finger tap
 // on the text: shown if away, away if shown (mw-5r3p30.255, his words: "2 fingers on, 2 fingers off"). Nothing else brings them back: not
 // scrolling up (mw-5r3p30.227), not the end of the chapter or scrolling past it, not a sheet closing, not reading aloud stopping. A three-finger tap
-// does nothing. Where the Tutor door is the two-finger tap (mw-5r3p30.880, src/tutor/door.ts) that tap also opens the tutor, and on the text it only brings the bars back, never puts them away. No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
+// does nothing. The two-finger tap opens no tutor (mw-5r3p30.882: the floating ? is the one door, src/tutor/door.ts). No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
 // sliding.
 //
 // With Turn pages nothing scrolls (src/reader/usePages.ts): turning to the next page is what scrolling down is, and puts the bars away (mw-5r3p30.611: the

@@ -1,5 +1,5 @@
 // tests/e2e/hold-bar.spec.ts — Postern's hold-to-talk bar (src/cockpit/TalkLineScreen.tsx: h-24 w-full max-w-xl rounded-3xl,
-// a mic over the label) is the one hold control of the Talk sheet, the reader's foot Talk bar and the Verse view's foot bar. Layout is only provable in a browser; phone width 360 x 740.
+// a mic over the label) is the one hold control of the Talk sheet, and the Verse view's foot bar (the reader's foot Talk bar went, mw-5r3p30.882). Layout is only provable in a browser; phone width 360 x 740.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { GREEK_READING_ANSWER, makeFakePostern, READING_ANSWER, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';

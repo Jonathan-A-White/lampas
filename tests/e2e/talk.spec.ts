@@ -21,7 +21,7 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the Talk bar sits at the bottom of the reader and opens a sheet that fits the phone', async ({ page }) => {
+test('the floating ? is on screen at the reader and opens a sheet that fits the phone', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: TALK_ANSWER };

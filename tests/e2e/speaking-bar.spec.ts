@@ -18,28 +18,32 @@ async function openRomans8(page: Page) {
 
 const bar = (page: Page) => page.getByRole('region', { name: 'Speaking', exact: true });
 
-test('Listen on a verse shows the bar above the Talk bar, 44 px buttons, over no text and clear of the Ask the tutor button', async ({ page }) => {
+test('Listen on a verse shows the bar at the foot, 44 px buttons, over no text and clear of the floating ?', async ({ page }) => {
   await openRomans8(page);
   await page.locator('[data-verse="3"]').getByRole('button', { name: 'Hear the verse', exact: true }).click();
   await expect(bar(page)).toBeVisible();
   await expect(bar(page).getByRole('button')).toHaveText(['Pause', 'Restart', 'Stop']);
 
   const box = await bar(page).boundingBox();
-  const talk = await page.locator('[data-talk-bar]').boundingBox();
   const main = await page.locator('[data-reader]').boundingBox();
   expect(box && box.x >= 0 && box.x + box.width <= PHONE.width).toBe(true);
-  // in flow, between the reading box and the Talk bar: it covers no text
+  // in flow, under the reading box: it covers no text (no Talk bar is under it any more, mw-5r3p30.882)
   expect(box && main && main.y + main.height <= box.y + 1).toBe(true);
-  expect(box && talk && box.y + box.height <= talk.y + 1).toBe(true);
   for (const name of ['Pause', 'Restart', 'Stop']) {
     const b = await bar(page).getByRole('button', { name, exact: true }).boundingBox();
     expect(b?.height).toBeGreaterThanOrEqual(43.5);
     expect(b?.width).toBeGreaterThanOrEqual(43.5);
     expect(b && b.x >= 0 && b.x + b.width <= PHONE.width).toBe(true);
   }
-  // the round Ask the tutor button rides above the bar, not over its buttons
-  const ask = await page.locator('[data-ask-tutor]').boundingBox();
-  expect(ask && box && ask.y + ask.height <= box.y + 1).toBe(true);
+  // the floating ? is drawn once and covers none of the bar's buttons
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(1);
+  const ask = await page.locator('[data-floating-tutor]').boundingBox();
+  expect(ask).not.toBeNull();
+  for (const name of ['Pause', 'Restart', 'Stop']) {
+    const b = await bar(page).getByRole('button', { name, exact: true }).boundingBox();
+    const apart = !ask || !b || ask.x + ask.width <= b.x || b.x + b.width <= ask.x || ask.y + ask.height <= b.y || b.y + b.height <= ask.y;
+    expect(apart).toBe(true);
+  }
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   await shot(page, 'speaking-bar');

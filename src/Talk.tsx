@@ -749,7 +749,7 @@ export function TalkSheet({ scope, talkRef: ref, state, suggestions, shared, onS
   }, [turns]);
   // Closing the sheet takes its answer's speech with it; an answer that waits for his return keeps its bar (mw-5r3p30.323).
   useEffect(() => () => stopAnswerSpeech(), []);
-  // The words of a hold that did not end in a release (a slide off the Talk bar, the recogniser failing) wait in the field, unsent (src/talk/keptWords.ts).
+  // The words of a hold that did not end in a release (a slide off the Talk sheet's bar, the recogniser failing) wait in the field, unsent (src/talk/keptWords.ts).
   const composer = useRef<HTMLDivElement>(null);
   // a swipe that starts on Hold to talk is no hold (mw-5r3p30.930)
   useEffect(() => (composer.current ? holdBackSwipes(composer.current) : undefined), []);
