@@ -12,7 +12,9 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { LicenceContext, type LicenceDetail, type LicenceState } from '../../src/gate/licenceContext';
 import { ideaOf } from '../../src/data/grammar/ladder';
+import type { Candidate } from '../../src/data/frontier';
 import { IdeaSheet } from '../../src/IdeaSheet';
+import { TeachSheet, type NewWordAsk } from '../../src/TeachSheet';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { showSettingsGroup } from '../support/settings-pages';
 import { setCurrentLicence } from '../../src/services/licenceNow';
@@ -289,6 +291,58 @@ describe('the lesson (idea) sheet', () => {
     twoFingerTap();
     expect(document.querySelector('[data-floating-tutor]')).toBeNull();
     expect(screen.queryByRole('dialog', { name: /Ask the tutor: / })).toBeNull();
+  });
+});
+
+describe('the teach sheet (the new word)', () => {
+  const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+  // a word of the chapter, as the 'New N' chip offers it (src/data/frontier.ts Candidate)
+  const word = chapter.verses.find((v) => v.n === 9)!.g.find((w) => w.l.normalize('NFC') === 'αὐτός')!;
+  const candidate: Candidate = { strongs: 'G846', lemma: 'αὐτός', gloss: 'it/s/he', count: 5000, verses: chapter.verses.filter((v) => v.g.some((w) => w.l.normalize('NFC') === 'αὐτός')).map((v) => v.n) };
+  // The Reader's own target is under the sheet (src/Reader.tsx opens the Talk sheet about the chapter or verse, at z-10, under this sheet at z-20): the ? must not reach it
+  const reader = vi.fn();
+  const render1 = (onAsk: ((ask: NewWordAsk) => void) | undefined, onClose: () => void, licence: LicenceState = 'licensed') =>
+    render(
+      <Phone licence={licence}>
+        <FloatingTutor />
+        <Screen ask={licence === 'licensed' ? reader : undefined} />
+        <TeachSheet chapter={chapter} title="Romans 8" candidates={[candidate]} solid={new Set()} onClose={onClose} onShowVerse={() => undefined} onAsk={onAsk} />
+      </Phone>,
+    );
+
+  beforeEach(() => reader.mockClear());
+
+  it('has no Ask the tutor of its own, and the floating ? closes it and asks about its word (mw-5r3p30.949)', async () => {
+    expect(word).toBeTruthy();
+    const order: string[] = [];
+    const asked: NewWordAsk[] = [];
+    const user = userEvent.setup();
+    render1(
+      (ask) => {
+        order.push('ask');
+        asked.push(ask);
+      },
+      () => order.push('close'),
+    );
+    await screen.findByRole('dialog', { name: 'New word' });
+    expect(screen.queryByRole('button', { name: 'Ask the tutor' })).toBeNull();
+    await user.click(await screen.findByRole('button', { name: FLOATING }));
+    expect(reader).not.toHaveBeenCalled();
+    expect(asked).toHaveLength(1);
+    expect(asked[0]).toMatchObject({ lemma: 'αὐτός', gloss: 'it/s/he' });
+    expect(chapter.verses.find((v) => v.n === asked[0].verse)?.g.some((w) => w.l.normalize('NFC') === 'αὐτός')).toBe(true);
+    // the sheet closes first, so the Talk opens in the commit the sheet closes in
+    expect(order).toEqual(['close', 'ask']);
+  });
+
+  it('draws no ? and asks nothing on a phone with no licence', async () => {
+    const asked: NewWordAsk[] = [];
+    render1(undefined, () => undefined, 'not-licensed');
+    await screen.findByRole('dialog', { name: 'New word' });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(document.querySelector('[data-floating-tutor]')).toBeNull();
+    expect(openDoorTarget()).toBe(false);
+    expect(asked).toEqual([]);
   });
 });
 

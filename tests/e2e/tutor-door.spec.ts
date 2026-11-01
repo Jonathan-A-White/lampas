@@ -94,6 +94,26 @@ test('Floating ?: over the Verse view and over a word sheet, and a tap on a shee
   await expect(talk.locator('[data-turn]')).toContainText(GRAMMAR_HELP_ANSWER.answer);
 });
 
+test('Floating ?: on the teach sheet it closes the sheet and the tutor opens in front, asking about the new word (mw-5r3p30.949)', async ({ page }) => {
+  await openReader(page);
+  await keepHand(page, 'right');
+  await page.getByTestId('new-words').click();
+  const teach = page.getByRole('dialog', { name: 'New word', exact: true });
+  await expect(teach).toBeVisible();
+  await expect(teach.getByRole('button', { name: 'Ask the tutor', exact: true })).toHaveCount(0);
+  await expect(floating(page)).toBeVisible();
+  await shot(page, 'tutor-door-floating-teach-sheet');
+  await floating(page).click();
+  await expect(teach).toHaveCount(0);
+  const talk = page.getByRole('dialog', { name: /^Talk about Romans 8:/ });
+  await expect(talk).toBeVisible();
+  // the Talk sheet is in front: what is at its centre is inside it, not under another sheet
+  const centre = (await talk.boundingBox())!;
+  expect(await talk.evaluate((el, { x, y }) => el.contains(document.elementFromPoint(x, y)), { x: centre.x + centre.width / 2, y: centre.y + centre.height / 2 })).toBe(true);
+  await expect(talk.locator('[data-turn]').first()).toContainText('αὐτός');
+  await shot(page, 'tutor-door-teach-sheet-talk');
+});
+
 test('A two-finger tap opens nothing tutor-ish: it goes into immersive reading, where the ? is not drawn, and out again', async ({ page }) => {
   await openReader(page);
   await expect(floating(page)).toBeVisible();

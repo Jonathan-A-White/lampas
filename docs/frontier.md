@@ -89,7 +89,7 @@ A tap opens the teach sheet (`src/TeachSheet.tsx`, dialog 'New word') on the fir
   Reader to that verse and closes the sheet;
 - **Got it**: `teachWord(lemma, gloss, 'got-it')` puts the word on the list as learning, lesson 0, `source: 'frontier'`, on the schedule at
   step 0 and due now; **I know this**: the same word solid, at the 30-day step; **Not now**: skipped for today only (`src/data/skipped.ts`, in
-  memory, forgotten at midnight, nothing in Dexie); **Ask the tutor**: the Talk sheet on the verse, with `newWordQuestion` sent.
+  memory, forgotten at midnight, nothing in Dexie); the floating **?** over the sheet (it has no button of its own): the sheet closes and the Talk sheet opens on the verse, with `newWordQuestion` sent (the sheet registers its word as the door's target, mw-5r3p30.949).
 - Each answer shows the next candidate; the sheet closes when none is left. `frontier-taught` {lemma, outcome} goes on the bus (docs/events.md).
 
 Words lists the words taken here under 'From my reading' (`source: 'frontier'`, lesson 0).

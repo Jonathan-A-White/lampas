@@ -258,4 +258,24 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
+  Scenario('The floating ? on the teach sheet closes it and opens the Talk sheet on that word', ({ When, And, Then }) => {
+    When('he taps New words', openSheet);
+    And('he taps the floating ? on the teach sheet', async () => {
+      expect(within(sheet()).queryByRole('button', { name: 'Ask the tutor' })).toBeNull();
+      await user.click(await screen.findByRole('button', { name: 'Ask the tutor about what is on screen', exact: true }));
+    });
+    Then('the teach sheet is gone and the Talk sheet is titled {string}', async (_, title: string) => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'New word' })).toBeNull());
+      expect(screen.getByRole('dialog', { name: /^Talk about / })).toHaveAccessibleName(title);
+    });
+    And('the Talk sheet is on top of the screen', () => {
+      // jsdom has no layout (tests/e2e/tutor-door.spec.ts proves it is in front); here nothing modal is left over it
+      expect(screen.queryByRole('dialog', { name: 'New word' })).toBeNull();
+      expect(screen.getAllByRole('dialog', { name: /^Talk about / })).toHaveLength(1);
+    });
+    And('the grist carries a question that names {string}', async (_, lemma: string) => {
+      await waitFor(() => expect(fake.received).toHaveLength(1));
+      expect(nfc(String(fake.received[0].input.question))).toContain(nfc(lemma));
+    });
+  });
 });

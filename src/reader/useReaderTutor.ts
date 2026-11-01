@@ -1,7 +1,7 @@
 // src/reader/useReaderTutor.ts — the Reader's tutor wiring (docs/module-map.md R1b): which Talk sheet is open and what it is about, and every way
 // the Reader asks the tutor: Help with this word (helpWithWord), a grammar term
-// (askAboutTerm), and the Verse view's Quiz me (openQuiz); with the request another screen made
-// (the Quick test's ask), met once as the Reader opens. helpWithWord and askAboutTerm differ only in the question
+// (askAboutTerm), the teach sheet's new word (askAboutNewWord, the floating ? over it) and the Verse view's Quiz me (openQuiz); with the request another screen made
+// (the Quick test's ask), met once as the Reader opens. helpWithWord, askAboutTerm and askAboutNewWord differ only in the question
 // they build: askFrom is the one place that opens the sheet on the verse and sends it.
 // The refs the Reader's effects share are passed in, never copied: `openTalkRef` (the conversation the sheet is open on, which useTalk's
 // callback reads) is the Reader's, and this hook keeps it current.
@@ -14,6 +14,7 @@ import { publish } from '../events/bus';
 import { pendingReturn, takeReturn, watchReturn, type ReaderRequest } from '../nav/readerRequest';
 import {
   helpQuestion,
+  newWordQuestion,
   quizMeQuestion,
   scopeRef,
   scopeTitle,
@@ -23,6 +24,7 @@ import {
   type WordFocus,
 } from '../services/talk';
 import { speakWord } from '../speech/greek';
+import type { NewWordAsk } from '../TeachSheet';
 import type { UseTalk } from '../useTalk';
 import type { TermAsk, WordHelp } from '../WordSheet';
 
@@ -36,6 +38,7 @@ export interface ReaderTutor {
   setTalkAbout(about: number | null | undefined): void;
   helpWithWord(help: WordHelp): void;
   askAboutTerm(ask: TermAsk): void;
+  askAboutNewWord(ask: NewWordAsk): void;
   openQuiz(): void;
   /** the quiz of the unit the Verse view shows has a turn or a message on its way: the button then says Continue */
   quizStarted: boolean;
@@ -143,6 +146,11 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     (ask: TermAsk) => askFrom(ask.verse, (scope) => ({ question: termQuestion(ask.term, scopeTitle(scope)), focus: { term: ask.term, kind: 'grammar-term' } })),
     [askFrom],
   );
+  // The teach sheet's new word (the floating ? over it): the verse the sheet shows it in.
+  const askAboutNewWord = useCallback(
+    (ask: NewWordAsk) => askFrom(ask.verse, (scope) => ({ question: newWordQuestion(ask.lemma, ask.gloss, scopeTitle(scope)) })),
+    [askFrom],
+  );
   // Quiz me: the quiz about the unit the view shows is begun when it has no turn yet and nothing is on its way; the button then says Continue.
   const quizKey = viewUnit ? scopeRef(BOOK, CHAPTER, { verse: viewUnit, quiz: true }) : null;
   const quizTurns = useLiveQuery(() => (quizKey ? listTurns(quizKey) : Promise.resolve([])), [quizKey]);
@@ -157,5 +165,5 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     }
   }, [chapter, viewUnit, quizKey, quizTurns, states, say, TITLE]);
 
-  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, openQuiz, quizStarted };
+  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, askAboutNewWord, openQuiz, quizStarted };
 }
