@@ -4,8 +4,11 @@
 // (Learn, Not now) until he has finished it or dismissed it. A tap on a word reports the Lookup the Reader's own WordSheet opens (English: the word's chunk, fromEnglish;
 // Greek: that Greek word). When the tutor could not (no answer, or a tree that broke THE RULE twice) it says so and why and offers Try again. The pane is keyed by the
 // unit and the mode (src/VerseView.tsx), so a switch of the Reader's view is a new pane that asks for the new mode; a Redraw keeps the picture beneath it until the new one comes.
+// BY SENTENCE (mw-5r3p30.897): Diagram on a verse draws the sentence the verse belongs to (src/diagram/sentence.ts): Ephesians 1:5 draws 1:3-14 as one, a verse of two sentences draws two, stacked, each
+// with its own kept diagram, Redraw and caption ('Ephesians 1:3-14, one sentence'). The pane is the stack; SentenceDiagram is one sentence's.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useState } from 'react';
+import { isOneVerse } from '../data/passage';
 import type { Chapter, Verse } from '../data/chapter';
 import { getStudyResources } from '../data/repositories';
 import type { WovenVerse } from '../data/weave';
@@ -15,12 +18,16 @@ import { armFallback } from '../resources/openApp';
 import { TutorError } from '../services/tutor';
 import { useElapsed } from '../ui/useElapsed';
 import { ReedKellogg } from './ReedKellogg';
-import { diagramReference } from './request';
+import { diagramReference, sentenceCaption, sentenceVerses } from './request';
+import { loadSentenceTable, loadedSentenceTable, sentenceEnds, sentencesAt, type Sentence } from './sentence';
 import { fetchDiagram, type DiagramResult } from './fetchDiagram';
 import { keepInviteDismissed, lessonInvited } from './lesson';
 import { diagramLogosLinks } from './logosLinks';
 import type { DiagramMode, DiagramWord } from './types';
 import { weaveDiagramWords } from './weave';
+
+// the table of sentence ends is fetched as the app starts, so the first Diagram does not wait for it
+void loadSentenceTable();
 
 const WORKING_LINE = 'Working it out…';
 const FAILED_LINE = 'The tutor could not diagram this verse';
@@ -87,7 +94,7 @@ function Working() {
 
 export interface DiagramPaneProps {
   chapter: Chapter;
-  /** the Verse view's verse, or its passage as one Verse (`to` set) */
+  /** the Verse view's verse (a passage, `to` set, is drawn whole: nothing offers Diagram on one now, mw-5r3p30.895) */
   verse: Verse;
   view: DiagramMode;
   /** the Reader's Weave of each verse of the chapter, in step with `chapter.verses`; an English diagram draws the words it shows in Greek in Greek. null: not woven (off, or the Greek view) */
@@ -96,12 +103,66 @@ export interface DiagramPaneProps {
   onLook: (lookup: Lookup) => void;
 }
 
+/** The pane: the sentence(s) the Verse view's verse belongs to, one diagram each, stacked. */
 export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPaneProps) {
-  // keyed by the unit's numbers, not the object, so a Reader that rebuilds the Verse does not ask again
   const { n, to } = verse;
+  const [table, setTable] = useState(loadedSentenceTable);
+  useEffect(() => {
+    if (table) return;
+    let live = true;
+    void loadSentenceTable().then((t) => live && setTable(t));
+    return () => {
+      live = false;
+    };
+  }, [table]);
+  // a passage (nothing offers Diagram on one) is drawn whole, as it was before sentences
+  const sentences = useMemo<Sentence[] | null>(() => {
+    if (!table) return null;
+    if (!isOneVerse({ n, to })) {
+      const verses = unitVerses(chapter, { n, to });
+      return [{ parts: verses.map((v) => ({ verse: v.n, from: 0, to: v.g.length - 1 })) }];
+    }
+    return sentencesAt(chapter, n, sentenceEnds(chapter, table));
+  }, [table, chapter, n, to]);
+  if (!sentences) {
+    return (
+      <section aria-label="Diagram" data-diagram-pane className="flex flex-col gap-2">
+        <Working />
+      </section>
+    );
+  }
+  return (
+    <section aria-label="Diagram" data-diagram-pane className="flex flex-col gap-6">
+      {sentences.map((sentence, k) => (
+        <SentenceDiagram
+          key={`${sentence.parts[0].verse}.${sentence.parts[0].from}`}
+          chapter={chapter}
+          sentence={sentence}
+          caption={sentenceCaption(chapter, sentence, k, sentences.length, n)}
+          first={k === 0}
+          view={view}
+          woven={woven}
+          onLook={onLook}
+        />
+      ))}
+    </section>
+  );
+}
+
+interface SentenceDiagramProps extends Omit<DiagramPaneProps, 'verse'> {
+  sentence: Sentence;
+  caption: string | null;
+  /** the first of the stack: only it carries the invitation to the lesson */
+  first: boolean;
+}
+
+/** One sentence: asked for (or kept), worked out, drawn, redrawable. */
+function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLook }: SentenceDiagramProps) {
   // an Old Testament chapter read in its source language (the Reader's 'greek' view) is diagrammed in its Hebrew (mw-5r3p30.887)
   const mode: DiagramMode = chapter.lang === 'hbo' && view === 'greek' ? 'hebrew' : view;
-  const verses = useMemo(() => unitVerses(chapter, { n, to }), [chapter, n, to]);
+  const verses = useMemo(() => sentenceVerses(chapter, sentence), [chapter, sentence]);
+  const n = verses[0].n;
+  const reference = caption ?? diagramReference(chapter, verses);
   // each ask is one run: Redraw and Try again start another
   const [run, setRun] = useState({ n: 0, redraw: false });
   const [drawn, setDrawn] = useState<Drawn | null>(null);
@@ -116,7 +177,7 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
   };
   useEffect(() => {
     const stop = new AbortController();
-    fetchDiagram(chapter, verses, mode, { redraw: run.redraw, signal: stop.signal }).then(
+    fetchDiagram(chapter, verses, mode, { redraw: run.redraw, signal: stop.signal, sentence }).then(
       (result) => {
         if (stop.signal.aborted) return;
         if (result.ok) setDrawn(result);
@@ -130,7 +191,7 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
       },
     );
     return () => stop.abort();
-  }, [chapter, verses, mode, run]);
+  }, [chapter, verses, mode, run, sentence]);
 
   // the words as the Weave shows them: the tree is the English one, so a change of Weave redraws with no new ask
   const words = useMemo(
@@ -139,9 +200,10 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
   );
 
   return (
-    <section aria-label="Diagram" data-diagram-pane className="flex flex-col gap-2">
+    <div data-diagram-sentence className="flex flex-col gap-2">
+      {caption ? <p className="px-1 text-sm text-muted" data-diagram-caption>{caption}</p> : null}
       {working ? <Working /> : null}
-      {drawn && words && problem === null && invited ? (
+      {drawn && words && problem === null && invited && first ? (
         <div className="flex flex-col gap-2 rounded-xl border border-line p-3" data-testid="diagram-invitation">
           <p className="text-base">{INVITATION_LINE}</p>
           <div className="grid grid-cols-2 gap-3">
@@ -167,7 +229,7 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
             diagram={drawn.diagram}
             words={words}
             mode={mode}
-            reference={diagramReference(chapter, verses)}
+            reference={reference}
             onWord={(index) => {
               const look = lookupOfWord(verses, words[index]);
               if (look) onLook(look);
@@ -207,6 +269,6 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
           <SeeItInLogos chapter={chapter} n={n} />
         </>
       ) : null}
-    </section>
+    </div>
   );
 }

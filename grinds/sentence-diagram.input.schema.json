@@ -10,7 +10,7 @@
   ],
   "properties": {
     "ref": {
-      "description": "The verse or passage, such as 'Colossians 3:1' or 'Colossians 3:1-2'.",
+      "description": "The sentence's verses, such as 'Colossians 3:1' or 'Ephesians 1:3-14' (a sentence runs across verses); a sentence that is part of a verse adds its words' places, 'John 2:4 [2:4.0-2:4.8]'.",
       "type": "string",
       "minLength": 1,
       "maxLength": 60
@@ -92,7 +92,6 @@
         "additionalProperties": false,
         "required": [
           "text",
-          "lemma",
           "parse"
         ],
         "properties": {
@@ -103,7 +102,7 @@
             "maxLength": 60
           },
           "lemma": {
-            "description": "Its dictionary form.",
+            "description": "Its dictionary form; left out of a long sentence, to keep the request small.",
             "type": "string",
             "minLength": 1,
             "maxLength": 60

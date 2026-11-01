@@ -11,7 +11,7 @@ export const MAX_CREDITS_BYTES = 5800;
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The New Testament\'s Greek, aligned to the English', licence: 'Public domain', link: 'https://majoritybible.com' },
   { name: 'Berean Standard Bible', use: 'The Old Testament\'s Hebrew (WLC), aligned to the English', licence: 'Public domain', link: 'https://berean.bible/licensing.htm' },
-  { name: 'byztxt', use: 'The variant readings', licence: 'Public domain', link: 'https://github.com/byztxt/byzantine-majority-text' },
+  { name: 'byztxt', use: 'The variant readings and sentence ends', licence: 'Public domain', link: 'https://github.com/byztxt/byzantine-majority-text' },
   { name: 'Byzantine Priority', use: 'Robinson\'s essay, read on the Preface', licence: 'Public domain', link: 'https://byzantinetext.com/study/editions/robinson-pierpont/' },
   { name: 'TBESG', use: 'Each Greek word\'s lemma, gloss, definition', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'TBESH', use: 'Each Hebrew word\'s headword, gloss, definition', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
