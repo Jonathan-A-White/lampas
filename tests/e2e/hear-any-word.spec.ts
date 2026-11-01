@@ -6,10 +6,10 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { holdFor } from '../support/hold';
-import { typeQuestion } from './ask-composer';
+import { talkField } from './talk-field';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { chooseAction } from './verse-view';
+import { openTalkAbout } from './verse-view';
 import { asSpoken } from '../support/lone-word';
 
 test.use({ viewport: { width: 412, height: 915 } });
@@ -28,10 +28,11 @@ async function openAnswer(page: Page) {
   await page.clock.install();
   await openUnlocked(page);
   await page.goto('/');
-  await chooseAction(page, 28, 'Ask the tutor');
-  await typeQuestion(page, 'Where does righteousness come from?');
-  // the answer is the Talk sheet's (mw-5r3p30.842)
-  const card = page.getByRole('dialog', { name: /^Talk about / }).locator('[data-turn]');
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: /^Talk about / });
+  await (await talkField(sheet)).fill('Where does righteousness come from?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  const card = sheet.locator('[data-turn]');
   await expect(card).toContainText('ἀγαθόν');
   // the answer is read aloud when it arrives: only what the press adds counts
   await page.waitForTimeout(300);

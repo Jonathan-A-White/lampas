@@ -1,16 +1,15 @@
-// tests/e2e/talk-settings.spec.ts — Settings > Talk (mw-06ggew.8): Talk Hold | Tap and Send On release | By button, kept on the device, read live by Ask the tutor.
-// At 390 x 844 he switches to Tap and By button in Settings and the Ask the tutor bar changes: Hold to ask becomes Tap to ask, and the hint under it says the words wait in the box.
+// tests/e2e/talk-settings.spec.ts — Settings > Talk (mw-06ggew.8): Talk Hold | Tap and Send On release | By button, kept on the device, read live by the Talk sheet.
+// At 390 x 844 he switches to Tap and By button in Settings and the Talk sheet's bar changes: Hold to talk becomes Tap to talk.
 import { expect, test } from '@playwright/test';
 import { honestMic } from '../support/honest-fakes';
 import { leaveSettings, openGroup } from './settings-group';
-import { askBar, composerOf } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { chooseAction } from './verse-view';
+import { openTalkAbout } from './verse-view';
 
 const VIEWPORT = { width: 390, height: 844 };
 
-test('Settings > The tutor > Talk: Tap and By button change the Ask the tutor bar, and stay after a reload', async ({ page }) => {
+test('Settings > The tutor > Talk: Tap and By button change the Talk sheet bar, and stay after a reload', async ({ page }) => {
   await page.setViewportSize(VIEWPORT);
   await honestMic(page);
   await openUnlocked(page);
@@ -39,10 +38,10 @@ test('Settings > The tutor > Talk: Tap and By button change the Ask the tutor ba
   await page.reload();
   await expect(page.getByRole('group', { name: 'Talk', exact: true }).getByRole('button', { name: 'Tap', exact: true })).toHaveAttribute('aria-pressed', 'true');
 
-  // the Ask the tutor bar reads them: Tap to ask, and the words wait in the box
+  // the Talk sheet's bar reads them: Tap to talk
   await leaveSettings(page);
   await expect(page.locator('[data-verse="28"]')).toBeVisible();
-  await chooseAction(page, 28, 'Ask the tutor');
-  await expect(askBar(page)).toHaveText('Tap to ask');
-  await expect(composerOf(page)).toContainText('The words wait in the box for you to fix, then Send.');
+  await openTalkAbout(page, 28);
+  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
+  await expect(sheet.getByRole('button', { name: 'Tap to talk' })).toBeVisible();
 });

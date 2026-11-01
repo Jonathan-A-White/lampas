@@ -9,16 +9,15 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { setReaderView, setWeave } from '../../src/data/repositories';
 import { applyRequestStatus, keepRequest, type StatusRecord, type RequestStatus } from '../../src/data/repositories/requests';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { messageBox, typeQuestion } from '../../tests/support/composer';
+import { messageBox } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
-import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { openTutor } from './open-tutor';
 
 afterAll(() => {
@@ -101,8 +100,6 @@ function expectOne(sent: Awaited<ReturnType<typeof requestsSent>>, summary: stri
   const { field, value } = detailOf(detail);
   expect(sent).toEqual([{ summary, status, ...(field && value ? { [field]: value } : {}) }]);
 }
-
-const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 
 const feature = await loadFeature('features/tutor-requests.feature');
 

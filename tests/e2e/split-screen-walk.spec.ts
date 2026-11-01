@@ -7,7 +7,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER, type FakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic, honestSpeech } from '../support/honest-fakes';
-import { composerOf, typeQuestion } from './ask-composer';
+import { openTutor } from './open-tutor';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout, openVerseView } from './verse-view';
@@ -268,11 +268,11 @@ const SCREENS: { name: string; walk: Walk }[] = [
       await honestSpeech(page, { msPerWord: 400 });
       await page.goto('/#/?c=8&view=english&weave=off');
       await page.locator('[data-heading]', { hasText: 'Walking by the Spirit' }).getByRole('button').click();
-      const view = page.getByRole('region', { name: 'Verse view' });
-      await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
-      await expect(composerOf(page)).toBeVisible();
-      await typeQuestion(page, 'What does called mean?');
-      await expect(page.getByRole('dialog', { name: /^Talk about / }).locator('[data-turn]')).toContainText(SYNERGEI_ANSWER.answer);
+      await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+      const sheet = await openTutor(page, { sheet: /^Talk about / });
+      await (await talkField(sheet)).fill('What does called mean?');
+      await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+      await expect(sheet.locator('[data-turn]')).toContainText(SYNERGEI_ANSWER.answer);
     },
   },
   {

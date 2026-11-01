@@ -28,9 +28,6 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
-const FORM = 'συνεργεῖ';
-const LEMMA = 'συνεργέω';
-const PARSE = 'verb, present active indicative, 3rd person singular';
 let fake: FakePostern;
 
 async function open(hash: string, round?: unknown, settings: Record<string, string> = {}): Promise<void> {

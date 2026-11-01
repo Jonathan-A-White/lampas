@@ -3,9 +3,10 @@ import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { askBar, composerOf, questionField } from './ask-composer';
+import { talkField } from './talk-field';
+import { openTutor } from './open-tutor';
 import { honestMic } from '../support/honest-fakes';
-import { chooseAction } from './verse-view';
+import { openVerseView } from './verse-view';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: Page) {
@@ -18,7 +19,7 @@ async function expectFitsPhone(page: Page) {
   expect(scrollTop).toBe(0);
 }
 
-test('the composer of the Verse view on verse 28 sends the question and the Talk sheet shows the answer, at phone width', async ({ page, context }) => {
+test('the floating ? over verse 28 opens the Talk sheet, a typed question is sent and the sheet shows the answer, at phone width', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
@@ -26,15 +27,11 @@ test('the composer of the Verse view on verse 28 sends the question and the Talk
   await honestMic(page);
   await openUnlocked(page);
   await page.goto('/');
-  await chooseAction(page, 28, 'Ask the tutor');
-
-  const box = page.getByRole('region', { name: 'Ask the tutor' });
-  await expect(box).toBeInViewport();
-  // one big bar, and Type a question beneath it; no Ask button
-  await expect(askBar(page)).toHaveText('Hold to ask');
-  await expect(box.getByRole('button', { name: 'Ask', exact: true })).toHaveCount(0);
-  const field = await questionField(page);
-  const ask = composerOf(page).getByRole('button', { name: 'Send', exact: true });
+  await openVerseView(page, 28);
+  const sheet = await openTutor(page, { sheet: 'Talk about Romans 8:28' });
+  await expect(sheet).toBeInViewport();
+  const field = await talkField(sheet);
+  const ask = sheet.getByRole('button', { name: 'Send', exact: true });
   await expect(ask).toHaveCount(0);
   await field.fill('What does συνεργεῖ mean here?');
   await expect(ask).toBeEnabled();
@@ -49,12 +46,10 @@ test('the composer of the Verse view on verse 28 sends the question and the Talk
   await shot(page, 'ask');
 
   await ask.click();
-  // the answer is the Talk sheet's (mw-5r3p30.842): the Verse view's Ask sends the question to the one tutor
-  const card = page.getByRole('dialog', { name: /^Talk about / }).locator('[data-turn]');
+  const card = sheet.locator('[data-turn]');
   await expect(card).toContainText(SYNERGEI_ANSWER.answer);
   // the explained word's lemma in the words list (the answer's own text has the Greek too, as words to tap)
   await expect(card.locator('dl').getByText('συνεργέω', { exact: true })).toBeVisible();
-  await expect(askBar(page)).toBeEnabled();
   await expect(card).toBeInViewport();
   await expectFitsPhone(page);
   expect(fake.received).toHaveLength(1);

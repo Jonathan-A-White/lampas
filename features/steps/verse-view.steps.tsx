@@ -18,8 +18,8 @@ import { getReading, stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { holdBarsIn } from '../../tests/support/composer';
-import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
-import { type StubbedMic, stubMic } from '../../tests/support/fake-mic';
+import { stubRecognizer } from '../../tests/support/fake-recognizer';
+import { stubMic } from '../../tests/support/fake-mic';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
@@ -34,10 +34,8 @@ afterAll(() => {
 const ROMANS_8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as { verses: { n: number; e: { t: string }[] }[] };
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
-const AT = { clientX: 100, clientY: 700 };
 let fake: FakePostern;
 let synth: FakeSynth | undefined;
-let mic: StubbedMic | undefined;
 let copied: string[] = [];
 
 interface Options {
@@ -61,7 +59,7 @@ async function open(weave: 'off' | 'solid', { speaks = false, tutor = false, mic
   synth = speaks ? stubSpeech([GREEK_VOICE, ENGLISH_VOICE]) : undefined;
   // Ask the tutor's composer shows its Hold to ask bar only on a phone with a recogniser
   if (tutor || !hears) stubRecognizer();
-  mic = hears ? stubMic() : undefined;
+  if (hears) stubMic();
   stubChapterFetch();
   const chapterFetch = globalThis.fetch;
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
@@ -96,11 +94,6 @@ const bar = () => {
   expect(bars()).toHaveLength(1);
   return bars()[0];
 };
-/** The words he has said so far, as the composer shows them above the bar while he holds ('Listening…' and 'Starting the mic…' come before the first). */
-const askLive = (): string => {
-  const said = within(viewEl()).queryByTestId('live-transcript')?.textContent ?? '';
-  return said === 'Listening…' || said === 'Starting the mic…' ? '' : said;
-};
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 const feature = await loadFeature('features/verse-view.feature');
@@ -113,22 +106,6 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const headed = async (_: unknown, reference: string) => {
     await waitFor(() => expect(within(viewEl()).getByRole('heading', { name: reference })).toBeInTheDocument());
-  };
-  const saysAndLetsGo = async (_: unknown, words: string) => {
-    await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
-    await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(0));
-    act(() => {
-      FakeRecognizer.last().open();
-      FakeRecognizer.last().say([result(words, false)]);
-    });
-    await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
-  };
-  // the Verse view's Ask goes to the Talk sheet's tutor (mw-5r3p30.842): the answer, its wait and its failure are the sheet's
-  const sheetOf = (): Promise<HTMLElement> => screen.findByRole('dialog', { name: /^Talk about / });
-  const answerShows = async () => {
-    const dialog = await sheetOf();
-    await waitFor(() => expect(dialog.querySelectorAll('[data-turn]')).toHaveLength(1));
-    expect(dialog.querySelector('[data-turn]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
   };
   const closed = () => waitFor(() => expect(queryView()).toBeNull());
   const back = async () => {

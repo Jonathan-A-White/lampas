@@ -1,4 +1,4 @@
-// tests/e2e/floating-tutor-once.spec.ts — the tutor door is drawn once (mw-5r3p30.935). His screenshots of 2026-10-31: with the Tutor door on Floating ?, Settings > The tutor and
+// tests/e2e/floating-tutor-once.spec.ts — the tutor door is drawn once (mw-5r3p30.935). His screenshots of 2026-10-31: Settings > The tutor and
 // Review each showed two round buttons, the door's floating ? and the older round Ask the tutor button (src/AskTutor.tsx AskTutorButton, bottom right). One door, drawn once: with the
 // floating ? chosen the older button is not drawn, on any screen, the Reader and the Verse view and the sheets among them. Counted at 390x844 with a licence.
 import { expect, test, type Page } from '@playwright/test';
@@ -6,7 +6,6 @@ import { LADDER } from '../../src/data/grammar/ladder';
 import { honestSpeech } from '../support/honest-fakes';
 import { openGroup } from './settings-group';
 import { shot } from './shot';
-import { keepDoor } from './tutor-door';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
 
@@ -21,8 +20,6 @@ async function openReader(page: Page) {
   await openUnlocked(page);
   await honestSpeech(page, { langs: ['el-GR'] });
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await keepDoor(page, 'floating', 'right');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
 }
 
@@ -58,7 +55,6 @@ test('Floating ?: Settings > The tutor shows one tutor button', async ({ page })
   await openReader(page);
   await page.goto('/#/settings');
   await openGroup(page, 'The tutor');
-  await expect(page.getByRole('group', { name: 'Tutor door', exact: true })).toBeVisible();
   await expectOneDoor(page);
   await shot(page, 'floating-tutor-once-settings');
 });
@@ -87,15 +83,6 @@ test('Floating ?: the Reader, the Verse view and a word sheet each show one tuto
   await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
   await expectOneDoor(page);
-});
-
-test('Two-finger tap door: the older round button is the one tutor button, as before', async ({ page }) => {
-  await openReader(page);
-  await keepDoor(page, 'twoFinger');
-  await page.goto('/#/paradigms');
-  await expect(page.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 })).toBeVisible();
-  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
-  await expect(page.locator(DRAWN)).toHaveCount(1);
 });
 
 // every screen of Lampas's own: never more than one round tutor button

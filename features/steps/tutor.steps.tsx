@@ -15,7 +15,7 @@ import { readerOf } from '../../src/nav/route';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
-import { composerIn, questionField, typeQuestion } from '../../tests/support/composer';
+import { typeQuestion } from '../../tests/support/composer';
 import { expectKeepsItShort, expectLearnerField, expectTeachesNewWord, instructionsOf } from '../../tests/support/learner';
 import { stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -69,7 +69,6 @@ async function selectVerse28(): Promise<void> {
 
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
-const sendButton = () => within(composerIn(sheet())).getByRole('button', { name: 'Send' });
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 
 async function ask(question: string): Promise<void> {

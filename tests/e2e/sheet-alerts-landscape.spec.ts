@@ -133,21 +133,6 @@ for (const size of SIZES) {
       await shot(page, `sheet-alert-talk-${size.name}`);
     });
 
-    test('the Verse view: a failed Ask the tutor question keeps its message and Copy in the Talk sheet it opens', async ({ page }) => {
-      const fake = await putPostern(page);
-      await openUnlocked(page);
-      await page.goto('/#/?c=8&view=english&weave=off');
-      const view = await chooseAction(page, 28, 'Ask the tutor');
-      fake.licensed = false;
-      await view.getByRole('button', { name: 'Type a question', exact: true }).click();
-      await view.getByRole('textbox', { name: 'Your question' }).fill('What is the subject of this verse?');
-      await view.getByRole('button', { name: 'Send', exact: true }).click();
-      const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
-      await expect(sheet.getByRole('alert')).toContainText('No licence');
-      await expectFailureShown(sheet, ['Copy my question'], 'Verse view Ask, in the Talk sheet');
-      await shot(page, `sheet-alert-verse-ask-${size.name}`);
-    });
-
     test('the Verse view: a reading that fails keeps its message and Retry on screen', async ({ page }) => {
       const fake = makeFakePostern();
       await routePostern(page, fake);
