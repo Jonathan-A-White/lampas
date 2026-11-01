@@ -70,7 +70,7 @@ export function DictationPane({ reference, language, text, slot, onRevealed }: D
         <p data-phrase-total={phrases.length} className="px-1 text-sm text-muted">
           The app reads {reference} aloud in {phrases.length === 1 ? 'one phrase' : `${phrases.length} phrases`}, one at a time, in {language === 'en' ? 'English' : language === 'grc' ? 'Greek' : 'Hebrew'}. Write each as you hear it; the verse stays hidden until your page is judged.
         </p>
-      ) : (
+      ) : done ? null : (
         <p data-phrase-total={phrases.length} data-phrase-count aria-live="polite" className="px-1 text-base font-medium">
           Phrase {at + 1} of {phrases.length}
         </p>
