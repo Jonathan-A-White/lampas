@@ -1,16 +1,20 @@
-// scripts/lxx/derive.ts — npm run lxx:derive -- --book <code> [--hide <book>]
-// The Septuagint derivation (docs/lxx-derivation.md): a lemma and a parsing for each word of a book of Swete's Greek. So far layer 1 alone:
-// the word's form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis or one with at least 95% of
-// 20 or more words. Every other word is pending, for the parser (layer 2) and the model's choice (layer 3) to come.
+// scripts/lxx/derive.ts — npm run lxx:derive -- --book <code> [--hide <book>] [--word <ref>]
+// The Septuagint derivation (docs/lxx-derivation.md): a lemma and a parsing for each word of a book of Swete's Greek, in layers. Layer 1: the word's
+// form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis or one with at least 95% of 20 or more words.
+// Layer 2, for a form the New Testament lacks: the paradigm parser (parser.ts), then Swete's other spellings, then analogy; taken when it leaves one
+// candidate or one with 90% of the support. Every other word is pending, with its candidates, for the model's choice (layer 3, to come).
 // It writes data/lxx/derived/<book>.tsv (the words settled) and data/lxx/pending/<book>.tsv (the rest), both git-ignored. They are Lampas's own
 // data (MIT, data/lxx/LICENSE): a word is named by its reference in the pinned Swete file and no column holds Swete's Greek. A second run writes
-// the same bytes. `--hide jhn` leaves John's rows out of the form index, for a known-answer run.
+// the same bytes. `--hide jhn` leaves John's rows out of the form index and the parser's training, for a known-answer run. `--word Gen.1:20#13`
+// prints one word's candidates, their support and what produced each, and writes nothing.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fetchPinned, readPinned, type Fetcher } from './sources';
-import { bareOf, hasAccent, hasLower, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
+import { bareOf, bookOf, hasAccent, hasLower, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
 import { analysesOf, formIndex, readTagnt, settle, type Analysis, type FormIndex } from './tagnt';
+import { byAnalogy, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
+import { TBESG_FILE, lemmaCount, readTbesg } from './tbesg';
 
 export const OUT_DIR = join('data', 'lxx');
 
@@ -24,8 +28,14 @@ const SPELLING_NOTE: Readonly<Record<string, string>> = {
 export const NOTE_UNACCENTED = 'unaccented: matched without accents';
 export const NOTE_CAPITALS = 'capitals';
 export const NOTE_BRACKETS = 'brackets: letters Swete supplied';
-export const NOTE_SEVERAL = 'several analyses: for the parser or the model';
+export const NOTE_SEVERAL = 'several analyses: for the model';
 export const NOTE_NOT_IN_NT = 'not in the New Testament: for the parser';
+export const NOTE_ANALOGY = 'analogy: a sibling form in the New Testament';
+export const NOTE_CANDIDATES = 'several candidates: for the model';
+export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
+
+/** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
+export type WordCandidate = Analysis & { via?: string[] };
 
 export interface DerivedWord {
   ref: string;
@@ -33,19 +43,32 @@ export interface DerivedWord {
   morph: string;
   layer: number;
   confidence: number;
-  candidates: Analysis[];
+  candidates: WordCandidate[];
   notes: string[];
 }
 
 export interface PendingWord {
   ref: string;
-  candidates: Analysis[];
+  candidates: WordCandidate[];
   notes: string[];
 }
 
-/** One word through layer 1: its candidates, and the analysis when layer 1 settles it. */
-export function layer1(word: Pick<SweteWord, 'ref' | 'form' | 'display'>, index: FormIndex): DerivedWord | PendingWord {
+/** The parser's candidates for each form, by its bare letters: a form met twice is parsed once. */
+type ParseCache = Map<string, Candidate[]>;
+
+/**
+ * One word through layers 1 and 2. Layer 1 looks the form up as TAGNT has it (without accents when Swete gives it none) and settles it by the
+ * 95%-of-20 rule. A form the New Testament lacks goes to the parser; when the parser finds nothing, Swete's other spellings are tried in turn (an
+ * alternative the New Testament has is a layer-1 answer, otherwise it is parsed), and last analogy. Layer 2 settles by the 90% rule.
+ */
+export function deriveWord(word: Pick<SweteWord, 'ref' | 'form' | 'display'>, index: FormIndex, parser: Parser, cache: ParseCache = new Map()): DerivedWord | PendingWord {
   const notes: string[] = [];
+  const parsed = (form: string): Candidate[] => {
+    const k = bareOf(form);
+    let cs = cache.get(k);
+    if (!cs) cache.set(k, (cs = parse(form, parser)));
+    return cs;
+  };
   let counts = index.byKey.get(keyOf(word.form));
   if (!counts && !hasAccent(word.form)) {
     counts = index.byBare.get(bareOf(word.form));
@@ -53,22 +76,37 @@ export function layer1(word: Pick<SweteWord, 'ref' | 'form' | 'display'>, index:
   }
   if (!hasLower(word.form) && word.form.length > 1) notes.push(NOTE_CAPITALS);
   if (/[[\]]/.test(word.display)) notes.push(NOTE_BRACKETS);
+  let fromParser: Candidate[] = [];
   if (!counts) {
-    for (const [why, alt] of spellings(word.form)) {
-      counts = index.byBare.get(bareOf(alt));
-      if (counts) {
-        notes.push(SPELLING_NOTE[why]);
-        break;
+    fromParser = parsed(word.form);
+    if (fromParser.length === 0) {
+      for (const [why, alt] of spellings(word.form)) {
+        counts = index.byBare.get(bareOf(alt));
+        if (!counts) fromParser = parsed(alt);
+        if (counts || fromParser.length) {
+          notes.push(SPELLING_NOTE[why]);
+          break;
+        }
       }
     }
   }
-  const candidates = counts ? analysesOf(counts) : [];
-  const settled = settle(candidates);
-  if (!settled) return { ref: word.ref, candidates, notes: [...notes, candidates.length ? NOTE_SEVERAL : NOTE_NOT_IN_NT] };
-  return { ref: word.ref, lemma: settled.analysis.lemma, morph: settled.analysis.morph, layer: 1, confidence: settled.confidence, candidates, notes };
+  if (counts) {
+    const candidates = analysesOf(counts);
+    const settled = settle(candidates);
+    if (!settled) return { ref: word.ref, candidates, notes: [...notes, NOTE_SEVERAL] };
+    return { ref: word.ref, lemma: settled.analysis.lemma, morph: settled.analysis.morph, layer: 1, confidence: settled.confidence, candidates, notes };
+  }
+  notes.push(NOTE_NOT_IN_NT);
+  if (fromParser.length === 0) {
+    fromParser = byAnalogy(word.form, parser);
+    if (fromParser.length) notes.push(NOTE_ANALOGY);
+  }
+  const settled = settleParsed(fromParser);
+  if (!settled) return { ref: word.ref, candidates: fromParser, notes: [...notes, fromParser.length ? NOTE_CANDIDATES : NOTE_NO_CANDIDATE] };
+  return { ref: word.ref, lemma: settled.analysis.lemma, morph: settled.analysis.morph, layer: 2, confidence: settled.confidence, candidates: fromParser, notes };
 }
 
-const isDerived = (w: DerivedWord | PendingWord): w is DerivedWord => 'layer' in w;
+export const isDerived = (w: DerivedWord | PendingWord): w is DerivedWord => 'layer' in w;
 
 export interface DeriveInput {
   /** 00-Swete_versification.csv */
@@ -77,6 +115,8 @@ export interface DeriveInput {
   words: string;
   /** the two TAGNT files */
   tagnt: readonly string[];
+  /** the TBESG file */
+  tbesg: string;
 }
 
 export interface BookResult {
@@ -85,20 +125,25 @@ export interface BookResult {
   signs: EditorSign[];
   derived: DerivedWord[];
   pending: PendingWord[];
+  /** the parser as trained for this run (a hidden book left out), for a second look at a word */
+  parser: Parser;
 }
 
 export function deriveBook(input: DeriveInput, book: string, hide?: string): BookResult {
   const { words, signs } = sweteTokens(input.versification, input.words, book);
   if (words.length === 0) throw new Error(`no book '${book}' in Swete's file`);
-  const index = formIndex(readTagnt(input.tagnt, hide));
+  const rows = readTagnt(input.tagnt, hide);
+  const index = formIndex(rows);
+  const parser = trainParser(rows, readTbesg(input.tbesg));
+  const cache: ParseCache = new Map();
   const derived: DerivedWord[] = [];
   const pending: PendingWord[] = [];
   for (const word of words) {
-    const out = layer1(word, index);
+    const out = deriveWord(word, index, parser, cache);
     if (isDerived(out)) derived.push(out);
     else pending.push(out);
   }
-  return { book: book.toLowerCase(), words, signs, derived, pending };
+  return { book: book.toLowerCase(), words, signs, derived, pending, parser };
 }
 
 /** 'ἀρχή/N-NSF/8 | ἀρχή/N-DSF/5': a lemma may hold spaces and commas ('ὅς, ἥ') but never '/' or '|'. */
@@ -141,28 +186,55 @@ export function summary(result: BookResult): string[] {
   for (const w of [...result.derived, ...result.pending]) {
     for (const note of w.notes) notes.set(note.split(':')[0], (notes.get(note.split(':')[0]) ?? 0) + 1);
   }
+  const inLayer = (layer: number): number => result.derived.filter((w) => w.layer === layer).length;
+  const none = result.pending.filter((w) => w.candidates.length === 0).length;
+  const { parser } = result;
   return [
     `${result.book}: ${n} words; ${result.signs.length} editor's signs left out`,
-    `layer 1 (TAGNT form): ${result.derived.length} (${pct(result.derived.length)})`,
-    `pending: ${result.pending.length} (${pct(result.pending.length)})`,
+    `parser: ${parser.triples} distinct (form, lemma, parsing) triples, ${parser.rules.size} ending rules; ${lemmaCount(parser.lexicon)} TBESG lemmas`,
+    `layer 1 (TAGNT form): ${inLayer(1)} (${pct(inLayer(1))})`,
+    `layer 2 (parser): ${inLayer(2)} (${pct(inLayer(2))})`,
+    `pending: ${result.pending.length} (${pct(result.pending.length)}), of which no candidate: ${none}`,
     ...[...notes].sort(([a], [b]) => (a < b ? -1 : 1)).map(([note, k]) => `note '${note}': ${k}`),
   ];
+}
+
+/** One word as `--word` prints it: its token, what the layers made of it, and each candidate with its support and what produced it. */
+export function wordReport(result: BookResult, ref: string): string[] {
+  const word = result.words.find((w) => w.ref === ref);
+  if (!word) throw new Error(`no word ${ref} in Swete's ${result.book}`);
+  const out = [...result.derived, ...result.pending].find((w) => w.ref === ref)!;
+  const lines = [`${ref} ${word.display}`];
+  lines.push(isDerived(out) ? `layer ${out.layer}: ${out.lemma} ${out.morph}, confidence ${out.confidence.toFixed(2)}` : 'pending');
+  if (out.notes.length) lines.push(`notes: ${out.notes.join('; ')}`);
+  if (out.candidates.length === 0) lines.push('no candidate');
+  for (const c of out.candidates) {
+    lines.push(`  ${c.lemma} ${c.morph}: support ${c.support} (${(100 * c.share).toFixed(1)}%)`);
+    for (const why of c.via ?? ["layer 1: the New Testament's form"]) lines.push(`    ${why}`);
+  }
+  return lines;
 }
 
 export interface DeriveArgs {
   book: string;
   hide?: string;
+  /** one word's reference, 'Gen.1:20#13': print its candidates, write nothing */
+  word?: string;
 }
+
+const USAGE = 'usage: npm run lxx:derive -- --book <code> [--hide <book>] [--word <ref>]';
 
 export function parseArgs(argv: readonly string[]): DeriveArgs {
   const value = (flag: string): string | undefined => {
     const at = argv.indexOf(flag);
-    return at >= 0 ? argv[at + 1] : undefined;
+    const v = at >= 0 ? argv[at + 1] : undefined;
+    return v && !v.startsWith('--') ? v : undefined;
   };
-  const book = value('--book');
-  if (!book || book.startsWith('--')) throw new Error('usage: npm run lxx:derive -- --book <code> [--hide <book>]');
-  const hide = value('--hide');
-  return { book, hide: hide && !hide.startsWith('--') ? hide : undefined };
+  const word = value('--word');
+  if (argv.includes('--word') && !word) throw new Error(USAGE);
+  const book = value('--book') ?? (word ? bookOf(word).toLowerCase() : undefined);
+  if (!book) throw new Error(USAGE);
+  return { book, hide: value('--hide'), word };
 }
 
 export interface RunOptions {
@@ -184,11 +256,16 @@ export async function runDerive(argv: readonly string[], options: RunOptions = {
       versification: readPinned(rawDir, SWETE, SWETE_VERSIFICATION),
       words: readPinned(rawDir, SWETE, SWETE_WORDS),
       tagnt: TAGNT_FILES.map((f) => readPinned(rawDir, STEP, f)),
+      tbesg: readPinned(rawDir, STEP, TBESG_FILE),
     };
   }
   const result = deriveBook(input, args.book, args.hide);
+  if (args.hide) log(`hidden from the form index and the parser: ${args.hide}`);
+  if (args.word) {
+    for (const line of wordReport(result, args.word)) log(line);
+    return result;
+  }
   const paths = writeBook(outDir, result);
-  if (args.hide) log(`hidden from the form index: ${args.hide}`);
   for (const line of summary(result)) log(line);
   log(`wrote ${paths.derived} and ${paths.pending}`);
   return result;

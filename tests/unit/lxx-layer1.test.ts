@@ -6,6 +6,8 @@
 // cut to the columns the reader reads (reference, form, grammar, lemma) and thinned: each kind of row keeps at most three rows, or a share of its rows,
 // except where that would change layer 1's answer, its candidates or its notes for any word of the two chapters, with John hidden or not (checked against
 // the whole of TAGNT when the slice was made). So the supports in a fixture run's candidates are not the New Testament's counts; the answers are.
+// Those are its first 3,683 rows; the rows after them are the parser's (layer 2, mw-u2w5klk.2: tests/unit/lxx-parser.test.ts says how they were cut), and
+// tbesg-slice.txt is its lemmas. Layer 2 now runs in these tests too, so a count of layer 1's words filters on the layer.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -18,9 +20,10 @@ import { DOMINANT, DOMINANT_MIN, readTagnt, settle, type Analysis } from '../../
 
 const FIXTURES = 'tests/fixtures/lxx';
 const tagnt = [readFileSync(join(FIXTURES, 'tagnt-slice.tsv'), 'utf8')];
+const tbesg = readFileSync(join(FIXTURES, 'tbesg-slice.txt'), 'utf8');
 function swete(file: string): DeriveInput {
   const [versification, words] = readFileSync(join(FIXTURES, file), 'utf8').split('\n\n');
-  return { versification, words, tagnt };
+  return { versification, words, tagnt, tbesg };
 }
 const GEN_1 = swete('swete-gen-1.csv');
 const PSA_22 = swete('swete-psa-22.csv');
@@ -48,11 +51,11 @@ const has = (cs: readonly Analysis[], lemma: string, morph: string): boolean => 
 describe("layer 1 on Swete's Gen 1 (npm run lxx:derive -- --book gen)", async () => {
   const gen = await run(GEN_1, ['--book', 'gen']);
 
-  it('settles 545 of the 751 words, the probe’s count to within one, and leaves the rest pending', () => {
+  it('settles 545 of the 751 words, the probe’s count to within one, and leaves the rest to the parser (layer 2) or pending', () => {
     expect(gen.words).toHaveLength(751);
-    expect(Math.abs(gen.derived.length - 545)).toBeLessThanOrEqual(1);
+    expect(Math.abs(gen.derived.filter((w) => w.layer === 1).length - 545)).toBeLessThanOrEqual(1);
     expect(gen.derived.length + gen.pending.length).toBe(751);
-    expect(gen.derived.every((w) => w.layer === 1)).toBe(true);
+    expect(gen.derived.every((w) => w.layer === 1 || w.layer === 2)).toBe(true);
   });
 
   it('matches ΕΝ ΑΡΧΗ without accents, and leaves ΑΡΧΗ pending between nominative and dative', () => {
@@ -98,13 +101,15 @@ describe("layer 1 on Swete's Gen 1 (npm run lxx:derive -- --book gen)", async ()
     const pasi = wordOf(gen, 'πᾶσι');
     expect(pasi.out.notes).toContain('spelling: movable nu added');
     expect(pasi.out.candidates.length).toBeGreaterThan(1);
+    // the parser reads it as the infinitive it is (story mw-u2w5klk.2), and no spelling of φαίνει is tried
     const phainein = wordOf(gen, 'φαίνειν');
-    expect(phainein.settled).toBe(false);
-    expect(phainein.out.candidates).toEqual([]);
+    expect(phainein.out.notes.some((n) => n.startsWith('spelling'))).toBe(false);
+    expect(phainein.out.candidates.some((c) => c.morph === 'V-PAI-3S')).toBe(false);
+    expect((phainein.out as DerivedWord).layer).not.toBe(1);
   });
 
   it('takes a form with several analyses when one has at least 95% of 20 or more words', () => {
-    const dominant = gen.derived.filter((w) => w.candidates.length > 1);
+    const dominant = gen.derived.filter((w) => w.layer === 1 && w.candidates.length > 1);
     expect(dominant.length).toBeGreaterThan(0);
     for (const w of dominant) {
       const total = w.candidates.reduce((s, c) => s + c.support, 0);
@@ -120,7 +125,7 @@ describe("layer 1 on Swete's Greek Ps 22", async () => {
 
   it('settles the probe’s 78 of the 104 words', () => {
     expect(psa.words).toHaveLength(104);
-    expect(psa.derived).toHaveLength(78);
+    expect(psa.derived.filter((w) => w.layer === 1)).toHaveLength(78);
   });
 
   it('looks ἐξέθρεψέν (before the enclitic με) up as ἐξέθρεψεν', () => {
@@ -167,10 +172,10 @@ describe('--hide jhn: a known-answer run', async () => {
     expect(readTagnt(tagnt, 'jhn')).toHaveLength(readTagnt(tagnt).filter((r) => r.book !== 'Jhn').length);
   });
 
-  it('leaves pending a form only John has (ἐλάσσω, John 2:10)', () => {
-    expect(wordOf(shown, 'ἐλάσσω').settled).toBe(true);
+  it('sends a form only John has (ἐλάσσω, John 2:10) past layer 1 to the parser', () => {
+    expect((wordOf(shown, 'ἐλάσσω').out as DerivedWord).layer).toBe(1);
     const w = wordOf(hidden, 'ἐλάσσω');
-    expect(w.settled).toBe(false);
+    expect((w.out as DerivedWord).layer).not.toBe(1);
     expect(w.out.notes).toContain('not in the New Testament: for the parser');
   });
 });
