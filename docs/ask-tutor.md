@@ -65,7 +65,7 @@ and sheet that registers something to ask about: the Reader, Goal, Words, Review
 - 56 px, at the Hand side's edge (Settings > Reading > Layout > Hand; right to start), 17 rem up, over the sheets. Its accessible name is `Ask the tutor about what is on screen`. Playwright matches a name as a
   substring: a spec that means a screen's own `Ask the tutor` button (the Quick test's) passes `exact: true`.
 - The older round button of each screen, the Reader's Talk bar, the Verse view's Ask the tutor action and its composer (`Hold to ask`, `Type a question`, `src/Ask.tsx`) and the `Ask the tutor` button of
-  the word, lesson (idea), variant and New words sheets are gone (mw-5r3p30.882): one door. A two-finger tap opens no tutor; it goes in and out of immersive reading.
+  the word, lesson (idea), variant and New words sheets are gone (mw-5r3p30.882): one door. A two-finger tap opens no tutor; it goes in and out of immersive reading, the one screen where the ? is not drawn (mw-5r3p30.934): the tap that brings the bars back brings the ? with them.
 - `.screen` (src/index.css) ends at the phone's bar (`--lp-end-inset`); the ? floats over a list as any such button does. It is not drawn while a Talk sheet is open. One tap opens the Talk sheet.
 
 The Reader registers its chapter or its selected verse (`Talk about Romans 8`, kept under 'rom.8') with `useDoorTarget`; the word sheet its word, the lesson sheet its lesson, the brace sheet its unit. Every other

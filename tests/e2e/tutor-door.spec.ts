@@ -94,12 +94,17 @@ test('Floating ?: over the Verse view and over a word sheet, and a tap on a shee
   await expect(talk.locator('[data-turn]')).toContainText(GRAMMAR_HELP_ANSWER.answer);
 });
 
-test('A two-finger tap opens nothing tutor-ish, with the ? drawn', async ({ page }) => {
+test('A two-finger tap opens nothing tutor-ish: it goes into immersive reading, where the ? is not drawn, and out again', async ({ page }) => {
   await openReader(page);
   await expect(floating(page)).toBeVisible();
   await twoFingers(page);
   await afterTap(page);
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+  await twoFingers(page);
+  await afterTap(page);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(floating(page)).toBeVisible();
 });
 
 test('With no licence there is no tutor door: no ?, a two-finger tap opens no tutor, and Settings hides the Hand row', async ({ page }) => {

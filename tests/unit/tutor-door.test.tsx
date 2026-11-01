@@ -46,9 +46,9 @@ function Phone({ licence, children }: { licence: LicenceState; children: ReactNo
   return <LicenceContext.Provider value={value}>{children}</LicenceContext.Provider>;
 }
 
-/** A screen that registers what a tap asks about. */
-function Screen({ ask }: { ask: (() => void) | undefined }) {
-  useDoorTarget(ask);
+/** A screen that registers what a tap asks about; `hidden` is the immersive reader, where he wants no tutor. */
+function Screen({ ask, hidden }: { ask: (() => void) | undefined; hidden?: boolean }) {
+  useDoorTarget(ask, hidden);
   return <p>a screen</p>;
 }
 
@@ -171,6 +171,47 @@ describe('the floating ?', () => {
       </Phone>,
     );
     await waitFor(() => expect(document.querySelector('[data-floating-tutor]')).toBeNull());
+  });
+
+  it('is put away while the newest target is hidden (the immersive reader) and comes back with the bars', async () => {
+    const { rerender } = render(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} hidden />
+      </Phone>,
+    );
+    await new Promise((r) => setTimeout(r, 50));
+    expect(document.querySelector('[data-floating-tutor]')).toBeNull();
+    rerender(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} hidden={false} />
+      </Phone>,
+    );
+    expect(await screen.findByRole('button', { name: FLOATING })).toBeTruthy();
+  });
+
+  it('is drawn over a sheet that stands on a hidden screen: the sheet is not the immersive reader', async () => {
+    render(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} hidden />
+        <Screen ask={() => undefined} />
+      </Phone>,
+    );
+    expect(await screen.findByRole('button', { name: FLOATING })).toBeTruthy();
+  });
+
+  it('reads a stored Tutor door of "twoFinger" (the setting that is gone) as floating: the ? is drawn and nothing reads the row', async () => {
+    await db.settings.put({ key: 'tutorDoor', value: 'twoFinger' });
+    render(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} />
+      </Phone>,
+    );
+    expect(await screen.findByRole('button', { name: FLOATING })).toBeTruthy();
+    expect(document.querySelectorAll('[data-floating-tutor]')).toHaveLength(1);
   });
 
   it('draws over an open sheet (it is not hidden by one)', async () => {

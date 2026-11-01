@@ -16,5 +16,5 @@ export const immersiveSetting = defineSetting<Immersive>({
   section: 'immersive',
   label: 'Immersive reader',
   hint: 'While you read, the top slides away.',
-  help: 'On: scrolling the text down slides the header and the row of chips out of view, so the text has the whole screen, and the text is set like a book: tight lines, a serif face, justified and hyphenated, with small dim verse numbers, and pure black behind it in the dark theme. Scrolling back up does not bring them back. With Turn pages, turning to the next page slides them away. Tapping the text with two fingers brings them back, and a second two-finger tap sends them away again. Off by default.',
+  help: 'On: scrolling the text down slides the header and the row of chips out of view, so the text has the whole screen, and the text is set like a book: tight lines, a serif face, justified and hyphenated, with small dim verse numbers, and pure black behind it in the dark theme. Scrolling back up does not bring them back. With Turn pages, turning to the next page slides them away. Tapping the text with two fingers brings them back, and a second two-finger tap sends them away again; with this Off, the same tap switches it On and sends them away. The floating ? for the tutor is not drawn while the bars are away; the two-finger tap that brings them back brings the ? with them. Off by default.',
 });

@@ -12,6 +12,14 @@ Feature: Immersive reader
     When he scrolls the text down 200 px
     Then the header and the chips are both in view
 
+  Scenario: With Immersive reader Off a two-finger tap goes into immersive reading, and a second brings the bars back
+    Given Lampas is opened on Romans 8 with Immersive reader Off
+    When he taps the text with two fingers
+    Then the header and the chips are both out of view
+    And Immersive reader is now On
+    When he taps the text with two fingers again
+    Then the header and the chips are both in view
+
   Scenario: Scrolling down slides the bars away and scrolling up leaves them away
     Given Lampas is opened on Romans 8 with Immersive reader On
     When he scrolls the text down 300 px
