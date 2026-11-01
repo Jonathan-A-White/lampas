@@ -55,12 +55,12 @@ async function put(page: Page, store: 'settings' | 'grammarLevels', rows: object
   );
 }
 
-// The Drill it walk opens the idea sheet on The noun with a goal of 1 John 1. `holdChapters` keeps the chapter fetches back until the returned release is called,
+// The Drill it walk opens the idea sheet on The noun with a goal of 1 John 2. `holdChapters` keeps the chapter fetches back until the returned release is called,
 // as a loaded host does (mw-5r3p30.485): the sheet's slider is disabled until its examples have loaded.
 async function openIdeaSheet(page: Page, percent: number, holdChapters = false): Promise<() => void> {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 2' }]);
   await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
   await openWithTextSize(page, '#/goal', percent);
   await expect(page.getByTestId('ideas-bar')).toBeVisible();

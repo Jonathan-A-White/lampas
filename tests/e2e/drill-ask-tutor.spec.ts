@@ -74,7 +74,7 @@ async function openIdea(page: Page) {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 2' }]);
   await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
   await page.goto('/#/goal');
   await page.reload();
