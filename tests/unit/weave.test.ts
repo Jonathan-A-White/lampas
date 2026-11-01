@@ -39,12 +39,20 @@ describe('weaveVerse', () => {
     expect(woven[2]?.words.map((w) => w.t)).toEqual(['τοῦ', 'θεοῦ']);
   });
 
-  it('never weaves a chunk with no Greek word, one that points at a missing word, a dash or a supplied one', () => {
+  it('never weaves a chunk with no Greek word, one that points at a missing word, a dash or a chunk of supplied words only', () => {
     const woven = weaveVerse(verse, { solid: new Set(['ἐν', 'Χριστός', 'ὁ', 'θεός']) });
     expect(woven[3]).toBeNull();
     expect(woven[4]).toBeNull();
     expect(woven[5]).toBeNull();
     expect(woven[6]).toBeNull();
+  });
+
+  it("weaves a one-word chunk with supplied words when it has English of its own ('[the] beginning,'), so the Greek stands for the whole chunk (mw-5r3p30.947)", () => {
+    const supplied: Verse = { ...verse, e: [{ t: 'the beginning,', g: [0], s: [0] }, { t: 'is', g: [0], s: [0] }, { t: '-', g: [0] }] };
+    const woven = weaveVerse(supplied, { solid: new Set(['ἐν']) });
+    expect(woven[0]?.words.map((w) => w.t)).toEqual(['ἐν']);
+    expect(woven[1]).toBeNull();
+    expect(woven[2]).toBeNull();
   });
 
   it('weaves nothing for an empty set', () => {
