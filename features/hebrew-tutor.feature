@@ -26,7 +26,7 @@ Feature: The tutor and a Hebrew verse
   Scenario: The Quiz door is not offered on Jonah 1:10, and Ask the tutor and Diagram are
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram"
+    Then the Verse view offers the actions "Listen", "Read it aloud", "Practise" and "Diagram"
     When he chooses "Practise"
     Then the Practise door has no "Quiz"
 

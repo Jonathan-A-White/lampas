@@ -26,35 +26,3 @@ Feature: A long question not yet sent is still in the box when the sheet is open
     And he opens the Talk sheet a third time
     Then the Talk sheet's message box is empty
 
-  Scenario: A prayer in Ask the tutor is still there when it is opened again after Back
-    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
-    When he taps the heading "Walking by the Spirit"
-    And he chooses "Ask the tutor"
-    And he pastes a prayer of 3800 characters into the Ask the tutor box
-    And he presses Back
-    Then the Verse view is closed
-    When he taps the heading "Walking by the Spirit" again
-    And he chooses "Ask the tutor" again
-    Then the Ask the tutor box holds all 3800 characters
-    And the mill received no grist
-
-  Scenario: A refused over-long question in Ask the tutor is still there when it is opened again
-    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
-    When he taps the heading "Walking by the Spirit"
-    And he chooses "Ask the tutor"
-    And he pastes a prayer of 4500 characters into the Ask the tutor box and taps Send
-    And he presses Back
-    And he taps the heading "Walking by the Spirit" again
-    And he chooses "Ask the tutor" again
-    Then the Ask the tutor box holds all 4500 characters
-
-  Scenario: A prayer in Ask the tutor is gone once it is sent
-    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
-    When he taps the heading "Walking by the Spirit"
-    And he chooses "Ask the tutor"
-    And he pastes a prayer of 3800 characters into the Ask the tutor box and taps Send
-    Then the mill received one bible-talk grist whose question is the whole prayer of 3800 characters
-    When he presses Back
-    And he taps the heading "Walking by the Spirit" again
-    And he chooses "Ask the tutor" again
-    Then the Ask the tutor box is empty

@@ -147,25 +147,4 @@ describeFeature(feature, ({ Scenario }) => {
     And('the mill received no grist', nothingSent);
   });
 
-  Scenario('A 3000-character prayer pasted into Ask the tutor is sent whole', ({ Given, When, Then, And }) => {
-    Given(opened, open);
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    And('he pastes a prayer of {number} characters into the Ask the tutor box and taps Send', pasteIntoAsk);
-    Then('the mill received one bible-talk grist whose question is the whole prayer of {number} characters', (_, length: number) => receivedWhole('bible-talk', length));
-  });
-
-  Scenario('A 4500-character prayer pasted into Ask the tutor is kept and not sent', ({ Given, When, Then, And }) => {
-    Given(opened, open);
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    And('he pastes a prayer of {number} characters into the Ask the tutor box and taps Send', pasteIntoAsk);
-    Then('the Ask the tutor box holds all {number} characters', askHolds);
-    And('Ask the tutor says {string} and that the question is too long', async (_, count: string) => {
-      const note = await within(composerIn(viewEl())).findByRole('alert');
-      expect(note).toHaveTextContent(count);
-      expect(note).toHaveTextContent(/too long/i);
-    });
-    And('the mill received no grist', nothingSent);
-  });
 });

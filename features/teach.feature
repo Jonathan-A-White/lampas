@@ -54,8 +54,3 @@ Feature: Teaching a new word on the spot
     And he opens the teach sheet again
     Then the teach sheet shows "εἰς" and never "αὐτός" again
 
-  Scenario: Ask the tutor opens the Talk sheet on that word
-    When he taps New words
-    And he taps Ask the tutor on the teach sheet
-    Then the teach sheet is gone and the Talk sheet is titled "Talk about Romans 8:9"
-    And the grist carries a question that names "αὐτός"

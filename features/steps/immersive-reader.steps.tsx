@@ -8,7 +8,6 @@ import Dexie from 'dexie';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
-import { ASK_TUTOR_LABEL } from '../../src/AskTutor';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
@@ -191,15 +190,13 @@ const chips = () => screen.getByTestId('reader-chips');
 const barsAway = () => {
   expect(chips().closest('[data-away]')).not.toBeNull();
   expect(screen.queryByRole('button', { name: 'Settings' })).toBeNull();
-  expect(screen.queryByRole('button', { name: 'Talk', exact: true })).toBeNull();
 };
 const barsShown = () => {
   expect(document.querySelectorAll('[data-away]')).toHaveLength(0);
   expect(chips()).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: 'Talk', exact: true })).toBeInTheDocument();
-  // the door is the floating ? here: the older round Ask button is not drawn beside it (mw-5r3p30.935)
-  expect(screen.queryByRole('button', { name: ASK_TUTOR_LABEL })).toBeNull();
+  // the Talk bar and the round Ask button are gone (mw-5r3p30.882)
+  expect(screen.queryByRole('button', { name: 'Talk', exact: true })).toBeNull();
 };
 const inView = async () => waitFor(barsShown);
 const outOfView = async () => waitFor(barsAway);
@@ -212,7 +209,7 @@ const oneFingerTap = () => {
 };
 
 describeFeature(feature, ({ Scenario }) => {
-  const bars = 'the header, the chips and the Talk bar are all';
+  const bars = 'the header and the chips are both';
 
   Scenario('Immersive reader is Off by default and Off leaves the Reader alone when the text scrolls', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader Off', () => open({ immersive: 'off' }));
@@ -348,25 +345,6 @@ describeFeature(feature, ({ Scenario }) => {
     Then(`${bars} in view`, async () => {
       await sleep(50);
       await inView();
-    });
-  });
-
-  Scenario('With the bars away, a two-finger tap and then holding Talk starts listening', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with Immersive reader On and a recogniser', () => open({ immersive: 'on', recogniser: true }));
-    When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
-    And('he taps the text with two fingers', async () => {
-      await outOfView();
-      twoFingerTap();
-      await inView();
-    });
-    And('he holds the Talk button', async () => {
-      await user.pointer({ keys: '[MouseLeft>]', target: talkButton(), coords: AT });
-      await sleep(HOLD_MS);
-    });
-    Then('the Talk sheet is open and the phone is listening', async () => {
-      await screen.findByRole('dialog', { name: /^Talk about / });
-      await waitFor(() => expect(FakeRecognizer.instances.length > 0 && FakeRecognizer.last().startFn.mock.calls.length > 0).toBe(true));
-      await user.pointer({ keys: '[/MouseLeft]', target: talkButton(), coords: AT });
     });
   });
 

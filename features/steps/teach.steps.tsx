@@ -259,18 +259,4 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
-  Scenario('Ask the tutor opens the Talk sheet on that word', ({ When, And, Then }) => {
-    When('he taps New words', openSheet);
-    And('he taps Ask the tutor on the teach sheet', async () => {
-      await user.click(within(sheet()).getByRole('button', { name: 'Ask the tutor', exact: true }));
-    });
-    Then('the teach sheet is gone and the Talk sheet is titled {string}', async (_, title: string) => {
-      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'New word' })).toBeNull());
-      expect(talkSheet()).toHaveAccessibleName(title);
-    });
-    And('the grist carries a question that names {string}', async (_, lemma: string) => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(nfc(String(fake.received[0].input.question))).toContain(nfc(lemma));
-    });
-  });
 });

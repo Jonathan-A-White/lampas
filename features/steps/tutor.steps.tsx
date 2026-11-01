@@ -15,7 +15,7 @@ import { readerOf } from '../../src/nav/route';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
-import { composerIn, holdBarIn, questionField, typeQuestion } from '../../tests/support/composer';
+import { composerIn, questionField, typeQuestion } from '../../tests/support/composer';
 import { expectKeepsItShort, expectLearnerField, expectTeachesNewWord, instructionsOf } from '../../tests/support/learner';
 import { stubClipboard } from '../../tests/support/exchange';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -64,14 +64,12 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
 async function selectVerse28(): Promise<void> {
   const number = await screen.findByRole('button', { name: 'Verse 28' });
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
-  const view = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(view).getByRole('button', { name: 'Ask the tutor', exact: true }));
-  await screen.findByRole('region', { name: 'Ask the tutor' });
+  await screen.findByRole('region', { name: 'Verse view' });
 }
 
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
-const sendButton = () => within(composerIn(viewEl())).getByRole('button', { name: 'Send' });
+const sendButton = () => within(composerIn(sheet())).getByRole('button', { name: 'Send' });
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 
 async function ask(question: string): Promise<void> {
@@ -130,8 +128,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     });
     And('the Ask box is ready for the next question', () =>
       waitFor(() => {
-        expect(holdBarIn(viewEl())).toBeEnabled();
-        expect(within(composerIn(viewEl())).queryByRole('textbox', { name: 'Your question' })).toBeNull();
+        expect(within(composerIn(sheet())).queryByRole('textbox', { name: 'Your message' })).toHaveValue('');
       }),
     );
   });
@@ -192,13 +189,13 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await questionField(user, viewEl());
     });
     Then('there is no Send button', () => {
-      expect(within(composerIn(viewEl())).queryByRole('button', { name: 'Send' })).toBeNull();
+      expect(within(composerIn(sheet())).queryByRole('button', { name: 'Send' })).toBeNull();
     });
     When('he types {string}', async (_, text: string) => {
       await user.type(await questionField(user, viewEl()), text);
     });
     Then('there is still no Send button', () => {
-      expect(within(composerIn(viewEl())).queryByRole('button', { name: 'Send' })).toBeNull();
+      expect(within(composerIn(sheet())).queryByRole('button', { name: 'Send' })).toBeNull();
     });
     When('he types {string} instead', async (_, text: string) => {
       const field = await questionField(user, viewEl());

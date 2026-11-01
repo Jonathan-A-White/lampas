@@ -219,9 +219,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The passage has one row of actions, without Diagram, and exactly one control at the foot', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);
-    Then('the row of actions is {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+    Then('the row of actions is {string}, {string} and {string}', (_, a: string, b: string, c: string) => {
       const row = within(viewEl()).getByRole('group', { name: 'Actions' });
-      expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c, d]);
+      expect(within(row).getAllByRole('button').map((button) => button.textContent)).toEqual([a, b, c]);
     });
     And('{string} is one of the tools under the text, not an action', (_, name: string) => {
       expect(within(within(viewEl()).getByRole('group', { name: 'Tools' })).getByRole('button', { name, exact: true })).toBeInTheDocument();
@@ -297,43 +297,6 @@ describeFeature(feature, ({ Scenario }) => {
     And('the reading of the passage is kept under {string} and not under verse 1', async (_, ref: string) => {
       await waitFor(async () => expect(await db.readings.get(ref)).toBeDefined());
       expect(await db.readings.get('rom.8.1')).toBeUndefined();
-    });
-  });
-
-  Scenario('Ask the tutor about the passage carries its reference and text', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern', () =>
-      open({ tutor: true }),
-    );
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    Then('the hold bar is labelled {string}', labelled);
-    When('he holds the hold bar and says {string} and lets go', async (_, words: string) => {
-      await holdBar();
-      await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(0));
-      act(() => {
-        FakeRecognizer.last().open();
-        FakeRecognizer.last().say([result(words, false)]);
-      });
-      await letGo();
-    });
-    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question {string}', async (_, reference: string, question: string) => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
-      expect(fake.received[0].input.reference).toBe(reference);
-      expect(fake.received[0].input.question).toBe(question);
-    });
-    And('that grist carries the Greek and the English of verses 1 to 11 and no other', () => {
-      expect(fake.received[0].input.greek).toBe(greekOf(1, 11));
-      expect(fake.received[0].input.english).toBe(markedEnglishOf(1, 11));
-    });
-    And('the answer shows in the Talk sheet about Romans 8:1-11', async () => {
-      const dialog = await screen.findByRole('dialog', { name: 'Talk about Romans 8:1-11' });
-      await waitFor(() => expect(dialog.querySelectorAll('[data-turn]')).toHaveLength(1));
-      expect(dialog.querySelector('[data-turn]')).toHaveTextContent(SYNERGEI_ANSWER.answer);
-    });
-    And('the talk is kept under {string} and not under verse 1', async (_, ref: string) => {
-      const refs = (await db.talks.toArray()).map((t) => t.ref);
-      expect(refs).toEqual([ref]);
     });
   });
 

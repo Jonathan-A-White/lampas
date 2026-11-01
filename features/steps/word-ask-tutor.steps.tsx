@@ -119,7 +119,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the word sheet has an Ask the tutor button', () => {
       expect(within(wordSheet()).getAllByRole('button', { name: 'Ask the tutor' })).toHaveLength(1);
     });
-    When('he opens the tutor with a two-finger tap on the word sheet', async () => {
+    When('he opens the tutor with the floating ? on the word sheet', async () => {
       await openTutor();
     });
     Then('the word sheet is gone and the sheet is titled {string}', async (_, title: string) => {
@@ -218,7 +218,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Ask the tutor on the sheet of a Hebrew word sends the word with its language', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Jonah 1 in the Hebrew view behind a fake Postern', openHebrew);
     And('he taps the Hebrew word {string} in verse {int}', tapsHebrewWord);
-    When('he opens the tutor with a two-finger tap on the word sheet', async () => {
+    When('he opens the tutor with the floating ? on the word sheet', async () => {
       await openTutor();
     });
     Then('the word sheet is gone and the sheet is titled {string}', sheetTitled);

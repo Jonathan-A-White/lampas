@@ -181,7 +181,6 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       if (!heading) throw new Error('no heading');
       await user.click(within(heading).getByRole('button'));
       await screen.findByRole('region', { name: 'Verse view' });
-      await user.click(within(viewEl()).getByRole('button', { name: 'Ask the tutor', exact: true }));
       await within(viewEl()).findByTestId('composer');
     });
     When('he asks {string} by the composer and the tutor answers {string}', async (_, question: string, answer: string) => {

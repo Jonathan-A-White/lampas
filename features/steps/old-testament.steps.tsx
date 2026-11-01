@@ -6,6 +6,7 @@ import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
+import { typeQuestion } from '../../tests/support/composer';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
@@ -592,24 +593,6 @@ describeFeature(feature, ({ Scenario }) => {
     [...within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button')].map((b) => b.textContent?.trim() ?? '');
   const phoneLicensed = 'Lampas is opened on Jonah 1 with a licence';
 
-  Scenario('The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor, Practise and Share', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Jonah 1 with a licence and a phone that can share', () => openOn('Jonah 1', {}, false, { licensed: true, share: true }));
-    When('he taps the number of verse {int}', tapVerseNumber);
-    Then('the Verse view is headed {string}', async (_, reference: string) => {
-      await waitFor(() => expect(within(viewEl()).getByRole('heading', { name: reference })).toBeInTheDocument());
-    });
-    And('the Verse view shows the verse in English', () => {
-      const verse = viewEl().querySelector<HTMLElement>('[data-sheet-verse]') as HTMLElement;
-      expect(squash(verse.textContent)).toContain('The men knew that he was fleeing from the presence of the LORD');
-    });
-    And('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}, and the tools {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string, f: string, g: string) => {
-      expect(actionNames()).toEqual([a, b, c, d, e]);
-      // Copy and Share are tools in the quiet line under the text, not cells of the row of actions (mw-5r3p30.896)
-      const tools = within(screen.getByRole('group', { name: 'Tools' })).getAllByRole('button').map((b) => b.textContent?.trim() ?? '');
-      expect(tools).toEqual(expect.arrayContaining([f, g]));
-    });
-  });
-
   Scenario('Diagram kept from a New Testament verse opens an Old Testament verse on Diagram and is kept', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with a licence and the kept action {string}', (_, kept: string) => openOn('Jonah 1', {}, false, { licensed: true, kept }));
     When('he taps the number of verse {int}', tapVerseNumber);
@@ -625,13 +608,8 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Ask the tutor about Jonah 1:10 sends the English verse and its reference', ({ Given, When, Then, And }) => {
     Given(phoneLicensed, () => openOn('Jonah 1', {}, false, { licensed: true }));
     When('he taps the number of verse {int}', tapVerseNumber);
-    And('he chooses the action {string}', async (_, name: string) => {
-      await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
-    });
     And('he types the question {string} and sends it', async (_, question: string) => {
-      await user.click(await within(viewEl()).findByRole('button', { name: 'Type a question' }));
-      await user.type(await within(viewEl()).findByRole('textbox', { name: 'Your question' }), question);
-      await user.click(within(viewEl()).getByRole('button', { name: 'Send' }));
+      await typeQuestion(user, viewEl(), question);
     });
     Then('the mill received one bible-talk grist about {string} with the English {string} and no Greek', async (_, reference: string, english: string) => {
       await waitFor(() => expect(fake?.received).toHaveLength(1));

@@ -8,7 +8,7 @@ Feature: Quiz me on a Hebrew verse
   Scenario: Jonah 1:1's Practise door offers the Quiz and the quiz talk carries the Hebrew
     Given Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a quiz behind a fake Postern
     When he taps the number of verse 1
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram"
+    Then the Verse view offers the actions "Listen", "Read it aloud", "Practise" and "Diagram"
     When he chooses "Practise", opens "Quiz" and taps "Start the quiz"
     Then the sheet is titled "Quiz on Jonah 1:1"
     And the mill received one grist for the lampas app, kind bible-talk, in quiz mode about "Jonah 1:1"
@@ -18,7 +18,7 @@ Feature: Quiz me on a Hebrew verse
   Scenario: At Hebrew 0 an Old Testament verse's Practise door has no Quiz
     Given Lampas is opened on Jonah 1 with the Hebrew dial at Just English and a quiz behind a fake Postern
     When he taps the number of verse 1
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram"
+    Then the Verse view offers the actions "Listen", "Read it aloud", "Practise" and "Diagram"
     When he chooses "Practise"
     Then the Practise door lists "Copywork", "Narration", "Dictation" and "Summary" and no Quiz
 
@@ -26,7 +26,7 @@ Feature: Quiz me on a Hebrew verse
   Scenario: A Greek verse's quiz is as it was
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern
     When he taps the number of verse 11
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram"
+    Then the Verse view offers the actions "Listen", "Read it aloud", "Practise" and "Diagram"
     When he chooses "Practise", opens "Quiz" and taps "Start the quiz"
     Then the mill received one grist for the lampas app, kind bible-talk, in quiz mode about "Romans 8:11"
     And that grist carries the Greek of verse 11 and the English, and no Hebrew

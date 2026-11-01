@@ -243,25 +243,6 @@ describeFeature(feature, ({ Scenario }) => {
     And('the speaking bar shows Pause, Restart and Stop', showsPlaying);
   });
 
-  Scenario('Hold to ask pauses Listen and it goes on after the question is sent', ({ Given, When, Then, And }) => {
-    Given(`${phone} and a tutor and a recogniser behind a fake Postern`, () => open({ tutor: true }));
-    When('he taps the heading {string}', tapHeading);
-    And('he taps {string}', tapPlay);
-    And('the phone finishes speaking until verse {int} is being read', untilVerse);
-    And('he chooses {string}', chooseAction);
-    And('he holds the hold bar', holdBar);
-    Then('the passage is paused at verse {int}', pausedAt);
-    When('he says {string} and lets go', async (_, words: string) => {
-      await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(0));
-      act(() => {
-        FakeRecognizer.last().open();
-        FakeRecognizer.last().say([result(words, false)]);
-      });
-      await user.pointer({ keys: '[/MouseLeft]', target: holdBars()[0], coords: AT });
-    });
-    Then('the phone is reading verse {int} aloud', readingVerse);
-  });
-
   Scenario("The reading check's recording pauses Listen and it goes on when he lets go", ({ Given, When, Then, And }) => {
     Given(`${phone} and a reading check behind a fake Postern`, () => open({ recorder: true }));
     When('he taps the heading {string}', tapHeading);

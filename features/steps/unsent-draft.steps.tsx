@@ -164,42 +164,4 @@ describeFeature(feature, ({ Scenario }) => {
     Then("the Talk sheet's message box is empty", () => expect(talkField().value).toBe(''));
   });
 
-  Scenario('A prayer in Ask the tutor is still there when it is opened again after Back', ({ Given, When, Then, And }) => {
-    Given(opened, open);
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    And('he pastes a prayer of {number} characters into the Ask the tutor box', pasteIntoAsk);
-    And('he presses Back', pressBack);
-    Then('the Verse view is closed', verseViewClosed);
-    When('he taps the heading {string} again', tapHeading);
-    And('he chooses {string} again', choose);
-    Then('the Ask the tutor box holds all {number} characters', askHolds);
-    And('the mill received no grist', nothingSent);
-  });
-
-  Scenario('A refused over-long question in Ask the tutor is still there when it is opened again', ({ Given, When, Then, And }) => {
-    Given(opened, open);
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    And('he pastes a prayer of {number} characters into the Ask the tutor box and taps Send', pasteIntoAskAndSend);
-    And('he presses Back', pressBack);
-    And('he taps the heading {string} again', tapHeading);
-    And('he chooses {string} again', choose);
-    Then('the Ask the tutor box holds all {number} characters', askHolds);
-  });
-
-  Scenario('A prayer in Ask the tutor is gone once it is sent', ({ Given, When, Then, And }) => {
-    Given(opened, open);
-    When('he taps the heading {string}', tapHeading);
-    And('he chooses {string}', choose);
-    And('he pastes a prayer of {number} characters into the Ask the tutor box and taps Send', pasteIntoAskAndSend);
-    Then('the mill received one bible-talk grist whose question is the whole prayer of {number} characters', (_, length: number) => receivedWhole('bible-talk', length));
-    When('he presses Back', pressBack);
-    And('he taps the heading {string} again', tapHeading);
-    And('he chooses {string} again', choose);
-    Then('the Ask the tutor box is empty', async () => {
-      await new Promise((r) => setTimeout(r, 50));
-      expect(within(composerIn(viewEl())).queryByRole('textbox', { name: 'Your question' })).toBeNull();
-    });
-  });
 });

@@ -114,7 +114,6 @@ async function openAsk(): Promise<void> {
   if (!heading) throw new Error('no heading');
   await user.click(within(heading).getByRole('button'));
   await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(view()).getByRole('button', { name: 'Ask the tutor', exact: true }));
 }
 
 const feature = await loadFeature('features/send-to-makers.feature');
@@ -173,23 +172,6 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens the Talk sheet on the chapter, attaches a picture and types {string} without sending it', attachesAndTypes);
     Then('the Talk sheet shows no button {string}', noButton(sheet));
     And('the mill received {int} grists for the lampas app, kind feedback', feedbackCount);
-  });
-
-  Scenario("The Verse view's Ask has Attach a picture and Take a photo and no Send to the makers button", ({ Given, When, Then, And }) => {
-    Given(openedAsk, async () => {
-      await openReader();
-      await openAsk();
-    });
-    When('he attaches a picture and types {string} in the Ask composer', async (_, words: string) => {
-      await user.upload(picker(view()), pictureFile());
-      await user.type(await questionField(user, view()), words);
-    });
-    Then('the Ask composer has the buttons {string} and {string}', (_, attach: string, camera: string) => {
-      const composer = composerIn(view());
-      expect(within(composer).getByRole('button', { name: attach })).toBeInTheDocument();
-      expect(within(composer).getByRole('button', { name: camera })).toBeInTheDocument();
-    });
-    And('the Verse view shows no button {string}', noButton(view));
   });
 
   Scenario('When the tutor cannot do what he asks, the talk offers to pass it on and a tap sends it with the pictures', ({ Given, When, Then, And }) => {
