@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.52
+_2026-11-01_
+- New: A Practise door on a verse starts with copywork: write the verse by hand in English, Greek or Hebrew, photograph the page, and the tutor marks each word.
+- New: A variant reading's words now show their Strong's numbers, and where the number is only a best guess the word sheet says so.
+
 ## 0.7.51
 _2026-11-01_
 - Fixed: a word that only one manuscript reading has no longer offers a Copy link button that would have given a link to nothing.

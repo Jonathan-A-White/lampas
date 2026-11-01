@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.52",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.899",
+    "kind": "new",
+    "text": "A Practise door on a verse starts with copywork: write the verse by hand in English, Greek or Hebrew, photograph the page, and the tutor marks each word."
+  },
+  {
+    "version": "0.7.52",
+    "date": "2026-11-01",
+    "story": "mw-9ji6ek0.44",
+    "kind": "new",
+    "text": "A variant reading's words now show their Strong's numbers, and where the number is only a best guess the word sheet says so."
+  },
+  {
     "version": "0.7.51",
     "date": "2026-11-01",
     "story": "mw-5r3p30.939",
