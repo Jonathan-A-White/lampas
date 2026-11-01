@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.64",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.934",
+    "kind": "new",
+    "text": "In immersive reading the tutor's ? is out of the way; tap with two fingers to bring the bars and the ? back, and the same tap now starts immersive reading from the normal Reader."
+  },
+  {
+    "version": "0.7.64",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.947",
+    "kind": "fixed",
+    "text": "In the Weave, a Greek word you know no longer shows beside its own English translation (such as \"ἀπ' ἀρχῆς the beginning\"); the Greek replaces the English."
+  },
+  {
     "version": "0.7.62",
     "date": "2026-11-01",
     "story": "mw-5r3p30.944",

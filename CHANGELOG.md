@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.64
+_2026-11-01_
+- New: In immersive reading the tutor's ? is out of the way; tap with two fingers to bring the bars and the ? back, and the same tap now starts immersive reading from the normal Reader.
+- Fixed: In the Weave, a Greek word you know no longer shows beside its own English translation (such as "ἀπ' ἀρχῆς the beginning"); the Greek replaces the English.
+
 ## 0.7.62
 _2026-11-01_
 - Fixed: The tutor now has one door, the round ? button; the Talk bar at the bottom of the reader, and the "Ask the tutor" buttons on the verse and word screens, are gone.
