@@ -25,6 +25,7 @@
     "data:build": "tsx scripts/data-build.ts",
     "data:build:ot": "tsx scripts/data-build-ot.ts",
     "variants:english": "tsx scripts/variants-english.ts",
+    "lxx:english": "tsx scripts/lxx/english.ts",
     "variants:sweep": "tsx scripts/variants-sweep.ts",
     "variants:align": "tsx scripts/variants-align.ts",
     "maps:build": "tsx scripts/maps-build.ts",
