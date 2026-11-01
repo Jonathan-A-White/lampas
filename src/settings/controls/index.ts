@@ -17,7 +17,7 @@ import { OfflineCopyControl } from './offlineCopy';
 import { QuizGoalControl } from './quizGoal';
 import { AudioBibleControl, LibraryControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
 import { HandControl } from './hand';
-import { AskByControl, ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
+import { ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
 import type { Control } from './types';
 import { EnglishAccentControl, FamilyControl, IpaLessonControl, PronunciationControl, PronunciationSeparateControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
 import { ReadingSetControl, Rp2026EnglishControl, VariantLessonsOfferControl, VariantsControl, VariantWitnessesControl } from './variants';
@@ -90,7 +90,6 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   tips: TipsControl,
   readTutor: ReadTutorControl,
   readLessons: ReadLessonsControl,
-  askBy: AskByControl,
   hand: HandControl,
   talk: TalkControl,
   send: SendControl,

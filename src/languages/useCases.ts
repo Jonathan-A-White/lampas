@@ -347,7 +347,6 @@ export const NEUTRAL_FEATURES: Readonly<Record<string, string>> = {
   'app-update': 'the update flow: the shell',
   appearance: 'theme and text size: the shell (a language’s speed row is uc-voice-settings)',
   'ask-approach': 'Ask for another approach: the tutor’s mechanics',
-  'ask-by': 'Ask by Speaking or Typing: the tutor’s mechanics',
   'ask-for-book': 'Ask for a book: his Logos library, no language in it',
   'ask-for-more': 'Ask for more: the request flow',
   'audio-bible': 'Listen in Audible: an English audio Bible',

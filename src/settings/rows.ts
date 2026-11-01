@@ -56,7 +56,6 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'handwriting', title: 'Handwriting' },
   { id: 'readAloud', title: 'Read aloud' },
   { id: 'readTutor', title: "The tutor's responses" },
-  { id: 'askBy', title: 'Asking the tutor' },
   { id: 'talk', title: 'Talk' },
   { id: 'hebrew', title: 'Hebrew in the tutor' },
   { id: 'voices', title: 'Reading voices' },
@@ -89,7 +88,7 @@ export type SettingsGroup = KitGroup<SectionId, GroupId>;
 export const GROUPS: readonly SettingsGroup[] = [
   { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave', 'variants'] },
   { id: 'greek', title: 'Learning', hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting and Hebrew in the tutor.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'hebrew'] },
-  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how you ask, how the talk bars work, tips and your study way.', sections: ['readTutor', 'askBy', 'talk', 'tips', 'studyWay'] },
+  { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how the talk bars work, tips and your study way.', sections: ['readTutor', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
   { id: 'study', title: 'Study resources', hint: 'Your Logos library, links to the tools you own, Bible in Logos and maps.', sections: ['resources', 'maps'] },
@@ -111,7 +110,7 @@ export type SettingsRow = KitRow<SectionId> & {
 };
 
 /** The settings that only matter to the tutor. A new setting for the tutor is listed here, so an unlicensed phone sees it off with 'Needs a licence'. */
-const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'askBy', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
+const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
 
 const LINKS: readonly SettingsRow[] = [
   { key: 'link.variantLessons', label: 'Lessons on variant readings', hint: 'Five short lessons on where the manuscripts differ and how to read it.', section: 'variants' },

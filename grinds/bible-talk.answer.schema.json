@@ -1485,7 +1485,6 @@
                   "readSpan",
                   "readLessons",
                   "readTutor",
-                  "askBy",
                   "talk",
                   "send",
                   "hebrewDepth",
@@ -1673,12 +1672,6 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "readTutor" }, "value": { "type": "string", "enum": ["on", "off"] } }
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["key", "value"],
-            "properties": { "key": { "const": "askBy" }, "value": { "type": "string", "enum": ["speaking", "typing"] } }
           },
           {
             "type": "object",

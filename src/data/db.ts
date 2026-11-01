@@ -67,7 +67,7 @@ export interface TutorAnswer {
   words: AnswerWord[];
   /** when it arrived (ms since the epoch) */
   when: number;
-  /** the settings the answer changed (Ask by, when he asked the tutor to switch it): shown under the answer as 'Changed: Ask by: Typing' */
+  /** the settings the answer changed (when he asked the tutor to switch one): shown under the answer as 'Changed: <setting>: <value>' */
   changes?: AppliedChange[];
   /** the foundation ideas the answer bridged to (mw-1vuvq6.5): shown under the answer with Take me there */
   bridge?: Bridge;
