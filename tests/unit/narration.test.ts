@@ -45,7 +45,6 @@ describe('the tutor’s answer', () => {
     expect(isNarrationAnswer({ ...answer, missed: [1] })).toBe(false);
     expect(isNarrationAnswer({ ...answer, in_order: 'yes' })).toBe(false);
     expect(isNarrationAnswer({ ...answer, question: '' })).toBe(false);
-    const { question: _question, ...noQuestion } = answer;
-    expect(isNarrationAnswer(noQuestion)).toBe(false);
+    expect(isNarrationAnswer({ caught: answer.caught, missed: answer.missed, in_order: true })).toBe(false);
   });
 });

@@ -340,7 +340,6 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
 
   // ---- Narration (mw-5r3p30.901) ----
   const ENGLISH_JOHN = john.verses[0].e.map((c) => c.t.trim()).filter(Boolean).join(' ');
-  const SAID = 'in the beginning was the word and the word was with god';
   const WRITTEN = 'In the beginning was the word and the word was with god.';
   const narrated = {
     caught: ['In the beginning was the Word', 'The Word was with God'],
