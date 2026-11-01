@@ -28,6 +28,7 @@
 βασιλεύουσιν	1	Revelation 5:10
 βληθεὶς	1	Luke 23:19
 βληθὲν	1	Matthew 5:13
+δισμυριάδες	1	Revelation 9:16
 ενδινγ	1	Mark 16:8
 εἴδαμεν	1	Acts 4:20
 θα	1	1 Corinthians 16:22
@@ -52,6 +53,10 @@
 ἀφεῖναι	1	Luke 5:21
 ἀφῆκες	1	Revelation 2:4
 ἐξεπέσετε	1	Galatians 5:4
+ἐπίστασίς	1	2 Corinthians 11:28
+ἐπίστασιν	1	Acts 24:12
+ἑλισσόμενος	1	Revelation 6:14
+ἔβαλαν	1	Acts 16:37
 Ἐλιακὶμ	1	Matthew 1:13
 ἠμελλες	1	Revelation 3:2
 ἠσθενήκαμεν	1	2 Corinthians 11:21
