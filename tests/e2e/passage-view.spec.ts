@@ -5,7 +5,6 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic, honestSpeech, spoken } from '../support/honest-fakes';
-import { expectOneAskBar } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -38,7 +37,7 @@ test('the heading is one 44 px button over its whole width and sits where the he
   expect(await heading.evaluate((el) => getComputedStyle(el).fontSize)).toBe('18px');
 });
 
-test('Listen: the heading and range at the top, the passage big, the row of actions in two rows of three, the one bar', async ({ page }) => {
+test('Listen: the heading and range at the top, the passage big, the row of actions in one row of three, the one bar', async ({ page }) => {
   await start(page);
   await page.locator('[data-heading]', { hasText: HEADING }).getByRole('button').click();
   const view = page.getByRole('region', { name: 'Verse view' });
@@ -69,7 +68,7 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
     expect(b.height).toBeGreaterThanOrEqual(43.5);
     tops.add(Math.round(b.y));
   }
-  expect(tops.size).toBe(2);
+  expect(tops.size).toBe(1);
 
   // the passage is longer than the screen: it scrolls in a box of its own, which takes what the tools, the row and the foot leave (mw-5r3p30.896), and the row of actions is in sight under it
   const box = view.locator('[data-passage-box]');
@@ -99,12 +98,10 @@ test('Listen: the heading and range at the top, the passage big, the row of acti
   await shot(page, 'passage-view-listen');
 
   // the passage scrolls inside the view, the bar stays; Back returns to the Reader
-  await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
-  await expectOneAskBar(page, VIEWPORT);
-  await shot(page, 'passage-view-ask');
+  await expect(view.getByRole('button', { name: 'Ask the tutor', exact: true })).toHaveCount(0);
   await page.goBack();
   await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Talk', exact: true })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toBeVisible();
 });
 
 test('the passage sits on the page like the Reader\'s text, with no border drawn round it, and Listen is in reach (mw-5r3p30.501)', async ({ page }) => {

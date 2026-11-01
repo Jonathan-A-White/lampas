@@ -629,10 +629,10 @@ const footGap = (page: Page) =>
       heading = r.height + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
     }
     const line = document.querySelector('[data-place-line]') as HTMLElement;
-    // the place line's words and the round Ask button beside them do not meet
+    // the place line's words and the floating ? beside them do not meet
     range.selectNodeContents(line);
     const words = range.getBoundingClientRect();
-    const button = document.querySelector('[data-ask-tutor]')?.getBoundingClientRect();
+    const button = document.querySelector('[data-floating-tutor]')?.getBoundingClientRect();
     const clear = !button || words.right <= button.left || words.bottom <= button.top || words.top >= button.bottom;
     return { gap: line.getBoundingClientRect().top - lowest, lineHeight, heading, clear };
   });
@@ -678,7 +678,7 @@ test('with Turn pages and the Immersive reader, each page fills down to the plac
   await openMark12(page, 'pages', { settings: { immersiveReader: 'on', immersiveHint: 'off' } });
   await page.getByRole('button', { name: 'Put the bars away', exact: true }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('[data-ask-tutor]')).toHaveAttribute('data-away', '');
+  await expect(page.locator('[data-floating-tutor]')).toBeVisible(); // the floating ? stays whole while the bars are away (mw-5r3p30.882)
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   // the place line is the lowest row now, with the phone's floor under it; the bars' slide is 200 ms
   await expect(place(page)).toHaveAttribute('data-floor', '');
@@ -708,7 +708,7 @@ for (const size of [
     await tapAt(page, 0.85);
     await expect(page.locator('header').first()).toBeHidden();
     await expect(card).toBeHidden();
-    await expect(page.locator('[data-ask-tutor]')).toHaveAttribute('data-away', '');
+    await expect(page.locator('[data-floating-tutor]')).toBeVisible(); // the floating ? stays whole while the bars are away (mw-5r3p30.882)
     // the slide is 200 ms, and the pages are cut afresh for the taller box: fewer of them
     await page.waitForTimeout(400);
     const b = await box(page);
@@ -838,6 +838,13 @@ for (const size of [
 /** Whether a verse screen or a sheet is open: a tap on the outer thirds opens neither. */
 const opened = async (page: Page) => /[?&]v=/.test(page.url()) || (await page.getByTestId('sheet-backdrop').count()) > 0;
 
+/** Whether (x, y) is under the floating ? (4 px of margin): a tap there is the tutor door's. */
+const underDoor = (page: Page, x: number, y: number) =>
+  page.evaluate(({ x, y }) => {
+    const r = document.querySelector('[data-floating-tutor]')?.getBoundingClientRect();
+    return !!r && x >= r.left - 4 && x <= r.right + 4 && y >= r.top - 4 && y <= r.bottom + 4;
+  }, { x, y });
+
 /** Taps (x, y) and waits for the page to be `to`; fails, naming the point and what it landed on, when a verse or sheet opened instead. */
 async function tapTurns(page: Page, x: number, y: number, to: number) {
   const hit = await page.evaluate(({ x, y }) => {
@@ -891,6 +898,8 @@ for (const on of [2, 3, 4]) {
     // each point is tapped on page `on` in both thirds, and the page it turns to is turned home by the same point of the other third
     for (const y of rows) {
       for (let i = 0; i < left.length; i++) {
+        // a point under the floating ? taps the tutor door, not the page (the door is proved in floating-tutor-once.spec.ts)
+        if (await underDoor(page, right[i], y)) continue;
         await tapTurns(page, left[i], y, on - 1);
         await tapTurns(page, right[i], y, on);
         await tapTurns(page, right[i], y, on + 1);

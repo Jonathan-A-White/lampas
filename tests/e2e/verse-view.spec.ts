@@ -4,7 +4,6 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
-import { composerOf, expectOneAskBar } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
@@ -101,19 +100,6 @@ test('Read it aloud: the reading check above the one bar Hold to read verse 11',
   await shot(page, 'verse-view-read');
 });
 
-test('Ask the tutor: the one composer, Hold to ask over Type a question, and Talk about the verse', async ({ page }) => {
-  await start(page);
-  const view = await openVerseView(page, 11);
-  await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
-  await expect(view.getByRole('region', { name: 'Ask the tutor' })).toBeVisible();
-  await expectOneAskBar(page, VIEWPORT);
-  await expect(composerOf(page).getByRole('button', { name: 'Type a question', exact: true })).toBeVisible();
-  await expect(view.getByRole('button', { name: 'Ask', exact: true })).toHaveCount(0);
-  await expect(view.getByRole('button', { name: 'Talk about verse 11', exact: true })).toBeVisible();
-  await expectFitsPhone(page);
-  await shot(page, 'verse-view-ask');
-});
-
 test('the chosen action is kept for the next verse, the arrows move through the chapter, and Back returns to the Reader at the same place', async ({ page }) => {
   await start(page);
   const reader = page.locator('[data-reader]');
@@ -121,17 +107,17 @@ test('the chosen action is kept for the next verse, the arrows move through the 
   // the Reader stays where it was, under the view (tapping scrolled verse 20 into reach first)
   const left = await reader.evaluate((el) => el.scrollTop);
   expect(left).toBeGreaterThan(300);
-  await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
+  await view.getByRole('button', { name: 'Read it aloud', exact: true }).click();
   await view.getByRole('button', { name: 'Next verse', exact: true }).click();
   await expect(view.getByRole('heading', { name: 'Romans 8:21' })).toBeVisible();
-  await expectOneAskBar(page, VIEWPORT);
+  await expect(view.getByRole('button', { name: 'Hold to read verse 21', exact: true })).toBeVisible();
   await view.getByRole('button', { name: 'Previous verse', exact: true }).click();
   await expect(view.getByRole('heading', { name: 'Romans 8:20' })).toBeVisible();
 
   await page.goBack();
   await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
   expect(await reader.evaluate((el) => el.scrollTop)).toBe(left);
-  await expect(page.getByRole('button', { name: 'Talk', exact: true })).toBeVisible();
+  await expect(page.locator('[data-floating-tutor]')).toBeVisible();
 });
 
 test('across a chapter end the arrows go from Romans 8:39 to 9:1 and back', async ({ page }) => {

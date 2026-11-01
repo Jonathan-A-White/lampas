@@ -6,10 +6,11 @@ import { makeFakePostern, SYNERGEI_ANSWER, type FakePostern } from '../support/f
 import { routePostern } from '../support/playwright-postern';
 import { clips, honestMic } from '../support/honest-fakes';
 import { longQuestion } from '../support/long-text';
-import { askBar, composerOf, talkSheetOf, talkTurnsOf, typeQuestion } from './ask-composer';
+import { talkSheetOf, talkTurnsOf } from './ask-composer';
+import { talkField } from './talk-field';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { chooseAction } from './verse-view';
+import { openTalkAbout } from './verse-view';
 
 const LENGTH = 885;
 const QUESTION = longQuestion(LENGTH);
@@ -20,17 +21,17 @@ async function start(page: Page, fake: FakePostern, transcript = QUESTION) {
   await honestMic(page, { clip: { ...clips.english, transcript } });
   await openUnlocked(page);
   await page.goto('/#/?c=8&view=english&weave=off');
-  return chooseAction(page, 28, 'Ask the tutor');
+  await openTalkAbout(page, 28);
 }
 
 test('an 885-character spoken question from verse 28 is sent whole, waits and is answered', async ({ page }) => {
   const fake = makeFakePostern();
   await start(page, fake);
-  const bar = await askBar(page).boundingBox();
+  const bar = await talkSheetOf(page).getByRole('button', { name: 'Hold to talk' }).boundingBox();
   if (!bar) throw new Error('no bar');
   await page.mouse.move(bar.x + bar.width / 2, bar.y + bar.height / 2);
   await page.mouse.down();
-  await expect(composerOf(page).getByTestId('live-transcript')).toHaveText(QUESTION, { timeout: 20_000 });
+  await expect(talkSheetOf(page).getByTestId('live-transcript')).toHaveText(QUESTION, { timeout: 20_000 });
   await page.mouse.up();
 
   await expect(talkSheetOf(page).getByText(/Waiting for the tutor…/)).toBeVisible();
@@ -46,7 +47,9 @@ test('an 885-character spoken question from verse 28 is sent whole, waits and is
 test('an 885-character typed question from verse 28 is sent whole, waits and is answered', async ({ page }) => {
   const fake = makeFakePostern();
   await start(page, fake);
-  await typeQuestion(page, QUESTION);
+  const sheet = talkSheetOf(page);
+  await (await talkField(sheet)).fill(QUESTION);
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
 
   await expect(talkSheetOf(page).getByText(/Waiting for the tutor…/)).toBeVisible();
   expect(fake.received).toHaveLength(1);

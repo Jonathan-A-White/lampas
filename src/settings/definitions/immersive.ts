@@ -1,4 +1,4 @@
-// Immersive reader (Settings > Immersive reader): whether the Reader's top and Talk bar slide away while he reads (src/immersive.ts).
+// Immersive reader (Settings > Immersive reader): whether the Reader's top slides away while he reads (src/immersive.ts).
 import { defineSetting } from '../define';
 
 export type Immersive = 'on' | 'off';
@@ -15,6 +15,6 @@ export const immersiveSetting = defineSetting<Immersive>({
   },
   section: 'immersive',
   label: 'Immersive reader',
-  hint: 'While you read, the top and the Talk bar slide away.',
-  help: 'On: scrolling the text down slides the header, the row of chips, the Talk bar and the Ask button out of view, so the text has the whole screen, and the text is set like a book: tight lines, a serif face, justified and hyphenated, with small dim verse numbers, and pure black behind it in the dark theme. Scrolling back up does not bring them back. With Turn pages, turning to the next page slides them away. Tapping the text with two fingers brings them back, and a second two-finger tap sends them away again. Off by default.',
+  hint: 'While you read, the top slides away.',
+  help: 'On: scrolling the text down slides the header and the row of chips out of view, so the text has the whole screen, and the text is set like a book: tight lines, a serif face, justified and hyphenated, with small dim verse numbers, and pure black behind it in the dark theme. Scrolling back up does not bring them back. With Turn pages, turning to the next page slides them away. Tapping the text with two fingers brings them back, and a second two-finger tap sends them away again. Off by default.',
 });

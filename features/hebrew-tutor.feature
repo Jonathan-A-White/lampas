@@ -1,12 +1,12 @@
 Feature: The tutor and a Hebrew verse
-  Ask the tutor on a verse of an Old Testament chapter sends the verse's Hebrew with the English, as it sends a Greek verse's Greek: the pointed
+  The tutor asked about a verse of an Old Testament chapter (the floating ? over its Verse view) sends the verse's Hebrew with the English, as it sends a Greek verse's Greek: the pointed
   verse, and each word with its lemma, transliteration, gloss and parsing (mw-5vvlay.3, src/services/hebrewWords.ts, grinds/bible-talk.input.schema.json
-  `hebrew` and `hebrew_words`; the Verse view's Ask goes to the Talk sheet's tutor, mw-5r3p30.842). The tutor's answer draws a Hebrew
+  `hebrew` and `hebrew_words`; the Talk sheet's tutor, mw-5r3p30.842). The tutor's answer draws a Hebrew
   word right to left in the Hebrew face (src/markdown/scriptRuns.ts). The Quiz door of Practise stays out of an Old Testament verse's Practise at Hebrew 0: it is the Talk sheet's quiz, written
   in the Greek ladder's terms, and the drill-items grind takes Greek grammar ideas (docs/hebrew.md). These scenarios run against a fake Postern whose mill answers.
 
   @uc-tutor-ask @hebrew
-  Scenario: Ask the tutor on Jonah 1:10 sends the Hebrew words with the English
+  Scenario: The tutor asked about Jonah 1:10 is sent the Hebrew words with the English
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
     And he asks the tutor "What does the Hebrew say for fear?"
@@ -23,10 +23,10 @@ Feature: The tutor and a Hebrew verse
     And the answer draws the Hebrew word "יָרֵא" right to left
 
   @uc-tutor-ask @hebrew
-  Scenario: The Quiz door is not offered on Jonah 1:10, and Ask the tutor and Diagram are
+  Scenario: The Quiz door is not offered on Jonah 1:10, and Diagram is
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram"
+    Then the Verse view offers the actions "Listen", "Read it aloud", "Practise" and "Diagram"
     When he chooses "Practise"
     Then the Practise door has no "Quiz"
 

@@ -8,9 +8,9 @@
 // the moment it is wanted until it has slid out, and then it is not in the page at all.
 //
 // Its foot keeps the phone's bottom floor (`floor`, --lp-bar-inset) when it is the lowest thing on the screen, because Android Chrome does not always report
-// the navigation bar (mw-5r3p30.473); the Talk bar and the speaking bar keep the floor themselves when they are.
+// the navigation bar (mw-5r3p30.473); the speaking bar keeps the floor itself when it is.
 //
-// With Turn pages the row also holds the room the Reader keeps for the round Ask button (`room`, mw-5r3p30.610): the line is at its top, right under the
+// With Turn pages the row also holds the room the Reader keeps for the floating ? (`room`, mw-5r3p30.610): the line is at its top, right under the
 // text, and the button sits beside it in the rest, so a page ends a line or less above the line and not above a blank band of the button's room. The
 // line keeps the room's width clear at each side (the button's 12 px, 56 px and 4 px of air), so a long title wraps rather than runs under the button. A
 // room of 0px (the bars away) slides shut with the bars, as the box's margin does with Scroll.

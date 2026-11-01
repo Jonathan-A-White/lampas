@@ -9,16 +9,15 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { setReaderView, setWeave } from '../../src/data/repositories';
 import { applyRequestStatus, keepRequest, type StatusRecord, type RequestStatus } from '../../src/data/repositories/requests';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { messageBox, typeQuestion } from '../../tests/support/composer';
+import { messageBox } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
-import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { openTutor } from './open-tutor';
 
 afterAll(() => {
@@ -102,8 +101,6 @@ function expectOne(sent: Awaited<ReturnType<typeof requestsSent>>, summary: stri
   expect(sent).toEqual([{ summary, status, ...(field && value ? { [field]: value } : {}) }]);
 }
 
-const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
-
 const feature = await loadFeature('features/tutor-requests.feature');
 
 describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
@@ -169,32 +166,4 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
-  Scenario("The Verse view's Ask the tutor is sent his requests too", ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on the Verse view of Romans 8 with Ask the tutor chosen behind a fake Postern with the request {string} landed version 0.1.86', async (_, summary: string) => {
-      await resetApp('#/');
-      await keepWith(summary, 'landed', 'version 0.1.86', 1_780_000_000_000);
-      await setReaderView('english');
-      await setWeave('off');
-      render(<App />);
-      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-      const heading = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => h.textContent?.includes('Walking by the Spirit'));
-      if (!heading) throw new Error('no heading');
-      await user.click(within(heading).getByRole('button'));
-      await screen.findByRole('region', { name: 'Verse view' });
-      await user.click(within(viewEl()).getByRole('button', { name: 'Ask the tutor', exact: true }));
-      await within(viewEl()).findByTestId('composer');
-    });
-    When('he asks {string} by the composer and the tutor answers {string}', async (_, question: string, answer: string) => {
-      fake.received.length = 0;
-      fake.autoReply = { status: 'answered', answer: { ...SYNERGEI_ANSWER, answer, words: [] } };
-      await typeQuestion(user, viewEl(), question);
-    });
-    Then('the bible-talk grist carried 1 request, {string}, as landed version 0.1.86', async (_, summary: string) => {
-      expectOne(await requestsSent('bible-talk'), summary, 'landed', 'version 0.1.86');
-    });
-    And('the Talk sheet shows the answer {string}', async (_, text: string) => {
-      const sheet = await screen.findByRole('dialog', { name: /^Talk about / });
-      expect(await within(sheet).findByText(text)).toBeInTheDocument();
-    });
-  });
 });

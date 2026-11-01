@@ -39,7 +39,7 @@ afterAll(() => {
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
-const CONTROL = 'Ask the tutor about this screen';
+const CONTROL = 'Ask the tutor about what is on screen';
 const SIMPLEST = "What's the simplest verse in the New Testament for me to learn first, given where I am?";
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
 const chapterFile = (book: string, n: number) => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
@@ -159,20 +159,6 @@ async function expectedProgress() {
 
 const counts = (c: { solid: number; frontier: number; notYet: number }) => `Solid ${c.solid} · Frontier ${c.frontier} · Not yet ${c.notYet}`;
 
-const FULL_SCREENS: [string, string][] = [
-  ['Goal', '#/goal'],
-  ['Words', '#/words'],
-  ['Review', '#/review'],
-  ['Quick test', '#/test'],
-  ['Parsing drill', '#/drill'],
-  ['Paradigms', '#/paradigms'],
-  ['Placement', '#/placement'],
-  ['Settings', '#/settings'],
-  ['My study way', '#/studyway'],
-  ['Import', '#/import'],
-  ['About', '#/about'],
-  ['Preface', '#/preface'],
-];
 
 const feature = await loadFeature('features/ask-tutor.feature');
 
@@ -183,78 +169,12 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       expect(name).toBe(CONTROL);
       await waitFor(() => expect(control()).toHaveLength(1));
     });
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     Then('the Talk sheet is titled for <screen>', async () => {
       expect(await screen.findByRole('dialog', { name: `Ask the tutor: ${row.screen}` })).toBeInTheDocument();
     });
     And('the control is hidden while the sheet is open', async () => {
       await waitFor(() => expect(control()).toHaveLength(0));
-    });
-  });
-
-  Scenario("Every full screen has the control, and the Reader's opens its chapter talk", ({ Given, Then, When }) => {
-    Given('Lampas is opened on the Reader behind a fake Postern', async () => {
-      await openAt('', undefined);
-      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-    });
-    Then('the screen has one control named {string}', async (_, name: string) => {
-      expect(name).toBe(CONTROL);
-      await waitFor(() => expect(control()).toHaveLength(1));
-    });
-    When('he opens the tutor with a two-finger tap', taps);
-    Then('the Talk sheet is titled {string}', async (_, title: string) => {
-      expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();
-    });
-    When('he closes the Talk sheet', closeSheet);
-    Then('every other full screen has the control: Goal, Words, Review, Quick test, Parsing drill, Paradigms, Placement, Settings, My study way, Import and About', async () => {
-      for (const [name, address] of FULL_SCREENS) {
-        cleanup();
-        forgetTrail();
-        window.history.replaceState(null, '', `/${address}`);
-        render(<App />);
-        await waitFor(() => expect(control(), name).toHaveLength(1));
-        await user.click(control()[0]);
-        expect(await screen.findByRole('dialog', { name: `Ask the tutor: ${name}` })).toBeInTheDocument();
-      }
-    });
-  });
-
-  Scenario('A screen with the control keeps room for it, so nothing is ever behind it', ({ Given, And, Then, When }) => {
-    // the room (src/AskTutor.tsx useAskRoom) is written on the root as custom properties that src/index.css `.screen` reads; the placing is proved by tests/e2e/ask-button-room.spec.ts
-    const room = () => document.documentElement.style.getPropertyValue('--lp-ask-clear');
-    const goTo = async (address: string) => {
-      cleanup();
-      forgetTrail();
-      window.history.replaceState(null, '', `/${address}`);
-      render(<App />);
-    };
-    Given('Lampas is opened on #/settings with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/settings', goal));
-    Then('the screen has one control named {string}', async (_, name: string) => {
-      expect(name).toBe(CONTROL);
-      await waitFor(() => expect(control()).toHaveLength(1));
-    });
-    And("the screen's scroll box keeps room beneath it for the control, and the same while the Talk sheet is open", async () => {
-      expect(room()).toContain('var(--spacing) * 18');
-      expect(document.documentElement.style.getPropertyValue('--lp-ask-end')).toBe('0px');
-      await taps();
-      await screen.findByRole('dialog', { name: /^Ask the tutor: Settings/ });
-      expect(control()).toHaveLength(0);
-      expect(room()).not.toBe('');
-    });
-    When('he opens the Goal screen', async () => {
-      await goTo('#/goal');
-      await waitFor(() => expect(control()).toHaveLength(1));
-    });
-    Then('the room is kept there too', () => {
-      expect(room()).not.toBe('');
-    });
-    When('he opens the Reader', async () => {
-      await goTo('#/');
-      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-    });
-    Then('no room is kept for the control, the Reader keeps its own', () => {
-      expect(room()).toBe('');
-      expect(document.documentElement.style.getPropertyValue('--lp-ask-side')).toBe('');
     });
   });
 
@@ -268,7 +188,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       await waitFor(() => expect(screen.getByTestId('ideas-legend')).toHaveTextContent(counts(grammar)));
       await waitFor(() => expect(screen.queryAllByTestId('next-word').length).toBe(3));
     });
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he sends {string}', (_, question: string) => send(question));
     Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
       await waitFor(() => expect(fake.received).toHaveLength(count));
@@ -318,7 +238,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
 
   Scenario('The sheet opens with questions fitted to the screen and a tap sends one', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/goal with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/goal', goal));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     Then('the sheet suggests two or three questions', async () => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: Goal' });
       await waitFor(() => expect(suggestions().length).toBeGreaterThanOrEqual(2));
@@ -350,7 +270,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
 
   Scenario('On Settings the request carries every setting, its value and its help, and the sheet suggests questions about settings', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/settings with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/settings', goal));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     Then('the sheet suggests a question about Logos, {string}', async (_, question: string) => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: Settings' });
       await suggestionWaiting(question);
@@ -388,7 +308,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
 
   Scenario('After the first question the other suggestions are still there and a tap sends one', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
     And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
     Then('the suggested question {string} can still be tapped', (_, question: string) => canBeTapped(question));
@@ -406,7 +326,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
 
   Scenario('New talk clears the kept talk and brings back the empty state with all three suggestions, also after a reload', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
     And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
     And('he taps New talk', tapsNewTalk);
@@ -423,7 +343,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       window.history.replaceState(null, '', '/#/about');
       render(<App />);
     });
-    And('he opens the tutor with a two-finger tap after the reload', taps);
+    And('he opens the tutor with the floating ? after the reload', taps);
     Then('after the reload the sheet shows the empty state with all three suggestions and no earlier turn', async () => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: About' });
       await waitFor(() => expect(sheet().querySelector('[data-talk-empty]')).not.toBeNull());
@@ -436,7 +356,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     Given('Lampas is opened on #/about with the goal {string} behind a fake Postern and a phone slow to finish storing an answer', (_, goal: string) =>
       openAt('#/about', goal, 1500),
     );
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
     And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
     And('he taps New talk', tapsNewTalk);
@@ -451,7 +371,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     Given('Lampas is opened on #/about with the goal {string} behind a fake Postern and a phone slow to read the kept talk', (_, goal: string) =>
       openAt('#/about', goal, 0, 1500),
     );
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
     And('the answer number {int} has arrived', (_, n: number) => answerArrived(n));
     Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
@@ -461,7 +381,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
 
   Scenario('A first question that fails offline still leaves the other suggestions reachable', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('the mill goes down', () => {
       fake.down = true;
     });
@@ -483,7 +403,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
 
   Scenario('On About the request carries every credit and the sheet suggests questions about the credits', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/about with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/about', goal));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     Then('the sheet suggests questions about the credits, one of them {string}', async (_, question: string) => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: About' });
       await waitFor(() => expect(suggestions().length).toBeGreaterThanOrEqual(2));
@@ -520,7 +440,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
 
   Scenario('Other screens suggest their own questions', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/words with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/words', goal));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     Then('the sheet suggests two or three questions', async () => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: Words' });
       await waitFor(() => expect(suggestions().length).toBeGreaterThanOrEqual(2));
@@ -533,7 +453,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
 
   Scenario('A talk from a screen is kept under the screen, and is there on return', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on #/goal with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/goal', goal));
-    When('he opens the tutor with a two-finger tap', taps);
+    When('he opens the tutor with the floating ?', taps);
     And('he sends {string}', (_, question: string) => send(question));
     And('the answer number {int} has arrived', async (_, n: number) => {
       await waitFor(() => expect(turns()).toHaveLength(n));
@@ -553,7 +473,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       });
       await screen.findByTestId('learn-next');
     });
-    And('he opens the tutor with a two-finger tap on return', taps);
+    And('he opens the tutor with the floating ? on return', taps);
     Then('the sheet shows his question {string} and its answer', async (_, question: string) => {
       await waitFor(() => expect(turns()).toHaveLength(1));
       expect(within(turns()[0]).getByText(question)).toBeInTheDocument();
@@ -566,7 +486,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       });
       await screen.findByRole('heading', { name: 'Words', level: 1 });
     });
-    And('he opens the tutor with a two-finger tap there', taps);
+    And('he opens the tutor with the floating ? there', taps);
     Then('the sheet shows no earlier turn', async () => {
       await screen.findByRole('dialog', { name: 'Ask the tutor: Words' });
       expect(turns()).toHaveLength(0);

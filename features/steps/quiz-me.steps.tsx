@@ -217,20 +217,4 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('An ordinary talk about a verse is not in quiz mode', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern', openWith);
-    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    And('he chooses {string}', choose);
-    And('he taps {string}', tapsInView);
-    And('he sends {string}', async (_, said: string) => {
-      await screen.findByRole('dialog', { name: 'Talk about Romans 8:11' });
-      await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), said);
-      await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
-    });
-    Then('the mill received one grist for the lampas app, kind bible-talk, not in quiz mode', async () => {
-      await sent(1);
-      expect(received(0).grist).toMatchObject({ kind: 'bible-talk' });
-      expect('mode' in received(0).input).toBe(false);
-    });
-  });
 });

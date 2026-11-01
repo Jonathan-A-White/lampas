@@ -98,7 +98,7 @@ export function SettingsScreen() {
     if (linked !== null && linkedRow && isHomeRow(linkedRow)) setQuery('');
   }
   const values = useLiveQuery(readValues, []);
-  // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3); the Tutor door and Hand rows are not drawn at all (mw-5r3p30.880: no tutor door exists)
+  // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3); the Hand row is not drawn at all (mw-5r3p30.880: no tutor door exists)
   const aiAllowed = useAiAllowed();
   const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest)).filter((r) => aiAllowed || !r.licenceOnly);
   const needed = values && linked ? neededFor(values, linked) : undefined;

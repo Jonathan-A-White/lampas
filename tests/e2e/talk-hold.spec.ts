@@ -1,5 +1,5 @@
 // tests/e2e/talk-hold.spec.ts — the Talk sheet holds with Postern's component (mw-06ggew.15): the sheet's input is voice-kit's Composer, as in Ask the tutor, with Settings > Talk
-// (Tap to talk), the words of a hold that the recogniser drops are kept, in the sheet and on the Talk bar, and anything playing aloud pauses while he holds. The microphone and the
+// (Tap to talk), the words of a hold that the recogniser drops are kept, in the sheet, and anything playing aloud pauses while he holds. The microphone and the
 // speech are voice-kit's honest fakes (tests/support/honest-fakes.ts); how a phone really hears is only a phone check (docs/pwa-best-practices.md section 12).
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
@@ -8,6 +8,7 @@ import { honestMic, honestSpeech, isSpeaking } from '../support/honest-fakes';
 import { leaveSettings, openGroup } from './settings-group';
 import { shot } from './shot';
 import { talkField } from './talk-field';
+import { openTutor } from './open-tutor';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 
@@ -73,15 +74,15 @@ test('a hold in the sheet whose recogniser drops after words were heard leaves t
   expect(fake.received).toHaveLength(0);
 });
 
-test('a hold of the Talk bar whose recogniser drops after words were heard keeps them in the sheet, unsent', async ({ page }) => {
+test('a hold of the sheet opened by the floating ? whose recogniser drops after words were heard keeps them in the sheet, unsent', async ({ page }) => {
   const fake = await prepare(page);
   await honestMic(page);
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await press(page, page.getByRole('button', { name: 'Talk', exact: true }));
-  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
-  await expect(sheet.locator('[data-talk-live]')).toContainText('Please read');
+  const sheet = await openTutor(page, { sheet: 'Talk about Romans 8' });
+  await press(page, sheet.getByRole('button', { name: 'Hold to talk' }));
+  await expect(sheet.getByTestId('live-transcript')).toContainText('Please read');
   await dropRecogniser(page);
   await page.mouse.up();
   await expect(await talkField(sheet)).toHaveValue(/^Please read/);

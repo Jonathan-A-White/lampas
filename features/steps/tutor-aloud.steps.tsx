@@ -18,7 +18,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { getReading } from '../../src/speech/readAloud';
 import { dropWaiting, waitingAnswer } from '../../src/speech/tutorWaiting';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { holdBarIn, typeQuestion } from '../../tests/support/composer';
+import { typeQuestion } from '../../tests/support/composer';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
@@ -85,8 +85,11 @@ async function openVerse28(action: 'Read it aloud' | 'Ask the tutor'): Promise<v
   const number = await screen.findByRole('button', { name: 'Verse 28', exact: true });
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
   const view = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(view).getByRole('button', { name: action, exact: true }));
-  await screen.findByRole('region', { name: action === 'Read it aloud' ? 'Reading check' : 'Ask the tutor' });
+  // the Verse view's Ask the tutor action is gone (mw-5r3p30.882): a question goes to the Talk sheet the floating ? opens (typeQuestion)
+  if (action === 'Read it aloud') {
+    await user.click(within(view).getByRole('button', { name: action, exact: true }));
+    await screen.findByRole('region', { name: 'Reading check' });
+  }
 }
 
 async function holdAndLetGo(): Promise<void> {
@@ -108,7 +111,6 @@ async function ask(question: string): Promise<void> {
  * replaced by its open) would take the late send, answer it, and the answer would be stored as that scenario's first (mw-5r3p30.656). */
 async function askUnanswered(question: string): Promise<void> {
   fake.autoReply = undefined;
-  await waitFor(() => expect(holdBarIn(viewEl())).toBeEnabled());
   const sent = fake.received.length;
   await ask(question);
   await waitFor(() => expect(fake.received.length).toBe(sent + 1));
@@ -215,8 +217,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he asks the tutor {string} about verse 28 instead', async (_, question: string) => {
       fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
-      await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Ask the tutor', exact: true }));
-      await screen.findByRole('region', { name: 'Ask the tutor' });
+      await screen.findByRole('region', { name: 'Verse view' });
       await ask(question);
     });
     Then('the answer is shown and nothing is spoken', async () => {

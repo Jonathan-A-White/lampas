@@ -3,7 +3,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 // The Immersive reader's hint card (src/ImmersiveHint.tsx) at 390x844: with Immersive reader On the Reader opens with a card above the text that
-// says how it works, with two big buttons, and it never covers the round Ask button. A phone-width layout claim: it runs under --project=shots.
+// says how it works, with two big buttons. A phone-width layout claim: it runs under --project=shots.
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 /** Puts a setting in the app's store through raw IndexedDB, as the app wrote it. */
@@ -41,7 +41,7 @@ async function openReader(page: Page, immersive: 'on' | 'off') {
 
 const card = (page: Page) => page.locator('[data-immersive-hint]');
 
-test('the card says how it works, in large type, and does not cover the Ask button', async ({ page }) => {
+test('the card says how it works, in large type', async ({ page }) => {
   await openReader(page, 'on');
   await expect(card(page)).toBeVisible();
   await expect(card(page)).toContainText('Scroll down and the bars slide away.');
@@ -61,9 +61,6 @@ test('the card says how it works, in large type, and does not cover the Ask butt
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
   const size = await card(page).locator('p').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
   expect(size).toBeGreaterThanOrEqual(16);
-  // it is above the round Ask button, not over it
-  const ask = await page.locator('[data-ask-tutor]').boundingBox();
-  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(ask?.y ?? 0);
   await shot(page, 'immersive-hint');
 });
 
@@ -167,13 +164,8 @@ for (const size of [
   });
 }
 
-// The default Tutor door makes a two-finger tap on the text open the tutor (and only bring the bars back), and its sheet then covers the card; this test
-// taps with two fingers to bring the bars back, so it sets the door to the floating ? first (as immersive-reader.spec.ts does).
 test('the card comes back with the bars, and Got it then closes it', async ({ page }) => {
   await openReader(page, 'on');
-  await keep(page, 'tutorDoor', 'floating');
-  await page.reload();
-  await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await scrollText(page, 400);
   await expect(card(page)).toBeHidden();
   const cdp = await page.context().newCDPSession(page);

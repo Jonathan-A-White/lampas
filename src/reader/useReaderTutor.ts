@@ -1,7 +1,7 @@
 // src/reader/useReaderTutor.ts — the Reader's tutor wiring (docs/module-map.md R1b): which Talk sheet is open and what it is about, and every way
-// the Reader asks the tutor: a hold on the Talk bar (holdTalk), Help with this word (helpWithWord), a grammar term
-// (askAboutTerm), the teach sheet's new word (askAboutNewWord) and the Verse view's Quiz me (openQuiz); with the request another screen made
-// (the Quick test's ask), met once as the Reader opens. helpWithWord, askAboutTerm and askAboutNewWord differ only in the question
+// the Reader asks the tutor: Help with this word (helpWithWord), a grammar term
+// (askAboutTerm), and the Verse view's Quiz me (openQuiz); with the request another screen made
+// (the Quick test's ask), met once as the Reader opens. helpWithWord and askAboutTerm differ only in the question
 // they build: askFrom is the one place that opens the sheet on the verse and sends it.
 // The refs the Reader's effects share are passed in, never copied: `openTalkRef` (the conversation the sheet is open on, which useTalk's
 // callback reads) is the Reader's, and this hook keeps it current.
@@ -9,13 +9,11 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Chapter, Verse } from '../data/chapter';
 import { listTurns, talkRef } from '../data/repositories';
-import type { OutgoingPicture } from '../talk/pictures';
 import type { OpenChapter } from '../data/readerChapter';
 import { publish } from '../events/bus';
 import { pendingReturn, takeReturn, watchReturn, type ReaderRequest } from '../nav/readerRequest';
 import {
   helpQuestion,
-  newWordQuestion,
   quizMeQuestion,
   scopeRef,
   scopeTitle,
@@ -25,7 +23,6 @@ import {
   type WordFocus,
 } from '../services/talk';
 import { speakWord } from '../speech/greek';
-import type { NewWordAsk } from '../TeachSheet';
 import type { UseTalk } from '../useTalk';
 import type { TermAsk, WordHelp } from '../WordSheet';
 
@@ -39,16 +36,9 @@ export interface ReaderTutor {
   setTalkAbout(about: number | null | undefined): void;
   helpWithWord(help: WordHelp): void;
   askAboutTerm(ask: TermAsk): void;
-  askAboutNewWord(ask: NewWordAsk): void;
   openQuiz(): void;
-  /** The Verse view's Ask the tutor (mw-5r3p30.842): the Talk sheet opens on the verse or the whole passage `unit` and `question` goes as its turn, with `pictures`; a conversation still waiting for its answer is only shown. */
-  askUnit(unit: Verse, question: string, pictures?: OutgoingPicture[]): void;
   /** the quiz of the unit the Verse view shows has a turn or a message on its way: the button then says Continue */
   quizStarted: boolean;
-  /** a hold begins on the Talk bar: the sheet opens about `about` (null: the chapter) */
-  holdTalk(about: number | null): void;
-  /** that conversation is waiting for its answer: a press on it only opens the sheet, and listens to nothing */
-  talkWaiting(about: number | null): boolean;
 }
 
 /** What the Reader shares with this hook besides the chapter and the talk. */
@@ -61,13 +51,13 @@ export interface ReaderTutorShared {
   openTalkRef: { current: string | null };
 }
 
-export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk: UseTalk, voice: { abort: () => void }, shared: ReaderTutorShared): ReaderTutor {
+export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk: UseTalk, shared: ReaderTutorShared): ReaderTutor {
   const { book: BOOK, chapter: CHAPTER, title: TITLE } = open;
   const { request, viewUnit, openTalkRef } = shared;
   const { states, say } = talk;
   // The Talk sheet: undefined is closed, a number the verse it was opened on, null the chapter. A request from another screen opens it first.
   const [talkAbout, setTalkAboutRaw] = useState<number | null | undefined>(() =>
-    request?.action === 'talk' || request?.action === 'word' ? request.verse : pendingReturn(BOOK, CHAPTER)?.about,
+    request?.action === 'talk' || request?.action === 'word' || request?.action === 'ask' ? request.verse : pendingReturn(BOOK, CHAPTER)?.about,
   );
   // The quiz (the Verse view's Quiz me, mw-5r3p30.74): the verse or passage the open Talk sheet quizzes, else null.
   const [quizUnit, setQuizUnit] = useState<Verse | null>(null);
@@ -115,17 +105,6 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     say({ title: TITLE, chapter, verse }, request.question, request.focus);
   }, [request, chapter, say, TITLE]);
 
-  // A hold on the Talk bar opens the sheet about `about`; the hold itself (voice-kit's bar) listens. A conversation still waiting for its answer
-  // is only shown (talkWaiting: the hold is not begun, the press opens the sheet as a tap does).
-  const holdTalk = useCallback((about: number | null) => setTalkAbout(about), [setTalkAbout]);
-  const talkWaiting = useCallback(
-    (about: number | null) => {
-      const state = states[talkRef(BOOK, CHAPTER, about)];
-      return state?.phase === 'sending' || state?.phase === 'waiting';
-    },
-    [states, BOOK, CHAPTER],
-  );
-
   // The one way to ask the tutor about a verse from a sheet: drop what he was saying, open the Talk sheet on the verse and send the first
   // question `build` makes for its scope; a conversation still waiting for its answer is only shown. `beforeSay` runs just before the send.
   const askFrom = useCallback(
@@ -136,7 +115,6 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
       if (!chapter) return;
       const verse = chapter.verses.find((v) => v.n === verseN) ?? null;
       const scope = { title: TITLE, chapter, verse };
-      voice.abort();
       setTalkAbout(verseN);
       const state = states[talkRef(BOOK, CHAPTER, verseN)];
       if (state?.phase === 'sending' || state?.phase === 'waiting') return;
@@ -144,7 +122,7 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
       beforeSay?.();
       say(scope, question, focus);
     },
-    [chapter, states, voice, say, setTalkAbout, BOOK, CHAPTER, TITLE],
+    [chapter, states, say, setTalkAbout, BOOK, CHAPTER, TITLE],
   );
   // Help with this word (the word sheet's Grammar | Sound it out): the first question names the word. Sound it out says the word, slowly, now.
   const helpWithWord = useCallback(
@@ -165,43 +143,19 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     (ask: TermAsk) => askFrom(ask.verse, (scope) => ({ question: termQuestion(ask.term, scopeTitle(scope)), focus: { term: ask.term, kind: 'grammar-term' } })),
     [askFrom],
   );
-  // Ask the tutor on the teach sheet: the verse the new word was shown in.
-  const askAboutNewWord = useCallback(
-    (ask: NewWordAsk) => askFrom(ask.verse, (scope) => ({ question: newWordQuestion(ask.lemma, ask.gloss, scopeTitle(scope)) })),
-    [askFrom],
-  );
-
   // Quiz me: the quiz about the unit the view shows is begun when it has no turn yet and nothing is on its way; the button then says Continue.
   const quizKey = viewUnit ? scopeRef(BOOK, CHAPTER, { verse: viewUnit, quiz: true }) : null;
   const quizTurns = useLiveQuery(() => (quizKey ? listTurns(quizKey) : Promise.resolve([])), [quizKey]);
   const quizStarted = (quizTurns?.length ?? 0) > 0 || (quizKey !== null && states[quizKey] !== undefined);
   const openQuiz = useCallback(() => {
     if (!chapter || !viewUnit || !quizKey) return;
-    voice.abort();
     setQuizUnit(viewUnit);
     setPassageUnit(null);
     setTalkAboutRaw(viewUnit.n);
     if (quizTurns?.length === 0 && !states[quizKey]) {
       say({ title: TITLE, chapter, verse: viewUnit, quiz: true }, quizMeQuestion(scopeTitle({ title: TITLE, verse: viewUnit })));
     }
-  }, [chapter, viewUnit, quizKey, quizTurns, states, voice, say, TITLE]);
+  }, [chapter, viewUnit, quizKey, quizTurns, states, say, TITLE]);
 
-  // The Verse view's Ask the tutor: the same Talk session the Talk bar opens, on the verse or the whole passage the view shows.
-  const askUnit = useCallback(
-    (unit: Verse, question: string, pictures?: OutgoingPicture[]) => {
-      if (!chapter) return;
-      voice.abort();
-      setQuizUnit(null);
-      const passage = unit.to !== undefined && unit.to !== unit.n;
-      setPassageUnit(passage ? unit : null);
-      setTalkAboutRaw(unit.n);
-      const scope = { title: TITLE, chapter, verse: passage ? unit : (chapter.verses.find((v) => v.n === unit.n) ?? null) };
-      const state = states[scopeRef(BOOK, CHAPTER, scope)];
-      if (state?.phase === 'sending' || state?.phase === 'waiting') return;
-      say(scope, question, undefined, pictures);
-    },
-    [chapter, states, voice, say, BOOK, CHAPTER, TITLE],
-  );
-
-  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, askAboutNewWord, openQuiz, askUnit, quizStarted, holdTalk, talkWaiting };
+  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, openQuiz, quizStarted };
 }

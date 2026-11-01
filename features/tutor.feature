@@ -19,7 +19,6 @@ Feature: Ask the tutor about a verse
     When he asks "What does συνεργεῖ mean here?"
     Then the Talk sheet about Romans 8:28 opens and the answer shows in it under his question
     And the answer names the Greek word "συνεργεῖ" with its lemma "συνεργέω"
-    And the Ask box is ready for the next question
 
   Scenario: While the tutor has not answered the Talk sheet says Waiting
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern that holds its answers
@@ -43,15 +42,6 @@ Feature: Ask the tutor about a verse
     Then the Talk sheet says "Could not reach the tutor" with a Retry button
     When the backend comes back and he taps Retry
     Then the Talk sheet about Romans 8:28 opens and the answer shows in it under his question
-
-  Scenario: Send is not offered with nothing typed
-    Given Lampas is opened on Romans 8 with a tutor behind a fake Postern
-    When he selects verse 28 and taps Type a question
-    Then there is no Send button
-    When he types "   "
-    Then there is still no Send button
-    When he types "Why?" instead
-    Then the Send button is on
 
   Scenario: An answer in the wrong shape is not kept
     Given Lampas is opened on Romans 8 with a tutor behind a fake Postern that answers in the wrong shape

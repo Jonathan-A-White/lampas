@@ -3,7 +3,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
-import { composerOf, questionField } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { pictureInput, talkField } from './talk-field';
@@ -52,21 +51,6 @@ test('the Talk sheet has no Send to the makers button, empty or with words and a
   await expect(sheet.locator('[data-makers-send]')).toHaveCount(0);
   await shot(page, 'send-to-makers-talk-none');
   expect(feedbacks(fake)).toHaveLength(0);
-});
-
-test("the Verse view's Ask has Attach a picture and Take a photo and no Send to the makers button", async ({ page }) => {
-  await start(page);
-  await page.goto('/#/?c=8&view=english&weave=off');
-  await page.locator('[data-heading]', { hasText: 'Walking by the Spirit' }).getByRole('button').click();
-  const view = page.getByRole('region', { name: 'Verse view' });
-  await view.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
-  const composer = composerOf(page);
-  await expect(composer.getByRole('button', { name: 'Attach a picture' })).toBeVisible();
-  await expect(composer.getByRole('button', { name: 'Take a photo' })).toBeVisible();
-  await view.locator('input[type="file"]:not([capture])').setInputFiles(PICTURE);
-  await (await questionField(page)).fill('The Greek is too small here');
-  await expect(view.getByRole('button', { name: 'Send to the makers', exact: true })).toHaveCount(0);
-  await shot(page, 'send-to-makers-ask-none');
 });
 
 test('what the tutor cannot do is offered in the talk, and a tap on the offer sends it with the picture', async ({ page }) => {

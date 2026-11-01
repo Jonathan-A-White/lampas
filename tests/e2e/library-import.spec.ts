@@ -107,9 +107,9 @@ test('a long list turns on in one tap and the Library says when it came', async 
   const button = page.getByRole('button', { name: /^Turn on \d+ books$/ });
   await expect(button).toBeVisible();
   await expectThumbSized(page);
-  // the round Ask the tutor button rises above the pinned button and does not cover it
-  const [turnOn, ask] = await Promise.all([button.boundingBox(), page.locator('[data-ask-tutor]').boundingBox()]);
-  expect(ask!.y + ask!.height, 'the round button ends above the Turn on button').toBeLessThanOrEqual(turnOn!.y);
+  // the floating ? rises above the pinned button and does not cover it
+  const [turnOn, ask] = await Promise.all([button.boundingBox(), page.locator('[data-floating-tutor]').boundingBox()]);
+  expect(ask!.y + ask!.height, 'the floating ? ends above the Turn on button').toBeLessThanOrEqual(turnOn!.y);
   await shot(page, 'library-import-long');
   await button.click();
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();

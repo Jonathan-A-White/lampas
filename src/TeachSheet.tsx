@@ -2,7 +2,7 @@
 // try to work it out himself with the tools around him. The Greek lemma large with a speaker, how it sounds, what it means, the form
 // of its first occurrence in plain words, its picture if it has one, and the easiest verse of the chapter (src/data/frontier.ts
 // easiestVerse) woven (src/data/weave.ts) with the new word in Greek as well and its English in small grey beneath it. At the foot Got it,
-// I know this, Not now (skipped for today only) and Ask the tutor. Each answer moves on to the next new word; the sheet closes when none is left.
+// I know this, Not now (skipped for today only). The sheet's own Ask the tutor is gone (mw-5r3p30.882): the floating ? is the one door. Each answer moves on to the next new word; the sheet closes when none is left.
 import { useEffect, useMemo, useState } from 'react';
 import { type Chapter, sourceLanguage, wordParse } from './data/chapter';
 import { type Candidate, easiestVerse } from './data/frontier';
@@ -24,14 +24,7 @@ import { HeartOfWord } from './HeartOfWord';
 
 const BUTTON = 'min-h-12 min-w-0 rounded-xl border px-3 text-base font-medium disabled:opacity-50';
 
-/** What a tap on Ask the tutor asks for: the word, its meaning and the verse it is met in. */
-export interface NewWordAsk {
-  lemma: string;
-  gloss: string;
-  verse: number;
-}
-
-export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowVerse, onAsk }: {
+export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowVerse }: {
   chapter: Chapter;
   /** 'Romans 8' */
   title: string;
@@ -41,8 +34,6 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
   onClose: () => void;
   /** the verse number was tapped: the Reader shows that verse (the sheet closes itself first) */
   onShowVerse: (verse: number) => void;
-  /** Ask the tutor (the sheet closes itself first); the button is left out without it (no licence) */
-  onAsk?: (ask: NewWordAsk) => void;
 }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
@@ -186,22 +177,9 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
           <button type="button" disabled={busy} onClick={() => teach('known')} className={`${BUTTON} border-line text-accent active:bg-line`}>
             I know this
           </button>
-          <button type="button" disabled={busy} onClick={notNow} className={`${BUTTON} border-line text-accent active:bg-line`}>
+          <button type="button" disabled={busy} onClick={notNow} className={`${BUTTON} col-span-2 border-line text-accent active:bg-line`}>
             Not now
           </button>
-          {onAsk ? (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                onClose();
-                onAsk({ lemma: current.lemma, gloss: current.gloss, verse: verse.n });
-              }}
-              className={`${BUTTON} border-line text-accent active:bg-line`}
-            >
-              Ask the tutor
-            </button>
-          ) : null}
         </div>
       </div>
     </div>

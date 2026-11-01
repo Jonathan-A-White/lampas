@@ -46,8 +46,8 @@ Answer with a Tips Answer (grinds/tips.answer.schema.json): `{"tip": null}`, or 
 
 Each id in `features_used` and `features_never` is one of these:
 
-- `ask`: Ask the tutor about a verse, from the box under the selected verse.
-- `talk`: Talk about a verse or chapter by holding the Talk bar.
+- `ask`: Ask the tutor about a verse, with the floating ? over the verse.
+- `talk`: Talk about a verse or chapter with the floating ?, by holding the Hold to talk bar in its sheet.
 - `quick-test`: the Quick test of words.
 - `parsing-drill`: the Parsing drill.
 - `review`: Review of the words and ideas that are due.

@@ -38,8 +38,8 @@ test('the lesson fits the phone, scrolls its diagram sideways, lights the right 
     expect(b.y + b.height).toBeLessThanOrEqual(VIEWPORT.height);
     expect(b.height).toBeGreaterThanOrEqual(43.5);
   }
-  const ask = await page.locator('[data-ask-tutor]').boundingBox();
-  if (!ask) throw new Error('no Ask the tutor button');
+  const ask = await page.locator('[data-floating-tutor]').boundingBox();
+  if (!ask) throw new Error('no floating ? (the tutor door)');
   const next = await box(page, 'Next');
   expect(ask.y + ask.height).toBeLessThanOrEqual(next.y);
   await shot(page, 'diagram-lesson');

@@ -69,7 +69,7 @@ export interface Lookup {
 /** What a tap on Grammar or Sound it out asks for: the word as it stands, its lemma, its parsing as the sheet shows it, and
  * the verse it stands in. */
 export interface WordHelp {
-  /** Grammar and Sound it out are the Help row's; 'word' is the sheet's Ask the tutor (the word, its lemma and its parsing, no particular help asked) */
+  /** Grammar and Sound it out are the Help row's; 'word' is what the tutor door asks over the sheet (the word, its lemma and its parsing, no particular help asked) */
   kind: 'grammar' | 'sound' | 'word';
   form: string;
   lemma: string;
@@ -159,8 +159,8 @@ function studyGroupsOf(chapter: Chapter, word: GreekWord, study: StudyResources 
 const MANY_TILES = 5;
 
 /** The facts' box's height and foot: the heading above it (a line and its padding) takes its room out of the box, so the sheet stays as tall as before. A short sheet
- * whose word has a Paradigm row (a row of its own, 44 px and its padding) gets that much more room, so Help with this word and Ask the tutor stay where they were
- * (mw-irpgqi.1; tests/e2e/word-tip.spec.ts holds Ask the tutor in reach, so the row's 52 px are added and not taken from what was there); a long sheet (many tiles) scrolls and keeps its height. */
+ * whose word has a Paradigm row (a row of its own, 44 px and its padding) gets that much more room, so Help with this word stays where it was
+ * (mw-irpgqi.1; tests/e2e/word-tip.spec.ts holds Help with this word in reach, so the row's 52 px are added and not taken from what was there); a long sheet (many tiles) scrolls and keeps its height. */
 function scrollHeight(many: boolean, heading: unknown, paradigm: boolean): string {
   // whole class names, as tailwind finds them in the source
   if (many) return heading ? 'max-h-[calc(50dvh-2.75rem)] pb-4' : 'max-h-[50dvh] pb-4';
@@ -261,8 +261,7 @@ export function AppMissingSheet({ app, onClose, onTurnOff }: { app: string; onCl
 
 const HELP_BUTTON = 'min-h-12 flex-1 rounded-xl border border-line px-3 text-base font-medium text-accent active:bg-line';
 
-/** Help with this word: Grammar and Sound it out (for a Hebrew word Syllables and sounds, the Hebrew guide's own label), the two ways a word he struggled with can be helped; and, under them, Ask the tutor
- * about the word with what the app knows of it already handed over. */
+/** Help with this word: Grammar and Sound it out (for a Hebrew word Syllables and sounds, the Hebrew guide's own label), the two ways a word he struggled with can be helped. The sheet's own Ask the tutor is gone (mw-5r3p30.882): the floating ? asks about the word. */
 function HelpRow({ help, hebrew = false }: { help: (kind: WordHelp['kind']) => void; hebrew?: boolean }) {
   return (
     <div role="group" aria-label="Help with this word" className="mt-3">
@@ -275,16 +274,13 @@ function HelpRow({ help, hebrew = false }: { help: (kind: WordHelp['kind']) => v
           {hebrew ? 'Syllables and sounds' : 'Sound it out'}
         </button>
       </div>
-      <button type="button" onClick={() => help('word')} className={`${HELP_BUTTON} mt-2 w-full`}>
-        Ask the tutor
-      </button>
     </div>
   );
 }
 
 /** A Hebrew word's card (an Old Testament chapter, mw-5vvlay.2): the pointed form large, right to left, with Listen in the phone's he-IL voice; its respelling in the chosen Hebrew scheme where the Greek has its own (mw-gdcyf98.6: the scholarly transliteration is no longer drawn);
  * the lemma, the Parsing as the chapter's parse map decodes it (plain words: the Grammar sheet explains Greek terms only), the Paradigm row where a Hebrew table holds the word's parsing (mw-gdcyf98.13), the Meaning and the Definition of the chapter's lex, Strong's and the English
- * of its chunk. Each term of the Parsing is a link to the Grammar sheet (mw-gdcyf98.20), and Help with this word (Grammar, Syllables and sounds, Ask the tutor) sits under the Study row where the screen can send it. No Heart note: it is Greek-only for now (docs/layout/word-sheet.md lists it as LATER). With Logos off the first card offers to turn it on. */
+ * of its chunk. Each term of the Parsing is a link to the Grammar sheet (mw-gdcyf98.20), and Help with this word (Grammar, Syllables and sounds) sits under the Study row where the screen can send it. No Heart note: it is Greek-only for now (docs/layout/word-sheet.md lists it as LATER). With Logos off the first card offers to turn it on. */
 function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, onHelp, onTerm, onParadigm, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
@@ -538,7 +534,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
   const scroll = useRef<HTMLDivElement>(null);
   const moreBelow = useMoreBelow(scroll, `${tiles}:${lookup.words.length}`);
   // A word of another chapter has no verse in the Reader's chapter to help with or ask about.
-  // Help with this word and Ask the tutor are the AI: left out without a licence (mw-8m9dyu.2).
+  // Help with this word is the AI: left out without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
   const help = ai && onHelp && !elsewhere
     ? (asked: WordHelp): void => {
@@ -546,7 +542,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
         onHelp(asked);
       }
     : undefined;
-  // The tutor door (src/tutor/door.ts, a two-finger tap or the floating ?) on this sheet asks about its word, as the word's own Ask the tutor does: the first word, its lemma and its parsing
+  // The tutor door (src/tutor/door.ts, the floating ?) on this sheet asks about its word: the first word, its lemma and its parsing
   const first = lookup.words[0];
   const firstVerse = lookup.verse ?? (first ? sheetChapter.verses.find((v) => v.g.includes(first))?.n : undefined);
   useDoorTarget(

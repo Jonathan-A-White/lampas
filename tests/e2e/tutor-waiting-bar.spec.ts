@@ -5,10 +5,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../support/fake-postern';
 import { honestMic, honestSpeech, spoken } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
-import { typeQuestion } from './ask-composer';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { chooseAction, openTalkAbout } from './verse-view';
+import { openTalkAbout } from './verse-view';
 import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
@@ -31,6 +30,15 @@ async function start(page: Page): Promise<FakePostern> {
   await openUnlocked(page);
   await page.goto('/');
   return fake;
+}
+
+/** He opens the Verse view of verse `n`, the floating ? opens the Talk sheet over it and he sends `question`. Returns the Verse view. */
+async function askAboutVerse(page: Page, n: number, question: string) {
+  await openTalkAbout(page, n);
+  const sheet = page.getByRole('dialog', { name: `Talk about Romans 8:${n}` });
+  await (await talkField(sheet)).fill(question);
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  return page.getByRole('region', { name: 'Verse view' });
 }
 
 /** He leaves, the answer arrives while he is away, and he comes back. */
@@ -59,8 +67,7 @@ for (const size of [{ width: 390, height: 844 }, { width: 844, height: 390 }]) {
   test(`the bar is above the Verse view and a tap on it plays the answer, at ${size.width}x${size.height}`, async ({ page }) => {
     await page.setViewportSize(size);
     const fake = await start(page);
-    const view = await chooseAction(page, 28, 'Ask the tutor');
-    await typeQuestion(page, 'What does συνεργεῖ mean here?');
+    const view = await askAboutVerse(page, 28, 'What does συνεργεῖ mean here?');
     await awayAndBack(page, fake, SYNERGEI_ANSWER);
     await expect(page.getByRole('button', { name: BAR, exact: true })).toBeVisible();
     await expectBarOnTop(page);
@@ -93,8 +100,7 @@ test('the bar is above the Talk sheet and its backdrop, and a tap on it plays th
 // Leaving the screen he asked from keeps the answer that waits: the bar stays over the Reader and plays it on his tap (mw-5r3p30.323).
 test('the phone\'s Back out of the Verse view keeps the bar over the Reader, and a tap on it plays the answer', async ({ page }) => {
   const fake = await start(page);
-  const view = await chooseAction(page, 28, 'Ask the tutor');
-  await typeQuestion(page, 'What does συνεργεῖ mean here?');
+  const view = await askAboutVerse(page, 28, 'What does συνεργεῖ mean here?');
   await awayAndBack(page, fake, SYNERGEI_ANSWER);
   // the question was sent to the Talk sheet over the view (mw-5r3p30.842): the phone's Back closes it, then the Verse view (its '‹ Reader' is below the bar since mw-5r3p30.636)
   await page.goBack();

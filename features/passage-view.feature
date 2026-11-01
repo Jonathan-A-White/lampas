@@ -32,7 +32,7 @@ Feature: A section heading opens the Verse view for its passage
   Scenario: The passage has one row of actions, without Diagram, and exactly one control at the foot
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the heading "Walking by the Spirit"
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor" and "Practise"
+    Then the row of actions is "Listen", "Read it aloud" and "Practise"
     And "Copy" is one of the tools under the text, not an action
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
 
@@ -58,17 +58,6 @@ Feature: A section heading opens the Verse view for its passage
     When he holds the hold bar for 2 seconds and lets go
     Then the mill received one grist for the lampas app, kind verse-read, about "Romans 8:1-11" whose target_text holds the English of verses 1 to 11 and no other
     And the reading of the passage is kept under "rom.8.1-11" and not under verse 1
-
-  Scenario: Ask the tutor about the passage carries its reference and text
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a recogniser behind a fake Postern
-    When he taps the heading "Walking by the Spirit"
-    And he chooses "Ask the tutor"
-    Then the hold bar is labelled "Hold to ask"
-    When he holds the hold bar and says "What is the Spirit's work here?" and lets go
-    Then the mill received one grist for the lampas app, kind bible-talk, about "Romans 8:1-11" with the question "What is the Spirit's work here?"
-    And that grist carries the Greek and the English of verses 1 to 11 and no other
-    And the answer shows in the Talk sheet about Romans 8:1-11
-    And the talk is kept under "rom.8.1-11" and not under verse 1
 
   Scenario: Copy copies the passage with its link on the last line
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"

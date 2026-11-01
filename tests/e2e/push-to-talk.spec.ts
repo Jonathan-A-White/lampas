@@ -3,6 +3,7 @@ import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
+import { openTutor } from './open-tutor';
 import { openUnlocked } from './unlocked';
 
 const VIEWPORT = { width: 390, height: 844 };
@@ -23,21 +24,24 @@ test('holding Talk shows his words live in the sheet and sends them on release',
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
-  const talk = page.getByRole('button', { name: 'Talk', exact: true });
-  const box = await talk.boundingBox();
-  if (!box) throw new Error('no Talk button');
+  // the floating ? opens the Talk sheet with its mic button ready, not listening; holding that button listens (mw-5r3p30.882: the Reader's Talk bar is gone)
+  const sheet = await openTutor(page, { sheet: 'Talk about Romans 8' });
+  await expect(sheet.getByTestId('live-transcript')).toHaveCount(0);
+  const mic = sheet.getByRole('button', { name: 'Hold to talk' });
+  const box = await mic.boundingBox();
+  if (!box) throw new Error('no Hold to talk button');
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8' });
-  await expect(sheet).toBeVisible();
-  const live = sheet.locator('[data-talk-live]');
+  // his live words are the sheet's Composer's (the kit's live-transcript; the [data-talk-live] box was the Reader's Talk bar's, gone with it), and the line under them says it is listening
+  const live = sheet.getByTestId('live-transcript');
   await expect(live).toBeVisible();
-  await expect(live).toContainText('Listening');
+  await expect(sheet.getByTestId('mic-name')).toContainText('Listening');
   // his words come as he says them
   await expect(live).toContainText('Please');
 
-  // The live words and the mic button are inside the window, a thumb tall, and the page has not moved.
-  const hold = sheet.getByRole('button', { name: 'Hold to talk' });
+  // The live words and the mic button are inside the window, a thumb tall, and the page has not moved. Held, the button is named Release to send: it is found as the Composer's bar.
+  const hold = sheet.locator('.bk-composer__bar');
+  await expect(hold).toHaveAccessibleName('Release to send');
   const holdBox = await hold.boundingBox();
   expect(holdBox?.height).toBeGreaterThanOrEqual(43.5);
   expect(holdBox?.width).toBeGreaterThanOrEqual(43.5);

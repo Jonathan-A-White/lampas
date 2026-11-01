@@ -1,7 +1,7 @@
 // src/talk/Bars.tsx — Lampas's two uses of voice-kit/composer's one hold-to-talk bar (mw-06ggew.7; the look is the kit's, Postern's bar, set to Lampas's
 // palette and size by `.lp-bar` in index.css, docs/pwa-best-practices.md section 12: every hold-to-talk control is this bar):
-//   HeldTalkBar  the kit's TalkBar over a hold of useTalkHold: the Talk sheet's foot, the Reader's Talk bar, Welcome and the letter drill. With `onTap` a press
-//                shorter than the hold's delay is a tap (the Reader's Talk bar opens the sheet); the click that ends a hold is not one.
+//   HeldTalkBar  the kit's TalkBar over a hold of useTalkHold: the Talk sheet's foot, Welcome and the letter drill. With `onTap` a press
+//                shorter than the hold's delay is a tap (no screen uses it since the Reader's Talk bar went, mw-5r3p30.882); the click that ends a hold is not one.
 //   RecordBar    the kit's HoldToTalkBar for a hold that records rather than listens (the reading check's Read buttons, the Try it step): a hold from the first
 //                touch, or Space / Enter held, `onAbort` when the finger slides off the bar or the phone takes the touch.
 // In a short window (a phone held sideways) a bar can be `compact` (a 56 px row, the icon beside the label) or `round` (a round mic button, the label hidden;
