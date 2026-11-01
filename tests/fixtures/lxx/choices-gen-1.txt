@@ -1,0 +1,164 @@
+# A model session's choices for the Gen 1 fixture (tests/unit/lxx-choose.test.ts): the first candidate of each pending word, so every line is among the candidates,
+# except the two words with no candidate (guess, with the lemma) and two marks the test needs: Gen.1:9#35 guess (a candidate, marked) and a `?` on some lines.
+# Not a reading of the verses: the fixture only shows the shape (ref parsing [lemma] [?|guess]) and the confidences it gives.
+Gen.1:1#2 N-DSF
+Gen.1:2#5 A-NSM
+Gen.1:2#7 A-NSM
+Gen.1:2#9 N-ASN
+Gen.1:2#14 N-ASN
+Gen.1:2#16 V-IPI-3S ?
+Gen.1:3#6 N-ASN
+Gen.1:3#9 N-ASN
+Gen.1:4#5 T-ASN
+Gen.1:4#6 N-ASN
+Gen.1:4#8 A-ASM
+Gen.1:4#14 A-ASN
+Gen.1:4#19 A-ASN
+Gen.1:5#5 T-ASN
+Gen.1:5#6 N-ASN
+Gen.1:5#9 T-ASN ?
+Gen.1:5#10 N-ASN
+Gen.1:5#18 ADV
+Gen.1:6#6 N-ASN
+Gen.1:6#8 A-DSN
+Gen.1:6#13 V-PAP-NSN
+Gen.1:6#15 A-ASN
+Gen.1:7#5 T-ASN
+Gen.1:7#6 N-ASN
+Gen.1:7#12 A-ASN
+Gen.1:7#15 R-ASN ?
+Gen.1:7#22 A-ASN
+Gen.1:7#25 T-GSM
+Gen.1:8#5 T-ASN
+Gen.1:8#6 N-ASN
+Gen.1:8#13 A-ASM
+Gen.1:8#19 ADV
+Gen.1:9#6 T-ASN
+Gen.1:9#7 N-ASN
+Gen.1:9#8 T-ASN
+Gen.1:9#24 T-ASN ?
+Gen.1:9#25 N-ASN
+Gen.1:9#26 T-ASN
+Gen.1:9#33 P-GPM
+Gen.1:9#35 V-API-3S ὁράω guess
+Gen.1:10#9 T-APN
+Gen.1:10#10 N-APN
+Gen.1:10#14 N-GSF
+Gen.1:10#20 A-ASM
+Gen.1:11#10 V-PAP-NSN
+Gen.1:11#11 N-NSN ?
+Gen.1:11#13 N-NSN
+Gen.1:11#18 N-ASN
+Gen.1:11#19 A-ASM
+Gen.1:11#20 V-PAP-NSN
+Gen.1:11#22 R-GSM
+Gen.1:11#23 T-ASN
+Gen.1:11#24 N-NSN
+Gen.1:11#25 P-GSM
+Gen.1:11#27 P-DSM
+Gen.1:11#29 N-NSN ?
+Gen.1:12#7 V-PAP-NSN
+Gen.1:12#8 N-NSN
+Gen.1:12#10 N-NSN
+Gen.1:12#15 N-ASN
+Gen.1:12#16 A-ASM
+Gen.1:12#17 V-PAP-NSN
+Gen.1:12#19 R-GSM
+Gen.1:12#20 T-ASN
+Gen.1:12#21 N-NSN
+Gen.1:12#22 P-GSM ?
+Gen.1:12#24 P-DSM
+Gen.1:12#26 N-NSN
+Gen.1:12#35 A-ASM
+Gen.1:13#6 ADV
+Gen.1:14#5 V-APM-3P γίνομαι guess
+Gen.1:14#26 A-ASN
+Gen.1:14#31 A-ASN
+Gen.1:14#37 N-APN
+Gen.1:14#43 N-APF
+Gen.1:18#11 A-ASN ?
+Gen.1:18#16 A-ASN
+Gen.1:18#24 A-ASM
+Gen.1:19#6 ADV
+Gen.1:19#8 A-NSF
+Gen.1:20#6 T-APN
+Gen.1:20#7 N-APN
+Gen.1:20#8 N-APN
+Gen.1:20#10 V-PAP-GPF ζάω guess
+Gen.1:20#12 N-APN
+Gen.1:20#13 V-PNP-APN ?
+Gen.1:20#18 T-ASN
+Gen.1:20#19 N-ASN
+Gen.1:21#5 T-APN
+Gen.1:21#6 N-APN
+Gen.1:21#7 T-APN
+Gen.1:21#8 A-APN
+Gen.1:21#14 R-NPN
+Gen.1:21#16 T-APN
+Gen.1:21#17 N-APN
+Gen.1:21#19 N-NPN ?
+Gen.1:21#20 P-GPM
+Gen.1:21#22 A-ASN
+Gen.1:21#23 N-ASN
+Gen.1:21#24 A-ASM
+Gen.1:21#26 N-NSN
+Gen.1:21#32 A-APN
+Gen.1:22#3 P-APN
+Gen.1:22#7 V-PPM-2P
+Gen.1:22#9 V-PPM-2P
+Gen.1:22#12 T-APN ?
+Gen.1:22#13 N-APN
+Gen.1:22#18 T-APN
+Gen.1:22#19 N-APN
+Gen.1:23#6 ADV
+Gen.1:23#8 A-NSF
+Gen.1:24#11 N-NSN
+Gen.1:24#12 A-APN
+Gen.1:24#14 N-APN
+Gen.1:24#16 N-NPN
+Gen.1:24#20 N-NSN ?
+Gen.1:25#5 T-APN
+Gen.1:25#6 N-NPN
+Gen.1:25#10 N-NSN
+Gen.1:25#12 T-APN
+Gen.1:25#13 N-APN
+Gen.1:25#15 N-NSN
+Gen.1:25#17 A-APN
+Gen.1:25#18 T-APN
+Gen.1:25#19 N-APN
+Gen.1:25#23 N-NSN ?
+Gen.1:25#24 P-GPM
+Gen.1:25#30 A-APN
+Gen.1:26#32 A-GPM
+Gen.1:27#12 A-ASN
+Gen.1:27#14 A-ASN
+Gen.1:28#7 V-PPM-2P
+Gen.1:28#9 V-PPM-2P
+Gen.1:28#15 V-AAM-2P
+Gen.1:28#18 V-PAM-2P
+Gen.1:28#29 A-GPM ?
+Gen.1:28#37 A-GPM
+Gen.1:29#8 A-ASN
+Gen.1:29#10 A-ASM
+Gen.1:29#11 V-PAP-NSN
+Gen.1:29#12 N-NSN
+Gen.1:29#13 R-ASN
+Gen.1:29#20 A-ASN
+Gen.1:29#21 N-ASN
+Gen.1:29#22 R-ASN
+Gen.1:29#25 F-3DSM ?
+Gen.1:30#2 A-DPM
+Gen.1:30#8 A-DPM
+Gen.1:30#9 T-DPM
+Gen.1:30#10 N-DPN
+Gen.1:30#14 A-DSM
+Gen.1:30#15 N-DSN
+Gen.1:30#16 T-DSM
+Gen.1:30#17 V-PAP-DSM
+Gen.1:30#21 R-ASN
+Gen.1:30#24 F-3DSM ?
+Gen.1:31#5 T-APN
+Gen.1:31#6 A-APN
+Gen.1:31#7 K-APN
+Gen.1:31#11 A-APN
+Gen.1:31#18 ADV

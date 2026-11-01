@@ -1,6 +1,6 @@
 // scripts/lxx/choices.ts — the model's choices (layer 3) read from a choices file and joined to the words still pending
 // (docs/lxx-derivation.md, 'The choices file'; story mw-u2w5klk.4). A Builder's own session reads each pending word in its verse and writes one line;
-// no script calls a paid API. The runner that lists the words and checks a file as it is written is B4's (mw-u2w5klk.5); this is the reader every
+// no script calls a paid API. The runner that lists the words and checks a file as it is written is B4's (mw-u2w5klk.5, choose.ts); this is the reader every
 // consumer shares: `lxx:known` scores a file against TAGNT, `lxx:release` joins the files of a book to its derived rows, `lxx:report` counts them.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -67,14 +67,23 @@ export function readChoiceFiles(files: ReadonlyArray<{ path: string; text: strin
   return out;
 }
 
-/** The files of a directory whose names are `<prefix>*.tsv`, in name order, read and joined; a missing directory holds none. */
-export function readChoiceDir(dir: string, prefix: string): { files: string[]; choices: Map<string, Choice> } {
+function readChoiceDirWhere(dir: string, keep: (file: string) => boolean): { files: string[]; choices: Map<string, Choice> } {
   if (!existsSync(dir)) return { files: [], choices: new Map() };
   const files = readdirSync(dir)
-    .filter((f) => f.startsWith(prefix) && f.endsWith('.tsv'))
+    .filter((f) => f.endsWith('.tsv') && keep(f))
     .sort();
   const choices = readChoiceFiles(files.map((f) => ({ path: join(dir, f), text: readFileSync(join(dir, f), 'utf8') })));
   return { files, choices };
+}
+
+/** The files of a directory whose names are `<prefix>*.tsv`, in name order, read and joined; a missing directory holds none. */
+export function readChoiceDir(dir: string, prefix: string): { files: string[]; choices: Map<string, Choice> } {
+  return readChoiceDirWhere(dir, (f) => f.startsWith(prefix));
+}
+
+/** The second pass's files for a book: `<book>.tsv` (what lxx:choose --recheck writes) and any `<book>-*.tsv`. */
+export function readRecheckDir(dir: string, book: string): { files: string[]; choices: Map<string, Choice> } {
+  return readChoiceDirWhere(dir, (f) => f === `${book}.tsv` || f.startsWith(`${book}-`));
 }
 
 export interface Chosen {

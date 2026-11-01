@@ -8,7 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { BAR, chaptersOf, verdict, type Failure } from './bar';
-import { readChoiceDir, type Choice } from './choices';
+import { readChoiceDir, readRecheckDir, type Choice } from './choices';
 import { deriveBook, loadInput, splitBooks, train, type DeriveInput } from './derive';
 import { KNOWN_DIR, knownScores, type KnownScore } from './known';
 import { RECHECK_DIR, CHOICES_DIR, currentBuild, figuresOf, joinChoices } from './release';
@@ -194,7 +194,7 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
       pending: figures.pending,
       guesses: figures.guesses,
       breaks: figures.breaks,
-      secondPass: disagreement(choices, readChoiceDir(recheckDir, `${result.book}-`).choices),
+      secondPass: disagreement(choices, readRecheckDir(recheckDir, result.book).choices),
       shippable: v.shippable,
       failures: v.failures,
     });
