@@ -88,7 +88,7 @@ test('Floating ?: the Reader, the Verse view and a word sheet each show one tuto
 // every screen of Lampas's own: never more than one round tutor button
 const SCREENS = ['', 'words', 'import', 'test', 'drill', 'review', 'today', 'paradigms', 'placement', 'goal', 'path', 'ipa', 'diagram-lesson', 'sounds', 'studyway', 'aboutyou', 'memory', 'requests', 'conversations', 'askmore', 'help', 'about', 'preface', 'preface/robinson', 'lessons/variants', 'library', 'lists', 'memorize', 'settings', 'share'];
 
-test('Floating ?: no screen draws more than one tutor button', async ({ page }) => {
+test('Floating ?: every screen draws exactly one tutor button', async ({ page }) => {
   test.setTimeout(120_000);
   await openReader(page);
   const counts: Record<string, number> = {};
@@ -99,5 +99,5 @@ test('Floating ?: no screen draws more than one tutor button', async ({ page }) 
     expect(await page.locator('[data-ask-tutor]').count(), `${screen}: the older button`).toBe(0);
   }
   console.log(JSON.stringify(counts));
-  for (const [screen, n] of Object.entries(counts)) expect(n, screen).toBeLessThanOrEqual(1);
+  for (const [screen, n] of Object.entries(counts)) expect(n, screen).toBe(1);
 });

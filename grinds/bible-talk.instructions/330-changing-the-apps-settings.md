@@ -27,7 +27,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `copyReference` — Copy: reference. Where Copy puts the reference, such as Colossians 3:1 (MSB): After, the default; Before; or Off. Value: "after", "before", "off".
 - `copyNumbers` — Copy: verse numbers. Number each verse of a passage or chapter; a single verse never is.
 - `copyLink` — Copy: link. End with the https link that opens it in Lampas; Share sends the link too.
-- `immersiveReader` — Immersive reader. While you read, the top and the Talk bar slide away.
+- `immersiveReader` — Immersive reader. While you read, the top slides away.
 - `immersiveHint` — Immersive reader card. A small card on the text that says how to bring the bars back.
 - `readSpan` — Play to. Play goes on from here. To hear less, tap a verse, a section heading or the place line. Value: "book" (End of the book), "bible" (End of the Bible).
 - `readLessons` — Read lessons to me. A lesson reads itself aloud when it opens; the words stay on screen.
