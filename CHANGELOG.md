@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.57
+_2026-11-01_
+- Fixed: In the tutor's answers, a second chapter written after a book ("4 and 5") and ranges like "4 to 5" are now links.
+- New: Practise now has Dictation: the app reads a verse to you a phrase at a time in English, Greek or Hebrew, you write it by hand, and the tutor checks your page.
+- New: Hebrew words now come with small memory pictures on the teach sheet, in Words and in the Quick test, as Greek words do.
+
 ## 0.7.54
 _2026-11-01_
 - Fixed: Sideways, the update bar and the tutor's answer bar no longer scroll off the top while you scroll a talk.

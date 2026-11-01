@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.57",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.940",
+    "kind": "fixed",
+    "text": "In the tutor's answers, a second chapter written after a book (\"4 and 5\") and ranges like \"4 to 5\" are now links."
+  },
+  {
+    "version": "0.7.57",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.900",
+    "kind": "new",
+    "text": "Practise now has Dictation: the app reads a verse to you a phrase at a time in English, Greek or Hebrew, you write it by hand, and the tutor checks your page."
+  },
+  {
+    "version": "0.7.57",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.910",
+    "kind": "new",
+    "text": "Hebrew words now come with small memory pictures on the teach sheet, in Words and in the Quick test, as Greek words do."
+  },
+  {
     "version": "0.7.54",
     "date": "2026-11-01",
     "story": "mw-5r3p30.943",
