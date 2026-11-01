@@ -41,8 +41,8 @@ export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
 export type WordCandidate = Analysis & { via?: string[] };
 
-/** 1 the New Testament's form, 2 the parser, '2a' the agreement check (layer 3, the model's choice, to come) */
-export type Layer = 1 | 2 | typeof AGREEMENT_LAYER;
+/** 1 the New Testament's form, 2 the parser, '2a' the agreement check, 3 the model's choice (choices.ts joins it to the pending words; derive.ts never makes one) */
+export type Layer = 1 | 2 | typeof AGREEMENT_LAYER | 3;
 
 export interface DerivedWord {
   ref: string;
@@ -296,9 +296,8 @@ export interface RunOptions {
   input?: DeriveInput;
 }
 
-/** Every book of the file in its order, trained once: each book's files written, and one line a book (ALL_HEADER). */
-export function deriveAll(input: DeriveInput, outDir: string, log: (line: string) => void, hide?: string): BookResult[] {
-  const trained = train(input, hide);
+/** Swete's tokens of every book of the file, by Swete's book code ('Gen'), in the file's order. */
+export function splitBooks(input: Pick<DeriveInput, 'versification' | 'words'>): Map<string, { words: SweteWord[]; signs: EditorSign[] }> {
   const { words, signs } = sweteTokens(input.versification, input.words);
   const books = new Map<string, { words: SweteWord[]; signs: EditorSign[] }>();
   const bookIn = (code: string): { words: SweteWord[]; signs: EditorSign[] } => {
@@ -308,6 +307,13 @@ export function deriveAll(input: DeriveInput, outDir: string, log: (line: string
   };
   for (const w of words) bookIn(bookOf(w.verse)).words.push(w);
   for (const s of signs) bookIn(bookOf(s.verse)).signs.push(s);
+  return books;
+}
+
+/** Every book of the file in its order, trained once: each book's files written, and one line a book (ALL_HEADER). */
+export function deriveAll(input: DeriveInput, outDir: string, log: (line: string) => void, hide?: string): BookResult[] {
+  const trained = train(input, hide);
+  const books = splitBooks(input);
   log(ALL_HEADER.join('\t'));
   const results: BookResult[] = [];
   for (const [code, tokens] of books) {
@@ -320,19 +326,21 @@ export function deriveAll(input: DeriveInput, outDir: string, log: (line: string
   return results;
 }
 
+/** The pinned sources as a run reads them: fetched into rawDir unless they are there already (nothing else touches the network). */
+export async function loadInput(rawDir: string = RAW_DIR, fetcher?: Fetcher, log: (line: string) => void = () => {}): Promise<DeriveInput> {
+  for (const src of [SWETE, STEP]) await fetchPinned(rawDir, src, fetcher, log);
+  return {
+    versification: readPinned(rawDir, SWETE, SWETE_VERSIFICATION),
+    words: readPinned(rawDir, SWETE, SWETE_WORDS),
+    tagnt: TAGNT_FILES.map((f) => readPinned(rawDir, STEP, f)),
+    tbesg: readPinned(rawDir, STEP, TBESG_FILE),
+  };
+}
+
 export async function runDerive(argv: readonly string[], options: RunOptions = {}): Promise<BookResult> {
   const { rawDir = RAW_DIR, outDir = OUT_DIR, log = () => {}, fetcher } = options;
   const args = parseArgs(argv);
-  let input = options.input;
-  if (!input) {
-    for (const src of [SWETE, STEP]) await fetchPinned(rawDir, src, fetcher, log);
-    input = {
-      versification: readPinned(rawDir, SWETE, SWETE_VERSIFICATION),
-      words: readPinned(rawDir, SWETE, SWETE_WORDS),
-      tagnt: TAGNT_FILES.map((f) => readPinned(rawDir, STEP, f)),
-      tbesg: readPinned(rawDir, STEP, TBESG_FILE),
-    };
-  }
+  const input = options.input ?? (await loadInput(rawDir, fetcher, log));
   if (args.all) {
     if (args.hide) log(`hidden from the form index and the parser: ${args.hide}`);
     const results = deriveAll(input, outDir, log, args.hide);

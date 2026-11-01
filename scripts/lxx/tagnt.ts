@@ -9,6 +9,10 @@ export interface TagntRow {
   book: string;
   chapter: number;
   verse: number;
+  /** TAGNT's number of the word in its verse (the #02 of Jhn.1.1#02); unique among the NA28 words of a verse */
+  word: number;
+  /** TAGNT's edition code after the '=' ('NKO', 'N(k)O', 'k'): which editions have the word; an N, capital or lower case (bracketed), is NA28 */
+  editions: string;
   form: string;
   /** NFC */
   lemma: string;
@@ -35,6 +39,9 @@ export const isName = (morph: string, lemma: string): boolean => {
 
 const ROW = /^([1-3A-Z][A-Za-z]{2})\.(\d+)\.(\d+)#(\d+)=(\S+)\t/;
 
+/** Whether NA28 has the word (the probe's known-answer words): an N in the edition code, capital or lower case (the edition has it in brackets). */
+export const inNa28 = (row: Pick<TagntRow, 'editions'>): boolean => /n/i.test(row.editions);
+
 /** Every word row of the TAGNT files; header and note lines are skipped. With `hide` ('jhn', any case), that book's rows are left out. */
 export function readTagnt(texts: readonly string[], hide?: string): TagntRow[] {
   const hidden = hide?.toLowerCase();
@@ -49,7 +56,7 @@ export function readTagnt(texts: readonly string[], hide?: string): TagntRow[] {
       const grammar = (c[3] ?? '').split('=')[1]?.trim();
       const lemma = (c[4] ?? '').split('=')[0].trim();
       if (!form || !grammar || !lemma) continue;
-      rows.push({ book: m[1], chapter: Number(m[2]), verse: Number(m[3]), form, lemma: lemma.normalize('NFC'), morph: normMorph(grammar), name: isName(grammar, lemma) });
+      rows.push({ book: m[1], chapter: Number(m[2]), verse: Number(m[3]), word: Number(m[4]), editions: m[5], form, lemma: lemma.normalize('NFC'), morph: normMorph(grammar), name: isName(grammar, lemma) });
     }
   }
   return rows;
