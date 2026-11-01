@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.51
+_2026-11-01_
+- Fixed: a word that only one manuscript reading has no longer offers a Copy link button that would have given a link to nothing.
+- New: About now credits the English Septuagint (Brenton) and the verse map that will sit under it.
+- New: Settings now names the Hebrew voice in use and has a Test button under it, as the Greek voice does.
+
 ## 0.7.50
 _2026-11-01_
 - Fixed: Holding to talk for a long time no longer pushes the talk button down under the phone's bottom bar; your words scroll in a small box above it.

@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.51",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.939",
+    "kind": "fixed",
+    "text": "a word that only one manuscript reading has no longer offers a Copy link button that would have given a link to nothing."
+  },
+  {
+    "version": "0.7.51",
+    "date": "2026-11-01",
+    "story": "mw-u2w5klk.9",
+    "kind": "new",
+    "text": "About now credits the English Septuagint (Brenton) and the verse map that will sit under it."
+  },
+  {
+    "version": "0.7.51",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.909",
+    "kind": "new",
+    "text": "Settings now names the Hebrew voice in use and has a Test button under it, as the Greek voice does."
+  },
+  {
     "version": "0.7.50",
     "date": "2026-11-01",
     "story": "mw-5r3p30.931",
