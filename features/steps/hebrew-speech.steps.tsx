@@ -112,6 +112,23 @@ const spokenNow = () => synth.since.map((u) => ({ text: u.text, lang: u.lang }))
 const feature = await loadFeature('features/hebrew-speech.feature');
 
 describeFeature(feature, ({ Scenario }) => {
+  Scenario('The tutor’s answer read aloud says its Hebrew words in the Hebrew voice', ({ Given, Then }) => {
+    Given('Lampas is opened on a phone with a Hebrew voice, and the tutor\'s answer has the Hebrew word {string} in it', () => open([GREEK_VOICE, ENGLISH_VOICE, HEBREW_VOICE]));
+    Then("the phone says the answer's English in the English voice and {string} in the Hebrew voice", async (_, hebrew: string) => {
+      // the answer is read aloud on arrival (Settings > Read the tutor's responses aloud is On by default): let each stretch end so the next is asked of the phone
+      await waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0));
+      for (let i = 0; i < 60; i++) {
+        if (!synth.speaking) await new Promise((resolve) => setTimeout(resolve, 30));
+        if (!synth.speaking) break;
+        synth.finish();
+        await new Promise((resolve) => setTimeout(resolve, 5));
+      }
+      const said = synth.spoken.map((u) => ({ text: u.text, lang: u.lang }));
+      expect(said.filter((s) => s.lang === 'he-IL').map((s) => s.text)).toContain(hebrew);
+      expect(said.filter((s) => s.lang === 'en-US').map((s) => s.text).join(' ')).toContain('which is about being in the right before God');
+    });
+  });
+
   Scenario('Tapping a Hebrew word says it in the Hebrew voice and opens the guide', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Hebrew voice, and the tutor\'s answer has the Hebrew word {string} in it', () => open([GREEK_VOICE, ENGLISH_VOICE, HEBREW_VOICE]));
     When('he taps the Hebrew word {string}', async (_, word: string) => {

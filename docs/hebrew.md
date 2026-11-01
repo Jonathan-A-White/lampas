@@ -59,8 +59,9 @@ A Hebrew word in an answer is a button (`src/script/HebrewWord.tsx`, drawn by `M
 `guide` {word, syllables, sounds} (no table change) and the turn draws the card (`HebrewSoundGuide`): the word, then each syllable over its sound,
 each a 56 px button that says it in Hebrew. The Greek 'Sound it out' reading of syllables does not run for a Hebrew focus.
 
-Not done: the answers read aloud still leave Hebrew out (the English voice would garble it), and the Verse view's Ask answers have the guide
-without Syllables and sounds (no conversation to ask in).
+The answers read aloud say a Hebrew stretch in the Hebrew voice, as Greek in the Greek one (`answerRuns`, `languageRuns`; the scenario in `features/hebrew-speech.feature`).
+
+Not done: the Verse view's Ask answers have the guide without Syllables and sounds (no conversation to ask in).
 
 ## The Reader's Hebrew view (mw-5vvlay.1)
 
