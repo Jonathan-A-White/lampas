@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.50",
+    "date": "2026-11-01",
+    "story": "mw-5r3p30.931",
+    "kind": "fixed",
+    "text": "Holding to talk for a long time no longer pushes the talk button down under the phone's bottom bar; your words scroll in a small box above it."
+  },
+  {
     "version": "0.7.49",
     "date": "2026-11-01",
     "story": "mw-5r3p30.935",

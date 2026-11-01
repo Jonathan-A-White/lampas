@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.50
+_2026-11-01_
+- Fixed: Holding to talk for a long time no longer pushes the talk button down under the phone's bottom bar; your words scroll in a small box above it.
+
 ## 0.7.49
 _2026-11-01_
 - Fixed: with the floating ? chosen, only one round tutor button is drawn on a screen, not two.
