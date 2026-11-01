@@ -193,12 +193,12 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('One row of actions, the tools under the text, exactly one control at the foot, and no Talk bar', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    Then('the row of actions is {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
+    Then('the row of actions is {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
       const row = within(viewEl()).getByRole('group', { name: 'Actions' });
       const names = within(row)
         .getAllByRole('button')
         .map((button) => button.textContent);
-      expect(names).toEqual([a, b, c, d, e]);
+      expect(names).toEqual([a, b, c, d]);
     });
     And('{string} is one of the tools under the text, not an action', (_, name: string) => {
       // the quiet line under the text (Copy, Share, Memorize, the Logos doors, Maps) is a group of its own, apart from the row of actions (mw-5r3p30.896)
@@ -259,105 +259,6 @@ describeFeature(feature, ({ Scenario }) => {
     And('exactly one hold bar is on screen', oneBar);
   });
 
-  Scenario('Hold to ask shows his words in the Ask box as he says them, not only when the clip ends', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a microphone that hears a clip', (_, weave: string) =>
-      open(weaveOf(weave), { mic: true }),
-    );
-    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    And('he chooses {string}', choose);
-    And('he holds the hold bar', async () => {
-      await user.pointer({ keys: '[MouseLeft>]', target: bar(), coords: AT });
-    });
-    And('a second goes by', () => {
-      act(() => mic?.advance(1000));
-    });
-    Then('the words on screen are the start of the clip, and not all of it', async () => {
-      const whole = mic?.transcript ?? '';
-      await waitFor(() => expect(askLive()).not.toBe(''));
-      expect(whole.startsWith(askLive())).toBe(true);
-      expect(askLive()).not.toBe(whole);
-    });
-    When('the clip plays to its end', () => {
-      act(() => mic?.advance(2000));
-    });
-    Then('the words on screen are the whole clip', () => {
-      expect(askLive()).toBe(mic?.transcript);
-    });
-    When('he lets go of the hold bar', async () => {
-      await user.pointer({ keys: '[/MouseLeft]', target: bar(), coords: AT });
-    });
-    And('a moment goes by', () => {
-      act(() => mic?.advance(50));
-    });
-    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question of the whole clip', async (_, reference: string) => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
-      expect(fake.received[0].input.reference).toBe(reference);
-      expect(fake.received[0].input.question).toBe(mic?.transcript);
-    });
-  });
-
-  Scenario('Ask the tutor: the bar says Hold to ask and what he says goes to the tutor about the verse', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern', (_, weave: string) =>
-      open(weaveOf(weave), { tutor: true }),
-    );
-    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    And('he chooses {string}', choose);
-    Then('the hold bar is labelled {string}', labelled);
-    When('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
-    Then('the mill received one grist for the lampas app, kind bible-talk, about {string} with the question {string}', async (_, reference: string, question: string) => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'bible-talk' });
-      expect(fake.received[0].input.reference).toBe(reference);
-      expect(fake.received[0].input.question).toBe(question);
-    });
-    And('the answer shows in the Talk sheet about Romans 8:11', answerShows);
-  });
-
-  Scenario('His question stays shown above Waiting for the tutor in the Talk sheet until the answer comes', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern that holds its answers', async (_, weave: string) => {
-      await open(weaveOf(weave), { tutor: true });
-      fake.autoReply = undefined;
-    });
-    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    And('he chooses {string}', choose);
-    And('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
-    Then('the Talk sheet shows his question {string} above Waiting for the tutor', async (_, question: string) => {
-      const dialog = await sheetOf();
-      await waitFor(() => {
-        const said = within(dialog).getByText(question);
-        const waiting = within(dialog).getByText(/^Waiting for the tutor… \d+ s$/);
-        expect(said.compareDocumentPosition(waiting) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-      });
-    });
-    When('the tutor answers', async () => {
-      await waitFor(() => expect(fake.received).toHaveLength(1));
-      await fake.answer({ status: 'answered', answer: SYNERGEI_ANSWER });
-    });
-    Then('the answer shows in the Talk sheet about Romans 8:11', answerShows);
-    And('the Talk sheet shows no pending question', async () => {
-      expect(within(await sheetOf()).queryByText(/^Waiting for the tutor/)).toBeNull();
-    });
-  });
-
-  Scenario('A question that could not be sent stays in the Talk sheet with Retry', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string} and a tutor and a recogniser behind a fake Postern that holds no licence for this phone', async (_, weave: string) => {
-      await open(weaveOf(weave), { tutor: true });
-      fake.licensed = false;
-    });
-    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    And('he chooses {string}', choose);
-    And('he holds the hold bar and says {string} and lets go', saysAndLetsGo);
-    Then('the Talk sheet says {string} with a Retry button', async (_, words: string) => {
-      const dialog = await sheetOf();
-      expect(await within(dialog).findByRole('alert')).toHaveTextContent(words);
-      expect(within(dialog).getByRole('button', { name: 'Retry' })).toBeEnabled();
-    });
-    And('the Talk sheet keeps his question {string}', async (_, question: string) => {
-      expect(within(await sheetOf()).getByText(question)).toBeInTheDocument();
-    });
-  });
-
   Scenario('Copy copies the verse with its link on the last line', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
@@ -371,15 +272,6 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Verse view says {string}', async (_, words: string) => {
       expect(await within(viewEl()).findByText(words)).toBeInTheDocument();
     });
-  });
-
-  Scenario('The chosen action is remembered from verse to verse', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
-    When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
-    And('he chooses {string}', choose);
-    And('he goes to the next verse', step('next'));
-    Then('the Verse view is headed {string}', headed);
-    And('the hold bar is labelled {string}', labelled);
   });
 
   Scenario('The arrows go to the verse before and the verse after', ({ Given, When, And, Then }) => {

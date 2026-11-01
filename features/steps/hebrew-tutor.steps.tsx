@@ -168,9 +168,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The Quiz door is not offered on Jonah 1:10, and Ask the tutor and Diagram are', ({ Given, When, Then }) => {
     Given(phone, openJonah);
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
-    Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
+    Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
       const names = within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button').map((x) => x.textContent?.trim() ?? '');
-      expect(names).toEqual([a, b, c, d, e]);
+      expect(names).toEqual([a, b, c, d]);
     });
     When('he chooses {string}', async (_, name: string) => {
       await user.click(within(viewEl()).getByRole('button', { name, exact: true }));

@@ -138,8 +138,8 @@ describeFeature(feature, ({ Background, Scenario }) => {
         expect(within(sheet()).getByTestId('teach-form')).toHaveTextContent(parse);
       },
     );
-    And('the teach sheet has the buttons Got it, I know this, Not now and Ask the tutor, each at least 48 px tall', () => {
-      for (const name of ['Got it', 'I know this', 'Not now', 'Ask the tutor']) {
+    And('the teach sheet has the buttons Got it, I know this and Not now, each at least 48 px tall', () => {
+      for (const name of ['Got it', 'I know this', 'Not now']) {
         const button = within(sheet()).getByRole('button', { name, exact: true });
         expect(button.className, name).toContain('min-h-12');
       }

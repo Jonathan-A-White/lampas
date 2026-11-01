@@ -107,35 +107,6 @@ const resume = async (): Promise<void> => {
 const feature = await loadFeature('features/word-ask-tutor.feature');
 
 describeFeature(feature, ({ Scenario }) => {
-  Scenario("Ask the tutor on the word sheet opens the Talk sheet on the word's verse with the word, its lemma and its parsing", ({ Given, And, When, Then }) => {
-    Given('Lampas is opened on Romans 8 behind a fake Postern', async () => {
-      await open('');
-      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-    });
-    And('he taps {string} in verse {int}', async (_, text: string, verse: number) => {
-      await user.click(within(verseEl(verse)).getByRole('button', { name: text }));
-      await screen.findByRole('dialog', { name: 'Word' });
-    });
-    Then('the word sheet has an Ask the tutor button', () => {
-      expect(within(wordSheet()).getAllByRole('button', { name: 'Ask the tutor' })).toHaveLength(1);
-    });
-    When('he opens the tutor with the floating ? on the word sheet', async () => {
-      await openTutor();
-    });
-    Then('the word sheet is gone and the sheet is titled {string}', async (_, title: string) => {
-      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull());
-      await titled(title);
-    });
-    And('the mill received {int} grist for the lampas app, kind bible-talk', (_, count: number) => grists(count));
-    And('the grist carries the focus form {string}, lemma {string}, parse {string} and kind word', (_, form: string, lemma: string, parse: string) => {
-      expect(focus()).toEqual({ form, lemma, parse, kind: 'word' });
-    });
-    And('the grist carries the reference {string}', (_, reference: string) => expect(received().input.reference).toBe(reference));
-    And('the grist question names the word, its lemma, its parsing and the reference', () => {
-      for (const part of [FORM, LEMMA, PARSE, 'Romans 8:28']) expect(question()).toContain(part);
-    });
-  });
-
   Scenario('Ask the tutor on a Quick test question sends the word, the question and his answers so far', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on the Quick test behind a fake Postern, on the third question of a round where he got one right and one wrong', async () => {
       await open('#/test', {

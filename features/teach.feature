@@ -18,7 +18,7 @@ Feature: Teaching a new word on the spot
   Scenario: The teach sheet shows the word with its help
     When he taps New words
     Then the teach sheet shows "αὐτός" large with a speaker, its transliteration, its meaning "it/s/he" and the form of its first occurrence
-    And the teach sheet has the buttons Got it, I know this, Not now and Ask the tutor, each at least 48 px tall
+    And the teach sheet has the buttons Got it, I know this and Not now, each at least 48 px tall
 
   Scenario: The sheet shows the easiest verse with the new word in Greek and its English beneath
     When he taps New words

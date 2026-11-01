@@ -27,7 +27,7 @@ Feature: The Verse view
   Scenario: One row of actions, the tools under the text, exactly one control at the foot, and no Talk bar
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram"
+    Then the row of actions is "Listen", "Read it aloud", "Practise" and "Diagram"
     And "Copy" is one of the tools under the text, not an action
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
     And the Reader's Talk bar is not on screen
@@ -52,60 +52,12 @@ Feature: The Verse view
     And the reading check is shown
     And exactly one hold bar is on screen
 
-  Scenario: Ask the tutor: the bar says Hold to ask and what he says goes to the tutor about the verse
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a recogniser behind a fake Postern
-    When he taps the number of verse 11
-    And he chooses "Ask the tutor"
-    Then the hold bar is labelled "Hold to ask"
-    When he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
-    Then the mill received one grist for the lampas app, kind bible-talk, about "Romans 8:11" with the question "What does ζωοποιήσει mean?"
-    And the answer shows in the Talk sheet about Romans 8:11
-
-  Scenario: Hold to ask shows his words in the Ask box as he says them, not only when the clip ends
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a microphone that hears a clip
-    When he taps the number of verse 11
-    And he chooses "Ask the tutor"
-    And he holds the hold bar
-    And a second goes by
-    Then the words on screen are the start of the clip, and not all of it
-    When the clip plays to its end
-    Then the words on screen are the whole clip
-    When he lets go of the hold bar
-    And a moment goes by
-    Then the mill received one grist for the lampas app, kind bible-talk, about "Romans 8:11" with the question of the whole clip
-
-  Scenario: His question stays shown above Waiting for the tutor in the Talk sheet until the answer comes
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a recogniser behind a fake Postern that holds its answers
-    When he taps the number of verse 11
-    And he chooses "Ask the tutor"
-    And he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
-    Then the Talk sheet shows his question "What does ζωοποιήσει mean?" above Waiting for the tutor
-    When the tutor answers
-    Then the answer shows in the Talk sheet about Romans 8:11
-    And the Talk sheet shows no pending question
-
-  Scenario: A question that could not be sent stays in the Talk sheet with Retry
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off" and a tutor and a recogniser behind a fake Postern that holds no licence for this phone
-    When he taps the number of verse 11
-    And he chooses "Ask the tutor"
-    And he holds the hold bar and says "What does ζωοποιήσει mean?" and lets go
-    Then the Talk sheet says "No licence" with a Retry button
-    And the Talk sheet keeps his question "What does ζωοποιήσει mean?"
-
   Scenario: Copy copies the verse with its link on the last line
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11
     And he taps "Copy"
     Then the phone's clipboard ends with the link of Romans 8:11
     And the Verse view says "Copied"
-
-  Scenario: The chosen action is remembered from verse to verse
-    Given Lampas is opened on Romans 8 in the English view with the weave "Off"
-    When he taps the number of verse 11
-    And he chooses "Ask the tutor"
-    And he goes to the next verse
-    Then the Verse view is headed "Romans 8:12"
-    And the hold bar is labelled "Hold to ask"
 
   Scenario: The arrows go to the verse before and the verse after
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"

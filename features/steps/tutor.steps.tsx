@@ -126,11 +126,6 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(within(list).getByText(lemma, { selector: '[lang="el"]' })).toBeInTheDocument();
       expect(turns()[0]).toHaveTextContent('third person singular');
     });
-    And('the Ask box is ready for the next question', () =>
-      waitFor(() => {
-        expect(within(composerIn(sheet())).queryByRole('textbox', { name: 'Your message' })).toHaveValue('');
-      }),
-    );
   });
 
   Scenario('While the tutor has not answered the Talk sheet says Waiting', ({ Given, And, When, Then }) => {
@@ -180,31 +175,6 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await user.click(within(sheet()).getByRole('button', { name: 'Retry' }));
     });
     Then('the Talk sheet about Romans 8:28 opens and the answer shows in it under his question', answerShowsInSheet);
-  });
-
-  Scenario('Send is not offered with nothing typed', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Romans 8 with a tutor behind a fake Postern', () => open());
-    When('he selects verse 28 and taps Type a question', async () => {
-      await selectVerse28();
-      await questionField(user, viewEl());
-    });
-    Then('there is no Send button', () => {
-      expect(within(composerIn(sheet())).queryByRole('button', { name: 'Send' })).toBeNull();
-    });
-    When('he types {string}', async (_, text: string) => {
-      await user.type(await questionField(user, viewEl()), text);
-    });
-    Then('there is still no Send button', () => {
-      expect(within(composerIn(sheet())).queryByRole('button', { name: 'Send' })).toBeNull();
-    });
-    When('he types {string} instead', async (_, text: string) => {
-      const field = await questionField(user, viewEl());
-      await user.clear(field);
-      await user.type(field, text);
-    });
-    Then('the Send button is on', () => {
-      expect(sendButton()).toBeEnabled();
-    });
   });
 
   Scenario('An answer in the wrong shape is not kept', ({ Given, And, When, Then }) => {

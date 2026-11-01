@@ -105,7 +105,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'The tutor',
     line: 'Ask about a verse, a word or a screen.',
     body: [
-      'The round ? button, on the side of the hand you hold your phone in (Settings > Hand), is the one way to the tutor, on every screen but the immersive reader. It opens a talk about what is in front of you: the screen, the verse, a word or a lesson; hold to talk, type, or send a picture. The tutor can look things up in the app and do what you ask: a change shows what it did with an Undo, a step that needs your yes waits for your tap, and a screen it takes you to is a step of Back.',
+      'The round ? button, on the side of the hand you hold your phone in (Settings > Hand), is the one way to the tutor. It opens a talk about what is in front of you; hold to talk, type, or send a picture. The tutor can look things up in the app and do what you ask: a change shows what it did with an Undo, a step that needs your yes waits for your tap, and a screen it takes you to is a step of Back.',
       'Every talk is kept on the phone: Settings > Conversations lists them, newest first, with a search. Under Talk in Settings you choose whether the bars are held or tapped, and when your words are sent.',
     ],
   },
