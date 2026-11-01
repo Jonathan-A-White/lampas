@@ -31,6 +31,10 @@ The reader, the word sheet, the voices and the drills read the chapter's `lang` 
   - [The keys for a Hebrew word](#the-keys-for-a-hebrew-word)
   - [`lexicon-hbo.json` and `frequency-hbo.json`](#lexicon-hbojson-and-frequency-hbojson)
   - [Sizes (2026-10-25)](#sizes-2026-10-25)
+- [The Septuagint data](#the-septuagint-data)
+  - [What a chapter holds](#what-a-chapter-holds)
+  - [`index.json`, `lexicon-grc-lxx.json` and the notices](#indexjson-lexicon-grc-lxxjson-and-the-notices)
+  - [The build and what it refuses](#the-build-and-what-it-refuses)
 - [The spaced schedule (Dexie v10)](#the-spaced-schedule-dexie-v10)
 - [Grammar levels (Dexie v11)](#grammar-levels-dexie-v11)
 - [Offline](#offline)
@@ -465,6 +469,49 @@ Neither is loaded by the app yet.
 
 `public/data` was 33,979,126 bytes and is 110,165,157 with the Old Testament: 75,009,674 bytes of the 929 chapter files (the largest, Psalm 119, 236,644 bytes), `index.json` 27,092 (it was 2 KB), `lexicon-hbo.json` 444,690 and `frequency-hbo.json` 711,270. A walk of every word of every chapter takes about 0.6 s.
 Only `index.json` is precached, as before; an Old Testament chapter is fetched on first read and kept by the worker's `/data/` route like a New Testament one.
+
+## The Septuagint data
+
+`scripts/data-build-lxx.ts` (`npm run data:build:lxx`, story mw-u2w5klk.10, the Septuagint epic's R2) writes **Swete's Greek Old Testament** into `public/data-lxx/` (not `public/data`: the tests that read every file of `public/data` as a chapter, and the worker's `/data/` route, are not widened).
+A book is written only when its annotation file exists (`data/lxx/annotations/<book>.tsv`, which `npm run lxx:release` writes only for a book above the bar, `docs/lxx-derivation.md`); the other books of Swete's file are skipped and named. **Nothing reads these files yet** (R3 and R4 open them in the Reader):
+`src/data/chapter.ts` carries the new keys with their docs, `pwa-precache.ts` and the offline copy do not name the folder, and the worker's `/data/` route does not match `/data-lxx/`.
+
+### What a chapter holds
+
+`public/data-lxx/<book>/<n>.json` is one **Greek** chapter in the chapter shape (`src/data/chapter.ts`), the Septuagint's own numbering (Greek Ps 22 is the Hebrew Ps 23). `<book>` is Swete's book code in lower case, as the annotation file names it (`gen`, `psa`, `sol` for the Song of Solomon, `joe`, `eze`, `nah`).
+The file says `lang: 'grc'`, `translation: 'lxx2012'` and a new `edition: 'swete'`; `lex` is `{}` (no Strong's numbers: the lexicon is by lemma, below) and `parse` is the chapter's codes in plain words (`decodeParse`, as the New Testament's; a code it cannot decode stops the build).
+
+| Key | Meaning in the Septuagint |
+| --- | --- |
+| `verses[].n` | Swete's verse number. A Psalm's title is not a verse of its own: Swete's verse 1 holds the title and the first verse together |
+| `verses[].ref` | PROVISIONAL. The verse of Lampas's own Old Testament this Greek verse is, `{book, chapter, verse}` with Lampas's codes (`sng` for Swete's `sol`), from TVTMS (`scripts/data/tvtms.ts`); `'none'` where Lampas has no verse for it (an Addition, the Song of the Three, a verse past the end of the Lampas chapter, a book outside the 39). Greek Ps 22:1 is `psa 23:1` and 22:2 is `psa 23:2`. `refs` lists every Lampas verse when it is more than one (`ref` is the first) |
+| `g[].t` | Swete's token as he prints it (NFC): **his capitals (`ΕΝ ΑΡΧΗ`), his brackets (`ἐγέ[νετο`) and his punctuation are kept**; nothing is looked up by it |
+| `g[].tr` | the SBL transliteration (NFC) of eliranwong's `03-Swete_SBL_transliterations.csv`, by the line of the word |
+| `g[].s` | `''` |
+| `g[].l`, `g[].p` | the lemma and the parsing from the annotation file; `p` is TAGNT's code (`N-NSM`, `V-AAI-3S`, `PREP`) |
+| `g[].y`, `g[].c` | PROVISIONAL. The layer that gave the word its answer (`'1'`, `'2'`, `'2a'`, `'3'`) and its confidence (two decimals); a word whose confidence is **below 0.5** has `y: 'g'`, a guess, whatever layer found it |
+| `g[].e` | `0` when the verse has English (the one chunk), absent otherwise |
+| `verses[].e` | **one chunk a verse**, `{t, g: every word, s?}`: LXX2012 is not word-aligned (word alignment is a later story). `t` is Brenton's English of the verse; `s` counts the words he supplied (`\add`) among `t` split on white space, as the chunk shape does. A verse with no English has `e: []` |
+
+The English of a Greek verse is found by walking LXX2012's reference to the Greek's (`lxx2012ToGreek`, `carriedAsGreek`: `scripts/data/lxx2012.ts`, `tvtms.ts`; `npm run lxx:english` prints the walk). Where Brenton's verses answer one Greek verse (a Psalm's title and its first verse) their texts are joined with a space, and a Psalm's title loses the number of the Psalm in the other numbering that LXX2012 prefixes it with ("(23) A Psalm of David." is "A Psalm of David.").
+A Brenton verse that answers several Greek verses stands at the first. **Known gaps** (a real run over Genesis, Exodus, 1 Samuel, 1 Kings, Psalms, Job, Esther, Isaiah, Jeremiah, Ezekiel, Daniel, Joel and Nahum, 2026-11-01): 12,547 Greek verses, 89 with `ref: 'none'`, 171 with no English, and about 120 Brenton verses with no Greek verse of Swete's to stand at
+(where Swete and Brenton divide the verses differently, such as Daniel 3:24-100 and 1 Samuel 17); the run names them (`unplaced`) and the build does not guess where they go.
+
+### `index.json`, `lexicon-grc-lxx.json` and the notices
+
+* `index.json`: `{sources, books}`. `sources` names where each part comes from (greek, transliteration, annotations, english, versification, lexicon). Each of `books` is `{code, name, chapters, verses, fingerprints, lang: 'grc', lampas?, lampasChapters}` in Swete's order: the number of Greek chapters, the verse count of each (0 for a chapter Swete's text lacks), each chapter's fingerprint (as `public/data/index.json` keeps them), the code of the book in Lampas's Old Testament and, for each Greek chapter, **the Lampas chapter(s)** its verses are in (`[23]` for Greek Ps 22; `[]` where none is).
+* `lexicon-grc-lxx.json`: every distinct lemma of the shipped books, sorted, `{g, d, s}`: TBESG's gloss and definition (the Greek rules of `lexicon.json`) and its Strong's number. A lemma the derivation writes as several forms (`ὕδωρ, ὕδατος`) is looked up whole and then by each form; one TBESG lacks has `{g: '', d: '', s: ''}` and is named in the run's log.
+* `LICENSE-swete.txt` and `README-swete.md`: eliranwong's `LICENSE` (GPL-3.0) and `README.md` for Swete's text, **byte for byte** from the pinned commit (`1d3efc3c`); the build copies them from `data/raw`. `README.md` states what is under which licence: Lampas's own lemma, parsing, layer and confidence are MIT (`data/lxx/LICENSE`, in files that hold references and never Swete's Greek), Swete's text and transliteration ship under the GPL-3.0 notice beside them, TVTMS and TBESG are CC BY 4.0.
+  `ATTRIBUTION.md` and `src/tutor/credits.ts` credit Swete's Septuagint, and `tests/support/credits.ts` has a rule for the folder.
+
+### The build and what it refuses
+
+```bash
+npm run data:build:lxx   # fetches the pinned Swete files, the transliteration, TBESG, TVTMS and LXX2012 into data/raw if absent, then writes public/data-lxx
+```
+
+It is deterministic (a second run writes nothing), writes a file only when its bytes differ, and removes a `.json` of the folder it no longer produces (a book that lost its annotation file). No paid API is called; the network is only for the pinned sources. It stops, naming the reference, at **an annotation row for a ref Swete's text lacks**, at **a word with no row**, at a ref given twice, a transliteration the file lacks and a parsing code `decodeParse` cannot read.
+`tests/unit/data-build-lxx.test.ts` runs it on fixtures under `tests/fixtures/lxx/` (Swete's Gen 1 and Greek Ps 22, their transliteration, `annotations-gen-1.tsv`, TBESG's rows for Gen 1's lemmas, the LXX2012 and TVTMS slices). The pure parts are `scripts/data/lxxChapter.ts`; `scripts/lxx/sources.ts` pins the transliteration file as `SWETE_TRANSLIT` beside the derivation's own sources.
 
 ## The spaced schedule (Dexie v10)
 

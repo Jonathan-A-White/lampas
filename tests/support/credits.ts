@@ -73,6 +73,10 @@ function creditFor(path: string): string | null | undefined {
   if (path === 'public/data/lexicon-hbo.json') return 'TBESH'; // the Hebrew lemmas, with TBESH's glosses (scripts/data-build-ot.ts)
   if (OT_BOOKS.some((b) => path.startsWith(`public/data/${b.code}/`))) return 'Berean Standard Bible'; // the Old Testament: the Berean tables, whose English the Majority Standard Bible's Old Testament is
   if (path === 'public/data/frequency-hbo.json') return 'Berean Standard Bible';
+  // the Septuagint (mw-u2w5klk.10, scripts/data-build-lxx.ts): Swete's Greek with its licence and README beside it; the lemmas' glosses are TBESG's; the notes are ours
+  if (path === 'public/data-lxx/lexicon-grc-lxx.json') return 'TBESG';
+  if (path === 'public/data-lxx/README.md' || path === 'public/data-lxx/LICENSE-swete.txt' || path === 'public/data-lxx/README-swete.md') return null; // notices, not data (the last two are eliranwong's own)
+  if (path.startsWith('public/data-lxx/')) return 'Swete'; // the chapters and index.json: Swete's Septuagint
   if (path.startsWith('public/data/')) return 'Majority Standard Bible';
   if (path.startsWith('public/lemma-forms/')) return 'Majority Standard Bible'; // the forms of each lemma the text uses, made from the chapters (scripts/build-lemma-forms.mjs)
   if (path.startsWith('public/sounds/')) return 'eSpeak NG'; // the clips of a one-letter Greek word's sound, made by eSpeak NG (scripts/sounds-build.sh)

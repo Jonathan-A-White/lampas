@@ -362,6 +362,8 @@ check's: `a name in the New Testament: lower case here, for the model`, `shared 
 
 `<book>` is Swete's book code in lower case: `gen`, `exo`, … `psa`, … (Swete's file has 60 books; Tobit and Daniel come in two forms each).
 
+A released book is turned into the app's chapter files by `npm run data:build:lxx` (`scripts/data-build-lxx.ts`, `public/data-lxx/`; docs/data.md 'The Septuagint data'): it joins the annotation file's rows to Swete's tokens by reference, so the MIT file never holds his Greek and the chapter files, which do, ship with eliranwong's GPL-3.0 notice beside them.
+
 ## The commands
 
 From a clean checkout, Node 20 or later, with network access for the first run:
