@@ -5,6 +5,11 @@ Feature: A Hebrew word in the tutor's answer is tappable like a Greek one
   each one a button that says it. With no Hebrew voice on the phone nothing is spoken and a line says so; it never falls back to an English
   voice. speechSynthesis is the recording fake of tests/support/fake-speech.ts and the Postern is tests/support/fake-postern.ts.
 
+  @uc-tutor-aloud @hebrew
+  Scenario: The tutor’s answer read aloud says its Hebrew words in the Hebrew voice
+    Given Lampas is opened on a phone with a Hebrew voice, and the tutor's answer has the Hebrew word "צֶדֶק" in it
+    Then the phone says the answer's English in the English voice and "צֶדֶק" in the Hebrew voice
+
   @uc-tutor-word @hebrew
   Scenario: Tapping a Hebrew word says it in the Hebrew voice and opens the guide
     Given Lampas is opened on a phone with a Hebrew voice, and the tutor's answer has the Hebrew word "צֶדֶק" in it

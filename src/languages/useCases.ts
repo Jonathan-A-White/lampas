@@ -114,7 +114,7 @@ export const USE_CASES: readonly UseCase[] = [
     title: "The tutor's answers read aloud, the source words in their own voice",
     status: {
       greek: 'has',
-      hebrew: { gap: 'scenario "The tutor’s answer read aloud says its Hebrew words in the Hebrew voice" in features/hebrew-speech.feature; src/speech/answerRuns.ts (a Hebrew stretch becomes a run in the Hebrew voice as a Greek one does), features/steps/hebrew-speech.steps.tsx; docs/hebrew.md "Not done" names it; S' },
+      hebrew: 'has',
       latin: LATIN_LATER,
     },
   },
