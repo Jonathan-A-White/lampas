@@ -15,7 +15,7 @@ import { RAW_DIR, type Fetcher } from './sources';
 
 /** Where the choices for Swete's books are kept: data/lxx/choices/<book>-<batch>.tsv (B4's batches: gen-01.tsv). */
 export const CHOICES_DIR = join(OUT_DIR, 'choices');
-/** Where the second pass's choices on a sample of a book are kept: the same shape, data/lxx/recheck/<book>-<batch>.tsv (B4 writes them). */
+/** Where the second pass's choices on a sample of a book are kept: the same shape, data/lxx/recheck/<book>.tsv (lxx:choose --recheck writes it). */
 export const RECHECK_DIR = join(OUT_DIR, 'recheck');
 /** Where the committed, MIT annotation files are written. */
 export const ANNOTATIONS_DIR = join(OUT_DIR, 'annotations');
