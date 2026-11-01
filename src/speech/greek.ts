@@ -505,20 +505,24 @@ export function greekWordSpeech(text: string): { text: string; language: SpeechL
  * hears whether his Greek voice puts the stress where the respelling does. */
 export const VOICE_TEST_WORDS: readonly string[] = ['πατήρ', 'ἀγάπη'];
 
-/** The key the Test of the Greek voice speaks under. */
+/** What Settings > Reading voices' Test of the Hebrew voice says (mw-5r3p30.909): a word stressed on its last syllable, in the Hebrew scheme's voice form. */
+export const HEBREW_VOICE_TEST_WORD = 'שָׁלוֹם';
+
+/** The key the Test of a voice speaks under (one test at a time, so Greek's and Hebrew's share it). */
 export const VOICE_TEST_KEY = 'voice-test';
 
-/** Says VOICE_TEST_WORDS in the Greek voice he chose (or the phone's pick), each as Tap to hear says a word; a second tap while it speaks stops it. */
-export function testGreekVoice(): SpeakOutcome {
+/** Says the test of `language` in the voice he chose for it (or the phone's pick): Greek's VOICE_TEST_WORDS, each as Tap to hear says a word, or the Hebrew
+ * word; a second tap while it speaks stops it. */
+export function testVoice(language: 'greek' | 'hebrew'): SpeakOutcome {
   const synth = synthesis();
-  if (!synth || hasVoice('greek') === false) return 'no-voice';
+  if (!synth || hasVoice(language) === false) return 'no-voice';
   if (beside?.key === VOICE_TEST_KEY || isSpeaking(VOICE_TEST_KEY)) {
     stopIfSpeaking(VOICE_TEST_KEY);
     return 'stopped';
   }
   // a line each: the speech package says each line as an utterance of its own
-  const text = VOICE_TEST_WORDS.map((w) => greekWordSpeech(w).text).join('\n');
-  return speakText(text, VOICE_TEST_KEY, { language: 'greek' }) ? 'speaking' : 'no-voice';
+  const text = language === 'hebrew' ? hebrewVoiceForm(HEBREW_VOICE_TEST_WORD) : VOICE_TEST_WORDS.map((w) => greekWordSpeech(w).text).join('\n');
+  return speakText(text, VOICE_TEST_KEY, { language }) ? 'speaking' : 'no-voice';
 }
 
 /** The voice an utterance in `language` is given among `voices`: the one he chose (`chosen`, a voiceKey) while the phone lists it, else the phone's own

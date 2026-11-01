@@ -132,11 +132,7 @@ export const USE_CASES: readonly UseCase[] = [
   {
     id: 'voice-test',
     title: 'Hear and switch the voice from Settings: the name of the voice in use and Test',
-    status: {
-      greek: 'has',
-      hebrew: { gap: 'scenario "Test under the Hebrew voice says a Hebrew word in the voice in use" in a new features/hebrew-voice-test.feature; src/settings/controls/voice.tsx (GreekVoiceInUse drawn for one language: take the language), src/speech/greek.ts voiceInUse/testGreekVoice by language; S' },
-      latin: LATIN_LATER,
-    },
+    status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
   },
   {
     id: 'pronunciation',
