@@ -3,6 +3,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Markdown } from '../../src/markdown/Markdown';
+import { markdownToSpeech } from '../../src/markdown/plain';
 import { cardOf, referencesIn, writtenOf } from '../../src/markdown/verseLinks';
 
 afterEach(cleanup);
@@ -53,6 +54,16 @@ const LINKED: [string, string, [string, string][]][] = [
   ['a verse past the end', 'Romans 8 is long; verse 99 is not there', [['Romans 8', 'Romans 8']]],
   ['an explicit chapter range', 'Read Daniel 10-12 slowly.', [['Daniel 10-12', 'Daniel 10-12']]],
   ['a book then chapters', 'Daniel is key; see chapters 2 and 7.', [['2', 'Daniel 2'], ['7', 'Daniel 7']]],
+  ['a chapter after a full reference with and', '1 Thessalonians 4 and 5', [['1 Thessalonians 4', '1 Thessalonians 4'], ['5', '1 Thessalonians 5']]],
+  ['two references, the second with and', 'Matthew 24 and 1 Thessalonians 4 and 5', [['Matthew 24', 'Matthew 24'], ['1 Thessalonians 4', '1 Thessalonians 4'], ['5', '1 Thessalonians 5']]],
+  ['a numbered book after a capitalised word', 'In 1 Thessalonians 4 and 5.', [['1 Thessalonians 4', '1 Thessalonians 4'], ['5', '1 Thessalonians 5']]],
+  ['a numbered book after See', 'See 1 Thessalonians 4 and 5 for the return.', [['1 Thessalonians 4', '1 Thessalonians 4'], ['5', '1 Thessalonians 5']]],
+  ['chapters 4, 5 and 6 after a full reference', 'Then 1 Corinthians 4, 5 and 6 are the heart', [['1 Corinthians 4', '1 Corinthians 4'], ['5', '1 Corinthians 5'], ['6', '1 Corinthians 6']]],
+  ['to after a full reference', '1 Thessalonians 4 to 5', [['1 Thessalonians 4 to 5', '1 Thessalonians 4-5']]],
+  ['to after a full reference, in a sentence', 'Read 1 Thessalonians 4 to 5 now.', [['1 Thessalonians 4 to 5', '1 Thessalonians 4-5']]],
+  ['to after a full reference, Daniel', 'Daniel 10 to 12 is the last vision.', [['Daniel 10 to 12', 'Daniel 10-12']]],
+  ['through after a full reference', 'Romans 8 through 9.', [['Romans 8 through 9', 'Romans 8-9']]],
+  ['chapters after a full reference', 'Romans 8, and chapters 9 and 10.', [['Romans 8', 'Romans 8'], ['9', 'Romans 9'], ['10', 'Romans 10']]],
 ];
 
 // Text that is not a reference even with a book named before it.
@@ -140,5 +151,18 @@ describe('Markdown links the references that lean on context', () => {
       ['2', '#/?ref=Daniel%202'],
       ['7', '#/?ref=Daniel%207'],
     ]);
+  });
+
+  it('links the live answer\'s chapters after a full reference, and its text and speech stay as written', () => {
+    const text = 'See Matthew 24 and 1 Thessalonians 4 and 5, and 1 Thessalonians 4 to 5.';
+    const { container } = render(<Markdown text={text} />);
+    expect(screen.getAllByRole('link').map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
+      ['Matthew 24', '#/?ref=Matthew%2024'],
+      ['1 Thessalonians 4', '#/?ref=1%20Thessalonians%204'],
+      ['5', '#/?ref=1%20Thessalonians%205'],
+      ['1 Thessalonians 4 to 5', '#/?ref=1%20Thessalonians%204-5'],
+    ]);
+    expect(container.textContent).toBe(text);
+    expect(markdownToSpeech(text)).toBe(text);
   });
 });
