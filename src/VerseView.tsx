@@ -6,7 +6,7 @@
 // the chosen one marked with the accent's border and a tint, never filled; and at the foot ONE control, the one thing on the screen filled in the accent,
 // that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar). The Ask the tutor action and its composer are gone (mw-5r3p30.882): the floating ? is the one door. Listen is not a hold
 // (mw-5r3p30.130): its foot is a Play button, and while it plays or waits the speaking bar above has Pause / Resume, Restart and Stop.
-// Practise (mw-5r3p30.899, src/practise/) is a door: Copywork, Narration, Dictation, Summary and Quiz, in Susan Wise Bauer's order. Dictation (mw-5r3p30.900) hides the verse in this view's text box until his page is judged. Narration (mw-5r3p30.901) shows the verse in English there and its foot is a hold bar he tells it back into; Copywork and Dictation can then work on his written-down narration in its place. Copywork shows the verse to copy in the script he picks, in this view's text box
+// Practise (mw-5r3p30.899, src/practise/) is a door: Copywork, Narration, Dictation, Summary and Quiz, in Susan Wise Bauer's order. Dictation (mw-5r3p30.900) hides the verse in this view's text box until his page is judged. Narration (mw-5r3p30.901) shows the verse in English there and its foot is a hold bar he tells it back into; Copywork and Dictation can then work on his written-down narration in its place. Summary (mw-5r3p30.902) shows the verse, passage or chapter in English there, with a box under it to type the main points in and a foot of Check my summary or Take a photo. Copywork shows the verse to copy in the script he picks, in this view's text box
 // in place of the Reader's text, and its foot is Take a photo / Try again; the Quiz (mw-5r3p30.74, once the action Quiz me) has no hold: its foot is the Start the quiz / Continue the quiz button, which opens the Talk sheet in quiz mode.
 // Diagram (mw-souyao.3, offered only for one verse, mw-5r3p30.895) has no foot: its pane (src/diagram/DiagramPane.tsx) is drawn under the row, and a tapped word of it opens the Reader's WordSheet through `onLook`.
 // The Reader has no Talk bar (mw-5r3p30.882); the floating ? is the one tutor door, over the view. The chosen action is kept (src/verse/action.ts); the
@@ -170,7 +170,9 @@ export function VerseView(props: VerseViewProps) {
   // Narration (mw-5r3p30.901) shows the verse in English to read first, and Copywork or Dictation of his written-down narration work on it, in English, in place of the verse
   const narrating = action === 'practise' && ai && practice.door === 'narration';
   const ownNarration = practice.fromNarration ? practice.narration : undefined;
-  const copyLanguages = ownNarration || narrating ? (['en'] as CopyLanguage[]) : copyLanguagesOf(source);
+  // Summary (mw-5r3p30.902) shows the verse, passage or chapter in English too: he gives its main points in English
+  const summarizing = action === 'practise' && ai && practice.door === 'summary';
+  const copyLanguages = ownNarration || narrating || summarizing ? (['en'] as CopyLanguage[]) : copyLanguagesOf(source);
   const copyLanguage: CopyLanguage = copyLanguages.includes(practice.language) ? practice.language : 'en';
   const modelText = ownNarration ? ownNarration.text : modelTextOf(verse, copyLanguage);
   const big = hebrewView ? 'script-he reader-hebrew [--lp-greek-size:2.25rem]' : view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
@@ -264,10 +266,10 @@ export function VerseView(props: VerseViewProps) {
             <p data-dictation-hidden className="px-1 text-base text-muted">
               The verse is hidden while you write. Listen to each phrase, write it on paper, then photograph your page.
             </p>
-          ) : copying || dictating || narrating ? (
+          ) : copying || dictating || narrating || summarizing ? (
             <p
               data-sheet-verse
-              {...(copying ? { 'data-copywork-text': '' } : dictating ? { 'data-dictation-text': '' } : { 'data-narration-text': '' })}
+              {...(copying ? { 'data-copywork-text': '' } : dictating ? { 'data-dictation-text': '' } : narrating ? { 'data-narration-text': '' } : { 'data-summary-text': '' })}
               data-size="big"
               {...copyAttrs(copyLanguage)}
               className={`break-words leading-(--lp-leading) ${copyLanguage === 'hbo' ? 'script-he reader-hebrew [--lp-greek-size:2.25rem]' : copyLanguage === 'grc' ? 'font-greek [--lp-greek-size:2.25rem] text-[length:var(--lp-greek-size)]' : 'font-sans [--lp-english-size:1.75rem] text-[length:var(--lp-english-size)]'}`}

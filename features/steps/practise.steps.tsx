@@ -99,7 +99,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     expect(received(0).input).toMatchObject({ language, reference });
   };
 
-  Scenario('The Practise door lists copywork, narration, dictation, summary and the quiz, and summary says soon', ({ Given, When, And, Then }) => {
+  Scenario('The Practise door lists copywork, narration, dictation, summary and the quiz, and every one can be opened', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on John 1 with a copywork tutor behind a fake Postern', openOn('#/?b=jhn&c=1', judged));
     When('he taps the number of verse {int}', tapVerse);
     And('he chooses {string}', choose);
@@ -107,11 +107,9 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       const names = Array.from(doorEl().querySelectorAll('li')).map((li) => li.querySelector('button')?.getAttribute('aria-label'));
       expect(names).toEqual([a, b, c, d, e]);
     });
-    And('{string} says soon and cannot be opened', (_, name: string) => {
-      const button = within(doorEl()).getByRole('button', { name, exact: true });
-      expect(button).toBeDisabled();
-      expect(button.parentElement?.querySelector('[data-soon]')?.textContent).toBe('soon');
-      for (const name of ['Copywork', 'Narration', 'Dictation', 'Quiz']) expect(within(doorEl()).getByRole('button', { name, exact: true })).toBeEnabled();
+    And('every way on the door can be opened and none says soon', () => {
+      for (const name of ['Copywork', 'Narration', 'Dictation', 'Summary', 'Quiz']) expect(within(doorEl()).getByRole('button', { name, exact: true })).toBeEnabled();
+      expect(doorEl().querySelector('[data-soon]')).toBeNull();
     });
   });
 
@@ -514,6 +512,233 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await waitFor(() => expect(narrationEl().querySelector('[role="alert"]')).not.toBeNull());
       expect(narrationEl().querySelector('[data-narration-question]')).toBeNull();
       expect(await within(narrationEl()).findByRole('button', { name, exact: true })).toBeEnabled();
+    });
+  });
+  // ---- Summary (mw-5r3p30.902) ----
+  const summaryEl = () => viewEl().querySelector<HTMLElement>('[data-summary]') as HTMLElement;
+  const summaryResult = () => summaryEl().querySelector<HTMLElement>('[data-summary-result]') as HTMLElement;
+  const summarised = {
+    readable: true,
+    read_as: 'The Word was with God and the Word was God.',
+    present: ['The Word was with God', 'The Word was God'],
+    missing: ['The Word was in the beginning'],
+    in_order: false,
+    length: 'right',
+    model_summary: 'In the beginning the Word was with God, and the Word was God.',
+    advice: 'Begin with when the Word was, then say who he was with.',
+  };
+  const summaryTutor = (reply: () => { status: 'answered' | 'failed'; answer?: unknown; reason?: string }, place = '#/?b=jhn&c=1') => () =>
+    open((f) => {
+      f.autoReply = { status: 'answered', answer: {} };
+      f.replyFor = (_input, kind) => (kind === 'summary' ? reply() : undefined);
+    }, false, place);
+  const answers = (answer: unknown) => () => ({ status: 'answered' as const, answer });
+  const summaryField = () => within(summaryEl()).getByRole('textbox', { name: 'Your summary' }) as HTMLTextAreaElement;
+  const typeSummary = async (_: unknown, text: string) => {
+    const field = await within(viewEl()).findByRole('textbox', { name: 'Your summary' });
+    await user.clear(field);
+    await user.type(field, text);
+  };
+  const summaryGrist = async (_: unknown, how: string, reference: string) => {
+    await sent();
+    expect(received(0).grist).toMatchObject({ app: 'lampas', kind: 'summary', v: '1' });
+    expect(received(0).input).toMatchObject({ reference, how });
+  };
+  const englishOf = (verses: Chapter['verses']) => verses.map((v) => v.e.map((c) => c.t.trim()).filter(Boolean).join(' ')).join(' ');
+  const summaryPoints = (selector: string) => Array.from(summaryEl().querySelectorAll(`${selector} li`)).map((li) => li.textContent);
+  const summaryResultShown = () => waitFor(() => expect(summaryResult()).not.toBeNull());
+  const summaryFoot = async (_: unknown, shown: string, other: string) => {
+    expect(await within(viewEl()).findByRole('button', { name: shown, exact: true })).toBeEnabled();
+    expect(within(viewEl()).queryByRole('button', { name: other, exact: true })).toBeNull();
+  };
+  const present = async (_: unknown, a: string, b: string) => {
+    await summaryResultShown();
+    expect(summaryPoints('[data-summary-present]')).toEqual([a, b]);
+  };
+  const summaryScope = () => {
+    expect(summaryEl().querySelector('[data-summary-scope]')).toHaveTextContent('Summary is in English. A summary in Greek or Hebrew is not offered yet.');
+    expect(viewEl().querySelector('[role="group"][aria-label]:is([aria-label="Copy in"],[aria-label="Dictate in"])')).toBeNull();
+  };
+  const passageIsOpen = async (_: unknown, reference: string) => {
+    const view = await screen.findByRole('region', { name: 'Verse view' });
+    await waitFor(() => expect(view.querySelector('[data-passage-box]')).not.toBeNull());
+    expect(within(view).getByRole('heading', { level: 2 })).toHaveTextContent(reference);
+  };
+
+  Scenario('Summary on John 1:1 is in English: the verse is shown and a summary in Greek or Hebrew is said to be out of reach', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on John 1 with a summary tutor behind a fake Postern', summaryTutor(answers(summarised)));
+    When('he taps the number of verse {int}', tapVerse);
+    And('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    Then('summary says it is in English and that a summary in Greek or Hebrew is not offered yet', summaryScope);
+    And('the passage is shown in English for him to read first', () => {
+      const text = viewEl().querySelector<HTMLElement>('[data-summary-text]') as HTMLElement;
+      expect(text).toHaveAttribute('lang', 'en');
+      expect(text.textContent).toBe(ENGLISH_JOHN);
+    });
+    And('he can type in {string}', async (_, name: string) => {
+      expect(await within(viewEl()).findByRole('textbox', { name })).toBeEnabled();
+    });
+    And('the foot offers {string} and not {string}', summaryFoot);
+    And('nothing has been sent to the tutor', () => {
+      expect(fake.received).toHaveLength(0);
+    });
+  });
+
+  Scenario('He types a summary of John 1:1; the tutor says which main points are present and missing, the order, the length, and a model summary', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on John 1 with a summary tutor behind a fake Postern', summaryTutor(answers(summarised)));
+    When('he taps the number of verse {int}', tapVerse);
+    And('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    And('he types {string} in {string}', typeSummary);
+    Then('the foot offers {string} and not {string}', summaryFoot);
+    When('he sends it with {string}', choose);
+    Then('the mill received one grist for the lampas app, kind summary, typed, about {string}', (_, reference: string) => summaryGrist(_, 'typed', reference));
+    And('that grist carries the passage in English and his summary as he typed it, and no picture', () => {
+      expect(received(0).input.passage).toBe(ENGLISH_JOHN);
+      expect(received(0).input.summary).toBe('The Word was with God and the Word was God.');
+      expect(received(0).attachments).toHaveLength(0);
+    });
+    And('the result lists the main points present: {string} and {string}', present);
+    And('the result lists the main points missing: {string}', (_, a: string) => {
+      expect(summaryPoints('[data-summary-missing]')).toEqual([a]);
+    });
+    And('the result says he gave the points in a different order from the passage', () => {
+      expect(summaryResult().querySelector('[data-summary-order]')).toHaveTextContent('different order');
+    });
+    And('the result says the length is right', () => {
+      expect(summaryResult().querySelector('[data-summary-length]')).toHaveAttribute('data-length', 'right');
+      expect(summaryResult().querySelector('[data-summary-length]')).toHaveTextContent('The length is right');
+    });
+    And('the result shows a model summary to compare', () => {
+      expect(summaryResult().querySelector('[data-summary-model]')).toHaveTextContent(summarised.model_summary);
+    });
+    And('the result gives one piece of advice', () => {
+      expect(summaryResult().querySelector('[data-summary-advice]')).toHaveTextContent(summarised.advice);
+    });
+  });
+
+  Scenario('Summary on Genesis 1:1 is in English too, with the English text sent', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Genesis 1 with a summary tutor behind a fake Postern', summaryTutor(answers(summarised), '#/?b=gen&c=1'));
+    When('he taps the number of verse {int}', tapVerse);
+    And('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    Then('summary says it is in English and that a summary in Greek or Hebrew is not offered yet', summaryScope);
+    When('he types {string} in {string}', typeSummary);
+    And('he sends it with {string}', choose);
+    Then('the mill received one grist for the lampas app, kind summary, typed, about {string}', (_, reference: string) => summaryGrist(_, 'typed', reference));
+    And('that grist carries the passage in English and his summary as he typed it, and no picture', () => {
+      expect(received(0).input.passage).toBe(genesisEnglish);
+      expect(received(0).input.summary).toBe('God made heaven and earth.');
+      expect(received(0).attachments).toHaveLength(0);
+    });
+  });
+
+  Scenario("A summary too long is told so, and one in the passage's order says the order was kept", ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on John 1 with a summary tutor that finds it too long and in order', summaryTutor(answers({ ...summarised, present: ['The Word was in the beginning', 'The Word was with God', 'The Word was God'], missing: [], in_order: true, length: 'too_long' })));
+    When('he taps the number of verse {int}', tapVerse);
+    And('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    And('he types {string} in {string}', typeSummary);
+    And('he sends it with {string}', choose);
+    Then('the result says the length is too long, and that a summary keeps only the main points', async () => {
+      await summaryResultShown();
+      expect(summaryResult().querySelector('[data-summary-length]')).toHaveAttribute('data-length', 'too_long');
+      expect(summaryResult().querySelector('[data-summary-length]')).toHaveTextContent('keeps only the main points');
+    });
+    And("the result says he kept the passage's order", () => {
+      expect(summaryResult().querySelector('[data-summary-order]')).toHaveTextContent("kept the passage's order");
+    });
+    And('the result lists nothing missing', () => {
+      expect(summaryResult().querySelector('[data-summary-missing]')).toBeNull();
+      expect(summaryResult()).toHaveTextContent('Nothing: you gave every main point.');
+    });
+  });
+
+  Scenario("He photographs his handwriting; the page is sent as a picture, the tutor's reading of it is shown and can be corrected", ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on John 1 with a summary tutor behind a fake Postern', summaryTutor(answers(summarised)));
+    When('he taps the number of verse {int}', tapVerse);
+    And('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    And('he attaches a picture of the page', attach);
+    Then('the mill received one grist for the lampas app, kind summary, photo, about {string}', (_, reference: string) => summaryGrist(_, 'photo', reference));
+    And('that grist carries the passage in English, no typed summary and one picture', () => {
+      expect(received(0).input.passage).toBe(ENGLISH_JOHN);
+      expect(received(0).input).not.toHaveProperty('summary');
+      expect(received(0).attachments).toHaveLength(1);
+      expect(received(0).attachments[0].mime).toBe('image/jpeg');
+    });
+    And('the result shows what the tutor read on the page', async () => {
+      await summaryResultShown();
+      await waitFor(() => expect(summaryField().value).toBe(summarised.read_as));
+      expect(summaryEl().querySelector('[data-summary-read]')).toHaveTextContent('The tutor read this on your page');
+    });
+    And('the result lists the main points present: {string} and {string}', present);
+    And('the result lists the main points missing: {string}', (_, a: string) => {
+      expect(summaryPoints('[data-summary-missing]')).toEqual([a]);
+    });
+    And('a {string} button is offered', tryAgain);
+  });
+
+  Scenario('A page of handwriting the tutor cannot read says so and judges nothing', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on John 1 with a summary tutor that cannot read the page', summaryTutor(answers({ readable: false, read_as: '', present: [], missing: [], in_order: true, length: 'right', model_summary: '', advice: 'The photo is too dark to read; take it again in better light.' })));
+    When('he taps the number of verse {int}', tapVerse);
+    And('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    And('he attaches a picture of the page', attach);
+    Then('the result says the page could not be read, with no main point judged', async () => {
+      await summaryResultShown();
+      expect(summaryResult()).toHaveTextContent('could not read');
+      expect(summaryResult()).toHaveTextContent('too dark to read');
+      expect(summaryResult().querySelector('[data-summary-present]')).toBeNull();
+      expect(summaryResult().querySelector('[data-summary-missing]')).toBeNull();
+      expect(summaryResult().querySelector('[data-summary-model]')).toBeNull();
+    });
+    And('a {string} button is offered', tryAgain);
+  });
+
+  Scenario('A summary of a passage sends the whole passage in English', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on John 1:1-5 with a summary tutor behind a fake Postern', summaryTutor(answers(summarised), '#/?b=jhn&c=1&p=1&pt=5&view=english&weave=off'));
+    Then('the Verse view is open on the passage {string}', passageIsOpen);
+    When('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    And('he types {string} in {string}', typeSummary);
+    And('he sends it with {string}', choose);
+    Then('the mill received one grist for the lampas app, kind summary, typed, about {string}', (_, reference: string) => summaryGrist(_, 'typed', reference));
+    And('that grist carries the English of verses 1 to 5 as one passage', () => {
+      expect(received(0).input.passage).toBe(englishOf(john.verses.slice(0, 5)));
+      expect(received(0).attachments).toHaveLength(0);
+    });
+  });
+
+  Scenario('A summary of a whole chapter sends the whole chapter in English', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on the whole of John 1 as a passage with a summary tutor behind a fake Postern', summaryTutor(answers(summarised), `#/?b=jhn&c=1&p=1&pt=${john.verses.length}&view=english&weave=off`));
+    Then('the Verse view is open on the passage {string}', passageIsOpen);
+    When('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    And('he types {string} in {string}', typeSummary);
+    And('he sends it with {string}', choose);
+    Then('the mill received one grist for the lampas app, kind summary, typed, about {string}', (_, reference: string) => summaryGrist(_, 'typed', reference));
+    And('that grist carries the English of every verse of the chapter as one passage', () => {
+      expect(received(0).input.passage).toBe(englishOf(john.verses));
+      expect((received(0).input.passage as string).length).toBeGreaterThan(3000);
+    });
+  });
+
+  Scenario('When the tutor cannot answer, what he typed stays and he can ask again', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on John 1 with a summary tutor that cannot answer', summaryTutor(() => ({ status: 'failed', reason: 'the mill is out' })));
+    When('he taps the number of verse {int}', tapVerse);
+    And('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    And('he types {string} in {string}', typeSummary);
+    And('he sends it with {string}', choose);
+    Then('the result says the tutor could not be asked, and a {string} button is offered', async (_, name: string) => {
+      await waitFor(() => expect(summaryEl().querySelector('[role="alert"]')).not.toBeNull());
+      expect(summaryEl().querySelector('[data-summary-result]')).toBeNull();
+      expect(await within(summaryEl()).findByRole('button', { name, exact: true })).toBeEnabled();
+    });
+    And('{string} still holds {string}', (_, name: string, text: string) => {
+      expect((within(summaryEl()).getByRole('textbox', { name }) as HTMLTextAreaElement).value).toBe(text);
     });
   });
 });
