@@ -158,9 +158,11 @@ async function watchFrames(page: Page, bars: 'away' | 'shown') {
 
 const frames = (page: Page) => page.evaluate(() => (window as unknown as { __frames: string[] }).__frames);
 
+// The swipes run at y 620, under the floating ? (src/AskTutor.tsx FloatingTutor: at the Hand side's edge, 17 rem above the bar, y 468 to 524 here), which takes a touch that starts on it
+// (mw-5r3p30.882 made it the one door; whether it shows in the immersive reader at all is mw-5r3p30.934's).
 for (const [name, from, to, chapter] of [
-  ['left to the next chapter', [330, 500], [90, 500], 3],
-  ['right to the previous chapter', [90, 500], [330, 500], 1],
+  ['left to the next chapter', [330, 620], [90, 620], 3],
+  ['right to the previous chapter', [90, 620], [330, 620], 1],
 ] as const) {
   test(`with the bars away, a swipe ${name} never draws the bars or the Reader without Immersive`, async ({ page }) => {
     await openEphesians2(page, 'on');
