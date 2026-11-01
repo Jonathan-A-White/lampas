@@ -1,0 +1,43 @@
+{
+  "description": "Talking about Revelation 10 he asks for the top five books to read to understand Revelation: the answer is a numbered list of at most seven items (not run into a paragraph) that names each book in full at its first mention and writes its chapters as 'chapters 2 and 7' or 'verse 22', so every reference is one the app links; no heading.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Revelation 10",
+    "greek": "Καὶ εἶδον ἄγγελον ἰσχυρὸν καταβαίνοντα ἐκ τοῦ οὐρανοῦ περιβεβλημένον νεφέλην καὶ ἡ ἶρις ἐπὶ τῆς κεφαλῆς αὐτοῦ καὶ τὸ πρόσωπον αὐτοῦ ὡς ὁ ἥλιος καὶ οἱ πόδες αὐτοῦ ὡς στύλοι πυρός καὶ ἔχων ἐν τῇ χειρὶ αὐτοῦ βιβλίον ἀνεῳγμένον καὶ ἔθηκεν τὸν πόδα αὐτοῦ τὸν δεξιὸν ἐπὶ τῆς θαλάσσης τὸν δὲ εὐώνυμον ἐπὶ τῆς γῆς καὶ ἔκραξεν φωνῇ μεγάλῃ ὥσπερ λέων μυκᾶται καὶ ὅτε ἔκραξεν ἐλάλησαν αἱ ἑπτὰ βρονταὶ τὰς ἑαυτῶν φωνάς",
+    "english": "I saw another mighty angel coming down from heaven, wrapped in a cloud, with a rainbow over his head. His face was like the sun, and his feet like pillars of fire. He held a little scroll open in his hand. He set his right foot on the sea and his left on the land.",
+    "verses": "10:1-3",
+    "question": "What are the top five books of the Bible I should read to understand Revelation?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": []
+  },
+  "expect": {
+    "answer": {
+      "all": [
+        {
+          "matches": "(^|\\n)1\\. [\\s\\S]*\\n2\\. [\\s\\S]*\\n3\\. [\\s\\S]*\\n4\\. [\\s\\S]*\\n5\\. "
+        },
+        {
+          "matches": "Daniel"
+        },
+        {
+          "matches": "Daniel|Ezekiel|Isaiah|Zechariah|Exodus"
+        }
+      ]
+    },
+    "setting_offer": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    }
+  }
+}

@@ -124,6 +124,7 @@ Settings > The tutor's responses has one choice, **Read the tutor's responses al
 when asked). On, a response is spoken the moment it arrives, with no tap (`src/speech/tutorVoice.ts`, the one engine of `startAnswer`, English in the
 English voice and Greek words in the Greek voice):
 
+- a list in an answer (mw-5r3p30.928, `src/markdown/plain.ts`): a numbered item opens with its ordinal word ('First, Daniel...', 'Second, ...'; past tenth 'Number 11, ...'), a bulleted item is its own sentence, and no digit, dot or star is said; the instructions (`340-how-to-answer.md`) have the tutor write at most 7 items, each one sentence that reads as speech;
 - the reading check's verdict (`ReadCheck.tsx`): the heading, the note, and each word to fix with its tip in full ("blessed: say it as one beat, blest");
   never the verse, the chunks or the words of "Read these again", which are for him to read;
 - the answer to Ask the tutor in the Verse view (the Talk sheet's, mw-5r3p30.842), and the answers of the Talk sheet and of
