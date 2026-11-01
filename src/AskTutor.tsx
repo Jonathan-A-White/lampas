@@ -19,6 +19,7 @@ import { useTalk } from './useTalk';
 import { isHolding } from './talk/holding';
 import { openDoorTarget, useDoorTarget, useHasDoorTarget, useTalkOpen } from './tutor/door';
 import { useHand } from './settings/hand';
+import { focusQuietly } from './ui/focus';
 
 /** The speech bubble with a ? that is the tutor's mark on the floating button. */
 function TutorIcon() {
@@ -174,6 +175,16 @@ export function LessonTalk({ screen, kept, suggestions, open, onClose }: { scree
 /** The floating button's name for a screen reader and the tests. */
 export const FLOATING_TUTOR_LABEL = 'Ask the tutor about what is on screen';
 
+/** The ? opened the talk that is open: it is not drawn while the Talk sheet is (FloatingTutor), so the sheet cannot give focus back to it (src/ui/sheetBack.ts gives it only to an opener still
+ * in the page); the ? takes it itself when it is drawn again, if nothing else has it, as every other sheet gives it back to what opened it (tests/e2e/talkback-reading.spec.ts). */
+let focusWhenBack = false;
+
+const takeFocusBack = (button: HTMLButtonElement | null): void => {
+  if (!button || !focusWhenBack) return;
+  focusWhenBack = false;
+  if (document.activeElement === null || document.activeElement === document.body) focusQuietly(button);
+};
+
 /**
  * The tutor's one door (mw-5r3p30.880, mw-5r3p30.882): a round tutor button at the Hand side's edge, drawn over every screen that has something to ask about, the Verse view and open sheets too (z-50: over the
  * sheets at z-35 and the full-screen dialogs at z-40, under the shell's bars). A tap opens the tutor about the newest target a screen or sheet registered (src/tutor/door.ts). Not drawn while a Talk sheet
@@ -188,12 +199,13 @@ export function FloatingTutor() {
   return (
     <button
       type="button"
+      ref={takeFocusBack}
       data-floating-tutor
       data-hand={hand}
       aria-label={FLOATING_TUTOR_LABEL}
       onClick={() => {
         stopReading();
-        openDoorTarget();
+        if (openDoorTarget()) focusWhenBack = true;
       }}
       style={{ bottom: 'calc(var(--lp-bar-inset) + min(17rem, 35dvh))' }}
       className={`fixed ${hand === 'left' ? 'left-3' : 'right-3'} z-50 flex size-14 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg active:opacity-80`}
