@@ -1,0 +1,127 @@
+TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY
+A slice for tests: the sections of the condensed data this rig's lxx tests read, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge, www.STEPBible.org).
+#DataStart(Condensed)
+$Gen.31:55--32:32	English KJV	Hebrew	Latin	Greek
+TEST: If...	Gen.32:32=Last	Gen.32:33=Last	Gen.32:32=Last	Gen.32:32=Last
+OneToOne	Gen.31:55	Gen.32:1	Gen.31:55	Gen.31:55
+OneToOne	Gen.32:1-32	Gen.32:2-33	Gen.32:1-32	Gen.32:1-32
+
+$Psa.9:1-10:18
+English KJV	 & Psa.9:20=Last & Psa.9:TextBeforeV1=Exist
+Hebrew	 & Psa.9:21=Last & Psa.9:TextBeforeV1=NotExist
+Latin + Greek	 & Psa.9:39=Last & Psa.9:TextBeforeV1=NotExist
+EngTitleMerged	 & Psa.9:20=Last & Psa.9:TextBeforeV1=NotExist
+GrkTitleSeparate (eg Brenton)	 & Psa.9:38=Last & Psa.9:TextBeforeV1=Exist
+BIBLES	English KJV	Hebrew	Latin	Greek	EngTitleMerged	GrkTitleSeparate (eg Brenton)
+OneToOne	Psa.9:Title	Psa.9:1	Psa.9:1	Psa.9:1	Absent [=Psa.9:1]	Psa.9:Title
+OneToOne	Psa.9:1	Psa.9:2	Psa.9:2	Psa.9:2	Psa.9:1	Psa.9:1
+OneToOne	Psa.9:2-20	Psa.9:3-21	Psa.9:3-21	Psa.9:3-21	Psa.9:2-20	Psa.9:2-20
+OneToOne	Psa.10:1-18	Psa.10:1-18	Psa.9:22-39	Psa.9:22-39	Psa.10:1-18	Psa.9:21-38
+
+$Psa.21:1-21:13
+English KJV	 & Psa.9:30=NotExist & Psa.21:13=Last & Psa.21:TextBeforeV1=Exist
+Hebrew	 & Psa.9:30=NotExist & Psa.21:14=Last & Psa.21:TextBeforeV1=NotExist
+Latin + Greek	 & Psa.9:30=Exist & PSA.20:14=Last & Psa.20:TextBeforeV1=NotExist
+EngTitleMerged	 & Psa.9:30=NotExist & Psa.21:13=Last & Psa.21:TextBeforeV1=NotExist
+BrentonSeparate 	 & Psa.9:30=Exist & Psa.20:13=Last & Psa.20:TextBeforeV1=Exist
+BrentonMerged	 & Psa.9:30=Exist & Psa.20:13=Last & Psa.20:TextBeforeV1=NotExist
+BIBLES	English KJV	Hebrew	Latin	Greek	EngTitleMerged	BrentonSeparate 	BrentonMerged
+OneToOne	Psa.21:Title	Psa.21:1	Psa.20:1	Psa.20:1	Absent [=Psa.21:1]	Psa.20:Title	Absent [=Psa.20:1]
+OneToOne	Psa.21:1	Psa.21:2	Psa.20:2	Psa.20:2	Psa.21:1	Psa.20:1	Psa.20:1
+OneToOne	Psa.21:2-13	Psa.21:3-14	Psa.20:3-14	Psa.20:3-14	Psa.21:2-13	Psa.20:2-13	Psa.20:2-13
+
+$Psa.22:1-22:31
+English KJV	 & Psa.9:30=NotExist & Psa.22:31=Last & Psa.22:TextBeforeV1=Exist
+Hebrew	 & Psa.9:30=NotExist & Psa.22:32=Last & Psa.22:TextBeforeV1=NotExist
+Latin + Greek	 & Psa.9:30=Exist & PSA.21:32=Last & PSA.21:TextBeforeV1=NotExist
+EngTitleMerged	 & Psa.9:30=NotExist & Psa.22:31=Last & Psa.22:TextBeforeV1=NotExist
+BrentonSeparate 	 & Psa.9:30=Exist & Psa.21:31=Last & Psa.21:TextBeforeV1=Exist
+BrentonMerged	 & Psa.9:30=Exist & Psa.21:31=Last & Psa.21:TextBeforeV1=NotExist
+BIBLES	English KJV	Hebrew	Latin	Greek	EngTitleMerged	BrentonSeparate 	BrentonMerged
+OneToOne	Psa.22:Title	Psa.22:1	Psa.21:1	Psa.21:1	Absent [=Psa.22:1]	Psa.21:Title	Absent [=Psa.21:1]
+OneToOne	Psa.22:1	Psa.22:2	Psa.21:2	Psa.21:2	Psa.22:1	Psa.21:1	Psa.21:1
+OneToOne	Psa.22:2-31	Psa.22:3-32	Psa.21:3-32	Psa.21:3-32	Psa.22:2-31	Psa.21:2-31	Psa.21:2-31
+
+$Psa.23:1-6
+English KJV	 & Psa.9:30=NotExist & Psa.23:6=Last & Psa.23:TextBeforeV1=Exist
+Hebrew + EngTitleMerged	 & Psa.9:30=NotExist & Psa.23:6=Last & Psa.23:TextBeforeV1=NotExist
+Latin + Greek	 & Psa.9:30=Exist & PSA.22:6=Last & PSA.22:TextBeforeV1=NotExist
+BrentonSeparate 	 & Psa.9:30=Exist & Psa.22:6=Last & Psa.22:TextBeforeV1=Exist
+BIBLES	English KJV	Hebrew	Latin	Greek	EngTitleMerged	BrentonSeparate
+OneToOne	Psa.23:Title	Absent [=Psa.23:1]	Absent [=Psa.22:1]	Absent [=Psa.22:1]	Absent [=Psa.23:1]	Psa.22:Title
+OneToOne	Psa.23:1	Psa.23:1	Psa.22:1	Psa.22:1	Psa.23:1	Psa.22:1
+OneToOne	Psa.23:2-6	Psa.23:2-6	Psa.22:2-6	Psa.22:2-6	Psa.23:2-6	Psa.22:2-6
+
+$Exo.40:9-40:38	English KJV	Hebrew	Latin	Greek*
+TEST: If...	Exo.40:38=Last	Exo.40:38=Last	Exo.40:36=Last	Exo.40:32=Last
+TextMayBeMissing	Exo.40:7-8	Exo.40:7-8	Exo.40:7-8	Absent
+OneToOne	Exo.40:9	Exo.40:9	Exo.40:9	Exo.40:7
+SubdividedVerse	Exo.40:10	Exo.40:10	Exo.40:10	Exo.40:8-9
+TextMayBeMissing	Exo.40:11	Exo.40:11	Exo.40:11	Absent
+OneToOne	Exo.40:12	Exo.40:12	Exo.40:12	Exo.40:10
+OneToOne	Exo.40:13	Exo.40:13	Exo.40:13	Exo.40:11
+MergedPrevVerse	Exo.40:12-15	Exo.40:12-15	Absent [=Exo.40:13]	Exo.40:12-13
+OneToOne	Exo.40:16-27	Exo.40:16-27	Exo.40:14-25	Exo.40:14-25
+TextMayBeMissing	Exo.40:28	Exo.40:28	Exo.40:26	Absent
+OneToOne	Exo.40:29	Exo.40:29	Exo.40:27	Exo.40:26
+OneToOne	Exo.40:30	Exo.40:30	Exo.40:28	Exo.38:27
+MergedPrevVerse	Exo.40:31	Exo.40:31	Exo.40:29	Absent [=Exo.38:27]
+MergedPrevVerse	Exo.40:32	Exo.40:32	Exo.40:30	Absent [=Exo.38:27]
+OneToOne	Exo.40:33-38	Exo.40:33-38	Exo.40:31-36	Exo.40:27-32
+
+$Est.1:1-22	English KJV	Hebrew	Latin*	Greek	GreekUndivided	Latin2*	GreekIntegrated
+TEST: If...	Est.1:22=Last	Est.1:22=Last	Est.1:22=Last	Est.1:22=Last	Est.1:22=Last	Est.1:22=Last	Est.1:39=Last
+TEST: & if... 	Est.1:1.1=Exist	Est.1:1.1=NotExist	Est.1:1.1=NotExist	Est.1:1.1=Exist	Est.1:1.1=NotExist	Est.1:1.1=NotExist	Est.1:1.1=NotExist
+TEST: & if... 	Est.A:17=NotExist	Est.A:17=NotExist	Est.A:17=Exist	Est.A:17=NotExist	Est.A:17=NotExist	Est.A:17=NotExist	Est.A:17=NotExist
+TEST: & if... 	Est.12:6=NotExist	Est.12:6=NotExist	Est.12:6=NotExist	Est.12:6=NotExist	Est.12:6=NotExist	Est.12:6=Exist	Est.12:6=NotExist
+TEST: & if... 	Est.1:1<Est.1:6	Est.1:1<Est.1:6	Est.1:1<Est.1:6	Est.1:1<Est.1:6	Est.1:1>Est.1:6	Est.1:1<Est.1:6	Est.1:1<Est.1:6
+OneToOne	Est.1:1.0	Est.1:1	Est.1:1	Est.1:1.0	Est.1:1 [=+Est.11:2-12; 12:1-6]	Est.1:1	Est.1:1
+LongVerse/LVExtra	Est.1:1.1-17	NoVerse	Est.A:1-17	Est.1:1.1-17	NoVerse	Est.11:2-12; 12:1-6	Est.1:2-18
+OneToOne	Est.1:2-22	Est.1:2-22	Est.1:2-22	Est.1:2-22	Est.1:2-22	Est.1:2-22	Est.1:19-39
+
+$Jer.25:15-38	English KJV	Hebrew	Latin	Greek*	Greek2 (eg Brenton)*
+TEST: If...	Jer.25:38=Last	Jer.25:38=Last	Jer.25:38=Last	Jer.25:19=Last	Jer.25:39=Last
+OneToOne	Jer.25:14	Jer.25:14	Jer.25:14	Absent	Absent
+OneToOne	Jer.25:15-38	Jer.25:15-38	Jer.25:15-38	Jer.32:1-24	Jer.32:15-38
+
+$Jer.26:1-24	English KJV	Hebrew	Latin	Greek*
+TEST: If...	Jer.26:24=Last	Jer.26:24=Last	Jer.26:24=Last	Jer.26:28=Last
+OneToOne	Jer.26:1-24	Jer.26:1-24	Jer.26:1-24	Jer.33:1-24
+
+$Jer.46:1-28	English KJV	Hebrew	Latin	Greek*
+TEST: If...	Jer.46:28=Last	Jer.46:28=Last	Jer.46:28=Last	Jer.46:18=Last
+OneToOne	Jer.46:1-28	Jer.46:1-28	Jer.46:1-28	Jer.26:1-28
+
+$Dan.3:23--4:3	English KJV	Hebrew	Latin*	Greek*
+TEST: & if... 	Dan.3:30=Last	Dan.3:33=Last	Dan.3:100=Last	Dan.3:97=Last
+OneToOne	S3Y.1:1-28	NoVerse	Dan.3:24-51	Dan.3:24-51
+#OneToOne	S3Y.1:29	NoVerse	Dan.3:52	Dan.3:52
+#MergedPrevVerse	S3Y.1:30	NoVerse	Absent [=Dan.3:52]	Absent [=Dan.3:52]
+#OneToOne	S3Y.1:31	NoVerse	Dan.3:53	Dan.3:53
+#OneToOne	S3Y.1:32	NoVerse	Dan.3:55	Dan.3:55
+#OneToOne	S3Y.1:33	NoVerse	Dan.3:54	Dan.3:54
+#OneToOne	S3Y.1:34-35	NoVerse	Dan.3:56-57	Dan.3:56-57
+#OneToOne	S3Y.1:36	NoVerse	Dan.3:59	Dan.3:59
+#OneToOne	S3Y.1:37	NoVerse	Dan.3:58	Dan.3:58
+#OneToOne	S3Y.1:38-46	NoVerse	Dan.3:60-68	Dan.3:60-68
+#OneToOne	S3Y.1:47-48	NoVerse	Dan.3:71-72	Dan.3:71-72
+#OneToOne	S3Y.1:49-50	NoVerse	Dan.3:69-70	Dan.3:69-70
+#OneToOne	S3Y.1:51-54	NoVerse	Dan.3:73-76	Dan.3:73-76
+#OneToOne	S3Y.1:55	NoVerse	Dan.3:78	Dan.3:78
+#OneToOne	S3Y.1:56	NoVerse	Dan.3:77	Dan.3:77
+#OneToOne	S3Y.1:57	NoVerse	Dan.3:79	Dan.3:79
+#OneToOne	S3Y.1:58-68	NoVerse	Dan.3:80-90	Dan.3:80-90
+OneToOne	Dan.3:24-30	Dan.3:24-30	Dan.3:91-97 	Dan.3:91-97
+OneToOne	Dan.4:1-3	Dan.3:31-33	Dan.3:98-100 	Absent
+
+$Mal.4:1-4:6	English KJV	Hebrew	Latin	Greek*	Greek2
+TEST: If...	Mal.3:18=Last	Mal.3:24=Last	Mal.3:18=Last	Mal.3:18=Last	Mal.3:24=Last
+TEST: & if... 	Mal.4:5<Mal.4:6	Mal.3:23<Mal.3:24	Mal.4:5<Mal.4:6	Mal.4:5>Mal.4:6	Mal.3:23>Mal.3:24
+TEST: & if... 	Mal.4:5*2<Mal.4:4+Mal.4:6	Mal.3:23*2<Mal.3:22+Mal.3:24	Mal.4:5*2<Mal.4:4+Mal.4:6	Mal.4:5*2>Mal.4:4+Mal.4:6	Mal.3:23*2>Mal.3:22+Mal.3:24
+OneToOne	Mal.4:1-3	Mal.3:19-21	Mal.4:1-3	Mal.4:1-3	Mal.3:19-21
+OneToOne	Mal.4:1-3	Mal.3:19-21	Mal.4:1-3	Mal.4:1-35	Mal.3:19-21
+OneToOne	Mal.4:4	Mal.3:22	Mal.4:4	Mal.4:5	Mal.3:24
+OneToOne	Mal.4:5	Mal.3:23	Mal.4:5	Mal.4:6	Mal.3:22
+OneToOne	Mal.4:6	Mal.3:24	Mal.4:6	Mal.4:4	Mal.3:23
+
+#DataEnd(Condensed)

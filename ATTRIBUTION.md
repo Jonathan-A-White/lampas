@@ -11,16 +11,11 @@ Lampas stands on others' work and names every text, font, library, service and i
 
 - **[Majority Standard Bible (MSB), New Testament tables](https://majoritybible.com).** Public domain. The Byzantine Greek aligned to English: the text you read. Changes: per chapter.
 - **[Berean Standard Bible tables](https://berean.bible/licensing.htm).** Public domain. The Old Testament: Westminster Leningrad Codex Hebrew aligned to English. Changes: split by chapter.
-- **[Tyndale House's TBESG (Brief lexicon of the Greek NT, extended), from STEPBible](https://www.stepbible.org).** Licensed
-  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House, Cambridge. Greek lemmas, glosses and definitions.
-  Changes: first entry per Strong's number; definitions cut near 300 characters.
-- **[Tyndale House's TBESH (Translators Brief lexicon of Extended Strongs for Hebrew), from STEPBible](https://www.stepbible.org).** Licensed
-  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House, Cambridge. Hebrew headwords, glosses and definitions.
-  Changes: first sense per number; definitions cleaned and cut near 300 characters.
+- **[Tyndale House's TBESG, TBESH, TIPNR and TVTMS, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House,
+  Cambridge. Greek and Hebrew words, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the Greek-to-English verse map. Changes: first entry per Strong's number; cut near 300 characters.
+- **[LXX2012, from eBible](https://ebible.org/eng-lxx2012/)**: Brenton's Septuagint in English (1851), American spelling by M. P. Johnson. Public domain. Changes: footnotes dropped.
 - **[byztxt Byzantine text](https://github.com/byztxt/byzantine-majority-text)** and the [Robinson-Pierpont 2026 release](https://byzantinetext.com/study/editions/robinson-pierpont/). Public domain. Variant readings and sentence ends. Changes: laid on the words.
 - **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. The 2005 appendix, read on the Preface. Changes: Greek in Greek letters.
-- **[TIPNR, from STEPBible](https://www.stepbible.org)** (Translators Individualised Proper Names with all References), Tyndale House Cambridge.
-  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The places for the maps, with coordinates from [OpenBible.info](https://www.openbible.info/geo/). Changes: places only.
 - **[Learn to Read New Testament Greek](https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC)** by David Alan Black. Only lesson titles and pages, so a link finds the lesson.
 - **[Biblical Hebrew Step by Step](https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ)** by Menahem Mansoor. Only lesson titles and pages, so a link finds the lesson.
 - **[Bible Mapper](https://biblemapper.com)**, maps by David P. Barrett. Free for non-commercial use with a credit: "Map by David P. Barrett, biblemapper.com". Shown from his site, not copied.
