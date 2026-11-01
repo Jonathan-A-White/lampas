@@ -12,6 +12,15 @@ Every grind's instructions stay under 100,000 bytes, as `cat grinds/<kind>.instr
 
 **Bible talk, maps (mw-zbjgn3r.4).** The request may carry `maps` (the maps of the passage's chapter, `{id, source, title, period, places}`, at most 12, Bible Mapper's first and at most two Logos rows last, titled '(opens in Logos)'; docs/maps.md 'The tutor brings up maps') and the answer's `links` may carry `{kind: 'map', map: <id>}`, an id of a line of `maps`. The rule is the `### Links to a map` paragraph of part 200, and the examples are `map-of-the-passage`, `map-in-logos` and `no-map-listed`; verse-ask has neither the field nor the link.
 
+<!-- toc -->
+
+- [copywork (mw-5r3p30.899, dictation mw-5r3p30.900)](#copywork-mw-5r3p30899-dictation-mw-5r3p30900)
+- [narration (mw-5r3p30.901)](#narration-mw-5r3p30901)
+- [summary (mw-5r3p30.902)](#summary-mw-5r3p30902)
+- [drill-items: a Hebrew request (mw-gdcyf98.21)](#drill-items-a-hebrew-request-mw-gdcyf9821)
+
+<!-- /toc -->
+
 ## copywork (mw-5r3p30.899, dictation mw-5r3p30.900)
 
 `copywork` judges a photographed page of copywork against the verse (the Verse view's Practise > Copywork, docs/verse-view.md 'Practise'). The request is `{reference, language: 'en'|'grc'|'hbo', words}` with one picture (up to 1 MB, jpeg, png or webp); the answer marks each word `right`, `missing` or `wrong` (with a `problem` naming the letter, accent, breathing or vowel point), says whether the page was `readable`, and gives `fix_first`. Its examples are `grinds/examples/copywork/`: a perfect copy and one with errors in each language, John 1:1 in English and Greek, Genesis 1:1 in Hebrew.
