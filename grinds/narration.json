@@ -1,0 +1,16 @@
+{
+  "grind": 1,
+  "app": "lampas",
+  "kind": "narration",
+  "versions": ["1"],
+  "model": "sonnet",
+  "effort": "medium",
+  "instructions": "grinds/narration.instructions.md",
+  "answerSchema": "grinds/narration.answer.schema.json",
+  "attachments": {
+    "min": 0,
+    "max": 0,
+    "mime": [],
+    "maxBytes": 0
+  }
+}

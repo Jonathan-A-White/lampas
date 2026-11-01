@@ -102,7 +102,7 @@ Two rows the Governor may want to reopen: `variants` is `n/a` for Hebrew because
 | --- | --- | --- | --- |
 | mw-5r3p30.899 | Practise door and copywork | English, Greek, Hebrew from the start (his Q4 C) | tags `@uc-practise @greek @hebrew`; turns the `practise` row to `has` for both |
 | mw-5r3p30.900 | Practise: dictation | English, Greek, Hebrew | the same tags on its scenarios |
-| mw-5r3p30.901 | Practise: narration | English only in its first slice (the transcriber is en-US) | no language tag; a Greek or Hebrew narration is a later `gap` with its story |
+| mw-5r3p30.901 | Practise: narration | English only in its first slice (the transcriber is en-US) | tags `@uc-practise @greek` and `@hebrew` (the verse is English either way); a Greek or Hebrew narration is a later `gap` with its story |
 | mw-5r3p30.902 | Practise: summary | English only in its first slice | as narration |
 | mw-5r3p30.897 | Diagram by sentence, across verse breaks | Greek and Hebrew (its title) | its scenarios carry `@uc-diagram @greek` and `@uc-diagram @hebrew`; the `diagram` row stays `has` |
 

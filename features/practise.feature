@@ -4,15 +4,17 @@ Feature: Practise a verse
   Hebrew on an Old Testament verse), he copies it by hand, photographs the page, and the tutor (the copywork grind) marks each word right, missing or
   wrong, with the one thing to fix first. Dictation is live in the same languages (mw-5r3p30.900): the verse is hidden, the app reads it a phrase at a
   time (Start dictation, Again, Next), he writes it by hand, photographs the page, and the tutor judges what he heard and wrote; then the verse is shown
-  beside the marks and Try again restarts. Narration and Summary say "soon" until their stories land. The quiz is the existing Verse quiz.
+  beside the marks and Try again restarts. Narration is live (mw-5r3p30.901) in English only: he holds the bar and tells the verse or passage back in his own words,
+  the app writes down what the phone heard, and the tutor (the narration grind) lists what he caught, in the passage's order, what he missed, and one gentle
+  question; the written-down narration can be taken to Copywork or Dictation. Summary says "soon" until its story lands. The quiz is the existing Verse quiz.
 
   @uc-practise @greek
-  Scenario: The Practise door lists copywork, narration, dictation, summary and the quiz, and two of them say soon
+  Scenario: The Practise door lists copywork, narration, dictation, summary and the quiz, and summary says soon
     Given Lampas is opened on John 1 with a copywork tutor behind a fake Postern
     When he taps the number of verse 1
     And he chooses "Practise"
     Then the Practise door lists "Copywork", "Narration", "Dictation", "Summary" and "Quiz" in that order
-    And "Narration" and "Summary" say soon and cannot be opened
+    And "Summary" says soon and cannot be opened
 
   @uc-practise @greek
   Scenario: Copywork on John 1:1 in Greek: the page is photographed and each word is marked
@@ -136,3 +138,78 @@ Feature: Practise a verse
     Then the result says the page could not be read, with no word marked
     And the verse is still hidden while he writes
     And a "Take a photo" button is offered
+
+  @uc-practise @greek
+  Scenario: Narration on John 1:1 is in English: the verse is shown and Greek or Hebrew narration is said to be out of reach
+    Given Lampas is opened on John 1 with a narration tutor behind a fake Postern and a phone that hears
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Narration"
+    Then narration says it is in English and that Greek or Hebrew narration is not offered yet
+    And the verse is shown in English for him to read first
+    And the bar "Hold and tell it back" is offered
+    And nothing has been sent to the tutor
+
+  @uc-practise @greek
+  Scenario: He holds and tells John 1:1 back; it is written down and the tutor says what he caught and missed, in order
+    Given Lampas is opened on John 1 with a narration tutor behind a fake Postern and a phone that hears
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Narration"
+    And he holds the bar and says "in the beginning was the word and the word was with god"
+    Then his narration is written down as "In the beginning was the word and the word was with god."
+    And the mill received one grist for the lampas app, kind narration, about "John 1:1"
+    And that grist carries the verse in English and his written-down narration, and no picture
+    And the result lists what he caught, in order: "In the beginning was the Word" and "The Word was with God"
+    And the result lists what he missed: "The Word was God"
+    And the result asks one gentle question
+    And "Use as copywork" and "Use as dictation" are offered
+
+  @uc-practise @hebrew
+  Scenario: Narration on Genesis 1:1 is in English too, with the English text sent
+    Given Lampas is opened on Genesis 1 with a narration tutor behind a fake Postern and a phone that hears
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Narration"
+    Then narration says it is in English and that Greek or Hebrew narration is not offered yet
+    When he holds the bar and says "god made heaven and earth in the beginning"
+    Then the mill received one grist for the lampas app, kind narration, about "Genesis 1:1"
+    And that grist carries the verse in English and his written-down narration, and no picture
+
+  @uc-practise @greek
+  Scenario: A narration can be taken to copywork and back, the tutor's answer kept
+    Given Lampas is opened on John 1 with a narration tutor behind a fake Postern and a phone that hears
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Narration"
+    And he holds the bar and says "in the beginning was the word and the word was with god"
+    And he waits for the result
+    And he taps "Use as copywork"
+    Then copywork is open on his narration only in English
+    And the text to copy is "In the beginning was the word and the word was with god."
+    When he attaches a picture of the page
+    Then the mill received a copywork grist in English about "My narration of John 1:1" with his narration's words
+    When he goes back with "Back to Practise"
+    Then narration is open again with his narration and the tutor's answer
+
+  @uc-practise @greek
+  Scenario: A narration can be taken to dictation
+    Given Lampas is opened on John 1 with a narration tutor behind a fake Postern and a phone that hears
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Narration"
+    And he holds the bar and says "in the beginning was the word and the word was with god"
+    And he waits for the result
+    And he taps "Use as dictation"
+    Then dictation is open on his narration only in English
+    And the verse is hidden while he writes
+
+  @uc-practise @greek
+  Scenario: When the tutor cannot answer, his narration is still written down and he can ask again
+    Given Lampas is opened on John 1 with a narration tutor that cannot answer, behind a fake Postern and a phone that hears
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Narration"
+    And he holds the bar and says "in the beginning was the word and the word was with god"
+    Then his narration is written down as "In the beginning was the word and the word was with god."
+    And the result says the tutor could not be asked, and a "Try again" button is offered

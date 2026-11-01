@@ -1,0 +1,26 @@
+{
+  "description": "John 3:16 \"told back\" with a story about buying bread: no point is caught, all of them are missed, and the question sends him back to the first point kindly.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 3:16",
+    "passage": "For God so loved the world that He gave His one and only Son, that everyone who believes in Him shall not perish but have eternal life.",
+    "narration": "A man went to the market and bought some bread and then he went home."
+  },
+  "expect": {
+    "caught.0": {
+      "present": false
+    },
+    "missed.0": {
+      "present": true
+    },
+    "missed.1": {
+      "present": true
+    },
+    "in_order": {
+      "equals": true
+    },
+    "question": {
+      "matches": "^[^?]+\\?$"
+    }
+  }
+}

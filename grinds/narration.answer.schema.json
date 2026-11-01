@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Narration Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["caught", "missed", "in_order", "question"],
+  "properties": {
+    "caught": {
+      "description": "The main events or points of the passage that he told, one short plain phrase each, in the order the PASSAGE has them (not the order he told them). Empty when he told none of them.",
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+    },
+    "missed": {
+      "description": "The main events or points of the passage that he left out, one short plain phrase each, in the passage's order. Empty when he told every main point.",
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+    },
+    "in_order": {
+      "description": "True when the points he told came in the order the passage has them (or he told one point or none); false when he told two or more of them in a different order.",
+      "type": "boolean"
+    },
+    "question": {
+      "description": "One gentle question, a single sentence ending in a question mark, that leads him toward the first point he missed without telling it; when he missed nothing, one question that takes him a little deeper into the passage.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    }
+  }
+}
