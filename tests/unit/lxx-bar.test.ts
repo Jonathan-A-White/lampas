@@ -140,7 +140,8 @@ describe('lxx:known on John 1, John hidden (the probe’s known-answer run)', as
   const lines: string[] = [];
   const [kept] = await runKnown(['--chapter', 'Jhn.1', '--choices', PROBE_CHOICES, '--keep-demoted'], { input: JHN, log: (l) => lines.push(l) });
   const [strict] = await runKnown(['--chapter', 'Jhn.1', '--choices', PROBE_CHOICES], { input: JHN });
-  const [bare] = await runKnown(['--chapter', 'Jhn.1'], { input: JHN });
+  // an empty directory stands for a chapter with no choices file (data/lxx/known/jhn-1.tsv is committed now, mw-u2w5klk.7)
+  const [bare] = await runKnown(['--chapter', 'Jhn.1', '--choices-dir', tmp()], { input: JHN });
 
   it('scores layers 1 and 2 as the probe did, within one word: 672 of 673 on the lemma and 670 on full parsing for layer 1, 25 of 25 for layer 2', () => {
     expect(kept.words).toBe(829);
