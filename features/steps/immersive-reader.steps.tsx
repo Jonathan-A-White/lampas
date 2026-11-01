@@ -192,14 +192,14 @@ const barsAway = () => {
   expect(chips().closest('[data-away]')).not.toBeNull();
   expect(screen.queryByRole('button', { name: 'Settings' })).toBeNull();
   expect(screen.queryByRole('button', { name: 'Talk', exact: true })).toBeNull();
-  expect(screen.queryByRole('button', { name: ASK_TUTOR_LABEL })).toBeNull();
 };
 const barsShown = () => {
   expect(document.querySelectorAll('[data-away]')).toHaveLength(0);
   expect(chips()).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Talk', exact: true })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: ASK_TUTOR_LABEL })).toBeInTheDocument();
+  // the door is the floating ? here: the older round Ask button is not drawn beside it (mw-5r3p30.935)
+  expect(screen.queryByRole('button', { name: ASK_TUTOR_LABEL })).toBeNull();
 };
 const inView = async () => waitFor(barsShown);
 const outOfView = async () => waitFor(barsAway);
@@ -212,7 +212,7 @@ const oneFingerTap = () => {
 };
 
 describeFeature(feature, ({ Scenario }) => {
-  const bars = 'the header, the chips, the Talk bar and the Ask button are all';
+  const bars = 'the header, the chips and the Talk bar are all';
 
   Scenario('Immersive reader is Off by default and Off leaves the Reader alone when the text scrolls', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader Off', () => open({ immersive: 'off' }));

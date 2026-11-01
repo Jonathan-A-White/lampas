@@ -226,7 +226,8 @@ for (const licensed of [true, false]) {
       });
       expect(rows.rows.length).toBeGreaterThanOrEqual(4);
       for (const row of rows.rows) expect(rows.height - row.bottom, row.name).toBeGreaterThanOrEqual(FLOOR - 0.5);
-      if (licensed) await expect(page.locator('[data-ask-tutor]')).toHaveAttribute('data-away', '');
+      // the door is the floating ? here, so the older round Ask button is not drawn at all (mw-5r3p30.935)
+      await expect(page.locator('[data-ask-tutor]')).toHaveCount(0);
       await shot(page, `immersive-place-floor-${licensed ? 'licensed' : 'free'}-${size.name}`);
 
       // the bars back: the speaking bar, the Talk bar's round Ask button and the rows under them keep the floor too. Upright only: sideways, with the bars
