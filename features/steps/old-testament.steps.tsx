@@ -592,7 +592,7 @@ describeFeature(feature, ({ Scenario }) => {
     [...within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button')].map((b) => b.textContent?.trim() ?? '');
   const phoneLicensed = 'Lampas is opened on Jonah 1 with a licence';
 
-  Scenario('The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor, Quiz me and Share', ({ Given, When, Then, And }) => {
+  Scenario('The Verse view of Jonah 1:10 offers Listen, Read it aloud, Ask the tutor, Practise and Share', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Jonah 1 with a licence and a phone that can share', () => openOn('Jonah 1', {}, false, { licensed: true, share: true }));
     When('he taps the number of verse {int}', tapVerseNumber);
     Then('the Verse view is headed {string}', async (_, reference: string) => {

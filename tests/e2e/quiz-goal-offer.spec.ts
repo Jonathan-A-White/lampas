@@ -45,7 +45,8 @@ async function start(page: Page, viewport: { width: number; height: number }, op
 async function openQuiz(page: Page) {
   await page.locator('[data-heading]', { hasText: 'Walking by the Spirit' }).getByRole('button').click();
   const view = page.getByRole('region', { name: 'Verse view' });
-  await view.getByRole('button', { name: 'Quiz me', exact: true }).click();
+  await view.getByRole('button', { name: 'Practise', exact: true }).click();
+  await view.getByRole('button', { name: 'Quiz', exact: true }).click();
   await view.getByRole('button', { name: 'Start the quiz', exact: true }).click();
   return page.getByRole('dialog', { name: 'Quiz on Romans 8:1-11' });
 }

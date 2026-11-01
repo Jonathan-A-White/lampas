@@ -1,4 +1,4 @@
-// features/steps/quiz-me.steps.tsx — runs features/quiz-me.feature: the Verse view's Quiz me action (mw-5r3p30.74). It starts the Talk sheet in quiz
+// features/steps/quiz-me.steps.tsx — runs features/quiz-me.feature: the Verse view's Practise action and its Quiz door (mw-5r3p30.74, mw-5r3p30.899). It starts the Talk sheet in quiz
 // mode on a verse or a passage; the grist is the bible-talk grind's, with the whole passage's Greek and English and `mode: 'quiz'`. Postern is the fake
 // (tests/support/fake-postern.ts) whose mill answers every grist with QUIZ_ANSWER; fetch serves the chapter files from disk.
 import '@testing-library/react/dont-cleanup-after-each';
@@ -116,6 +116,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern', openWith);
     When('he taps the heading {string}', tapHeading);
     And('he chooses {string}', choose);
+    And('he opens {string}', choose);
     Then('the Verse view shows a {string} button and no hold bar', (_, name: string) => {
       expect(within(viewEl()).getByRole('button', { name, exact: true })).toBeInTheDocument();
       expect(bars()).toHaveLength(0);
@@ -158,6 +159,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern', openWith);
     When('he taps the heading {string}', tapHeading);
     And('he chooses {string}', choose);
+    And('he opens {string}', choose);
     And('he taps {string}', tapsInView);
     And('the quiz answer number {int} has arrived', (_, n: number) => turnsKept(n));
     And('he sends {string}', async (_, said: string) => {
@@ -177,6 +179,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern', openWith);
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
     And('he chooses {string}', choose);
+    And('he opens {string}', choose);
     And('he taps {string}', tapsInView);
     Then('the sheet is titled {string}', titled);
     And('the mill received one grist for the lampas app, kind bible-talk, in quiz mode about {string}', async (_, reference: string) => {
@@ -195,6 +198,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern', openWith);
     When('he taps the heading {string}', tapHeading);
     And('he chooses {string}', choose);
+    And('he opens {string}', choose);
     And('he taps {string}', tapsInView);
     And('the quiz answer number {int} has arrived', (_, n: number) => turnsKept(n));
     And('he taps Done on the sheet', async () => {

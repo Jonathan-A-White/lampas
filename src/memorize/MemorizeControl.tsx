@@ -105,7 +105,7 @@ export function MemorizeControl({ canonical, compact = false, quiet = false, cla
       {on ? `Memorizing · ${memorized.map(langName).join(', ')}` : 'Memorize'}
     </button>
   );
-  // Practise (mw-fu7dqf.15, PROVISIONAL wording): once it is memorized, one tap opens a session on exactly this reference, in the first language it is memorized in. It stands beside the
+  // Practise (mw-fu7dqf.15, PROVISIONAL wording; 'Rehearse' in the Verse view's tools line, where Practise is the action of the row, mw-5r3p30.899): once it is memorized, one tap opens a session on exactly this reference, in the first language it is memorized in. It stands beside the
   // control, so the first tap on Memorize only marks (a tap on a button never leaves the screen by surprise) and the way to practise appears right after.
   const practise = on ? (
     <button
@@ -115,7 +115,7 @@ export function MemorizeControl({ canonical, compact = false, quiet = false, cla
       onClick={() => openMemorizeSession(canonical, memorized[0])}
       className={quiet ? `${QUIET} text-accent active:bg-line` : `${BUTTON} ${compact ? 'w-36 text-sm' : 'text-base'} border-line text-accent active:bg-line`}
     >
-      Practise
+      {quiet ? 'Rehearse' : 'Practise'}
     </button>
   ) : null;
   return (

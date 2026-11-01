@@ -2,7 +2,7 @@
 Feature: The Verse view
   Tapping a verse number opens the verse on a screen of its own (mw-5r3p30.79): the verse big at the top, woven as the Reader
   weaves it, a quiet line of tools under the text (Copy, Share, Memorize, the Logos doors, Maps; mw-5r3p30.896), a row of actions under that (Listen, Read it aloud,
-  Ask the tutor, Quiz me, Diagram; the chosen one is marked, not filled) and ONE control at the bottom, the one filled control on the screen, that
+  Ask the tutor, Practise, Diagram; the chosen one is marked, not filled) and ONE control at the bottom, the one filled control on the screen, that
   does the chosen action: Listen's Play button, or the hold bar of Read it aloud and Ask the tutor. The phone's Back returns to the Reader where it was. The Reader's Talk bar is not shown under it.
 
   Scenario: Tapping verse 11 opens the Verse view with the verse big and woven
@@ -27,7 +27,7 @@ Feature: The Verse view
   Scenario: One row of actions, the tools under the text, exactly one control at the foot, and no Talk bar
     Given Lampas is opened on Romans 8 in the English view with the weave "Off"
     When he taps the number of verse 11
-    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Quiz me" and "Diagram"
+    Then the row of actions is "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram"
     And "Copy" is one of the tools under the text, not an action
     And exactly one control sits at the foot, the Play button of Listen, and there is no hold bar
     And the Reader's Talk bar is not on screen

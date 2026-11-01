@@ -2,7 +2,7 @@ Feature: The tutor and a Hebrew verse
   Ask the tutor on a verse of an Old Testament chapter sends the verse's Hebrew with the English, as it sends a Greek verse's Greek: the pointed
   verse, and each word with its lemma, transliteration, gloss and parsing (mw-5vvlay.3, src/services/hebrewWords.ts, grinds/bible-talk.input.schema.json
   `hebrew` and `hebrew_words`; the Verse view's Ask goes to the Talk sheet's tutor, mw-5r3p30.842). The tutor's answer draws a Hebrew
-  word right to left in the Hebrew face (src/markdown/scriptRuns.ts). Quiz me stays out of an Old Testament verse's row: it is the Talk sheet's quiz, written
+  word right to left in the Hebrew face (src/markdown/scriptRuns.ts). The Quiz door of Practise stays out of an Old Testament verse's Practise at Hebrew 0: it is the Talk sheet's quiz, written
   in the Greek ladder's terms, and the drill-items grind takes Greek grammar ideas (docs/hebrew.md). These scenarios run against a fake Postern whose mill answers.
 
   @uc-tutor-ask @hebrew
@@ -23,11 +23,12 @@ Feature: The tutor and a Hebrew verse
     And the answer draws the Hebrew word "יָרֵא" right to left
 
   @uc-tutor-ask @hebrew
-  Scenario: Quiz me is not offered on Jonah 1:10, and Ask the tutor and Diagram are
+  Scenario: The Quiz door is not offered on Jonah 1:10, and Ask the tutor and Diagram are
     Given Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern
     When he taps the number of verse 10
-    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor" and "Diagram"
-    And the Verse view has no "Quiz me"
+    Then the Verse view offers the actions "Listen", "Read it aloud", "Ask the tutor", "Practise" and "Diagram"
+    When he chooses "Practise"
+    Then the Practise door has no "Quiz"
 
   @uc-learner-summary @hebrew
   Scenario: The tutor on Genesis 1 is told his Hebrew words and his place on the Hebrew ladder

@@ -277,7 +277,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const { view: v, weave: w } = readerOf(window.location.hash);
     openVerseRange({ book: BOOK, chapter: CHAPTER, from: verses[0].n, to: verses[verses.length - 1].n, view: v, weave: w });
   }, [chapter, BOOK, CHAPTER]);
-  const [action, chooseAction] = useVerseAction(hbo ? 'hbo' : 'grc');
+  const [action, chooseAction] = useVerseAction();
   const woven = useWoven(chapter, settings);
   // the variant units Settings > Variants shows (mw-9ji6ek0.5): marked in the text with a brace after them, counted by the chip in the row under the header; the Immersive reader has the marks and braces too (mw-9ji6ek0.12), not the chip
   const variants = useReaderVariants(chapter);

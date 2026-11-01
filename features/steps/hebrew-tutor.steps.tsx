@@ -1,5 +1,5 @@
 // features/steps/hebrew-tutor.steps.tsx — runs features/hebrew-tutor.feature: Ask the tutor on Jonah 1:10 (the copy of the built chapter in tests/fixtures/data/jon/1.json) sends the verse's Hebrew
-// words to a fake Postern whose mill records the grist, the answer draws a Hebrew word right to left, and Quiz me is not in the row (mw-5vvlay.3).
+// words to a fake Postern whose mill records the grist, the answer draws a Hebrew word right to left, and the Quiz door of Practise is not offered (mw-5vvlay.3).
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -168,15 +168,20 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Quiz me is not offered on Jonah 1:10, and Ask the tutor and Diagram are', ({ Given, When, Then, And }) => {
+  Scenario('The Quiz door is not offered on Jonah 1:10, and Ask the tutor and Diagram are', ({ Given, When, Then }) => {
     Given(phone, openJonah);
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
-    Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
+    Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => {
       const names = within(screen.getByRole('group', { name: 'Actions' })).getAllByRole('button').map((x) => x.textContent?.trim() ?? '');
-      expect(names).toEqual([a, b, c, d]);
+      expect(names).toEqual([a, b, c, d, e]);
     });
-    And('the Verse view has no {string}', (_, name: string) => {
-      expect(within(viewEl()).queryByRole('button', { name, exact: true }), name).toBeNull();
+    When('he chooses {string}', async (_, name: string) => {
+      await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+    });
+    Then('the Practise door has no {string}', async (_, name: string) => {
+      const door = await within(viewEl()).findByRole('list', { name: 'Ways to practise' });
+      expect(within(door).queryByRole('button', { name, exact: true }), name).toBeNull();
+      expect(within(door).getByRole('button', { name: 'Copywork', exact: true })).toBeInTheDocument();
     });
   });
 

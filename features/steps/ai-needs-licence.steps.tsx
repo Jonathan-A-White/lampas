@@ -141,7 +141,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Reader has an Ask the tutor button', () => expect(askButton()).not.toBeNull());
   });
 
-  Scenario('With no licence the Verse view offers neither Ask the tutor nor Quiz me, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
+  Scenario('With no licence the Verse view offers neither Ask the tutor nor Practise, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
     Given('this phone has no licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(false, 'ask'));
     Then('the Verse view offers only the action {string}, with Copy', offersOnlyListen);
     And('the Verse view has no Hold to ask', () => {
@@ -151,7 +151,18 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('With no licence the Verse view of a Hebrew verse offers neither Ask the tutor nor Quiz me, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
+  Scenario('With no licence the Verse view offers no Practise, even if Practise was the action he left it on', ({ Given, Then, And }) => {
+    Given('this phone has no licence and the Verse view of verse 28 is open, last left on Practise', () => openVerseView(false, 'practise'));
+    Then('the Verse view offers only the action {string}, with Copy', offersOnlyListen);
+    And('the Verse view has no Practise door and no Take a photo', () => {
+      expect(within(verseView()).queryByRole('button', { name: 'Practise' })).toBeNull();
+      expect(within(verseView()).queryByRole('list', { name: 'Ways to practise' })).toBeNull();
+      expect(within(verseView()).queryByRole('button', { name: 'Take a photo' })).toBeNull();
+      expect(verseView().querySelector('[data-practise-door], [data-copywork]')).toBeNull();
+    });
+  });
+
+  Scenario('With no licence the Verse view of a Hebrew verse offers neither Ask the tutor nor Practise, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
     Given('this phone has no licence and the Verse view of Genesis 1:1 is open, last left on Ask the tutor', () => openVerseView(false, 'ask', 'Gen.1.1'));
     Then('the Verse view offers only the action {string}, with Copy', offersOnlyListen);
     And('the Verse view has no Hold to ask', () => {
@@ -188,7 +199,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('With a licence the Verse view offers Ask the tutor and Quiz me and the Hold to ask bar', ({ Given, Then, And }) => {
+  Scenario('With a licence the Verse view offers Ask the tutor and Practise and the Hold to ask bar', ({ Given, Then, And }) => {
     Given('this phone has a licence and the Verse view of verse 28 is open, last left on Ask the tutor', () => openVerseView(true, 'ask'));
     Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {
       expect(actionNames().slice(0, 4)).toEqual([a, b, c, d]);
@@ -288,7 +299,7 @@ function offersOnlyListen(_: unknown, only: string): void {
   expect(actionNames().slice(0, 1)).toEqual([only]);
   expect(actionNames()).not.toContain('Read it aloud');
   expect(actionNames()).not.toContain('Ask the tutor');
-  expect(actionNames()).not.toContain('Quiz me');
+  expect(actionNames()).not.toContain('Practise');
   expect(within(verseView()).getByRole('button', { name: 'Copy' })).toBeInTheDocument();
 }
 

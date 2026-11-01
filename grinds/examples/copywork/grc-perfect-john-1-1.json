@@ -1,0 +1,53 @@
+{
+  "description": "A page that copies John 1:1 in Greek exactly, every accent, breathing and iota subscript: it is readable and every word is right.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 1:1",
+    "language": "grc",
+    "words": [
+      "Ἐν",
+      "ἀρχῇ",
+      "ἦν",
+      "ὁ",
+      "λόγος",
+      "καὶ",
+      "ὁ",
+      "λόγος",
+      "ἦν",
+      "πρὸς",
+      "τὸν",
+      "θεόν",
+      "καὶ",
+      "θεὸς",
+      "ἦν",
+      "ὁ",
+      "λόγος"
+    ]
+  },
+  "photos": [
+    "grc-perfect-john-1-1.jpg"
+  ],
+  "expect": {
+    "readable": {
+      "equals": true
+    },
+    "words.0.mark": {
+      "equals": "right"
+    },
+    "words.1.mark": {
+      "equals": "right"
+    },
+    "words.9.mark": {
+      "equals": "right"
+    },
+    "words.16.mark": {
+      "equals": "right"
+    },
+    "words.17": {
+      "present": false
+    },
+    "fix_first": {
+      "present": true
+    }
+  }
+}

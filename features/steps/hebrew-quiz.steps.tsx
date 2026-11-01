@@ -133,7 +133,8 @@ describeFeature(
     // the Verse view reads the Hebrew dial when it opens (useHebrewOn: unread counts as 0, so Quiz me is left out) and draws it a moment later: a read taken at once on a loaded host races that read
     const offers = (...names: string[]) => () => waitFor(() => expect(actionNames()).toEqual(names));
     const quizOn = async (): Promise<void> => {
-      await user.click(within(viewEl()).getByRole('button', { name: 'Quiz me', exact: true }));
+      await user.click(within(viewEl()).getByRole('button', { name: 'Practise', exact: true }));
+      await user.click(within(viewEl()).getByRole('button', { name: 'Quiz', exact: true }));
       await user.click(within(viewEl()).getByRole('button', { name: 'Start the quiz', exact: true }));
     };
     const titled = async (_: unknown, title: string) => expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();
@@ -144,11 +145,11 @@ describeFeature(
       expect(received(0).input.reference).toBe(reference);
     };
 
-    Scenario("Jonah 1:1's Verse view offers Quiz me and the quiz talk carries the Hebrew", ({ Given, When, Then, And }) => {
+    Scenario("Jonah 1:1's Practise door offers the Quiz and the quiz talk carries the Hebrew", ({ Given, When, Then, And }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Curious and a quiz behind a fake Postern', () => openQuiz('#/?b=jon&c=1', 'Curious'));
       When('he taps the number of verse {int}', tapVerse);
       Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => offers(a, b, c, d, e)());
-      When('he chooses {string} and taps {string}', quizOn);
+      When('he chooses {string}, opens {string} and taps {string}', quizOn);
       Then('the sheet is titled {string}', titled);
       And('the mill received one grist for the lampas app, kind bible-talk, in quiz mode about {string}', inQuizMode);
       And('that grist carries the Hebrew of verse 1 pointed, its Hebrew words and the English, and no Greek', () => {
@@ -163,17 +164,24 @@ describeFeature(
       });
     });
 
-    Scenario('At Hebrew 0 an Old Testament verse offers no Quiz me', ({ Given, When, Then }) => {
+    Scenario("At Hebrew 0 an Old Testament verse's Practise door has no Quiz", ({ Given, When, Then }) => {
       Given('Lampas is opened on Jonah 1 with the Hebrew dial at Just English and a quiz behind a fake Postern', () => openQuiz('#/?b=jon&c=1', 'Just English'));
       When('he taps the number of verse {int}', tapVerse);
-      Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => offers(a, b, c, d)());
+      Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => offers(a, b, c, d, e)());
+      When('he chooses {string}', async (_, name: string) => {
+        await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+      });
+      Then('the Practise door lists {string}, {string}, {string} and {string} and no Quiz', async (_, a: string, b: string, c: string, d: string) => {
+        const door = await within(viewEl()).findByRole('list', { name: 'Ways to practise' });
+        expect(Array.from(door.querySelectorAll('li button')).map((x) => x.getAttribute('aria-label'))).toEqual([a, b, c, d]);
+      });
     });
 
     Scenario("A Greek verse's quiz is as it was", ({ Given, When, Then, And }) => {
       Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern', () => openQuiz('', 'Curious'));
       When('he taps the number of verse {int}', tapVerse);
       Then('the Verse view offers the actions {string}, {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string, e: string) => offers(a, b, c, d, e)());
-      When('he chooses {string} and taps {string}', quizOn);
+      When('he chooses {string}, opens {string} and taps {string}', quizOn);
       Then('the mill received one grist for the lampas app, kind bible-talk, in quiz mode about {string}', inQuizMode);
       And('that grist carries the Greek of verse 11 and the English, and no Hebrew', () => {
         const input = received(0).input;

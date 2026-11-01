@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 5800;
+export const MAX_CREDITS_BYTES = 6000;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The New Testament\'s Greek, aligned to the English', licence: 'Public domain', link: 'https://majoritybible.com' },
@@ -44,6 +44,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'STEPBible', use: 'Tyndale House data, TVTMS verse map; Strong\'s links', licence: 'CC BY 4.0; links', link: 'https://www.stepbible.org' },
   { name: 'Web Speech API', use: 'Your phone\'s voices speak and hear', licence: 'a web standard', link: 'https://developer.mozilla.org/docs/Web/API/Web_Speech_API' },
   { name: '$P recognizer', use: 'Checks a letter you write by its shape', licence: 'none needed; a method', link: 'https://depts.washington.edu/acelab/proj/dollar/pdollar.html' },
+  { name: 'The Well-Trained Mind', use: 'Copywork, narration, dictation, summary in Practise', licence: 'none needed; a method', link: 'https://welltrainedmind.com/' },
   { name: 'Beads', use: 'How the factory keeps its work, with Gas Town', licence: 'MIT', link: 'https://github.com/steveyegge/beads' },
   { name: 'Claude Code', use: 'Writes most of the code', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude-code' },
   { name: 'Vite', use: 'Builds the app, with vite-plugin-pwa', licence: 'MIT', link: 'https://vite.dev' },

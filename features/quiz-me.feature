@@ -1,6 +1,6 @@
 @uc-verse-quiz @greek
 Feature: Quiz me in the Verse view
-  The Verse view has a fourth action, Quiz me (mw-5r3p30.74), for a verse or for a passage under a heading. Its button starts the
+  The Verse view's Practise action has the Quiz (mw-5r3p30.74, once an action of its own, Quiz me; mw-5r3p30.899) as a door, for a verse or for a passage under a heading. Its button starts the
   read, quiz, map cycle with the tutor: the Talk sheet opens on a conversation of its own, 'Quiz on Romans 8:1-11', and the
   bible-talk grind is sent the whole passage's Greek and English (the app's own text, never the first three verses), a quiz mode
   marker, and what Lampas knows of the reader. The quiz is kept on the phone apart from the ordinary talk about the same verses.
@@ -8,7 +8,8 @@ Feature: Quiz me in the Verse view
   Scenario: Quiz me on Romans 8:1-11 sends the whole passage with the quiz marker
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern
     When he taps the heading "Walking by the Spirit"
-    And he chooses "Quiz me"
+    And he chooses "Practise"
+    And he opens "Quiz"
     Then the Verse view shows a "Start the quiz" button and no hold bar
     When he taps "Start the quiz"
     Then the sheet is titled "Quiz on Romans 8:1-11"
@@ -22,7 +23,8 @@ Feature: Quiz me in the Verse view
   Scenario: An answer in the quiz carries the marker and the earlier turn
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern
     When he taps the heading "Walking by the Spirit"
-    And he chooses "Quiz me"
+    And he chooses "Practise"
+    And he opens "Quiz"
     And he taps "Start the quiz"
     And the quiz answer number 1 has arrived
     And he sends "There is no condemnation"
@@ -33,7 +35,8 @@ Feature: Quiz me in the Verse view
   Scenario: Quiz me on one verse
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern
     When he taps the number of verse 11
-    And he chooses "Quiz me"
+    And he chooses "Practise"
+    And he opens "Quiz"
     And he taps "Start the quiz"
     Then the sheet is titled "Quiz on Romans 8:11"
     And the mill received one grist for the lampas app, kind bible-talk, in quiz mode about "Romans 8:11"
@@ -43,7 +46,8 @@ Feature: Quiz me in the Verse view
   Scenario: A quiz that is already begun is continued, not begun again
     Given Lampas is opened on Romans 8 with a quiz behind a fake Postern
     When he taps the heading "Walking by the Spirit"
-    And he chooses "Quiz me"
+    And he chooses "Practise"
+    And he opens "Quiz"
     And he taps "Start the quiz"
     And the quiz answer number 1 has arrived
     And he taps Done on the sheet

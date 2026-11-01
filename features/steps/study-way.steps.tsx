@@ -102,7 +102,8 @@ describeFeature(feature, ({ Scenario }) => {
     if (!h) throw new Error(`no heading ${heading}`);
     await user.click(within(h).getByRole('button'));
     const view = await screen.findByRole('region', { name: 'Verse view' });
-    await user.click(within(view).getByRole('button', { name: 'Quiz me', exact: true }));
+    await user.click(within(view).getByRole('button', { name: 'Practise', exact: true }));
+    await user.click(within(view).getByRole('button', { name: 'Quiz', exact: true }));
     await user.click(within(view).getByRole('button', { name: 'Start the quiz', exact: true }));
     await screen.findByRole('dialog', { name: 'Quiz on Romans 8:1-11' });
   };

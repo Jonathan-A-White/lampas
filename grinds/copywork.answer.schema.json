@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Copywork Answer 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["readable", "words", "fix_first"],
+  "properties": {
+    "readable": {
+      "description": "False when the picture is not a readable page of handwriting (too dark, blurred, cut off, or no writing in it): then `words` is empty and `fix_first` says what to do about the photo. True otherwise.",
+      "type": "boolean"
+    },
+    "words": {
+      "description": "One entry for each word of the request's `words`, in the same order and the same number, when `readable`; empty when not.",
+      "type": "array",
+      "maxItems": 400,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["word", "mark"],
+        "properties": {
+          "word": {
+            "description": "The model word, copied from the request's `words` at this place.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "mark": {
+            "description": "'right' the word is written exactly as the model has it; 'missing' the word is not on the page where it belongs; 'wrong' it is on the page but not as the model has it.",
+            "type": "string",
+            "enum": ["right", "missing", "wrong"]
+          },
+          "problem": {
+            "description": "For a 'wrong' word only: what is wrong in plain words, naming the letter, accent, breathing or vowel point, with the word as he wrote it: 'you wrote begining; the second e is an i'. Left out for 'right' and 'missing'.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        }
+      }
+    },
+    "fix_first": {
+      "description": "One short sentence, kind and plain: the one thing to fix first (or, when every word is right, a word of praise; when the page was unreadable, what to do about the photo).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    }
+  }
+}
