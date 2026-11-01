@@ -21,9 +21,6 @@
     "readable": {
       "equals": true
     },
-    "words.0.mark": {
-      "equals": "right"
-    },
     "words.1.mark": {
       "equals": "right"
     },
