@@ -39,7 +39,7 @@ Under it is a **dial per language**, drawn only while its language is chosen (th
 | --- | --- |
 | Reading | appearance, layout, reading, headings, immersive, weave (Weave rows from step 2) |
 | Learning (id `greek`) | newWords, paradigms (How much of a table, from step 5, mw-irpgqi.2), goal, approach, handwriting, hebrew (Hebrew in the tutor, from Hebrew step 1) (the page is listed once a row of it is drawn: from step 3, or Hebrew 1) |
-| The tutor | readTutor, askBy, talk (Talk Hold | Tap, Send On release | By button), tips, studyWay (Quiz goal, My study way) |
+| The tutor | readTutor, talk (Talk Hold | Tap, Send On release | By button), tips, studyWay (Quiz goal, My study way) |
 | Listening | readAloud, voices, speed, pronunciation |
 | Daily | daily |
 | Study resources | resources, logos, maps |

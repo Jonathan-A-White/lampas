@@ -124,7 +124,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const phone = 'Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern';
 
-  Scenario('Ask the tutor on Jonah 1:10 sends the Hebrew words with the English', ({ Given, When, And, Then }) => {
+  Scenario('The tutor asked about Jonah 1:10 is sent the Hebrew words with the English', ({ Given, When, And, Then }) => {
     Given(phone, openJonah);
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
     And('he asks the tutor {string}', asks);
@@ -165,7 +165,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The Quiz door is not offered on Jonah 1:10, and Ask the tutor and Diagram are', ({ Given, When, Then }) => {
+  Scenario('The Quiz door is not offered on Jonah 1:10, and Diagram is', ({ Given, When, Then }) => {
     Given(phone, openJonah);
     When('he taps the number of verse {int}', (_, n: number) => openAndTap(n));
     Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => {

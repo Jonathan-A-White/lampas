@@ -2,8 +2,8 @@
 Feature: The Verse view
   Tapping a verse number opens the verse on a screen of its own (mw-5r3p30.79): the verse big at the top, woven as the Reader
   weaves it, a quiet line of tools under the text (Copy, Share, Memorize, the Logos doors, Maps; mw-5r3p30.896), a row of actions under that (Listen, Read it aloud,
-  Ask the tutor, Practise, Diagram; the chosen one is marked, not filled) and ONE control at the bottom, the one filled control on the screen, that
-  does the chosen action: Listen's Play button, or the hold bar of Read it aloud and Ask the tutor. The phone's Back returns to the Reader where it was. The Reader's Talk bar is not shown under it.
+  Practise, Diagram; the chosen one is marked, not filled; no Ask the tutor of its own, the floating ? is the one door, mw-5r3p30.882) and ONE control at the bottom, the one filled control on the screen, that
+  does the chosen action: Listen's Play button, or the hold bar of Read it aloud. The phone's Back returns to the Reader where it was. The Reader's Talk bar is not shown under it.
 
   Scenario: Tapping verse 11 opens the Verse view with the verse big and woven
     Given Lampas is opened on Romans 8 in the English view with the weave "Solid words"

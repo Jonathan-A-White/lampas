@@ -1,7 +1,7 @@
 @uc-source-view @greek
 Feature: Immersive reader
-  Settings has a switch, Immersive reader (Off by default). With it On, scrolling the Reader's text down slides the header, the row of chips,
-  the Talk bar and the round Ask button out of view, so the text has the whole screen (src/immersive.ts, src/Away.tsx). After that the bars
+  Settings has a switch, Immersive reader (Off by default). With it On, scrolling the Reader's text down slides the header and the row of chips
+  out of view, so the text has the whole screen (src/immersive.ts, src/Away.tsx). After that the bars
   change ONLY on a two-finger tap anywhere on the text (mw-5r3p30.255: "2 fingers on, 2 fingers off"): shown if away, away if shown. Nothing
   else brings them back: not scrolling up, not scrolling to or past the end of the chapter, not a sheet closing, not reading aloud stopping.
   A three-finger tap does nothing. A two-finger tap never opens a word sheet; a one-finger tap on a word still does. With the switch Off the
