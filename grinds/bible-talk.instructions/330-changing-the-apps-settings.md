@@ -17,7 +17,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `languages` — Which languages? The Bible in English, or with its Greek, its Hebrew, or both Value: "english" (English only), "greek", "hebrew", "both" (Greek and Hebrew).
 - `greekInterest` — How much Greek? From none to all in: each step shows more Greek, and nothing more. Value: "0" (Just English), "1" (Curious), "2" (Dipping a toe), "3" (Learning), "4" (Reading in Greek), "5" (All in).
 - `hebrewInterest` — How much Hebrew? From none to all in: each step shows more Hebrew, and nothing more. Value: "4" (Reading in Hebrew), or any value of `greekInterest`.
-- `theme` — Theme. The colours: Phone: follows the phone's light or dark setting. Sepia: warm paper with dark brown text, for long reading. High contrast: pure white on black with thick outlines, for low vision. Value: "phone", "light", "dark", "sepia", "contrast".
+- `theme` — Theme. Light, dark, sepia, high contrast, or the phone's own. Value: "phone", "light", "dark", "sepia", "contrast" (High contrast).
 - `font` — Font. The face of the English text; the Greek and the Hebrew keep theirs. Value: "phone" (The phone's own), "literata", "atkinson" (Atkinson Hyperlegible), "lexend".
 - `textSize` — Text size. How big the text is, in steps of the phone's own size. Value: "small", "normal", "large", "largest".
 - `layout` — Layout. How the verses are set on the page: Verse by verse: one verse per line. Paragraph: runs the verses of a paragraph together, with small verse numbers. Value: "verse", "paragraph".
@@ -36,7 +36,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `talk` — Talk. Hold the bar to speak, or tap to start and stop. Value: "hold", "tap".
 - `send` — Send. Sent when you let go, or kept in the box to fix. Value: "release" (On release), "button" (By button).
 - `hebrewDepth` — Hebrew in the tutor. How the tutor writes a Hebrew word: its sound, the letters, or both. Value: "transliteration", "both" (Hebrew and transliteration), "full".
-- `tips` — Tips. Whether Lampas may offer one small tip a day, from what you use, to help you get more from the app. Once a day at most, when you open Lampas and are online. On by default; Off sends nothing.
+- `tips` — Tips. One small tip a day, from what you use.
 - `weave` — Weave. In the English view, whether the Greek or Hebrew of his solid words, and of the words he is learning with their English beneath in small grey, is shown in place of their English: Solid: shows the solid ones. + Learning: shows the ones being learned too, with their English beneath in small grey until they turn solid. Value: "off", "solid", "solid+learning".
 - `weaveGrammar` — Grammar. Of the woven Greek or Hebrew, keep only forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off. Value: "any", "solid", "solid+frontier" (+ Frontier).
 - `weaveOrder` — Order. Lay the woven verse out in the English or in the original word order. Value: "english", "greek" (Original).
