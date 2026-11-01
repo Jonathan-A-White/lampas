@@ -53,8 +53,8 @@ async function openEphesians2(page: Page, immersive: 'on' | 'off', door?: 'float
 const header = (page: Page) => page.locator('header').first();
 const chips = (page: Page) => page.getByTestId('reader-chips');
 const talkBar = (page: Page) => page.locator('[data-talk-bar]');
-const askButton = (page: Page) => page.locator('[data-ask-tutor]');
-const all = (page: Page) => [header(page), chips(page), talkBar(page), askButton(page)];
+// the specs here choose the floating ? to get the two-finger tap that shows the bars; the older round Ask button is not drawn beside it (mw-5r3p30.935), so it is not among the bars
+const all = (page: Page) => [header(page), chips(page), talkBar(page)];
 
 const scrollText = (page: Page, by: number) =>
   page.evaluate((px) => {

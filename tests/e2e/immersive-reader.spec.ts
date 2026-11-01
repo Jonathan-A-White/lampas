@@ -50,8 +50,8 @@ async function openReader(page: Page, immersive: 'on' | 'off') {
 const header = (page: Page) => page.locator('header').first();
 const chips = (page: Page) => page.getByTestId('reader-chips');
 const talkBar = (page: Page) => page.locator('[data-talk-bar]');
-const askButton = (page: Page) => page.locator('[data-ask-tutor]');
-const all = (page: Page) => [header(page), chips(page), talkBar(page), askButton(page)];
+// the specs here choose the floating ? to get the two-finger tap that shows the bars; the older round Ask button is not drawn beside it (mw-5r3p30.935), so it is not among the bars
+const all = (page: Page) => [header(page), chips(page), talkBar(page)];
 
 const scrollText = (page: Page, by: number) =>
   page.evaluate((px) => {
@@ -353,11 +353,11 @@ test('with the bars shown, Read from the top moves the text to follow the voice 
   await page.clock.runFor(2000);
   await page.waitForTimeout(400);
   await expect(page.locator('[data-verse][data-reading="true"]')).toHaveCount(1);
-  // the chips row is not drawn while a chapter is read aloud (ReaderChips hidden), so it is the other three that stay
-  for (const el of [header(page), talkBar(page), askButton(page)]) await expect(el).toBeVisible();
+  // the chips row is not drawn while a chapter is read aloud (ReaderChips hidden), so it is the other two that stay
+  for (const el of [header(page), talkBar(page)]) await expect(el).toBeVisible();
   await shot(page, 'immersive-reading-aloud-shown');
 
   // his own scrolling down still slides them away
   await scrollText(page, 300);
-  for (const el of [header(page), talkBar(page), askButton(page)]) await expect(el).toBeHidden();
+  for (const el of [header(page), talkBar(page)]) await expect(el).toBeHidden();
 });
