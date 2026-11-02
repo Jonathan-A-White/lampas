@@ -10,7 +10,8 @@ import { whyLinesOf } from '../../src/handwriting/writeText';
 import { glyphsOfScript, scriptOfGlyph, strokeNotesOf, variantsOf } from '../../src/handwriting/glyphs';
 import { caseTwins, recognize, type InkStroke } from '../../src/handwriting/recognizer';
 import { HEBREW_STROKES } from '../../src/handwriting/hebrewTemplates';
-import { WRITERS, writing, type Distortion } from '../support/handwriting';
+import { frameOfPad } from '../../src/handwriting/padFrame';
+import { WRITERS, onPad, writing, type Distortion, type Hand } from '../support/handwriting';
 
 const DISTORTIONS: readonly [string, Distortion][] = [
   ['as written', {}],
@@ -114,6 +115,61 @@ describe('the look-alike Hebrew letters', () => {
       expect(failures).toEqual([]);
     });
   }
+});
+
+describe('a vav and a final nun on the pad that knows its line (mw-5r3p30.958)', () => {
+  // the card tells the checker where the line is and how tall a letter is, from the pad's own height (padFrame.ts); a hand writes on that line
+  const pad = frameOfPad(256)!;
+  const cases: [Hand, Distortion][] = [];
+  for (const scale of [0.8, 0.9, 1, 1.1, 1.25]) {
+    for (const shiftY of [-0.08, 0, 0.08]) {
+      for (const rotate of [0, 6, -6]) cases.push([{ scale, shiftY, shiftX: rotate / 30 }, { rotate, jitter: 0.008 }]);
+    }
+  }
+  const onCard = (written: string, asked: string, writer: number, hand: Hand, distortion: Distortion) =>
+    recognize(onPad(writing(written, WRITERS[writer], distortion), pad, 320, hand), asked, { script: 'hbo', ...pad });
+
+  for (const [letter, other] of [['ו', 'ן'], ['ן', 'ו']]) {
+    it(`takes a ${letter} written on the line for ${letter} and not for ${other}, in 90% of at least 50 hands`, () => {
+      let right = 0;
+      let wrong = 0;
+      let total = 0;
+      for (const [hand, distortion] of cases) {
+        for (let writer = 0; writer < WRITERS.length; writer += 1) {
+          total += 1;
+          if (onCard(letter, letter, writer, hand, distortion).match) right += 1;
+          if (onCard(letter, other, writer, hand, distortion).match) wrong += 1;
+        }
+      }
+      expect(total).toBeGreaterThanOrEqual(50);
+      console.info(`${letter}: ${right} of ${total} Right on its own card, ${wrong} of ${total} Right on the ${other} card`);
+      expect(right / total).toBeGreaterThanOrEqual(0.9);
+      expect(wrong / total).toBeLessThanOrEqual(0.1);
+    });
+  }
+
+  it('leaves a writing whose place cannot tell them apart Right, as it was', () => {
+    // a ו and a ן drawn with no line told: nothing to go by
+    for (const [letter, asked] of [['ו', 'ן'], ['ן', 'ו']]) {
+      expect(recognize(ink(letter), asked, { script: 'hbo' }).match).toBe(true);
+    }
+    // a stem that reaches from 0.2 above the line to 0.25 below it is as near a ן as a ו (byCase gives null): Right on either card
+    const stem = onPad(writing('ו', WRITERS[0]), pad, 320).map((stroke) =>
+      stroke.map((p) => ({ ...p, y: pad.baseline + (0.2 + 1.05 * (1 + (p.y - pad.baseline) / pad.capHeight) - 1) * pad.capHeight })),
+    );
+    expect([recognize(stem, 'ו', { script: 'hbo', ...pad }).match, recognize(stem, 'ן', { script: 'hbo', ...pad }).match]).toEqual([true, true]);
+  });
+
+  it('is unchanged for every other Hebrew letter: the pad tells nothing that moves them', () => {
+    for (const glyph of HEBREW_GLYPHS) {
+      if ('וןךףץ'.includes(glyph)) continue;
+      for (let writer = 0; writer < WRITERS.length; writer += 1) {
+        const strokes = onPad(writing(glyph, WRITERS[writer]), pad, 320);
+        const [bare, told] = [hebrew(strokes, glyph), recognize(strokes, glyph, { script: 'hbo', ...pad })];
+        expect(told, `${glyph} hand ${writer}`).toEqual(bare);
+      }
+    }
+  });
 });
 
 describe('which strokes were off', () => {

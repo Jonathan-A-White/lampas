@@ -2,7 +2,8 @@
 // the strokes go to the checker as they were written (recognizer.ts takes them in the pad's own pixels, any size). Palm rejection: a hand resting on the
 // screen while a pen writes is a touch, so once a pen has touched or hovered over the pad a touch never draws on it, and a touch stroke under way when the
 // pen comes is dropped. A second finger is ignored. The pad never scrolls the page (touch-action none). `under` is drawn beneath the ink (the letter to trace).
-import { useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react';
+import { LINE_AT } from './padFrame';
 import type { InkPoint, InkStroke } from './recognizer';
 
 interface Live {
@@ -13,15 +14,18 @@ interface Live {
 
 const polyline = (points: readonly InkPoint[]): string => points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
-export function WritingPad({ strokes, onChange, onStart, under, label }: {
+export function WritingPad({ strokes, onChange, onStart, under, label, boxRef }: {
   strokes: readonly InkStroke[];
   onChange: (strokes: InkStroke[]) => void;
   /** the first stroke on an empty pad has begun: hand, eye and ear meet (the card plays the letter's sound) */
   onStart?: () => void;
   under?: ReactNode;
   label: string;
+  /** the pad's element, for the card to read its size as it checks (padFrame.ts) */
+  boxRef?: RefObject<HTMLDivElement | null>;
 }) {
-  const box = useRef<HTMLDivElement>(null);
+  const own = useRef<HTMLDivElement>(null);
+  const box = boxRef ?? own;
   const live = useRef<Live | null>(null);
   // a pen has touched or hovered over this pad: from then on a touch is a resting hand
   const penHere = useRef(false);
@@ -86,8 +90,8 @@ export function WritingPad({ strokes, onChange, onStart, under, label }: {
       className="relative h-64 w-full touch-none select-none overflow-hidden rounded-2xl border-2 border-line bg-canvas"
     >
       {under ? <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">{under}</div> : null}
-      {/* the line the letters stand on, for the eye only: the check does not read it */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-4 top-[72%] border-t border-dashed border-line" />
+      {/* the line the letters stand on (padFrame.ts LINE_AT); a Hebrew card tells the checker where it is */}
+      <div aria-hidden="true" style={{ top: `${LINE_AT * 100}%` }} className="pointer-events-none absolute inset-x-4 border-t border-dashed border-line" />
       <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-fg">
         {[...strokes, ...(drawing ? [drawing] : [])].map((stroke, i) =>
           stroke.length === 1 ? (

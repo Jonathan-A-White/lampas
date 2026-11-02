@@ -325,8 +325,8 @@ function dotted(strokes: readonly InkStroke[]): boolean {
 let twinCache: Map<string, string[]> | null = null;
 
 /**
- * Hebrew letters a hand writes the same way, told apart only by how far they reach below the line: a vav and a final nun are both a stem with a small head, and the pad does not say where
- * the line is, so either is taken for the other (as ο and Ο are, with no cap height).
+ * Hebrew letters a hand writes the same way, told apart only by how far they reach below the line: a vav and a final nun are both a stem with a small head, and with no cap height and baseline (the
+ * Hebrew card gives both, padFrame.ts) either is taken for the other, as ο and Ο are.
  */
 const HEBREW_TWINS: Readonly<Record<string, readonly string[]>> = { ו: ['ן'], ן: ['ו'] };
 

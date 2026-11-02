@@ -73,3 +73,16 @@ Feature: Learning to read Hebrew: the letters
     And he writes "א" with the pen and checks it
     Then the card says "Right"
     And the sound of "א" was said in the Hebrew voice as he started writing
+
+  @uc-handwriting @hebrew
+  Scenario Outline: Write it tells a vav from a final nun by how far the stroke reaches below the line
+    Given a pen has been seen and the Hebrew Write it card for "<card>" is open on a pad 256 pixels tall
+    When he writes "<written>" standing on the line and taps Check
+    Then the Write it card says "<verdict>"
+
+    Examples:
+      | card             | written | verdict   |
+      | Vav              | ו       | Right     |
+      | Vav              | ן       | Not quite |
+      | Nun, final form  | ן       | Right     |
+      | Nun, final form  | ו       | Not quite |
