@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { TALK_MAX_EDGE } from '../../src/talk/pictures';
 import { COPYWORK_PAGES } from '../../scripts/render-copywork-examples';
+import '../support/grinds-in-graph';
 
 const DIR = 'grinds/examples/copywork';
 const names = readdirSync(DIR)
