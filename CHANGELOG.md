@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.72
+_2026-11-02_
+- New: A Septuagint word you tap now opens a card with its lemma, parsing and meaning, says how sure Lampas is of it, and marks a word it only guessed.
+
 ## 0.7.71
 _2026-11-02_
 - Fixed: the round tutor button no longer opens the tutor behind the drill, check, Try it and Memorize screens where it did nothing.

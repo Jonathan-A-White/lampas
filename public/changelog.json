@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.72",
+    "date": "2026-11-02",
+    "story": "mw-u2w5klk.12",
+    "kind": "new",
+    "text": "A Septuagint word you tap now opens a card with its lemma, parsing and meaning, says how sure Lampas is of it, and marks a word it only guessed."
+  },
+  {
     "version": "0.7.71",
     "date": "2026-11-02",
     "story": "mw-5r3p30.955",
