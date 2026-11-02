@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.78
+_2026-11-02_
+- Fixed: Typing a verse in Memorize now keeps the verse in view, shows a two-line box and the Check button above the keyboard, and has a way back to saying it.
+- Fixed: A Hebrew copywork page whose first word was written right is no longer told, now and then, that a small dot in it is missing.
+
 ## 0.7.77
 _2026-11-02_
 - Fixed: turning Variants on or off no longer moves the verse you are reading.

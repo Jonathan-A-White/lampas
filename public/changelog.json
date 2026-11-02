@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.78",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.983",
+    "kind": "fixed",
+    "text": "Typing a verse in Memorize now keeps the verse in view, shows a two-line box and the Check button above the keyboard, and has a way back to saying it."
+  },
+  {
+    "version": "0.7.78",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.982",
+    "kind": "fixed",
+    "text": "A Hebrew copywork page whose first word was written right is no longer told, now and then, that a small dot in it is missing."
+  },
+  {
     "version": "0.7.77",
     "date": "2026-11-02",
     "story": "mw-9ji6ek0.45",
