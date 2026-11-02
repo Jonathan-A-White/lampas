@@ -5,8 +5,10 @@
 // fetch the pinned sources into data/raw (skipped when present).
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { OUT_DIR, deriveBook, loadInput, type BookResult, type DeriveInput, type PendingWord } from './derive';
+import { OUT_DIR, deriveBook, loadInput, splitBooks, train, type BookResult, type DeriveInput, type PendingWord } from './derive';
+import type { SweteWord } from './swete';
 import { readMorpheusCache } from './morpheus';
+import { OLD_TESTAMENT } from './report';
 import { RAW_DIR, type Fetcher } from './sources';
 
 /** About how many pending words a batch holds; the cut falls at the chapter boundary nearest to it. */
@@ -129,10 +131,74 @@ export async function derivedBook(book: string, options: RunOptions): Promise<Bo
   return deriveBook(options.input ?? (await loadInput(rawDir, fetcher, log)), book, undefined, undefined, undefined, readMorpheusCache(join(options.outDir ?? OUT_DIR, 'morpheus'), book));
 }
 
-export const BATCHES_USAGE = 'usage: npm run lxx:batches -- --book <code>';
+export const BATCHES_USAGE = 'usage: npm run lxx:batches -- --book <code> | --all';
+
+export const ALL_BOOKS_HEADER = ['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name'];
+
+const isCapital = (form: string): boolean => {
+  const first = [...form.normalize('NFC')][0] ?? '';
+  return first !== first.toLowerCase();
+};
+/** A mark that ends a sentence or a clause in Swete's print: a full stop, a colon, the high point, the Greek question mark. */
+const ENDS_CLAUSE = /[.:;\u00B7\u0387\u037E][\])]*$/;
+
+/**
+ * The words that are names, by a rule of the print and not of any lexicon: written with a capital, and not the first word of a verse or of a clause (Swete
+ * capitalises the word after a full stop or high point). A name that opens a verse or a clause is not counted, and the first word of what someone says, which
+ * follows no mark (`εἶπεν ὁ θεός Γενηθήτωσαν`, Gen 1:14), is: an estimate, near the truth for a book of names (Gen 1: 1 of 2 is not one).
+ */
+export function nameRefs(words: ReadonlyArray<Pick<SweteWord, 'ref' | 'verse' | 'form' | 'display'>>): Set<string> {
+  const out = new Set<string>();
+  words.forEach((w, i) => {
+    const before = words[i - 1];
+    if (!isCapital(w.form) || !before || before.verse !== w.verse || ENDS_CLAUSE.test(before.display.normalize('NFC').trim())) return;
+    out.add(w.ref);
+  });
+  return out;
+}
+
+/** What `--all` counts for a book: its words, its pending words, those with no candidate, and the no-candidate words that are names (nameRefs). */
+export function bookCounts(result: Pick<BookResult, 'book' | 'words' | 'pending'>): { words: number; pending: number; none: number; names: number } {
+  const names = nameRefs(result.words);
+  const none = result.pending.filter((w) => w.candidates.length === 0);
+  return { words: result.words.length, pending: result.pending.length, none: none.length, names: none.filter((w) => names.has(w.ref)).length };
+}
+
+const rowOf = (name: string, c: { words: number; pending: number; none: number; names: number }): string =>
+  [name, c.words, c.pending, c.none, `${((100 * c.none) / c.words).toFixed(2)}%`, c.names].join('\t');
+
+/** One book's row of `--all`. */
+export const bookRow = (result: Pick<BookResult, 'book' | 'words' | 'pending'>): string => rowOf(result.book, bookCounts(result));
+
+/**
+ * `--all`: a row for each of the 39 books of the Old Testament (report.ts OLD_TESTAMENT; the model stories are filed from it: how many words each book forces to be a guess, because no candidate
+ * can be right), trained once, then a total row. Nothing is written.
+ */
+export async function runAllBooks(options: RunOptions = {}): Promise<BookResult[]> {
+  const { rawDir = RAW_DIR, log = () => {}, fetcher } = options;
+  const input = options.input ?? (await loadInput(rawDir, fetcher, log));
+  const trained = train(input);
+  log(ALL_BOOKS_HEADER.join('\t'));
+  const results: BookResult[] = [];
+  const wanted = new Set(OLD_TESTAMENT.map(([code]) => code));
+  for (const [code, tokens] of splitBooks(input)) {
+    if (tokens.words.length === 0 || !wanted.has(code)) continue;
+    const result = deriveBook(input, code, undefined, trained, tokens, readMorpheusCache(join(options.outDir ?? OUT_DIR, 'morpheus'), code));
+    log(bookRow(result));
+    results.push(result);
+  }
+  const sum = results.map(bookCounts).reduce((t, c) => ({ words: t.words + c.words, pending: t.pending + c.pending, none: t.none + c.none, names: t.names + c.names }), { words: 0, pending: 0, none: 0, names: 0 });
+  log(rowOf('total', sum));
+  return results;
+}
 
 export async function runBatches(argv: readonly string[], options: RunOptions = {}): Promise<Batch[]> {
   const { log = () => {} } = options;
+  if (argv.includes('--all')) {
+    if (argv.includes('--book')) throw new Error(BATCHES_USAGE);
+    await runAllBooks(options);
+    return [];
+  }
   const args = parseBookArgs(argv, BATCHES_USAGE);
   const result = await derivedBook(args.book, options);
   const batches = batchesOf(result.book, result.pending, args.size);
