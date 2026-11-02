@@ -20,6 +20,13 @@ export function topVerseOf(box: HTMLElement): number | null {
   return null;
 }
 
+/** The words the weave draws in Greek, as one string for the keep key: his solid lemmas and, when the weave shows them (`withLearning`), his learning ones, each set sorted. A word moving between
+ * the sets, or onto the list or off it, changes the string; a learning word also gains or loses the English hint line under it, so its line changes height (mw-5r3p30.994). */
+export function weavedWordsKey(solid: ReadonlySet<string> | undefined, learning: ReadonlySet<string> | undefined, withLearning: boolean): string {
+  const part = (set: ReadonlySet<string> | undefined) => (set ? [...set].sort().join(',') : '');
+  return withLearning ? `${part(solid)};${part(learning)}` : part(solid);
+}
+
 /** Keeps the verse on top of `main` on top as `mode` (a string that changes when the view, the weave, its order or the plain English under it does) changes; `mode` is null until the
  * Reader's settings are read, and `place` (the chapter) forgets the verse noted when it changes. The mode also changes with Variants turned on or off, its filter and the reading set (mw-9ji6ek0.45). */
 export function useKeepTopVerse(main: RefObject<HTMLElement | null>, inner: RefObject<HTMLElement | null>, mode: string | null, paging: boolean, place: string): void {

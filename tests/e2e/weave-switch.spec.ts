@@ -337,3 +337,50 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
     });
   }
 });
+
+// A word he is learning draws its English hint under its Greek (src/reader/VerseText.tsx), so its line is taller. A word that gains or loses that hint under an open Reader (the tutor
+// or Words, in another window, puts it on his learning list or takes it off) lays the lines again: the verse on top stays on top (mw-5r3p30.994).
+test('a word gaining or losing its hint line under an open Reader keeps the verse that is on top', async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=rom&c=16&weave=solid%2Blearning');
+  await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
+  await page.evaluate(() => {
+    const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+    const el = document.querySelector('[data-verse="12"]')!;
+    box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+  });
+  const firstVerse = () =>
+    page.evaluate(() => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      const top = box.getBoundingClientRect().top;
+      const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top - 1);
+      return Number(el?.dataset.verse);
+    });
+  const hints = () => page.locator('[data-reader] [data-verse] [data-hint]').count();
+  await expect.poll(firstVerse).toBe(12);
+  const before = await hints();
+
+  // Words in another window: a tap on a solid word makes it learning (a hint line under it where the text has it); a tap on a learning word asks to drop it, which takes the hint off
+  const other = await context.newPage();
+  await other.setViewportSize({ width: 390, height: 844 });
+  await other.goto('/#/words');
+  const solid = other.locator('button[data-lemma][data-state="solid"]');
+  await expect(solid.first()).toBeVisible();
+  const lemmas = await solid.evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.lemma!));
+  for (const lemma of lemmas) await other.locator(`button[data-lemma="${lemma}"]`).click();
+  await expect.poll(hints).toBeGreaterThan(before);
+  await page.waitForTimeout(1500);
+  await expect.poll(firstVerse).toBe(12);
+  await shot(page, 'weave-switch-hints-gained');
+
+  const learning = other.locator('button[data-lemma][data-state="learning"]');
+  const now = await learning.evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.lemma!));
+  for (const lemma of now) {
+    await other.locator(`button[data-lemma="${lemma}"]`).click();
+    await other.getByRole('button', { name: /^Drop/ }).click();
+  }
+  await expect.poll(hints).toBe(0);
+  await page.waitForTimeout(1500);
+  await expect.poll(firstVerse).toBe(12);
+});
