@@ -94,6 +94,8 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
   const subtitle = `${langName(lang)} · ${rungName(rung)} · step ${session.step + 1} of ${STEPS}`;
   // Type it: English always, Greek or Hebrew only once he says his phone has that keyboard (the switch reads undefined until it is read: neither Type it nor the line to turn it on), the Weave never
   const canType = lang === 'en' || (lang === 'el' && greekKeyboard === 'on') || (lang === 'he' && hebrewKeyboard === 'on');
+  // the box is open: the screen serves typing (docs/layout/memorize.md 'Typing'): the verse in its own scrolling area, the box, Check at the foot, no Hold to say it
+  const typingOpen = !judged && lang !== 'weave' && canType && typing;
   const hearIt = (
     <button type="button" onClick={hear} className={ACTION}>
       {hearing ? 'Stop hearing it' : 'Hear it'}
@@ -102,9 +104,9 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
 
   return (
     <>
-      <ScreenHeader title={session.heading} subtitle={subtitle} back={back} />
-      <main className="screen min-h-0 flex-1 px-4">
-        <div className="mt-3 min-h-24">
+      <ScreenHeader title={session.heading} subtitle={typingOpen ? undefined : subtitle} back={back} />
+      <main data-typing={typingOpen ? '' : undefined} className={typingOpen ? 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4' : 'screen min-h-0 flex-1 px-4'}>
+        <div data-verse-area={typingOpen ? '' : undefined} className={typingOpen ? 'mt-3 min-h-[4.5rem] flex-1 overflow-y-auto overscroll-contain' : 'mt-3 min-h-24'}>
           <HiddenVerse tokens={shown} hidden={judged ? new Set() : hidden} firstLetters={rung.kind === 'gaps' && rung.share === 1} missed={missed} />
         </div>
         {judged ? (
@@ -129,7 +131,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
             </div>
           </div>
         ) : (
-          <div className="mt-4 space-y-3">
+          <div className={typingOpen ? 'mt-2 shrink-0 space-y-2' : 'mt-4 space-y-3'}>
             {note ? (
               <p data-testid="note" role="status" className="text-base">
                 {note}
@@ -140,6 +142,8 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
                 Checking how you said it…
               </p>
             ) : null}
+            {/* with the box open only a note's buttons stay up here: the verse, the box and the foot take the window (Hear it and Hold to say it are back with Say it instead) */}
+            {typingOpen && !note ? null : (
             <div className="flex flex-wrap gap-2">
               {hearIt}
               {canType && !typing ? (
@@ -158,6 +162,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
                 </>
               ) : null}
             </div>
+            )}
             {lang === 'el' && greekKeyboard === 'off' ? (
               <button type="button" onClick={() => openSetting('greekKeyboard')} className="min-h-12 text-left text-base text-accent underline">
                 Turn on Greek keyboard in Settings to type Greek
@@ -168,11 +173,11 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
                 Turn on Hebrew keyboard in Settings to type Hebrew
               </button>
             ) : null}
-            {lang !== 'weave' && canType && typing ? <TypeIt lang={lang} disabled={phase === 'sending'} onTyped={session.typed} /> : null}
+            {lang !== 'weave' && canType && typing ? <TypeIt lang={lang} disabled={phase === 'sending'} onTyped={session.typed} onSayIt={() => setTyping(false)} /> : null}
           </div>
         )}
       </main>
-      {judged || selfGraded ? null : (
+      {judged || selfGraded || typingOpen ? null : (
         <footer className="shrink-0 px-4 pb-[calc(0.5rem+var(--lp-bar-inset))] pr-[calc(var(--spacing)*18)] pt-2">
           {lang === 'weave' ? (
             <RecordBar label="Hold to say it" listening={hold.record.listening} disabled={phase === 'sending'} onPress={hold.record.press} onRelease={hold.record.release} onAbort={hold.record.drop} />

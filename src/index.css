@@ -494,6 +494,14 @@ textarea,
     bottom: calc(var(--lp-bar-inset) + 0.75rem);
   }
 }
+/* While Memorize's box is open (src/memorize/MemorizeSession.tsx data-typing, TypeIt.tsx) the ? stands at the foot beside Check, whose row leaves it room (useDoorRoom), instead of 17 rem up the edge
+ * where it sat on the box's corner (mw-5r3p30.983); with the keyboard up (data-keyboard) the window ends where the keyboard begins, so it has no bar floor under it. */
+:root:has([data-typing]) [data-floating-tutor] {
+  bottom: calc(var(--lp-bar-inset) + 0.5rem);
+}
+:root:has([data-typing] [data-keyboard]) [data-floating-tutor] {
+  bottom: 0.5rem;
+}
 
 .place-box {
   display: grid;
