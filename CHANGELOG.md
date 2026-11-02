@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.68
+_2026-11-02_
+- New: While the Verse view reads aloud, the big Play button turns into a plain Stop button that ends the reading in one tap.
+- New: Hebrew now has the same optional hard-sound lessons as Greek, for the het, ayin, resh and tsade, with hearing, a which-did-you-hear drill and a say-it-yourself step.
+
 ## 0.7.66
 _2026-11-02_
 - New: A Hebrew passage lesson (Jonah 1:1-3) can be read and checked, and Hebrew lessons can read themselves to you.
