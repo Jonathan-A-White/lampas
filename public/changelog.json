@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.73",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.956",
+    "kind": "fixed",
+    "text": "the round ? button no longer opens the tutor out of sight behind the sheets of the listening plan, Ask for a book, the lexicon list, the Logos chooser and the maps; it is put away while they are open and comes back when you close them."
+  },
+  {
+    "version": "0.7.73",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.958",
+    "kind": "fixed",
+    "text": "Writing a ן on the ו card, or a ו on the ן card, in Hebrew Write it is no longer marked Right; the checker now knows where the line is, and the faint letter to trace stands on it."
+  },
+  {
     "version": "0.7.72",
     "date": "2026-11-02",
     "story": "mw-u2w5klk.12",

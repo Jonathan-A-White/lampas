@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.73
+_2026-11-02_
+- Fixed: the round ? button no longer opens the tutor out of sight behind the sheets of the listening plan, Ask for a book, the lexicon list, the Logos chooser and the maps; it is put away while they are open and comes back when you close them.
+- Fixed: Writing a ן on the ו card, or a ו on the ן card, in Hebrew Write it is no longer marked Right; the checker now knows where the line is, and the faint letter to trace stands on it.
+
 ## 0.7.72
 _2026-11-02_
 - New: A Septuagint word you tap now opens a card with its lemma, parsing and meaning, says how sure Lampas is of it, and marks a word it only guessed.
