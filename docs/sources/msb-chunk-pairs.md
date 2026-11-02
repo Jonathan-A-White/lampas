@@ -9,6 +9,7 @@ FIXED by mw-5r3p30.997 (see 'What was done' at the end); the report below is mw-
 - [Answer: both. The source says nothing wrong; our build reads the marker the wrong way for these words](#answer-both-the-source-says-nothing-wrong-our-build-reads-the-marker-the-wrong-way-for-these-words)
 - [The count (`node scripts/check-msb-chunk-pairs.ts [--list] [--tsv <msb_nt_tables.tsv>]`, run on this tree, 117,385 chunks)](#the-count-node-scriptscheck-msb-chunk-pairsts---list---tsv-msb_nt_tablestsv-run-on-this-tree-117385-chunks)
 - [What a fix would need (not done here: it changes data)](#what-a-fix-would-need-not-done-here-it-changes-data)
+- [What was done (mw-5r3p30.997)](#what-was-done-mw-5r3p30997)
 
 <!-- /toc -->
 
