@@ -15,6 +15,11 @@ import { openVerseView } from './verse-view';
 const VIEWPORT = { width: 390, height: 844 };
 test.use({ viewport: VIEWPORT, hasTouch: true });
 
+// the variants chip's long press is held on the page's clock (tests/support/hold.ts)
+test.beforeEach(async ({ page }) => {
+  await page.clock.install();
+});
+
 const FLOATING = 'Ask the tutor about what is on screen';
 const floating = (page: Page) => page.getByRole('button', { name: FLOATING, exact: true });
 
