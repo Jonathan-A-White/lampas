@@ -188,7 +188,7 @@ export interface Chapter {
   translation?: string;
   /** PROVISIONAL, the Septuagint only (isSeptuagint reads it, src/reader/septuagint.ts): the edition of the Greek the words are from, 'swete' (Swete's The Old Testament in Greek); absent in the New Testament and the Old Testament */
   edition?: string;
-  /** every Strong's number used in this file -> its gloss and definition, once */
+  /** every Strong's number used in this file -> its gloss and definition, once; in the Septuagint (`edition` 'swete', whose words have no number) every lemma used -> the same, from public/data-lxx/lexicon-grc-lxx.json */
   lex: Record<string, LexEntry>;
   /** every parsing code used in this file -> plain words, once */
   parse: Record<string, string>;
@@ -267,7 +267,13 @@ export interface BookIndex {
 }
 
 export const wordLemma = (w: GreekWord): string => w.l;
-export const wordGloss = (chapter: Chapter, w: GreekWord): string => w.gl ?? chapter.lex[w.s]?.g ?? '';
+/** The key of a word's entry in its chapter's `lex`: the Strong's number, or in the Septuagint (Swete's words have none) the lemma, which loadSeptuagintChapter lays the lemma lexicon in by. */
+const lexKey = (chapter: Pick<Chapter, 'edition'>, w: GreekWord): string => (chapter.edition === 'swete' ? w.l : w.s);
+export const wordGloss = (chapter: Chapter, w: GreekWord): string => w.gl ?? chapter.lex[lexKey(chapter, w)]?.g ?? '';
+/** The lexicon's definition of a word ('' when the chapter has none). */
+export const wordDefinition = (chapter: Chapter, w: GreekWord): string => chapter.lex[lexKey(chapter, w)]?.d ?? '';
+/** Whether the Septuagint's derivation only guessed this word's lemma and parsing (`y` 'g', docs/lxx-derivation.md): such a word is drawn with a mark, told as a guess, and never offered to learn, quizzed or drilled. */
+export const isGuess = (w: Pick<GreekWord, 'y'>): boolean => w.y === 'g';
 export const wordParse = (chapter: Chapter, w: GreekWord): string => chapter.parse[w.p] ?? '';
 
 const chapters = new Map<string, Promise<Chapter>>();

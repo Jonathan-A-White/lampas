@@ -1,6 +1,6 @@
 // src/data/quiz.ts — the pure parts of the Quick test: the state rule, the drawing of a round, the option
 // builder and the question. Nothing here touches the store or the screen; the random source is passed in.
-import { sourceLanguage, wordLemma, type Chapter, type GreekWord, type SourceLanguage } from './chapter';
+import { isGuess, sourceLanguage, wordLemma, type Chapter, type GreekWord, type SourceLanguage } from './chapter';
 import type { Word, WordState } from './db';
 import { normaliseLemma } from './lemma';
 import { SEED_WORDS } from './seed-words';
@@ -101,7 +101,8 @@ export function lemmasOf(word: Word, others: ReadonlySet<string> = new Set()): S
  * his words (ἡμεῖς has the lexicon lemma ἐγώ, but asking it for 'I' would teach the wrong gloss) is not.
  */
 export function isFormOf(g: GreekWord, lemmas: ReadonlySet<string>, others: ReadonlySet<string> = new Set()): boolean {
-  return lemmas.has(nfc(wordLemma(g))) && !others.has(nfc(g.t));
+  // a Septuagint word the derivation only guessed (`y` 'g') is not a place the lemma is known to stand: not shown in the Quick test, not drilled (mw-u2w5klk.12)
+  return !isGuess(g) && lemmas.has(nfc(wordLemma(g))) && !others.has(nfc(g.t));
 }
 
 /**

@@ -23,7 +23,7 @@ export function stubChapterFetch(): ChapterFetch {
       const url = String(input);
       stub.requests.push(url);
       const lxx = url.replace(/^(\/data-lxx\/[0-9a-z]+\/\d+\.json)\?v=[0-9a-f]{12}$/, '$1');
-      if (/^\/data-lxx\/([0-9a-z]+\/\d+|index)\.json$/.test(lxx)) {
+      if (/^\/data-lxx\/([0-9a-z]+\/\d+|index|lexicon-grc-lxx)\.json$/.test(lxx)) {
         const file = [`tests/fixtures${lxx}`, `public${lxx}`].find((f) => existsSync(f));
         return file ? new Response(readFileSync(file, 'utf8'), { status: 200, headers: { 'Content-Type': 'application/json' } }) : new Response('not found', { status: 404 });
       }

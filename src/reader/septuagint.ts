@@ -1,6 +1,6 @@
 // src/reader/septuagint.ts — what the Reader says of a Septuagint chapter (mw-u2w5klk.11, docs/data.md 'The Septuagint data'): the chapter is Swete's Greek with Brenton's English, one chunk a verse, in the Septuagint's
 // own chapters and verses, which are not always Lampas's (Greek Ps 22:1 is Psalm 23:1). The Reader is opened on a Lampas chapter; its title, its verse numbers and its English under the Greek say both.
-import type { Chapter, Verse } from '../data/chapter';
+import type { Chapter, GreekWord, Verse } from '../data/chapter';
 
 /** What the header says under the title of a Septuagint chapter: the Greek and the English, each with whose it is. */
 export const SEPTUAGINT_SUBTITLE = 'Septuagint (Swete) · Brenton (LXX2012)';
@@ -24,3 +24,23 @@ export function septuagintNumber(verse: Pick<Verse, 'n' | 'ref'>, greekChapter: 
 
 /** Brenton's English of a verse: its chunk (a verse has one; two or more are joined). '' when the verse has none. */
 export const englishOfVerse = (verse: Pick<Verse, 'e'>): string => verse.e.map((c) => c.t.trim()).filter(Boolean).join(' ');
+
+/** The layers of the derivation, in the words a reader is told (docs/lxx-derivation.md 'The layers'; Help's Words page). */
+const LAYER_WORDS: Record<string, string> = {
+  '1': "From the New Testament's forms",
+  '2': 'From the paradigm parser',
+  '2a': 'By agreement with its neighbours',
+  '3': "A model's reading of the verse",
+  g: 'A guess',
+};
+
+/** The derivation's confidence (0 to 1) in words: 0.85 and above is sure (layer 1, layer 2a), 0.6 and above likely (layer 2, a model's plain choice), the rest unsure (a model's `?`, a guess). */
+export const confidenceWord = (confidence: number): 'sure' | 'likely' | 'unsure' => (confidence >= 0.85 ? 'sure' : confidence >= 0.6 ? 'likely' : 'unsure');
+
+/** How Lampas read a word of the Septuagint: the layer in words, the confidence in words, and whether the card offers Report this reading (a guess, or a word it is unsure of). Undefined for a word the derivation did not read. */
+export function readingOf(word: Pick<GreekWord, 'y' | 'c'>): { layer: string; confidence: 'sure' | 'likely' | 'unsure'; report: boolean } | undefined {
+  const layer = word.y === undefined ? undefined : LAYER_WORDS[word.y];
+  if (layer === undefined) return undefined;
+  const confidence = confidenceWord(word.y === 'g' ? Math.min(word.c ?? 0, 0.49) : (word.c ?? 0));
+  return { layer, confidence, report: confidence === 'unsure' };
+}

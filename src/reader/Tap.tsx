@@ -32,6 +32,8 @@ export function Tap({ onTap, onLongPress, still, lang, dir, className, children,
   'data-beside'?: string;
   'data-hint'?: string;
   'data-marked'?: string;
+  /** a Septuagint word the derivation only guessed (VerseText draws its mark) */
+  'data-guess'?: string;
   'data-variant'?: string;
   'data-chosen'?: string;
   'data-rp2026'?: string;

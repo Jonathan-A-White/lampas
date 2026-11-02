@@ -1,5 +1,5 @@
 // src/data/answerWord.ts — a Greek word of an answer, found again in the chapter's text, so a tap can open its word sheet.
-import { type Chapter, type GreekWord, type Verse, wordGloss, wordLemma } from './chapter';
+import { type Chapter, type GreekWord, type Verse, isGuess, wordGloss, wordLemma } from './chapter';
 import type { AnswerWord } from './db';
 import { languageOfLemma, normaliseHeadword } from './lemma';
 import { lookupLemma } from './lexicon';
@@ -35,6 +35,12 @@ export function glossOf(scope: TalkScope, word: AnswerWord): string {
   return found ? wordGloss(scope.chapter, found) : '';
 }
 
+/** Whether the chapter has the lemma only as words the Septuagint's derivation guessed: such a lemma is not a dictionary form until it is checked, so it is never put on his list (mw-u2w5klk.12). */
+function onlyGuessed(chapter: Chapter, headword: string): boolean {
+  const mine = chapter.verses.flatMap((v) => v.g).filter((w) => normaliseHeadword(wordLemma(w)) === headword);
+  return mine.length > 0 && mine.every(isGuess);
+}
+
 /** What happened to a lemma an answer asked to add: 'unknown' is a word neither his list nor the lexicon has. */
 export interface AddedLemma {
   headword: string;
@@ -48,7 +54,7 @@ export interface AddedLemma {
  */
 export async function addLemmaToLearn(scope: TalkScope, lemma: string, now = Date.now()): Promise<AddedLemma> {
   const headword = normaliseHeadword(lemma);
-  if (!headword) return { headword, result: 'ignored' };
+  if (!headword || onlyGuessed(scope.chapter, headword)) return { headword, result: 'ignored' };
   const lang = languageOfLemma(headword);
   if (await wordIsListed(headword)) return { headword, result: await addWordToLearn(headword, '', now, '', lang) };
   let entry;

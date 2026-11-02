@@ -2,7 +2,7 @@
 // shipped and, for each Greek chapter, the chapter(s) of Lampas's own Old Testament its verses are in; a shipped book's chapter is public/data-lxx/<code>/<n>.json, the Greek chapter's number,
 // which is not always Lampas's (Greek Ps 22 is Psalm 23). loadChapter (src/data/chapter.ts) opens them for an Old Testament book while Settings > Old Testament in Greek is On.
 import { within } from './within';
-import type { BookInfo, Chapter } from './chapter';
+import type { BookInfo, Chapter, LexEntry } from './chapter';
 
 /** One book of public/data-lxx/index.json: a BookInfo of Swete's own book (`code` is Swete's, lower case) with the Lampas book it is and the Lampas chapters of each Greek chapter. */
 export interface LxxBook extends BookInfo {
@@ -44,9 +44,30 @@ export function loadLxxIndex(): Promise<LxxIndex> {
   return request;
 }
 
-/** Forgets the index held in memory (tests). */
+let lexicon: Promise<Record<string, LexEntry>> | null = null;
+
+/**
+ * Fetches /data-lxx/lexicon-grc-lxx.json once: every lemma of the shipped books -> TBESG's gloss and definition (and its Strong's number, which a word of this text does not show: it has none of its own).
+ * A lexicon that cannot be fetched is `{}`, not a failure: the word's card then has no Meaning, and the next chapter asks again.
+ */
+export function loadLxxLexicon(): Promise<Record<string, LexEntry>> {
+  if (lexicon) return lexicon;
+  const request = within(async (signal) => {
+    const response = await fetch('/data-lxx/lexicon-grc-lxx.json', { signal });
+    if (!response.ok) throw new Error(`Could not load the Septuagint lexicon: ${response.status}`);
+    return (await response.json()) as Record<string, LexEntry & { s?: string }>;
+  }).then((all) => Object.fromEntries(Object.entries(all).map(([lemma, { g, d }]) => [lemma, { g, d }])));
+  lexicon = request;
+  request.catch(() => {
+    if (lexicon === request) lexicon = null;
+  });
+  return request.catch(() => ({}));
+}
+
+/** Forgets the index and the lexicon held in memory (tests). */
 export const forgetLxxIndex = (): void => {
   index = null;
+  lexicon = null;
 };
 
 /**
@@ -69,10 +90,17 @@ export async function loadSeptuagintChapter(book: string, n: number): Promise<Ch
   const from = await loadLxxIndex().catch(() => null);
   const at = from ? greekChapterOf(from, book, n) : null;
   if (!at) return null;
-  return within(async (signal) => {
-    const response = await fetch(lxxChapterUrl(at), { signal });
-    if (!response.ok) throw new Error(`Could not load ${at.code}/${at.chapter} of the Septuagint: ${response.status}`);
-    // the code is Lampas's own for the book (`sng`, where Swete's file is `sol`); `chapter` stays the Greek number, which the Reader's title names beside Lampas's
-    return { ...((await response.json()) as Chapter), code: book };
-  });
+  const [chapter, all] = await Promise.all([
+    within(async (signal) => {
+      const response = await fetch(lxxChapterUrl(at), { signal });
+      if (!response.ok) throw new Error(`Could not load ${at.code}/${at.chapter} of the Septuagint: ${response.status}`);
+      return (await response.json()) as Chapter;
+    }),
+    loadLxxLexicon(),
+  ]);
+  // the code is Lampas's own for the book (`sng`, where Swete's file is `sol`); `chapter` stays the Greek number, which the Reader's title names beside Lampas's.
+  // The words have no Strong's number: the chapter's `lex` is the lexicon's entry for each lemma the chapter uses, keyed by the lemma (wordGloss, wordDefinition).
+  const lex: Record<string, LexEntry> = {};
+  for (const verse of chapter.verses) for (const word of verse.g) if (Object.hasOwn(all, word.l)) lex[word.l] = all[word.l];
+  return { ...chapter, code: book, lex };
 }

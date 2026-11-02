@@ -190,6 +190,11 @@ export function helpQuestion(focus: WordFocus, reference: string): string {
     : `The word ${word}. Help me pronounce this word: its syllables and how each sounds.`;
 }
 
+/** The question the Septuagint word card's Report this reading sends (mw-u2w5klk.12): is the word in its verse read right as the lemma and parsing Lampas derived. Asked as any word question is: the focus is the word's. */
+export function reportQuestion(focus: WordFocus, reference: string): string {
+  return `Is ${focus.form} in ${reference} read right as ${focus.lemma}, ${focus.parse}?`;
+}
+
 /** What the Quick test's Ask the tutor sends: it names the word, the gloss he chose and the right one, and where the word stands when
  * it stands anywhere (`reference`). The rest of what the app knows rides in the focus. */
 export function quizQuestion(focus: QuizFocus, reference: string | undefined): string {

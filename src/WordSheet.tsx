@@ -7,7 +7,8 @@
 // and is not drawn when none is on.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { bareEnglish, type Chapter, type GreekWord, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
+import { bareEnglish, type Chapter, type GreekWord, isGuess, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
+import { readingOf } from './reader/septuagint';
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
@@ -19,7 +20,7 @@ import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
 import { paradigmOfHebrewWord, paradigmOfWord } from './data/paradigms';
-import { openLibrary, openParadigm } from './nav/route';
+import { openHelpPage, openLibrary, openParadigm } from './nav/route';
 import { holdWord } from './wordReturn';
 import { oneTap } from './ui/settle';
 import { resourcesForLevel } from './resources/resourcesForLevel';
@@ -77,6 +78,8 @@ export interface WordHelp {
   verse: number;
   /** 'he' for a Hebrew word of an Old Testament chapter (mw-gdcyf98.20): the form is pointed with the cantillation off, as the tutor's answers write it */
   language?: 'he';
+  /** the question is Report this reading's (a Septuagint word the derivation guessed or is unsure of): is the word read right as the lemma and parsing the card gives (mw-u2w5klk.12) */
+  report?: true;
 }
 
 /** What a tap on Ask the tutor, on the Grammar sheet of `term`, asks for: the term and the verse of the word whose sheet it was opened from. */
@@ -369,7 +372,7 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
   );
 }
 
-function WordCard({ chapter, word, verseOf, english, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, onMissing, onAll }: {
+function WordCard({ chapter, word, verseOf, english, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, onReading, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
   /** the verse to ask about when the word is not one of the chapter's (a form of a variant reading) */
@@ -385,6 +388,8 @@ function WordCard({ chapter, word, verseOf, english, pronunciation, known, study
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
   /** the Paradigm row was tapped: the word, to open its table */
   onParadigm: (word: GreekWord) => void;
+  /** About this reading was tapped: Help's Words page opens, the sheet held */
+  onReading: () => void;
   /** a Study link's app did not open */
   onMissing: (resource: StudyResource) => void;
   /** the door to every lexicon was tapped: the word, and the lexicons On with their links for it */
@@ -397,8 +402,15 @@ function WordCard({ chapter, word, verseOf, english, pronunciation, known, study
   const strongsOn = study?.on.includes('strongs') ?? false;
   // the table that holds the word's form (a conjunction or a particle has none): the row names it and a tap opens it with the word's own cell lit
   const table = paradigmOfWord(word)?.table;
+  // a word of the Septuagint (the derivation read it, `y`): how Lampas read it, told as a guess when it only guessed (mw-u2w5klk.12)
+  const reading = readingOf(word);
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
+      {isGuess(word) ? (
+        <p data-testid="sheet-guess" className="mb-2 rounded-lg border border-line px-3 py-2 text-base">
+          A guess: Lampas derived this reading and is not sure
+        </p>
+      ) : null}
       <div className="flex items-start justify-between gap-2">
         <h2 data-testid="sheet-word" {...GREEK_LANG} className="min-w-0 break-words font-greek text-4xl font-bold">
           {word.t}
@@ -445,7 +457,8 @@ function WordCard({ chapter, word, verseOf, english, pronunciation, known, study
           <Fact label="Strong's" testId="sheet-strongs">
             <GuessedNumber number={word.s} />
           </Fact>
-        ) : strongsOn || formOnly ? null : (
+        ) : strongsOn || formOnly || word.s === '' ? null : (
+          // a word of the Septuagint has no Strong's number of its own: no row, rather than an empty one
           <Fact label="Strong's" testId="sheet-strongs">
             {word.s}
           </Fact>
@@ -456,6 +469,27 @@ function WordCard({ chapter, word, verseOf, english, pronunciation, known, study
           </Fact>
         ) : null}
       </dl>
+      {reading ? (
+        <div role="group" aria-label="How Lampas read this word" className="mt-2">
+          <p data-reading-line="" className="text-base">
+            <span className="text-sm text-muted">How Lampas read this word:</span> {reading.layer} ({reading.confidence})
+          </p>
+          <div className="flex flex-wrap items-center gap-x-3">
+            <button type="button" onClick={() => oneTap('word:reading', onReading)} className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4">
+              About this reading
+            </button>
+          </div>
+          {reading.report && onHelp && verse !== undefined ? (
+            <button
+              type="button"
+              onClick={() => onHelp({ kind: 'word', form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse, report: true })}
+              className={`${HELP_BUTTON} mt-1 w-full flex-none`}
+            >
+              Report this reading
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       {/* the note kept for a word that earns one: the thread behind its senses, always here to go back to (mw-bsf54t.14) */}
       <HeartOfWord lemma={wordLemma(word)} className="mt-3" />
       <StudyRow groups={studyGroupsOf(chapter, word, study, levels)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
@@ -562,6 +596,11 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
     holdWord(sheetChapter, lookup);
     openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse: word.p, lemma: word.l });
   };
+  // the Help page (Words) that says how the Septuagint's words were read is a page of its own: the sheet is held, and Back brings it back
+  const openReading = (): void => {
+    holdWord(sheetChapter, lookup);
+    openHelpPage('words');
+  };
   // a Hebrew word's table: the parsing in plain words rides in the address as the Greek word's code does (no lemma: This word is the Greek tables' only)
   const openHebrewTable = (word: GreekWord): void => {
     const parse = wordParse(sheetChapter, word);
@@ -657,6 +696,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 onHelp={help}
                 onTerm={openTerm}
                 onParadigm={openTable}
+                onReading={openReading}
                 onMissing={setMissing}
                 onAll={(word, door) => setAllLexicons({ word, door })}
               />

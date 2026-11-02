@@ -69,3 +69,36 @@ test('Psalms 23 names both numberings and a book that is not shipped says so', a
   await page.goto('/#/?b=isa&c=1');
   await expect(page.locator('[data-septuagint-not-ready]')).toHaveText('The Septuagint of Isaiah is not ready yet; this is the Hebrew.');
 });
+
+test('a tap on a Septuagint word opens its card from the lemma lexicon, and a guessed word is drawn with a mark and told as a guess', async ({ page }) => {
+  await openUnlocked(page);
+  await turnOn(page);
+  await page.goto('/#/?b=gen&c=1');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'Greek', exact: true }).click();
+
+  // ἐποίησεν: read from the New Testament's forms, sure
+  await page.locator('[data-verse="1"]').getByRole('button', { name: /^ἐποίησεν/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Word' });
+  await expect(sheet.getByTestId('sheet-word')).toHaveText('ἐποίησεν');
+  await expect(sheet.getByTestId('sheet-lemma')).toHaveText('ποιέω');
+  await expect(sheet.getByTestId('sheet-parse')).toHaveText('verb, aorist active indicative, 3rd person singular');
+  await expect(sheet.getByTestId('sheet-gloss')).toHaveText('to do, make');
+  await expect(sheet.getByRole('button', { name: 'Hear it' })).toBeVisible();
+  await expect(sheet.getByTestId('sheet-strongs')).toHaveCount(0);
+  await expect(sheet.locator('[data-reading-line]')).toHaveText("How Lampas read this word: From the New Testament's forms (sure)");
+  // the card and what is under it stay on the phone
+  const box = await sheet.boundingBox();
+  expect(box!.y + box!.height).toBeLessThanOrEqual(844);
+  await shot(page, 'septuagint-word');
+  await sheet.getByRole('button', { name: 'Done' }).click();
+
+  // Γενηθήτωσαν (verse 14) was only guessed: a dotted mark, and its card says so
+  const guessed = page.locator('[data-verse="14"]').getByRole('button', { name: /^Γενηθήτωσαν/ });
+  await expect(guessed.locator('[role="img"][aria-label="a guess"]')).toHaveCount(1);
+  await expect(guessed).toHaveCSS('text-decoration-style', 'dotted');
+  await guessed.click();
+  await expect(sheet.getByTestId('sheet-guess')).toHaveText('A guess: Lampas derived this reading and is not sure');
+  await expect(sheet.locator('[data-reading-line]')).toHaveText('How Lampas read this word: A guess (unsure)');
+  await expect(sheet.getByRole('button', { name: 'Add to my words' })).toHaveCount(0);
+});
