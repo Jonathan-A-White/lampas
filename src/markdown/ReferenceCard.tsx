@@ -24,6 +24,7 @@ import { useWoven } from '../reader/useWoven';
 import { isOrdered, rowAttrs } from '../reader/sourceText';
 import { textClass } from '../reader/textClass';
 import { MARGIN, WIDTH, spotFor, type Spot } from './cardSpot';
+import { useNoDoor } from '../tutor/door';
 import { useOnline } from '../ui/online';
 import { KeepOnPhoneLink } from '../ui/KeepOnPhoneLink';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
@@ -165,6 +166,8 @@ function PlayControls({ card }: { card: Card }) {
 
 function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
   useSheetBack(onClose);
+  // z-40 (drawn into document.body), over the Talk sheet (z-10) and a card to read: no ? over it (mw-5r3p30.955)
+  useNoDoor();
   const { held } = card;
   const online = useOnline();
   const [passage, setPassage] = useState<Passage>(null);

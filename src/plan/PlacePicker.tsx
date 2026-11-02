@@ -9,6 +9,7 @@ import { ChapterPicker } from '../ChapterPicker';
 import type { PlanChapter } from '../data/plans';
 import { getOpenChapter } from '../data/readerChapter';
 import { setPlace, setPlaceAfter, type ReadingPlanState } from '../data/repositories';
+import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -57,6 +58,8 @@ function Confirm({ chapter, onSet, onBack }: { chapter: PlanChapter; onSet: () =
   const { drag, handle } = useSheetDrag(onBack);
   useEscapeToClose(onBack);
   useSheetBack(onBack);
+  // z-40, over the Talk sheet (z-10), a yes or no with nothing to ask about: no ? over it (mw-5r3p30.955)
+  useNoDoor();
   const name = chapterName(chapter);
   return (
     <div className="fixed inset-0 z-40 flex flex-col justify-end">

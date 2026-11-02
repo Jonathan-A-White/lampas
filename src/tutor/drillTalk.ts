@@ -15,7 +15,7 @@ export interface DrillTry {
 }
 
 /** What was asked, in words: the prompt and the Greek it is about (the form with its blank, the word, or the verse's words). */
-function askedOf(q: GrammarQuestion): string {
+export function askedOf(q: GrammarQuestion): string {
   const about = q.form ?? q.words?.join(' ');
   return about ? `${q.prompt} ${about}` : q.prompt;
 }

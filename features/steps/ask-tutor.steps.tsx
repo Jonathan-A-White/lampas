@@ -207,6 +207,49 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
   });
 
+  Scenario('A screen he works in keeps the ?, and its Talk opens in front of it (mw-5r3p30.955)', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/?b=1jn&c=1&p=1&pt=4&view=english&weave=off with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/?b=1jn&c=1&p=1&pt=4&view=english&weave=off', goal));
+    When('he starts the Check of the passage lesson', async () => {
+      const strip = await screen.findByRole('region', { name: 'Lesson strip' });
+      await user.click(within(strip).getByRole('button', { name: 'Check', exact: true }));
+      expect(await screen.findByRole('dialog', { name: 'Check' })).toBeInTheDocument();
+    });
+    Then('the screen has one control named {string}', async (_, name: string) => {
+      expect(name).toBe(CONTROL);
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+    When('he opens the tutor with the floating ?', taps);
+    Then('the Talk sheet is drawn inside the Check, in front of it', async () => {
+      // the Talk is z-10: only inside the Check's own layer (z-40) does it stand in front of it
+      const check = screen.getByRole('dialog', { name: 'Check' });
+      expect(await within(check).findByRole('dialog', { name: 'Ask the tutor: Check' })).toBeInTheDocument();
+    });
+    And('the control is hidden while the sheet is open', async () => {
+      await waitFor(() => expect(control()).toHaveLength(0));
+    });
+  });
+
+  Scenario('A sheet with nothing to ask about draws no ?, and it is back when the sheet is closed (mw-5r3p30.955)', ({ Given, When, Then }) => {
+    Given('Lampas is opened on #/?b=rom&c=8&view=english&weave=off&v=28 with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/?b=rom&c=8&view=english&weave=off&v=28', goal));
+    When('he memorizes the verse and opens its language sheet', async () => {
+      const view = await screen.findByRole('region', { name: 'Verse view' });
+      await user.click(await within(view).findByRole('button', { name: 'Memorize' }));
+      await user.click(await within(view).findByRole('button', { name: 'Memorizing · English' }));
+      expect(await screen.findByRole('dialog', { name: 'Memorize Rom 8:28' })).toBeInTheDocument();
+    });
+    Then('the screen has no control named {string}', async (_, name: string) => {
+      expect(name).toBe(CONTROL);
+      await waitFor(() => expect(control()).toHaveLength(0));
+    });
+    When('he closes the language sheet', async () => {
+      await user.click(within(screen.getByRole('dialog', { name: 'Memorize Rom 8:28' })).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Memorize Rom 8:28' })).toBeNull());
+    });
+    Then('the floating ? is drawn again', async () => {
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+  });
+
   Scenario('From Goal the request carries the goal, the counts, Learn next and the Next words', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on #/goal with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/goal', goal));
     And('the Goal screen shows its counts, Learn next and Next words', async () => {

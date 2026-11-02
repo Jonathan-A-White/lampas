@@ -16,6 +16,7 @@ import { ideaOfAny, type LadderLang } from './data/grammar/ladders';
 import { ideaSound } from './data/grammar/lessons';
 import { letterHeard } from './data/grammar/sayIt';
 import { noteDrillAnswer } from './data/repositories';
+import { DialogAskTutor } from './AskTutor';
 import { GrammarCard } from './GrammarCard';
 import { useHandwritingOn } from './handwriting/useHandwriting';
 import { WriteIt } from './handwriting/WriteIt';
@@ -31,6 +32,7 @@ import { useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 import { GREEK_LANG } from './script/greekLang';
 import { forgetSpoken } from './speech/spoken';
+import { LETTER_DRILL_SCREEN, questionFact, workKept, workScreen, workSuggestions } from './tutor/workTalk';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 const PRIMARY = `${BUTTON} border-accent bg-accent text-accent-fg`;
@@ -50,6 +52,8 @@ interface Sitting {
 
 export function LetterDrillScreen({ onClose, lang = 'grc' }: { onClose: () => void; lang?: LadderLang }) {
   useSheetBack(onClose);
+  // the key this run's talk is kept under (the floating ? asks about the drill, in front of it: DialogAskTutor)
+  const [talkKey] = useState(() => workKept(LETTER_DRILL_SCREEN));
   const set = letterSetOf(lang);
   const hebrew = lang === 'hbo';
   const idea = ideaOfAny(set.alphabetId);
@@ -81,6 +85,7 @@ export function LetterDrillScreen({ onClose, lang = 'grc' }: { onClose: () => vo
             Stop
           </button>
         </header>
+        <DialogAskTutor kept={talkKey} screen={workScreen(LETTER_DRILL_SCREEN, [{ label: 'Lesson', value: idea.title }])} suggestions={workSuggestions('this letter drill')} />
       </div>
     );
   }
@@ -175,6 +180,16 @@ export function LetterDrillScreen({ onClose, lang = 'grc' }: { onClose: () => vo
           </div>
         )}
       </div>
+      <DialogAskTutor
+        kept={talkKey}
+        screen={workScreen(LETTER_DRILL_SCREEN, [
+          { label: 'Lesson', value: idea.title },
+          { label: 'Round', value: String(sitting.number) },
+          { label: 'Step', value: over ? 'The round is done' : `Question ${at + 1} of ${round.length}` },
+          ...questionFact(item?.question),
+        ])}
+        suggestions={workSuggestions('this letter drill')}
+      />
       <FootBar>
         {step?.kind === 'write' ? (
           <p className="min-h-12 text-center text-base text-muted">Write it, or skip it: a skip costs nothing.</p>

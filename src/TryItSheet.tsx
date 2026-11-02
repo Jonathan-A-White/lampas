@@ -10,6 +10,7 @@ import { tryItOn, type IdeaPassage, type TryIt } from './data/grammar/ideaSheet'
 import { mulberry32 } from './data/quiz';
 import { listOpenedParadigms, noteAnswer, recordDrillStep, recordGrammarAnswer } from './data/repositories';
 import { publish } from './events/bus';
+import { DialogAskTutor } from './AskTutor';
 import { GrammarCard } from './GrammarCard';
 import { openVerseAt } from './nav/route';
 import { gradingOf } from './review/kinds';
@@ -18,6 +19,7 @@ import { FootBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
 import { closeAllSheets, useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose } from './ui/sheetDrag';
+import { questionFact, TRY_IT_SCREEN, workKept, workScreen, workSuggestions } from './tutor/workTalk';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
@@ -49,6 +51,8 @@ function useTryIt(idea: GrammarIdea, passage: IdeaPassage): Found {
 export function TryItSheet({ idea, passage, onClose }: { idea: GrammarIdea; passage: IdeaPassage; onClose: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // the key this run's talk is kept under: the floating ? asks about Try it, in front of it (DialogAskTutor)
+  const [talkKey] = useState(() => workKept(TRY_IT_SCREEN));
   const found = useTryIt(idea, passage);
   const tried = found && found !== 'none' ? found : null;
   const [index, setIndex] = useState(0);
@@ -134,6 +138,16 @@ export function TryItSheet({ idea, passage, onClose }: { idea: GrammarIdea; pass
           <GrammarCard key={index} question={question} mode="choice" picked={picked} onPick={pick} onStep={step} sideBySide />
         ) : null}
       </div>
+      <DialogAskTutor
+        kept={talkKey}
+        screen={workScreen(TRY_IT_SCREEN, [
+          { label: 'Idea', value: idea.title },
+          { label: 'Verse', value: tried?.ref ?? '' },
+          { label: 'Step', value: over ? `You got ${right} of ${total}` : tried ? `Question ${index + 1} of ${total}` : '' },
+          ...questionFact(question),
+        ])}
+        suggestions={workSuggestions('this Try it')}
+      />
       <FootBar>
         {over ? (
           <div className="flex gap-2">
