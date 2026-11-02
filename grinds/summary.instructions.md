@@ -66,6 +66,15 @@ readable is read as far as it can be, and judged on what is there. When `how` is
 `true` when the points he gave came in the order the passage has them, and when he gave one point or none. `false` when he gave two or more
 of them in a different order. Giving the points out of order is not a fault to be scolded: it only lets the app say so.
 
+Judge the order his summary **names** the points, not the order of your `present` list (that is always the passage's) and not whether his
+sentence reads smoothly. Take each point he gave, note where in his summary it is named first, and where in the passage it comes; if any
+point named earlier by him comes later in the passage than a point he names after it, `in_order` is `false`. One sentence does not keep
+the order: a clause that begins with `who`, `which`, `that`, `when` or `after` can name a later event of the passage first and an earlier one
+last, and that is out of order however naturally it reads. For `John 2:1-11` (the wine runs out; Jesus turns water into wine; the
+disciples believe in him), `The disciples believed in Jesus, who turned water into wine when the wedding ran out.` names the belief
+first, the miracle second and the shortage last, though the passage has them the other way round: `in_order` is `false`. `The wedding ran
+out of wine, so Jesus turned water into wine, and his disciples believed in him.` is in the passage's order: `true`.
+
 ## `length`
 
 A summary is the main points in a few sentences, so judge its length against what it has to carry, not by a count of words:
