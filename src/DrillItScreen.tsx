@@ -21,6 +21,8 @@ import { PlanDrillScreen } from './PlanDrillScreen';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
 import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
+import { DRILL_SCREEN } from './tutor/screen';
+import { questionFact, workScreen, workSuggestions } from './tutor/workTalk';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
@@ -192,10 +194,11 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
     }
   }, [result, onResult]);
 
+  const question = walk?.current ?? null;
+  // the dialog always draws its Talk, so the floating ? always asks about it, in front of it: on a step it is told the idea, the step and the question on screen; on the results, every question of the run
   const talkScreen = result
     ? drillScreen({ idea: idea.title, headline: headlineOf(result), tries, strong: result.strong.map((f) => f.label), weak: result.weak.map((f) => f.label) })
-    : null;
-  const question = walk?.current ?? null;
+    : workScreen(DRILL_SCREEN, [{ label: 'Idea', value: idea.title }, walk ? { label: 'Step', value: `${walk.step} of ${walk.steps.length}` } : null, ...questionFact(question)]);
   const pick = (option: string) => {
     if (!walk || !question || after) return;
     // the list of questions he has been asked is not read yet: this answer waits for the walk it may change
@@ -282,7 +285,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
           </button>
         )}
       </FootBar>
-      {talkScreen ? <DialogAskTutor kept={talkKey} screen={talkScreen} suggestions={drillSuggestions(talkScreen)} /> : null}
+      <DialogAskTutor kept={talkKey} screen={talkScreen} suggestions={result ? drillSuggestions(talkScreen) : workSuggestions('this drill')} />
     </div>
   );
 }
