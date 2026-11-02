@@ -87,7 +87,8 @@ async function openDrill(page: Page): Promise<Locator> {
         open.onsuccess = () => {
           const idb = open.result;
           const tx = idb.transaction(['settings', 'grammarLevels'], 'readwrite');
-          tx.objectStore('settings').put({ key: 'goal', value: '1 John 1' });
+          // 1 John 2, not 1: Drill it asks nothing of an idea whose top step holds fewer than two questions without the mill's items (mw-indx1x6.5), and The noun has one over 1 John 1, three over 1 John 2
+          tx.objectStore('settings').put({ key: 'goal', value: '1 John 2' });
           for (const id of ['breathings', 'accents', 'iota-subscript']) tx.objectStore('grammarLevels').put({ id, level: 'solid', since: Date.now(), how: 'placement' });
           tx.oncomplete = () => {
             idb.close();
