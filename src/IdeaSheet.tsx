@@ -542,6 +542,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           }
         }
       : undefined,
+    false,
+    true,
   );
   // the goal's own examples at once; with none, the pericope, chapter and book are looked in (mw-5r3p30.350) and the sheet says which gave them
   const levels = useLiveQuery(listLevels, []);

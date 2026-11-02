@@ -22,6 +22,7 @@ import { useStillLoading } from './reader/useStillLoading';
 import { usePlan, type PlanView } from './plan/usePlan';
 import { focusQuietly } from './ui/focus';
 import { matching, matchingInOrder } from './ui/listFilter';
+import { useNoDoor } from './tutor/door';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
@@ -122,6 +123,8 @@ export function ChapterPicker({
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-10 and drawn after the Talk sheet: a tutor opened from the ? would stand under this picker, so no ? is drawn over it (mw-5r3p30.953)
+  useNoDoor();
   const box = useRef<HTMLDivElement>(null);
   // The search field has the focus when the sheet opens and when the books come back from a chapter grid, so the keyboard is up and ready to type (mw-5r3p30.711).
   // Not a ref callback: useSheetBack, above, moves focus to the heading once the sheet has mounted, and this effect runs after it, still inside the tap that opened the sheet.

@@ -10,6 +10,7 @@ import { openVariantLesson } from '../nav/route';
 import { variantLessonsOfferSetting } from '../settings/definitions';
 import { useSetting } from '../settings/store';
 import { focusOnMount } from '../ui/focus';
+import { useNoDoor } from '../tutor/door';
 import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { variantEnglishClass, type EnglishSource } from './englishSource';
@@ -82,6 +83,7 @@ export function VariantKeySheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  useNoDoor(); // z-30, above the Talk sheet (z-10): no ? over it (mw-5r3p30.953)
   return createPortal(
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />

@@ -19,6 +19,16 @@ Feature: Ask the tutor from any screen
       | Review   | #/review  |
       | Settings | #/settings |
 
+  Scenario: The ? is not drawn over a picker, whose sheet would hide the tutor (mw-5r3p30.953)
+    Given Lampas is opened on #/ with the goal "1 John 1:1" behind a fake Postern
+    Then the screen has one control named "Ask the tutor about what is on screen"
+    When he opens the chapter picker from the Reader's title
+    Then the screen has no control named "Ask the tutor about what is on screen"
+    When he closes the chapter picker
+    Then the floating ? is drawn again
+    When he opens the tutor with the floating ?
+    Then the Talk sheet is in front of the Reader
+
   Scenario: From Goal the request carries the goal, the counts, Learn next and the Next words
     Given Lampas is opened on #/goal with the goal "1 John 1:1" behind a fake Postern
     And the Goal screen shows its counts, Learn next and Next words
