@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.77
+_2026-11-02_
+- Fixed: turning Variants on or off no longer moves the verse you are reading.
+- Fixed: The diagram of a very long sentence, such as Ephesians 1:3-14, now arrives far more reliably instead of failing about one time in three.
+
 ## 0.7.76
 _2026-11-02_
 - Fixed: the floating ? no longer shows over two small sheets (an English word's sheet and the "App not on this phone" notice), where it would have opened the tutor out of sight beneath them.
