@@ -170,6 +170,8 @@ Feature: Review asks grammar ideas, and asks them before words
   Scenario: A strong idea is asked with Show and I knew it
     Given his goal is "1 John 1"
     And the idea "case-genitive" is due on step 3
+    And he has opened the table "noun-endings"
+    And the draw asks "case-genitive" as a paradigm ending
     When Lampas is opened on the Reader
     And he opens Review from Settings
     And he starts the review
@@ -178,6 +180,57 @@ Feature: Review asks grammar ideas, and asks them before words
     Then the answer is shown with "I knew it" and "Not yet"
     When he taps "I knew it"
     Then "case-genitive" has one right review and no lapse
+
+  # mw-5r3p30.984 (PROVISIONAL): a question of words to tap is never a flashcard, as a full parsing is not: a Show button would hide nothing, since the words are on the screen. It stays the same word buttons at
+  # every strength, and the tap grades it, a right one as I knew it does and a wrong one as Not yet does.
+  Scenario Outline: A strong question of words to tap stays words to tap, and a right tap counts as I knew it
+    Given his goal is "John 1"
+    And he knows every word and every idea of "John 1"
+    And the idea "<idea>" is due on step 3
+    And the draw asks "<idea>" as a question of kind "<kind>"
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    Then the card shows the verse's words as buttons and no Show
+    When he taps the right word
+    Then the right word turns green and it says "Right."
+    And "<idea>" is still on step 3 with one right review and no lapse
+
+    Examples:
+      | idea            | kind     |
+      | case-dative     | tap-form |
+      | case-nominative | roles    |
+      | agreement       | tap-use  |
+
+  Scenario Outline: A strong question of words to tap that is answered wrong counts as Not yet
+    Given his goal is "John 1"
+    And he knows every word and every idea of "John 1"
+    And the idea "<idea>" is due on step 3
+    And the draw asks "<idea>" as a question of kind "<kind>"
+    When Lampas is opened on the Reader
+    And he opens Review from Settings
+    And he starts the review
+    And he taps a wrong word
+    Then the wrong word turns red and the right one green and it says "Not quite."
+    And "<idea>" drops to step 1 with one lapse and is due in 1 day
+
+    Examples:
+      | idea            | kind     |
+      | case-dative     | tap-form |
+      | case-nominative | roles    |
+      | agreement       | tap-use  |
+
+  # no state strands one: a round kept in session storage before this, with its question marked as a flashcard, still draws as words to tap
+  Scenario: A question of words to tap in a saved round marked as a flashcard is drawn as buttons
+    Given his goal is "John 1"
+    And he knows every word and every idea of "John 1"
+    And the idea "case-dative" is due on step 3
+    And a saved round holds the draw of "case-dative" as a question of kind "tap-form" marked as a flashcard
+    When Lampas is opened on the Reader
+    And he opens Review from Settings with that round still in the tab
+    Then the card shows the verse's words as buttons and no Show
+    When he taps the right word
+    Then "case-dative" is still on step 3 with one right review and no lapse
 
   Scenario: A wrong answer brings the idea back tomorrow
     Given his goal is "1 John 1"

@@ -46,6 +46,7 @@ async function freshStore(): Promise<void> {
   clearBus();
   forgetTrail();
   localStorage.clear();
+  sessionStorage.clear();
   stubChapterFetch();
   seed = 7;
   opened = new Set();
@@ -156,9 +157,24 @@ const optionWith = (text: string): HTMLElement => {
   return found;
 };
 
+/** The card asks by words to tap whatever its mode: the words are buttons, and there is no Show to tap. */
+function seesWordsToTap(): void {
+  expect(verseWords().length).toBeGreaterThan(3);
+  expect(screen.queryByRole('button', { name: 'Show' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'I knew it' })).toBeNull();
+}
+
+/** The idea, on step 3, keeps it with one right answer and no lapse: what 'I knew it' on its flashcard does (a single right keeps the step, schedule.ts). */
+async function expectRightOnce(id: string): Promise<void> {
+  await waitFor(async () => expect((await review(id)).rights).toBe(1));
+  const r = await review(id);
+  expect(r.lapses).toBe(0);
+  expect(r.step).toBe(3);
+}
+
 const feature = await loadFeature('features/grammar-drills.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('Review counts ideas before words', ({ Given, And, When, Then }) => {
     Given('the idea {string} is due', async (_, id: string) => {
       await freshStore();
@@ -590,6 +606,13 @@ describeFeature(feature, ({ Scenario }) => {
       await setGoal(goal);
     });
     And('the idea {string} is due on step {int}', async (_, id: string, step: number) => makeIdeaDue(id, step));
+    And('he has opened the table {string}', async (_, id: string) => {
+      opened.add(id);
+      await db.settings.put({ key: 'paradigmsOpened', value: JSON.stringify([...opened]) });
+    });
+    And('the draw asks {string} as a paradigm ending', async (_, id: string) => {
+      await drawAs(id, [chapter('1jn/1')], 'ending');
+    });
     When('Lampas is opened on the Reader', openReader);
     And('he opens Review from Settings', openReviewFromSettings);
     And('he starts the review', start);
@@ -610,6 +633,84 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(async () => expect((await review(id)).rights).toBe(1));
       expect((await review(id)).lapses).toBe(0);
     });
+  });
+
+  // mw-5r3p30.984: a question of words to tap is never a flashcard
+  ScenarioOutline('A strong question of words to tap stays words to tap, and a right tap counts as I knew it', ({ Given, And, When, Then }, row) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('he knows every word and every idea of {string}', async (_, name: string) => knowEverything(name));
+    And('the idea "<idea>" is due on step 3', async () => makeIdeaDue(row.idea, 3));
+    And('the draw asks "<idea>" as a question of kind "<kind>"', async () => drawAs(row.idea, [chapter('jhn/1')], row.kind as GrammarKind));
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    Then("the card shows the verse's words as buttons and no Show", () => seesWordsToTap());
+    When('he taps the right word', async () => user.click(rightOne()));
+    Then('the right word turns green and it says {string}', (_, text: string) => {
+      expect(rightOne().getAttribute('data-result')).toBe('right');
+      expect(screen.getByTestId('feedback')).toHaveTextContent(text);
+    });
+    And('"<idea>" is still on step 3 with one right review and no lapse', async () => expectRightOnce(row.idea));
+  });
+
+  ScenarioOutline('A strong question of words to tap that is answered wrong counts as Not yet', ({ Given, And, When, Then }, row) => {
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('he knows every word and every idea of {string}', async (_, name: string) => knowEverything(name));
+    And('the idea "<idea>" is due on step 3', async () => makeIdeaDue(row.idea, 3));
+    And('the draw asks "<idea>" as a question of kind "<kind>"', async () => drawAs(row.idea, [chapter('jhn/1')], row.kind as GrammarKind));
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings', openReviewFromSettings);
+    And('he starts the review', start);
+    And('he taps a wrong word', async () => {
+      const wrong = optionButtons().find((o) => o.textContent !== expected?.right);
+      if (!wrong) throw new Error('no wrong word');
+      await user.click(wrong);
+    });
+    Then('the wrong word turns red and the right one green and it says {string}', (_, text: string) => {
+      expect(optionButtons().filter((o) => o.getAttribute('data-result') === 'wrong')).toHaveLength(1);
+      expect(rightOne().getAttribute('data-result')).toBe('right');
+      expect(screen.getByTestId('feedback')).toHaveTextContent(text);
+    });
+    And('"<idea>" drops to step 1 with one lapse and is due in 1 day', async () => {
+      await waitFor(async () => expect((await review(row.idea)).lapses).toBe(1));
+      const r = await review(row.idea);
+      // one wrong drops two steps, as 'Not yet' on a flashcard does (schedule.ts)
+      expect(r.step).toBe(1);
+      expect(Math.abs(r.due - (Date.now() + DAY))).toBeLessThan(60_000);
+    });
+  });
+
+  Scenario('A question of words to tap in a saved round marked as a flashcard is drawn as buttons', ({ Given, And, When, Then }) => {
+    let savedRound = '';
+    Given('his goal is {string}', async (_, goal: string) => {
+      await freshStore();
+      await setGoal(goal);
+    });
+    And('he knows every word and every idea of {string}', async (_, name: string) => knowEverything(name));
+    And('the idea {string} is due on step {int}', async (_, id: string, step: number) => makeIdeaDue(id, step));
+    And('a saved round holds the draw of {string} as a question of kind {string} marked as a flashcard', async (_, id: string, kind: string) => {
+      await drawAs(id, [chapter('jhn/1')], kind as GrammarKind);
+      const item = { kind: 'grammar', id, question: expected, mode: 'flashcard' };
+      // session storage is cleared after every step (tests/setup.ts), so the round is put there as Review opens
+      savedRound = JSON.stringify({ round: { status: 'running', items: [item], index: 0, picked: null, right: 0, missed: [] }, at: Date.now() });
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Review from Settings with that round still in the tab', async () => {
+      sessionStorage.setItem('lampas.reviewRound', savedRound);
+      await openReviewFromSettings();
+    });
+    Then("the card shows the verse's words as buttons and no Show", async () => {
+      await screen.findByTestId('grammar-prompt');
+      seesWordsToTap();
+    });
+    When('he taps the right word', async () => user.click(rightOne()));
+    Then('{string} is still on step 3 with one right review and no lapse', async (_, id: string) => expectRightOnce(id));
   });
 
   Scenario('A wrong answer brings the idea back tomorrow', ({ Given, And, When, Then }) => {

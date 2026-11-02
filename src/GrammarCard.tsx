@@ -1,7 +1,7 @@
 // src/GrammarCard.tsx — one grammar question in Review (mw-hqd5bz.6): what is asked, the Greek form large, Tap to hear for a letter or a word,
 // then the choices. Multiple choice while the idea is weak: four endings, glyphs or syllables to tap, or the words of a verse as buttons
 // (tap the form) that wrap; what a use is doing (kind 'use', mw-br588b.3): the verse with the use's words marked and four titles of sentence ideas, and the word a use hangs on (kind 'tap-use'): the verse's words, the same buttons; who does it, what is done, what it is done to (kind 'roles', mw-emk3xt.3): the verse's words, the same buttons; what a chunk or clause says (kind 'meaning'): the Greek large with Tap to hear, four English chunks;
-// a full parsing (kind 'parse', mw-emk3xt.3): the word large and the Parsing drill's steps one after the other, '2 of 5: tense', right only when every step is, never a flashcard; a flashcard once it is strong: the prompt and the form, Show reveals the answer, then I knew it / Not yet.
+// a full parsing (kind 'parse', mw-emk3xt.3): the word large and the Parsing drill's steps one after the other, '2 of 5: tense', right only when every step is, never a flashcard; a question to tap (tap-form, roles, tap-use, a sound's glyphs: asksToTap) is those same buttons at every strength, never a flashcard; any other question is a flashcard once it is strong: the prompt and the form, Show reveals the answer, then I knew it / Not yet.
 import { useState } from 'react';
 import type { ParseStep } from './data/drill';
 import type { GrammarQuestion } from './data/grammar/questions';
@@ -9,6 +9,7 @@ import type { QuestionMode } from './data/schedule';
 import { HINTED_RIGHT, hintLine } from './data/grammar/hint';
 import { GreekRuns } from './FacetLabel';
 import type { ParadigmAddress } from './nav/route';
+import { modeOfQuestion } from './review/asksToTap';
 import { KNEW_IT, NOT_PARSED } from './review/kinds';
 import { seeTableAddress } from './review/seeTable';
 import { TapToHear } from './TapToHear';
@@ -146,19 +147,6 @@ function Flash({ question, picked, onPick, onSeeTable }: Omit<Props, 'mode'>) {
   return (
     <>
       <Heading question={question} mode="flashcard" answered={shown || graded} />
-      {showsVerse(question) ? (
-        <p
-          data-testid="verse-words"
-          {...(question.lang === 'hbo' ? { ...HEBREW_LANG_ATTRS, dir: 'rtl' as const } : GREEK_LANG)}
-          className={`mt-4 text-center ${question.lang === 'hbo' ? 'script-he hebrew-choice' : 'font-greek text-2xl'}`}
-        >
-          {question.options.map((word, i) => (
-            <span key={i} className={shown && word === question.right ? 'rounded bg-good/20 px-1 font-medium' : 'px-1'}>
-              {word}{' '}
-            </span>
-          ))}
-        </p>
-      ) : null}
       <p data-testid="grammar-answer" {...greekLang(GREEK.test(question.right))} className="mt-3 min-h-10 text-center font-greek text-3xl">
         {shown ? answerOf(question) : ''}
       </p>
@@ -327,7 +315,8 @@ function Parse({ question, picked, onPick, onStep }: Pick<Props, 'question' | 'p
 
 export function GrammarCard({ question, mode, picked, onPick, taken, sideBySide, onSeeTable, onStep }: Props) {
   if (question.kind === 'parse') return <Parse question={question} picked={picked} onPick={onPick} onStep={onStep} />;
-  return mode === 'flashcard' ? (
+  // a question to tap is never a flashcard, whatever mode it was kept in (src/review/asksToTap.ts)
+  return modeOfQuestion(question, mode) === 'flashcard' ? (
     <Flash question={question} picked={picked} onPick={onPick} onSeeTable={onSeeTable} />
   ) : (
     <Choice question={question} picked={picked} onPick={onPick} taken={taken} sideBySide={sideBySide} onSeeTable={onSeeTable} />
