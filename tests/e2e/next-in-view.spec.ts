@@ -110,7 +110,9 @@ for (const phone of PHONES) {
           await expect(show.or(page.locator('[data-option]').last())).toBeVisible();
           if (await show.isVisible()) {
             await show.click();
-            await page.getByRole('button', { name: /^(Not yet|Don't know)$/ }).click();
+            // the three grade buttons are narrow and the floating ? (17 rem up the Hand side's edge, over the screen by design) lands on the end one for some cards: tap the button's
+            // inner edge, which the ? never covers, as a reader's thumb would
+            await page.getByRole('button', { name: /^(Not yet|Don't know)$/ }).click({ position: { x: 24, y: 12 } });
           } else {
             await page.locator('[data-option]').last().click();
           }
