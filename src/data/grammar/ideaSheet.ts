@@ -5,7 +5,7 @@
 // Pure data work: no store, no screen; docs/grammar.md.
 import { chosenPronunciation } from '../../speech/greek';
 import { lessonsOf, type Pronunciation } from '../../speech/pronunciation';
-import { type BookIndex, type Chapter, type GreekWord, type Verse, ownEnglish, wordGloss } from '../chapter';
+import { isGuess, type BookIndex, type Chapter, type GreekWord, type Verse, ownEnglish, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
 import type { FormTest } from '../frontier';
 import { scoreWords } from '../ladderScore';
@@ -120,7 +120,7 @@ function sentenceExamples(id: string, chapters: Chapter[], verse: number | undef
       if (verse !== undefined && v.n !== verse) continue;
       let first = true;
       for (const use of usesOf(v)) {
-        if (use.id !== id) continue;
+        if (use.id !== id || use.words.some((i) => isGuess(v.g[i]))) continue;
         found.push({
           example: {
             word: v.g[exampleIndexOf(use)],
@@ -148,7 +148,7 @@ function* wordsOf(chapters: Chapter[], verse?: number): Generator<{ word: GreekW
   for (const chapter of chapters) {
     for (const v of chapter.verses) {
       if (verse !== undefined && v.n !== verse) continue;
-      for (const word of v.g) yield { word, chapter, verse: v.n };
+      for (const word of v.g) if (!isGuess(word)) yield { word, chapter, verse: v.n };
     }
   }
 }

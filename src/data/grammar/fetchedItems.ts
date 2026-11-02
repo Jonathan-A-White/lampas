@@ -2,7 +2,7 @@
 // missed most are sent to the drill-items grind (grinds/drill-items.json) with verses of his passage that use them; what comes back is short questions of the shapes the app already draws
 // (tap the form, what does this say), kept on the phone and served first in the next round on that idea. Pure: the caller hands in the passage and the answer; nothing here touches the store,
 // the network or a screen. The answer is not believed: every item is checked against the verse it names, and an item that does not match is dropped.
-import { wordParse, type Chapter, type GreekWord, type Verse } from '../chapter';
+import { isGuess, wordParse, type Chapter, type GreekWord, type Verse } from '../chapter';
 import { decodeParse } from '../parseCode';
 import { OPTION_COUNT } from '../choices';
 import { LADDER, ideasOfWord, type GrammarIdea, type Tier } from './ladder';
@@ -105,6 +105,8 @@ export interface DrillItemsRequest {
 
 /** The ids of the ideas a word needs, patterns included; none for a code the ladder cannot read. */
 function ideasOfForm(word: GreekWord): string[] {
+  // a word the Septuagint derivation only guessed is no use of an idea, so it is never sent to the mill nor the right word of an item it made (mw-5r3p30.963)
+  if (isGuess(word)) return [];
   try {
     return ideasOfWord(word);
   } catch {
