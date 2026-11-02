@@ -12,7 +12,7 @@ export type Stroke = readonly Point[];
 export type Variant = readonly Stroke[];
 
 /** Points along an ellipse: centre, radii, and the angles in degrees (0 right, 90 down, so a rising angle turns clockwise). */
-function arc(cx: number, cy: number, rx: number, ry: number, from: number, to: number): Point[] {
+export function arc(cx: number, cy: number, rx: number, ry: number, from: number, to: number): Point[] {
   const steps = Math.max(2, Math.ceil(Math.abs(to - from) / 15));
   const out: Point[] = [];
   for (let i = 0; i <= steps; i += 1) {
@@ -26,7 +26,7 @@ function arc(cx: number, cy: number, rx: number, ry: number, from: number, to: n
 const STEP = 0.1;
 
 /** A straight line through the points, with a point at least every STEP along it. */
-function line(...points: Point[]): Point[] {
+export function line(...points: Point[]): Point[] {
   const out: Point[] = [points[0]];
   for (let i = 1; i < points.length; i += 1) {
     const [a, b] = [points[i - 1], points[i]];
@@ -37,7 +37,7 @@ function line(...points: Point[]): Point[] {
 }
 
 /** One smooth curve through the points (Catmull-Rom), the way a pen moves round a bend; a point at least every STEP along it. */
-function curve(...points: Point[]): Point[] {
+export function curve(...points: Point[]): Point[] {
   const at = (i: number): Point => points[Math.min(points.length - 1, Math.max(0, i))];
   const out: Point[] = [points[0]];
   for (let i = 0; i < points.length - 1; i += 1) {
@@ -54,7 +54,7 @@ function curve(...points: Point[]): Point[] {
 }
 
 /** Parts that follow one another in ONE pen movement: each begins where the one before ends (it throws if one does not). */
-function join(...parts: Point[][]): Point[] {
+export function join(...parts: Point[][]): Point[] {
   for (let i = 1; i < parts.length; i += 1) {
     const [end, start] = [parts[i - 1][parts[i - 1].length - 1], parts[i][0]];
     if (Math.hypot(end[0] - start[0], end[1] - start[1]) > 0.06) throw new Error(`templates: a joined stroke jumps from ${end} to ${start}`);

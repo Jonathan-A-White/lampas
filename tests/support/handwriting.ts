@@ -3,7 +3,8 @@
 // its own spacing, slants, stretches and wobbles it, draws its strokes in a shuffled order and direction, and puts it
 // somewhere on a pad at some size. The checker resamples and normalises, so it never sees the template's own points.
 import { mulberry32, shuffle, type Random } from '../../src/data/random';
-import { GLYPHS, type Variant } from '../../src/handwriting/templates';
+import { variantsOf } from '../../src/handwriting/glyphs';
+import type { Variant } from '../../src/handwriting/templates';
 import type { InkPoint, InkStroke } from '../../src/handwriting/recognizer';
 
 /** The height of a capital letter on the test pad, in pixels. */
@@ -74,7 +75,7 @@ function densify(line: readonly (readonly [number, number])[], step: number): [n
 
 /** One writing of `letter` as stroke sets of {x, y, t} points, the way a pad would hand them over. */
 export function writing(letter: string, writer: Writer, distortion: Distortion = {}): InkStroke[] {
-  const variants = GLYPHS[letter];
+  const variants = variantsOf(letter);
   if (!variants) throw new Error(`no template for ${letter}`);
   const design = variants[writer.variant % variants.length];
   const random = mulberry32(writer.seed * 7919 + letter.codePointAt(0)!);

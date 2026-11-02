@@ -10,7 +10,8 @@
 // drifts off level, or a phone held at a slant, still meets the template. The templates are in templates.ts.
 // Nothing here reads the network, a clock or the page.
 
-import { GLYPHS, LETTERS, LOOKALIKES, type Variant } from './templates';
+import { glyphsOfScript, type WriteScript } from './glyphs';
+import { LETTERS, LOOKALIKES, type Variant } from './templates';
 
 export interface InkPoint {
   x: number;
@@ -31,6 +32,8 @@ export interface RecognizeOptions {
    * ascender, a capital that fills the line) then tell such a pair apart by where it was written as well as how big.
    */
   baseline?: number;
+  /** The script the letter asked for is written in: Greek ('grc', the default) or Hebrew ('hbo'); the writing is compared with that script's letters only (Hebrew has no case and no Latin look-alike). */
+  script?: WriteScript;
 }
 
 export interface Recognition {
@@ -276,14 +279,16 @@ function build(letter: string, variant: Variant): Template {
   return { letter, cloud, coarse: thin(cloud), top: Math.min(...ys), bottom: Math.max(...ys), points: placed };
 }
 
-let cache: Template[] | null = null;
+const caches = new Map<WriteScript, Template[]>();
 
-/** The templates, built on first use. */
-function templates(): Template[] {
-  if (cache) return cache;
+/** The templates of a script (Greek unless asked), built on first use. */
+function templates(script: WriteScript = 'grc'): Template[] {
+  const cached = caches.get(script);
+  if (cached) return cached;
   const out: Template[] = [];
-  for (const letter of LETTERS) for (const variant of GLYPHS[letter] as readonly Variant[]) out.push(build(letter, variant));
-  cache = out;
+  const glyphs = glyphsOfScript(script);
+  for (const letter of script === 'grc' ? LETTERS : Object.keys(glyphs)) for (const variant of glyphs[letter] as readonly Variant[]) out.push(build(letter, variant));
+  caches.set(script, out);
   return out;
 }
 
@@ -319,8 +324,15 @@ function dotted(strokes: readonly InkStroke[]): boolean {
 
 let twinCache: Map<string, string[]> | null = null;
 
-/** The other-case letter whose template is nearly this one's shape, if any: ο and Ο, ι and Ι, ρ and Ρ. */
-export function caseTwins(letter: string): string[] {
+/**
+ * Hebrew letters a hand writes the same way, told apart only by how far they reach below the line: a vav and a final nun are both a stem with a small head, and the pad does not say where
+ * the line is, so either is taken for the other (as ο and Ο are, with no cap height).
+ */
+const HEBREW_TWINS: Readonly<Record<string, readonly string[]>> = { ו: ['ן'], ן: ['ו'] };
+
+/** The other-case letter whose template is nearly this one's shape, if any: ο and Ο, ι and Ι, ρ and Ρ; for Hebrew ('hbo') the letter written the same but for its length. */
+export function caseTwins(letter: string, script: WriteScript = 'grc'): string[] {
+  if (script === 'hbo') return [...(HEBREW_TWINS[letter] ?? [])];
   if (!twinCache) {
     twinCache = new Map();
     const all = templates();
@@ -357,7 +369,7 @@ const NOTHING = (target: string): Recognition => ({
 function byCase(group: string[], ink: Pt[], options: RecognizeOptions): string | null {
   const { capHeight, baseline } = options;
   if (!capHeight || !(capHeight > 0)) return null;
-  const own = (letter: string): Template[] => templates().filter((t) => t.letter === letter);
+  const own = (letter: string): Template[] => templates(options.script ?? 'grc').filter((t) => t.letter === letter);
   let low = Infinity;
   let high = -Infinity;
   for (const p of ink) {
@@ -445,8 +457,9 @@ export function recognize(strokes: readonly InkStroke[], target: string, options
   if (!sampled || !frameOf(sampled)) return NOTHING(target);
   const views = TURNS.map((degrees) => turned(points, sampled, degrees)).filter((v): v is Turned => v !== null);
 
-  const all = templates();
-  const known = Object.prototype.hasOwnProperty.call(GLYPHS, target);
+  const script = options.script ?? 'grc';
+  const all = templates(script);
+  const known = Object.prototype.hasOwnProperty.call(glyphsOfScript(script), target);
   /** The nearest a template comes to the writing over the turns tried (stopping early past `cutoff`); `view` came nearest. */
   const nearest = (template: Template, coarse: boolean, cutoff = Infinity): { d: number; view: Turned } => {
     let found = { d: Infinity, view: views[0] };
@@ -482,7 +495,7 @@ export function recognize(strokes: readonly InkStroke[], target: string, options
   let closest = [...best.entries()].reduce((a, b) => (b[1].d < a[1].d ? b : a))[0];
 
   // a small and a capital letter of the same shape: the size or place of the writing tells them apart, when the pad says enough
-  const group = [closest, ...caseTwins(closest)];
+  const group = [closest, ...caseTwins(closest, script)];
   const bySize = group.length > 1 ? byCase(group, points, options) : null;
   if (bySize) closest = bySize;
   const caseChecked = bySize !== null;
@@ -497,7 +510,7 @@ export function recognize(strokes: readonly InkStroke[], target: string, options
   let hint = '';
   if (known) {
     let nearestLookalike = Infinity;
-    for (const l of lookalikesOf(target)) {
+    for (const l of script === 'grc' ? lookalikesOf(target) : []) {
       for (const template of l.templates) {
         const { d } = nearest(template, false, Math.min(nearestLookalike, ACCEPT));
         if (d < nearestLookalike) {
@@ -506,7 +519,7 @@ export function recognize(strokes: readonly InkStroke[], target: string, options
         }
       }
     }
-    const dot = Object.prototype.hasOwnProperty.call(LOOKALIKES, target) ? LOOKALIKES[target].find((l) => l.dot) : undefined;
+    const dot = script === 'grc' && Object.prototype.hasOwnProperty.call(LOOKALIKES, target) ? LOOKALIKES[target].find((l) => l.dot) : undefined;
     if (!hint && dot && shaped && dotted(strokes)) hint = dot.hint;
   }
   const match = shaped && hint === '';

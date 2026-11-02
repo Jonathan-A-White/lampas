@@ -56,7 +56,7 @@ const GREEK_ROWS: Readonly<Record<string, readonly [Follows, GreekLevel]>> = {
   pickerGrammar: ['depth', 3],
   grammarMove: ['depth', 3],
   grammarApproach: ['greekInterest', 3],
-  handwritingDrills: ['greekInterest', 3],
+  handwritingDrills: ['depth', 3],
   readLessons: ['depth', 3],
   quizGoal: ['depth', 3],
   goal: ['depth', 4],

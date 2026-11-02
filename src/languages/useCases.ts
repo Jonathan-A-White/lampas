@@ -161,11 +161,7 @@ export const USE_CASES: readonly UseCase[] = [
   {
     id: 'handwriting',
     title: 'Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills',
-    status: {
-      greek: 'has',
-      hebrew: { gap: 'scenario "Write it on Alef traces its strokes" in features/hebrew-letters.feature; stroke data for the 27 glyphs beside the Greek ones in src/handwriting/, the Write it part of a Hebrew letter sheet and the drill’s Write it questions (src/data/grammar/hebrew/letterQuestions.ts), Settings > Handwriting drills shown by either dial (src/settings/registry.ts); M' },
-      latin: LATIN_LATER,
-    },
+    status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
   },
   // Words
   {

@@ -4,54 +4,68 @@
 // ear meet. Clear, Check and Skip are the same size. Check asks the checker on the phone (recognizer.ts, nothing is sent), which judges which letter it is,
 // not neatness, size or slant: Right, or Close (a Greek letter drawn as its Latin look-alike, with one line that says where) or Not quite, with the right strokes drawn and Try again, never a score. The first card he ever meets says why he writes.
 // A right check is kept (repositories/handwriting.ts recordWrite); a miss or a skip keeps nothing and costs nothing.
+// The card writes a Greek letter or a Hebrew one (target.ts, mw-5r3p30.913): the Hebrew letter is drawn in the Hebrew face, checked against the Hebrew letters only (no Latin look-alike line), and
+// its sound plays in the Hebrew voice.
 import { useEffect, useState, type ReactNode } from 'react';
 import type { GrammarIdea } from '../data/grammar/ladder';
-import { ideaChoice } from '../data/grammar/lessons';
 import { getWhySeen, getWriteProgress, markWhySeen, recordWrite } from '../data/repositories';
-import { speakSound } from '../speech/greek';
+import { speakSound, speakWord } from '../speech/greek';
 import { greekMarked } from '../ui/GreekMarked';
 import { GlyphStrokes, StrokeLine } from './GlyphStrokes';
+import type { WriteScript } from './glyphs';
 import { recognize, type InkStroke } from './recognizer';
 import { STAGES, STAGE_NAMES, type WriteProgress, type WriteStage } from './progression';
-import { WHY_LINES, WRITE_PLAIN, WRITE_PRIMARY } from './writeText';
+import { writeTargetOf, type WriteForm } from './target';
+import { whyLinesOf, WRITE_PLAIN, WRITE_PRIMARY } from './writeText';
 import { WritingPad } from './WritingPad';
 import { GREEK_LANG } from '../script/greekLang';
+import { HEBREW_LANG_ATTRS } from '../reader/sourceText';
 
+const GREEK_SIZE = 'text-[length:var(--lp-greek-size)]';
 
-const GREEK = 'font-greek text-[length:var(--lp-greek-size)]';
+/** A letter as the card draws it: Greek in the Greek face, Hebrew right to left in the Hebrew face (`size` is the class that sizes it). */
+function Letter({ glyph, lang, size }: { glyph: string; lang: WriteScript; size: string }) {
+  return lang === 'hbo' ? (
+    <span {...HEBREW_LANG_ATTRS} dir="rtl" className={`script-he ${size}`}>
+      {glyph}
+    </span>
+  ) : (
+    <span {...GREEK_LANG} className={`font-greek ${size}`}>
+      {glyph}
+    </span>
+  );
+}
 
-/** The line that says why, for the first Write it he meets. */
-export function WhyLine() {
+/** The line that says why, for the first Write it he meets, in the script of the letter. */
+export function WhyLine({ lang = 'grc' }: { lang?: WriteScript }) {
   return (
     <p data-testid="write-why" className="mt-1 text-base">
-      {WHY_LINES.join(' ')}
+      {whyLinesOf(lang).join(' ')}
     </p>
   );
 }
 
-function Prompt({ stage, idea, glyph }: { stage: WriteProgress['stage']; idea: GrammarIdea; glyph: string }) {
-  const letter = (
-    <span {...GREEK_LANG} className="font-greek text-4xl">
-      {glyph}
-    </span>
-  );
+function Prompt({ stage, title, glyph, lang }: { stage: WriteProgress['stage']; title: string; glyph: string; lang: WriteScript }) {
+  const letter = <Letter glyph={glyph} lang={lang} size="text-4xl" />;
   return (
     <h3 data-testid="write-prompt" className="text-xl font-medium">
-      {stage === 'trace' ? <>Trace {letter}</> : stage === 'copy' ? <>Copy {letter}</> : <>Write {idea.title} from memory</>}
+      {stage === 'trace' ? <>Trace {letter}</> : stage === 'copy' ? <>Copy {letter}</> : <>Write {title} from memory</>}
     </h3>
   );
 }
 
-export function WriteIt({ idea, onSkip, onRight, afterRight }: {
-  /** a letter of the alphabet (it has glyphs); the small form is written */
+export function WriteIt({ idea, form, onSkip, onRight, afterRight }: {
+  /** a letter of the alphabet, Greek (its small form is written) or Hebrew (its ordinary shape, or with `form` its final one) */
   idea: GrammarIdea;
+  form?: WriteForm;
   onSkip: () => void;
   /** a check came back right and was kept */
   onRight?: (progress: WriteProgress) => void;
   /** what to offer once it is right (Write it again, Next), given the progress after it and the stage the card was at */
   afterRight: (after: WriteProgress, stage: WriteStage) => ReactNode;
 }) {
-  const glyph = idea.glyphs?.[0] ?? '';
+  const target = writeTargetOf(idea, form);
+  const { glyph = '', lang = 'grc', title = idea.title, sound } = target ?? {};
   // the stage is read once, as the card opens: it is the stage of this card even after a right moves the letter on
   const [progress, setProgress] = useState<WriteProgress | null>(null);
   const [first, setFirst] = useState(false);
@@ -75,10 +89,9 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
 
   if (!progress) return <p className="text-base text-muted">Getting the pad ready…</p>;
   const { stage } = progress;
-  const sound = ideaChoice(idea);
 
   const check = (): void => {
-    const { match, hint } = recognize(strokes, glyph);
+    const { match, hint } = recognize(strokes, glyph, { script: lang });
     // a miss changes nothing kept: it is never counted against him
     if (!match) return setVerdict({ right: false, hint });
     void recordWrite(glyph, true)
@@ -97,12 +110,12 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
 
   return (
     <div data-testid="write-it" data-stage={stage} data-letter={glyph}>
-      <Prompt stage={stage} idea={idea} glyph={glyph} />
+      <Prompt stage={stage} title={title} glyph={glyph} lang={lang} />
       <p data-testid="write-name" className="mt-1 text-lg">
-        {idea.title}
+        {title}
         {sound ? <span className="text-muted"> · sounds {sound}</span> : null}
       </p>
-      {first ? <WhyLine /> : null}
+      {first ? <WhyLine lang={lang} /> : null}
       <div className="mt-3 flex items-stretch gap-3">
         {stage === 'copy' ? (
           <div data-testid="write-beside" className="flex w-28 shrink-0 items-center justify-center rounded-2xl border border-line p-1">
@@ -118,9 +131,9 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
             <WritingPad
               strokes={strokes}
               onChange={setStrokes}
-              onStart={() => void speakSound(glyph)}
+              onStart={() => void (lang === 'hbo' ? speakWord(glyph, 'hebrew') : speakSound(glyph))}
               under={stage === 'trace' ? <div data-testid="write-under" className="h-full w-full">{model}</div> : undefined}
-              label={stage === 'memory' ? `Write ${idea.title} here` : `Write ${glyph} here`}
+              label={stage === 'memory' ? `Write ${title} here` : `Write ${glyph} here`}
             />
           )}
         </div>
@@ -145,7 +158,7 @@ export function WriteIt({ idea, onSkip, onRight, afterRight }: {
               </p>
             ) : null}
             <p className="text-base text-muted">
-              This is how <span {...GREEK_LANG} className={GREEK}>{glyph}</span> is written. Watch the strokes, then try again.
+              This is how <Letter glyph={glyph} lang={lang} size={lang === 'hbo' ? 'text-2xl' : GREEK_SIZE} /> is written. Watch the strokes, then try again.
             </p>
           </div>
         ) : null}

@@ -734,7 +734,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
               {soundLessons.length > 1 ? `${learnLabel(lesson)}: ${lesson.title}` : learnLabel(lesson)}
             </button>
           ))}
-          {idea.glyphs ? <LessonWriteIt idea={idea} /> : null}
+          {idea.glyphs || hebrewLetter ? <LessonWriteIt idea={idea} /> : null}
           {card.diagram ? <InADiagram card={card.diagram} onWord={onWord} /> : null}
           <Worked teach={card} passage={passage} scheme={scheme} lang={lang} />
           {tables.length ? (

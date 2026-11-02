@@ -17,6 +17,7 @@ import { GREEK_SET, HEBREW_SET, answerTarget, drawRound, isComplete, letterDrill
 import { mulberry32, type Random } from '../../src/data/random';
 import { setGoal } from '../../src/data/repositories/settings';
 import { setLanguages, teachIdea } from '../../src/data/repositories';
+import { getWriteProgress } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
@@ -24,6 +25,7 @@ import type { Languages } from '../../src/settings/definitions/interest';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { WRITERS, writing } from '../../tests/support/handwriting';
 
 const realLetterSeed = letterDrillSeed.next;
 const realDrillSeed = drillSeed.next;
@@ -149,6 +151,33 @@ function questionOnScreen(ideaId: string) {
     if (found) return found;
   }
   throw new Error(`question not among the steps: ${prompt} / ${form} / ${options.join(', ')}`);
+}
+
+// ---- Write it ----
+
+let pointer = 1;
+let spokenBefore = 0;
+const writeDialog = () => screen.getByRole('dialog', { name: 'Write it' });
+const writeCard = () => screen.getByTestId('write-it');
+
+/** The letter written on the pad as pointer events, stroke by stroke, with a pen. */
+function writeOnPad(letter: string): void {
+  const pad = within(writeCard()).getByTestId('writing-pad');
+  for (const stroke of writing(letter, WRITERS[0])) {
+    const pointerId = (pointer += 1);
+    const at = (i: number) => ({ pointerId, pointerType: 'pen', isPrimary: true, button: 0, buttons: 1, clientX: stroke[i].x, clientY: stroke[i].y });
+    fireEvent.pointerDown(pad, at(0));
+    for (let i = 1; i < stroke.length; i += 1) fireEvent.pointerMove(pad, at(i));
+    fireEvent.pointerUp(pad, { ...at(stroke.length - 1), buttons: 0 });
+  }
+}
+
+async function writesAndChecks(letter: string): Promise<void> {
+  await screen.findByTestId('write-it');
+  spokenBefore = synth.spoken.length;
+  writeOnPad(letter);
+  await user.click(within(writeCard()).getByRole('button', { name: 'Check' }));
+  await within(writeCard()).findByTestId('write-verdict');
 }
 
 const feature = await loadFeature('features/hebrew-letters.feature');
@@ -342,6 +371,74 @@ describeFeature(feature, ({ Scenario }) => {
       const dialog = await sheet();
       expect(dialog.querySelector('[lang="he"]')).toBeNull();
       expect(dialog.textContent).not.toMatch(/[֐-׿]/);
+    });
+  });
+
+  Scenario('Write it on Alef traces its strokes', ({ Given, When, Then, And }) => {
+    Given('Hebrew is the only language chosen, the Hebrew alphabet is known, a pen has been seen and the Goal screen is open', async () => {
+      await fresh('hebrew');
+      await teachIdea('he-alphabet', 'known');
+      await db.settings.put({ key: 'penSeen', value: 'yes' });
+      await openGoal();
+    });
+    When('he taps Learn next', async () => {
+      await user.click(await learnNext());
+    });
+    Then('Alef\'s sheet has a Write it part after {string}, saying why in Hebrew\'s words', async (_, heading: string) => {
+      const dialog = await sheet();
+      const part = await within(dialog).findByTestId('lesson-write-it');
+      const before = within(dialog).getByRole('heading', { name: heading });
+      expect(before.compareDocumentPosition(part) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      const why = await within(part).findByTestId('write-why');
+      expect(why).toHaveTextContent('Writing a letter by hand helps it stick. You never need to write Hebrew to read the Bible.');
+      expect(why).not.toHaveTextContent('Greek');
+    });
+    When('he opens Write it on Alef\'s sheet', async () => {
+      await user.click(within(await within(await sheet()).findByTestId('lesson-write-it')).getByRole('button', { name: 'Write it' }));
+      await screen.findByRole('dialog', { name: 'Write it' });
+    });
+    Then('the Write it card asks him to trace {string} with the letter faint under the pad, drawn in the Hebrew face', async (_, letter: string) => {
+      const shown = await screen.findByTestId('write-it');
+      expect(shown).toHaveAttribute('data-stage', 'trace');
+      const prompt = within(shown).getByTestId('write-prompt');
+      expect(prompt).toHaveTextContent(`Trace ${letter}`);
+      const drawn = prompt.querySelector('[lang="he"]');
+      expect(drawn).toHaveAttribute('dir', 'rtl');
+      expect(drawn).toHaveClass('script-he');
+      const model = within(within(shown).getByTestId('write-under')).getByTestId('write-model');
+      expect(model).toHaveAttribute('data-letter', letter);
+      expect(model.querySelectorAll('path.glyph-stroke')).toHaveLength(3);
+      expect(model.querySelectorAll('[data-start-marker]')).toHaveLength(3);
+    });
+    And('the card shows the name {string} and the line {string}', (_, name: string, line: string) => {
+      expect(within(writeCard()).getByTestId('write-name')).toHaveTextContent(name);
+      expect(within(writeCard()).getByTestId('write-stroke-line')).toHaveTextContent(line);
+    });
+    When('he writes {string} with the pen and taps Check', (_, letter: string) => writesAndChecks(letter));
+    Then('the card says {string} and draws the strokes of {string}', (_, text: string, letter: string) => {
+      const verdict = within(writeCard()).getByTestId('write-verdict');
+      expect(verdict).toHaveAttribute('data-right', 'false');
+      expect(verdict).toHaveTextContent(text);
+      expect(within(writeCard()).getByTestId('write-strokes-shown')).toHaveAttribute('data-letter', letter);
+    });
+    When('he taps {string}', async (_, name: string) => {
+      await user.click(within(writeCard()).getByRole('button', { name }));
+    });
+    And('he writes {string} with the pen and checks it', async (_, letter: string) => {
+      expect(await within(writeCard()).findByTestId('writing-pad')).toHaveAttribute('data-strokes', '0');
+      await writesAndChecks(letter);
+    });
+    Then('the card says {string}', async (_, text: string) => {
+      expect(within(writeCard()).getByTestId('write-verdict')).toHaveTextContent(text);
+      expect(within(writeCard()).getByTestId('write-verdict')).toHaveAttribute('data-right', 'true');
+      await waitFor(async () => expect(await getWriteProgress('א')).toEqual({ stage: 'trace', rights: 1 }));
+    });
+    And('the sound of {string} was said in the Hebrew voice as he started writing', (_, letter: string) => {
+      const said = synth.spoken.slice(spokenBefore);
+      expect(said.length).toBeGreaterThan(0);
+      expect(said[0].text).toBe(letter);
+      expect(said[0].lang).toBe('he-IL');
+      expect(writeDialog()).toBeInTheDocument();
     });
   });
 });

@@ -3,7 +3,8 @@ Feature: Learning to read Hebrew: the letters
   Goal with Hebrew chosen, Learn next names the Hebrew alphabet and, once that is known, Alef; Alef's sheet teaches the letter in Hebrew type and its sound is the Israeli
   scheme's lesson, and "Hear it" speaks the letter in the Hebrew voice. "Your level" moved to "Learning" on The Hebrew alphabet starts the letter drill over the 27 glyphs (the 22
   letters and the 5 final forms), drawn right to left; "Drill it" on a letter asks its name, its sound and a word that holds it, and runs to "Proved". The Greek letter drill is as it
-  was, and with Greek only no Hebrew letter is anywhere.
+  was, and with Greek only no Hebrew letter is anywhere. With a pen seen (Settings > Handwriting drills, Automatic) Alef's sheet has a Write it part after "How it sounds": the letter faint
+  under the pad with its strokes drawn first, checked on the phone against the Hebrew letters only, and its sound said in the Hebrew voice as he starts writing; the letter drill mixes in Write it too.
 
   @uc-letter-drill @hebrew
   Scenario: Learn next offers the Hebrew alphabet and then Alef
@@ -57,3 +58,18 @@ Feature: Learning to read Hebrew: the letters
     Then the Goal shows no Hebrew letter and no Hebrew idea
     When he opens the idea sheet of "The Greek alphabet" from the Goal list
     Then the sheet shows no Hebrew letter
+
+  @uc-handwriting @hebrew
+  Scenario: Write it on Alef traces its strokes
+    Given Hebrew is the only language chosen, the Hebrew alphabet is known, a pen has been seen and the Goal screen is open
+    When he taps Learn next
+    Then Alef's sheet has a Write it part after "How it sounds", saying why in Hebrew's words
+    When he opens Write it on Alef's sheet
+    Then the Write it card asks him to trace "א" with the letter faint under the pad, drawn in the Hebrew face
+    And the card shows the name "Alef" and the line "Three strokes: the slanting stroke first, then the upper left arm, then the lower right leg."
+    When he writes "ב" with the pen and taps Check
+    Then the card says "Not quite" and draws the strokes of "א"
+    When he taps "Try again"
+    And he writes "א" with the pen and checks it
+    Then the card says "Right"
+    And the sound of "א" was said in the Hebrew voice as he started writing

@@ -1,5 +1,5 @@
 // The rows both languages share (they follow the higher of the two dials: mw-gdcyf98.2) name the original as 'Greek or Hebrew' or 'the original',
-// never Greek alone (mw-gdcyf98.26). Rows tied to the Greek dial only (greekKeyboard, handwritingDrills, grammarApproach) are not listed.
+// never Greek alone (mw-gdcyf98.26). Rows tied to the Greek dial only (greekKeyboard, grammarApproach) are not listed.
 import { describe, expect, it } from 'vitest';
 import { SETTINGS } from '../../src/settings/registry';
 import { ROWS } from '../../src/settings/rows';
@@ -15,6 +15,7 @@ const SHARED = [
   'goal',
   'readLessons',
   'quizGoal',
+  'handwritingDrills',
   'link.goal',
   'link.words',
   'link.review',
@@ -44,8 +45,8 @@ describe('the words of the rows both languages share', () => {
   });
 
   it('leaves the rows of the Greek dial alone', () => {
-    const greek = ROWS.filter((r) => ['greekKeyboard', 'handwritingDrills', 'grammarApproach'].includes(r.key));
-    expect(greek.length).toBe(3);
+    const greek = ROWS.filter((r) => ['greekKeyboard', 'grammarApproach'].includes(r.key));
+    expect(greek.length).toBe(2);
     expect(greek.some((r) => /Greek/.test(`${r.label} ${r.hint} ${r.help ?? ''}`))).toBe(true);
   });
 });
