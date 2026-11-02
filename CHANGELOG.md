@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.70
+_2026-11-02_
+- New: A setting for reading the Old Testament in the Greek Septuagint with an English line under each verse; no book is ready yet, so the Hebrew still shows with a note.
+- New: You can now learn to write the Hebrew letters by hand with a pen or finger, traced, then copied, then from memory, just as you can for Greek.
+
 ## 0.7.69
 _2026-11-02_
 - Fixed: The round ? button no longer shows over a chapter list or a notes sheet that would hide the tutor behind it, so a tap is never wasted.

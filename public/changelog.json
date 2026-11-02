@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.70",
+    "date": "2026-11-02",
+    "story": "mw-u2w5klk.11",
+    "kind": "new",
+    "text": "A setting for reading the Old Testament in the Greek Septuagint with an English line under each verse; no book is ready yet, so the Hebrew still shows with a note."
+  },
+  {
+    "version": "0.7.70",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.913",
+    "kind": "new",
+    "text": "You can now learn to write the Hebrew letters by hand with a pen or finger, traced, then copied, then from memory, just as you can for Greek."
+  },
+  {
     "version": "0.7.69",
     "date": "2026-11-02",
     "story": "mw-5r3p30.953",
