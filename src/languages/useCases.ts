@@ -55,6 +55,11 @@ export const USE_CASES: readonly UseCase[] = [
     status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
   },
   {
+    id: 'septuagint',
+    title: "Read the Old Testament in Greek over the Hebrew, Brenton's English under each verse",
+    status: { greek: 'has', hebrew: { na: "the Hebrew is the Old Testament's own text; the switch is to the Greek" }, latin: LATIN_LATER },
+  },
+  {
     id: 'weave',
     title: 'The diglot weave: his known words stand in the source language inside the English',
     status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },

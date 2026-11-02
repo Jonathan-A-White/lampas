@@ -116,9 +116,9 @@ const TITLE_MAX_REM = 1.125;
 /** A letter of a semibold name, in em, at the most (the phone's own wide sans, DejaVu, measures 0.75 on 'Romans'): a name's room is its length times this. */
 const LETTER_EM = 0.8;
 
-/** The title as its two halves: the book's name ('1 Thessalonians', never broken) and the chapter ('5'), which may drop to a second line. */
+/** The title as its two halves: the book's name ('1 Thessalonians', never broken) and the chapter ('5'; a Septuagint chapter's '23 (Greek 22)'), which may drop to a second line. */
 function partsOf(title: string): { name: string; chapter: string } {
-  const at = title.search(/\s\d+$/);
+  const at = title.search(/\s\d+(?: \(Greek \d+\))?$/);
   return at < 0 ? { name: title, chapter: '' } : { name: title.slice(0, at), chapter: title.slice(at + 1) };
 }
 

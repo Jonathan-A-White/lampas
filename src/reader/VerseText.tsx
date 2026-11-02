@@ -68,6 +68,8 @@ export interface VerseProps {
   view: ReaderView;
   /** the language of the chapter's own words, the source view's: Greek unless the chapter is Hebrew ('hbo') */
   source?: SourceLanguage;
+  /** the chapter is Swete's Septuagint (src/reader/septuagint.ts) and this is the number of its Greek chapter: the verse number says Lampas's verse and the Greek one beside it, and the source view has Brenton's English under the Greek */
+  septuagint?: number;
   /** per English chunk, the Greek words shown in its place or null, and the order the chunks are laid out in; null for the whole verse when the weave is off */
   woven: WovenVerse | null;
   selected: boolean;

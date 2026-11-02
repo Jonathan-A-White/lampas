@@ -17,6 +17,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `languages` — Which languages? The Bible in English, or with its Greek, its Hebrew, or both Value: "english" (English only), "greek", "hebrew", "both" (Greek and Hebrew).
 - `greekInterest` — How much Greek? From none to all in: each step shows more Greek, and nothing more. Value: "0" (Just English), "1" (Curious), "2" (Dipping a toe), "3" (Learning), "4" (Reading in Greek), "5" (All in).
 - `hebrewInterest` — How much Hebrew? From none to all in: each step shows more Hebrew, and nothing more. Value: "4" (Reading in Hebrew), or any value of `greekInterest`.
+- `septuagint` — Old Testament in Greek (Septuagint). Swete’s Greek with Brenton’s English; the Hebrew when off.
 - `theme` — Theme. Light, dark, sepia, high contrast, or the phone's own. Value: "phone", "light", "dark", "sepia", "contrast" (High contrast).
 - `font` — Font. The face of the English text; the Greek and the Hebrew keep theirs. Value: "phone" (The phone's own), "literata", "atkinson" (Atkinson Hyperlegible), "lexend".
 - `textSize` — Text size. How big the text is, in steps of the phone's own size. Value: "small", "normal", "large", "largest".

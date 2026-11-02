@@ -50,7 +50,7 @@ import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { layRp2026English } from './data/rp2026English';
 import { Rp2026Sheet } from './reader/Rp2026Sheet';
-import { readingModeSetting, rp2026EnglishSetting } from './settings/definitions';
+import { readingModeSetting, rp2026EnglishSetting, septuagintSetting } from './settings/definitions';
 import { useSheetOpen } from './ui/sheetBack';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
@@ -85,6 +85,9 @@ import { TeachSheet } from './TeachSheet';
 import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
+import { SeptuagintNote } from './reader/SeptuagintNote';
+import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintTitle } from './reader/septuagint';
+import type { InterestLang } from './settings/definitions/interest';
 import { ReadingBar } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { useBarShown } from './speech/barShown';
@@ -140,15 +143,23 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [picking, setPicking] = useState(false);
   const closePicker = useCallback(() => setPicking(false), []);
   // An Old Testament chapter ('hbo') is read in English or in its Hebrew (mw-5vvlay.1): the switch's second choice is the chapter's one source view ('greek' in code, the Hebrew of this
-  // chapter and the Greek of a New Testament one, so the saved view opens either), and the weave lays the English against the Hebrew.
-  const hbo = isHebrewBook(BOOK);
-  const settings = useReaderSettings(hbo ? 'hbo' : 'grc') ?? NO_SETTINGS;
+  // chapter and the Greek of a New Testament one, so the saved view opens either), and the weave lays the English against the Hebrew. With Settings > Old Testament in Greek (Septuagint) On
+  // and the book shipped, the chapter is Swete's Greek with Brenton's English under it (src/reader/septuagint.ts): an 'grc' chapter, read by the Greek dial, so which of the two an Old
+  // Testament book is waits for its file; the settings wait with it (useReaderSettings null).
+  const { chapter: fetched, failed, retry: retryChapter } = useChapter(BOOK, CHAPTER);
+  const ownLang: InterestLang | null = isHebrewBook(BOOK) ? (fetched ? (sourceLanguage(fetched) as InterestLang) : null) : 'grc';
+  const hbo = ownLang === 'hbo';
+  const settings = useReaderSettings(ownLang) ?? NO_SETTINGS;
   const { level, view, weave, weaveShown, weaveOrder, solid, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
-  const { chapter: fetched, failed, retry: retryChapter } = useChapter(BOOK, CHAPTER);
   // English from the 2026 Greek (mw-9ji6ek0.33): with it On, the places where the 2026 Greek changes the English read in Lampas's own words, marked; the chapter waits for the setting, as it waits for the others
   const rp2026 = useSetting(rp2026EnglishSetting);
   const chapter = useMemo(() => (fetched && rp2026 ? layRp2026English(fetched, rp2026) : null), [fetched, rp2026]);
+  // The Septuagint chapter: its English is one chunk a verse, so the Weave has nothing to lay a Greek word over and is off here (a note says so, once); a book that is not shipped says so and stays Hebrew
+  const septuagint = isSeptuagint(chapter);
+  const septuagintOn = useSetting(septuagintSetting) === 'on';
+  const wovenSettings = useMemo(() => (septuagint ? { ...settings, weaveShown: false } : settings), [septuagint, settings]);
+  const heading = chapter ? septuagintTitle(TITLE, CHAPTER, chapter) : TITLE;
   const [rpShown, setRpShown] = useState<string | null>(null);
   // 'Loading …' that goes on 8 s (the chapter's fetch hangs, or the settings wait on a database an older tab blocks) offers Try again instead of a black screen (mw-5r3p30.846).
   const dbBlocked = useDbBlocked();
@@ -158,7 +169,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (!db.isOpen()) db.open().catch(() => undefined);
   }, [retryChapter]);
   // the language of the chapter's own words (the switch's last choice, the Hebrew or the Greek view); the book says it before the chapter has loaded
-  const source: SourceLanguage = chapter ? sourceLanguage(chapter) : hbo ? 'hbo' : 'grc';
+  const source: SourceLanguage = chapter ? sourceLanguage(chapter) : isHebrewBook(BOOK) ? 'hbo' : 'grc';
   // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse (the view and weave it names are
   // put back in the settings by useReaderSettings). The address is the place; the settings follow it.
   const [opened] = useState(() => readerOf(window.location.hash));
@@ -265,7 +276,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     openVerseRange({ book: BOOK, chapter: CHAPTER, from: verses[0].n, to: verses[verses.length - 1].n, view: v, weave: w });
   }, [chapter, BOOK, CHAPTER]);
   const [action, chooseAction] = useVerseAction();
-  const woven = useWoven(chapter, settings);
+  const woven = useWoven(chapter, wovenSettings);
   // the variant units Settings > Variants shows (mw-9ji6ek0.5): marked in the text with a brace after them, counted by the chip in the row under the header; the Immersive reader has the marks and braces too (mw-9ji6ek0.12), not the chip
   const variants = useReaderVariants(chapter);
   const variantsOf = useCallback((n: number) => variants.byVerse?.get(n), [variants]);
@@ -459,11 +470,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       <Away enabled={immersive} away={away}>
       <div data-reader-top className="reader-top">
       <ReaderHeader
-        title={TITLE}
+        title={heading}
         view={view && level !== undefined && level >= GREEK_VIEW_FROM ? view : undefined}
         source={source}
-        weave={weave ?? 'off'}
-        weaveShown={weaveShown ?? false}
+        weave={septuagint ? 'off' : (weave ?? 'off')}
+        weaveShown={septuagint ? false : (weaveShown ?? false)}
         weaveOrder={weaveOrder ?? 'english'}
         chapterReading={chapterReading}
         reading={reading}
@@ -473,6 +484,19 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         onPick={() => setPicking(true)}
         onRead={() => readFrom(selected ?? 1, true)}
       />
+      {septuagint && !chapterReading ? (
+        <>
+          <p data-reader-subtitle className="chrome-small px-2 pb-1 text-center text-muted">
+            {SEPTUAGINT_SUBTITLE}
+          </p>
+          {weave !== undefined && weave !== 'off' ? <SeptuagintNote className="mx-2 mb-1" /> : null}
+        </>
+      ) : null}
+      {septuagintOn && chapter && !failed && isHebrewBook(BOOK) && sourceLanguage(chapter) === 'hbo' && !chapterReading ? (
+        <p role="note" data-septuagint-not-ready className="chrome-small px-2 pb-1 text-center text-muted">
+          The Septuagint of {bookOf(BOOK)?.name ?? BOOK} is not ready yet; this is the Hebrew.
+        </p>
+      ) : null}
       <ReaderChips
         hidden={chapterReading}
         newWords={newWords?.length ?? 0}
@@ -523,6 +547,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       verses={block}
                       view={view}
                       source={source}
+                      septuagint={septuagint ? chapter.chapter : undefined}
                       woven={block.map(wovenOf)}
                       selected={selected}
                       reading={readingVerse}
@@ -540,6 +565,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       verse={first}
                       view={view}
                       source={source}
+                      septuagint={septuagint ? chapter.chapter : undefined}
                       woven={wovenOf(first)}
                       selected={selected === first.n}
                       reading={readingVerse === first.n}

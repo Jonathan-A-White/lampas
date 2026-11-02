@@ -1,5 +1,6 @@
 // tests/support/chapter-fetch.ts — a fetch that answers /data/<book>/<n>.json, /data/index.json and /data/lexicon.json (and the Hebrew lexicon-hbo.json, frequency-hbo.json) with the committed file read
 // from disk (a chapter in tests/fixtures/data first, then public/data) and refuses everything else, so a test proves the reader calls nothing beyond the app's own data.
+// The Septuagint's /data-lxx/index.json and /data-lxx/<book>/<n>.json (src/data/lxxChapter.ts) are answered the same way, from tests/fixtures/data-lxx first, then public/data-lxx.
 import { existsSync, readFileSync } from 'node:fs';
 import { vi } from 'vitest';
 import { forgetChapters } from '../../src/data/chapter';
@@ -21,6 +22,11 @@ export function stubChapterFetch(): ChapterFetch {
     vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       stub.requests.push(url);
+      const lxx = url.replace(/^(\/data-lxx\/[0-9a-z]+\/\d+\.json)\?v=[0-9a-f]{12}$/, '$1');
+      if (/^\/data-lxx\/([0-9a-z]+\/\d+|index)\.json$/.test(lxx)) {
+        const file = [`tests/fixtures${lxx}`, `public${lxx}`].find((f) => existsSync(f));
+        return file ? new Response(readFileSync(file, 'utf8'), { status: 200, headers: { 'Content-Type': 'application/json' } }) : new Response('not found', { status: 404 });
+      }
       // a chapter is asked for with its fingerprint (?v=, src/data/chapter.ts chapterUrl); the file read is the one without it
       const path = url.replace(/^(\/data\/(?:[0-9a-z]+\/\d+|ladder\/[a-z]{2})\.json)\?v=[0-9a-f]{12}$/, '$1');
       if (!/^\/data\/([0-9a-z]+\/\d+|ladder\/(?:el|en|he)|lexicon|lexicon-hbo|index|frequency|frequency-hbo)\.json$/.test(path)) return new Response('not found', { status: 404 });

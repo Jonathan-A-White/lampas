@@ -3,7 +3,11 @@
 // are the same for every source language. Screens read a chapter through loadChapter and the word helpers below, never through the short keys.
 
 import { CANON_INDEX, greekBooks } from './bookIndex';
+import { isHebrewBook } from './books';
+import { forgetLxxIndex, loadSeptuagintChapter } from './lxxChapter';
 import { within } from './within';
+import { getSetting } from '../settings/store';
+import { septuagintSetting } from '../settings/definitions/septuagint';
 
 /** The language a chapter's words are in: Koine Greek ('grc') or Biblical Hebrew ('hbo', whose Aramaic verses are words of the same chapter). */
 export type SourceLanguage = 'grc' | 'hbo';
@@ -38,7 +42,7 @@ export interface GreekWord {
   /** position in this verse's `e` array of the English chunk this word is part of; absent: no English */
   e?: number;
   /**
-   * PROVISIONAL, the Septuagint only (public/data-lxx, docs/data.md 'The Septuagint data'; nothing reads it yet): the layer of Lampas's derivation that gave this word its lemma
+   * PROVISIONAL, the Septuagint only (public/data-lxx, docs/data.md 'The Septuagint data'; src/data/lxxChapter.ts, src/reader/septuagint.ts): the layer of Lampas's derivation that gave this word its lemma
    * and parsing: '1' (the word's form in the New Testament), '2' (the parser), '2a' (the agreement check), '3' (a model session's choice), or 'g' when the confidence is below 0.5
    * (a guess). Absent in the New Testament and the Old Testament.
    */
@@ -147,7 +151,7 @@ export interface VerseRef {
 export interface Verse {
   n: number;
   /**
-   * PROVISIONAL, the Septuagint only (nothing reads it yet): the verse of Lampas's Old Testament this Greek verse is, from STEPBible's TVTMS, since the Septuagint's chapters and verses
+   * PROVISIONAL, the Septuagint only (the Reader's verse number, src/reader/septuagint.ts): the verse of Lampas's Old Testament this Greek verse is, from STEPBible's TVTMS, since the Septuagint's chapters and verses
    * are not always the Hebrew's (the Psalms one number lower from Ps 10). 'none' when Lampas has no verse for it (an Addition, a Psalm's extra title). When it is several Lampas
    * verses this is the first and `refs` lists them all. Absent in the New Testament and the Old Testament.
    */
@@ -182,7 +186,7 @@ export interface Chapter {
   lang?: SourceLanguage;
   /** the translation the English chunks are from: 'msb', the Majority Standard Bible (its Old Testament is the Berean Standard Bible's); absent means 'msb'; 'lxx2012' in the Septuagint (Brenton's, one chunk a verse) */
   translation?: string;
-  /** PROVISIONAL, the Septuagint only (nothing reads it yet): the edition of the Greek the words are from, 'swete' (Swete's The Old Testament in Greek); absent in the New Testament and the Old Testament */
+  /** PROVISIONAL, the Septuagint only (isSeptuagint reads it, src/reader/septuagint.ts): the edition of the Greek the words are from, 'swete' (Swete's The Old Testament in Greek); absent in the New Testament and the Old Testament */
   edition?: string;
   /** every Strong's number used in this file -> its gloss and definition, once */
   lex: Record<string, LexEntry>;
@@ -282,17 +286,26 @@ export function ladderUrl(lang: 'el' | 'en' | 'he'): string {
   return `/data/ladder/${lang}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
 }
 
-/** Fetches /data/<book>/<n>.json once; later and concurrent callers share the one request. */
-export function loadChapter(book: string, n: number): Promise<Chapter> {
-  const key = `${book}/${n}`;
+/** The key a chapter is kept under in memory: the Septuagint's is its own, since the same book and chapter is the Hebrew or the Greek by the setting. */
+const keyOf = (book: string, n: number, septuagint: boolean): string => `${septuagint ? 'lxx:' : ''}${book}/${n}`;
+
+/**
+ * Fetches /data/<book>/<n>.json once; later and concurrent callers share the one request. An Old Testament book while Settings > Old Testament in Greek (Septuagint) is On is the Septuagint's chapter
+ * of public/data-lxx that holds Lampas's chapter `n` (src/data/lxxChapter.ts; its `chapter` is the Greek number, `lang` 'grc'), when the book is shipped there, else the Hebrew as ever.
+ */
+export async function loadChapter(book: string, n: number): Promise<Chapter> {
+  const septuagint = isHebrewBook(book) && (await getSetting(septuagintSetting)) === 'on';
+  const key = keyOf(book, n, septuagint);
   const known = chapters.get(key);
   if (known) return known;
   // A fetch the worker never answers (a half-written cache entry) is given up on, so the Reader can say so rather than load for ever (mw-5r3p30.846).
-  const request = within(async (signal) => {
-    const response = await fetch(chapterUrl(book, n), { signal });
-    if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
-    return fillChapter((await response.json()) as Chapter);
-  });
+  const hebrew = (): Promise<Chapter> =>
+    within(async (signal) => {
+      const response = await fetch(chapterUrl(book, n), { signal });
+      if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
+      return fillChapter((await response.json()) as Chapter);
+    });
+  const request = septuagint ? loadSeptuagintChapter(book, n).then((greek) => (greek ? fillChapter(greek) : hebrew())) : hebrew();
   chapters.set(key, request);
   // A failure is not kept: the next call asks again.
   request.catch(() => {
@@ -303,7 +316,8 @@ export function loadChapter(book: string, n: number): Promise<Chapter> {
 
 /** Forgets a chapter's request still in flight, so the next loadChapter asks afresh (the Reader's Try again). */
 export function forgetChapter(book: string, n: number): void {
-  chapters.delete(`${book}/${n}`);
+  chapters.delete(keyOf(book, n, false));
+  chapters.delete(keyOf(book, n, true));
 }
 
 let index: Promise<BookIndex> | null = null;
@@ -335,4 +349,5 @@ export function forgetCanonIndex(): void {
 export function forgetChapters(): void {
   chapters.clear();
   index = null;
+  forgetLxxIndex();
 }

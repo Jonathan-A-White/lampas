@@ -473,8 +473,8 @@ Only `index.json` is precached, as before; an Old Testament chapter is fetched o
 ## The Septuagint data
 
 `scripts/data-build-lxx.ts` (`npm run data:build:lxx`, story mw-u2w5klk.10, the Septuagint epic's R2) writes **Swete's Greek Old Testament** into `public/data-lxx/` (not `public/data`: the tests that read every file of `public/data` as a chapter, and the worker's `/data/` route, are not widened).
-A book is written only when its annotation file exists (`data/lxx/annotations/<book>.tsv`, which `npm run lxx:release` writes only for a book above the bar, `docs/lxx-derivation.md`); the other books of Swete's file are skipped and named. **Nothing reads these files yet** (R3 and R4 open them in the Reader):
-`src/data/chapter.ts` carries the new keys with their docs, `pwa-precache.ts` and the offline copy do not name the folder, and the worker's `/data/` route does not match `/data-lxx/`.
+A book is written only when its annotation file exists (`data/lxx/annotations/<book>.tsv`, which `npm run lxx:release` writes only for a book above the bar, `docs/lxx-derivation.md`); the other books of Swete's file are skipped and named. **The Reader reads them** (R3, mw-u2w5klk.11) through `loadChapter` when Settings > Old Testament in Greek (Septuagint) is On (`src/data/lxxChapter.ts`: `loadLxxIndex` reads `index.json` once, `greekChapterOf` maps a Lampas chapter to its Greek chapter through `lampasChapters`, the first when there are several; a book the index lacks, or an index that cannot be fetched, is the Hebrew, and the Reader says so). The loaded chapter has `code` = Lampas's code and `chapter` = the Greek number.
+`pwa-precache.ts` and the offline copy do not name the folder, and the worker's `/data/` route does not match `/data-lxx/`: a Septuagint chapter is fetched from the network and not kept for offline (a follow-up). Tests read `tests/fixtures/data-lxx/` (`tests/support/chapter-fetch.ts` answers `/data-lxx/` from it before `public/data-lxx`).
 
 ### What a chapter holds
 

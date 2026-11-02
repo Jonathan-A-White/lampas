@@ -11,9 +11,39 @@ import type { Lookup } from '../WordSheet';
 import { READING_CLASS, textClass } from './textClass';
 import { VerseNumber, VerseText, type VerseProps } from './VerseText';
 import { isOrdered, rowAttrs } from './sourceText';
+import { englishOfVerse, septuagintNumber } from './septuagint';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { ChosenUnit } from './chosenReading';
 import type { ShownUnit } from './variants';
+
+/** The number of a verse of a Septuagint chapter (`septuagint` is the Greek chapter's number): Lampas's verse, and the Greek chapter and verse in small beside it where they differ ('1 (22:1)'). */
+function ShownNumber({ verse, septuagint }: { verse: Verse; septuagint?: number }) {
+  if (septuagint === undefined) return <>{verse.n}</>;
+  const { shown, greek } = septuagintNumber(verse, septuagint);
+  return (
+    <>
+      {shown}
+      {greek ? (
+        <>
+          {' '}
+          <span data-greek-number className="text-xs font-medium">
+            ({greek})
+          </span>
+        </>
+      ) : null}
+    </>
+  );
+}
+
+/** Brenton's English of a verse of a Septuagint chapter, under its Greek (the source view draws the Greek words, the English view draws this chunk in their place). */
+function EnglishUnder({ verse }: { verse: Verse }) {
+  const text = englishOfVerse(verse);
+  return text ? (
+    <span data-lxx-english lang="en" dir="ltr" className="block pb-1 font-sans text-base font-normal leading-snug text-muted">
+      {text}
+    </span>
+  ) : null;
+}
 
 /** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
 export function VerseLine(props: VerseProps) {
@@ -35,9 +65,10 @@ export function VerseLine(props: VerseProps) {
         onCopy={onCopy}
         className="inline-block min-h-(--lp-tap) min-w-(--lp-tap) pe-1 text-start align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted"
       >
-        {verse.n}
+        <ShownNumber verse={verse} septuagint={props.septuagint} />
       </VerseNumber>
       <VerseText {...props} />
+      {props.septuagint !== undefined && view === 'greek' ? <EnglishUnder verse={verse} /> : null}
       <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
     </p>
   );
@@ -46,8 +77,10 @@ export function VerseLine(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-export function ParagraphView({ verses, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay, onLook, variantsOf, chosenOf, onVariant, onRp }: {
+export function ParagraphView({ verses, view, source = 'grc', septuagint, woven, selected, reading, onSelect, onCopy, onPlay, onLook, variantsOf, chosenOf, onVariant, onRp }: {
   verses: Verse[];
+  /** the chapter is Swete's Septuagint: this is the Greek chapter's number (VerseProps.septuagint) */
+  septuagint?: number;
   view: ReaderView;
   source?: SourceLanguage;
   woven: (WovenVerse | null)[];
@@ -77,9 +110,12 @@ export function ParagraphView({ verses, view, source = 'grc', woven, selected, r
             onCopy={onCopy ? () => onCopy(verse.n) : undefined}
             className="-mx-3 inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)"
           >
-            <sup className="text-xs font-semibold text-muted">{verse.n}</sup>
+            <sup className="text-xs font-semibold text-muted">
+              <ShownNumber verse={verse} septuagint={septuagint} />
+            </sup>
           </VerseNumber>
           <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} />
+          {septuagint !== undefined && view === 'greek' ? <EnglishUnder verse={verse} /> : null}
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}

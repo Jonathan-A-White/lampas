@@ -2,10 +2,10 @@
 // name (never a bare number), and the line under the buttons says what the chosen step means. Choosing one writes the setting, which moves the dial
 // (src/data/repositories/greekInterest.ts). Step 0 is never drawn: 'Which languages?' above is how a language is left off, and the dial's row hides with it.
 import { levelsOf, type InterestLang } from '../definitions/interest';
-import { greekInterestSetting, hebrewInterestSetting } from '../definitions';
+import { greekInterestSetting, hebrewInterestSetting, septuagintSetting } from '../definitions';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
-import { SettingRow } from './SettingRow';
+import { OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 function InterestControl({ language, ...props }: Parameters<Control>[0] & { language: InterestLang }) {
@@ -46,3 +46,14 @@ function InterestControl({ language, ...props }: Parameters<Control>[0] & { lang
 
 export const GreekInterestControl: Control = (props) => <InterestControl language="grc" {...props} />;
 export const HebrewInterestControl: Control = (props) => <InterestControl language="hbo" {...props} />;
+
+/** The Old Testament in Greek (Septuagint), under the Greek dial: On | Off. */
+export const SeptuagintControl: Control = ({ row }) => {
+  const on = useSetting(septuagintSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {on ? <OnOff name={row.label} current={on} settingKey="septuagint" /> : null}
+    </SettingRow>
+  );
+};
