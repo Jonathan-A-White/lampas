@@ -84,6 +84,8 @@ A tap opens the teach sheet (`src/TeachSheet.tsx`, dialog 'New word') on the fir
 
 - the lemma large with a speaker, its respelling (`testid teach-translit`), its meaning, the picture if it has one, and the parsing of its
   first occurrence in plain words;
+- under the gloss, **An English cousin** (`src/WordCognate.tsx`, mw-5r3p30.988) for a word that has one in `src/data/cognates.ts` ('perimeter (περι-): the distance around' for περί): written in advance, only where the English word really comes
+  from the Greek, nothing for the rest and nothing when the app's language is not English (the word sheet carries the same row);
 - its easiest verse (`easiestVerse`), woven by `weaveForTeaching` (`src/data/weave.ts`): his solid words and the new word in Greek, the new
   word's chunk marked (`[data-new]`) with its English in small grey beneath (`[data-hint]`); the verse number ('Romans 8:9') scrolls the
   Reader to that verse and closes the sheet;
