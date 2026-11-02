@@ -217,13 +217,22 @@ export function opensClause(words: ReadonlyArray<Pick<SweteWord, 'verse' | 'disp
 }
 
 /**
- * A word still without a candidate that is written with a capital, does not open a verse or a clause and ends as a Hebrew name does (formNameLemma) takes its form as
+ * Whether word `i` is a whole clause of its own: it opens a verse or a clause (opensClause) and its own print ends one (a full stop, a colon, the high point). Swete
+ * capitalises the first word of a clause whatever it is, but a word that is all of its sentence is not a Greek clause's opening: in Lamentations it is a letter name of the
+ * acrostic (`Βήθ. Κλαίουσα ἔκλαυσεν`, Lam 1:2; 62 of Lamentations' words, 49 of them with an ending a Hebrew name has) and elsewhere a name set apart (story mw-u2w5klk.20).
+ */
+export function isWholeClause(words: ReadonlyArray<Pick<SweteWord, 'verse' | 'display'>>, i: number): boolean {
+  return opensClause(words, i) && ENDS_CLAUSE.test(words[i].display.normalize('NFC').trim());
+}
+
+/**
+ * A word still without a candidate that is written with a capital, does not open a verse or a clause (unless it is all of its clause: isWholeClause) and ends as a Hebrew name does (formNameLemma) takes its form as
  * its lemma, in every case of every gender, support `form`, and is pending with the note NOTE_FORM_NAME: a reading from the form alone, no lexicon's, for the agreement
  * check or the model. Every other word is as layers 1 and 2 left it.
  */
 function withFormNames(words: readonly SweteWord[], outs: ReadonlyArray<DerivedWord | PendingWord>): Array<DerivedWord | PendingWord> {
   return outs.map((out, i) => {
-    if (isDerived(out) || out.candidates.length > 0 || opensClause(words, i)) return out;
+    if (isDerived(out) || out.candidates.length > 0 || (opensClause(words, i) && !isWholeClause(words, i))) return out;
     const lemma = formNameLemma(words[i].form);
     if (!lemma) return out;
     const via = ['a name no lexicon has: the form itself as the lemma (an ending a Hebrew name has, no reading of the New Testament or of TBESG)'];

@@ -437,3 +437,36 @@ describe('docs/lxx-derivation.md says the bar', () => {
     expect(block).toMatch(/SHIPPABLE|NOT/);
   });
 });
+
+// The Governor's answer of 2026-11-02, "A: Count only words with no candidate" (story mw-u2w5klk.20, B9; decision card direct:cca660c0...7d2a on mw-u2w5klk): the bar's guesses
+// are the words a model had to guess: one with no candidate, one outside the candidates, one it marked a guess. A word read from its own form (candidate support `form`,
+// derive.ts withFormNames) that a model chooses among is a reading, however little a lexicon vouches for it, and does not count.
+describe('the bar counts only the words with no candidate, or marked a guess: not a choice among form candidates (B9)', () => {
+  const formName = (ref: string): PendingWord => ({
+    ref,
+    notes: ['a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model'],
+    candidates: ['N-NSF', 'N-GSF', 'N-DSF'].map((morph) => ({ lemma: 'Βήθ', morph, support: 0, share: 0, via: ['a name no lexicon has'], source: 'form' as const })),
+  });
+  const none = (ref: string): PendingWord => ({ ref, notes: ['no candidate: for the model to guess'], candidates: [] });
+
+  it('does not count a choice among form candidates, even an unsure one, and counts one on a word with no candidates or one marked a guess', () => {
+    const words = [formName('Tst.1:1#1'), formName('Tst.1:1#2'), formName('Tst.1:1#3'), none('Tst.1:1#4'), none('Tst.1:1#5')];
+    const choices = readChoices(
+      ['Tst.1:1#1\tN-NSF\tΒήθ', 'Tst.1:1#2\tN-GSF\tΒήθ\tunsure', 'Tst.1:1#3\tN-DSF\tΒήθ\tguess', 'Tst.1:1#4\tN-NSF\tΒήθ', 'Tst.1:1#5\tN-NSF\tΒήθ\tguess'].join('\n'),
+    );
+    const { chosen, left } = applyChoices(words, choices);
+    expect(left).toEqual([]);
+    const byRef = (ref: string) => chosen.find((w) => w.ref === ref)!;
+    expect(isGuess(byRef('Tst.1:1#1'))).toBe(false);
+    expect(isGuess(byRef('Tst.1:1#2'))).toBe(false);
+    expect(byRef('Tst.1:1#1').notes.some((n) => n.startsWith('guess:'))).toBe(false);
+    // a form candidate the model marks a guess is one; so is a word with no candidate at all
+    expect(isGuess(byRef('Tst.1:1#3'))).toBe(true);
+    expect(isGuess(byRef('Tst.1:1#4'))).toBe(true);
+    expect(isGuess(byRef('Tst.1:1#5'))).toBe(true);
+    // the bar's figure is the count of isGuess: 3 of the 5, not 5
+    expect(chosen.filter(isGuess)).toHaveLength(3);
+    expect(verdict({ words: 100, pending: 0, guesses: chosen.filter(isGuess).length, breaks: 0 }, []).shippable).toBe(true);
+    expect(verdict({ words: 100, pending: 0, guesses: chosen.length, breaks: 0 }, []).shippable).toBe(false);
+  });
+});

@@ -53,6 +53,13 @@ export function spellings(form: string): Array<[string, string]> {
   return out;
 }
 
+/**
+ * A verse number the editor prints in the Greek of the additions (`[1]`, `⸂[1]`: Esther's, Daniel's, Proverbs' and others, 257 tokens in Swete's file): his own numbering of the
+ * verse's parts, not a word of the Septuagint. It is an editor's sign, left out of the words and counted with the signs (story mw-u2w5klk.20), where it was a word with no
+ * candidate that no lexicon could have (106 of Esther's 181). A Greek numeral (`ε᾽`) is a word, and has no brackets and no digits.
+ */
+export const VERSE_NUMBER = /^[\u2E00-\u2E7F]*\[\d+\]$/;
+
 export interface SweteWord {
   /** 'Gen.1:20#13': the verse and the word's number in it, counting words and not the editor's signs */
   ref: string;
@@ -111,7 +118,7 @@ export function sweteTokens(versification: string, wordFile: string, book?: stri
       const raw = lines.get(n);
       if (!raw) continue;
       const form = raw.replace(PUNCT, '');
-      if (!form) {
+      if (!form || VERSE_NUMBER.test(raw)) {
         signs.push({ verse: start.ref, line: n, sign: raw });
         continue;
       }
