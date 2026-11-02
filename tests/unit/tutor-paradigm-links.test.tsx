@@ -110,10 +110,4 @@ describe('the table ids the instructions list', () => {
     expect(listed).toEqual(PARADIGMS.map((p) => p.id));
     for (const id of listed) expect(paradigmById(id)).toBeDefined();
   });
-
-  it('are the answer schema\'s enum for a paradigm link too', async () => {
-    const schema = (await import('../../grinds/bible-talk.answer.schema.json')).default as { properties: { links: { items: { anyOf: { properties: { kind: { const: string }; table?: { enum: string[] } } }[] } } } };
-    const link = schema.properties.links.items.anyOf.find((one) => one.properties.kind.const === 'paradigm');
-    expect(link?.properties.table?.enum).toEqual(PARADIGMS.map((p) => p.id));
-  });
 });

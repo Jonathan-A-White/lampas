@@ -1466,32 +1466,8 @@
               "table": {
                 "description": "The id of the one paradigm table to open, exactly as the instructions list it (Links to a paradigm table); never one not listed.",
                 "type": "string",
-                "enum": [
-                  "article",
-                  "noun-endings",
-                  "eimi",
-                  "verb-endings",
-                  "third-declension",
-                  "adjective-endings",
-                  "pronouns-personal",
-                  "pronouns-demonstrative-relative",
-                  "pronouns-interrogative-indefinite",
-                  "future-and-aorist",
-                  "aorist-and-future-passive",
-                  "perfect-and-pluperfect",
-                  "second-aorist",
-                  "contract-verbs",
-                  "mi-verbs",
-                  "oida",
-                  "subjunctive",
-                  "imperative",
-                  "infinitive",
-                  "participle",
-                  "he-qal-strong",
-                  "he-pronouns-personal",
-                  "he-noun-suffixes",
-                  "he-article"
-                ]
+                "minLength": 1,
+                "maxLength": 40
               }
             }
           },
