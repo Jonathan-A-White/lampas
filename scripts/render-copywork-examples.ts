@@ -4,7 +4,7 @@
 //   npx tsx scripts/render-copywork-examples.ts --check  # draw them to a temp dir and fail if one differs from the committed page
 //
 // A page is the example's request.words written out by hand-ish: the repo's own fonts (Literata, Gentium Plus, Noto Serif Hebrew) on
-// ruled paper, each word nudged off the line by a fixed pseudo-random amount, drawn at the width the phone sends (TALK_MAX_EDGE, 1600 px
+// ruled paper (the rule runs below the vowel points, not through them), each word nudged off the line by a fixed pseudo-random amount, drawn at the width the phone sends (TALK_MAX_EDGE, 1600 px
 // on the long edge) with type big enough that a vowel point is a blob of 8 px or more, as it is when a page is photographed to fill the
 // frame. A page that holds a mistake says which in PAGES below (the words are replaced or left out); the example's `expect` holds the rest.
 // Running it twice gives the same bytes.
@@ -83,7 +83,7 @@ export function pageHtml(name: string, words: string[], spec: PageSpec): string 
 ${faces}
 html,body{margin:0;background:#fbf5e6}
 #page{box-sizing:border-box;width:${TALK_MAX_EDGE}px;height:${HEIGHT}px;padding:${TOP}px 90px 0;overflow:hidden;
-  background:repeating-linear-gradient(to bottom,transparent 0,transparent ${LINE - 3}px,#a9c4de ${LINE - 3}px,#a9c4de ${LINE}px);background-position:0 ${TOP - 40}px;
+  background:repeating-linear-gradient(to bottom,transparent 0,transparent ${LINE - 3}px,#a9c4de ${LINE - 3}px,#a9c4de ${LINE}px);background-position:0 ${TOP - 12}px;
   font-family:'${font.family}',serif;font-size:${font.size}px;color:#1e2a8c;line-height:${LINE}px;font-kerning:normal}
 #text{display:block}
 #text span{display:inline-block;white-space:nowrap;line-height:${LINE}px;height:${LINE}px;vertical-align:top}
