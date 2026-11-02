@@ -116,6 +116,14 @@ describeFeature(feature, ({ Scenario }) => {
     expect(within(footEl()).getByRole('button', { name: label, exact: true })).toHaveTextContent(label);
     expect(holdBars()).toHaveLength(0);
   };
+  const footIsStop = () => {
+    expect(within(footEl()).getAllByRole('button').map((b) => b.textContent)).toEqual(['Stop']);
+    expect(holdBars()).toHaveLength(0);
+  };
+  const tapFootStop = async () => {
+    await user.click(within(footEl()).getByRole('button', { name: 'Stop', exact: true }));
+  };
+  const barGone = () => expect(screen.queryByRole('region', { name: 'Speaking' })).toBeNull();
   const readingVerse = async (_: unknown, n: number) => {
     await waitFor(() => expect(getReading().status).toBe('reading'));
     expect(getReading().verse).toBe(n);
@@ -155,10 +163,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', tapPlay);
     Then('the phone is reading verse {int} aloud', readingVerse);
     And('the speaking bar shows Pause, Restart and Stop', showsPlaying);
-    And('the Listen foot is gone', () => {
-      expect(footEl().children).toHaveLength(0);
-      expect(holdBars()).toHaveLength(0);
-    });
+    And('the Listen foot is now a Stop button and there is no hold bar', footIsStop);
     And('nothing says {string}', (_, text: string) => {
       expect(document.body.textContent).not.toContain(text);
       expect(document.querySelector(`[aria-label*="${text}"]`)).toBeNull();
@@ -205,6 +210,32 @@ describeFeature(feature, ({ Scenario }) => {
     And('the speaking bar shows Pause, Restart and Stop', showsPlaying);
     When('he taps Stop on the speaking bar', () => onBar('Stop'));
     Then('the phone has stopped reading', stopped);
+    And('the Listen foot says {string} and there is no hold bar', footSays);
+  });
+
+  Scenario('A cancel button for listening: Stop where Play was ends the reading and Play comes back', ({ Given, When, Then, And }) => {
+    Given(phone, () => open());
+    When('he taps the heading {string}', tapHeading);
+    And('he taps {string}', tapPlay);
+    Then('the phone is reading verse {int} aloud', readingVerse);
+    And('the Listen foot is now a Stop button and there is no hold bar', footIsStop);
+    When('he taps Stop on the Listen foot', tapFootStop);
+    Then('the phone has stopped reading', stopped);
+    And('the speaking bar is gone', barGone);
+    And('the Listen foot says {string} and there is no hold bar', footSays);
+  });
+
+  Scenario('The cancel button is there for a single verse too, and while it is paused', ({ Given, When, Then, And }) => {
+    Given(phone, () => open());
+    When('he taps the number of verse {int}', tapNumber);
+    And('he taps {string}', tapPlay);
+    Then('the phone is reading verse {int} aloud', readingVerse);
+    And('the Listen foot is now a Stop button and there is no hold bar', footIsStop);
+    When('he taps Pause on the speaking bar', () => onBar('Pause'));
+    Then('the Listen foot is now a Stop button and there is no hold bar', footIsStop);
+    When('he taps Stop on the Listen foot', tapFootStop);
+    Then('the phone has stopped reading', stopped);
+    And('the speaking bar is gone', barGone);
     And('the Listen foot says {string} and there is no hold bar', footSays);
   });
 

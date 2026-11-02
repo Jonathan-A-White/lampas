@@ -40,6 +40,8 @@ import { SHORT_BAR } from './ui/barClass';
 import { focusOnMount } from './ui/focus';
 import { useNarrow } from './ui/useNarrow';
 import { Icon as PlayIcon } from './speech/ReadControls';
+import { stopReading } from './speech/readAloud';
+import { oneTap } from './ui/settle';
 import { LinkActions } from './ui/LinkActions';
 import { COPY_DEFAULTS, copyLink, copyText, copyUnitOf } from './copy/format';
 import { useCopyFormat } from './copy/useCopyFormat';
@@ -353,11 +355,26 @@ export function VerseView(props: VerseViewProps) {
             // Not a hold: a tap starts it and it runs on by itself. Same size and place as the hold bars.
             <button
               type="button"
-              onClick={listen.onPlay}
+              onClick={() => oneTap('listen-play-stop', listen.onPlay)}
               className={`mx-auto flex h-24 w-full max-w-xl select-none flex-col items-center justify-center gap-1 rounded-3xl bg-accent chrome-text font-semibold text-accent-fg ${SHORT_BAR}`}
             >
               <PlayIcon kind="play" />
               <span>{listen.again ? 'Play again' : `Play ${name}`}</span>
+            </button>,
+            slot,
+          )
+        ) : null}
+        {slot && action === 'listen' && listen.playing ? (
+          createPortal(
+            // The Play button stays where it was, now plainly Stop (a cancel for the listening): one tap ends the reading and the speaking bar goes. The bar keeps its own Stop. Play and Stop share a oneTap key: the second tap of a double tap on Play must not stop it.
+            <button
+              type="button"
+              data-listen-stop
+              onClick={() => oneTap('listen-play-stop', stopReading)}
+              className={`mx-auto flex h-24 w-full max-w-xl select-none flex-col items-center justify-center gap-1 rounded-3xl bg-accent chrome-text font-semibold text-accent-fg ${SHORT_BAR}`}
+            >
+              <PlayIcon kind="stop" />
+              <span>Stop</span>
             </button>,
             slot,
           )

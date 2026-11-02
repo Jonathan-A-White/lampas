@@ -45,9 +45,9 @@ async function keep(page: Page, values: Record<string, string>) {
 }
 
 /** A licensed phone with a fast reader, open on 2 John 1 in the English view with these settings. */
-async function start(page: Page, settings: Record<string, string> = {}) {
+async function start(page: Page, settings: Record<string, string> = {}, msPerWord = 5) {
   await openUnlocked(page);
-  await honestSpeech(page, { msPerWord: 5 });
+  await honestSpeech(page, { msPerWord });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await keep(page, { immersiveHint: 'off', ...settings });
@@ -126,3 +126,32 @@ test('the place line: its chapter view plays that chapter only, even with End of
   await over(page);
   expect(await said(page)).toBe(englishOf(JOHN2));
 });
+
+// A cancel button for listening (mw-5r3p30.950): while a Listen plays, the Verse view's Play is a plain Stop in the same place; one tap ends it.
+for (const [name, open, play] of [
+  ['a verse', async (page: Page) => page.locator('[data-verse="5"]').getByRole('button', { name: 'Verse 5' }).click(), 'Play verse 5'],
+  ['a section from its heading', async (page: Page) => page.getByRole('button', { name: 'Beware of Deceivers', exact: true }).click(), 'Play verses 7-11'],
+] as const) {
+  test(`Listen to ${name}: Play becomes Stop where it was, one tap ends it, the bar goes and Play returns`, async ({ page }) => {
+    await start(page, {}, 400);
+    await open(page);
+    const view = page.getByRole('region', { name: 'Verse view' });
+    const foot = view.locator('[data-verse-bar]');
+    const playButton = foot.getByRole('button', { name: play, exact: true });
+    const before = await playButton.boundingBox();
+    await playButton.click();
+    const bar = page.getByRole('region', { name: 'Speaking', exact: true });
+    await expect(bar.getByRole('button')).toHaveText(['Pause', 'Restart', 'Stop']);
+    const stop = foot.getByRole('button', { name: 'Stop', exact: true });
+    await expect(stop).toBeVisible();
+    await expect(stop).toHaveText('Stop');
+    const after = await stop.boundingBox();
+    expect(after && before && Math.abs(after.y - before.y) < 1 && Math.abs(after.height - before.height) < 1).toBe(true);
+    await shot(page, 'listen-stop');
+    await stop.click();
+    await expect(bar).toHaveCount(0);
+    await over(page);
+    await expect(foot.getByRole('button', { name: play, exact: true })).toBeVisible();
+    await expect(foot.getByRole('button', { name: 'Stop', exact: true })).toHaveCount(0);
+  });
+}
