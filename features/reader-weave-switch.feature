@@ -89,6 +89,15 @@ Feature: The Reader's switch is English | Weave | Greek
     When he switches in turn to "Hebrew", "Weave" and "English"
     Then verse 20 was at the top of the reading box after each
 
+  # mw-9ji6ek0.45: Variants turned on or off brings the braces into the text and takes them out, and the verse on top stays on top.
+  Scenario: Turning Variants on and off keeps the verse that is on top
+    Given Lampas is opened with nothing saved
+    And he sets Weave to Solid words
+    And the Reader lays each mode out at a height of its own
+    And he has scrolled so verse 5 is the first verse at the top
+    When he turns Variants on, off and on again with its chip
+    Then verse 5 was at the top of the reading box after each
+
   Scenario: Switching the mode with the chapter at its top leaves it at its top
     Given Lampas is opened with nothing saved
     And he sets Weave to Solid words

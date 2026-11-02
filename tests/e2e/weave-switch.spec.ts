@@ -136,3 +136,133 @@ test('switching the mode keeps the verse that is on top, Acts 18', async ({ page
     if (label === 'Greek') await shot(page, 'weave-switch-place-greek');
   }
 });
+
+// Turning Variants on or off keeps the verse that is on top (mw-9ji6ek0.45): the braces come into the text and leave it, every line reflows, and the place is a verse, not a number of
+// pixels. His Romans 16, Variants On with the tail of verse 15 at the top went to verse 17 with Variants Off.
+test('turning Variants on and off keeps the verse that is on top, Romans 16, in English, Weave and Greek', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=rom&c=16&weave=solid');
+  await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
+  const chip = page.getByRole('button', { name: /^Variants,/ });
+  const firstVerse = () =>
+    page.evaluate(() => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      const top = box.getBoundingClientRect().top;
+      const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top - 1);
+      return Number(el?.dataset.verse);
+    });
+  const scrollTo = (verse: number) =>
+    page.evaluate((n) => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      const el = document.querySelector(`[data-verse="${n}"]`)!;
+      box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+    }, verse);
+  for (const label of ['English', 'Weave', 'Greek']) {
+    await choice(page, label).click();
+    await expect(choice(page, label)).toHaveAttribute('aria-pressed', 'true');
+    await page.evaluate(() => (document.querySelector<HTMLElement>('main[data-reader]')!.scrollTop = 0));
+    await scrollTo(15);
+    await expect.poll(firstVerse).toBe(15);
+    // Variants goes on, off, on: verse 15 is first at the top after each
+    for (const on of ['true', 'false', 'true']) {
+      await chip.click();
+      await expect(chip).toHaveAttribute('aria-pressed', on);
+      await expect.poll(firstVerse).toBe(15);
+    }
+    await shot(page, `weave-switch-variants-${label.toLowerCase()}`);
+    // leave Variants Off for the next view
+    await chip.click();
+    await expect(chip).toHaveAttribute('aria-pressed', 'false');
+  }
+});
+
+// At the chapter's top the heading stays in view when Variants is turned on or off, as it does for a switch of the mode (mw-5r3p30.863).
+test('turning Variants on at the top of the chapter leaves the heading in view', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=rom&c=16');
+  await expect(page.locator('[data-verse="1"] [data-text]')).toBeVisible();
+  const chip = page.getByRole('button', { name: /^Variants,/ });
+  for (const on of ['true', 'false']) {
+    await chip.click();
+    await expect(chip).toHaveAttribute('aria-pressed', on);
+    expect(await page.evaluate(() => document.querySelector<HTMLElement>('main[data-reader]')!.scrollTop)).toBe(0);
+  }
+});
+
+// Turn pages keeps its own anchor (src/reader/usePages.ts): Variants turned on or off re-cuts the pages, and the page he is on still holds the verse it began with, with no scrolling of the box.
+test('Turn pages keeps its own anchor when Variants is turned on and off', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.goto('/');
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction('settings', 'readwrite');
+          tx.objectStore('settings').put({ key: 'readingMode', value: 'pages' });
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+        };
+      }),
+  );
+  await page.goto('/#/?b=rom&c=16');
+  await page.reload();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', 'pages');
+  await expect(page.locator('[data-place-line]')).toHaveText(/Page 1 of \d+$/);
+  const chip = page.getByRole('button', { name: /^Variants,/ });
+  const scrollTop = () => page.evaluate(() => document.querySelector<HTMLElement>('main[data-reader]')!.scrollTop);
+  // the verses that begin inside the reading box as it stands: the page he is on
+  const onPage = () =>
+    page.evaluate(() => {
+      const b = document.querySelector<HTMLElement>('[data-reader]')!.getBoundingClientRect();
+      return Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-verse]'))
+        .filter((v) => {
+          const r = v.getClientRects()[0];
+          return r && r.left >= b.left - 1 && r.right <= b.right + 1;
+        })
+        .map((v) => Number(v.dataset.verse));
+    });
+  const first = (await onPage())[0];
+  for (const on of ['true', 'false']) {
+    await chip.click();
+    await expect(chip).toHaveAttribute('aria-pressed', on);
+    await expect.poll(async () => (await onPage()).includes(first)).toBe(true);
+    expect(await scrollTop()).toBe(0);
+  }
+});
+
+// The layout and the section headings reach an open Reader (a change by the tutor, or in Settings in another window) and lay every line again: the verse on top stays on top.
+test('the layout changed under an open Reader keeps the verse that is on top', async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=rom&c=16');
+  await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
+  await page.evaluate(() => {
+    const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+    const el = document.querySelector('[data-verse="12"]')!;
+    box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+  });
+  const firstVerse = () =>
+    page.evaluate(() => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      const top = box.getBoundingClientRect().top;
+      const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top - 1);
+      return Number(el?.dataset.verse);
+    });
+  await expect.poll(firstVerse).toBe(12);
+  const other = await context.newPage();
+  await other.goto('/#/settings?setting=layout');
+  await other.getByRole('button', { name: 'Paragraph', exact: true }).click();
+  await expect(page.locator('main[data-reader]')).toHaveAttribute('data-layout', 'paragraph');
+  await expect.poll(firstVerse).toBe(12);
+  await other.getByRole('button', { name: 'Verse by verse', exact: true }).click();
+  await expect(page.locator('main[data-reader]')).toHaveAttribute('data-layout', 'verse');
+  await expect.poll(firstVerse).toBe(12);
+});

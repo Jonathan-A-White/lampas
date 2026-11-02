@@ -178,6 +178,12 @@ export interface ReaderVariants {
   chosenByVerse: ReadonlyMap<number, readonly ChosenUnit[]>;
 }
 
+/** A string that changes when the text's lines change for want of the variants: Variants turned on or off, the filter showing more or fewer units, the reading set laying other readings in place
+ * (the Reader keeps the verse on top across it, src/reader/useKeepTopVerse.ts, mw-9ji6ek0.45). */
+export function variantsLayoutKey(v: Pick<ReaderVariants, 'on' | 'count' | 'chosenByVerse'>): string {
+  return `${v.on ? 'v' : '-'}${v.count}:${[...v.chosenByVerse.values()].flat().map((c) => `${c.key}=${c.index}`).join(',')}`;
+}
+
 /** The value a tap on the chip turns Variants on to: the last value it had before it was turned off, 'english' the first time. */
 export const onValue = (lastOn: Variants | null | undefined): Exclude<Variants, 'off'> => (lastOn === 'all' ? 'all' : 'english');
 

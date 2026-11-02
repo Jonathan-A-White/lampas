@@ -66,7 +66,7 @@ import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciati
 import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
 import { ReaderHeader } from './reader/ReaderHeader';
 import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
-import { useReaderVariants, type ShownUnit } from './reader/variants';
+import { useReaderVariants, variantsLayoutKey, type ShownUnit } from './reader/variants';
 import { VariantSheet } from './reader/VariantSheet';
 import { VariantKeyBar, VariantKeySheet } from './reader/VariantKey';
 import { VariantKeyContext } from './reader/variantKeyContext';
@@ -245,7 +245,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // Choose a book's Go to John 18:2: the chapter, with that verse brought to the top of the reading area (no Verse view)
   useBringVerse(main, inner, BOOK, CHAPTER, chapter, paging, showPage);
   // English, Weave and Greek (Hebrew) lay a verse out at different heights: the verse on top before a switch is on top after it (mw-5r3p30.863)
-  useKeepTopVerse(main, inner, view ? `${view}|${weave}|${weaveShown}|${weaveOrder}` : null, paging);
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   // the reading check follows the view; in an Old Testament chapter the Hebrew view is read in Hebrew (useReadChecks turns the source view into 'hebrew' by the book, mw-gdcyf98.14)
@@ -280,6 +279,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // the variant units Settings > Variants shows (mw-9ji6ek0.5): marked in the text with a brace after them, counted by the chip in the row under the header; the Immersive reader has the marks and braces too (mw-9ji6ek0.12), not the chip
   const variants = useReaderVariants(chapter);
   const variantsOf = useCallback((n: number) => variants.byVerse?.get(n), [variants]);
+  // the same for the layout and the section headings (the tutor changes them under an open Reader) and for Variants turned on or off, the filter, the reading set: the braces come into the text and leave it and every line reflows (mw-9ji6ek0.45); Turn pages keeps its own anchor
+  useKeepTopVerse(main, inner, view ? `${view}|${weave}|${weaveShown}|${weaveOrder}|${layout}|${headings}|${variantsLayoutKey(variants)}` : null, paging, `${BOOK}/${CHAPTER}`);
   // the reading set in force lays its readings into the text in place, with Variants Off too (src/reader/chosenReading.ts, mw-9ji6ek0.24)
   const chosenOf = useCallback((n: number) => variants.chosenByVerse.get(n), [variants]);
   // the unit whose brace he tapped: its sheet (src/reader/VariantSheet.tsx, mw-9ji6ek0.6)
