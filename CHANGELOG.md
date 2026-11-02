@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.82
+_2026-11-02_
+- Fixed: The verse you are reading stays at the top when a word you are learning gains or loses its small English line.
+- New: A Greek lesson now shows how a word is built from its parts, for example no one is "not even" plus "one", for the words where a lexicon says so.
+
 ## 0.7.81
 _2026-11-02_
 - Fixed: The round question-mark button now opens the tutor in front of Drill it on every question, instead of vanishing and opening it behind.

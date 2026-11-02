@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.82",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.994",
+    "kind": "fixed",
+    "text": "The verse you are reading stays at the top when a word you are learning gains or loses its small English line."
+  },
+  {
+    "version": "0.7.82",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.986",
+    "kind": "new",
+    "text": "A Greek lesson now shows how a word is built from its parts, for example no one is \"not even\" plus \"one\", for the words where a lexicon says so."
+  },
+  {
     "version": "0.7.81",
     "date": "2026-11-02",
     "story": "mw-5r3p30.985",
