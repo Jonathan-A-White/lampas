@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.69",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.953",
+    "kind": "fixed",
+    "text": "The round ? button no longer shows over a chapter list or a notes sheet that would hide the tutor behind it, so a tap is never wasted."
+  },
+  {
     "version": "0.7.68",
     "date": "2026-11-02",
     "story": "mw-5r3p30.950",

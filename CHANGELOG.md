@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.69
+_2026-11-02_
+- Fixed: The round ? button no longer shows over a chapter list or a notes sheet that would hide the tutor behind it, so a tap is never wasted.
+
 ## 0.7.68
 _2026-11-02_
 - New: While the Verse view reads aloud, the big Play button turns into a plain Stop button that ends the reading in one tap.
