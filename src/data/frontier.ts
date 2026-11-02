@@ -1,7 +1,7 @@
 // src/data/frontier.ts — the frontier picker (docs/frontier.md): the next new words of the chapter he is reading, and the
 // verse where each has the most solid words around it. Pure: the caller hands in the chapter, what he knows and the
 // word counts; nothing here reads the store or the network.
-import { type Chapter, type GreekWord, wordGloss, wordLemma } from './chapter';
+import { type Chapter, type GreekWord, isGuess, wordGloss, wordLemma } from './chapter';
 import type { FrequencyEntry } from './frequency';
 
 /** The lemmas (NFC, as listSolidLemmas gives them) he has in each state. A lemma in any of the three is not new. */
@@ -54,6 +54,8 @@ export function pickFrontier(
   const found = new Map<string, Found>();
   for (const verse of chapter.verses) {
     for (const word of verse.g) {
+      // a Septuagint word the derivation only guessed is not a dictionary form until it is checked (mw-u2w5klk.12): it is never offered to learn
+      if (isGuess(word)) continue;
       const lemma = lemmaOf(word);
       if (!lemma || known.solid.has(lemma) || known.learning.has(lemma) || known.dropped.has(lemma)) continue;
       const passes = formPasses ? formPasses(word) : true;
