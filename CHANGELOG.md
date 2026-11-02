@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.81
+_2026-11-02_
+- Fixed: The round question-mark button now opens the tutor in front of Drill it on every question, instead of vanishing and opening it behind.
+- Fixed: In Review, a "Tap the word" question you know well now has real word buttons instead of a flashcard you could not tap.
+
 ## 0.7.80
 _2026-11-02_
 - Fixed: the verse you are reading stays at the top when the tutor changes the text size, the font, the grammar for the weave or the immersive reader.

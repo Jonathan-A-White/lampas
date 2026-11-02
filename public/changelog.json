@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.81",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.985",
+    "kind": "fixed",
+    "text": "The round question-mark button now opens the tutor in front of Drill it on every question, instead of vanishing and opening it behind."
+  },
+  {
+    "version": "0.7.81",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.984",
+    "kind": "fixed",
+    "text": "In Review, a \"Tap the word\" question you know well now has real word buttons instead of a flashcard you could not tap."
+  },
+  {
     "version": "0.7.80",
     "date": "2026-11-02",
     "story": "mw-9ji6ek0.46",
