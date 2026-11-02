@@ -168,12 +168,13 @@ docs/research/audible-addon-seek.md # an add-on that seeks his Audible Bible
 docs/research/greek-speech-libraries.md # libraries for Greek sound
 docs/research/kjv-tr.md # the KJV and the Greek behind it as a text pair
 docs/research/logos-section-refs.md # grammar sections by a book's own Logos data type
-docs/research/logos-morph-charts.md # Logos's Morphology Charts at a lemma from a link
+docs/research/logos-morph-charts.md # Logos Morphology Charts
 docs/research/logos-factbook.md # Factbook at a proper name: link form, source
-docs/research/logos-exegetical-guide.md # the Exegetical Guide at a verse: link form, source
+docs/research/logos-exegetical-guide.md # the Exegetical Guide
 docs/research/letter-sounds.md # lone vowels and letter sounds on the phone
 docs/sources/latin-bible.md # Latin Bible sources: licences, word data, versification, audio
 docs/sources/tagnt.md # STEPBible's TAGNT: variant words' Strong's numbers and the guess
+docs/sources/msb-chunk-pairs.md # MSB '. . .' rows and the chunks they join
 docs/sources/public-domain-works.md # Spurgeon and other public-domain works: sources, terms, coverage
 docs/design/library-at-scale.md # the Logos library at scale, mockups, build plan
 docs/design/bible-talk-trim-map.md # the bible-talk rules before the 100,000-byte trim, where each lives
