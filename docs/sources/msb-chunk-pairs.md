@@ -3,6 +3,15 @@
 A report, not a change: no data was touched. Luke 20:20's English chunk 'to the' holds αὐτὸν τῇ while 'to hand Him over' holds παραδοῦναι alone
 (public/data/luk/20.json, verse 20, `e[12]` and `e[13]`). Is that the Majority Standard Bible's table as published, or our build?
 
+<!-- toc -->
+
+- [The row, as published](#the-row-as-published)
+- [Answer: both. The source says nothing wrong; our build reads the marker the wrong way for these words](#answer-both-the-source-says-nothing-wrong-our-build-reads-the-marker-the-wrong-way-for-these-words)
+- [The count (`node scripts/check-msb-chunk-pairs.ts [--list] [--tsv <msb_nt_tables.tsv>]`, run on this tree, 117,385 chunks)](#the-count-node-scriptscheck-msb-chunk-pairsts---list---tsv-msb_nt_tablestsv-run-on-this-tree-117385-chunks)
+- [What a fix would need (not done here: it changes data)](#what-a-fix-would-need-not-done-here-it-changes-data)
+
+<!-- /toc -->
+
 ## The row, as published
 
 `msb_nt_tables.tsv` (https://majoritybible.com/msb_nt_tables.tsv, fetched 2026-11-02), verse group 25800 / VerseId `Luke 20:20`, in English order, Greek word, parsing, the
