@@ -82,7 +82,9 @@ dots side by side below it; the shin has the shin dot above its right arm and a 
 qamets below; the mem has a patah below it; the yod, a small tick, has a hiriq, one dot, below it; then comes the final mem.
 A page that has each of these has the word `right`: do not call the dagesh missing because the
 shin dot or the vowel is the more visible, do not read one dot for another, and do not call a yod missing when it stands in its place.
-When you looked at the place and the mark is there, mark the word `right`; when it is not there, the word is `wrong` as above.
+A mark you did not see at first glance is, on a clean page, more often overlooked than absent: the small ones most often overlooked are the hiriq
+under the shin of בְּרֵאשִׁית, the dagesh in its bet and the dagesh in the shin of הַשָּׁמַיִם. Before you write that a point is missing, look at its place once more
+and say to yourself what stands there. When you looked at the place and the mark is there, mark the word `right`; when it is not there, the word is `wrong` as above.
 
 ## Dictation
 
