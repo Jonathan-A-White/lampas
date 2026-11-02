@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.66
+_2026-11-02_
+- New: A Hebrew passage lesson (Jonah 1:1-3) can be read and checked, and Hebrew lessons can read themselves to you.
+- Fixed: Drill it no longer asks the same question twice and calls an idea proved on it; if there are not enough different questions yet, it says more are on their way.
+- Fixed: the ? on a new word's card now takes you to the tutor about that word, instead of vanishing.
+- Fixed: the tutor no longer, now and then, offers to switch on a setting when you ask about an idea the makers answered another way.
+
 ## 0.7.65
 _2026-11-01_
 - New: Practise now has Summary: type the main points of a verse, passage or chapter, or photograph your handwriting, and the tutor says which main points you gave and which you left out, whether they came in order, whether the length is right, and shows a model summary.

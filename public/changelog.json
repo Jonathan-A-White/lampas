@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.66",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.911",
+    "kind": "new",
+    "text": "A Hebrew passage lesson (Jonah 1:1-3) can be read and checked, and Hebrew lessons can read themselves to you."
+  },
+  {
+    "version": "0.7.66",
+    "date": "2026-11-02",
+    "story": "mw-indx1x6.5",
+    "kind": "fixed",
+    "text": "Drill it no longer asks the same question twice and calls an idea proved on it; if there are not enough different questions yet, it says more are on their way."
+  },
+  {
+    "version": "0.7.66",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.949",
+    "kind": "fixed",
+    "text": "the ? on a new word's card now takes you to the tutor about that word, instead of vanishing."
+  },
+  {
+    "version": "0.7.66",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.951",
+    "kind": "fixed",
+    "text": "the tutor no longer, now and then, offers to switch on a setting when you ask about an idea the makers answered another way."
+  },
+  {
     "version": "0.7.65",
     "date": "2026-11-01",
     "story": "mw-5r3p30.902",
