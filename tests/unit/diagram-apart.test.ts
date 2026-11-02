@@ -24,13 +24,14 @@ const nested: Diagram = {
     verb: { words: [{ i: 4 }], modifiers: [] },
   } }],
 };
+const mainClause = {
+  subject: { words: [{ i: 1 }], modifiers: [
+    { kind: 'word', word: { i: 0 }, modifiers: [] },
+    { kind: 'clause', connector: { i: 2 }, apart: 0 }] },
+  verb: { words: [{ i: 4 }], modifiers: [] },
+};
 const wire: WireDiagram = {
-  clauses: [{ clause: {
-    subject: { words: [{ i: 1 }], modifiers: [
-      { kind: 'word', word: { i: 0 }, modifiers: [] },
-      { kind: 'clause', connector: { i: 2 }, apart: 0 }] },
-    verb: { words: [{ i: 4 }], modifiers: [] },
-  } }],
+  clauses: [{ clause: mainClause }],
   apart: [{ subject: { words: [{ implied: 'who' }], modifiers: [] }, verb: { words: [{ i: 3 }], modifiers: [] } }],
 };
 const faultsOf = (answer: WireDiagram) => expandApart(answer).faults.map((f) => f.kind);
@@ -64,15 +65,15 @@ describe('expandApart', () => {
 
   it.each([
     ['a place that is not in the list', { ...wire, apart: [] }],
-    ['a place that is not a whole number', { ...wire, apart: undefined, clauses: [{ clause: { ...wire.clauses[0].clause, subject: { words: [{ i: 1 }], modifiers: [{ kind: 'clause', apart: 'a' }] } } }] }],
+    ['a place that is not a whole number', { ...wire, apart: undefined, clauses: [{ clause: { ...mainClause, subject: { words: [{ i: 1 }], modifiers: [{ kind: 'clause', apart: 'a' }] } } }] }],
     ['a clause held and never placed', { ...wire, apart: [...(wire.apart ?? []), { subject: { words: [{ i: 5 }], modifiers: [] }, verb: { words: [{ i: 6 }], modifiers: [] } }] }],
-    ['a clause modifier with neither a clause nor a place', { ...wire, apart: undefined, clauses: [{ clause: { ...wire.clauses[0].clause, subject: { words: [{ i: 1 }], modifiers: [{ kind: 'clause' }] } } }] }],
+    ['a clause modifier with neither a clause nor a place', { ...wire, apart: undefined, clauses: [{ clause: { ...mainClause, subject: { words: [{ i: 1 }], modifiers: [{ kind: 'clause' }] } } }] }],
   ] as [string, WireDiagram][])('names %s as a fault', (_name, answer) => {
     expect(faultsOf(answer)).toEqual(['bad-apart']);
   });
 
   it('names a clause placed twice, and one placed inside itself', () => {
-    const twice: WireDiagram = { ...wire, clauses: [...wire.clauses, wire.clauses[0]] };
+    const twice: WireDiagram = { ...wire, clauses: [...wire.clauses, ...wire.clauses] };
     expect(faultsOf(twice)).toEqual(['bad-apart']);
     const inside: WireDiagram = { clauses: wire.clauses, apart: [{ subject: { words: [{ i: 3 }], modifiers: [{ kind: 'clause', apart: 0 }] }, verb: { words: [{ i: 4 }], modifiers: [] } }] };
     expect(faultsOf(inside)).toEqual(['bad-apart']);
@@ -111,8 +112,7 @@ describe('fetchDiagram with a clause held apart', () => {
       const o = node as Record<string, unknown>;
       if (o.kind === 'clause' && apart.length === 0) {
         apart.push(o.clause);
-        const { clause: _clause, ...rest } = o;
-        return { ...rest, apart: 0 };
+        return { kind: o.kind, ...(o.connector ? { connector: o.connector } : {}), apart: 0 };
       }
       return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, move(v)]));
     };

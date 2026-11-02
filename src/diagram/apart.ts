@@ -6,7 +6,10 @@ import type { Diagram } from './types';
 import type { Fault } from './validate';
 
 /** What the tutor answers: a Diagram, whose clause modifiers may name a clause held in `apart` rather than carry it. */
-export type WireDiagram = Diagram & { apart?: unknown[] };
+export interface WireDiagram {
+  clauses: unknown[];
+  apart?: unknown[];
+}
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
