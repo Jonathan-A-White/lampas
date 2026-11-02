@@ -19,6 +19,7 @@ import { GREEK_LANG, greekLang } from './script/greekLang';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 import { DrillReference } from './markdown/DrillReference';
 import { useDoorRoom } from './tutor/doorRoom';
+import { QuestionParts } from './WordParts';
 
 const LOOK = {
   idle: 'border-line bg-surface',
@@ -158,6 +159,7 @@ function Flash({ question, picked, onPick, onSeeTable }: Omit<Props, 'mode'>) {
       <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">
         {!graded ? '' : picked === KNEW_IT ? 'Right.' : 'It comes back tomorrow.'}
       </p>
+      {graded ? <QuestionParts question={question} className="mt-2" /> : null}
       {graded ? <SeeTable question={question} onSeeTable={onSeeTable} /> : null}
     </>
   );
@@ -222,6 +224,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
       <p data-testid="feedback" role="status" className={`mt-4 text-center text-lg ${sideBySide ? 'min-h-12 short:mt-1 short:min-h-8' : 'min-h-12'}`}>
         {!answered ? '' : picked === question.right ? (hint ? HINTED_RIGHT : 'Right.') : `Not quite. ${tapForm ? 'The word is' : 'It is'} ${answerOf(question)}.`}
       </p>
+      {answered ? <QuestionParts question={question} className="mt-2" /> : null}
       {answered ? <SeeTable question={question} onSeeTable={onSeeTable} /> : null}
       {answered && picked !== question.right && question.rule ? (
         <p data-testid="rule-line" className="mt-1 text-center text-base">
@@ -316,6 +319,7 @@ function Parse({ question, picked, onPick, onStep }: Pick<Props, 'question' | 'p
           {question.right}
         </p>
       ) : null}
+      {answered ? <QuestionParts question={question} className="mt-2" /> : null}
     </>
   );
 }

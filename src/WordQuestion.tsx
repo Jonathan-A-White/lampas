@@ -9,6 +9,7 @@ import { WordPicture } from './WordPicture';
 import { faceOf, GREEK_LANG } from './script/greekLang';
 import { DrillReference } from './markdown/DrillReference';
 import { HeartOfWord } from './HeartOfWord';
+import { WordParts } from './WordParts';
 import type { Grade } from './data/schedule';
 import { WORD_GRADES } from './review/kinds';
 import { WordGrades } from './ui/SelfGrade';
@@ -102,6 +103,8 @@ export function WordQuestion({ question, index, picked, onPick, onGrade, grade =
       <p data-testid="feedback" className="mt-4 min-h-12 text-center text-lg">
         {feedback}
       </p>
+      {/* after the answer, right or wrong, the parts the word is built from: never before, they would give the meaning away (mw-5r3p30.987) */}
+      {answered && question.lang !== 'hbo' ? <WordParts word={question.lemma} className="text-center" /> : null}
       {right && onGrade ? (
         <WordGrades
           picked={grade === null ? null : (WORD_GRADES.find((g) => g.grade === grade)?.label ?? null)}

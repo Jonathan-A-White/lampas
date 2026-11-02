@@ -9,6 +9,7 @@ import { TapToHear } from './TapToHear';
 import { WordPicture } from './WordPicture';
 import { faceOf } from './script/greekLang';
 import { HeartOfWord } from './HeartOfWord';
+import { WordParts } from './WordParts';
 
 interface Props {
   question: Question;
@@ -42,6 +43,8 @@ export function Flashcard({ question, picked, onPick }: Props) {
       <p data-testid="feedback" role="status" className="mt-4 min-h-12 text-center text-lg">
         {!graded ? '' : missed ? 'It comes back tomorrow.' : 'Right.'}
       </p>
+      {/* once graded, right or wrong, the parts the word is built from: never before, they would give the meaning away (mw-5r3p30.987) */}
+      {graded && question.lang !== 'hbo' ? <WordParts word={question.lemma} className="text-center" /> : null}
       {/* Don't know shows the heart of the word under the answer (mw-bsf54t.14) */}
       {missed ? <HeartOfWord lemma={question.lemma} className="mt-2" /> : null}
     </>
