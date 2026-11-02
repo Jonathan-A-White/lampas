@@ -9,7 +9,7 @@
 // when both were answered right). Every choice is built by ../choices.ts, near misses first.
 // The words a step reads come from his passage first (mw-i7xe0n.8: the dictionary forms of the verses he holds, short and common first), the fixed lists
 // below only to fill what the passage lacks, and a drill reads a word once while another that fits exists (the rarest letters choose first).
-import type { Chapter } from '../chapter';
+import { isGuess, type Chapter } from '../chapter';
 import { LOOK_ALIKE_LETTERS, OPTION_COUNT, choicesOf, lookAlikesOf } from '../choices';
 import { mulberry32, type Random } from '../quiz';
 import { soundRuleOf, soundRulesOf, type Pronunciation, type SoundRule, type SoundRuleSide } from '../../speech/pronunciation';
@@ -230,10 +230,10 @@ interface WordNeed {
   fits: string[];
 }
 
-/** The lemmas of the passage, with no mark that makes a pair of letters two sounds (a diaeresis), short first, then common first. */
+/** The lemmas of the passage (a word only guessed, isGuess, does not lend its lemma: mw-5r3p30.963), with no mark that makes a pair of letters two sounds (a diaeresis), short first, then common first. */
 export function passageWords(passage: readonly Chapter[]): string[] {
   const count = new Map<string, number>();
-  for (const chapter of passage) for (const verse of chapter.verses) for (const word of verse.g) if (word.l) count.set(word.l, (count.get(word.l) ?? 0) + 1);
+  for (const chapter of passage) for (const verse of chapter.verses) for (const word of verse.g) if (word.l && !isGuess(word)) count.set(word.l, (count.get(word.l) ?? 0) + 1);
   return [...count.keys()]
     .filter((w) => !w.normalize('NFD').includes('\u0308'))
     .sort((a, b) => baseLetters(a).length - baseLetters(b).length || count.get(b)! - count.get(a)! || (a < b ? -1 : 1));

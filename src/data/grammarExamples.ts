@@ -1,6 +1,6 @@
 // src/data/grammarExamples.ts — the examples a Grammar sheet shows: words of the chapter whose parsing has the term. The chapter's own language decides which terms its parsings are cut
 // into: the Greek ones (GRAMMAR_TERMS) or, for a Hebrew chapter, the Hebrew parsing terms (hebrew/terms.ts, mw-gdcyf98.12).
-import { sourceLanguage, type Chapter, type GreekWord } from './chapter';
+import { isGuess, sourceLanguage, type Chapter, type GreekWord } from './chapter';
 import { hebrewParseSegments, parseSegments } from './parseCode';
 
 export interface GrammarExample {
@@ -13,7 +13,7 @@ export const MAX_EXAMPLES = 3;
 
 /** Up to `max` words of `chapter` whose parsing has `term`, one word for each lemma, in the order of the text. `term` is matched
  * as a whole term, so middle does not find 'middle or passive'. The lemma of `except` (the word he is looking at) is left out:
- * it is no example of itself. */
+ * it is no example of itself. A word the Septuagint derivation only guessed (isGuess) is no example of a term (mw-5r3p30.963). */
 export function grammarExamples(chapter: Chapter, term: string, except?: GreekWord, max = MAX_EXAMPLES): GrammarExample[] {
   const cut = sourceLanguage(chapter) === 'hbo' ? hebrewParseSegments : parseSegments;
   const has = new Map<string, boolean>();
@@ -30,7 +30,7 @@ export function grammarExamples(chapter: Chapter, term: string, except?: GreekWo
   for (const verse of chapter.verses) {
     for (const word of verse.g) {
       if (chosen.length >= max) return chosen;
-      if (!hasTerm(word.p) || lemmas.has(word.l)) continue;
+      if (isGuess(word) || !hasTerm(word.p) || lemmas.has(word.l)) continue;
       lemmas.add(word.l);
       chosen.push({ word, verse: verse.n });
     }
