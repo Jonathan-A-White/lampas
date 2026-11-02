@@ -4,6 +4,7 @@
 // It teaches the form (mw-86e9r1.56): each stroke has a numbered start point and an arrowhead along it, both drawn in the SVG and kept when the animation is
 // over, and StrokeLine is the plain line under the model that says how many strokes there are.
 import { variantsOf } from './glyphs';
+import { viewBoxOnLine } from './padFrame';
 import type { Variant } from './templates';
 import { strokeLineOf } from './writeText';
 
@@ -53,10 +54,12 @@ function alongOf(stroke: Variant[number], fraction: number): { x: number; y: num
 
 const pathOf = (stroke: Variant[number]): string => stroke.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(3)} ${y.toFixed(3)}`).join(' ');
 
-export function GlyphStrokes({ letter, animate = false, faint = false, className = '', testId }: {
+export function GlyphStrokes({ letter, animate = false, faint = false, line = false, className = '', testId }: {
   letter: string;
   animate?: boolean;
   faint?: boolean;
+  /** Draw it at the size and on the line of the writing pad it fills (padFrame.ts), so that tracing it is writing the letter where the checker looks for it, instead of fitted to its own box. */
+  line?: boolean;
   className?: string;
   testId?: string;
 }) {
@@ -69,7 +72,7 @@ export function GlyphStrokes({ letter, animate = false, faint = false, className
       data-testid={testId}
       data-letter={letter}
       data-animate={animate || undefined}
-      viewBox={viewBoxOf(variant)}
+      viewBox={line ? viewBoxOnLine(variant) : viewBoxOf(variant)}
       aria-hidden="true"
       className={`${className} ${faint ? 'text-muted' : 'text-accent'}`}
     >

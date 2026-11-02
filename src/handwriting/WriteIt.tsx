@@ -2,11 +2,11 @@
 // cannot yet read or write Greek. It shows the letter's name and sound, then by his stage (progression.ts): Trace, the letter faint under the pad with its
 // strokes drawn first; Copy, the letter beside the pad; From memory, only the name and sound. The letter's sound plays as he starts writing, so hand, eye and
 // ear meet. Clear, Check and Skip are the same size. Check asks the checker on the phone (recognizer.ts, nothing is sent), which judges which letter it is,
-// not neatness, size or slant: Right, or Close (a Greek letter drawn as its Latin look-alike, with one line that says where) or Not quite, with the right strokes drawn and Try again, never a score. The first card he ever meets says why he writes.
+// not neatness, size or slant (but a Hebrew card tells it where the line is, padFrame.ts, so a vav and a final nun differ by how far the stem reaches): Right, or Close (a Greek letter drawn as its Latin look-alike, with one line that says where) or Not quite, with the right strokes drawn and Try again, never a score. The first card he ever meets says why he writes.
 // A right check is kept (repositories/handwriting.ts recordWrite); a miss or a skip keeps nothing and costs nothing.
 // The card writes a Greek letter or a Hebrew one (target.ts, mw-5r3p30.913): the Hebrew letter is drawn in the Hebrew face, checked against the Hebrew letters only (no Latin look-alike line), and
 // its sound plays in the Hebrew voice.
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { GrammarIdea } from '../data/grammar/ladder';
 import { getWhySeen, getWriteProgress, markWhySeen, recordWrite } from '../data/repositories';
 import { speakSound, speakWord } from '../speech/greek';
@@ -15,6 +15,7 @@ import { GlyphStrokes, StrokeLine } from './GlyphStrokes';
 import type { WriteScript } from './glyphs';
 import { recognize, type InkStroke } from './recognizer';
 import { STAGES, STAGE_NAMES, type WriteProgress, type WriteStage } from './progression';
+import { frameOfPad } from './padFrame';
 import { writeTargetOf, type WriteForm } from './target';
 import { whyLinesOf, WRITE_PLAIN, WRITE_PRIMARY } from './writeText';
 import { WritingPad } from './WritingPad';
@@ -73,6 +74,7 @@ export function WriteIt({ idea, form, onSkip, onRight, afterRight }: {
   const [verdict, setVerdict] = useState<{ right: true; after: WriteProgress } | { right: false; hint: string } | null>(null);
   // a tap on 'Show the strokes' draws them again
   const [shown, setShown] = useState(0);
+  const pad = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let live = true;
@@ -91,7 +93,9 @@ export function WriteIt({ idea, form, onSkip, onRight, afterRight }: {
   const { stage } = progress;
 
   const check = (): void => {
-    const { match, hint } = recognize(strokes, glyph, { script: lang });
+    // Hebrew has vav and final nun, one stem told apart only by how far it reaches below the line: the pad says where the line is and how tall a letter is (Greek's ο and Ο are still taken for each other)
+    const frame = lang === 'hbo' ? frameOfPad(pad.current?.getBoundingClientRect().height ?? 0) : undefined;
+    const { match, hint } = recognize(strokes, glyph, { script: lang, ...frame });
     // a miss changes nothing kept: it is never counted against him
     if (!match) return setVerdict({ right: false, hint });
     void recordWrite(glyph, true)
@@ -106,7 +110,11 @@ export function WriteIt({ idea, form, onSkip, onRight, afterRight }: {
     setVerdict(null);
   };
 
-  const model = <GlyphStrokes key={shown} letter={glyph} animate faint={stage === 'trace'} testId="write-model" className="h-full max-h-full w-full" />;
+  // a Hebrew letter traced under the pad stands on the pad's line, where the check looks for it
+  const onLine = lang === 'hbo' && stage === 'trace';
+  const model = (
+    <GlyphStrokes key={shown} letter={glyph} animate faint={stage === 'trace'} line={onLine} testId="write-model" className={onLine ? 'absolute inset-0 h-full w-full' : 'h-full max-h-full w-full'} />
+  );
 
   return (
     <div data-testid="write-it" data-stage={stage} data-letter={glyph}>
@@ -130,6 +138,7 @@ export function WriteIt({ idea, form, onSkip, onRight, afterRight }: {
           ) : (
             <WritingPad
               strokes={strokes}
+              boxRef={pad}
               onChange={setStrokes}
               onStart={() => void (lang === 'hbo' ? speakWord(glyph, 'hebrew') : speakSound(glyph))}
               under={stage === 'trace' ? <div data-testid="write-under" className="h-full w-full">{model}</div> : undefined}
