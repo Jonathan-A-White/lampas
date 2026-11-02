@@ -3,7 +3,7 @@
 // an English imperative); so is an implied-only verb (an understood 'is'): an empty slot is one with no word of any kind.
 import type { Clause, Diagram, Modifier, Slot, TokenRef } from './types';
 
-export type FaultKind = 'out-of-range' | 'used-twice' | 'missing' | 'empty-subject' | 'empty-verb';
+export type FaultKind = 'out-of-range' | 'used-twice' | 'missing' | 'empty-subject' | 'empty-verb' | 'bad-apart';
 
 export interface Fault {
   kind: FaultKind;

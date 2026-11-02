@@ -6,6 +6,7 @@ import type { Chapter, Verse } from '../data/chapter';
 import { DIAGRAM_VERSION, getDiagram, keepDiagram } from '../data/repositories';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askGrind, type AskOptions } from '../services/tutor';
+import { expandApart, type WireDiagram } from './apart';
 import { buildDiagramRequest, type DiagramRequest } from './request';
 import type { Sentence } from './sentence';
 import type { Clause, Diagram, DiagramMode, DiagramWords, Modifier, Slot, TokenRef } from './types';
@@ -43,8 +44,8 @@ function isClause(value: unknown): value is Clause {
   return c === undefined || (isObject(c) && typeof c.kind === 'string' && COMPLEMENTS.includes(c.kind) && isSlot(c.slot));
 }
 
-/** The answer guard: a tree of the shape types.ts gives (whether it keeps THE RULE is validateDiagram's to say). */
-export function isDiagramAnswer(value: unknown): value is Diagram {
+/** A tree of the shape types.ts gives (whether it keeps THE RULE is validateDiagram's to say). */
+function isTree(value: unknown): value is Diagram {
   return (
     isObject(value) &&
     Array.isArray(value.clauses) &&
@@ -53,8 +54,14 @@ export function isDiagramAnswer(value: unknown): value is Diagram {
   );
 }
 
+/** The answer guard: a tree of the shape types.ts gives, once the clauses it holds apart (apart.ts) are put where they hang. */
+export function isDiagramAnswer(value: unknown): value is WireDiagram {
+  if (!isObject(value) || (value.apart !== undefined && !Array.isArray(value.apart))) return false;
+  return isTree(expandApart(value as unknown as WireDiagram).diagram);
+}
+
 /** askGrind with its kind and answer guard filled in; a test passes a fake of this. */
-export type AskDiagram = (request: DiagramRequest, options: AskOptions) => Promise<Diagram>;
+export type AskDiagram = (request: DiagramRequest, options: AskOptions) => Promise<WireDiagram>;
 
 const askMill: AskDiagram = (request, options) => askGrind(DIAGRAM_KIND, request, isDiagramAnswer, options);
 
@@ -92,13 +99,13 @@ export async function fetchDiagram(chapter: Chapter, verses: readonly Verse[], v
   let faults: Fault[] = [];
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const asked = attempt === 0 ? request : { ...request, faults: faults.slice(0, MAX_FAULTS).map((f) => f.message.slice(0, MAX_FAULT_CHARS)) };
-    const diagram = await ask(asked, asking);
+    const { diagram, faults: placing } = expandApart(await ask(asked, asking));
     const checked = validateDiagram(diagram, words.length);
-    if (checked.ok) {
+    if (checked.ok && placing.length === 0) {
       await keepDiagram(request.ref, view, diagram, options.now);
       return { ok: true, diagram, words, kept: false };
     }
-    faults = checked.faults;
+    faults = [...placing, ...(checked.ok ? [] : checked.faults)];
   }
   return { ok: false, faults };
 }
