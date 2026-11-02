@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.76
+_2026-11-02_
+- Fixed: the floating ? no longer shows over two small sheets (an English word's sheet and the "App not on this phone" notice), where it would have opened the tutor out of sight beneath them.
+
 ## 0.7.75
 _2026-11-02_
 - Fixed: Write it no longer tells you a vav or a final nun is "Not quite" just because you wrote it higher or lower on the pad than the line; "Not quite" is kept for a writing that is clearly the other letter.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.76",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.977",
+    "kind": "fixed",
+    "text": "the floating ? no longer shows over two small sheets (an English word's sheet and the \"App not on this phone\" notice), where it would have opened the tutor out of sight beneath them."
+  },
+  {
     "version": "0.7.75",
     "date": "2026-11-02",
     "story": "mw-5r3p30.976",
