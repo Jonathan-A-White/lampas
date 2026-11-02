@@ -11,7 +11,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [Layer 1 in detail](#layer-1-in-detail)
 - [Layer 2 in detail](#layer-2-in-detail)
   - [Names no lexicon has: the form as its own lemma](#names-no-lexicon-has-the-form-as-its-own-lemma)
-  - [The two books over the bar on words with no candidate](#the-two-books-over-the-bar-on-words-with-no-candidate-b9)
+  - [The two books over the bar on words with no candidate (B9)](#the-two-books-over-the-bar-on-words-with-no-candidate-b9)
 - [The agreement check](#the-agreement-check)
 - [Swete's tokens](#swetes-tokens)
 - [The bar](#the-bar)
