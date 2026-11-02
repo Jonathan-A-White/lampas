@@ -17,6 +17,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [The choices file](#the-choices-file)
 - [A model session](#a-model-session)
 - [Morpheus, the second method](#morpheus-the-second-method)
+  - [The sweep: what the first real run found](#the-sweep-what-the-first-real-run-found)
 - [The annotation file](#the-annotation-file)
 - [The report](#the-report)
 - [On the word card](#on-the-word-card)
