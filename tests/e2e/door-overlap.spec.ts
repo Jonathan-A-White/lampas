@@ -3,6 +3,7 @@
 // the screen at 390x844 on a licensed phone, once for each hand, scrolls the screen's box so the foot passes the ?'s height (the worst place), and compares boxes. A tap at the right (left) end of
 // the button nearest the ? must reach the button, not the ?. The sibling of tutor-door.spec.ts, which mw-5r3p30.956 owns.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { openCheck, openDrillIt, openShortDrill, openTryIt } from './large-text-titles';
 import { FLOATING } from './open-tutor';
 import { shot } from './shot';
 import { keepHand } from './tutor-door';
@@ -74,3 +75,109 @@ test('the Hebrew ayin lesson (the Deputy’s screen) leaves the ? clear of Next 
   await expect(page.locator(FLOATING)).toBeVisible();
   await expectClear(page, lesson, ['Next']);
 });
+
+// ---- the answer buttons of a question card (mw-5r3p30.981): Drill it, the short drill, Check and Try it draw GrammarCard's choices in a scroll box under the ? ----
+
+/** The scroll box a locator stands in: its nearest ancestor that scrolls in y. */
+const scrollBoxOf = (inside: Locator): Locator => inside.locator('xpath=ancestor::div[contains(@class,"overflow-y-auto")][1]');
+
+/** Puts settings in the app's store through raw IndexedDB, as the app wrote them, and reloads so the app reads them. */
+async function keepSettings(page: Page, values: Record<string, string>): Promise<void> {
+  await page.evaluate(
+    (pairs) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction('settings', 'readwrite');
+          for (const [key, value] of Object.entries(pairs)) tx.objectStore('settings').put({ key, value });
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    values,
+  );
+  await page.reload();
+}
+
+const CARDS = [
+  { name: 'Drill it', open: (page: Page) => openDrillIt(page, 'The noun') },
+  { name: 'the short drill', open: openShortDrill },
+  { name: 'Check', open: openCheck },
+  { name: 'Try it', open: openTryIt },
+];
+
+const CONDITIONS = [
+  { name: '390x844', size: { width: 390, height: 844 }, textSize: '100' },
+  { name: '360x640', size: { width: 360, height: 640 }, textSize: '100' },
+  { name: '390x844, text size 160', size: { width: 390, height: 844 }, textSize: '160' },
+];
+
+const QUESTIONS = 3;
+
+for (const { name: card, open } of CARDS) {
+  for (const { name: where, size, textSize } of CONDITIONS) {
+    for (const hand of HANDS) {
+      test(`${card} leaves the ? its room at ${where}, ${hand}-handed: no answer button is under it and a tap at the end nearest it chooses`, async ({ page }) => {
+        test.setTimeout(180_000);
+        await page.setViewportSize(size);
+        await openUnlocked(page);
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+        await keepSettings(page, { hand, textSize });
+        const screen = await open(page);
+        await expect(page.locator(FLOATING)).toBeVisible();
+
+        for (let question = 0; question < QUESTIONS; question += 1) {
+          // a full parsing is steps one after the other: each step's buttons are checked, and a tap goes on or ends the question
+          for (let step = 0; step < 8; step += 1) {
+            const options = screen.locator('[data-option]:not(:disabled)');
+            await expect(options.first()).toBeVisible();
+            const box = scrollBoxOf(options.first());
+            const count = await options.count();
+            let nearest = { index: 0, edge: hand === 'right' ? -Infinity : Infinity };
+            for (let i = 0; i < count; i += 1) {
+              const button = options.nth(i);
+              await button.scrollIntoViewIfNeeded();
+              await scrollToTheDoor(page, box, button);
+              const door = (await page.locator(FLOATING).boundingBox())!;
+              const at = (await button.boundingBox())!;
+              const label = (await button.textContent()) ?? '';
+              expect(overlaps(door, at), `the ? ${JSON.stringify(door)} is over ${label} ${JSON.stringify(at)}`).toBe(false);
+              const edge = hand === 'right' ? at.x + at.width : at.x;
+              if (hand === 'right' ? edge > nearest.edge : edge < nearest.edge) nearest = { index: i, edge };
+            }
+            // the button that reaches furthest toward the ?, with the foot at the ?'s height, is tapped at its end nearest the ?
+            const target = options.nth(nearest.index);
+            const label = (await target.textContent()) ?? '';
+            await target.scrollIntoViewIfNeeded();
+            await scrollToTheDoor(page, box, target);
+            const at = (await target.boundingBox())!;
+            const before = (await screen.getByTestId('parse-step').count()) ? await screen.getByTestId('parse-step').textContent() : null;
+            await page.touchscreen.tap(hand === 'right' ? at.x + at.width - 3 : at.x + 3, at.y + at.height / 2);
+            await expect
+              .poll(
+                async () =>
+                  (await screen.locator('[data-option][data-result]').count()) > 0 ||
+                  (before !== null && (await screen.getByTestId('parse-step').textContent()) !== before),
+                { message: `a tap at the end of ${label} nearest the ? chose it` },
+              )
+              .toBe(true);
+            if ((await screen.locator('[data-option][data-result]').count()) > 0) break;
+          }
+          const next = screen.getByTestId(/-next$/);
+          await expect(next).toBeVisible();
+          const foot = (await next.boundingBox())!;
+          expect(overlaps((await page.locator(FLOATING).boundingBox())!, foot), 'the ? is over the foot button').toBe(false);
+          await next.click();
+          if (!(await screen.locator('[data-option]').first().isVisible().catch(() => false))) break;
+        }
+        await shot(page, `door-overlap-${card.replaceAll(' ', '-')}-${where.replaceAll(/[ ,]/g, '-')}-${hand}`);
+      });
+    }
+  }
+}
