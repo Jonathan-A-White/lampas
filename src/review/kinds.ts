@@ -293,7 +293,7 @@ export const PARADIGM: ReviewKind = {
       return table ? drawCellQuestions(table, levels, own).map((question): ParadigmItem => ({ kind: 'paradigm', id: table.id, question, mode: modeFor(r.step) })) : [];
     });
   },
-  isRight: (item, picked) => item.kind === 'paradigm' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
+  isRight: (item, picked) => item.kind === 'paradigm' && (modeOfQuestion(item.question, item.mode) === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
   hear: (item) => {
     // said once answered: before, it would give the answer away
     const form = item.kind === 'paradigm' ? spokenForm(item.question.right) : undefined;
