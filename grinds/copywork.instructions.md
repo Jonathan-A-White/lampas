@@ -71,6 +71,13 @@ look-alike letter (`ב` and `כ`, `ד` and `ר`, `ה` and `ח` and `ת`, `ו` an
 `problem` names it (`the qamets under ר is missing`, `ו written for ז`). A maqaf (the high hyphen) joining words is part of the word
 before it as the model has it.
 
+A point is `missing` only when you looked at the place it belongs and saw nothing there. Before you call one missing, find that place on
+the page and look at it closely: a point is a small dot or dash, and a letter can carry several (a dagesh inside it, a dot or a vowel
+above, a vowel below). Count the marks the model gives the letter and find each of them on the page. Take the shin in בְּרֵאשִׁית: the
+model gives it a shin dot above, on its right arm, and a hiriq, one small dot below it. A page that has the dot above and the dot below
+has both, so the word is `right`; do not read the one for the other, and do not call the hiriq missing because the dot above is the more
+visible. When you looked at the place and the mark is there, mark the word `right`; when it truly is not there, it is `wrong` as above.
+
 ## Dictation
 
 When `mode` is `dictation` the learner did not copy `words` from sight: the app read them aloud a phrase at a time while they were hidden, and he
