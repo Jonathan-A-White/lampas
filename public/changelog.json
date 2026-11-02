@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.83",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.991",
+    "kind": "fixed",
+    "text": "In the Weave with learning words, two Greek words standing over one English phrase no longer run into the next Greek word."
+  },
+  {
     "version": "0.7.82",
     "date": "2026-11-02",
     "story": "mw-5r3p30.994",

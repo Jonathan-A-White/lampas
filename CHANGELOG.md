@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.83
+_2026-11-02_
+- Fixed: In the Weave with learning words, two Greek words standing over one English phrase no longer run into the next Greek word.
+
 ## 0.7.82
 _2026-11-02_
 - Fixed: The verse you are reading stays at the top when a word you are learning gains or loses its small English line.
