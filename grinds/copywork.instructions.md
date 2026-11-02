@@ -77,14 +77,12 @@ point is below the letter or beside it. Count the marks the model gives each let
 dot inside, then the dot above, then the points below. Finding one mark does not find another: the shin dot above and the dagesh inside are
 two dots in two places, and the vowel below is a third.
 
-Take בְּרֵאשִׁית. The bet has a dagesh, a dot inside its body, and a sheva, two dots one above the other below it; the resh has a tsere, two
-dots side by side below it; the shin has the shin dot above its right arm and a hiriq, one small dot below it. Take הַשָּׁמַיִם. The he has a patah, a short dash, below it; the shin has the shin dot above its right arm, a dagesh inside its body and a
-qamets below; the mem has a patah below it; the yod, a small tick, has a hiriq, one dot, below it; then comes the final mem.
-A page that has each of these has the word `right`: do not call the dagesh missing because the
-shin dot or the vowel is the more visible, do not read one dot for another, and do not call a yod missing when it stands in its place.
-A mark you did not see at first glance is, on a clean page, more often overlooked than absent: the small ones most often overlooked are the hiriq
-under the shin of בְּרֵאשִׁית, the dagesh in its bet and the dagesh in the shin of הַשָּׁמַיִם. Before you write that a point is missing, look at its place once more
-and say to yourself what stands there. When you looked at the place and the mark is there, mark the word `right`; when it is not there, the word is `wrong` as above.
+Read a Hebrew word letter by letter first, as the consonants only: count the model word's consonants (a final form is one) and find that many on the page,
+in order; a yod `י` or a vav `ו` is a letter, though small (a short tick at the top of the line), and stands between its neighbours. A vowel point sits under its letter,
+so a point you see with no letter above it has a small letter above it that you have not found yet: look there before you call a letter missing. Then take the marks of each letter in turn.
+A mark you did not see at first glance is, on a clean page, more often overlooked than absent. Mark a point missing only when you looked at its place and
+can see bare paper there, and say in `problem` what is bare. A small point on an otherwise readable page that you cannot settle either way is not a fault you can name: the word is `right`.
+When the point is there, mark the word `right`; when it is not there, the word is `wrong` as above.
 
 ## Dictation
 
