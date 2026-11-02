@@ -155,7 +155,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // English from the 2026 Greek (mw-9ji6ek0.33): with it On, the places where the 2026 Greek changes the English read in Lampas's own words, marked; the chapter waits for the setting, as it waits for the others
   const rp2026 = useSetting(rp2026EnglishSetting);
   const chapter = useMemo(() => (fetched && rp2026 ? layRp2026English(fetched, rp2026) : null), [fetched, rp2026]);
-  // The Septuagint chapter: its English is one chunk a verse, so the Weave has nothing to lay a Greek word over and is off here (a hint says so, once); a book that is not shipped says so and stays Hebrew
+  // The Septuagint chapter: its English is one chunk a verse, so the Weave has nothing to lay a Greek word over and is off here (a note says so, once); a book that is not shipped says so and stays Hebrew
   const septuagint = isSeptuagint(chapter);
   const septuagintOn = useSetting(septuagintSetting) === 'on';
   const wovenSettings = useMemo(() => (septuagint ? { ...settings, weaveShown: false } : settings), [septuagint, settings]);
@@ -169,7 +169,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (!db.isOpen()) db.open().catch(() => undefined);
   }, [retryChapter]);
   // the language of the chapter's own words (the switch's last choice, the Hebrew or the Greek view); the book says it before the chapter has loaded
-  const source: SourceLanguage = chapter ? sourceLanguage(chapter) : hbo ? 'hbo' : 'grc';
+  const source: SourceLanguage = chapter ? sourceLanguage(chapter) : isHebrewBook(BOOK) ? 'hbo' : 'grc';
   // What the address said when the reader opened (a reopen, Back to an earlier place): the selected verse (the view and weave it names are
   // put back in the settings by useReaderSettings). The address is the place; the settings follow it.
   const [opened] = useState(() => readerOf(window.location.hash));
