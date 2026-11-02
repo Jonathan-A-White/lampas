@@ -150,9 +150,9 @@ describe('lxx:pending and lxx:batches', () => {
   it('lxx:batches --all gives a row for each Old Testament book of the file: its words, its pending words, those with no candidate and how many of those are names', async () => {
     const lines: string[] = [];
     await runBatches(['--all'], { input: GEN_1, outDir: tmp(), log: (l) => lines.push(l) });
-    expect(lines[0]).toBe(['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name'].join('\t'));
+    expect(lines[0]).toBe(['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name', 'a name from its form alone', 'both % of words'].join('\t'));
     expect(lines).toHaveLength(3);
-    expect(lines[1]).toBe(`gen\t${gen.words.length}\t161\t2\t${((100 * 2) / gen.words.length).toFixed(2)}%\t1`);
+    expect(lines[1]).toBe(`gen\t${gen.words.length}\t161\t2\t${((100 * 2) / gen.words.length).toFixed(2)}%\t1\t0\t${((100 * 2) / gen.words.length).toFixed(2)}%`);
     expect(lines[2]).toBe(lines[1].replace('gen', 'total'));
     // the one capital among Gen 1's two words with no candidate is Γενηθήτωσαν, which opens what God says (Gen 1:14) and follows no mark: counted, so the count is an upper bound
     const w = (ref: string, display: string): { ref: string; verse: string; form: string; display: string } => ({ ref, verse: ref.split('#')[0], form: display.replace(/[.,·]/g, ''), display });
@@ -329,6 +329,20 @@ describe('lxx:choose', () => {
     const good = checkChoices([word], parseModelLines('Gen.1:5#1 N-NSM β').lines);
     expect(good.offences).toEqual([]);
     expect(good.rows[0]).toMatchObject({ lemma: 'β', confidence: CONFIDENCE_CHOSEN });
+  });
+
+  // Gen 5:12 Καινάν: TBESG's lemma is Καϊνάν (a diaeresis), the model wrote the file's Καινάν, and the choice was refused as outside the candidates (story mw-u2w5klk.19)
+  it('takes a lemma that differs from a candidate’s by a diaeresis alone for that candidate, and no other difference', () => {
+    const word: PendingWord = { ref: 'Gen.5:12#3', candidates: [{ lemma: 'Καϊνάν'.normalize('NFC'), morph: 'N-NSM', support: 0, share: 0, source: 'name' }], notes: [] };
+    const said = (lemma: string): string => `Gen.5:12#3 N-NSM ${lemma}`;
+    const checked = checkChoices([word], parseModelLines(said('Καινάν')).lines);
+    expect(checked.offences).toEqual([]);
+    expect(checked.rows[0]).toMatchObject({ lemma: 'Καϊνάν', confidence: CONFIDENCE_CHOSEN });
+    const applied = applyChoices([word], readChoices('ref\tparsing\tlemma\tmark\nGen.5:12#3\tN-NSM\tΚαινάν\t\n'));
+    expect(applied.refused).toEqual([]);
+    expect(applied.chosen[0]).toMatchObject({ lemma: 'Καϊνάν', layer: 3, confidence: CONFIDENCE_CHOSEN });
+    // an accent is not a diaeresis
+    expect(checkChoices([word], parseModelLines(said('Καίνάν')).lines).offences).toHaveLength(1);
   });
 });
 

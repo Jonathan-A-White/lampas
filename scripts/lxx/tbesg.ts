@@ -26,7 +26,7 @@ export function readTbesg(text: string): Lexicon {
   for (const line of text.split(/\r?\n/)) {
     if (!ROW.test(line)) continue;
     const c = line.split('\t');
-    const lemma = (c[3] ?? '').trim().normalize('NFC');
+    const lemma = (c[3] ?? '').trim().replace(/[\p{P}]+$/u, '').normalize('NFC');
     if (!lemma || /\s/.test(lemma)) continue;
     const key = bareOf(lemma);
     let entries = byBare.get(key);

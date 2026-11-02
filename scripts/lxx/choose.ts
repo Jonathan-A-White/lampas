@@ -19,6 +19,7 @@ import {
   NOTE_GUESS_NO_CANDIDATE,
   NOTE_GUESS_OUTSIDE,
   NOTE_UNSURE,
+  sameLemma,
   type ChoiceMark,
 } from './choices';
 import { OUT_DIR, type PendingWord } from './derive';
@@ -100,7 +101,7 @@ export function checkChoices(words: readonly PendingWord[], lines: readonly Mode
       continue;
     }
     const said = `${line.parsing}${line.lemma ? ` ${line.lemma}` : ''}`;
-    const hits = word.candidates.filter((c) => c.morph === line.parsing && (!line.lemma || c.lemma.normalize('NFC') === line.lemma));
+    const hits = word.candidates.filter((c) => c.morph === line.parsing && (!line.lemma || sameLemma(c.lemma, line.lemma)));
     const guess = line.mark === 'guess';
     if (hits.length === 0 && !guess) {
       offences.push(
