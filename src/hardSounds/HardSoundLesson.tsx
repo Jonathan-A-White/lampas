@@ -15,6 +15,7 @@ import { navigate, openVerseAt, showSoundStep, soundLessonOf, useAddress } from 
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { useAccent } from '../speech/accents/useAccent';
 import { SpeakButton } from '../speech/SpeakButton';
+import { useDoorRoom } from '../tutor/doorRoom';
 import { useReportScreen } from '../tutor/screenContext';
 import { greekMarked, hebrewMarked } from '../ui/GreekMarked';
 import { setVerseAction } from '../verse/action';
@@ -152,6 +153,7 @@ function StepBody({ step, lesson, at }: { step: HardSoundStep; lesson: Lesson; a
 /** The lesson's steps, one at a time: `step` is the one on screen, `onStep` moves to another, `onDone` is Done on the last. */
 export function LessonSteps({ lesson, step, onStep, onDone }: { lesson: Lesson; step: number; onStep: (step: number) => void; onDone: () => void }) {
   const accent = useAccent();
+  const room = useDoorRoom();
   const at = Math.min(Math.max(0, step), lesson.steps.length - 1);
   const shown = lesson.steps[at];
   const last = at === lesson.steps.length - 1;
@@ -169,7 +171,7 @@ export function LessonSteps({ lesson, step, onStep, onDone }: { lesson: Lesson; 
       <h2 className="mt-1 text-2xl font-semibold">{STEP_HEADINGS[shown.kind]}</h2>
       <p className="mt-2 text-lg">{(lessonLanguage(lesson) === 'he' ? hebrewMarked : greekMarked)(saidFor(shown.text, accent))}</p>
       <StepBody key={key} step={shown} lesson={lesson} at={key} />
-      <div className="mt-6 grid grid-cols-2 gap-3 pb-[var(--lp-end-inset)]">
+      <div data-sound-foot className={`mt-6 grid grid-cols-2 gap-3 pb-[var(--lp-end-inset)] ${room}`}>
         {at > 0 ? (
           <button type="button" onClick={() => onStep(at - 1)} className={BUTTON}>
             Previous
