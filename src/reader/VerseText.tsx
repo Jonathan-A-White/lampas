@@ -1,6 +1,6 @@
 // src/reader/VerseText.tsx — how one verse's words are drawn (moved as is from src/Reader.tsx, module map R1a).
 import { Fragment, type MouseEvent, type ReactNode } from 'react';
-import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns } from '../data/chapter';
+import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns, isGuess } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { besideOf, chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
@@ -146,6 +146,9 @@ function underRuns(items: readonly Drawn[]): ReactNode[] {
 /** How a marked word is drawn: the verse card of a Review question shows the form asked (mw-5r3p30.652). */
 const MARKED = 'font-bold underline decoration-2 underline-offset-4';
 
+/** How a Septuagint word the derivation only guessed is drawn (mw-u2w5klk.12): a dotted line under it, and a mark a screen reader reads as 'a guess'. */
+const GUESS = 'underline decoration-dotted decoration-1 underline-offset-4';
+
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
  * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). `marked` are indices into `verse.g` drawn marked (data-marked; in the English view
  * the chunk that stands for one); `still` draws the words as plain text for a verse shown on a card, where a tap has nothing to open. */
@@ -257,8 +260,9 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
               {
                 run: plan.marked.has(i) ? 'variant' : undefined,
                 node: (bare: boolean) => (
-                  <Tap key={i} bare={bare} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
+                  <Tap key={i} bare={bare} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-guess={isGuess(w) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''} ${isGuess(w) ? GUESS : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
                     {w.t}
+                    {isGuess(w) ? <span role="img" aria-label="a guess" /> : null}
                   </Tap>
                 ),
               },
